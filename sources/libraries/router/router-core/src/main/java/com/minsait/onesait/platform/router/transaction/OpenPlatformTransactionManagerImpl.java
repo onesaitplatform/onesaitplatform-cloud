@@ -237,23 +237,43 @@ public class OpenPlatformTransactionManagerImpl implements OpenPlatformTransacti
 
 				if (rollback) {
 					log.info("Transaction {} failed, rollback will be done.", transactionId);
+					
 					for (int i = currentOperation - 1; i >= 0; i--) {
 						TransactionalOperation transactionalOperation = lTransactionOps.get(i);
+					
 						switch (transactionalOperation.getType()) {
 						case INSERT:
-							rollback = !processCompensationTxInsert(transactionalOperation);
-							result.setErrorCode(GENERIC_OPERATION_ERROR_CODE);
-							result.setMessage("ROLLBACK " + GENERIC_OPERATION_ERROR_MESSAGE);
+							if(transactionalOperation.getAffectedIds() != null) {
+								
+								rollback = !processCompensationTxInsert(transactionalOperation);
+							
+							} else {
+								result.setErrorCode(GENERIC_OPERATION_ERROR_CODE);
+								result.setMessage(ONTOLOGIES_INSTANCE_ERROR_MESSAGE + transactionalOperation.getNotificationModel().getOperationModel().getBody());
+								
+							}
+							
 							break;
+							
+							
 						case UPDATE:
 						case DELETE:
-							rollback = !processCompensationTxUpdateDelete(transactionalOperation,
-									transactionalOperation.getType());
-							result.setErrorCode(GENERIC_OPERATION_ERROR_CODE);
-							result.setMessage("ROLLBACK " + GENERIC_OPERATION_ERROR_MESSAGE);
+							
+							if(transactionalOperation.getAffectedIds() != null) {
+								
+										rollback = !processCompensationTxUpdateDelete(transactionalOperation,transactionalOperation.getType());
+							
+							} else {
+								result.setErrorCode(GENERIC_OPERATION_ERROR_CODE);
+								result.setMessage(ONTOLOGIES_INSTANCE_ERROR_MESSAGE + transactionalOperation.getNotificationModel().getOperationModel().getBody());
+								
+							}
 							break;
 						}
-					}
+					} 
+							
+					
+					
 					transaction.setNextOperation(0);
 					transactionalOperationsMap.put(transactionId, transaction);
 					result.setStatus(false);

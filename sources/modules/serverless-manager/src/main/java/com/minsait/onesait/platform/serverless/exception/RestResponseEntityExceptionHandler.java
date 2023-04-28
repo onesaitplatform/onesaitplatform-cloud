@@ -22,16 +22,16 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-@ControllerAdvice
-public class RestResponseEntityExceptionHandler
-extends ResponseEntityExceptionHandler {
+import lombok.extern.slf4j.Slf4j;
 
-	@ExceptionHandler(value
-			= { Exception.class })
-	protected ResponseEntity<Object> handleConflict(
-			RuntimeException ex, WebRequest request) {
+@ControllerAdvice
+@Slf4j
+public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
+
+	@ExceptionHandler(value = { Exception.class })
+	protected ResponseEntity<Object> handleConflict(RuntimeException ex, WebRequest request) {
+		log.error("Error in request {}", ex.getMessage(), ex);
 		final String bodyOfResponse = "This should be application specific";
-		return handleExceptionInternal(ex, bodyOfResponse,
-				new HttpHeaders(), HttpStatus.CONFLICT, request);
+		return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.CONFLICT, request);
 	}
 }

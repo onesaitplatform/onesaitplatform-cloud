@@ -39,7 +39,7 @@ import com.minsait.onesait.platform.multitenant.config.services.MultitenancyServ
 
 import lombok.extern.slf4j.Slf4j;
 
-@Service
+@Service("BinaryRepositoryLogicServiceImpl")
 @Slf4j
 public class BinaryRepositoryLogicServiceImpl implements BinaryRepositoryLogicService {
 
@@ -59,12 +59,13 @@ public class BinaryRepositoryLogicServiceImpl implements BinaryRepositoryLogicSe
 	private String filePath;
 
 	@Override
-	public String addBinary(MultipartFile file, String metadata) throws BinaryRepositoryException, IOException {
-		return this.addBinary(file, metadata, RepositoryType.MONGO_GRIDFS);
+	public String addBinary(MultipartFile file, String metadata, String filePath)
+			throws BinaryRepositoryException, IOException {
+		return this.addBinary(file, metadata, RepositoryType.MONGO_GRIDFS, null);
 	}
 
 	@Override
-	public String addBinary(MultipartFile file, String metadata, RepositoryType repository)
+	public String addBinary(MultipartFile file, String metadata, RepositoryType repository, String filePath)
 			throws BinaryRepositoryException, IOException {
 		if (repository == null) {
 			repository = BinaryFile.RepositoryType.MONGO_GRIDFS;
@@ -104,7 +105,7 @@ public class BinaryRepositoryLogicServiceImpl implements BinaryRepositoryLogicSe
 			// changeTenant for file
 			final String currentTenat = MultitenancyContextHolder.getTenantName();
 			multitenancyService.findUser(bFile.getUser().getUserId())
-			.ifPresent(u -> MultitenancyContextHolder.setTenantName(u.getTenant().getName()));
+					.ifPresent(u -> MultitenancyContextHolder.setTenantName(u.getTenant().getName()));
 			binaryRepositoryFactory.getInstance(binaryFileService.getFile(fileId).getRepository()).updateBinary(fileId,
 					file.getInputStream(), metadata);
 			binaryFileService.updateBinaryFile(fileId, metadata, file.getContentType(), file.getOriginalFilename());
@@ -123,7 +124,7 @@ public class BinaryRepositoryLogicServiceImpl implements BinaryRepositoryLogicSe
 				// changeTenant for file
 				final String currentTenat = MultitenancyContextHolder.getTenantName();
 				multitenancyService.findUser(file.getUser().getUserId())
-				.ifPresent(u -> MultitenancyContextHolder.setTenantName(u.getTenant().getName()));
+						.ifPresent(u -> MultitenancyContextHolder.setTenantName(u.getTenant().getName()));
 				binaryFileService.deleteFile(fileId);
 				binaryRepositoryFactory.getInstance(file.getRepository()).removeBinary(fileId);
 				MultitenancyContextHolder.setTenantName(currentTenat);
@@ -148,7 +149,7 @@ public class BinaryRepositoryLogicServiceImpl implements BinaryRepositoryLogicSe
 			// changeTenant for file
 			final String currentTenat = MultitenancyContextHolder.getTenantName();
 			multitenancyService.findUser(file.getUser().getUserId())
-			.ifPresent(u -> MultitenancyContextHolder.setTenantName(u.getTenant().getName()));
+					.ifPresent(u -> MultitenancyContextHolder.setTenantName(u.getTenant().getName()));
 			final BinaryFileData dataFile = binaryRepositoryFactory
 					.getInstance(binaryFileService.getFile(fileId).getRepository()).getBinaryFile(fileId);
 			dataFile.setContentType(file.getMime());
@@ -172,8 +173,9 @@ public class BinaryRepositoryLogicServiceImpl implements BinaryRepositoryLogicSe
 				// changeTenant for file
 				final String currentTenat = MultitenancyContextHolder.getTenantName();
 				multitenancyService.findUser(file.getUser().getUserId())
-				.ifPresent(u -> MultitenancyContextHolder.setTenantName(u.getTenant().getName()));
-				final String dataFile = binaryRepositoryFactory.getInstance(binaryFileService.getFile(fileId).getRepository())
+						.ifPresent(u -> MultitenancyContextHolder.setTenantName(u.getTenant().getName()));
+				final String dataFile = binaryRepositoryFactory
+						.getInstance(binaryFileService.getFile(fileId).getRepository())
 						.getBinaryFileForPaginate(fileId, startLine, maxLines, skipHeaders);
 				MultitenancyContextHolder.setTenantName(currentTenat);
 				return dataFile;
@@ -195,7 +197,7 @@ public class BinaryRepositoryLogicServiceImpl implements BinaryRepositoryLogicSe
 			// changeTenant for file
 			final String currentTenat = MultitenancyContextHolder.getTenantName();
 			multitenancyService.findUser(file.getUser().getUserId())
-			.ifPresent(u -> MultitenancyContextHolder.setTenantName(u.getTenant().getName()));
+					.ifPresent(u -> MultitenancyContextHolder.setTenantName(u.getTenant().getName()));
 			final Boolean isOk = binaryRepositoryFactory.getInstance(binaryFileService.getFile(fileId).getRepository())
 					.closePaginate(fileId);
 			MultitenancyContextHolder.setTenantName(currentTenat);
@@ -212,7 +214,7 @@ public class BinaryRepositoryLogicServiceImpl implements BinaryRepositoryLogicSe
 		// changeTenant for file
 		final String currentTenat = MultitenancyContextHolder.getTenantName();
 		multitenancyService.findUser(file.getUser().getUserId())
-		.ifPresent(u -> MultitenancyContextHolder.setTenantName(u.getTenant().getName()));
+				.ifPresent(u -> MultitenancyContextHolder.setTenantName(u.getTenant().getName()));
 		final BinaryFileData dataFile = binaryRepositoryFactory
 				.getInstance(binaryFileService.getFile(fileId).getRepository()).getBinaryFile(fileId);
 		dataFile.setContentType(file.getMime());
@@ -272,6 +274,5 @@ public class BinaryRepositoryLogicServiceImpl implements BinaryRepositoryLogicSe
 			throw new BinaryRepositoryException(e.getMessage());
 		}
 	}
-
 
 }

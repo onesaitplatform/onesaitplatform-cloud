@@ -16,10 +16,12 @@ package com.minsait.onesait.platform.persistence.presto;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
+import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -34,6 +36,7 @@ import com.minsait.onesait.platform.persistence.historical.minio.HistoricalMinio
 import com.minsait.onesait.platform.persistence.historical.minio.HistoricalMinioService;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
 import com.minsait.onesait.platform.persistence.presto.generator.PrestoSQLHelper;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,10 +53,7 @@ public class PrestoManageDBRepository implements ManageDBRepository {
 	private static final String KEY_SCHEMA = "datasourceSchema";
 	private static final String KEY_CATALOG = "datasourceCatalog";
 	private static final String KEY_BUCKET = "bucketName";
-
-	@Value("${onesaitplatform.database.prestodb.historicalCatalog:minio}")
-	private String historicalCatalog;
-
+	
 	@Autowired
 	@Qualifier("PrestoDatasourceManagerImpl")
 	private PrestoDatasourceManager prestoDatasourceManager;
@@ -70,7 +70,17 @@ public class PrestoManageDBRepository implements ManageDBRepository {
 	@Autowired
 	private OntologyService ontologySevice;
 
-//	private PrestoSQLGeneratorOps sqlGeneratorOps = new PrestoSQLGeneratorOpsImpl();
+	@Autowired
+	private IntegrationResourcesService integrationResourcesService;
+
+	private String historicalCatalog;
+
+	@PostConstruct
+	public void init() {
+		historicalCatalog = Optional.ofNullable(
+				(String) integrationResourcesService.getGlobalConfiguration().getEnv().getDatabase().get("prestodb-historical-catalog"))
+				.orElse("minio");
+	}
 	
 	public JdbcTemplate getJdbTemplate(String catalog, String schema) {
 		return new JdbcTemplate(prestoDatasourceManager.getDatasource(catalog, schema));

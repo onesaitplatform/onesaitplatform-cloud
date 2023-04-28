@@ -18,12 +18,13 @@ import java.util.Map;
 
 import org.springframework.boot.autoconfigure.security.oauth2.resource.PrincipalExtractor;
 
-public class OauthPrincipalExtractor implements PrincipalExtractor{
+public class OauthPrincipalExtractor implements PrincipalExtractor {
 
 	public static final String USERNAME = "username";
+	public static final String USERNAME_BACKUP = "principal";
 
 	@Override
 	public Object extractPrincipal(Map<String, Object> map) {
-		return map.get(USERNAME);
+		return map.get(USERNAME) != null ? map.get(USERNAME) : map.get(USERNAME_BACKUP);
 	}
 }

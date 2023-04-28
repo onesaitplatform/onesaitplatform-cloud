@@ -9,14 +9,25 @@ from collections import defaultdict
 
 from django.db import connections, models
 from django.db.models.sql import UpdateQuery
+from django.conf import settings
 
+
+def _get_type_ifbool(type):
+    if settings.DJANGO_DB == settings.DJANGO_DB_POSTGRESQL :
+        return type;
+    else:
+        if type == 'bool' :
+            return 'INTEGER'        
+        else :
+            return type;
+    
 
 def _get_db_type(field, connection):
     if isinstance(field, (models.PositiveSmallIntegerField,
                           models.PositiveIntegerField)):
-        return field.db_type(connection).split(' ', 1)[0]
+        return _get_type_ifbool(field.db_type(connection).split(' ', 1)[0])
 
-    return field.db_type(connection)
+    return _get_type_ifbool(field.db_type(connection))
 
 
 def _as_sql(obj, field, query, compiler, connection):
@@ -145,7 +156,8 @@ def bulk_update(objs, meta=None, update_fields=None, exclude_fields=None,
     compiler = query.get_compiler(connection=connection)
 
     template = '"{column}" = CAST(CASE "{pk_column}" {cases}ELSE "{column}" END AS {type})'
-
+    if settings.DJANGO_DB != settings.DJANGO_DB_POSTGRESQL:
+         template = '{column} = CAST(CASE "{pk_column}" {cases}ELSE "{column}" END AS {type})'
     case_template = "WHEN %s THEN {} "
 
     lenpks = 0
@@ -184,7 +196,8 @@ def bulk_update(objs, meta=None, update_fields=None, exclude_fields=None,
         del pks
 
         dbtable = '"{}"'.format(meta.db_table)
-
+        if settings.DJANGO_DB != settings.DJANGO_DB_POSTGRESQL:
+            dbtable = '{}'.format(meta.db_table)
         in_clause = '"{pk_column}" in ({pks})'.format(
             pk_column=pk_field.column,
             pks=', '.join(itertools.repeat('%s', n_pks)),

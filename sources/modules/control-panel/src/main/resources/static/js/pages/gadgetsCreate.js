@@ -117,6 +117,7 @@ var GadgetsCreateController = function() {
 	return{		
 		// LOAD() JSON LOAD FROM TEMPLATE TO CONTROLLER
 		load: function(Data) { 
+			debugger
 			logControl ? console.log(LIB_TITLE + ': load()') : '';
 			return gadgetCreateReg = Data;
 		},	
@@ -128,9 +129,10 @@ var GadgetsCreateController = function() {
 			if(gadgetCreateReg.iframe){
 				 $("#toolFullScreen").trigger("click");
 			}
-			if(gadgetCreateReg.ontologyId != null)
-				$('#datasources').val(gadgetCreateReg.ontologyId).change();
+			if(gadgetCreateReg.ontologyId != null){
 				
+					$('#datasources').val(gadgetCreateReg.ontologyId).change();
+				}
 				
 
 			$( "body" ).removeClass( "wait-interval" )

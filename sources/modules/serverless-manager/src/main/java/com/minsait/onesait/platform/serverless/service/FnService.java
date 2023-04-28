@@ -20,7 +20,6 @@ import com.minsait.onesait.platform.serverless.dto.fn.FnFunction;
 import com.minsait.onesait.platform.serverless.model.Application;
 import com.minsait.onesait.platform.serverless.model.Function;
 
-
 public interface FnService {
 
 	public boolean create(String appName);
@@ -38,5 +37,9 @@ public interface FnService {
 	public FnFunction deploy(Application app, Function function, String basePath);
 
 	public void deleteFunction(String fnId);
+
+	void updateFunction(FnFunction function);
+
+	void removeVar(String appName, String fnName, String var);
 
 }

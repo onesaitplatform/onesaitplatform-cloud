@@ -95,7 +95,7 @@
     "port": 9000
 },{
     "module": "presto",
-    "name": "Presto coordinator",
+    "name": "PrestoDB",
     "servicename": "localhost",
     "port": 8080
 },

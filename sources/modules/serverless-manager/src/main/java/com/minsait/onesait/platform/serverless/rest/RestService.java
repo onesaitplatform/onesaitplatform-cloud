@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.serverless.dto.ApplicationCreate;
 import com.minsait.onesait.platform.serverless.dto.ApplicationInfo;
 import com.minsait.onesait.platform.serverless.dto.ApplicationUpdate;
@@ -63,7 +64,7 @@ public class RestService {
 	private ApplicationService applicationService;
 
 	@PostMapping("/applications")
-	@Operation(summary="Create new application")
+	@Operation(summary = "Create new application")
 	public ResponseEntity<Object> create(@RequestBody ApplicationCreate application) {
 		try {
 			final ApplicationInfo dto = applicationService.create(application);
@@ -87,7 +88,7 @@ public class RestService {
 
 	}
 
-	@Operation(summary="Create new function")
+	@Operation(summary = "Create new function")
 	@PostMapping("/applications/{appName}/functions")
 	public ResponseEntity<Object> createFunction(@RequestBody FunctionCreate function,
 			@PathVariable("appName") String appName) {
@@ -112,9 +113,10 @@ public class RestService {
 		}
 	}
 
-	@Operation(summary="Update an existing application")
+	@Operation(summary = "Update an existing application")
 	@PutMapping("/applications/{appName}")
-	public ResponseEntity<Object> updateApp(@PathVariable("appName") String appName, @RequestBody ApplicationUpdate app){
+	public ResponseEntity<Object> updateApp(@PathVariable("appName") String appName,
+			@RequestBody ApplicationUpdate app) {
 		try {
 			final ApplicationInfo dto = applicationService.update(app, appName);
 			return ResponseEntity.ok(dto);
@@ -136,9 +138,9 @@ public class RestService {
 		}
 	}
 
-	@Operation(summary="Delete an existing application")
+	@Operation(summary = "Delete an existing application")
 	@DeleteMapping("/applications/{appName}")
-	public ResponseEntity<Object> deleteApp(@PathVariable("appName") String appName){
+	public ResponseEntity<Object> deleteApp(@PathVariable("appName") String appName) {
 		try {
 			applicationService.delete(appName);
 			return ResponseEntity.ok().build();
@@ -160,9 +162,10 @@ public class RestService {
 		}
 	}
 
-	@Operation(summary="Delete an existing function")
+	@Operation(summary = "Delete an existing function")
 	@DeleteMapping("/applications/{appName}/functions/{fnName}")
-	public ResponseEntity<Object> deleteFn(@PathVariable("appName") String appName, @PathVariable("fnName") String fnName){
+	public ResponseEntity<Object> deleteFn(@PathVariable("appName") String appName,
+			@PathVariable("fnName") String fnName) {
 		try {
 			applicationService.deleteFunction(appName, fnName);
 			return ResponseEntity.ok().build();
@@ -184,9 +187,10 @@ public class RestService {
 		}
 	}
 
-	@Operation(summary="Update an existing function")
+	@Operation(summary = "Update an existing function")
 	@PutMapping("/applications/{appName}/functions/{fnName}")
-	public ResponseEntity<Object> updateFunction(@PathVariable("appName") String appName,@PathVariable("fnName") String fnName, @RequestBody FunctionUpdate function){
+	public ResponseEntity<Object> updateFunction(@PathVariable("appName") String appName,
+			@PathVariable("fnName") String fnName, @RequestBody FunctionUpdate function) {
 		try {
 			final FunctionInfo dto = applicationService.updateFunction(appName, fnName, function);
 			return ResponseEntity.ok(dto);
@@ -208,9 +212,35 @@ public class RestService {
 		}
 	}
 
-	@Operation(summary="Get a function")
+	@Operation(summary = "Update an existing function")
+	@PutMapping("/applications/{appName}/functions/{fnName}/update-version")
+	public ResponseEntity<Object> updateFunctionsVersion(@PathVariable("appName") String appName,
+			@PathVariable("fnName") String fnName, @RequestBody String version) {
+		try {
+			applicationService.updateFunctionsVersion(appName, fnName, version);
+			return ResponseEntity.ok().build();
+		} catch (final UserNotFoundException e) {
+			log.error(USER_NOT_FOUND_EXCEPTION, e);
+			return new ResponseEntity<>(ErrorResponse.builder().message(e.getMessage()).build(), HttpStatus.FORBIDDEN);
+		} catch (final FnException e) {
+			log.error(FN_EXCEPTION_WITH_MESSAGE, e.getMessage(), e);
+			return new ResponseEntity<>(ErrorResponse.builder().message(e.getMessage()).build(),
+					HttpStatus.valueOf(e.getCode().getCode()));
+		} catch (final ApplicationException e) {
+			log.error(APPLICATION_EXCEPTION, e);
+			return new ResponseEntity<>(ErrorResponse.builder().message(e.getMessage()).build(),
+					HttpStatus.valueOf(e.getCode().getCode()));
+		} catch (final Exception e) {
+			log.error(GENERIC_EXCEPTION_WITH_MESSAGE, e.getMessage(), e);
+			return new ResponseEntity<>(ErrorResponse.builder().message(e.getMessage()).build(),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Operation(summary = "Get a function")
 	@GetMapping("/applications/{appName}/functions/{fnName}")
-	public ResponseEntity<Object> getFunction(@PathVariable("appName") String appName,@PathVariable("fnName") String fnName){
+	public ResponseEntity<Object> getFunction(@PathVariable("appName") String appName,
+			@PathVariable("fnName") String fnName) {
 		try {
 			final FunctionInfo dto = applicationService.getFunction(appName, fnName);
 			return ResponseEntity.ok(dto);
@@ -231,7 +261,8 @@ public class RestService {
 					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	@Operation(summary="Get applications by user")
+
+	@Operation(summary = "Get applications by user")
 	@GetMapping("/applications/users/{userId}")
 	public ResponseEntity<Object> applicationsByUser(@PathVariable("userId") String userId) {
 		try {
@@ -250,7 +281,7 @@ public class RestService {
 		}
 	}
 
-	@Operation(summary="Get applications for current authenticated user")
+	@Operation(summary = "Get applications for current authenticated user")
 	@GetMapping("/applications/users/self")
 	public ResponseEntity<Object> applicationsSelf() {
 		try {
@@ -271,7 +302,7 @@ public class RestService {
 
 	@GetMapping("/applications")
 	@PreAuthorize("hasRole('ADMINISTRATOR')")
-	@Operation(summary="Get all applications")
+	@Operation(summary = "Get all applications")
 	public ResponseEntity<Object> allApplications() {
 		try {
 			return ResponseEntity.ok(applicationService.list());
@@ -290,7 +321,7 @@ public class RestService {
 	}
 
 	@GetMapping("/applications/{appName}")
-	@Operation(summary="Get application by its name")
+	@Operation(summary = "Get application by its name")
 	public ResponseEntity<Object> appByName(@PathVariable("appName") String appName) {
 		try {
 			return ResponseEntity.ok(applicationService.find(appName));
@@ -308,11 +339,61 @@ public class RestService {
 		}
 	}
 
-	@Operation(summary="Deploy a function")
+	@Operation(summary = "Deploy a function")
 	@PostMapping("/applications/{appName}/functions/{fnName}/deploy")
-	public ResponseEntity<Object> deployFn(@PathVariable("appName") String appName, @PathVariable("fnName") String fnName) {
+	public ResponseEntity<Object> deployFn(@PathVariable("appName") String appName,
+			@PathVariable("fnName") String fnName) {
 		try {
 			return ResponseEntity.ok(applicationService.deploy(appName, fnName));
+		} catch (final UserNotFoundException e) {
+			log.error(USER_NOT_FOUND_EXCEPTION, e);
+			return new ResponseEntity<>(ErrorResponse.builder().message(e.getMessage()).build(), HttpStatus.FORBIDDEN);
+		} catch (final FnException e) {
+			log.error(FN_EXCEPTION_WITH_MESSAGE, e.getMessage(), e);
+			return new ResponseEntity<>(ErrorResponse.builder().message(e.getMessage()).build(),
+					HttpStatus.valueOf(e.getCode().getCode()));
+		} catch (final ApplicationException e) {
+			log.error(APPLICATION_EXCEPTION, e);
+			return new ResponseEntity<>(ErrorResponse.builder().message(e.getMessage()).build(),
+					HttpStatus.valueOf(e.getCode().getCode()));
+		} catch (final Exception e) {
+			log.error(GENERIC_EXCEPTION_WITH_MESSAGE, e.getMessage(), e);
+			return new ResponseEntity<>(ErrorResponse.builder().message(e.getMessage()).build(),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Operation(summary = "Get function's environment")
+	@GetMapping("/applications/{appName}/functions/{fnName}/environment")
+	public ResponseEntity<Object> getEnvironment(@PathVariable("appName") String appName,
+			@PathVariable("fnName") String fnName) {
+		try {
+			return ResponseEntity.ok(applicationService.getFunctionsEnvironment(appName, fnName));
+		} catch (final UserNotFoundException e) {
+			log.error(USER_NOT_FOUND_EXCEPTION, e);
+			return new ResponseEntity<>(ErrorResponse.builder().message(e.getMessage()).build(), HttpStatus.FORBIDDEN);
+		} catch (final FnException e) {
+			log.error(FN_EXCEPTION_WITH_MESSAGE, e.getMessage(), e);
+			return new ResponseEntity<>(ErrorResponse.builder().message(e.getMessage()).build(),
+					HttpStatus.valueOf(e.getCode().getCode()));
+		} catch (final ApplicationException e) {
+			log.error(APPLICATION_EXCEPTION, e);
+			return new ResponseEntity<>(ErrorResponse.builder().message(e.getMessage()).build(),
+					HttpStatus.valueOf(e.getCode().getCode()));
+		} catch (final Exception e) {
+			log.error(GENERIC_EXCEPTION_WITH_MESSAGE, e.getMessage(), e);
+			return new ResponseEntity<>(ErrorResponse.builder().message(e.getMessage()).build(),
+					HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@Operation(summary = "Get function's environment")
+	@PutMapping("/applications/{appName}/functions/{fnName}/environment")
+	public ResponseEntity<Object> updateEnvironment(@PathVariable("appName") String appName,
+			@PathVariable("fnName") String fnName, @RequestBody ObjectNode config) {
+		try {
+			applicationService.updateFunctionsEnvironmnet(appName, fnName, config);
+			return ResponseEntity.ok().build();
 		} catch (final UserNotFoundException e) {
 			log.error(USER_NOT_FOUND_EXCEPTION, e);
 			return new ResponseEntity<>(ErrorResponse.builder().message(e.getMessage()).build(), HttpStatus.FORBIDDEN);

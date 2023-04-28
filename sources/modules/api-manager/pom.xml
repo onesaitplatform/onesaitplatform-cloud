@@ -331,6 +331,11 @@
 			<artifactId>commons-fileupload</artifactId>
 			<version>${version.commons-fileupload}</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.jolokia</groupId>
+			<artifactId>jolokia-core</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

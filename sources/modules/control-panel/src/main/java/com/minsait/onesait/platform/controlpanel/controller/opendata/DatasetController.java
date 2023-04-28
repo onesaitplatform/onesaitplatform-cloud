@@ -46,13 +46,14 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.minsait.onesait.platform.business.services.binaryrepository.BinaryRepositoryLogicService;
+import com.minsait.onesait.platform.business.services.binaryrepository.factory.BinaryRepositoryServiceFactory;
 import com.minsait.onesait.platform.business.services.dataset.DatasetService;
 import com.minsait.onesait.platform.business.services.opendata.OpenDataPermissions;
 import com.minsait.onesait.platform.business.services.opendata.organization.OrganizationService;
 import com.minsait.onesait.platform.business.services.resources.ResourceService;
 import com.minsait.onesait.platform.comms.protocol.binary.BinarySizeException;
 import com.minsait.onesait.platform.config.model.BinaryFile;
+import com.minsait.onesait.platform.config.model.BinaryFile.RepositoryType;
 import com.minsait.onesait.platform.config.model.DatasetResource;
 import com.minsait.onesait.platform.config.model.ODBinaryFilesDataset;
 import com.minsait.onesait.platform.config.model.ODTypology;
@@ -101,10 +102,10 @@ public class DatasetController {
 	@Autowired
 	private AppWebUtils webUtils;
 	@Autowired
-	private BinaryRepositoryLogicService binaryRepositoryLogicService;
-	@Autowired 
+	private BinaryRepositoryServiceFactory binaryFactory;
+	@Autowired
 	private HttpSession httpSession;
-	
+
 	private static final String APP_ID = "appId";
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_USER,ROLE_DATASCIENTIST')")
@@ -112,15 +113,15 @@ public class DatasetController {
 	public String listDatasets(Model model, @RequestParam(required = false) String name,
 			@RequestParam(required = false) String tag, RedirectAttributes redirect) {
 
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);		
-		
-	    if (name != null && name.equals("")) {
-            name = null;
-        }
-	    if (tag != null && tag.equals("")) {
-            tag = null;
-        }
+		// CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
+
+		if (name != null && name.equals("")) {
+			name = null;
+		}
+		if (tag != null && tag.equals("")) {
+			tag = null;
+		}
 		final String userToken = utils.getCurrentUserOauthToken();
 		try {
 			final List<OpenDataOrganization> organizationsFromUser = organizationService
@@ -236,9 +237,10 @@ public class DatasetController {
 			}
 			datasetDTO.setFiles(datasetFilesList);
 
-			List<BinaryFile> binaryFiles = binaryFilesDatasetService.getBinaryFilesObjectByDatasetId(datasetDTO.getId());
+			List<BinaryFile> binaryFiles = binaryFilesDatasetService
+					.getBinaryFilesObjectByDatasetId(datasetDTO.getId());
 			model.addAttribute("binaryFiles", binaryFiles);
-			
+
 			final List<OpenDataOrganization> organizationsFromUser = organizationService
 					.getOrganizationsFromUser(userToken);
 			final boolean modifyPermissions = datasetService.getModifyPermissions(organizationsFromUser,
@@ -397,7 +399,7 @@ public class DatasetController {
 			if (file.getSize() > webUtils.getMaxFileSizeAllowed().longValue())
 				throw new BinarySizeException("The file size is larger than max allowed");
 
-			String id = binaryRepositoryLogicService.addBinary(file, "datasetFile", null);
+			String id = binaryFactory.getInstance(RepositoryType.MONGO_GRIDFS).addBinary(file, "datasetFile", null);
 			response = binaryFileService.getFile(id);
 
 		} catch (final Exception e) {

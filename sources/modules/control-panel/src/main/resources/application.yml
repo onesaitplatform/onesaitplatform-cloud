@@ -107,7 +107,7 @@ onesaitplatform: #Config onesait Platform specific
         admin_user_id: 51503283G
         id_hash: true
       cas:
-        base_url: http://localhost:8080
+        base_url: https://localhost:8080
         service_id: http://localhost:18000/controlpanel/login/cas
         key: CAS_PROVIDER_LOCALHOST_18000
         login_url: http://localhost:8080/cas/login
@@ -168,8 +168,8 @@ onesaitplatform: #Config onesait Platform specific
    controlpanel:
          url: http://localhost:18000/controlpanel
          realms:
-            max.users.app.assign.table: 0
-            max.users.combo: 0
+             max.users.app.assign.table: 0
+             max.users.combo: 0
    ontologies:
          schema:
              ignore-case-properties: false
@@ -192,6 +192,7 @@ onesaitplatform: #Config onesait Platform specific
                 git_path: devops/build-deploy/openshift/onesaitplatform/*
                 tmp_path: /tmp/oc-templates/
    gitlab:
+         manager.server: http://localhost:10050/gitlab/api/v1
          scaffolding.directory: /tmp/scaffolding
          namespace:
            id: 120
@@ -266,6 +267,7 @@ onesaitplatform: #Config onesait Platform specific
    database.prestodb:
       historicalCatalog: minio
       historicalSchema: default
+      realtimedbCatalog: realtimedb
    datalabeling:
       user: user@datalabeling.com
       password: 87654321
@@ -376,12 +378,13 @@ onesaitplatform: #Config onesait Platform specific
       host: 127.0.0.1
       port: 12201
    filestore:
-      type: MINIO #MONGO_GRIDFS, FILE, MINIO
+      type: MINIO #MONGO_GRIDFS, FILE, MINIO, GCP
 
 spring: ## General Config
    mvc.hiddenmethod.filter.enabled: true
    main:
       allow-circular-references: true
+      lazy-initialization: true
       allow-bean-definition-overriding: true
    application.name: onesaitplatform-control-panel
    thymeleaf: ## Thymeleaf Config

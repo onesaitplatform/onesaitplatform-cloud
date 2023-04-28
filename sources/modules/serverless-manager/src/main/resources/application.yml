@@ -8,7 +8,7 @@ onesaitplatform:
      secret: operations
    api-key: 52bd41e41c2c4b919ace6f43560a3d03
    serverless:
-     url: https://development.onesaitplatform.com/fn
+     url: http://localhost:8080/
    controlpanel:
      url: http://localhost:18000/controlpanel
    authentication:

@@ -15,6 +15,7 @@
 package com.minsait.onesait.platform.config.repository;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -60,4 +61,11 @@ public interface BinaryFileRepository extends JpaRepository<BinaryFile, String> 
 	@Modifying
 	@Transactional
 	void deleteByIdNotIn(Collection<String> ids);
+
+	@Modifying
+	@Transactional
+	void deleteByIdIn(Collection<String> ids);
+
+	@Query("select bf.id from BinaryFile bf where bf.createdAt <= :date ")
+	List<String> getAllIdsBeforeDate(@Param("date") Date date);
 }

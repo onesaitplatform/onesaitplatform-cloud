@@ -188,6 +188,29 @@ public class UserManagementController {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
 	}
+	
+	@Operation(summary = "Get users additional info")
+	@GetMapping("/allUsersAdditionalInfo")
+	@ApiResponses(@ApiResponse(content = @Content(schema = @Schema(implementation = MasterUserAmplified.class)), responseCode = "200", description = "OK"))
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
+	public ResponseEntity<?> getAllUsersAdditionalInfo() {
+		log.debug("New GET request for users");
+		if (utils.isAdministrator()) {
+			final List<MasterUserAmplified> masterUsersAmplified = new ArrayList<MasterUserAmplified>();
+			final List<?> mUsers = multitenancyService.getAllLazy();
+			for (Object muser : mUsers) {
+				log.debug("Found users");	
+				MasterUserAmplified masterUserAmplified = new MasterUserAmplified(muser);
+				masterUsersAmplified.add(masterUserAmplified);
+			}
+			log.debug("Found users");
+			return new ResponseEntity<>(masterUsersAmplified, HttpStatus.OK);
+		} else {
+			log.warn("Forbidden access");
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		}
+	}
+
 
 	@Operation(summary = "Get user by id")
 	@GetMapping("/username/like/{filter}")
@@ -494,6 +517,24 @@ public class UserManagementController {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
 
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+	
+	@Operation(summary = "Activate multiple users by ids")
+	@PostMapping("/activate")
+	public ResponseEntity<String> activateMultiple(
+			@Parameter(description = "User ids", example = "developer,guest,observer", required = true) @RequestBody @Valid List<UserId> userIds) {
+		try {
+			if (utils.isAdministrator()) {
+				for (final UserId userId : userIds) {
+					userService.activateUser(userService.getUser(userId.getId()));
+				}
+			} else {
+				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			}
+		} catch (final Exception e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

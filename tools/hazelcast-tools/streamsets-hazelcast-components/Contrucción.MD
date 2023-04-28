@@ -1,0 +1,1 @@
+mvn clean package -P<profile en función al SPI a utilizar para Hazelcast>

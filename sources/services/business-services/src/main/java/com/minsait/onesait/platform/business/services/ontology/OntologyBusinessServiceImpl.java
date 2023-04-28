@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.business.services.ontology.graph.NebulaGraphBusinessService;
 import com.minsait.onesait.platform.business.services.ontology.graph.NebulaGraphEntity;
+import com.minsait.onesait.platform.business.services.presto.datasource.PrestoDatasourceConfigurationService;
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbCleanLapse;
@@ -115,6 +116,9 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 
 	@Autowired
 	private NebulaGraphBusinessService nebulaGraphBusinessService;
+	
+	@Autowired
+	private PrestoDatasourceConfigurationService prestoDatasourceConfigurationService;
 
 	@Override
 	public void createOntology(Ontology ontology, String userId, OntologyConfiguration config)
@@ -242,6 +246,8 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 			clone.setAllowsCreateTopic(ontology.isAllowsCreateTopic());
 			clone.setSupportsJsonLd(ontology.isSupportsJsonLd());
 			clone.setJsonLdContext(ontology.getJsonLdContext());
+			clone.setContextDataEnabled(ontology.isContextDataEnabled());
+			clone.setEnableDataClass(ontology.isEnableDataClass());
 
 			ontologyService.createOntology(clone, config);
 
@@ -313,16 +319,25 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 
 	@Override
 	public List<String> getDatabasesFromDatasource(String datasource) {
+		if (datasource.equals(VirtualDatasourceType.PRESTO.toString())) {
+			return prestoDBBasicOpsDBRepository.getCatalogs();
+		}
 		return virtualRepo.getDatabases(datasource);
 	}
 
 	@Override
 	public List<String> getSchemasFromDatasourceDatabase(String datasource, String database) {
+		if (datasource.equals(VirtualDatasourceType.PRESTO.toString())) {
+			return prestoDBBasicOpsDBRepository.getSchemas(database);
+		}
 		return virtualRepo.getSchemasDB(datasource, database);
 	}
 
 	@Override
 	public List<String> getTablesFromDatasource(String datasource, String database, String schema) {
+		if (datasource.equals(VirtualDatasourceType.PRESTO.toString())) {
+			return prestoDBBasicOpsDBRepository.getTables(database, schema);
+		}
 		return virtualRepo.getTables(datasource, database, schema);
 	}
 
@@ -500,7 +515,10 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 			cosmosManageRepository.removeTable4Ontology(identification);
 		}
 		if (RtdbDatasource.PRESTO.equals(o.getRtdbDatasource())) {
-			prestoManageDBRepository.removeTable4Ontology(identification);
+			final String catalog = ontologyService.getOntologyPrestoByOntologyId(o).getDatasourceCatalog();
+			if(catalog != null && prestoDatasourceConfigurationService.isHistoricalCatalog(catalog)) {
+				prestoManageDBRepository.removeTable4Ontology(identification);
+			}
 		}
 		if (RtdbDatasource.NEBULA_GRAPH.equals(o.getRtdbDatasource())) {
 			nebulaGraphBusinessService.deleteNebulaGraphEntity(identification);
@@ -527,7 +545,10 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 			throw new OntologyBusinessServiceException(OntologyBusinessServiceException.Error.ILLEGAL_ARGUMENT,
 					"Ontology Database Instance is not Presto - MinIO");
 		}
-		prestoManageDBRepository.removeTable4Ontology(identification, deleteData);
+		final String catalog = ontologyService.getOntologyPrestoByOntologyId(o).getDatasourceCatalog();
+		if(catalog != null && prestoDatasourceConfigurationService.isHistoricalCatalog(catalog)) {
+			prestoManageDBRepository.removeTable4Ontology(identification, deleteData);
+		}		
 		entityDeleteionService.deleteOntology(id, userId);
 	}
 

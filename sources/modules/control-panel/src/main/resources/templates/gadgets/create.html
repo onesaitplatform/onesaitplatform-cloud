@@ -2395,12 +2395,17 @@
 	
 	
 	function selectOntologyOrDataSource(e){
+	
+	    if(gadgetCreateReg.ontologyId == null){
 		 $('#identification').attr('readonly', true);
+		}
 		if(e!=null && e.options.selectedIndex!=null && e[e.options.selectedIndex].dataset!=null){
 			if (e[e.options.selectedIndex].dataset.type==="ontology"){
 				initOntology();
 				$("#icons").empty();
 				$('#query-panel').show();
+				     $('#query-panel').removeClass('hide');
+    		 $('#query-panel').css('display','block');
 				//$('#createDataSourceButton').hide();
 			}else if(e[e.options.selectedIndex].dataset.type==="datasource"){
 				showGadgetSelect();
@@ -2660,9 +2665,15 @@
 	};
 	
 	function createDataSource(){
+	
+		if($("#identification").val().trim().length>4){
+			$("#datasources").selectpicker('refresh');
+		            	   $("#identification").closest('.form-group').removeClass('has-error');	            	  
+		                   $('.alert-danger').hide();	
 			var csrf_value = $("meta[name='_csrf']").attr("content");
 			var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-			identification = $("#identification").val();		 
+			identification = $("#identification").val();
+			$('#identification').attr('readonly', true);		 
 			var str = '_'+new Date().getTime();			
 			if((identification.length)>36){
 			 	identification = identification.substring(0, 36)+str;
@@ -2713,6 +2724,11 @@
 	             error: function(data,status,er) { 
 	             }
           });
+          }else{
+               $("#identification").closest('.form-group').addClass('has-error');	
+			   $('#alert-danger-message').text([[#{gadgets.name.exist}]]);
+               $('.alert-danger').show();
+          }
 	}
 	
 	
@@ -2969,20 +2985,33 @@
 	            type: 'POST',
 	            data: { identification:$("#identification").val()},	          
 	            success: function(data) {
-	              
-	                console.log("success existGadget");
-	               if(data.exist === "true"){
-	            	   $("#datasources").attr('disabled', 'disabled');
-	                   $("#datasources").selectpicker('refresh');
-	                   $("#identification").closest('.form-group').addClass('has-error');
-	                   $('#alert-danger-message').text([[#{gadgets.name.exist}]]);
-	                   $('.alert-danger').show();
-	                  
+	               if(gadgetCreateReg.ontologyId !== null){
+	                $("#datasources").attr('disabled', 'disabled');
+		            $("#datasources").selectpicker('refresh');	               
+	                if(data.exist === "true"){		            	   
+		                   $("#identification").closest('.form-group').addClass('has-error');
+		                   $('#alert-danger-message').text([[#{gadgets.name.exist}]]);
+		                   $('.alert-danger').show();		                  
+		               }else{		            	   
+		            	   $("#identification").closest('.form-group').removeClass('has-error');	            	  
+		                   $('.alert-danger').hide();
+		                   selectOntologyOrDataSource(document.getElementById("datasources"));
+		               }
 	               }else{
-	            	   $("#datasources").prop( "disabled", null );
-	            	   $("#datasources").selectpicker('refresh');
-	            	   $("#identification").closest('.form-group').removeClass('has-error');	            	  
-	                   $('.alert-danger').hide();
+		                console.log("success existGadget");
+		               if(data.exist === "true"){
+		            	   $("#datasources").attr('disabled', 'disabled');
+		                   $("#datasources").selectpicker('refresh');
+		                   $("#identification").closest('.form-group').addClass('has-error');
+		                   $('#alert-danger-message').text([[#{gadgets.name.exist}]]);
+		                   $('.alert-danger').show();
+		                  
+		               }else{
+		            	   $("#datasources").prop( "disabled", null );
+		            	   $("#datasources").selectpicker('refresh');
+		            	   $("#identification").closest('.form-group').removeClass('has-error');	            	  
+		                   $('.alert-danger').hide();
+		               }
 	               }
 	                
 	            },

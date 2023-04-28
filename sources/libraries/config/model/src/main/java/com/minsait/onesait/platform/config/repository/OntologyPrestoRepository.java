@@ -35,4 +35,6 @@ public interface OntologyPrestoRepository extends JpaRepository<OntologyPresto, 
 	
 	@Query("SELECT op FROM OntologyPresto AS op WHERE op.ontologyId.user=:user")	
 	List <OntologyPresto> findByUser(@Param("user") User user);
+		
+	List<OntologyPresto> findOntologyPrestoByDatasourceCatalog(@Param("catalog") String catalog);
 }

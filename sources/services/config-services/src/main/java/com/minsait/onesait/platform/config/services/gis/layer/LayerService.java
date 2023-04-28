@@ -51,9 +51,9 @@ public interface LayerService {
 	String getLayerKml(String layerIdentification);
 
 	String getLayerSvgImage(String layerIdentification);
-	
+
 	String getLayerArcGIS(String layerIdentification);
-	
+
 	String getLayerCesiumAsset(String layerIdentification);
 
 	List<String> getQueryFields(String query, String ontology, String userId);
@@ -63,5 +63,9 @@ public interface LayerService {
 	Boolean checkExist(String layerIdentification);
 
 	List<Layer> checkAllLayersByCriteria(String userId, String identification, String description);
+
+	boolean hasUserPermission(String identification, String userId);
+
+	void deleteLayerByIdentification(String identification, String userId);
 
 }

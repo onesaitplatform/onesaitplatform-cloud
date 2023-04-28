@@ -196,6 +196,11 @@
 			<version>${spring-boot-admin-starter-client.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.jolokia</groupId>
+			<artifactId>jolokia-core</artifactId>
+		</dependency>
+
 
 	</dependencies>
 

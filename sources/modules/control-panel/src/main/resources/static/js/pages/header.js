@@ -300,91 +300,100 @@ var HeaderController = function() {
 		var Content = headerReg.ontologyConfirm;
 		var Title = headerReg.ontologyDelete;
 		
-		$.get("/controlpanel/ontologies/getResourcesAssociated/" + ontologyId).done(
-				function(data){
-					console.log('getResourcesAssociated() -> ok');
-					if (data.rtdbDatasource.length > 0 && data.rtdbDatasource[0] === "PRESTO") {
-						Content = '<label class="mt-checkbox control-label" data-trigger="hover" data-placement="top" data-container="body">' +
-							'<div class="inline font-xs"> ' + headerReg.historicalOntologyDeleteData + '</div>' +
-							'<input id="deleteData" name="deleteData" type="checkbox" class="form-control"/>' +
-							'<span></span></label>';
-						Content += '<br>' + headerReg.historicalOntologyConfirm;
-					}
-					if(data.apis.length > 0) {
-						Content += "<br><b> APIs: </b>";
-						for(var i=0; i<data.apis.length; i++){
-							Content += "<br>" + data.apis[i];
+		$.get("/controlpanel/ontologies/isHistoricalOntology/" + ontologyId).done(
+			function(isHistorical) {
+				$.get("/controlpanel/ontologies/getResourcesAssociated/" + ontologyId).done(
+					function(data){
+						console.log('getResourcesAssociated() -> ok');
+						$.get("/controlpanel/ontologies/isHistoricalOntology")
+						
+						if (isHistorical) {
+							Content = '<label class="mt-checkbox control-label" data-trigger="hover" data-placement="top" data-container="body">' +
+								'<div class="inline font-xs"> ' + headerReg.historicalOntologyDeleteData + '</div>' +
+								'<input id="deleteData" name="deleteData" type="checkbox" class="form-control"/>' +
+								'<span></span></label>';
+							Content += '<br>' + headerReg.historicalOntologyConfirm;
 						}
-					}
-					if(data.datasources.length > 0) {
-						Content += "<br><b> Datasources: </b>";
-						for(var i=0; i<data.datasources.length; i++){
-							Content += "<br>" + data.datasources[i];
+						if(data.apis.length > 0) {
+							Content += "<br><b> APIs: </b>";
+							for(var i=0; i<data.apis.length; i++){
+								Content += "<br>" + data.apis[i];
+							}
 						}
-					}
-					if(data.layers.length > 0) {
-						Content += "<br><b> Layers: </b>";
-						for(var i=0; i<data.layers.length; i++){
-							Content += "\n" + data.layers[i];
+						if(data.datasources.length > 0) {
+							Content += "<br><b> Datasources: </b>";
+							for(var i=0; i<data.datasources.length; i++){
+								Content += "<br>" + data.datasources[i];
+							}
 						}
-					}
-					if(data.subscriptions.length > 0) {
-						Content += "<br><b> Subscriptions: </b>";
-						for(var i=0; i<data.subscriptions.length; i++){
-							Content += "<br>" + data.subscriptions[i];
+						if(data.layers.length > 0) {
+							Content += "<br><b> Layers: </b>";
+							for(var i=0; i<data.layers.length; i++){
+								Content += "\n" + data.layers[i];
+							}
 						}
-					}
-					if(data.clients.length > 0) {
-						Content += "<br><b> Digital Clients: </b>";
-						for(var i=0; i<data.clients.length; i++){
-							Content += "<br>" + data.clients[i];
+						if(data.subscriptions.length > 0) {
+							Content += "<br><b> Subscriptions: </b>";
+							for(var i=0; i<data.subscriptions.length; i++){
+								Content += "<br>" + data.subscriptions[i];
+							}
 						}
-					}
-					if(data.resources.length > 0) {
-						Content += "<br><b> Open Data Resources: </b>";
-						for(var i=0; i<data.resources.length; i++){
-							Content += "<br>" + data.resources[i];
+						if(data.clients.length > 0) {
+							Content += "<br><b> Digital Clients: </b>";
+							for(var i=0; i<data.clients.length; i++){
+								Content += "<br>" + data.clients[i];
+							}
 						}
-					}
-					$.confirm({
-						title: Title,
-						theme: 'light',			
-						columnClass: 'medium',
-						content: Content,
-						draggable: true,
-						dragWindowGap: 100,
-						backgroundDismiss: true,
-						buttons: {
-							close: {
-								text: Close,
-								btnClass: 'btn btn-outline blue dialog',
-								action: function (){} //GENERIC CLOSE.		
-							},
-							remove: {
-								text: Remove,
-								btnClass: 'btn btn-primary',
-								action: function(){ 
-									if ( document.forms[formId] ) { 
-										if (data.rtdbDatasource.length > 0 && data.rtdbDatasource[0] === "PRESTO") {
-											var action = $('#'+formId).attr('action');
-											var checkDeleteData = $('#deleteData').is(':checked');
-											$('#'+formId).attr('action', action + '/data/' + checkDeleteData);
+						if(data.resources.length > 0) {
+							Content += "<br><b> Open Data Resources: </b>";
+							for(var i=0; i<data.resources.length; i++){
+								Content += "<br>" + data.resources[i];
+							}
+						}
+						$.confirm({
+							title: Title,
+							theme: 'light',			
+							columnClass: 'medium',
+							content: Content,
+							draggable: true,
+							dragWindowGap: 100,
+							backgroundDismiss: true,
+							buttons: {
+								close: {
+									text: Close,
+									btnClass: 'btn btn-outline blue dialog',
+									action: function (){} //GENERIC CLOSE.		
+								},
+								remove: {
+									text: Remove,
+									btnClass: 'btn btn-primary',
+									action: function(){ 
+										if ( document.forms[formId] ) { 
+											if (isHistorical) {
+												var action = $('#'+formId).attr('action');
+												var checkDeleteData = $('#deleteData').is(':checked');
+												$('#'+formId).attr('action', action + '/data/' + checkDeleteData);
+											}
+											document.forms[formId].submit(); 
+										} else { 
+											$.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); 
 										}
-										document.forms[formId].submit(); 
-									} else { 
-										$.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); 
 									}
 								}
 							}
-						}
-					});
-				}
-			).fail(
+						});
+					}
+				).fail(
+					function(e){
+						console.error("Error getResourcesAssociated", e);
+					}
+				)
+			}	
+		).fail(
 				function(e){
 					console.error("Error getResourcesAssociated", e);
 				}
-			)	
-
+			)
 		// jquery-confirm DIALOG SYSTEM.
 	}
 	
@@ -729,7 +738,7 @@ var HeaderController = function() {
 
 	}
 	
-	// ONTOLOGY-CONFIRM-DIALOG
+	// VIRTUAL-DATASOURCE-CONFIRM-DIALOG
 	var showConfirmDialogVirtualDatasource = function(formId){		
 		logControl ? console.log('showConfirmDialogVirtualDatasource()...') : '';
 
@@ -738,6 +747,43 @@ var HeaderController = function() {
 		var Close = headerReg.btnCancelar;
 		var Content = headerReg.virtualDatasourceConfirm;
 		var Title = headerReg.virtualDatasourceDelete;		
+
+		// jquery-confirm DIALOG SYSTEM.
+		$.confirm({
+			title: Title,
+			theme: 'light',			
+			columnClass: 'medium',
+			content: Content,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			buttons: {
+				close: {
+					text: Close,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function (){} //GENERIC CLOSE.		
+				},
+				remove: {
+					text: Remove,
+					btnClass: 'btn btn-primary',
+					action: function(){ 
+						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
+					}
+				}
+			}
+		});
+
+	}
+	
+	// PRESTO-DATASOURCE-CONFIRM-DIALOG
+	var showConfirmDialogPrestoDatasource = function(formId){		
+		logControl ? console.log('showConfirmDialogPrestoDatasource()...') : '';
+
+		// i18 labels
+		var Remove = headerReg.btnEliminar;
+		var Close = headerReg.btnCancelar;
+		var Content = headerReg.prestoDatasourceConfirm;
+		var Title = headerReg.prestoDatasourceDelete;		
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
@@ -1690,6 +1736,11 @@ var HeaderController = function() {
 		showConfirmDialogVirtualDatasource : function(formId){		
 			logControl ? console.log('showConfirmDialogVirtualDatasource()...') : '';
 			showConfirmDialogVirtualDatasource(formId);
+		},
+		// DATASOURCE PRESTO-CONFIRM-DIALOG
+		showConfirmDialogPrestoDatasource : function(formId){		
+			logControl ? console.log('showConfirmDialogPrestoDatasource()...') : '';
+			showConfirmDialogPrestoDatasource(formId);
 		},
 		// DIGITALTWINTYPE-CONFIRM-DIALOG
 		showConfirmDialogDigitalTwinType : function(formId){		

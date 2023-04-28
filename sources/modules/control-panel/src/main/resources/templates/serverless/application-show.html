@@ -210,7 +210,7 @@
 								<div th:if="${app.environment != null AND !app.environment.isEmpty()}" class="row main">
 									<div class="col-md-6 col-sm-6 col-xs-12">
 										<div class="form-group">
-											<label class="control-label"><span th:text="#{serverless.environment}">GIT User</span></label>
+											<label class="control-label"><span th:text="#{serverless.environment.function}">GIT User</span></label>
 											<p th:each="e : *{environment.entrySet()}" class="form-control-static-block " th:text="${e.getKey() + ' : ' + e.getValue()}"> e.value </p>
 										</div>
 									</div>													
@@ -260,7 +260,9 @@
 																<div class="grupo-iconos">
 																	<!-- VIEW -->															
 																	<!-- <span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/serverless/applications/${app.name}/functions/${fn.name}|} + '\');'"><i class="la la-eye font-hg"></i></span> -->
-																 	<span  th:if="${app.gitInfo.projectUrl != null}" th:title="#{microservice.deploy}" class="deploy-btn btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{microservice.deploy}" th:attr="onclick='deployFunction(\''+ ${fn.name}+'\')'"><i class="la la-rocket font-hg"></i></span>
+																 	<span  th:if="${app.gitInfo.projectUrl != null}" th:title="#{serverless.deploy.latest}" class="deploy-btn btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{serverless.deploy.latest}" th:attr="onclick='deployFunction(\''+ ${fn.name}+'\')'"><i class="la la-rocket font-hg"></i></span>
+																 	<span  th:if="${fn.image != null}" th:title="#{serverless.deploy.version}" class="deploy-specific-btn btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{serverless.deploy.version}" th:attr="onclick='deployFunctionWithVersion(\''+ ${fn.name}+'\',\''+ ${fn.image}+'\')'"><i class="la la-arrow-circle-up font-hg"></i></span>
+																 	<span  th:if="${fn.image != null}" th:title="#{serverless.environment.function}" class="environment-btn btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{serverless.environment.function}" th:attr="onclick='changeEnvironment(\''+ ${fn.name}+'\')'"><i class="la la-stream font-hg"></i></span>
 																 	<span class="dropdown">
 																	<span   class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
 																		<ul class="dropdown-menu dropdown-menu-table download-menu">
@@ -289,10 +291,8 @@
 									</div>
 								</div>
 							</div>											
-													
-										
-							
 						</div>
+						<div id="wrapper-environment-fragment" th:include="serverless/fragments/environment-modal"></div>
 					</div>		
 				</form>
 			</div><!-- END CONTENT BODY -->
@@ -346,6 +346,8 @@
 	var csrfToken = headerJson.csrfToken;
 	var headersObj = {};
 	headersObj[csrfHeader] = csrfToken;
+	
+	var versionTitle = [[#{serverless.deploy.version.title}]];
 		
 	$(document).ready(function() {
 		
@@ -422,6 +424,24 @@
 		
 	});
 	
+	var changeEnvironment = function(fnName) {
+		$('#currentFn').val(fnName);
+		fetch(`${baseUrl}/${appName}/functions/${fnName}/environment`, {
+			method: 'GET'
+		})
+		.then(r => {return r.json();})
+		.then(r => {
+			$('#table_deployment_parameters tbody').html('')
+			Object.keys(r).forEach(function(k){
+				addEnvVar(k, r[k]);
+			})
+			$('#environmentModal').modal('show');
+		})
+		.catch(e => {
+			console.error(e);
+		})
+	}
+	
 	var deployFunction = function(fnName){
 		$('#pulse-modal').modal('show');
 		$('#pulse').attr('class', 'col-md-12');
@@ -447,6 +467,104 @@
 		})
 		
 	}
+	
+	var doSaveEnvironment = function(){
+		let fnName = $('#currentFn').val();
+		var env = {};
+		var elements = $(".env-tr");
+		elements.each(function(){
+			var name = $(this).find("input[name='envName\\[\\]']").val();
+			var value = $(this).find("input[name='envValue\\[\\]']").val();
+			env[name]=value;
+		});
+		let headersObj = {};
+		headersObj[csrfHeader] = csrfToken;		
+		headersObj['Content-Type'] = 'application/json';
+		fetch(`${baseUrl}/${appName}/functions/${fnName}/environment`, {
+			method: 'POST',
+			headers: headersObj,
+			body: JSON.stringify(env)
+		})
+		.then(r => {location.reload();})
+		.catch(e => {
+			console.error(e);
+		})
+		
+	}
+	
+	
+	
+	var addEnvVar = function(key, value){
+		var tr = '<tr class="env-tr">'+
+				'<td>'+
+					`<input type="text" name="envName[]" value="${key}"  class="form-control" placeholder="ENV VAR Name"/>`+
+				'</td>'+
+				'<td>'+
+					 `<input type="text" name="envValue[]" value="${value}" class="form-control" placeholder="ENV VAR Value"/>`+
+				'</td>'+
+				'<td class="text-center">'+
+					'<div class="btn btn-outline  btn-sm blue tooltips btn-add-env" data-container="body" data-placement="top" data-original-title="Environment Variable" onclick="removeEnvVar(this)">'+
+						'<input type="checkbox" id="groupby_check" style="display:none; margin:0px"/><i class="fa fa-minus"></i>'+
+					'</div>'+
+				'</td>'+
+			'</tr>';
+		
+		$('#table_deployment_parameters tbody').append(tr);
+	}
+	
+	var removeEnvVar = function(obj){
+		$(obj).closest('tr').remove();
+	}
+	
+	var deployFunctionWithVersion = function(fnName, currentImage){
+		$.confirm({
+			title: versionTitle,
+			theme: 'light',
+			content: `<input style="margin-top:10px" id="function-version" type="text" name="commit-message" class="form-control" value="${currentImage}"/>`,
+			draggable: true,
+			dragWindowGap: 300,
+			backgroundDismiss: true,
+			buttons: {	
+				close: {
+					text: headerJson.btnClose,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function (){
+						
+					}
+				},
+				OK: {
+					text: headerJson.btnConfirmar,
+					btnClass: 'btn btn-primary blue',
+					action: function (){
+						let headersObj = {};
+						headersObj[csrfHeader] = csrfToken;		
+						headersObj['Content-Type'] = 'text/plain';
+						let v = $('#function-version').val();
+						fetch(`${baseUrl}/${appName}/functions/${fnName}/version`, {
+							method: 'POST',
+							headers: headersObj,
+							body: v
+						})
+						.then(r => {return r.text();})
+						.then(r => {
+							console.log(r);
+							$('#pulse-modal').modal('hide');
+							$('#pulse').attr('class', 'col-md-12 hide');
+							
+							location.reload();
+							
+						})
+						.catch(e => {
+							console.error(e);
+						})
+					} 
+				}
+			}
+		});
+		
+	}
+	
+	
 	var backUrl = [[@{/serverless/applications/}]];
 	var constants ={
 			deleteApplication: [[#{serverless.application.delete}]],

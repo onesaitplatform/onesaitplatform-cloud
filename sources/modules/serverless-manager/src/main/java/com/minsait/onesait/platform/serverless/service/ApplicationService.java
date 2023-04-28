@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.serverless.service;
 
 import java.util.List;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.serverless.dto.ApplicationCreate;
 import com.minsait.onesait.platform.serverless.dto.ApplicationInfo;
 import com.minsait.onesait.platform.serverless.dto.ApplicationUpdate;
@@ -46,5 +47,10 @@ public interface ApplicationService {
 
 	public void deleteFunction(String appName, String fnName);
 
+	public void updateFunctionsVersion(String appName, String fnName, String version);
+
+	public ObjectNode getFunctionsEnvironment(String appName, String fnName);
+
+	public void updateFunctionsEnvironmnet(String appName, String fnName, ObjectNode config);
 
 }

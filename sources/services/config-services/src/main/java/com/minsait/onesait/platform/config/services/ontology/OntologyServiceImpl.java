@@ -2368,10 +2368,6 @@ public class OntologyServiceImpl implements OntologyService {
 		mapResources.put("clients", clients);
 		mapResources.put("resources",
 				datasetResourceRepository.findIdentificationByOntology(ontology.getIdentification()));
-		final List<String> rtdbDatasource = new ArrayList<>();
-		rtdbDatasource.add(ontology.getRtdbDatasource().toString());
-		mapResources.put("rtdbDatasource", rtdbDatasource);
-
 		return mapResources;
 	}
 
@@ -2399,4 +2395,5 @@ public class OntologyServiceImpl implements OntologyService {
 			throw new OntologyServiceException(" User does not have rights to delete ontology");
 		}
 	}
+
 }

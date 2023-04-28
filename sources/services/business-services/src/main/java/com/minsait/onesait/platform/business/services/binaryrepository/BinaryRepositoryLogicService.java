@@ -24,9 +24,10 @@ import com.minsait.onesait.platform.config.model.BinaryFile.RepositoryType;
 
 public interface BinaryRepositoryLogicService {
 
-	public String addBinary(MultipartFile file, String metadata) throws BinaryRepositoryException, IOException;
+	public String addBinary(MultipartFile file, String metadata, String filePath)
+			throws BinaryRepositoryException, IOException;
 
-	public String addBinary(MultipartFile file, String metadata, RepositoryType repository)
+	public String addBinary(MultipartFile file, String metadata, RepositoryType repositorying, String filePath)
 			throws BinaryRepositoryException, IOException;
 
 	public void updateBinary(String fileId, MultipartFile file, String metadata)
@@ -46,7 +47,7 @@ public interface BinaryRepositoryLogicService {
 	public Boolean closePagination(String fileId) throws IOException, BinaryRepositoryException;
 
 	public void setAuthorization(String fileId, String userId, String accessType) throws BinaryRepositoryException;
-	
+
 	public void deleteAuthorization(String fileId, String userId) throws BinaryRepositoryException;
 
 }

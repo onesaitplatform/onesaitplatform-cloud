@@ -1,0 +1,127 @@
+properties(
+  [pipelineTriggers([cron('@midnight')]),buildDiscarder(logRotator(numToKeepStr: '2')),disableConcurrentBuilds(abortPrevious: true)]
+  )
+podTemplate(name: "imageBuilder",
+            yaml: """
+    apiVersion: v1
+    kind: Pod
+    spec:
+      containers:
+      - name: maven
+        image: maven:3.8.1-jdk-8
+        command: ['sleep', '99d']
+        env:
+        - name: SOURCESPATH
+          value: sources  
+        - name: FLOWENGINEPATH
+          value: sources/modules/flow-engine/docker
+        volumeMounts:
+        - name: m2repo
+          mountPath: /root/.m2            
+      - name: git
+        image: bitnami/git:latest
+        command: ['sleep', '99d']
+      - name: docker-client
+        image: docker:19.03.1
+        command: ['sleep', '99d']
+        env:
+        - name: DOCKER_HOST
+          value: tcp://localhost:2375
+        - name: DOCKERSCRIPTS
+          value: devops/build-deploy/docker/scripts              
+      - name: docker-daemon
+        image: docker:19.03.1-dind
+        env:
+        - name: DOCKER_TLS_CERTDIR
+          value: ""
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: cache
+          mountPath: /var/lib/docker        
+      volumes:
+        - name: cache
+          hostPath:
+            path: /datadrive/cache
+            type: Directory
+        - name: m2repo
+          persistentVolumeClaim:
+            claimName: m2repo-pvc          
+      hostAliases:
+      - ip: 10.86.1.113
+        hostnames:
+        - jenkins.onesaitplatform.com       
+""")  {
+        
+    node(POD_LABEL) {
+
+    stage('Download source code') {
+            sh "git config --global http.postBuffer 157286400"
+            checkout([$class: 'GitSCM',
+                branches: [[name: '*/develop' ]],
+                userRemoteConfigs: [[
+                    url: 'https://gitlab.devops.onesait.com/onesait/platform/engine/onesait-platform/onesait-cloud-platform.git',
+                    credentialsId: 'gitlab-ssdd-integration'
+                ]]
+            ])
+        }
+		stage('Base software installation') {
+            container('docker-client') {
+                stage('Start databases') {
+                    sh "apk add curl"
+                    sh "curl -L 'https://github.com/docker/compose/releases/download/v2.15.1/docker-compose-linux-x86_64' -o /usr/local/bin/docker-compose"
+                    sh "chmod +x /usr/local/bin/docker-compose"
+                    dir("devops/build-deploy/docker/data") {
+						            sh "docker-compose up -d || true"
+				          	}
+                }
+            }          
+        }
+		stage('Build Artifacts') {
+            container('maven') {
+                stage('Build a Maven project') {
+				          dir("${env.WORKSPACE}/sources") {
+                        sh "mvn -v"
+						            sh "mvn clean install -P integration,no-test"
+					        }
+                }
+            }
+        }
+		stage('Generate and launch ConfigInit') {
+            container('docker-client') {
+                stage('Generate and launch ConfigInit') {
+                    dir("devops/build-deploy/docker") {
+                      sh "sed '1s/bash/sh/' image-generation.sh >> image-generation-sh.sh"
+                        sh "chmod ugo+x image-generation-sh.sh"
+                        sh "./image-generation-sh.sh -1"
+					          }
+					          dir("devops/build-deploy/docker/data") {
+						          sh "docker-compose -f docker-compose.cicd-initdb.yml up || true"
+					          }
+                }
+            }          
+        }
+		stage('Execute Tests') {
+            container('maven') {
+                stage('Execute Tests') {
+				          dir("${env.WORKSPACE}/sources") {
+						        sh "mvn verify -P integration,unit-test"
+					        }
+                }
+            }
+        }
+	    stage('Sending notification email') {
+            script {
+                echo "${currentBuild.getCurrentResult()}"
+                if (currentBuild.resultIsBetterOrEqualTo('SUCCESS')) {
+                    mail bcc: '', body: 'This is a test!', cc: '', from: 'mmoran@minsait.com', replyTo: '', subject: '[SUCCESSFUL] Compilation', to: 'mmoran@minsait.com'                    
+                } else {
+                    mail bcc: '', body: 'This is a test!', cc: '', from: 'mmoran@minsait.com', replyTo: '', subject: '[FAILED] Compilation', to: 'mmoran@minsait.com'
+                }       
+            }
+            
+        }
+
+}
+}
+

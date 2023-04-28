@@ -13,6 +13,7 @@
 	<description>Services of the config module</description>
 	<properties>
 		<license.dir>${project.parent.basedir}</license.dir>
+        <groovy.version>4.0.6</groovy.version>
 	</properties>
 	<repositories>
 
@@ -285,9 +286,18 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
+        <dependency>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
+            <version>${groovy.version}</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+		    <groupId>com.google.cloud</groupId>
+		    <artifactId>google-cloud-storage</artifactId>
+		    <version>1.17.0</version>
+		</dependency>
 	</dependencies>
-
 
 	<build>
 		<plugins>

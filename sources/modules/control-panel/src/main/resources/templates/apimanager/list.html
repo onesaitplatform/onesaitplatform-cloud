@@ -164,7 +164,6 @@
 															<th class="titulo-columnas text-left"><span th:text="#{gen.public}">Public</span></th>
 															<th class="titulo-columnas text-left" ><span th:text="#{gen.owner}" >Name</span></th>
 															<th class="titulo-columnas text-left"><span th:text="#{apimanager.state}" >State</span><span   ></span></th>
-															<th class="titulo-columnas text-left"><span th:text="#{apimanager.auth}">Authorizations</span></th>
 															<th class="titulo-columnas text-center" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
 														</tr>
 
@@ -193,9 +192,6 @@
 															<td class="text-left no-wrap " th:text="${api.user.userId}"></td>
 															<!-- STATE -->
 															<td class="text-left no-wrap " th:text="#{apimanager.state.__${api.state}__}"></td>
-															<!--  AUTH -->
-															<td class="text-left" th:if="${!api.userApiAccesses.isEmpty()}"><i class="badge badge-empty-success"></i><span th:text="' '+#{gen.authorized}" style="color: #2E6B33;"></span></td>
-															<td class="text-left" th:if="${api.userApiAccesses.isEmpty()}"><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.unauthorized}" style="color: #A73535;"></span></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
@@ -321,10 +317,6 @@
 															<input class="toggle-vis" type="checkbox" data-column="7" checked/>
 															<label th:text="#{apimanager.state}"> State</label>
 														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="8"/>
-															<label th:text="#{apimanager.auth}"> Auths</label>
-														</span>
 													</div>
 												</div>
 											</div>
@@ -364,7 +356,7 @@
 									<label class="control-label" th:text="#{apimanager.list.auth.apiversion}">API-Version</label>
 									<select id="apis-select" class="selectpicker form-control" data-live-search="true" data-width="100%" >
 										<option value="" th:text="#{apimanager.select.api}"> Select API...</option>
-										<option th:each="api :${apis}"  th:if="${api.state != 'DELETED' && api.ontology != null}" th:value="${api.id}" th:text="${api.identification}  +' (v'+ ${api.numversion} +')'" ></option>
+										<option th:each="api :${apis}"  th:if="(${api.state.name() != 'DELETED'}) AND (${api.apiType.name() == 'INTERNAL_ONTOLOGY'})" th:value="${api.id}" th:text="${api.identification}  +' (v'+ ${api.numversion} +')'" ></option>
 									</select>
 								</div>
 								<div class="form-group pull-right">

@@ -166,7 +166,7 @@ public class OntologyReferencesValidationImp implements OntologyReferencesValida
 		if (datasource.equals(Ontology.RtdbDatasource.ELASTIC_SEARCH))
 			query = "select count(*) from " + dstOntology.toLowerCase() + " where ";
 		else
-			query = "select count(*) from " + dstOntology + " where " + dstOntology + ".";
+			query = "select count(*) from " + dstOntology + " dstOntology where dstOntology.";
 		final String ref = refJsonSchema(dstJsonSchema);
 		String dstPathReplaced = "";
 		if (!ref.equals("")) {

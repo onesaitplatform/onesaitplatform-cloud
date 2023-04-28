@@ -14,7 +14,9 @@
  */
 package com.minsait.onesait.platform.serverless.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -23,6 +25,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.serverless.dto.ApplicationCreate;
 import com.minsait.onesait.platform.serverless.dto.ApplicationInfo;
 import com.minsait.onesait.platform.serverless.dto.ApplicationUpdate;
@@ -63,6 +68,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 	private String baseURL;
 	public static final String FN_DEFAULT_URL = "http://fnproject:8080";
 	private static final String APP_SUFFIX = "-serverless";
+	private static final ObjectMapper MAPPER = new ObjectMapper();
 
 	@Override
 	public ApplicationInfo create(ApplicationCreate app) {
@@ -93,7 +99,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 		}
 		if (appUpdate.getGitInfo() != null) {
 			app.setGitInfo(appUpdate.getGitInfo());
-			if(app.getGitInfo().getProjectUrl() == null) {
+			if (app.getGitInfo().getProjectUrl() == null) {
 				createGit(app);
 			}
 		}
@@ -125,14 +131,12 @@ public class ApplicationServiceImpl implements ApplicationService {
 		if (!app.getUser().getUserId().equals(SecurityUtils.getCurrentUser()) && !SecurityUtils.isAdmin()) {
 			throw new ApplicationException(NOT_ENOUGH_RIGHTS, Code.FORBIDDEN);
 		}
-		//FOR NOW WE DON'T REMOVE PROJECT
-		/*if (app.getGitInfo() != null) {
-			try {
-				gitServiceManager.deleteProject(new GitlabConfiguration(app.getGitInfo()));
-			} catch (final GitException e) {
-				throw new ApplicationException(e.getMessage(), Code.INTERNAL_ERROR);
-			}
-		}*/
+		// FOR NOW WE DON'T REMOVE PROJECT
+		/*
+		 * if (app.getGitInfo() != null) { try { gitServiceManager.deleteProject(new
+		 * GitlabConfiguration(app.getGitInfo())); } catch (final GitException e) {
+		 * throw new ApplicationException(e.getMessage(), Code.INTERNAL_ERROR); } }
+		 */
 
 		fnService.delete(appName);
 		applicationRepository.delete(app);
@@ -235,7 +239,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 		if (!app.getUser().getUserId().equals(SecurityUtils.getCurrentUser()) && !SecurityUtils.isAdmin()) {
 			throw new ApplicationException(NOT_ENOUGH_RIGHTS, Code.FORBIDDEN);
 		}
-		if(app.getGitInfo() == null || app.getGitInfo().getProjectUrl() == null) {
+		if (app.getGitInfo() == null || app.getGitInfo().getProjectUrl() == null) {
 			throw new ApplicationException("GIT data not configured", Code.BAD_REQUEST);
 		}
 		final Function function = optFunction.get();
@@ -317,6 +321,83 @@ public class ApplicationServiceImpl implements ApplicationService {
 		fnService.deleteFunction(function.getFnId());
 		app.getFunctions().remove(function);
 		applicationRepository.save(app);
+
+	}
+
+	@Override
+	public void updateFunctionsVersion(String appName, String fnName, String version) {
+		final Application app = applicationRepository.findByName(appName);
+		if (app == null) {
+			throw new ApplicationException(APP_DOES_NOT_EXIST, Code.NOT_FOUND);
+		}
+		final Optional<Function> optFunction = app.getFunctions().stream().filter(f -> f.getName().equals(fnName))
+				.findFirst();
+		if (!optFunction.isPresent()) {
+			throw new ApplicationException("Function does not exist", Code.NOT_FOUND);
+		}
+		if (!app.getUser().getUserId().equals(SecurityUtils.getCurrentUser()) && !SecurityUtils.isAdmin()) {
+			throw new ApplicationException(NOT_ENOUGH_RIGHTS, Code.FORBIDDEN);
+		}
+		final Function function = optFunction.get();
+		final FnFunction fnFunction = fnService.getFunction(function.getFnId());
+		fnFunction.setImage(version);
+		log.debug("Updating function's version, fn: {}, version: {}", fnName, version);
+		fnService.updateFunction(fnFunction);
+
+	}
+
+	@Override
+	public ObjectNode getFunctionsEnvironment(String appName, String fnName) {
+		final Application app = applicationRepository.findByName(appName);
+		if (app == null) {
+			throw new ApplicationException(APP_DOES_NOT_EXIST, Code.NOT_FOUND);
+		}
+		final Optional<Function> optFunction = app.getFunctions().stream().filter(f -> f.getName().equals(fnName))
+				.findFirst();
+		if (!optFunction.isPresent()) {
+			throw new ApplicationException("Function does not exist", Code.NOT_FOUND);
+		}
+		if (!app.getUser().getUserId().equals(SecurityUtils.getCurrentUser()) && !SecurityUtils.isAdmin()) {
+			throw new ApplicationException(NOT_ENOUGH_RIGHTS, Code.FORBIDDEN);
+		}
+		final Function function = optFunction.get();
+		final FnFunction fnFunction = fnService.getFunction(function.getFnId());
+		if (fnFunction.getConfig() == null) {
+			return MAPPER.createObjectNode();
+		} else {
+			return MAPPER.convertValue(fnFunction.getConfig(), ObjectNode.class);
+		}
+	}
+
+	@Override
+	public void updateFunctionsEnvironmnet(String appName, String fnName, ObjectNode config) {
+		final Application app = applicationRepository.findByName(appName);
+		if (app == null) {
+			throw new ApplicationException(APP_DOES_NOT_EXIST, Code.NOT_FOUND);
+		}
+		final Optional<Function> optFunction = app.getFunctions().stream().filter(f -> f.getName().equals(fnName))
+				.findFirst();
+		if (!optFunction.isPresent()) {
+			throw new ApplicationException("Function does not exist", Code.NOT_FOUND);
+		}
+		if (!app.getUser().getUserId().equals(SecurityUtils.getCurrentUser()) && !SecurityUtils.isAdmin()) {
+			throw new ApplicationException(NOT_ENOUGH_RIGHTS, Code.FORBIDDEN);
+		}
+		final Function function = optFunction.get();
+		final FnFunction fnFunction = fnService.getFunction(function.getFnId());
+		final Map<String, Object> newConfig = MAPPER.convertValue(config, new TypeReference<Map<String, Object>>() {
+		});
+		final List<String> varsToRemove = new ArrayList<>();
+		if (fnFunction.getConfig() != null) {
+			fnFunction.getConfig().entrySet().forEach(e -> {
+				if (newConfig.get(e.getKey()) == null) {
+					varsToRemove.add(e.getKey());
+				}
+			});
+		}
+		fnFunction.setConfig(newConfig);
+		fnService.updateFunction(fnFunction);
+		varsToRemove.forEach(v -> fnService.removeVar(appName, fnFunction.getName(), v));
 
 	}
 

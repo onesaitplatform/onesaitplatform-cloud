@@ -169,7 +169,7 @@ public class ApiManagerController {
 
 			apiManagerHelper.populateApiManagerListForm(model);
 
-			model.addAttribute("apis", apiManagerService.loadAPISByFilter(apiId, state, user, utils.getUserId()));
+			model.addAttribute("apis", apiManagerService.loadAPISByFilterForList(apiId, state, user, utils.getUserId()));
 			if (graviteeService != null) {
 				addGraviteeUrls(model);
 			}

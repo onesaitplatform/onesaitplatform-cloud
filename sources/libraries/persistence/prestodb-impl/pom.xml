@@ -15,6 +15,7 @@
 
 	<properties>
 		<license.dir>${project.parent.basedir}</license.dir>
+		<presto.version>0.278.1</presto.version>
 	</properties>
 
 	<dependencies>
@@ -50,7 +51,7 @@
 		<dependency>
 			<groupId>com.facebook.presto</groupId>
 			<artifactId>presto-jdbc</artifactId>
-			<version>0.254</version>
+			<version>${presto.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.minio</groupId>

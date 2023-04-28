@@ -35,5 +35,7 @@ public interface QueryTemplateService {
 	public List<QueryTemplate> getQueryTemplateByCriteria(String name);
 
 	public void updateQueryTemplate(QueryTemplate queryTemplate);
+
+	public void checkQueryTemplateSelectorExists(String templateId, String ontology, String query);
     
 }

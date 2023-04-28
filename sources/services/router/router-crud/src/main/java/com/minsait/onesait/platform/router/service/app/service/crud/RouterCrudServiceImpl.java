@@ -264,7 +264,7 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 			});
 			throw new RouterCrudServiceException(INSERT_ERROR, e, result);
 		} catch (final Exception e) {
-			log.error("insert", e);
+		    log.error("insert", e);
 			result.setResult(ERROR_STR);
 			result.setStatus(false);
 			result.setMessage(e.getMessage());

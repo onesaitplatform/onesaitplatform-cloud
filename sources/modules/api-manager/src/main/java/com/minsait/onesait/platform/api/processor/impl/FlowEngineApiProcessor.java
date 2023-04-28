@@ -206,6 +206,7 @@ public class FlowEngineApiProcessor implements ApiProcessor {
 		}
 
 		data.put(ApiServiceInterface.HTTP_RESPONSE_CODE, result.getStatusCode());
+		data.put(Constants.HTTP_RESPONSE_HEADERS, result.getHeaders());
 		data.put(ApiServiceInterface.OUTPUT, result.getBody());
 		return data;
 	}

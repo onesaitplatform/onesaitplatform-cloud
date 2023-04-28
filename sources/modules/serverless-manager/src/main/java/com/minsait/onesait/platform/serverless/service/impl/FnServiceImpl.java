@@ -326,4 +326,44 @@ public class FnServiceImpl implements FnService {
 
 	}
 
+	@Override
+	public void updateFunction(FnFunction function) {
+		try {
+			restTemplate.exchange(baseURL + FNS_REST + "/" + function.getId(), HttpMethod.PUT,
+					new HttpEntity<>(function), String.class);
+
+		} catch (final HttpClientErrorException e) {
+			log.error("Error while getting triggers for fn {}, errorCode {} , message {}", function.getId(),
+					e.getRawStatusCode(), e.getResponseBodyAsString());
+			if (!e.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+				throw new FnException("Error while deleting function", Code.INTERNAL_ERROR);
+			}
+		}
+
+	}
+
+	@Override
+	public void removeVar(String appName, String fnName, String var) {
+		final ProcessBuilder pb = new ProcessBuilder(FN_CMD, "delete", "cf", "function", appName, fnName, var);
+		pb.redirectErrorStream(true);
+		try {
+			final Process p = pb.start();
+			final BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			final StringBuilder builder = new StringBuilder();
+			String line = null;
+			p.waitFor();
+			while ((line = reader.readLine()) != null) {
+				builder.append(line);
+				builder.append(System.getProperty(LINE_SEPARATOR));
+			}
+
+			log.debug(EXECUTED_COMMAND_WITH_RESULT, pb.command(), builder.toString());
+
+		} catch (final Exception e) {
+			log.error(COULD_NOT_EXECUTE_COMMAND + pb.command());
+
+		}
+
+	}
+
 }

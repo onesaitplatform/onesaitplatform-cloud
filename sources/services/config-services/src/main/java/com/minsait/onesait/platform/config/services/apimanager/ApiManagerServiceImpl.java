@@ -36,6 +36,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
+import com.minsait.onesait.platform.config.dto.ApiForList;
 import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Api.ApiStates;
@@ -131,6 +132,36 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 			obfuscateUsersData(api);
 		});
 
+		return apis;
+	}
+	
+	@Override
+	public List<ApiForList> loadAPISByFilterForList(String apiId, String state, String userId, String loggeduser) {
+		List<ApiForList> apis = null;
+		// Gets context User
+		final User user = userService.getUser(loggeduser);
+
+		// Clean the filter
+		if (apiId == null || "".equals(apiId)) {
+			apiId = "";
+		}
+
+		if (userId == null || "".equals(userId)) {
+			userId = "";
+		}
+
+		if (state == null || "".equals(state)) {
+			apis = apiRepository.findApisByIdentificationOrUserForAdminOrOwnerOrPublicOrPermissionForList(user.getUserId(),
+					user.getRole().getId(), apiId, userId);
+		} else {
+			apis = apiRepository.findApisByIdentificationOrStateOrUserForAdminOrOwnerOrPublicOrPermissionForList(
+					user.getUserId(), user.getRole().getId(), apiId, Api.ApiStates.valueOf(state), userId);
+		}
+
+//		apis.forEach(api->{
+//			obfuscateUsersData(api);
+//		});
+		
 		return apis;
 	}
 

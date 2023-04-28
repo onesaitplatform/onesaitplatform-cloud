@@ -78,6 +78,8 @@ import com.minsait.onesait.platform.config.services.configuration.ConfigurationS
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyRelation;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel;
 
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -875,23 +877,33 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 	        Object result = null;
 	        JsonNode rawdata = inst.get(ontology.asText());
 	        JSONObject jsonObject = new JSONObject(rawdata.toString());
-	        Object script = change.get("script");
-	        if(script != null) {
-                String scriptRegular = isRegularFunction(script.toString(), rawdata.toString());
+	        Object scriptT = change.get("script");
+	        if(scriptT != null) {
+	            String [] scriptArray = scriptT.toString().split("\n", 2);
+                String scriptType = scriptArray[0];
+                String script = scriptArray[1];
+                String scriptRegular = isRegularFunction(script, rawdata.toString());
                 if(scriptRegular.equals("0")) {
-                    try {
-                        final String scriptPostprocessFunction = "function preprocess(rawdata){ " + change.get("script") + " }";
-                        final ByteArrayInputStream scriptInputStream = new ByteArrayInputStream(
-                                scriptPostprocessFunction.getBytes(StandardCharsets.UTF_8));
-                        scriptEngine.eval(new InputStreamReader(scriptInputStream));
-                        final Invocable inv = (Invocable) scriptEngine;
-                        result = inv.invokeFunction("preprocess", jsonObject);
-                    } catch (NoSuchMethodException e) {
-                        log.error("Cannot eval preprocessing", e);
-                        auditWarning(e.getMessage(), operationModel);
-                    } catch (ScriptException ex) {
-                        log.error("Cannot eval preprocessing", ex);
-                        auditWarning(ex.getMessage(), operationModel);
+                    if("groovy".equals(scriptType)) {
+                        Binding binding = new Binding();
+                        binding.setVariable("rawdata", jsonObject);
+                        GroovyShell shell = new GroovyShell(binding);
+                        result = shell.evaluate(script);
+                    } else if("javascript".equals(scriptType)) {
+                        try {
+                            final String scriptPostprocessFunction = "function preprocess(rawdata){ " + script + " }";
+                            final ByteArrayInputStream scriptInputStream = new ByteArrayInputStream(
+                                    scriptPostprocessFunction.getBytes(StandardCharsets.UTF_8));
+                            scriptEngine.eval(new InputStreamReader(scriptInputStream));
+                            final Invocable inv = (Invocable) scriptEngine;
+                            result = inv.invokeFunction("preprocess", jsonObject);
+                        } catch (NoSuchMethodException e) {
+                            log.error("Cannot eval preprocessing", e);
+                            auditWarning(e.getMessage(), operationModel);
+                        } catch (ScriptException ex) {
+                            log.error("Cannot eval preprocessing", ex);
+                            auditWarning(ex.getMessage(), operationModel);
+                        }
                     }
                 } else {
                     result = scriptRegular;
@@ -1001,27 +1013,42 @@ public class OntologyDataServiceImpl implements OntologyDataService {
                 rootElement = true;
             }
             if(!toReplace.toString().equals("null")) {
-                String toReplaceStr = toReplace.toString().substring(1, toReplace.toString().length() - 1);
+                String toReplaceStr;
+                if(toReplace.toString().startsWith("\"")) {
+                    toReplaceStr = toReplace.toString().substring(1, toReplace.toString().length() - 1);
+                } else {
+                    toReplaceStr = toReplace + "";
+                }
+                
                 Object result = null;
-                Object script = change.get("script");
-                if(script != null) {
-                    String scriptRegular = isRegularFunction(script.toString(), toReplaceStr);
+                Object scriptT = change.get("script");
+                if(scriptT != null) {
+                    String [] scriptArray = scriptT.toString().split("\n", 2);
+                    String scriptType = scriptArray[0];
+                    String script = scriptArray[1];
+                    String scriptRegular = isRegularFunction(script, toReplaceStr);
                     if(scriptRegular.equals("0")) {
-                        try {
-                            final String scriptPostprocessFunction = "function preprocess(value){ " + script + " }";
-                            final ByteArrayInputStream scriptInputStream = new ByteArrayInputStream(
-                                    scriptPostprocessFunction.getBytes(StandardCharsets.UTF_8));
-                            scriptEngine.eval(new InputStreamReader(scriptInputStream));
-                            final Invocable inv = (Invocable) scriptEngine;
-                            result = inv.invokeFunction("preprocess", toReplaceStr);
-                            
-                        } catch (NoSuchMethodException e) {
-                            log.error("Cannot eval preprocessing", e);
-                            auditWarning(e.getMessage(), operationModel);
-                        } catch (ScriptException ex) {
-                            log.error("Cannot eval preprocessing", ex);
-                            auditWarning(ex.getMessage(), operationModel);
-                        }
+                        if("groovy".equals(scriptType)) {
+                            Binding binding = new Binding();
+                            binding.setVariable("value", toReplaceStr);
+                            GroovyShell shell = new GroovyShell(binding);
+                            result = shell.evaluate(script);
+                        } else if("javascript".equals(scriptType)) {
+                            try {
+                                final String scriptPostprocessFunction = "function preprocess(value){ " + script + " }";
+                                final ByteArrayInputStream scriptInputStream = new ByteArrayInputStream(
+                                        scriptPostprocessFunction.getBytes(StandardCharsets.UTF_8));
+                                scriptEngine.eval(new InputStreamReader(scriptInputStream));
+                                final Invocable inv = (Invocable) scriptEngine;
+                                result = inv.invokeFunction("preprocess", toReplaceStr);
+                            } catch (NoSuchMethodException e) {
+                                log.error("Cannot eval preprocessing", e);
+                                auditWarning(e.getMessage(), operationModel);
+                            } catch (ScriptException ex) {
+                                log.error("Cannot eval preprocessing", ex);
+                                auditWarning(ex.getMessage(), operationModel);
+                            }                           
+                        }   
                     } else {
                         result = scriptRegular;
                     }
@@ -1030,15 +1057,13 @@ public class OntologyDataServiceImpl implements OntologyDataService {
                         if(!(Boolean) result) {
                             dataClassError(change, toReplaceStr, operationModel);
                         }
-        
                     } else if(result != null) {
                         if(rootElement) {
                             ((ObjectNode)inst.get(path)).put(propToChange, result.toString());
                         } else {
                             ((ObjectNode)inst).put(propToChange, result.toString());
                         }
-                    }              
-    
+                    }      
                 }
             }
         }

@@ -37,7 +37,6 @@ import javax.validation.Valid;
 
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -76,6 +75,8 @@ import com.minsait.onesait.platform.business.services.ontology.graph.NebulaGraph
 import com.minsait.onesait.platform.business.services.ontology.graph.NebulaGraphUpdateEntity;
 import com.minsait.onesait.platform.business.services.ontology.timeseries.TimeSerieOntologyBusinessServiceException;
 import com.minsait.onesait.platform.business.services.ontology.timeseries.TimeSeriesOntologyBusinessService;
+import com.minsait.onesait.platform.business.services.presto.datasource.PrestoDatasourceConfigurationService;
+import com.minsait.onesait.platform.business.services.presto.datasource.PrestoDatasourceService;
 import com.minsait.onesait.platform.business.services.swagger.SwaggerApiImporterService;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.Api;
@@ -164,11 +165,11 @@ public class OntologyController {
 	@Autowired
 	private ClientPlatformOntologyRepository clientPlatformOntologyRepository;
 
-    @Autowired
-    private ConfigurationRepository configurationRepository;
-    @Autowired
-    ConfigurationService configurationService;
-    
+	@Autowired
+	private ConfigurationRepository configurationRepository;
+	@Autowired
+	ConfigurationService configurationService;
+
 	// Lazy so in local you can start ControlPanel and no start KPI Module
 	@Autowired
 	@Lazy
@@ -227,6 +228,12 @@ public class OntologyController {
 	@Autowired
 	private MessageSource messageSource;
 
+	@Autowired
+	private PrestoDatasourceService prestoDatasourceService;
+
+	@Autowired
+	private PrestoDatasourceConfigurationService prestoDatasourceConfigurationService;
+
 	private static final String ONTOLOGIES_STR = "ontologies";
 	private static final String ONTOLOGY_STR = "ontology";
 	private static final String ONTOLOGY_REST_STR = "ontologyRest";
@@ -256,11 +263,12 @@ public class OntologyController {
 	private static final String AUTHORIZATIONS = "authorizations";
 	private static final String USERS = "users";
 	private static final String REALMS = "realms";
-    private static final String PROPDATACLASSES = "propDclasses";
-    private static final String ENTITYDATACLASSES = "entityDclasses";
+	private static final String PROPDATACLASSES = "propDclasses";
+	private static final String ENTITYDATACLASSES = "entityDclasses";
 	private static final String PROPERTY_NAMES = "propertyNames";
 	private static final String DATAACCESSES = "dataaccesses";
 	private static final String HISTORICAL = "historical";
+	private static final String HISTORICAL_CATALOG = "historicalCatalog";
 	private static final String HISTORICAL_SCHEMA = "historicalSchema";
 	private static final String ONTOLOGIES_CREATEVIRTUAL = "ontologies/createvirtual";
 	private static final String FILE_FORMATS = "fileFormats";
@@ -271,12 +279,7 @@ public class OntologyController {
 	private static final String USER_ONTOLOGY_ACCESS = "userOntologyAccess";
 	private static final String APP_ID = "appId";
 	private static final String REDIRECT_PROJECT_SHOW = "/controlpanel/projects/update/";
-
-	@Value("${onesaitplatform.database.prestodb.historicalCatalog:minio}")
-	private String historicalCatalog;
-
-	@Value("${onesaitplatform.database.prestodb.historicalSchema:default}")
-	private String historicalSchema;
+	private static final String ONTOLOGIES_CREATEPRESTO = "ontologies/createpresto";
 
 	private final ObjectMapper mapper = new ObjectMapper();
 
@@ -501,7 +504,8 @@ public class OntologyController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@PostMapping(value = { "/create", "/createwizard", "/createapirest", "/createvirtual", "/createhistorical" })
+	@PostMapping(value = { "/create", "/createwizard", "/createapirest", "/createvirtual", "/createhistorical",
+			"/createpresto" })
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public ResponseEntity<Map<String, String>> createOntology(Model model, @Valid Ontology ontology,
 			BindingResult bindingResult, RedirectAttributes redirect, HttpServletRequest request) {
@@ -516,6 +520,13 @@ public class OntologyController {
 		try {
 			ontology.setOntologyKPI(null);
 			final OntologyConfiguration config = new OntologyConfiguration(request);
+
+			if (ontology.getRtdbDatasource().equals(RtdbDatasource.PRESTO) && (prestoDatasourceConfigurationService
+					.isHistoricalCatalog(config.getDatasourceCatalog())
+					|| prestoDatasourceConfigurationService.isRealtimedbCatalog(config.getDatasourceCatalog()))) {
+				ontologyConfigService.getOntologyById(config.getDatasourceTableName(), utils.getUserId());
+			}
+
 			ontologyBusinessService.createOntology(ontology, utils.getUserId(), config);
 
 			if (ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)
@@ -772,24 +783,26 @@ public class OntologyController {
 							|| dataAccess.getAppRole() != null) {
 						dataAccessesDTO.add(new OntologyDataAccessDTO(dataAccess));
 					}
-				}				
+				}
 
-                final List<String> propdclasses = new ArrayList<>();
-                final List<String> entitydclasses = new ArrayList<>();;
+				final List<String> propdclasses = new ArrayList<>();
+				final List<String> entitydclasses = new ArrayList<>();
+				;
 				List<Configuration> configs = configurationRepository.findByType(Type.DATACLASS);
-				for(Configuration config: configs) {
-				    String dcname = config.getIdentification();
-				    
-	                final Map<String, Object> dclassyml = (Map<String, Object>) configurationService
-	                    .fromYaml(config.getYmlConfig()).get("dataclass");
-	                ArrayList<Map<String, Object>> rules = (ArrayList<Map<String, Object>>)dclassyml.get("dataclassrules");
-	                for(Map<String, Object> rule : rules) {
-	                    if(rule.get("ruletype").toString().equalsIgnoreCase("entity")) {
-	                        entitydclasses.add(dcname + "." + rule.get("rulename").toString());
-	                    } else if(rule.get("ruletype").toString().equalsIgnoreCase("property")) {
-	                        propdclasses.add(dcname + "." + rule.get("rulename").toString());
-	                    }
-	                }
+				for (Configuration config : configs) {
+					String dcname = config.getIdentification();
+
+					final Map<String, Object> dclassyml = (Map<String, Object>) configurationService
+							.fromYaml(config.getYmlConfig()).get("dataclass");
+					ArrayList<Map<String, Object>> rules = (ArrayList<Map<String, Object>>) dclassyml
+							.get("dataclassrules");
+					for (Map<String, Object> rule : rules) {
+						if (rule.get("ruletype").toString().equalsIgnoreCase("entity")) {
+							entitydclasses.add(dcname + "." + rule.get("rulename").toString());
+						} else if (rule.get("ruletype").toString().equalsIgnoreCase("property")) {
+							propdclasses.add(dcname + "." + rule.get("rulename").toString());
+						}
+					}
 				}
 
 				model.addAttribute(DATAACCESSES, dataAccessesDTO);
@@ -799,7 +812,7 @@ public class OntologyController {
 				model.addAttribute(USERS, users);
 				model.addAttribute(REALMS, realms);
 				model.addAttribute(PROPDATACLASSES, propdclasses);
-                model.addAttribute(ENTITYDATACLASSES, entitydclasses);
+				model.addAttribute(ENTITYDATACLASSES, entitydclasses);
 				final OntologyElasticDTO elasticOntologyDTO = getDefaultElasticValues();
 				// InUseService
 				if (resourcesInUseService != null) {
@@ -844,12 +857,12 @@ public class OntologyController {
 					model.addAttribute("datasource", ontologyVirtual.getDatasourceId());
 					model.addAttribute("databaseName",
 							ontologyVirtual.getDatasourceDatabase() == null
-							|| "".equals(ontologyVirtual.getDatasourceDatabase()) ? vDTO.getCurrentDatabase()
-									: ontologyVirtual.getDatasourceDatabase());
+									|| "".equals(ontologyVirtual.getDatasourceDatabase()) ? vDTO.getCurrentDatabase()
+											: ontologyVirtual.getDatasourceDatabase());
 					model.addAttribute("schemaName",
 							ontologyVirtual.getDatasourceSchema() == null
-							|| "".equals(ontologyVirtual.getDatasourceSchema()) ? vDTO.getCurrentSchema()
-									: ontologyVirtual.getDatasourceSchema());
+									|| "".equals(ontologyVirtual.getDatasourceSchema()) ? vDTO.getCurrentSchema()
+											: ontologyVirtual.getDatasourceSchema());
 					model.addAttribute("tableName", ontologyVirtual.getDatasourceTableName());
 					model.addAttribute("objId", ontologyVirtual.getObjectId());
 					model.addAttribute("objGeometry", ontologyVirtual.getObjectGeometry());
@@ -858,19 +871,16 @@ public class OntologyController {
 				}
 				if (ontology.getRtdbDatasource().equals(RtdbDatasource.PRESTO)) {
 					final OntologyPresto ontologyPresto = ontologyConfigService.getOntologyPrestoByOntologyId(ontology);
-					populateFormVirtual(model);
-					final OntologyVirtualDatasource ovd = new OntologyVirtualDatasource();
-					ovd.setIdentification(VirtualDatasourceType.PRESTO.toString());
-					model.addAttribute("datasource", ovd);
+					populateFormHistorical(model);
+					populateFormPresto(model);
 					model.addAttribute("databaseName", ontologyPresto.getDatasourceCatalog());
+					model.addAttribute("catalogName", ontologyPresto.getDatasourceCatalog());
 					model.addAttribute("schemaName", ontologyPresto.getDatasourceSchema());
 					model.addAttribute("tableName", ontologyPresto.getDatasourceTableName());
-					model.addAttribute(HISTORICAL, historicalCatalog.equals(ontologyPresto.getDatasourceCatalog()));
-					model.addAttribute(HISTORICAL_SCHEMA, historicalSchema);
-					model.addAttribute(USER_BUCKET_ONTOLOGY_PATH,
-							minioObjectStoreService.getUserBucketName(utils.getUserId()) + "/"
-									+ minioObjectStoreService.ONTOLOGIES_DIR);
-					return ONTOLOGIES_CREATEVIRTUAL;
+					model.addAttribute(HISTORICAL, prestoDatasourceConfigurationService
+							.isHistoricalCatalog(ontologyPresto.getDatasourceCatalog()));
+
+					return ONTOLOGIES_CREATEPRESTO;
 				}
 				if (ontology.getRtdbDatasource().equals(RtdbDatasource.NEBULA_GRAPH)) {
 					model.addAttribute("nebulaTags", nebulaGraphService.getTags(ontology.getIdentification()));
@@ -977,7 +987,7 @@ public class OntologyController {
 	public ResponseEntity<Map<String, String>> updateOntology(Model model, @PathVariable("id") String id,
 			@Valid Ontology ontology, BindingResult bindingResult, RedirectAttributes redirect,
 			@RequestParam(required = false, name = "nebulaEntity") String nebulaEntity, HttpServletRequest request)
-					throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
+			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
 		final Map<String, String> response = new HashMap<>();
 
 		if (bindingResult.hasErrors()) {
@@ -990,7 +1000,8 @@ public class OntologyController {
 		try {
 
 			long count = 0;
-			if (ontology.getRtdbDatasource() != RtdbDatasource.API_REST) {
+			if (ontology.getRtdbDatasource() != RtdbDatasource.API_REST
+					&& ontology.getRtdbDatasource() != RtdbDatasource.PRESTO) {
 				count = basicOpsRepository.count(ontology.getIdentification());
 
 			}
@@ -1033,7 +1044,7 @@ public class OntologyController {
 
 			if (StringUtils.hasText(nebulaEntity)) {
 				nebulaGraphService
-				.updateNebulaGraphEntity(mapper.readValue(nebulaEntity, NebulaGraphUpdateEntity.class));
+						.updateNebulaGraphEntity(mapper.readValue(nebulaEntity, NebulaGraphUpdateEntity.class));
 			}
 
 		} catch (final OntologyServiceException | OntologyDataJsonProblemException e) {
@@ -1141,7 +1152,7 @@ public class OntologyController {
 						utils.addRedirectMessageWithParam(ONT_DEL_ERROR,
 								"Cannot delete an ontology with attached elements:\n -API: " + apis + "\n"
 										+ "-IoTClient: " + iotClients,
-										redirect);
+								redirect);
 					}
 				} else {
 					utils.addRedirectMessageWithParam(ONT_DEL_ERROR, e.getMessage(), redirect);
@@ -1166,7 +1177,7 @@ public class OntologyController {
 				final List<OntologyUserAccessDTO> authorizationsDTO = new ArrayList<>();
 
 				String userOntologyAccess = "";
-				if(utils.isAdministrator() || ontology.getUser().getUserId().equals(utils.getUserId())) {
+				if (utils.isAdministrator() || ontology.getUser().getUserId().equals(utils.getUserId())) {
 
 					userOntologyAccess = "ALL";
 
@@ -1175,13 +1186,12 @@ public class OntologyController {
 					if (authorization.getUser().isActive()) {
 						authorizationsDTO.add(new OntologyUserAccessDTO(authorization));
 					}
-					if(authorization.getUser().getUserId().equals(utils.getUserId())) {
+					if (authorization.getUser().getUserId().equals(utils.getUserId())) {
 
 						userOntologyAccess = authorization.getOntologyUserAccessType().getName().toUpperCase();
 
 					}
 				}
-
 
 				final List<User> users = userService.getAllActiveUsers();
 				OntologyTimeSeriesServiceDTO otsDTO = new OntologyTimeSeriesServiceDTO();
@@ -1206,14 +1216,13 @@ public class OntologyController {
 				model.addAttribute(ONTOLOGY_STR, ontology);
 				model.addAttribute(USER_ONTOLOGY_ACCESS, userOntologyAccess);
 
-
 				model.addAttribute(AUTHORIZATIONS, authorizationsDTO);
 				User sessionUser = userService.getUser(id);
 				for (OntologyUserAccessDTO permission : authorizationsDTO) {
 					if (permission.getTypeName() == "ALL" && permission.getUserId().equals(sessionUser)) {
 						OntologyDataAccessDTO obj = new OntologyDataAccessDTO(null);
-						obj.setOntologyPermission(true);	
-						}
+						obj.setOntologyPermission(true);
+					}
 				}
 				model.addAttribute(USERS, users);
 
@@ -1300,25 +1309,26 @@ public class OntologyController {
 		model.addAttribute(ONTOLOGIES_STR, ontologyConfigService.getOntologiesByUserId(utils.getUserId()));
 		model.addAttribute("modes", Ontology.RtdbToHdbStorage.values());
 
-        final List<String> propdclasses = new ArrayList<>();
-        final List<String> entitydclasses = new ArrayList<>();;
-        List<Configuration> configs = configurationRepository.findByType(Type.DATACLASS);
-        for(Configuration config: configs) {
-            String dcname = config.getIdentification();
-            
-            final Map<String, Object> dclassyml = (Map<String, Object>) configurationService
-                .fromYaml(config.getYmlConfig()).get("dataclass");
-            ArrayList<Map<String, Object>> rules = (ArrayList<Map<String, Object>>)dclassyml.get("dataclassrules");
-            for(Map<String, Object> rule : rules) {
-                if(rule.get("ruletype").toString().equalsIgnoreCase("entity")) {
-                    entitydclasses.add(dcname + "." + rule.get("rulename").toString());
-                } else if(rule.get("ruletype").toString().equalsIgnoreCase("property")) {
-                    propdclasses.add(dcname + "." + rule.get("rulename").toString());
-                }
-            }
-        }
-        model.addAttribute(PROPDATACLASSES, propdclasses);
-        model.addAttribute(ENTITYDATACLASSES, entitydclasses);
+		final List<String> propdclasses = new ArrayList<>();
+		final List<String> entitydclasses = new ArrayList<>();
+		;
+		List<Configuration> configs = configurationRepository.findByType(Type.DATACLASS);
+		for (Configuration config : configs) {
+			String dcname = config.getIdentification();
+
+			final Map<String, Object> dclassyml = (Map<String, Object>) configurationService
+					.fromYaml(config.getYmlConfig()).get("dataclass");
+			ArrayList<Map<String, Object>> rules = (ArrayList<Map<String, Object>>) dclassyml.get("dataclassrules");
+			for (Map<String, Object> rule : rules) {
+				if (rule.get("ruletype").toString().equalsIgnoreCase("entity")) {
+					entitydclasses.add(dcname + "." + rule.get("rulename").toString());
+				} else if (rule.get("ruletype").toString().equalsIgnoreCase("property")) {
+					propdclasses.add(dcname + "." + rule.get("rulename").toString());
+				}
+			}
+		}
+		model.addAttribute(PROPDATACLASSES, propdclasses);
+		model.addAttribute(ENTITYDATACLASSES, entitydclasses);
 	}
 
 	private void populateKPIForm(Model model) {
@@ -1353,12 +1363,14 @@ public class OntologyController {
 				dsList = ontologyConfigService.getPublicOrOwnedDatasourcesRelationals(utils.getUserId());
 			}
 		}
-
+		dsList.removeIf(ds -> (ds.getIdentification().equals(RtdbDatasource.PRESTO.toString())));
 		dsList.add(new VirtualDatasourceDTO(RtdbDatasource.KUDU.toString(), ""));
 		model.addAttribute("datasources", dsList);
 		model.addAttribute("collectionNames", new ArrayList<String>());
 
 		model.addAttribute("datasource", new OntologyVirtualDatasource());
+		model.addAttribute(USER_BUCKET_ONTOLOGY_PATH, minioObjectStoreService.getUserBucketName(utils.getUserId())
+				+ MinioObjectStorageService.ONTOLOGIES_DIR);
 	}
 
 	private void populateFormTimeseries(Model model) {
@@ -1535,7 +1547,18 @@ public class OntologyController {
 			if (tables.isEmpty()) {
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			} else {
-				return new ResponseEntity<>(tables, HttpStatus.OK);
+				if (datasource.equals(RtdbDatasource.PRESTO.toString())
+						&& (prestoDatasourceConfigurationService.isHistoricalCatalog(database)
+								|| prestoDatasourceConfigurationService.isRealtimedbCatalog(database))) {
+					List<String> ontologies = ontologyConfigService.getAllIdentificationsByUser(utils.getUserId());
+
+					List<String> authorizedEntities = ontologies.stream().map(s -> s.toLowerCase())
+							.filter(tables::contains).collect(Collectors.toList());
+
+					return new ResponseEntity<>(authorizedEntities, HttpStatus.OK);
+				} else {
+					return new ResponseEntity<>(tables, HttpStatus.OK);
+				}
 			}
 		} catch (final Exception e) {
 			return new ResponseEntity<>("Error processing the request: " + e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -1988,6 +2011,19 @@ public class OntologyController {
 		return ontologyConfigService.getResourcesFromOntology(ontologyRepository.findById(id).get());
 	}
 
+	@GetMapping(value = "/isHistoricalOntology/{id}")
+	public @ResponseBody boolean isHistoricalOntology(@PathVariable("id") String id) {
+		final Ontology o = ontologyRepository.findById(id).get();
+		if (o.getRtdbDatasource().equals(Ontology.RtdbDatasource.PRESTO)) {
+			final OntologyPresto op = ontologyConfigService.getOntologyPrestoByOntologyId(o);
+			if (op != null) {
+				if (prestoDatasourceConfigurationService.isHistoricalCatalog(op.getDatasourceCatalog()))
+					return true;
+			}
+		}
+		return false;
+	}
+
 	private boolean useQuasar() {
 		try {
 			return ((Boolean) resourcesService.getGlobalConfiguration().getEnv().getDatabase()
@@ -2042,11 +2078,9 @@ public class OntologyController {
 		}
 		model.addAttribute(ONTOLOGY_STR, new Ontology());
 		model.addAttribute(HISTORICAL, true);
-		model.addAttribute(HISTORICAL_SCHEMA, historicalSchema);
 		model.addAttribute(FILE_FORMATS, FileFormat.values());
-		model.addAttribute(USER_BUCKET_ONTOLOGY_PATH,
-				minioObjectStoreService.getUserBucketName(utils.getUserId()) + minioObjectStoreService.ONTOLOGIES_DIR);
-		populateFormVirtual(model);
+		populateFormHistorical(model);
+		populateFormPresto(model);
 
 		final Object projectId = httpSession.getAttribute(APP_ID);
 		if (projectId != null) {
@@ -2130,7 +2164,7 @@ public class OntologyController {
 						utils.addRedirectMessageWithParam(ONT_DEL_ERROR,
 								"Cannot delete an ontology with attached elements:\n -API: " + apis + "\n"
 										+ "-IoTClient: " + iotClients,
-										redirect);
+								redirect);
 					}
 				} else {
 					utils.addRedirectMessageWithParam(ONT_DEL_ERROR, e.getMessage(), redirect);
@@ -2216,6 +2250,76 @@ public class OntologyController {
 			response.setErrorMessage(e.getMessage());
 		}
 		return response;
+	}
+
+	@GetMapping(value = "/createpresto", produces = "text/html")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	public String createPresto(Model model, RedirectAttributes redirect) {
+		if (!serviceStatusBean.isPrestoActive()) {
+			redirect.addFlashAttribute(MODULE_NOT_ACTIVE_KEY,
+					messageSource.getMessage("service.presto.down", null, LocaleContextHolder.getLocale()));
+			return "redirect:/ontologies/create";
+		}
+
+		final Ontology ontology = new Ontology();
+		ontology.setJsonSchema("{\"type\": \"object\", \"$schema\": \"http://json-schema.org/draft-03/schema\","
+				+ "\"required\": false,\"title\": \"\",\"description\": \"\",\"properties\": {},"
+				+ "\"additionalProperties\": true}");
+		ontology.setRtdbDatasource(RtdbDatasource.PRESTO);
+		ontology.setDataModel(dataModelService.getDataModelByName(OntologyService.DATAMODEL_DEFAULT_NAME));
+		model.addAttribute(ONTOLOGY_STR, ontology);
+		model.addAttribute(HISTORICAL, false);
+		populateFormPresto(model);
+
+		final List<String> catalogList = prestoDatasourceService.getPrestoCatalogsByUser(utils.getUserId());
+		model.addAttribute("catalogs",
+				catalogList.stream().filter(s -> !prestoDatasourceConfigurationService.isHistoricalCatalog(s))
+						.collect(Collectors.toList()));
+
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId != null) {
+			model.addAttribute(APP_ID, projectId.toString());
+		}
+
+		return ONTOLOGIES_CREATEPRESTO;
+	}
+
+	private void populateFormHistorical(Model model) {
+		model.addAttribute(DATA_MODELS_STR, ontologyConfigService.getEmptyBaseDataModel());
+		model.addAttribute(DATA_MODEL_TYPES_STR, ontologyConfigService.getAllDataModelTypes());
+		model.addAttribute(RTDBS, ontologyConfigService.getDatasources());
+		model.addAttribute("fieldTypes", ontologyBusinessService.getStringSupportedFieldDataTypes());
+		model.addAttribute("constraintTypes", ontologyBusinessService.getStringSupportedConstraintTypes());
+
+		final List<VirtualDatasourceDTO> dsList = new ArrayList<>();
+		final VirtualDatasourceDTO virtualDatasourceDTO = new VirtualDatasourceDTO(RtdbDatasource.PRESTO.toString(),
+				"");
+		dsList.add(virtualDatasourceDTO);
+		model.addAttribute("datasources", dsList);
+
+		final List<String> dbList = ontologyBusinessService
+				.getDatabasesFromDatasource(RtdbDatasource.PRESTO.toString());
+		model.addAttribute("databases", dbList);
+		model.addAttribute("collections", new ArrayList<String>());
+		model.addAttribute(HISTORICAL_CATALOG, prestoDatasourceConfigurationService.getHistoricalCatalog());
+		model.addAttribute(HISTORICAL_SCHEMA, prestoDatasourceConfigurationService.getHistoricalSchema());
+		model.addAttribute(USER_BUCKET_ONTOLOGY_PATH, minioObjectStoreService.getUserBucketName(utils.getUserId())
+				+ MinioObjectStorageService.ONTOLOGIES_DIR);
+
+		model.addAttribute("historicalCatalogActive", serviceStatusBean.isMinIOActive());
+	}
+
+	private void populateFormPresto(Model model) {
+
+		final List<String> catalogList = prestoDatasourceService.getPrestoCatalogsByUser(utils.getUserId());
+		model.addAttribute("catalogs", catalogList);
+
+		final OntologyVirtualDatasource ds = new OntologyVirtualDatasource();
+		ds.setIdentification(VirtualDatasourceType.PRESTO.toString());
+		model.addAttribute("datasource", ds);
+
+		model.addAttribute("tableNames", new ArrayList<String>());
+
 	}
 
 }

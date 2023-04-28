@@ -17,9 +17,15 @@ package com.minsait.onesait.platform.config.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.model.Category;
+import com.minsait.onesait.platform.config.model.ClientConnection;
+import com.minsait.onesait.platform.config.model.ClientPlatform;
+import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.Category.Type;
+import com.minsait.onesait.platform.multitenant.config.model.MasterUserToken;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
@@ -27,11 +33,15 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
 	Category findByIdentification(String identification);
 	
-	List<Category> findByIdentificationLike(String identification);
+	//List<Category> findByIdentificationLike(String identification);
+	@Query("SELECT cp FROM Category cp WHERE cp.identification like %:identification%")	
+	List<Category> findByIdentificationLike(@Param("identification") String identification);
 
 	List<Category> findByDescription(String description);
 	
-	List<Category> findByDescriptionLike(String description);
+	//List<Category> findByDescriptionLike(String description);
+	@Query("SELECT cp FROM Category cp WHERE cp.description like %:description%")	
+	List<Category> findByDescriptionLike(@Param("description") String description);
 
 	List<Category> findByIdentificationContainingAndDescriptionContaining(String identification, String description);
 
@@ -43,7 +53,9 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
 	List<Category> findByIdentificationAndDescription(String identification, String description);
 
-	List<Category> findByIdentificationLikeAndDescriptionLike(String identification, String description);
+	//List<Category> findByIdentificationLikeAndDescriptionLike(String identification, String description);
+	@Query("SELECT cp FROM Category cp WHERE cp.description like %:description% and cp.identification like %:identification%")	
+	List<Category> findByIdentificationLikeAndDescriptionLike(@Param("description") String description, @Param("identification") String identification);
 	
 	List<Category> findByTypeIn(List<Type> types);
 	

@@ -133,6 +133,15 @@ public class PrestoDatasourceManagerImpl implements PrestoDatasourceManager {
 		final OntologyPresto op = this.getOntologyPrestoForOntology(ontology);
 		return this.getDatasource(op.getDatasourceCatalog(), op.getDatasourceSchema());
 	}
+	
+	@Override
+	public DataSource getDatasource() {
+		final DataSource ds = this.datasources.get("");
+		if (ds == null) {
+			setDatasource("");
+		}
+		return this.datasources.get("");
+	}
 
 	private String getDriverClassName() {
 			return com.facebook.presto.jdbc.PrestoDriver.class.getName();

@@ -60,9 +60,7 @@ onesaitplatform: #Config onesaitplatform specific
    database.minio:
       access-key: ${MINIO_ROOT_USER}
       secret-key: ${MINIO_ROOT_PASSWORD}
-   database.prestodb:
-      historicalCatalog: minio
-      historicalSchema: default
+
    audit.global.notify: ${AUDITGLOBALNOTIFY}
    hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
    hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}

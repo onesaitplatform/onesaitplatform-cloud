@@ -160,5 +160,33 @@ public class QueryTemplateServiceImpl implements QueryTemplateService {
 		} else
 			throw new QueryTemplateServiceException("Cannot update a query template that does not exist");
 	}
+	
+	@Override
+	public void checkQueryTemplateSelectorExists(String templateId, String ontology, String query) {
+		final List<QueryTemplate> templates = new ArrayList<>(queryTemplateRepository.findByOntologyIdentification(ontology));
+		templates.addAll(queryTemplateRepository.findByOntologyIdentificationIsNull());
+		MatchResult result = new MatchResult();
+		result.setResult(false);
+		QueryTemplate template = null;
+
+		try {
+			for (int i = 0; i < templates.size() && !result.isMatch(); i++) {
+				template = templates.get(i);
+				if (!template.getName().equals(templateId)) {
+					result = SqlComparator.match(query, template.getQuerySelector());
+				}
+			}
+		} catch (Exception e){
+			log.trace("Error processing Selector", e);
+		}
+		if (result.isMatch()) {
+			String logmessage = "Query Template Selector already used";
+			if (!ontology.equals("")) {
+				logmessage = logmessage + " for entity: " + ontology;
+			}
+			log.trace(logmessage);
+			throw new QueryTemplateServiceException(logmessage);
+		}
+	}
 
 }

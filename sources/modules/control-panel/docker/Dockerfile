@@ -258,9 +258,11 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+ExitOnOutOfMemoryError -XX:+HeapDum
     HTTP_LOG_LEVEL=TRACE \
     MAX_USERS_APP_ASSIGN_TABLE=0 \
     MAX_USERS_COMBO=0 \
+    GITLAB_MANAGER_URL=https://${SERVER_NAME}/gitlab \
     REMEDY_MS_ENABLED=false \
     REMEDY_MS_URL=https://integrationhub.ptmindra.net/v1/webhook/OpsDigitales/devops/PROD \
     REMEDY_MS_TOKEN=1
+
 
 
 COPY docker-entrypoint.sh /usr/local/bin/
