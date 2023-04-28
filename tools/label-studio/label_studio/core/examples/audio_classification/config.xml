@@ -1,0 +1,13 @@
+<!-- {"title": "Audio classification", "category": "audio", "complexity": "basic", "order": "!"} -->
+<View>
+  <Header value="Listen to the audio"/>
+  <Audio name="audio" value="$audio"/>
+  <Header value="Select its topic"/>
+  <Choices name="topic" toName="audio"
+           choice="single-radio" showInline="true">
+    <Choice value="Politics"/>
+    <Choice value="Business"/>
+    <Choice value="Education"/>
+    <Choice value="Other"/>
+  </Choices>
+</View>

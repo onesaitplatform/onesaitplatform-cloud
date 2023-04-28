@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -256,7 +256,7 @@ public class UpdateProcessor implements MessageTypeProcessor {
 				} else {
 					return Source.valueOf(json.get(SOURCE).asText().toUpperCase());
 				}
-			} catch (IOException e) {
+			} catch (Exception e) {
 				return Source.IOTBROKER;
 			}
 		}
@@ -280,7 +280,7 @@ public class UpdateProcessor implements MessageTypeProcessor {
 	}
 
 	private boolean validateMessageUpdate(SSAPMessage<SSAPBodyUpdateMessage> updateMessage) {
-		if (StringUtils.isEmpty(updateMessage.getBody().getQuery())) {
+		if (!StringUtils.hasText(updateMessage.getBody().getQuery())) {
 			log.error("Error quey field");
 			throw new SSAPProcessorException(String.format(MessageException.ERR_FIELD_IS_MANDATORY, "quey",
 					updateMessage.getMessageType().name()));
@@ -289,7 +289,7 @@ public class UpdateProcessor implements MessageTypeProcessor {
 	}
 
 	private boolean validateMessageUpdateById(SSAPMessage<SSAPBodyUpdateByIdMessage> updateMessage) {
-		if (StringUtils.isEmpty(updateMessage.getBody().getId())) {
+		if (!StringUtils.hasText(updateMessage.getBody().getId())) {
 			log.error("Error id field");
 			throw new SSAPProcessorException(String.format(MessageException.ERR_FIELD_IS_MANDATORY, "id",
 					updateMessage.getMessageType().name()));

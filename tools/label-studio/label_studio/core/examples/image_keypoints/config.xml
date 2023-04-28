@@ -1,0 +1,9 @@
+<!-- {"title": "Keypoints and landmarks", "category": "image", "complexity": "basic"} -->
+<View>
+  <Image name="image" value="$image" zoom="true" zoomControl="true"/>
+  <KeyPointLabels name="label" toName="image"
+                  strokewidth="2" opacity="1" >
+      <Label value="Engine" background="red"/>
+      <Label value="Tail" background="blue"/>
+  </KeyPointLabels>
+</View>

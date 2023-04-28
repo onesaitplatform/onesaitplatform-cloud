@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ public class JsonToolUtils {
 	private static final String DEFAULT_META_INF = "imported,json";
 	private final ObjectMapper mapper = new ObjectMapper();
 
-	public Ontology createOntology(String identification, String description, RtdbDatasource datasource, String schema)
+	public Ontology createOntology(String identification, String description, RtdbDatasource datasource, String schema, boolean contextdata)
 			throws IOException {
 
 		final Ontology ontology = new Ontology();
@@ -53,7 +53,7 @@ public class JsonToolUtils {
 		ontology.setUser(userService.getUser(utils.getUserId()));
 		ontology.setMetainf(DEFAULT_META_INF);
 		ontology.setRtdbDatasource(datasource);
-		ontology.setContextDataEnabled(true);
+		ontology.setContextDataEnabled(contextdata);
 		return ontology;
 	}
 

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -184,10 +184,10 @@ public class WebProjectServiceImpl implements WebProjectService {
 		if (wp != null) {
 			if (hasUserPermissionToEditWebProject(user, wp)) {
 				if (webProjectExists(wp.getIdentification())) {
-					if (!StringUtils.isEmpty(webProject.getDescription())) {
+					if (StringUtils.hasText(webProject.getDescription())) {
 						wp.setDescription(webProject.getDescription());
 					}
-					if (!StringUtils.isEmpty(webProject.getMainFile())) {
+					if (StringUtils.hasText(webProject.getMainFile())) {
 						wp.setMainFile(webProject.getMainFile());
 					}
 					updateFolderWebProject(webProject.getIdentification(), userId);

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.hazelcast.internal.json.Json;
+import com.hazelcast.org.json.JSONArray;
+import com.hazelcast.org.json.JSONException;
+import com.hazelcast.org.json.JSONObject;
 import com.minsait.onesait.platform.config.model.DataModel;
 import com.minsait.onesait.platform.config.model.DataModel.MainType;
 import com.minsait.onesait.platform.config.repository.DataModelRepository;
@@ -64,7 +68,7 @@ public class DataModelServiceImpl implements DataModelService {
 	public DataModel getDataModelByName(String dataModelName) {
 		return dataModelRepository.findByIdentification(dataModelName).get(0);
 	}
-
+	
 	@Override
 	public boolean dataModelExists(DataModel datamodel) {
 		return dataModelRepository.findDatamodelsByIdentification(datamodel.getIdentification()) != null;
@@ -82,5 +86,15 @@ public class DataModelServiceImpl implements DataModelService {
 			dataModelRepository.save(oldDataModel);
 		}
 	}
+	@Override
+	public boolean validateJSON(DataModel datamodel) {
+		 try{
+	            Json.parse(datamodel.getJsonSchema());
+	            return true;
+	        } catch(final Exception e){
+	            return false;
+	        }
+		}
+	
 
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,17 @@ public class DashboardEngineException extends RuntimeException {
 	private static final long serialVersionUID = 1432534144145L;
 
 	public enum Error {
-		PARSE_EXCEPTION, TIMEOUT_EXCEPTION, PERMISSION_DENIED, NOT_FOUND, GENERIC_EXCEPTION
+		PARSE_EXCEPTION(500), TIMEOUT_EXCEPTION(500), PERMISSION_DENIED(403), NOT_FOUND(404), GENERIC_EXCEPTION(500), INVALID_AUTH(401);
+		
+		int code;
+		
+		public int getCode() {
+			return code;
+		}
+		
+		private Error(int code) {
+			this.code = code;
+		}
 	}
 	
 	@Getter

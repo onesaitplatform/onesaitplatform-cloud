@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,9 +61,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SolverServiceImpl implements SolverService {
 
-	private static final String ELASTIC_DATASOURCE_TYPE = "ELASTIC_SEARCH";
-	private static final String VIRTUAL_DATASOURCE_TYPE = "VIRTUAL";
-	private static final String KUDU_DATASOURCE_TYPE = "KUDU";
 	private static final String SIMPLE_MODE = "simpleMode";
 
 	@Autowired
@@ -103,6 +100,10 @@ public class SolverServiceImpl implements SolverService {
 	@Autowired
 	@Qualifier("OracleSolver11")
 	SolverInterface oracleSolver11;
+	
+	@Autowired
+	@Qualifier("NebulaGraphSolver")
+	SolverInterface nebulaGraphSolver;
 
 	@Autowired
 	private DashboardCache dashboardCache;
@@ -117,26 +118,28 @@ public class SolverServiceImpl implements SolverService {
 	private ValidationService validationService;
 
 	private SolverInterface getSolverByDatasource(RtdbDatasource datasource, String ontology) {
-		switch (datasource.name()) {
-		case ELASTIC_DATASOURCE_TYPE:
-			return sqlSolver;
-		case VIRTUAL_DATASOURCE_TYPE:
-			final OntologyVirtualDatasource ontologyDatasource = ontologyVirtualRepository
-			.findOntologyVirtualDatasourceByOntologyIdentification(ontology);
-			switch (ontologyDatasource.getSgdb()) {
-			case ORACLE:
-				return oracleSolver;
-			case ORACLE11:
-				return oracleSolver11;
-			case SQLSERVER:
-				return sqlServerSolver;
-			default:
+		switch (datasource) {
+			case ELASTIC_SEARCH:
 				return sqlSolver;
-			}
-		case KUDU_DATASOURCE_TYPE:
-			return sqlSolver;
-		default:
-			return quasarSolver;
+			case VIRTUAL:
+				final OntologyVirtualDatasource ontologyDatasource = ontologyVirtualRepository
+						.findOntologyVirtualDatasourceByOntologyIdentification(ontology);
+				switch (ontologyDatasource.getSgdb()) {
+					case ORACLE:
+						return oracleSolver;
+					case ORACLE11:
+						return oracleSolver11;
+					case SQLSERVER:
+						return sqlServerSolver;
+					default:
+						return sqlSolver;
+				}
+			case KUDU:
+				return sqlSolver;
+			case NEBULA_GRAPH:
+				return nebulaGraphSolver;
+			default:
+				return quasarSolver;
 		}
 	}
 

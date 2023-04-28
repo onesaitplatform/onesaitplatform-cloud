@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@
 			if(indexOf == -1) {
 				indexOf = query.length;
 			}
-			var testOntology = getOntologyFromQuery(query);
+			var testOntology = getOntologyFromQuery(query) || $("#datasourceOntologySelected").text();
 			while(testOntology.startsWith("(") && indexfrom!=-1) {
 				indexfrom = query.toLowerCase().indexOf("from ",indexfrom);
 				indexOf = query.toLowerCase().indexOf(" ",indexfrom + 5);
@@ -264,7 +264,7 @@
 							<div class="col-md-3 col-sm-6" id="div-datasource">
 								<div class="form-group">
 									<label class="control-label" th:text="#{gen.ontology}">Ontology</label>
-									<p class="form-control-static-block" th:text="${datasourceOntologySelected}"> datasourceOntologySelected </p>
+									<p class="form-control-static-block" id="datasourceOntologySelected" th:text="${datasourceOntologySelected}"> datasourceOntologySelected </p>
 								</div>
 							</div>
 							<div class="col-md-3 col-sm-6 col-xs-12 hide" >

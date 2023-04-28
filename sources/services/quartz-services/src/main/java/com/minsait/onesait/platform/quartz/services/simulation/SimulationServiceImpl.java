@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,11 +63,11 @@ public class SimulationServiceImpl implements SimulationService {
 		((ObjectNode) rootNode).put("token", token);
 		((ObjectNode) rootNode).put("ontology", ontology);
 
-		if (!StringUtils.isEmpty(jsonInstances)) {
+		if (StringUtils.hasText(jsonInstances)) {
 			((ObjectNode) rootNode).set("instances", mapper.readTree(jsonInstances));
 			((ObjectNode) rootNode).put("instancesMode", instancesMode);
 		}
-		if (!StringUtils.isEmpty(jsonMap))
+		if (StringUtils.hasText(jsonMap))
 			((ObjectNode) rootNode).set("fields", mapper.readTree(jsonMap));
 		return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
 	}

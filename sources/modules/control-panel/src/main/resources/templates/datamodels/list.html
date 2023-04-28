@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -40,9 +40,16 @@
 	
 	<!-- page-sidebar-closed to start page with collapsed menu -->
 	<body class="page-header-fixed  page-content-white page-sidebar-closed">
-
+	
+    <form id="delete_dataModel_form" class="delete-dataModel hide"  action=""  method="post">
+					<input type="hidden" name="_method" value="DELETE"/>
+					<input type="hidden" name="id" th:value="${datamodel?.id}"/>
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+				</form>			
 	<!-- MAIN PAGE WRAPPER -->
 	<div class="page-wrapper">
+	
+	
 	
 		<!-- BEGIN HEADER INCLUDE -->
 		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
@@ -64,12 +71,6 @@
 				<!-- SEARCH FORM -->
 					<form id="form_datamodel" action="list.html" th:action="@{/datamodels/list}" class="" role="form" method="get">												
 						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-						<div class="col-md-3 col-sm-4 col-xs-12">
-							<div class="input-icon">																		
-								<i class="icon-search font-grey-mint"></i>												
-								<input id="dataModelId" th:placeholder="#{datamodel.id}" name="dataModelId" class="form-control" type="text" maxlength="70" value=""/>
-							</div>
-						</div>
 						<div class="col-md-3 col-sm-4 col-xs-12">
 							<div class="input-icon">
 								<i class="icon-search font-grey-mint"></i>
@@ -241,7 +242,11 @@
 																	<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/datamodels/show/${datamodel.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>																			
 																	
 																	<!-- EDIT -->
-																	<span th:tittle="#{gen.edit}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/datamodels/update/${datamodel.id}/|} + '\');'"><i class="icon-edit"></i></span>
+																	<span th:tittle="#{gen.edit}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/datamodels/update/${datamodel.id}|} + '\');'"><i class="icon-edit"></i></span>
+																	
+																	<!-- DELETE -->
+																	<span th:tittle="#{gen.delete}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.delete}" th:attr="onclick='deleteDataModelConfirmation(\'' +  ${datamodel.id} + '\');'"><i class="icon-delete"></i></span>
+																	
 																</div>
 															</td>													
 														</tr>
@@ -454,6 +459,19 @@
 		$(".yadcf-filter").css('color','grey');
 		$(".yadcf-filter option").css('color','black');
 	}
+	
+	// DELETE Data Model 
+	function deleteDataModelConfirmation(dataModelId){
+		console.log('deleteDataModelConfirmation() -> formId: '+ dataModelId);
+		
+		// set action and dataModelId to the form
+		$('.delete-dataModel').attr('id', dataModelId);
+		$('.delete-dataModel').attr('action','/controlpanel/datamodels/delete/'+ dataModelId );
+		console.log('deleteUserConfirmation() -> formAction: ' + $('.delete-dataModel').attr('action') + ' ID: ' + $('.delete-dataModel').attr('id'));
+		
+		// call Data Model Confirm at header.
+		HeaderController.showDataModelConfirmDialog(dataModelId);	
+	}	
 		 
 	// MAIN WHEN LOAD
 	$(window).load(function(){  

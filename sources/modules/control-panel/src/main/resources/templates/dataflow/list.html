@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -90,7 +90,13 @@
 						close: {
 							text: cancelBtn,
 							btnClass: 'btn btn-outline blue dialog ',
-							action: function (){} //GENERIC CLOSE.
+							action: function (){
+								
+								if ([[${appId}]]!=null){
+									window.location.href = "/controlpanel/projects/update/" + [[${appId}]];
+								}
+								
+							} //GENERIC CLOSE.
 						},
 						Ok: {
 							text: confirmBtn,
@@ -648,7 +654,7 @@
 
 	</script>
 
-	<script type="text/javascript">
+	<script  th:inline="javascript">
 	var optionName = 'Dataflows';
 
 	//<![CDATA[
@@ -680,7 +686,7 @@
 		$('#search_dataflow').on('click',function(){
 			$('#pipelines').DataTable().column(0).search( $('#dataflow-name').val()).draw();
 		});
-
+		
 	});
 
 	// MAIN WHEN LOAD
@@ -726,6 +732,10 @@
 
 		$("#contenedor-tabla-outside").removeClass("hidden");
 
+		if ([[${appId}]]!=null){
+			showCreatePipelineDialog();
+		}
+		
 	});
 
 	//]]>

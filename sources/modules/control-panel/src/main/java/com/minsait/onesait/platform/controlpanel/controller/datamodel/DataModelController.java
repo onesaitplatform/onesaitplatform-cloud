@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package com.minsait.onesait.platform.controlpanel.controller.datamodel;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,14 +55,20 @@ public class DataModelController {
 
 	@Autowired
 	private AppWebUtils utils;
+	
+	@Autowired 
+	private HttpSession httpSession;
 
 	private static final String DATAMOD_CREATE = "datamodels/create";
 	private static final String REDIRECT_DATAMOD_LIST = "redirect:/datamodels/list";
+	private static final String APP_ID = "appId";
 
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, @RequestParam(required = false) String dataModelId,
 			@RequestParam(required = false) String name, @RequestParam(required = false) String description) {
-
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
+		
 		if ("".equals(dataModelId)) {
 			dataModelId = null;
 		}
@@ -127,6 +134,11 @@ public class DataModelController {
 				utils.addRedirectMessage("datamodel.error.exist", redirect);
 				return REDIRECT_DATAMOD_LIST;
 			}
+			if(!dataModelService.validateJSON(datamodel)){
+				utils.addRedirectMessage(" Error, The JSON entered is not valid ", redirect);
+				return "redirect:/datamodels/create";
+				
+			}
 
 			datamodel.setUser(userService.getUserByIdentification(utils.getUserId()));
 			dataModelService.createDataModel(datamodel);
@@ -162,7 +174,10 @@ public class DataModelController {
 	@PutMapping(value = "/update/{id}", produces = "text/html")
 	public String updateDataModel(@PathVariable String id, Model model, @ModelAttribute DataModel datamodel,
 			RedirectAttributes redirect, HttpServletRequest request) {
-
+		if(!dataModelService.validateJSON(datamodel)){
+			utils.addRedirectMessage(" Error, The JSON entered is not valid ", redirect);
+			return "redirect:/datamodels/update/" + id;
+		}
 		if (datamodel != null) {
 			datamodel.setUser(userService.getUserByIdentification(utils.getUserId()));
 			if (!this.utils.getUserId().equals(datamodel.getUser().getUserId()) && !utils.isAdministrator())
@@ -175,7 +190,7 @@ public class DataModelController {
 				return DATAMOD_CREATE;
 			}
 		} else {
-			return "redirect:/update/" + id;
+			return "redirect:/datamodels/update/" + id;
 		}
 		model.addAttribute("Datamodel", datamodel);
 		log.debug("Data Mode has been update succesfully");

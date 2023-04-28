@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,16 +62,16 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 
 	@Autowired
 	private UserService userService;
-	
+
 	@Autowired
 	private CategoryRelationService categoryRelationService;
-	
+
 	@Autowired
 	private CategoryRelationRepository categoryRelationRepository;
-	
+
 	@Autowired
 	private CategoryService categoryService;
-	
+
 	@Autowired
 	private SubcategoryService subcategoryService;
 
@@ -220,12 +220,11 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 		}
 
 		final GadgetTemplateExportDto gadgetTemplateDTO = GadgetTemplateExportDto.builder().id(dto.getId())
-				.identification(dto.getIdentification()).user(dto.getUser().getUserId())
-				.headerlibs(dto.getHeaderlibs()).createdAt(gadgetTemplate.getCreatedAt())
-				.description(dto.getDescription()).modifiedAt(gadgetTemplate.getUpdatedAt())
-				.type(dto.getType()).isPublic(dto.isPublic())
-				.template(dto.getTemplate()).templateJS(dto.getTemplateJS())
-				.category(dto.getCategory()).subcategory(dto.getSubcategory()).config(dto.getConfig()).build();
+				.identification(dto.getIdentification()).user(dto.getUser().getUserId()).headerlibs(dto.getHeaderlibs())
+				.createdAt(gadgetTemplate.getCreatedAt()).description(dto.getDescription())
+				.modifiedAt(gadgetTemplate.getUpdatedAt()).type(dto.getType()).isPublic(dto.isPublic())
+				.template(dto.getTemplate()).templateJS(dto.getTemplateJS()).category(dto.getCategory())
+				.subcategory(dto.getSubcategory()).config(dto.getConfig()).build();
 
 		return gadgetTemplateDTO;
 	}
@@ -270,8 +269,9 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 				if (dto == null) {
 					GadgetTemplateDTO gadgetTemplate = toGadgetTemplate(gadgetTemplateDTO);
 					if (hasUserPermission(gadgetTemplate.getId(), userId)) {
-
-						createGadgetTemplate(dto);
+						final User user = userRepository.findByUserId(userId);
+						gadgetTemplate.setUser(user);
+						createGadgetTemplate(gadgetTemplate);
 						responses.add(GadgetTemplateImportResponsetDto.builder()
 								.identification(gadgetTemplate.getIdentification()).id(gadgetTemplate.getId()).build());
 					}
@@ -279,9 +279,8 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 					if (hasUserPermission(gadgetTemplateDb, userId)) {
 						copyProperties(dto, gadgetTemplateDTO);
 						updateGadgetTemplate(dto);
-						responses.add(GadgetTemplateImportResponsetDto.builder()
-								.identification(dto.getIdentification()).id(dto.getId())
-								.build());
+						responses.add(GadgetTemplateImportResponsetDto.builder().identification(dto.getIdentification())
+								.id(dto.getId()).build());
 					}
 				}
 			}
@@ -297,6 +296,8 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 		template.setDescription(dto.getDescription() == null ? "" : dto.getDescription());
 		template.setType(dto.getType() == null ? "angularJS" : dto.getType());
 		template.setPublic(dto.isPublic());
+		template.setConfig(dto.getConfig());
+		template.setHeaderlibs(dto.getHeaderlibs());
 		template.setTemplate(dto.getTemplate());
 		template.setTemplateJS(dto.getTemplateJS());
 		template.setUser(userRepository.findByUserId(dto.getUser()));
@@ -315,6 +316,8 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 		template.setPublic(dto.isPublic());
 		template.setTemplate(dto.getTemplate());
 		template.setTemplateJS(dto.getTemplateJS());
+		template.setConfig(dto.getConfig());
+		template.setHeaderlibs(dto.getHeaderlibs());
 		template.setCategory(dto.getCategory());
 		template.setSubcategory(dto.getSubcategory());
 	}
@@ -330,15 +333,16 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 			}
 			Subcategory subcategory = new Subcategory();
 			if (!StringUtils.isEmpty(dto.getSubcategory())) {
-				subcategory = subcategoryService.getSubcategoryByIdentificationAndCategory(dto.getSubcategory(), category);
+				subcategory = subcategoryService.getSubcategoryByIdentificationAndCategory(dto.getSubcategory(),
+						category);
 				if (subcategory == null) {
 					throw new SubcategoryServiceException("Subcategory does not exist");
 				}
 			}
-			categoryRelationService.createCategoryRelation(id, category, subcategory, Category.Type.GADGET);			
+			categoryRelationService.createCategoryRelation(id, category, subcategory, Category.Type.GADGET);
 		}
 	}
-	
+
 	private GadgetTemplate getNewGadgetTemplate(GadgetTemplateDTO dto, String userId) {
 		GadgetTemplate gt = new GadgetTemplate();
 		gt.setUser(userService.getUser(userId));
@@ -352,7 +356,7 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 		gt.setConfig(dto.getConfig());
 		return gt;
 	}
-	
+
 	private void updateCategoryRelation(GadgetTemplateDTO dto, String id) {
 		final CategoryRelation categoryRelation = categoryRelationService.getByIdType(id);
 		if (!StringUtils.isEmpty(dto.getCategory())) {
@@ -366,7 +370,8 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 			}
 			Subcategory subcategory = new Subcategory();
 			if (!StringUtils.isEmpty(dto.getSubcategory())) {
-				subcategory = subcategoryService.getSubcategoryByIdentificationAndCategory(dto.getSubcategory(), category);
+				subcategory = subcategoryService.getSubcategoryByIdentificationAndCategory(dto.getSubcategory(),
+						category);
 				if (subcategory == null) {
 					throw new SubcategoryServiceException("Subcategory does not exist");
 				}
@@ -380,7 +385,7 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 			categoryRelationService.deleteCategoryRelation(id);
 		}
 	}
-	
+
 	private GadgetTemplate getUpdateGadgetTemplate(GadgetTemplateDTO dto) {
 		GadgetTemplate gt = this.getGadgetTemplateById(dto.getId());
 		gt.setDescription(dto.getDescription());
@@ -392,13 +397,13 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 		gt.setConfig(dto.getConfig());
 		return gt;
 	}
-	
+
 	@Override
 	public GadgetTemplateDTO getGadgetTemplateDTOById(String id) {
 		final GadgetTemplate gadgetTemplate = this.getGadgetTemplateById(id);
 		return getGadgetTemplateDTO(gadgetTemplate);
 	}
-	
+
 	@Override
 	public GadgetTemplateDTO getGadgetTemplateDTOByIdentification(String identification) {
 		final GadgetTemplate gadgetTemplate = this.getGadgetTemplateByIdentification(identification);
@@ -406,6 +411,9 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 	}
 
 	private GadgetTemplateDTO getGadgetTemplateDTO(GadgetTemplate gt) {
+		if (gt == null) {
+			return null;
+		}
 		GadgetTemplateDTO gadgetTemplate = new GadgetTemplateDTO();
 		gadgetTemplate.setId(gt.getId());
 		gadgetTemplate.setIdentification(gt.getIdentification());
@@ -417,7 +425,7 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 		gadgetTemplate.setHeaderlibs(gt.getHeaderlibs());
 		gadgetTemplate.setUser(gt.getUser());
 		gadgetTemplate.setConfig(gt.getConfig());
-		
+
 		final CategoryRelation cr = categoryRelationService.getByIdType(gt.getId());
 		if (cr != null) {
 			final Category c = categoryService.getCategoryById(cr.getCategory());
@@ -430,38 +438,38 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 		return gadgetTemplate;
 	}
 
-    @Override
-    public String cloneGadgetTemplate(GadgetTemplate gadgetTemplate, String identification, User user) {
-        final GadgetTemplate cloneGadgetTemplate = new GadgetTemplate();
-        
-        try {
-            cloneGadgetTemplate.setIdentification(identification);
-            cloneGadgetTemplate.setUser(user);
-            cloneGadgetTemplate.setConfig(gadgetTemplate.getConfig());
-            cloneGadgetTemplate.setDescription(gadgetTemplate.getDescription());
-            cloneGadgetTemplate.setPublic(gadgetTemplate.isPublic());
-            cloneGadgetTemplate.setType(gadgetTemplate.getType());
-            cloneGadgetTemplate.setHeaderlibs(gadgetTemplate.getHeaderlibs());
-            cloneGadgetTemplate.setTemplate(gadgetTemplate.getTemplate());
-            cloneGadgetTemplate.setTemplateJS(gadgetTemplate.getTemplateJS());
-    
-            gadgetTemplateRepository.save(cloneGadgetTemplate);
+	@Override
+	public String cloneGadgetTemplate(GadgetTemplate gadgetTemplate, String identification, User user) {
+		final GadgetTemplate cloneGadgetTemplate = new GadgetTemplate();
 
-            CategoryRelation cr = categoryRelationRepository.findByTypeId(gadgetTemplate.getId());
-            if(cr != null) {
-                CategoryRelation cloneCR = new CategoryRelation();
-                cloneCR.setTypeId(cloneGadgetTemplate.getId());
-                cloneCR.setCategory(cr.getCategory());
-                cloneCR.setSubcategory(cr.getSubcategory());
-                cloneCR.setType(cr.getType());
-                categoryRelationRepository.save(cloneCR);
-            }
-            return cloneGadgetTemplate.getId();
-        } catch (final Exception e) {
-    
-            log.error(e.getMessage());
-            return null;
-        }
-    }
-	
+		try {
+			cloneGadgetTemplate.setIdentification(identification);
+			cloneGadgetTemplate.setUser(user);
+			cloneGadgetTemplate.setConfig(gadgetTemplate.getConfig());
+			cloneGadgetTemplate.setDescription(gadgetTemplate.getDescription());
+			cloneGadgetTemplate.setPublic(gadgetTemplate.isPublic());
+			cloneGadgetTemplate.setType(gadgetTemplate.getType());
+			cloneGadgetTemplate.setHeaderlibs(gadgetTemplate.getHeaderlibs());
+			cloneGadgetTemplate.setTemplate(gadgetTemplate.getTemplate());
+			cloneGadgetTemplate.setTemplateJS(gadgetTemplate.getTemplateJS());
+
+			gadgetTemplateRepository.save(cloneGadgetTemplate);
+
+			CategoryRelation cr = categoryRelationRepository.findByTypeId(gadgetTemplate.getId());
+			if (cr != null) {
+				CategoryRelation cloneCR = new CategoryRelation();
+				cloneCR.setTypeId(cloneGadgetTemplate.getId());
+				cloneCR.setCategory(cr.getCategory());
+				cloneCR.setSubcategory(cr.getSubcategory());
+				cloneCR.setType(cr.getType());
+				categoryRelationRepository.save(cloneCR);
+			}
+			return cloneGadgetTemplate.getId();
+		} catch (final Exception e) {
+
+			log.error(e.getMessage());
+			return null;
+		}
+	}
+
 }

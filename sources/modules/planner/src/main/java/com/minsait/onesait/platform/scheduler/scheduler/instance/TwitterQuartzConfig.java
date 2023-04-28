@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class TwitterQuartzConfig extends GenericQuartzConfig {
 	@Bean(SCHEDULER_BEAN_FACTORY_NAME)
 	public SchedulerFactoryBean twitterSchedulerFactoryBean(JobFactory jobFactory,
 			PlatformTransactionManager transactionManager) {
-		return getSchedulerFactoryBean(jobFactory, transactionManager);
+		return getSchedulerFactoryBean(jobFactory, transactionManager, false);
 	}
 
 	@Bean(SchedulerNames.TWITTER_SCHEDULER_NAME)

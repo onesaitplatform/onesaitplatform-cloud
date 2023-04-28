@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -568,16 +568,35 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 
 			ontologyName = ontology;
 			final ResultSet rs = dbmeta.getColumns(database, schema, ontologyName, null);
-			while (rs.next()) {
-				final JsonObject jsonObj = new JsonObject();
-				jsonObj.addProperty("ordinal_position", rs.getString("ORDINAL_POSITION"));
-				jsonObj.addProperty("column_name", rs.getString("COLUMN_NAME").trim());
-				jsonObj.addProperty("data_type", rs.getString("DATA_TYPE"));
-				// jsonObj.addProperty("column_def", rs.getString("COLUMN_DEF")); it's not used
-				// and can have SQLException 99999 in fetching with oracle
-				jsonObj.addProperty("is_nullable", rs.getString("IS_NULLABLE"));
-				jsonObj.addProperty("remarks", rs.getString("REMARKS"));
-				columns.add(jsonObj);
+			if (rs.next()) {
+				do {
+					final JsonObject jsonObj = new JsonObject();
+					jsonObj.addProperty("ordinal_position", rs.getString("ORDINAL_POSITION"));
+					jsonObj.addProperty("column_name", rs.getString("COLUMN_NAME").trim());
+					jsonObj.addProperty("data_type", rs.getString("DATA_TYPE"));
+					// jsonObj.addProperty("column_def", rs.getString("COLUMN_DEF")); it's not used
+					// and can have SQLException 99999 in fetching with oracle
+					jsonObj.addProperty("is_nullable", rs.getString("IS_NULLABLE"));
+					jsonObj.addProperty("remarks", rs.getString("REMARKS"));
+					columns.add(jsonObj);
+
+				} while (rs.next());
+			} else {
+				if (rs.getMetaData() != null && rs.getMetaData().getColumnCount() > 0) {
+					for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
+						final JsonObject jsonObj = new JsonObject();
+
+						jsonObj.addProperty("ordinal_position", i);
+						jsonObj.addProperty("column_name", rs.getMetaData().getColumnName(i).trim());
+						jsonObj.addProperty("data_type", rs.getMetaData().getColumnType(i));
+						// jsonObj.addProperty("column_def", rs.getString("COLUMN_DEF")); it's not used
+						// and can have SQLException 99999 in fetching with oracle
+						jsonObj.addProperty("is_nullable", rs.getMetaData().isNullable(i));
+						// jsonObj.addProperty("remarks", rs.getString("REMARKS"));
+						columns.add(jsonObj);
+					}
+
+				}
 
 			}
 		} catch (final SQLException e) {
@@ -810,8 +829,21 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 			final VirtualDataSourceDescriptor dataSource = virtualDatasourcesManager
 					.getDataSourceDescriptor(datasource);
 			final SQLHelper helper = virtualDatasourcesManager.getOntologyHelper(dataSource.getVirtualDatasourceType());
-			return new JdbcTemplate(dataSource.getDatasource()).queryForList(helper.getDatabasesStatement(),
-					String.class);
+			try {
+				return new JdbcTemplate(dataSource.getDatasource()).queryForList(helper.getDatabasesStatement(),
+						String.class);
+			} catch (final org.springframework.jdbc.IncorrectResultSetColumnCountException e) {
+				// CASE HIVE IMPALA
+				List<Map<String, Object>> listMap = new JdbcTemplate(dataSource.getDatasource())
+						.queryForList(helper.getDatabasesStatement());
+
+				List<String> result = new ArrayList<String>();
+				for (Map<String, Object> map : listMap) {
+					result.add(map.get("name").toString());
+				}
+				return result;
+			}
+
 		} catch (final Exception e) {
 			log.error("Error listing databases from user in external database", e);
 			throw new DBPersistenceException("Error listing databases from user in external database", e);

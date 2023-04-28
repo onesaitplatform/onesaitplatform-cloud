@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,9 @@ public class CategoryController {
 
 	@Autowired
 	private AppWebUtils utils;
+	
+	@Autowired 
+	private HttpSession httpSession;
 
 	private static final String CATEGORY_STR = "category";
 	private static final String CATEGORY_TYPE_LIST_STR = "categoryTypeList";
@@ -67,11 +71,15 @@ public class CategoryController {
 	private static final String CAT_VAL_ERROR = "category.validation.error";
 	private static final String REDIRECT_CAT_CREATE = "redirect:/categories/create";
 	private static final String REDIRECT_CAT_LIST = "redirect:/categories/list";
+	private static final String APP_ID = "appId";
 
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, HttpServletRequest request,
 			@RequestParam(required = false, name = "identification") String identification,
 			@RequestParam(required = false, name = "description") String description) {
+		
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
 		
 		// Scaping "" string values for parameters
 		if (identification == null) {

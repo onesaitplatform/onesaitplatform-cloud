@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.controlpanel.controller.twitter;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,13 +78,20 @@ public class TwitterListeningController {
 	private TokenService tokenService;
 	@Autowired
 	private EntityDeletionService entityDeletionService;
+	@Autowired 
+	private HttpSession httpSession;
 
+	private static final String APP_ID = "appId";
+	
 	@Autowired
 	UserService userService;
 
 	// SCHEDULED SEARCH BEGIN METHODS
 	@GetMapping("/scheduledsearch/list")
 	public String listListenings(Model model) {
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
+		
 		model.addAttribute("twitterListenings", this.twitterListeningService.getAllListeningsByUser(utils.getUserId()));
 		return "twitter/scheduledsearch/list";
 	}

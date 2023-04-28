@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -176,7 +176,7 @@
 															<th dt:sortInitDirection="asc" class="titulo-columnas" th:text="#{categorization.tree}">Tree</th>
 															<th class="titulo-columnas text-left" th:text="#{gen.created}">Created at</th>
 															<th dt:sortInitDirection="dsc" class="titulo-columnas text-left" th:text="#{consolemenu.updated}">Updated at</th>
-															<th th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" class="titulo-columnas text-left"	th:text="#{gen.active}">Active</th>
+															<th class="titulo-columnas text-left"	th:text="#{gen.active}">Active</th>
 															<th class="titulo-columnas text-left" th:text="#{categorization.authorization}">Authorization</th>
 															<th class="titulo-columnas text-center" th:text="#{gen.options}" style="width:85px;">Options</th>
 														</tr>
@@ -198,29 +198,31 @@
 															<td class="text-left" th:if="${categorization.categorization.updatedAt==null}"
 																th:text="'---'"></td>
 															<!--ACTIVE-->
-															<td class="text-left" th:if="${categorization.active} AND ${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span th:text="' '+#{gen.active}" style="color: #2E6B33;"></span></td>
-															<td class="text-left" th:if="${!categorization.active} AND ${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.inactive}" style="color: #A73535;"></span></td>
+															<td class="text-left" th:if="${categorization.active}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span th:text="' '+#{gen.active}" style="color: #2E6B33;"></span></td>
+															<td class="text-left" th:if="${!categorization.active}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.inactive}" style="color: #A73535;"></span></td>
 															<!--AUTHORIZATION-->
-															<td class="text-left" th:text="${categorization.authorizationType}"></td>
+															<td class="text-left" th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" th:text="${categorization.authorizationType}"></td>
+															<td class="text-left" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:text="OWNER"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos text-center">																	
 																	<!-- VIEW -->
 																	<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue" data-container="body" data-placement="bottom" th:attr="onclick='javascript:navigateUrl(\'' + @{|/categorization/show/${categorization.categorization.Id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
 																	<!-- EDIT -->
-																	<span th:if="${categorization.authorizationType} == 'OWNER'" class="btn btn-xs btn-no-border icon-on-table color-blue" data-container="body" data-placement="bottom"><i class="icon-edit" th:attr="onclick='javascript:navigateUrl(\'' + @{|/categorization/edit/${categorization.categorization.Id}/|} + '\');'"></i></span>
-																	<span th:if="${categorization.authorizationType} == 'OWNER'" class="dropdown">
+																	<span th:if="${categorization.authorizationType} == 'OWNER' OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border icon-on-table color-blue" data-container="body" data-placement="bottom"><i class="icon-edit" th:attr="onclick='javascript:navigateUrl(\'' + @{|/categorization/edit/${categorization.categorization.Id}/|} + '\');'"></i></span>
+																	<span th:if="${categorization.authorizationType} == 'OWNER' OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="dropdown">
 																	<span class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
 																		<ul class="dropdown-menu dropdown-menu-table download-menu">
 																			<li>
 																				<!-- ACTIVE -->
-																				<span th:if="${categorization.active} == false AND ${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'"	class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" th:attr="onclick='setActiveTree(\''+${categorization.Id}+'\')'"><i	class="icon-tick"></i><span class="span-title-three-dots-icons" th:text="#{categorization.activate}" >Activate</span></span>
+																				
+																				<span th:if="${categorization.active} == false OR ${#authentication.getPrincipal().Username!=categorization.user.id}"	class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" th:attr="onclick='setActiveTree(\''+${categorization.categorization.Id}+'\')'"><i	class="icon-tick"></i><span class="span-title-three-dots-icons" th:text="#{categorization.activate}" >Activate</span></span>
 																				<!-- INACTIVE -->
-																				<span th:if="${categorization.active} == true AND ${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='deactivateTree(\''+${categorization.Id}+'\')'"><i class="icon-close"></i><span class="span-title-three-dots-icons" th:text="#{categorization.deactivate}" >Deactivate</span></span>
+																				<span th:if="${categorization.active} == true AND ${#authentication.getPrincipal().Username==categorization.user.id}" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='deactivateTree(\''+${categorization.categorization.Id}+'\')'"><i class="icon-close"></i><span class="span-title-three-dots-icons" th:text="#{categorization.deactivate}" >Deactivate</span></span>
 																			</li>
 																			<li>
 																				<!-- SHARE -->
-																				<span th:if="${categorization.authorizationType} == 'OWNER'" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:navigateUrl(\'' + @{|/categorization/share/${categorization.categorization.Id}/|} + '\');'"><i class="icon-share"></i><span class="span-title-three-dots-icons" th:text="#{categorization.share}" >Share</span></span>
+																				<span th:if="${categorization.authorizationType} == 'OWNER' OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:navigateUrl(\'' + @{|/categorization/share/${categorization.categorization.Id}/|} + '\');'"><i class="icon-share"></i><span class="span-title-three-dots-icons" th:text="#{categorization.share}" >Share</span></span>
 																			</li>
 																			<li>
 																				<!-- DELETE -->
@@ -229,9 +231,9 @@
 																		</ul>
 																	</span>
 																	<!-- ACTIVE -->
-																	<span th:if="${categorization.authorizationType} != 'OWNER' AND ${categorization.active} == false AND ${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border icon-on-table color-blue" data-container="body" data-placement="bottom" th:attr="onclick='setActiveTree(\''+${categorization.Id}+'\')'"><i class="icon-tick"></i></span>
+																	<span th:if="${categorization.authorizationType} != 'OWNER' AND ${categorization.active} == false AND ${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border icon-on-table color-blue" data-container="body" data-placement="bottom" th:attr="onclick='setActiveTree(\''+${categorization.categorization.Id}+'\')'"><i class="icon-tick"></i></span>
 																	<!-- INACTIVE -->
-																	<span th:if="${categorization.authorizationType} != 'OWNER' AND ${categorization.active} == true AND ${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border icon-on-table color-blue" data-container="body" data-placement="bottom" th:attr="onclick='deactivateTree(\''+${categorization.Id}+'\')'"><i class="icon-close"></i></span>
+																	<span th:if="${categorization.authorizationType} != 'OWNER' AND ${categorization.active} == true AND ${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border icon-on-table color-blue" data-container="body" data-placement="bottom" th:attr="onclick='deactivateTree(\''+${categorization.categorization.Id}+'\')'"><i class="icon-close"></i></span>
 																</div>
 															</td>
 														</tr>

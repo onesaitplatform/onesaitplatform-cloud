@@ -106,7 +106,9 @@ ENV SERVER_NAME=localhost \
 	SBA_SECRET=ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv) \
 	MAX_HTTP_HEADER_SIZE=20000 \
 	ENCRYPTION_KEY=ENC(VYVseIUh5xiRd8ws0prbEAg6bGq7vmbfi3gkM65HECy+YPbjz4f49w==) \
-    ENCRYPTION_ITERATIONS=5 
+    ENCRYPTION_ITERATIONS=5 \
+    QUERY_METRICS_ENABLED=false \
+    HTTP_LOG_LEVEL=TRACE
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod ugo+x /usr/local/bin/docker-entrypoint.sh

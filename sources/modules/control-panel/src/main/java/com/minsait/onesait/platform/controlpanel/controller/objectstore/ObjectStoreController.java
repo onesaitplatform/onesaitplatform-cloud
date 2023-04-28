@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,7 +99,7 @@ public class ObjectStoreController {
 	private static final String REDIRECT_FILES_LIST = "redirect:/objectstore/list";
 
 	private String minioBaseUrl;
-	
+
 	private String minioAdminExternalUrl;
 
 	private String minioBrowserExternalUrl;
@@ -218,22 +218,20 @@ public class ObjectStoreController {
 
 		final List<BinaryFile> lAllFiles = Stream.concat(lFilesOwner.stream(), lFilesAllowed.stream())
 				.collect(Collectors.toList());
-		
-		//Elimina duplicados (Hechos públicos por el propio usuario)
-		Map<String, BinaryFile> mFiles=new HashMap<String, BinaryFile>();
-		lAllFiles.forEach(file-> {
-			BinaryFile storedFile=mFiles.get(file.getPath());
-			if(null == storedFile) {
+
+		// Elimina duplicados (Hechos públicos por el propio usuario)
+		Map<String, BinaryFile> mFiles = new HashMap<String, BinaryFile>();
+		lAllFiles.forEach(file -> {
+			BinaryFile storedFile = mFiles.get(file.getPath());
+			if (null == storedFile) {
 				mFiles.put(file.getPath(), file);
-			}else {
-				mFiles.put(file.getPath(), file.isPublic() ? file : storedFile);//Conserva el publico
+			} else {
+				mFiles.put(file.getPath(), file.isPublic() ? file : storedFile);// Conserva el publico
 			}
 		});
-		
+
 		lAllFiles.clear();
-		mFiles.values().forEach(v-> lAllFiles.add(v));
-		
-		
+		mFiles.values().forEach(v -> lAllFiles.add(v));
 
 		model.addAttribute("files", lAllFiles);
 		model.addAttribute("accessMap", accessMap);
@@ -547,8 +545,13 @@ public class ObjectStoreController {
 			String filePath = null;
 			if (null != bFileFromBDC) {
 				filePath = bFileFromBDC.getPath();
+				binaryFileService.updateUpdateTime(fileId);
 			} else {
 				filePath = this.objectStorageService.decodeTemporalId(fileId);
+				List<BinaryFile> tempfile = this.binaryFileService.getFileByPath(filePath);
+				if (tempfile != null && tempfile.size() > 0) {
+					binaryFileService.updateUpdateTime(tempfile.get(0).getId());
+				}
 			}
 
 			if (filePath.indexOf('/') > 0) {
@@ -647,30 +650,29 @@ public class ObjectStoreController {
 		// Cuando se haga publico un fichero, se asociará la politicia al grupo
 		try {
 			String requesterUser = utils.getUserId();
-			
 
 			BinaryFile bFileFromBDC = this.binaryFileService.getFile(fileId);
 
-			boolean setPublic=false;
+			boolean setPublic = false;
 			String filePath = null;
 			if (null != bFileFromBDC) {
 				filePath = bFileFromBDC.getPath();
-				
-				if(!bFileFromBDC.isPublic()) {
-					// 	Set file as public
+
+				if (!bFileFromBDC.isPublic()) {
+					// Set file as public
 					this.binaryFileService.changePublic(bFileFromBDC.getId());
-					setPublic=true;
-				}else {
+					setPublic = true;
+				} else {
 					this.binaryFileService.deleteFile(bFileFromBDC.getId());
 				}
-				
-			} else {//Si el fichero no estaba en BDC es privado, lo pasamos a publico
+
+			} else {// Si el fichero no estaba en BDC es privado, lo pasamos a publico
 				filePath = this.objectStorageService.decodeTemporalId(fileId);
 				// Creates file as Public in BDC
 				BinaryFile bfile = this.objectStorageService.buildBinaryFile(requesterUser, filePath);
 				bfile.setPublic(true);
 				this.binaryFileService.createBinaryFile(bfile);
-				setPublic=true;
+				setPublic = true;
 			}
 
 			String objectStoreAuthToken = null;
@@ -680,13 +682,12 @@ public class ObjectStoreController {
 				log.error("Error loing with superuser in MinIO", e);
 				return "ko";
 			}
-			
-			if(setPublic) {
+
+			if (setPublic) {
 				this.setPublicFile(objectStoreAuthToken, filePath);
-			}else {
+			} else {
 				this.setPrivateFile(objectStoreAuthToken, filePath);
 			}
-			
 
 		} catch (ObjectStoreCreatePolicyException e) {
 			log.error("Error setting file to public", e);
@@ -702,41 +703,38 @@ public class ObjectStoreController {
 		map.put("maxsize", webUtils.getMaxFileSizeAllowed());
 		return new ResponseEntity<>(map, HttpStatus.OK);
 	}
-	
-	
+
 	private void setPublicFile(String objectStoreAuthToken, String filePath) throws ObjectStoreCreatePolicyException {
-		
+
 		String policyName = "Allow_PUBLIC_" + filePath.replace('/', '_').replace('.', '_');
 
 		// Creates the policy
-		if(!this.objectStorageService.existPolicy(objectStoreAuthToken, policyName)) {
+		if (!this.objectStorageService.existPolicy(objectStoreAuthToken, policyName)) {
 			this.objectStorageService.createPolicyToReadFile(objectStoreAuthToken, policyName, filePath);
 		}
 
 		// Set the policy to the group of all users to share public files
 		this.objectStorageService.setPoliciesMulti(objectStoreAuthToken,
-				new ArrayList<>(Arrays.asList(new String[] { policyName })), new ArrayList<String>(),
-				new ArrayList<>(Arrays.asList(new String[] { MinioObjectStorageService.ONESAIT_PLATFORM_PUBLIC_FILES_GROUP })));
+				new ArrayList<>(Arrays.asList(new String[] { policyName })), new ArrayList<String>(), new ArrayList<>(
+						Arrays.asList(new String[] { MinioObjectStorageService.ONESAIT_PLATFORM_PUBLIC_FILES_GROUP })));
 	}
-	
-	
+
 	private void setPrivateFile(String objectStoreAuthToken, String filePath) throws ObjectStoreCreatePolicyException {
-		
+
 		String policyName = "Allow_PUBLIC_" + filePath.replace('/', '_').replace('.', '_');
 
 		// Removes the policy
-		if(this.objectStorageService.existPolicy(objectStoreAuthToken, policyName)) {
+		if (this.objectStorageService.existPolicy(objectStoreAuthToken, policyName)) {
 			this.objectStorageService.createPolicyToReadFile(objectStoreAuthToken, policyName, filePath);
-			
+
 			this.objectStorageService.removePolicy(objectStoreAuthToken, policyName);
-			
+
 //			// Set the policy to the group of all users to share public files
 //			this.objectStorageService.setPoliciesMulti(objectStoreAuthToken,
 //					new ArrayList<>(Arrays.asList(new String[] { policyName })), new ArrayList<String>(),
 //					new ArrayList<>());
 		}
 
-
 	}
-	
+
 }

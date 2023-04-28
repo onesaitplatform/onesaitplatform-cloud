@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -187,6 +187,8 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	private String samlServerName;
 	@Value("${onesaitplatform.authentication.saml.context.samlIncludePort}")
 	private boolean samlIncludePort;
+	@Value("${onesaitplatform.authentication.X509.enabled:false}")
+	private boolean x509Enabled;
 	@Value("${server.port}")
 	private int samlServerPort;
 	@Value("${server.servlet.contextPath}")
@@ -265,11 +267,12 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 					new RegexRequestMatcher("^/virtualdatasources.*", null),
 					new RegexRequestMatcher("^/querytool.*", null), new RegexRequestMatcher("^/datasources.*", null),
 					new RegexRequestMatcher("^/gadgets.*", null), new RegexRequestMatcher("^/saml.*", null),
-					new RegexRequestMatcher("^/oauth" + ".*", null),
+					new RegexRequestMatcher("^/bpm" + ".*", null), new RegexRequestMatcher("^/oauth" + ".*", null),
 					new RegexRequestMatcher("^/users/register", null),
 					new RegexRequestMatcher("^/users/reset-password", null),
-					new RegexRequestMatcher("^/actuator.*", null),
-					new RegexRequestMatcher("^/modelsmanager.*", null), new RegexRequestMatcher("^/process.*", null));
+					new RegexRequestMatcher("^/actuator.*", null), new RegexRequestMatcher("^/opendata.*", null),
+					new RegexRequestMatcher("^/modelsmanager.*", null), new RegexRequestMatcher("^/process.*", null),
+					new RegexRequestMatcher("^/microservices.*", null));
 
 			// When using CsrfProtectionMatcher we need to explicitly declare allowed
 			// methods
@@ -300,8 +303,8 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
 						http.headers().frameOptions().disable();
 						http.authorizeRequests().antMatchers("/", "/home", "/favicon.ico", "/blocked", "/loginerror").permitAll()
-						.antMatchers("/api/applications", "/api/applications/").permitAll()
-						.antMatchers("/users/register", "/oauth/authorize", "/oauth/token", "/oauth/check_token")
+						.antMatchers("/api/applications", "/api/applications/").permitAll().antMatchers("/opendata/register")
+						.permitAll().antMatchers("/users/register", "/oauth/authorize", "/oauth/token", "/oauth/check_token")
 						.permitAll().antMatchers(HttpMethod.POST, "/users/reset-password").permitAll()
 						.antMatchers("/resources/**", "/static/**", "/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
 						.antMatchers(HttpMethod.PUT, "/users/update/**/**").permitAll()
@@ -347,8 +350,10 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 						}
 						http.addFilterBefore(new BearerTokenFilter(), AnonymousAuthenticationFilter.class)
 						.addFilterBefore(new XOpAPIKeyFilter(), AnonymousAuthenticationFilter.class)
-						.addFilterBefore(new X509CertFilter(), AnonymousAuthenticationFilter.class)
 						.addFilterBefore(new MicrosoftTeamsTokenFilter(), AnonymousAuthenticationFilter.class);
+						if(x509Enabled) {
+							http.addFilterBefore(new X509CertFilter(), AnonymousAuthenticationFilter.class);
+						}
 						if (oauthLogin) {
 							http.addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);
 						}

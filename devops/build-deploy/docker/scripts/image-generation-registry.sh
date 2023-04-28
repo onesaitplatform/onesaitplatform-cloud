@@ -2,7 +2,7 @@
 
 #
 # Copyright Indra Sistemas, S.A.
-# 2013-2018 SPAIN
+# 2013-2022 SPAIN
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -20,7 +20,7 @@ buildImage()
 	echo "Docker image generation for onesaitplatform module: "$2
 	cd $1/docker
 	cp $1/target/*-exec.jar $1/docker/
-	docker build -t $USERNAME/$2:$3 .
+	docker build --network host -t $USERNAME/$2:$3 .
 	rm $1/docker/*.jar
 }
 
@@ -221,7 +221,7 @@ buildZeppelin()
 buildStreamsets()
 {
 	echo "Streamsets image generation with Docker CLI: "
-	docker build --squash -t $USERNAME/streamsets:$1 .
+	docker build -t $USERNAME/streamsets:$1 .
 }
 
 buildDashboardExporter()
@@ -359,9 +359,26 @@ buildLogCentralizer()
 buildTimescaleDB()
 {
 	echo "TimescaleDB image generation with Docker CLI: "
-    docker build -t $USERNAME/timescaledb:$1 .
+	docker build -t $USERNAME/timescaledb:$1 .
+
+}
 
 
+buildAnalyticsEngine()
+{
+	echo "Spark image generation with Docker CLI: "
+    cp -r /tmp/platformdata/jars .
+	cp $homepath/../../../../sources/libraries/security/spark-auth/target/*.jar .
+    docker build -t $USERNAME/analytics-engine:$1 .
+	rm -fr ./jars
+}
+
+buildAnalyticsEngineLauncher()
+{
+	echo "Spark image generation with Docker CLI: "
+    cp -r /tmp/platformdata/jars .
+    docker build -t $USERNAME/analytics-engine-launcher-manager:$1 .
+	rm -fr ./jars
 }
 
 prepareConfigInitExamples()
@@ -441,6 +458,20 @@ removeNodeRED()
 	rm nodered.zip
 }
 
+prepareAnalyticsEngineSparkFiles(){
+
+	echo "Copying Spark files "
+	cd $homepath/../../../../sources/modules/analytics-engine-launcher-manager/docker
+    cp -r /tmp/platformdata/jars .
+
+}
+
+removeAnalyticsEngineSparkFiles()
+{
+	cd $homepath/../../../../sources/modules/analytics-engine-launcher-manager/docker
+	rm -rf jars
+}
+
 pushImage2Registry()
 {
 	if [ "$NO_PROMT" = false ]; then
@@ -470,6 +501,21 @@ pushImage2GCPRegistry()
 		fi
 	fi
 }
+
+buildDataLabeling()
+{
+    echo "Copying DataLabeling sources to target directory"
+    cp -r $homepath/../../../../tools/label-studio $homepath/../../../../devops/build-deploy/docker/dockerfiles/datalabeling/label-studio
+    echo "Copying Dokerfile into label-studio directory"
+    cp  $homepath/../../../../devops/build-deploy/docker/dockerfiles/datalabeling/Dockerfile $homepath/../../../../devops/build-deploy/docker/dockerfiles/datalabeling/label-studio/
+    echo "DataLabeling image generation with Docker CLI: "
+    cd $homepath/../dockerfiles/datalabeling/label-studio/
+    docker build -t $USERNAME/datalabeling:$1 .
+    cd $homepath/../dockerfiles/datalabeling	
+    echo "Cleaning DataLabeling sources"
+    rm -rf $homepath/../../../../devops/build-deploy/docker/dockerfiles/datalabeling/label-studio
+}
+
 
 clear
 echo "#############################################################################################"
@@ -573,6 +619,10 @@ if [[ "$MODULE_ROUTER" = true && "$(docker images -q $USERNAME/router 2> /dev/nu
 	buildImage $homepath/../../../../sources/modules/semantic-inf-broker router $MODULE_TAG
 fi
 
+if [[ "$MODULE_AUDIT_ROUTER" = true && "$(docker images -q $USERNAME/audit-router 2> /dev/null)" == "" ]]; then
+	buildImage $homepath/../../../../sources/modules/audit-router audit-router $MODULE_TAG
+fi
+
 if [[ "$MODULE_OAUTHSERVER" = true && "$(docker images -q $USERNAME/oauthserver 2> /dev/null)" == "" ]]; then
 	buildImage $homepath/../../../../sources/modules/oauth-server oauthserver $MODULE_TAG
 fi
@@ -636,6 +686,12 @@ fi
 
 if [[ "$MODULE_SERVERLESS_MANAGER" = true && "$(docker images -q $USERNAME/serverless-manager 2> /dev/null)" == "" ]]; then
 	buildImage $homepath/../../../../sources/modules/serverless-manager serverless-manager $MODULE_TAG
+fi
+
+if [[ "$MODULE_ANALYTICS_ENGINE_LAUNCHER_MANAGER" = true && "$(docker images -q $USERNAME/analytics-engine-launcher-manager 2> /dev/null)" == "" ]]; then
+        prepareAnalyticsEngineSparkFiles
+        buildImage $homepath/../../../../sources/modules/analytics-engine-launcher-manager analytics-engine-launcher-manager $MODULE_TAG
+        removeAnalyticsEngineSparkFiles
 fi
 
 #####################################################
@@ -723,6 +779,11 @@ if [[ "$PERSISTENCE_TIMESCALEDB" = true ]]; then
 	buildTimescaleDB  $PERSISTENCE_TAG
 fi
 
+if [[ "$PERSISTENCE_ANALYTICS_ENGINE" = true  ]]; then
+	cd $homepath/../dockerfiles/analytics-engine
+	buildAnalyticsEngine $PERSISTENCE_TAG
+fi
+
 
 #####################################################
 # Infrastructure image generation
@@ -796,6 +857,11 @@ fi
 if [[ "$INFRA_STREAMSETS318" = true && "$(docker images -q $USERNAME/streamsets 2> /dev/null)" == "" ]]; then
 	cd $homepath/../dockerfiles/streamsets318
 	buildStreamsets $INFRA_TAG
+fi
+
+if [[ "$INFRA_STREAMSETS323" = true && "$(docker images -q $USERNAME/streamsets 2> /dev/null)" == "" ]]; then
+        cd $homepath/../dockerfiles/streamsets323
+        buildStreamsets $INFRA_TAG
 fi
 
 if [[ "$INFRA_DASHBOARDEXPORTER" = true && "$(docker images -q $USERNAME/dashboardexporter 2> /dev/null)" == "" ]]; then
@@ -875,6 +941,12 @@ if [[ "$INFRA_MLFLOW" = true && "$(docker images -q $USERNAME/modelsmanager 2> /
 	buildMLFlow $INFRA_TAG
 fi
 
+if [[ "$INFRA_DATALABELING" = true && "$(docker images -q $USERNAME/modelsmanager 2> /dev/null)" == "" ]]; then	
+        cd $homepath/../dockerfiles/datalabeling
+        buildDataLabeling $INFRA_TAG
+	
+	
+fi
 
 echo "Docker images successfully generated!"
 
@@ -890,6 +962,7 @@ if [ "$PUSH2GCPREGISTRY" = true ]; then
 	pushImage2GCPRegistry kafka-secured $PERSISTENCE_TAG
 	pushImage2GCPRegistry ksql-server $PERSISTENCE_TAG
 	pushImage2GCPRegistry timescaledb $PERSISTENCE_TAG
+	pushImage2GCPRegistry analytics-engine $PERSISTENCE_TAG
 
 	pushImage2GCPRegistry controlpanel $MODULE_TAG
 	pushImage2GCPRegistry iotbroker $MODULE_TAG
@@ -904,6 +977,7 @@ if [ "$PUSH2GCPREGISTRY" = true ]; then
 	pushImage2GCPRegistry chatbot $MODULE_TAG
 	pushImage2GCPRegistry cacheservice $MODULE_TAG
 	pushImage2GCPRegistry router $MODULE_TAG
+	pushImage2GCPRegistry audit-router $MODULE_TAG
 	pushImage2GCPRegistry oauthserver $MODULE_TAG
 	pushImage2GCPRegistry rtdbmaintainer $MODULE_TAG
 	pushImage2GCPRegistry videobroker $MODULE_TAG
@@ -915,6 +989,7 @@ if [ "$PUSH2GCPREGISTRY" = true ]; then
 	pushImage2GCPRegistry report-engine $MODULE_TAG
 	pushImage2GCPRegistry keycloak-manager $MODULE_TAG
 	pushImage2GCPRegistry serverless-manager $MODULE_TAG
+	pushImage2GCPRegistry analytics-engine-launcher-manager $MODULE_TAG
 
 	pushImage2GCPRegistry baseimage $BASEIMAGE_TAG
 
@@ -939,6 +1014,7 @@ if [ "$PUSH2GCPREGISTRY" = true ]; then
 	pushImage2GCPRegistry presto-server $INFRA_TAG
 	pushImage2GCPRegistry presto-metastore-server $INFRA_TAG
 	pushImage2GCPRegistry modelsmanager $INFRA_TAG
+	pushImage2GCPRegistry datalabeling $INFRA_TAG
 fi
 
 if [ "$PUSH2DOCKERHUBREGISTRY" = true ]; then
@@ -954,6 +1030,7 @@ if [ "$PUSH2DOCKERHUBREGISTRY" = true ]; then
 	pushImage2Registry kafka-secured $PERSISTENCE_TAG
 	pushImage2Registry ksql-server $PERSISTENCE_TAG
 	pushImage2Registry timescaledb $PERSISTENCE_TAG
+	pushImage2Registry analytics-engine $PERSISTENCE_TAG
 
 	pushImage2Registry controlpanel $MODULE_TAG
 	pushImage2Registry iotbroker $MODULE_TAG
@@ -968,6 +1045,7 @@ if [ "$PUSH2DOCKERHUBREGISTRY" = true ]; then
 	pushImage2Registry chatbot $MODULE_TAG
 	pushImage2Registry cacheservice $MODULE_TAG
 	pushImage2Registry router $MODULE_TAG
+	pushImage2Registry audit-router $MODULE_TAG
 	pushImage2Registry oauthserver $MODULE_TAG
 	pushImage2Registry rtdbmaintainer $MODULE_TAG
 	pushImage2Registry videobroker $MODULE_TAG
@@ -979,6 +1057,7 @@ if [ "$PUSH2DOCKERHUBREGISTRY" = true ]; then
 	pushImage2Registry report-engine $MODULE_TAG
 	pushImage2Registry keycloak-manager $MODULE_TAG
 	pushImage2Registry serverless-manager $MODULE_TAG
+	pushImage2Registry analytics-engine-launcher-manager $MODULE_TAG
 
 	pushImage2Registry baseimage $BASEIMAGE_TAG
 
@@ -1005,6 +1084,7 @@ if [ "$PUSH2DOCKERHUBREGISTRY" = true ]; then
 	pushImage2Registry presto-server $INFRA_TAG
 	pushImage2Registry presto-metastore-server $INFRA_TAG
 	pushImage2Registry modelsmanager $INFRA_TAG
+	pushImage2Registry datalabeling $INFRA_TAG
 fi
 
 if [ "$PUSH2PRIVREGISTRY" = true ]; then
@@ -1020,6 +1100,7 @@ if [ "$PUSH2PRIVREGISTRY" = true ]; then
 	pushImage2Registry kafka-secured $PERSISTENCE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry ksql-server $PERSISTENCE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry timescaledb $PERSISTENCE_TAG $PRIVATE_REGISTRY/
+	pushImage2Registry analytics-engine $PERSISTENCE_TAG $PRIVATE_REGISTRY/
 
 	pushImage2Registry controlpanel $MODULE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry iotbroker $MODULE_TAG $PRIVATE_REGISTRY/
@@ -1034,6 +1115,7 @@ if [ "$PUSH2PRIVREGISTRY" = true ]; then
 	pushImage2Registry chatbot $MODULE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry cacheservice $MODULE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry router $MODULE_TAG $PRIVATE_REGISTRY/
+	pushImage2Registry audit-router $MODULE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry oauthserver $MODULE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry rtdbmaintainer $MODULE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry videobroker $MODULE_TAG $PRIVATE_REGISTRY/
@@ -1045,6 +1127,7 @@ if [ "$PUSH2PRIVREGISTRY" = true ]; then
 	pushImage2Registry report-engine $MODULE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry keycloak-manager $MODULE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry serverless-manager $MODULE_TAG $PRIVATE_REGISTRY/
+	pushImage2Registry analytics-engine-launcher-manager $MODULE_TAG $PRIVATE_REGISTRY/
 
 	pushImage2Registry baseimage $BASEIMAGE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry loadbalancer $INFRA_TAG $PRIVATE_REGISTRY/
@@ -1073,6 +1156,7 @@ if [ "$PUSH2PRIVREGISTRY" = true ]; then
 	pushImage2Registry presto-server $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry presto-metastore-server $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry modelsmanager $INFRA_TAG $PRIVATE_REGISTRY/
+	pushImage2Registry datalabeling $INFRA_TAG $PRIVATE_REGISTRY/
 fi
 
 exit 0

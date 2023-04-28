@@ -1,0 +1,208 @@
+server:
+  port: 80
+  
+management.endpoints.web.exposure.include: "*"
+management.endpoint.health.show-details: always
+
+onesaitplatform:
+  graylog:
+      enabled: false
+      host: 127.0.0.1
+      port: 12201
+spring.cloud.gateway.globalcors.add-to-simple-url-handler-mapping: true
+spring:
+  boot.admin: #Spring Boot Admin Config   
+      client.url: http://localhost:18100/monitoring
+      client.username: operations
+      client.password: changeIt2019!
+      client.metadata.user.name: ${spring.boot.admin.username}
+      client.metadata.user.password: ${spring.boot.admin.password}
+  application.name: microservices-gateway
+  datasource:
+      url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
+      username: root
+      password: changeIt!
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      connection-timeout: 10000
+#      jdbc-url: jdbc:postgresql://localhost:5432/onesaitplatform_config
+#      username: postgres
+#      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph)
+#      driver-class-name: org.postgresql.Driver
+      minimum-idle: 2
+      maximum-pool-size: 5
+  jpa:
+      generate-ddl: true
+      open-in-view: false
+      # The SQL dialect makes Hibernate generate better SQL for the chosen database
+      properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+#      properties.hibernate.dialect: org.hibernate.dialect.PostgreSQL95Dialect
+      # Hibernate ddl auto (create, create-drop, validate, update
+      hibernate.ddl-auto: update
+      properties:
+        hibernate:
+          implicit_naming_strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+          physical_naming_strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+          format_sql: false
+          show_sql: false 
+  security:
+    user:
+      name: operations
+      password: changeIt2019!
+    basic:
+      enabled: true
+    oauth2:
+      resourceserver:
+        opaquetoken:
+          introspection-uri: https://development.onesaitplatform.com/auth/realms/onesaitplatform/protocol/openid-connect/token/introspect
+          client-id: onesaitplatform
+          client-secret: onesaitplatform
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+            - GET
+            - POST
+            - OPTIONS
+            - DELETE
+            - PUT
+      routes:
+        - id: fnproject
+          uri: http://localhost:8080
+          predicates:
+            - Path= /fn/**
+          filters:
+            - StripPrefix=1
+        - id: govconsole
+          uri: http://localhost:9081
+          predicates:
+            - Path= /gov-console/**
+        - id: cas
+          uri: http://localhost:8080
+          predicates:
+            - Path= /cas/**
+        - id: iotbroker
+          uri: http://localhost:19000
+          predicates:
+            - Path= /iot-broker/**
+        - id: dashboard
+          uri: http://localhost:18300
+          predicates:
+            - Path= /dashboardengine/**
+          filters:
+            - PreserveHostHeader
+        - id: controlpanel
+          uri: http://localhost:18000
+          predicates:
+            - Path= /controlpanel/**
+          filters:
+            - PreserveHostHeader
+        - id: oauthserver
+          uri: http://localhost:21000
+          predicates:
+            - Path= /oauth-server/**
+          filters:
+            - PreserveHostHeader
+        - id: gravitee_management
+          uri: http://localhost:25000/management/
+          predicates:
+            - Path= /gravitee/management/**
+          filters:
+            - PreserveHostHeader
+        - id: gravitee_ui
+          uri: http://localhost:25002/
+          predicates:
+            - Path= /gravitee/ui/**
+          filters:
+            - PreserveHostHeader
+        - id: gravitee_gateway
+          uri: http://localhost:25001/
+          predicates:
+            - Path= /gravitee/gateway/**
+          filters:
+            - PreserveHostHeader
+        - id: dashboardengine_loginRest
+          uri: http://localhost:18300
+          predicates:
+            - Path= /dashboardengine/loginRest/**
+          filters:
+            - PreserveHostHeader
+        - id: dashboardengine_solver
+          uri: http://localhost:18300
+          predicates:
+            - Path= /dashboardengine/dsengine/solver/**
+          filters:
+            - PreserveHostHeader
+        - id: devicesimulator
+          uri: http://localhost:20000
+          predicates:
+            - Path= /devicesimulator/**
+          filters:
+            - PreserveHostHeader
+        - id: router
+          uri: http://localhost:20000
+          predicates:
+            - Path= /router/**
+          filters:
+            - PreserveHostHeader
+       
+        - id: apimanager
+          uri: http://localhost:19100
+          predicates:
+            - Path= /api-manager/**
+          filters:
+            - PreserveHostHeader
+        - id: digitaltwinbroker
+          uri: http://localhost:19300
+          predicates:
+            - Path= /digitaltwinbroker/**
+          filters:
+            - PreserveHostHeader
+        - id: nodered
+          uri: http://localhost:5050/
+          predicates:
+            - Path= /nodered/**
+          filters:
+            - PreserveHostHeader
+            - StripPrefix=1
+        - id: flowengine
+          uri: http://localhost:20100/
+          predicates:
+            - Path= /flowengine/**
+          filters:
+            - PreserveHostHeader
+        - id: monitoring
+          uri: http://localhost:18100
+          predicates:
+            - Path= /monitoring/**
+          filters:
+            - PreserveHostHeader
+        - id: notebooks
+          uri: http://zeppelin:8080/ws
+          predicates:
+            - Path= /controlpanel/notebooks/app/ws/**
+          filters:
+            - PreserveHostHeader  
+        - id: fn
+          uri: http://localhost:8080
+          predicates:
+            - Path= /v2/**
+          filters:
+            - PreserveHostHeader       
+          
+## LOGGING CONF
+logging:
+   file.path: ./target/ 
+   file.name: ${spring.application.name}
+   level:
+      com.minsait: INFO
+
+webprojects:
+  folder: /usr/local/webprojects/
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

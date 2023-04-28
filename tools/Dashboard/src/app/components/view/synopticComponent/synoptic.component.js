@@ -23,26 +23,20 @@
       vm.$onInit = function () {  
         //Init background color
         if(typeof vm.backgroundcolorstyle === 'undefined'){
-          $('html').css("background-color", "hsl(0, 0%, 100%)");
-          $('body').css("background-color", "hsl(0, 0%, 100%)");
+          document.querySelector('html').style.backgroundColor="hsl(0, 0%, 100%)";
+          document.querySelector('body').style.backgroundColor="hsl(0, 0%, 100%)";
         }else{
-          $('html').css("background-color",  vm.backgroundcolorstyle);
-          $('body').css("background-color",  vm.backgroundcolorstyle);
+          document.querySelector('html').style.backgroundColor = vm.backgroundcolorstyle;
+          document.querySelector('body').style.backgroundColor = vm.backgroundcolorstyle;
         }
        
 
           if(typeof vm.synoptic!=='undefined'){
               vm.config = new Map(vm.synoptic.conditions);
               angular.element( document.querySelector( '#synopticbody' ) ).empty();
-
-             var  parsesvgImage = vm.synoptic.svgImage.split("xlink:").join(" target=\"_blank\" ");
-
-              
-              document.getElementById('synopticbody').innerHTML = parsesvgImage;  
-             
-              //$('gridster').show();
-              
-              $('svg g title')[0].innerHTML='';    
+              var  parsesvgImage = vm.synoptic.svgImage.split("xlink:").join(" target=\"_blank\" ");
+              document.getElementById('synopticbody').innerHTML = parsesvgImage;
+              document.querySelector('svg g title').innerHTML='';       
                 //connect to datasources
               createDatasourceHash();
               createClickEvents();
@@ -50,9 +44,13 @@
               $scope.$on(SYNOPTIC, eventSyMessageProcessor);
           }
 
-          $('#synopticbody > svg   title').each(function() {
-            $(this)[0].innerHTML='';
-          });
+          var elems =  document.querySelectorAll('#synopticbody > svg title');
+          if(elems!=null && elems.length>0){
+            for(var i = 0; i < elems.length;i++){
+              elems[i].innerHTML=''
+            }
+          }
+         
         }
 
 
@@ -124,7 +122,7 @@
                       if(typeof value.unitsOfMeasure !== 'undefined' && value.unitsOfMeasure !== null && value.unitsOfMeasure.length>0){
                         resulWithUnitsOfMeasure = resulWithUnitsOfMeasure+' '+value.unitsOfMeasure;
                       }
-                      $("#" + key).text(resulWithUnitsOfMeasure);
+                      document.querySelector("#" + key).innerHTML = resulWithUnitsOfMeasure;
                     }
                     break;
                   case 'indicator':
@@ -134,7 +132,6 @@
                       var dataVal = utilsService.getJsonValueByJsonPath(dataEvent.data[0], utilsService.replaceBrackets(value.fieldAtt), 0);
                     if (typeof dataVal !== 'undefined' && dataVal != null) {
                       var size;
-
                       if (dataVal > value.condition.maxValue){
                         size = value.condition.orgSize}
                       else if (dataVal < value.condition.minValue){
@@ -143,8 +140,7 @@
                       else{
                         size = dataVal * value.condition.orgSize / (value.condition.maxValue - value.condition.minValue);
                       }
-                      $("#" + key).attr(value.elementAttr, size);
-                      console.log("progress_bar ","key ",key,' ',size);
+                      document.querySelector("#" + key).setAttribute(value.elementAttr, size); 
                     }
                     break;
                   default:
@@ -163,7 +159,7 @@
                     } else {
                       color = (parseFloat(dataVal) > parseFloat(value.color.cutValue)) ? value.color.colorOn : value.color.colorOff;
                     }
-                    $("#" + key).attr("fill", color);
+                    document.querySelector("#" + key).setAttribute("fill", color);
                   }
                 }
 
@@ -198,7 +194,7 @@
               for(var e in value.events){
                 (function(index,valu,ke){
                   try{                  
-                   $("#"+ke).on(index,function(){eval(valu[index])});                 
+                    document.getElementById(ke).addEventListener(index,function(){eval(valu[index])});                                 
                   }catch(err){console.log(err)}
                 })(e,value.events,key);
               }

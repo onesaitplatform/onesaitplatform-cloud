@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -187,7 +187,7 @@
 																	    	</li>
 																	</ul>
 																	</span>
-																	<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border icon-on-table color-blue" data-container="body" data-placement="bottom" th:attr="onclick='javascript:checkConnection(\''+${datasource.identification}+'\');'"><i class="icon-connect"></i>
+																	<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'"   th:data-original-title="#{gen.checkConection}"  class="btn btn-xs btn-no-border icon-on-table color-blue tooltips"  data-container="body" data-placement="bottom" th:attr="onclick='javascript:checkConnection(\''+${datasource.identification}+'\');'"><i class="icon-connect"></i>
 																	</span>
 																</div>
 															</td>

@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -2931,12 +2931,21 @@
 				$.get("/controlpanel/gadgets/freeResource/" + [[${gadget.id}]]).done(
 						function(data){
 							console.log('freeResource() -> ok');
-							GadgetsCreateController.go( [[@{/gadgets/list}]] );
+							
+							if ([[${appId}]]==null){
+								GadgetsCreateController.go( [[@{/gadgets/list}]] );
+							} else {
+								GadgetsCreateController.go( [[@{'/projects/update/'} + ${appId}]] );
+							}
 						}
 					).fail(
 						function(e){
 							console.error("Error freeResource", e);
-							GadgetsCreateController.go( [[@{/gadgets/list}]] );
+							if ([[${appId}]]==null){
+								GadgetsCreateController.go( [[@{/gadgets/list}]] );
+							} else {
+								GadgetsCreateController.go( [[@{'/projects/update/'} + ${appId}]] );
+							}
 						}
 					)		
 				

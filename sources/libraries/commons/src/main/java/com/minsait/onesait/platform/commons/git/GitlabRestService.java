@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,7 +95,7 @@ public class GitlabRestService extends GitRestService {
 			// First generate gitlab config for convenience
 			final GitlabConfiguration config = getGitlabConfigurationFromPrivateToken(gitlabConfig.getSite(),
 					gitlabConfig.getPrivateToken());
-			if (!StringUtils.isEmpty(gitlabConfig.getGitlabGroup())) {
+			if (StringUtils.hasText(gitlabConfig.getGitlabGroup())) {
 				if (namespaceExists(config.getSite(), gitlabConfig.getGitlabGroup(), config.getPrivateToken())) {
 					namespaceId = getNamespace(config.getSite(), gitlabConfig.getGitlabGroup(),
 							config.getPrivateToken());
@@ -244,7 +244,7 @@ public class GitlabRestService extends GitRestService {
 
 		final HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
-		if (!StringUtils.isEmpty(token)) {
+		if (StringUtils.hasText(token)) {
 
 			headers.add(PRIVATE_TOKEN, token);
 
@@ -268,7 +268,7 @@ public class GitlabRestService extends GitRestService {
 	public List<CommitWrapper> getCommitsForFile(GitlabConfiguration gitConfiguration, String filePath, String branch) {
 		try {
 			final String projectFullpath;
-			if (!StringUtils.isEmpty(gitConfiguration.getGitlabGroup())) {
+			if (StringUtils.hasText(gitConfiguration.getGitlabGroup())) {
 				projectFullpath = gitConfiguration.getGitlabGroup().endsWith("/")
 						? gitConfiguration.getGitlabGroup() + gitConfiguration.getProjectName()
 						: gitConfiguration.getGitlabGroup() + "/" + gitConfiguration.getProjectName();
@@ -279,7 +279,7 @@ public class GitlabRestService extends GitRestService {
 			String url = gitConfiguration.getSite() + GITLAB_API_PATH + GITLAB_PROJECTS + "/"
 					+ getProjectId(gitConfiguration.getSite(), projectFullpath, gitConfiguration.getPrivateToken()) + "/repository/commits"
 					+ "?path=" + URLEncoder.encode(filePath, StandardCharsets.UTF_8.name());
-			if (!StringUtils.isEmpty(branch)) {
+			if (StringUtils.hasText(branch)) {
 				url = url + "&ref_name=" + URLEncoder.encode(branch, StandardCharsets.UTF_8.name());
 			}
 			final ResponseEntity<List<CommitWrapper>> response = execute(url, HttpMethod.GET, null,

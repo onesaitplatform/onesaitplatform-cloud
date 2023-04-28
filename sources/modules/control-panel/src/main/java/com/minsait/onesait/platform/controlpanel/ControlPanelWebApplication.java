@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,9 +57,9 @@ import com.github.dandelion.core.web.DandelionServlet;
 import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
 import com.minsait.onesait.platform.controlpanel.converter.YamlHttpMessageConverter;
+import com.minsait.onesait.platform.controlpanel.pathresourceresolver.DataflowAdminPathResourceResolver;
 import com.minsait.onesait.platform.controlpanel.security.CheckSecurityFilter;
 import com.minsait.onesait.platform.controlpanel.security.encryption.PasswordEncryptionManager;
-import com.minsait.onesait.platform.interceptor.CorrelationInterceptor;
 import com.minsait.onesait.platform.metrics.manager.MetricsNotifier;
 
 import lombok.Getter;
@@ -92,8 +92,7 @@ public class ControlPanelWebApplication implements WebMvcConfigurer {
 	@Value("${onesaitplatform.analytics.dataflow.version:3.10.0}")
 	private String streamsetsVersion;
 
-	@Autowired
-	private CorrelationInterceptor logInterceptor;
+
 	@Autowired
 	private CheckSecurityFilter securityCheckInterceptor;
 
@@ -148,7 +147,9 @@ public class ControlPanelWebApplication implements WebMvcConfigurer {
 		registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
 		registry.addResourceHandler("/notebooks/app/**").addResourceLocations("classpath:/static/notebooks/");
 		registry.addResourceHandler("/dataflow/{instance}/app/**")
-		.addResourceLocations("classpath:/static/dataflow/" + streamsetsVersion + "/");
+		.addResourceLocations("classpath:/static/dataflow/" + streamsetsVersion + "/")
+		.resourceChain(true)
+		.addResolver(new DataflowAdminPathResourceResolver());
 		registry.addResourceHandler("/dataflow/app/**")
 		.addResourceLocations("classpath:/static/dataflow/" + streamsetsVersion + "/");
 		registry.addResourceHandler("/gitlab/**").addResourceLocations("classpath:/static/gitlab/");
@@ -201,7 +202,6 @@ public class ControlPanelWebApplication implements WebMvcConfigurer {
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(localeChangeInterceptor());
-		// registry.addInterceptor(logInterceptor);
 		registry.addInterceptor(securityCheckInterceptor);
 
 	}

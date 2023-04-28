@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,7 +133,7 @@ public class InsertProcessor implements MessageTypeProcessor {
 				} else {
 					return Source.valueOf(json.get(SOURCE).asText().toUpperCase());
 				}
-			} catch (IOException e) {
+			} catch (Exception e) {
 				return Source.IOTBROKER;
 			}
 		}

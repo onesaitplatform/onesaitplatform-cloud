@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -87,7 +87,7 @@
                                 <div class="col-md-6 col-sm-6 col-xs-12">
                                     <div class="margin-top-4">
                                         <span th:if="${report.id} == null" class="caption-subject" th:text="#{reports.create}"> Create Reports</span>
-                                        <span th:if="${report.id} != null" class="caption-subject" th:text="#{reports.update} + ' ' + ${report.identification}"> Update Reports</span>
+                                        <span th:if="${report.id} != null" class="caption-subject" th:text="#{reports.update}"> Update Reports</span>
                                     </div>
                                 </div>
                                 <div class="tools hide">
@@ -107,7 +107,8 @@
                                         <span th:if="${report.id} != null" class="sep no-border" ></span>
                                         
                                         <!-- CANCEL --> 
-                                        <button id="btn-report-cancel" name="btn-report-cancel" type="button" class="btn btn-primary-cancel" th:value="#{gen.cancelBtn}" value="cancel"> <span th:text="#{gen.cancelBtn}"> Cancel </span> </button>
+                                        <button th:if="(${appId} == null)" id="btn-report-cancel" name="btn-report-cancel" type="button" class="btn btn-primary-cancel" th:value="#{gen.cancelBtn}" value="cancel"> <span th:text="#{gen.cancelBtn}"> Cancel </span> </button>
+       									<button th:if="(${appId} != null)" id="btn-cancel" name="btn-cancel" type="button" class="btn btn-primary-cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/projects/update/} + ${appId} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
                                         
                                         <!-- RESET create -->
                                         <button id="resetBtn" type="button" th:if="${report.id} == null" class="btn btn-outline-search" name="reset" th:value="#{gen.resetBtn}"> <span th:text="#{gen.resetBtn}"> Reset </span> </button>
@@ -125,69 +126,62 @@
                         </div>
                         
                         <!-- MAIN ROW -->
-                        <div class="mainPanel">
-                            <div class="row display-hide">
-                                <!-- ALERTS ZONE -->
-                                <div class="col-md-12 alert-zone">
-                                    <div class="alert alert-danger display-hide">
-                                        <button class="close" data-close="alert"></button>
-                                        <span th:text="#{gen.form.error}">You have some form errors. Please check below.</span>
-                                    </div>
-                                    <div class="alert alert-success display-hide">
-                                        <button class="close" data-close="alert"></button>
-                                        <span th:text="#{gen.form.success}">Your form validation is successful!</span>
-                                    </div>
-                                </div><!-- //ALERTS ZONE -->
-                            </div>
+                        <div class="mainPanel padding-right-20">
+							<div class="row main">
+								<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+									<span th:text="#{gen.generalInformation}">General Information</span>
+								</div>
+								<div class="col-md-3 col-sm-3 col-xs-3">
+									<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
+								</div>
+							</div>	
                                                                                              
                             <div class="row main">
-                                <div class="col-md-3 col-sm-6 col-xs-12">
+                                <div class="col-md-4 col-sm-6 col-xs-12">
                                     <div class="form-group">
                                         <label>Name</label><span class="required"> *</span>
                                         <input id="identification" type="text" name="identification" th:required="true" maxlength="100" th:field="*{identification}" class="form-control " th:placeholder="#{gen.name}"/>
                                     </div>
                                 </div>
-
-                                <div class="col-md-3 col-sm-6 col-xs-12">
+							</div>	
+                                                                                             
+                            <div class="row main">
+                                <div class="col-md-4 col-sm-6 col-xs-12">
                                     <div class="form-group">
                                         <label th:text="#{gen.description}">Description</label><span class="required"> *</span>
-                                        <div class="form-group">
-                                            <input id="description" type="text" name="description" th:required="true" maxlength="100" th:field="*{description}" class="form-control " th:placeholder="#{gen.description}"/>
-                                        </div>
+										<input id="description" type="text" name="description" th:required="true" maxlength="100" th:field="*{description}" class="form-control " th:placeholder="#{gen.description}"/>
                                     </div>
                                 </div>
-
+							</div>	
+                                                                                             
+                            <div class="row main">
                                 <div class="col-md-2 col-sm-6 col-xs-12">
-                                    <div class="form-group">
-                                        <div class="mt-checkbox-list margin-top-20"> 
-											<input id="checkboxPublic" class="no-remove"  name="checkboxPublic" type="checkbox" th:field="*{isPublic}"   />
-											<label class="control-label margin-left-5" th:text="#{dashboards.public}">Public</label>
-                                        </div>
-                                    </div>
-                                </div>  
+									<input id="checkboxPublic" class="no-remove"  name="checkboxPublic" type="checkbox" th:field="*{isPublic}"   />
+									<label class="control-label margin-left-5" th:text="#{dashboards.public}">Public</label>	
+                                </div>
+							</div>	
+                                                                                             
+                            <div class="row main">
                                 
-                                <div class="col-md-3 col-sm-6 col-xs-12 ">
+                                <div class="col-md-3 col-sm-3 col-xs-6 ">
                                     <div class="form-group">
-                                        <label th:text="#{binaryfiles.file}">File</label><span class="required"> *</span>
+                                        <label th:text="#{binaryfiles.file}">File</label><span class="required"> *</span></br>
                                         <!-- <input id="file" class="btn btn-default" type="file" th:field="*{file}" style="width:100%"/> -->
-                                        <button style="width:100%" id="btn-report-upload" type="button" class="btn btn-outline btn-circle blue" value="Select"> <i class="fa fa-file-archive-o" style="padding-right:4px;" disabled="disabled"></i><span th:text="#{binaryfiles.select}"></span></button>
+                                        <button style="width:48%" id="btn-report-upload" type="button" class="btn btn-outline btn-circle blue" value="Select"> <i class="fa fa-file-archive-o" style="padding-right:4px;" disabled="disabled"></i><span th:text="#{binaryfiles.select}"></span></button>
                                         <input id="btn-report-upload-file" class="form-group button_text hide" th:required="true" type="file" accept=".jrxml,.jasper" name="file" onchange="Report.Create.fileName()" />
-                                        <hr style="margin-top: -10px;"/>
-                                        <label id ="fileName" class="description" ></label>
+                                        <label style="width:48%" id ="fileName" class="description padding-left-10" th:text="*{fileName}" ></label>
                                     </div>
                                 </div>
                             </div>
                             <div class="row main">
-                                <div class="col-md-8 col-sm-6 col-xs-12"></div>
-                                <div class="col-md-3 col-sm-6 col-xs-12">
+                                <div class="col-md-3 col-sm-3 col-xs-6">
                                     <div class="form-group">
-                                        <label th:text="#{binaryfiles.resources}">Resources</label>
-                                        <button style="width:100%" id="btn-report-upload-resources" type="button" class="btn btn-outline btn-circle blue" value="Select"> <i class="fa fa-file-archive-o" style="padding-right:4px;" disabled="disabled"></i><span th:text="#{binaryfiles.select}"></span></button>
+                                        <label style="width:100%" th:text="#{binaryfiles.resources}">Resources</label>
+                                        <button style="width:48%" id="btn-report-upload-resources" type="button" class="btn btn-outline btn-circle blue" value="Select"> <i class="fa fa-file-archive-o" style="padding-right:4px;" disabled="disabled"></i><span th:text="#{binaryfiles.select}"></span></button>
                                         <input id="btn-report-upload-file-resources" class="form-group button_text hide" type="file" accept="*" name="additionalFiles" multiple="multiple" onchange="Report.Create.resourceName()"/>
-                                        <hr style="margin-top: -10px;"/>
-                                        <label id ="resourceName" class="description"></label>
-                                        <hr style="border-top: 0px;"/>
-                                        <button th:if="*{id}" style="width:100%" id="btn-report-add-resources" type="button" class="btn btn-outline btn-circle blue" value="Select"> <i class="fa fa-file-archive-o" style="padding-right:4px;" disabled="disabled"></i><span th:text="#{binaryfiles.select.existing}"></span></button>
+
+                                         <label id ="resourceName" class="description"></label>
+                                         <button th:if="*{id}" style="width:48%" id="btn-report-add-resources" type="button" class="btn btn-outline btn-circle blue" value="Select"> <i class="fa fa-file-archive-o" style="padding-right:4px;" disabled="disabled"></i><span th:text="#{binaryfiles.select.existing}"></span></button>
                                     </div>
                                 </div>
                             </div>
@@ -297,7 +291,7 @@
     	
     	<script th:inline="javascript">
     	//<![CDATA[
-    		
+    		function navigateUrl(url){  window.location.href = url;	}
     		var currentLanguage = [[${lang}]];
     		var validateTemplate = [[#{reports.validation.template}]];
     		var reportId =[[${report.id}]];
@@ -307,7 +301,8 @@
     		var reportsCreateJson = { 	
     				"messages": {
     					"filerequired" : [[#{reports.file.error}]]
-    				}
+    				},
+    				"actionMode" : [[${report.id}]],
     			}; 
     	//]]>
     	</script>

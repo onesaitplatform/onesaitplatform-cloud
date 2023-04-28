@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -97,7 +97,7 @@
 
 				<form role="form" id="json2ont_form" method="post" class="form">
 					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />		
-				
+					<input type="hidden" th:if="${appId}" name="appId" id="appId" th:value="${appId}" />
 					<div id="header">
 						<div class="row pageCreateHeader">
 							<div class="col-md-6 col-sm-6 col-xs-12">
@@ -109,7 +109,8 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/main} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button th:if="(${appId} == null)" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/main} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button th:if="(${appId} != null)" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/projects/update/} + ${appId} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 		
 									<!-- RESET -->
 									<button id="resetBtn" type="button" class="btn btn-primary-cancel" name="reset"  th:value="#{gen.resetBtn}" onclick="location.href='../jsontool/tools'"><span th:text="#{gen.resetBtn}"> Reset</span></button>
@@ -149,6 +150,11 @@
 									<input id="check-import" class="margin-right-10" name="active" type="checkbox" th:checked="checked"/>
 									<label class="control-label popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{json2ont.importdata.help},data-title=#{json2ont.importdata.title}" th:text="#{json2ont.importdata.title}">Import rtdb</label>
 								</div>
+								<!-- CONTEXT DATA -->
+								<div class="mt-checkbox-list">
+									<input id="check-contextdata" class="margin-right-10" name="active" type="checkbox"/>
+									<label class="control-label popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{json2ont.contextdata.help},data-title=#{json2ont.contextdata.title}" th:text="#{json2ont.contextdata.title}">ContextData</label>
+								</div>
 							</div>
 							<div id="newOntologyDiv" class="col-md-3 col-sm-6 col-xs-12 hide">
 								<div class="form-group">
@@ -164,6 +170,7 @@
 								<div class="row main panelHeader">
 									<div class="col-md-5 col-sm-5 col-xs-12 pageCreateBackground">
 										<span th:text="#{json2ont.json}">JSON</span>
+										<i class="la la-info-circle popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{json2ont.importJSON.warning},data-title=#{json2ont.json.modify}"></i>
 									</div>
 									<div class="col-md-6 col-sm-6 col-xs-12 no-padding-right pageCreateBackground">
 										<div class="pull-right">
@@ -198,7 +205,7 @@
 							    <!-- Modal content-->
 								<div class="modal-content">
 									<div class="modal-header">
-							        	<h4 class="modal-title">New Ontology</h4>
+							        	<h4 class="modal-title" th:text="#{json2ont.newontology.title}">New Entity</h4>
 							        	<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
 							      	</div>		
 									<div class="modal-body margin-both-20">

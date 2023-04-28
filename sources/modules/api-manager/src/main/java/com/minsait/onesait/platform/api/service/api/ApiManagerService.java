@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -169,7 +169,7 @@ public class ApiManagerService {
 		for (final ApiOperation operacion : operaciones) {
 			if (operacion.getIdentification().equals(opIdentifier)
 					|| !api.getApiType().equals(ApiType.INTERNAL_ONTOLOGY)
-							&& operacion.getPath().startsWith("/" + opIdentifier)) {
+					&& operacion.getPath().startsWith("/" + opIdentifier)) {
 				if (opType != null) {
 					if (opType.equals(operacion.getOperation())) {
 						return operacion;
@@ -275,6 +275,8 @@ public class ApiManagerService {
 
 			}
 			return paramvalue;
+		case HEADER:
+			return request.getHeader(customqueryparameter.getName());
 		case BODY:
 			return body;
 		default:

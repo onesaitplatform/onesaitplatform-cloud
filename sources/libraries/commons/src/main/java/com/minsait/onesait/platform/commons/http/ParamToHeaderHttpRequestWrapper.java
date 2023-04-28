@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.commons.http;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -25,6 +26,8 @@ import org.springframework.util.StringUtils;
 
 public class ParamToHeaderHttpRequestWrapper extends HttpServletRequestWrapper {
 
+	private final List<String> paramsToHeaer = Arrays.asList("Authorization", "X-OP-APIKey");
+
 	public ParamToHeaderHttpRequestWrapper(HttpServletRequest request) {
 		super(request);
 	}
@@ -33,7 +36,7 @@ public class ParamToHeaderHttpRequestWrapper extends HttpServletRequestWrapper {
 	public String getHeader(String name) {
 		final String header = super.getHeader(name);
 
-		if (!StringUtils.isEmpty(header)) {
+		if (StringUtils.hasText(header)) {
 			return header;
 		} else {
 			return super.getParameter(name);
@@ -50,7 +53,7 @@ public class ParamToHeaderHttpRequestWrapper extends HttpServletRequestWrapper {
 	@Override
 	public Enumeration<String> getHeaders(String name) {
 		final List<String> values = Collections.list(super.getHeaders(name));
-		if (!values.contains(name) && Collections.list(super.getParameterNames()).contains(name)) {
+		if (!values.contains(name) && Collections.list(super.getParameterNames()).contains(name) && paramsToHeaer.contains(name)) {
 			values.add(super.getParameter(name));
 		}
 		return Collections.enumeration(values);

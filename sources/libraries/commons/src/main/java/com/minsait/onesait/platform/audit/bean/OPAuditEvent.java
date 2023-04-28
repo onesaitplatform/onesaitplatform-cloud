@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ public class OPAuditEvent implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	public enum EventType {
-		USER, SECURITY, ERROR, DATA, GENERAL, IOTBROKER, APIMANAGER, FLOWENGINE, BATCH, QUERY, SYSTEM, PROCESS_EXECUTION
+		USER, SECURITY, ERROR, DATA, GENERAL, IOTBROKER, APIMANAGER, FLOWENGINE, BATCH, QUERY, SYSTEM, PROCESS_EXECUTION, WARNING
 	}
 
 	public enum Module {

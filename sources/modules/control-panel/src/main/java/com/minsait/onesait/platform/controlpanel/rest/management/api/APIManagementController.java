@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,12 +62,16 @@ import com.minsait.onesait.platform.config.services.oauth.JWTService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.config.services.usertoken.UserTokenService;
+import com.minsait.onesait.platform.controlpanel.gravitee.dto.ApiPageResponse;
+import com.minsait.onesait.platform.controlpanel.gravitee.dto.GraviteeApi;
+import com.minsait.onesait.platform.controlpanel.gravitee.dto.GraviteeException;
 import com.minsait.onesait.platform.controlpanel.rest.management.api.model.ApiDTOConverter;
 import com.minsait.onesait.platform.controlpanel.rest.management.api.model.ApiResponseErrorDTO;
 import com.minsait.onesait.platform.controlpanel.rest.management.api.model.ApiRestDTO;
 import com.minsait.onesait.platform.controlpanel.rest.management.api.model.ApiSimplifiedResponseDTO;
 import com.minsait.onesait.platform.controlpanel.rest.management.api.model.UserApiSimplifiedInputDTO;
 import com.minsait.onesait.platform.controlpanel.rest.management.api.model.UserApiSimplifiedResponseDTO;
+import com.minsait.onesait.platform.controlpanel.services.gravitee.GraviteeService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
@@ -103,6 +107,9 @@ public class APIManagementController {
 	JWTService jwtService;
 	@Autowired
 	ApiDTOConverter apiDTOConverter;
+
+	@Autowired(required = false)
+	private GraviteeService graviteeService;
 
 	private static final String ERROR_API_NOT_FOUND = "Api not found";
 	private static final String ERROR_USER_NOT_ALLOWED = "User is not authorized";
@@ -466,7 +473,7 @@ public class APIManagementController {
 		}
 		ApiStates state = ApiStates.CREATED;
 		try {
-			if (!StringUtils.isEmpty(apiBody.getStatus())) {
+			if (StringUtils.hasText(apiBody.getStatus())) {
 				state = ApiStates.valueOf(apiBody.getStatus());
 			}
 			if (!state.equals(ApiStates.CREATED) && !state.equals(ApiStates.DEVELOPMENT)) {
@@ -503,6 +510,9 @@ public class APIManagementController {
 				createdApi = apiManagerService.createApiRest(api, operations, auths);
 			} else {
 				createdApi = apiManagerService.versionateApiRest(api, operations, auths, user);
+			}
+			if (graviteeService != null && apiBody.getPublishInGravitee() != null && apiBody.getPublishInGravitee()) {
+				publish2Gravitee(createdApi.getId());
 			}
 
 		} catch (final ApiManagerServiceException e) {
@@ -563,6 +573,9 @@ public class APIManagementController {
 			final String apiId = apiManagerService.updateApiRest(api, apimemory, operations, auths, false);
 			api.setId(apiId); // to print in result update (retrocomp)
 
+			if (graviteeService != null && apiBody.getPublishInGravitee() != null && apiBody.getPublishInGravitee()) {
+				publish2Gravitee(apiId);
+			}
 
 			return new ResponseEntity<>(new ApiSimplifiedResponseDTO(api), HttpStatus.OK);
 
@@ -615,7 +628,11 @@ public class APIManagementController {
 			usersapi = apiManagerService.getUserApiByApiId(api.getId());
 		}
 
-		return new ApiRestDTO(api, apiops, usersapi, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE));
+		if (api.getGraviteeId() == null) {
+			return new ApiRestDTO(api, apiops, usersapi, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE));
+		} else {
+			return new ApiRestDTO(api, apiops, usersapi, resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.GATEWAY));
+		}
 	}
 
 	@Operation(summary= "Export api by identification or id")
@@ -809,4 +826,41 @@ public class APIManagementController {
 		}
 
 	}
+
+	@PostMapping(value = "/gravitee/update/swagger", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<String> updateGraviteeSwagger(@RequestParam(name="apiId") String apiId, @RequestParam(required=false, name="content") String content) {
+		try {
+			if (!apiManagerService.hasUserEditAccess(apiId, utils.getUserId())) {
+				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			}
+			updateGraviteeSwaggerDoc(apiId, content);
+
+			return new ResponseEntity<>(HttpStatus.OK);
+		} catch (final RuntimeException | GenericOPException  e) {
+			log.error("Error updating Gravitee Swagger documentation : {}", e);
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+
+	}
+
+	private ApiPageResponse updateGraviteeSwaggerDoc(String apiId, String content) throws GenericOPException {
+		final com.minsait.onesait.platform.config.model.Api apiDb = apiManagerService.getById(apiId);
+		if (graviteeService != null && apiManagerService.isGraviteeApi(apiId)) {
+			return graviteeService.processUpdateAPIDocs(apiDb, !StringUtils.hasText(content) ? apiDb.getSwaggerJson() : content);
+		}
+		return new ApiPageResponse();
+	}
+
+
+	private void publish2Gravitee(String apiId) throws GenericOPException {
+		final com.minsait.onesait.platform.config.model.Api apiDb = apiManagerService.getById(apiId);
+		try {
+			final GraviteeApi graviteeApi = graviteeService.processApi(apiDb);
+			apiDb.setGraviteeId(graviteeApi.getApiId());
+			apiManagerService.updateApi(apiDb);
+		} catch (final GraviteeException e) {
+			log.error("Could not publish API to Gravitee {}", e.getMessage());
+		}
+	}
+
 }

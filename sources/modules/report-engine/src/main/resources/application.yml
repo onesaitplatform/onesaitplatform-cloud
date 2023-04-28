@@ -6,6 +6,17 @@ server: ## Config Web Server
       access_log_enabled: true
       basedir: target/tomcat
    jetty.max-http-form-post-size: 20000000
+   
+   
+logbook:
+  exclude:
+     - ${server.servlet.contextPath}/actuator/**
+     - ${server.servlet.contextPath}/static/**
+     - ${server.servlet.contextPath}/themes/**
+     - ${server.servlet.contextPath}/swagger-ui/**
+  write:
+     max-body-size: 10000
+     
 master: 
    datasource:
       hikari: 
@@ -68,6 +79,7 @@ logging:
       com.minsait: INFO 
       org.springframework.security: INFO
       org.camunda.bpm: WARN
+      org.zalando.logbook: TRACE  
     
 
      

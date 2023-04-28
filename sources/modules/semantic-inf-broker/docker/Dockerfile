@@ -30,6 +30,8 @@ RUN cd /usr/local \
 
 VOLUME ["/tmp", "/var/log/platform-logs"]
 
+USER onesait
+
 EXPOSE 20000
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
@@ -91,11 +93,9 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -javaagent:/usr/local/aspectjweaver-$ASP
 	TIMESCALE_USER=ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot) \
 	TIMESCALE_PASS=ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c) \
 	MINIO_ROOT_USER=ENC(d6bDYa5aGMyXndGA0edIGWFtcw3UygXi) \
-	MINIO_ROOT_PASSWORD=ENC(kV79KowPOv0J8QGeQ6iSQcFUqoZalNVj)
+	MINIO_ROOT_PASSWORD=ENC(kV79KowPOv0J8QGeQ6iSQcFUqoZalNVj) \
+	QUERY_METRICS_ENABLED=false \
+	HTTP_LOG_LEVEL=TRACE
 
 COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod 775 /usr/local/bin/docker-entrypoint.sh
-
-USER onesait
-
 ENTRYPOINT ["docker-entrypoint.sh"]

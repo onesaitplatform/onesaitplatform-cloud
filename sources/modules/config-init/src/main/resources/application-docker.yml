@@ -73,3 +73,6 @@ spring:
    jpa:
       properties.hibernate.dialect: ${CONFIGDB_DIALECT}
 
+opendata:
+   load-ontologies: ${OPENDATA_ONTOLOGIES}
+

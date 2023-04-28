@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,6 +81,31 @@ public class GitOperationsImpl implements GitOperations {
 			pb.directory(new File(directory));
 			executeAndReadOutput(pb.start());
 			pb = new ProcessBuilder("git", CONFIG_STR, "user.name", user);
+			pb.directory(new File(directory));
+			executeAndReadOutput(pb.start());
+			if (email != null) {
+				pb = new ProcessBuilder("git", CONFIG_STR, "user.email", email);
+				pb.directory(new File(directory));
+				executeAndReadOutput(pb.start());
+			}
+
+			pb = new ProcessBuilder("git", CONFIG_STR, "http.sslVerify", "false");
+			pb.directory(new File(directory));
+			executeAndReadOutput(pb.start());
+
+		} catch (final Exception e) {
+			log.error("Could not config git {}", e.getMessage());
+			throw new GitException("Could not config git", e);
+		}
+
+	}
+
+	@Override
+	public void configureGit(String user, String email, String directory) {
+		try {
+
+			ProcessBuilder pb = new ProcessBuilder("git", CONFIG_STR, "user.name", user);
+			pb.redirectErrorStream(true);
 			pb.directory(new File(directory));
 			executeAndReadOutput(pb.start());
 			if (email != null) {
@@ -358,7 +383,8 @@ public class GitOperationsImpl implements GitOperations {
 			if (!StringUtils.isEmpty(user) && !StringUtils.isEmpty(token)) {
 				url = url.replaceAll("://", "://" + user + ":" + token + "@");
 			}
-			final ProcessBuilder pb = new ProcessBuilder("git", "clone", url, ".");
+			final ProcessBuilder pb = new ProcessBuilder("git", "clone", "--depth=1", "--branch",
+					remoteConfig.getBranch(), url, ".");
 			pb.redirectErrorStream(true);
 			log.info(pb.command().toString());
 			pb.directory(new File(directory));

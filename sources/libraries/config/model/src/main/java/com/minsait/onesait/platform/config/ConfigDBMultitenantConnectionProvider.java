@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ public class ConfigDBMultitenantConnectionProvider extends AbstractDataSourceBas
 			dataSources.put(Tenant2SchemaMapper.DEFAULT_SCHEMA, dataSourceUtil.createDefaultDatasource());
 
 		String returnDS = Tenant2SchemaMapper.DEFAULT_SCHEMA;
-		if (!StringUtils.isEmpty(System.getenv().get(ConfigDBTenantConfig.CONFIGDB_TENANT_ENVVAR)))
+		if (StringUtils.hasText(System.getenv().get(ConfigDBTenantConfig.CONFIGDB_TENANT_ENVVAR)))
 			returnDS = System.getenv().get(ConfigDBTenantConfig.CONFIGDB_TENANT_ENVVAR);
 
 		return dataSources.get(returnDS);

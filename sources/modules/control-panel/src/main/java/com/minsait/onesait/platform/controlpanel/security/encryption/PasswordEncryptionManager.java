@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ public class PasswordEncryptionManager {
 	@PostConstruct
 	public void migrate() {
 		String algorithm = System.getenv(PasswordEncoderBean.ENV_VARIABLE);
-		if (StringUtils.isEmpty(algorithm)) {
+		if (!StringUtils.hasText(algorithm)) {
 			algorithm = PasswordEncoderSHA2.SHA_2;
 		}
 		log.debug("Running password migrator for default passwords, current hashing algorithm is: {}", algorithm);

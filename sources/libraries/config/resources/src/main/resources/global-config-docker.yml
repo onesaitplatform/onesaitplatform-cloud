@@ -1,6 +1,8 @@
 onesaitplatform:
   env:
     database:
+      nebula-hosts: graphd.nebula:9669,graphd1.nebula:9669,graphd2.nebula:9669
+      nebula-pool-size: 10
       execution-timeout: !!java.lang.Long 10000
       queries-limit: 2000
       mongodb-servers: realtimedb:27017

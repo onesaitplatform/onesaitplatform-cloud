@@ -32,6 +32,15 @@
     /* Own code */
     var vm = this;
     vm.tparams = vm.params;
+    $scope.$on("$resize", vm.updateResize);
+    
+    vm.updateResize = function(e){
+      if (vm.vueapp){
+        vm.vueapp.resizeEvent(e);
+      } else {
+        vm.resizeEvent(e);
+      }
+    }
 
     vm.$onDestroy = function () {
       
@@ -72,7 +81,7 @@
       if (dataEvent.type === "data" && dataEvent.data.length === 0) {
         vm.type = "nodata";
         $scope.ds = "";
-        if (vm.vueapp.drawVueComponent) {
+        if (vm.drawLiveComponent) {
           vm.drawLiveComponent($scope.ds, null);
         }
         if (vm.vueapp.drawVueComponent) {       
@@ -146,10 +155,18 @@
             }
             break;
           case "value":
-            vm.receiveValue(dataEvent.data);
+            if (vm.vueapp){
+              vm.vueapp.receiveValue(dataEvent.data);
+            } else {
+              vm.receiveValue(dataEvent.data);
+            }
             break
           case "customOptionMenu":
-            vm.receiveValue(dataEvent.data);
+            if (vm.vueapp){
+              vm.vueapp.receiveValue(dataEvent.data);
+            } else {
+              vm.receiveValue(dataEvent.data);
+            }
             break;
           default:
             console.error("Not allowed event: " + dataEvent.type);

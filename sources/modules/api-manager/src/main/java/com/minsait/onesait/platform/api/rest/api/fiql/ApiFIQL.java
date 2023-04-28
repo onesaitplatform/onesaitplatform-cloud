@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,7 +87,14 @@ public class ApiFIQL {
 			apiDTO.setOntologyId(api.getOntology().getId());
 		}
 
-		apiDTO.setEndpoint(resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE).concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
+		if (api.getGraviteeId() == null) {
+			apiDTO.setEndpoint(resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE).concat("server/api/v")
+					.concat(api.getNumversion() + "/").concat(api.getIdentification()));
+		} else {
+			apiDTO.setEndpoint(resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.GATEWAY).concat("/")
+					.concat(api.getIdentification()).concat("/v").concat(String.valueOf(api.getNumversion())));
+		}
+
 		apiDTO.setEndpointExt(api.getEndpointExt());
 		apiDTO.setDescription(api.getDescription());
 		apiDTO.setMetainf(api.getMetaInf());
@@ -124,6 +131,8 @@ public class ApiFIQL {
 
 			apiDTO.setAuthentication(atributosDTO);
 		}
+
+		apiDTO.setGraviteeId(api.getGraviteeId());
 		return apiDTO;
 	}
 

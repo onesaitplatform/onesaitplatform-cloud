@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import com.minsait.onesait.platform.business.services.interceptor.MultitenancyInterceptor;
-import com.minsait.onesait.platform.interceptor.CorrelationInterceptor;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -54,12 +53,10 @@ public class ReportEngineApplication extends WebMvcConfigurerAdapter {
 
 	@Autowired
 	private MultitenancyInterceptor multitenancyInterceptor;
-	@Autowired
-	private CorrelationInterceptor logInterceptor;
+
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(multitenancyInterceptor);
-		registry.addInterceptor(logInterceptor);
 	}
 }

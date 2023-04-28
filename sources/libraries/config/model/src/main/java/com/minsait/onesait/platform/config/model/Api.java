@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -204,7 +204,7 @@ public class Api extends OPResource implements Versionable<Api> {
 
 	@JsonSetter("ontology")
 	public void setOntologyJson(String id) {
-		if (!StringUtils.isEmpty(id)) {
+		if (StringUtils.hasText(id)) {
 			final Ontology o = new Ontology();
 			o.setId(id);
 			ontology = o;
@@ -221,7 +221,7 @@ public class Api extends OPResource implements Versionable<Api> {
 
 	@JsonSetter("image")
 	public void setImageJson(String imageBase64) {
-		if (!StringUtils.isEmpty(imageBase64)) {
+		if (StringUtils.hasText(imageBase64)) {
 			try {
 				image = Base64.getDecoder().decode(imageBase64);
 			} catch (final Exception e) {

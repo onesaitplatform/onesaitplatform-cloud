@@ -65,9 +65,8 @@ ENV SERVER_NAME=localhost \
     USE_KEYCLOAK=false \
     MAX_HTTP_HEADER_SIZE=20000
 
-COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod 775 /usr/local/bin/docker-entrypoint.sh
-
 USER onesait
 
+
+COPY docker-entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["docker-entrypoint.sh"]

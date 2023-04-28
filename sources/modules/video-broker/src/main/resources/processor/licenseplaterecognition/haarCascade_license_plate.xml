@@ -49,7 +49,7 @@
                 <_>
                   59 3 4 3 2.</_></rects>
               <tilted>0</tilted></feature>
-            <threshold>-1.0168660432100296e-002</threshold>
+            <threshold>-1.01686604.2.00296e-002</threshold>
             <left_val>8.8940089941024780e-001</left_val>
             <right_val>-7.7847331762313843e-001</right_val></_></_>
         <_>
@@ -1071,8 +1071,8 @@
                 <_>
                   49 0 2 11 3.</_></rects>
               <tilted>0</tilted></feature>
-            <threshold>-8.6617246270179749e-003</threshold>
-            <left_val>8.4029090404510498e-001</left_val>
+            <threshold>-8.661724.2.0179749e-003</threshold>
+            <left_val>8.4.2.090404510498e-001</left_val>
             <right_val>-7.1949690580368042e-001</right_val></_></_>
         <_>
           <!-- tree 2 -->

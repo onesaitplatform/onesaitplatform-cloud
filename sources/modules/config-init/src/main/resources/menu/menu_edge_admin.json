@@ -92,6 +92,15 @@
                     },
                     "icon": "",
                     "url": "/controlpanel/categories/list"
+                },
+                {
+                    "title": {
+                        "EN": "Environment Promotion tool",
+                        "ES": "Herramienta de Promoción entre Entornos",
+						"FR": "Outil de Promotion de l'environnement"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/promotiontool/execute"
                 }
             ]
         },
@@ -182,9 +191,9 @@
             "submenu": [
                 {
                     "title": {
-                        "EN": "Projects Management",
-                        "ES": "Gestión de Proyectos",
-						"FR": "Gestion de projets"
+                        "EN": "Applications Management",
+                        "ES": "Gestión de Aplicaciones",
+						"FR": "Gestion de Applications"
                     },
                     "icon": "",
                     "url": "/controlpanel/edge/projects"
@@ -347,6 +356,24 @@
                     },
                     "icon": "",
                     "url": "/controlpanel/rule-domains/list"
+                },
+                {
+                    "title": {
+                        "EN": "Microservices Management",
+                        "ES": "Gestión de Microservicios",
+						"FR": "Gestion des Microservices"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/microservices/list"
+                },
+                {
+                    "title": {
+                        "EN": "BPM Tenants Management",
+                        "ES": "Gestión de Dominios BPM",
+						"FR": "Gestion du BPM"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/bpm/list"
                 },
                 {
                     "title": {

@@ -68,6 +68,10 @@ var OntologyCreateController = function() {
 		var isTimestampMongo     = false;
 		var objectType		= '';
 		var isTimestamp = false;
+		var enumdata = [];
+		var defaultdata = [];
+		var propdclassdata = [];
+		var entitydclassdata = [];
 	
 		// Required
 		if ( jsonData.hasOwnProperty('datos') ){ required = jsonData.datos.required; } else { required = jsonData.required;  }
@@ -113,6 +117,11 @@ var OntologyCreateController = function() {
 								isTimestamp=true;									
 							}						
 						}
+						if(object.hasOwnProperty('enum')){
+							enumdata =  object['enum'].join(", ");
+						}else{
+							enumdata = null;
+						}
 						if ( object.hasOwnProperty('properties')) { if (object.properties.hasOwnProperty('media')){ isFile = true;  } }
 						if ( object.hasOwnProperty('properties')) { 
 							if (object.properties.hasOwnProperty('coordinates'))
@@ -145,9 +154,31 @@ var OntologyCreateController = function() {
 									objectType = propValue;
 								}
 							 }
-
+						//set default
+						if(object.hasOwnProperty('default')){
+							if(objectType==='boolean'){
+								defaultdata = object['default'].toString();
+							}else{
+								defaultdata =  object['default'];
+							}
+						}else{
+							defaultdata = null;
+						}
+						if(objectType == 'timestamp-mongo'){
+							if(object.properties['$date'].hasOwnProperty('default')){
+								defaultdata = object.properties['$date']['default']
+							}
+							
+						}
+						//set propdclassdata
+						if(object.hasOwnProperty('propdclass')){
+							propdclassdata = object['propdclass'].join(",");
+						}else{
+							propdclassdata = null;
+						}
+						
 						// adding properties
-						propObj = {"property": key, "type": objectType, "required": propRequired, "encrypted": propEncrypted , "descriptions": propDescription};
+						propObj = {"property": key, "type": objectType,"defaultdata":defaultdata, "enumdata":enumdata, "propdclassdata":propdclassdata, "required": propRequired, "encrypted": propEncrypted , "descriptions": propDescription};
 						jsonFormatted.push(propObj);
 					}
 				});
@@ -369,14 +400,16 @@ var OntologyCreateController = function() {
 	// SCHEMA LOADED
 	var updateSchemaProperties = function(){
 		logControl ? console.log('updateSchemaProperties() -> ') : '';
-
 		// properties, types and required arrays
 		var updateProperties = $("input[name='property\\[\\]']").map(function(){ if ($(this).val() !== ''){ return $(this).val(); }}).get();
 		var updateTypes = $("select[name='type\\[\\]']").map(function(){return $(this).val();}).get();
 		var updateRequired = $("select[name='required\\[\\]']").map(function(){return $(this).val();}).get();
 		var updateDescription = $("input[name='descriptions\\[\\]']").map(function(){return $(this).val();}).get();
 		var updateEncrypted = $("select[name='encrypted\\[\\]']").map(function(){return $(this).val();}).get();
-
+		var updateEnumData = $("input[name='enumdata\\[\\]']").map(function(){return $(this).val();}).get();
+		var updatePropDataClass = $("select[name='propdclassdata\\[\\]']").map(function(){var pdcs = $(this).val();if(pdcs != null){return pdcs.toString();}else {return '';}}).get();
+		var updateDefaultData = $("input[name='defaultdata\\[\\]']").map(function(){return $(this).val();}).get();
+		var updateEntityDataClass = $("select[name='entitydclassdata\\[\\]']").map(function(){return $(this).val();}).get();
 		var schemaObj = {};
 
 		logControl ? console.log('|--- CURRENT: ' + updateProperties + ' types: ' + updateTypes + ' required: ' + updateRequired + ' description: ' + updateDescription + ' Encrypted: ' + updateEncrypted ): '';
@@ -390,7 +423,8 @@ var OntologyCreateController = function() {
 
 		}else if (typeof schema == 'object') { schemaObj = schema; } else { $.alert({title: 'ERROR!', theme: 'light', content: ontologyCreateReg.validations.tplschema}); return false; }
 
-
+		schemaObj.entitydclass = updateEntityDataClass;
+		
 		// UPDATE SCHEMA , REMOVES REQUIRED, AND PROPERTIES, TO FILL AGAIN ALL
 		// FIELDS. (FOR CHANGES)
 		var backUpProperties = {};
@@ -407,6 +441,7 @@ var OntologyCreateController = function() {
 		if ( schemaObj.hasOwnProperty('datos') ){ schemaObj.datos.properties = {}; schemaObj.datos.required = []; } else { schemaObj.properties = {};  schemaObj.required = []; }
 		
 		schema = JSON.stringify(schemaObj);
+		
 		// Show modal if has properties of type array and object, and in create
 		// Mode
 		var showModalCompleteProperties = false;
@@ -435,7 +470,7 @@ var OntologyCreateController = function() {
 						schema = JSON.stringify(schemaObj);
 					}else{
 						// update but notify user mode= Create
-						updateProperty(updateProperties[propIndex], updateTypes[propIndex], updateRequired[propIndex], updateDescription[propIndex], updateEncrypted[propIndex] , schemaObj );
+						updateProperty(updateProperties[propIndex], updateTypes[propIndex], updateDefaultData[propIndex], updateEnumData[propIndex], updatePropDataClass[propIndex], updateRequired[propIndex], updateDescription[propIndex], updateEncrypted[propIndex] , schemaObj );
 						logControl ? console.log('index: ' + propIndex + ' | property: ' + updateProperties[propIndex] + ' type: ' + updateTypes[propIndex] + ' required: ' + updateRequired[propIndex] + 'description: ' + updateDescription[propIndex] + ' encrypted: ' + updateEncrypted[propIndex]) : '';
 						showModalCompleteProperties = true;
 						complexProperties.push(updateProperties[propIndex]);
@@ -444,10 +479,11 @@ var OntologyCreateController = function() {
 						logControl ? console.log('index: ' + propIndex + ' | property: ' + updateProperties[propIndex] + ' type: ' + updateTypes[propIndex] + ' required: ' + updateRequired[propIndex] + 'description: ' + updateDescription[propIndex] + ' encrypted: ' + updateEncrypted[propIndex]) : '';
 						// update property on Schema /current are stored in
 						// schema var. (property,type,required)
-						updateProperty(updateProperties[propIndex], updateTypes[propIndex], updateRequired[propIndex], updateDescription[propIndex], updateEncrypted[propIndex], schemaObj  );
+						updateProperty(updateProperties[propIndex], updateTypes[propIndex],updateDefaultData[propIndex],updateEnumData[propIndex], updatePropDataClass[propIndex], updateRequired[propIndex], updateDescription[propIndex], updateEncrypted[propIndex], schemaObj  );
 					}
 			});
 		}
+		
 		// ADD additionalProperties, because we are adding properties.
 		if (!schemaObj.hasOwnProperty('additionalProperties')){
 			schemaObj["additionalProperties"] = true;
@@ -501,7 +537,7 @@ var OntologyCreateController = function() {
 
 
 	// AUX. UPDATE PROPERTY IN SCHEMA FOR EACH NEW PROPERTY ADDED
-	var updateProperty = function(prop, type, req, desc, encrypt, schemaObj){
+	var updateProperty = function(prop, type, defaultData, enumData, propdclassdata, req, desc, encrypt, schemaObj){
 		logControl ? console.log('|---   updateProperty() -> ') : '';
 
 		var properties = [];
@@ -531,9 +567,32 @@ var OntologyCreateController = function() {
 			}else{
 				typereq ='"type": ["object","null"]';
 			}
+		let defaultD ='';	
+		if(defaultData!=null && defaultData.trim()!=''){
+			if(type=='number'){
+				defaultD = ', "default": '+ defaultData;
+			}else if (type=='boolean'){
+				defaultD = ', "default": '+ (defaultData.toLowerCase().trim() === 'true');
+			}else if (type=='integer'){
+				defaultD = ', "default": '+ defaultData;
+			}else {
+				defaultD = ', "default": '+  "\""+defaultData+"\"";
+			}
+		}
+		
+		//ADD PROPDATACLASS
+		let propdclass = '';
+		if(propdclassdata!=null && propdclassdata!=''){
+			let dclassTemp = propdclassdata.split(",");
+			for(var i =0;i<dclassTemp.length;i++){							
+				dclassTemp[i]=dclassTemp[i].trim();
+			}
+			propdclass = ',"propdclass":["'+dclassTemp.join('","')+'"]';
+		}
+			
 		// ADD PROPERTY+TYPE
 		if (type == 'timestamp-mongo'){		
-				propString = '{'+typereq+', '+ updDesc +' '+ updEncryp +' "required": ["$date"],"properties": {"$date": {"type": "string","format": "date-time"}}}';			
+				propString = '{'+typereq+', '+ updDesc +' '+ updEncryp +' "required": ["$date"],"properties": {"$date": {"type": "string","format": "date-time" '+defaultD+'}}}';			
 				properties[prop] = JSON.parse(propString);
 		} else if(type == 'file') {			
 				properties[prop] = JSON.parse('{'+typereq+', '+ updDesc +' '+ updEncryp +' "required": ["data","media"],"properties": {"data": {"type": "string"},"media": {"type": "object", "required": ["name","storageArea","binaryEncoding","mime"],"properties": {"name":{"type": "string"},"storageArea": {"type": "string","enum": ["SERIALIZED","DATABASE","URL"]},"binaryEncoding": {"type": "string","enum": ["Base64"]},"mime": {"type": "string","enum": ["application/pdf","image/jpeg", "image/png"]}}}},"additionalProperties": false}');				
@@ -551,22 +610,39 @@ var OntologyCreateController = function() {
 			properties[prop] = JSON.parse('{'+typereq+',  '+ updDesc +' '+ updEncryp +' "required":["coordinates","type"],"properties":{"coordinates": {"type": "array","items": [{"type": "array", "items": [{"type": "array","minItems": 4, "items": [{"type":"array", "minItems": 2, "maxItems":2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]},{"type":"array", "minItems": 2, "maxItems":2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]},{"type":"array", "minItems": 2, "maxItems":2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]},{"type":"array", "minItems": 2, "maxItems":2, "items":[{"type": "number","maximum": 180,"minimum": -180},{"type": "number","maximum": 90,"minimum": -90}]} ]}]}]},"type": {"type": "string","enum": ["MultiPolygon"]}},"additionalProperties": false}');
 		}else if(type == 'timestamp'){
 			if(req == 'required'){
-				properties[prop] = JSON.parse('{"type": "string","format": "date-time"}');
+				properties[prop] = JSON.parse('{"type": "string","format": "date-time"'+defaultD+'}');
 			}else {
-				properties[prop] = JSON.parse('{"type": ["string","null"],"format": "date-time"}');
+				properties[prop] = JSON.parse('{"type": ["string","null"],"format": "date-time"'+defaultD+'}');
 			}
 			
 		}else if(type == 'date'){			
 			if(req == 'required'){
-				properties[prop] = JSON.parse('{"type": "string","format": "date"}');
+				properties[prop] = JSON.parse('{"type": "string","format": "date"'+defaultD+'}');
 			}else {
-				properties[prop] = JSON.parse('{"type": ["string","null"],"format": "date"}');
+				properties[prop] = JSON.parse('{"type": ["string","null"],"format": "date"'+defaultD+'}');
 			}
 		}else {
+			let enumD = '';	
+			if(type=='string'||type=='number'||type=='integer'){
+				if(enumData!=null && enumData!=''){
+					if(type=='string'){
+						
+						let enumTemp = enumData.split(",");
+						for(var i =0;i<enumTemp.length;i++){							
+							enumTemp[i]=enumTemp[i].trim();
+						}
+						enumD = ',"enum":["'+enumTemp.join('","')+'"]';						
+						
+					}else{
+						enumD = ',"enum":['+enumData+']';
+					}
+				}
+			}		
+			
 			if(req == 'required'){
-				propString = '{' + updDesc +' '+ updEncryp +' "type": "' + type + '"}';
+				propString = '{' + updDesc +' '+ updEncryp +' "type": "' + type + '"' + enumD + propdclass + defaultD + '}';
 			}else {
-				propString = '{' + updDesc +' '+ updEncryp +' "type": ["' + type + '","null"]}';
+				propString = '{' + updDesc +' '+ updEncryp +' "type": ["' + type + '","null"]' + enumD + propdclass + defaultD+'}';
 			}
 				properties[prop] = JSON.parse(propString);
 
@@ -584,6 +660,7 @@ var OntologyCreateController = function() {
 				requires.splice(index, 1);
 			}
 		}
+		
 	}
 
 
@@ -592,8 +669,7 @@ var OntologyCreateController = function() {
 		logControl ? console.log(LIB_TITLE + ': noBaseProperty()') : '';
 
 		var isNoBaseProperty = false;
-		var noBaseJson = createJsonProperties(JSON.parse(staticSchema)); // to
-																			// JSON
+		var noBaseJson = createJsonProperties(JSON.parse(staticSchema)); // to																	// JSON
 		var noBaseProperties = getProperties(noBaseJson); // only
 															// Properties
 															// Arr
@@ -692,8 +768,120 @@ var OntologyCreateController = function() {
 		}
 	}
 	
+	var jProperties ;
+	
+	var showMultipleSelectEntity = function(){
+		var schemaObj = JSON.parse(schema);
+		var edc = schemaObj.entitydclass;
+		if(edc != null) {
+			edc = edc.join(",");
+			$('.entitydclassdatatag').selectpicker('val', edc);
+		}
+	}
+	
+	showMultipleSelectProperty = function() {
+		var propdcdt = $('.propdclassdatatag');
+		if(propdcdt){
+			var i = 0;
+			propdcdt.each(function(index) { 
+				if(index%2==0 && index != 0){
+					i = i+1;
+				}
+				if(jProperties != null && jProperties.length != 0){
+					var stringprop = jProperties[i];
+					if(stringprop != null  && stringprop != "" && typeof stringprop != undefined) {
+						stringprop = stringprop.propdclassdata;
+						if(stringprop != null && stringprop != "" && typeof stringprop != undefined){
+							const arrayprop = stringprop.split(",");
+							$(this).selectpicker('val', arrayprop);
+						}
+					} else {
+						$(this).selectpicker();
+					}
+				}
+			});
+		}
+	}
+	
+	var showEnumTagData = function(){
+		setTimeout(function(){			
+			
+			$('.enumtags').tagsinput();
+			var enums = $('.enumtags');
+			if(enums){
+				for (var i=0;i<enums.length;i++){
+					var typeVal = enums[i].parentElement.parentElement.parentElement.children[1].children[0].value;
+					if(typeVal =='string' || typeVal=='number' || typeVal =='integer' ){
+						enums[i].removeAttribute('disabled');
+						if(typeVal =='string'){
+							$(enums[i]).off('beforeItemAdd');
+							$(enums[i]).on('beforeItemAdd', function(event) {
+									
+									});
+							
+						}
+						else if(typeVal =='number'){								
+							let valTemp=$(enums[i]).val().split(",");
+							if(valTemp!=null && valTemp.length>0){
+								let resultTemp =[];
+								$(enums[i]).tagsinput('removeAll');
+								for (var j=0; j < valTemp.length;j++){
+										
+										if(!isNaN(valTemp[j])){
+											resultTemp.push(valTemp[j].trim())
+											$(enums[i]).tagsinput('add',valTemp[j].trim());
+										}
+									}
+									$(enums[i]).tagsinput('refresh');
+							}								
+							$(enums[i]).off('beforeItemAdd');
+							$(enums[i]).on('beforeItemAdd', function(event) {
+										  // check item contents
+										  if (isNaN(event.item)) {
+										    // set to true to prevent the item getting added
+										    event.cancel = true;
+										  }
+										});
+							
+						}else if(typeVal =='integer'){
+							    $(enums[i]).off('beforeItemAdd');
+								$(enums[i]).on('beforeItemAdd', function(event) {
+										  // check item contents
+										  let num = parseFloat(event.item)
+										  if (isNaN(num) || !Number.isInteger(num)) {
+										    // set to true to prevent the item getting added
+										    event.cancel = true;
+										  }
+										});								
+						}
+					}else{
+						enums[i].setAttribute('disabled', true);
+						$(enums[i]).tagsinput('removeAll');
+					}
+				}
+			}
+			
+			
+			var defaults = $('.defaulttags');
+			if(defaults){
+				for (var i=0;i<defaults.length;i++){
+					var typeVal = defaults[i].parentElement.parentElement.parentElement.children[1].children[0].value;						
+					if(typeVal =='string' || typeVal=='number' || typeVal =='integer' ||typeVal=='date' || typeVal=='boolean'||typeVal=='timestamp'||typeVal=='timestamp-mongo' ){
+						defaults[i].removeAttribute('disabled');
+					}else{
+						defaults[i].setAttribute('disabled', true);
+					}
+						
+				}
+			}
+			$('.propdclassdatatag').selectpicker();
+			showMultipleSelectProperty();
+			showMultipleSelectEntity();
+		},10);
+	}
 	
 	var updateFieldsFromJSONLDTree = function(){
+		
 		var clickedTree = document.getElementsByClassName("jstree-clicked");
 				if(clickedTree.length == 0){
 					toastr.error(messagesForms.operations.genOpError, ontologyCreateReg.validations.jsonldformat);
@@ -713,11 +901,11 @@ var OntologyCreateController = function() {
 					}
 					
 					schema = JSON.stringify(entitySchema);
-					
 					var properties;
 					if ( data.hasOwnProperty('datos') ){ properties = data.datos; } else { properties = data;  }
 					// CREATING TABLE FROM DATA.
 					var jsonProperties = createJsonProperties(properties);
+					jProperties=jsonProperties;
 					// TO-HTML
 					if ( $('#datamodel_properties').attr('data-loaded') == 'true' ){
 
@@ -745,6 +933,8 @@ var OntologyCreateController = function() {
 												button: "#button2",
 												onClick: function (element){
 													console.log('Property added!');
+													showEnumTagData();
+													showMultipleSelectProperty();
 													return true;
 												}
 											}
@@ -758,7 +948,8 @@ var OntologyCreateController = function() {
 			
 										// UPDATING FORM FIELDS
 										$('#jsonschema').val(schema);
-			
+										showEnumTagData();
+										showMultipleSelectProperty();
 										return true;
 									}
 								}
@@ -772,6 +963,7 @@ var OntologyCreateController = function() {
 								button: "#button2",
 								onClick: function (element){
 									console.log('Property added!');
+									showEnumTagData();
 									return true;
 								}
 							}
@@ -814,7 +1006,6 @@ var OntologyCreateController = function() {
 	
 	
 	var wizardStepContinue = function(){
-		
 		if (wizardStep == 1){
 			if(!document.getElementById("supportsJsonLd").checked) {
 				$('#tab-data-schema a').removeClass('disabled');
@@ -841,11 +1032,12 @@ var OntologyCreateController = function() {
 					}
 					
 					schema = JSON.stringify(entitySchema);
-					
 					var properties;
 					if ( data.hasOwnProperty('datos') ){ properties = data.datos; } else { properties = data;  }
 					// CREATING TABLE FROM DATA.
 					var jsonProperties = createJsonProperties(properties);
+					jProperties=jsonProperties;
+					
 					// TO-HTML
 					if ( $('#datamodel_properties').attr('data-loaded') == 'true' ){
 
@@ -873,6 +1065,8 @@ var OntologyCreateController = function() {
 												button: "#button2",
 												onClick: function (element){
 													console.log('Property added!');
+													showEnumTagData();
+													showMultipleSelectProperty();
 													return true;
 												}
 											}
@@ -900,10 +1094,12 @@ var OntologyCreateController = function() {
 								button: "#button2",
 								onClick: function (element){
 									console.log('Property added!');
+									showEnumTagData();
 									return true;
 								}
 							}
 						});
+						showEnumTagData();
 					}
 
 					// HIGHLIGHT CURRENT DATAMODEL AND SHOW TABLE
@@ -961,7 +1157,8 @@ var OntologyCreateController = function() {
 		if(typeof emptySchema == 'string'){ data = JSON.parse(emptySchema); }
 			else if (typeof emptySchema == 'object'){ data = emptySchema; }
 		data["title"] = $('#identification').val();
-		if (!data.hasOwnProperty('description')){ data["description"] = $('#description').val(); }		
+		if (!data.hasOwnProperty('description')){ data["description"] = $('#description').val(); }	
+		
 		var schemaOrgProperties = {};
 		var types = [];
 		var typesquotes = [];
@@ -1028,8 +1225,10 @@ var OntologyCreateController = function() {
 		}
 		
 		var description = graph["rdfs:comment"];
-		description = description.replace(/\r?\n|\r/g, " ");
-		description = description.replace(/['"]/g, '');
+		if(description!=null && typeof description!='undefined'){
+			description = description.replace(/\r?\n|\r/g, " ");
+			description = description.replace(/['"]/g, '');
+		}
 		return "{\"description\":\"" + description + "\"," + type + "}";
 	}
 	
@@ -1125,13 +1324,18 @@ var OntologyCreateController = function() {
             },
 			// ALL OK, THEN SUBMIT.
             submitHandler: function(form) {
-            			
                 // VALIDATE JSON SCHEMA
 				validIdName = validateIdName();
 				if (validIdName){
 
 					// VALIDATE JSON SCHEMA
-					validJsonSchema = validateJsonSchema();
+					if(ontologyCreateReg.rtdbDatasource === 'NEBULA_GRAPH'){
+	            		let p = OntologyCreateGraphController.preparePayloadUpdate();
+	            		$('#nebulaEntity').val(JSON.stringify(p));
+	            		validJsonSchema=true;
+	            	}else{
+	            		validJsonSchema = validateJsonSchema();
+	            	}
 					if (validJsonSchema){
 
 						// VALIDATE TAGSINPUT
@@ -1150,8 +1354,12 @@ var OntologyCreateController = function() {
 									if(ontologyCreateReg.actionMode != null) {
 										navigateUrl(data.redirect);
 									} else {
-										$('#modal-mongohasrecords').modal('hide');
-										$('#modal-created').modal('show');
+										if (ontologyCreateJson.appId==null){
+											$('#modal-mongohasrecords').modal('hide');
+											$('#modal-created').modal('show');
+										} else {
+											navigateUrl(data.redirect);
+										}
 									}
 								}, error: function(data){
 									if(data.responseJSON.cause.includes("The collection already exists and has records")){
@@ -1348,6 +1556,20 @@ var OntologyCreateController = function() {
 
 		});
 		
+		$('#entitydclassdata').on('change', function(){
+			var jsonFromEditor = {};
+			var datamodelLoaded = $('#datamodel_properties').attr('data-loaded');
+			if (datamodelLoaded){
+				if (IsJsonString(editor.getText())){
+					jsonFromEditor = editor.get();
+					jsonFromEditor["entitydclassdata"] = $(this).val();
+					editor.set(jsonFromEditor);
+				}
+			}
+
+		});
+		
+		
 		$("#rtdbInstance").on('change', function(){
 			if(this.value == "COSMOS_DB"){
 				$(".cosmosProps").removeClass("hidden");
@@ -1522,6 +1744,8 @@ var OntologyCreateController = function() {
 					$('#roledataaccess').attr('data-loaded',true);// TO-HTML
 					$("#realmdata").selectpicker('deselectAll');
 					$("#roledata").selectpicker('deselectAll');
+					$("#entitydclassdata").selectpicker('deselectAll');
+					$("#propdclassdata").selectpicker('deselectAll');
 				}
 
 			}			
@@ -1539,6 +1763,7 @@ var OntologyCreateController = function() {
 				if ( data.hasOwnProperty('datos') ){ properties = data.datos; } else { properties = data;  }
 						// CREATING TABLE FROM DATA.
 				var jsonProperties = createJsonProperties(properties);
+				jProperties=jsonProperties;
 				$('#'+"datamodel_properties").mounTable(jsonProperties,{
 								model: '.mountable-model',
 								noDebug: false,
@@ -1546,6 +1771,8 @@ var OntologyCreateController = function() {
 									button: "#button2",
 									onClick: function (element){
 										console.log('Property added!');
+										showEnumTagData();
+										showMultipleSelectProperty();
 										return true;
 									}
 								}
@@ -2501,6 +2728,17 @@ var OntologyCreateController = function() {
 			else { 
 				$.alert({title: 'ALERT!', theme: 'light',  content: ontologyCreateReg.validations.base}); 
 			}
+		},enumProperty: function(obj){
+			logControl ? console.log(LIB_TITLE + ': enumProperty()') : '';
+
+			var enumProperty = $(obj).closest('tr').find("input[name='property\\[\\]']").val();
+			
+			if (( remproperty == '')||( noBaseProperty(remproperty))){ 
+				$(obj).closest('tr').remove();
+			}
+			else { 
+				$.alert({title: 'ALERT!', theme: 'light',  content: ontologyCreateReg.validations.base}); 
+			}
 		},
 
 		// CHECK FOR NON DUPLICATE PROPERTIES
@@ -2543,6 +2781,8 @@ var OntologyCreateController = function() {
 			propType = $.inArray( currentType, validTypes ) > -1 ?  currentType : 'string';
 			logControl ? console.log('checkType: ' +propType ) : '';
 			$(obj).val(propType);
+			
+			showEnumTagData();
 		},
 
 		// CHECK PROPERTIES to be REQUIRED or NOT
@@ -2582,10 +2822,10 @@ var OntologyCreateController = function() {
 				// adding title and description
 				// ADD TITLE
 				data["title"] = $('#identification').val();
-
+				
 				// ADD DESCRIPTION
 				if (!data.hasOwnProperty('description')){ data["description"] = $('#description').val(); }
-
+				
 				// UDATING SCHEMA STRING
 				schema = JSON.stringify(data);
 			}
@@ -2595,7 +2835,8 @@ var OntologyCreateController = function() {
 
 			// CREATING TABLE FROM DATA.
 			jsonProperties = createJsonProperties(properties);
-
+			jProperties=jsonProperties;
+		
 			// CHECK IF WE HAVE A DATAMODEL LOADED YET... o-DO: make confirm.
 			if ( $('#datamodel_properties').attr('data-loaded') == 'true' ){
 
@@ -2623,6 +2864,8 @@ var OntologyCreateController = function() {
 										button: "#button2",
 										onClick: function (element){
 											console.log('Property added!');
+											showEnumTagData();
+											showMultipleSelectProperty();
 											return true;
 										}
 									}
@@ -2636,7 +2879,7 @@ var OntologyCreateController = function() {
 	
 								// UPDATING FORM FIELDS
 								$('#jsonschema').val(schema);
-	
+								showEnumTagData();
 								return true;
 							}
 						}
@@ -2652,6 +2895,7 @@ var OntologyCreateController = function() {
 						button: "#button2",
 						onClick: function (element){
 							console.log('Property added!');
+							showEnumTagData();
 							return true;
 						}
 					}
@@ -2664,6 +2908,7 @@ var OntologyCreateController = function() {
 			$(objschema).closest('li').addClass('bg-success done');
 
 			$('#imageNoTemplate').addClass('hide');
+			
 			$('#template_schema').removeClass('hide');
 			$('#template_schema_buttons').removeClass('hide');
 			$('#datamodel_properties').attr('data-loaded', true);
@@ -2682,7 +2927,7 @@ var OntologyCreateController = function() {
 
 			// UPDATING DATAMODEL ID for ONTOLOGY
 			$('#datamodelid').val($(objschema).attr('data-model'));
-
+			
 			// UPDATING FORM FIELDS
 			$('#jsonschema').val(schema);
 
@@ -2693,6 +2938,7 @@ var OntologyCreateController = function() {
 			if (ontologyCreateJson.actionMode==null){
 				manageWizardStep();
 			}
+			showEnumTagData();
 		},
 
 		// JSON SCHEMA VALIDATION

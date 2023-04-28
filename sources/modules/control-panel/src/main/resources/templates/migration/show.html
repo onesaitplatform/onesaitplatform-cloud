@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -69,16 +69,19 @@
         <!-- BEGIN SIDEBAR INCLUDE (MENU) -->
         <div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
         <!-- END SIDEBAR -->
+        
             
         <!-- BEGIN CONTENT -->
         <div class="page-content-wrapper">
             
             <!-- BEGIN CONTENT BODY -->
+            
             <div class="page-content">
             
                 <div class="alert alert-success display-hide">
                     <span th:text="${globalMessage}"></span>
-                </div>      
+                </div>     
+                 
                 
                 <!-- BEGIN PAGE BAR AND BREADCRUM-->
                 <div class="page-bar margin-bottom-20">
@@ -93,19 +96,28 @@
                 <!-- END PAGE TITLE-->          
                 
                 <!-- MAIN ROW -->
+                   
                 <div class="row main">
-                    <div class="col-md-12">                     
+                    <div class="col-md-12">                
                         <div id="migrationPortlet" class="portlet light">
-                            <div class="portlet-title tabbable-line">
-                                <div class="caption">
-                                    
-                                </div>                                  
+                        </br>
+                        	<div class="alert alert-warning alert-dismissable">
+								<i class="fa fa-exclamation-circle"></i>
+								<span th:text="#{migration.export.warning.all}"> Alert.</span>
+							</div>	
+                         <div class="portlet-title tabbable-line">
+                         <div class="caption">
+                             </div>                                  
                                 <div class="tools">
                                     <a href="" class="collapse" data-original-title="" title=""> </a>                                                                           
                                     <a href="" class="fullscreen" data-original-title="" title=""> </a>                                     
                                 </div>
+                                </br>
+                                
+                               
                                 
                                 <!-- SECCIONES DE MIGRATION TABS -->
+                                
                                 <ul class="nav nav-tabs pull-left">
                                     <li id="tab-import" class="active"><a href="#tab_1" data-toggle="tab" aria-expanded="false"><i class="flaticon-network font-grey-gallery"></i>   <span class="caption-subject font-grey-gallery uppercase" th:text="#{migration.import}"> Data Import</span></a></li>
                                     <li id="tab-export" class=""><a href="#tab_2" data-toggle="tab" aria-expanded="true"><i class="la la-code"></i> <span class="uppercase font-md" th:text="#{migration.export}">Data Export</span></a></li>

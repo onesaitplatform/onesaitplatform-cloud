@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -289,7 +289,7 @@
 																				<span th:if="${domain.state == null OR domain.state == 'STOP' OR flowEngineActive == false}"    ><span disabled="true" th:attr="data-id=${domain.domain}" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" ><i class="la la la-line-chart font-hg"></i><span class="span-title-three-dots-icons" th:text="#{domain.monitor}" >MONITOR</span></span></span>
 																			</li>
 																			<li>
-																				<span  th:attr="onclick='javascript:deleteFlowDomainConfirmation(\''+${domain.domain}+ '\');',data-id=${domain.domain}" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" style="margin-top: 10px;" data-container="body" data-placement="bottom" ><i class="icon-delete"></i>  <span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >DELETE</span></span>																	
+																				<span sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" th:if="${#authentication.name} == ${domain.user} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'"  th:attr="onclick='javascript:deleteFlowDomainConfirmation(\''+${domain.domain}+ '\');',data-id=${domain.domain}" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" style="margin-top: 10px;" data-container="body" data-placement="bottom" ><i class="icon-delete"></i>  <span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >DELETE</span></span>																	
 																			</li>
 																		</ul>
 																	</span>

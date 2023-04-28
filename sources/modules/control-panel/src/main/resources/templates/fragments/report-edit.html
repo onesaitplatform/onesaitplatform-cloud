@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@
 				
 				  </div>
 				</div>	
-		<div class="row">
+		<div class="row main">
 			<div class="col-md-12">
 				<div class="tabbable-line">									
 					<ul class="nav nav-tabs pull-left">
@@ -69,10 +69,6 @@
 					</ul>
 				</div>
 			</div>
-		</div>
-		
-		<div class="row">
-			
 			<div class="tab-content">
 				<div class="tab-pane active" id="tab_1">
 					<div class="col-md-12 col-sm-6 col-xs-12">
@@ -108,24 +104,17 @@
 				</div>
 				<div th:if="${dataSource != null OR report.dataSourceUrl != null}" class="tab-pane" id="tab_2">
 					<div class="col-md-12 col-sm-6 col-xs-12">
-						<div class="panel panel-info">
-							<div class="panel-body">
-								<div class="form-group">
+						<div class="panel">
+							<div class="form-group">
 								<div class="col-md-4 col-sm-6 col-xs-12">
-									<div class="form-group">
-										<label class="" th:text="#{reports.datasource.overwrite}">Datasource</label>
-										<div class="mt-checkbox-list"> 
-											<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{reports.datasource.overwrite.explain},data-title=#{dashboards.public}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{reports.datasource.overwrite} +'?'">Public?</div>
-												<input id="checkboxDataSource" class="form-control no-remove"  name="checkboxDataSource" type="checkbox" th:checked="*{dataSourceUrl}"   />
-												<span></span>
-											</label>
-										</div>
-									</div>
+									<input id="checkboxDataSource" class="no-remove"  name="checkboxDataSource" type="checkbox" th:checked="*{dataSourceUrl}"   />
+									<label class="control-label margin-left-5" th:text="#{reports.datasource.overwrite}">Overwrite</label>	
+									<i class="la la-info-circle popovers"  data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{reports.datasource.overwrite.explain},data-title=#{reports.datasource.overwrite}"></i>
+									<span></span>
 								</div>	
-									<input th:if="*{dataSourceUrl}" id="report-datasource" type="text" name="report-datasource" class="form-control" th:value="${report.dataSourceUrl}"/>
-									<input th:if="!*{dataSourceUrl}" id="report-datasource" type="text" name="report-datasource" class="form-control" th:value="${dataSource}"/>
-									<input th:if="*{dataSourceUrl}" type="hidden" th:field="*{dataSourceUrl}" id="data-source-url"/>
-								</div>
+								<textarea th:if="*{dataSourceUrl}" id="report-datasource" type="text" name="report-datasource" class="textareaBlack" th:text="${report.dataSourceUrl}"></textarea>
+								<textarea th:if="!*{dataSourceUrl}" id="report-datasource" type="text" name="report-datasource" class="textareaBlack" th:text="${dataSource}"></textarea>
+								<input type="hidden" th:field="*{dataSourceUrl}" id="data-source-url"/>
 							</div>
 						</div>
 					</div>

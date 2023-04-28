@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,13 @@
  */
 package com.minsait.onesait.platform.api.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import com.minsait.onesait.platform.interceptor.CorrelationInterceptor;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
@@ -33,14 +29,13 @@ public class WebConfig implements WebMvcConfigurer {
 			"classpath:/resources/", "classpath:/static/", "classpath:/public/" };
 	private static final String WEBJARS = "/webjars/**";
 
-	@Autowired
-	CorrelationInterceptor logInterceptor;
+
 
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
 		if (!registry.hasMappingForPattern(WEBJARS)) {
 			registry.addResourceHandler(WEBJARS).addResourceLocations("classpath:/META-INF/resources/webjars/")
-					.resourceChain(false);
+			.resourceChain(false);
 
 			registry.addResourceHandler(WEBJARS).addResourceLocations("/webjars/").resourceChain(false);
 		}
@@ -54,10 +49,7 @@ public class WebConfig implements WebMvcConfigurer {
 		registry.addMapping("/**").allowedOrigins("*");
 	}
 
-	@Override
-	public void addInterceptors(InterceptorRegistry registry) {
-		registry.addInterceptor(logInterceptor);
-	}
+
 
 	@Bean
 	public ServletContextInitializer servletContextInitializer(

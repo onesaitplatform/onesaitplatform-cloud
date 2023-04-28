@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,11 @@ import com.minsait.onesait.platform.persistence.elasticsearch.ElasticSearchManag
 import com.minsait.onesait.platform.persistence.external.virtual.VirtualRelationalOntologyManageDBRepository;
 import com.minsait.onesait.platform.persistence.hadoop.common.NameBeanConst;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
+import com.minsait.onesait.platform.persistence.mindsdb.MindsDBManageDBRepository;
 import com.minsait.onesait.platform.persistence.mongodb.MongoNativeManageDBRepository;
-import com.minsait.onesait.platform.persistence.timescaledb.TimescaleDBManageDBRepository;
+import com.minsait.onesait.platform.persistence.nebula.NebulaGraphDBManageDBRepository;
 import com.minsait.onesait.platform.persistence.presto.PrestoManageDBRepository;
+import com.minsait.onesait.platform.persistence.timescaledb.TimescaleDBManageDBRepository;
 
 @Component
 public class ManageDBRepositoryFactory {
@@ -48,19 +50,25 @@ public class ManageDBRepositoryFactory {
 
 	@Autowired
 	private VirtualRelationalOntologyManageDBRepository relationalManager;
-	
+
 	@Autowired
 	private TimescaleDBManageDBRepository timescaleManager;
 
 	@Autowired(required = false)
 	@Qualifier(NameBeanConst.KUDU_MANAGE_DB_REPO_BEAN_NAME)
 	private ManageDBRepository kuduManageDBRepository;
-	
+
 	@Autowired
 	private PrestoManageDBRepository prestoManageDBRepository;
 
 	@Autowired
 	private OntologyRepository ontologyRepository;
+
+	@Autowired
+	private MindsDBManageDBRepository mindsDBManageDBRepository;
+
+	@Autowired
+	private NebulaGraphDBManageDBRepository nebulaGraphDBManageDBRepository;
 
 	public ManageDBRepository getInstance(String ontologyId) {
 		final Ontology ds = ontologyRepository.findByIdentification(ontologyId);
@@ -85,6 +93,10 @@ public class ManageDBRepositoryFactory {
 			return timescaleManager;
 		} else if (RtdbDatasource.PRESTO.equals(dataSource)) {
 			return prestoManageDBRepository;
+		}else if (RtdbDatasource.AI_MINDS_DB.equals(dataSource)) {
+			return mindsDBManageDBRepository;
+		}else if (RtdbDatasource.NEBULA_GRAPH.equals(dataSource)) {
+			return nebulaGraphDBManageDBRepository;
 		} else {
 			return mongoManage;
 		}

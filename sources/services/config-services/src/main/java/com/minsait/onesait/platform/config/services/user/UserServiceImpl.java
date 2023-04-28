@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package com.minsait.onesait.platform.config.services.user;
 
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -235,7 +236,7 @@ public class UserServiceImpl implements UserService {
 				.collect(Collectors.toMap(MasterUser::getUserId, mu -> mu.getTenant().getName()));
 		users.forEach(u -> {
 			final String tenant = mapUsers.get(u.getUsername());
-			if (!StringUtils.isEmpty(tenant)) {
+			if (StringUtils.hasText(tenant)) {
 				u.setTenant(tenant);
 			}
 		});
@@ -363,8 +364,16 @@ public class UserServiceImpl implements UserService {
 		if (userExists(user)) {
 			log.info("User exists in configdb");
 			final User userDb = userRepository.findByUserId(user.getUserId());
+			
+			List<String> findAllEmailsNotUser = userRepository.findAllEmailsNotUser(user.getUserId());
+			
+			for(String emails : findAllEmailsNotUser){
+				if(emails.equals(user.getEmail())) {
+					throw new UserServiceException("The user cannot be updated because the email exists");
+				}
+			}
 			userDb.setEmail(user.getEmail());
-
+			
 			if (user.getRole() != null) {
 				final Role role = roleRepository.findByName(user.getRole().getName());
 				userDb.setRole(role);
@@ -386,9 +395,11 @@ public class UserServiceImpl implements UserService {
 		}
 		if (userDb.isActive() && !user.isActive()) {
 			userDb.setDateDeleted(new Date());
+			deactivateClientPlatformsTokens(user);	
 		}
 
 		userDb.setActive(user.isActive());
+		
 		if (user.getDateDeleted() != null) {
 			userDb.setDateDeleted(user.getDateDeleted());
 		}
@@ -402,6 +413,16 @@ public class UserServiceImpl implements UserService {
 		}
 	}
 
+	public void deactivateClientPlatformsTokens(User user) {
+		List<Token> tokenList = tokenRepository.findByUser(user); 
+		
+		for (Iterator iterator = tokenList.iterator(); iterator.hasNext();) {
+			Token token = (Token) iterator.next();
+			token.setActive(false);
+			tokenRepository.save(token);
+		}
+	}
+
 	@Override
 	public Role getUserRole(String role) {
 		return roleRepository.findByName(role);
@@ -409,6 +430,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public void deleteUser(String userId) {
+	    deactivateClientPlatformsTokens(userRepository.findByUserId(userId));
 		entityDeletionService.deactivateUser(userId);
 	}
 

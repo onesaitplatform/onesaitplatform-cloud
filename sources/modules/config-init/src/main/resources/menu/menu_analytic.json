@@ -39,6 +39,32 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/models/list"
+				},
+				{
+					"title": {
+						"EN": "My Models Manager",
+						"ES": "Mi Model Mánager",
+						"FR": "Mon Gestionnaire de Modèles"
+					},
+					"icon": "",
+					"url": "/controlpanel/modelsmanager/show"
+				},
+				{
+					"title": {
+						"EN": "My AutoML Predictors",
+						"ES": "Mis Predictores AutoML",
+						"FR": "Mes AutoML Prédicteurs"
+					},
+					"icon": "",
+					"url": "/controlpanel/predictors/list"
+				},{
+                    "title": {
+                        "EN": "My Data Labeling Tool",
+                        "ES": "Mi Herramienta De Etiquetado De Datos",
+						"FR": "Mon Outil D'étiquetage De Données"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/datalabeling/list"
 				}
 			]
 		},
@@ -108,6 +134,55 @@
 				}
 			]
 		},
+		
+		{
+			"title": {
+				"EN": "OPEN DATA",
+				"ES": "INFORMACIÓN ABIERTA",
+				"FR": "DONNÉES OUVERTES"
+			},
+			"icon": "icon-open-data",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "Open Data Portal",
+						"ES": "Portal de Datos Abiertos",
+						"FR": "Portail de Données Ouvertes"
+					},
+					"icon": "",
+					"url": "/controlpanel/opendata/access"
+				},
+				{
+					"title": {
+						"EN": "My Organizations",
+						"ES": "Mis Organizaciones",
+						"FR": "Mes organisations"
+					},
+					"icon": "",
+					"url": "/controlpanel/opendata/organizations/list"
+				},
+				{
+					"title": {
+						"EN": "My Datasets",
+						"ES": "Mis Conjuntos de Datos",
+						"FR": "Mes Ensembles de Données"
+					},
+					"icon": "",
+					"url": "/controlpanel/opendata/datasets/list"
+				},
+				{
+					"title": {
+						"EN": "My Resources",
+						"ES": "Mis Recursos",
+						"FR": "Mes Ressources"
+					},
+					"icon": "",
+					"url": "/controlpanel/opendata/resources/list"
+				}	
+			]
+		},
+
 		{
 			"title": {
 				"EN": "DEVELOPMENT",
@@ -119,9 +194,9 @@
 			"submenu": [
 				{
 					"title": {
-						"EN": "My Projects",
-						"ES": "Mis Proyectos",
-						"FR": "Mes Projets"
+						"EN": "My Applications",
+						"ES": "Mis Aplicaciones",
+						"FR": "Mes Applications"
 					},
 					"icon": "",
 					"url": "/controlpanel/projects/list"
@@ -161,6 +236,33 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/rule-domains/list"
+				},
+				{
+					"title": {
+						"EN": "My Microservices",
+						"ES": "Mis Microservicios",
+						"FR": "Mes Microservices"
+					},
+					"icon": "",
+					"url": "/controlpanel/microservices/list"
+				},
+				{
+					"title": {
+						"EN": "My Serverless Applications",
+						"ES": "Mis aplicaciones serverless",
+						"FR": "Des applications serverless"
+					},
+					"icon": "",
+					"url": "/controlpanel/serverless/applications"
+				},
+				{
+					"title": {
+						"EN": "My BPM Tenants",
+						"ES": "Mis Dominios BPM",
+						"FR": "Mes Locataires BPM"
+					},
+					"icon": "",
+					"url": "/controlpanel/bpm/list"
 				},
 				{
 					"title": {
@@ -333,13 +435,22 @@
 				},
 				{
 					"title": {
-						"EN": "My Files",
-						"ES": "Mis Ficheros",
-						"FR": "Mes fichiers"
+						"EN": "My Files (old)",
+						"ES": "Mis Ficheros (antiguo)",
+						"FR": "Mes fichiers (ancien)"
 					},
 					"icon": "",
 					"url": "/controlpanel/files/list"
 				},
+				{
+                    "title": {
+                        "EN": "My Files",
+                        "ES": "Mis Ficheros",
+                        "FR": "Mes fichiers"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/objectstore/list"
+                },
 				{
 					"title": {
 						"EN": "My Configurations",
@@ -441,6 +552,15 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/logcentralizer/show"
+				},
+				{
+					"title": {
+						"EN": "Spark UI",
+						"ES": "Spark UI",
+						"FR": "Spark UI"
+					},
+					"icon": "",
+					"url": "/controlpanel/sparkui/show"
 				}
 			]
 		},

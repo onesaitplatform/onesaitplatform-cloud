@@ -1,6 +1,8 @@
 onesaitplatform:
   env:
     database:
+      nebula-hosts: localhost:9669
+      nebula-pool-size: 10
       execution-timeout: !!java.lang.Long 10000
       queries-limit: 2000
       mongodb-servers: localhost:27017

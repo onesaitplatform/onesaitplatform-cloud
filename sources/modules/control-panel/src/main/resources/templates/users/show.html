@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -199,7 +199,8 @@
 			"deleteError" : [[#{user.deleteError}]] || 'Error!',
 			"deactivateTitle" : [[#{user.deactivate.title}]] || 'Deactivate User',
 			"deactivateText" : [[#{user.deactivateText}]] || '',
-			"confirmBtn" : [[#{gen.confirmBtn}]] || 'Confirm'
+			"confirmBtn" : [[#{gen.confirmBtn}]] || 'Confirm',
+			"deleteResourceError" : [[#{user.delete.resource.error}]] || 'Error!'
 		};
 
     //<![CDATA[
@@ -280,13 +281,27 @@
 							success : function(response){
 								navigateUrl("/controlpanel/users/list");
 							},
-						    error :  function () {
-						    	$.alert({
+						    error :  function (dataError) {						    
+						    
+						    if(dataError!=null && dataError.responseText!=null 
+						    	&& typeof dataError.responseText!='undefined' 
+						    	&& dataError.responseText.indexOf(', there are resources owned')>-1){
+						    	
+						    
+						    $.alert({
+									title : 'ERROR!',
+									type : 'red',
+									theme : 'light',
+									content :  userCreateJson.deleteResourceError
+								});
+						    }else{
+						    $.alert({
 									title : 'ERROR!',
 									type : 'red',
 									theme : 'light',
 									content :  userCreateJson.deleteError
 								});
+						    }
 						    }
 						})
 					}

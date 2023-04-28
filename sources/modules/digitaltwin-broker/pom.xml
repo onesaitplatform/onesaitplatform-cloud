@@ -20,7 +20,7 @@
 	</properties>
 
 	<dependencies>
-		<!-- dependency> <groupId>com.minsait.onesait.platform</groupId> <artifactId>onesaitplatform-router-client-rest</artifactId> 
+		<!-- dependency> <groupId>com.minsait.onesait.platform</groupId> <artifactId>onesaitplatform-router-client-rest</artifactId>
 			<version>${project.version}</version> </dependency -->
 
 		<!-- To overwrite MySQL version-->
@@ -45,7 +45,7 @@
 			<artifactId>onesaitplatform-persistence-interfaces</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-router-client-rest</artifactId>
@@ -55,13 +55,13 @@
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-pass-encryptor</artifactId>
 			<version>${project.version}</version>
-		</dependency>	
+		</dependency>
 		<!-- OneLog -->
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-onelog</artifactId>
 			<version>${project.version}</version>
-		</dependency>	
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -75,6 +75,10 @@
          			<groupId>org.springframework.boot</groupId>
          			<artifactId>spring-boot-starter-tomcat</artifactId>
       			</exclusion>
+						<exclusion>
+							<groupId>com.fasterxml.jackson.core</groupId>
+							<artifactId>jackson-databind</artifactId>
+						</exclusion>						
    			</exclusions>
 		</dependency>
 		<dependency>
@@ -158,20 +162,20 @@
 			<artifactId>jquery</artifactId>
 			<version>3.1.0</version>
 		</dependency>
-		
+
 		<!-- CACHE -->
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-cache</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<version>1.2.3</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-core</artifactId>
@@ -220,8 +224,8 @@
 					</execution>
 				</executions>
 			</plugin>
-			
-		    <!-- skip deployment -->	
+
+		    <!-- skip deployment -->
 		    <plugin>
 		      <groupId>org.apache.maven.plugins</groupId>
 		      <artifactId>maven-deploy-plugin</artifactId>
@@ -229,7 +233,7 @@
 		      <configuration>
 		          <skip>true</skip>
 		      </configuration>
-		    </plugin>			
+		    </plugin>
 		</plugins>
 	</build>
 

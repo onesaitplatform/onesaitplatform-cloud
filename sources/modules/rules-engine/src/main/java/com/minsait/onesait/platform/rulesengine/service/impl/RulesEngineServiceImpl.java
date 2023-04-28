@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,7 +82,7 @@ public class RulesEngineServiceImpl implements RulesEngineService {
 		final List<Future<String>> results = rules.stream().map(dr -> {
 			final String output = executeRules(ontology, jsonInput, dr.getUser().getUserId());
 
-			if (StringUtils.isEmpty(output) || output.equals("{}"))
+			if (!StringUtils.hasText(output) || output.equals("{}"))
 				return new AsyncResult<>(output);
 			final OperationModel model = OperationModel.builder(dr.getTargetOntology().getIdentification(),
 					OperationType.POST, dr.getUser().getUserId(), OperationModel.Source.RULES_ENGINE).body(output)

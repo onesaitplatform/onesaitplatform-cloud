@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
@@ -69,6 +70,7 @@ import com.minsait.onesait.platform.config.model.BinaryFile;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.Report;
 import com.minsait.onesait.platform.config.model.Role.Type;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.reports.ReportService;
 import com.minsait.onesait.platform.config.services.user.UserService;
@@ -107,8 +109,15 @@ public class ReportController {
 
 	@Autowired
 	private IntegrationResourcesService resourcesService;
+	
+	@Autowired 
+	private HttpSession httpSession;
+	
 
 	private static final String REPORT_API_PATH = "/api/reports";
+	private static final String APP_ID = "appId";
+	private static final String REDIRECT_PROJECT_SHOW = "redirect:/projects/update/";
+	
 	private RestTemplate restTemplate;
 
 	@PostConstruct
@@ -147,6 +156,10 @@ public class ReportController {
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@Transactional
 	public String list(Model model) {
+		
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
+		
 		model.addAttribute("owners",
 				userService.getAllActiveUsers().stream()
 				.filter(user -> !Type.ROLE_ADMINISTRATOR.toString().equals(user.getRole().getId())
@@ -192,7 +205,13 @@ public class ReportController {
 			report = (ReportDto) model.asMap().get(REPORT);
 		}
 
-		return new ModelAndView("reports/create", REPORT, report);
+		ModelAndView newModel = new ModelAndView("reports/create", REPORT, report);
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId!=null) {
+			newModel.addObject(APP_ID, projectId.toString());
+		}
+		
+		return newModel;
 	}
 
 	@GetMapping(value = "/edit/{id}", produces = MediaType.TEXT_HTML_VALUE)
@@ -271,6 +290,14 @@ public class ReportController {
 				return "redirect:/reports/create";
 			}
 			reportService.saveOrUpdate(entity);
+			
+			final Object projectId = httpSession.getAttribute(APP_ID);
+			if (projectId!=null) {
+				httpSession.setAttribute("resourceTypeAdded", OPResource.Resources.REPORT.toString());
+				httpSession.setAttribute("resourceIdentificationAdded", entity.getIdentification());
+				httpSession.removeAttribute(APP_ID);
+				return REDIRECT_PROJECT_SHOW + projectId.toString();
+			}
 
 			return "redirect:/reports/list";
 		} catch (final Exception e) {

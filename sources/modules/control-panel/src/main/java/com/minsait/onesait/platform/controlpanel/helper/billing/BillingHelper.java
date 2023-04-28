@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,9 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.minsait.onesait.platform.commons.ActiveProfileDetector;
 import com.minsait.onesait.platform.config.model.Configuration;
 import com.minsait.onesait.platform.config.model.Configuration.Type;
-import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,10 +38,7 @@ public class BillingHelper {
 	private static final String READ_ERROR = null;
 
 	@Autowired
-	ConfigurationService configservice;
-
-	@Autowired
-	ActiveProfileDetector profiledetector;
+	private IntegrationResourcesService integrationResourcesService;
 
 	@Value("${onesaitplatform.multitenancy.enabled}")
 	private String MULTITENANCY;
@@ -51,28 +47,34 @@ public class BillingHelper {
 
 	public List<ModuleStatus> getModuleStatus() {
 
-		List<ModuleStatus> list = new ArrayList<>();
+		final List<ModuleStatus> list = new ArrayList<>();
 
-		Configuration config = configservice.getConfiguration(Type.ENDPOINT_MODULES, profiledetector.getActiveProfile(),
-				"BillableModules");
+		final Configuration config = integrationResourcesService.getBillableModules();
+
 		if (config == null) {
 			log.error("It doesn't exist the BillableModules Centralized Configuration ");
 			return list;
 		}
-		String json = config.getYmlConfig();
+		final String json = config.getYmlConfig();
 		JsonNode actualObj;
 		try {
-			ObjectMapper mapper = new ObjectMapper();
+			final ObjectMapper mapper = new ObjectMapper();
 			actualObj = mapper.readTree(json);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			log.error("Error when parsing the Json", e);
 			return list;
 		}
-		for (JsonNode jsonnode : actualObj) {
+		for (final JsonNode jsonnode : actualObj) {
 			try {
-				ModuleStatus status = new ModuleStatus();
+				final ModuleStatus status = new ModuleStatus();
 
-				Socket clientSocket = new Socket(jsonnode.get("servicename").asText(), jsonnode.get("port").asInt());
+				Socket clientSocket;
+				try {
+					clientSocket = new Socket(jsonnode.get("servicename").asText() + "." + jsonnode.get("stack").asText(), jsonnode.get("port").asInt());
+				}catch(NullPointerException e) {
+					clientSocket = new Socket(jsonnode.get("servicename").asText(), jsonnode.get("port").asInt());
+
+				}
 				status.setIdentification(jsonnode.get("module").asText());
 				status.setName(jsonnode.get("name").asText());
 				if (clientSocket.isConnected()) {
@@ -83,15 +85,15 @@ public class BillingHelper {
 
 				list.add(status);
 				clientSocket.close();
-			} catch (IOException e) {
-				ModuleStatus status = new ModuleStatus();
+			} catch (final IOException e) {
+				final ModuleStatus status = new ModuleStatus();
 				status.setIdentification(jsonnode.get("module").asText());
 				status.setName(jsonnode.get("name").asText());
 				status.setStatus(false);
 				list.add(status);
 			}
 		}
-		ModuleStatus status = new ModuleStatus();
+		final ModuleStatus status = new ModuleStatus();
 		status.setIdentification("multitenant");
 		status.setName("Multitenant");
 		if (MULTITENANCY.equals("true")) {

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,12 @@ public interface BinaryFileRepository extends JpaRepository<BinaryFile, String> 
 
 	@Query("select bf from BinaryFile as bf WHERE (bf.path=:path)")
 	List<BinaryFile> findByPath(@Param("path") String path);
+
+	@Query("select bf from BinaryFile as bf WHERE (bf.fileName LIKE %:fileName% ) ORDER BY bf.fileName ASC")
+	List<BinaryFile> findAllByFileName(@Param("fileName") String fileName);
+
+	@Query("select bf from BinaryFile as bf WHERE (bf.user=:user OR bf.isPublic=TRUE OR bf.id IN (SELECT bfa.binaryFile.id FROM BinaryFileAccess AS bfa WHERE bfa.user=:user) ) AND bf.fileName LIKE %:fileName% ORDER BY bf.fileName ASC")
+	List<BinaryFile> findByUserAndFileName(@Param("user") User user, @Param("fileName") String fileName);
 
 	@Override
 	@Transactional

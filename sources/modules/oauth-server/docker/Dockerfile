@@ -65,7 +65,8 @@ ENV SERVER_NAME=localhost \
 	SBA_SECRET=ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv) \
 	LDAP_GROUP_WHITELIST= \
     LDAP_AUTH_REGEX=(.*) \
-    JWT_EXPIRATION_TIME=44000
+    JWT_EXPIRATION_TIME=44000 \
+    HTTP_LOG_LEVEL=TRACE
 
 # Timezone
 RUN apk add --no-cache tzdata \
@@ -95,12 +96,8 @@ RUN chown -R onesait:onesait /var/log/platform-logs && \
 
 VOLUME ["/tmp", "/var/log/platform-logs"]
 
-
+USER onesait
 EXPOSE 21000
 COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod 775 /usr/local/bin/docker-entrypoint.sh
-
-USER onesait
-
 ENTRYPOINT ["docker-entrypoint.sh"]
 

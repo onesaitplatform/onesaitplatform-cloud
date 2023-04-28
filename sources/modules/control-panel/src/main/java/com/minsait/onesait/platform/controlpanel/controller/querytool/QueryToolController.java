@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import java.util.concurrent.Executors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.hibernate.exception.SQLGrammarException;
 import org.json.JSONException;
@@ -107,6 +108,9 @@ public class QueryToolController {
 
 	@Autowired
 	private IntegrationResourcesService resourcesServices;
+	
+	@Autowired 
+	private HttpSession httpSession;
 
 	@Value("${onesaitplatform.queryTool.allowedOperations:false}")
 	private Boolean queryToolAllowedOperations;
@@ -129,9 +133,13 @@ public class QueryToolController {
 	private static final String PRAGMA = "Pragma";
 	private static final String CACHE_CONTROL = "Cache-Control";
 	private static final String NO_CACHE_STR = "no-cache";
+	private static final String APP_ID = "appId";
 
 	@GetMapping("show")
 	public String show(Model model) {
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
+		
 		final List<OntologyDTO> ontologies = ontologyService
 				.getAllOntologiesForListWithProjectsAccess(utils.getUserId());
 

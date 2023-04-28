@@ -228,20 +228,35 @@
         }
     
     
-        $scope.sendFilter = function (field, value, op) {
+        $scope.sendFilter = function (field_filters, value, op) {
           var filterStt = {};
-          if (typeof op === 'undefined') {
-            op = "="
+          if (Array.isArray(field_filters)) {
+            
+            for(var i = 0 ; i< field_filters.length;i++){
+
+              filterStt[field_filters[i].name] = {
+                value: field_filters[i].value,
+                op: field_filters[i].op,
+                name: field_filters[i].name,
+                typeAction: "filter"
+              };
+            }
+
+          
+          } else {
+           
+            if (typeof op === 'undefined') {
+              op = "="
+            }
+            filterStt[field_filters] = {
+              value: value,
+              id: vm.id,
+              op: op
+            };
           }
-          filterStt[field] = {
-            value: value,
-            id: vm.id,
-            op: op
-          };
           interactionService.sendBroadcastFilter(vm.id, filterStt);
         }
-    
-        vm.sendFilter = $scope.sendFilter;
+        vm.sendFilter = $scope.sendFilter; 
     
         vm.sendFilters = function () {
           filterService.sendFilters(vm.id, vm.filters);

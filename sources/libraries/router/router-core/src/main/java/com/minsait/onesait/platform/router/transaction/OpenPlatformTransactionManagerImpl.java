@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,6 +59,10 @@ public class OpenPlatformTransactionManagerImpl implements OpenPlatformTransacti
 	public static final String NOT_VALID_SESSIONKEY_FOR_TRANSACTION_MESSAGE = "Sessionkey is not valid for this transaction";
 	public static final String ONTOLOGIES_NOT_AVAILABLE_MESSAGE = "Ontologies are locked, please try again.";
 	public static final String ONTOLOGIES_NOT_AVAILABLE_CODE = "ONTOLOGIES_NOT_AVAILABLE";
+	public static final String ONTOLOGIES_INSTANCE_ERROR_CODE = "ONTOLOGIES_INSTANCE_NOT_VALID";
+	public static final String ONTOLOGIES_INSTANCE_ERROR_MESSAGE = "Ontology instance not valid for schema: ";
+	public static final String GENERIC_OPERATION_ERROR_CODE = " OPERATION_ERROR";
+	public static final String GENERIC_OPERATION_ERROR_MESSAGE = " Operation error";
 
 	@Value("${sofia2.transaction.check.orphan.timeout.seconds:1000}")
 	private Integer oprhanTimeout;
@@ -203,11 +207,26 @@ public class OpenPlatformTransactionManagerImpl implements OpenPlatformTransacti
 					switch (transactionalOperation.getType()) {
 					case INSERT:
 						rollback = !processOperationTxInsert(transactionalOperation);
+						if(rollback) {
+							result.setStatus(false);
+							result.setErrorCode(ONTOLOGIES_INSTANCE_ERROR_CODE);
+							result.setMessage(ONTOLOGIES_INSTANCE_ERROR_MESSAGE + transactionalOperation.getNotificationModel().getOperationModel().getBody());
+						}
 						break;
 					case UPDATE:
 					case DELETE:
 						rollback = !processOperationTxUpdateDelete(transactionalOperation,
 								transactionalOperation.getType());
+						if(rollback) {
+							result.setStatus(false);
+							result.setErrorCode(transactionalOperation.getType() + GENERIC_OPERATION_ERROR_CODE);
+							if (transactionalOperation.getNotificationModel().getOperationModel().getObjectId() != null &&
+								transactionalOperation.getNotificationModel().getOperationModel().getObjectId().length() > 0) {
+									result.setMessage(transactionalOperation.getType() + GENERIC_OPERATION_ERROR_MESSAGE + " ID: " + transactionalOperation.getNotificationModel().getOperationModel().getObjectId());
+							} else {
+									result.setMessage(transactionalOperation.getType() + GENERIC_OPERATION_ERROR_MESSAGE + " Statement: " + transactionalOperation.getNotificationModel().getOperationModel().getBody());
+							}
+						}
 						break;
 					}
 					currentOperation = i;
@@ -223,11 +242,15 @@ public class OpenPlatformTransactionManagerImpl implements OpenPlatformTransacti
 						switch (transactionalOperation.getType()) {
 						case INSERT:
 							rollback = !processCompensationTxInsert(transactionalOperation);
+							result.setErrorCode(GENERIC_OPERATION_ERROR_CODE);
+							result.setMessage("ROLLBACK " + GENERIC_OPERATION_ERROR_MESSAGE);
 							break;
 						case UPDATE:
 						case DELETE:
 							rollback = !processCompensationTxUpdateDelete(transactionalOperation,
 									transactionalOperation.getType());
+							result.setErrorCode(GENERIC_OPERATION_ERROR_CODE);
+							result.setMessage("ROLLBACK " + GENERIC_OPERATION_ERROR_MESSAGE);
 							break;
 						}
 					}
@@ -561,13 +584,16 @@ public class OpenPlatformTransactionManagerImpl implements OpenPlatformTransacti
 					List<String> affectedIds = new ArrayList<String>();
 					String repositoryResponse = result.getResult();
 
-					final MultiDocumentOperationResult multidocument = MultiDocumentOperationResult
-							.fromString(repositoryResponse);
+					final MultiDocumentOperationResult multidocument = MultiDocumentOperationResult.fromString(repositoryResponse);
 					final long totalInserted = multidocument.getCount();
 					if (totalInserted == 1) {
-						affectedIds.add(multidocument.getIds().get(0));
+						if(multidocument.getIds() != null) {
+							affectedIds.add(multidocument.getIds().get(0));
+						}
 					} else if (totalInserted > 1) {
-						affectedIds.addAll(multidocument.getIds());
+						if(multidocument.getIds() != null) {
+							affectedIds.addAll(multidocument.getIds());
+						}
 					}
 					transactionalOperation.setAffectedIds(affectedIds);
 					return true;

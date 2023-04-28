@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.controlpanel.rest.management.configuration;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -145,8 +146,8 @@ public class ConfigurationRestService {
 	public ResponseEntity<?> getByIdentification(
 			@ApiParam("identification") @PathVariable(value = "identification", required = true) String identification,
 			@ApiParam("type") @PathVariable(value = "type", required = true) Configuration.Type type,
-			@ApiParam("environment") @PathVariable(value = "environment", required = true) String environment) {
-
+			@ApiParam("environment") @PathVariable(value = "environment", required = true) String environment, HttpServletResponse response) {
+		utils.cleanInvalidSpringCookie(response);
 		final Configuration configuration = configurationService.getConfiguration(type, environment, identification);
 		if (configuration != null && (utils.isAdministrator()
 				|| configuration.getUser().getUserId().equals(utils.getUserId())

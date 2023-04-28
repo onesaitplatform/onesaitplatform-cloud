@@ -138,7 +138,8 @@ var ApiCreateController = function() {
                         $('#numversion').val(data);
                         createOperationsOntology ();
                         // VISUAL-UPDATE
-                        configurarApi();
+                        //configurarApi();
+                        checkOntologyRTDB();
                     }
                 },
                 error: function(data,status,er) {
@@ -178,6 +179,7 @@ var ApiCreateController = function() {
         	ontologySelector.prop('disabled', false);
         	ontologySelector.selectpicker('refresh');
         	$('#row-json').addClass('hide');
+        	$('.common-ops').removeClass('hide');
         	$('#row-operations').removeClass('hide');
         	$('#divCUSTOMSQL').removeClass('hide');
         	$('#row-panel-info').removeClass('hide');
@@ -188,6 +190,7 @@ var ApiCreateController = function() {
         	ontologySelector.prop('disabled', true);
         	ontologySelector.selectpicker('refresh');
         	$('#row-operations').addClass('hide');
+        	$('.common-ops').addClass('hide');
         	$('#divCUSTOMSQL').addClass('hide');
         	$('#row-json').removeClass('hide');
         	$('#row-panel-info').removeClass('hide');
@@ -218,6 +221,21 @@ var ApiCreateController = function() {
 					$('.op_button').attr("disabled", true);
 				}
             }
+            let rtdbSelected = $("#ontology option:selected").data('rtdb');
+    		if(rtdbSelected === 'AI_MINDS_DB'){
+    			$('#row-operations').addClass('hide');
+    			$('#row-operations-nebula').addClass('hide');
+    			$('#row-operations-ai').removeClass('hide');
+    		}else if(rtdbSelected === 'NEBULA_GRAPH'){
+    			$('#row-operations').removeClass('hide');
+    			$('.common-ops').addClass('hide');
+    			$('#row-operations-ai').addClass('hide');
+    		}else{
+    			$('.common-ops').removeClass('hide');
+    			$('#row-operations').removeClass('hide');
+    			$('#row-operations-nebula').addClass('hide');
+    			$('#row-operations-ai').addClass('hide');
+    		}
         } catch (err) {
             console.log('Fallo cargando operaciones',err);
             $('.capa-loading').hide();
@@ -225,7 +243,7 @@ var ApiCreateController = function() {
     }
 	
 	function isDefaultOp(idOp){
-		if (idOp.endsWith("_GETAll") || idOp.endsWith("_GET") || idOp.endsWith("_POST") || idOp.endsWith("_PUT") || idOp.endsWith("_DELETEID")){
+		if (idOp.endsWith("_GETAll") || idOp.endsWith("_GET") || idOp.endsWith("_POST") || idOp.endsWith("_PUT") || idOp.endsWith("_DELETEID") || idOp.endsWith("_POSTAI") || idOp.endsWith("_POSTNebula")){
 			return true;
 		} else {
 			return false;
@@ -281,6 +299,12 @@ var ApiCreateController = function() {
     		$('#descOperation' + button.name).show();
     		$('#div' + button.name).prop('className', 'op_div_selected');
     		$('#buttonOperacion' + button.name).find("i").toggleClass("fa-angle-down fa-angle-up");
+    		if(button.name === 'POSTAI'){
+    			$('#description_POSTAI').val('Data prediction');
+    		}
+    		if(button.name === 'POSTNebula'){
+    			$('#description_POSTNebula').val('Execute nGQL query');
+    		}
     	} else if (button.className=='op_button_selected'){
     		button.className='op_button';
     		$('#description_' + button.name).val("");
@@ -579,6 +603,7 @@ var ApiCreateController = function() {
 			createOperationsOntology();
 			loadOperations();
 			
+			
 			$('#id_endpoint').val($('#id_endpoint_hidden').val());
 			
 			// set DATE created in EDIT MODE
@@ -608,11 +633,15 @@ var ApiCreateController = function() {
         }
     }
 	
-    function existOp(op_name){
+    function existOp(op_name, method){
         for(var i=0; i<operations.length; i+=1){
             var operation = operations [i];
             if (operation.identification == op_name){
-                return true;
+            	if(method !== null && typeof method !== 'undefined'){
+            	  return operation.operation === method;
+            	}else{
+            	  return true;
+            	}
             }
         }
         return false;
@@ -659,6 +688,28 @@ var ApiCreateController = function() {
                     replaceOperation(operationPOST);
                 }
             }
+            if ($('#POSTAI').attr('class')=='op_button_selected'){
+            	var querystringsPOST = new Array();
+            	var operationPOST = {identification: nameApi + "_POSTAI", description: $('#description_POSTAI').val() , operation:"POST", path:$('#description_POSTAI_label').text(), querystrings: querystringsPOST};
+	            querystringparameter = {name: "body", dataType: "STRING", headerType: "BODY", description: "", value: ""};
+	            operationPOST.querystrings.push(querystringparameter);
+                if (!existOp(operationPOST.identification)){
+                	operations.push(operationPOST);
+                } else {
+                    replaceOperation(operationPOST);
+                }
+            }
+            if ($('#POSTNebula').attr('class')=='op_button_selected'){
+            	var querystringsPOST = new Array();
+            	var operationPOST = {identification: nameApi + "_POSTNebula", description: $('#description_POSTNebula').val() , operation:"POST", path:$('#description_POSTNebula_label').text(), querystrings: querystringsPOST};
+	            querystringparameter = {name: "body", dataType: "STRING", headerType: "BODY", description: "", value: ""};
+	            operationPOST.querystrings.push(querystringparameter);
+                if (!existOp(operationPOST.identification)){
+                	operations.push(operationPOST);
+                } else {
+                    replaceOperation(operationPOST);
+                }
+            }
             if ($('#PUT').attr('class')=='op_button_selected'){
             	var querystringsPUT = new Array();
             	var operationPUT = {identification: nameApi + "_PUT", description: $('#description_PUT').val() , operation:"PUT", path:$('#description_PUT_label').text(), querystrings: querystringsPUT};
@@ -683,6 +734,7 @@ var ApiCreateController = function() {
                     replaceOperation(operationDELETEID);
                 }
             }
+            
             
             $("#operationsObject").val(JSON.stringify(operations));
             $("#authenticationObject").val(JSON.stringify(authentication));
@@ -743,6 +795,7 @@ var ApiCreateController = function() {
 		logControl ? console.log('|---> authorization()') : '';	
 		var insertURL = apiCreateReg.authorizationsPath + '/authorization';
 		var deleteURL = apiCreateReg.authorizationsPath + '/authorization/delete';
+		var authorizationOnOntologyURL = apiCreateReg.authorizationsPath + '/authorizationOnOntology';
 		var response = {};
 		var csrf_value = $("meta[name='_csrf']").attr("content");
 		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
@@ -751,6 +804,7 @@ var ApiCreateController = function() {
 			console.log('    |---> Inserting... ' + insertURL);
 			
 			var authorized=false;
+			
 			
 			for(var i=0; i<authorizationsIds.length; i+=1){
 				var authElement = authorizationsIds [i];
@@ -798,10 +852,30 @@ var ApiCreateController = function() {
 						$('#authorizations').removeClass('hide');
 						$('#authorizations').attr('data-loaded',true);
 						showHideImageTableOntology();
-						
+				
 						toastr.success(messagesForms.operations.genOpSuccess,'');
+						
 					}
 				});	
+				// ajax : authorizationOnOntology
+				$.ajax({
+					url:authorizationOnOntologyURL,
+	                headers: {
+						[csrf_header]: csrf_value
+				    },
+					type:"POST",
+					async: true,
+					data: {"api": api,"user": user},			 
+					dataType:"json",
+					statusCode: {
+    				403: function() {	 
+    				 toastr.warning('You have to give this user permission to the ontology before you can use this API');
+   				
+   					 }
+    }
+									
+  						 	
+						});
 			}	
 		}
 		if (action  === 'delete'){
@@ -912,6 +986,41 @@ var ApiCreateController = function() {
 						
 	};
  
+	var checkOntologyRTDB = function(){
+		let rtdbSelected = $("#ontology option:selected").data('rtdb');
+		if(rtdbSelected === 'AI_MINDS_DB'){
+		    $('#row-operations').addClass('hide');
+		    $('#row-operations-nebula').addClass('hide');
+	        $('#divCUSTOMSQL').addClass('hide');
+	        $('#row-panel-info').removeClass('hide');
+	        $('#row-operations-ai').removeClass('hide');
+	        $('#description_POSTAI_label').text("/predict");
+	        $('#ontologyOperationsAI input[type="text"]').val('').show();
+	        if(!$('#POSTAI').hasClass('op_button_selected')){
+	        	$('#POSTAI').click();
+	        }
+	        $('#description_POSTAI').val('Data prediction');
+		}else if (rtdbSelected === 'NEBULA_GRAPH'){
+			$('#row-operations').removeClass('hide');
+			$('.common-ops').addClass('hide');
+//	        $('#divCUSTOMSQL').addClass('hide');
+	        $('#row-panel-info').removeClass('hide');
+	        $('#row-operations-ai').addClass('hide');
+	        $('#row-operations-nebula').removeClass('hide');
+	        $('#description_POSTNebula_label').text("/execute-ngql");
+	        $('#ontologyOperationsNebula input[type="text"]').val('').show();
+			if(!$('#POSTNebula').hasClass('op_button_selected')){
+	        	$('#POSTNebula').click();
+	        }
+			$('#description_POSTNebula').val('Execute nGQL query');
+		}else{
+			$('#row-operations-ai').addClass('hide');
+			$('#row-operations-nebula').addClass('hide');
+			configurarApi();
+			$('#description_POSTAI').val('Data prediction');
+			$('#description_POSTNebula').val('Execute nGQL query');
+		}
+	}
 	// CONTROLLER PUBLIC FUNCTIONS 
 	return{
 		// SHOW ERROR DIALOG
@@ -950,6 +1059,10 @@ var ApiCreateController = function() {
 			calculateVersion();
 		},
 		
+		changeOntology: function() {
+			checkOntologyRTDB();
+		},
+		
 		// SELECT OPERATIONS
 		selectOp: function(button) {
 			logControl ? console.log(LIB_TITLE + ': selectOp()') : '';
@@ -957,9 +1070,9 @@ var ApiCreateController = function() {
 		},
 		
 		// SELECT OPERATIONS
-		existOperation: function(name) {
+		existOperation: function(name, method) {
 			logControl ? console.log(LIB_TITLE + ': existOperation(name)') : '';
-			return existOp(name);
+			return existOp(name, method);
 		},
 		
 		// LOAD() JSON LOAD FROM TEMPLATE TO CONTROLLER

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -129,6 +129,23 @@ public interface ClientPlatformInstanceRepository extends JpaRepository<ClientPl
 			" ON DUPLICATE KEY UPDATE updated_at = :#{#cpi.updatedAt}, connected = :#{#cpi.connected}, disabled = :#{#cpi.disabled}, json_actions = :#{#cpi.jsonActions}, location = :#{#cpi.location}, protocol = :#{#cpi.protocol}, status = :#{#cpi.status}, tags = :#{#cpi.tags}",
 			nativeQuery = true)
 	public int createOrUpdateClientPlatformInstance( @Param("cpi") ClientPlatformInstance entity,
+			@Param("cp") String clientPlatformId,
+			@Param("limit") int limit);
+	
+	@Transactional
+	@Modifying
+	@Query(value =
+	" INSERT INTO onesaitplatform_config.client_platform_instance (id, created_at, updated_at, connected, disabled, identification, json_actions, location, protocol, status, tags, client_platform_id) " +
+			"    SELECT uuid(), :#{#cpi.createdAt}, :#{#cpi.updatedAt}, :#{#cpi.connected}, :#{#cpi.disabled}, :#{#cpi.identification}, :#{#cpi.jsonActions}, :#{#cpi.location}, :#{#cpi.protocol}, :#{#cpi.status}, :#{#cpi.tags}, :#{#cp} " +
+			"    FROM " +
+			"     (SELECT client_platform_id, count(*) AS actual_devices " +
+			"      FROM onesaitplatform_config.client_platform_instance " +
+			"      WHERE client_platform_id = :#{#cp} AND identification <> :#{#cpi.identification} " +
+			"     ) AS actual " +
+			"    WHERE :#{#limit} > 0 AND actual.actual_devices < :#{#limit} " +
+			" ON CONFLICT DO UPDATE updated_at = :#{#cpi.updatedAt}, connected = :#{#cpi.connected}, disabled = :#{#cpi.disabled}, json_actions = :#{#cpi.jsonActions}, location = :#{#cpi.location}, protocol = :#{#cpi.protocol}, status = :#{#cpi.status}, tags = :#{#cpi.tags}",
+			nativeQuery = true)
+	public int createOrUpdateClientPlatformInstancePSQL( @Param("cpi") ClientPlatformInstance entity,
 			@Param("cp") String clientPlatformId,
 			@Param("limit") int limit);
 

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,10 @@ import org.apache.kafka.common.acl.AclBinding;
 import org.apache.kafka.common.acl.AclBindingFilter;
 import org.apache.kafka.common.acl.AclOperation;
 import org.apache.kafka.common.acl.AclPermissionType;
-import org.apache.kafka.common.resource.Resource;
+import org.apache.kafka.common.resource.PatternType;
 import org.apache.kafka.common.resource.ResourceFilter;
+import org.apache.kafka.common.resource.ResourcePattern;
+import org.apache.kafka.common.resource.ResourcePatternFilter;
 import org.apache.kafka.common.resource.ResourceType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -57,11 +59,11 @@ public class KafkaService {
 
 	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.brokers:none}")
 	private String kafkaBrokers;
-	
+
 	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.host:localhost}")
 	private String kafkaHost;
 
-	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.port:9092}") 	
+	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.port:9092}")
 	private String kafkaPort;
 
 	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.user:admin}")
@@ -100,7 +102,7 @@ public class KafkaService {
 	private static final String KAFKA_DEFAULTPORT = "9092";
 	private static final String ACL_CREATED = "Creating {} access for user {} to topic {}...";
 	private static final String PRINCIPAL = "User:";
-	
+
 	private static final String EMPTY_BROKERS = "none";
 
 	private AdminClient adminAcl;
@@ -148,7 +150,8 @@ public class KafkaService {
 			// if default used, then topic name has no vertical and tenant
 			return (ontologyInputPrefix + ontology).toUpperCase();
 		} else {
-			return (ontologyInputPrefix.substring(0, ontologyInputPrefix.length() - 1) + "-" + vertical + "-" + tenant + "-" + ontology).toUpperCase();
+			return (ontologyInputPrefix.substring(0, ontologyInputPrefix.length() - 1) + "-" + vertical + "-" + tenant
+					+ "-" + ontology).toUpperCase();
 		}
 	}
 
@@ -165,7 +168,8 @@ public class KafkaService {
 			// if default used, then topic name has no vertical and tenant
 			return (ontologyNotificationPrefix + ontology).toUpperCase();
 		} else {
-			return (ontologyNotificationPrefix.substring(0, ontologyNotificationPrefix.length() - 1) + "-" + vertical + "-" + tenant + "-" + ontology).toUpperCase();
+			return (ontologyNotificationPrefix.substring(0, ontologyNotificationPrefix.length() - 1) + "-" + vertical
+					+ "-" + tenant + "-" + ontology).toUpperCase();
 		}
 	}
 
@@ -255,7 +259,8 @@ public class KafkaService {
 
 	public void addAcls(String client, String operation, String topic) {
 		List<AclBinding> acls = new ArrayList<>();
-		Resource kafkaResource = new Resource(ResourceType.TOPIC, topic);
+		// Resource kafkaResource = new Resource(ResourceType.TOPIC, topic);
+		ResourcePattern kafkaResource = new ResourcePattern(ResourceType.TOPIC, topic, PatternType.LITERAL);
 
 		switch (operation) {
 		case "QUERY":
@@ -290,10 +295,14 @@ public class KafkaService {
 
 	public void deleteAcls(String client, String topic) {
 		List<AclBindingFilter> filters = new ArrayList<>();
-		ResourceFilter resourceFilter = new ResourceFilter(ResourceType.TOPIC, topic);
+		// ResourceFilter resourceFilter = new ResourceFilter(ResourceType.TOPIC,
+		// topic);
 		AccessControlEntryFilter entityFilter = new AccessControlEntryFilter(PRINCIPAL + client, "*", AclOperation.ANY,
 				AclPermissionType.ANY);
+		ResourcePatternFilter resourceFilter = new ResourcePatternFilter(ResourceType.TOPIC, topic,
+				PatternType.LITERAL);
 		AclBindingFilter filter = new AclBindingFilter(resourceFilter, entityFilter);
+
 		filters.add(filter);
 		log.info("Deleting ACLs for user {} to topic {}.", client, topic);
 		DeleteAclsResult result = adminAcl.deleteAcls(filters);
@@ -306,7 +315,7 @@ public class KafkaService {
 		log.info("ACLs successfully deleted for user {} to topic {}.", client, topic);
 	}
 
-	private AclBinding generateAclBinding(String principal, AclOperation operation, Resource kafkaResource) {
+	private AclBinding generateAclBinding(String principal, AclOperation operation, ResourcePattern kafkaResource) {
 		AccessControlEntry accessControlEntity = new AccessControlEntry(principal, "*", operation,
 				AclPermissionType.ALLOW);
 		return new AclBinding(kafkaResource, accessControlEntity);

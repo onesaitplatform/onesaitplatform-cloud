@@ -4,7 +4,15 @@ server:
   servlet.contextPath: /flowengine
 
 # all access to actuator endpoints without security
-
+logbook:
+  exclude:
+     - ${server.servlet.contextPath}/actuator/**
+     - ${server.servlet.contextPath}/static/**
+     - ${server.servlet.contextPath}/themes/**
+     - ${server.servlet.contextPath}/swagger-ui/**
+  write:
+     max-body-size: 10000
+     
 master: 
    datasource:
       hikari: 
@@ -157,3 +165,4 @@ logging:
    file.name: ${spring.application.name}
    level:
       com.minsait: INFO
+      org.zalando.logbook: TRACE

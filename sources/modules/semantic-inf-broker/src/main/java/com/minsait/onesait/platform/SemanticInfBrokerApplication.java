@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.minsait.onesait.platform.business.services.interceptor.MultitenancyInterceptor;
-import com.minsait.onesait.platform.interceptor.CorrelationInterceptor;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,8 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SemanticInfBrokerApplication implements WebMvcConfigurer {
 
-	@Autowired
-	private CorrelationInterceptor logInterceptor;
+
 	@Autowired
 	private MultitenancyInterceptor multitenancyInterceptor;
 
@@ -74,7 +72,6 @@ public class SemanticInfBrokerApplication implements WebMvcConfigurer {
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
-		registry.addInterceptor(logInterceptor);
 		registry.addInterceptor(multitenancyInterceptor);
 	}
 

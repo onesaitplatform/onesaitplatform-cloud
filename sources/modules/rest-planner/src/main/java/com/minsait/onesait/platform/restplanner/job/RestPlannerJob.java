@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ public class RestPlannerJob {
 		final String tenant = context.getJobDetail().getJobDataMap().getString(Tenant2SchemaMapper.TENANT_KEY_STRING);
 		String resp = null;
 
-		if (!StringUtils.isEmpty(tenant) && !StringUtils.isEmpty(verticalSchema)) {
+		if (StringUtils.hasText(tenant) && StringUtils.hasText(verticalSchema)) {
 			MultitenancyContextHolder.setTenantName(tenant);
 			MultitenancyContextHolder.setVerticalSchema(verticalSchema);
 		}

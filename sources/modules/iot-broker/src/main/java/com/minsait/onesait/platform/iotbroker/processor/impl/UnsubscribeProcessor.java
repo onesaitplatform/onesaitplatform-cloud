@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ public class UnsubscribeProcessor implements MessageTypeProcessor {
 		final String result = routerResponse.getResult();
 		log.error(errorCode + " " + messageResponse + " " + operation + " " + result);
 
-		if (!StringUtils.isEmpty(routerResponse.getErrorCode())) {
+		if (StringUtils.hasText(routerResponse.getErrorCode())) {
 			response = SSAPUtils.generateErrorMessage(unsubscribeMessage, SSAPErrorCode.PROCESSOR,
 					routerResponse.getErrorCode());
 			return response;
@@ -114,7 +114,7 @@ public class UnsubscribeProcessor implements MessageTypeProcessor {
 	public boolean validateMessage(SSAPMessage<? extends SSAPBodyMessage> message) {
 		final SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribeMessage = (SSAPMessage<SSAPBodyUnsubscribeMessage>) message;
 
-		if (StringUtils.isEmpty(unsubscribeMessage.getBody().getSubscriptionId())) {
+		if (!StringUtils.hasText(unsubscribeMessage.getBody().getSubscriptionId())) {
 			throw new SSAPProcessorException(String.format(MessageException.ERR_FIELD_IS_MANDATORY, "subscriptionId",
 					message.getMessageType().name()));
 		}

@@ -267,5 +267,15 @@
           }
         )
       }
+
+      //Rest solver
+
+      vm.restConnect = function(id){
+        return $http.get(__env.endpointDashboardEngine + '/loginRest');
+      }
+
+      vm.solveDatasource = function(datasourceParams){
+        return $http.post(__env.endpointDashboardEngine + '/dsengine/rest/solver/' + datasourceParams.ds ,JSON.stringify(datasourceParams));
+      }
   };
 })();

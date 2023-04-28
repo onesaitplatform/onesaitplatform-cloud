@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,8 +96,8 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 			Authentication authentication) throws IOException {
 
 		final HttpSession session = request.getSession();
-
 		if (session != null) {
+			multitenancyService.updateLastLogin(authentication.getName());
 			if (plugableOauthAuthenticator != null) {
 				log.info("Post processing plugin authentication");
 				plugableOauthAuthenticator.postProcessAuthentication(authentication);
@@ -131,6 +131,7 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 
 				} else {
 					final String redirectUrl = (String) session.getAttribute(BLOCK_PRIOR_LOGIN);
+
 					if (redirectUrl != null && !"/error".equalsIgnoreCase(redirectUrl)) {
 						// we do not forget to clean this attribute from session
 						session.removeAttribute(BLOCK_PRIOR_LOGIN);
@@ -140,14 +141,11 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 
 					} else {
 						response.sendRedirect(request.getContextPath() + URI_MAIN);
-
 					}
 				}
 			}
-
 		} else {
 			response.sendRedirect(request.getContextPath() + URI_MAIN);
-
 		}
 
 	}
@@ -168,7 +166,7 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 			}
 		} else if (authentication != null && authentication.isAuthenticated()) {
 			if (plugableOauthAuthenticator != null) {
-				//NO-OP
+				// NO-OP
 			} else if (controller != null) {
 				request.getSession().setAttribute(OAUTH_TOKEN,
 						controller.postLoginOauthNopass(authentication).getValue());
@@ -211,7 +209,8 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 			@Override
 			protected boolean shouldNotFilter(HttpServletRequest request) {
 				final String path = request.getServletPath();
-				return path.startsWith(URI_VERIFY) || path.startsWith("/login") || path.startsWith("/oauth");
+				return path.startsWith(URI_VERIFY) || path.startsWith("/login") || path.startsWith("/oauth")
+						|| path.contains("/static/") || path.contains("/images/");
 
 			}
 		});
@@ -277,7 +276,8 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 			@Override
 			protected boolean shouldNotFilter(HttpServletRequest request) {
 				final String path = request.getServletPath();
-				return path.startsWith(URI_COMPLETE_IMPORT) || path.startsWith("/login") || path.startsWith("/oauth");
+				return path.startsWith(URI_COMPLETE_IMPORT) || path.startsWith(URI_VERIFY) || path.startsWith("/login")
+						|| path.startsWith("/oauth") || path.contains("/static/") || path.contains("/images/");
 
 			}
 		});
@@ -287,7 +287,6 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 		filter.setOrder(Ordered.LOWEST_PRECEDENCE);
 		return filter;
 	}
-
 
 	// added for oauth flows
 	@SuppressWarnings("unchecked")

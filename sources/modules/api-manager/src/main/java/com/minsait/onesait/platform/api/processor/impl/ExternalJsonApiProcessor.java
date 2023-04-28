@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -230,7 +230,7 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 			String postProcess = apiManagerServiceConfig.getPostProccess(api);
 			postProcess = postProcess.replace(Constants.CONTEXT_USER, user.getUserId());
 
-			if (!StringUtils.isEmpty(postProcess)) {
+			if (StringUtils.hasText(postProcess)) {
 				try {
 					final Object result = scriptEngine.invokeScript(postProcess, data.get(Constants.OUTPUT));
 					data.put(Constants.OUTPUT, result);
@@ -293,7 +293,7 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 					final Operation operation = op.getValue();
 					operation.getParameters().stream().filter(p -> p instanceof HeaderParameter).forEach(p -> {
 						final String header = request.getHeader(p.getName());
-						if (!StringUtils.isEmpty(header) && !headers.containsKey(p.getName())) {
+						if (StringUtils.hasText(header) && !headers.containsKey(p.getName())) {
 							headers.add(p.getName(), header);
 						}
 					});
@@ -322,9 +322,9 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 								name = p.getName();
 							}
 						}
-						if (!StringUtils.isEmpty(name)) {
+						if (StringUtils.hasText(name)) {
 							final String header = request.getHeader(name);
-							if (!StringUtils.isEmpty(header) && !headers.containsKey(name)) {
+							if (StringUtils.hasText(header) && !headers.containsKey(name)) {
 								headers.add(name, header);
 							}
 						}

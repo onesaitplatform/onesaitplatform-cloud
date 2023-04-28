@@ -13,7 +13,7 @@
 
 	<properties>
 
-		<revision>4.0.0-ce</revision>
+		<revision>4.2.0-ce</revision>
 		<docker.image.username>onesaitplatform</docker.image.username>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -40,7 +40,7 @@
 		<skip.integration.tests>true</skip.integration.tests>
 		<maven.install>2.5.2</maven.install>
 		<jsqlparser.version>3.1</jsqlparser.version>
-		<sql-to-mongo.version>3.0.8</sql-to-mongo.version>
+		<sql-to-mongo.version>4.0.1</sql-to-mongo.version>
 		<mongo-driver.version>4.3.1</mongo-driver.version>
 		<mockito.version>2.22.0</mockito.version>
 		<tika.version>1.20</tika.version>
@@ -74,6 +74,11 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
+				<groupId>org.zalando</groupId>
+				<artifactId>logbook-spring-boot-starter</artifactId>
+				<version>2.14.0</version>
+			</dependency>
+			<dependency>
 				<groupId>com.fasterxml.jackson.dataformat</groupId>
 				<artifactId>jackson-dataformat-yaml</artifactId>
 				<version>2.13.2</version>
@@ -88,6 +93,10 @@
 				<artifactId>jackson-annotations</artifactId>
 				<version>2.13.2</version>
 			</dependency>
+
+
+
+
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-core</artifactId>
@@ -301,7 +310,7 @@
 				<artifactId>minio</artifactId>
 				<version>${minio.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>com.apicatalog</groupId>
 				<artifactId>titanium-json-ld</artifactId>
@@ -326,6 +335,11 @@
 			<!-- TEMPORAL <url>https://central.maven.org/maven2/</url> -->
 		</repository>
 		<repository>
+			<id>confluent</id>
+			<url>https://packages.confluent.io/maven/</url>
+		</repository>
+
+		<repository>
 			<id>jcenter</id>
 			<url>https://jcenter.bintray.com/</url>
 		</repository>
@@ -335,6 +349,7 @@
 		<!-- <module>sofia2-springboot-autoconfigure-starter</module> -->
 		<!-- PLUGIN LIBRARIES -->
 		<module>plugins/interfaces</module>
+		<module>plugins/keycloak-onesaitplatform</module>
 
 		<!--LIBRARIES -->
 		<module>libraries/commons</module>
@@ -347,6 +362,7 @@
 		<module>libraries/security/security-ldap-ri</module>
 		<module>libraries/security/security-oauth2-ri</module>
 		<module>libraries/security/kafka-login</module>
+		<module>libraries/security/spark-auth</module>
 
 		<module>services/nodered-auth-services</module>
 
@@ -360,6 +376,8 @@
 		<module>libraries/persistence/no-persistence-impl</module>
 		<module>libraries/persistence/timescaledb-impl</module>
 		<module>libraries/persistence/prestodb-impl</module>
+		<module>libraries/persistence/ai-mindsdb</module>
+		<module>libraries/persistence/nebula-graph</module>
 
 		<!--DIGITAL TWIN -->
 		<module>libraries/digital-twin/digital-twin-library</module>
@@ -404,6 +422,7 @@
 		<module>modules/api-manager</module>
 		<module>modules/planner</module>
 		<module>modules/semantic-inf-broker</module>
+		<module>modules/audit-router</module>
 		<module>modules/cache-server</module>
 		<module>modules/flow-engine</module>
 		<module>modules/dashboard-engine</module>
@@ -412,8 +431,12 @@
 		<module>modules/digitaltwin-broker</module>
 		<module>modules/rtdb-maintainer</module>
 		<module>modules/rules-engine</module>
+		<module>modules/bpm-engine</module>
 		<module>modules/rest-planner</module>
+		<module>modules/microservices-gateway</module>
 		<module>modules/report-engine</module>
+		<module>modules/serverless-manager</module>
+		<module>modules/analytics-engine-launcher-manager</module>
 
 
 		<!--<module>modules/scripting-engine</module -->
@@ -421,6 +444,7 @@
 
 		<!--THEMES -->
 		<module>libraries/themes/onesaitplatform-base-theme</module>
+		<module>libraries/themes/onesaitplatform-iwire-theme</module>
 
 		<!--CONTRIBUTIONS -->
 		<module>libraries/contributions/spring-boot-admin-server-ui-onesaitplatform</module>
@@ -533,7 +557,7 @@
 				<artifactId>spotbugs-maven-plugin</artifactId>
 				<version>3.1.0-RC7</version>
 				<dependencies>
-					<!-- overwrite dependency on spotbugs if you want to specify the version
+					<!-- overwrite dependency on spotbugs if you want to specify the version 
 						of spotbugs -->
 					<dependency>
 						<groupId>com.github.spotbugs</groupId>
@@ -701,9 +725,7 @@
 		</profile>
 		<profile>
 			<id>integration</id>
-			<modules>
-				<module>modules/video-broker</module>
-			</modules>
+			<!-- <modules> <module>modules/video-broker</module> </modules> -->
 			<properties>
 				<onesaitplatform.quartzURL>jdbc:mysql://localhost:3307/onesaitplatform_scheduler?useUnicode=true&amp;characterEncoding=UTF-8&amp;allowMultiQueries=true&amp;useSSL=false</onesaitplatform.quartzURL>
 			</properties>

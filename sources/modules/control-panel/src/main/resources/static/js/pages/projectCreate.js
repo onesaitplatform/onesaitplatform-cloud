@@ -4,6 +4,7 @@ var ProjectCreateController = function() {
 	var LIB_TITLE = 'Menu Controller';
 	var logControl = 1;
 	var form1 = $('#project_create_form');
+	var oTable;
 	
 	var initTemplateElements = function() {
 		var csrf_header = headerReg.csrfHeaderName;
@@ -104,6 +105,120 @@ var ProjectCreateController = function() {
 				$('.form').validate().element('#' + event.currentTarget.getElementsByTagName('select')[0].getAttribute('id'));
 			}
 		})
+		
+		initTable();
+		
+		calculateTotals();
+		
+		showAddedResource();
+		
+	}
+	
+	var initTable = function(){
+		oTable = $('#resource-access-list').DataTable({
+			   paging: false,
+			   columnDefs: [
+			      {
+			         targets: [1, 2, 3, 4],
+			         type: 'string',
+			         render: function(data, type, full, meta){
+			            if (type === 'filter' || type === 'sort') {
+			               var api = new $.fn.dataTable.Api(meta.settings);
+			               var td = api.cell({row: meta.row, column: meta.col}).node();
+			               data = $('select, input[type="text"]', td).val();
+			               if (!data){
+			            	   if (td.val){
+			            		   data = td.val;
+			            	   } else {
+			            		   data=td.innerHTML;
+			            	   }
+			               }
+			            }
+			            return data;
+			         }
+			      }
+			   ]
+			});
+		
+		if (oTable.settings()[0]){
+			initFilter();
+		}
+		
+	}
+	
+	var initFilter = function(){
+		if (oTable.settings()[0]){
+			$('#resource-access-list_wrapper div.dataTables_filter').addClass('hide');
+			$('#resource-access-list_wrapper > div.row').addClass('hide');
+			
+			$('#search-on-title').append($('#resource-access-list_wrapper div.dataTables_filter > label > input'));
+			$('#search-on-title > input').removeClass('input-xsmall')
+			
+			if ($("#search-on-title").children().length>2){
+				$("#search-on-title").find('input:first').remove();
+			}
+			
+			// RESET ALL FILTERS BTN
+			$('#clearFilters').on('click', function(){			
+				yadcf.exResetAllFilters(oTable);		
+			});
+			
+			yadcf.init(oTable, [			
+				    {column_number : 3,
+				    	filter_type: "select",
+				    	filter_container_id:"accessfilter",
+				    	filter_default_label: projectCreateJson.accessType,
+				    	render : function (data, type, row){
+			                  		return "TEXT";
+			               		}
+				    }
+				  ]);
+			
+			var filtersResets = $('.yadcf-filter-reset-button');
+		    filtersResets.html('<i class="icon-delete"></i>');
+		    filtersResets.addClass("btn color-blue");
+		    filtersResets.on('click',function(e){
+		    	$('#accessfilter').toggleClass('hide');
+		    });
+	
+		    turnFirstOptionToGrey();
+		    
+			$(".yadcf-filter").on("change",function(e){
+				refreshFilter();
+				if ($(".yadcf-filter option[value='-1']").is(":selected")){
+					turnFirstOptionToGrey();
+					
+				} else {
+					$(".yadcf-filter").css('color','black');
+				}
+			});
+		}
+	}
+	
+	var turnFirstOptionToGrey = function (){
+		$(".yadcf-filter").css('color','grey');
+		$(".yadcf-filter option").css('color','black');
+	}
+	
+	var calculateTotals = function(){
+		var total = 0;
+		$(".checkbox-filter").each(function() {
+			var countclass ="." + $( this ).attr('id').split("_")[1];		
+			total = total + $(".resource-row" + countclass).length;
+			$('#count_' + $( this ).attr('id').split("_")[1]).text($(".resource-row" + countclass).length);			
+		})
+		$('#count_ALL').text(total);
+	}
+	
+	var showAddedResource = function(){
+		if (projectCreateJson.resourceTypeAdded!=null || document.referrer.indexOf('project')==-1){
+			$(".option a[href='#tab_3']").trigger("click");
+		}
+		if (projectCreateJson.resourceTypeAdded!=null) {
+			$("#resource-identification-filter").val(projectCreateJson.resourceIdentificationAdded);
+			$("#resource-type-filter").val(projectCreateJson.resourceTypeAdded).change();
+			$('#search').trigger("click");
+		}
 	}
 	
 	var handleValidation = function() {
@@ -333,17 +448,29 @@ var ProjectCreateController = function() {
 	}
 
 	var getResourcesFiltered = function() {
-		var identification = $('#resource-identification-filter').val()
+		var identification = $('#resource-identification-filter').val();
 		var type = $('#resource-type-filter').val();
+		if (projectCreateJson.resourceTypeAdded!=null){
+			type = projectCreateJson.resourceTypeAdded;
+		}
 		App.blockUI({boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Searching..."});
+		$('#resources-modal').modal('hide');
 		$('#resources-modal-fragment').load(
 				'/controlpanel/projects/resources?identification='
 						+ identification + '&project='
 						+ projectCreateJson.projectId + '&type=' + type,
 				function() {
-					$('#resources-modal').modal('show');
 					refreshSelectpickers();
 					App.unblockUI();
+					refreshFilter();
+					$('#resource-identification-filter').val(identification);
+					$('#resources-modal').modal('show');
+					if (projectCreateJson.resourceTypeAdded!=null){
+						$("#resource-type-filter").val(projectCreateJson.resourceTypeAdded).change();
+					} else {
+						$("#resource-type-filter").val(type).change();
+					}
+					
 				});
 	}
 
@@ -454,6 +581,55 @@ var ProjectCreateController = function() {
 		}).done(updateResourcesFragment);
 		$('#associated-modal').modal('hide');
 	}
+	
+	var removeAllAuthorizationsConfirm =function(id){
+        //i18 labels
+        var Close = headerReg.btnCancelar;
+        var Remove = headerReg.btnEliminar;
+        var Content = projectCreateJson.confirm.deleteAllSelected;
+        var Title = projectCreateJson.confirm.deleteAllSelectedTitle;
+
+        // jquery-confirm DIALOG SYSTEM.
+        $.confirm({
+            title: Title,
+            theme: 'light',
+            columnClass: 'medium',
+            content: Content,
+            draggable: true,
+            dragWindowGap: 100,
+            backgroundDismiss: true,
+            buttons: {
+                close: {
+                    text: Close,
+                    btnClass: 'btn btn-outline blue dialog',
+                    action: function (){} //GENERIC CLOSE.      
+                },
+                remove: {
+                    text: Remove,
+                    btnClass: 'btn btn-primary',
+                    action: function(){
+                    	var deleteIds = "";
+                    	$('.resource-row').not('.invisible').each(function() {
+                    		if ($( this ).find(':checkbox').prop('checked')){
+                    			if (deleteIds!=""){
+                    				deleteIds = deleteIds + ",";
+                    			}
+                    			deleteIds = deleteIds + $( this ).find(':checkbox').attr('id').split("_")[2];
+                    		}
+                		})
+                    	
+                		var payload = {
+            				'id' : id,
+            				'idsArray' : deleteIds
+            			};
+            			App.blockUI({boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Removing..."});
+            			handleAuth(payload, 'DELETE_ALL').done(updateResourcesFragment).fail();
+            			App.unblockUI();
+                    }                                           
+                }               
+            }
+        });
+	}
 
 	var removeAuthorization = function(id) {
 		var payload = {
@@ -476,7 +652,7 @@ var ProjectCreateController = function() {
 				type : methodType,
 				data : JSON.stringify(payload),
 				contentType : "application/json",
-				dataType : "html"
+				dataType : "html",
 			});
 		} else if (methodType == 'DELETE') {
 			return $.ajax({
@@ -486,7 +662,17 @@ var ProjectCreateController = function() {
 			    },
 				type : methodType,
 				data : JSON.stringify(payload),
-				dataType : "html"
+				dataType : "html",
+			});
+		} else if (methodType == 'DELETE_ALL') {
+			return $.ajax({
+				url : authorizationEndpoint + "/all" + '?' + $.param(payload),
+				headers: {
+					[csrf_header]: csrf_value
+			    },
+				type : 'DELETE',
+				data : JSON.stringify(payload),
+				dataType : "html",
 			});
 		}
 	}
@@ -496,12 +682,20 @@ var ProjectCreateController = function() {
 				authorizationEndpoint + '?project='
 						+ projectCreateJson.projectId, function() {
 					refreshSelectpickers();
+					oTable.clear();
+					initTable();
+					refreshFilter()
+					calculateTotals();
 				});
 	}
 	var updateResourcesFragment = function(response) {
 		toastr.success(messagesForms.operations.genOpSuccess,'');
 		$('#resources-tab-fragment').html(response);
 		refreshSelectpickers();
+		oTable.clear();
+		initTable();
+		refreshFilter()
+		calculateTotals();
 	}
 
 	var sortHTML = function(id, sel, sortvalue){
@@ -541,9 +735,70 @@ var ProjectCreateController = function() {
 		  }
 	}
 	
+	function refreshFilter(){
+		if ($( "#checkbox_ALL").prop("checked")){
+			$(".resource-row").removeClass("invisible");
+			$(".resource-combo").removeClass("invisible");
+			$(".resource-combo").closest("li").removeClass("invisible");
+		} else {
+			$(".checkbox-filter").each(function() {
+				if ($( this ).prop("checked")){
+					$("." + $( this ).attr('id').split("_")[1]).removeClass("invisible");
+					$(".resource-combo." + $( this ).attr('id').split("_")[1]).removeClass("invisible");
+					$(".resource-combo." + $( this ).attr('id').split("_")[1]).closest("li").removeClass("invisible");
+				} else {
+					$("." + $( this ).attr('id').split("_")[1]).addClass("invisible");
+					$(".resource-combo." + $( this ).attr('id').split("_")[1]).addClass("invisible");
+					$(".resource-combo." + $( this ).attr('id').split("_")[1]).closest("li").addClass("invisible");
+				}	
+			});
+		}
+	}
+	
+	function filterTable(type){
+		if (type == "ALL"){
+			$('.checkbox-filter').attr('checked', false);
+			if ($( "#checkbox_ALL").prop("checked")){
+				$(".resource-row").removeClass("invisible");
+				$(".resource-combo").removeClass("invisible");
+				$(".resource-combo").closest("li").removeClass("invisible");
+			} else {
+				$(".resource-row").addClass("invisible");
+				$(".resource-combo").addClass("invisible");
+				$(".resource-combo").closest("li").addClass("invisible");
+			}
+		} else {
+			if ($( "#checkbox_ALL").prop("checked")){
+				$( "#checkbox_ALL").prop("checked", false);
+				$(".resource-row").addClass("invisible");
+				$(".resource-combo").addClass("invisible");
+				$(".resource-combo").closest("li").addClass("invisible");
+			}
+			if ($( "#checkbox_" + type).prop("checked")){
+				$("." + type).removeClass("invisible");
+				$(".resource-combo." + type).removeClass("invisible");
+				$(".resource-combo." + type).closest("li").removeClass("invisible");
+			} else {
+				$("." + type).addClass("invisible");
+				$(".resource-combo." + type).addClass("invisible");
+				$(".resource-combo." + type).closest("li").addClass("invisible");
+			}		
+		}
+
+	}
+	
+	function toggleAllVisible(){
+		$('.resource-row').not('.invisible').each(function() {
+			$( this ).find(':checkbox').prop('checked', $( "#checkbox_delete_all").prop("checked"));
+		})
+	}
+	
 	return {
 		removeAuthorization : function(id) {
 			removeAuthorization(id);
+		},
+		removeAllAuthorizationsConfirm : function(id) {
+			removeAllAuthorizationsConfirm(id);
 		},
 		insertAuthorization : function(obj) {
 			App.blockUI({boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Adding..."});
@@ -577,7 +832,15 @@ var ProjectCreateController = function() {
 		sortHTML : function(id, sel, sortvalue){
 			sortHTML(id, sel, sortvalue);
 		},
-
+		toggleAllVisible: function(){
+			toggleAllVisible();
+		},
+		filterTable : function(id){
+			filterTable(id);
+		},
+		turnFirstOptionToGrey: function(){
+			turnFirstOptionToGrey();
+		},
 		init : function() {
 			initTemplateElements();
 			handleValidation();

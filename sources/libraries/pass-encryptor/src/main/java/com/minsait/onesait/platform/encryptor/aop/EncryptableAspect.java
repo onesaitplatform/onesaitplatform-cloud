@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ public class EncryptableAspect {
 		return joinPoint.proceed();
 	}
 
-	private String encryptedProperty(String encrypted) {
+	public String encryptedProperty(String encrypted) {
 		final Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(encrypted);
 		while (m.find()) {
 			return m.group(1);

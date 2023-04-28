@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import com.minsait.onesait.platform.commons.model.MetricsPlatformDto;
 @EnableScheduling
 public class MetricsNotifier {
 
-	@Value("${onesaitplatform.metrics.collector.endpoint:http://routerservice:20000/router/metrics-collector/refresh}")
+	@Value("${onesaitplatform.metrics.collector.endpoint:http://auditrouter:20002/router/metrics-collector/refresh}")
 	private String metricsCollectorEndpoint;
 
 	@Value("${onesaitplatform.metrics.enabled:false}")
@@ -46,21 +46,21 @@ public class MetricsNotifier {
 
 	@PostConstruct
 	public void init() {
-		this.restTemplate = new RestTemplate();
+		restTemplate = new RestTemplate();
 	}
 
 	@Scheduled(cron = "0 * * * * *")
 	public void eachMinue() {
 
 		if (metricsEnabled) {
-			long date = System.currentTimeMillis() - 60000;
+			final long date = System.currentTimeMillis() - 60000;
 
-			MetricsPlatformDto dto = metricsManager.computeMetrics(date);
+			final MetricsPlatformDto dto = metricsManager.computeMetrics(date);
 			try {
 				if (dto.containsMetrics()) {
-					this.restTemplate.postForLocation(metricsCollectorEndpoint, dto);
+					restTemplate.postForLocation(metricsCollectorEndpoint, dto);
 				}
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				Log.error("Error notifing metrics", e);
 			}
 		}

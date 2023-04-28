@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,7 +136,7 @@ public class ProjectResourceAccess extends ProjectResourceAccessParent {
 
 	@JsonSetter("user")
 	public void setUserJson(String userId) {
-		if (!StringUtils.isEmpty(userId)) {
+		if (StringUtils.hasText(userId)) {
 			final User u = new User();
 			u.setUserId(userId);
 			user = u;
@@ -148,7 +148,7 @@ public class ProjectResourceAccess extends ProjectResourceAccessParent {
 	}
 	@JsonSetter("appRole")
 	public void setAppRoleJson(String id) {
-		if (!StringUtils.isEmpty(id)) {
+		if (StringUtils.hasText(id)) {
 			final AppRole ar = new AppRole();
 			ar.setId(id);
 			appRole = ar;
@@ -161,7 +161,7 @@ public class ProjectResourceAccess extends ProjectResourceAccessParent {
 
 	@JsonSetter("project")
 	public void setProjectJson(String id) {
-		if (!StringUtils.isEmpty(id)) {
+		if (StringUtils.hasText(id)) {
 			final Project p = new Project();
 			p.setId(id);
 			project = p;
@@ -175,7 +175,7 @@ public class ProjectResourceAccess extends ProjectResourceAccessParent {
 
 	@JsonSetter("resource")
 	public void setResourceJson(String id) throws Exception {
-		if (!StringUtils.isEmpty(id)) {
+		if (StringUtils.hasText(id)) {
 			final String[] parts = id.split("@");
 			final OPResource p = (OPResource) Class.forName(VersioningIOService.CONFIG_MODEL_CLASS_PREFIX + parts[1]).newInstance();
 			p.setId(parts[0]);

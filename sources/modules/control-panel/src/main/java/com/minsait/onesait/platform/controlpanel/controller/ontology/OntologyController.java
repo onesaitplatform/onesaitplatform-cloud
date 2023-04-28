@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 package com.minsait.onesait.platform.controlpanel.controller.ontology;
+
+import static com.minsait.onesait.platform.business.services.ontology.OntologyServiceStatusBean.MODULE_NOT_ACTIVE_KEY;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,19 +31,23 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -64,6 +70,10 @@ import com.minsait.onesait.platform.business.services.ontology.CreateStatementBu
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessService;
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessServiceException;
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessServiceException.Error;
+import com.minsait.onesait.platform.business.services.ontology.OntologyServiceStatusBean;
+import com.minsait.onesait.platform.business.services.ontology.graph.NebulaGraphBusinessService;
+import com.minsait.onesait.platform.business.services.ontology.graph.NebulaGraphEntity;
+import com.minsait.onesait.platform.business.services.ontology.graph.NebulaGraphUpdateEntity;
 import com.minsait.onesait.platform.business.services.ontology.timeseries.TimeSerieOntologyBusinessServiceException;
 import com.minsait.onesait.platform.business.services.ontology.timeseries.TimeSeriesOntologyBusinessService;
 import com.minsait.onesait.platform.business.services.swagger.SwaggerApiImporterService;
@@ -71,6 +81,7 @@ import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
+import com.minsait.onesait.platform.config.model.Configuration;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.model.OntologyDataAccess;
@@ -89,11 +100,15 @@ import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.model.Configuration.Type;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.repository.ApiRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformOntologyRepository;
+import com.minsait.onesait.platform.config.repository.ConfigurationRepository;
 import com.minsait.onesait.platform.config.repository.OntologyKPIRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.services.app.AppService;
+import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 import com.minsait.onesait.platform.config.services.datamodel.DataModelService;
 import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;
 import com.minsait.onesait.platform.config.services.objectstorage.MinioObjectStorageService;
@@ -122,6 +137,7 @@ import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.factory.ManageDBRepositoryFactory;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
+import com.minsait.onesait.platform.persistence.nebula.service.NebulaGraphService;
 import com.minsait.onesait.platform.persistence.services.BasicOpsPersistenceServiceFacade;
 import com.minsait.onesait.platform.persistence.services.QueryToolService;
 import com.minsait.onesait.platform.persistence.timescaledb.util.TimescaleDBPersistantException;
@@ -148,6 +164,11 @@ public class OntologyController {
 	@Autowired
 	private ClientPlatformOntologyRepository clientPlatformOntologyRepository;
 
+    @Autowired
+    private ConfigurationRepository configurationRepository;
+    @Autowired
+    ConfigurationService configurationService;
+    
 	// Lazy so in local you can start ControlPanel and no start KPI Module
 	@Autowired
 	@Lazy
@@ -191,8 +212,20 @@ public class OntologyController {
 	@Autowired
 	private IntegrationResourcesService resourcesService;
 
+	@Autowired
+	private NebulaGraphBusinessService nebulaGraphService;
+
 	@Autowired(required = false)
 	private MinioObjectStorageService minioObjectStoreService;
+
+	@Autowired
+	private HttpSession httpSession;
+
+	@Autowired
+	private OntologyServiceStatusBean serviceStatusBean;
+
+	@Autowired
+	private MessageSource messageSource;
 
 	private static final String ONTOLOGIES_STR = "ontologies";
 	private static final String ONTOLOGY_STR = "ontology";
@@ -223,6 +256,8 @@ public class OntologyController {
 	private static final String AUTHORIZATIONS = "authorizations";
 	private static final String USERS = "users";
 	private static final String REALMS = "realms";
+    private static final String PROPDATACLASSES = "propDclasses";
+    private static final String ENTITYDATACLASSES = "entityDclasses";
 	private static final String PROPERTY_NAMES = "propertyNames";
 	private static final String DATAACCESSES = "dataaccesses";
 	private static final String HISTORICAL = "historical";
@@ -233,6 +268,9 @@ public class OntologyController {
 	private static final String RTDB_DATASOURCE_TYPE = "rtdbDatasourceType";
 	private static final String USER_BUCKET_ONTOLOGY_PATH = "userBucketOntologiesPath";
 	private static final String MODEL_JSON_LD_URL = "modeljsonldurl";
+	private static final String USER_ONTOLOGY_ACCESS = "userOntologyAccess";
+	private static final String APP_ID = "appId";
+	private static final String REDIRECT_PROJECT_SHOW = "/controlpanel/projects/update/";
 
 	@Value("${onesaitplatform.database.prestodb.historicalCatalog:minio}")
 	private String historicalCatalog;
@@ -247,6 +285,9 @@ public class OntologyController {
 			@RequestParam(required = false, name = "identification") String identification,
 			@RequestParam(required = false, name = "description") String description) {
 
+		// CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
+
 		// Scaping "" string values for parameters
 		if (identification != null && identification.equals("")) {
 			identification = null;
@@ -259,6 +300,7 @@ public class OntologyController {
 				identification, description);
 		model.addAttribute(ONTOLOGIES_STR, ontologies);
 		model.addAttribute("filterCheck", false);
+		model.addAttribute("nebulaURL", resourcesService.getUrl(Module.NEBULA_GRAPH, ServiceUrl.BASE));
 		return ONTOLOGIES_LIST;
 	}
 
@@ -279,19 +321,32 @@ public class OntologyController {
 				.getOntologiesForListByUserPropietary(utils.getUserId(), identification, description);
 		model.addAttribute(ONTOLOGIES_STR, ontologies);
 		model.addAttribute("filterCheck", true);
+		model.addAttribute("nebulaURL", resourcesService.getUrl(Module.NEBULA_GRAPH, ServiceUrl.BASE));
 		return ONTOLOGIES_LIST;
 	}
 
 	@PostMapping("/getNamesForAutocomplete")
 	public @ResponseBody List<String> getNamesForAutocomplete() {
+		// CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
+
 		return ontologyConfigService.getAllIdentificationsByUser(utils.getUserId());
 	}
 
 	@GetMapping(value = "/create")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String create(Model model) {
+		if (model.asMap().containsKey(MODULE_NOT_ACTIVE_KEY)) {
+			model.addAttribute("message", model.asMap().get(MODULE_NOT_ACTIVE_KEY));
+		}
 		model.addAttribute(ONTOLOGY_STR, new Ontology());
 		model.addAttribute(ONTOLOGY_REST_STR, new OntologyRestDTO());
+
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId != null) {
+			model.addAttribute(APP_ID, projectId.toString());
+		}
+
 		populateForm(model);
 		return ONTOLOGIES_CREATE;
 	}
@@ -313,6 +368,11 @@ public class OntologyController {
 			model.addAttribute(MODEL_JSON_LD_URL, resourcesService.getUrl(Module.MODELJSONLD, ServiceUrl.BASE));
 		}
 
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId != null) {
+			model.addAttribute(APP_ID, projectId.toString());
+		}
+
 		populateForm(model);
 		return "ontologies/createwizard";
 	}
@@ -322,6 +382,12 @@ public class OntologyController {
 	public String createAPIREST(Model model) {
 
 		model.addAttribute(ONTOLOGY_STR, new Ontology());
+
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId != null) {
+			model.addAttribute(APP_ID, projectId.toString());
+		}
+
 		populateFormApiRest(model);
 		return "ontologies/createapirest";
 	}
@@ -334,7 +400,24 @@ public class OntologyController {
 		model.addAttribute(USER_BUCKET_ONTOLOGY_PATH, minioObjectStoreService.getUserBucketName(utils.getUserId()) + "/"
 				+ minioObjectStoreService.ONTOLOGIES_DIR);
 		populateFormVirtual(model);
+
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId != null) {
+			model.addAttribute(APP_ID, projectId.toString());
+		}
 		return ONTOLOGIES_CREATEVIRTUAL;
+	}
+
+	@GetMapping(value = "/create-graph", produces = "text/html")
+	public String createGraph(Model model, RedirectAttributes ra) {
+		if (!serviceStatusBean.isNebulaGraphActive()) {
+			ra.addFlashAttribute(MODULE_NOT_ACTIVE_KEY,
+					messageSource.getMessage("service.nebula.down", null, LocaleContextHolder.getLocale()));
+			return "redirect:/ontologies/create";
+		}
+		model.addAttribute(ONTOLOGY_STR, new NebulaGraphEntity());
+		model.addAttribute("fieldTypes", NebulaGraphService.NEBULA_TYPES);
+		return "ontologies/creategraph";
 	}
 
 	@GetMapping(value = "/createkpi", produces = "text/html")
@@ -351,6 +434,11 @@ public class OntologyController {
 			model.addAttribute(ONTOLOGY_STR, ontology);
 		}
 
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId != null) {
+			model.addAttribute(APP_ID, projectId.toString());
+		}
+
 		populateKPIForm(model);
 		return "ontologies/createkpi";
 	}
@@ -359,6 +447,12 @@ public class OntologyController {
 	public String createTimeSeries(Model model) {
 
 		model.addAttribute(ONTOLOGYTSDTO, new OntologyTimeSeriesServiceDTO());
+
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId != null) {
+			model.addAttribute(APP_ID, projectId.toString());
+		}
+
 		populateFormTimeseries(model);
 		return ONTOLOGIES_CREATE_TS;
 	}
@@ -430,6 +524,15 @@ public class OntologyController {
 					|| ontology.getRtdbDatasource().equals(RtdbDatasource.PRESTO)) {
 				response.put(REDIRECT_STR, REDIRECT_ONTOLOGY_LIST);
 			}
+
+			final Object projectId = httpSession.getAttribute(APP_ID);
+			if (projectId != null) {
+				httpSession.setAttribute("resourceTypeAdded", OPResource.Resources.ONTOLOGY.toString());
+				httpSession.setAttribute("resourceIdentificationAdded", ontology.getIdentification());
+				httpSession.removeAttribute(APP_ID);
+				response.put(REDIRECT_STR, REDIRECT_PROJECT_SHOW + projectId.toString());
+			}
+
 			response.put(STATUS_STR, "ok");
 			return new ResponseEntity<>(response, HttpStatus.CREATED);
 
@@ -499,10 +602,25 @@ public class OntologyController {
 					true);
 			if (createdOnt != null) {
 				response.put(REDIRECT_STR, REDIRECT_ONTOLOGY_LIST);
+
+				final Object projectId = httpSession.getAttribute(APP_ID);
+				if (projectId != null) {
+					httpSession.setAttribute("resourceTypeAdded", OPResource.Resources.ONTOLOGY.toString());
+					httpSession.setAttribute("resourceIdentificationAdded", createdOnt.getIdentification());
+					httpSession.removeAttribute(APP_ID);
+					response.put(REDIRECT_STR, REDIRECT_PROJECT_SHOW + projectId.toString());
+				}
+
 				response.put(STATUS_STR, "ok");
 				return new ResponseEntity<>(response, HttpStatus.CREATED);
 			} else {
 				response.put(REDIRECT_STR, "/controlpanel/ontologies/list");
+
+				final Object projectId = httpSession.getAttribute(APP_ID);
+				if (projectId != null) {
+					response.put(REDIRECT_STR, REDIRECT_PROJECT_SHOW + projectId.toString());
+				}
+
 				response.put(STATUS_STR, "ko");
 				return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 			}
@@ -612,6 +730,7 @@ public class OntologyController {
 		ontology.setRtdbDatasource(Ontology.RtdbDatasource.valueOf(ontologyKPIDTO.getDatasource()));
 		ontology.setSupportsJsonLd(ontologyKPIDTO.isSupportsJsonLd());
 		ontology.setJsonLdContext(ontologyKPIDTO.getJsonLdContext());
+		ontology.setEnableDataClass(ontologyKPIDTO.isEnableDataClass());
 
 		final OntologyConfiguration config = new OntologyConfiguration(request);
 		ontologyBusinessService.createOntology(ontology, utils.getUserId(), config);
@@ -653,6 +772,24 @@ public class OntologyController {
 							|| dataAccess.getAppRole() != null) {
 						dataAccessesDTO.add(new OntologyDataAccessDTO(dataAccess));
 					}
+				}				
+
+                final List<String> propdclasses = new ArrayList<>();
+                final List<String> entitydclasses = new ArrayList<>();;
+				List<Configuration> configs = configurationRepository.findByType(Type.DATACLASS);
+				for(Configuration config: configs) {
+				    String dcname = config.getIdentification();
+				    
+	                final Map<String, Object> dclassyml = (Map<String, Object>) configurationService
+	                    .fromYaml(config.getYmlConfig()).get("dataclass");
+	                ArrayList<Map<String, Object>> rules = (ArrayList<Map<String, Object>>)dclassyml.get("dataclassrules");
+	                for(Map<String, Object> rule : rules) {
+	                    if(rule.get("ruletype").toString().equalsIgnoreCase("entity")) {
+	                        entitydclasses.add(dcname + "." + rule.get("rulename").toString());
+	                    } else if(rule.get("ruletype").toString().equalsIgnoreCase("property")) {
+	                        propdclasses.add(dcname + "." + rule.get("rulename").toString());
+	                    }
+	                }
 				}
 
 				model.addAttribute(DATAACCESSES, dataAccessesDTO);
@@ -661,6 +798,8 @@ public class OntologyController {
 				model.addAttribute(ONTOLOGYTSDTO, otsDTO);
 				model.addAttribute(USERS, users);
 				model.addAttribute(REALMS, realms);
+				model.addAttribute(PROPDATACLASSES, propdclasses);
+                model.addAttribute(ENTITYDATACLASSES, entitydclasses);
 				final OntologyElasticDTO elasticOntologyDTO = getDefaultElasticValues();
 				// InUseService
 				if (resourcesInUseService != null) {
@@ -732,6 +871,11 @@ public class OntologyController {
 							minioObjectStoreService.getUserBucketName(utils.getUserId()) + "/"
 									+ minioObjectStoreService.ONTOLOGIES_DIR);
 					return ONTOLOGIES_CREATEVIRTUAL;
+				}
+				if (ontology.getRtdbDatasource().equals(RtdbDatasource.NEBULA_GRAPH)) {
+					model.addAttribute("nebulaTags", nebulaGraphService.getTags(ontology.getIdentification()));
+					model.addAttribute("nebulaEdges", nebulaGraphService.getEdges(ontology.getIdentification()));
+					model.addAttribute("fieldTypes", NebulaGraphService.NEBULA_TYPES);
 				}
 
 				if (ontology.getDataModel().getId().equals(TIMESERIES_DATAMODEL)) {
@@ -832,9 +976,10 @@ public class OntologyController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public ResponseEntity<Map<String, String>> updateOntology(Model model, @PathVariable("id") String id,
 			@Valid Ontology ontology, BindingResult bindingResult, RedirectAttributes redirect,
-			HttpServletRequest request)
+			@RequestParam(required = false, name = "nebulaEntity") String nebulaEntity, HttpServletRequest request)
 					throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
 		final Map<String, String> response = new HashMap<>();
+
 		if (bindingResult.hasErrors()) {
 			log.debug("Some ontology properties missing");
 			response.put(STATUS_STR, ERROR_STR);
@@ -886,6 +1031,11 @@ public class OntologyController {
 
 			}
 
+			if (StringUtils.hasText(nebulaEntity)) {
+				nebulaGraphService
+				.updateNebulaGraphEntity(mapper.readValue(nebulaEntity, NebulaGraphUpdateEntity.class));
+			}
+
 		} catch (final OntologyServiceException | OntologyDataJsonProblemException e) {
 			log.error("Cannot update ontology {}", e.getMessage());
 			response.put(STATUS_STR, ERROR_STR);
@@ -913,7 +1063,13 @@ public class OntologyController {
 				return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 
 			}
+		} catch (final JsonProcessingException e) {
+			log.error("Nebula entity not valid JSON");
+			response.put(STATUS_STR, ERROR_STR);
+			response.put(CAUSE_STR, "Nebula entity not valid JSON");
+			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+
 		resourcesInUseService.removeByUser(id, utils.getUserId());
 		response.put(STATUS_STR, "ok");
 		response.put(REDIRECT_STR, "/controlpanel/ontologies/show/" + id);
@@ -1009,11 +1165,23 @@ public class OntologyController {
 						.getOntologyUserAccesses(ontology.getId(), utils.getUserId());
 				final List<OntologyUserAccessDTO> authorizationsDTO = new ArrayList<>();
 
+				String userOntologyAccess = "";
+				if(utils.isAdministrator() || ontology.getUser().getUserId().equals(utils.getUserId())) {
+
+					userOntologyAccess = "ALL";
+
+				}
 				for (final OntologyUserAccess authorization : authorizations) {
 					if (authorization.getUser().isActive()) {
 						authorizationsDTO.add(new OntologyUserAccessDTO(authorization));
 					}
+					if(authorization.getUser().getUserId().equals(utils.getUserId())) {
+
+						userOntologyAccess = authorization.getOntologyUserAccessType().getName().toUpperCase();
+
+					}
 				}
+
 
 				final List<User> users = userService.getAllActiveUsers();
 				OntologyTimeSeriesServiceDTO otsDTO = new OntologyTimeSeriesServiceDTO();
@@ -1036,8 +1204,17 @@ public class OntologyController {
 
 				model.addAttribute(ONTOLOGYTSDTO, otsDTO);
 				model.addAttribute(ONTOLOGY_STR, ontology);
+				model.addAttribute(USER_ONTOLOGY_ACCESS, userOntologyAccess);
+
 
 				model.addAttribute(AUTHORIZATIONS, authorizationsDTO);
+				User sessionUser = userService.getUser(id);
+				for (OntologyUserAccessDTO permission : authorizationsDTO) {
+					if (permission.getTypeName() == "ALL" && permission.getUserId().equals(sessionUser)) {
+						OntologyDataAccessDTO obj = new OntologyDataAccessDTO(null);
+						obj.setOntologyPermission(true);	
+						}
+				}
 				model.addAttribute(USERS, users);
 
 				if (ontology.getRtdbDatasource().equals(RtdbDatasource.API_REST)) {
@@ -1076,6 +1253,10 @@ public class OntologyController {
 					final OntologyPresto op = ontologyConfigService.getOntologyPrestoByOntologyId(ontology);
 					model.addAttribute(RTDB_DATASOURCE_TYPE, op.getDatasourceCatalog().toUpperCase());
 					model.addAttribute(IS_ONTOLOGY_REST, false);
+				} else if (ontology.getRtdbDatasource().equals(RtdbDatasource.NEBULA_GRAPH)) {
+					model.addAttribute(IS_ONTOLOGY_REST, false);
+					model.addAttribute("nebulaTags", nebulaGraphService.getTags(ontology.getIdentification()));
+					model.addAttribute("nebulaEdges", nebulaGraphService.getEdges(ontology.getIdentification()));
 				} else {
 					model.addAttribute(IS_ONTOLOGY_REST, false);
 				}
@@ -1111,14 +1292,33 @@ public class OntologyController {
 		model.addAttribute(DATA_MODEL_TYPES_STR, ontologyConfigService.getAllDataModelTypes());
 
 		final List<Ontology.RtdbDatasource> listRtdbs = ontologyConfigService.getDatasources().stream()
-				.filter(o -> !Arrays
-						.asList(RtdbDatasource.KUDU, RtdbDatasource.VIRTUAL, RtdbDatasource.API_REST,
-								RtdbDatasource.DIGITAL_TWIN, RtdbDatasource.PRESTO, RtdbDatasource.TIMESCALE)
-						.contains(o))
+				.filter(o -> !Arrays.asList(RtdbDatasource.KUDU, RtdbDatasource.VIRTUAL, RtdbDatasource.API_REST,
+						RtdbDatasource.AI_MINDS_DB, RtdbDatasource.DIGITAL_TWIN, RtdbDatasource.PRESTO,
+						RtdbDatasource.TIMESCALE, RtdbDatasource.NEBULA_GRAPH).contains(o))
 				.collect(Collectors.toList());
 		model.addAttribute(RTDBS, listRtdbs);
 		model.addAttribute(ONTOLOGIES_STR, ontologyConfigService.getOntologiesByUserId(utils.getUserId()));
 		model.addAttribute("modes", Ontology.RtdbToHdbStorage.values());
+
+        final List<String> propdclasses = new ArrayList<>();
+        final List<String> entitydclasses = new ArrayList<>();;
+        List<Configuration> configs = configurationRepository.findByType(Type.DATACLASS);
+        for(Configuration config: configs) {
+            String dcname = config.getIdentification();
+            
+            final Map<String, Object> dclassyml = (Map<String, Object>) configurationService
+                .fromYaml(config.getYmlConfig()).get("dataclass");
+            ArrayList<Map<String, Object>> rules = (ArrayList<Map<String, Object>>)dclassyml.get("dataclassrules");
+            for(Map<String, Object> rule : rules) {
+                if(rule.get("ruletype").toString().equalsIgnoreCase("entity")) {
+                    entitydclasses.add(dcname + "." + rule.get("rulename").toString());
+                } else if(rule.get("ruletype").toString().equalsIgnoreCase("property")) {
+                    propdclasses.add(dcname + "." + rule.get("rulename").toString());
+                }
+            }
+        }
+        model.addAttribute(PROPDATACLASSES, propdclasses);
+        model.addAttribute(ENTITYDATACLASSES, entitydclasses);
 	}
 
 	private void populateKPIForm(Model model) {
@@ -1626,6 +1826,15 @@ public class OntologyController {
 		ontologyKPIRepository.save(oKPI);
 		ontologyKPIService.scheduleKpi(oKPI);
 		response.put(REDIRECT_STR, "/controlpanel/ontologies/list");
+
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId != null) {
+			httpSession.setAttribute("resourceTypeAdded", OPResource.Resources.ONTOLOGY.toString());
+			httpSession.setAttribute("resourceIdentificationAdded", ontology.getIdentification());
+			httpSession.removeAttribute(APP_ID);
+			response.put(REDIRECT_STR, REDIRECT_PROJECT_SHOW + projectId.toString());
+		}
+
 		response.put(STATUS_STR, "ok");
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
@@ -1672,6 +1881,7 @@ public class OntologyController {
 					return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 				} else {
 					response.put(STATUS_STR, "ok");
+					response.put(CAUSE_STR, utils.getMessage(result.get(MESSAGE_STR), ""));
 					return new ResponseEntity<>(response, HttpStatus.CREATED);
 				}
 
@@ -1820,6 +2030,16 @@ public class OntologyController {
 	@GetMapping(value = "/createhistorical", produces = "text/html")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String createHistorical(Model model, RedirectAttributes redirect) {
+		if (!serviceStatusBean.isMinIOActive()) {
+			redirect.addFlashAttribute(MODULE_NOT_ACTIVE_KEY,
+					messageSource.getMessage("service.minio.down", null, LocaleContextHolder.getLocale()));
+			return "redirect:/ontologies/create";
+		}
+		if (!serviceStatusBean.isPrestoActive()) {
+			redirect.addFlashAttribute(MODULE_NOT_ACTIVE_KEY,
+					messageSource.getMessage("service.presto.down", null, LocaleContextHolder.getLocale()));
+			return "redirect:/ontologies/create";
+		}
 		model.addAttribute(ONTOLOGY_STR, new Ontology());
 		model.addAttribute(HISTORICAL, true);
 		model.addAttribute(HISTORICAL_SCHEMA, historicalSchema);
@@ -1827,6 +2047,12 @@ public class OntologyController {
 		model.addAttribute(USER_BUCKET_ONTOLOGY_PATH,
 				minioObjectStoreService.getUserBucketName(utils.getUserId()) + minioObjectStoreService.ONTOLOGIES_DIR);
 		populateFormVirtual(model);
+
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId != null) {
+			model.addAttribute(APP_ID, projectId.toString());
+		}
+
 		return ONTOLOGIES_CREATEVIRTUAL;
 	}
 
@@ -1858,6 +2084,15 @@ public class OntologyController {
 			}
 			ontologyBusinessService.uploadHistoricalFile(file, ontology);
 			response.put(REDIRECT_STR, REDIRECT_ONTOLOGY_LIST);
+
+			final Object projectId = httpSession.getAttribute(APP_ID);
+			if (projectId != null) {
+				httpSession.setAttribute("resourceTypeAdded", OPResource.Resources.ONTOLOGY.toString());
+				httpSession.setAttribute("resourceIdentificationAdded", ontology);
+				httpSession.removeAttribute(APP_ID);
+				response.put(REDIRECT_STR, REDIRECT_PROJECT_SHOW + projectId.toString());
+			}
+
 			response.put(STATUS_STR, "ok");
 			return new ResponseEntity<>(response, HttpStatus.CREATED);
 		} catch (final Exception e) {

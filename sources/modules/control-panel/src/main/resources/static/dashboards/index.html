@@ -28,6 +28,8 @@
     window.__env.enableDebug = false;
     window.__env.dashboardEngineProtocol = 'websocket';
     window.__env.urlParameters = "";
+    window.__env.dashboardEngineAvoidReassign=false; //avoid reassign template parameters to other levels
+    window.__env.dashboardEngineAvoidFillDefault=false; //avoid fill default template parameters with default options of gform
     // <![CDATA[    
     var eventMethod = window.addEventListener
           ? "addEventListener"

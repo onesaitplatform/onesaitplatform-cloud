@@ -1,0 +1,11 @@
+spring:
+   data.mongodb:
+      database: test
+      host: localhost
+      port: 27017
+
+sofia2: #Config Sofia2 specific
+   database.mongodb:
+      database: test
+      servers: localhost:27017
+      

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,10 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -47,6 +50,7 @@ import org.springframework.web.filter.GenericFilterBean;
 
 import com.microsoft.sqlserver.jdbc.StringUtils;
 import com.minsait.onesait.platform.config.model.security.UserPrincipal;
+import com.minsait.onesait.platform.exception.DashboardEngineException;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 import com.minsait.onesait.platform.multitenant.util.BeanUtil;
@@ -99,11 +103,13 @@ public class CustomFilter extends GenericFilterBean {
 			final String jwt = getBearerToken(httpRequest);
 			if (jwt != null && !jwt.isEmpty()) {
 				final String userId = validateToken(jwt);
-				if (!org.springframework.util.StringUtils.isEmpty(userId)) {
+				if (!StringUtils.isEmpty(userId)) {
 					generateSecurityContextAuthentication(userId, jwt);
 					log.info("Logged in using JWT");
 					if (((HttpServletRequest) servletRequest).getServletPath().startsWith("/dsengine/solver")
-							|| ((HttpServletRequest) servletRequest).getServletPath().startsWith("/api")) {
+							|| ((HttpServletRequest) servletRequest).getServletPath().startsWith("/api")
+							|| ((HttpServletRequest) servletRequest).getServletPath().startsWith("/loginRest")
+							|| ((HttpServletRequest) servletRequest).getServletPath().startsWith("/dsengine/rest/solver")) {
 						filterChain.doFilter(servletRequest, servletResponse);
 					} else {
 						return;
@@ -187,9 +193,22 @@ public class CustomFilter extends GenericFilterBean {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 
 		final HttpEntity<String> entity = new HttpEntity<>(token, headers);
-		final TokenResponse response = restTemplate.postForObject(onesaitPlatformTokenAuth, entity,
+		final ResponseEntity<TokenResponse> response = restTemplate.exchange(onesaitPlatformTokenAuth, HttpMethod.POST , entity,
 				TokenResponse.class);
-		return response.getPrincipal();
+		if (response.getStatusCode() == HttpStatus.OK) {
+			return response.getBody().getPrincipal();
+		} else {
+			switch (response.getStatusCode()) {
+				case NOT_FOUND: 
+					throw new DashboardEngineException(DashboardEngineException.Error.NOT_FOUND);
+				case FORBIDDEN: 
+					throw new DashboardEngineException(DashboardEngineException.Error.PERMISSION_DENIED);
+				case UNAUTHORIZED: 
+					throw new DashboardEngineException(DashboardEngineException.Error.INVALID_AUTH);
+				default:
+					throw new DashboardEngineException("Error: " + response.getStatusCode() + " - " + response.toString());
+			} 
+		}
 	}
 
 	private void generateSecurityContextAuthentication(String userId, String token) {
