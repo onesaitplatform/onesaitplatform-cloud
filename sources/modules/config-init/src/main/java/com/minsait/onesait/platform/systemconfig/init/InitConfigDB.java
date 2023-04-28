@@ -114,6 +114,8 @@ import com.minsait.onesait.platform.config.model.ODTypologyDataset;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.model.OntologyCategory;
+import com.minsait.onesait.platform.config.model.OntologyPrestoDatasource;
+import com.minsait.onesait.platform.config.model.OntologyPrestoDatasource.PrestoDatasourceType;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeries;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesProperty;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesProperty.PropertyDataType;
@@ -170,6 +172,7 @@ import com.minsait.onesait.platform.config.repository.ODBinaryFilesDatasetReposi
 import com.minsait.onesait.platform.config.repository.ODTypologyDatasetRepository;
 import com.minsait.onesait.platform.config.repository.ODTypologyRepository;
 import com.minsait.onesait.platform.config.repository.OntologyCategoryRepository;
+import com.minsait.onesait.platform.config.repository.OntologyPrestoDatasourceRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.repository.OntologyTimeSeriesPropertyRepository;
 import com.minsait.onesait.platform.config.repository.OntologyTimeSeriesRepository;
@@ -805,6 +808,7 @@ public class InitConfigDB {
 				log.info("Init Open Data Portal ontologies and resources");
 			}
 
+			initPrestoConnections();
 		}
 
 	}
@@ -1776,6 +1780,20 @@ public class InitConfigDB {
 			config.setEnvironment(DEFAULT);
 			config.setDescription("Data class with general rules");
 			config.setYmlConfig(loadFromResources("configurations/GeneralDataClass.yml"));
+			configurationRepository.save(config);
+		}
+		
+		config = configurationRepository.findByTypeAndEnvironmentAndIdentification(Type.PRESTO_PROPERTIES, DEFAULT,
+				"Presto Connection Properties");
+		if (config == null) {
+			config = new Configuration();
+			config.setDescription("Presto connection properties.");
+			config.setEnvironment(DEFAULT);
+			config.setId("MASTER-Configuration-31");
+			config.setType(Type.PRESTO_PROPERTIES);
+			config.setUser(getUserAdministrator());
+			config.setIdentification("Presto Connection Properties");
+			config.setYmlConfig(loadFromResources("configurations/PrestoProperties.json"));
 			configurationRepository.save(config);
 		}
 	}
@@ -7471,7 +7489,9 @@ public class InitConfigDB {
 				+ "                            that.downloaddisabled = false;\n"
 				+ "                            that.uploaddisabled = false;\n"
 				+ "                            that.showSelect = false;\n"
-				+ "                            that.showEntityName = true;\n" + "                        } else {\n"
+				+ "                            that.showEntityName = true;\n" 
+				+ "                            that.onChangeOntology( that.initialEntity);"
+				+ "                        } else {\n"
 				+ "                            that.msgerr = that.$t('error.message.ontology');                      \n"
 				+ "                            that.dialogCreateVisible = true;\n" + "                        }\n"
 				+ "                        that.showSelectOntology=true;\n" + "                        return;\n"
@@ -7486,7 +7506,9 @@ public class InitConfigDB {
 				+ "                            that.downloaddisabled = false;\n"
 				+ "                            that.uploaddisabled = false;\n"
 				+ "                            that.showSelect = false;\n"
-				+ "                            that.showEntityName = true;\n" + "                        } else {\n"
+				+ "                            that.showEntityName = true;\n" 
+				+ "                            that.onChangeOntology( that.initialEntity);"
+				+ "                        } else {\n"
 				+ "                            that.msgerr = that.$t('error.message.ontology');                      \n"
 				+ "                            that.dialogCreateVisible = true;\n" + "                        }\n"
 				+ "                        that.showSelectOntology=true;\n" + "                        return;\n"
@@ -7539,18 +7561,16 @@ public class InitConfigDB {
 				+ "                });\n" + "            } else {\n"
 				+ "                this.$alert(this.$t(\"message.success.loaded.1\") +' \"' + file.name + '\" ' + this.$t(\"message.success.loaded.2\"), 'Success', {\n"
 				+ "                    confirmButtonText: 'OK',\n" + "                    type: 'success'\n"
-				+ "                });\n" + "            }\n" + "            this.$refs.upload.clearFiles();\n"
-				+ "            this.selectedOntology = null;\n" + "            this.importdisabled = true;\n"
-				+ "            this.downloaddisabled = true;\n" + "            this.uploaddisabled = true;\n"
+				+ "                });\n" + "            }\n" 
+				+ "            this.$refs.upload.clearFiles();\n"			
 				+ "        },\n" + "        handlePreview: function(file){\n" + "        },\n"
 				+ "        handleRemove: function(file, fileList){\n" + "        },\n"
 				+ "        handleExceed: function(files, fileList){\n"
 				+ "            this.$alert(this.$t(\"message.alert.onefile\"), 'Warning', {\n"
 				+ "                    confirmButtonText: 'OK',\n" + "                    type: 'warning'\n"
 				+ "                });\n" + "        },\n" + "        clearFiles: function(){\n"
-				+ "            this.$refs.upload.clearFiles();\n" + "            this.selectedOntology = null;\n"
-				+ "            this.importdisabled = true;\n" + "            this.downloaddisabled = true;\n"
-				+ "            this.uploaddisabled = true;\n" + "        },\n" + "        sendValue: vm.sendValue,\n"
+				+ "            this.$refs.upload.clearFiles();\n"				
+				+ "        },\n" + "        sendValue: vm.sendValue,\n"
 				+ "        sendFilter: vm.sendFilter\n" + "    },\n" + "    mounted() {\n"
 				+ "        if(vm.tparams && vm.tparams.parameters){\n"
 				+ "            this.initialEntity=vm.tparams.parameters.initialEntity; \n" + "        }\n"
@@ -8811,7 +8831,9 @@ public class InitConfigDB {
 				+ "                            that.downloaddisabled = false;\n"
 				+ "                            that.uploaddisabled = false;\n"
 				+ "                            that.showSelect = false;\n"
-				+ "                            that.showEntityName = true;\n" + "                        } else {\n"
+				+ "                            that.showEntityName = true;\n" 
+				+ "                            that.onChangeOntology( that.initialEntity);"
+				+ "                        } else {\n"
 				+ "                            that.msgerr = that.$t('error.message.ontology');                      \n"
 				+ "                            that.dialogCreateVisible = true;\n" + "                        }\n"
 				+ "                        that.showSelectOntology=true;\n" + "                        return;\n"
@@ -8826,7 +8848,9 @@ public class InitConfigDB {
 				+ "                            that.downloaddisabled = false;\n"
 				+ "                            that.uploaddisabled = false;\n"
 				+ "                            that.showSelect = false;\n"
-				+ "                            that.showEntityName = true;\n" + "                        } else {\n"
+				+ "                             that.showEntityName = true;\n"
+				+ "                            that.onChangeOntology( that.initialEntity);"
+				+ "                        } else {\n"
 				+ "                            that.msgerr = that.$t('error.message.ontology');                      \n"
 				+ "                            that.dialogCreateVisible = true;\n" + "                        }\n"
 				+ "                        that.showSelectOntology=true;\n" + "                        return;\n"
@@ -8879,18 +8903,15 @@ public class InitConfigDB {
 				+ "                });\n" + "            } else {\n"
 				+ "                this.$alert(this.$t(\"message.success.loaded.1\") +' \"' + file.name + '\" ' + this.$t(\"message.success.loaded.2\"), 'Success', {\n"
 				+ "                    confirmButtonText: 'OK',\n" + "                    type: 'success'\n"
-				+ "                });\n" + "            }\n" + "            this.$refs.upload.clearFiles();\n"
-				+ "            this.selectedOntology = null;\n" + "            this.importdisabled = true;\n"
-				+ "            this.downloaddisabled = true;\n" + "            this.uploaddisabled = true;\n"
+				+ "                });\n" + "            }\n" + "            this.$refs.upload.clearFiles();\n"			
 				+ "        },\n" + "        handlePreview: function(file){\n" + "        },\n"
 				+ "        handleRemove: function(file, fileList){\n" + "        },\n"
 				+ "        handleExceed: function(files, fileList){\n"
 				+ "            this.$alert(this.$t(\"message.alert.onefile\"), 'Warning', {\n"
 				+ "                    confirmButtonText: 'OK',\n" + "                    type: 'warning'\n"
 				+ "                });\n" + "        },\n" + "        clearFiles: function(){\n"
-				+ "            this.$refs.upload.clearFiles();\n" + "            this.selectedOntology = null;\n"
-				+ "            this.importdisabled = true;\n" + "            this.downloaddisabled = true;\n"
-				+ "            this.uploaddisabled = true;\n" + "        },\n" + "        sendValue: vm.sendValue,\n"
+				+ "            this.$refs.upload.clearFiles();\n"			
+				+ "        },\n" + "        sendValue: vm.sendValue,\n"
 				+ "        sendFilter: vm.sendFilter\n" + "    },\n" + "    mounted() {\n"
 				+ "        if(vm.tparams && vm.tparams.parameters){\n"
 				+ "            this.initialEntity=vm.tparams.parameters.initialEntity; \n" + "        }\n"
@@ -9103,6 +9124,32 @@ public class InitConfigDB {
 		} catch (final IOException e) {
 			log.debug("Error deleting folder: {}", file.getPath());
 		}
+	}
+	
+	@Autowired OntologyPrestoDatasourceRepository prestoDatasourceRepository;	
+	
+	@Value("${onesaitplatform.database.prestodb.historicalCatalog:minio}")	
+	private String historicalCatalog;	
+	@Value("${onesaitplatform.database.prestodb.realtimedbCatalog:realtimedb}")	
+	private String realtimedbCatalog;	
+		
+	private void initPrestoConnections() {	
+		if (prestoDatasourceRepository.findByIdentification(historicalCatalog) == null) {	
+			initPrestoConnection(historicalCatalog, PrestoDatasourceType.HIVE);				
+		}	
+			
+		if (prestoDatasourceRepository.findByIdentification(realtimedbCatalog) == null) {	
+			initPrestoConnection(realtimedbCatalog, PrestoDatasourceType.MONGODB);		
+		}	
+	}	
+		
+	private void initPrestoConnection(String catalogIdentification, OntologyPrestoDatasource.PrestoDatasourceType type) {	
+		final OntologyPrestoDatasource prestoConnection = new OntologyPrestoDatasource();	
+		prestoConnection.setIdentification(catalogIdentification);	
+		prestoConnection.setType(type);	
+		prestoConnection.setUser(getUserAdministrator());	
+		prestoConnection.setPublic(true);	
+		prestoDatasourceRepository.save(prestoConnection);	
 	}
 
 }

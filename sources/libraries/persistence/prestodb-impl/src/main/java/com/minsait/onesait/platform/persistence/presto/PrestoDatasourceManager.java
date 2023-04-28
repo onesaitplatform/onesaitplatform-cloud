@@ -30,4 +30,5 @@ public interface PrestoDatasourceManager {
 
 	public DataSource getDatasource(String ontology);
 
+	public DataSource getDatasource();
 }

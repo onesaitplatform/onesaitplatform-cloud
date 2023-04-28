@@ -779,6 +779,11 @@ if [[ "$PERSISTENCE_TIMESCALEDB" = true ]]; then
 	buildTimescaleDB  $PERSISTENCE_TAG
 fi
 
+if [[ "$PERSISTENCE_TIMESCALEDB_PG14" = true ]]; then
+	cd $homepath/../dockerfiles/timescaledb-pg14/
+	buildTimescaleDB  $PERSISTENCE_TAG
+fi
+
 if [[ "$PERSISTENCE_ANALYTICS_ENGINE" = true  ]]; then
 	cd $homepath/../dockerfiles/analytics-engine
 	buildAnalyticsEngine $PERSISTENCE_TAG

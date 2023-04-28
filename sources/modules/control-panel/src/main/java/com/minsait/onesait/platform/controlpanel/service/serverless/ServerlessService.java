@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.controlpanel.service.serverless;
 
 import java.util.Collection;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.controlpanel.controller.serverless.ApplicationCreate;
 import com.minsait.onesait.platform.controlpanel.controller.serverless.ApplicationInfo;
 import com.minsait.onesait.platform.controlpanel.controller.serverless.ApplicationUpdate;
@@ -41,9 +42,14 @@ public interface ServerlessService {
 
 	public void updateFunction(String appName, String fnName, FunctionUpdate functionUpdate);
 
-	public void createFunction(String appName, String fnName,  FunctionCreate functionCreate);
+	public void createFunction(String appName, String fnName, FunctionCreate functionCreate);
 
 	public FunctionInfo getFunction(String appName, String fnName);
 
+	public void updateFunction(String appName, String fnName, String version);
+
+	public ObjectNode getEnvironment(String appName, String fnName);
+
+	public void updateFunctionEnvironment(String appName, String fnName, ObjectNode config);
 
 }

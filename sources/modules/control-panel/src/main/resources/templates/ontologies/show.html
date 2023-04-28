@@ -249,29 +249,29 @@
 										<input id="public" class="margin-right-10" name="public" type="checkbox" checked="checked" th:field="*{public}" disabled="disabled" />
 										<label class="control-label margin-right-5" th:text="#{ontology.publicontology}">Public</label>
 									</div>
-									<div class="col-md-12 col-xs-12">
+									<div th:if="${ontology.rtdbDatasource.name() != 'PRESTO'}" class="col-md-12 col-xs-12">
 										<input id="allowsCypherFields" class="margin-right-10" name="allowsCypherFields" type="checkbox" checked="checked" th:field="*{allowsCypherFields}" disabled="disabled"/>
 										<label class="control-label margin-right-5" th:text="#{ontology.allowsCypherFields}">Allows Cypher</label>
 									</div>
-									<div class="col-md-12 col-xs-12">
+									<div th:if="${ontology.rtdbDatasource.name() != 'PRESTO'}" class="col-md-12 col-xs-12">
 										<input id="rtdbClean" class="margin-right-10" name="public" type="checkbox" checked="checked" th:field="*{rtdbClean}" disabled="disabled" />
 										<label class="control-label margin-right-5" th:text="#{ontology.rtdbclean}">rtdbclean</label>
 									</div>
-									<div class="col-md-12 col-xs-12">
+									<div th:if="${ontology.rtdbDatasource.name() != 'PRESTO'}" class="col-md-12 col-xs-12">
 										<input id="contextDataEnabled" class="margin-right-10" name="public" type="checkbox" checked="checked" th:field="*{contextDataEnabled}" disabled="disabled" />
 										<label class="control-label margin-right-5" th:text="#{ontology.contextDataEnabled}">contextDataEnabled</label>
 									</div>
-                                    <div class="col-md-2 col-xs-12">
+                                    <div th:if="${ontology.rtdbDatasource.name() != 'PRESTO'}" class="col-md-2 col-xs-12">
                                         <input id="supportsJsonLd" class="margin-right-10" name="supportsJsonLd" type="checkbox" checked="checked" th:field="*{supportsJsonLd}" disabled="disabled" />
                                         <label class="control-label margin-right-5" th:text="#{ontology.supportsJsonLd}">Supports JSON-LD</label>
                                     </div>
-                                    <div class="col-md-4 col-xs-12">
+                                    <div th:if="${ontology.rtdbDatasource.name() != 'PRESTO'}" class="col-md-4 col-xs-12">
                                         <div class="form-group hide" id="jsonLdCtxt">
                                             <label class="control-label" th:text="#{ontology.jsonLdContextEdit}">JSON-LD Context </label><span class="required"> *</span>
                                             <textarea class="form-control" style="height: 100px" id="jsonLdContext" th:field="*{jsonLdContext}" th:required="true" readOnly="readonly" ></textarea>
                                         </div>
                                     </div>
-                                    <div class="col-md-12 col-xs-12">
+                                    <div th:if="${ontology.rtdbDatasource.name() != 'PRESTO'}" class="col-md-12 col-xs-12">
                                         <input id="enableDataClass" class="margin-right-10" name="enableDataClass" type="checkbox" checked="checked" th:field="*{enableDataClass}" disabled="disabled" />
                                         <label class="control-label margin-right-5" th:text="#{ontology.enableDataClass}">Enable data class preprocessing</label>
                                     </div>
@@ -324,11 +324,11 @@
 											<p class="form-control-static-block " th:text="${ontology.rtdbToHdbStorage}"> Storage mode </p>
 										</div>
 									</div>
-									<div class="col-md-12 col-xs-12">
+									<div th:if="${ontology.rtdbDatasource.name() != 'PRESTO'}" class="col-md-12 col-xs-12">
 										<input id="allowsCreateTopic" class="margin-right-10" name="allowsCreateTopic" type="checkbox" checked="checked" th:field="*{allowsCreateTopic}" disabled="disabled" />
 										<label class="control-label margin-right-5" th:text="#{ontology.allowsCreateTopic}">Kafka</label>
 									</div>
-									<div class="col-md-12 col-xs-12">
+									<div th:if="${ontology.rtdbDatasource.name() != 'PRESTO'}" class="col-md-12 col-xs-12">
 										<input id="allowsCreateNotificationTopic" class="margin-right-10" name="allowsCreateNotificationTopic" type="checkbox" checked="checked" th:field="*{allowsCreateNotificationTopic}" disabled="disabled" />
 										<label class="control-label margin-right-5" th:text="#{ontology.allowsCreateNotificationTopic}">Kafka Notification</label>
 									</div>

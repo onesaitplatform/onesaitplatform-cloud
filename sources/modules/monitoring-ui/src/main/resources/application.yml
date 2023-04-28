@@ -52,7 +52,7 @@ onesaitplatform: #Config onesait Platform specific
       port: 12201
 
 ## Config Reference      
-spring: ## General Config  
+spring: ## General Config
    mvc.hiddenmethod.filter.enabled: true
    main:
       allow-circular-references: true

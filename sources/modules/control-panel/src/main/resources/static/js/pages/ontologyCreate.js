@@ -284,15 +284,17 @@ var OntologyCreateController = function() {
 	}
 	
 	var createReferences = function(schema){
-		
-		var refs = [];
-		referencesArr.forEach(function(r){
-			var self = r.srcAttPath;
-			var target = schemaUrl + r.dstOntology + '#' + r.dstAttPath;
-			var validate = r.validate;
-			refs.push({"self":self, "target": target, "validate":validate});
-		});
-		schema["_references"] = refs;
+		delete schema["_references"];
+		if(referencesArr.length > 0){
+			var refs = [];
+			referencesArr.forEach(function(r){
+				var self = r.srcAttPath;
+				var target = schemaUrl + r.dstOntology + '#' + r.dstAttPath;
+				var validate = r.validate;
+				refs.push({"self":self, "target": target, "validate":validate});
+			});
+			schema["_references"] = refs;
+		}
 	}
 	var mountLDModal = function(){
 		cleanLDSelects();
@@ -511,8 +513,8 @@ var OntologyCreateController = function() {
 		 * editor.setMode("tree"); } }
 		 */
 		// HANDLE REFERENCES
-		if(referencesArr.length > 0)
-			createReferences(schemaObj);
+		createReferences(schemaObj);
+
 		// ADD INFO TO SCHEMA EDITOR
 		schema = JSON.stringify(schemaObj);
 		editor.setMode("text");
@@ -1012,6 +1014,7 @@ var OntologyCreateController = function() {
 				$('#tab-data-schema a').click();
 				$('#continueBtn').prop('disabled', true);
 				wizardStep = 2;
+				manageWizardStep();
 			} else {
 				var clickedTree = document.getElementsByClassName("jstree-clicked");
 				if(clickedTree.length == 0){
@@ -1486,6 +1489,11 @@ var OntologyCreateController = function() {
 		$('#resetBtn').on('click',function(){
 			cleanFields('ontology_create_form');
 		});
+
+		// Reset form
+		$('#continueBtn').on('click',function(){
+			wizardStepContinue();
+		});	
 		
 		// Fields OnBlur validation
 		
@@ -2747,7 +2755,9 @@ var OntologyCreateController = function() {
 			logControl ? console.log(LIB_TITLE + ': checkProperty()') : '';
 			var allProperties = $("input[name='property\\[\\]']").map(function(){return $(this).val();}).get();
 			areUnique = allProperties.unique();
-			if (allProperties.length !== areUnique.length)  {
+			const filterAllProperties = allProperties.filter((item) => item != "");
+			const filterAreUnique = areUnique.filter((item) => item != "");
+			if (filterAllProperties.length !== filterAreUnique.length)  {
 				$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: ontologyCreateReg.validations.duplicates});
 				$(obj).val(''); return false;
 			}

@@ -50,7 +50,7 @@ public class BinaryFile extends OPResource implements Versionable<BinaryFile> {
 	private static final long serialVersionUID = 5923804579468183726L;
 
 	public enum RepositoryType {
-		MONGO_GRIDFS, FILE, MINIO_S3
+		MONGO_GRIDFS, FILE, MINIO_S3, GCP
 	}
 
 	@Column(name = "FILE_NAME", nullable = false)

@@ -96,6 +96,7 @@ RUN npm i appmetrics-dash  && \
     npm i prom-client && \ 
     npm rebuild
 
+
 VOLUME ["/tmp", "/var/log/platform-logs"]
 
 USER onesait

@@ -21,7 +21,7 @@ import org.springframework.boot.autoconfigure.security.oauth2.resource.Authoriti
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 
-public class OauthAuthoritiesExtractor implements AuthoritiesExtractor{
+public class OauthAuthoritiesExtractor implements AuthoritiesExtractor {
 
 	private static final String DEFAULT_ROLE = "ROLE_DEVELOPER";
 
@@ -29,12 +29,17 @@ public class OauthAuthoritiesExtractor implements AuthoritiesExtractor{
 	public List<GrantedAuthority> extractAuthorities(Map<String, Object> map) {
 		return AuthorityUtils.createAuthorityList(extractRole(map));
 	}
+
 	@SuppressWarnings("unchecked")
 	public String extractRole(Map<String, Object> map) {
 		try {
 			return ((List<String>) map.get("authorities")).iterator().next();
 		} catch (final Exception e) {
-			return DEFAULT_ROLE;
+			try {
+				return (String) map.get("role");
+			} catch (final Exception e2) {
+				return DEFAULT_ROLE;
+			}
 		}
 	}
 

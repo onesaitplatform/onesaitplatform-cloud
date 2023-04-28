@@ -44,6 +44,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.jayway.jsonpath.JsonPath;
 import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.AppList;
@@ -97,7 +101,26 @@ public class AppRestController {
 	private static final String IN_REALM_STR = "\" in Realm \"";
 
 	private static final String NOT_FOUND = "\" not found";
-
+	private static final String ROLE_STR = "Role";
+	private static final String ROLE_NAME_STR = "name";
+	private static final String ROLE_DESC_STR = "description";
+	private static final String ROLE_ASSOCIATION = "Association";
+	private static final String USER_AUTHORIZATION = "Authorization";
+	private static final String USER = "User";
+	private static final String MESSAGE_STR = "message";
+	private static final String STATUS_STR = "status";
+	private static final String OK_STR = "OK";
+	private static final String ERROR_STR = "error";
+	private static final String ERROR_NOT_NAME_PROVIDED = "Not 'name' field provided";
+	private static final String ERROR_NOT_DESC_PROVIDED = "Not 'description' field provided";
+	private static final String ERROR_NOT_PARENT_REALM_PROVIDED = "Not 'parentRealmId' field provided";
+	private static final String ERROR_NOT_PARENT_ROLE_PROVIDED = "Not 'parentRoleName' field provided";	
+	private static final String ERROR_NOT_CHILD_REALM_PROVIDED = "Not 'childRealmId' field provided";
+	private static final String ERROR_NOT_CHILD_ROLE_PROVIDED = "Not 'childRoleName' field provided";
+	private static final String ERROR_NOT_REALM_PROVIDED = "Not 'realmId' field provided";
+	private static final String ERROR_NOT_ROLE_PROVIDED = "Not 'roleName' field provided";
+	private static final String ERROR_NOT_USER_PROVIDED = "Not 'userId' field provided";	
+	
 	@Autowired
 	private AppService appService;
 	@Autowired
@@ -460,7 +483,7 @@ public class AppRestController {
 
 	}
 
-	@Operation(summary = "Authorizes user with a role in a existing Realm")
+	@Operation(summary = "Authorizes user with a role in an existing Realm")
 	@PostMapping("/authorization")
 	@Transactional
 	public ResponseEntity<?> createAuthorization(
@@ -478,12 +501,12 @@ public class AppRestController {
 			return new ResponseEntity<>(REALM_STR + authorization.getRealmId() + NOT_EXIST, HttpStatus.NOT_FOUND);
 		}
 
-		final User user = userService.getUserByIdentification(authorization.getUserId());
 		// user not administrator and not owner is not allowed to authorize
 		if (!utils.isAdministrator()
 				&& (null == appDb.getUser() || !appDb.getUser().getUserId().equals(utils.getUserId()))) {
 			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 		}
+		final User user = userService.getUserByIdentification(authorization.getUserId());
 
 		if (user == null) {
 			log.warn("End realm authorization user does not exist");
@@ -508,6 +531,180 @@ public class AppRestController {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
+	}
+	
+	@Operation(summary = "Authorizes multiple users with roles in a Realm")
+	@PostMapping("/authorization/{identification}/multiple")
+	@Transactional
+	public ResponseEntity<?> createAuthorizationMultipleOneRealm(@PathVariable("identification") String identification,
+			@Parameter(description= "Realm Authorization", required = true) @Valid @RequestBody String authorizationDTOsArrayString,
+			Errors errors) {
+
+		if (errors.hasErrors()) {
+			return ErrorValidationResponse.generateValidationErrorResponse(errors);
+		}
+		try {
+			final AppList appDb = appService.getAppListByIdentification(identification);
+
+			if (appDb == null) {
+				log.warn("The realm does not exist");
+				return new ResponseEntity<>("The specified realms does not exist", HttpStatus.BAD_REQUEST);
+			}
+
+			// user not administrator and not owner is not allowed to authorize
+			if (!utils.isAdministrator()
+					&& (null == appDb.getUser() || !appDb.getUser().getUserId().equals(utils.getUserId()))) {
+				return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
+			}
+			
+			final JsonArray jsonResponse = new JsonArray();
+			final JsonArray authorizationDTOs = new JsonParser().parse(authorizationDTOsArrayString).getAsJsonArray();
+			for (final JsonElement jsonElement : authorizationDTOs) {
+				final JsonObject authorizationDTOJson = jsonElement.getAsJsonObject();
+				final JsonObject jsonObjectResponse = tryCreateAuthorizationOneRealm(authorizationDTOJson, appDb, identification);
+				jsonResponse.add(jsonObjectResponse);
+			}
+			return new ResponseEntity<>(jsonResponse.toString(), HttpStatus.OK);		
+		} catch (final Exception exception) {
+			return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}	
+	}
+	
+	private JsonObject tryCreateAuthorizationOneRealm(JsonObject authorizationDTOJson, AppList appDb, String realmId) {
+		String msg = "";
+		String status = "";
+		
+		if (!authorizationDTOJson.has("roleName")) { 
+			msg = ERROR_NOT_ROLE_PROVIDED;
+			status = ERROR_STR;
+		} else if (!authorizationDTOJson.has("userId")) { 
+			msg = ERROR_NOT_USER_PROVIDED;
+			status = ERROR_STR;
+		} else {
+			final String roleName = authorizationDTOJson.get("roleName").getAsString();
+			final String userId = authorizationDTOJson.get("userId").getAsString();
+
+			final User user = userService.getUserByIdentification(userId);
+
+			if (user == null) {
+				msg = USER_STR + userId + NOT_EXIST;
+				status = ERROR_STR;
+				log.warn(USER_STR + userId + NOT_EXIST);
+			}
+			try {
+				final AppRoleListOauth role = appService.getByRoleNameAndAppListOauth(roleName, appDb);
+				if (role == null) {
+					msg = "Role \"" + roleName + "\" does not exist in Realm ";
+					status = ERROR_STR;
+					log.warn("Role \"" + roleName + "\" does not exist in Realm ");
+				}
+				final List<AppUserListOauth> authList = appService.getAppUsersByUserIdAndRoleAndApp(userId,	roleName, realmId);
+				if (!authList.isEmpty()) {
+					msg = "This association already exists.";
+					status = ERROR_STR;
+					log.warn("This association already exists.");
+				}
+				appService.createUserAccess(appDb.getId(), userId, role.getId());
+				msg = "New realm authorization with user: " + userId + " : Role : " + roleName + " : Realm : " + realmId;
+				status = OK_STR;
+				log.debug("End realm authorization successfully");
+			} catch (final AppServiceException e) {
+				msg = e.getMessage();
+				status = ERROR_STR;
+				log.warn("Not possible to create authorization: " + authorizationDTOJson.toString(), e.getMessage());
+			}
+		}
+		return constructJsonResponse(authorizationDTOJson, USER_AUTHORIZATION, status, msg);
+	}
+	
+	@Operation(summary = "Authorizes multiple users with roles in existing Realms")
+	@PostMapping("/authorization/multiple")
+	@Transactional
+	public ResponseEntity<?> createAuthorizationMultiple(
+			@Parameter(description= "Realm Authorization", required = true) @Valid @RequestBody String authorizationDTOsArrayString,
+			Errors errors) {
+
+		if (errors.hasErrors()) {
+			return ErrorValidationResponse.generateValidationErrorResponse(errors);
+		}
+		try {
+			final JsonArray jsonResponse = new JsonArray();
+			final JsonArray authorizationDTOs = new JsonParser().parse(authorizationDTOsArrayString).getAsJsonArray();
+			for (final JsonElement jsonElement : authorizationDTOs) {
+				final JsonObject authorizationDTOJson = jsonElement.getAsJsonObject();
+				final JsonObject jsonObjectResponse = tryCreateAuthorization(authorizationDTOJson);
+				jsonResponse.add(jsonObjectResponse);
+			}
+			return new ResponseEntity<>(jsonResponse.toString(), HttpStatus.OK);		
+		} catch (final Exception exception) {
+			return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}	
+	}
+	
+	private JsonObject tryCreateAuthorization(JsonObject authorizationDTOJson) {
+		String msg = "";
+		String status = "";
+		
+		if (!authorizationDTOJson.has("realmId")) {
+			msg = ERROR_NOT_REALM_PROVIDED;
+			status = ERROR_STR;
+		} else if (!authorizationDTOJson.has("roleName")) { 
+			msg = ERROR_NOT_ROLE_PROVIDED;
+			status = ERROR_STR;
+		} else if (!authorizationDTOJson.has("userId")) { 
+			msg = ERROR_NOT_USER_PROVIDED;
+			status = ERROR_STR;
+		} else {
+			final String realmId = authorizationDTOJson.get("realmId").getAsString();
+			final String roleName = authorizationDTOJson.get("roleName").getAsString();
+			final String userId = authorizationDTOJson.get("userId").getAsString();
+			
+			final AppList appDb = appService.getAppListByIdentification(realmId);
+
+			if (appDb == null) {
+				msg = "The specified realms does not exist";
+				status = ERROR_STR;
+				log.warn("The realm does not exist");
+			}
+
+			// user not administrator and not owner is not allowed to authorize
+			if (!utils.isAdministrator()
+					&& (null == appDb.getUser() || !appDb.getUser().getUserId().equals(utils.getUserId()))) {
+				msg = USER_STR + utils.getUserId() + NOT_AUTH;
+				status = ERROR_STR;
+				log.warn(USER_STR + utils.getUserId() + NOT_AUTH);
+			}
+			final User user = userService.getUserByIdentification(userId);
+
+			if (user == null) {
+				msg = USER_STR + userId + NOT_EXIST;
+				status = ERROR_STR;
+				log.warn(USER_STR + userId + NOT_EXIST);
+			}
+			try {
+				final AppRoleListOauth role = appService.getByRoleNameAndAppListOauth(roleName, appDb);
+				if (role == null) {
+					msg = "Role \"" + roleName + "\" does not exist in Realm ";
+					status = ERROR_STR;
+					log.warn("Role \"" + roleName + "\" does not exist in Realm ");
+				}
+				final List<AppUserListOauth> authList = appService.getAppUsersByUserIdAndRoleAndApp(userId,	roleName, realmId);
+				if (!authList.isEmpty()) {
+					msg = "This association already exists.";
+					status = ERROR_STR;
+					log.warn("This association already exists.");
+				}
+				appService.createUserAccess(appDb.getId(), userId, role.getId());
+				msg = "New realm authorization with user: " + userId + " : Role : " + roleName + " : Realm : " + realmId;
+				status = OK_STR;
+				log.debug("End realm authorization successfully");
+			} catch (final AppServiceException e) {
+				msg = e.getMessage();
+				status = ERROR_STR;
+				log.warn("Not possible to create authorization: " + authorizationDTOJson.toString(), e.getMessage());
+			}
+		}
+		return constructJsonResponse(authorizationDTOJson, USER_AUTHORIZATION, status, msg);
 	}
 
 	@Operation(summary = "Invalidates user authorization for a Realm")
@@ -536,6 +733,70 @@ public class AppRestController {
 		} catch (final AppServiceException e) {
 			return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+	}
+	
+	@Operation(summary = "Invalidates users authorizations for a Realm")
+	@DeleteMapping("/authorization/realm/{identification}/user/multiple")
+	@Transactional
+	public ResponseEntity<?> deleteAuthorizationMultiple(
+			@Parameter(description= "Realm identification", required = true) @PathVariable("identification") String identification,
+			@Parameter(description= "Users identifications", required = true) @Valid @RequestBody String userIdsArrayString) {
+		log.debug("Removing realm authorization for users");
+		final AppList appDb = appService.getAppListByIdentification(identification);
+
+		if (appDb == null) {
+			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.BAD_REQUEST);
+		}
+
+		// user not administrator and not owner is not allowed to unauthorize
+		if (!utils.isAdministrator()
+				&& (null == appDb.getUser() || !appDb.getUser().getUserId().equals(utils.getUserId()))) {
+			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
+		}
+		
+		try {
+			final JsonArray jsonResponse = new JsonArray();
+			final JsonArray UserIds = new JsonParser().parse(userIdsArrayString).getAsJsonArray();
+			for (final JsonElement jsonElement : UserIds) {
+				final JsonObject UserIdJson = jsonElement.getAsJsonObject();
+				final JsonObject jsonObjectResponse = tryDeleteAuthorizationUsers(UserIdJson, appDb);
+				jsonResponse.add(jsonObjectResponse);
+			}
+			return new ResponseEntity<>(jsonResponse.toString(), HttpStatus.OK);
+		} catch (final Exception exception) {
+			return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+
+	private JsonObject tryDeleteAuthorizationUsers(JsonObject userIdJson, AppList appDb) {
+		String msg = "";
+		String status = "";
+		
+		if (!userIdJson.has("userId")) {
+			msg = ERROR_NOT_USER_PROVIDED;
+			status = ERROR_STR;
+		} else {
+			final String userId = userIdJson.get("userId").getAsString();	
+			
+			final User user = userService.getUserByIdentification(userId);
+
+			if (user == null) {
+				msg = USER_STR + userId + NOT_EXIST;
+				status = ERROR_STR;
+				log.warn(USER_STR + userId + NOT_EXIST);
+			}
+			try {
+				appService.removeAuthorizations(userId, appDb.getIdentification());
+				msg = "Authorizations for user: " + userId + " removed in Realm : " + appDb.getIdentification();
+				status = OK_STR;
+			} catch (final AppServiceException e) {
+				msg = e.getMessage();
+				status = ERROR_STR;
+				log.warn("Not possible to remove authorizations for user: " + userId, e.getMessage());
+			}
+		}
+		return constructJsonResponse(userIdJson, USER, status, msg);	
 	}
 
 	@Operation(summary = "Creates a realm association given parent and child realms, as well as respective roles")
@@ -577,6 +838,88 @@ public class AppRestController {
 
 	}
 
+	@Operation(summary = "Creates realms associations given parents and childs realms, as well as respective roles")
+	@PostMapping("/association/multiple")
+	@Transactional
+	public ResponseEntity<?> createAssociationMultiple(
+			@Parameter(description = "Realm Association", required = true) @RequestBody String associationDTOsArrayString,
+			Errors errors) {
+		if (errors.hasErrors()) {
+			return ErrorValidationResponse.generateValidationErrorResponse(errors);
+		}
+		
+		try {
+			final JsonArray jsonResponse = new JsonArray();
+			final JsonArray rolesDTOs = new JsonParser().parse(associationDTOsArrayString).getAsJsonArray();
+			for (final JsonElement jsonElement : rolesDTOs) {
+				final JsonObject associationDTOJson = jsonElement.getAsJsonObject();
+				final JsonObject jsonObjectResponse = tryCreateAssociation(associationDTOJson);
+				jsonResponse.add(jsonObjectResponse);
+			}
+			return new ResponseEntity<>(jsonResponse.toString(), HttpStatus.OK);
+		} catch (final Exception exception) {
+			return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+
+	private JsonObject tryCreateAssociation(JsonObject associationDTOJson) {
+		String msg = "";
+		String status = "";
+		
+		if (!associationDTOJson.has("parentRealmId")) {
+			msg = ERROR_NOT_PARENT_REALM_PROVIDED;
+			status = ERROR_STR;
+		} else if (!associationDTOJson.has("parentRoleName")) { 
+			msg = ERROR_NOT_PARENT_ROLE_PROVIDED;
+			status = ERROR_STR;
+		} else if (!associationDTOJson.has("childRealmId")) { 
+			msg = ERROR_NOT_CHILD_REALM_PROVIDED;
+			status = ERROR_STR;
+		} else if (!associationDTOJson.has("childRoleName")) { 
+			msg = ERROR_NOT_CHILD_ROLE_PROVIDED;
+			status = ERROR_STR;
+		} else {
+			try {
+				final String parentRealmId = associationDTOJson.get("parentRealmId").getAsString();
+				final String parentRoleName = associationDTOJson.get("parentRoleName").getAsString();
+				final String childRealmId = associationDTOJson.get("childRealmId").getAsString();
+				final String childRoleName = associationDTOJson.get("childRoleName").getAsString();	
+			
+				final App appDbParent = appService.getAppByIdentification(parentRealmId);
+				final App appDbChild = appService.getAppByIdentification(childRealmId);
+				
+
+				if (appDbChild == null || appDbParent == null) {
+					msg = "Any of the specified realms does not exist";
+					status = ERROR_STR;
+					log.warn("Any of the specified realms does not exist");
+				// user not administrator and not owner is not allowed to associate this realms
+				} else if (!utils.isAdministrator() && (null == appDbChild.getUser()
+						|| !appDbChild.getUser().getUserId().equals(utils.getUserId()) || null == appDbParent.getUser()
+						|| !appDbParent.getUser().getUserId().equals(utils.getUserId()))) {
+					msg = "User not authorized";
+					status = ERROR_STR;
+					log.warn("User not authorized");
+				} else if (null == appService.getByRoleNameAndApp(parentRoleName, appDbParent)
+						|| null == appService.getByRoleNameAndApp(childRoleName, appDbChild)) {
+					msg = "Any Role does not exists";
+					status = ERROR_STR;
+					log.warn("Any Role does not exists");
+				} else {
+					appService.createAssociation(parentRoleName, childRoleName,	parentRealmId, childRealmId);
+					msg = "Association: " + parentRealmId + ":" + parentRoleName + "-" + childRealmId + ":" + childRoleName +" successfully created";
+					status = OK_STR;
+				}
+			} catch (final AppServiceException e) {
+				msg = e.getMessage();
+				status = ERROR_STR;
+				log.warn("Not possible to create association: " + associationDTOJson.toString(), e.getMessage());
+			}
+		}
+		return constructJsonResponse(associationDTOJson, ROLE_ASSOCIATION, status, msg);
+	}
+	
 	@Operation(summary = "Deletes a realm's association")
 	@DeleteMapping("/association/parent-realm/{parentRealmId}/parent-role/{parentRole}/child-realm/{childRealmId}/child-role/{childRole}")
 	@Transactional
@@ -672,6 +1015,89 @@ public class AppRestController {
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
+	@Operation(summary = "Creates multiple roles in a Realm")
+	@PostMapping("/{identification}/roles/multiple")
+	@Transactional
+	public ResponseEntity<String> addRoleMultiple(
+			@Parameter(description = "Realm Identification", required = true) @PathVariable("identification") String identification,
+			@Parameter(description = "Realm roles", required = true) @RequestBody String roleDTOsArrayString) {
+
+		final App appDb = appService.getAppByIdentification(identification);
+
+		if (appDb == null) {
+			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.BAD_REQUEST);
+		}
+		
+		// user not administrator and not owner is not allowed to get Roles
+		if (!utils.isAdministrator()
+				&& (null == appDb.getUser() || !appDb.getUser().getUserId().equals(utils.getUserId()))) {
+			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
+		}
+		
+		try {
+			final JsonArray jsonResponse = new JsonArray();
+			final JsonArray rolesDTOs = new JsonParser().parse(roleDTOsArrayString).getAsJsonArray();
+			for (final JsonElement jsonElement : rolesDTOs) {
+				final JsonObject roleDTOJson = jsonElement.getAsJsonObject();
+				final JsonObject jsonObjectResponse = tryCreateRole(roleDTOJson, appDb);
+				jsonResponse.add(jsonObjectResponse);
+			}
+			return new ResponseEntity<>(jsonResponse.toString(), HttpStatus.OK);
+		} catch (final Exception exception) {
+			return new ResponseEntity<>(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	private JsonObject tryCreateRole(JsonObject roleDTOJson, App appDb) {
+		String msg = "";
+		String status = "";
+		
+		if (!roleDTOJson.has(ROLE_NAME_STR)) {
+			msg = ERROR_NOT_NAME_PROVIDED;
+			status = ERROR_STR;
+		} else if (!roleDTOJson.has(ROLE_DESC_STR)) { 
+			msg = ERROR_NOT_DESC_PROVIDED;
+			status = ERROR_STR;
+		} else {
+			try {
+				final String name = roleDTOJson.get(ROLE_NAME_STR).getAsString();
+				final String description = roleDTOJson.get(ROLE_DESC_STR).getAsString();
+		
+				if (appDb.getAppRoles().stream().anyMatch(r -> r.getName().equalsIgnoreCase(name))) {
+					msg = "Role already exists wiht name " + name;
+					status = ERROR_STR;
+					log.warn("Role already exists wiht name " + name);
+				} else {
+					final AppRole newRole = new AppRole();
+					newRole.setApp(appDb);
+					newRole.setName(name);
+					newRole.setDescription(description);
+					appDb.getAppRoles().add(newRole);
+					appService.updateApp(appDb);
+					if (keycloakNotificator != null) {
+						keycloakNotificator.notifyRealmToKeycloak(appDb.getIdentification(), Type.UPDATE);
+					}
+					msg = "Role: " + name + " successfully created";
+					status = OK_STR;
+				}
+			} catch (final Exception e) {
+				msg = e.getMessage();
+				status = ERROR_STR;
+				log.warn("Not possible to create role:" + roleDTOJson.toString(), e.getMessage());
+			}
+		}
+		return constructJsonResponse(roleDTOJson, ROLE_STR, status, msg);
+	}
+
+	private JsonObject constructJsonResponse(JsonObject jsonObject, String resource, String status, String msg) {
+		final JsonObject jsonObjectResponse = new JsonObject();
+		jsonObjectResponse.addProperty(resource, jsonObject.toString());
+		jsonObjectResponse.addProperty(STATUS_STR, status);
+		jsonObjectResponse.addProperty(MESSAGE_STR, msg);
+		return jsonObjectResponse;
+	}
+
+	
 	@Operation(summary = "Deletes a role in a Realm")
 	@DeleteMapping("/{identification}/roles/{roleName}")
 	public ResponseEntity<?> deleteRole(

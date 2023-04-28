@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import com.minsait.onesait.platform.config.dto.ApiForList;
 import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Api.ApiStates;
@@ -142,5 +143,7 @@ public interface ApiManagerService {
 	public void obfuscateUsersData(Api api);
 
 	public boolean permision(String apiId, String userId);
+
+	public List<ApiForList> loadAPISByFilterForList(String apiId, String state, String userId, String loggeduser);
 
 }

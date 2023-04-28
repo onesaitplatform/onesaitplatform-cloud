@@ -17,7 +17,9 @@ package com.minsait.onesait.platform.controlpanel.services.keycloak;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
@@ -53,24 +55,26 @@ public class KeycloakNotificator {
 						.getVerticalFromSchema(MultitenancyContextHolder.getVerticalSchema()).getName())
 				.build();
 		execute(resourcesService.getUrl(Module.KEYCLOAK_MANAGER, ServiceUrl.ADVICE), HttpMethod.POST, notification,
-				String.class);
+				Void.class);
 	}
 
 	public void notifyNewVerticalToKeycloak(String vertical) {
 		final AdviceNotification notification = AdviceNotification.builder().newVertical(true).realm(false)
 				.type(Type.CREATE).vertical(vertical).build();
 		execute(resourcesService.getUrl(Module.KEYCLOAK_MANAGER, ServiceUrl.ADVICE), HttpMethod.POST, notification,
-				String.class);
+				Void.class);
 	}
 
 	private <T> ResponseEntity<T> execute(String url, HttpMethod method, Object body, Class<T> clazz) {
 		try {
-			return template.exchange(url, method, new HttpEntity<>(body), clazz);
+			final HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_JSON);
+			return template.exchange(url, method, new HttpEntity<>(body, headers), clazz);
 		} catch (final HttpClientErrorException | HttpServerErrorException e) {
 			log.error("Error on request {}, code: {}, cause: {}", url, e.getRawStatusCode(),
 					e.getResponseBodyAsString());
 			return null;
-		}catch (final ResourceAccessException e) {
+		} catch (final ResourceAccessException e) {
 			log.error("Could not notify to keycloak manager");
 			return null;
 		}

@@ -112,9 +112,9 @@ public interface MultitenancyService {
 
 	Vertical getVerticalFromSchema(String schema);
 
-	MasterUser updateLastLogin(String userId);
+	void updateLastLogin(String userId);
 
 	long countTenantUsers(String tenantName);
 
-
+	List<?> getAllLazy();
 }

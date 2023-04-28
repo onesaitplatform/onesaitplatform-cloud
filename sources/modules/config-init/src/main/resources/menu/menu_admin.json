@@ -558,21 +558,12 @@
 				},
 				{
 					"title": {
-						"EN": "Files Management (old)",
-						"ES": "Gestión de Ficheros (antiguo)",
-						"FR": "Gestion des fichiers (ancien)"
-					},
-					"icon": "",
-					"url": "/controlpanel/files/list"
-				},
-				{
-					"title": {
 						"EN": "Files Management",
 						"ES": "Gestión de Fichero",
 						"FR": "Gestion des fichiers"
 					},
 					"icon": "",
-					"url": "/controlpanel/objectstore/list"
+					"url": "/controlpanel/files/list"
 				},
 				{
 					"title": {
@@ -627,6 +618,15 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/virtualdatasources/list"
+				},
+				{
+					"title": {
+						"EN": "Presto Connection Management",
+						"ES": "Gestión de Conexiones Presto",
+						"FR": "Gestion des Connexions à Presto"
+					},
+					"icon": "",
+					"url": "/controlpanel/presto/datasources/list"
 				},
 				{
 					"title": {
@@ -728,6 +728,15 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/queriesprofilerui/"
+				},
+				{
+					"title": {
+						"EN": "Presto Monitoring",
+						"ES": "Monitorización de Presto",
+						"FR": "Surveillance Presto"
+					},
+					"icon": "",
+					"url": "/controlpanel/presto/ui"
 				}
 			]
 		},

@@ -1,3 +1,2 @@
 # Mapped as Java
 *.* linguist-language=Java
-sources/modules/control-panel/docker/oc filter=lfs diff=lfs merge=lfs -text

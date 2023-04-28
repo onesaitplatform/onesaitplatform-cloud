@@ -176,7 +176,7 @@
 									<button id="resetBtnCreate" onclick="location.href='../ontologies/createwizard'" type="button" class="btn btn-primary-cancel" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
 
 									<!-- CONTINUE -->
-									<button id="continueBtn" type="button" class="btn btn-primary btn-primary-save" name="continue"  onclick="OntologyCreateController.wizardContinue()" th:value="#{gen.continueBtn}" disabled="disabled"><span th:text="#{gen.continueBtn}"> Continue</span></button>
+									<button id="continueBtn" type="button" class="btn btn-primary btn-primary-save" name="continue"  th:value="#{gen.continueBtn}" disabled="disabled"><span th:text="#{gen.continueBtn}"> Continue</span></button>
 
 									<!-- CREATE -->
 									<button id="createWizardBtn" type="submit" class="btn btn-primary btn-primary-save hide" name="create" onclick="OntologyCreateController.updateJsonschemaInput()"><span th:text="#{gen.createBtn}"> New</span></button>
@@ -1387,16 +1387,11 @@
 	<script th:src="@{/static/vendor/json/json2.min.js}"></script>
 	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>
 
+	<script>var require = { paths: { 'ace': '/controlpanel/static/vendor/ace' } };</script>
 	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
 	<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
 	<script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>
 	<script th:src="@{/static/vendor/json/jsonToTable.js}"></script>
-
-    <!-- MONACO EDITOR-->
-    <script>var require = { paths: { 'vs': '/controlpanel/static/vendor/vs' } };</script>
-    <script th:src="@{/static/vendor/vs/loader.js}" ></script>
-    <script th:src="@{/static/vendor/vs/editor/editor.main.nls.js}" ></script>
-    <script th:src="@{/static/vendor/vs/editor/editor.main.js}" ></script>
 
 	<!-- INPUTMASK -->
 	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>

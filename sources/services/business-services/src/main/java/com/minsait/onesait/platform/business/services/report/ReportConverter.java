@@ -26,10 +26,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.minsait.onesait.platform.binaryrepository.exception.BinaryRepositoryException;
-import com.minsait.onesait.platform.business.services.binaryrepository.BinaryRepositoryLogicService;
+import com.minsait.onesait.platform.business.services.binaryrepository.factory.BinaryRepositoryServiceFactory;
 import com.minsait.onesait.platform.config.dto.report.ReportDto;
 import com.minsait.onesait.platform.config.dto.report.ReportResourceDTO;
 import com.minsait.onesait.platform.config.model.BinaryFile;
+import com.minsait.onesait.platform.config.model.BinaryFile.RepositoryType;
 import com.minsait.onesait.platform.config.model.Report;
 import com.minsait.onesait.platform.config.model.Report.ReportExtension;
 import com.minsait.onesait.platform.config.model.User;
@@ -43,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ReportConverter {
 
 	@Autowired
-	private BinaryRepositoryLogicService binaryRepositoryLogicService;
+	private BinaryRepositoryServiceFactory binaryFactory;
 	@Autowired
 	private BinaryFileService binaryFileService;
 
@@ -70,7 +71,8 @@ public class ReportConverter {
 		final Set<BinaryFile> resources = report.getAdditionalFiles().stream().map(mf -> {
 			if (!mf.isEmpty()) {
 				try {
-					final String fileId = binaryRepositoryLogicService.addBinary(mf, null);
+					final String fileId = binaryFactory.getInstance(RepositoryType.MONGO_GRIDFS).addBinary(mf, null,
+							null);
 					return binaryFileService.getFile(fileId);
 				} catch (final Exception e) {
 					log.error("Could not add file {}", mf.getOriginalFilename());
@@ -88,7 +90,7 @@ public class ReportConverter {
 
 		final ReportDto reportDto = ReportDto.builder().id(report.getId()).identification(report.getIdentification())
 				.description(report.getDescription()).owner(report.getUser().getUserId()).created(report.getCreatedAt())
-				.fileName(report.getIdentification()+"."+report.getExtension().toString().toLowerCase())
+				.fileName(report.getIdentification() + "." + report.getExtension().toString().toLowerCase())
 				.resources(report.getResources().stream()
 						.map(r -> ReportResourceDTO.builder().id(r.getId()).fileName(r.getFileName()).build())
 						.collect(Collectors.toList()))
@@ -114,7 +116,8 @@ public class ReportConverter {
 			if (!r.isEmpty()) {
 				target.getResources().removeIf(bf -> bf.getFileName().equalsIgnoreCase(r.getOriginalFilename()));
 				try {
-					final String fileId = binaryRepositoryLogicService.addBinary(r, null);
+					final String fileId = binaryFactory.getInstance(RepositoryType.MONGO_GRIDFS).addBinary(r, null,
+							null);
 					target.getResources().add(binaryFileService.getFile(fileId));
 				} catch (BinaryRepositoryException | IOException e) {
 					log.error("Could not add file {}", r.getOriginalFilename());

@@ -26,11 +26,11 @@ public interface PrestoOntologyOpsDBRepository extends BasicOpsDBRepository {
 
 	List<String> getTables(String datasourceName);
 		
-	public List<String> getDatabases(String datasource);
+	public List<String> getCatalogs();
 
-	public List<String> getSchemasDB(String datasource, String catalog);
+	public List<String> getSchemas(String catalog);
 
-	public List<String> getTables(String datasource, String catalog, String schema);
+	public List<String> getTables(String catalog, String schema);
 	
 	/**
 	 * Returns the first element of the table. Used to generate document schemas.

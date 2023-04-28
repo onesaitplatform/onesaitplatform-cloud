@@ -190,6 +190,8 @@ onesaitplatform:
       port: ${GRAYLOG_PORT}
    filestore:
       type: ${FILE_STORE} #MONGO_GRIDFS, FILE, MINIO
+   gitlab:
+         manager.server: ${GITLAB_MANAGER_URL}
 ldap:
   url: ${LDAP_URL}
   base: ${LDAP_BASE_DN}

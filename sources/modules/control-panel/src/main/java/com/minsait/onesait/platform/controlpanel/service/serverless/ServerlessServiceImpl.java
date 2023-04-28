@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.controlpanel.service.serverless;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
@@ -33,6 +32,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
 import com.minsait.onesait.platform.controlpanel.controller.serverless.ApplicationCreate;
 import com.minsait.onesait.platform.controlpanel.controller.serverless.ApplicationInfo;
@@ -93,7 +94,7 @@ public class ServerlessServiceImpl implements ServerlessService {
 			return executeRequest(
 					serverlessBaseURL + API_APPLICATIONS + "/" + URLEncoder.encode(name, StandardCharsets.UTF_8.name()),
 					HttpMethod.GET, null, ApplicationInfo.class).getBody();
-		} catch (final UnsupportedEncodingException e) {
+		} catch (final Exception e) {
 			log.error("Error encoding app name {}", name);
 			return new ApplicationInfo();
 		}
@@ -118,7 +119,7 @@ public class ServerlessServiceImpl implements ServerlessService {
 
 		} catch (final HttpClientErrorException | HttpServerErrorException e) {
 			log.error("HttpResponse code :{} , cause: {}", e.getStatusCode(), e.getResponseBodyAsString());
-			throw new RuntimeException("Error code " +e.getRawStatusCode() + " with message "+ e.getMessage()) ;
+			throw new RuntimeException("Error code " + e.getRawStatusCode() + " with message " + e.getMessage());
 		}
 
 	}
@@ -130,8 +131,8 @@ public class ServerlessServiceImpl implements ServerlessService {
 					serverlessBaseURL + API_APPLICATIONS + "/"
 							+ URLEncoder.encode(appName, StandardCharsets.UTF_8.name()) + API_FUNCTIONS + "/"
 							+ URLEncoder.encode(fnName, StandardCharsets.UTF_8.name()) + "/deploy",
-							HttpMethod.POST, null, FunctionInfo.class);
-		} catch (final UnsupportedEncodingException e) {
+					HttpMethod.POST, null, FunctionInfo.class);
+		} catch (final Exception e) {
 			log.error("Error deploying function with name {} on app {}", fnName, appName);
 		}
 	}
@@ -143,8 +144,8 @@ public class ServerlessServiceImpl implements ServerlessService {
 					serverlessBaseURL + API_APPLICATIONS + "/"
 							+ URLEncoder.encode(appName, StandardCharsets.UTF_8.name()) + API_FUNCTIONS + "/"
 							+ URLEncoder.encode(fnName, StandardCharsets.UTF_8.name()),
-							HttpMethod.GET, null, FunctionInfo.class).getBody();
-		} catch (final UnsupportedEncodingException e) {
+					HttpMethod.GET, null, FunctionInfo.class).getBody();
+		} catch (final Exception e) {
 			log.error("Error deploying function with name {} on app {}", fnName, appName);
 			return new FunctionInfo();
 		}
@@ -157,8 +158,8 @@ public class ServerlessServiceImpl implements ServerlessService {
 					serverlessBaseURL + API_APPLICATIONS + "/"
 							+ URLEncoder.encode(appName, StandardCharsets.UTF_8.name()) + API_FUNCTIONS + "/"
 							+ URLEncoder.encode(fnName, StandardCharsets.UTF_8.name()),
-							HttpMethod.DELETE, null, String.class);
-		} catch (final UnsupportedEncodingException e) {
+					HttpMethod.DELETE, null, String.class);
+		} catch (final Exception e) {
 			log.error("Error deleting function with name {} on app {}", fnName, appName);
 		}
 
@@ -171,8 +172,8 @@ public class ServerlessServiceImpl implements ServerlessService {
 					serverlessBaseURL + API_APPLICATIONS + "/"
 							+ URLEncoder.encode(appName, StandardCharsets.UTF_8.name()) + API_FUNCTIONS + "/"
 							+ URLEncoder.encode(fnName, StandardCharsets.UTF_8.name()),
-							HttpMethod.PUT, new HttpEntity<>(functionUpdate), FunctionInfo.class);
-		} catch (final UnsupportedEncodingException e) {
+					HttpMethod.PUT, new HttpEntity<>(functionUpdate), FunctionInfo.class);
+		} catch (final Exception e) {
 			log.error("Error updating function with name {} on app {}", fnName, appName);
 		}
 	}
@@ -183,15 +184,16 @@ public class ServerlessServiceImpl implements ServerlessService {
 			executeRequest(
 					serverlessBaseURL + API_APPLICATIONS + "/"
 							+ URLEncoder.encode(appName, StandardCharsets.UTF_8.name()) + API_FUNCTIONS,
-							HttpMethod.POST, new HttpEntity<>(functionCreate), FunctionInfo.class);
-		} catch (final UnsupportedEncodingException e) {
+					HttpMethod.POST, new HttpEntity<>(functionCreate), FunctionInfo.class);
+		} catch (final Exception e) {
 			log.error("Error creating function with name {} on app {}", fnName, appName);
 		}
 	}
 
 	@Override
 	public void createApplication(ApplicationCreate appCreate) {
-		executeRequest(serverlessBaseURL + API_APPLICATIONS, HttpMethod.POST, new HttpEntity<>(appCreate), FunctionInfo.class).getBody();
+		executeRequest(serverlessBaseURL + API_APPLICATIONS, HttpMethod.POST, new HttpEntity<>(appCreate),
+				FunctionInfo.class).getBody();
 	}
 
 	@Override
@@ -200,9 +202,9 @@ public class ServerlessServiceImpl implements ServerlessService {
 			executeRequest(
 					serverlessBaseURL + API_APPLICATIONS + "/"
 							+ URLEncoder.encode(appUpdate.getName(), StandardCharsets.UTF_8.name()),
-							HttpMethod.PUT, new HttpEntity<>(appUpdate), FunctionInfo.class);
-		} catch (final UnsupportedEncodingException e) {
-			log.error("Error updating application with name {} ",appUpdate.getName());
+					HttpMethod.PUT, new HttpEntity<>(appUpdate), FunctionInfo.class);
+		} catch (final Exception e) {
+			log.error("Error updating application with name {} ", appUpdate.getName());
 		}
 
 	}
@@ -211,11 +213,53 @@ public class ServerlessServiceImpl implements ServerlessService {
 	public void deleteApplication(String name) {
 		try {
 			executeRequest(
+					serverlessBaseURL + API_APPLICATIONS + "/" + URLEncoder.encode(name, StandardCharsets.UTF_8.name()),
+					HttpMethod.DELETE, null, String.class);
+		} catch (final Exception e) {
+			log.error("Error deleting application with name {} ", name);
+		}
+
+	}
+
+	@Override
+	public void updateFunction(String appName, String fnName, String version) {
+		try {
+			executeRequest(
 					serverlessBaseURL + API_APPLICATIONS + "/"
-							+ URLEncoder.encode(name, StandardCharsets.UTF_8.name()),
-							HttpMethod.DELETE, null, String.class);
-		} catch (final UnsupportedEncodingException e) {
-			log.error("Error deleting application with name {} ",name);
+							+ URLEncoder.encode(appName, StandardCharsets.UTF_8.name()) + API_FUNCTIONS + "/"
+							+ URLEncoder.encode(fnName, StandardCharsets.UTF_8.name()) + "/update-version",
+					HttpMethod.PUT, new HttpEntity<>(version), Void.class);
+		} catch (final Exception e) {
+			log.error("Error updating function: app {} , fn {} , version {} ", appName, fnName, version);
+		}
+
+	}
+
+	@Override
+	public ObjectNode getEnvironment(String appName, String fnName) {
+		try {
+			final ResponseEntity<ObjectNode> response = executeRequest(
+					serverlessBaseURL + API_APPLICATIONS + "/"
+							+ URLEncoder.encode(appName, StandardCharsets.UTF_8.name()) + API_FUNCTIONS + "/"
+							+ URLEncoder.encode(fnName, StandardCharsets.UTF_8.name()) + "/environment",
+					HttpMethod.GET, null, ObjectNode.class);
+			return response.getBody();
+		} catch (final Exception e) {
+			log.error("Error getting function environment: app {} , fn {} , version {} ", appName, fnName);
+			return new ObjectMapper().createObjectNode();
+		}
+	}
+
+	@Override
+	public void updateFunctionEnvironment(String appName, String fnName, ObjectNode config) {
+		try {
+			executeRequest(
+					serverlessBaseURL + API_APPLICATIONS + "/"
+							+ URLEncoder.encode(appName, StandardCharsets.UTF_8.name()) + API_FUNCTIONS + "/"
+							+ URLEncoder.encode(fnName, StandardCharsets.UTF_8.name()) + "/environment",
+					HttpMethod.PUT, new HttpEntity<>(config), Void.class);
+		} catch (final Exception e) {
+			log.error("Error updating function's environment: app {} , fn {} , version {} ", appName, fnName);
 		}
 
 	}

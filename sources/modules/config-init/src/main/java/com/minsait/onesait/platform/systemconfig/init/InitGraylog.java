@@ -386,6 +386,7 @@ public class InitGraylog {
 		modules.put("Config Init", "systemconfig-init");
 		modules.put("Dashboard Engine", "onesaitplatform-dashboard-engine");
 		modules.put("Flow Engine", "onesaitplatform-flow-engine");
+		modules.put("Flow Engine - NodeRED", "NodeRED");
 		modules.put("Digital Twin Broker", "onesaitplatform-digitaltwin-broker");
 		modules.put("IoT Broker", "onesaitplatform-iot-broker");
 		modules.put("Monitorin UI", "onesaitplatform-monitoring-ui");

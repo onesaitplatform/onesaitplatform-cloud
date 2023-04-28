@@ -39,9 +39,15 @@ onesaitplatform:
         defaults:
           replicas: 0
           shards: 5
+      prestodb-historical-catalog: minio
+      prestodb-historical-schema: default
+      prestodb-realtimedb-catalog: realtimedb
+      prestodb-catalog-path: /usr/local/presto/catalog/
     files:
       allowed-extensions: jasper
       max-size: !!java.lang.Long 60000000
+      gcp-project-id: dcme-npro-onst-snbx-osp-dev-00
+      gcp-bucket-id: op-file-repository-bucket
     iotbroker:
       session-expiration: !!java.lang.Long 600000
     audit:

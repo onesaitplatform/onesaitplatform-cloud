@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.router.service.app.service;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 import javax.annotation.PostConstruct;
 
@@ -29,6 +30,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.http.MediaType;
 
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
 import com.minsait.onesait.platform.interceptor.CorrelationInterceptor;
@@ -189,6 +191,8 @@ public class RouterServiceImpl implements RouterService, RouterClient<Notificati
 		if (!StringUtils.hasText(correlationID))
 			correlationID = CorrelationInterceptor.generateUniqueCorrelationId();
 		headers.add(CorrelationInterceptor.CORRELATION_ID_HEADER_NAME, correlationID);
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 
 		addMultitenancyHeaders(headers);
 

@@ -28,6 +28,7 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.transaction.Transactional;
 
+import org.codehaus.groovy.control.CompilationFailedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.yaml.snakeyaml.Yaml;
@@ -53,6 +54,8 @@ import com.minsait.onesait.platform.config.services.exceptions.ConfigServiceExce
 import com.minsait.onesait.platform.config.services.ontologydata.DataClassValidationException;
 import com.minsait.onesait.platform.git.GitlabConfiguration;
 
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -363,20 +366,33 @@ public class ConfigurationServiceImpl implements ConfigurationService {
                     ArrayList<Map<String, Object>> changes = (ArrayList<Map<String, Object>>)rule.get("changes");
                     if(changes != null) {
                         for(Map<String, Object> change: changes) {
-                            Object script = change.get("script");
-                            if(script != null && !script.toString().contains("toDate(")) {
-                                
-                                try {
-                                    final String scriptPostprocessFunction = "function preprocess(value){ " + script + " }";
-                                    final ByteArrayInputStream scriptInputStream = new ByteArrayInputStream(
-                                            scriptPostprocessFunction.getBytes(StandardCharsets.UTF_8));
-                                    scriptEngine.eval(new InputStreamReader(scriptInputStream));
-                                    final Invocable inv = (Invocable) scriptEngine;
-                                    inv.invokeFunction("preprocess", "valueTest");
-                                } catch (NoSuchMethodException e) {
-                                    throw new ConfigServiceException("There are errors in the " + change.get("name") + " change script: " + e.getMessage());
-                                } catch (ScriptException ex) {
-                                    throw new ConfigServiceException("There are errors in the " + change.get("name") + " change script: " + ex.getMessage());
+                            Object scriptT = change.get("script");
+                            if(scriptT != null && !scriptT.toString().contains("toDate(")) {
+                                String [] scriptArray = scriptT.toString().split("\n", 2);
+                                String scriptType = scriptArray[0];
+                                String script = scriptArray[1];
+                                if("groovy".equals(scriptType)) {
+                                    try {
+                                        Binding binding = new Binding();
+                                        binding.setVariable("value", "valueTest");
+                                        GroovyShell shell = new GroovyShell(binding);
+                                        shell.evaluate(script);
+                                    } catch(CompilationFailedException e) {
+                                        throw new ConfigServiceException("There are errors in the " + change.get("name") + " change script: " + e.getMessage());   
+                                    }
+                                } else if("javascript".equals(scriptType)) {
+                                    try {
+                                        final String scriptPostprocessFunction = "function preprocess(value){ " + script + " }";
+                                        final ByteArrayInputStream scriptInputStream = new ByteArrayInputStream(
+                                                scriptPostprocessFunction.getBytes(StandardCharsets.UTF_8));
+                                        scriptEngine.eval(new InputStreamReader(scriptInputStream));
+                                        final Invocable inv = (Invocable) scriptEngine;
+                                        inv.invokeFunction("preprocess", "valueTest");
+                                    } catch (NoSuchMethodException e) {
+                                        throw new ConfigServiceException("There are errors in the " + change.get("name") + " change script: " + e.getMessage());
+                                    } catch (ScriptException ex) {
+                                        throw new ConfigServiceException("There are errors in the " + change.get("name") + " change script: " + ex.getMessage());
+                                    }
                                 }
                             }
                         }
@@ -385,21 +401,31 @@ public class ConfigurationServiceImpl implements ConfigurationService {
                     ArrayList<Map<String, Object>> validations = (ArrayList<Map<String, Object>>)rule.get("validations");
                     if(validations != null) {
                         for(Map<String, Object> validation: validations) {
-                            Object script = validation.get("script");
-                            if(script != null) {
-                                try {
-                                    final String scriptPostprocessFunction = "function preprocess(rawdata){ " + script + " }";
-                                    final ByteArrayInputStream scriptInputStream = new ByteArrayInputStream(
-                                            scriptPostprocessFunction.getBytes(StandardCharsets.UTF_8));
-                                    scriptEngine.eval(new InputStreamReader(scriptInputStream));
-                                    final Invocable inv = (Invocable) scriptEngine;
-                                    inv.invokeFunction("preprocess", "{\"testScript\": \"test\"}");
-                                } catch (NoSuchMethodException e) {
-                                    log.error("Cannot eval preprocessing", e);
-                                    throw new ConfigServiceException("There are errors in the " + validation.get("name") + " validation script: " + e.getMessage());
-                                } catch (ScriptException ex) {
-                                    log.error("Cannot eval preprocessing", ex);
-                                    throw new ConfigServiceException("There are errors in the " + validation.get("name") + " validation script: " + ex.getMessage());
+                            Object scriptT = validation.get("script");
+                            if(scriptT != null) {
+                                String [] scriptArray = scriptT.toString().split("\n", 2);
+                                String scriptType = scriptArray[0];
+                                String script = scriptArray[1];
+                                if("groovy".equals(scriptType)) {
+                                    Binding binding = new Binding();
+                                    binding.setVariable("rawdata", "{\"testScript\": \"test\"}");
+                                    GroovyShell shell = new GroovyShell(binding);
+                                    shell.evaluate(script);
+                                } else if("javascript".equals(scriptType)) {
+                                    try {
+                                        final String scriptPostprocessFunction = "function preprocess(rawdata){ " + script + " }";
+                                        final ByteArrayInputStream scriptInputStream = new ByteArrayInputStream(
+                                                scriptPostprocessFunction.getBytes(StandardCharsets.UTF_8));
+                                        scriptEngine.eval(new InputStreamReader(scriptInputStream));
+                                        final Invocable inv = (Invocable) scriptEngine;
+                                        inv.invokeFunction("preprocess", "{\"testScript\": \"test\"}");
+                                    } catch (NoSuchMethodException e) {
+                                        log.error("Cannot eval preprocessing", e);
+                                        throw new ConfigServiceException("There are errors in the " + validation.get("name") + " validation script: " + e.getMessage());
+                                    } catch (ScriptException ex) {
+                                        log.error("Cannot eval preprocessing", ex);
+                                        throw new ConfigServiceException("There are errors in the " + validation.get("name") + " validation script: " + ex.getMessage());
+                                    }
                                 }
                             }
                         }

@@ -146,7 +146,7 @@
 					<input id="datasourceTableName" name="datasourceTableName" type="hidden" value=""/>
 					<input id="datasourceDatabase" name="datasourceDatabase" type="hidden" value=''/>
 					<input id="datasourceSchema" name="datasourceSchema" type="hidden" th:value="${historical} == true ? ${historicalSchema} : ''"/>
-					<input id="datasourceCatalog" name="datasourceCatalog" type="hidden" th:value="${historical} == true ? 'minio' : ''"/>
+					<input id="datasourceCatalog" name="datasourceCatalog" type="hidden" th:value="${historical} == true ? ${historicalCatalog} : ''"/>
 					<input th:if="${historical == true}" id="allowsCreateTable" name="allowsCreateTable" type="hidden" value="true"/>	
 					<input th:if="${historical == true}" id="bucketName" name="bucketName" type="hidden" th:value="${userBucketOntologiesPath}"/>				
 					
@@ -376,7 +376,7 @@
 										<label class="control-label margin-right-5" th:text="#{ontology.publicontology}">Public</label>
 										<i class="la la-info-circle popovers"  data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.public.help},data-title=#{ontology.public}"></i>
 									</div>								
-									<div class="col-md-12 col-xs-12">
+									<div th:if="${historical == false}" class="col-md-12 col-xs-12">
 										<input id="allowsCypherFields" class="margin-right-10" name="allowsCypherFields" type="checkbox" checked="checked" th:field="*{allowsCypherFields}" />
 										<label class="control-label margin-right-5" th:text="#{ontology.allowsCypherFields}">Allows Cypher</label>
 										<i class="la la-info-circle popovers"  data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.allowsCypherFields.help},data-title=#{ontology.allowsCypherFields}"></i>

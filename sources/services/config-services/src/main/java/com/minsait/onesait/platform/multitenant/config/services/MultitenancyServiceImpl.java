@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -107,6 +108,9 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 	private DigitalTwinDeviceService digitalTwinDeviceService;
 	@Autowired
 	private UserRepository userRepository;
+
+	@Value("${spring.datasource.hikari.jdbc-url:mysql}")
+	private String datasource;
 
 	@Override
 	public Optional<MasterUser> findUser(String userId) {
@@ -512,14 +516,25 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 	}
 
 	@Override
-	public MasterUser updateLastLogin(String userId) {
-		final MasterUser masterUser = masterUserRepository.findByUserId(userId);
-		if (masterUser != null) {
-			masterUser.setLastLogin(new Date());
-			masterUserRepository.save(masterUser);
-		}
-		return masterUser;
+	public void updateLastLogin(String userId) {
+//		final MasterUser masterUser = masterUserRepository.findByUserId(userId);
+//		if (masterUser != null) {
+//			masterUser.setLastLogin(new Date());
+//			masterUserRepository.save(masterUser);
+//		}
+//		return masterUser;
+		masterUserRepository.updateLastLogin(userId, new Date());
 
+	}
+
+	@Override
+	public List<?> getAllLazy() {
+
+		if (datasource.contains("postgresql")) {
+			return (masterUserRepository.findAllLazyPSQL());
+		} else {
+			return (masterUserRepository.findAllLazy());
+		}
 	}
 
 }

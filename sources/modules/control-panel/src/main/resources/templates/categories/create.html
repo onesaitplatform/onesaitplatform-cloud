@@ -174,8 +174,11 @@
 										<div class="form-group">
 											<label class="" th:text="#{gen.type}">Type</label><span class="required"> *</span>
 											<i th:if="${category.id == null}" class="la la-info-circle popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{category.help.type},data-title=#{gen.type}" ></i>
-											<select name="type" id="type" class="selectpicker form-control" data-live-search="true" data-width="100%" th:required="true" th:disabled="${category.id} != null">
+											<select th:if="${category.id} == null" name="type" id="type" class="selectpicker form-control" data-live-search="true" data-width="100%" th:required="true" th:disabled="${category.id} != null">
 												<option th:each="type:${categoryTypeList}" th:value="${type}" th:text="${type}" ></option>
+		                                   	</select>
+		                                   	<select th:if="${category.id} != null" name="type" id="type" class="selectpicker form-control" data-live-search="true" data-width="100%" th:required="true" th:disabled="${category.id} != null">
+												<option th:each="type:${categoryTypeList}" th:value="${type}" th:text="*{type}" ></option>
 		                                   	</select>
 		                                   	<input th:if="${category.id} != null" id="type" class="hide" th:field="*{type}"  type="text" />
 		                                   	

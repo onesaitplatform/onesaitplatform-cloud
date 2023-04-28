@@ -20,6 +20,7 @@
 		<property name="hazelcast.version.check.enabled">false</property>
 		<property name="hazelcast.memcache.enabled">true</property>
 		<property name="hazelcast.rest.enabled">true</property>
+		<property name="hazelcast.network.rest-api.enabled">true</property>
 		<property name="hazelcast.wait.seconds.before.join">5</property>
 		<property name="hazelcast.connection.monitor.interval">300</property>
 
@@ -43,6 +44,9 @@
 				<!-- member>192.168.102.200</member -->
 			</tcp-ip>
 		</join>
+		 <rest-api enabled="true">
+            <endpoint-group name="DATA" enabled="true"/>
+        </rest-api>
 	</network>
 
 <!--Config Maps see: https://docs.hazelcast.org/docs/latest-dev/manual/html-single/index.html#map -->
@@ -98,5 +102,9 @@
 		<eviction eviction-policy="NONE" max-size-policy="PER_NODE"
 			size="300" />
 	</map>
+	
+	<queue name="auditQueue">	
+		 <max-size>100000</max-size>
+    </queue>
 
 </hazelcast>

@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.controlpanel.controller.serverless;
 import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,12 +29,30 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.config.services.usertoken.UserTokenService;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.controlpanel.service.serverless.ServerlessService;
+import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
+
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
 @Controller
 @RequestMapping("serverless")
 public class ServerlessController {
 
+	@Value("${onesaitplatform.gitlab.manager.server}")
+	private String gitlabManagerServer;
+	
+	@Autowired
+	UserService userservice;
+	
+	@Autowired
+	UserTokenService usertokenservice;
+	
+	@Autowired
+	private AppWebUtils utils;
+	
 	@Autowired
 	private ServerlessService serverlessService;
 
@@ -83,7 +102,7 @@ public class ServerlessController {
 	@GetMapping("applications/{name}/update")
 	public String getUpdateApplication(Model model, @PathVariable("name") String appName) {
 		try {
-			//TO-DO environment
+			// TO-DO environment
 			model.addAttribute("app", serverlessService.getApplication(appName));
 		} catch (final Exception e) {
 			model.addAttribute("message", e.getMessage());
@@ -107,6 +126,8 @@ public class ServerlessController {
 
 	@GetMapping("applications/{name}/functions")
 	public String functions(Model model, @PathVariable("name") String appName) {
+		model.addAttribute("token", utils.getCurrentUserOauthToken());
+		model.addAttribute("baseUrl", gitlabManagerServer);
 		model.addAttribute("app", serverlessService.getApplication(appName));
 		model.addAttribute("function", new FunctionCreate());
 		return "serverless/functions";
@@ -122,6 +143,8 @@ public class ServerlessController {
 	public String getUpdateFunction(Model model, @PathVariable("appName") String appName,
 			@PathVariable("fnName") String fnName) {
 		try {
+			model.addAttribute("token", utils.getCurrentUserOauthToken());
+			model.addAttribute("baseUrl", gitlabManagerServer);
 			model.addAttribute("function", serverlessService.getFunction(appName, fnName));
 			model.addAttribute("app", serverlessService.getApplication(appName));
 		} catch (final Exception e) {
@@ -145,6 +168,27 @@ public class ServerlessController {
 		return ResponseEntity.ok().build();
 	}
 
+	@PostMapping("applications/{appName}/functions/{fnName}/version")
+	public ResponseEntity<Object> updateVersion(@PathVariable("appName") String appName,
+			@PathVariable("fnName") String fnName, @RequestBody String version) {
+		serverlessService.updateFunction(appName, fnName, version);
+		return ResponseEntity.ok().build();
+	}
+
+	@GetMapping("applications/{appName}/functions/{fnName}/environment")
+	public ResponseEntity<Object> getEnvironment(@PathVariable("appName") String appName,
+			@PathVariable("fnName") String fnName) {
+		final ObjectNode config = serverlessService.getEnvironment(appName, fnName);
+		return ResponseEntity.ok(config);
+	}
+
+	@PostMapping("applications/{appName}/functions/{fnName}/environment")
+	public ResponseEntity<Object> updateEnvironment(@PathVariable("appName") String appName,
+			@PathVariable("fnName") String fnName, @RequestBody ObjectNode config) {
+		serverlessService.updateFunctionEnvironment(appName, fnName, config);
+		return ResponseEntity.ok().build();
+	}
+
 	@GetMapping("applications/{appName}/functions/{fnName}")
 	public String showFunction(@PathVariable("appName") String appName, @PathVariable("fnName") String fnName) {
 		return "serverless/functions";
@@ -156,6 +200,7 @@ public class ServerlessController {
 		serverlessService.deleteFunction(appName, fnName);
 		return ResponseEntity.ok().build();
 	}
+
 	@DeleteMapping("applications/{appName}")
 	public ResponseEntity<Object> deleteApplication(@PathVariable("appName") String appName) {
 		serverlessService.deleteApplication(appName);

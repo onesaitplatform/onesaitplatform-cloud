@@ -15,6 +15,7 @@ var ApiCreateController = function() {
 	var internalLanguage = 'en';
 	var reader = new FileReader();
 	var mountableModel2 = "";
+	var oTable;
 	
 	if ($('#api_authorizations').find('tr.authorization-model')[0]){
 		mountableModel2 = $('#api_authorizations').find('tr.authorization-model')[0].outerHTML;
@@ -646,6 +647,70 @@ var ApiCreateController = function() {
         }
         return false;
     }
+    
+    var initTable = function(){
+	    oTable = $('#api_authorizations').DataTable({
+			   columnDefs: [
+			      {
+			         targets: [0, 1],
+			         type: 'string',
+			         render: function(data, type, full, meta){
+			            if (type === 'filter' || type === 'sort') {
+			               var api = new $.fn.dataTable.Api(meta.settings);
+			               var td = api.cell({row: meta.row, column: meta.col}).node();
+			               data = $('select, input[type="text"]', td).val();
+			               if (!data){
+			            	   if (td.val){
+			            		   data = td.val;
+			            	   } else {
+			            		   data=td.innerHTML;
+			            	   }
+			               }
+			            }
+			            return data;
+			         }
+			      }
+			   ]
+			});
+			
+		$('#api_authorizations_wrapper div.dataTables_filter').addClass('hide');
+		$('#api_authorizations_wrapper > div.row').addClass('hide');
+		
+		$('#search-on-title').append($('#api_authorizations_wrapper div.dataTables_filter > label > input'));
+		$('#search-on-title > input').css('height', 'auto');
+		$('#search-on-title > input').removeClass('input-xsmall')
+		
+		if ($("#search-on-title").children().length>2){
+			$("#search-on-title").find('input:first').remove();
+		}
+		
+	}
+    
+    var refreshTable = function(){
+		oTable.clear();
+		oTable.destroy();
+		
+		// TO-HTML
+		$('#api_authorizations > tbody').html("");
+		$('#api_authorizations > tbody').append(mountableModel2);
+		
+		$('#api_authorizations').mounTable(authorizationsArr,{
+			model: '.authorization-model',
+			noDebug: false							
+		});
+
+		// hide info , disable user and show table
+		$('#alert-authorizations').toggle($('#alert-authorizations').hasClass('hide'));			
+		$("#users").selectpicker('deselectAll');
+		$("#users").selectpicker('refresh');					
+	
+		initTable();
+		
+		$('#authorizations').removeClass('hide');
+		$('#authorizations').attr('data-loaded',true);
+		showHideImageTableOntology();
+	}
+
 	
     function formatData(){
     	$('#id_endpoint_hidden').val($('#id_endpoint').val());
@@ -804,8 +869,7 @@ var ApiCreateController = function() {
 			console.log('    |---> Inserting... ' + insertURL);
 			
 			var authorized=false;
-			
-			
+		
 			for(var i=0; i<authorizationsIds.length; i+=1){
 				var authElement = authorizationsIds [i];
 				authorized = authElement.hasOwnProperty(user) || authorized;
@@ -826,6 +890,7 @@ var ApiCreateController = function() {
 						
 						var propAuth = {"users":user, "usersFullName": response.userFullName, "id": response.id};
 						authorizationsArr.push(propAuth);
+						
 						console.log('     |---> JSONtoTable: ' + authorizationsArr.length + ' data: ' + JSON.stringify(authorizationsArr));
 						// store ids for after actions.	inside callback 				
 						var user_id = user;
@@ -833,28 +898,10 @@ var ApiCreateController = function() {
 						var AuthId = {[user_id]:auth_id};
 						authorizationsIds.push(AuthId);
 						console.log('     |---> Auths: ' + authorizationsIds.length + ' data: ' + JSON.stringify(authorizationsIds));
-											
-						// TO-HTML
-						if ($('#authorizations').attr('data-loaded') === 'true'){
-							$('#api_authorizations > tbody').html("");
-							$('#api_authorizations > tbody').append(mountableModel2);
-						}
-						console.log('authorizationsArr: ' + authorizationsArr.length + ' Arr: ' + JSON.stringify(authorizationsArr));
-						$('#api_authorizations').mounTable(authorizationsArr,{
-							model: '.authorization-model',
-							noDebug: false							
-						});
 						
-						// hide info , disable user and show table
-						$('#alert-authorizations').toggle($('#alert-authorizations').hasClass('hide'));			
-						$("#users").selectpicker('deselectAll');
-						$("#users").selectpicker('refresh');
-						$('#authorizations').removeClass('hide');
-						$('#authorizations').attr('data-loaded',true);
-						showHideImageTableOntology();
-				
+						refreshTable();
+						
 						toastr.success(messagesForms.operations.genOpSuccess,'');
-						
 					}
 				});	
 				// ajax : authorizationOnOntology
@@ -868,14 +915,12 @@ var ApiCreateController = function() {
 					data: {"api": api,"user": user},			 
 					dataType:"json",
 					statusCode: {
-    				403: function() {	 
-    				 toastr.warning('You have to give this user permission to the ontology before you can use this API');
-   				
-   					 }
-    }
-									
-  						 	
-						});
+	    				403: function() {	 
+	    					toastr.warning('You have to give this user permission to the ontology before you can use this API');
+	   				
+	    				}
+					}
+				});
 			}	
 		}
 		if (action  === 'delete'){
@@ -894,12 +939,10 @@ var ApiCreateController = function() {
 					authorizationsIds.splice(removeIndex, 1);
 					authorizationsArr.splice(removeIndex, 1);
 					
-					console.log('AuthorizationsIDs: ' + JSON.stringify(authorizationsIds));
-					// refresh interface. TO-DO: EL this este fallará					
+					// refresh interface				
 					if ( response  ){ 
-						$(btn).closest('tr').remove();
-						showHideImageTableOntology();
-						
+						refreshTable();
+
 						toastr.success(messagesForms.operations.genOpSuccess,'');
 					}
 					else{ 
@@ -1096,6 +1139,7 @@ var ApiCreateController = function() {
 				})
 				
 			}
+			initTable();
 			handleCodeMirrorGraviteeSwaggerDoc();
 		},
 		
@@ -1108,34 +1152,24 @@ var ApiCreateController = function() {
 				// UPDATE MODE ONLY AND VALUES on user
 				if (($('#users').val() !== '') && ($("#users option:selected").attr('disabled') !== 'disabled')){
 					
-			    if ($("#api_authorizations > tbody > tr").size() > 0) {
-	                $("#api_authorizations > tbody > tr").each(
-		
-		
-						function() {
-							
-							let fila = $(this).children().eq(0);
-							
-							if(fila.children().eq(0).val() == $('#users').val()){	
-							   existe=true;
-							   
-							//alert("Ya tiene autorización el usuario " +$('#users').val());
-							toastr.warning(messagesForms.validation.genOpexist);
-							   
-							} 
+				    if ($("#api_authorizations > tbody > tr").size() > 0) {
+		                $("#api_authorizations > tbody > tr").each(
+			
+							function() {
+								let fila = $(this).children().eq(0);
+								
+								if(fila.children().eq(0).val() == $('#users').val()){	
+								   existe=true;
+								   toastr.warning(messagesForms.validation.genOpexist);
+								} 
+							}
+						);
+					}
 						
-						
-						
-						}
-					);
-				};
-					
-				// AJAX INSERT (ACTION,APIID,USER) returns object with data.
-				if(!existe) {
-					
-					authorization('insert',apiCreateReg.apiId,$('#users').val(),'');		
-					
-				 }	
+					// AJAX INSERT (ACTION,APIID,USER) returns object with data.
+					if(!existe) {
+						authorization('insert',apiCreateReg.apiId,$('#users').val(),'');
+					}	
 				}	
 			}
 		},

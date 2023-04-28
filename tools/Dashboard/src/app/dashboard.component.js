@@ -262,7 +262,7 @@
       vm.api={};
       //External API
       vm.api.createGadget = function(type,id,name,template,datasource,filters,customMenuOptions,setupLayout) {
-            if(typeof template !== "undefined" && template !== null && typeof template !=="string" && template.length>0  ){
+            if(typeof template !== "undefined" && template !== null && typeof template !=="string" && template.length>0 ){
               //Gadgetcreate from template
               var newElem = {x: 0, y: 0, cols: 40, rows: 40,};
               //newElem.minItemRows = 10;

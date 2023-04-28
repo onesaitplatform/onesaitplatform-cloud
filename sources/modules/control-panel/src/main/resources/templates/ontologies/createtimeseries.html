@@ -2456,7 +2456,9 @@
 		
 		$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
 			$('.form').validate().element('#' + event.target.id);                // checks form for validity
-		}).on('keyup', function(){
+		}).on('keyup', function(ev){
+			$('.form').validate().element('#' + event.target.id);
+			$('#' + event.target.id + "Info").addClass('hide');
 			if (ontologyCreateJson.actionMode==null){
 				manageWizardStep();
 			}

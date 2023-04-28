@@ -230,7 +230,9 @@ public class ApiManagerService {
 
 		// We need to allow path params on queries that dont were defined without them
 		for (final ApiOperation op : operations) {
-			return op;
+			if (op.getPath().equals(opIdentifier)) {
+				return op;
+			}
 		}
 		return null;
 

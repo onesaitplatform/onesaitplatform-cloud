@@ -35,13 +35,15 @@ import lombok.Setter;
 @Table(name = "CONFIGURATION")
 @Configurable
 //@JsonPropertyOrder({ "configParseType" })
-@EqualsAndHashCode(callSuper=false)
+@EqualsAndHashCode(callSuper = false)
 public class Configuration extends OPResource implements Versionable<Configuration> {
 
 	private static final long serialVersionUID = 1L;
 
 	public enum Type {
-		ENDPOINT_MODULES, TWITTER, MAIL, RTDB, MONITORING, SCHEDULING, GITLAB, RANCHER, OPENSHIFT, DOCKER, NGINX, OPEN_PLATFORM, JENKINS, GOOGLE_ANALYTICS, CUSTOM, EXPIRATIONUSERS, SQLENGINE, EXTERNAL_CONFIG, LINEAGE, VERSIONING, KAFKA_PROPERTIES, DATACLASS
+		ENDPOINT_MODULES, TWITTER, MAIL, RTDB, MONITORING, SCHEDULING, GITLAB, RANCHER, OPENSHIFT, DOCKER, NGINX,
+		OPEN_PLATFORM, JENKINS, GOOGLE_ANALYTICS, CUSTOM, EXPIRATIONUSERS, SQLENGINE, EXTERNAL_CONFIG, LINEAGE,
+		VERSIONING, KAFKA_PROPERTIES, DATACLASS, PRESTO_PROPERTIES
 	}
 
 	@Column(name = "YML_CONFIG", nullable = false)
@@ -68,57 +70,57 @@ public class Configuration extends OPResource implements Versionable<Configurati
 	@Setter
 	private String description;
 
-	//	@Transient
-	//	@Getter
-	//	private ParseType configParseType;
+	// @Transient
+	// @Getter
+	// private ParseType configParseType;
 
 	public enum ParseType {
 		YAML, JSON, OTHER
 	}
 
+	// TO-DO Pretify ymlConfig
+	// @JsonGetter("configParseType")
+	// public Object getConfigParseTypeJson() {
+	// getYmlConfigJson();
+	// return configParseType;
+	// }
 
-	//TO-DO Pretify ymlConfig
-	//	@JsonGetter("configParseType")
-	//	public Object getConfigParseTypeJson() {
-	//		getYmlConfigJson();
-	//		return configParseType;
-	//	}
+	// @JsonGetter("ymlConfig")
+	// public Object getYmlConfigJson() {
+	// try {
+	// configParseType = ymlConfig.startsWith("{") || ymlConfig.startsWith("[") ?
+	// ParseType.JSON : ParseType.YAML;
+	// return new YAMLMapper().readTree(ymlConfig);
+	// } catch (final Exception e) {
+	// configParseType = ParseType.OTHER;
+	// return ymlConfig;
+	// }
+	// }
 
-	//	@JsonGetter("ymlConfig")
-	//	public Object getYmlConfigJson() {
-	//		try {
-	//			configParseType = ymlConfig.startsWith("{") || ymlConfig.startsWith("[") ? ParseType.JSON : ParseType.YAML;
-	//			return new YAMLMapper().readTree(ymlConfig);
-	//		} catch (final Exception e) {
-	//			configParseType = ParseType.OTHER;
-	//			return ymlConfig;
-	//		}
-	//	}
-
-	//	@JsonSetter("ymlConfig")
-	//	public void setJsonJson(Object node) {
-	//		try {
-	//			if (node != null) {
-	//				if (configParseType == null) {
-	//					configParseType = ParseType.OTHER;
-	//				}
-	//				switch (configParseType) {
-	//				case JSON:
-	//					ymlConfig = new ObjectMapper().writeValueAsString(node);
-	//					break;
-	//				case YAML:
-	//					ymlConfig = new YAMLMapper().writeValueAsString(node);
-	//					break;
-	//				case OTHER:
-	//				default:
-	//					ymlConfig = (@NotNull String) node;
-	//					break;
-	//				}
-	//			}
-	//		} catch (final Exception e) {
-	//			ymlConfig = (@NotNull String) node;
-	//		}
-	//	}
+	// @JsonSetter("ymlConfig")
+	// public void setJsonJson(Object node) {
+	// try {
+	// if (node != null) {
+	// if (configParseType == null) {
+	// configParseType = ParseType.OTHER;
+	// }
+	// switch (configParseType) {
+	// case JSON:
+	// ymlConfig = new ObjectMapper().writeValueAsString(node);
+	// break;
+	// case YAML:
+	// ymlConfig = new YAMLMapper().writeValueAsString(node);
+	// break;
+	// case OTHER:
+	// default:
+	// ymlConfig = (@NotNull String) node;
+	// break;
+	// }
+	// }
+	// } catch (final Exception e) {
+	// ymlConfig = (@NotNull String) node;
+	// }
+	// }
 
 	@Override
 	public String fileName() {

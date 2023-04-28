@@ -36,7 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.minsait.onesait.platform.binaryrepository.exception.BinaryRepositoryException;
 import com.minsait.onesait.platform.binaryrepository.model.BinaryFileData;
-import com.minsait.onesait.platform.business.services.binaryrepository.BinaryRepositoryLogicService;
+import com.minsait.onesait.platform.business.services.binaryrepository.factory.BinaryRepositoryServiceFactory;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.dto.report.ReportField;
 import com.minsait.onesait.platform.config.dto.report.ReportInfoDto;
@@ -44,6 +44,7 @@ import com.minsait.onesait.platform.config.dto.report.ReportParameter;
 import com.minsait.onesait.platform.config.dto.report.ReportParameterType;
 import com.minsait.onesait.platform.config.dto.report.ReportType;
 import com.minsait.onesait.platform.config.model.BinaryFile;
+import com.minsait.onesait.platform.config.model.BinaryFile.RepositoryType;
 import com.minsait.onesait.platform.config.model.Report;
 import com.minsait.onesait.platform.config.model.Report.ReportExtension;
 import com.minsait.onesait.platform.config.services.binaryfile.BinaryFileService;
@@ -90,7 +91,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 	public static final String JSON_DATA_SOURCE_ATT_TYPE = "STRING";
 
 	@Autowired
-	private BinaryRepositoryLogicService binaryRepositoryLogicService;
+	private BinaryRepositoryServiceFactory binaryFactory;
 	@Autowired
 	private BinaryFileService binaryFileService;
 	@Autowired
@@ -107,7 +108,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 	@Override
 	public void updateResource(Report report, String fileId, MultipartFile file) throws Exception {
 		report.getResources().removeIf(r -> r.getId().equals(fileId));
-		binaryRepositoryLogicService.updateBinary(fileId, file, null);
+		binaryFactory.getInstance(RepositoryType.MONGO_GRIDFS).updateBinary(fileId, file, null);
 		report.getResources().add(binaryFileService.getFile(fileId));
 		reportService.saveOrUpdate(report);
 	}
@@ -247,7 +248,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 	private void writeFileToPath(String path, String binaryFileId) {
 		BinaryFileData data;
 		try {
-			data = binaryRepositoryLogicService.getBinaryFileWOPermission(binaryFileId);
+			data = binaryFactory.getInstance(RepositoryType.MONGO_GRIDFS).getBinaryFileWOPermission(binaryFileId);
 			writeFileToPath(path, ((ByteArrayOutputStream) data.getData()).toByteArray());
 		} catch (IOException | BinaryRepositoryException e) {
 			log.error("Error while trying to create file", e);

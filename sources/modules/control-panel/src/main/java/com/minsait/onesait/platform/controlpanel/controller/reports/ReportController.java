@@ -58,7 +58,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.net.HttpHeaders;
 import com.minsait.onesait.platform.binaryrepository.exception.BinaryRepositoryException;
-import com.minsait.onesait.platform.business.services.binaryrepository.BinaryRepositoryLogicService;
+import com.minsait.onesait.platform.business.services.binaryrepository.factory.BinaryRepositoryServiceFactory;
 import com.minsait.onesait.platform.business.services.report.ReportBusinessService;
 import com.minsait.onesait.platform.business.services.report.ReportConverter;
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
@@ -67,11 +67,12 @@ import com.minsait.onesait.platform.config.dto.report.ReportParameter;
 import com.minsait.onesait.platform.config.dto.report.ReportResourceDTO;
 import com.minsait.onesait.platform.config.dto.report.ReportType;
 import com.minsait.onesait.platform.config.model.BinaryFile;
+import com.minsait.onesait.platform.config.model.BinaryFile.RepositoryType;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.Report;
 import com.minsait.onesait.platform.config.model.Role.Type;
-import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.services.reports.ReportService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
@@ -99,7 +100,7 @@ public class ReportController {
 	private ReportBusinessService reportBusinessService;
 
 	@Autowired
-	private BinaryRepositoryLogicService binaryRepositoryLogicService;
+	private BinaryRepositoryServiceFactory binaryFactory;
 
 	@Autowired
 	private ReportConverter reportConverter;
@@ -109,15 +110,14 @@ public class ReportController {
 
 	@Autowired
 	private IntegrationResourcesService resourcesService;
-	
-	@Autowired 
+
+	@Autowired
 	private HttpSession httpSession;
-	
 
 	private static final String REPORT_API_PATH = "/api/reports";
 	private static final String APP_ID = "appId";
 	private static final String REDIRECT_PROJECT_SHOW = "redirect:/projects/update/";
-	
+
 	private RestTemplate restTemplate;
 
 	@PostConstruct
@@ -156,15 +156,15 @@ public class ReportController {
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@Transactional
 	public String list(Model model) {
-		
-		//CLEANING APP_ID FROM SESSION
+
+		// CLEANING APP_ID FROM SESSION
 		httpSession.removeAttribute(APP_ID);
-		
+
 		model.addAttribute("owners",
 				userService.getAllActiveUsers().stream()
-				.filter(user -> !Type.ROLE_ADMINISTRATOR.toString().equals(user.getRole().getId())
-						&& !Type.ROLE_SYS_ADMIN.toString().equals(user.getRole().getId()))
-				.map(User::getUserId).collect(Collectors.toList()));
+						.filter(user -> !Type.ROLE_ADMINISTRATOR.toString().equals(user.getRole().getId())
+								&& !Type.ROLE_SYS_ADMIN.toString().equals(user.getRole().getId()))
+						.map(User::getUserId).collect(Collectors.toList()));
 		model.addAttribute("types", Arrays.asList(ReportType.values()).stream().filter(t -> !t.equals(ReportType.JRXML))
 				.collect(Collectors.toList()));
 		final List<Report> reports = utils.isAdministrator() ? reportService.findAllActiveReports()
@@ -181,9 +181,9 @@ public class ReportController {
 	public String runReport(@PathVariable("id") String id, Model model) {
 		model.addAttribute("owners",
 				userService.getAllActiveUsers().stream()
-				.filter(user -> !Type.ROLE_ADMINISTRATOR.toString().equals(user.getRole().getId())
-						&& !Type.ROLE_SYS_ADMIN.toString().equals(user.getRole().getId()))
-				.map(User::getUserId).collect(Collectors.toList()));
+						.filter(user -> !Type.ROLE_ADMINISTRATOR.toString().equals(user.getRole().getId())
+								&& !Type.ROLE_SYS_ADMIN.toString().equals(user.getRole().getId()))
+						.map(User::getUserId).collect(Collectors.toList()));
 		model.addAttribute("types", Arrays.asList(ReportType.values()).stream().filter(t -> !t.equals(ReportType.JRXML))
 				.collect(Collectors.toList()));
 		final List<Report> reports = utils.isAdministrator() ? reportService.findAllActiveReports()
@@ -207,10 +207,10 @@ public class ReportController {
 
 		ModelAndView newModel = new ModelAndView("reports/create", REPORT, report);
 		final Object projectId = httpSession.getAttribute(APP_ID);
-		if (projectId!=null) {
+		if (projectId != null) {
 			newModel.addObject(APP_ID, projectId.toString());
 		}
-		
+
 		return newModel;
 	}
 
@@ -290,9 +290,9 @@ public class ReportController {
 				return "redirect:/reports/create";
 			}
 			reportService.saveOrUpdate(entity);
-			
+
 			final Object projectId = httpSession.getAttribute(APP_ID);
-			if (projectId!=null) {
+			if (projectId != null) {
 				httpSession.setAttribute("resourceTypeAdded", OPResource.Resources.REPORT.toString());
 				httpSession.setAttribute("resourceIdentificationAdded", entity.getIdentification());
 				httpSession.removeAttribute(APP_ID);
@@ -409,7 +409,7 @@ public class ReportController {
 		resourceIds.forEach(r -> {
 			if (reportService.countAssociatedReportsToResource(r) == 0) {
 				try {
-					binaryRepositoryLogicService.removeBinary(r);
+					binaryFactory.getInstance(RepositoryType.MONGO_GRIDFS).removeBinary(r);
 				} catch (final BinaryRepositoryException e) {
 					log.error("Could not delete resource from binary repository");
 				}
@@ -451,7 +451,7 @@ public class ReportController {
 		try {
 			final ResponseEntity<List<ReportParameter>> response = restTemplate.exchange(requestURL, HttpMethod.GET,
 					null, new ParameterizedTypeReference<List<ReportParameter>>() {
-			});
+					});
 
 			return new ResponseEntity<>(response.getBody(), HttpStatus.OK);
 		} catch (final HttpClientErrorException | HttpServerErrorException e) {
@@ -477,7 +477,7 @@ public class ReportController {
 		reportService.deleteResource(report, resource);
 		if (reportService.countAssociatedReportsToResource(resource) == 0) {
 			try {
-				binaryRepositoryLogicService.removeBinary(resource);
+				binaryFactory.getInstance(RepositoryType.MONGO_GRIDFS).removeBinary(resource);
 			} catch (final BinaryRepositoryException e) {
 				log.error("Could not delete binary file ", e);
 				return new ResponseEntity<>("Could not delete binary file ", HttpStatus.INTERNAL_SERVER_ERROR);

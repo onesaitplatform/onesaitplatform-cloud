@@ -135,15 +135,15 @@ public interface ClientPlatformInstanceRepository extends JpaRepository<ClientPl
 	@Transactional
 	@Modifying
 	@Query(value =
-	" INSERT INTO onesaitplatform_config.client_platform_instance (id, created_at, updated_at, connected, disabled, identification, json_actions, location, protocol, status, tags, client_platform_id) " +
-			"    SELECT uuid(), :#{#cpi.createdAt}, :#{#cpi.updatedAt}, :#{#cpi.connected}, :#{#cpi.disabled}, :#{#cpi.identification}, :#{#cpi.jsonActions}, :#{#cpi.location}, :#{#cpi.protocol}, :#{#cpi.status}, :#{#cpi.tags}, :#{#cp} " +
+	" INSERT INTO onesaitplatform_config.client_platform_instance (id, created_at, updated_at, connected, disabled, identification, json_actions, location, protocol, status, tags, client_platform_id)" +
+			"  SELECT uuid(), :#{#cpi.createdAt}, :#{#cpi.updatedAt}, :#{#cpi.connected}, :#{#cpi.disabled}, :#{#cpi.identification}, :#{#cpi.jsonActions}, :#{#cpi.location}, :#{#cpi.protocol}, :#{#cpi.status}, :#{#cpi.tags}, :#{#cp}" +
 			"    FROM " +
 			"     (SELECT client_platform_id, count(*) AS actual_devices " +
 			"      FROM onesaitplatform_config.client_platform_instance " +
 			"      WHERE client_platform_id = :#{#cp} AND identification <> :#{#cpi.identification} " +
 			"     ) AS actual " +
 			"    WHERE :#{#limit} > 0 AND actual.actual_devices < :#{#limit} " +
-			" ON CONFLICT DO UPDATE updated_at = :#{#cpi.updatedAt}, connected = :#{#cpi.connected}, disabled = :#{#cpi.disabled}, json_actions = :#{#cpi.jsonActions}, location = :#{#cpi.location}, protocol = :#{#cpi.protocol}, status = :#{#cpi.status}, tags = :#{#cpi.tags}",
+			" ON CONFLICT (id) DO UPDATE SET updated_at = " + "EXCLUDED." + ":#{#cpi.updatedAt}, connected = " + "EXCLUDED." +":#{#cpi.connected}, disabled = " + "EXCLUDED." +":#{#cpi.disabled}, json_actions = " + "EXCLUDED." +":#{#cpi.jsonActions}, location = " + "EXCLUDED." +":#{#cpi.location}, protocol = " + "EXCLUDED." +":#{#cpi.protocol}, status = " + "EXCLUDED." +":#{#cpi.status}, tags = " + "EXCLUDED." +":#{#cpi.tags}",
 			nativeQuery = true)
 	public int createOrUpdateClientPlatformInstancePSQL( @Param("cpi") ClientPlatformInstance entity,
 			@Param("cp") String clientPlatformId,

@@ -98,20 +98,19 @@ var JsonToolController = function(){
 						//	$('#returnAction').modal("show");
 						toastr.success(messagesForms.validation.genFormSuccess,ontologyCreated);
 						importBulkJson($('#ontologyIdentification').val());
+						$('#modal-created').modal('show');
 						
 						if ($("#appId").val()!=null){
 							navigateUrl('/controlpanel/projects/update/' + $("#appId").val());
+						} else {
+							$('#modal-created').modal('show');
 						}
 					}else{
 						//	$('#response').text(ontologyCreated);
 						//	$('#returnAction').modal("show");
 						toastr.success(messagesForms.validation.genFormSuccess,ontologyCreated);
-						
-						if ($("#appId").val()!=null){
-							navigateUrl('/controlpanel/projects/update/' + $("#appId").val());
-						} else {
-							navigateUrl('/controlpanel/ontologies/show/' + ontologyId);
-						}
+						$('#modal-created').modal('show');
+					
 					}
 				}else{
 					//	$('#response').html(nl2br(data.cause));
@@ -336,10 +335,11 @@ var JsonToolController = function(){
 					toastr.success(messagesForms.validation.genFormSuccess,"Ontology inserted of type " + $('#ontology').val());
 				}
 //				$('#returnAction').modal("show");
-				if(ontologyId !=null) 
-					navigateUrl('/controlpanel/ontologies/show/' + ontologyId)
-				else
-					navigateUrl('/controlpanel/ontologies/list')
+			//	if(ontologyId !=null) {
+			//		navigateUrl('/controlpanel/ontologies/show/' + ontologyId)
+			//	}else{
+			//		navigateUrl('/controlpanel/ontologies/list')
+			//		}
 			}
 			catch(err) {
 //				$('#response').text(err);

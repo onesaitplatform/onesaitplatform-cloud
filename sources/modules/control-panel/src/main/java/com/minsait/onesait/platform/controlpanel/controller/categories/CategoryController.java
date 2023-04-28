@@ -50,7 +50,9 @@ import lombok.extern.slf4j.Slf4j;
 @Controller
 @RequestMapping("/categories")
 @Slf4j
-@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+
+
 public class CategoryController {
 
 	@Autowired

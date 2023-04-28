@@ -13,7 +13,7 @@
 
 	<properties>
 
-		<revision>4.2.0-ce</revision>
+		<revision>4.3.0-ce</revision>
 		<docker.image.username>onesaitplatform</docker.image.username>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -40,7 +40,7 @@
 		<skip.integration.tests>true</skip.integration.tests>
 		<maven.install>2.5.2</maven.install>
 		<jsqlparser.version>3.1</jsqlparser.version>
-		<sql-to-mongo.version>4.0.1</sql-to-mongo.version>
+		<sql-to-mongo.version>4.2.0</sql-to-mongo.version>
 		<mongo-driver.version>4.3.1</mongo-driver.version>
 		<mockito.version>2.22.0</mockito.version>
 		<tika.version>1.20</tika.version>

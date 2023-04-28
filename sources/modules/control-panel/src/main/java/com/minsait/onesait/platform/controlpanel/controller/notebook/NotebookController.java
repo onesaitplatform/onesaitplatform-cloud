@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Optional;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -85,21 +86,21 @@ public class NotebookController {
 
 	@Autowired
 	private UserRepository userRepository;
-	
+
 	@Autowired
 	private JWTService jwtService;
-	
+
 	@Value("${onesaitplatform.analytics.notebook.platformAuth}")
 	private boolean platformAuth;
 
 	@Autowired
 	private ResourcesInUseService resourcesInUseService;
-	
-	@Autowired 
+
+	@Autowired
 	private HttpSession httpSession;
 
 	private static final String APP_ID = "appId";
-	
+
 	@Transactional
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
 	@PostMapping(value = "/createNotebook")
@@ -238,16 +239,21 @@ public class NotebookController {
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
-	@GetMapping(value = "/list", produces = "text/html")
-	public String list(Model uiModel) {
+	@GetMapping(value = { "/list", "/list/{redirect}" }, produces = "text/html")
+	public String list(Model uiModel, @PathVariable("redirect") Optional<Boolean> redirect) {
 
 		uiModel.addAttribute("lnt", notebookService.getNotebooks(utils.getUserId()));
 		uiModel.addAttribute("user", utils.getUserId());
 		uiModel.addAttribute("userRole", utils.getRole());
-		
-		final Object projectId = httpSession.getAttribute(APP_ID);
-		if (projectId!=null) {
-			uiModel.addAttribute(APP_ID, projectId.toString());
+
+		if (!redirect.isPresent()) {
+			// CLEANING APP_ID FROM SESSION
+			httpSession.removeAttribute(APP_ID);
+		} else {
+			final Object projectId = httpSession.getAttribute(APP_ID);
+			if (projectId != null) {
+				uiModel.addAttribute(APP_ID, projectId.toString());
+			}
 		}
 
 		return "notebooks/list";
@@ -312,32 +318,31 @@ public class NotebookController {
 
 	@GetMapping(value = "/app/api/security/ticket")
 	@ResponseBody
-	public ResponseEntity<String> loginAppOrGetWSToken(@CookieValue(value = "platformbearer", required=false) String platformbearer) {
-		if(!platformAuth) {
+	public ResponseEntity<String> loginAppOrGetWSToken(
+			@CookieValue(value = "platformbearer", required = false) String platformbearer) {
+		if (!platformAuth) {
 			if (utils.isAdministrator()) {
-				return new ResponseEntity<>(notebookService.loginOrGetWSTokenAdmin(),HttpStatus.OK);
-			} else if (!"ROLE_ANONYMOUS".equals(utils.getRole())){
-				return  new ResponseEntity<>(notebookService.loginOrGetWSToken(),HttpStatus.OK);
+				return new ResponseEntity<>(notebookService.loginOrGetWSTokenAdmin(), HttpStatus.OK);
+			} else if (!"ROLE_ANONYMOUS".equals(utils.getRole())) {
+				return new ResponseEntity<>(notebookService.loginOrGetWSToken(), HttpStatus.OK);
 			} else {
-				return  new ResponseEntity<>("Not authorized",HttpStatus.UNAUTHORIZED);
+				return new ResponseEntity<>("Not authorized", HttpStatus.UNAUTHORIZED);
 			}
-		}
-		else {
+		} else {
 			String username, token;
-			if(platformbearer == null || platformbearer.equals("")) {
+			if (platformbearer == null || platformbearer.equals("")) {
 				username = utils.getUserId();
 				token = utils.getCurrentUserOauthToken();
-			}
-			else{
+			} else {
 				OAuth2Authentication info = (OAuth2Authentication) jwtService.getAuthentication(platformbearer);
 				username = info.getUserAuthentication().getName();
 				token = platformbearer;
 			}
 			try {
-				return new ResponseEntity<>(notebookService.loginOrGetWSTokenByBearer(username,"Bearer " + token),HttpStatus.OK);
-			}
-			catch(Exception e) {
-				return new ResponseEntity<>("Token error, message: " +  e.getMessage(),HttpStatus.UNAUTHORIZED);
+				return new ResponseEntity<>(notebookService.loginOrGetWSTokenByBearer(username, "Bearer " + token),
+						HttpStatus.OK);
+			} catch (Exception e) {
+				return new ResponseEntity<>("Token error, message: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
 			}
 		}
 	}
@@ -374,7 +379,7 @@ public class NotebookController {
 		return notebookService.sendHttp(request, HttpMethod.valueOf(request.getMethod()), body);
 	}
 
-	//@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
+	// @PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
 	@GetMapping(value = { "/app/api/notebook/**", "/app/api/helium/**", "/app/api/version" })
 	@ResponseBody
 	public ResponseEntity<String> analyAppRest(Model uiModel, HttpServletRequest request)
@@ -387,9 +392,10 @@ public class NotebookController {
 		return "notebooks/index";
 	}
 
-	@GetMapping(value = {"/nameByIdZep/{id}", "/app/nameByIdZep/{id}"}, produces = "text/html")
+	@GetMapping(value = { "/nameByIdZep/{id}", "/app/nameByIdZep/{id}" }, produces = "text/html")
 	@ResponseBody
-	public ResponseEntity<String> nameByIdZep(Model model, @PathVariable("id") String id, @CookieValue(value = "platformbearer", required=false) String platformbearer) {
+	public ResponseEntity<String> nameByIdZep(Model model, @PathVariable("id") String id,
+			@CookieValue(value = "platformbearer", required = false) String platformbearer) {
 		try {
 			return new ResponseEntity<>(notebookService.notebookNameByIdZep(id, utils.getUserId()), HttpStatus.OK);
 		} catch (NotebookServiceException e) {

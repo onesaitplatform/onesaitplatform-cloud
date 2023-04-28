@@ -1,7 +1,7 @@
 var BinaryFilesController = function() {
-	var mainPath = '/controlpanel/files/';
-	var publicPath = '/controlpanel/files/public';
-	var listPath = '/controlpanel/files/list';
+	var mainPath = '/controlpanel/files/gridfs/';
+	var publicPath = '/controlpanel/files/gridfs/public';
+	var listPath = '/controlpanel/files/gridfs';
 	var metadataPath = mainPath + 'metadata/';
 	var getAuthsPath = mainPath + 'authorization/';
 	var maxsizePath = mainPath + 'maxsize';
@@ -124,9 +124,9 @@ var BinaryFilesController = function() {
 	}
 	var authorization = function(action,file,user,accesstype,authorization,btn){
 		
-		var insertURL = '/controlpanel/files/authorization';
-		var updateURL = '/controlpanel/files/authorization/update';
-		var deleteURL = '/controlpanel/files/authorization/delete';
+		var insertURL = '/controlpanel/files/gridfs/authorization';
+		var updateURL = '/controlpanel/files/gridfs/authorization/update';
+		var deleteURL = '/controlpanel/files/gridfs/authorization/delete';
 		var response = {};
 		
 		var csrf_value = $("meta[name='_csrf']").attr("content");

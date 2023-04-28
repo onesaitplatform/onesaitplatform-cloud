@@ -1606,6 +1606,287 @@
 (function () {
   'use strict';
 
+  angular.module('dashboardFramework')
+    .controller(
+      'editTemplateParamsController',
+      ["$scope", "__env", "$mdDialog", "$mdCompiler", "httpService", "type", "config", "layergrid", "edit", "element", "utilsService", "create", "inline", function ($scope,__env, $mdDialog,$mdCompiler, httpService, type, config, layergrid, edit, element, utilsService,create,inline) {
+        var agc = this;
+
+        agc.$onInit = function () {
+          if (!$scope.config.tconfig) {
+            $scope.getPredefinedParameters($scope.config.content);
+            $scope.getPredefinedParameters($scope.config.contentcode);
+          } else {
+            $scope.parameters = JSON.parse(JSON.stringify($scope.config.tconfig)).gform;
+          }
+        }
+
+        window.setTimeout(
+        function() {
+          var gform = JSON.parse(JSON.stringify($scope.parameters));
+          if ($scope.config.config) {
+            var gformvalue = utilsService.legacyToNewParamsWithDatasource(JSON.parse($scope.config.config), $scope.element.datasource);
+            if (!__env.dashboardEngineAvoidReassign) {
+              gformvalue = utilsService.reassign(gform, gformvalue)
+            }
+          } else {
+            var gformvalue = {}
+          }
+
+          $scope.vueapp = new Vue({
+            el: '#gform',
+            data: {
+              list2: gform,
+              gformvalue: create?gformvalue:utilsService.fillWithDefaultFormData(gformvalue, gform)
+            },
+            methods: {
+              remove: function(list,index){
+                list.splice(index, 1);
+              },
+              getDefaultTParams: function() {
+                function setDefault(elements, localvalue) {
+                  for (element in elements) {
+                    if (elements[element].elements && elements[element].elements.length > 0) {
+                      localvalue[elements[element].name] = {}
+                      setDefault(elements[element].elements, localvalue[elements[element].name])
+                    } else {
+                      localvalue[elements[element].name] = JSON.parse(JSON.stringify(elements[element].default == undefined ? null : elements[element].default))
+                    }
+                  }
+                }
+                var defaultTParams = {}
+                setDefault(this.list2, defaultTParams);
+                return defaultTParams;
+              }
+            },
+            mounted: function () {
+              if (this.gformvalue == {}) {
+                this.gformvalue['parameters'] = this.getDefaultTParams();
+              }
+            }
+          });
+
+
+        },500);
+       
+        $scope.type = type;
+        $scope.config = config;
+        $scope.element = element;
+        $scope.layergrid = layergrid;
+        $scope.edit = edit;
+        $scope.inline = inline;
+        $scope.datasource;
+        $scope.datasources = [];
+        $scope.datasourceFields = [];
+        $scope.parameters = [];
+        
+        $scope.templates = [];
+
+        $scope.create = create;
+        $scope.dat ={};
+        $scope.dat.ident ;
+        $scope.dat.desc ;
+
+        $scope.hide = function() {
+          $mdDialog.hide();
+        };
+
+        $scope.cancel = function() {
+          $mdDialog.cancel();
+        };
+
+       
+        $scope.loadDatasources = function(){
+          return httpService.getDatasources().then(
+            function(response){
+              $scope.datasources=response.data;
+              
+            },
+            function(e){
+              console.log("Error getting datasources: " +  JSON.stringify(e))
+            }
+          );
+        };
+  
+        $scope.iterate=  function (obj, stack, fields) {
+          for (var property in obj) {
+               if (obj.hasOwnProperty(property)) {
+                   if (typeof obj[property] == "object") {
+                    $scope.iterate(obj[property], stack + (stack==""?'':'.') + property, fields);
+            } else {
+                       fields.push({field:stack + (stack==""?'':'.') + property, type:typeof obj[property]});
+                   }
+               }
+            }    
+            return fields;
+         }
+
+        
+
+        /**we look for the parameters in the source code to create the form */
+        $scope.getPredefinedParameters = function(str){
+          var regexTagHTML =  /<![\-\-\s\w\>\=\"\'\,\:\+\_\/]*\-->/g;
+          var regexTagJS =  /\/\*[\-\-\s\w\>\=\"\'\,\:\+\_\/]*\*\//g;
+          var regexName = /name\s*=\s*\"[\s\w\>\=\-\'\+\_\/]*\s*\"/g;
+          var regexDescription = /description\s*=\s*\"[\s\w\>\=\-\'\+\_\/]*\s*\"/g;
+          var regexOptions = /options\s*=\s*\"[\s\w\>\=\-\'\:\,\+\_\/]*\s*\"/g;
+          var found=[];
+          found = utilsService.searchTag(regexTagHTML,str).concat(utilsService.searchTag(regexTagJS,str));	
+          
+          found.unique=function unique (a){
+            return function(){return this.filter(a)}}(function(a,b,c){return c.indexOf(a,b+1)<0
+           }); 
+          found = found.unique(); 
+      
+          for (var i = 0; i < found.length; i++) {			
+            var tag = found[i];
+            
+            var name = utilsService.searchTagContentName(regexName,tag)
+            var param = {
+              name: name
+            }
+            if(tag.replace(/\s/g, '').search('type="text"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
+              param.type = "input-text"
+            }else if(tag.replace(/\s/g, '').search('type="number"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
+              param.type = "input-number"
+            }else if(tag.replace(/\s/g, '').search('type="ds"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
+              param.type = "ds-field(ds[0].)"
+            }else if(tag.replace(/\s/g, '').search('type="ds_parameter"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
+              param.type = "ds-field"
+            }else if(tag.replace(/\s/g, '').search('type="ds"')>=0 && tag.replace(/\s/g, '').search('select-osp')>=0){
+              param.type = "selector";
+              var options = utilsService.searchTagContentName(regexOptions,tag);
+              if (options && options.length > 0) {
+                param.options = options.split(",").map(
+                  function(option){
+                    return {
+                      value: option
+                    }
+                  }
+                )
+              }
+            }
+            if (name) {
+              $scope.parameters.push(param);
+            }
+           } 
+          }       
+        
+        $scope.loadDatasourcesFields = function(){
+          
+          if($scope.config.datasource!=null && $scope.config.datasource.id!=null && $scope.config.datasource.id!=""){
+               return httpService.getsampleDatasources($scope.config.datasource.id).then(
+                function(response){
+                  $scope.datasourceFields=$scope.iterate(response.data[0],"", []);
+                },
+                function(e){
+                  console.log("Error getting datasourceFields: " +  JSON.stringify(e))
+                }
+              );
+            }
+            else 
+            {return null;}
+      }
+
+
+        $scope.save = function() { 
+          $scope.parameters = $scope.vueapp._data.gformvalue;
+          if(!edit){
+            if(create){
+              //create new gadget with 
+              
+
+              var config = $scope.parameters;
+              var gadget = {
+                "identification": $scope.dat.ident,
+                "description": $scope.dat.desc,               
+                "config": JSON.stringify(config),
+                "gadgetMeasures": [],
+                "type": $scope.config.tempId,
+                "instance":true
+              }
+              if( $scope.config.datasource){     
+                gadget["datasource"]= {
+                  "identification": $scope.config.datasource.name,
+                  "query": $scope.config.datasource.query,
+                  "refresh": $scope.config.datasource.refresh,
+                  "maxValues": $scope.config.datasource.maxValues,
+                  "description": $scope.config.datasource.description
+                }
+              }
+
+              if (!inline) {//Gadget custom
+                return httpService.createGadget(gadget).then(
+                  function(response){
+                    $scope.config.type = $scope.type;                 
+                    $scope.config.params = $scope.parameters;
+                    $scope.config.tparams = $scope.parameters;
+                    $scope.config.gadgetid = response.data.id;
+                    $scope.config.datasource = $scope.parameters.datasource;
+                    $scope.layergrid.push($scope.config);
+                    window.dispatchEvent(new CustomEvent("newgadgetcreated",{detail: $scope.config}));
+                    $mdDialog.cancel();
+                  },
+                  function(e){
+                    console.log("Error create Custom Gadget: " +  JSON.stringify(e))
+                  }
+                );
+              } else {//Gadget inline
+                $scope.config.type = $scope.type;
+                $scope.config.params = $scope.parameters;
+                $scope.config.tparams = $scope.parameters;
+                $scope.config.datasource = $scope.parameters.datasource;
+                $scope.layergrid.push($scope.config);
+                window.dispatchEvent(new CustomEvent("newgadgetcreated",{detail: $scope.config}));
+                $mdDialog.cancel();
+              } 
+            }else{  
+              $scope.config.type = $scope.type;
+              if($scope.config.template){// ID mode, save init params (edit only params)
+                $scope.config.params = $scope.parameters;
+              }
+              else{ // edit code mode (no id reference) 
+                $scope.config.content=utilsService.parseProperties($scope.config.content,$scope.parameters);         
+                $scope.config.contentcode=utilsService.parseProperties($scope.config.contentcode,$scope.parameters,true);
+                $scope.config.datasource = $scope.parameters.datasource
+              }
+              $scope.layergrid.push($scope.config);
+              $mdDialog.cancel();
+            }
+          }
+          else{ // only edit params (ID mode)
+            if (!inline) {
+              var configCustomGadget = $scope.parameters;
+              httpService.updateGadgetConf($scope.element.gadgetid,JSON.stringify(configCustomGadget)).then(
+                function(response){
+                  $scope.element.params = $scope.parameters;
+                  $scope.element.datasource = $scope.parameters.datasource;
+                  $mdDialog.cancel();
+                },
+                function(e){
+                  console.log("Error create Custom Gadget: " +  JSON.stringify(e));
+                  $mdDialog.cancel();
+                }
+              );
+            } else {
+              $scope.element.params = $scope.parameters;
+              if(typeof $scope.parameters.datasource !== 'undefined'){
+                $scope.element.datasource = JSON.parse(JSON.stringify($scope.parameters.datasource));
+              }
+              $mdDialog.cancel();
+            }
+          }
+        
+        };
+      
+      }]
+    )
+  
+})();
+
+(function () {
+  'use strict';
+
 DatadiscoveryFieldSelectorController.$inject = ["$log", "$scope", "$mdDialog", "$element", "datasourceSolverService", "utilsService"];
   angular.module('dashboardFramework')
     .component('datadiscoveryFieldSelector', { 
@@ -2726,287 +3007,6 @@ DatadiscoveryFieldPickerController.$inject = ["$log", "$scope", "$mdDialog", "$e
 
   angular.module('dashboardFramework')
     .controller(
-      'editTemplateParamsController',
-      ["$scope", "__env", "$mdDialog", "$mdCompiler", "httpService", "type", "config", "layergrid", "edit", "element", "utilsService", "create", "inline", function ($scope,__env, $mdDialog,$mdCompiler, httpService, type, config, layergrid, edit, element, utilsService,create,inline) {
-        var agc = this;
-
-        agc.$onInit = function () {
-          if (!$scope.config.tconfig) {
-            $scope.getPredefinedParameters($scope.config.content);
-            $scope.getPredefinedParameters($scope.config.contentcode);
-          } else {
-            $scope.parameters = JSON.parse(JSON.stringify($scope.config.tconfig)).gform;
-          }
-        }
-
-        window.setTimeout(
-        function() {
-          var gform = JSON.parse(JSON.stringify($scope.parameters));
-          if ($scope.config.config) {
-            var gformvalue = utilsService.legacyToNewParamsWithDatasource(JSON.parse($scope.config.config), $scope.element.datasource);
-            if (!__env.dashboardEngineAvoidReassign) {
-              gformvalue = utilsService.reassign(gform, gformvalue)
-            }
-          } else {
-            var gformvalue = {}
-          }
-
-          $scope.vueapp = new Vue({
-            el: '#gform',
-            data: {
-              list2: gform,
-              gformvalue: create?gformvalue:utilsService.fillWithDefaultFormData(gformvalue, gform)
-            },
-            methods: {
-              remove: function(list,index){
-                list.splice(index, 1);
-              },
-              getDefaultTParams: function() {
-                function setDefault(elements, localvalue) {
-                  for (element in elements) {
-                    if (elements[element].elements && elements[element].elements.length > 0) {
-                      localvalue[elements[element].name] = {}
-                      setDefault(elements[element].elements, localvalue[elements[element].name])
-                    } else {
-                      localvalue[elements[element].name] = JSON.parse(JSON.stringify(elements[element].default == undefined ? null : elements[element].default))
-                    }
-                  }
-                }
-                var defaultTParams = {}
-                setDefault(this.list2, defaultTParams);
-                return defaultTParams;
-              }
-            },
-            mounted: function () {
-              if (this.gformvalue == {}) {
-                this.gformvalue['parameters'] = this.getDefaultTParams();
-              }
-            }
-          });
-
-
-        },500);
-       
-        $scope.type = type;
-        $scope.config = config;
-        $scope.element = element;
-        $scope.layergrid = layergrid;
-        $scope.edit = edit;
-        $scope.inline = inline;
-        $scope.datasource;
-        $scope.datasources = [];
-        $scope.datasourceFields = [];
-        $scope.parameters = [];
-        
-        $scope.templates = [];
-
-        $scope.create = create;
-        $scope.dat ={};
-        $scope.dat.ident ;
-        $scope.dat.desc ;
-
-        $scope.hide = function() {
-          $mdDialog.hide();
-        };
-
-        $scope.cancel = function() {
-          $mdDialog.cancel();
-        };
-
-       
-        $scope.loadDatasources = function(){
-          return httpService.getDatasources().then(
-            function(response){
-              $scope.datasources=response.data;
-              
-            },
-            function(e){
-              console.log("Error getting datasources: " +  JSON.stringify(e))
-            }
-          );
-        };
-  
-        $scope.iterate=  function (obj, stack, fields) {
-          for (var property in obj) {
-               if (obj.hasOwnProperty(property)) {
-                   if (typeof obj[property] == "object") {
-                    $scope.iterate(obj[property], stack + (stack==""?'':'.') + property, fields);
-            } else {
-                       fields.push({field:stack + (stack==""?'':'.') + property, type:typeof obj[property]});
-                   }
-               }
-            }    
-            return fields;
-         }
-
-        
-
-        /**we look for the parameters in the source code to create the form */
-        $scope.getPredefinedParameters = function(str){
-          var regexTagHTML =  /<![\-\-\s\w\>\=\"\'\,\:\+\_\/]*\-->/g;
-          var regexTagJS =  /\/\*[\-\-\s\w\>\=\"\'\,\:\+\_\/]*\*\//g;
-          var regexName = /name\s*=\s*\"[\s\w\>\=\-\'\+\_\/]*\s*\"/g;
-          var regexDescription = /description\s*=\s*\"[\s\w\>\=\-\'\+\_\/]*\s*\"/g;
-          var regexOptions = /options\s*=\s*\"[\s\w\>\=\-\'\:\,\+\_\/]*\s*\"/g;
-          var found=[];
-          found = utilsService.searchTag(regexTagHTML,str).concat(utilsService.searchTag(regexTagJS,str));	
-          
-          found.unique=function unique (a){
-            return function(){return this.filter(a)}}(function(a,b,c){return c.indexOf(a,b+1)<0
-           }); 
-          found = found.unique(); 
-      
-          for (var i = 0; i < found.length; i++) {			
-            var tag = found[i];
-            
-            var name = utilsService.searchTagContentName(regexName,tag)
-            var param = {
-              name: name
-            }
-            if(tag.replace(/\s/g, '').search('type="text"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
-              param.type = "input-text"
-            }else if(tag.replace(/\s/g, '').search('type="number"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
-              param.type = "input-number"
-            }else if(tag.replace(/\s/g, '').search('type="ds"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
-              param.type = "ds-field(ds[0].)"
-            }else if(tag.replace(/\s/g, '').search('type="ds_parameter"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
-              param.type = "ds-field"
-            }else if(tag.replace(/\s/g, '').search('type="ds"')>=0 && tag.replace(/\s/g, '').search('select-osp')>=0){
-              param.type = "selector";
-              var options = utilsService.searchTagContentName(regexOptions,tag);
-              if (options && options.length > 0) {
-                param.options = options.split(",").map(
-                  function(option){
-                    return {
-                      value: option
-                    }
-                  }
-                )
-              }
-            }
-            if (name) {
-              $scope.parameters.push(param);
-            }
-           } 
-          }       
-        
-        $scope.loadDatasourcesFields = function(){
-          
-          if($scope.config.datasource!=null && $scope.config.datasource.id!=null && $scope.config.datasource.id!=""){
-               return httpService.getsampleDatasources($scope.config.datasource.id).then(
-                function(response){
-                  $scope.datasourceFields=$scope.iterate(response.data[0],"", []);
-                },
-                function(e){
-                  console.log("Error getting datasourceFields: " +  JSON.stringify(e))
-                }
-              );
-            }
-            else 
-            {return null;}
-      }
-
-
-        $scope.save = function() { 
-          $scope.parameters = $scope.vueapp._data.gformvalue;
-          if(!edit){
-            if(create){
-              //create new gadget with 
-              
-
-              var config = $scope.parameters;
-              var gadget = {
-                "identification": $scope.dat.ident,
-                "description": $scope.dat.desc,               
-                "config": JSON.stringify(config),
-                "gadgetMeasures": [],
-                "type": $scope.config.tempId,
-                "instance":true
-              }
-              if( $scope.config.datasource){     
-                gadget["datasource"]= {
-                  "identification": $scope.config.datasource.name,
-                  "query": $scope.config.datasource.query,
-                  "refresh": $scope.config.datasource.refresh,
-                  "maxValues": $scope.config.datasource.maxValues,
-                  "description": $scope.config.datasource.description
-                }
-              }
-
-              if (!inline) {//Gadget custom
-                return httpService.createGadget(gadget).then(
-                  function(response){
-                    $scope.config.type = $scope.type;                 
-                    $scope.config.params = $scope.parameters;
-                    $scope.config.tparams = $scope.parameters;
-                    $scope.config.gadgetid = response.data.id;
-                    $scope.config.datasource = $scope.parameters.datasource;
-                    $scope.layergrid.push($scope.config);
-                    window.dispatchEvent(new CustomEvent("newgadgetcreated",{detail: $scope.config}));
-                    $mdDialog.cancel();
-                  },
-                  function(e){
-                    console.log("Error create Custom Gadget: " +  JSON.stringify(e))
-                  }
-                );
-              } else {//Gadget inline
-                $scope.config.type = $scope.type;
-                $scope.config.params = $scope.parameters;
-                $scope.config.tparams = $scope.parameters;
-                $scope.config.datasource = $scope.parameters.datasource;
-                $scope.layergrid.push($scope.config);
-                window.dispatchEvent(new CustomEvent("newgadgetcreated",{detail: $scope.config}));
-                $mdDialog.cancel();
-              } 
-            }else{  
-              $scope.config.type = $scope.type;
-              if($scope.config.template){// ID mode, save init params (edit only params)
-                $scope.config.params = $scope.parameters;
-              }
-              else{ // edit code mode (no id reference) 
-                $scope.config.content=utilsService.parseProperties($scope.config.content,$scope.parameters);         
-                $scope.config.contentcode=utilsService.parseProperties($scope.config.contentcode,$scope.parameters,true);
-                $scope.config.datasource = $scope.parameters.datasource
-              }
-              $scope.layergrid.push($scope.config);
-              $mdDialog.cancel();
-            }
-          }
-          else{ // only edit params (ID mode)
-            if (!inline) {
-              var configCustomGadget = $scope.parameters;
-              httpService.updateGadgetConf($scope.element.gadgetid,JSON.stringify(configCustomGadget)).then(
-                function(response){
-                  $scope.element.params = $scope.parameters;
-                  $scope.element.datasource = $scope.parameters.datasource;
-                  $mdDialog.cancel();
-                },
-                function(e){
-                  console.log("Error create Custom Gadget: " +  JSON.stringify(e));
-                  $mdDialog.cancel();
-                }
-              );
-            } else {
-              $scope.element.params = $scope.parameters;
-              if(typeof $scope.parameters.datasource !== 'undefined'){
-                $scope.element.datasource = JSON.parse(JSON.stringify($scope.parameters.datasource));
-              }
-              $mdDialog.cancel();
-            }
-          }
-        
-        };
-      
-      }]
-    )
-  
-})();
-
-(function () {
-  'use strict';
-
-  angular.module('dashboardFramework')
-    .controller(
       'baseTemplateController',
       ["$rootScope", "$scope", "$element", "$mdCompiler", "datasourceSolverService", "httpService", "interactionService", "utilsService", "urlParamService", "filterService", "$translate", "$window", "cacheBoard", function($rootScope, $scope, $element, $mdCompiler, datasourceSolverService, httpService, interactionService, utilsService, urlParamService, filterService, $translate, $window, cacheBoard){
 
@@ -3950,6 +3950,119 @@ DatadiscoveryFieldPickerController.$inject = ["$log", "$scope", "$mdDialog", "$e
 (function () {
   'use strict';
 
+  PageController.$inject = ["$log", "$scope", "$mdSidenav", "$mdDialog", "datasourceSolverService"];
+  angular.module('dashboardFramework')
+    .component('page', {
+      templateUrl: 'app/components/view/pageComponent/page.html',
+      controller: PageController,
+      controllerAs: 'vm',
+      bindings:{
+        page:"=",
+        iframe:"=",
+        editmode:"<",
+        gridoptions:"<",
+        dashboardheader:"<",
+        synoptic: "=?",
+        synopticedit: "<?",
+        tabson:"<?",
+        editbuttonsiframe:"<?",
+        showfavoritesg:"<?"
+      }
+    });
+
+  /** @ngInject */
+  function PageController($log, $scope, $mdSidenav, $mdDialog, datasourceSolverService) {
+    var vm = this;
+    vm.$onInit = function () {
+
+     var countgadgets = vm.page.layers[0].gridboard.filter(function(gadget){return typeof gadget.id != "undefined"});
+      if(countgadgets.length === 0){
+        window.dispatchEvent(new Event('resize'));
+        window.postMessage("dashboardloaded", "*");
+        if(window.self !== window.top){
+          window.parent.postMessage("dashboardloaded", "*");
+        }
+      }
+    };
+
+    vm.$postLink = function(){
+
+    }
+
+    vm.$onDestroy = function(){   
+    }
+   
+    function eventStop(item, itemComponent, event) {
+      $log.info('eventStop', item, itemComponent, event);
+    }
+
+    function itemChange(item, itemComponent) {
+      $log.info('itemChanged', item, itemComponent);
+    }
+ 
+    function itemResize(item, itemComponent) {
+    
+      $log.info('itemResized', item, itemComponent);
+    }
+
+    function itemInit(item, itemComponent) {
+      $log.info('itemInitialized', item, itemComponent);
+    }
+
+    function itemRemoved(item, itemComponent) {
+      $log.info('itemRemoved', item, itemComponent);
+    }
+
+    function gridInit(grid) {
+      $log.info('gridInit', grid);
+    }
+
+    function gridDestroy(grid) {
+      $log.info('gridDestroy', grid);
+    }
+
+    vm.prevent = function (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    };
+
+    vm.pageStyle = function(){
+      var  temp ;
+      try {
+        if(typeof  $('#synopticbody > svg')[0].height.baseVal.value !=='undefined' && 
+        typeof  $('#synopticbody > svg')[0].width.baseVal.value !=='undefined'){
+          return   {'height': $('#synopticbody > svg')[0].height.baseVal.value+'px' , 'width': $('#synopticbody > svg')[0].width.baseVal.value+'px'};
+        }       
+      } catch (error) {
+        
+      }
+      
+      if(vm.dashboardheader.enable){
+        if(vm.tabson){
+          temp = {'height': 'calc(100% - '+(vm.dashboardheader.height+50)+'px'+')'};
+        }
+        else{
+          temp= {'height': 'calc(100% - '+vm.dashboardheader.height+'px'+')'};
+        }
+      }else{
+        if(vm.tabson){
+          temp = {'height': 'calc(100% - 50px)'};
+        }
+        else{
+          temp= {'height': '100%'};
+        }
+      }
+      return temp;
+     }
+ 
+
+
+  }
+})();
+
+(function () {
+  'use strict';
+
   LeftSideMenuController.$inject = ["$scope", "httpService"];
   angular.module('dashboardFramework')
     .component('leftsidemenu', {
@@ -4308,119 +4421,6 @@ DatadiscoveryFieldPickerController.$inject = ["$log", "$scope", "$mdDialog", "$e
 
   }
 })();
-(function () {
-  'use strict';
-
-  PageController.$inject = ["$log", "$scope", "$mdSidenav", "$mdDialog", "datasourceSolverService"];
-  angular.module('dashboardFramework')
-    .component('page', {
-      templateUrl: 'app/components/view/pageComponent/page.html',
-      controller: PageController,
-      controllerAs: 'vm',
-      bindings:{
-        page:"=",
-        iframe:"=",
-        editmode:"<",
-        gridoptions:"<",
-        dashboardheader:"<",
-        synoptic: "=?",
-        synopticedit: "<?",
-        tabson:"<?",
-        editbuttonsiframe:"<?",
-        showfavoritesg:"<?"
-      }
-    });
-
-  /** @ngInject */
-  function PageController($log, $scope, $mdSidenav, $mdDialog, datasourceSolverService) {
-    var vm = this;
-    vm.$onInit = function () {
-
-     var countgadgets = vm.page.layers[0].gridboard.filter(function(gadget){return typeof gadget.id != "undefined"});
-      if(countgadgets.length === 0){
-        window.dispatchEvent(new Event('resize'));
-        window.postMessage("dashboardloaded", "*");
-        if(window.self !== window.top){
-          window.parent.postMessage("dashboardloaded", "*");
-        }
-      }
-    };
-
-    vm.$postLink = function(){
-
-    }
-
-    vm.$onDestroy = function(){   
-    }
-   
-    function eventStop(item, itemComponent, event) {
-      $log.info('eventStop', item, itemComponent, event);
-    }
-
-    function itemChange(item, itemComponent) {
-      $log.info('itemChanged', item, itemComponent);
-    }
- 
-    function itemResize(item, itemComponent) {
-    
-      $log.info('itemResized', item, itemComponent);
-    }
-
-    function itemInit(item, itemComponent) {
-      $log.info('itemInitialized', item, itemComponent);
-    }
-
-    function itemRemoved(item, itemComponent) {
-      $log.info('itemRemoved', item, itemComponent);
-    }
-
-    function gridInit(grid) {
-      $log.info('gridInit', grid);
-    }
-
-    function gridDestroy(grid) {
-      $log.info('gridDestroy', grid);
-    }
-
-    vm.prevent = function (event) {
-      event.stopPropagation();
-      event.preventDefault();
-    };
-
-    vm.pageStyle = function(){
-      var  temp ;
-      try {
-        if(typeof  $('#synopticbody > svg')[0].height.baseVal.value !=='undefined' && 
-        typeof  $('#synopticbody > svg')[0].width.baseVal.value !=='undefined'){
-          return   {'height': $('#synopticbody > svg')[0].height.baseVal.value+'px' , 'width': $('#synopticbody > svg')[0].width.baseVal.value+'px'};
-        }       
-      } catch (error) {
-        
-      }
-      
-      if(vm.dashboardheader.enable){
-        if(vm.tabson){
-          temp = {'height': 'calc(100% - '+(vm.dashboardheader.height+50)+'px'+')'};
-        }
-        else{
-          temp= {'height': 'calc(100% - '+vm.dashboardheader.height+'px'+')'};
-        }
-      }else{
-        if(vm.tabson){
-          temp = {'height': 'calc(100% - 50px)'};
-        }
-        else{
-          temp= {'height': '100%'};
-        }
-      }
-      return temp;
-     }
- 
-
-
-  }
-})();
-
 (function () { 
   'use strict';
 
@@ -9165,1515 +9165,6 @@ angular.module('dashboardFramework').value('cacheBoard', {});
 (function () {
   'use strict';
 
-  UtilsService.$inject = ["__env", "httpService"];
-  angular.module('dashboardFramework')
-    .service('utilsService', UtilsService);
-
-  /** @ngInject */
-  function UtilsService(__env,httpService) {
-    var vm = this;
-
-    //force angular render in order to fast refresh view of component. $scope is pass as argument for render only this element
-    vm.forceRender = function ($scope) {
-      if (!$scope.$$phase) {
-        $scope.$applyAsync();
-      }
-    }
-
-    //Access json by string dot path
-    function multiIndex(obj, is, pos) {  // obj,['1','2','3'] -> ((obj['1'])['2'])['3']
-      if (is.length && !(is[0] in obj)) {
-        return obj[is[is.length - 1]];
-      }
-      return is.length ? multiIndex(obj[is[0]], is.slice(1), pos) : obj
-    }
-
-    function isNormalInteger(str) {
-      var n = Math.floor(Number(str));
-      return n !== Infinity && String(n) === str && n >= 0;
-    }
-
-    vm.replaceBrackets = function (obj) {
-      obj = obj.replace(/[\[]/g, ".");
-      obj = obj.replace(/[\]]/g, "");
-      return obj;
-    }
-
-    vm.getJsonValueByJsonPath = function (obj, is, pos) {
-      //special case for array access, return key is 0, 1
-      var matchArray = is.match(/\[[0-9]\]*$/);
-      if (matchArray) {
-        //Get de match in is [0] and get return field name
-        return obj[pos];
-      }
-      return multiIndex(obj, is.split('.'))
-    }
-
-    //array transform to sorted and unique values
-    vm.sort_unique = function (arr) {
-      if (arr.length === 0) return arr;
-      var sortFn;
-      if (typeof arr[0] === "string") {//String sort
-        sortFn = function (a, b) {
-          if (a < b) return -1;
-          if (a > b) return 1;
-          return 0;
-        }
-      }
-      else {//Number and date sort
-        sortFn = function (a, b) {
-          return a * 1 - b * 1;
-        }
-      }
-      arr = arr.sort(sortFn);
-      var ret = [arr[0]];
-      for (var i = 1; i < arr.length; i++) { //Start loop at 1: arr[0] can never be a duplicate
-        if (arr[i - 1] !== arr[i]) {
-          ret.push(arr[i]);
-        }
-      }
-      return ret;
-    }
-
-    //array transform to sorted and unique values
-    vm.sort_jsonarray = function(arr,sortfield) {
-      if (arr.length === 0) return arr;
-      var sortFn;
-      if(typeof arr[0][sortfield] === "string"){//String sort
-        sortFn = function (a, b) {
-          if(a[sortfield] < b[sortfield]) return -1;
-          if(a[sortfield] > b[sortfield]) return 1;
-          return 0;
-        }
-      }
-      else{//Number and date sort
-        sortFn = function (a, b) {
-          return a[sortfield]*1 - b[sortfield]*1;
-        }
-      }
-      return arr.sort(sortFn);
-    }
-
-    vm.isSameJsonInArray = function (json, arrayJson) {
-      for (var index = 0; index < arrayJson.length; index++) {
-        var equals = true;
-        for (var key in arrayJson[index]) {
-          if (arrayJson[index][key] != json[key]) {
-            equals = false;
-            break;
-          }
-        }
-        if (equals) {
-          return true;
-        }
-      }
-      return false;
-    }  
-
-    vm.getJsonFields = function iterate(obj, stack, fields) {
-      for (var property in obj) {
-        if (obj.hasOwnProperty(property)) {
-          if (typeof obj[property] == "object") {
-            vm.getJsonFields(obj[property], stack + (stack == "" ? '' : '.') + property, fields);
-          } else {
-            fields.push({ field: stack + (stack == "" ? '' : '.') + property, type: typeof obj[property] });
-          }
-        }
-      }
-      return fields;
-    }
-
-
-
-    function distinct(value, index, self) {
-      return self.indexOf(value) === index;
-    }
-
-    vm.uniqueArray = function (arr) {
-      if (typeof arr !== undefined) {
-        return arr.filter(distinct);
-      }
-      return arr;
-    }
-
-
-
-    vm.transformJsonFieldsArrays = function (fields) {
-      var transformArrays = [];
-      for (var fieldAux in fields) {
-        var pathFields = fields[fieldAux].field.split(".");
-        var realField = pathFields[0];
-        for (var i = 1; i < pathFields.length; i++) {
-          if (isNormalInteger(pathFields[i])) {
-            pathFields[i] = "[" + pathFields[i] + "]"
-            realField += pathFields[i];
-          }
-          else {
-            realField += "." + pathFields[i];
-          }
-        }
-        transformArrays.push({ field: realField, type: fields[fieldAux].type });
-      }
-      return transformArrays;
-    }
-
-    vm.urlParamLang = function () {
-      //controlar si ponen minúsculas o mayusculas
-      var urlSearch = window.location.search;
-      var searchParam = new URLSearchParams(urlSearch);
-      var lang = searchParam.get("lang");
-      return (lang?lang.toUpperCase():"");
-    }
-
-    vm.getMarkerForMap = function (value, jsonMarkers) {
-
-      var result = {
-        type: 'vectorMarker',
-        icon: 'circle',
-        markerColor: 'blue',
-        iconColor: "white"
-      }
-      var found = false;
-      for (var index = 0; index < jsonMarkers.length && !found; index++) {
-        var limit = jsonMarkers[index];
-        var minUndefined = typeof limit.min == "undefined";
-        var maxUndefined = typeof limit.max == "undefined";
-
-        if (!minUndefined && !maxUndefined) {
-          if (value <= limit.max && value >= limit.min) {
-            result.icon = limit.icon;
-            result.markerColor = limit.markerColor;
-            result.iconColor = limit.iconColor;
-            found = true;
-          }
-        } else if (!minUndefined && maxUndefined) {
-          if (value >= limit.min) {
-            result.icon = limit.icon;
-            result.markerColor = limit.markerColor;
-            result.iconColor = limit.iconColor;
-            found = true;
-          }
-
-        } else if (minUndefined && !maxUndefined) {
-          if (value <= limit.max) {
-            result.icon = limit.icon;
-            result.markerColor = limit.markerColor;
-            result.iconColor = limit.iconColor;
-            found = true;
-          }
-
-        }
-
-      }
-
-      return result;
-    }
-
-    vm.isEmptyJson = function (obj) {
-      return Object.keys(obj).length === 0 && obj.constructor === Object;
-    }
-
-    /**method that finds the tags in the given text*/
-    vm.searchTag = function(regex,str){
-      var m;
-      var found=[];
-      while ((m = regex.exec(str)) !== null) {  
-          if (m.index === regex.lastIndex) {
-              regex.lastIndex++;
-          }
-          m.forEach(function(item, index, arr){			
-          found.push(arr[0]);			
-        });  
-      }
-      return found;
-    }
-
-
-    vm.searchTagContentDescriptionOrName = function(regexDescription,regexName, str){
-      var tag = vm.searchTagContentName(regexDescription,str);
-      if(typeof tag=='undefined' || tag==null || tag.length==0 ){
-        tag = vm.searchTagContentName(regexName,str);
-      }
-      return tag;
-    }
-    
-
-
-    vm.searchTagContentName = function(regex,str){
-      var m;
-      var content;
-      while ((m = regex.exec(str)) !== null) {  
-          if (m.index === regex.lastIndex) {
-              regex.lastIndex++;
-          }
-          m.forEach(function(item, index, arr){			
-            content = arr[0].match(/"([^"]+)"/)[1];			
-        });  
-      }
-      return content;
-    }
-
-    /**method that finds the options attribute and returns its values in the given tag */
-    vm.searchTagContentOptions = function(regex,str){
-      var m;
-      var content=" ";
-      while ((m = regex.exec(str)) !== null) {  
-          if (m.index === regex.lastIndex) {
-              regex.lastIndex++;
-          }
-          m.forEach(function(item, index, arr){			
-            content = arr[0].match(/"([^"]+)"/)[1];			
-        });  
-      }
-    
-      return  content.split(',');
-    }
-
-    /**find a value for a given parameter */
-    function findValueForParameter(parameters,label,jsparam,number){
-      for (var index = 0; index <  parameters.length; index++) {
-        var element =  parameters[index];
-        if(element.label===label){
-          if(!jsparam){
-            return element.value;
-          }
-          else{
-            if(number){
-              return element.value + " || ";
-            }
-            else{
-              return "'" + element.value + "' || ";
-            }
-          }
-        }
-      }
-    }
-
-    /**Parse the parameter of the data source so that it has array coding*/
-    function parseArrayPosition(str){
-      var regex = /\.[\d]+/g;
-      var m;              
-      while ((m = regex.exec(str)) !== null) {                
-          if (m.index === regex.lastIndex) {
-              regex.lastIndex++;
-          } 
-          m.forEach( function(item, index, arr){             
-            var index = arr[0].substring(1,arr[0].length)
-            var result =  "["+index+"]";
-            str = str.replace(arr[0],result) ;
-          });
-      }
-      return str;
-    }
-
-    vm.flattenObj = function (ob) {
-      var toReturn = {};
-
-      for (var i in ob) {
-        if (!ob.hasOwnProperty(i)) continue;
-
-        if ((typeof ob[i]) == 'object' && ob[i] !== null) {
-          var flatObject = vm.flattenObj(ob[i]);
-          for (var x in flatObject) {
-            if (!flatObject.hasOwnProperty(x)) continue;
-
-            toReturn[i + '.' + x] = flatObject[x];
-          }
-        } else {
-          toReturn[i] = ob[i];
-        }
-      }
-      return toReturn;
-    }
-
-    vm.unflattenObj = function (data) {
-      var result = {}
-      for (var i in data) {
-        var keys = i.split('.')
-        keys.reduce(function (r, e, j) {
-          return r[e] || (r[e] = isNaN(Number(keys[j + 1])) ? (keys.length - 1 == j ? data[i] : {}) : [])
-        }, result)
-      }
-      return result
-    }
-
-    vm.setRecProperty = function (obj, spath, value) {
-      var auxobj = obj;
-      var paths = spath.split(".");
-      for (var p = 0; p < paths.length; p++) {
-        var path = paths[p];
-        if (!auxobj.hasOwnProperty(path)) {
-          auxobj[path] = {}
-        }
-        if (p === (paths.length-1)) {
-          auxobj[path] = value
-        } else {
-          auxobj = auxobj[path]
-        }
-      }
-    }
-
-    vm.getDefaultParams = function(gform) {
-      function getDefault(elements, localvalue) {
-        for (var element in elements) {
-          if (elements[element].elements && elements[element].elements.length > 0) {
-            localvalue[elements[element].name] = {}
-            getDefault(elements[element].elements, localvalue[elements[element].name])
-          } else {
-            localvalue[elements[element].name] = JSON.parse(JSON.stringify(elements[element].default == undefined ? null : elements[element].default))
-          }
-        }
-      }
-      var defaultParams = {}
-      getDefault(gform, defaultParams);
-      return defaultParams;
-    }
-
-    vm.reassign = function(gform, parameters) { //reassign parameters to other level of gform. Only for saved parameters not used with 1 level of deep
-      var defaultParams = vm.getDefaultParams(gform); //we get default params of gform
-
-      var notUsedParams = [];
-      for (var key in parameters.parameters) { // we get the not used params: params in parameters.parameters and not in defaultParams
-        if (!defaultParams.hasOwnProperty(key)) {
-          notUsedParams.push(key)
-        }
-      }
-      if (notUsedParams.length > 0) {
-        var fdparams = Object.keys(vm.flattenObj(defaultParams)).filter(function(key){ //defaultParams with more than 1 level of deep flattened. 
-          return key.indexOf(".") != -1;
-        });
-        for (var i in notUsedParams) {
-          var param = notUsedParams[i];
-          for (var j in fdparams) {
-            var fdpath = fdparams[j];
-            if (fdpath.endsWith("." + param)) { //if recursive param in defaultparams ends with .name of not used param, the value will be reassing in this position in paramters.parameters
-              vm.setRecProperty(parameters.parameters, fdpath, parameters.parameters[param]);
-              delete parameters.parameters[param]
-              break;
-            }
-          }
-        }
-      }
-      return parameters;
-    }
-
-    vm.isValidObject = function(obj) { //obj is object and not array or null
-      return typeof obj === 'object' && !Array.isArray(obj) && obj !== null
-    }
-
-    vm.cleanDashboardTempFields = function (dashboard) {
-      var cleanDashboard = dashboard;
-      return cleanDashboard
-    }
-
-    vm.deepMerge = function () {
-      // create a new object
-      var target = {};
-
-      // deep merge the object into the target object
-      var merger = function(obj) {
-        for (var prop in obj) {
-          if (obj.hasOwnProperty(prop)) {
-            if (Object.prototype.toString.call(obj[prop]) === '[object Object]') {
-              // if the property is a nested object
-              target[prop] = vm.deepMerge(target[prop], obj[prop]);
-            } else {
-              // for regular property
-              target[prop] = obj[prop];
-            }
-          }
-        }
-      };
-
-      // iterate through all objects and 
-      // deep merge them with target
-      for (var i = 0; i < arguments.length; i++) {
-        merger(arguments[i]);
-      }
-
-      return target;
-    }
-
-    vm.fillWithDefaultFormData = function(paramsori, gform) {
-      var params = JSON.parse(JSON.stringify(paramsori));
-      if (!window.__env.dashboardEngineAvoidFillDefault) {
-        var defaultParams = vm.getDefaultParams(gform);
-        if (vm.isValidObject(params) && Array.isArray(gform)) {
-          if (params.hasOwnProperty("parameters")) {
-            if (vm.isValidObject(params.parameters)) {
-              var auxParams = vm.deepMerge(defaultParams, params.parameters);
-              params.parameters = auxParams;
-            } else {
-              console.info("Template can't be fill with default data because params.parameters exists but is not a valid object")
-            }
-          } else {
-            var auxParams = vm.deepMerge(defaultParams, params);
-            params.parameters = auxParams;
-          }
-        } else {
-          console.info("Template can't be fill with default data because params or defaultParams are not defined")
-        }
-      }
-      return params;
-    }
-
-    vm.legacyToNewParamsWithDatasource = function(parameters, datasource) { //return new params for legacy or parameters with stt {parameters:{...},datasource:{...}}
-      var auxparameters = {}
-      if (Array.isArray(parameters)) { // from legacy to new params
-        auxparameters['parameters'] = vm.legacyToNewParams(parameters);
-        auxparameters['datasource'] = datasource;
-      } else {
-        auxparameters = parameters;
-      }
-      return auxparameters;
-    }
-
-    vm.legacyToNewParams = function(parameters) { // return convertion of legacy params to new params, only for parameters without datasource
-      var auxparameters = {}
-      if (Array.isArray(parameters)) { // from legacy to new params
-        for (var i = 0; i < parameters.length ; i++) {
-          var param = parameters[i];
-          auxparameters[param.label] = typeof param.value === 'object' && param.value !== null ? param.value.field : param.value;
-        }
-      } else {
-        auxparameters = parameters;
-      }
-      return auxparameters;
-    }
-
-    /** this function Replace parameteres for his selected values*/
-    vm.parseProperties = function(str,parameters,jsparam){
-      var regexTagHTML =  /<![\-\-\s\w\>\=\"\'\,\:\+\_\/]*\-->/g;
-      var regexTagJS =  /\/\*[\-\-\s\w\>\=\"\'\,\:\+\_\/]*\*\//g;
-      var regexName = /name\s*=\s*\"[\s\w\>\=\-\'\+\_\/]*\s*\"/g;
-      var regexOptions = /options\s*=\s*\"[\s\w\>\=\-\'\:\,\+\_\/]*\s*\"/g;
-      var found=[];
-      found = vm.searchTag(regexTagHTML,str).concat(vm.searchTag(regexTagJS,str));	
-      
-      var auxparameters = vm.legacyToNewParams(parameters);
-
-      var parserList=[];
-      for (var i = 0; i < found.length; i++) {
-        var tag = found[i];	
-        
-        function getKeyRec(paramMap, key) {
-          for (var k in paramMap) {
-            if (typeof paramMap[k] === "object") {
-              var ret = getKeyRec(paramMap[k], key)
-              if (ret) {
-                return ret;
-              }
-            } else if (key in paramMap) {
-              return paramMap[key];
-            }		
-          }
-          return null
-        }
-        var key = vm.searchTagContentName(regexName,tag);
-        var value = getKeyRec(auxparameters, key);
-        if(tag.replace(/\s/g, '').search('type="text"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0 ||
-           tag.replace(/\s/g, '').search('type="ds_parameter"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0 ||
-           tag.replace(/\s/g, '').search('type="ds"')>=0 && tag.replace(/\s/g, '').search('select-osp')>=0){
-          parserList.push({tag:tag,value:(jsparam?("'" + value + "' || "):value)});   
-        }else if(tag.replace(/\s/g, '').search('type="number"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
-          parserList.push({tag:tag,value:value + (jsparam?" || ":"")});   
-        }else if(tag.replace(/\s/g, '').search('type="ds"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){                
-          var field = value;
-          if(!jsparam){                             
-            parserList.push({tag:tag,value:"{{ds[0]."+field+"}}"});
-          }
-          else{
-            parserList.push({tag:tag,value:"ds[0]."+field+" || "});
-          }
-        }
-      } 
-      //Replace parameteres for his values
-      for (var i = 0; i < parserList.length; i++) {
-        str = str.replace(parserList[i].tag,parserList[i].value);
-      }
-      return str;
-    }
-
-  //function for create custom gadget
-  vm.createCustomGadget = function(config,type){    
-   var identification = config.identification;
-   var description = config.description; 
-   if(!config.identification){
-    identification="customgadget"+(new Date()).getTime();
-   }
-   if(!description){
-     description = identification;
-   }
-   delete config.identification;
-   delete config.description;
-    var gadget = {
-      "identification": identification,
-      "description": description,               
-      "config": JSON.stringify(config),
-      "gadgetMeasures": [],
-      "type": type,
-      "instance":true
-    }
-    return httpService.createGadget(gadget);
-  }
-
-
-    vm.icons = [
-      "3d_rotation",
-      "ac_unit",
-      "access_alarm",
-      "access_alarms",
-      "access_time",
-      "accessibility",
-      "accessible",
-      "account_balance",
-      "account_balance_wallet",
-      "account_box",
-      "account_circle",
-      "adb",
-      "add",
-      "add_a_photo",
-      "add_alarm",
-      "add_alert",
-      "add_box",
-      "add_circle",
-      "add_circle_outline",
-      "add_location",
-      "add_shopping_cart",
-      "add_to_photos",
-      "add_to_queue",
-      "adjust",
-      "airline_seat_flat",
-      "airline_seat_flat_angled",
-      "airline_seat_individual_suite",
-      "airline_seat_legroom_extra",
-      "airline_seat_legroom_normal",
-      "airline_seat_legroom_reduced",
-      "airline_seat_recline_extra",
-      "airline_seat_recline_normal",
-      "airplanemode_active",
-      "airplanemode_inactive",
-      "airplay",
-      "airport_shuttle",
-      "alarm",
-      "alarm_add",
-      "alarm_off",
-      "alarm_on",
-      "album",
-      "all_inclusive",
-      "all_out",
-      "android",
-      "announcement",
-      "apps",
-      "archive",
-      "arrow_back",
-      "arrow_downward",
-      "arrow_drop_down",
-      "arrow_drop_down_circle",
-      "arrow_drop_up",
-      "arrow_forward",
-      "arrow_upward",
-      "art_track",
-      "aspect_ratio",
-      "assessment",
-      "assignment",
-      "assignment_ind",
-      "assignment_late",
-      "assignment_return",
-      "assignment_returned",
-      "assignment_turned_in",
-      "assistant",
-      "assistant_photo",
-      "attach_file",
-      "attach_money",
-      "attachment",
-      "audiotrack",
-      "autorenew",
-      "av_timer",
-      "backspace",
-      "backup",
-      "battery_alert",
-      "battery_charging_full",
-      "battery_full",
-      "battery_std",
-      "battery_unknown",
-      "beach_access",
-      "beenhere",
-      "block",
-      "bluetooth",
-      "bluetooth_audio",
-      "bluetooth_connected",
-      "bluetooth_disabled",
-      "bluetooth_searching",
-      "blur_circular",
-      "blur_linear",
-      "blur_off",
-      "blur_on",
-      "book",
-      "bookmark",
-      "bookmark_border",
-      "border_all",
-      "border_bottom",
-      "border_clear",
-      "border_color",
-      "border_horizontal",
-      "border_inner",
-      "border_left",
-      "border_outer",
-      "border_right",
-      "border_style",
-      "border_top",
-      "border_vertical",
-      "branding_watermark",
-      "brightness_1",
-      "brightness_2",
-      "brightness_3",
-      "brightness_4",
-      "brightness_5",
-      "brightness_6",
-      "brightness_7",
-      "brightness_auto",
-      "brightness_high",
-      "brightness_low",
-      "brightness_medium",
-      "broken_image",
-      "brush",
-      "bubble_chart",
-      "bug_report",
-      "build",
-      "burst_mode",
-      "business",
-      "business_center",
-      "cached",
-      "cake",
-      "call",
-      "call_end",
-      "call_made",
-      "call_merge",
-      "call_missed",
-      "call_missed_outgoing",
-      "call_received",
-      "call_split",
-      "call_to_action",
-      "camera",
-      "camera_alt",
-      "camera_enhance",
-      "camera_front",
-      "camera_rear",
-      "camera_roll",
-      "cancel",
-      "card_giftcard",
-      "card_membership",
-      "card_travel",
-      "casino",
-      "cast",
-      "cast_connected",
-      "center_focus_strong",
-      "center_focus_weak",
-      "change_history",
-      "chat",
-      "chat_bubble",
-      "chat_bubble_outline",
-      "check",
-      "check_box",
-      "check_box_outline_blank",
-      "check_circle",
-      "chevron_left",
-      "chevron_right",
-      "child_care",
-      "child_friendly",
-      "chrome_reader_mode",
-      "class",
-      "clear",
-      "clear_all",
-      "close",
-      "closed_caption",
-      "cloud",
-      "cloud_circle",
-      "cloud_done",
-      "cloud_download",
-      "cloud_off",
-      "cloud_queue",
-      "cloud_upload",
-      "code",
-      "collections",
-      "collections_bookmark",
-      "color_lens",
-      "colorize",
-      "comment",
-      "compare",
-      "compare_arrows",
-      "computer",
-      "confirmation_number",
-      "contact_mail",
-      "contact_phone",
-      "contacts",
-      "content_copy",
-      "content_cut",
-      "content_paste",
-      "control_point",
-      "control_point_duplicate",
-      "copyright",
-      "create",
-      "create_new_folder",
-      "credit_card",
-      "crop",
-      "crop_16_9",
-      "crop_3_2",
-      "crop_5_4",
-      "crop_7_5",
-      "crop_din",
-      "crop_free",
-      "crop_landscape",
-      "crop_original",
-      "crop_portrait",
-      "crop_rotate",
-      "crop_square",
-      "dashboard",
-      "data_usage",
-      "date_range",
-      "dehaze",
-      "delete",
-      "delete_forever",
-      "delete_sweep",
-      "description",
-      "desktop_mac",
-      "desktop_windows",
-      "details",
-      "developer_board",
-      "developer_mode",
-      "device_hub",
-      "devices",
-      "devices_other",
-      "dialer_sip",
-      "dialpad",
-      "directions",
-      "directions_bike",
-      "directions_boat",
-      "directions_bus",
-      "directions_car",
-      "directions_railway",
-      "directions_run",
-      "directions_subway",
-      "directions_transit",
-      "directions_walk",
-      "disc_full",
-      "dns",
-      "do_not_disturb",
-      "do_not_disturb_alt",
-      "do_not_disturb_off",
-      "do_not_disturb_on",
-      "dock",
-      "domain",
-      "done",
-      "done_all",
-      "donut_large",
-      "donut_small",
-      "drafts",
-      "drag_handle",
-      "drive_eta",
-      "dvr",
-      "edit",
-      "edit_location",
-      "eject",
-      "email",
-      "enhanced_encryption",
-      "equalizer",
-      "error",
-      "error_outline",
-      "euro_symbol",
-      "ev_station",
-      "event",
-      "event_available",
-      "event_busy",
-      "event_note",
-      "event_seat",
-      "exit_to_app",
-      "expand_less",
-      "expand_more",
-      "explicit",
-      "explore",
-      "exposure",
-      "exposure_neg_1",
-      "exposure_neg_2",
-      "exposure_plus_1",
-      "exposure_plus_2",
-      "exposure_zero",
-      "extension",
-      "face",
-      "fast_forward",
-      "fast_rewind",
-      "favorite",
-      "favorite_border",
-      "featured_play_list",
-      "featured_video",
-      "feedback",
-      "fiber_dvr",
-      "fiber_manual_record",
-      "fiber_new",
-      "fiber_pin",
-      "fiber_smart_record",
-      "file_download",
-      "file_upload",
-      "filter",
-      "filter_1",
-      "filter_2",
-      "filter_3",
-      "filter_4",
-      "filter_5",
-      "filter_6",
-      "filter_7",
-      "filter_8",
-      "filter_9",
-      "filter_9_plus",
-      "filter_b_and_w",
-      "filter_center_focus",
-      "filter_drama",
-      "filter_frames",
-      "filter_hdr",
-      "filter_list",
-      "filter_none",
-      "filter_tilt_shift",
-      "filter_vintage",
-      "find_in_page",
-      "find_replace",
-      "fingerprint",
-      "first_page",
-      "fitness_center",
-      "flag",
-      "flare",
-      "flash_auto",
-      "flash_off",
-      "flash_on",
-      "flight",
-      "flight_land",
-      "flight_takeoff",
-      "flip",
-      "flip_to_back",
-      "flip_to_front",
-      "folder",
-      "folder_open",
-      "folder_shared",
-      "folder_special",
-      "font_download",
-      "format_align_center",
-      "format_align_justify",
-      "format_align_left",
-      "format_align_right",
-      "format_bold",
-      "format_clear",
-      "format_color_fill",
-      "format_color_reset",
-      "format_color_text",
-      "format_indent_decrease",
-      "format_indent_increase",
-      "format_italic",
-      "format_line_spacing",
-      "format_list_bulleted",
-      "format_list_numbered",
-      "format_paint",
-      "format_quote",
-      "format_shapes",
-      "format_size",
-      "format_strikethrough",
-      "format_textdirection_l_to_r",
-      "format_textdirection_r_to_l",
-      "format_underlined",
-      "forum",
-      "forward",
-      "forward_10",
-      "forward_30",
-      "forward_5",
-      "free_breakfast",
-      "fullscreen",
-      "fullscreen_exit",
-      "functions",
-      "g_translate",
-      "gamepad",
-      "games",
-      "gavel",
-      "gesture",
-      "get_app",
-      "gif",
-      "golf_course",
-      "gps_fixed",
-      "gps_not_fixed",
-      "gps_off",
-      "grade",
-      "gradient",
-      "grain",
-      "graphic_eq",
-      "grid_off",
-      "grid_on",
-      "group",
-      "group_add",
-      "group_work",
-      "hd",
-      "hdr_off",
-      "hdr_on",
-      "hdr_strong",
-      "hdr_weak",
-      "headset",
-      "headset_mic",
-      "healing",
-      "hearing",
-      "help",
-      "help_outline",
-      "high_quality",
-      "highlight",
-      "highlight_off",
-      "history",
-      "home",
-      "hot_tub",
-      "hotel",
-      "hourglass_empty",
-      "hourglass_full",
-      "http",
-      "https",
-      "image",
-      "image_aspect_ratio",
-      "import_contacts",
-      "import_export",
-      "important_devices",
-      "inbox",
-      "indeterminate_check_box",
-      "info",
-      "info_outline",
-      "input",
-      "insert_chart",
-      "insert_comment",
-      "insert_drive_file",
-      "insert_emoticon",
-      "insert_invitation",
-      "insert_link",
-      "insert_photo",
-      "invert_colors",
-      "invert_colors_off",
-      "iso",
-      "keyboard",
-      "keyboard_arrow_down",
-      "keyboard_arrow_left",
-      "keyboard_arrow_right",
-      "keyboard_arrow_up",
-      "keyboard_backspace",
-      "keyboard_capslock",
-      "keyboard_hide",
-      "keyboard_return",
-      "keyboard_tab",
-      "keyboard_voice",
-      "kitchen",
-      "label",
-      "label_outline",
-      "landscape",
-      "language",
-      "laptop",
-      "laptop_chromebook",
-      "laptop_mac",
-      "laptop_windows",
-      "last_page",
-      "launch",
-      "layers",
-      "layers_clear",
-      "leak_add",
-      "leak_remove",
-      "lens",
-      "library_add",
-      "library_books",
-      "library_music",
-      "lightbulb_outline",
-      "line_style",
-      "line_weight",
-      "linear_scale",
-      "link",
-      "linked_camera",
-      "list",
-      "live_help",
-      "live_tv",
-      "local_activity",
-      "local_airport",
-      "local_atm",
-      "local_bar",
-      "local_cafe",
-      "local_car_wash",
-      "local_convenience_store",
-      "local_dining",
-      "local_drink",
-      "local_florist",
-      "local_gas_station",
-      "local_grocery_store",
-      "local_hospital",
-      "local_hotel",
-      "local_laundry_service",
-      "local_library",
-      "local_mall",
-      "local_movies",
-      "local_offer",
-      "local_parking",
-      "local_pharmacy",
-      "local_phone",
-      "local_pizza",
-      "local_play",
-      "local_post_office",
-      "local_printshop",
-      "local_see",
-      "local_shipping",
-      "local_taxi",
-      "location_city",
-      "location_disabled",
-      "location_off",
-      "location_on",
-      "location_searching",
-      "lock",
-      "lock_open",
-      "lock_outline",
-      "looks",
-      "looks_3",
-      "looks_4",
-      "looks_5",
-      "looks_6",
-      "looks_one",
-      "looks_two",
-      "loop",
-      "loupe",
-      "low_priority",
-      "loyalty",
-      "mail",
-      "mail_outline",
-      "map",
-      "markunread",
-      "markunread_mailbox",
-      "memory",
-      "menu",
-      "merge_type",
-      "message",
-      "mic",
-      "mic_none",
-      "mic_off",
-      "mms",
-      "mode_comment",
-      "mode_edit",
-      "monetization_on",
-      "money_off",
-      "monochrome_photos",
-      "mood",
-      "mood_bad",
-      "more",
-      "more_horiz",
-      "more_vert",
-      "motorcycle",
-      "mouse",
-      "move_to_inbox",
-      "movie",
-      "movie_creation",
-      "movie_filter",
-      "multiline_chart",
-      "music_note",
-      "music_video",
-      "my_location",
-      "nature",
-      "nature_people",
-      "navigate_before",
-      "navigate_next",
-      "navigation",
-      "near_me",
-      "network_cell",
-      "network_check",
-      "network_locked",
-      "network_wifi",
-      "new_releases",
-      "next_week",
-      "nfc",
-      "no_encryption",
-      "no_sim",
-      "not_interested",
-      "note",
-      "note_add",
-      "notifications",
-      "notifications_active",
-      "notifications_none",
-      "notifications_off",
-      "notifications_paused",
-      "offline_pin",
-      "ondemand_video",
-      "opacity",
-      "open_in_browser",
-      "open_in_new",
-      "open_with",
-      "pages",
-      "pageview",
-      "palette",
-      "pan_tool",
-      "panorama",
-      "panorama_fish_eye",
-      "panorama_horizontal",
-      "panorama_vertical",
-      "panorama_wide_angle",
-      "party_mode",
-      "pause",
-      "pause_circle_filled",
-      "pause_circle_outline",
-      "payment",
-      "people",
-      "people_outline",
-      "perm_camera_mic",
-      "perm_contact_calendar",
-      "perm_data_setting",
-      "perm_device_information",
-      "perm_identity",
-      "perm_media",
-      "perm_phone_msg",
-      "perm_scan_wifi",
-      "person",
-      "person_add",
-      "person_outline",
-      "person_pin",
-      "person_pin_circle",
-      "personal_video",
-      "pets",
-      "phone",
-      "phone_android",
-      "phone_bluetooth_speaker",
-      "phone_forwarded",
-      "phone_in_talk",
-      "phone_iphone",
-      "phone_locked",
-      "phone_missed",
-      "phone_paused",
-      "phonelink",
-      "phonelink_erase",
-      "phonelink_lock",
-      "phonelink_off",
-      "phonelink_ring",
-      "phonelink_setup",
-      "photo",
-      "photo_album",
-      "photo_camera",
-      "photo_filter",
-      "photo_library",
-      "photo_size_select_actual",
-      "photo_size_select_large",
-      "photo_size_select_small",
-      "picture_as_pdf",
-      "picture_in_picture",
-      "picture_in_picture_alt",
-      "pie_chart",
-      "pie_chart_outlined",
-      "pin_drop",
-      "place",
-      "play_arrow",
-      "play_circle_filled",
-      "play_circle_outline",
-      "play_for_work",
-      "playlist_add",
-      "playlist_add_check",
-      "playlist_play",
-      "plus_one",
-      "poll",
-      "polymer",
-      "pool",
-      "portable_wifi_off",
-      "portrait",
-      "power",
-      "power_input",
-      "power_settings_new",
-      "pregnant_woman",
-      "present_to_all",
-      "print",
-      "priority_high",
-      "public",
-      "publish",
-      "query_builder",
-      "question_answer",
-      "queue",
-      "queue_music",
-      "queue_play_next",
-      "radio",
-      "radio_button_checked",
-      "radio_button_unchecked",
-      "rate_review",
-      "receipt",
-      "recent_actors",
-      "record_voice_over",
-      "redeem",
-      "redo",
-      "refresh",
-      "remove",
-      "remove_circle",
-      "remove_circle_outline",
-      "remove_from_queue",
-      "remove_red_eye",
-      "remove_shopping_cart",
-      "reorder",
-      "repeat",
-      "repeat_one",
-      "replay",
-      "replay_10",
-      "replay_30",
-      "replay_5",
-      "reply",
-      "reply_all",
-      "report",
-      "report_problem",
-      "restaurant",
-      "restaurant_menu",
-      "restore",
-      "restore_page",
-      "ring_volume",
-      "room",
-      "room_service",
-      "rotate_90_degrees_ccw",
-      "rotate_left",
-      "rotate_right",
-      "rounded_corner",
-      "router",
-      "rowing",
-      "rss_feed",
-      "rv_hookup",
-      "satellite",
-      "save",
-      "scanner",
-      "schedule",
-      "school",
-      "screen_lock_landscape",
-      "screen_lock_portrait",
-      "screen_lock_rotation",
-      "screen_rotation",
-      "screen_share",
-      "sd_card",
-      "sd_storage",
-      "search",
-      "security",
-      "select_all",
-      "send",
-      "sentiment_dissatisfied",
-      "sentiment_neutral",
-      "sentiment_satisfied",
-      "sentiment_very_dissatisfied",
-      "sentiment_very_satisfied",
-      "settings",
-      "settings_applications",
-      "settings_backup_restore",
-      "settings_bluetooth",
-      "settings_brightness",
-      "settings_cell",
-      "settings_ethernet",
-      "settings_input_antenna",
-      "settings_input_component",
-      "settings_input_composite",
-      "settings_input_hdmi",
-      "settings_input_svideo",
-      "settings_overscan",
-      "settings_phone",
-      "settings_power",
-      "settings_remote",
-      "settings_system_daydream",
-      "settings_voice",
-      "share",
-      "shop",
-      "shop_two",
-      "shopping_basket",
-      "shopping_cart",
-      "short_text",
-      "show_chart",
-      "shuffle",
-      "signal_cellular_4_bar",
-      "signal_cellular_connected_no_internet_4_bar",
-      "signal_cellular_no_sim",
-      "signal_cellular_null",
-      "signal_cellular_off",
-      "signal_wifi_4_bar",
-      "signal_wifi_4_bar_lock",
-      "signal_wifi_off",
-      "sim_card",
-      "sim_card_alert",
-      "skip_next",
-      "skip_previous",
-      "slideshow",
-      "slow_motion_video",
-      "smartphone",
-      "smoke_free",
-      "smoking_rooms",
-      "sms",
-      "sms_failed",
-      "snooze",
-      "sort",
-      "sort_by_alpha",
-      "spa",
-      "space_bar",
-      "speaker",
-      "speaker_group",
-      "speaker_notes",
-      "speaker_notes_off",
-      "speaker_phone",
-      "spellcheck",
-      "star",
-      "star_border",
-      "star_half",
-      "stars",
-      "stay_current_landscape",
-      "stay_current_portrait",
-      "stay_primary_landscape",
-      "stay_primary_portrait",
-      "stop",
-      "stop_screen_share",
-      "storage",
-      "store",
-      "store_mall_directory",
-      "straighten",
-      "streetview",
-      "strikethrough_s",
-      "style",
-      "subdirectory_arrow_left",
-      "subdirectory_arrow_right",
-      "subject",
-      "subscriptions",
-      "subtitles",
-      "subway",
-      "supervisor_account",
-      "surround_sound",
-      "swap_calls",
-      "swap_horiz",
-      "swap_vert",
-      "swap_vertical_circle",
-      "switch_camera",
-      "switch_video",
-      "sync",
-      "sync_disabled",
-      "sync_problem",
-      "system_update",
-      "system_update_alt",
-      "tab",
-      "tab_unselected",
-      "tablet",
-      "tablet_android",
-      "tablet_mac",
-      "tag_faces",
-      "tap_and_play",
-      "terrain",
-      "text_fields",
-      "text_format",
-      "textsms",
-      "texture",
-      "theaters",
-      "thumb_down",
-      "thumb_up",
-      "thumbs_up_down",
-      "time_to_leave",
-      "timelapse",
-      "timeline",
-      "timer",
-      "timer_10",
-      "timer_3",
-      "timer_off",
-      "title",
-      "toc",
-      "today",
-      "toll",
-      "tonality",
-      "touch_app",
-      "toys",
-      "track_changes",
-      "traffic",
-      "train",
-      "tram",
-      "transfer_within_a_station",
-      "transform",
-      "translate",
-      "trending_down",
-      "trending_flat",
-      "trending_up",
-      "tune",
-      "turned_in",
-      "turned_in_not",
-      "tv",
-      "unarchive",
-      "undo",
-      "unfold_less",
-      "unfold_more",
-      "update",
-      "usb",
-      "verified_user",
-      "vertical_align_bottom",
-      "vertical_align_center",
-      "vertical_align_top",
-      "vibration",
-      "video_call",
-      "video_label",
-      "video_library",
-      "videocam",
-      "videocam_off",
-      "videogame_asset",
-      "view_agenda",
-      "view_array",
-      "view_carousel",
-      "view_column",
-      "view_comfy",
-      "view_compact",
-      "view_day",
-      "view_headline",
-      "view_list",
-      "view_module",
-      "view_quilt",
-      "view_stream",
-      "view_week",
-      "vignette",
-      "visibility",
-      "visibility_off",
-      "voice_chat",
-      "voicemail",
-      "volume_down",
-      "volume_mute",
-      "volume_off",
-      "volume_up",
-      "vpn_key",
-      "vpn_lock",
-      "wallpaper",
-      "warning",
-      "watch",
-      "watch_later",
-      "wb_auto",
-      "wb_cloudy",
-      "wb_incandescent",
-      "wb_iridescent",
-      "wb_sunny",
-      "wc",
-      "web",
-      "web_asset",
-      "weekend",
-      "whatshot",
-      "widgets",
-      "wifi",
-      "wifi_lock",
-      "wifi_tethering",
-      "work",
-      "wrap_text",
-      "youtube_searched_for",
-      "zoom_in",
-      "zoom_out",
-      "zoom_out_map"
-    ]
-
-vm.getInsensitiveProperty = function (elem,label){
-  if(elem == null || typeof elem == 'undefined' || label == null || typeof label == 'undefined' ){
-    return undefined;
-  }
-  if(label in elem){
-    return elem[label];
-  }else if(label.toUpperCase() in elem){
-    return elem[label.toUpperCase()]
-  }else if(label.toLowerCase() in elem){
-    return elem[label.toLowerCase()]
-  }else{
-    return undefined;
-  }
- 
-}
-  };
-})();
-
-(function () {
-  'use strict';
-
   urlParamService.$inject = ["$log", "__env", "$rootScope"];
   angular.module('dashboardFramework')
     .service('urlParamService', urlParamService);
@@ -13607,6 +12098,1515 @@ function buildValueEvent(destination,  sourceFilterData, gadgetEmitterId,listVal
   }
 })();
 
+(function () {
+  'use strict';
+
+  UtilsService.$inject = ["__env", "httpService"];
+  angular.module('dashboardFramework')
+    .service('utilsService', UtilsService);
+
+  /** @ngInject */
+  function UtilsService(__env,httpService) {
+    var vm = this;
+
+    //force angular render in order to fast refresh view of component. $scope is pass as argument for render only this element
+    vm.forceRender = function ($scope) {
+      if (!$scope.$$phase) {
+        $scope.$applyAsync();
+      }
+    }
+
+    //Access json by string dot path
+    function multiIndex(obj, is, pos) {  // obj,['1','2','3'] -> ((obj['1'])['2'])['3']
+      if (is.length && !(is[0] in obj)) {
+        return obj[is[is.length - 1]];
+      }
+      return is.length ? multiIndex(obj[is[0]], is.slice(1), pos) : obj
+    }
+
+    function isNormalInteger(str) {
+      var n = Math.floor(Number(str));
+      return n !== Infinity && String(n) === str && n >= 0;
+    }
+
+    vm.replaceBrackets = function (obj) {
+      obj = obj.replace(/[\[]/g, ".");
+      obj = obj.replace(/[\]]/g, "");
+      return obj;
+    }
+
+    vm.getJsonValueByJsonPath = function (obj, is, pos) {
+      //special case for array access, return key is 0, 1
+      var matchArray = is.match(/\[[0-9]\]*$/);
+      if (matchArray) {
+        //Get de match in is [0] and get return field name
+        return obj[pos];
+      }
+      return multiIndex(obj, is.split('.'))
+    }
+
+    //array transform to sorted and unique values
+    vm.sort_unique = function (arr) {
+      if (arr.length === 0) return arr;
+      var sortFn;
+      if (typeof arr[0] === "string") {//String sort
+        sortFn = function (a, b) {
+          if (a < b) return -1;
+          if (a > b) return 1;
+          return 0;
+        }
+      }
+      else {//Number and date sort
+        sortFn = function (a, b) {
+          return a * 1 - b * 1;
+        }
+      }
+      arr = arr.sort(sortFn);
+      var ret = [arr[0]];
+      for (var i = 1; i < arr.length; i++) { //Start loop at 1: arr[0] can never be a duplicate
+        if (arr[i - 1] !== arr[i]) {
+          ret.push(arr[i]);
+        }
+      }
+      return ret;
+    }
+
+    //array transform to sorted and unique values
+    vm.sort_jsonarray = function(arr,sortfield) {
+      if (arr.length === 0) return arr;
+      var sortFn;
+      if(typeof arr[0][sortfield] === "string"){//String sort
+        sortFn = function (a, b) {
+          if(a[sortfield] < b[sortfield]) return -1;
+          if(a[sortfield] > b[sortfield]) return 1;
+          return 0;
+        }
+      }
+      else{//Number and date sort
+        sortFn = function (a, b) {
+          return a[sortfield]*1 - b[sortfield]*1;
+        }
+      }
+      return arr.sort(sortFn);
+    }
+
+    vm.isSameJsonInArray = function (json, arrayJson) {
+      for (var index = 0; index < arrayJson.length; index++) {
+        var equals = true;
+        for (var key in arrayJson[index]) {
+          if (arrayJson[index][key] != json[key]) {
+            equals = false;
+            break;
+          }
+        }
+        if (equals) {
+          return true;
+        }
+      }
+      return false;
+    }  
+
+    vm.getJsonFields = function iterate(obj, stack, fields) {
+      for (var property in obj) {
+        if (obj.hasOwnProperty(property)) {
+          if (typeof obj[property] == "object") {
+            vm.getJsonFields(obj[property], stack + (stack == "" ? '' : '.') + property, fields);
+          } else {
+            fields.push({ field: stack + (stack == "" ? '' : '.') + property, type: typeof obj[property] });
+          }
+        }
+      }
+      return fields;
+    }
+
+
+
+    function distinct(value, index, self) {
+      return self.indexOf(value) === index;
+    }
+
+    vm.uniqueArray = function (arr) {
+      if (typeof arr !== undefined) {
+        return arr.filter(distinct);
+      }
+      return arr;
+    }
+
+
+
+    vm.transformJsonFieldsArrays = function (fields) {
+      var transformArrays = [];
+      for (var fieldAux in fields) {
+        var pathFields = fields[fieldAux].field.split(".");
+        var realField = pathFields[0];
+        for (var i = 1; i < pathFields.length; i++) {
+          if (isNormalInteger(pathFields[i])) {
+            pathFields[i] = "[" + pathFields[i] + "]"
+            realField += pathFields[i];
+          }
+          else {
+            realField += "." + pathFields[i];
+          }
+        }
+        transformArrays.push({ field: realField, type: fields[fieldAux].type });
+      }
+      return transformArrays;
+    }
+
+    vm.urlParamLang = function () {
+      //controlar si ponen minúsculas o mayusculas
+      var urlSearch = window.location.search;
+      var searchParam = new URLSearchParams(urlSearch);
+      var lang = searchParam.get("lang");
+      return (lang?lang.toUpperCase():"");
+    }
+
+    vm.getMarkerForMap = function (value, jsonMarkers) {
+
+      var result = {
+        type: 'vectorMarker',
+        icon: 'circle',
+        markerColor: 'blue',
+        iconColor: "white"
+      }
+      var found = false;
+      for (var index = 0; index < jsonMarkers.length && !found; index++) {
+        var limit = jsonMarkers[index];
+        var minUndefined = typeof limit.min == "undefined";
+        var maxUndefined = typeof limit.max == "undefined";
+
+        if (!minUndefined && !maxUndefined) {
+          if (value <= limit.max && value >= limit.min) {
+            result.icon = limit.icon;
+            result.markerColor = limit.markerColor;
+            result.iconColor = limit.iconColor;
+            found = true;
+          }
+        } else if (!minUndefined && maxUndefined) {
+          if (value >= limit.min) {
+            result.icon = limit.icon;
+            result.markerColor = limit.markerColor;
+            result.iconColor = limit.iconColor;
+            found = true;
+          }
+
+        } else if (minUndefined && !maxUndefined) {
+          if (value <= limit.max) {
+            result.icon = limit.icon;
+            result.markerColor = limit.markerColor;
+            result.iconColor = limit.iconColor;
+            found = true;
+          }
+
+        }
+
+      }
+
+      return result;
+    }
+
+    vm.isEmptyJson = function (obj) {
+      return Object.keys(obj).length === 0 && obj.constructor === Object;
+    }
+
+    /**method that finds the tags in the given text*/
+    vm.searchTag = function(regex,str){
+      var m;
+      var found=[];
+      while ((m = regex.exec(str)) !== null) {  
+          if (m.index === regex.lastIndex) {
+              regex.lastIndex++;
+          }
+          m.forEach(function(item, index, arr){			
+          found.push(arr[0]);			
+        });  
+      }
+      return found;
+    }
+
+
+    vm.searchTagContentDescriptionOrName = function(regexDescription,regexName, str){
+      var tag = vm.searchTagContentName(regexDescription,str);
+      if(typeof tag=='undefined' || tag==null || tag.length==0 ){
+        tag = vm.searchTagContentName(regexName,str);
+      }
+      return tag;
+    }
+    
+
+
+    vm.searchTagContentName = function(regex,str){
+      var m;
+      var content;
+      while ((m = regex.exec(str)) !== null) {  
+          if (m.index === regex.lastIndex) {
+              regex.lastIndex++;
+          }
+          m.forEach(function(item, index, arr){			
+            content = arr[0].match(/"([^"]+)"/)[1];			
+        });  
+      }
+      return content;
+    }
+
+    /**method that finds the options attribute and returns its values in the given tag */
+    vm.searchTagContentOptions = function(regex,str){
+      var m;
+      var content=" ";
+      while ((m = regex.exec(str)) !== null) {  
+          if (m.index === regex.lastIndex) {
+              regex.lastIndex++;
+          }
+          m.forEach(function(item, index, arr){			
+            content = arr[0].match(/"([^"]+)"/)[1];			
+        });  
+      }
+    
+      return  content.split(',');
+    }
+
+    /**find a value for a given parameter */
+    function findValueForParameter(parameters,label,jsparam,number){
+      for (var index = 0; index <  parameters.length; index++) {
+        var element =  parameters[index];
+        if(element.label===label){
+          if(!jsparam){
+            return element.value;
+          }
+          else{
+            if(number){
+              return element.value + " || ";
+            }
+            else{
+              return "'" + element.value + "' || ";
+            }
+          }
+        }
+      }
+    }
+
+    /**Parse the parameter of the data source so that it has array coding*/
+    function parseArrayPosition(str){
+      var regex = /\.[\d]+/g;
+      var m;              
+      while ((m = regex.exec(str)) !== null) {                
+          if (m.index === regex.lastIndex) {
+              regex.lastIndex++;
+          } 
+          m.forEach( function(item, index, arr){             
+            var index = arr[0].substring(1,arr[0].length)
+            var result =  "["+index+"]";
+            str = str.replace(arr[0],result) ;
+          });
+      }
+      return str;
+    }
+
+    vm.flattenObj = function (ob) {
+      var toReturn = {};
+
+      for (var i in ob) {
+        if (!ob.hasOwnProperty(i)) continue;
+
+        if ((typeof ob[i]) == 'object' && ob[i] !== null) {
+          var flatObject = vm.flattenObj(ob[i]);
+          for (var x in flatObject) {
+            if (!flatObject.hasOwnProperty(x)) continue;
+
+            toReturn[i + '.' + x] = flatObject[x];
+          }
+        } else {
+          toReturn[i] = ob[i];
+        }
+      }
+      return toReturn;
+    }
+
+    vm.unflattenObj = function (data) {
+      var result = {}
+      for (var i in data) {
+        var keys = i.split('.')
+        keys.reduce(function (r, e, j) {
+          return r[e] || (r[e] = isNaN(Number(keys[j + 1])) ? (keys.length - 1 == j ? data[i] : {}) : [])
+        }, result)
+      }
+      return result
+    }
+
+    vm.setRecProperty = function (obj, spath, value) {
+      var auxobj = obj;
+      var paths = spath.split(".");
+      for (var p = 0; p < paths.length; p++) {
+        var path = paths[p];
+        if (!auxobj.hasOwnProperty(path)) {
+          auxobj[path] = {}
+        }
+        if (p === (paths.length-1)) {
+          auxobj[path] = value
+        } else {
+          auxobj = auxobj[path]
+        }
+      }
+    }
+
+    vm.getDefaultParams = function(gform) {
+      function getDefault(elements, localvalue) {
+        for (var element in elements) {
+          if (elements[element].elements && elements[element].elements.length > 0) {
+            localvalue[elements[element].name] = {}
+            getDefault(elements[element].elements, localvalue[elements[element].name])
+          } else {
+            localvalue[elements[element].name] = JSON.parse(JSON.stringify(elements[element].default == undefined ? null : elements[element].default))
+          }
+        }
+      }
+      var defaultParams = {}
+      getDefault(gform, defaultParams);
+      return defaultParams;
+    }
+
+    vm.reassign = function(gform, parameters) { //reassign parameters to other level of gform. Only for saved parameters not used with 1 level of deep
+      var defaultParams = vm.getDefaultParams(gform); //we get default params of gform
+
+      var notUsedParams = [];
+      for (var key in parameters.parameters) { // we get the not used params: params in parameters.parameters and not in defaultParams
+        if (!defaultParams.hasOwnProperty(key)) {
+          notUsedParams.push(key)
+        }
+      }
+      if (notUsedParams.length > 0) {
+        var fdparams = Object.keys(vm.flattenObj(defaultParams)).filter(function(key){ //defaultParams with more than 1 level of deep flattened. 
+          return key.indexOf(".") != -1;
+        });
+        for (var i in notUsedParams) {
+          var param = notUsedParams[i];
+          for (var j in fdparams) {
+            var fdpath = fdparams[j];
+            if (fdpath.endsWith("." + param)) { //if recursive param in defaultparams ends with .name of not used param, the value will be reassing in this position in paramters.parameters
+              vm.setRecProperty(parameters.parameters, fdpath, parameters.parameters[param]);
+              delete parameters.parameters[param]
+              break;
+            }
+          }
+        }
+      }
+      return parameters;
+    }
+
+    vm.isValidObject = function(obj) { //obj is object and not array or null
+      return typeof obj === 'object' && !Array.isArray(obj) && obj !== null
+    }
+
+    vm.cleanDashboardTempFields = function (dashboard) {
+      var cleanDashboard = dashboard;
+      return cleanDashboard
+    }
+
+    vm.deepMerge = function () {
+      // create a new object
+      var target = {};
+
+      // deep merge the object into the target object
+      var merger = function(obj) {
+        for (var prop in obj) {
+          if (obj.hasOwnProperty(prop)) {
+            if (Object.prototype.toString.call(obj[prop]) === '[object Object]') {
+              // if the property is a nested object
+              target[prop] = vm.deepMerge(target[prop], obj[prop]);
+            } else {
+              // for regular property
+              target[prop] = obj[prop];
+            }
+          }
+        }
+      };
+
+      // iterate through all objects and 
+      // deep merge them with target
+      for (var i = 0; i < arguments.length; i++) {
+        merger(arguments[i]);
+      }
+
+      return target;
+    }
+
+    vm.fillWithDefaultFormData = function(paramsori, gform) {
+      var params = JSON.parse(JSON.stringify(paramsori));
+      if (!window.__env.dashboardEngineAvoidFillDefault) {
+        var defaultParams = vm.getDefaultParams(gform);
+        if (vm.isValidObject(params) && Array.isArray(gform)) {
+          if (params.hasOwnProperty("parameters")) {
+            if (vm.isValidObject(params.parameters)) {
+              var auxParams = vm.deepMerge(defaultParams, params.parameters);
+              params.parameters = auxParams;
+            } else {
+              console.info("Template can't be fill with default data because params.parameters exists but is not a valid object")
+            }
+          } else {
+            var auxParams = vm.deepMerge(defaultParams, params);
+            params.parameters = auxParams;
+          }
+        } else {
+          console.info("Template can't be fill with default data because params or defaultParams are not defined")
+        }
+      }
+      return params;
+    }
+
+    vm.legacyToNewParamsWithDatasource = function(parameters, datasource) { //return new params for legacy or parameters with stt {parameters:{...},datasource:{...}}
+      var auxparameters = {}
+      if (Array.isArray(parameters)) { // from legacy to new params
+        auxparameters['parameters'] = vm.legacyToNewParams(parameters);
+        auxparameters['datasource'] = datasource;
+      } else {
+        auxparameters = parameters;
+      }
+      return auxparameters;
+    }
+
+    vm.legacyToNewParams = function(parameters) { // return convertion of legacy params to new params, only for parameters without datasource
+      var auxparameters = {}
+      if (Array.isArray(parameters)) { // from legacy to new params
+        for (var i = 0; i < parameters.length ; i++) {
+          var param = parameters[i];
+          auxparameters[param.label] = typeof param.value === 'object' && param.value !== null ? param.value.field : param.value;
+        }
+      } else {
+        auxparameters = parameters;
+      }
+      return auxparameters;
+    }
+
+    /** this function Replace parameteres for his selected values*/
+    vm.parseProperties = function(str,parameters,jsparam){
+      var regexTagHTML =  /<![\-\-\s\w\>\=\"\'\,\:\+\_\/]*\-->/g;
+      var regexTagJS =  /\/\*[\-\-\s\w\>\=\"\'\,\:\+\_\/]*\*\//g;
+      var regexName = /name\s*=\s*\"[\s\w\>\=\-\'\+\_\/]*\s*\"/g;
+      var regexOptions = /options\s*=\s*\"[\s\w\>\=\-\'\:\,\+\_\/]*\s*\"/g;
+      var found=[];
+      found = vm.searchTag(regexTagHTML,str).concat(vm.searchTag(regexTagJS,str));	
+      
+      var auxparameters = vm.legacyToNewParams(parameters);
+
+      var parserList=[];
+      for (var i = 0; i < found.length; i++) {
+        var tag = found[i];	
+        
+        function getKeyRec(paramMap, key) {
+          for (var k in paramMap) {
+            if (typeof paramMap[k] === "object") {
+              var ret = getKeyRec(paramMap[k], key)
+              if (ret) {
+                return ret;
+              }
+            } else if (key in paramMap) {
+              return paramMap[key];
+            }		
+          }
+          return null
+        }
+        var key = vm.searchTagContentName(regexName,tag);
+        var value = getKeyRec(auxparameters, key);
+        if(tag.replace(/\s/g, '').search('type="text"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0 ||
+           tag.replace(/\s/g, '').search('type="ds_parameter"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0 ||
+           tag.replace(/\s/g, '').search('type="ds"')>=0 && tag.replace(/\s/g, '').search('select-osp')>=0){
+          parserList.push({tag:tag,value:(jsparam?("'" + value + "' || "):value)});   
+        }else if(tag.replace(/\s/g, '').search('type="number"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){
+          parserList.push({tag:tag,value:value + (jsparam?" || ":"")});   
+        }else if(tag.replace(/\s/g, '').search('type="ds"')>=0 && tag.replace(/\s/g, '').search('label-osp')>=0){                
+          var field = value;
+          if(!jsparam){                             
+            parserList.push({tag:tag,value:"{{ds[0]."+field+"}}"});
+          }
+          else{
+            parserList.push({tag:tag,value:"ds[0]."+field+" || "});
+          }
+        }
+      } 
+      //Replace parameteres for his values
+      for (var i = 0; i < parserList.length; i++) {
+        str = str.replace(parserList[i].tag,parserList[i].value);
+      }
+      return str;
+    }
+
+  //function for create custom gadget
+  vm.createCustomGadget = function(config,type){    
+   var identification = config.identification;
+   var description = config.description; 
+   if(!config.identification){
+    identification="customgadget"+(new Date()).getTime();
+   }
+   if(!description){
+     description = identification;
+   }
+   delete config.identification;
+   delete config.description;
+    var gadget = {
+      "identification": identification,
+      "description": description,               
+      "config": JSON.stringify(config),
+      "gadgetMeasures": [],
+      "type": type,
+      "instance":true
+    }
+    return httpService.createGadget(gadget);
+  }
+
+
+    vm.icons = [
+      "3d_rotation",
+      "ac_unit",
+      "access_alarm",
+      "access_alarms",
+      "access_time",
+      "accessibility",
+      "accessible",
+      "account_balance",
+      "account_balance_wallet",
+      "account_box",
+      "account_circle",
+      "adb",
+      "add",
+      "add_a_photo",
+      "add_alarm",
+      "add_alert",
+      "add_box",
+      "add_circle",
+      "add_circle_outline",
+      "add_location",
+      "add_shopping_cart",
+      "add_to_photos",
+      "add_to_queue",
+      "adjust",
+      "airline_seat_flat",
+      "airline_seat_flat_angled",
+      "airline_seat_individual_suite",
+      "airline_seat_legroom_extra",
+      "airline_seat_legroom_normal",
+      "airline_seat_legroom_reduced",
+      "airline_seat_recline_extra",
+      "airline_seat_recline_normal",
+      "airplanemode_active",
+      "airplanemode_inactive",
+      "airplay",
+      "airport_shuttle",
+      "alarm",
+      "alarm_add",
+      "alarm_off",
+      "alarm_on",
+      "album",
+      "all_inclusive",
+      "all_out",
+      "android",
+      "announcement",
+      "apps",
+      "archive",
+      "arrow_back",
+      "arrow_downward",
+      "arrow_drop_down",
+      "arrow_drop_down_circle",
+      "arrow_drop_up",
+      "arrow_forward",
+      "arrow_upward",
+      "art_track",
+      "aspect_ratio",
+      "assessment",
+      "assignment",
+      "assignment_ind",
+      "assignment_late",
+      "assignment_return",
+      "assignment_returned",
+      "assignment_turned_in",
+      "assistant",
+      "assistant_photo",
+      "attach_file",
+      "attach_money",
+      "attachment",
+      "audiotrack",
+      "autorenew",
+      "av_timer",
+      "backspace",
+      "backup",
+      "battery_alert",
+      "battery_charging_full",
+      "battery_full",
+      "battery_std",
+      "battery_unknown",
+      "beach_access",
+      "beenhere",
+      "block",
+      "bluetooth",
+      "bluetooth_audio",
+      "bluetooth_connected",
+      "bluetooth_disabled",
+      "bluetooth_searching",
+      "blur_circular",
+      "blur_linear",
+      "blur_off",
+      "blur_on",
+      "book",
+      "bookmark",
+      "bookmark_border",
+      "border_all",
+      "border_bottom",
+      "border_clear",
+      "border_color",
+      "border_horizontal",
+      "border_inner",
+      "border_left",
+      "border_outer",
+      "border_right",
+      "border_style",
+      "border_top",
+      "border_vertical",
+      "branding_watermark",
+      "brightness_1",
+      "brightness_2",
+      "brightness_3",
+      "brightness_4",
+      "brightness_5",
+      "brightness_6",
+      "brightness_7",
+      "brightness_auto",
+      "brightness_high",
+      "brightness_low",
+      "brightness_medium",
+      "broken_image",
+      "brush",
+      "bubble_chart",
+      "bug_report",
+      "build",
+      "burst_mode",
+      "business",
+      "business_center",
+      "cached",
+      "cake",
+      "call",
+      "call_end",
+      "call_made",
+      "call_merge",
+      "call_missed",
+      "call_missed_outgoing",
+      "call_received",
+      "call_split",
+      "call_to_action",
+      "camera",
+      "camera_alt",
+      "camera_enhance",
+      "camera_front",
+      "camera_rear",
+      "camera_roll",
+      "cancel",
+      "card_giftcard",
+      "card_membership",
+      "card_travel",
+      "casino",
+      "cast",
+      "cast_connected",
+      "center_focus_strong",
+      "center_focus_weak",
+      "change_history",
+      "chat",
+      "chat_bubble",
+      "chat_bubble_outline",
+      "check",
+      "check_box",
+      "check_box_outline_blank",
+      "check_circle",
+      "chevron_left",
+      "chevron_right",
+      "child_care",
+      "child_friendly",
+      "chrome_reader_mode",
+      "class",
+      "clear",
+      "clear_all",
+      "close",
+      "closed_caption",
+      "cloud",
+      "cloud_circle",
+      "cloud_done",
+      "cloud_download",
+      "cloud_off",
+      "cloud_queue",
+      "cloud_upload",
+      "code",
+      "collections",
+      "collections_bookmark",
+      "color_lens",
+      "colorize",
+      "comment",
+      "compare",
+      "compare_arrows",
+      "computer",
+      "confirmation_number",
+      "contact_mail",
+      "contact_phone",
+      "contacts",
+      "content_copy",
+      "content_cut",
+      "content_paste",
+      "control_point",
+      "control_point_duplicate",
+      "copyright",
+      "create",
+      "create_new_folder",
+      "credit_card",
+      "crop",
+      "crop_16_9",
+      "crop_3_2",
+      "crop_5_4",
+      "crop_7_5",
+      "crop_din",
+      "crop_free",
+      "crop_landscape",
+      "crop_original",
+      "crop_portrait",
+      "crop_rotate",
+      "crop_square",
+      "dashboard",
+      "data_usage",
+      "date_range",
+      "dehaze",
+      "delete",
+      "delete_forever",
+      "delete_sweep",
+      "description",
+      "desktop_mac",
+      "desktop_windows",
+      "details",
+      "developer_board",
+      "developer_mode",
+      "device_hub",
+      "devices",
+      "devices_other",
+      "dialer_sip",
+      "dialpad",
+      "directions",
+      "directions_bike",
+      "directions_boat",
+      "directions_bus",
+      "directions_car",
+      "directions_railway",
+      "directions_run",
+      "directions_subway",
+      "directions_transit",
+      "directions_walk",
+      "disc_full",
+      "dns",
+      "do_not_disturb",
+      "do_not_disturb_alt",
+      "do_not_disturb_off",
+      "do_not_disturb_on",
+      "dock",
+      "domain",
+      "done",
+      "done_all",
+      "donut_large",
+      "donut_small",
+      "drafts",
+      "drag_handle",
+      "drive_eta",
+      "dvr",
+      "edit",
+      "edit_location",
+      "eject",
+      "email",
+      "enhanced_encryption",
+      "equalizer",
+      "error",
+      "error_outline",
+      "euro_symbol",
+      "ev_station",
+      "event",
+      "event_available",
+      "event_busy",
+      "event_note",
+      "event_seat",
+      "exit_to_app",
+      "expand_less",
+      "expand_more",
+      "explicit",
+      "explore",
+      "exposure",
+      "exposure_neg_1",
+      "exposure_neg_2",
+      "exposure_plus_1",
+      "exposure_plus_2",
+      "exposure_zero",
+      "extension",
+      "face",
+      "fast_forward",
+      "fast_rewind",
+      "favorite",
+      "favorite_border",
+      "featured_play_list",
+      "featured_video",
+      "feedback",
+      "fiber_dvr",
+      "fiber_manual_record",
+      "fiber_new",
+      "fiber_pin",
+      "fiber_smart_record",
+      "file_download",
+      "file_upload",
+      "filter",
+      "filter_1",
+      "filter_2",
+      "filter_3",
+      "filter_4",
+      "filter_5",
+      "filter_6",
+      "filter_7",
+      "filter_8",
+      "filter_9",
+      "filter_9_plus",
+      "filter_b_and_w",
+      "filter_center_focus",
+      "filter_drama",
+      "filter_frames",
+      "filter_hdr",
+      "filter_list",
+      "filter_none",
+      "filter_tilt_shift",
+      "filter_vintage",
+      "find_in_page",
+      "find_replace",
+      "fingerprint",
+      "first_page",
+      "fitness_center",
+      "flag",
+      "flare",
+      "flash_auto",
+      "flash_off",
+      "flash_on",
+      "flight",
+      "flight_land",
+      "flight_takeoff",
+      "flip",
+      "flip_to_back",
+      "flip_to_front",
+      "folder",
+      "folder_open",
+      "folder_shared",
+      "folder_special",
+      "font_download",
+      "format_align_center",
+      "format_align_justify",
+      "format_align_left",
+      "format_align_right",
+      "format_bold",
+      "format_clear",
+      "format_color_fill",
+      "format_color_reset",
+      "format_color_text",
+      "format_indent_decrease",
+      "format_indent_increase",
+      "format_italic",
+      "format_line_spacing",
+      "format_list_bulleted",
+      "format_list_numbered",
+      "format_paint",
+      "format_quote",
+      "format_shapes",
+      "format_size",
+      "format_strikethrough",
+      "format_textdirection_l_to_r",
+      "format_textdirection_r_to_l",
+      "format_underlined",
+      "forum",
+      "forward",
+      "forward_10",
+      "forward_30",
+      "forward_5",
+      "free_breakfast",
+      "fullscreen",
+      "fullscreen_exit",
+      "functions",
+      "g_translate",
+      "gamepad",
+      "games",
+      "gavel",
+      "gesture",
+      "get_app",
+      "gif",
+      "golf_course",
+      "gps_fixed",
+      "gps_not_fixed",
+      "gps_off",
+      "grade",
+      "gradient",
+      "grain",
+      "graphic_eq",
+      "grid_off",
+      "grid_on",
+      "group",
+      "group_add",
+      "group_work",
+      "hd",
+      "hdr_off",
+      "hdr_on",
+      "hdr_strong",
+      "hdr_weak",
+      "headset",
+      "headset_mic",
+      "healing",
+      "hearing",
+      "help",
+      "help_outline",
+      "high_quality",
+      "highlight",
+      "highlight_off",
+      "history",
+      "home",
+      "hot_tub",
+      "hotel",
+      "hourglass_empty",
+      "hourglass_full",
+      "http",
+      "https",
+      "image",
+      "image_aspect_ratio",
+      "import_contacts",
+      "import_export",
+      "important_devices",
+      "inbox",
+      "indeterminate_check_box",
+      "info",
+      "info_outline",
+      "input",
+      "insert_chart",
+      "insert_comment",
+      "insert_drive_file",
+      "insert_emoticon",
+      "insert_invitation",
+      "insert_link",
+      "insert_photo",
+      "invert_colors",
+      "invert_colors_off",
+      "iso",
+      "keyboard",
+      "keyboard_arrow_down",
+      "keyboard_arrow_left",
+      "keyboard_arrow_right",
+      "keyboard_arrow_up",
+      "keyboard_backspace",
+      "keyboard_capslock",
+      "keyboard_hide",
+      "keyboard_return",
+      "keyboard_tab",
+      "keyboard_voice",
+      "kitchen",
+      "label",
+      "label_outline",
+      "landscape",
+      "language",
+      "laptop",
+      "laptop_chromebook",
+      "laptop_mac",
+      "laptop_windows",
+      "last_page",
+      "launch",
+      "layers",
+      "layers_clear",
+      "leak_add",
+      "leak_remove",
+      "lens",
+      "library_add",
+      "library_books",
+      "library_music",
+      "lightbulb_outline",
+      "line_style",
+      "line_weight",
+      "linear_scale",
+      "link",
+      "linked_camera",
+      "list",
+      "live_help",
+      "live_tv",
+      "local_activity",
+      "local_airport",
+      "local_atm",
+      "local_bar",
+      "local_cafe",
+      "local_car_wash",
+      "local_convenience_store",
+      "local_dining",
+      "local_drink",
+      "local_florist",
+      "local_gas_station",
+      "local_grocery_store",
+      "local_hospital",
+      "local_hotel",
+      "local_laundry_service",
+      "local_library",
+      "local_mall",
+      "local_movies",
+      "local_offer",
+      "local_parking",
+      "local_pharmacy",
+      "local_phone",
+      "local_pizza",
+      "local_play",
+      "local_post_office",
+      "local_printshop",
+      "local_see",
+      "local_shipping",
+      "local_taxi",
+      "location_city",
+      "location_disabled",
+      "location_off",
+      "location_on",
+      "location_searching",
+      "lock",
+      "lock_open",
+      "lock_outline",
+      "looks",
+      "looks_3",
+      "looks_4",
+      "looks_5",
+      "looks_6",
+      "looks_one",
+      "looks_two",
+      "loop",
+      "loupe",
+      "low_priority",
+      "loyalty",
+      "mail",
+      "mail_outline",
+      "map",
+      "markunread",
+      "markunread_mailbox",
+      "memory",
+      "menu",
+      "merge_type",
+      "message",
+      "mic",
+      "mic_none",
+      "mic_off",
+      "mms",
+      "mode_comment",
+      "mode_edit",
+      "monetization_on",
+      "money_off",
+      "monochrome_photos",
+      "mood",
+      "mood_bad",
+      "more",
+      "more_horiz",
+      "more_vert",
+      "motorcycle",
+      "mouse",
+      "move_to_inbox",
+      "movie",
+      "movie_creation",
+      "movie_filter",
+      "multiline_chart",
+      "music_note",
+      "music_video",
+      "my_location",
+      "nature",
+      "nature_people",
+      "navigate_before",
+      "navigate_next",
+      "navigation",
+      "near_me",
+      "network_cell",
+      "network_check",
+      "network_locked",
+      "network_wifi",
+      "new_releases",
+      "next_week",
+      "nfc",
+      "no_encryption",
+      "no_sim",
+      "not_interested",
+      "note",
+      "note_add",
+      "notifications",
+      "notifications_active",
+      "notifications_none",
+      "notifications_off",
+      "notifications_paused",
+      "offline_pin",
+      "ondemand_video",
+      "opacity",
+      "open_in_browser",
+      "open_in_new",
+      "open_with",
+      "pages",
+      "pageview",
+      "palette",
+      "pan_tool",
+      "panorama",
+      "panorama_fish_eye",
+      "panorama_horizontal",
+      "panorama_vertical",
+      "panorama_wide_angle",
+      "party_mode",
+      "pause",
+      "pause_circle_filled",
+      "pause_circle_outline",
+      "payment",
+      "people",
+      "people_outline",
+      "perm_camera_mic",
+      "perm_contact_calendar",
+      "perm_data_setting",
+      "perm_device_information",
+      "perm_identity",
+      "perm_media",
+      "perm_phone_msg",
+      "perm_scan_wifi",
+      "person",
+      "person_add",
+      "person_outline",
+      "person_pin",
+      "person_pin_circle",
+      "personal_video",
+      "pets",
+      "phone",
+      "phone_android",
+      "phone_bluetooth_speaker",
+      "phone_forwarded",
+      "phone_in_talk",
+      "phone_iphone",
+      "phone_locked",
+      "phone_missed",
+      "phone_paused",
+      "phonelink",
+      "phonelink_erase",
+      "phonelink_lock",
+      "phonelink_off",
+      "phonelink_ring",
+      "phonelink_setup",
+      "photo",
+      "photo_album",
+      "photo_camera",
+      "photo_filter",
+      "photo_library",
+      "photo_size_select_actual",
+      "photo_size_select_large",
+      "photo_size_select_small",
+      "picture_as_pdf",
+      "picture_in_picture",
+      "picture_in_picture_alt",
+      "pie_chart",
+      "pie_chart_outlined",
+      "pin_drop",
+      "place",
+      "play_arrow",
+      "play_circle_filled",
+      "play_circle_outline",
+      "play_for_work",
+      "playlist_add",
+      "playlist_add_check",
+      "playlist_play",
+      "plus_one",
+      "poll",
+      "polymer",
+      "pool",
+      "portable_wifi_off",
+      "portrait",
+      "power",
+      "power_input",
+      "power_settings_new",
+      "pregnant_woman",
+      "present_to_all",
+      "print",
+      "priority_high",
+      "public",
+      "publish",
+      "query_builder",
+      "question_answer",
+      "queue",
+      "queue_music",
+      "queue_play_next",
+      "radio",
+      "radio_button_checked",
+      "radio_button_unchecked",
+      "rate_review",
+      "receipt",
+      "recent_actors",
+      "record_voice_over",
+      "redeem",
+      "redo",
+      "refresh",
+      "remove",
+      "remove_circle",
+      "remove_circle_outline",
+      "remove_from_queue",
+      "remove_red_eye",
+      "remove_shopping_cart",
+      "reorder",
+      "repeat",
+      "repeat_one",
+      "replay",
+      "replay_10",
+      "replay_30",
+      "replay_5",
+      "reply",
+      "reply_all",
+      "report",
+      "report_problem",
+      "restaurant",
+      "restaurant_menu",
+      "restore",
+      "restore_page",
+      "ring_volume",
+      "room",
+      "room_service",
+      "rotate_90_degrees_ccw",
+      "rotate_left",
+      "rotate_right",
+      "rounded_corner",
+      "router",
+      "rowing",
+      "rss_feed",
+      "rv_hookup",
+      "satellite",
+      "save",
+      "scanner",
+      "schedule",
+      "school",
+      "screen_lock_landscape",
+      "screen_lock_portrait",
+      "screen_lock_rotation",
+      "screen_rotation",
+      "screen_share",
+      "sd_card",
+      "sd_storage",
+      "search",
+      "security",
+      "select_all",
+      "send",
+      "sentiment_dissatisfied",
+      "sentiment_neutral",
+      "sentiment_satisfied",
+      "sentiment_very_dissatisfied",
+      "sentiment_very_satisfied",
+      "settings",
+      "settings_applications",
+      "settings_backup_restore",
+      "settings_bluetooth",
+      "settings_brightness",
+      "settings_cell",
+      "settings_ethernet",
+      "settings_input_antenna",
+      "settings_input_component",
+      "settings_input_composite",
+      "settings_input_hdmi",
+      "settings_input_svideo",
+      "settings_overscan",
+      "settings_phone",
+      "settings_power",
+      "settings_remote",
+      "settings_system_daydream",
+      "settings_voice",
+      "share",
+      "shop",
+      "shop_two",
+      "shopping_basket",
+      "shopping_cart",
+      "short_text",
+      "show_chart",
+      "shuffle",
+      "signal_cellular_4_bar",
+      "signal_cellular_connected_no_internet_4_bar",
+      "signal_cellular_no_sim",
+      "signal_cellular_null",
+      "signal_cellular_off",
+      "signal_wifi_4_bar",
+      "signal_wifi_4_bar_lock",
+      "signal_wifi_off",
+      "sim_card",
+      "sim_card_alert",
+      "skip_next",
+      "skip_previous",
+      "slideshow",
+      "slow_motion_video",
+      "smartphone",
+      "smoke_free",
+      "smoking_rooms",
+      "sms",
+      "sms_failed",
+      "snooze",
+      "sort",
+      "sort_by_alpha",
+      "spa",
+      "space_bar",
+      "speaker",
+      "speaker_group",
+      "speaker_notes",
+      "speaker_notes_off",
+      "speaker_phone",
+      "spellcheck",
+      "star",
+      "star_border",
+      "star_half",
+      "stars",
+      "stay_current_landscape",
+      "stay_current_portrait",
+      "stay_primary_landscape",
+      "stay_primary_portrait",
+      "stop",
+      "stop_screen_share",
+      "storage",
+      "store",
+      "store_mall_directory",
+      "straighten",
+      "streetview",
+      "strikethrough_s",
+      "style",
+      "subdirectory_arrow_left",
+      "subdirectory_arrow_right",
+      "subject",
+      "subscriptions",
+      "subtitles",
+      "subway",
+      "supervisor_account",
+      "surround_sound",
+      "swap_calls",
+      "swap_horiz",
+      "swap_vert",
+      "swap_vertical_circle",
+      "switch_camera",
+      "switch_video",
+      "sync",
+      "sync_disabled",
+      "sync_problem",
+      "system_update",
+      "system_update_alt",
+      "tab",
+      "tab_unselected",
+      "tablet",
+      "tablet_android",
+      "tablet_mac",
+      "tag_faces",
+      "tap_and_play",
+      "terrain",
+      "text_fields",
+      "text_format",
+      "textsms",
+      "texture",
+      "theaters",
+      "thumb_down",
+      "thumb_up",
+      "thumbs_up_down",
+      "time_to_leave",
+      "timelapse",
+      "timeline",
+      "timer",
+      "timer_10",
+      "timer_3",
+      "timer_off",
+      "title",
+      "toc",
+      "today",
+      "toll",
+      "tonality",
+      "touch_app",
+      "toys",
+      "track_changes",
+      "traffic",
+      "train",
+      "tram",
+      "transfer_within_a_station",
+      "transform",
+      "translate",
+      "trending_down",
+      "trending_flat",
+      "trending_up",
+      "tune",
+      "turned_in",
+      "turned_in_not",
+      "tv",
+      "unarchive",
+      "undo",
+      "unfold_less",
+      "unfold_more",
+      "update",
+      "usb",
+      "verified_user",
+      "vertical_align_bottom",
+      "vertical_align_center",
+      "vertical_align_top",
+      "vibration",
+      "video_call",
+      "video_label",
+      "video_library",
+      "videocam",
+      "videocam_off",
+      "videogame_asset",
+      "view_agenda",
+      "view_array",
+      "view_carousel",
+      "view_column",
+      "view_comfy",
+      "view_compact",
+      "view_day",
+      "view_headline",
+      "view_list",
+      "view_module",
+      "view_quilt",
+      "view_stream",
+      "view_week",
+      "vignette",
+      "visibility",
+      "visibility_off",
+      "voice_chat",
+      "voicemail",
+      "volume_down",
+      "volume_mute",
+      "volume_off",
+      "volume_up",
+      "vpn_key",
+      "vpn_lock",
+      "wallpaper",
+      "warning",
+      "watch",
+      "watch_later",
+      "wb_auto",
+      "wb_cloudy",
+      "wb_incandescent",
+      "wb_iridescent",
+      "wb_sunny",
+      "wc",
+      "web",
+      "web_asset",
+      "weekend",
+      "whatshot",
+      "widgets",
+      "wifi",
+      "wifi_lock",
+      "wifi_tethering",
+      "work",
+      "wrap_text",
+      "youtube_searched_for",
+      "zoom_in",
+      "zoom_out",
+      "zoom_out_map"
+    ]
+
+vm.getInsensitiveProperty = function (elem,label){
+  if(elem == null || typeof elem == 'undefined' || label == null || typeof label == 'undefined' ){
+    return undefined;
+  }
+  if(label in elem){
+    return elem[label];
+  }else if(label.toUpperCase() in elem){
+    return elem[label.toUpperCase()]
+  }else if(label.toLowerCase() in elem){
+    return elem[label.toLowerCase()]
+  }else{
+    return undefined;
+  }
+ 
+}
+  };
+})();
+
 !function(e,i,n){"use strict";var t=function(){return"lfobjyxxxxxxxx".replace(/[xy]/g,function(e){var i=16*Math.random()|0,n="x"==e?i:3&i|8;return n.toString(16)})},l=function(e){var i=e.type,n=e.name;return o(i,n)?"image":r(i,n)?"video":s(i,n)?"audio":"object"},o=function(e,i){return!(!e.match("image.*")&&!i.match(/\.(gif|png|jpe?g)$/i))},r=function(e,i){return!(!e.match("video.*")&&!i.match(/\.(og?|mp4|webm|3gp)$/i))},s=function(e,i){return!(!e.match("audio.*")&&!i.match(/\.(ogg|mp3|wav)$/i))},a=function(i){var n={key:t(),lfFile:i,lfFileName:i.name,lfFileType:i.type,lfTagType:l(i),lfDataUrl:e.URL.createObjectURL(i),isRemote:!1};return n},f=function(e,i,n){var o={name:i,type:n},r={key:t(),lfFile:void 0,lfFileName:i,lfFileType:n,lfTagType:l(o),lfDataUrl:e,isRemote:!0};return r},c=i.module("lfNgMdFileInput",["ngMaterial"]);c.directive("lfFile",function(){return{restrict:"E",scope:{lfFileObj:"=",lfUnknowClass:"="},link:function(e,i,n){var t=e.lfFileObj.lfDataUrl,l=e.lfFileObj.lfFileType,o=e.lfFileObj.lfTagType,r=e.lfUnknowClass;switch(o){case"image":i.replaceWith('<img src="'+t+'" />');break;case"video":i.replaceWith('<video controls><source src="'+t+'""></video>');break;case"audio":i.replaceWith('<audio controls><source src="'+t+'""></audio>');break;default:void 0==e.lfFileObj.lfFile&&(l="unknown/unknown"),i.replaceWith('<object type="'+l+'" data="'+t+'"><div class="lf-ng-md-file-input-preview-default"><md-icon class="lf-ng-md-file-input-preview-icon '+r+'"></md-icon></div></object>')}}}}),c.run(["$templateCache",function(e){e.put("lfNgMdFileinput.html",['<div layout="column" class="lf-ng-md-file-input" ng-model="'+t()+'">','<div layout="column" class="lf-ng-md-file-input-preview-container" ng-class="{\'disabled\':isDisabled}" ng-show="isDrag || (isPreview && lfFiles.length)">','<md-button aria-label="remove all files" class="close lf-ng-md-file-input-x" ng-click="removeAllFiles($event)" ng-hide="!lfFiles.length || !isPreview" >&times;</md-button>','<div class="lf-ng-md-file-input-drag">','<div layout="row" layout-align="center center" class="lf-ng-md-file-input-drag-text-container" ng-show="(!lfFiles.length || !isPreview) && isDrag">','<div class="lf-ng-md-file-input-drag-text">{{strCaptionDragAndDrop}}</div>',"</div>",'<div class="lf-ng-md-file-input-thumbnails" ng-if="isPreview == true">','<div class="lf-ng-md-file-input-frame" ng-repeat="lffile in lfFiles" ng-click="onFileClick(lffile)">','<div class="lf-ng-md-file-input-x" aria-label="remove {{lffile.lFfileName}}" ng-click="removeFile(lffile,$event)">&times;</div>','<lf-file lf-file-obj="lffile" lf-unknow-class="strUnknowIconCls"/>','<div class="lf-ng-md-file-input-frame-footer">','<div class="lf-ng-md-file-input-frame-caption">{{lffile.lfFileName}}</div>',"</div>","</div>","</div>",'<div class="clearfix" style="clear:both"></div>',"</div>","</div>",'<div layout="row" class="lf-ng-md-file-input-container" >','<div class="lf-ng-md-file-input-caption" layout="row" layout-align="start center" flex ng-class="{\'disabled\':isDisabled}" >','<md-icon class="lf-icon" ng-class="strCaptionIconCls"></md-icon>','<div flex class="lf-ng-md-file-input-caption-text-default" ng-show="!lfFiles.length">',"{{strCaptionPlaceholder}}","</div>",'<div flex class="lf-ng-md-file-input-caption-text" ng-hide="!lfFiles.length">','<span ng-if="isCustomCaption">{{strCaption}}</span>','<span ng-if="!isCustomCaption">','{{ lfFiles.length == 1 ? lfFiles[0].lfFileName : lfFiles.length+" files selected" }}',"</span>","</div>",'<md-progress-linear md-mode="determinate" value="{{floatProgress}}" ng-show="intLoading && isProgress"></md-progress-linear>',"</div>",'<md-button aria-label="remove all files" ng-disabled="isDisabled" ng-click="removeAllFiles()" ng-hide="!lfFiles.length || intLoading" class="md-raised lf-ng-md-file-input-button lf-ng-md-file-input-button-remove" ng-class="strRemoveButtonCls">','<md-icon class="lf-icon" ng-class="strRemoveIconCls"></md-icon> ',"{{strCaptionRemove}}","</md-button>",'<md-button aria-label="submit" ng-disabled="isDisabled" ng-click="onSubmitClick()" class="md-raised md-warn lf-ng-md-file-input-button lf-ng-md-file-input-button-submit" ng-class="strSubmitButtonCls" ng-show="lfFiles.length && !intLoading && isSubmit">','<md-icon class="lf-icon" ng-class="strSubmitIconCls"></md-icon> ',"{{strCaptionSubmit}}","</md-button>",'<md-button aria-label="browse" ng-disabled="isDisabled" ng-click="openDialog($event, this)" class="md-raised lf-ng-md-file-input-button lf-ng-md-file-input-button-brower" ng-class="strBrowseButtonCls">','<md-icon class="lf-icon" ng-class="strBrowseIconCls"></md-icon> ',"{{strCaptionBrowse}}",'<input type="file" aria-label="{{strAriaLabel}}" accept="{{accept}}" ng-disabled="isDisabled" class="lf-ng-md-file-input-tag" />',"</md-button>","</div>","</div>"].join(""))}]),c.filter("lfTrusted",["$sce",function(e){return function(i){return e.trustAsResourceUrl(i)}}]),c.directive("lfRequired",function(){return{restrict:"A",require:"ngModel",link:function(e,i,n,t){t&&(t.$validators.required=function(e,i){return e?e.length>0:!1})}}}),c.directive("lfMaxcount",function(){return{restrict:"A",require:"ngModel",link:function(e,i,n,t){if(t){var l=-1;n.$observe("lfMaxcount",function(e){var i=parseInt(e,10);l=isNaN(i)?-1:i,t.$validate()}),t.$validators.maxcount=function(e,i){return e?e.length<=l:!1}}}}}),c.directive("lfFilesize",function(){return{restrict:"A",require:"ngModel",link:function(e,i,n,t){if(t){var l=-1;n.$observe("lfFilesize",function(e){var i=/^[1-9][0-9]*(Byte|KB|MB)$/;if(i.test(e)){var n=["Byte","KB","MB"],o=e.match(i)[1],r=e.substring(0,e.indexOf(o));n.every(function(e,i){return o===e?(l=parseInt(r)*Math.pow(1024,i),!1):!0})}else l=-1;t.$validate()}),t.$validators.filesize=function(e,i){if(!e)return!1;var n=!0;return e.every(function(e,i){return e.lfFile.size>l?(n=!1,!1):!0}),n}}}}}),c.directive("lfTotalsize",function(){return{restrict:"A",require:"ngModel",link:function(e,n,t,l){if(l){var o=-1;t.$observe("lfTotalsize",function(e){var i=/^[1-9][0-9]*(Byte|KB|MB)$/;if(i.test(e)){var n=["Byte","KB","MB"],t=e.match(i)[1],r=e.substring(0,e.indexOf(t));n.every(function(e,i){return t===e?(o=parseInt(r)*Math.pow(1024,i),!1):!0})}else o=-1;l.$validate()}),l.$validators.totalsize=function(e,n){if(!e)return!1;var t=0;return i.forEach(e,function(e,i){t+=e.lfFile.size}),o>t}}}}}),c.directive("lfMimetype",function(){return{restrict:"A",require:"ngModel",link:function(e,i,t,l){if(l){var o;t.$observe("lfMimetype",function(e){var i=e.replace(/,/g,"|");o=new RegExp(i,"i"),l.$validate()}),l.$validators.mimetype=function(e,i){if(!e)return!1;var t=!0;return e.every(function(e,i){return e.lfFile!==n&&e.lfFile.type.match(o)?!0:(t=!1,!1)}),t}}}}}),c.directive("lfNgMdFileInput",["$q","$compile","$timeout",function(e,t,l){return{restrict:"E",templateUrl:"lfNgMdFileinput.html",replace:!0,require:"ngModel",scope:{lfFiles:"=?",lfApi:"=?",lfOption:"=?",lfCaption:"@?",lfPlaceholder:"@?",lfDragAndDropLabel:"@?",lfBrowseLabel:"@?",lfRemoveLabel:"@?",lfSubmitLabel:"@?",lfOnFileClick:"=?",lfOnSubmitClick:"=?",lfOnFileRemove:"=?",accept:"@?",ngDisabled:"=?",ngChange:"&?"},link:function(t,o,r,s){var c=i.element(o[0].querySelector(".lf-ng-md-file-input-tag")),u=i.element(o[0].querySelector(".lf-ng-md-file-input-drag")),d=i.element(o[0].querySelector(".lf-ng-md-file-input-thumbnails")),m=0;t.intLoading=0,t.floatProgress=0,t.isPreview=!1,t.isDrag=!1,t.isMutiple=!1,t.isProgress=!1,t.isCustomCaption=!1,t.isSubmit=!1,i.isDefined(r.preview)&&(t.isPreview=!0),i.isDefined(r.drag)&&(t.isDrag=!0),i.isDefined(r.multiple)?(c.attr("multiple","multiple"),t.isMutiple=!0):c.removeAttr("multiple"),i.isDefined(r.progress)&&(t.isProgress=!0),i.isDefined(r.submit)&&(t.isSubmit=!0),t.isDisabled=!1,i.isDefined(r.ngDisabled)&&t.$watch("ngDisabled",function(e){t.isDisabled=e}),t.strBrowseIconCls="lf-browse",t.strRemoveIconCls="lf-remove",t.strCaptionIconCls="lf-caption",t.strSubmitIconCls="lf-submit",t.strUnknowIconCls="lf-unknow",t.strBrowseButtonCls="md-primary",t.strRemoveButtonCls="",t.strSubmitButtonCls="md-accent",i.isDefined(r.lfOption)&&i.isObject(t.lfOption)&&(t.lfOption.hasOwnProperty("browseIconCls")&&(t.strBrowseIconCls=t.lfOption.browseIconCls),t.lfOption.hasOwnProperty("removeIconCls")&&(t.strRemoveIconCls=t.lfOption.removeIconCls),t.lfOption.hasOwnProperty("captionIconCls")&&(t.strCaptionIconCls=t.lfOption.captionIconCls),t.lfOption.hasOwnProperty("unknowIconCls")&&(t.strUnknowIconCls=t.lfOption.unknowIconCls),t.lfOption.hasOwnProperty("submitIconCls")&&(t.strSubmitIconCls=t.lfOption.submitIconCls),t.lfOption.hasOwnProperty("strBrowseButtonCls")&&(t.strBrowseButtonCls=t.lfOption.strBrowseButtonCls),t.lfOption.hasOwnProperty("strRemoveButtonCls")&&(t.strRemoveButtonCls=t.lfOption.strRemoveButtonCls),t.lfOption.hasOwnProperty("strSubmitButtonCls")&&(t.strSubmitButtonCls=t.lfOption.strSubmitButtonCls)),t.accept=t.accept||"",t.lfFiles=[],t[r.ngModel]=t.lfFiles,t.lfApi=new function(){var e=this;e.removeAll=function(){t.removeAllFiles()},e.removeByName=function(e){t.removeFileByName(e)},e.addRemoteFile=function(e,i,n){var l=f(e,i,n);t.lfFiles.push(l)}},t.strCaption="",t.strCaptionPlaceholder="Select file",t.strCaptionDragAndDrop="Drag & drop files here...",t.strCaptionBrowse="Browse",t.strCaptionRemove="Remove",t.strCaptionSubmit="Submit",t.strAriaLabel="",i.isDefined(r.ariaLabel)&&(t.strAriaLabel=r.ariaLabel),i.isDefined(r.lfPlaceholder)&&t.$watch("lfPlaceholder",function(e){t.strCaptionPlaceholder=e}),i.isDefined(r.lfCaption)&&(t.isCustomCaption=!0,t.$watch("lfCaption",function(e){t.strCaption=e})),t.lfDragAndDropLabel&&(t.strCaptionDragAndDrop=t.lfDragAndDropLabel),t.lfBrowseLabel&&(t.strCaptionBrowse=t.lfBrowseLabel),t.lfRemoveLabel&&(t.strCaptionRemove=t.lfRemoveLabel),t.lfSubmitLabel&&(t.strCaptionSubmit=t.lfSubmitLabel),t.openDialog=function(e,i){e&&l(function(){e.preventDefault(),e.stopPropagation();var i=e.target.children[2];i!==n&&c[0].click()},0)},t.removeAllFilesWithoutVaildate=function(){t.isDisabled||(t.lfFiles.length=0,d.empty())},t.removeAllFiles=function(e){t.removeAllFilesWithoutVaildate(),g()},t.removeFileByName=function(e,i){t.isDisabled||(t.lfFiles.every(function(i,n){return i.lfFileName==e?(t.lfFiles.splice(n,1),!1):!0}),g())},t.removeFile=function(e){t.lfFiles.every(function(n,l){return n.key==e.key?(i.isFunction(t.lfOnFileRemove)&&t.lfOnFileRemove(n,l),t.lfFiles.splice(l,1),!1):!0}),g()},t.onFileClick=function(e){i.isFunction(t.lfOnFileClick)&&t.lfFiles.every(function(i,n){return i.key==e.key?(t.lfOnFileClick(i,n),!1):!0})},t.onSubmitClick=function(){i.isFunction(t.lfOnSubmitClick)&&t.lfOnSubmitClick(t.lfFiles)},u.bind("dragover",function(e){e.stopPropagation(),e.preventDefault(),!t.isDisabled&&t.isDrag&&u.addClass("lf-ng-md-file-input-drag-hover")}),u.bind("dragleave",function(e){e.stopPropagation(),e.preventDefault(),!t.isDisabled&&t.isDrag&&u.removeClass("lf-ng-md-file-input-drag-hover")}),u.bind("drop",function(e){if(e.stopPropagation(),e.preventDefault(),!t.isDisabled&&t.isDrag){u.removeClass("lf-ng-md-file-input-drag-hover"),i.isObject(e.originalEvent)&&(e=e.originalEvent);var n=e.target.files||e.dataTransfer.files,l=t.accept.replace(/,/g,"|"),o=new RegExp(l,"i"),r=[];i.forEach(n,function(e,i){e.type.match(o)&&r.push(e)}),p(r)}}),c.bind("change",function(e){var i=e.files||e.target.files;p(i)});var p=function(e){if(!(e.length<=0)){t.lfFiles.map(function(e){return e.lfFileName});if(t.floatProgress=0,t.isMutiple){m=e.length,t.intLoading=m;for(var i=0;i<e.length;i++){var n=e[i];setTimeout(v(n),100*i)}}else{m=1,t.intLoading=m;for(var i=0;i<e.length;i++){var n=e[i];t.removeAllFilesWithoutVaildate(),v(n);break}}c.val("")}},g=function(){i.isFunction(t.ngChange)&&t.ngChange(),s.$validate()},v=function(e){b(e).then(function(i){var l=!1;if(t.lfFiles.every(function(i,t){var o=i.lfFile;return i.isRemote?!0:o.name!==n&&o.name==e.name?(o.size==e.size&&o.lastModified==e.lastModified&&(l=!0),!1):!0}),!l){var o=a(e);t.lfFiles.push(o)}0==t.intLoading&&g()},function(e){},function(e){})},b=function(i,n){var l=e.defer(),o=new FileReader;return o.onloadstart=function(){l.notify(0)},o.onload=function(e){},o.onloadend=function(e){l.resolve({index:n,result:o.result}),t.intLoading--,t.floatProgress=(m-t.intLoading)/m*100},o.onerror=function(e){l.reject(o.result),t.intLoading--,t.floatProgress=(m-t.intLoading)/m*100},o.onprogress=function(e){l.notify(e.loaded/e.total)},o.readAsArrayBuffer(i),l.promise}}}}])}(window,window.angular);
 (function () {
   'use strict';
@@ -13689,17 +13689,6 @@ function buildValueEvent(destination,  sourceFilterData, gadgetEmitterId,listVal
     }
 
 })();
-var env = {};
-
-// Import variables if present (from env.js)
-if(window && window.__env){
-  Object.assign(env, window.__env);
-  angular.module('dashboardFramework').constant('__env', env);
-}
-else{//Default config
-  console.info("__env properties not defined globally, manual definition is required")
-}
-
 (function () {
     'use strict';
     angular.module('dashboardFramework').config(['$translateProvider', configTranslate]);
@@ -13719,6 +13708,17 @@ else{//Default config
     };
 
 })();
+var env = {};
+
+// Import variables if present (from env.js)
+if(window && window.__env){
+  Object.assign(env, window.__env);
+  angular.module('dashboardFramework').constant('__env', env);
+}
+else{//Default config
+  console.info("__env properties not defined globally, manual definition is required")
+}
+
 (function () {
   'use strict';
 
@@ -14002,7 +14002,7 @@ else{//Default config
       vm.api={};
       //External API
       vm.api.createGadget = function(type,id,name,template,datasource,filters,customMenuOptions,setupLayout) {
-            if(typeof template !== "undefined" && template !== null && typeof template !=="string" && template.length>0  ){
+            if(typeof template !== "undefined" && template !== null && typeof template !=="string" && template.length>0 ){
               //Gadgetcreate from template
               var newElem = {x: 0, y: 0, cols: 40, rows: 40,};
               //newElem.minItemRows = 10;
@@ -14993,18 +14993,18 @@ $templateCache.put('app/partials/edit/saveDialog.html','<md-dialog><form ng-cloa
 $templateCache.put('app/partials/edit/saveErrorDialog.html','<md-dialog><form ng-cloak><md-dialog-content><div class=md-dialog-content layout=column layout-align="center center"><div class=md-dialog-alert-title>Dashboard Editor</div><div class=md-dialog-alert-text>There was an error saving your dashboard!</div></div></md-dialog-content><md-dialog-actions layout=row layout-align="center center"><md-button class=ok-button ng-click="answer(\'OK\')">OK</md-button></md-dialog-actions></form></md-dialog>');
 $templateCache.put('app/partials/edit/saveSynopticDialog.html','<md-dialog><form ng-cloak><md-dialog-content><div class=md-dialog-content layout=column layout-align="center center"><div class=md-dialog-alert-title>Synoptic Editor</div><div class=md-dialog-alert-text>Your synoptic has been temporarily stored, save the dashboard to save it permanently.</div></div></md-dialog-content><md-dialog-actions layout=row layout-align="center center"><md-button class=ok-button ng-click="answer(\'OK\')">OK</md-button></md-dialog-actions></form></md-dialog>');
 $templateCache.put('app/partials/edit/urlParamDialog.html','<md-dialog aria-label=Pages><md-toolbar><div class=md-toolbar-tools><h2>URL Parameters</h2><span flex></span><md-button class=md-icon-button ng-click=cancel()><b>X</b></md-button></div></md-toolbar><form ng-cloak><md-dialog-content><md-subheader class="md-primary form-header">Add new parameter:</md-subheader><md-list><md-list-item class=md-no-proxy><md-input-container flex=25><label>Parameter Name</label><input type=text class=flex ng-model=paramName></md-input-container><md-input-container flex=25 style="padding-bottom: 25px!important;"><label>Parameter Type</label><md-select ng-model=type aria-label="Source Field" placeholder="Parameter Type" class=flex><md-option ng-repeat="type in types" ng-value=type>{{type}}</md-option></md-select></md-input-container><md-input-container flex=25 style="padding-bottom: 25px!important;"><label>Target Gadget</label><md-select ng-model=targetGadget aria-label="Target Gadget" placeholder="Target Gadget" class=flex ng-change=refreshGadgetTargetFields(targetGadget)><md-option ng-repeat="gadget in gadgetsTargets" ng-value=gadget.id>{{prettyGadgetInfo(gadget)}}</md-option></md-select></md-input-container><md-input-container flex=25><label>{{targetDatasource?\'Target Field\' + \'(\' + targetDatasource + \')\':\'Target Field\'}}</label><input class=flex list=targetGadgetFieldlist ng-model=targetGadgetField><datalist id=targetGadgetFieldlist><option ng-repeat="field in gadgetTargetFields" ng-value=field.field>{{field.field}}</option></datalist></md-input-container><md-input-container flex=25><md-checkbox ng-model=mandatory class=flex>Mandatory</md-checkbox></md-input-container><md-input-container flex=5><md-button class="md-icon-button md-primary" aria-label="Add Connection" ng-click=create(paramName,type,targetGadget,targetGadgetField,mandatory)><md-icon>add</md-icon></md-button></md-input-container></md-list-item></md-list><md-subheader class="md-primary form-header">Parameters:</md-subheader><md-table-container style="margin-bottom: 12px;"><table md-table ng-model=parameters md-progress=promise><thead md-head><tr md-row><th md-column><span>Parameter Name</span></th><th md-column><span>Parameter Type</span></th><th md-column><span>Target Gadget</span></th><th md-column><span>Target Field</span></th><th md-column><span>Mandatory</span></th><th md-column><span>Options</span></th></tr></thead><tbody md-body><tr md-row md-select=c md-select-id=name md-auto-select ng-repeat="c in parameters"><td md-cell>{{c.paramName | translate}}</td><td md-cell>{{c.type}}</td><td md-cell>{{ generateGadgetInfo(c.target) }}</td><td md-cell>{{c.targetField}}</td><td md-cell><md-checkbox ng-model=c.mandatory ng-disabled=true class=flex></md-checkbox></td><td md-cell><md-button class="md-icon-button md-primary" aria-label="Edit Connection" ng-click=edit(c.paramName,c.type,c.target,c.targetField,c.mandatory)><md-icon>create</md-icon></md-button><md-button class="md-icon-button md-warn" aria-label="Delete connection" ng-click=delete(c.paramName,c.type,c.target,c.targetField,c.mandatory)><md-icon>clear</md-icon></md-button></td></tr></tbody></table></md-table-container></md-dialog-content><md-dialog-actions layout=row><span flex></span><md-button ng-click=hide() class="md-raised md-primary">Close</md-button></md-dialog-actions></form></md-dialog>');
-$templateCache.put('app/components/view/datadiscoveryComponent/datadiscovery.html','<div style=height:100% layout=row flex><div flex layout=column><datadiscovery-field-selector flex ng-if="vm.ds && vm.config.config.editFields" columns=vm.config.config.discovery.columns config=vm.config.config></datadiscovery-field-selector><datadiscovery-data-draw flex ng-if=vm.ds reload-data-link=vm.reloadDataLink(reloadchild) get-data-and-style=vm.getDataAndStyle(getDataAndStyleChild) columns=vm.config.config.discovery.columns id=vm.id datastatus=vm.datastatus datasource=vm.ds config=vm.config.config filters=vm.filters></datadiscovery-data-draw></div><datadiscovery-field-picker flex=30 ng-if="vm.ds && vm.config.config.editFields" datasource=vm.ds id=vm.id fields=vm.config.config.discovery.fields.list metrics=vm.config.config.discovery.metrics.list></datadiscovery-field-picker></div>');
 $templateCache.put('app/components/edit/editDashboardComponent/edit.dashboard.html','<ng-include ng-if=" ed.showHideButtons()" src="\'app/partials/edit/editDashboardButtons.html\'"></ng-include><ng-include src="\'app/partials/edit/editDashboardSidenav.html\'"></ng-include>');
 $templateCache.put('app/components/edit/editDashboardComponent/edit.synoptic.html','<div class=editsynoptic></div>');
+$templateCache.put('app/components/view/datadiscoveryComponent/datadiscovery.html','<div style=height:100% layout=row flex><div flex layout=column><datadiscovery-field-selector flex ng-if="vm.ds && vm.config.config.editFields" columns=vm.config.config.discovery.columns config=vm.config.config></datadiscovery-field-selector><datadiscovery-data-draw flex ng-if=vm.ds reload-data-link=vm.reloadDataLink(reloadchild) get-data-and-style=vm.getDataAndStyle(getDataAndStyleChild) columns=vm.config.config.discovery.columns id=vm.id datastatus=vm.datastatus datasource=vm.ds config=vm.config.config filters=vm.filters></datadiscovery-data-draw></div><datadiscovery-field-picker flex=30 ng-if="vm.ds && vm.config.config.editFields" datasource=vm.ds id=vm.id fields=vm.config.config.discovery.fields.list metrics=vm.config.config.discovery.metrics.list></datadiscovery-field-picker></div>');
 $templateCache.put('app/components/view/elementComponent/element.html','<gridster-item ng-hide="!vm.editmode && !vm.datastatus && vm.element.showOnlyFiltered" item=vm.element ng-style="{\'background-color\':vm.element.backgroundColor, \'border-width\': vm.element.border.width + \'px\', \'border-color\': vm.element.border.color, \'border-radius\': vm.element.border.radius + \'px\', \'border-style\': \'solid\'}" ng-class="vm.isMaximized ? \'animate-show-hide widget-maximize\': \'animate-show-hide\'"><div class="element-container fullcontainer"><div class="md-toolbar-tools widget-header md-hue-2" flex ng-if=vm.element.header.enable ng-style="{\'background\':vm.element.header.backgroundColor, \'height\': vm.element.header.height + \'px\'}"><md-icon ng-if=vm.element.header.title.icon ng-style="{\'color\':vm.element.header.title.iconColor,\'font-size\' : \'24px\'}">{{vm.element.header.title.icon}}</md-icon><h5 ng-if=vm.element.header.enable class=gadget-title flex ng-style="{\'color\':vm.element.header.title.textColor}" md-truncate>{{vm.element.header.title.text | translate}}</h5><div ng-repeat="menuOption in vm.element.customMenuOptions"><md-button ng-if="menuOption.position == \'header\'" ng-click=vm.sendCustomMenuOption(menuOption.id) style="margin-right: 10px;" class="cursor-hand md-icon-button"><img draggable=false ng-src="{{menuOption.imagePath ? menuOption.imagePath : \'/controlpanel/static/images/dashboards/icon_button_controls.svg\'}}"><md-tooltip>{{menuOption.description}}</md-tooltip></md-button></div><md-button ng-if=vm.showFiltersInBody() ng-click="vm.toggleRight(vm.element.id+\'rightSidenav\')" style="margin-right: 10px;" class="cursor-hand md-icon-button"><img draggable=false ng-src={{vm.baseimg}}/static/images/dashboards/icon_filter.svg><md-tooltip>Filter</md-tooltip></md-button><md-button ng-if="vm.showfiltersInModal() " ng-click=vm.openFilterDialog() style="margin-right: 10px;" class="cursor-hand md-icon-button"><img draggable=false ng-src={{vm.baseimg}}/static/images/dashboards/icon_filter.svg><md-tooltip>Filter</md-tooltip></md-button><md-button ng-if="vm.editmode && vm.element.header.enable" style="margin-right: 10px;" class="drag-handler md-icon-button"><img draggable=false ng-src={{vm.baseimg}}/static/images/dashboards/Icon_move.svg><md-tooltip>Move</md-tooltip></md-button><div id="{{vm.element.id + \'toolbarheader\'}}"></div><div flex=nogrow layout-align="center right" ng-if="vm.editmode || !vm.element.notshowDotsMenu"><md-menu-bar><md-menu md-position-mode="target-right bottom" md-offset="-4 0"><button ng-click=$mdMenu.open() style="padding: 0px"><img ng-src={{vm.baseimg}}/static/images/dashboards/more.svg><md-tooltip>Options</md-tooltip></button><md-menu-content width=5><md-menu-item><md-button ng-click=vm.toggleFullScreen() aria-label=Fullscreen><img ng-if=!vm.isMaximized ng-src={{vm.baseimg}}/static/images/dashboards/Icon_full.svg> <img ng-if=vm.isMaximized ng-src={{vm.baseimg}}/static/images/dashboards/icon_minimize.svg> <span ng-if=!vm.isMaximized>Maximize</span> <span ng-if=vm.isMaximized>Restore</span></md-button></md-menu-item><md-menu-item ng-if="(!vm.iframe || vm.iframe && vm.editbuttonsiframe.filterGadgetMenu) && vm.editmode && vm.element.type != \'html5\'"><md-button ng-click=vm.openEditFilterDialog() aria-label="Edit Filter"><img ng-src={{vm.baseimg}}/static/images/dashboards/icon_menu_filter.svg> <span>Edit Filters</span></md-button></md-menu-item><md-menu-item ng-if="!vm.iframe && vm.editmode && vm.element.type === \'livehtml\'"><md-button ng-click=vm.openEditCustomMenuOptionsDialog() aria-label="Custom Menu Options"><img ng-src={{vm.baseimg}}/static/images/dashboards/icon_button_menu.svg style=height:20px;> <span>Custom Menu Options</span></md-button></md-menu-item><md-menu-item ng-if=vm.showfavoritesg><md-button ng-click=vm.addFavoriteDialog() aria-label="Add to Favorites"><img ng-src={{vm.baseimg}}/static/images/dashboards/star-default.svg style="height:20px;color: #060E14;"> <span>Add to Favorites</span></md-button></md-menu-item><md-menu-item ng-if="vm.editmode && (!vm.iframe || (vm.iframe &&  vm.editbuttonsiframe.stylingGadgetMenu) )"><md-button ng-click=vm.openEditContainerDialog() aria-label="Edit Container"><img ng-src={{vm.baseimg}}/static/images/dashboards/style.svg> <span>Styling</span></md-button></md-menu-item><md-menu-item ng-if="vm.editmode && ((!vm.iframe || (vm.iframe &&  vm.editbuttonsiframe.editGadgetMenu) ) || vm.eventedit) && (vm.element.type == \'livehtml\' ||  vm.element.type == \'vuetemplate\' ||  vm.element.type == \'reacttemplate\')"><md-button ng-if="vm.element.template == null" ng-click=vm.openEditGadgetDialog() aria-label="Gadget Editor"><img ng-src={{vm.baseimg}}/static/images/dashboards/edit.svg> <span>Edit</span></md-button><md-button ng-if="vm.element.template != null" ng-click=vm.openEditTemplateParamsDialog() aria-label="Gadget Editor"><img ng-src={{vm.baseimg}}/static/images/dashboards/edit.svg> <span>Edit</span></md-button></md-menu-item><md-menu-item ng-if="vm.editmode  && ((!vm.iframe || (vm.iframe &&  vm.editbuttonsiframe.editGadgetMenu) ) || vm.eventedit) &&  (vm.element.type == \'html5\' )"><md-button ng-click=vm.openEditGadgetHTML5Dialog() aria-label="Gadget Editor"><img ng-src={{vm.baseimg}}/static/images/dashboards/edit.svg> <span>Edit</span></md-button></md-menu-item><md-menu-item ng-if="vm.editmode  && ((!vm.iframe || (vm.iframe &&  vm.editbuttonsiframe.editGadgetMenu) ) || vm.eventedit) && (vm.element.type != \'livehtml\' && vm.element.type != \'html5\'&& vm.element.type != \'gadgetfilter\'   && vm.element.type != \'vuetemplate\'  && vm.element.type != \'reacttemplate\')"><md-button ng-click=vm.openEditGadgetIframe() aria-label="Edit Container"><img ng-src={{vm.baseimg}}/static/images/dashboards/edit.svg> <span>Edit</span></md-button></md-menu-item><md-menu-item ng-if="vm.editmode && (!vm.iframe || (vm.iframe &&  vm.editbuttonsiframe.removeGadgetMenu) )"><md-button ng-click=vm.deleteElement()><img ng-src={{vm.baseimg}}/static/images/dashboards/delete.svg> <span>Remove</span></md-button></md-menu-item><div ng-repeat="menuOption in vm.element.customMenuOptions"><md-menu-item ng-if="menuOption.position == \'menu\'"><md-button ng-click=vm.sendCustomMenuOption(menuOption.id)><img ng-src="{{menuOption.imagePath ? menuOption.imagePath : \'/controlpanel/static/images/dashboards/icon_button_controls.svg\'}}" style=height:20px;> <span>{{menuOption.description}}</span></md-button></md-menu-item></div></md-menu-content></md-menu></md-menu-bar></div></div><div flex ng-if=!vm.element.header.enable class=item-buttons><div ng-repeat="menuOption in vm.element.customMenuOptions"><md-button ng-if="menuOption.position == \'header\'" ng-click=vm.sendCustomMenuOption(menuOption.id) style="margin-right: 10px;" class="cursor-hand md-icon-button"><img draggable=false ng-src="{{menuOption.imagePath ? menuOption.imagePath : \'/controlpanel/static/images/dashboards/icon_button_controls.svg\'}}"><md-tooltip>{{menuOption.description}}</md-tooltip></md-button></div><md-button ng-if=vm.showFiltersInBody() ng-click="vm.toggleRight(vm.element.id+\'rightSidenav\')" style="margin-right: 10px;" class="cursor-hand md-icon-button"><img draggable=false ng-src={{vm.baseimg}}/static/images/dashboards/icon_filter.svg><md-tooltip>Filter</md-tooltip></md-button><md-button ng-if=vm.showfiltersInModal() ng-click=vm.openFilterDialog() style="margin-right: 10px;" class="cursor-hand md-icon-button"><img draggable=false ng-src={{vm.baseimg}}/static/images/dashboards/icon_filter.svg><md-tooltip>Filter</md-tooltip></md-button><md-button ng-if=vm.editmode style="margin: 0px 10px 0px 0px;" class="drag-handler md-icon-button"><img draggable=false ng-src={{vm.baseimg}}/static/images/dashboards/Icon_move.svg><md-tooltip>Move</md-tooltip></md-button><div flex=nogrow layout-align="center right" ng-if="vm.editmode || !vm.element.notshowDotsMenu"><md-menu-bar><md-menu md-position-mode="target-right bottom" md-offset="-4 0"><button ng-click=$mdMenu.open() style="padding: 0px"><img ng-src={{vm.baseimg}}/static/images/dashboards/more.svg><md-tooltip>Options</md-tooltip></button><md-menu-content width=5><md-menu-item><md-button ng-click=vm.toggleFullScreen() aria-label=Fullscreen><img ng-if=!vm.isMaximized ng-src={{vm.baseimg}}/static/images/dashboards/Icon_full.svg> <img ng-if=vm.isMaximized ng-src={{vm.baseimg}}/static/images/dashboards/icon_minimize.svg> <span ng-if=!vm.isMaximized>Maximize</span> <span ng-if=vm.isMaximized>Restore</span></md-button></md-menu-item><md-menu-item ng-if="(!vm.iframe || vm.iframe && vm.editbuttonsiframe.filterGadgetMenu) && vm.editmode && vm.element.type != \'html5\'"><md-button ng-click=vm.openEditFilterDialog() aria-label="Edit Filter"><img ng-src={{vm.baseimg}}/static/images/dashboards/icon_menu_filter.svg> <span>Edit Filters</span></md-button></md-menu-item><md-menu-item ng-if="!vm.iframe && vm.editmode && vm.element.type === \'livehtml\'"><md-button ng-click=vm.openEditCustomMenuOptionsDialog() aria-label="Custom Menu Options"><img ng-src={{vm.baseimg}}/static/images/dashboards/icon_button_menu.svg style=height:20px;> <span>Custom Menu Options</span></md-button></md-menu-item><md-menu-item ng-if=vm.showfavoritesg><md-button ng-click=vm.addFavoriteDialog() aria-label="Add to Favorites"><img ng-src={{vm.baseimg}}/static/images/dashboards/star-default.svg style="height:20px;color: #060E14;"> <span>Add to Favorites</span></md-button></md-menu-item><md-menu-item ng-if="vm.editmode && (!vm.iframe || (vm.iframe &&  vm.editbuttonsiframe.stylingGadgetMenu) )"><md-button ng-click=vm.openEditContainerDialog() aria-label="Edit Container"><img ng-src={{vm.baseimg}}/static/images/dashboards/style.svg> <span>Styling</span></md-button></md-menu-item><md-menu-item ng-if="vm.editmode && ((!vm.iframe || (vm.iframe &&  vm.editbuttonsiframe.editGadgetMenu) )|| vm.eventedit) && (vm.element.type == \'livehtml\' ||  vm.element.type == \'vuetemplate\' ||  vm.element.type == \'reacttemplate\')"><md-button ng-if="vm.element.template == null" ng-click=vm.openEditGadgetDialog() aria-label="Gadget Editor"><img ng-src={{vm.baseimg}}/static/images/dashboards/edit.svg> <span>Edit</span></md-button><md-button ng-if="vm.element.template != null" ng-click=vm.openEditTemplateParamsDialog() aria-label="Gadget Editor"><img ng-src={{vm.baseimg}}/static/images/dashboards/edit.svg> <span>Edit</span></md-button></md-menu-item><md-menu-item ng-if="vm.editmode && ((!vm.iframe || (vm.iframe &&  vm.editbuttonsiframe.editGadgetMenu) ) || vm.eventedit) &&  (vm.element.type == \'html5\' )"><md-button ng-click=vm.openEditGadgetHTML5Dialog() aria-label="Gadget Editor"><img ng-src={{vm.baseimg}}/static/images/dashboards/edit.svg> <span>Edit</span></md-button></md-menu-item><md-menu-item ng-if="vm.editmode && ((!vm.iframe || (vm.iframe &&  vm.editbuttonsiframe.editGadgetMenu) ) || vm.eventedit) && (vm.element.type != \'livehtml\' && vm.element.type != \'html5\'  && vm.element.type != \'gadgetfilter\'  && vm.element.type != \'vuetemplate\'  && vm.element.type != \'reacttemplate\')"><md-button ng-click=vm.openEditGadgetIframe() aria-label="Edit Container"><img ng-src={{vm.baseimg}}/static/images/dashboards/edit.svg> <span>Edit</span></md-button></md-menu-item><md-menu-item ng-if="vm.editmode && (!vm.iframe || (vm.iframe &&  vm.editbuttonsiframe.removeGadgetMenu) )"><md-button ng-click=vm.deleteElement()><img ng-src={{vm.baseimg}}/static/images/dashboards/delete.svg> <span>Remove</span></md-button></md-menu-item><div ng-repeat="menuOption in vm.element.customMenuOptions"><md-menu-item ng-if="menuOption.position == \'menu\'"><md-button ng-click=vm.sendCustomMenuOption(menuOption.id)><img ng-src="{{menuOption.imagePath ? menuOption.imagePath : \'/controlpanel/static/images/dashboards/icon_button_controls.svg\'}}" style=height:20px;> <span>{{menuOption.description}}</span></md-button></md-menu-item></div></md-menu-content></md-menu></md-menu-bar></div></div><div layout=row layout-wrap layout-align="end start" ng-if="(vm.element.hideBadges === undefined || vm.element.hideBadges === false) && vm.element.type != \'gadgetfilter\'"><div ng-class=vm.elemntbadgesclass() ng-repeat=" data in vm.datastatus" style="margin-top: 5px; text-align: left; z-index:1"><div class=filter flex=20><span class=badges-filters title="{{data.name}} {{data.op}} {{data.value}}">{{data.name}} <span style="margin-left: 10px;margin-right: 2px" ng-click=vm.deleteFilter(data.id,data.field,data.op)>X</span></span></div></div></div><md-sidenav style="min-width: 50px !important;    width: 100% !important;    max-width: 257px !important;" ng-if="(vm.element.filtersInModal === undefined || vm.element.filtersInModal === false) && vm.element.type != \'gadgetfilter\' " class=md-sidenav-right md-component-id={{vm.element.id}}rightSidenav md-disable-backdrop="" md-whiteframe=4><md-content style="padding: 24px"><div layout=row layout-align="end start"><button type=button aria-label=Close style="background: 0 0;border: none; outline: 0; cursor: pointer;" ng-click="vm.toggleRight(vm.element.id+\'rightSidenav\')"><span style="font-size: 16px !important;" class="ods-dialog__close ods-icon ods-icon-close"></span></button></div><div id=_{{vm.element.id}}filters><filter id=vm.element.id datasource=vm.element.datasource config=vm.config hidebuttonclear=vm.element.hidebuttonclear buttonbig=false></filter></div></md-content></md-sidenav><livehtml ng-style="{\'background-color\':vm.element.backgroundColor, \'padding\': vm.element.padding + \'px\'}" ng-if="(vm.element.type == \'livehtml\' && (!vm.element.subtype || vm.element.subtype.startsWith(\'angularJS\'))) || vm.element.type == \'gadgetfilter\'" livecontent=vm.element.content filters=vm.config livecontentcode=vm.element.contentcode gadgetid=vm.element.gadgetid datasource=vm.element.datasource custommenuoptions=vm.element.customMenuOptions ng-class=vm.elemntbodyclass() id=vm.element.id datastatus=vm.datastatus showonlyfiltered=vm.element.showOnlyFiltered template=vm.element.template params=vm.element.params></livehtml><vuetemplate ng-style="{\'background-color\':vm.element.backgroundColor, \'padding\': vm.element.padding + \'px\'}" ng-if="vm.element.type == \'livehtml\' && vm.element.subtype.startsWith(\'vueJS\')" livecontent=vm.element.content filters=vm.config livecontentcode=vm.element.contentcode datasource=vm.element.datasource custommenuoptions=vm.element.customMenuOptions ng-class=vm.elemntbodyclass() id=vm.element.id datastatus=vm.datastatus showonlyfiltered=vm.element.showOnlyFiltered template=vm.element.template params=vm.element.params gadgetid=vm.element.gadgetid></vuetemplate><reacttemplate ng-style="{\'background-color\':vm.element.backgroundColor, \'padding\': vm.element.padding + \'px\'}" ng-if="vm.element.type == \'livehtml\' && vm.element.subtype.startsWith(\'reactJS\')" livecontent=vm.element.content filters=vm.config livecontentcode=vm.element.contentcode datasource=vm.element.datasource custommenuoptions=vm.element.customMenuOptions ng-class=vm.elemntbodyclass() id=vm.element.id datastatus=vm.datastatus showonlyfiltered=vm.element.showOnlyFiltered template=vm.element.template params=vm.element.params gadgetid=vm.element.gadgetid></reacttemplate><gadget ng-style="{\'background-color\':vm.element.backgroundColor, \'padding\': vm.element.padding + \'px\', \'display\': \'inline-block\', \'width\': \'calc(100% - 40px)\', \'position\': \'absolute\',\'top\': \'50%\',\'left\': \'50%\',\'transform\': \'translate(-50%, -50%)\'}" ng-if="vm.element.type != \'livehtml\'&& vm.element.type != \'html5\' && vm.element.type != \'gadgetfilter\' && vm.element.type != \'datadiscovery\'" ng-class=vm.elemntbodyclass() id=vm.element.id datastatus=vm.datastatus filters=vm.config></gadget><html5 ng-style="{\'background-color\':vm.element.backgroundColor, \'padding\': vm.element.padding + \'px\'}" ng-if="vm.element.type == \'html5\'" livecontent=vm.element.content datasource=vm.element.datasource ng-class=vm.elemntbodyclass() id=vm.element.id></html5><datadiscovery ng-style="{\'background-color\':vm.element.backgroundColor, \'padding\': vm.element.padding + \'px\', \'display\': \'inline-block\', \'width\': \'calc(100% - 40px)\', \'position\': \'absolute\',\'top\': \'50%\',\'left\': \'50%\',\'transform\': \'translate(-50%, -50%)\'}" ng-if="vm.element.type === \'datadiscovery\'" ng-class=vm.elemntbodyclass() id=vm.element.id datastatus=vm.datastatus filters=vm.config></datadiscovery><md-content ng-style="{\'background-color\':vm.element.backgroundColor, \'padding\':\'0px 22px 22px 22px\', \'height\': \'calc(100% - \'+ (vm.element.header.height+22) + \'px)\'}" ng-if="vm.element.type == \'gadgetfilter\' && vm.element.header.enable"><div id=__{{vm.element.id}}filters class=ovfl><filter id=vm.element.id datasource=vm.element.datasource config=vm.config hidebuttonclear=vm.element.hidebuttonclear buttonbig=false></filter></div></md-content><md-content ng-style="{\'background-color\':vm.element.backgroundColor, \'padding\':\'0px 22px 22px 22px\', \'height\': \'calc(100% - 22px)\'}" ng-if="vm.element.type == \'gadgetfilter\' && !vm.element.header.enable"><div id=__{{vm.element.id}}filters class=ovfl><filter id=vm.element.id datasource=vm.element.datasource config=vm.config hidebuttonclear=vm.element.hidebuttonclear buttonbig=false></filter></div></md-content></div></gridster-item>');
-$templateCache.put('app/components/view/elementFullScreenComponent/elementFullScreen.html','<gridster options=vm.gridoptions class=flex><element id={{vm.element.id}} idtemplate={{vm.element.idtemplate}} iframe=vm.iframe element=vm.element editmode=vm.editmode></element></gridster>');
 $templateCache.put('app/components/view/filterComponent/filter.html','<div ng-repeat="(index,item) in vm.tempConfig" id={{vm.tempConfig[index].htmlId}}><div ng-class="{\'ng-hide\': vm.tempConfig[index].hide}"><textfilter ng-if="item.type == \'textfilter\'  " idfilter=vm.tempConfig[index].id resultfilter=vm.resultFilters[index] datasource=vm.datasource config=vm.tempConfig[index]></textfilter><numberfilter ng-if="item.type == \'numberfilter\' " idfilter=vm.tempConfig[index].id resultfilter=vm.resultFilters[index] datasource=vm.datasource config=vm.tempConfig[index]></numberfilter><intervaldatefilter ng-if="item.type == \'intervaldatefilter\' " idfilter=vm.tempConfig[index].id resultfilter=vm.resultFilters[index] datasource=vm.datasource config=vm.tempConfig[index]></intervaldatefilter><intervaldatestringfilter ng-if="item.type == \'intervaldatestringfilter\' " idfilter=vm.tempConfig[index].id resultfilter=vm.resultFilters[index] datasource=vm.datasource config=vm.tempConfig[index]></intervaldatestringfilter><activaterefreshaction ng-if="item.type == \'activaterefreshaction\' " idfilter=vm.tempConfig[index].id resultfilter=vm.resultFilters[index] datasource=vm.datasource config=vm.tempConfig[index]></activaterefreshaction><livefilter ng-if="item.type == \'livefilter\' " idfilter=vm.tempConfig[index].id resultfilter=vm.resultFilters[index] datasource=vm.datasource config=vm.tempConfig[index]></livefilter><simpleselectfilter ng-if="item.type == \'simpleselectfilter\' " idfilter=vm.tempConfig[index].id resultfilter=vm.resultFilters[index] datasource=vm.datasource config=vm.tempConfig[index]></simpleselectfilter><simpleselectnumberfilter ng-if="item.type == \'simpleselectnumberfilter\' " idfilter=vm.tempConfig[index].id resultfilter=vm.resultFilters[index] datasource=vm.datasource config=vm.tempConfig[index]></simpleselectnumberfilter><simpleselectdsfilter ng-if="item.type == \'simpleselectdsfilter\' " idfilter=vm.tempConfig[index].id resultfilter=vm.resultFilters[index] datasource=vm.datasource config=vm.tempConfig[index]></simpleselectdsfilter><simpleselectnumberdsfilter ng-if="item.type == \'simpleselectnumberdsfilter\' " idfilter=vm.tempConfig[index].id resultfilter=vm.resultFilters[index] datasource=vm.datasource config=vm.tempConfig[index]></simpleselectnumberdsfilter><multiselectfilter ng-if="item.type == \'multiselectfilter\' " idfilter=vm.tempConfig[index].id resultfilter=vm.resultFilters[index] datasource=vm.datasource config=vm.tempConfig[index]></multiselectfilter><multiselectnumberfilter ng-if="item.type == \'multiselectnumberfilter\' " idfilter=vm.tempConfig[index].id resultfilter=vm.resultFilters[index] datasource=vm.datasource config=vm.tempConfig[index]></multiselectnumberfilter><multiselectdsfilter ng-if="item.type == \'multiselectdsfilter\' " idfilter=vm.tempConfig[index].id resultfilter=vm.resultFilters[index] datasource=vm.datasource config=vm.tempConfig[index]></multiselectdsfilter><multiselectnumberdsfilter ng-if="item.type == \'multiselectnumberdsfilter\' " idfilter=vm.tempConfig[index].id resultfilter=vm.resultFilters[index] datasource=vm.datasource config=vm.tempConfig[index]></multiselectnumberdsfilter></div></div><md-button ng-class="vm.buttonbig ? \'ok-button\' : \'ok-button-small\'" ng-click=vm.sendFilters()>OK</md-button><md-button ng-class="vm.buttonbig ? \'ok-button\' : \'ok-button-small\'" ng-if="vm.hidebuttonclear === undefined || vm.hidebuttonclear === false" ng-click=vm.cleanFilters()>CLEAN FILTERS</md-button>');
 $templateCache.put('app/components/view/gadgetComponent/gadget.html','<div class=spinner-margin-top ng-if="vm.type == \'loading\'" layout=row layout-sm=column layout-align=space-around><div class=sk-chase><div class=sk-chase-dot></div><div class=sk-chase-dot></div><div class=sk-chase-dot></div><div class=sk-chase-dot></div><div class=sk-chase-dot></div><div class=sk-chase-dot></div></div></div><div class=spinner-overlay ng-if="vm.status == \'pending\'" layout=row layout-sm=column layout-align=space-around><md-progress-linear md-mode=indeterminate></md-progress-linear></div><div ng-if="vm.type == \'nodata\' || vm.showNoData  " class=no-data-gadget layout=column><div class=no-data-title>NO DATA</div><div class=no-data-text>Sorry, we couldn\xB4t load the visual information for this gadget. Try again.</div></div><div ng-if="vm.type == \'removed\' || vm.showNoData  " class=no-data-gadget layout=column><div class=no-data-title>NO DATA</div><div class=no-data-text>Sorry, we couldn\xB4t load the visual information for this gadget. This gadget was removed.</div></div><canvas ng-if="vm.type == \'line\'" chart-dataset-override=vm.datasetOverride chart-click=vm.clickChartEventProcessorEmitter class="chart chart-line" chart-data=vm.data chart-labels=vm.labels chart-series=vm.series chart-options=vm.optionsChart></canvas><canvas ng-if="vm.type == \'mixed\'" chart-dataset-override=vm.datasetOverride chart-click=vm.clickChartEventProcessorEmitter class=chart-bar chart-data=vm.data chart-labels=vm.labels chart-series=vm.series chart-options=vm.optionsChart></canvas><canvas ng-if="vm.type == \'bar\'" chart-dataset-override=vm.datasetOverride chart-click=vm.clickChartEventProcessorEmitter class="chart chart-bar" chart-data=vm.data chart-labels=vm.labels chart-series=vm.series chart-options=vm.optionsChart></canvas><canvas ng-if="vm.type == \'pie\' && vm.classPie()" chart-click=vm.clickChartEventProcessorEmitter class="chart chart-pie" chart-data=vm.data chart-labels=vm.labels chart-options=vm.optionsChart chart-colors=vm.swatches.global></canvas><canvas ng-if="vm.type == \'pie\' && !vm.classPie()" chart-click=vm.clickChartEventProcessorEmitter class="chart chart-doughnut" chart-data=vm.data chart-labels=vm.labels chart-options=vm.optionsChart chart-colors=vm.swatches.global></canvas><canvas ng-if="vm.type == \'radar\'" chart-dataset-override=vm.datasetOverride chart-click=vm.clickChartEventProcessorEmitter class="chart chart-radar" chart-data=vm.data chart-labels=vm.labels chart-series=vm.series chart-options=vm.optionsChart></canvas><word-cloud ng-if="vm.type == \'wordcloud\'" words=vm.words on-click=vm.clickWordCloudEventProcessorEmitter width=vm.width height=vm.height padding=0 use-tooltip=false use-transition=true></word-cloud><leaflet id="{{\'lmap\' + vm.id}}" ng-if="vm.type == \'map\'" lf-center=vm.center markers=vm.markers height={{vm.height}} width=100%></leaflet><md-table-container ng-style="{\'height\': \'calc(100% - \'+{{vm.config.config.tablePagination.style.trHeightFooter}}+\'px\'+\')\'}" ng-if="vm.type == \'table\'"><table md-table md-progress=promise md-row-select=vm.config.config.tablePagination.options.rowSelection ng-model=vm.selected class="table-light table-hover"><thead md-head ng-if=!vm.config.config.tablePagination.options.decapitate ng-style="{\'background-color\':vm.config.config.tablePagination.style.backGroundTHead}" md-order=vm.config.config.tablePagination.order><tr md-row ng-style="{\'height\':vm.config.config.tablePagination.style.trHeightHead}"><th ng-if=vm.showCheck[$index] ng-style="{\'color\':vm.config.config.tablePagination.style.textColorTHead}" md-column ng-repeat="measure in vm.measures" md-order-by={{measure.config.order}}><span>{{measure.config.name | translate}}</span></th></tr></thead><tbody md-body><tr md-row md-auto-select=true md-on-select=vm.selectItemTable md-select=dat ng-style="{\'height\':vm.config.config.tablePagination.style.trHeightBody}" ng-repeat="dat in vm.data | orderBy: vm.getValueOrder(vm.config.config.tablePagination.order) : vm.config.config.tablePagination.order.charAt(0) === \'-\' |  limitTo: vm.config.config.tablePagination.limit : (vm.config.config.tablePagination.page -1) * vm.config.config.tablePagination.limit"><td ng-if=vm.showCheck[$index] ng-style="{\'color\':vm.config.config.tablePagination.style.textColorBody}" md-cell ng-repeat="value in dat">{{value}}</td></tr></tbody></table></md-table-container><div ng-if="vm.type == \'table\'" class="md-table-toolbar md-default" style="min-height: 30px;height: 30px; position: absolute;"><div class=md-toolbar-tools><md-button class=md-icon-button ng-click=vm.toggleDecapite()><md-icon style="color: #ACACAC;  font-size: 18px;">calendar_view_day</md-icon></md-button><md-menu md-position-mode="target-left bottom"><md-button class=md-icon-button ng-click=$mdMenu.open() style="margin-right: 12px;"><md-icon style="color: #ACACAC;  font-size: 18px; margin-right: 8px">visibility</md-icon></md-button><md-menu-content width=2><md-menu-item ng-repeat="measure in vm.measures"><md-checkbox class=blue ng-model=vm.showCheck[$index] ng-checked=true>{{measure.config.name | translate}}</md-checkbox></md-menu-item></md-menu-content></md-menu></div></div><md-table-pagination ng-if="vm.type == \'table\'" md-limit=vm.config.config.tablePagination.limit md-limit-options="vm.notSmall ? vm.config.config.tablePagination.limitOptions : undefined" md-page=vm.config.config.tablePagination.page md-total={{vm.data.length}} md-page-select="vm.config.config.tablePagination.options.pageSelect && vm.notSmall" md-boundary-links="vm.config.config.tablePagination.options.boundaryLinks && vm.notSmall" ng-style="{\'background-color\':vm.config.config.tablePagination.style.backGroundTFooter,\'height\':vm.config.config.tablePagination.style.trHeightFooter, \'color\':vm.config.config.tablePagination.style.textColorFooter}"></md-table-pagination>');
-$templateCache.put('app/components/view/html5Component/html5.html','<iframe ng-attr-id="{{vm.id + \'_html5\'}}" style="height: 100%; width: 100%; padding: 0; margin: 0;" frameborder=0></iframe>');
 $templateCache.put('app/components/view/leftSideMenuComponent/leftsidemenu.html','<style>.el-tooltip__popper.is-light {\n    z-index: 9000000 !important;\n  }\n\n  #leftsidemenu {\n    font-size: 12px;\n  }\n\n  .el-card__body {\n    padding: 10px;\n  }\n\n  .el-card__header {\n    padding-top: 2px;\n    padding-bottom: 2px;\n    padding-left: 8px;\n    background-color:#f0f1f2;\n  }\n  .el-divider--horizontal {\n    display: block;\n    height: 1px;\n    width: 100%;\n    margin: 12px 0;\n}\n.apply-icons-grey {\n          filter: invert(0%) sepia(0%) saturate(0%) hue-rotate(162deg) brightness(93%) contrast(88%);\n    }\n.leafstyle { \n  border: 1px solid #d7dadc;\n    width: 93%;\n    margin: 3px 2px 3px 2px;\n    padding: 1px 2px 1px 10px;\n    height: auto;\n}\n.is-leaf.el-tree-node__expand-icon.el-icon-caret-right{display: none;}\n.el-tabs__item{ font-size: 12px;}</style><div id=leftsidemenu><el-card class=box-card shadow=always style="width: 100%;height: 99.5%;"><div slot=header class=clearfix><span style="line-height: 40px;   font-size: 14px;      font-weight: 500;      color: #303133;">Gadgets</span><el-button v-on:click=hideLeftSideMenu() style="float: right; font-size: 16px;" type=text><i class="el-icon-close apply-icons-grey"></i></el-button></div><template><el-tabs v-model=activeName @tab-click=handleClick><el-tab-pane label=Predefined name=first><el-input size=small prefix-icon=el-icon-search placeholder=Search v-model=filterText></el-input><el-divider></el-divider><el-tree class=filter-tree :data=data :props=defaultProps :filter-node-method=filterNode style="overflow-y: auto; height: 80%;" @node-drag-start=handleDragStart draggable :allow-drop=allowDrop :allow-drag=allowDrag node-key=id :default-expanded-keys="[\'Predefined\', \'Custom\',\'Code\']" ref=tree><span class=custom-tree-node v-bind:class="{ leafstyle: data.drag}" slot-scope="{ node, data }"><i v-if=data.new class=el-icon-plus></i> <img v-if="data.image && !data.new" style="height: 14px;padding-right: 6px;padding-top: 4px;" :src=data.image><el-tooltip :content=node.label placement=right :open-delay=opendelay effect=light><span v-if=!data.image style=font-weight:bold v-html=node.label></span> <span v-if="data.image && node.label.length<=24" v-html=node.label></span> <span v-if="data.image && node.label.length>24" v-html="node.label.substring(0,24)+\'..\'"></span></el-tooltip><img v-if=data.drag style="height: 20px; float: right;" class=apply-icons-grey src=/controlpanel/static/images/dashboards/drag.svg></span></el-tree></el-tab-pane><el-tab-pane label=Favorites name=second><el-input size=small placeholder=Search prefix-icon=el-icon-search v-model=filterTextFavorite></el-input><el-divider></el-divider><el-tree class=filter-tree :data=dataFavorite :props=defaultProps :filter-node-method=filterNode style="overflow-y: auto; height: 80%;" @node-drag-start=handleDragStart draggable :allow-drop=allowDrop :allow-drag=allowDrag ref=treeFavorite><span class=custom-tree-node v-bind:class="{ leafstyle: data.drag}" slot-scope="{ node, data }"><img v-if=data.image style="height: 14px; padding-right: 6px;padding-top: 4px;" :src=data.image><el-tooltip :content=node.label placement=right :open-delay=opendelay effect=light><span v-if=!data.image style=font-weight:bold v-html=node.label></span> <span v-if="data.image && node.label.length<=24" v-html=node.label></span> <span v-if="data.image && node.label.length>24" v-html="node.label.substring(0,24)+\'..\'"></span></el-tooltip><img v-if=data.drag style="height: 20px; float: right;" class=apply-icons-grey src=/controlpanel/static/images/dashboards/drag.svg></span></el-tree></el-tab-pane></el-tabs></template></el-card></div>');
+$templateCache.put('app/components/view/html5Component/html5.html','<iframe ng-attr-id="{{vm.id + \'_html5\'}}" style="height: 100%; width: 100%; padding: 0; margin: 0;" frameborder=0></iframe>');
 $templateCache.put('app/components/view/pageComponent/page.html','<div class=page-dashboard-container ng-style="{\'background-image\':\'url(\' + vm.page.background.filedata + \')\',\'background-color\': vm.page.background.color }"><synoptic ng-if="vm.synopticedit.showSynoptic && !vm.synopticedit.showEditor" style="position: absolute; z-index:1 ;left:0px;" synoptic=vm.synoptic backgroundcolorstyle=vm.page.background.color></synoptic><span ng-repeat="layer in vm.page.layers"><gridster ng-style=vm.pageStyle() ng-if="(vm.synopticedit.showSynoptic && !vm.synopticedit.showEditor && (vm.page.combinelayers || vm.page.selectedlayer == $index))||(!vm.synopticedit.showSynoptic && (vm.page.combinelayers || vm.page.selectedlayer == $index)) " options=vm.gridoptions class=flex><element ng-style="{\'z-index\':$parent.$index*500+1}" ng-if=item.id id={{item.id}} idtemplate={{item.idtemplate}} iframe=vm.iframe editbuttonsiframe=vm.editbuttonsiframe element=item editmode=vm.editmode showfavoritesg=vm.showfavoritesg eventedit=vm.gridoptions.eventedit ng-repeat="item in layer.gridboard"></element></gridster></span></div>');
-$templateCache.put('app/components/view/synopticComponent/synoptic.html','<div id=synopticbody></div>');
+$templateCache.put('app/components/view/elementFullScreenComponent/elementFullScreen.html','<gridster options=vm.gridoptions class=flex><element id={{vm.element.id}} idtemplate={{vm.element.idtemplate}} iframe=vm.iframe element=vm.element editmode=vm.editmode></element></gridster>');
 $templateCache.put('app/components/view/synopticEditorComponent/synopticEditor.html','<iframe id=synoptic_editor ng-style="vm.dashboardheader.enable && {\'height\': \'calc(100% - \'+{{vm.dashboardheader.height }}+\'px\'+\')\',\'position\': \'absolute\',\'left\':\'0px\',\'z-index\':vm.config.zindexEditor,\'border-style\': \'none\'} || {\'height\': \'100%\',\'position\': \'absolute\',\'z-index\':vm.config.zindexEditor,\'border-style\': \'none\'}" src=/controlpanel/static/svg/editor/svg-editor.html width=100% onload=initsvgImage();></iframe>');
+$templateCache.put('app/components/view/synopticComponent/synoptic.html','<div id=synopticbody></div>');
 $templateCache.put('app/components/view/datadiscoveryComponent/datadiscoveryComponents/datadiscoveryDataDraw.html','<div style=overflow:auto;height:100%;width:100%><div ng-hide="vm.status != \'ready\'" class=container></div><div ng-hide="vm.status != \'error\'" class=container>{{vm.error}}</div><div class=spinner-overlay ng-if="vm.status == \'pending\'" layout=row layout-sm=column layout-align=space-around style=overflow:hidden;position:relative><md-progress-linear md-mode=indeterminate></md-progress-linear></div></div>');
 $templateCache.put('app/components/view/datadiscoveryComponent/datadiscoveryComponents/datadiscoveryFieldPicker.html','<md-content style=height:100% layout=column><md-subheader flex=5 layout=row><md-button aria-label="Reload Fields" ng-click=vm.reloadFields() class="md-icon-button md-primary"><md-icon>replay</md-icon></md-button><label>{{vm.datasource.identification}}</label></md-subheader><hr><md-subheader class=md-secondary flex=5><md-icon class=md-secondary>view_list</md-icon><span>Attributes</span></md-subheader><ul flex class="fieldPicker attrPicker" data-as-sortable=vm.dragPickerControl data-ng-model=vm.fields style=padding-left:0px;overflow-y:auto;overflow-x:hidden><li data-as-sortable-item data-as-sortable-item-handle data-ng-repeat="field in vm.fields" ng-click=null class="datacolumn pickercolumn"><md-tooltip>{{field.field}}</md-tooltip><label data-as-sortable-item-handle><md-icon ng-if="field.type==\'string\'">line_weight</md-icon><md-icon ng-if="field.type==\'integer\' || field.type==\'number\'">score</md-icon><md-icon ng-if="field.type==\'boolean\'">exposure</md-icon>{{ field.field }}</label><md-button aria-label="Clear Metric" ng-click=vm.removeAttr($index) class="md-icon-button md-accent pull-right"><md-icon>clear</md-icon></md-button></li></ul><md-subheader class=md-primary flex=5><md-icon class=md-primary>insert_chart_outlined</md-icon><span>Metrics</span></md-subheader><ul flex class="fieldPicker metricPicker" data-as-sortable=vm.dragPickerControl data-ng-model=vm.metrics style=padding-left:0px;overflow-y:auto;overflow-x:hidden><li data-as-sortable-item data-as-sortable-item-handle data-ng-repeat="field in vm.metrics" ng-click=null class="datacolumn pickercolumn"><md-tooltip>{{field.field + \': \' + field.formula}}</md-tooltip><label titledata-as-sortable-item-handle><md-icon>functions</md-icon>{{ field.field }}</label><md-button aria-label="Clear Metric" ng-click=vm.removeMetric($index) class="md-icon-button md-accent pull-right"><md-icon>clear</md-icon></md-button><md-button aria-label="Edit Metric" ng-click=vm.metricDialog($index) class="md-icon-button md-primary pull-right"><md-icon>edit</md-icon></md-button></li></ul><md-button ng-click=vm.metricDialog() flex=5 style=padding-left:0px class="addmetric md-raised"><md-icon>add</md-icon></md-button></md-content>');
 $templateCache.put('app/components/view/datadiscoveryComponent/datadiscoveryComponents/datadiscoveryFieldSelector.html','<md-content><div ng-on-drop=vm.onDrop() class="sortable-row columnSelector" as-sortable=vm.dragSelectControl data-ng-model=vm.columns.list><div ng-repeat="field in vm.columns.list" as-sortable-item><div as-sortable-item-handle><span ng-if="field.asc === undefined" ng-init=vm.onDrop(field)></span><md-tooltip ng-if="field.type==\'metric\'">{{field.formula}}</md-tooltip><label data-as-sortable-item-handle><md-icon ng-if="field.type==\'string\'">line_weight</md-icon><md-icon ng-if="field.type==\'integer\' || field.type==\'number\'">score</md-icon><md-icon ng-if="field.type==\'boolean\'">exposure</md-icon><md-icon ng-if="field.type==\'metric\'">functions</md-icon>{{ field.field }}</label><md-button ng-if="field.type !== \'metric\' && vm.columns.subtotalEnable" aria-label="Enable subtotals" class=md-icon-button ng-click=vm.toggleSubtotalField($index);vm.refreshModel() class=pull-right><md-icon ng-class="{\'md-primary\': vm.columns.subtotalFields.indexOf($index) !== -1}">notes</md-icon></md-button><md-button aria-label="Edit Dynamic Style" class=md-icon-button ng-click=vm.openColumnStyleDialog($index) class=pull-right><md-icon>brush</md-icon></md-button><md-button aria-label="Change sort" class=md-icon-button ng-click="(field.asc == true?field.asc = false:(field.asc == null?field.asc = true:field.asc = null));vm.columns.subtotalEnable=field.asc!=null;vm.refreshModel()" class=pull-right><md-icon ng-if="field.asc === null">block</md-icon><md-icon ng-if="field.asc == true " ng-click="field.asc = false">arrow_downward</md-icon><md-icon ng-if="field.asc == false" ng-click="field.asc = null">arrow_upward</md-icon></md-button><md-button aria-label=Clear ng-click=vm.removeColumn($index) class="md-icon-button md-accent"><md-icon>clear</md-icon></md-button></div></div></div></md-content>');
@@ -15022,6 +15022,6 @@ $templateCache.put('app/components/view/filterComponent/filtersComponents/simple
 $templateCache.put('app/components/view/filterComponent/filtersComponents/simpleselectnumberdsfilter.html','<ods-form v-model=dynamicValidateForm><form v-on:submit.prevent=noop><ods-form-item :label=dynamicValidateForm.inputName><ods-select v-model=dynamicValidateForm.optionsSelected collapse-tags clearable placeholder=Select @change=valueChange><ods-option v-for="item in dynamicValidateForm.options" :key=item.value :label=item.label :value=item.value></ods-option></ods-select></ods-form-item></form></ods-form>');
 $templateCache.put('app/components/view/filterComponent/filtersComponents/simpleselectnumberfilter.html','<ods-form v-model=dynamicValidateForm><form v-on:submit.prevent=noop><ods-form-item :label=dynamicValidateForm.inputName><ods-select v-model=dynamicValidateForm.optionsSelected collapse-tags clearable placeholder=Select @change=valueChange><ods-option v-for="item in dynamicValidateForm.options" :key=item :label=item :value=item></ods-option></ods-select></ods-form-item></form></ods-form>');
 $templateCache.put('app/components/view/filterComponent/filtersComponents/textfilter.html','<ods-form v-model=dynamicValidateForm v-on:submit.prevent=noop><form v-on:submit.prevent=noop><ods-form-item :label=dynamicValidateForm.inputName><ods-input type=text placeholder="Please input" v-model=dynamicValidateForm.inputValue @change=valueChange></ods-input></ods-form-item></form></ods-form>');
-$templateCache.put('app/components/view/templateComponent/liveHTMLComponent/livehtml.html','<div id=testhtml></div>');
 $templateCache.put('app/components/view/templateComponent/reactTemplateComponent/reacttemplate.html','<div class=rootapp></div><div class=styles></div>');
+$templateCache.put('app/components/view/templateComponent/liveHTMLComponent/livehtml.html','<div id=testhtml></div>');
 $templateCache.put('app/components/view/templateComponent/vueTemplateComponent/vuetemplate.html','<div id=testhtml></div>');}]);

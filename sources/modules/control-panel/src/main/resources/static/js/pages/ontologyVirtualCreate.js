@@ -775,10 +775,11 @@ var OntologyCreateController = function() {
 			form1.ajaxSubmit({type: 'post', success : function(data){
 					toastr.success(messagesForms.validation.genFormSuccess,'');
 					if (ontologyCreateJson.historical && ontologyCreateReg.actionMode === null) {
-						$('#modal-file').modal('show');					
-					} else {
+						$('#modal-file').modal('show');	
+					} else if (ontologyCreateReg.actionMode === null){
 						$('#modal-created').modal('show');
-						//navigateUrl(data.redirect);
+					} else {
+						navigateUrl(data.redirect);
 					}
 				}, error: function(data){
 					toastr.error(messagesForms.operations.genOpError,data.responseJSON.cause);

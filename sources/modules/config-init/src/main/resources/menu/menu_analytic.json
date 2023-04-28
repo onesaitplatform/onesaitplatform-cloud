@@ -434,22 +434,13 @@
 					"url": "/controlpanel/webprojects/list"
 				},
 				{
-					"title": {
-						"EN": "My Files (old)",
-						"ES": "Mis Ficheros (antiguo)",
-						"FR": "Mes fichiers (ancien)"
-					},
-					"icon": "",
-					"url": "/controlpanel/files/list"
-				},
-				{
                     "title": {
                         "EN": "My Files",
                         "ES": "Mis Ficheros",
                         "FR": "Mes fichiers"
                     },
                     "icon": "",
-                    "url": "/controlpanel/objectstore/list"
+                    "url": "/controlpanel/files/list"
                 },
 				{
 					"title": {

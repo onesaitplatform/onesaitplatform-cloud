@@ -149,7 +149,7 @@ DATABASES_ALL = {
         },
     },
 }
-DATABASES_ALL['default'] = DATABASES_ALL[DJANGO_DB_POSTGRESQL]
+DATABASES_ALL['default'] = DATABASES_ALL[DJANGO_DB_MYSQL]
 DATABASES = {'default': DATABASES_ALL.get(get_env('DJANGO_DB', 'default'))}
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'

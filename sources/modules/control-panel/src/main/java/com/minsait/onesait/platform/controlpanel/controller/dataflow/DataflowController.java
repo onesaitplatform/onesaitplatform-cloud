@@ -15,6 +15,7 @@
 package com.minsait.onesait.platform.controlpanel.controller.dataflow;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.servlet.ServletContext;
@@ -92,20 +93,20 @@ public class DataflowController {
 
 	@Autowired
 	private ResourcesInUseService resourcesInUseService;
-	
-	@Autowired 
+
+	@Autowired
 	private HttpSession httpSession;
 
 	@Autowired
 	ServletContext context;
-	
+
 	private static final String APP_ID = "appId";
 
 	/* TEMPLATES VIEWS */
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
-	@GetMapping(value = "/list", produces = "text/html")
-	public String list(Model uiModel) {
+	@GetMapping(value = { "/list", "/list/{redirect}" }, produces = "text/html")
+	public String list(Model uiModel, @PathVariable("redirect") Optional<Boolean> redirect) {
 		final String instanceIdentification = dataflowService.getDataflowInstanceForUserId(utils.getUserId())
 				.getIdentification();
 		uiModel.addAttribute("lpl", dataflowService.getPipelinesWithStatus(utils.getUserId()));
@@ -113,13 +114,18 @@ public class DataflowController {
 		uiModel.addAttribute("userRole", utils.getRole());
 		uiModel.addAttribute(DATAFLOW_VERSION_STR, dataflowService.getVersion());
 		uiModel.addAttribute("instance", instanceIdentification);
-		
-		final Object projectId = httpSession.getAttribute(APP_ID);
-		if (projectId!=null) {
-			uiModel.addAttribute(APP_ID, projectId.toString());
+
+		if (!redirect.isPresent()) {
+			// CLEANING APP_ID FROM SESSION
 			httpSession.removeAttribute(APP_ID);
+		} else {
+			final Object projectId = httpSession.getAttribute(APP_ID);
+			if (projectId != null) {
+				uiModel.addAttribute(APP_ID, projectId.toString());
+				httpSession.removeAttribute(APP_ID);
+			}
 		}
-		
+
 		return "dataflow/list";
 	}
 
@@ -364,7 +370,8 @@ public class DataflowController {
 			RequestMethod.PUT }, headers = "Accept=application/json")
 	@ResponseBody
 	public ResponseEntity<String> appRest(HttpServletRequest request, @RequestBody(required = false) String body) {
-		ResponseEntity<String> dataflowResponse = dataflowService.sendHttp(request, HttpMethod.valueOf(request.getMethod()), body, utils.getUserId());
+		ResponseEntity<String> dataflowResponse = dataflowService.sendHttp(request,
+				HttpMethod.valueOf(request.getMethod()), body, utils.getUserId());
 		return ResponseEntity.status(dataflowResponse.getStatusCode()).body(dataflowResponse.getBody());
 	}
 
@@ -374,7 +381,8 @@ public class DataflowController {
 	@ResponseBody
 	public ResponseEntity<String> appRestWithInstance(@PathVariable("instance") String instance,
 			HttpServletRequest request, @RequestBody(required = false) String body) {
-		ResponseEntity<String> dataflowResponse = dataflowService.sendHttpWithInstance(request, HttpMethod.valueOf(request.getMethod()), body, instance);
+		ResponseEntity<String> dataflowResponse = dataflowService.sendHttpWithInstance(request,
+				HttpMethod.valueOf(request.getMethod()), body, instance);
 		return ResponseEntity.status(dataflowResponse.getStatusCode()).body(dataflowResponse.getBody());
 	}
 
@@ -414,7 +422,7 @@ public class DataflowController {
 	}
 
 	@ExceptionHandler({ IllegalArgumentException.class, RestClientException.class, DataAccessException.class,
-		BadRequestException.class })
+			BadRequestException.class })
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
 	@ResponseBody
 	public String handleOPException(final RuntimeException exception) {

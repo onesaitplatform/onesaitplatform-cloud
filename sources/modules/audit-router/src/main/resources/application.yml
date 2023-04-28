@@ -117,9 +117,6 @@ onesaitplatform: #Config onesaitplatform specific
    database.minio:
       access-key: ENC(d6bDYa5aGMyXndGA0edIGWFtcw3UygXi)
       secret-key: ENC(kV79KowPOv0J8QGeQ6iSQcFUqoZalNVj)
-   database.prestodb:
-      historicalCatalog: minio
-      historicalSchema: default
 
    router.avoidsslverification: true
    router.audit:
