@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,7 +114,7 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 	@Override
 	public Response getApiWithoutToken(String numVersion, String identification, String vertical)
 			throws GenericOPException {
-		if (!StringUtils.isEmpty(vertical))
+		if (StringUtils.hasText(vertical))
 			masterUserService.getVertical(vertical)
 					.ifPresent(v -> MultitenancyContextHolder.setVerticalSchema(v.getSchema()));
 
@@ -156,9 +156,14 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 
 	private Response getExternalApiWithSwagger(Api api, Swagger swagger) {
 
-		addCustomHeaderToPaths(swagger);
-		swagger.setHost(null);
-		swagger.setBasePath(getApiBasePath(api, String.valueOf(api.getNumversion())));
+		if (!StringUtils.hasText(api.getGraviteeId())) {
+			addCustomHeaderToPaths(swagger);
+			swagger.setHost(null);
+			swagger.setBasePath(getApiBasePath(api, String.valueOf(api.getNumversion())));
+		} else {
+			swagger.setHost(getGraviteeHost());
+			swagger.setBasePath(getGraviteeBasePath(api));
+		}
 		MultitenancyContextHolder.clear();
 		return Response.ok(Json.pretty(swagger)).build();
 	}
@@ -167,7 +172,11 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 		addCustomHeaderToPaths(openAPI);
 		final Server server = new Server();
 
-		server.setUrl(getApiBasePath(api, String.valueOf(api.getNumversion())));
+		if (StringUtils.hasText(api.getGraviteeId())) {
+			server.setUrl(resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.GATEWAY) + getGraviteeBasePath(api));
+		} else {
+			server.setUrl(getApiBasePath(api, String.valueOf(api.getNumversion())));
+		}
 		openAPI.setServers(Arrays.asList(server));
 		MultitenancyContextHolder.clear();
 		return Response.ok(io.swagger.v3.core.util.Json.pretty(openAPI)).build();
@@ -177,8 +186,13 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 		final ApiDTO apiDto = apiFIQL.toApiDTO(api);
 		final BeanConfig config = new BeanConfig();
 
-		config.setBasePath(getApiBasePath(api, numVersion));
-		config.setHost(null);
+		if (StringUtils.hasText(api.getGraviteeId())) {
+			config.setHost(getGraviteeHost());
+			config.setBasePath(getGraviteeBasePath(api));
+		} else {
+			config.setBasePath(getApiBasePath(api, numVersion));
+			config.setHost(null);
+		}
 
 		final RestSwaggerReader reader = new RestSwaggerReader();
 		final Swagger swagger = reader.read(apiDto, config);
@@ -201,12 +215,23 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 		config.setBasePath(getApiBasePath(api, numVersion));
 		final RestSwaggerReader reader = new RestSwaggerReader();
 		final Swagger swagger = reader.read(apiDto, config);
+		if (StringUtils.hasText(api.getGraviteeId())) {
+			swagger.setHost(getGraviteeHost());
+		}
 		MultitenancyContextHolder.clear();
 		return Response.ok(Json.pretty(swagger)).build();
 	}
 
 	private String getApiBasePath(Api api, String numVersion) {
 		return BASE_PATH + "/v" + numVersion + "/" + api.getIdentification();
+	}
+
+	private String getGraviteeBasePath(Api api) {
+		return "/".concat(api.getIdentification().concat("/v").concat(String.valueOf(api.getNumversion())));
+	}
+
+	private String getGraviteeHost() {
+		return resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.GATEWAY).replaceAll("^(http://|https://)", "");
 	}
 
 	/**

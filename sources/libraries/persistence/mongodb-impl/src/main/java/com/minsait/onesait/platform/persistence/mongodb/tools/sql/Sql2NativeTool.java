@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,34 +66,94 @@ public class Sql2NativeTool {
 		qc = new QueryConverter.Builder().dictionary(d).aggregationAllowDiskUse(true);
 	}
 
+	// public static String translateSql(String query) {
+	// log.debug("Query to be translated {}", query);
+	// String result = null;
+	// try {
+	// if (query.trim().toLowerCase().startsWith(UPDATE)) {
+	// result = translateUpdate(replaceDoubleQuotes(query));
+	// } else if (query.trim().toLowerCase().startsWith(DELETE)) {
+	// result = translateDelete(replaceDoubleQuotes(query));
+	// } else if (query.trim().toLowerCase().startsWith(SELECT)) {
+	// result = translateSelect(query);
+	// }
+	// if(result == null) {
+	// throw new DBPersistenceException("Unsupported SQL operation");
+	// } else {
+	// log.debug("Query translated to :{}", result);
+	// return result;
+	// }
+	// } catch (final JSQLParserException e) {
+	// log.error("Error executing query", e);
+	// throw new DBPersistenceException("Syntax Error");
+	// } catch (final DBPersistenceException e) {
+	// log.error("Error executing query", e);
+	// throw e;
+	// } catch(final Exception e) {
+	// log.error("Error executing query", e);
+	// throw new DBPersistenceException("Invalid SQL Syntax");
+	// }
+	//
+	//
+	// }
+
 	public static String translateSql(String query) {
 		log.debug("Query to be translated {}", query);
 		String result = null;
 		try {
 			if (query.trim().toLowerCase().startsWith(UPDATE)) {
 				result = translateUpdate(replaceDoubleQuotes(query));
-			} else if (query.trim().toLowerCase().startsWith(DELETE)) {
-				result = translateDelete(replaceDoubleQuotes(query));
-			} else if (query.trim().toLowerCase().startsWith(SELECT)) {
-				result = translateSelect(query);
 			}
-			if(result == null) {
-				throw new DBPersistenceException("Unsupported SQL operation");
-			} else {
-				log.debug("Query translated to :{}", result);
-				return result;
-			}
+
 		} catch (final JSQLParserException e) {
 			log.error("Error executing query", e);
-			throw new DBPersistenceException(e.getLocalizedMessage());
+			throw new DBPersistenceException("{\"error\": \"Syntax Error, try the following Syntax-> UPDATE table_name "
+					+ "SET column1 = value1, column2 = value2, ... " + "WHERE condition;\" }");
 		} catch (final DBPersistenceException e) {
 			log.error("Error executing query", e);
 			throw e;
-		} catch(final Exception e) {
+		} catch (final Exception e) {
 			log.error("Error executing query", e);
 			throw new DBPersistenceException("Invalid SQL Syntax");
 		}
 
+		try {
+			if (query.trim().toLowerCase().startsWith(DELETE)) {
+				result = translateDelete(replaceDoubleQuotes(query));
+			}
+
+		} catch (final JSQLParserException e) {
+			log.error("Error executing query", e);
+
+			throw new DBPersistenceException(
+					"{\"error\": \"Syntax Error. try the following Syntax-> DELETE FROM table_name WHERE condition;\" }");
+		} catch (final DBPersistenceException e) {
+			log.error("Error executing query", e);
+			throw e;
+		} catch (final Exception e) {
+			log.error("Error executing query", e);
+			throw new DBPersistenceException("Invalid SQL Syntax");
+		}
+
+		try {
+			if (query.trim().toLowerCase().startsWith(SELECT)) {
+				result = translateSelect(query);
+			}
+		} catch (final ParseException e) {
+			log.error("Error executing query", e);
+
+			throw new DBPersistenceException(
+					"{\"error\": \"Syntax Error. try the following Syntax-> SELECT * FROM table_name WHERE condition;\" }");
+
+		} catch (final DBPersistenceException e) {
+			log.error("Error executing query", e);
+			throw e;
+		} catch (final Exception e) {
+			log.error("Error executing query", e);
+			throw new DBPersistenceException("Invalid SQL Syntax");
+		}
+
+		return result;
 
 	}
 
@@ -110,21 +170,20 @@ public class Sql2NativeTool {
 				}
 			}
 			return translatedQueries;
-		} catch (final JSQLParserException e) {
+		} catch (final JSQLParserException | ParseException e) {
 			throw new DBPersistenceException("Invalid SQL syntax");
 		}
 	}
 
-	private static synchronized  String translateSelect(String query) {
+	private static synchronized String translateSelect(String query) throws ParseException {
 		try {
 			final QueryConverter queryConverter = qc.sqlString(preprocessQuery(query)).build();
 			final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 			queryConverter.write(byteArrayOutputStream);
 			return byteArrayOutputStream.toString(StandardCharsets.UTF_8.name());
-		}catch (final ParseException e) {
-			throw new DBPersistenceException(e.getCause().getLocalizedMessage(), e);
-		}
-		catch (IOException e) {
+		} catch (final ParseException e) {
+			throw e;
+		} catch (final IOException e) {
 			throw new DBPersistenceException(e.getMessage(), e);
 		}
 
@@ -185,8 +244,11 @@ public class Sql2NativeTool {
 		final StringBuilder mongoDbQuery = new StringBuilder();
 
 		final Delete statement = (Delete) parserManager.parse(new StringReader(query));
+
 		mongoDbQuery.append("db.".concat(statement.getTable().getFullyQualifiedName()).concat(".remove("));
+
 		final Expression where = statement.getWhere();
+
 		if (null != where) {
 			where.accept(new WhereExpressionVisitorAdapter(mongoDbQuery, false, 0, false, 0));
 			removeIfLastCharacterIsComma(mongoDbQuery);
@@ -194,7 +256,6 @@ public class Sql2NativeTool {
 		} else {
 			mongoDbQuery.append("{})");
 		}
-
 		return mongoDbQuery.toString();
 	}
 

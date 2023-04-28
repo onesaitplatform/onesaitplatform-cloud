@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@
 				<div id="footerText">
 				</div>
 				<div id="footerText_original" style=" padding-left: 60px;">
-					<span class="m-link m-link--metal" th:text="#{footer.app}">onesait Platform
+					<span class="m-link m-link--metal"  id = "footer-app">onesait Platform
 						 © Minsait 2021</span> <span class="sep"></span> <span
 						class="m-link m-link--metal" th:text="'('+#{build.version}+')'">5.2.0</span>
 					<span class="sep"></span> <a href="https://github.com/onesaitplatform" target="_blank" class="m-link m-link--metal"><i
@@ -210,7 +210,12 @@
 		footerTheme(currentLanguage);
 	})
 	
-	
+	 var appFooter = [[#{footer.app}]];
+	 if(typeof appFooter !== 'undefined' && appFooter!=null && appFooter.length>0){
+	 	appFooter=appFooter+' '+new Date().getFullYear(); 
+	 	document.getElementById("footer-app").innerHTML = appFooter;
+	 }
+		
 	/* 
 	$( document ).ready(function()  {
 		var csrf_value = $("meta[name='_csrf']").attr("content");

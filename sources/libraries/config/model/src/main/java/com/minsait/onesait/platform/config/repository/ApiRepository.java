@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,6 +136,15 @@ public interface ApiRepository extends JpaRepository<Api, String> {
 
 	@Query("SELECT a FROM Api as a WHERE a.user.userId = :userId ORDER BY a.createdAt desc")
 	List<Api> findByUserOrderByDate(@Param("userId") String userId);
+	
+	
+
+	@Query("SELECT a.apiType FROM Api as a WHERE a.id = :apiId")
+	String typeOntology(@Param("apiId") String apiId);
+	
+	@Query("SELECT a.ontology.id FROM Api as a WHERE a.id= :apiId")
+	String 	getOntologyId(@Param("apiId") String apiId);
+
 
 	@Query("SELECT a FROM Api as a ORDER BY a.createdAt desc")
 	List<Api> findAllOrderByDate();

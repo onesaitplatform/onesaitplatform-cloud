@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -60,6 +61,8 @@ public class MarketAssetController {
 	MarketAssetHelper marketAssetHelper;
 	@Autowired
 	private AppWebUtils utils;
+	@Autowired 
+	private HttpSession httpSession;
 
 	private static final String MARKETASSETS = "marketAssets";
 	private static final String REDIRECT = "redirect:/";
@@ -67,10 +70,13 @@ public class MarketAssetController {
 	private static final String MARKETASSET_CREATE = "marketasset/create";
 	private static final String MARKETASSET_UPDATE = "marketasset/update";
 	private static final String MARKETASSET_SHOW =  "marketasset/show";
+	private static final String MARKETASSET_MAIN_USER = "marketasset/mainuser";
 	
 	private static final String MARKETASSET_FRAGMENTS =  "marketasset/marketassetfragments :: ";
 	private static final String CANNOT_UPDATE_ASSET = "Cannot update asset that does not exist";
 	private static final String API_UPDATE_ERROR = "api.update.error";
+	private static final String APP_ID = "appId";
+	
 
 	@GetMapping(value = "/create", produces = "text/html")
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
@@ -113,12 +119,26 @@ public class MarketAssetController {
 
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, @RequestParam(required = false) String marketassetId) {
-
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
+		
 		marketAssetHelper.populateMarketAssetListForm(model);
 		model.addAttribute(MARKETASSETS, marketAssetHelper
 				.toMarketAssetBean(marketAssetService.loadMarketAssetByFilter(marketassetId, utils.getUserId())));
 
 		return MARKETASSET_LIST;
+	}
+	
+	@GetMapping(value = "/mainuser", produces = "text/html")
+	public String mainuser(Model model, @RequestParam(required = false) String marketassetId) {
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
+		
+		marketAssetHelper.populateMarketAssetListForm(model);
+		model.addAttribute(MARKETASSETS, marketAssetHelper
+				.toMarketAssetBean(marketAssetService.loadMarketAssetByFilter(marketassetId, utils.getUserId())));
+
+		return MARKETASSET_MAIN_USER;
 	}
 
 	@PostMapping(value = "/create")

@@ -761,9 +761,9 @@ ed.showHideMoveToolBarButton = function () {
                 })
                 .then(function(answer) {
                   httpService.freeResource(ed.id()).then(
-                    function(t){ $window.location.href=__env.endpointControlPanel+'/dashboards/list';}
+                    exitRedirect()
                     ).catch(
-                      function(t){ $window.location.href=__env.endpointControlPanel+'/dashboards/list';}
+                      exitRedirect()
                     );
                  
                 }, function() {
@@ -794,9 +794,9 @@ ed.showHideMoveToolBarButton = function () {
         }
         else{         
           httpService.freeResource(ed.id()).then(
-            function(t){ $window.location.href=__env.endpointControlPanel+'/dashboards/list';}
+            exitRedirect()
             ).catch(
-              function(t){ $window.location.href=__env.endpointControlPanel+'/dashboards/list';}
+              exitRedirect()
             );         
         }
       }, function() {
@@ -806,7 +806,13 @@ ed.showHideMoveToolBarButton = function () {
 
 
     }
-
+    function exitRedirect(){
+      if(typeof __env.appID!='undefined' && __env.appID != null){
+        $window.location.href=__env.endpointControlPanel+__env.endpointProjectsUpdate+__env.appID;
+      }else{
+        $window.location.href=__env.endpointControlPanel+'/dashboards/list';
+      }
+    }
 
     ed.changedOptions = function changedOptions() {
       //main.options.api.optionsChanged();
@@ -1262,9 +1268,17 @@ ed.showHideMoveToolBarButton = function () {
 
       function prettyGadgetInfo(gadget) {
         if (gadget.type === 'synoptic') {
-          return gadget.header.title.text;
+          if(typeof gadget.header =='undefined'){
+            return gadget.id;
+          }else{
+            return gadget.header.title.text;
+          }
         } else {
-          return gadget.header.title.text + " (" + gadget.type + ")";
+          if(typeof gadget.header =='undefined'){
+            return gadget.id;
+          }else{
+            return gadget.header.title.text + " (" + gadget.type + ")";
+          }          
         }
       }
 
@@ -1441,9 +1455,11 @@ ed.showHideMoveToolBarButton = function () {
 
       //Get gadget JSON and return string info for UI
       $scope.prettyGadgetInfo = function(gadget){
-       
+        if(typeof gadget.header =='undefined'){
+          return gadget.id;
+        }else{
           return gadget.header.title.text + " (" + gadget.type + ")";
-        
+        }
       }
 
       $scope.generateGadgetInfo = function (gadgetId){

@@ -11,11 +11,11 @@
     <form ng-cloak>    
     <md-input-container ng-if="create && !inline" class="md-dialog-content">
       <label>Gadget Identification</label>
-      <input type="text" name="identification" ng-model="dat.ident" pattern="[a-zA-Z0-9_-]*"/>
+      <input type="text" minlength="5" name="identification" ng-model="dat.ident" pattern="[a-zA-Z0-9_-]*"/>
     </md-input-container>
     <md-input-container ng-if="create && !inline" class="md-dialog-content">
       <label>Gadget description</label>
-      <input type="text" name="description" ng-model="dat.desc"/>
+      <input type="text" minlength="5" name="description" ng-model="dat.desc"/>
     </md-input-container>
     <div  flex="">
       <md-content>        

@@ -1,0 +1,32 @@
+version: '2'
+services:
+  {{SERVICE_NAME}}:
+    image: {{IMAGE_URL}}
+    privileged: true
+    environment:
+      ONESAIT_SERVER_NAME: {{ONESAIT_SERVER_NAME}}
+      SERVER_NAME: {{SERVER_NAME}}
+      CONTEXT_PATH: {{CONTEXT_PATH}}
+      PORT: {{PORT}}
+    stdin_open: true
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: {{{WORKER2DEPLOY}}}
+      io.rancher.sidekicks: {{SERVICE_NAME}}-sidecar
+  {{SERVICE_NAME}}-sidecar:
+    image: registry.onesaitplatform.com/onesaitplatform/consul-proxy-sidecar:2.0
+    hostname: {{SERVICE_NAME}}-sidecar
+    network_mode: container:{{SERVICE_NAME}}
+    privileged: true
+    stdin_open: true
+    tty: true
+    environment:
+      - CONSUL_AGENT=consul-agent.onesaitplatform   
+      - SERVICE_NAME={{SERVICE_NAME}} 
+      - PORT={{PORT}}
+      - STACK={{SERVICE_NAME}}
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: {{{WORKER2DEPLOY}}}
+      io.rancher.container.network: true

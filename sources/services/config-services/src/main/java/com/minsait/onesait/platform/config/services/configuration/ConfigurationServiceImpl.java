@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,18 @@
  */
 package com.minsait.onesait.platform.config.services.configuration;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +50,7 @@ import com.minsait.onesait.platform.config.model.Configuration.Type;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.ConfigurationRepository;
 import com.minsait.onesait.platform.config.services.exceptions.ConfigServiceException;
+import com.minsait.onesait.platform.config.services.ontologydata.DataClassValidationException;
 import com.minsait.onesait.platform.git.GitlabConfiguration;
 
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +61,9 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 
 	@Autowired
 	private ConfigurationRepository configurationRepository;
+	
+
+    private ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("nashorn");
 
 	private static final String DEFAULT = "default";
 
@@ -96,9 +108,11 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 				configuration.getType(), configuration.getEnvironment(), configuration.getIdentification());
 		if (oldConfiguration != null) {
 			throw new ConfigServiceException(
-					"Exist a configuration of this type for the environment and suffix:" + configuration.toString());
+					" A configuration definition already exists for that type and environment");
 		}
-
+		
+		checkIfScriptIsCorrect(configuration);
+		
 		oldConfiguration = new Configuration();
 		oldConfiguration.setUser(configuration.getUser());
 		oldConfiguration.setType(configuration.getType());
@@ -113,6 +127,8 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 	@Override
 	public void updateConfiguration(Configuration configuration) {
 		configurationRepository.findById(configuration.getId()).ifPresent(oc -> {
+	        checkIfScriptIsCorrect(configuration);
+	        
 			oc.setYmlConfig(configuration.getYmlConfig());
 			oc.setType(configuration.getType());
 			oc.setDescription(configuration.getDescription());
@@ -338,4 +354,58 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 		return configurationRepository.findByIdentification(identification);
 	}
 
+	private void checkIfScriptIsCorrect(Configuration configuration) {
+	    if(configuration.getType().equals(Type.DATACLASS)) {
+            final Map<String, Object> dclassyml = (Map<String, Object>) fromYaml(configuration.getYmlConfig()).get("dataclass");
+            ArrayList<Map<String, Object>> rules = (ArrayList<Map<String, Object>>)dclassyml.get("dataclassrules");
+            for(Map<String, Object> rule : rules) {
+                if(rule.get("ruletype").equals("property")) {
+                    ArrayList<Map<String, Object>> changes = (ArrayList<Map<String, Object>>)rule.get("changes");
+                    if(changes != null) {
+                        for(Map<String, Object> change: changes) {
+                            Object script = change.get("script");
+                            if(script != null && !script.toString().contains("toDate(")) {
+                                
+                                try {
+                                    final String scriptPostprocessFunction = "function preprocess(value){ " + script + " }";
+                                    final ByteArrayInputStream scriptInputStream = new ByteArrayInputStream(
+                                            scriptPostprocessFunction.getBytes(StandardCharsets.UTF_8));
+                                    scriptEngine.eval(new InputStreamReader(scriptInputStream));
+                                    final Invocable inv = (Invocable) scriptEngine;
+                                    inv.invokeFunction("preprocess", "valueTest");
+                                } catch (NoSuchMethodException e) {
+                                    throw new ConfigServiceException("There are errors in the " + change.get("name") + " change script: " + e.getMessage());
+                                } catch (ScriptException ex) {
+                                    throw new ConfigServiceException("There are errors in the " + change.get("name") + " change script: " + ex.getMessage());
+                                }
+                            }
+                        }
+                    }
+                } else if(rule.get("ruletype").equals("entity")) {
+                    ArrayList<Map<String, Object>> validations = (ArrayList<Map<String, Object>>)rule.get("validations");
+                    if(validations != null) {
+                        for(Map<String, Object> validation: validations) {
+                            Object script = validation.get("script");
+                            if(script != null) {
+                                try {
+                                    final String scriptPostprocessFunction = "function preprocess(rawdata){ " + script + " }";
+                                    final ByteArrayInputStream scriptInputStream = new ByteArrayInputStream(
+                                            scriptPostprocessFunction.getBytes(StandardCharsets.UTF_8));
+                                    scriptEngine.eval(new InputStreamReader(scriptInputStream));
+                                    final Invocable inv = (Invocable) scriptEngine;
+                                    inv.invokeFunction("preprocess", "{\"testScript\": \"test\"}");
+                                } catch (NoSuchMethodException e) {
+                                    log.error("Cannot eval preprocessing", e);
+                                    throw new ConfigServiceException("There are errors in the " + validation.get("name") + " validation script: " + e.getMessage());
+                                } catch (ScriptException ex) {
+                                    log.error("Cannot eval preprocessing", ex);
+                                    throw new ConfigServiceException("There are errors in the " + validation.get("name") + " validation script: " + ex.getMessage());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+	}
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,7 @@ import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;
 import com.minsait.onesait.platform.config.services.exceptions.VirtualDatasourceServiceException;
 import com.minsait.onesait.platform.config.services.user.UserService;
@@ -67,16 +69,24 @@ public class VirtualDatasourceController {
 
 	@Autowired
 	private AppWebUtils utils;
+	
+	@Autowired 
+	private HttpSession httpSession;
 
 	private static final String DATASOURCE_STR = "datasource";
 	private static final String VIRTUAL_DATASOURCE_CREATE = "virtualdatasources/create";
 	private static final String REDIRECT_VIRT_DS_LIST = "redirect:/virtualdatasources/list";
 	private static final String REDIRECT_VIRT_DS_CREATE = "redirect:/virtualdatasources/create";
+	private static final String APP_ID = "appId";
+	private static final String REDIRECT_PROJECT_SHOW = "redirect:/projects/update/";
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, @RequestParam(required = false, name = "identification") String identification) {
 
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
+		
 		model.addAttribute("datasources",
 				virtualDatasourceService.getAllByDatasourceNameAndUser(identification, utils.getUserId()));
 		return "virtualdatasources/list";
@@ -97,6 +107,12 @@ public class VirtualDatasourceController {
 				Arrays.stream(VirtualDatasourceType.values())
 						.filter(o -> !o.equals(VirtualDatasourceType.KUDU) && !o.equals(VirtualDatasourceType.PRESTO))
 						.collect(Collectors.toList()));
+		
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId!=null) {
+			model.addAttribute(APP_ID, projectId.toString());
+		}
+		
 		return VIRTUAL_DATASOURCE_CREATE;
 	}
 
@@ -166,6 +182,15 @@ public class VirtualDatasourceController {
 			redirect.addFlashAttribute(DATASOURCE_STR, datasource);
 			return REDIRECT_VIRT_DS_CREATE;
 		}
+		
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId!=null) {
+			httpSession.setAttribute("resourceTypeAdded", OPResource.Resources.ONTOLOGYVIRTUALDATASOURCE.toString());
+			httpSession.setAttribute("resourceIdentificationAdded", datasource.getIdentification());
+			httpSession.removeAttribute(APP_ID);
+			return REDIRECT_PROJECT_SHOW + projectId.toString();
+		}
+		
 		return REDIRECT_VIRT_DS_LIST;
 	}
 

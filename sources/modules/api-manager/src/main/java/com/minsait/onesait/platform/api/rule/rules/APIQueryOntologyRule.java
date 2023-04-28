@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,6 +85,7 @@ public class APIQueryOntologyRule extends DefaultRuleBase {
 
 	@Action
 	public void setFirstDerivedData(Facts facts) {
+		boolean isCustomSQL = false;
 		String queryDb = "";
 		String targetDb = "";
 		final Map<String, Object> data = facts.get(RuleManager.FACTS);
@@ -95,13 +96,14 @@ public class APIQueryOntologyRule extends DefaultRuleBase {
 		final String pathInfo = (String) data.get(Constants.PATH_INFO);
 		final byte[] requestBody = (byte[]) data.get(Constants.BODY);
 		final String body = requestBody == null ? null : new String(requestBody);
+		final String method = (String) data.get(Constants.METHOD);
 		String queryType = (String) data.get(Constants.QUERY_TYPE);
 
 		final Ontology ontology = api.getOntology();
 		if (ontology != null) {
 			data.put(Constants.IS_EXTERNAL_API, false);
 
-			final ApiOperation customSQL = apiManagerService.getCustomSQL(pathInfo, api, null);
+			final ApiOperation customSQL = apiManagerService.getCustomSQL(pathInfo, api, method);
 
 			final String objectId = apiManagerService.getObjectidFromPathQuery(pathInfo, customSQL);
 			if (customSQL == null && !StringUtils.isEmpty(objectId)
@@ -146,6 +148,7 @@ public class APIQueryOntologyRule extends DefaultRuleBase {
 					queryType = result.getQueryType();
 					queryDb = result.getQueryDb();
 					targetDb = result.getTargetDb();
+					isCustomSQL = true;
 				} catch (final IllegalArgumentException e) {
 					stopAllNextRules(facts, e.getMessage(), ReasonType.DEVELOPMENT, HttpStatus.INTERNAL_SERVER_ERROR);
 				}
@@ -158,6 +161,7 @@ public class APIQueryOntologyRule extends DefaultRuleBase {
 			data.put(Constants.OBJECT_ID, objectId);
 			data.put(Constants.ONTOLOGY, ontology);
 
+			data.put(Constants.IS_CUSTOM_SQL, isCustomSQL);
 			// Guess type of operation!!!
 
 		} else {
@@ -176,7 +180,7 @@ public class APIQueryOntologyRule extends DefaultRuleBase {
 		switch (dataSource) {
 		case VIRTUAL:
 			final String id = ontologyVirtualRepository
-					.findOntologyVirtualObjectIdByOntologyIdentification(ontology.getIdentification());
+			.findOntologyVirtualObjectIdByOntologyIdentification(ontology.getIdentification());
 			if (id != null && !id.isEmpty()) {
 				queryDb = "SELECT * FROM " + ontology.getIdentification() + " WHERE " + id + "="
 						+ apiManagerService.getFieldValue(objectId);
@@ -189,8 +193,7 @@ public class APIQueryOntologyRule extends DefaultRuleBase {
 				queryDb = "select *, _id from " + ontology.getIdentification() + " as c where _id = OID(\"" + objectId
 						+ "\")";
 			} else {
-				queryDb = "select * from " + ontology.getIdentification() + " as c where _id = OID('" + objectId
-						+ "')";
+				queryDb = "select * from " + ontology.getIdentification() + " as c where _id = OID('" + objectId + "')";
 			}
 			break;
 		case ELASTIC_SEARCH:
@@ -227,13 +230,14 @@ public class APIQueryOntologyRule extends DefaultRuleBase {
 			}
 		}
 
-		if (body == null || body.equals("")) {
-			final Map<String, String> queryParametersValues = apiManagerService.getCustomParametersValues(request, body,
-					queryParametersCustomQuery, customSQL);
-			queryDb = apiManagerService.buildQuery(queryDb, queryParametersValues, user);
-		} else {
-			queryDb = body;
-		}
+		//		if (body == null || body.equals("") || (Boolean) data.get(Constants.IS_CUSTOM_SQL)) {
+		final Map<String, String> queryParametersValues = apiManagerService.getCustomParametersValues(request, body,
+				queryParametersCustomQuery, customSQL);
+		queryDb = apiManagerService.buildQuery(queryDb, queryParametersValues, user);
+		//		}
+		//		else {
+		//			queryDb = body;
+		//		}
 
 		final CustomQueryData result = new CustomQueryData();
 		result.setQueryDb(queryDb);

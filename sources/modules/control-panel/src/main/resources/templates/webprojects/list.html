@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -200,10 +200,10 @@
 															<!-- URL -->
 															<td class="text-left text-primary" th:text="${rootWWW} + ${webproject.identification} + '/' + ${webproject.mainFile}"></td>
 															<!-- DATE -->
-															<td class="text-left" th:if="${webproject.created!=null}"><span th:text="${webproject.created}" ></span></td>
+															<td class="text-left" th:if="${webproject.created!=null}"><span th:text="${#dates.format(webproject.created,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(webproject.created,'dd/MM/YYYY')}" ></span></td>
 															<td class="text-left" th:if="${webproject.created==null}" th:text="'---'"></td>
 															<!-- UPDATE -->
-															<td class="text-left" th:if="${webproject.updated!=null}"><span th:text="${webproject.updated}" ></span></td>
+															<td class="text-left" th:if="${webproject.updated!=null}"><span th:text="${#dates.format(webproject.updated,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(webproject.updated,'dd/MM/YYYY')}" ></span></td>
 															<td class="text-left" th:if="${webproject.updated==null}" th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">

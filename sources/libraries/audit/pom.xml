@@ -16,7 +16,11 @@
 	</properties>
 
 	<dependencies>
-	
+		<dependency>
+			<groupId>com.minsait.onesait.platform</groupId>
+			<artifactId>onesaitplatform-router-services</artifactId>
+			<version>${project.version}</version>
+		</dependency>		
 	
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>

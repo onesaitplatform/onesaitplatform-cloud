@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,6 +104,7 @@ public class KafkaOntologyConsumer {
 				if (!batchsToInsert.containsKey(ontologyId)) {
 					final StringBuilder stringBuilder = new StringBuilder();
 					stringBuilder.append("[");
+					comma = "";
 					batchsToInsert.put(ontologyId, stringBuilder);
 				}
 
@@ -172,6 +173,7 @@ public class KafkaOntologyConsumer {
 				if (!batchsToInsert.containsKey(ontologyId + "-" + vertical + "-" + tenant)) {
 					final StringBuilder stringBuilder = new StringBuilder();
 					stringBuilder.append("[");
+					comma = "";
 					batchsToInsert.put(ontologyId + "-" + vertical + "-" + tenant, stringBuilder);
 				}
 

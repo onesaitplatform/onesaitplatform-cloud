@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.json.JSONArray;
@@ -169,8 +170,8 @@ public class DashboardManagementRestController {
 	@Operation(summary = "Get dashboard by identification or id")
 	@GetMapping(PATH + "/{identification}")
 	public ResponseEntity<DashboardDTO> getDashboardByIdentification(
-			@Parameter(description= "dashboard identification or id", required = true) @PathVariable("identification") String identification) {
-
+			@Parameter(description= "dashboard identification or id", required = true) @PathVariable("identification") String identification, HttpServletResponse response) {
+		utils.cleanInvalidSpringCookie(response);
 		Dashboard dashboard = dashboardService.getDashboardByIdentification(identification, utils.getUserId());
 		if (dashboard == null) {
 			dashboard = dashboardService.getDashboardById(identification, utils.getUserId());

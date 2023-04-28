@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ import com.minsait.onesait.platform.config.services.exceptions.OPResourceService
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.config.services.usertoken.UserTokenService;
-
+import com.minsait.onesait.platform.config.repository.OntologyUserAccessRepository;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -68,6 +68,8 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 
 	@Autowired
 	private UserRepository userRepository;
+	@Autowired
+	private OntologyUserAccessRepository ontologyUserAccessRepository;
 	@Autowired
 	private ApiRepository apiRepository;
 	@Autowired
@@ -493,6 +495,28 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 		return userApi;
 	}
 
+	@Override
+	@Modifying
+	public boolean permision (String apiId, String userId) {
+		
+		String typeOntology = apiRepository.typeOntology(apiId);
+		
+		
+		if (typeOntology == "INTERNAL_ONTOLOGY"){
+			String getOntologyId = apiRepository.getOntologyId(apiId);
+			String getPermision = ontologyUserAccessRepository.getPermision(userId, getOntologyId);
+			if (getPermision == null ) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	
+	
+	
+	
+	
 	@Override
 	public List<UserApi> updateAuthorizationAllVersions(String identification, String userId, User user) {
 		// for api+version: if possible: update auth, else: skip update auth

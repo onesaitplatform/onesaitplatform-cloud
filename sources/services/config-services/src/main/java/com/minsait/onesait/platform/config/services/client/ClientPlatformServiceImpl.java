@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -162,18 +162,18 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 
 		if (userService.isUserAdministrator(user)) {
 			if (identification != null) {
-				final ClientPlatform cli = clientPlatformRepository.findByIdentification(identification);
+				final List<ClientPlatform> cli = clientPlatformRepository.findByIdentificationLike(identification);
 				if (cli != null) {
-					clients.add(cli);
+					clients.addAll(cli);
 				}
 			} else {
 				clients = clientPlatformRepository.findAll();
 			}
 		} else {
 			if (identification != null) {
-				final ClientPlatform cliUs = clientPlatformRepository.findByUserAndIdentification(user, identification);
+				final List<ClientPlatform> cliUs = clientPlatformRepository.findByUserAndIdentificationLike(user, identification);
 				if (cliUs != null) {
-					clients.add(cliUs);
+					clients.addAll(cliUs);
 				}
 			} else {
 				clients = clientPlatformRepository.findByUser(user);

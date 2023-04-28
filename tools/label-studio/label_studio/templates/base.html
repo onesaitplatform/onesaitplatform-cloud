@@ -1,0 +1,147 @@
+{% load static %}
+{% load i18n %}
+{% load rules %}
+{% load filters %}
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="author" content="Label Studio"/>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, shrink-to-fit=no">
+
+  <!-- Address string color -->
+  <meta name="theme-color" content="#272727"> <!-- Chrome, Firefox OS and Opera -->
+  <meta name="msapplication-navbutton-color" content="#272727">  <!-- Windows Phone -->
+  <meta name="apple-mobile-web-app-status-bar-style" content="#272727">  <!-- iOS Safari -->
+
+  <link href="{{settings.HOSTNAME}}{% static 'images/favicon.ico' %}" rel="shortcut icon"/>
+  <link href="{{settings.HOSTNAME}}{% static 'css/uikit.css' %}" rel="stylesheet">
+  <link href="{{settings.HOSTNAME}}{% static 'css/main.css' %}" rel="stylesheet">
+  <link href="{{settings.HOSTNAME}}/static/fonts/roboto/roboto.css" rel="stylesheet">
+  <link href="{{settings.HOSTNAME}}/react-app/main.css?v={{ versions.backend.commit }}" rel="stylesheet">
+
+  <script src="{{settings.HOSTNAME}}{% static 'js/jquery.min.js' %}"></script>
+  <script src="{{settings.HOSTNAME}}{% static 'js/helpers.js' %}"></script>
+
+  <script>
+    EDITOR_JS = "{{settings.HOSTNAME}}/label-studio-frontend/js/main.js?v={{ versions.lsf.commit }}";
+    EDITOR_CSS = "{{settings.HOSTNAME}}/label-studio-frontend/css/main.css?v={{ versions.lsf.commit }}";
+    DM_JS = "{{settings.HOSTNAME}}/dm/js/main.js?v={{ versions.dm2.commit }}";
+    DM_CSS = "{{settings.HOSTNAME}}/dm/css/main.css?v={{ versions.dm2.commit }}";
+  </script>
+
+  <script
+   src="https://browser.sentry-cdn.com/5.17.0/bundle.min.js"
+   integrity="sha384-lowBFC6YTkvMIWPORr7+TERnCkZdo5ab00oH5NkFLeQUAmBTLGwJpFjF6djuxJ/5"
+   crossorigin="anonymous"></script>
+
+  <script>
+    window.exports = () => {};
+  </script>
+
+  {% block head %}
+    <title>Data Labeling Tool</title>
+  {% endblock %}
+
+  {% block head-toast %}
+    <script src="{{settings.HOSTNAME}}{% static 'js/Toast.min.js' %}"></script>
+    <link href="{{settings.HOSTNAME}}{% static 'css/Toast.min.css' %}" rel="stylesheet">
+  {% endblock %}
+
+  {% get_current_language as LANGUAGE_CODE %}
+  {% get_available_languages as LANGUAGES %}
+</head>
+
+<body>
+
+<div class="app-wrapper"></div>
+
+<template id="main-content">
+  <main class="main" style="background: transparent">
+
+      <div class="ui floating dropdown theme basic" style="float: right;">
+        {% block top-buttons %}
+        {% endblock %}
+      </div>
+    </div>
+
+    <!-- Space & Divider -->
+    {% block divider %}
+      <div class="ui divider divider-wide"></div>
+    {% endblock %}
+
+    <!-- Content -->
+    {% block content %}
+    {% endblock %}
+
+  </main>
+</template>
+
+<template id="context-menu-left">
+  {% block context_menu_left %}{% endblock %}
+</template>
+
+<template id="context-menu-right">
+  {% block context_menu_right %}{% endblock %}
+</template>
+
+<script id="app-settings">
+  window.APP_SETTINGS = Object.assign({
+    user: {
+      id: {{ user.pk }},
+      username: "{{user.username}}",
+      firstName: "{{user.first_name}}",
+      lastName: "{{user.last_name}}",
+      initials: "{{user.get_initials}}",
+      email: "{{user.email}}",
+      allow_newsletters: {% if user.allow_newsletters is None %}null{% else %}{{user.allow_newsletters|yesno:"true,false"}}{% endif %},
+      {% if user.avatar %}
+      avatar: "{{user.avatar_url|safe}}",
+      {% endif %}
+    },
+    debug: {{settings.DEBUG|yesno:"true,false"}},
+    hostname: "{{settings.HOSTNAME}}",
+    version: {{ versions|json_dumps_ensure_ascii|safe }},
+    sentry_dsn: {% if settings.FRONTEND_SENTRY_DSN %}"{{ settings.FRONTEND_SENTRY_DSN }}"{% else %}null{% endif %},
+    sentry_rate: "{{ settings.FRONTEND_SENTRY_RATE }}",
+    sentry_environment: "{{ settings.FRONTEND_SENTRY_ENVIRONMENT }}",
+    editor_keymap: JSON.parse({{ settings.EDITOR_KEYMAP|safe }}),
+    feature_flags: {{ feature_flags|json_dumps_ensure_ascii|safe }},
+    feature_flags_default_value: {{ settings.FEATURE_FLAGS_DEFAULT_VALUE|json_dumps_ensure_ascii|safe }},
+
+    {% block app_more_settings %}
+      flags: {
+        allow_organization_webhooks: {{settings.ALLOW_ORGANIZATION_WEBHOOKS|yesno:"true,false"}}
+      }
+    {% endblock %}
+
+  }, {% block frontend_settings %}{}{% endblock %});
+</script>
+
+<script src="{{settings.HOSTNAME}}/react-app/index.js?v={{ versions.backend.commit }}"></script>
+
+<div id="dynamic-content">
+  <script>
+      applyCsrf();
+
+      $('.message .close').on('click', function () {
+           $(this).closest('.message').transition('fade');
+      });
+  </script>
+
+  {% block bottomjs %}
+  {% endblock %}
+
+  {% block storage-persistence %}
+
+  {% endblock %}
+
+  {% block billing-checks %}
+  {% endblock %}
+
+</div>
+
+</body>
+</html>

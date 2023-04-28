@@ -2,7 +2,7 @@
 <div class="page-dashboard-container" ng-style="{'background-image':'url(' + vm.page.background.filedata + ')','background-color': vm.page.background.color }">
   
 
-  <synoptic ng-if="vm.synopticedit.showSynoptic && !vm.synopticedit.showEditor" style="position: absolute; z-index:1 ;" synoptic="vm.synoptic" backgroundcolorstyle="vm.page.background.color" ></synoptic>
+  <synoptic ng-if="vm.synopticedit.showSynoptic && !vm.synopticedit.showEditor" style="position: absolute; z-index:1 ;left:0px;" synoptic="vm.synoptic" backgroundcolorstyle="vm.page.background.color" ></synoptic>
   <span ng-repeat="layer in vm.page.layers">  
     <gridster  ng-style="vm.pageStyle()" ng-if="(vm.synopticedit.showSynoptic && !vm.synopticedit.showEditor && (vm.page.combinelayers || vm.page.selectedlayer == $index))||(!vm.synopticedit.showSynoptic && (vm.page.combinelayers || vm.page.selectedlayer == $index)) " options="vm.gridoptions"  class="flex">
         <element ng-style="{'z-index':$parent.$index*500+1}" ng-if="item.id" id="{{item.id}}" idtemplate="{{item.idtemplate}}"  iframe="vm.iframe"  editbuttonsiframe="vm.editbuttonsiframe"  element="item" editmode="vm.editmode" showfavoritesg="vm.showfavoritesg" eventedit="vm.gridoptions.eventedit" ng-repeat="item in layer.gridboard"></element>

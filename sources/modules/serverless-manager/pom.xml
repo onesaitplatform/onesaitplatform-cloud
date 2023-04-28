@@ -14,7 +14,10 @@
 		<license.dir>${project.parent.basedir}</license.dir>
 	</properties>
 	<dependencies>
-		
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>

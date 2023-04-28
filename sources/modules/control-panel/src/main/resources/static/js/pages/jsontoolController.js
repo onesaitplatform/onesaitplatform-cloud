@@ -1,5 +1,6 @@
 var JsonToolController = function(){
 	var fileLoaded;
+	var myCodeMirrorSlice20;
 	var parentNode;
 	var myCodeMirror;
 	var myCodeMirrorSchema;
@@ -10,7 +11,7 @@ var JsonToolController = function(){
 	var counter= 0;
 	var arrayJson;
 	var ontologyId;
-	var RegExPattern = /^[5,a-zA-Z0-9_]{5,}$/;
+	var RegExPattern = /^[A-Z-a-z_][\w\d\s]{5,}$/;
 	var handleCodeMirror = function () {
 		
         var myTextArea = document.getElementById('jsonTextArea');
@@ -79,7 +80,7 @@ var JsonToolController = function(){
 				//	$('#returnAction').modal("show");
 				toastr.error(messagesForms.operations.genOpError, err);
 			}
-			var payload = {'ontologyDescription':$('#ontologyDescription').val(),'ontologyIdentification':$('#ontologyIdentification').val(),'schema': myCodeMirrorSchema.getValue(), 'datasource' : $('#datasource').val()};
+			var payload = {'ontologyDescription':$('#ontologyDescription').val(),'ontologyIdentification':$('#ontologyIdentification').val(),'schema': myCodeMirrorSchema.getValue(), 'datasource' : $('#datasource').val(), 'contextdata': $('#check-contextdata').is(':checked'), 'appId': $("#appId").val()};
 			payload[csrfParam] = csrfToken;
 			jQuery.post(createUrl,payload, function(data){
 				try{
@@ -97,11 +98,20 @@ var JsonToolController = function(){
 						//	$('#returnAction').modal("show");
 						toastr.success(messagesForms.validation.genFormSuccess,ontologyCreated);
 						importBulkJson($('#ontologyIdentification').val());
+						
+						if ($("#appId").val()!=null){
+							navigateUrl('/controlpanel/projects/update/' + $("#appId").val());
+						}
 					}else{
 						//	$('#response').text(ontologyCreated);
 						//	$('#returnAction').modal("show");
 						toastr.success(messagesForms.validation.genFormSuccess,ontologyCreated);
-						navigateUrl('/controlpanel/ontologies/show/' + ontologyId);
+						
+						if ($("#appId").val()!=null){
+							navigateUrl('/controlpanel/projects/update/' + $("#appId").val());
+						} else {
+							navigateUrl('/controlpanel/ontologies/show/' + ontologyId);
+						}
 					}
 				}else{
 					//	$('#response').html(nl2br(data.cause));
@@ -128,7 +138,7 @@ var JsonToolController = function(){
 			$('#ontologyIdentification').closest('.form-group').removeClass('has-error');
 		}
 		
-		if($('#ontologyDescription').val() == "") {
+		if($('#ontologyDescription').val() == ""|| !$('#ontologyDescription').val().match(RegExPattern)) {
 			$('#ontologyDescriptionerror').removeClass('hide');
 			$('#ontologyDescription').closest('.form-group').addClass('has-error');
 			toastr.error(messagesForms.operations.genOpError,invaliddescr);
@@ -179,11 +189,22 @@ var JsonToolController = function(){
 //			$('#ErrorOntSelect').modal("show");
 			toastr.error(messagesForms.operations.genOpError,'Select ontology first');
 		}else{
-			if(ontology == null )
+			if(ontology == null ){
 				ontology = $('#ontology').val();
+			}
 			arrayJson = fileLoaded;
-			if(fileLoaded == null) 
+			if(fileLoaded.length > 100 ){
+				myCodeMirrorSlice20 = (JSON.stringify(fileLoaded.slice(0,20))); 
+				
+				if(myCodeMirrorSlice20 != JSON.stringify(JSON.parse(myCodeMirror.getValue()))) {
+					arrayJson = JSON.parse(myCodeMirror.getValue());
+				} else {
+					arrayJson = fileLoaded;
+				} 
+			} else {
 				arrayJson = JSON.parse(myCodeMirror.getValue());
+			}
+		
 			if(parentNode != null){
 				//var arrayJson = fileLoaded;
 				var newArray = [];
@@ -351,9 +372,9 @@ var JsonToolController = function(){
     }
 	
 	var printJson = function(){
-	
+		
 		if(fileLoaded.length > 100){
-			myCodeMirror.setValue(JSON.stringify(fileLoaded.slice(0,20)));
+			myCodeMirror.setValue(JSON.stringify(fileLoaded.slice(0,20)));	
 		}else{
 			myCodeMirror.setValue(JSON.stringify(fileLoaded));
 		}
@@ -544,7 +565,7 @@ var JsonToolController = function(){
 			});
 			
 			$('#ontologyDescription').bind('blur', function(event) {
-				if($('#ontologyDescription').val() == "") {
+				if($('#ontologyDescription').val() == "" || !$('#ontologyDescription').val().match(RegExPattern)) {
 					$('#ontologyDescriptionerror').removeClass('hide');
 					$('#ontologyDescription').closest('.form-group').addClass('has-error');
 				} else {

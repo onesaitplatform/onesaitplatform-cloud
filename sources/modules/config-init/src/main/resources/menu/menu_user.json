@@ -15,9 +15,9 @@
 			"submenu": [
 				{
 					"title": {
-						"EN": "My Projects",
-						"ES": "Mis Proyectos",
-						"FR": "Mes Projets"
+						"EN": "My Applications",
+						"ES": "Mis Aplicaciones",
+						"FR": "Mes Applications"
 					},
 					"icon": "",
 					"url": "/controlpanel/projects/list"
@@ -121,6 +121,54 @@
 					"icon": "",
 					"url": "/controlpanel/marketasset/list"
 				}
+			]
+		},
+		
+		{
+			"title": {
+				"EN": "OPEN DATA",
+				"ES": "INFORMACIÓN ABIERTA",
+				"FR": "DONNÉES OUVERTES"
+			},
+			"icon": "icon-open-data",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "Open Data Portal",
+						"ES": "Portal de Datos Abiertos",
+						"FR": "Portail de Données Ouvertes"
+					},
+					"icon": "",
+					"url": "/controlpanel/opendata/access"
+				},
+				{
+					"title": {
+						"EN": "My Organizations",
+						"ES": "Mis Organizaciones",
+						"FR": "Mes organisations"
+					},
+					"icon": "",
+					"url": "/controlpanel/opendata/organizations/list"
+				},
+				{
+					"title": {
+						"EN": "My Datasets",
+						"ES": "Mis Datasets",
+						"FR": "Mes Ensembles de Données"
+					},
+					"icon": "",
+					"url": "/controlpanel/opendata/datasets/list"
+				},
+				{
+					"title": {
+						"EN": "My Resources",
+						"ES": "Mis Recursos",
+						"FR": "Mes Ressources"
+					},
+					"icon": "",
+					"url": "/controlpanel/opendata/resources/list"
+				}	
 			]
 		}
 	]

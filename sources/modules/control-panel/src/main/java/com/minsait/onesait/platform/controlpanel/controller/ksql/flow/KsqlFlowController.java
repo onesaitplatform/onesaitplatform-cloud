@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,17 +70,22 @@ public class KsqlFlowController {
 	private OntologyService ontologyService;
 	@Autowired
 	private KsqlRelationFIQL ksqlRelationFIQL;
+	@Autowired 
+	private HttpSession httpSession;
 
 	private static final String KSQL_FLOW_VALIDATION_ERROR = "ksql.flow.validation.error";
 	private static final String REDIRECT_KSQL_FLOW_LIST = "redirect:/ksql/flow/list";
 	private static final String KSQL_FLOW = "ksqlFlow";
+	private static final String APP_ID = "appId";
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, HttpServletRequest request,
 			@RequestParam(required = false, name = "identification") String identification,
 			@RequestParam(required = false, name = "description") String description) {
-
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
+		
 		List<KsqlFlow> ksqlFlows = this.ksqlFlowService.getKsqlFlowsWithDescriptionAndIdentification(
 				userService.getUser(utils.getUserId()), identification, description);
 		model.addAttribute("ksqlFlows", ksqlFlows);

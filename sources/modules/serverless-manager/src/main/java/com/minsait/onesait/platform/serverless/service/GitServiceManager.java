@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,6 +92,7 @@ public class GitServiceManager {
 	}
 
 	public void addAllAndPush(String projectName, GitlabConfiguration gitConfig) {
+		gitOperations.configureGit(gitConfig.getUser(), gitConfig.getEmail(), TMP_DIR + projectName);
 		gitOperations.addAll(TMP_DIR + projectName);
 		gitOperations.commit("Bump function yaml version for deployments", TMP_DIR + projectName);
 		gitOperations.push(gitConfig.getProjectURL(), gitConfig.getUser(), gitConfig.getPrivateToken(),

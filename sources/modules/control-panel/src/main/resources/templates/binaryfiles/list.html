@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -103,6 +103,13 @@
 				<div class="row">					
 						<div class="portlet light ">
 							<div class="portlet-title">
+							<div class="col-md-12 col-sm-6 col-xs-16" >
+									<div class="alert alert-info alert-dismissable">
+										<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+										<i class="fa fa-info-circle"></i>
+										<span th:text="#{binaryfiles.limit.excedeed}"></span>
+									</div>	
+								</div>
 								<div class="caption">									
 									<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="caption-subject" th:text="#{binaryfiles.breadcrumb.manage}"> Manage Files</span>
 									<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" class="caption-subject" th:text="#{binaryfiles.breadcrumb}"> My Files</span>
@@ -149,6 +156,7 @@
 											  <th:block th:include="versioning/fragments/form-commit"></th:block>
 										      <input class="form-group button_text hide" id="buttonLoadFile" type="file" accept="*" name="file"  />
 										  	  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+										  	  <input type="hidden" th:if="${appId}" name="appID" th:value="${appId}" />
 										      <div class="form-group">
 										      <input class="form-control no-remove" type="text" name="metadata" id="metadata" th:placeholder="#{binaryfiles.metadata}"/>
 										 	  <br/>    
@@ -467,7 +475,8 @@
 	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
 	
 	<script th:inline="javascript">	
-	
+	var name = [[${param.name}]] || '';
+	name ? $('#file-name').val(name) : name = '';
 	var role = [[${#strings.arrayJoin(#authentication.authorities,'')}]]
 	
 	// DATATABLES LANGUAJE FROM PROPERTIES.
@@ -502,17 +511,18 @@
 		});	
 		
 
+	
+		
 		// SEARCH FORM RESET
 		$('#reset_file').on('click',function(){
-			$('#file-name').val('');
-			$('#files').DataTable().column(0).search('').draw();
-		});
-
-		// SEARCH FORM
-		$('#search_file').on('click',function(){
-			$('#files').DataTable().column(0).search( $('#file-name').val()).draw();
+		    
+			$('#form_file')[0].reset();
+			$('#form_file')[0].submit();
 		});
 		
+		// SEARCH FORM
+		$('#search_file').on('click',function(){ $('#form_file')[0].submit(); });
+	
 		
 	});
 	 
@@ -592,6 +602,16 @@
 		
 		$('#submitUpdate').on('click', function(){
 			$('#form_update').submit();
+		})
+		
+		if ([[${appId}]]!=null){
+			$('#newFile').modal('show');
+		}
+		
+		$('.close').on('click', function(){
+			if ([[${appId}]]!=null){
+				navigateUrl([[@{'/projects/update/'} + ${appId}]])
+			}
 		})
 	});
 	

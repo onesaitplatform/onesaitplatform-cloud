@@ -1,0 +1,22 @@
+{% extends 'simple.html' %}
+{% load static %}
+
+{% block head %}
+  <title>404 | Label Studio</title>
+  <link rel="stylesheet" href="{{ settings.HOSTNAME }}{% static 'css/error.css' %}"/>
+{% endblock %}
+
+
+{% block content %}
+<div class="ls-global-error">
+  <h1>Server error</h1>
+  <img class="ls-global-error__heidi" src="{{ settings.HOSTNAME }}{% static 'images/opossum_broken.svg' %}" height="111" alt="Heidi's down" />
+  <h2>404 Not Found</h2>
+{#  <div class="ls-global-error__details">{{ exception }}</div>#}
+  <p class="ls-global-error__actions">
+   
+    <button onClick="history.back()">Go Back</button>
+    <button onClick="location.reload()">Reload</button>
+  </p>
+</div>
+{% endblock %}

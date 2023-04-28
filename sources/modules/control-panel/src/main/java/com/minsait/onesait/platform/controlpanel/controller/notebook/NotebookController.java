@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.List;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,7 +94,12 @@ public class NotebookController {
 
 	@Autowired
 	private ResourcesInUseService resourcesInUseService;
+	
+	@Autowired 
+	private HttpSession httpSession;
 
+	private static final String APP_ID = "appId";
+	
 	@Transactional
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
 	@PostMapping(value = "/createNotebook")
@@ -238,6 +244,11 @@ public class NotebookController {
 		uiModel.addAttribute("lnt", notebookService.getNotebooks(utils.getUserId()));
 		uiModel.addAttribute("user", utils.getUserId());
 		uiModel.addAttribute("userRole", utils.getRole());
+		
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId!=null) {
+			uiModel.addAttribute(APP_ID, projectId.toString());
+		}
 
 		return "notebooks/list";
 	}

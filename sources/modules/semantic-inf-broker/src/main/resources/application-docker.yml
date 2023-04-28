@@ -66,6 +66,7 @@ onesaitplatform: #Config onesaitplatform specific
    audit.global.notify: ${AUDITGLOBALNOTIFY}
    hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
    hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
+   router.metrics.query.enabled: ${QUERY_METRICS_ENABLED}
    router.notifications.pool:
       nodered: ${NOTIFICATION_POOL_NODERED}
       kafka: ${NOTIFICATION_POOL_KAFKA}
@@ -108,3 +109,4 @@ logging:
    level:
       com.minsait: ${OP_LOG_LEVEL}
       org.springframework.boot: ${OP_LOG_LEVEL}
+      org.zalando.logbook: ${HTTP_LOG_LEVEL}

@@ -48,12 +48,6 @@
 			<artifactId>onesaitplatform-pass-encryptor</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
-		<dependency>
-			<groupId>com.minsait.onesait.platform</groupId>
-			<artifactId>onesaitplatform-metrics-aggregator</artifactId>
-			<version>${project.version}</version>
-		</dependency>
 		<!-- OneLog -->
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
@@ -68,6 +62,10 @@
 				<exclusion>
 					<groupId>org.springframework.boot</groupId>
 					<artifactId>spring-boot-starter-tomcat</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-databind</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -103,10 +101,10 @@
 		</dependency>
 
 
-		<!-- NOT USED <dependency> <groupId>io.hawt</groupId> <artifactId>hawtio-springboot</artifactId> 
-			<version>${version.hawtio}</version> </dependency> metrics <dependency> <groupId>io.dropwizard.metrics</groupId> 
-			<artifactId>metrics-core</artifactId> </dependency> <dependency> <groupId>io.dropwizard.metrics</groupId> 
-			<artifactId>metrics-graphite</artifactId> </dependency> <dependency> <groupId>io.dropwizard.metrics</groupId> 
+		<!-- NOT USED <dependency> <groupId>io.hawt</groupId> <artifactId>hawtio-springboot</artifactId>
+			<version>${version.hawtio}</version> </dependency> metrics <dependency> <groupId>io.dropwizard.metrics</groupId>
+			<artifactId>metrics-core</artifactId> </dependency> <dependency> <groupId>io.dropwizard.metrics</groupId>
+			<artifactId>metrics-graphite</artifactId> </dependency> <dependency> <groupId>io.dropwizard.metrics</groupId>
 			<artifactId>metrics-annotation</artifactId> </dependency> -->
 
 	</dependencies>

@@ -340,6 +340,12 @@ var HeaderController = function() {
 							Content += "<br>" + data.clients[i];
 						}
 					}
+					if(data.resources.length > 0) {
+						Content += "<br><b> Open Data Resources: </b>";
+						for(var i=0; i<data.resources.length; i++){
+							Content += "<br>" + data.resources[i];
+						}
+					}
 					$.confirm({
 						title: Title,
 						theme: 'light',			
@@ -1126,6 +1132,42 @@ var HeaderController = function() {
 		});
 	}
 
+    // DASHBOARDS-CONFIRM-DIALOG
+	var showConfirmDialogDataLabelingProjectDelete = function(formId){	
+
+		//i18 labels
+		var Close = headerReg.btnCancelar;
+		var Remove = headerReg.btnEliminar;
+		var Content = headerReg.dataLabelingDelete;
+		var Title = headerReg.dataLabelingDeleteTitle;
+
+		// jquery-confirm DIALOG SYSTEM.
+		$.confirm({
+			title: Title,
+			theme: 'light',
+			columnClass: 'medium',
+			content: Content,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			buttons: {
+				close: {
+					text: Close,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function (){} //GENERIC CLOSE.		
+				},
+				remove: {
+					text: Remove,
+					btnClass: 'btn btn-primary',
+					action: function(){ 
+						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
+					}											
+				}
+			}
+		});
+	}
+
+
 	// DEVICE-CONFIRM-DIALOG
 	var showConfirmDialogDevice = function(formId){	
 
@@ -1298,6 +1340,111 @@ var HeaderController = function() {
 				}
 			}
 		});
+	}
+
+	// DATASET-CONFIRM-DIALOG
+	var showDatasetConfirmDialog = function(formId){
+
+		// i18 labels
+		var Remove = headerReg.btnEliminar;
+		var Close = headerReg.btnCancelar;
+		var	Content = headerReg.datasetConfirm;
+		var Title = headerReg.datasetDelete;
+
+		// dataset-confirm DIALOG SYSTEM.
+		$.confirm({
+			title: Title,
+			theme: 'light',
+			columnClass: 'medium',
+			content: Content,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			buttons: {
+				close: {
+					text: Close,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function (){} //GENERIC CLOSE.		
+				},				
+				remove: {
+					text: Remove,
+					btnClass: 'btn btn-primary',
+					action: function(){ 
+						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
+					}
+				}
+			}
+		});		
+	}
+
+	// RESOURCE-CONFIRM-DIALOG
+	var showResourceConfirmDialog = function(formId){
+
+		// i18 labels
+		var Remove = headerReg.btnEliminar;
+		var Close = headerReg.btnCancelar;
+		var	Content = headerReg.resourceConfirm;
+		var Title = headerReg.resourceDelete;
+
+		// resource-confirm DIALOG SYSTEM.
+		$.confirm({
+			title: Title,
+			theme: 'light',
+			columnClass: 'medium',
+			content: Content,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			buttons: {
+				close: {
+					text: Close,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function (){} //GENERIC CLOSE.		
+				},				
+				remove: {
+					text: Remove,
+					btnClass: 'btn btn-primary',
+					action: function(){ 
+						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
+					}
+				}
+			}
+		});		
+	}
+
+	// ORGANIZATION-CONFIRM-DIALOG
+	var showOrganizationConfirmDialog = function(formId){
+
+		// i18 labels
+		var Remove = headerReg.btnEliminar;
+		var Close = headerReg.btnCancelar;
+		var	Content = headerReg.organizationConfirm;
+		var Title = headerReg.organizationDelete;
+
+		// organization-confirm DIALOG SYSTEM.
+		$.confirm({
+			title: Title,
+			theme: 'light',
+			columnClass: 'medium',
+			content: Content,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			buttons: {
+				close: {
+					text: Close,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function (){} //GENERIC CLOSE.		
+				},				
+				remove: {
+					text: Remove,
+					btnClass: 'btn btn-primary',
+					action: function(){ 
+						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
+					}
+				}
+			}
+		});		
 	}
 
 	// INTERNATIONALIZATION-CONFIRM-DIALOG
@@ -1643,6 +1790,21 @@ var HeaderController = function() {
 			logControl ? console.log('showConfirmDialogQueryTemplate()...') : '';
 			showConfirmDialogQueryTemplate(formId);
 		},
+		// DATASET-CONFIRM-DIALOG
+		showDatasetConfirmDialog : function(formId){		
+			logControl ? console.log('showDatasetConfirmDialog()...') : '';
+			showDatasetConfirmDialog(formId);
+		},
+		// RESOURCE-CONFIRM-DIALOG
+		showResourceConfirmDialog : function(formId){		
+			logControl ? console.log('showResourceConfirmDialog()...') : '';
+			showResourceConfirmDialog(formId);
+		},
+		// ORGANIZATION-CONFIRM-DIALOG
+		showOrganizationConfirmDialog : function(formId){		
+			logControl ? console.log('showOrganizationConfirmDialog()...') : '';
+			showOrganizationConfirmDialog(formId);
+		},
 		// INTERNATIONALIZATION-CONFIRM-DIALOG
 		showInternationalizationConfirmDialog : function(formId){		
 			logControl ? console.log('showInternationalizationConfirmDialog()...') : '';
@@ -1657,6 +1819,11 @@ var HeaderController = function() {
 		showConfirmDialogProcess : function(formId){		
 			logControl ? console.log('showConfirmDialogProcess()...') : '';
 			showConfirmDialogProcess(formId);
+		},
+		// DATALABELING-PROJECT-CONFIRM-DIALOG
+		showConfirmDialogDataLabelingProjectDelete : function(formId){		
+			logControl ? console.log('showConfirmDialogDataLabelingProjectDelete()...') : '';
+			showConfirmDialogDataLabelingProjectDelete(formId);
 		}
 	};
 }();

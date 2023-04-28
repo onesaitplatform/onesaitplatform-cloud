@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +61,8 @@ public class QueryTemplateController {
 	private static final String ONTOLOGIES_STR = "ontologies";
 	private static final String REDIRECT_TEMPLATE_CREATE = "redirect:/querytemplates/create";
 	private static final String REDIRECT_TEMPLATE_LIST = "redirect:/querytemplates/list";
-
+	private static final String APP_ID = "appId";
+	
 	@Autowired
 	private QueryTemplateService queryTemplateService;
 	@Autowired
@@ -71,10 +73,15 @@ public class QueryTemplateController {
 	private AppWebUtils utils;
 	@Autowired
 	private EntityDeletionService entityDeletionService;
+	@Autowired 
+	private HttpSession httpSession;
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@RequestMapping(value = "/list", produces = "text/html")
 	public String list(Model uiModel, HttpServletRequest request, @RequestParam(required = false) String name) {
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
+		
 		if (name != null && name.equals("")) {
 			name = null;
 		}
@@ -131,7 +138,7 @@ public class QueryTemplateController {
 			this.queryTemplateService.createQueryTemplate(queryTemplate);
 		} catch (QueryTemplateServiceException e) {
 			log.debug("Cannot create query template");
-			utils.addRedirectMessage("templates.create.error", redirect);
+			utils.addRedirectMessageWithParam("templates.create.error", e.getMessage(), redirect);
 			return REDIRECT_TEMPLATE_CREATE;
 		}
 		return REDIRECT_TEMPLATE_LIST;

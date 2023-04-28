@@ -5,7 +5,16 @@ server:
    servlet.contextPath: /iot-broker
    jetty.max-http-post-size: 20000000   
    forward-headers-strategy: native
-   
+ 
+logbook:
+  exclude:
+     - ${server.servlet.contextPath}/actuator/**
+     - ${server.servlet.contextPath}/static/**
+     - ${server.servlet.contextPath}/themes/**
+     - ${server.servlet.contextPath}/swagger-ui/**
+  write:
+     max-body-size: 10000
+     
 master: 
    datasource:
       hikari: 
@@ -169,7 +178,7 @@ onesaitplatform: #Config onesait Platform specific
         
   iotbroker.devices.perclient.max: 20
   metrics:
-        collector.endpoint: http://localhost:20000/router/metrics-collector/refresh
+        collector.endpoint: http://localhost:20002/router/metrics-collector/refresh
         enabled: false
   graylog:
     enabled: false
@@ -185,5 +194,6 @@ logging:
       org.apache.kafka: ERROR
       org.springframework.boot: INFO
       org.hibernate.type: WARN
+      org.zalando.logbook: TRACE
 #      org.springframework.boot.autoconfigure: DEBUG
 

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -352,6 +352,7 @@ public class DataflowServiceImpl implements DataflowService {
 	public byte[] getyHttpBinary(String lib, String id, HttpServletRequest requestServlet, String body, String user) {
 		return getyHttpBinary(requestServlet, body, user).getBody();
 	}
+
 
 
 	private ResponseEntity<byte[]> getHttpBinary(String url, HttpMethod httpMethod, String body, HttpHeaders headers,
@@ -1369,5 +1370,6 @@ public class DataflowServiceImpl implements DataflowService {
 			return pipelineRepository.findDtoByUserAndPermissions(user, identification);
 		}
 	}
+
 
 }

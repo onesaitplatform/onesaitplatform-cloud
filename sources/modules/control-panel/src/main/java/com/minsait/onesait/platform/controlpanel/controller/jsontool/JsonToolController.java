@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 package com.minsait.onesait.platform.controlpanel.controller.jsontool;
 
 import java.io.IOException;
+
+import javax.servlet.http.HttpSession;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,6 +37,7 @@ import com.google.gson.JsonObject;
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessService;
 import com.minsait.onesait.platform.commons.model.InsertResult;
 import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.router.service.app.model.NotificationModel;
@@ -65,9 +68,13 @@ public class JsonToolController {
 
 	@Autowired
 	private JsonToolUtils jsonToolUtils;
+	
+	@Autowired 
+	private HttpSession httpSession;
 
 	private final ObjectMapper mapper = new ObjectMapper();
 
+	private static final String APP_ID = "appId";
 	private static final String PATH_PROPERTIES = "properties";
 
 	@GetMapping("tools")
@@ -75,16 +82,23 @@ public class JsonToolController {
 	public String show(Model model) {
 		model.addAttribute("datasources", ontologyService.getDatasources());
 		model.addAttribute("ontologies", ontologyService.getOntologiesByUserId(utils.getUserId()));
+		
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId!=null) {
+			model.addAttribute(APP_ID, projectId.toString());
+			httpSession.removeAttribute(APP_ID);
+		}
+		
 		return "json2ontologytool/import";
 	}
 
 	@PostMapping("createontology")
 	public @ResponseBody String createOntology(Model model, @RequestParam String ontologyIdentification,
-			@RequestParam String ontologyDescription, @RequestParam String schema, @RequestParam String datasource)
+			@RequestParam String ontologyDescription, @RequestParam String schema, @RequestParam String datasource, @RequestParam boolean contextdata, @RequestParam(value = "appId", required = false) String appId)
 			throws IOException {
 
 		final Ontology ontology = jsonToolUtils.createOntology(ontologyIdentification, ontologyDescription,
-				Ontology.RtdbDatasource.valueOf(datasource), schema);
+				Ontology.RtdbDatasource.valueOf(datasource), schema, contextdata);
 
 		try {
 			ontologyBusinessService.createOntology(ontology, ontology.getUser().getUserId(), null);
@@ -103,6 +117,12 @@ public class JsonToolController {
 		}
 		final Ontology oDb = ontologyService.getOntologyByIdentification(ontology.getIdentification(),
 				utils.getUserId());
+		
+		if (appId!=null) {
+			httpSession.setAttribute("resourceTypeAdded", OPResource.Resources.ONTOLOGY.toString());
+			httpSession.setAttribute("resourceIdentificationAdded", oDb.getIdentification());
+		}
+		
 		return "{\"result\":\"ok\", \"id\":\"" + oDb.getId() + "\"}";
 	}
 

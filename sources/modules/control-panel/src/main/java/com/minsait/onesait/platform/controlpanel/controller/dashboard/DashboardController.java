@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.json.JSONException;
@@ -123,6 +124,9 @@ public class DashboardController {
 	private SubcategoryRepository subcategoryRepository;
 	@Autowired
 	private CategoryRelationRepository categoryRelationRepository;
+	
+	@Autowired 
+	private HttpSession httpSession;
 
 	@Autowired()
 	private ResourcesInUseService resourcesInUseService;
@@ -155,6 +159,7 @@ public class DashboardController {
 	private static final String VIEWIFRAME = "viewiframe";
 	private static final String EDITFULLIFRAME = "editfulliframe";
 	private static final String EDITFULL = "editfull";
+	private static final String APP_ID = "appId";
 
 	@Value("${onesaitplatform.urls.iotbroker}")
 	private String IOTRBROKERSERVER;
@@ -223,7 +228,13 @@ public class DashboardController {
 		model.addAttribute(USERS, getUserListDTO());
 		model.addAttribute(CATEGORIES, categoryService.getCategoriesByTypeAndGeneralType(Category.Type.DASHBOARD));
 		model.addAttribute(I18NS, internationalizationService.getByUserIdOrPublic(utils.getUserId()));
-		model.addAttribute("schema", dashboardConfRepository.findAll());
+		model.addAttribute("schema", dashboardConfRepository.findAllByOrderByIdentificationAsc());
+		
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId!=null) {
+			model.addAttribute(APP_ID, projectId.toString());
+		}
+
 		return DASHB_CREATE;
 	}
 
@@ -496,13 +507,15 @@ public class DashboardController {
 	}
 
 	@GetMapping(value = "/i18n/{id}", produces = "application/json")
-	public @ResponseBody String getI18NById(@PathVariable("id") String id) {
+	public @ResponseBody String getI18NById(@PathVariable("id") String id, HttpServletResponse response) {
+		utils.cleanInvalidSpringCookie(response);
 		return dashboardService.getAllInternationalizationJSON(dashboardService.getDashboardById(id, utils.getUserId()))
 				.toString();
 	}
 
 	@GetMapping(value = "/bunglemodel/{id}", produces = "application/json")
-	public @ResponseBody ResponseEntity<DashboardExportDTO> getBungleModelById(@PathVariable("id") String id) {
+	public @ResponseBody ResponseEntity<DashboardExportDTO> getBungleModelById(@PathVariable("id") String id, HttpServletResponse response) {
+		utils.cleanInvalidSpringCookie(response);
 		ResponseEntity<DashboardExportDTO> dashboardResponse;
 		try {
 			dashboardResponse = new ResponseEntity<DashboardExportDTO>(
@@ -528,14 +541,14 @@ public class DashboardController {
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/editfull/{id}", produces = "text/html")
-	public String editFullDashboard(Model model, @PathVariable("id") String id) {
-		return openDashboard(model, id, null, null, EDITFULL);
+	public String editFullDashboard(Model model, @PathVariable("id") String id, HttpServletRequest request) {
+		return openDashboard(model, id, null, request, EDITFULL);
 	}
 
 	@GetMapping(value = "/editfulliframe/{id}", produces = "text/html")
 	public String editFullDashboardIframe(Model model, @PathVariable("id") String id,
-			@RequestParam(value = "oauthtoken", required = false) String oauthtoken) {
-		return openDashboard(model, id, oauthtoken, null, EDITFULLIFRAME);
+			@RequestParam(value = "oauthtoken", required = false) String oauthtoken, HttpServletRequest request) {
+		return openDashboard(model, id, oauthtoken, request, EDITFULLIFRAME);
 
 	}
 
@@ -546,7 +559,8 @@ public class DashboardController {
 
 	@GetMapping(value = "/viewiframe/{id}", produces = "text/html")
 	public String viewerDashboardIframe(Model model, @PathVariable("id") String id,
-			@RequestParam(value = "oauthtoken", required = false) String oauthtoken, HttpServletRequest request) {
+			@RequestParam(value = "oauthtoken", required = false) String oauthtoken, HttpServletRequest request, HttpServletResponse response) {
+		utils.cleanInvalidSpringCookie(response);
 		return openDashboard(model, id, oauthtoken, request, VIEWIFRAME);
 
 	}
@@ -571,7 +585,7 @@ public class DashboardController {
 				hasPermission = (from.equals(EDITFULLIFRAME) || from.equals(EDITFULL))
 						&& dashboardService.hasUserEditPermission(id, userId)
 						|| (from.equals(VIEW) || from.equals(VIEWIFRAME))
-						&& dashboardService.hasUserViewPermission(id, userId);
+								&& dashboardService.hasUserViewPermission(id, userId);
 				if (hasPermission) {
 					final Dashboard dashboard = dashboardService.getDashboardById(id, utils.getUserId());
 					model.addAttribute(DASHBOARD_STR, dashboard);
@@ -584,6 +598,13 @@ public class DashboardController {
 					final String url = IOTRBROKERSERVER.concat("/iot-broker/rest");
 					model.addAttribute(IOTBROKERURL, url);
 					// we assign the variables to the model based on the origin
+					if (request != null) {
+						HttpSession session = request.getSession();
+						final Object projectId = session.getAttribute(APP_ID);
+						if (projectId != null) {
+							model.addAttribute(APP_ID, projectId.toString());
+						}
+					}
 					if (from.equals(EDITFULL)) {
 						model.addAttribute(EDITION, true);
 						model.addAttribute(IFRAME, false);
@@ -696,7 +717,7 @@ public class DashboardController {
 			@Parameter(description = "Wait time (ms) for rendering dashboard", required = true) @RequestParam("waittime") int waittime,
 			@Parameter(description = "Render Height", required = true) @RequestParam("height") int height,
 			@Parameter(description = "Render Width", required = true) @RequestParam("width") int width,
-			@Parameter(description = "Fullpage", required = false) @RequestParam(value="fullpage", defaultValue="false") Boolean fullpage,
+			@Parameter(description = "Fullpage", required = false) @RequestParam(value = "fullpage", defaultValue = "false") Boolean fullpage,
 			@Parameter(description = "Authorization", required = true) @RequestParam("token") String bearerToken,
 			@Parameter(description = "Dashboard Params", required = false) @RequestParam(value = "params", required = false) String params) {
 

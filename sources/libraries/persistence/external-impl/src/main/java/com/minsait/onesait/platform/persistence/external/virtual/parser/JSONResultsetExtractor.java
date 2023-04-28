@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
+
+import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.JSQLParserException;
@@ -124,11 +126,19 @@ public class JSONResultsetExtractor implements ResultSetExtractor<List<String>> 
 			getRecurrence(columnName, obj, value, false);
 		} else if (rowType == java.sql.Types.TIMESTAMP) {
 			String value = null;
-			Timestamp t = rs.getTimestamp(columnName);
-			if (t != null) {
-				//value = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(new Date(t.getTime()));
-				value = t.toString();
-			}
+			try {
+				Timestamp t = rs.getTimestamp(columnName);
+				if (t != null) {
+					//value = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(new Date(t.getTime()));
+					value = t.toString();
+				}
+			} catch (IllegalArgumentException e) { //for oracle bug in timestamp(6) for nanoseconds
+				if ("nanos > 999999999 or < 0".equals(e.getMessage())) { //we check only the error of oracle msg nanos > 999999999 or < 0
+					value = rs.getString(columnName);
+	            } else {
+	            	throw e;
+	            }
+	        }
 			getRecurrence(columnName, obj, value, true);
 		} else if (rowType == java.sql.Types.CLOB) {
 			Clob value = rs.getClob(columnName);

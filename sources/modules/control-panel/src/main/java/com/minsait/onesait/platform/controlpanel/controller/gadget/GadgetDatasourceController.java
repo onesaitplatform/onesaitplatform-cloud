@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,7 @@ import com.minsait.onesait.platform.config.dto.GadgetDatasourceForList;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
 import com.minsait.onesait.platform.config.services.exceptions.GadgetDatasourceServiceException;
 import com.minsait.onesait.platform.config.services.gadget.GadgetDatasourceService;
@@ -83,6 +85,9 @@ public class GadgetDatasourceController {
 
 	@Autowired
 	private ResourcesInUseService resourcesInUseService;
+	
+	@Autowired 
+	private HttpSession httpSession;
 
 	private static final String DATASOURCE_STR = "datasource";
 	private static final String DATASOURCE_ONT_SEL_STR = "datasourceOntologySelected";
@@ -91,10 +96,15 @@ public class GadgetDatasourceController {
 	private static final String REDIRECT_DATAS_LIST = "redirect:/datasources/list";
 	private static final String ERROR_403 = "error/403";
 	private static final String ERROR_TRUE_STR = "{\"error\":\"true\"}";
+	private static final String APP_ID = "appId";
+	private static final String REDIRECT_PROJECT_SHOW = "redirect:/projects/update/";
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@RequestMapping(value = "/list", produces = "text/html")
 	public String list(Model uiModel, HttpServletRequest request) {
+		
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
 
 		String identification = request.getParameter("identification");
 		String description = request.getParameter("description");
@@ -130,6 +140,12 @@ public class GadgetDatasourceController {
 		model.addAttribute(DATASOURCE_STR, new GadgetDatasourceDTO());
 		model.addAttribute(DATASOURCE_ONT_SEL_STR, "");
 		model.addAttribute(ONTOLOGIES_STR, getOntologiesDTO());
+		
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId!=null) {
+			model.addAttribute(APP_ID, projectId.toString());
+		}
+		
 		return "datasources/create";
 
 	}
@@ -192,11 +208,21 @@ public class GadgetDatasourceController {
 				}
 			}
 			this.gadgetDatasourceService.createGadgetDatasource(gadgetDatasource);
+			
 		} catch (GadgetDatasourceServiceException e) {
 			log.error("Cannot create gadget datasource. {}", e.getMessage());
 			utils.addRedirectException(e, redirect);
 			return REDIRECT_DATAS_CREATE;
 		}
+		
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId!=null) {
+			httpSession.setAttribute("resourceTypeAdded", OPResource.Resources.GADGETDATASOURCE.toString());
+			httpSession.setAttribute("resourceIdentificationAdded", gadgetDatasource.getIdentification());
+			httpSession.removeAttribute(APP_ID);
+			return REDIRECT_PROJECT_SHOW + projectId.toString();
+		}
+
 		return REDIRECT_DATAS_LIST;
 	}
 

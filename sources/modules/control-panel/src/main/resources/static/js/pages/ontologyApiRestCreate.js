@@ -36,30 +36,7 @@ var OntologyCreateController = function() {
 	
 	// CONTROLLER PRIVATE FUNCTIONS	--------------------------------------------------------------------------------
 	
-	var handleCodeMirror = function () {
-
-        var myTextArea = document.getElementById('jsonLdContext');
-        myCodeMirror = CodeMirror.fromTextArea(myTextArea, {
-        	mode: "application/json",
-	    	autoRefresh: true,
-	    	autoCloseBrackets: true,
-	        matchBrackets: true,
-	        styleActiveLine: true,
-	        theme:"material",
-	        lineWrapping: true
-    	});
-		myCodeMirror.setSize("100%",100);
-    };
-    
-    var checkJsonLdContext = function(){
-		if($('#supportsJsonLd').is(':checked')){
-			$('#jsonLdCtxt').removeClass('hide');
-			document.getElementById("jsonLdContext").style.display = '';
-		}else{
-			$('#jsonLdCtxt').addClass('hide');
-		}
-	}
-
+	 
 	$('#pathsParams').mounTable(jsonPathParams,{
 		model: '.mountable-model',
 		noDebug: false,
@@ -481,8 +458,7 @@ var OntologyCreateController = function() {
 	}
 	
 	var wizardStepContinue = function(){
-		if (wizardStep == 1){
-			if(!document.getElementById("supportsJsonLd").checked) {
+		if (wizardStep == 1){		 
 				$('#tab-restapi-info a').removeClass('disabled');
 				$('#tab-restapi-info a').click();
 				$('#continueBtn').addClass('hide');
@@ -492,23 +468,7 @@ var OntologyCreateController = function() {
 				} else {
 					$('#saveSqlCode').hide();
 				}
-				wizardStep = 2;
-			} else {
-				if(IsJsonString($('#jsonLdContext').val())){
-					$('#tab-restapi-info a').removeClass('disabled');
-					$('#tab-restapi-info a').click();
-					$('#continueBtn').addClass('hide');
-					$('#createWizardBtn').removeClass('hide');
-					if ($("#allowsCreateTable") || $("#allowsCreateTable").is(':checked')) {
-						$('#saveSqlCode').show();
-					} else {
-						$('#saveSqlCode').hide();
-					}
-					wizardStep = 2;
-				} else {
-					toastr.error(messagesForms.operations.genOpError, ontologyCreateReg.validations.jsonldformat);
-				}
-			} 
+				wizardStep = 2;			 
 		} else if (wizardStep == 2){
 			
 		}
@@ -559,11 +519,6 @@ var OntologyCreateController = function() {
             },
 			// ALL OK, THEN SUBMIT.
             submitHandler: function(form) {
-            	if(document.getElementById("supportsJsonLd").checked && !IsJsonString($('#jsonLdContext').val())){
-    				toastr.error(messagesForms.operations.genOpError, ontologyCreateReg.validations.jsonldformat);
-    				return false;
-    			}
-            	document.getElementById('jsonLdContext').innerHTML = myCodeMirror.getValue();
             	
 				// VALIDATE JSON SCHEMA 
                 var postOperations = [];
@@ -621,7 +576,8 @@ var OntologyCreateController = function() {
 					// form.submit();
 					form1.ajaxSubmit({type: 'post', success : function(data){
 						toastr.success(messagesForms.operations.genOpSuccess,'');
-						navigateUrl(data.redirect);
+						$('#modal-created').modal('show');
+						//navigateUrl(data.redirect);
 						}, error: function(data){
 							toastr.error(messagesForms.operations.genOpError,data.responseJSON.cause);
 						}
@@ -1283,7 +1239,7 @@ var OntologyCreateController = function() {
 		init: function(){
 			logControl ? console.log(LIB_TITLE + ': init()') : '';				
 			handleValidation();
-			handleCodeMirror();
+		 
 			createEditor();
 			initTemplateElements();
 			showHideImageTableOntology();
@@ -1313,10 +1269,7 @@ var OntologyCreateController = function() {
 				return this;
 			};
 			
-			$('#supportsJsonLd').on('click', function(){
-				checkJsonLdContext();				
-			});
-			checkJsonLdContext();
+			
 		},
 		// UPDATE HIDDEN INPUT--> IF USER WANTS TO CHANGE ONTOLOGY TITLE FOR
 		// EXAMPLE

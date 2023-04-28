@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -124,26 +124,20 @@
 											</div>
 											<div class="col-md-4 col-sm-6 col-xs-12">
 												<div class="form-group">
-													<label class="" th:text="#{viewer.latitude} + ':'">Latitude</label><span class="required"> *</span>
-													<div class="input-icon ">
-														<input th:tabindex="1" id="latitude_gen" type="text" name="latitude"  maxlength="50" class="form-control "  th:placeholder="#{viewer.latitude}"/>
-													</div>
+													<label class="" th:text="#{viewer.latitude}">Latitude</label><span class="required"> *</span>
+													<input th:tabindex="1" id="latitude_gen" type="text" name="latitude" maxlength="50" class="form-control"/>
 												</div>
 											</div>
 											<div class="col-md-4 col-sm-6 col-xs-12">
 												<div class="form-group">
-													<label class="" th:text="#{viewer.longitude} + ':'">Longitude</label><span class="required"> *</span>
-													<div class="input-icon ">
-														<input th:tabindex="1" name="longitude" id="longitude_gen" type="text"   maxlength="50" class="form-control " th:placeholder="#{viewer.longitude}"/>
-													</div>
+													<label class="" th:text="#{viewer.longitude}">Longitude</label><span class="required"> *</span>
+													<input th:tabindex="2" name="longitude" id="longitude_gen" type="text" maxlength="50" class="form-control"/>
 												</div>
 											</div>
 											<div class="col-md-4 col-sm-6 col-xs-12">
 												<div class="form-group">
-													<label class="" th:text="#{viewer.height} + ':'">Height</label><span class="required"> *</span>
-													<div class="input-icon ">
-														<input th:tabindex="1" name="height" id="height" type="text"   maxlength="50" class="form-control " th:placeholder="#{viewer.height}"/>
-													</div>
+													<label class="" th:text="#{viewer.height}">Height</label><span class="required"> *</span>
+													<input th:tabindex="3" name="height" id="height" type="text" maxlength="50" class="form-control"/>
 												</div>
 											</div>
 											<div class="col-md-12">
@@ -195,12 +189,13 @@
 	
 	<!-- CORE CONTROLLERS -->
 	
-	<script th:src="@{/static/vendor/cesium/Cesium.js}"></script>
+	<script th:src="${onesaitCesiumPath + 'cesium/Cesium1.92/Cesium.js'}"></script>
 	<script th:src="@{/static/js/pages/viewerCrud.js}"></script>
 	<!-- PLUGINS -->
 	<script th:src="@{/static/vendor/jsoneditor/jsoneditor.js}"></script>
 	
-	
+	<!-- INPUTMASK -->
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
 	<script th:inline="javascript">	
 	
 	// TEMPLATE SEARCH FORM.
@@ -225,7 +220,12 @@
 
 	$( document ).ready(function() {
 		
-		defineViewerInitialExtent(null,null,null)
+		defineViewerInitialExtent(null,null,null);
+		
+		// INPUT MASK FOR lon&lat´
+		$("#latitude_gen").inputmask({regex: "[0-9-+.]*", greedy: false });
+		$("#longitude_gen").inputmask({regex: "[0-9-+.]*", greedy: false });
+		$("#height").inputmask({regex: "[0-9]*", greedy: false });
 		
 		$(".cesium-widget-credits").css("display", "none");
 		
@@ -501,6 +501,7 @@
 		            	
 		        },
 		        cancel: function () {
+		        	removeEntityById(id);
 		        },
 		    },
 		    onContentReady: function () {

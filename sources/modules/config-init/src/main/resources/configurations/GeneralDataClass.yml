@@ -1,0 +1,97 @@
+#General Data Class
+dataclass:
+    name: generalDataClass
+    description: general rules
+    dataclassrules:
+        -   ruletype: property
+            rulename: toUpperCase
+            changes:
+                -
+                    order: 0
+                    name: mayus
+                    script: |-
+                        return value.toUpperCase();
+        -   ruletype: property
+            rulename: toLowerCase
+            changes:
+                -
+                    order: 0
+                    name: minus
+                    script: |-
+                        return value.toLowerCase();
+        -   ruletype: property
+            rulename: toDatetoString
+            changes:
+                -
+                    order: 0
+                    name: toDate
+                    script: |-
+                        return value.toDate('dd.mm.yy').toString('yyyy-mm-dd');
+        -   ruletype: property
+            rulename: dniformat
+            validations:
+                -   
+                    name: dniformat
+                    script: |-
+                        var regular_exp = /^\d{8}[a-zA-Z]$/;
+                        if(regular_exp.test(value) === true){
+                            var numero = value.substr(0,value.length-1);
+                            var letr = value.substr(value.length-1,1);
+                            var num = numero % 23;
+                            var letra='TRWAGMYFPDXBNJZSQVHLCKET';
+                            letra=letra.substring(num,num+1);
+                            if (letra!==letr.toUpperCase()) {
+                                return numero + letra;
+                            } else{
+                                return true;
+                            }
+                        } else{
+                         return false;
+                        }
+                    error: error
+                    errormsg: ${value} no es un formato válido de dni
+        -   ruletype: property
+            rulename: comunidadesEsp
+            validations:
+                -   
+                    name: comunidades
+                    script: |-
+                        var comunidades = ["Andalucía", "Aragón", "Canarias", "Cantabria", "Castilla y León", "Castilla-La Mancha", "Cataluña", "Ceuta", 
+                            "Comunidad Valenciana","Comunidad de Madrid", "Extremadura", "Galicia", "Islas Baleares", "La Rioja", "Melilla", "Navarra", "País Vasco", "Principado de Asturias", "Región de Murcia"];
+                            return comunidades.indexOf(value) != -1;
+                    error: warning
+                    errormsg: ${value} no es una comunidad española
+        -   ruletype: property
+            rulename: provinciasEsp
+            validations:
+                -   
+                    name: provincias
+                    script: |-
+                        var provincias = ['Alava','Albacete','Alicante','Almería','Asturias','Ávila','Badajoz','Barcelona','Burgos','Cáceres','Cádiz','Cantabria','Castellón','Ciudad Real','Córdoba','La Coruña',
+                        'Cuenca','Gerona','Granada','Guadalajara','Guipúzcoa','Huelva','Huesca','Islas Baleares','Jaén','León','Lérida','Lugo','Madrid','Málaga','Murcia','Navarra','Ourense','Palencia','Las Palmas','Pontevedra',
+                        'La Rioja','Salamanca','Segovia','Sevilla','Soria','Tarragona','Santa Cruz de Tenerife','Teruel','Toledo','Valencia','Valladolid','Vizcaya','Zamora','Zaragoza']; 
+                        return provincias.indexOf(value) != -1;
+                    error: warning
+                    errormsg: ${value} no es una provincia española
+        -   
+            ruletype: entity
+            rulename: adultAge
+            changes:
+                -
+                    name: pediatra
+                    order: 0
+                    condition: rawdata.age > 17
+                    effect: rawdata.adult = 'Yes'
+                    else: rawdata.adult = 'No'
+            validations:
+                -
+                    name: isAdult
+                    error: error
+                    errormsg: El paciente ${rawdata.dni} es menor de 18
+                    script: |- 
+                        var json = JSON.parse(rawdata); 
+                        if(json.age > 17){
+                            return true;
+                        } else {
+                            return false;
+                        }

@@ -239,17 +239,17 @@ var addElement = function() {
 		$("#treeField").jstree(true).get_node(node).a_attr.href = "/controlpanel/ontologies/show/"+elementos[$("#selectElements").val()];
 		break;
 	case "flows":
-		$("#treeField").jstree(true).set_icon(node, "flaticon-network");
+		$("#treeField").jstree(true).set_icon(node, "flaticon-analytics");
 		$("#treeField").jstree(true).get_node(node).a_attr.elementId = $("#selectElements").val();
 		$("#treeField").jstree(true).get_node(node).a_attr.href = "/controlpanel/flows/show/"+$("#selectElements").val();
 		break;
 	case "apis":
-		$("#treeField").jstree(true).set_icon(node, "flaticon-network");
+		$("#treeField").jstree(true).set_icon(node, "flaticon-multimedia");
 		$("#treeField").jstree(true).get_node(node).a_attr.elementId = elementos[$("#selectElements").val()];
 		$("#treeField").jstree(true).get_node(node).a_attr.href = "/controlpanel/apimanager/show/"+elementos[$("#selectElements").val()];
 		break;
 	case "devices":
-		$("#treeField").jstree(true).set_icon(node, "flaticon-share");
+		$("#treeField").jstree(true).set_icon(node, "flaticon-truck");
 		$("#treeField").jstree(true).get_node(node).a_attr.elementId = elementos[$("#selectElements").val()];
 		$("#treeField").jstree(true).get_node(node).a_attr.href = "/controlpanel/devices/show/"+elementos[$("#selectElements").val()];
 		break;
@@ -259,12 +259,12 @@ var addElement = function() {
 		$("#treeField").jstree(true).get_node(node).a_attr.href = "/controlpanel/dashboards/view/"+elementos[$("#selectElements").val()];
 		break;
 	case "notebooks":
-		$("#treeField").jstree(true).set_icon(node, "flaticon-analytics");
+		$("#treeField").jstree(true).set_icon(node, "flaticon-interface-5");
 		$("#treeField").jstree(true).get_node(node).a_attr.elementId = elementos[$("#selectElements").val()];
 		$("#treeField").jstree(true).get_node(node).a_attr.href = "/controlpanel/notebooks/show/"+elementos[$("#selectElements").val()];
 		break;
 	case "dataflows":
-		$("#treeField").jstree(true).set_icon(node, "flaticon-analytics");
+		$("#treeField").jstree(true).set_icon(node, "flaticon-technology");
 		$("#treeField").jstree(true).get_node(node).a_attr.elementId = elementos[$("#selectElements").val()];
 		$("#treeField").jstree(true).get_node(node).a_attr.href = "/controlpanel/dataflow/show/"+elementos[$("#selectElements").val()];
 		break;
@@ -274,7 +274,7 @@ var addElement = function() {
 		$("#treeField").jstree(true).get_node(node).a_attr.href = "/controlpanel/viewers/view/"+elementos[$("#selectElements").val()];
 		break;
 	case "reports":
-		$("#treeField").jstree(true).set_icon(node, "flaticon-graph");
+		$("#treeField").jstree(true).set_icon(node, "la-folder-open");
 		$("#treeField").jstree(true).get_node(node).a_attr.elementId = elementos[$("#selectElements").val()];
 		$("#treeField").jstree(true).get_node(node).a_attr.href = "/controlpanel/reports/runReport/"+elementos[$("#selectElements").val()];
 		break;

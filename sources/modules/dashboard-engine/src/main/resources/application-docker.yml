@@ -94,6 +94,7 @@ onesaitplatform:
         socketReadTimeout: ${KUDUCLIENTSOCKETREADTIMEOUT}
    database.elasticsearch.enabled: ${ELASTICSEARCH_ENABLED}
    router.alternativeURL: http://routerservice:20000/router/router/
+   router.metrics.query.enabled: ${QUERY_METRICS_ENABLED}
    audit.global.notify: ${AUDITGLOBALNOTIFY}   
    hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
    hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
@@ -127,3 +128,5 @@ spring:
 ## LOGGING CONF
 logging:
    file.path: /var/log/platform-logs
+   level:
+      org.zalando.logbook: ${HTTP_LOG_LEVEL}

@@ -6,9 +6,11 @@ LABEL platform.image.vendor="Minsait"
 LABEL platform.image.support="support@onesaitplatform.com"
 LABEL platform.image.license="Apache Software License 2"
 
-RUN apk add --no-cache libc6-compat \
+RUN apk update && apk upgrade && \
+	apk add --no-cache libc6-compat \
     curl \
-    openjdk8
+    openjdk8 \
+    git
     
 RUN curl -LSs https://raw.githubusercontent.com/fnproject/cli/master/install | sh
 	
@@ -32,6 +34,9 @@ ENV FN_API_URL=https://development.onesaitplatform.com/fn \
 	CONFIGDB_DIALECT=org.hibernate.dialect.MySQL5InnoDBDialect \
     ROOT_LOG_LEVEL=WARN \
     MINSAIT_LOG_LEVEL=INFO \
-    SPRING_LOG_LEVEL=INFO
+    SPRING_LOG_LEVEL=INFO \
+    GATEWAY_USER=operations \
+    GATEWAY_SECRET=operations
     
-CMD ["java","-Dspring.application.json=$ONESAIT_PROPERTIES","-Dspring.profiles.active=docker","-jar","/app.jar"]
+    
+CMD ["java","-Dspring.profiles.active=docker","-jar","/app.jar"]

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@ import com.minsait.onesait.platform.multitenant.config.model.MasterDeviceToken;
 import com.minsait.onesait.platform.multitenant.config.model.MasterDigitalTwinDeviceToken;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUserHistoric;
+import com.minsait.onesait.platform.multitenant.config.model.MasterUserLazy;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUserToken;
 import com.minsait.onesait.platform.multitenant.config.model.Tenant;
 import com.minsait.onesait.platform.multitenant.config.model.Vertical;
@@ -106,7 +107,6 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 	private DigitalTwinDeviceService digitalTwinDeviceService;
 	@Autowired
 	private UserRepository userRepository;
-
 
 	@Override
 	public Optional<MasterUser> findUser(String userId) {
@@ -476,7 +476,8 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 		final MasterUser user = masterUserRepository.findByUserId(userId);
 		if (user != null) {
 			getTenant(tenant).ifPresent(t -> {
-				if(t.getVerticals().stream().noneMatch(v -> v.getSchema().equals(MultitenancyContextHolder.getVerticalSchema()))) {
+				if (t.getVerticals().stream()
+						.noneMatch(v -> v.getSchema().equals(MultitenancyContextHolder.getVerticalSchema()))) {
 					MultitenancyContextHolder.setIgnoreRemoveEvent(true);
 					userRepository.deleteByUserId(userId);
 				}
@@ -503,6 +504,22 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 	@Override
 	public long countTenantUsers(String tenantName) {
 		return tenantRepository.countUsersByTenantName(tenantName);
+	}
+
+	@Override
+	public MasterUserLazy getUserLazy(String userId) {
+		return masterUserRepository.findLazyByUserId(userId);
+	}
+
+	@Override
+	public MasterUser updateLastLogin(String userId) {
+		final MasterUser masterUser = masterUserRepository.findByUserId(userId);
+		if (masterUser != null) {
+			masterUser.setLastLogin(new Date());
+			masterUserRepository.save(masterUser);
+		}
+		return masterUser;
+
 	}
 
 }

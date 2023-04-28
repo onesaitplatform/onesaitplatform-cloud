@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ package com.minsait.onesait.platform.persistence.factory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
@@ -29,9 +29,11 @@ import com.minsait.onesait.platform.persistence.external.api.rest.ExternalApiRes
 import com.minsait.onesait.platform.persistence.external.virtual.VirtualOntologyOpsDBRepository;
 import com.minsait.onesait.platform.persistence.hadoop.common.NameBeanConst;
 import com.minsait.onesait.platform.persistence.interfaces.BasicOpsDBRepository;
+import com.minsait.onesait.platform.persistence.mindsdb.MindsDBBasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.mongodb.MongoBasicOpsDBRepository;
-import com.minsait.onesait.platform.persistence.timescaledb.TimescaleDBBasicOpsDBRepository;
+import com.minsait.onesait.platform.persistence.nebula.NebulaGraphDBBasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.presto.PrestoOntologyBasicOpsDBRepository;
+import com.minsait.onesait.platform.persistence.timescaledb.TimescaleDBBasicOpsDBRepository;
 
 @Component
 public class BasicOpsDBRepositoryFactory {
@@ -67,7 +69,13 @@ public class BasicOpsDBRepositoryFactory {
 
 	@Autowired
 	private PrestoOntologyBasicOpsDBRepository prestoBasicOpsDBRepository;
-	
+
+	@Autowired
+	private MindsDBBasicOpsDBRepository mindsDBBasicOpsDBRepository;
+
+	@Autowired
+	private NebulaGraphDBBasicOpsDBRepository nebulaGraphDBBasicOpsDBRepository;
+
 	public BasicOpsDBRepository getInstance(String ontologyId) {
 		final Ontology ds = ontologyRepository.findByIdentification(ontologyId);
 		final RtdbDatasource dataSource = ds.getRtdbDatasource();
@@ -93,6 +101,10 @@ public class BasicOpsDBRepositoryFactory {
 			return timescaleDBBasicOpsDBRepository;
 		} else if (RtdbDatasource.PRESTO.equals(dataSource)) {
 			return prestoBasicOpsDBRepository;
+		} else if (RtdbDatasource.AI_MINDS_DB.equals(dataSource)) {
+			return mindsDBBasicOpsDBRepository;
+		}else if(RtdbDatasource.NEBULA_GRAPH.equals(dataSource)) {
+			return nebulaGraphDBBasicOpsDBRepository;
 		} else {
 			return mongoBasicOps;
 		}

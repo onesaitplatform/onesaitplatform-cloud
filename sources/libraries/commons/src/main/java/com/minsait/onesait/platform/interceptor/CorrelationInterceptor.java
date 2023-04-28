@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.MDC;
 import org.springframework.http.HttpHeaders;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Component
+@Deprecated
 @Slf4j
 public class CorrelationInterceptor extends HandlerInterceptorAdapter {
 	public static final String CORRELATION_ID_HEADER_NAME = "X-Correlation-Id";
@@ -51,7 +50,7 @@ public class CorrelationInterceptor extends HandlerInterceptorAdapter {
 
 	private String getCorrelationIdFromHeader(final HttpServletRequest request) {
 		String correlationId = request.getHeader(CORRELATION_ID_HEADER_NAME);
-		if (StringUtils.isEmpty(correlationId)) {
+		if (!StringUtils.hasText(correlationId)) {
 			correlationId = generateUniqueCorrelationId();
 		}
 		return correlationId;

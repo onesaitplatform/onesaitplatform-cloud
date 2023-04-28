@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package com.minsait.onesait.platform.controlpanel.controller.simulation;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -70,13 +72,19 @@ public class DeviceSimulatorController {
 	private EntityDeletionService entityDeletionService;
 	@Autowired
 	private ResourcesInUseService resourcesInUseService;
-
+	@Autowired 
+	private HttpSession httpSession;
+	
 	private static final String SIMULATORS_STR = "simulators";
 	private static final String ERROR_403 = "error/403";
+	private static final String APP_ID = "appId";
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping("list")
 	public String list(Model model) {
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
+		
 		model.addAttribute(SIMULATORS_STR, data());
 		return "simulator/list";
 	}

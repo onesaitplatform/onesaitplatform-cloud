@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ public class AuditEntityListener {
 		if (eventProducer != null) {
 			final String className = entity.getClass().getSimpleName();
 			final String user = getPrincipalName();
-			log.debug("removed entity of class {} by user {}", className, user);
+			log.trace("removed entity of class {} by user {}", className, user);
 
 			final String message = "Removed entity of class " + className + " by user " + user;
 			final Date today = new Date();
@@ -89,7 +89,7 @@ public class AuditEntityListener {
 		if (eventProducer != null) {
 			final String className = entity.getClass().getSimpleName();
 			final String user = getPrincipalName();
-			log.debug("updated entity of class {} by user {}", className, user);
+			log.trace("updated entity of class {} by user {}", className, user);
 
 			final String message = "Updated entity of class " + className + " by user " + user;
 			final Date today = new Date();
@@ -116,7 +116,7 @@ public class AuditEntityListener {
 		if (eventProducer != null) {
 			final String className = entity.getClass().getSimpleName();
 			final String user = getPrincipalName();
-			log.debug("persisted entity of class {} by user {}", className, user);
+			log.trace("persisted entity of class {} by user {}", className, user);
 
 			final String message = "Persisted entity of class " + className + " by user " + user;
 			final Date today = new Date();

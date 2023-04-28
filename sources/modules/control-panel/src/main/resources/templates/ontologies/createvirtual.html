@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -122,6 +122,8 @@
 				</div>
 				<!-- END PAGE BAR -->
 				
+				<input id="historical" type="hidden" th:value="${historical}" />
+				
 				<!-- BEGIN PAGE TITLE-->
 				<h1 class="page-title hide "><span th:text="#{name.app}"> </span></h1>
 				<!-- END PAGE TITLE-->			
@@ -190,12 +192,14 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">								
 									<!-- CANCEL -->											
-									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button th:if="${appId} == null and ${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button th:if="${appId} == null and ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+
+									<button th:if="(${appId} != null)"	id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/projects/update/} + ${appId} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 
 									<!-- RESET -->
-									<button id="resetBtnCreate" type="button" class="btn btn-primary-cancel" onclick="location.href='../ontologies/createvirtual'" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
-
+									<button th:if="${historical == false}" id="resetBtnCreate" type="button" class="btn btn-primary-cancel" onclick="location.href='../ontologies/createvirtual'" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
+									<button th:if="${historical == true}" id="resetBtnCreate" type="button" class="btn btn-primary-cancel" onclick="location.href='../ontologies/createhistorical'" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
                                     										
 									<!-- CONTINUE -->
 									<button id="continueBtn" type="button" class="btn btn-primary btn-primary-save" name="continue"  onclick="OntologyCreateController.wizardContinue()" th:value="#{gen.continueBtn}" disabled="disabled"><span th:text="#{gen.continueBtn}"> Continue</span></button>
@@ -215,10 +219,12 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='OntologyCreateController.deleteOntology(\'' + ${ontology.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>
+									<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')"  id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='OntologyCreateController.deleteOntology(\'' + ${ontology.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>
+									<button sec:authorize="!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')"  th:if="${#authentication.name} == ${ontology.user.userId}" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='OntologyCreateController.deleteOntology(\'' + ${ontology.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>
 												
-									<span class="sep" ></span>
-										
+									<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" class="sep"></span>
+									<span sec:authorize="!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')"  th:if="${#authentication.name} == ${ontology.user.userId}" class="sep"></span>
+									
 									<!-- CANCEL -->											
 									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:OntologyCreateController.cancel(\'' + ${ontology.id} + '\',\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
@@ -374,18 +380,7 @@
 										<input id="allowsCypherFields" class="margin-right-10" name="allowsCypherFields" type="checkbox" checked="checked" th:field="*{allowsCypherFields}" />
 										<label class="control-label margin-right-5" th:text="#{ontology.allowsCypherFields}">Allows Cypher</label>
 										<i class="la la-info-circle popovers"  data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.allowsCypherFields.help},data-title=#{ontology.allowsCypherFields}"></i>
-									</div>
-                                    <div class="col-md-2 col-xs-12">
-                                        <input id="supportsJsonLd" class="margin-right-10" name="supportsJsonLd" type="checkbox" checked="checked" th:field="*{supportsJsonLd}" />
-                                        <label class="control-label margin-right-5" th:text="#{ontology.supportsJsonLd}">Supports JSON-LD</label>
-                                        <i class="la la-info-circle popovers"  data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.supportsJsonLd.help},data-title=#{ontology.supportsJsonLd}"></i>
-                                    </div>
-                                    <div class="col-md-4 col-xs-12">
-                                        <div class="form-group hide" id="jsonLdCtxt">
-                                            <label class="control-label" th:text="#{ontology.jsonLdContext}">JSON-LD Context </label><span class="required"> *</span>
-                                            <textarea class="form-control" style="height: 100px" id="jsonLdContext" th:field="*{jsonLdContext}" th:required="true" ></textarea>
-                                        </div>
-                                    </div>								
+									</div>                                   				
 								</div>
 							</div>
 							<div class="tab-pane" id="tab_table_schema">
@@ -409,7 +404,7 @@
 											<!-- Field: Name Column--> 
 											<div class="form-group"> 
 												<label class="control-label" th:text="#{gen.name}">Name</label><span class="required"> *</span>
-												<input id="fieldName" type="text" name="fieldName" maxlength="20" class="form-control " th:placeholder="#{ontology.timeseries.name}"/>
+												<input id="fieldName" type="text" name="fieldName" maxlength="50" class="form-control " th:placeholder="#{ontology.timeseries.name}"/>
 											</div>
 	
 											<!-- Field: Type Column-->
@@ -462,6 +457,7 @@
 																<th class="titulo-columnas"	th:text="#{ontology.virtual.field.notnull}">NOTNULL</th>
 																<th th:if="${historical == false}" th:text="#{ontology.virtual.field.autoinc}">AUTOINC</th>
 																<th class="titulo-columnas"	th:text="#{gen.description}">DESCRIPTION</th>
+																<th class="titulo-columnas"	th:text="#{ontology.virtual.field.defaultvalue}">DefaultValue</th>
 																<th class="titulo-columnas"></th>
 															</tr>
 														</thead>
@@ -774,7 +770,7 @@
 											<label class="control-label" th:text="#{ontology.user}">User</label>
 											<select id="users" class="selectpicker form-control" data-live-search="true" data-width="100%" >
 												<option value="" th:text="#{ontology.userselect}"> Select User...</option>
-												<option th:each="user :${users}" th:value="${user.userId}" th:text="${user.fullName}" ></option>														
+												<option th:each="user :${users}" th:value="${user.userId}" th:text="${user.fullName} +'('+ ${user.userId} +')'" ></option>														
 											</select>
 										</div>
 										<div class="form-group">
@@ -804,15 +800,8 @@
 													<tbody style="border-bottom: 1px solid #ddd;" th:remove="all-but-first">
 														<tr class="authorization-model">
 															<td><input type="text" name="users[]" readonly="readonly" class="form-control"/></td>
-															<td>
-																<select name="accesstypes[]" class="form-control">
-																	<option value="ALL">ALL</option>
-																	<option value="QUERY">QUERY</option>
-																	<option value="INSERT">INSERT</option>																																													
-																</select>
-															</td>																
+															<td><input name="accesstypes[]" type="text" class="form-control" readonly="readonly"/></td>																
 															<td width="150px" class="no-wrap text-center">																	
-																<button type="button" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips btn-mountable-authorization-update" style="background-color:transparent;" onclick="OntologyCreateController.updateAuthorization(this)"> <!--<span>Update</span>--><i class="icon-edit"></i></button>
 																<button type="button" class="btn btn-xs btn-no-border icon-on-table color-red tooltips btn-mountable-authorization-remove" style="background-color:transparent;" onclick="OntologyCreateController.removeAuthorization(this)"> <i class="icon-delete"></i></button>
 															</td>			
 														</tr>
@@ -834,6 +823,32 @@
 							
 					</div><!-- END COL-12 -->
 				</form>
+				<!-- MODAL LD -->
+				<div th:include="fragments/ontology-create-ld-modal">
+				</div>
+				<!-- Modal -->
+				<div id="modal-created" data-backdrop="static" class="modal fade" role="dialog">
+					<div class="modal-dialog modal-sm">
+						<!-- Modal content-->
+						<div class="modal-content">
+							<div class="modal-header">
+								<button type="button" class="close" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} +'\');'" data-dismiss="modal"></button>
+								<h4 class="modal-title" th:text="#{json2ont.ontcreated}"></h4>
+							</div>
+							<div class="modal-body">
+						      	<h4 ><a target="_blank" th:text="#{ontology.after.create.api}" th:attr="onclick='javascript:navigateUrl(\'' + @{/apimanager/create} +'?id=\'+$(\'#identification\').val()'+');'">Create API</a></h4>
+						      	<h4 ><a target="_blank" th:text="#{ontology.after.create.device}" th:attr="onclick='javascript:navigateUrl(\'' + @{/devices/create} +'?id=\'+$(\'#identification\').val()'+');'">Create Device</a></h4>
+					      		<h4 ><a target="_blank" th:text="#{ontology.after.create.dashboard}" th:attr="onclick='javascript:navigateUrl(\'' + @{/dashboards/create} +'?id=\'+$(\'#identification\').val()'+');'">Create Dashboard</a></h4>
+					      		<h4 ><a target="_blank" th:text="#{ontology.after.create.gadget}" th:attr="onclick='javascript:navigateUrl(\'' + @{/gadgets/create} +'?id=\'+$(\'#identification\').val()'+');'">Create Gadget</a></h4>
+
+					      	</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-default" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'" data-dismiss="modal">Close</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div><!-- END COL-12 -->
 				
 				<!-- Modal -->
 				<div th:if="${historical == true}" id="modal-file" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
@@ -841,7 +856,8 @@
 						<!-- Modal content-->
 						<div class="modal-content">
 							<div class="modal-header">
-								<button th:if="${ontology?.id} == null"  type="button" class="close" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} +'\');'" data-dismiss="modal"></button>
+								<button th:if="${ontology?.id == null && appId !=null}"  type="button" class="close" th:attr="onclick='javascript:navigateUrl(\'' + @{/projects/update/} + ${appId} +'\');'" data-dismiss="modal"></button>
+								<button th:if="${ontology?.id == null && appId ==null}"  type="button" class="close" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} +'\');'" data-dismiss="modal"></button>
 								<button th:if="${ontology?.id} != null"  type="button" class="close" onclick="" data-dismiss="modal"></button>
 								<h4 class="modal-title" th:text="#{ontology.historical.upload.file}"></h4>
 							</div>
@@ -866,7 +882,8 @@
 					      	</div>
 							<div class="modal-footer">
 							    <button type="button" class="btn btn-outline btn-circle btn-primary " id="submitNewFile" data-dismiss="modal" onclick="OntologyCreateController.submitModalFile()" disabled="true" th:text="#{gen.submit}" >Submit</button>
-								<button th:if="${ontology?.id} == null" type="button" class="btn btn-default" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'" data-dismiss="modal" th:text="#{gen.closeBtn}">Close</button>
+							    <button th:if="${ontology?.id == null && appId !=null}" type="button" class="btn btn-default" th:attr="onclick='javascript:navigateUrl(\'' + @{/projects/update/} + ${appId} + '\');'" data-dismiss="modal" th:text="#{gen.closeBtn}">Close</button>
+								<button th:if="${ontology?.id == null && appId ==null}" type="button" class="btn btn-default" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'" data-dismiss="modal" th:text="#{gen.closeBtn}">Close</button>
 								<button th:if="${ontology?.id} != null" type="button" class="btn btn-default" onclick="" data-dismiss="modal" th:text="#{gen.closeBtn}">Close</button>
 							</div>
 						</div>
@@ -987,7 +1004,8 @@
 			"schema" : [[#{ontology.virtual.schema.error}]],
 			"datasource" : [[#{ontology.virtual.datasources.empty}]],
 			"jsonldformat": [[#{ontology.valid.jsonldformat}]]
-		}
+		},
+		"appId" : [[${appId}]]
 	};
 	
 	$("#stepOneCheckbox").click(function() { return false; });	

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ public class MultiDocumentOperationResult {
 	private static final String COUNT_PROPERTY = "count";
 	private static final String IDS_PROPERTY = "ids";
 	private static final String DATA_PROPERTY = "data";
+	private static final String ID_PROPERTY = "_id";
 
 	@Getter
 	@Setter
@@ -59,6 +60,13 @@ public class MultiDocumentOperationResult {
 	public static MultiDocumentOperationResult fromJSONObject(JSONObject obj) {
 		MultiDocumentOperationResult result = new MultiDocumentOperationResult();
 		
+		if(obj.has(ID_PROPERTY) && obj.getJSONObject(ID_PROPERTY) != null ){
+			List<String> ids = new ArrayList<>();
+			ids.add(obj.getJSONObject(ID_PROPERTY).getString("$oid"));
+			result.setIds(ids);
+			result.setStrIds(obj.getJSONObject(ID_PROPERTY).getString("$oid"));
+			result.setCount(1);
+		}
 		
 		if (obj.has(DATA_PROPERTY) && obj.get(DATA_PROPERTY) instanceof JSONArray) {
 			//TIMESERIES
@@ -110,7 +118,7 @@ public class MultiDocumentOperationResult {
 				result.setStrIds(obj.get(IDS_PROPERTY).toString());
 			}
 	
-			if (!obj.has(DATA_PROPERTY) && !obj.has(IDS_PROPERTY)) {
+			if (!obj.has(DATA_PROPERTY) && !obj.has(IDS_PROPERTY) && !obj.has(ID_PROPERTY)) {
 				if (obj.get(COUNT_PROPERTY) instanceof Integer) {
 					result.setCount((Integer) obj.get(COUNT_PROPERTY));
 				} else if ((obj.get(COUNT_PROPERTY) instanceof Long)) {

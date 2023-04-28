@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.BadRequestException;
@@ -91,9 +92,14 @@ public class DataflowController {
 
 	@Autowired
 	private ResourcesInUseService resourcesInUseService;
+	
+	@Autowired 
+	private HttpSession httpSession;
 
 	@Autowired
 	ServletContext context;
+	
+	private static final String APP_ID = "appId";
 
 	/* TEMPLATES VIEWS */
 
@@ -107,6 +113,13 @@ public class DataflowController {
 		uiModel.addAttribute("userRole", utils.getRole());
 		uiModel.addAttribute(DATAFLOW_VERSION_STR, dataflowService.getVersion());
 		uiModel.addAttribute("instance", instanceIdentification);
+		
+		final Object projectId = httpSession.getAttribute(APP_ID);
+		if (projectId!=null) {
+			uiModel.addAttribute(APP_ID, projectId.toString());
+			httpSession.removeAttribute(APP_ID);
+		}
+		
 		return "dataflow/list";
 	}
 
@@ -351,7 +364,8 @@ public class DataflowController {
 			RequestMethod.PUT }, headers = "Accept=application/json")
 	@ResponseBody
 	public ResponseEntity<String> appRest(HttpServletRequest request, @RequestBody(required = false) String body) {
-		return dataflowService.sendHttp(request, HttpMethod.valueOf(request.getMethod()), body, utils.getUserId());
+		ResponseEntity<String> dataflowResponse = dataflowService.sendHttp(request, HttpMethod.valueOf(request.getMethod()), body, utils.getUserId());
+		return ResponseEntity.status(dataflowResponse.getStatusCode()).body(dataflowResponse.getBody());
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
@@ -360,7 +374,8 @@ public class DataflowController {
 	@ResponseBody
 	public ResponseEntity<String> appRestWithInstance(@PathVariable("instance") String instance,
 			HttpServletRequest request, @RequestBody(required = false) String body) {
-		return dataflowService.sendHttpWithInstance(request, HttpMethod.valueOf(request.getMethod()), body, instance);
+		ResponseEntity<String> dataflowResponse = dataflowService.sendHttpWithInstance(request, HttpMethod.valueOf(request.getMethod()), body, instance);
+		return ResponseEntity.status(dataflowResponse.getStatusCode()).body(dataflowResponse.getBody());
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")

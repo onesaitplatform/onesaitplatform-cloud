@@ -122,6 +122,7 @@ var InternationalizationCreateController = function() {
 
 	var saveJson = function(){
 		var tab = $("#langTabsUL li.active span").text();
+		
 		if(tab != null && tab != ""){
 			var textAreaFile= myJsonLanguageEditor.getValue();
 			myJson['languages'][tab]=JSON.parse(textAreaFile);
@@ -142,6 +143,7 @@ var InternationalizationCreateController = function() {
 		// Put the language name in text input
 		var lang = document.getElementById("languageTabCode");
 		lang.value = $("#languageCode option").filter(function(a){return this.value==tabName})[0].text;	
+		$('#file2').val(null);
 	}
 
 	var printJson = function(text) {
@@ -168,16 +170,16 @@ var InternationalizationCreateController = function() {
 				element.click();
 				document.body.removeChild(element);
 			} else {
-				alert("The file is empty.");
+				toastr.error(messagesForms.operations.genOpError, i18nJson.validations.file_empty_error);
 			}
 		} else {
-			alert("Please, select a language!");
+			toastr.error(messagesForms.operations.genOpError, i18nJson.validations.languaje_selection_error);
 		}
 	}
 	
 	var loadJsonFromDoc = function(files) {
 		if(files == null){
-			alert("Please, select a file!");
+			toastr.error(messagesForms.operations.genOpError, i18nJson.validations.file_selection_error);
 		} else {
 			var reader = new FileReader();
 			var size = files[0].size;
@@ -187,7 +189,8 @@ var InternationalizationCreateController = function() {
 			var bytes = 0;
 			var selectedTab = $("#langTabsUL li.active span").text();
 			if(selectedTab == ""){
-				alert("Please, select a language!");
+				toastr.error(messagesForms.operations.genOpError, i18nJson.validations.languaje_selection_error);
+			
 			} else {
 				if (files[0].type == "application/json") {
 		
@@ -240,6 +243,7 @@ var InternationalizationCreateController = function() {
 				$('#progressBarModal').modal("show");
 			}
 		}	
+			
 	};
 
 	var progressBarFileUpload = function(offset, maxSize) {
@@ -297,7 +301,10 @@ var InternationalizationCreateController = function() {
 				close: {
 					text: cancelBtn,
 					btnClass: 'btn btn-outline blue dialog',
-					action: function (){} // GENERIC CLOSE.
+					action: function (){
+						hideSelectOptions();
+					} // GENERIC CLOSE.
+					
 				},
 				Ok: {
 					text: confirmBtn,
@@ -339,7 +346,7 @@ var InternationalizationCreateController = function() {
     		return this.textContent}).get();
     	
     	var str='[value!=""]';
-        for(i=0;i<tabs.length;i++){
+        for(i=0;i<tabs.length - 2 ;i++){
             str += '[value!='+tabs[i]+']';
         }
         $('#languageCode option'+ str).hide();
@@ -379,6 +386,7 @@ var InternationalizationCreateController = function() {
 			} else {
 				$("#languageCode").val("");
 				hideSelectOptions();
+				
 			}
 			
 		} else {
@@ -404,7 +412,9 @@ var InternationalizationCreateController = function() {
 				close: {
 					text: cancelBtn,
 					btnClass: 'btn btn-outline blue dialog',
-					action: function (){} // GENERIC CLOSE.
+					action: function (){
+						hideSelectOptions();
+					} // GENERIC CLOSE.
 				},
 				Ok: {
 					text: deleteBtn,
@@ -412,10 +422,23 @@ var InternationalizationCreateController = function() {
 					action: function() {
 						var selectedTab = $("#langTabsUL li.active span").text();
 						if(selectedTab == ""){
-							alert("Please, select a language!");
+							toastr.error(messagesForms.operations.genOpError, i18nJson.validations.languaje_selection_error);
 						} else{
 							delete myJson['languages'][selectedTab];
 							$("#langTabsUL li.active").remove();
+						
+							var defaultLang = $("#languageCode").val();
+							
+							if(defaultLang != "") {
+								if(defaultLang != selectedTab) {
+									$("#languageCode").val(defaultLang);
+								} else {
+									$("#languageCode").val("");
+								}
+								var lang = document.getElementById("languageTabCode");
+								lang.value = "";	
+								hideSelectOptions();
+							}
 						}
 					}											
 				}						
@@ -451,6 +474,7 @@ var InternationalizationCreateController = function() {
 		// LOAD() JSON LOAD FROM TEMPLATE TO CONTROLLER
 		load: function(Data) { 
 			logControl ? console.log(LIB_TITLE + ': load()') : '';
+			return internacionalizationCreateReg = Data;
 		},
 		getCodeMirror : function() {
 			return myCodeMirror;
@@ -512,7 +536,7 @@ var InternationalizationCreateController = function() {
 
 // AUTO INIT CONTROLLER WHEN READY
 $(window).load(function() {	
-	
+	InternationalizationCreateController.load(i18nJson);
 	// AUTO INIT CONTROLLER.
 	InternationalizationCreateController.init();
 });

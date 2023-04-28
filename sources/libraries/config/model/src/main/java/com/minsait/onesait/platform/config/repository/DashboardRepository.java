@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,24 +97,26 @@ public interface DashboardRepository extends JpaRepository<Dashboard, String> {
 			@Param("description") String description);
 
 	List<Dashboard> findAllByOrderByIdentificationDesc();
-
+	
 	List<Dashboard> findAllByOrderByCreatedAtAsc();
-
+	
 	List<Dashboard> findAllByOrderByCreatedAtDesc();
-
+	
 	List<Dashboard> findAllByOrderByUpdatedAtAsc();
-
+	
 	List<Dashboard> findAllByOrderByUpdatedAtDesc();
 
 	List<Dashboard> findByIdentificationAndDescriptionAndUser(String identification, String description, User user);
 
 	List<Dashboard> findByIdentificationAndDescription(String identification, String description);
-
+	
 	Dashboard findByIdentificationOrId(String identification, String id);
 
-	@Query("SELECT new  com.minsait.onesait.platform.config.dto.DashboardForList(o.id, o.identification, o.description, o.type, o.user, o.isPublic, o.createdAt, o.updatedAt, 'EDIT')"
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.DashboardForList(o.id, o.identification, o.description, o.type, o.user, o.isPublic, o.createdAt, o.updatedAt, 'EDIT')"
 			+ "FROM Dashboard AS o " + "WHERE (o.isPublic=TRUE OR " + "o.user=:user OR "
-			+ "o.id IN (SELECT uo.dashboard.id " + "FROM DashboardUserAccess AS uo " + "WHERE uo.user=:user)) AND "
+			+ "o.id IN (SELECT uo.dashboard.id " + "FROM DashboardUserAccess AS uo " + "WHERE uo.user=:user) OR "
+			+ "o.id IN (SELECT pra.resource.id " + "FROM ProjectResourceAccess AS pra " + "WHERE pra.user=:user) OR "
+			+ "o.id IN (SELECT prar.resource.id FROM ProjectResourceAccess prar JOIN prar.appRole.appUsers au WHERE au.user= :user )) AND "
 			+ "(o.identification like %:identification% AND o.description like %:description%) ORDER BY o.identification ASC")
 	List<DashboardForList> findByUserAndPermissionsANDIdentificationContainingAndDescriptionContaining(
 			@Param("user") User user, @Param("identification") String identification,
@@ -132,23 +134,29 @@ public interface DashboardRepository extends JpaRepository<Dashboard, String> {
 	List<OPResourceDTO> findDtoByUserAndPermissions(@Param("user") User user,
 			@Param("identification") String identification, @Param("description") String description);
 
-	@Query("SELECT new  com.minsait.onesait.platform.config.dto.DashboardForList(o.id, o.identification, o.description, o.type, o.user, o.isPublic, o.createdAt, o.updatedAt, 'EDIT')"
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.DashboardForList(o.id, o.identification, o.description, o.type, o.user, o.isPublic, o.createdAt, o.updatedAt, 'EDIT')"
 			+ "FROM Dashboard AS o " + "WHERE (o.isPublic=TRUE OR " + "o.user=:user OR "
-			+ "o.id IN (SELECT uo.dashboard.id " + "FROM DashboardUserAccess AS uo " + "WHERE uo.user=:user)) AND "
+			+ "o.id IN (SELECT uo.dashboard.id " + "FROM DashboardUserAccess AS uo " + "WHERE uo.user=:user) OR "
+			+ "o.id IN (SELECT pra.resource.id " + "FROM ProjectResourceAccess AS pra " + "WHERE pra.user=:user) OR "
+			+ "o.id IN (SELECT prar.resource.id FROM ProjectResourceAccess prar JOIN prar.appRole.appUsers au WHERE au.user= :user )) AND "
 			+ "(o.identification like %:identification% AND o.type = :type) ORDER BY o.identification ASC")
 	List<DashboardForList> findByUserAndPermissionsANDIdentificationContainingAndTypeForList(@Param("user") User user,
 			@Param("identification") String identification, @Param("type") Dashboard.DashboardType type);
 
-	@Query("SELECT new  com.minsait.onesait.platform.config.dto.DashboardForList(o.id, o.identification, o.description, o.type, o.user, o.isPublic, o.createdAt, o.updatedAt, 'EDIT')"
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.DashboardForList(o.id, o.identification, o.description, o.type, o.user, o.isPublic, o.createdAt, o.updatedAt, 'EDIT')"
 			+ "FROM Dashboard AS o " + "WHERE (o.isPublic=TRUE OR " + "o.user=:user OR "
-			+ "o.id IN (SELECT uo.dashboard.id " + "FROM DashboardUserAccess AS uo " + "WHERE uo.user=:user)) AND "
+			+ "o.id IN (SELECT uo.dashboard.id " + "FROM DashboardUserAccess AS uo " + "WHERE uo.user=:user) OR "
+			+ "o.id IN (SELECT pra.resource.id " + "FROM ProjectResourceAccess AS pra " + "WHERE pra.user=:user) OR "
+			+ "o.id IN (SELECT prar.resource.id FROM ProjectResourceAccess prar JOIN prar.appRole.appUsers au WHERE au.user= :user )) AND "
 			+ "(o.identification like %:identification% AND o.type = null) ORDER BY o.identification ASC")
 	List<DashboardForList> findDashboardByUserAndPermissionsANDIdentificationContaining(@Param("user") User user,
 			@Param("identification") String identification);
 
-	@Query("SELECT new  com.minsait.onesait.platform.config.dto.DashboardForList(o.id, o.identification, o.description, o.type, o.user, o.isPublic, o.createdAt, o.updatedAt, 'EDIT')"
+	@Query("SELECT new com.minsait.onesait.platform.config.dto.DashboardForList(o.id, o.identification, o.description, o.type, o.user, o.isPublic, o.createdAt, o.updatedAt, 'EDIT')"
 			+ "FROM Dashboard AS o " + "WHERE (o.isPublic=TRUE OR " + "o.user=:user OR "
-			+ "o.id IN (SELECT uo.dashboard.id " + "FROM DashboardUserAccess AS uo " + "WHERE uo.user=:user)) AND "
+			+ "o.id IN (SELECT uo.dashboard.id " + "FROM DashboardUserAccess AS uo " + "WHERE uo.user=:user) OR "
+			+ "o.id IN (SELECT pra.resource.id " + "FROM ProjectResourceAccess AS pra " + "WHERE pra.user=:user) OR "
+			+ "o.id IN (SELECT prar.resource.id FROM ProjectResourceAccess prar JOIN prar.appRole.appUsers au WHERE au.user= :user)) AND "
 			+ "(o.identification like %:identification%) ORDER BY o.identification ASC")
 	List<DashboardForList> findByUserAndPermissionsANDIdentificationContaining(@Param("user") User user,
 			@Param("identification") String identification);

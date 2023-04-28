@@ -1,7 +1,6 @@
-	
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,15 +29,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 
 public class MasterUserAmplified extends UserAmplified {
-    @JsonInclude(Include.NON_NULL)
-    Integer failedAtemps; 
-    @JsonInclude(Include.NON_NULL)
-    String lastLogin;
-    @JsonInclude(Include.NON_NULL)
-    String lastPswdUpdate; 
-    @JsonInclude(Include.NON_NULL)
-    String resetPass;
-	
+	@JsonInclude(Include.NON_NULL)
+	Integer failedAtemps;
+	@JsonInclude(Include.NON_NULL)
+	String lastLogin;
+	@JsonInclude(Include.NON_NULL)
+	String lastPswdUpdate;
+	@JsonInclude(Include.NON_NULL)
+	String resetPass;
+
 	public MasterUserAmplified(com.minsait.onesait.platform.multitenant.config.model.MasterUser user) {
 		final DateFormat dateFormat = new SimpleDateFormat("dd/MM/YYYY");
 		setUsername(user.getUserId());
@@ -46,11 +45,25 @@ public class MasterUserAmplified extends UserAmplified {
 		setFullName(user.getFullName());
 		failedAtemps = user.getFailedAtemps();
 		if (user.getLastLogin() != null && user.getLastLogin().toString().length() > 0)
-		    lastLogin = dateFormat.format(user.getLastLogin());
+			lastLogin = dateFormat.format(user.getLastLogin());
 		if (user.getLastPswdUpdate() != null && user.getLastPswdUpdate().toString().length() > 0)
-		    lastPswdUpdate = dateFormat.format(user.getLastPswdUpdate());
+			lastPswdUpdate = dateFormat.format(user.getLastPswdUpdate());
 		if (user.getResetPass() != null && user.getResetPass().toString().length() > 0)
-		    resetPass = dateFormat.format(user.getResetPass());
+			resetPass = dateFormat.format(user.getResetPass());
+	}
+
+	public MasterUserAmplified(com.minsait.onesait.platform.multitenant.config.model.MasterUserLazy user) {
+		final DateFormat dateFormat = new SimpleDateFormat("dd/MM/YYYY");
+		setUsername(user.getUserId());
+		setMail(user.getEmail());
+		setFullName(user.getFullName());
+		failedAtemps = user.getFailedAtemps();
+		if (user.getLastLogin() != null && user.getLastLogin().toString().length() > 0)
+			lastLogin = dateFormat.format(user.getLastLogin());
+		if (user.getLastPswdUpdate() != null && user.getLastPswdUpdate().toString().length() > 0)
+			lastPswdUpdate = dateFormat.format(user.getLastPswdUpdate());
+		if (user.getResetPass() != null && user.getResetPass().toString().length() > 0)
+			resetPass = dateFormat.format(user.getResetPass());
 	}
 
 }

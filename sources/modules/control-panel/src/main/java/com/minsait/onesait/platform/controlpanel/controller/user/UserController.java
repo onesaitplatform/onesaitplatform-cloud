@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,6 +112,9 @@ public class UserController {
 
 	@Autowired
 	private ConfigurationService configurationService;
+	
+	@Autowired 
+	private HttpSession httpSession;
 
 	@Value("${onesaitplatform.user.registry.validation.url:http://localhost:18000/controlpanel/users/validateNewUserFromLogin/}")
 	private String validationUrlNewUser;
@@ -121,11 +125,9 @@ public class UserController {
 	@Value("${onesaitplatform.user.password.generated.url:http://localhost:18000/controlpanel/users/showGeneratedCredentials/}")
 	private String passworGeneratedByAdministratordUrl;
 
-	
 	@Value("${onesaitplatform.multitenancy.enabled}")
 	private boolean isMultitenantEnabled;
 
-	
 	private static final String REDIRECT_USER_LIST = "redirect:/users/list";
 	private static final String ERROR_403 = "error/403";
 	private static final String REDIRECT_USER_CREATE = "redirect:/users/create";
@@ -144,6 +146,8 @@ public class UserController {
 	private static final String CREDENTIALS_CONSTANT = "credentials";
 	private static final String MESSAGE_CONSTANT = "message";
 	private static final String PASSWORD_PATTERN = "password-pattern";
+	private static final String APP_ID = "appId";
+	private static final String USER_EMAIL_IN_USE_ERROR = "user.email.use.error";
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/create", produces = "text/html")
@@ -199,6 +203,7 @@ public class UserController {
 		if (user == null) {
 			return REDIRECT_USER_CREATE;
 		} else {
+			user.setPassword(null);
 			model.addAttribute("user", user);
 			model.addAttribute("passwordPattern", getPasswordPattern());
 		}
@@ -274,10 +279,9 @@ public class UserController {
 
 		if (bindingResult.hasErrors()) {
 			log.error("Some user properties missing: ");
-			bindingResult.getAllErrors().forEach(error->{
-				log.error(error.getDefaultMessage());	
+			bindingResult.getAllErrors().forEach(error -> {
+				log.error(error.getDefaultMessage());
 			});
-			
 
 			return "redirect:/users/update/" + user.getUserId() + "/" + bool;
 		}
@@ -290,42 +294,49 @@ public class UserController {
 		}
 
 		try {
-			if (!newPass.isEmpty() && !repeatPass.isEmpty()) {
-				if (newPass.equals(repeatPass) && utils.paswordValidation(newPass)) {
-					user.setPassword(newPass);
-					final Configuration configuration = configurationService
-							.getConfiguration(Configuration.Type.EXPIRATIONUSERS, "default", null);
-					final Map<String, Object> ymlExpirationUsersPassConfig = (Map<String, Object>) configurationService
-							.fromYaml(configuration.getYmlConfig()).get("Authentication");
-					final int numberLastEntriesToCheck = (Integer) ymlExpirationUsersPassConfig
-							.get("numberLastEntriesToCheck");
+			if (userService.canUserUpdateMail(user.getUserId(), user.getEmail())) {
+				if (!newPass.isEmpty() && !repeatPass.isEmpty()) {
+					if (newPass.equals(repeatPass) && utils.paswordValidation(newPass)) {
+						user.setPassword(newPass);
+						final Configuration configuration = configurationService
+								.getConfiguration(Configuration.Type.EXPIRATIONUSERS, "default", null);
+						final Map<String, Object> ymlExpirationUsersPassConfig = (Map<String, Object>) configurationService
+								.fromYaml(configuration.getYmlConfig()).get("Authentication");
+						final int numberLastEntriesToCheck = (Integer) ymlExpirationUsersPassConfig
+								.get("numberLastEntriesToCheck");
 
-					if (!multitenancyService.isValidPass(user.getUserId(), newPass, numberLastEntriesToCheck)) {
-						throw new UserServiceException("Password not valid because it has already been used before");
-					}
-					userService.updatePassword(user);
-					userService.updateUser(user);
-					if (utils.isAdministrator()) {
-						this.sendShowCredentialsMail(user.getEmail(), newPass, false);
-
-						if (!utils.getUserId().equals(user.getUserId())) {
-							utils.addRedirectInfoMessage("user.update.password.admin", redirect);
-							return REDIRECT_USER_SHOW + user.getUserId() + "/";
+						if (!multitenancyService.isValidPass(user.getUserId(), newPass, numberLastEntriesToCheck)) {
+							throw new UserServiceException(
+									"Password not valid because it has already been used before");
 						}
+						userService.updatePassword(user);
+						userService.updateUser(user);
+						if (utils.isAdministrator()) {
+							this.sendShowCredentialsMail(user.getEmail(), newPass, false);
+
+							if (!utils.getUserId().equals(user.getUserId())) {
+								utils.addRedirectInfoMessage("user.update.password.admin", redirect);
+								return REDIRECT_USER_SHOW + user.getUserId() + "/";
+							}
+						}
+					} else {
+						utils.addRedirectMessage("user.update.error.password", redirect);
+						return REDIRECT_USER_SHOW + user.getUserId() + "/";
 					}
-				} else {
-					utils.addRedirectMessage("user.update.error.password", redirect);
-					return REDIRECT_USER_SHOW + user.getUserId() + "/";
 				}
+			} else {
+				log.error("Cannot update user, email in use", "");
+				utils.addRedirectMessage(USER_EMAIL_IN_USE_ERROR, redirect);
+				return "redirect:/users/update/".concat(id).concat("/").concat(String.valueOf(bool));
 			}
-			
+
 			if (utils.isAdministrator() && isMultitenantEnabled && !StringUtils.isEmpty(tenant)) {
 				multitenancyService.changeUserTenant(user.getUserId(), tenant);
 			}
 			if (utils.isAdministrator()) {
 				userService.updateUser(user);
 			}
-			
+
 		} catch (final Exception e) {
 			log.error("Cannot update user", e);
 			utils.addRedirectException(e, redirect);
@@ -388,6 +399,9 @@ public class UserController {
 	public String list(Model model, @RequestParam(required = false) String userId,
 			@RequestParam(required = false) String fullName, @RequestParam(required = false) String roleType,
 			@RequestParam(required = false) String email, @RequestParam(required = false) Boolean active) {
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
+		
 		if (userId != null && userId.equals("")) {
 			userId = null;
 		}
@@ -653,6 +667,7 @@ public class UserController {
 
 				utils.deactivateSessions(userId);
 				userService.deleteUser(userId);
+				
 			}
 
 			if (utils.isAdministrator()) {

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,12 +29,11 @@ import org.slf4j.MDC;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Component
+@Deprecated
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Slf4j
 public class LoggerInterceptorFilter implements Filter {
@@ -69,7 +68,7 @@ public class LoggerInterceptorFilter implements Filter {
 
 	private String getCorrelationIdFromHeader(final HttpServletRequest request) {
 		String correlationId = request.getHeader(CORRELATION_ID_HEADER_NAME);
-		if (StringUtils.isEmpty(correlationId)) {
+		if (!StringUtils.hasText(correlationId)) {
 			correlationId = generateUniqueCorrelationId();
 		}
 		return correlationId;

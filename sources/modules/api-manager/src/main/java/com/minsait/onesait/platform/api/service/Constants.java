@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,5 +71,7 @@ public final class Constants {
 	public static final String CONTEXT_USER = "$context.userId";
 
 	public static final String HTTP_RESPONSE_HEADERS="RESPONSE_HEADERS";
+
+	public static final String IS_CUSTOM_SQL="IS_CUSTOM_SQL";
 
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,6 +88,7 @@ public class ReportConverter {
 
 		final ReportDto reportDto = ReportDto.builder().id(report.getId()).identification(report.getIdentification())
 				.description(report.getDescription()).owner(report.getUser().getUserId()).created(report.getCreatedAt())
+				.fileName(report.getIdentification()+"."+report.getExtension().toString().toLowerCase())
 				.resources(report.getResources().stream()
 						.map(r -> ReportResourceDTO.builder().id(r.getId()).fileName(r.getFileName()).build())
 						.collect(Collectors.toList()))

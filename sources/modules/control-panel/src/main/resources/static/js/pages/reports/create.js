@@ -21,8 +21,10 @@ Report.Create = (function() {
 	var form1 = $('#form-report');
    
 	
-	var init = function() {
+	var init = function(data) {
 
+		ontologyCreateReg = data;
+		
 		// INPUT MASK FOR ontology identification allow only letters, numbers and -_
 		$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
 		
@@ -149,9 +151,15 @@ Report.Create = (function() {
 			noerrors = noerrors && $('.form').validate().element(obj);
 		});
 		
-		if ($("[name='file']").val()==""){
+		if ($("[name='file']").val()=="" && reportsCreateJson.actionMode == null){
 			noerrors = false;
 			toastr.error(reportsCreateJson.messages.filerequired);
+		}
+		
+		if ($('#checkboxDataSource')[0] && $('#checkboxDataSource')[0].checked){
+			$('#data-source-url').val($('#report-datasource').val());
+		} else {
+			$('#data-source-url').prop( "disabled", true );
 		}
 		
 		if (noerrors) {
@@ -284,7 +292,8 @@ Report.Create = (function() {
 				$(event.target).parent().next().nextAll('span:first').removeClass('hide');
 				$(event.target).parent().addClass('tagsinput-has-error');
 			}   
-		})		
+		})
+		
 	}
 
 	// Public API

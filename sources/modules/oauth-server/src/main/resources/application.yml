@@ -6,7 +6,17 @@ server: ## Config Web Server
    tomcat:
       access_log_enabled: true
       basedir: target/tomcat
-
+      
+      
+logbook:
+  exclude:
+     - ${server.servlet.contextPath}/actuator/**
+     - ${server.servlet.contextPath}/static/**
+     - ${server.servlet.contextPath}/themes/**
+     - ${server.servlet.contextPath}/swagger-ui/**
+  write:
+     max-body-size: 10000
+     
 ldap:
   url: ldap://localhost:10389/
   base: ou=User,ou=onesait,ou=system
@@ -55,7 +65,7 @@ onesaitplatform:
       key: ENC(VYVseIUh5xiRd8ws0prbEAg6bGq7vmbfi3gkM65HECy+YPbjz4f49w==)
       iteration-count: 5
    multitenancy:
-      enabled: false
+      enabled: true
    audit.global.notify: true
    locale.default: en
    secure.cors: "*"
@@ -145,6 +155,7 @@ logging:
       org.springframework.security.oauth2: ERROR
       org.springframework.security: ERROR
       org.springframework.cache: ERROR
+      org.zalando.logbook: TRACE  
       
       
 ## OAUTH    

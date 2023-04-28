@@ -8,6 +8,9 @@ var WebProjectCreateController = function() {
 	var currentLanguage = ''; // loaded from template.	
 	var internalLanguage = 'en';
 	var stateSwitch = false;
+	var webProjectModified = false;
+	var webProjectUploaded = false;
+	
 	// FORM VALIDATION
 	var handleValidation = function() {
 		logControl ? console.log('handleValidation() -> ') : '';
@@ -52,12 +55,13 @@ var WebProjectCreateController = function() {
 						toastr.success(messagesForms.validation.genFormSuccess);             
 	                    form.submit();					
 				}else{
-	            	if ($("#buttonLoadRootZip").val() != ""){
+	            	if ($("#buttonLoadRootZip").val() != "" ||
+	            		(webProjectCreateJson.actionMode != null && !webProjectModified) ||
+	            		(webProjectCreateJson.actionMode != null && webProjectModified && webProjectUploaded)){
 	            		toastr.success(messagesForms.validation.genFormSuccess);             
 	                    form.submit();
 	            	} else {	            		 
 	            		toastr.error(webProjectCreateJson.validform.ziprequired);
-						App.scrollTo(error1, -200);
 	            	}
 				}			
             }
@@ -95,7 +99,9 @@ var WebProjectCreateController = function() {
     	$('#createBtn').attr('disabled','disabled');    	
     	$('#deleteBtn').attr('disabled','disabled');    	
     	$('#resetBtn').attr('disabled','disabled');
-		App.blockUI({target:"#createWebprojectPortlet",boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Uploading Web Project..."});
+    	webProjectUploaded = false;
+    	webProjectModified = true;
+		App.blockUI({target:"#createWebprojectDiv",boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Uploading Web Project..."});
     	$.ajax({
             type: 'post',
             url: '/controlpanel/webprojects/uploadZip',
@@ -109,15 +115,17 @@ var WebProjectCreateController = function() {
             	$('#updateBtn').removeAttr('disabled');
             	$('#createBtn').removeAttr('disabled'); 
             	$('#deleteBtn').removeAttr('disabled');    	
-            	$('#resetBtn').removeAttr('disabled');   
+            	$('#resetBtn').removeAttr('disabled'); 
+            	webProjectUploaded = true;
 				toastr.success(webProjectCreateJson.messages.validationZIP,'');	
             },
             error: function(xhr){
+            	webProjectUploaded = false;
             	toastr.error(messagesForms.operations.genOpError + ':', xhr.responseText);
     			return false;
             },
 			complete:function(){					
-				App.unblockUI("#createWebprojectPortlet");				
+				App.unblockUI("#createWebprojectDiv");				
 			}
         });
     }
@@ -127,10 +135,11 @@ var WebProjectCreateController = function() {
 		var csrf_value = $("meta[name='_csrf']").attr("content");
 		var csrf_header = $("meta[name='_csrf_header']").attr("content");
     	$('#updateBtn').attr('disabled','disabled');
-    	$('#createBtn').attr('disabled','disabled');    	
-    	$('#deleteBtn').attr('disabled','disabled');    	
+    	$('#createBtn').attr('disabled','disabled');
+    	$('#deleteBtn').attr('disabled','disabled');
     	$('#resetBtn').attr('disabled','disabled');
-		App.blockUI({target:"#createWebprojectPortlet",boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Uploading Web Project..."});
+   	
+		App.blockUI({target:"#createWebprojectDiv",boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Uploading Web Project..."});
     	$.ajax({
             type: 'post',
             url: '/controlpanel/webprojects/uploadWebTemplate',
@@ -141,9 +150,9 @@ var WebProjectCreateController = function() {
             processData: false,
             success: function () {
             	$('#updateBtn').removeAttr('disabled');
-            	$('#createBtn').removeAttr('disabled'); 
-            	$('#deleteBtn').removeAttr('disabled');    	
-            	$('#resetBtn').removeAttr('disabled');   
+            	$('#createBtn').removeAttr('disabled');
+            	$('#deleteBtn').removeAttr('disabled');
+            	$('#resetBtn').removeAttr('disabled');
 				toastr.success(webProjectCreateJson.messages.validationZIP,'');	
 				
             },
@@ -152,7 +161,7 @@ var WebProjectCreateController = function() {
     			return false;
             },
 			complete:function(){					
-				App.unblockUI("#createWebprojectPortlet");				
+				App.unblockUI("#createWebprojectDiv");				
 			}
         });
     }

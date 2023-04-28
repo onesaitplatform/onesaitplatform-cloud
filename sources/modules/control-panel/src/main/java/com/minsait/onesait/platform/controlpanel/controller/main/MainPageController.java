@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,10 @@
  */
 package com.minsait.onesait.platform.controlpanel.controller.main;
 
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,9 +29,12 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.minsait.onesait.platform.config.model.CategorizationUser;
 import com.minsait.onesait.platform.business.services.prometheus.PrometheusService;
 import com.minsait.onesait.platform.config.model.Role;
+import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.ApiRepository;
+import com.minsait.onesait.platform.config.repository.CategorizationUserRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
 import com.minsait.onesait.platform.config.repository.DashboardRepository;
 import com.minsait.onesait.platform.config.services.main.MainService;
@@ -46,6 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 public class MainPageController {
 
 	private static final String MESSAGE = "message";
+	private static final String APP_ID = "appId";
 	@Autowired
 	private AppWebUtils utils;
 	@Autowired
@@ -54,12 +61,14 @@ public class MainPageController {
 	private UserService userService;
 	@Autowired
 	private IntegrationResourcesService integrationResourcesService;
+	@Autowired
+	private CategorizationUserRepository categorizationUserRepository;
 
 	// TEMPORAL
 	@Autowired
 	private DashboardRepository dashboardRepository;
 	@Autowired
-	private DeviceSimulationService deviceSimulationServicve;
+	private DeviceSimulationService deviceSimulationService;
 	@Autowired
 	private OntologyService ontologyService;
 	@Autowired
@@ -70,10 +79,14 @@ public class MainPageController {
 	private MainService mainService;
 	@Autowired
 	private PrometheusService prometheusService;
+	@Autowired 
+	private HttpSession httpSession;
 
 
 	@GetMapping("/main")
 	public String main(Model model, HttpServletRequest request) {
+		final User user = userService.getUser(utils.getUserId());
+	
 		if(model.asMap().containsKey(MESSAGE)) {
 			model.addAttribute(MESSAGE, model.asMap().get(MESSAGE));
 		}
@@ -82,7 +95,6 @@ public class MainPageController {
 		// Remove PrettyPrinted
 		final String menu = utils.validateAndReturnJson(jsonMenu);
 		utils.setSessionAttribute(request, "menu", menu);
-
 		if (request.getSession().getAttribute("apis") == null) {
 			utils.setSessionAttribute(request, "apis", integrationResourcesService.getSwaggerUrls());
 		}
@@ -90,6 +102,9 @@ public class MainPageController {
 		final Boolean prometheusEnabled = prometheusEnabled();
 
 		if (utils.isAdministrator()) {
+			final List<CategorizationUser> activeCategorizations = categorizationUserRepository.findByUserAndActive(user);
+			model.addAttribute("hasCategorizationTreeActive", !activeCategorizations.isEmpty());
+		
 			if (prometheusEnabled) {
 				model.addAttribute("kpis", mainService.createKPIsNew());
 			} else {
@@ -102,13 +117,14 @@ public class MainPageController {
 		} else if (utils.isDeveloper()) {
 			// FLOW
 			model.addAttribute("hasOntology", ontologyService.getOntologiesByUserId(utils.getUserId()).isEmpty() ? false : true);
-			model.addAttribute("hasDevice",	clientPlatformRepository.findByUser(userService.getUser(utils.getUserId())).isEmpty() ? false : true);
-			model.addAttribute("hasDashboard", dashboardRepository.findByUser(userService.getUser(utils.getUserId())).isEmpty() ? false : true);
-			model.addAttribute("hasSimulation", deviceSimulationServicve.getSimulationsForUser(utils.getUserId()).isEmpty() ? false : true);
-			model.addAttribute("hasApi", apiRepository.findByUser(userService.getUser(utils.getUserId())).isEmpty() ? false : true);
+			model.addAttribute("hasDevice",	clientPlatformRepository.findByUser(user).isEmpty() ? false : true);
+			model.addAttribute("hasDashboard", dashboardRepository.findByUser(user).isEmpty() ? false : true);
+			model.addAttribute("hasSimulation",	deviceSimulationService.getSimulationsForUser(user.getUserId()).isEmpty() ? false : true);
+			model.addAttribute("hasApi", apiRepository.findByUser(user).isEmpty() ? false : true);
+
 			return "main";
-		} else if (utils.getRole().equals(Role.Type.ROLE_USER.name())) {
-			return "redirect:/marketasset/list";
+		} else if (userService.isUserUser(user)) {
+			return "redirect:/marketasset/mainuser";
 		} else if (utils.getRole().equals(Role.Type.ROLE_PLATFORM_ADMIN.name())) {
 			return "redirect:/multitenancy/verticals";
 		} else if (utils.getRole().equals(Role.Type.ROLE_DATAVIEWER.name())) {
@@ -119,8 +135,9 @@ public class MainPageController {
 		model.addAttribute("hasOntology", ontologyService.getOntologiesByUserId(utils.getUserId()).isEmpty() ? false : true);
 		model.addAttribute("hasDevice",	clientPlatformRepository.findByUser(userService.getUser(utils.getUserId())).isEmpty() ? false : true);
 		model.addAttribute("hasDashboard", dashboardRepository.findByUser(userService.getUser(utils.getUserId())).isEmpty() ? false : true);
-		model.addAttribute("hasSimulation",	deviceSimulationServicve.getSimulationsForUser(utils.getUserId()).isEmpty() ? false : true);
+		model.addAttribute("hasSimulation", deviceSimulationService.getSimulationsForUser(utils.getUserId()).isEmpty() ? false : true);
 		model.addAttribute("hasApi", apiRepository.findByUser(userService.getUser(utils.getUserId())).isEmpty() ? false : true);
+
 		return "main";
 	}
 

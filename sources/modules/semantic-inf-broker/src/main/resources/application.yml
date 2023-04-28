@@ -9,7 +9,15 @@ server: ## Config Web Server
    jetty.max-http-form-post-size: 20000000
 
 
-
+logbook:
+  exclude:
+     - ${server.servlet.contextPath}/actuator/**
+     - ${server.servlet.contextPath}/static/**
+     - ${server.servlet.contextPath}/themes/**
+     - ${server.servlet.contextPath}/swagger-ui/**
+  write:
+     max-body-size: 10000
+     
 #hawtio.authenticationEnabled: false
 #hawtio.offline: true
 
@@ -61,8 +69,8 @@ onesaitplatform: #Config onesaitplatform specific
       maxAutoConnectRetryTime: 5000
       maxWaitTime: 5000
       useAuth: false
-      username: #username
-      password: #password
+      username: #platformadmin
+      password: #0pen-platf0rm-2018!
       readFromSecondaries: false
       queries.executionTimeout: 5000
       queries.defaultLimit: 2000
@@ -112,7 +120,7 @@ onesaitplatform: #Config onesaitplatform specific
    database.prestodb:
       historicalCatalog: minio
       historicalSchema: default
-
+   router.metrics.query.enabled: false
    router.avoidsslverification: true
    router.audit:
       enabled: true
@@ -204,4 +212,5 @@ logging:
       com.minsait: INFO
       org.springframework.boot: INFO
       org.apache.kafka: ERROR
+      org.zalando.logbook: TRACE  
 #      org.springframework.boot.autoconfigure: DEBUG

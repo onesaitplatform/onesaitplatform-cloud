@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -117,7 +117,8 @@
 									<span class="sep" th:if="(${gadgetTemplate.id} != null)"></span>
 										
 									<!-- CANCEL -->											
-									<button	id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:GadgetsTemplateCreateController.go(\'' + ${gadgetTemplate.id} + '\',\'' + @{/gadgets/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button	th:if="(${appId} == null)" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:GadgetsTemplateCreateController.go(\'' + ${gadgetTemplate.id} + '\',\'' + @{/gadgets/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button	th:if="(${appId} != null)" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:GadgetsTemplateCreateController.go(\'' + @{/projects/update/} + ${appId} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 
 									<span class="sep no-border" th:if="(${gadgetTemplate.id} != null)"></span>
 									

@@ -1,0 +1,22 @@
+{% extends 'users/user_base.html' %}
+
+{% block user_content %}
+  <form id="login-form" action="{% url 'user-login' %}{% if next %}?next={{ next }}{% endif %}" method="post">
+    {% csrf_token %}
+    <p><input type="text" class="ls-input" name="email" id="email" placeholder="Email" value="{{ form.data.email }}"></p>
+    <p><input type="password" class="ls-input" name="password" id="password" placeholder="Password"></p>
+    {% if form.non_field_errors %}
+      {% for error in form.non_field_errors %}
+        <p class="error">
+          {{ error }}
+        </p>
+      {% endfor %}
+    {% endif %}
+    <p><button type="submit" aria-label="Log In" class="ls-button ">Log in</button></p>
+  </form>
+  <script>
+    document.getElementById("email").value = "user@datalabeling.com";
+    document.getElementById("password").value = "87654321";
+    document.getElementById("login-form").submit();
+  </script>
+{% endblock %}

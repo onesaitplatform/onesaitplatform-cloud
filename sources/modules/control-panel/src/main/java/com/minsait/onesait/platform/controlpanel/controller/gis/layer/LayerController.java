@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,13 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -81,7 +83,11 @@ public class LayerController {
 	private static final String IS_PUBLIC = "isPublic";
 	private static final String REDIRECT = "redirect";
 	private static final String REDIRECT_CONTROLPANEL_LAYERS_LIST = "/controlpanel/layers/list";
+	private static final String APP_ID = "appId";
 
+	@Value("${onesaitplatform.webproject.baseurl:http://localhost:18000/web}")
+	private String webProjectPath;
+	
 	@Autowired
 	LayerService layerService;
 
@@ -99,12 +105,18 @@ public class LayerController {
 
 	@Autowired
 	private ResourcesInUseService resourcesInUseService;
+	
+	@Autowired 
+	private HttpSession httpSession;
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, HttpServletRequest request, @RequestParam(required = false) String identification,
 			@RequestParam(required = false) String description) {
 
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
+		
 		List<Layer> layers = new ArrayList<>();
 
 		if (identification != null && identification.equals("")) {
@@ -377,6 +389,7 @@ public class LayerController {
 	public String crud(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 		Layer layer = layerService.findById(id, utils.getUserId());
 		if (layer != null) {
+			model.addAttribute("onesaitCesiumPath", webProjectPath);
 			model.addAttribute(LAYER, layer);
 			model.addAttribute("ontologyName", layer.getOntology().getIdentification());
 			model.addAttribute("schema", layer.getOntology().getJsonSchema());

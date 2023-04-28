@@ -1,8 +1,8 @@
 {
     "languages": {
         "ES": {
-            "numberAirports": "Número de aeropuertos",
-            "country": "País",
+            "Number of Airports": "Número de aeropuertos",
+            "Country": "País",
             "airportsByCountry": "Aeropuertos por país",
             "gadgetTitle": "Título del Gadget",
             "example": "Texto ejemplo",
@@ -12,8 +12,8 @@
             "dashboardTitle": "Título del dashboard"
         },
         "EN": {
-            "numberAirports": "Number of Airports",
-            "country": "Country",
+            "Number of Airports": "Number of Airports",
+            "Country": "Country",
             "airportsByCountry": "Airports by country",
             "gadgetTitle": "Gadget Title",
             "example": "Sample text",
@@ -23,8 +23,8 @@
             "dashboardTitle": "Dashboard Title"
         },
         "DE": {
-            "numberAirports": "Anzahl der Flughäfen",
-            "country": "Land",
+            "Number of Airports": "Anzahl der Flughäfen",
+            "Country": "Land",
             "airportsByCountry": "Flughäfen nach Ländern",
             "gadgetTitle": "Gadget-Titel",
             "example": "Beispieltext",

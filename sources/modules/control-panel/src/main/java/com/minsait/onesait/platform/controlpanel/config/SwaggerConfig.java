@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -360,6 +360,14 @@ public class SwaggerConfig {
 	@Bean
 	public GroupedOpenApi versioningAPI() {
 		return GroupedOpenApi.builder().group("Versioning").pathsToMatch("/api/versioning", "/api/versioning/**")
+				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+
+	}
+	
+	@Bean
+	public GroupedOpenApi sparkLauncherAPI() {
+		return GroupedOpenApi.builder().group("Spark Launcher Management")
+				.pathsToMatch("/api/sparklauncher", "/api/sparklauncher/**")
 				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
 
 	}

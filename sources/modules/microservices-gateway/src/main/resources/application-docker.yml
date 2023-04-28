@@ -1,0 +1,166 @@
+server:
+  port: ${PORT}
+  ssl:
+    enabled: ${SSL_ENABLED}
+    key-alias: ${KEY_ALIAS}
+    key-store-password: ${KEY_PASS}
+    key-store: ${KEY_PATH}
+    key-store-type: PKCS12
+onesaitplatform:
+  graylog:
+    enabled: ${GRAYLOG_ENABLED}
+    host: ${GRAYLOG_HOST}
+    port: ${GRAYLOG_PORT}
+  urls.insecure: ${INSECURE_URLS}
+  
+spring:
+  datasource:
+      url: ${CONFIGDBURL}
+      username: ${CONFIGDBUSER}
+      password: ${CONFIGDBPASS}
+      driver-class-name: ${CONFIGDB_DRIVER}
+  jpa:
+      properties.hibernate.dialect: ${CONFIGDB_DIALECT}
+  security:
+    user:
+      name: ${GATEWAY_CLIENT}
+      password: ${GATEWAY_SECRET}
+    basic:
+      enabled: true
+    oauth2:
+      resourceserver:
+        opaquetoken:
+          introspection-uri: ${INTROSPECTION_URI}
+          client-id: ${CLIENT_ID}
+          client-secret: ${CLIENT_SECRET}
+  cloud:
+    gateway:
+      httpclient:
+        ssl:
+          useInsecureTrustManager: true
+      routes:
+        - id: fnproject
+          uri: http://fnproject:8080
+          predicates:
+            - Path= /fn/**
+          filters:
+            - StripPrefix=1
+        - id: controlpanel
+          uri: http://controlpanelservice:18000
+          predicates:
+            - Path= /controlpanel/**
+          filters:
+            - PreserveHostHeader
+        - id: gravitee_management
+          uri: http://graviteemngservice:25000/
+          predicates:
+            - Path= /gravitee/management/**
+          filters:
+            - PreserveHostHeader
+            - StripPrefix=1
+        - id: gravitee_ui
+          uri: http://graviteeuiservice:25002
+          predicates:
+            - Path= /gravitee/ui/**
+          filters:
+            - PreserveHostHeader
+            - StripPrefix=2
+        - id: gravitee_gateway
+          uri: http://graviteegatewayservice:25001
+          predicates:
+            - Path= /gravitee/gateway/**
+          filters:
+            - PreserveHostHeader
+            - StripPrefix=2
+        - id: dashboardengine_loginRest
+          uri: http://dashboardengineservice:18300
+          predicates:
+            - Path= /dashboardengine/loginRest/**
+          filters:
+            - PreserveHostHeader
+        - id: dashboardengine_solver
+          uri: http://dashboardengineservice:18300/
+          predicates:
+            - Path= /dashboardengine/dsengine/solver/**
+          filters:
+            - PreserveHostHeader
+        - id: dashboardengine
+          uri: http://dashboardengineservice:18300
+          predicates:
+            - Path= /dashboardengine/**
+          filters:
+            - PreserveHostHeader
+        - id: devicesimulator
+          uri: http://devicesimulator:20000
+          predicates:
+            - Path= /devicesimulator/**
+          filters:
+            - PreserveHostHeader
+        - id: router
+          uri: http://routerservice:20000
+          predicates:
+            - Path= /router/**
+          filters:
+            - PreserveHostHeader
+        - id: iot-broker
+          uri: http://iotbrokerservice:19000
+          predicates:
+            - Path= /iot-broker/**
+          filters:
+            - PreserveHostHeader
+        - id: apimanager
+          uri: http://apimanagerservice:19100
+          predicates:
+            - Path= /api-manager/**
+          filters:
+            - PreserveHostHeader
+        - id: digitaltwinbroker
+          uri: http://digitaltwinbrokerservice:19300
+          predicates:
+            - Path= /digitaltwinbroker/**
+          filters:
+            - PreserveHostHeader
+        - id: nodered
+          uri: http://flowengineservice:5050
+          predicates:
+            - Path= /nodered/**
+          filters:
+            - PreserveHostHeader
+            - StripPrefix=1
+        - id: flowengine
+          uri: http://flowengineservice:20100
+          predicates:
+            - Path= /flowengine/**
+          filters:
+            - PreserveHostHeader
+        - id: monitoring
+          uri: http://monitoringuiservice:18100
+          predicates:
+            - Path= /monitoring/**
+          filters:
+            - PreserveHostHeader
+        - id: oauth-server
+          uri: http://oauthservice:21000
+          predicates:
+            - Path= /oauth-server/**
+          filters:
+            - PreserveHostHeader
+        - id: notebooks
+          uri: http://zeppelin:8080
+          predicates:
+            - Path= /controlpanel/notebooks/app/ws/**
+          filters:
+            - PreserveHostHeader     
+            - StripPrefix=3      
+
+## LOGGING CONF
+logging:
+   file.path: /var/log/platform-logs
+   
+webprojects:
+  folder: /usr/local/webprojects/
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

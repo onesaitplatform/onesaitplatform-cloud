@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package com.minsait.onesait.platform.controlpanel.controller.project;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
@@ -97,6 +99,8 @@ public class ProjectController {
 	/*
 	 * @Autowired private ResourcesInUseService resourcesInUseService;
 	 */
+	@Autowired 
+	private HttpSession httpSession;
 
 	private static final String ALL_USERS = "ALL";
 	private static final String PROJECT_OBJ_STR = "projectObj";
@@ -105,6 +109,9 @@ public class ProjectController {
 	private static final String PROJ_FRAG_USERTAB = "project/fragments/users-tab";
 	private static final String PROJ_FRAG_RESTAB = "project/fragments/resources-tab";
 	private static final String ACCESSES = "accesses";
+	private static final String APP_ID = "appId";
+	
+	
 	@Value("${onesaitplatform.webproject.baseurl:https://localhost:18000/web/}")
 	private String rootWWW;
 
@@ -130,6 +137,7 @@ public class ProjectController {
 		}
 		final String creator = projectService.getById(projectId).getUser().getUserId().toString();
 		final boolean isCreator = creator.equals(utils.getUserId());
+		model.addAttribute("resourceTypes", Resources.values());
 		model.addAttribute("urlsMap", getUrlsMap());
 		model.addAttribute(PROJECT_OBJ_STR, projectService.getById(projectId));
 		model.addAttribute("userRole", utils.getRole());
@@ -174,8 +182,18 @@ public class ProjectController {
 			return ERROR_403;
 		}
 		populateUsertabData(model, id);
+		httpSession.setAttribute(APP_ID, id);
 		model.addAttribute("projectTypes", Project.ProjectType.values());
 		model.addAttribute("resourceTypes", Resources.values());
+		model.addAttribute("urlsMap", getUrlsMap());
+		
+		if (httpSession.getAttribute("resourceTypeAdded")!=null) {
+			model.addAttribute("resourceTypeAdded", httpSession.getAttribute("resourceTypeAdded"));
+			model.addAttribute("resourceIdentificationAdded", httpSession.getAttribute("resourceIdentificationAdded"));
+		}
+		httpSession.removeAttribute("resourceTypeAdded");
+		httpSession.removeAttribute("resourceIdentificationAdded");
+
 		/*
 		 * model.addAttribute(ResourcesInUseService.RESOURCEINUSE,
 		 * resourcesInUseService.isInUse(id, utils.getUserId()));
@@ -439,6 +457,22 @@ public class ProjectController {
 		model.addAttribute(PROJECT_OBJ_STR, projectService.getById(projectId));
 		return PROJ_FRAG_RESTAB;
 	}
+	
+	@DeleteMapping("authorizations/all")
+	public String deleteAllAuthorization(Model model, @RequestParam("id") String id,
+			@RequestParam("idsArray") String idsStringArray) {
+
+		try {
+			List<String> idsArray = new ArrayList<String>(Arrays.asList(idsStringArray.split(",")));
+			for (String idAuth : idsArray) {
+				resourceService.removeAuthorization(idAuth, id, utils.getUserId());
+			}
+		} catch (final Exception e) {
+			return ERROR_403;
+		}
+		model.addAttribute(PROJECT_OBJ_STR, projectService.getById(id));
+		return PROJ_FRAG_RESTAB;
+	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@DeleteMapping("{id}")
@@ -454,6 +488,8 @@ public class ProjectController {
 		return list(model);
 	}
 
+
+	
 	private void populateUsertabData(Model model, String projectId) {
 		final Project project = projectService.getById(projectId);
 		final List<ProjectUserDTO> members = projectService.getProjectMembers(project.getId());
@@ -474,6 +510,7 @@ public class ProjectController {
 			members = members.stream().filter(m -> userService.isUserAnalytics(userService.getUser(m.getUserId())))
 					.collect(Collectors.toList());
 		}
+		model.addAttribute("resourceTypes", Resources.values());
 		model.addAttribute(ACCESSES, ResourceAccessType.values());
 		model.addAttribute(PROJECT_OBJ_STR, project);
 		model.addAttribute("members", members);
@@ -551,6 +588,7 @@ public class ProjectController {
 		final Map<String, String> urls = new HashMap<>();
 		urls.put(Resources.API.name(), "apimanager");
 		urls.put(Resources.CLIENTPLATFORM.name(), "devices");
+		urls.put(Resources.BINARYFILE.name(), "files");
 		urls.put(Resources.DASHBOARD.name(), "dashboards");
 		urls.put(Resources.GADGET.name(), "gadgets");
 		urls.put(Resources.DIGITALTWINDEVICE.name(), "digitaltwindevices");
@@ -562,6 +600,7 @@ public class ProjectController {
 		urls.put(Resources.ONTOLOGYVIRTUALDATASOURCE.name(), "virtualdatasources");
 		urls.put(Resources.CONFIGURATION.name(), "configurations");
 		urls.put(Resources.GADGETTEMPLATE.name(), "gadgettemplates");
+		urls.put(Resources.REPORT.name(), "reports");
 		return urls;
 	}
 }

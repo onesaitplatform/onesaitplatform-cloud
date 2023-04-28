@@ -5,7 +5,7 @@
     .service('datasourceSolverService', DatasourceSolverService);
 
   /** @ngInject */
-  function DatasourceSolverService(socketService, httpService, $mdDialog, $interval, $rootScope, urlParamService, $q, utilsService,$timeout) {
+  function DatasourceSolverService(__env, socketService, socketHttpService, httpService, $mdDialog, $interval, $rootScope, urlParamService, $q, utilsService,$timeout) {
     var vm = this;
     vm.gadgetToDatasource = {};
 
@@ -56,6 +56,9 @@
 
     function initConnection(){
       httpService.setDashboardEngineCredentials();
+      if (__env.dashboardEngineProtocol == "rest") {//enable rest mode
+        socketService = socketHttpService;
+      }
       socketService.connect(vm.reactivateHeartbeatTimeout,vm.addListenerForHeartbeat);
     }
 

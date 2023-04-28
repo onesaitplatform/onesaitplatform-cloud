@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2021 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -299,6 +299,11 @@
 														<button id="cleanJson" class="btn btn-circle btn-outline blue  pull-right" name="create"  style="margin-left: 10px;"   th:value="#{gen.createBtn}" onclick="cleanJSONEditor();" ><span th:text="#{crud.clean.json}"> clean registry</span></button>
 													</div>
 												</div>
+                                                <div class="mt-checkbox-list">
+                                                    <input id="updateprop" class="margin-right-10"   name="updateprop"  type="checkbox" checked="checked" onchange="updateProperties()"  />
+                                                    <label class="control-label margin-right-5" th:text="#{crud.updateprop} ">Update properties</label>
+                                                    <i class="la la-info-circle popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{crud.updateprop.info},data-title=#{crud.updateprop}"></i>
+                                                </div>
 												<div class="row">
 													<label class="uppercase font-md">Output </label>
 													<textarea  id="output" name="output" class="element textarea extra-small form-control" style="width: 100%; height: 400px;"></textarea>
@@ -444,11 +449,7 @@ var $query;
 
 		//reloadJSONEditor();
 		changeObjectLayout();
-
-		$('#output').on('change',function() {
-	        reloadJSONEditor(false,JSON.parse($output.value,null,2));
-	    });
-
+		updateProperties();
 		findElements();
 		getOntologyFields();
 
@@ -476,6 +477,8 @@ var $query;
 
 		$('#objectLayout').trigger('click');
 
+		document.getElementById("updateprop").checked = true;
+
 		$("#contenedor-tabla-outside").removeClass("hidden");
 
 	});
@@ -490,7 +493,17 @@ var $query;
 		reloadJSONEditor(true);
 	}
 
-
+	function updateProperties(){
+		
+		if(document.getElementById("updateprop").checked == true) {
+			$('#output').on('change',function() {
+    	        reloadJSONEditor(false,JSON.parse($output.value,null,2));
+    	    });
+		} else {
+			$('#output').off('change');			
+    	}
+		
+	}
 	function cleanJSONEditor(){
 		$elementSelected=null;
 		$("#updateBtn").prop('disabled', true);
@@ -525,7 +538,6 @@ var $query;
     	  jsoneditor.setValue(new_value);
     	 // jsoneditor.validate();
     }
-
 };
 
 	/*function toggleFindElements(){
@@ -534,10 +546,10 @@ var $query;
 	}*/
 
 	function findElements(){
+	
 		createQuery();
 
 		var params = createParametersMap();
-		
 		if(params!==undefined && params.where !== undefined && params.where.length>0 ){
 			for(var i=0;i<params.where.length;i++){
 				if(params.where[i].operator==="&#60;"){
@@ -1154,7 +1166,7 @@ function map_IdFromDataSet(dataSet){
 			$.ajaxSetup({'headers': {
 				[csrf_header]: csrf_value
 		    }});
-
+			
 			$("#fields").load('/controlpanel/querytool/ontologyfields', { 'ontologyIdentification': ontologyIdentification}, function() {$('#fields #all').remove();$('#fields #selectFields').remove();});
 		}
 		catch(err) {
@@ -1228,6 +1240,7 @@ function map_IdFromDataSet(dataSet){
 		conAux = conAux.join(" ");
 		cond['value']=conAux;		
 		condRes.push(cond);
+
 	}
 	else if( conditions.length > 0){
 		conditions.each(function(index){
@@ -1243,6 +1256,7 @@ function map_IdFromDataSet(dataSet){
 			cond['value']=conAux;		
 			condRes.push(cond);
 			});   
+
 		}
 		return   condRes;     
 	}		

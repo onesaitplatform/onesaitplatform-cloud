@@ -1,0 +1,45 @@
+<!-- {"title": "Image & Audio & Text", "category": "other", "complexity": "advanced"} -->
+<View>
+
+  <!-- Image with bounding boxes -->
+  <View style="padding: 25px;
+             box-shadow: 2px 2px 8px #AAA">
+    <Header value="Label the image with bounding boxes"/>
+    <Image name="img" value="$image"/>
+    <Text name="text1"
+          value="Select label, click and drag on image"/>
+
+    <RectangleLabels name="tag" toName="img"
+                     canRotate="false">
+      <Label value="Airplane" background="red"/>
+      <Label value="Car" background="blue"/>
+    </RectangleLabels>
+  </View>
+
+  <!-- Audio with single choice -->
+  <View style="margin-top: 20px; padding: 25px;
+             box-shadow: 2px 2px 8px #AAA;">
+    <Header value="Do you like this music?"/>
+    <Audio name="audio" value="$url"/>
+    <Choices name="choices1" toName="audio"
+             choice="single">
+      <Choice alias="yes" value="Yes"/>
+      <Choice alias="no" value="No"/>
+      <Choice alias="unknown" value="Don't know"/>
+    </Choices>
+  </View>
+
+  <!-- Text with multi-choices -->
+  <View style="margin-top: 20px; padding: 25px;
+             box-shadow: 2px 2px 8px #AAA;">
+    <Header value="Classify the text"/>
+    <Text name="text2" value="$text"/>
+
+    <Choices name="choices2" toName="text2"
+             choice="multiple">
+      <Choice alias="wisdom" value="Wisdom"/>
+      <Choice alias="long" value="Long"/>
+    </Choices>
+  </View>
+
+</View>

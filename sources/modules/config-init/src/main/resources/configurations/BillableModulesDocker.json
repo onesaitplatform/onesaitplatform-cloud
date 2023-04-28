@@ -82,6 +82,7 @@
     "module": "portalopendata",
     "name": "Open Data (CKAN)",
     "servicename": "ckanservice",
+    "stack": "opendata",
     "port": 5000
 }, {
     "module": "realtimedb",
@@ -93,5 +94,22 @@
     "name": "HistoricalDB ",
     "servicename": "minio",
     "port": 9000
+},{
+    "module": "presto",
+    "name": "Presto coordinator",
+    "servicename": "localhost",
+    "port": 8080
+},
+{
+    "module": "nebulagraph",
+    "name": "Nebula Graph DB",
+    "servicename": "localhost",
+    "port": 9669
+},
+{
+    "module": "datalabeling",
+    "name": "Data labeling",
+    "servicename": "datalabelingservice",
+    "port": 8080
 }
 ]

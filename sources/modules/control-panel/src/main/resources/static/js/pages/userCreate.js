@@ -13,6 +13,7 @@ var UserCreateController = function() {
 	var internalFormat = 'yyyy/mm/dd';
 	var internalLanguage = 'en';
 	
+	
 	// CONTROLLER PRIVATE FUNCTIONS	
 
 	
@@ -357,8 +358,17 @@ var UserCreateController = function() {
 								toastr.success(messagesForms.validation.genFormSuccess,'');
 								navigateUrl("/controlpanel/users/list");
 							},
-						    error :  function () {
-						    	toastr.error(userCreateJson.deleteError);
+						    error :  function (dataError) {
+						    	
+						  		 if(dataError!=null && dataError.responseText!=null 
+						  		  	&& typeof dataError.responseText!='undefined' 
+						  		 	&& dataError.responseText.indexOf(', there are resources owned')>-1){
+						    	
+						   			 toastr.error(userCreateJson.deleteResourceError); 
+								
+						    	}else {
+							 		toastr.error(userCreateJson.deleteError);
+							 	}
 						    }
 						})
 					}

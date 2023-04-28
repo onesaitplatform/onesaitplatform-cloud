@@ -17,9 +17,9 @@
 			"submenu": [
 				{
 					"title": {
-						"EN": "My Projects",
-						"ES": "Mis Proyectos",
-						"FR": "Mes Projets"
+						"EN": "My Applications",
+						"ES": "Mis Aplicaciones",
+						"FR": "Mes Applications"
 					},
 					"icon": "",
 					"url": "/controlpanel/projects/list"

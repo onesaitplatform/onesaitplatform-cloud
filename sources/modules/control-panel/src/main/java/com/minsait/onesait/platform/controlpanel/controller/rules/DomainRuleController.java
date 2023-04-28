@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -71,16 +73,24 @@ public class DomainRuleController {
 	@Autowired
 	private BusinessRuleService businessRuleService;
 
+	@Autowired
+	private HttpSession httpSession;
+
 	private static final String DOMANI_ID = "domainId";
 	private static final String ERROR_403 = "error/403";
 	private static final String REDIRECT_RULEDOMAINS = "redirect:/rule-domains/";
 	private static final String PATH_TO_RULES = "src/main/resources/rules/";
+	private static final String APP_ID = "appId";
 
 	@GetMapping("list")
 	public String list(Model model) {
+		//CLEANING APP_ID FROM SESSION
+		httpSession.removeAttribute(APP_ID);
+
 		final DroolsRuleDomain domain = droolsRuleService.getUserDomain(utils.getUserId());
-		if (domain == null)
+		if (domain == null) {
 			businessRuleService.createDomain(utils.getUserId());
+		}
 
 		model.addAttribute("domains", domains());
 		return "rules/list";
@@ -102,8 +112,9 @@ public class DomainRuleController {
 		model.addAttribute("ontologies", ontologies);
 		model.addAttribute("types", DroolsRule.Type.values());
 		DroolsRuleDTO rule = new DroolsRuleDTO();
-		if (null != model.asMap().get("rule"))
+		if (null != model.asMap().get("rule")) {
 			rule = (DroolsRuleDTO) model.asMap().get("rule");
+		}
 		model.addAttribute("rule", rule);
 		model.addAttribute(DOMANI_ID, id);
 
@@ -114,7 +125,7 @@ public class DomainRuleController {
 	public String save(Model model, @PathVariable("domainId") String domainId, DroolsRuleDTO rule,
 			RedirectAttributes ra) {
 		try {
-			businessRuleService.save(rule, utils.getUserId());
+			businessRuleService.save(rule, droolsRuleService.getDomain(domainId).getUser().getUserId());
 		} catch (final Exception e) {
 			utils.addRedirectException(e, ra);
 			rule.setId(null);
@@ -128,8 +139,9 @@ public class DomainRuleController {
 	public String update(Model model, @PathVariable("id") String id, @PathVariable("rule") String identification,
 			DroolsRuleDTO rule, RedirectAttributes ra) {
 		try {
-			if (!droolsRuleService.hasUserEditPermission(identification, utils.getUserId()))
+			if (!droolsRuleService.hasUserEditPermission(identification, utils.getUserId())) {
 				return ERROR_403;
+			}
 			businessRuleService.update(rule, utils.getUserId(), identification);
 		} catch (final Exception e) {
 			utils.addRedirectException(e, ra);
@@ -142,18 +154,20 @@ public class DomainRuleController {
 
 	@GetMapping("{id}/rule/{rule}")
 	public String create(Model model, @PathVariable("id") String id, @PathVariable("rule") String identification) {
-		if (!droolsRuleService.hasUserEditPermission(identification, utils.getUserId()))
+		if (!droolsRuleService.hasUserEditPermission(identification, utils.getUserId())) {
 			return ERROR_403;
+		}
 		final Set<Ontology> ontologies = new LinkedHashSet<>(ontologyService.getAllOntologies(utils.getUserId()));
 		ontologies.addAll(projectService.getResourcesForUserOfType(utils.getUserId(), Ontology.class));
 		model.addAttribute("ontologies", ontologies);
-		DroolsRule rule = droolsRuleService.getRule(identification);
+		final DroolsRule rule = droolsRuleService.getRule(identification);
 		DroolsRuleDTO ruleDTO = DroolsRuleDTO.builder().id(rule.getId()).active(rule.isActive())
 				.decisionTable(rule.getDecisionTable() != null ? true : false).DRL(rule.getDRL())
 				.identification(rule.getIdentification()).sourceOntology(rule.getSourceOntology())
 				.targetOntology(rule.getTargetOntology()).type(rule.getType()).table(null).build();
-		if (null != model.asMap().get("rule"))
+		if (null != model.asMap().get("rule")) {
 			ruleDTO = (DroolsRuleDTO) model.asMap().get("rule");
+		}
 		model.addAttribute("rule", ruleDTO);
 		model.addAttribute(DOMANI_ID, id);
 
@@ -164,13 +178,16 @@ public class DomainRuleController {
 	@GetMapping("{id}/rules")
 	public String rules(Model model, @PathVariable("id") String id) {
 		final DroolsRuleDomain domain = droolsRuleService.getDomain(id);
-		if (domain == null || !domain.isActive())
+		if (domain == null || !domain.isActive()) {
 			return "redirect:/rule-domains/list";
-		if (!droolsRuleService.hasUserPermissionOnDomain(id, utils.getUserId()))
+		}
+		if (!droolsRuleService.hasUserPermissionOnDomain(id, utils.getUserId())) {
 			return ERROR_403;
+		}
 		final List<DroolsRule> rules = droolsRuleService.getAllRules(domain.getUser());
 		model.addAttribute("rules", rules.stream().map(RuleDTO::convert).collect(Collectors.toList()));
 		model.addAttribute(DOMANI_ID, id);
+		model.addAttribute("domainIdentification", domain.getIdentification());
 		return "rules/rules";
 	}
 
@@ -219,9 +236,9 @@ public class DomainRuleController {
 	public ResponseEntity<InputStreamResource> downloadDecisionTable(
 			@PathVariable("identification") String identification) throws FileNotFoundException {
 		if (droolsRuleService.hasUserEditPermission(identification, utils.getUserId())) {
-			DroolsRule rule = droolsRuleService.getRule(identification);
+			final DroolsRule rule = droolsRuleService.getRule(identification);
 			businessRuleService.createFolder(PATH_TO_RULES + utils.getUserId());
-			File file = businessRuleService.uploadFileToFolder(rule.getDecisionTable(),
+			final File file = businessRuleService.uploadFileToFolder(rule.getDecisionTable(),
 					PATH_TO_RULES + utils.getUserId(), rule.getIdentification(), rule.getExtension().name());
 			final HttpHeaders respHeaders = new HttpHeaders();
 			respHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);

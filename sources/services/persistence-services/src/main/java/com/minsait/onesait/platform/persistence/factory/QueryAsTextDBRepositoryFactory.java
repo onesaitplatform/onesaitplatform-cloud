@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2021 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,9 +32,11 @@ import com.minsait.onesait.platform.persistence.external.api.rest.QueryAsTextRes
 import com.minsait.onesait.platform.persistence.external.virtual.QueryAsTextVirtualDBImpl;
 import com.minsait.onesait.platform.persistence.hadoop.common.NameBeanConst;
 import com.minsait.onesait.platform.persistence.interfaces.QueryAsTextDBRepository;
+import com.minsait.onesait.platform.persistence.mindsdb.MindsDBQueryAsTextDBRepository;
 import com.minsait.onesait.platform.persistence.mongodb.services.QueryAsTextMongoDBImpl;
-import com.minsait.onesait.platform.persistence.timescaledb.TimescaleDBQueryAsTextDBRepository;
+import com.minsait.onesait.platform.persistence.nebula.NebulaGraphDBQueryAsTextDBRepository;
 import com.minsait.onesait.platform.persistence.presto.QueryAsTextPrestoDBImpl;
+import com.minsait.onesait.platform.persistence.timescaledb.TimescaleDBQueryAsTextDBRepository;
 
 @Component
 public class QueryAsTextDBRepositoryFactory {
@@ -66,10 +68,16 @@ public class QueryAsTextDBRepositoryFactory {
 
 	@Autowired
 	private CosmosDBQueryAsTextDBRepository comosDBQuery;
-	
+
 	@Autowired
 	private TimescaleDBQueryAsTextDBRepository timescaleDBQueryRepository;
-	
+
+	@Autowired
+	private MindsDBQueryAsTextDBRepository mindsDBQueryAsTextDBRepository;
+
+	@Autowired
+	private NebulaGraphDBQueryAsTextDBRepository nebulaGraphDBQueryAsTextDBRepository;
+
 	@Autowired
 	private QueryAsTextPrestoDBImpl prestoDBQuery;
 
@@ -114,6 +122,10 @@ public class QueryAsTextDBRepositoryFactory {
 			return timescaleDBQueryRepository;
 		} else if (RtdbDatasource.PRESTO.equals(dataSource)) {
 			return prestoDBQuery;
+		} else if (RtdbDatasource.AI_MINDS_DB.equals(dataSource)) {
+			return mindsDBQueryAsTextDBRepository;
+		} else if (RtdbDatasource.NEBULA_GRAPH.equals(dataSource)) {
+			return nebulaGraphDBQueryAsTextDBRepository;
 		} else {
 			return queryMongo;
 		}
