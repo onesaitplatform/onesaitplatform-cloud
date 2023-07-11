@@ -95,6 +95,7 @@ public class DatalabelingServiceImpl implements DatalabelingService {
 	public List<ProjectDTO> findProjects(String token) {
 		List<ProjectDTO> projects = new ArrayList<ProjectDTO>();
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+
 		final HttpHeaders headers = new HttpHeaders();
 		headers.add("Authorization", "Token " + token);
 		final MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
@@ -130,6 +131,7 @@ public class DatalabelingServiceImpl implements DatalabelingService {
 	public ProjectDTO findProjectByID(String id, String token) {
 
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+
 		final HttpHeaders headers = new HttpHeaders();
 		headers.add("Authorization", "Token " + token);
 		final MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
@@ -161,6 +163,7 @@ public class DatalabelingServiceImpl implements DatalabelingService {
 
 		List<CloudStorageDTO> ics = new ArrayList<CloudStorageDTO>();
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+
 		final HttpHeaders headers = new HttpHeaders();
 		headers.add("Authorization", "Token " + token);
 		final MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
@@ -207,6 +210,7 @@ public class DatalabelingServiceImpl implements DatalabelingService {
 
 		List<CloudStorageDTO> ics = new ArrayList<CloudStorageDTO>();
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+
 		final HttpHeaders headers = new HttpHeaders();
 		headers.add("Authorization", "Token " + token);
 		final MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
@@ -254,6 +258,7 @@ public class DatalabelingServiceImpl implements DatalabelingService {
 
 		List<CloudStorageDTO> ics = new ArrayList<CloudStorageDTO>();
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+
 		final HttpHeaders headers = new HttpHeaders();
 		headers.add("Authorization", "Token " + token);
 		final MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
@@ -272,6 +277,7 @@ public class DatalabelingServiceImpl implements DatalabelingService {
 
 		List<CloudStorageDTO> ics = new ArrayList<CloudStorageDTO>();
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+
 		final HttpHeaders headers = new HttpHeaders();
 		headers.add("Authorization", "Token " + token);
 		final MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
@@ -291,6 +297,7 @@ public class DatalabelingServiceImpl implements DatalabelingService {
 
 		List<CloudStorageDTO> ics = new ArrayList<CloudStorageDTO>();
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+
 		final HttpHeaders headers = new HttpHeaders();
 		headers.add("Authorization", "Token " + token);
 		final MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
@@ -307,6 +314,7 @@ public class DatalabelingServiceImpl implements DatalabelingService {
 	@Override
 	public String createImportStorages(CloudStorageFullDTO cloudStorage, String token) {
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+
 		final HttpHeaders headers = new HttpHeaders();
 		headers.add("Authorization", "Token " + token);
 		headers.setContentType(MediaType.APPLICATION_JSON);
@@ -340,6 +348,7 @@ public class DatalabelingServiceImpl implements DatalabelingService {
 	public String createExportStorages(CloudStorageFullDTO cloudStorage, String token) {
 
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+
 		final HttpHeaders headers = new HttpHeaders();
 		headers.add("Authorization", "Token " + token);
 		headers.setContentType(MediaType.APPLICATION_JSON);
@@ -373,6 +382,7 @@ public class DatalabelingServiceImpl implements DatalabelingService {
 	public String getUserToken(String user, String pass) {
 
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+
 		final HttpHeaders headers = new HttpHeaders();
 
 		headers.setContentType(MediaType.APPLICATION_JSON);
@@ -397,6 +407,7 @@ public class DatalabelingServiceImpl implements DatalabelingService {
 	public Integer createProject(String token) {
 
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+
 		final HttpHeaders headers = new HttpHeaders();
 		headers.add("Authorization", "Token " + token);
 		headers.setContentType(MediaType.APPLICATION_JSON);
@@ -464,7 +475,7 @@ public class DatalabelingServiceImpl implements DatalabelingService {
 
 				e.printStackTrace();
 			}
-			String pattern = "MM/dd/yyyy";
+			String pattern = "dd/MM/yyyy";
 			DateFormat df = new SimpleDateFormat(pattern);
 			result = df.format(date);
 		}

@@ -4,7 +4,7 @@
   angular.module('dashboardFramework')
     .controller(
       'editTemplateParamsController',
-      function ($scope,__env, $mdDialog,$mdCompiler, httpService, type, config, layergrid, edit, element, utilsService,create,inline) {
+      function ($scope,__env, $mdCompiler, httpService, type, config, layergrid, edit, element, utilsService,create,inline) {
         var agc = this;
 
         agc.$onInit = function () {
@@ -82,13 +82,10 @@
         $scope.dat.ident ;
         $scope.dat.desc ;
 
-        $scope.hide = function() {
-          $mdDialog.hide();
-        };
-
-        $scope.cancel = function() {
-          $mdDialog.cancel();
-        };
+        $scope.close = function() {
+          window.dispatchEvent(new CustomEvent('editTemplateParamsclose',{}));
+        
+        };        
 
        
         $scope.loadDatasources = function(){
@@ -218,9 +215,20 @@
                     $scope.config.tparams = $scope.parameters;
                     $scope.config.gadgetid = response.data.id;
                     $scope.config.datasource = $scope.parameters.datasource;
-                    $scope.layergrid.push($scope.config);
+
+                    if($scope.layergrid && $scope.layergrid.length>0){
+                     var index = $scope.layergrid.findIndex(function (element){return element.id===$scope.config.id});
+                     if(index<0){
+                        $scope.layergrid.push($scope.config);
+                      }else{
+                        $scope.layergrid[index]=$scope.config;
+                      }
+                    }else{
+                      $scope.layergrid.push($scope.config);
+                    }
+
                     window.dispatchEvent(new CustomEvent("newgadgetcreated",{detail: $scope.config}));
-                    $mdDialog.cancel();
+                    $scope.close();
                   },
                   function(e){
                     console.log("Error create Custom Gadget: " +  JSON.stringify(e))
@@ -231,9 +239,18 @@
                 $scope.config.params = $scope.parameters;
                 $scope.config.tparams = $scope.parameters;
                 $scope.config.datasource = $scope.parameters.datasource;
-                $scope.layergrid.push($scope.config);
+                if($scope.layergrid && $scope.layergrid.length>0){
+                  var index = $scope.layergrid.findIndex(function (element){return element.id===$scope.config.id});
+                  if(index<0){
+                    $scope.layergrid.push($scope.config);
+                  }else{
+                    $scope.layergrid[index]=$scope.config;
+                  }
+                 }else{
+                   $scope.layergrid.push($scope.config);
+                 }
                 window.dispatchEvent(new CustomEvent("newgadgetcreated",{detail: $scope.config}));
-                $mdDialog.cancel();
+                //$scope.close();
               } 
             }else{  
               $scope.config.type = $scope.type;
@@ -244,9 +261,19 @@
                 $scope.config.content=utilsService.parseProperties($scope.config.content,$scope.parameters);         
                 $scope.config.contentcode=utilsService.parseProperties($scope.config.contentcode,$scope.parameters,true);
                 $scope.config.datasource = $scope.parameters.datasource
-              }
-              $scope.layergrid.push($scope.config);
-              $mdDialog.cancel();
+              }             
+              if($scope.layergrid && $scope.layergrid.length>0){
+                var index = $scope.layergrid.findIndex(function (element){return element.id===$scope.config.id});
+                if(index<0){
+                  $scope.layergrid.push($scope.config);
+                }else{
+                  $scope.layergrid[index]=$scope.config;
+                }
+               }else{
+                 $scope.layergrid.push($scope.config);
+               }
+
+              //$scope.close();
             }
           }
           else{ // only edit params (ID mode)
@@ -256,11 +283,11 @@
                 function(response){
                   $scope.element.params = $scope.parameters;
                   $scope.element.datasource = $scope.parameters.datasource;
-                  $mdDialog.cancel();
+                 // $scope.close();
                 },
                 function(e){
                   console.log("Error create Custom Gadget: " +  JSON.stringify(e));
-                  $mdDialog.cancel();
+                 // $scope.close();
                 }
               );
             } else {
@@ -268,7 +295,7 @@
               if(typeof $scope.parameters.datasource !== 'undefined'){
                 $scope.element.datasource = JSON.parse(JSON.stringify($scope.parameters.datasource));
               }
-              $mdDialog.cancel();
+              //$scope.close();
             }
           }
         

@@ -33,44 +33,46 @@ import com.minsait.onesait.platform.resources.service.IntegrationResourcesServic
 
 @Component
 public class GraviteeApi {
-	
+
 	@Autowired
 	private IntegrationResourcesService integrationResourcesService;
-	
+
 	private String graviteeUrl;
 	private static final String APIS_ENDPOINT = "/apis";
 	private static final String PAGES_ENDPOINT = "/pages";
 	private static final String CONTENT_ENDPOINT = "/content";
-	
+
 	@PostConstruct
-	public void graviteeSetUp () {
+	public void graviteeSetUp() {
 		graviteeUrl = integrationResourcesService.getUrl(Module.GRAVITEE, ServiceUrl.MANAGEMENT);
 	}
-	
+
 	public String executePagesApi(String graviteeId) {
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+
 		final HttpHeaders headers = new HttpHeaders();
 		final HttpEntity entity = new HttpEntity(headers);
-		List<Map<String,Object>> result = restTemplate.exchange(graviteeUrl + APIS_ENDPOINT + "/"
-				+ graviteeId + PAGES_ENDPOINT, HttpMethod.GET, entity, List.class).getBody();
+		List<Map<String, Object>> result = restTemplate
+				.exchange(graviteeUrl + APIS_ENDPOINT + "/" + graviteeId + PAGES_ENDPOINT, HttpMethod.GET, entity,
+						List.class)
+				.getBody();
 		if (result.isEmpty()) {
 			return "";
 		}
-		
-		return (String) result.get(0).get("id");		
+
+		return (String) result.get(0).get("id");
 	}
-	
-	public String getSwaggerGravitee(String graviteeId,String pageId) {
-		return graviteeUrl + APIS_ENDPOINT + "/"
-		+ graviteeId + PAGES_ENDPOINT + "/" + pageId + CONTENT_ENDPOINT;		
+
+	public String getSwaggerGravitee(String graviteeId, String pageId) {
+		return graviteeUrl + APIS_ENDPOINT + "/" + graviteeId + PAGES_ENDPOINT + "/" + pageId + CONTENT_ENDPOINT;
 	}
-	
+
 	public boolean isGraviteeApi(String resourceUrl) {
 		return resourceUrl.contains(graviteeUrl + APIS_ENDPOINT);
 	}
-	
+
 	public String getGraviteeIdFromUrl(String url) {
-		return url.substring(url.indexOf(APIS_ENDPOINT + "/") + 6,url.indexOf(PAGES_ENDPOINT));
+		return url.substring(url.indexOf(APIS_ENDPOINT + "/") + 6, url.indexOf(PAGES_ENDPOINT));
 	}
 
 }

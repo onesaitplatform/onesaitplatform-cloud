@@ -78,6 +78,7 @@ public class AdviceServiceImpl
 		httpRequestFactory.setHttpClient(httpClient());
 
 		restTemplate = new RestTemplate(httpRequestFactory);
+
 		restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor("admin", "admin"));
 		restTemplate.getInterceptors().add((r, b, e) -> {
 			r.getHeaders().add(Tenant2SchemaMapper.VERTICAL_HTTP_HEADER, MultitenancyContextHolder.getVerticalSchema());

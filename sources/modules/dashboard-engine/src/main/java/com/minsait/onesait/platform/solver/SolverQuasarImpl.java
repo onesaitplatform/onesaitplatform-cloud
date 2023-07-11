@@ -40,7 +40,7 @@ public class SolverQuasarImpl extends SolverSQLImpl {
 
 	@Override
 	protected String addLimitOffset(PlainSelect select, int maxreg, long offset, long limit) {
-		Limit querylimit = select.getLimit();
+		final Limit querylimit = select.getLimit();
 
 		Long min = (limit > 0 ? Math.min(maxreg, limit) : maxreg);
 
@@ -52,8 +52,9 @@ public class SolverQuasarImpl extends SolverSQLImpl {
 		select.setLimit(null);
 
 		if (offset > 0) {
-			Offset oaux = new Offset();
-			oaux.setOffset(offset);
+			final Expression offsetExp = new LongValue(offset);
+			final Offset oaux = new Offset();
+			oaux.setOffset(offsetExp);
 			select.setOffset(oaux);
 		}
 
@@ -73,8 +74,8 @@ public class SolverQuasarImpl extends SolverSQLImpl {
 		if (projections == null || projections.isEmpty()) {
 			return selectItem;
 		} else {
-			List<SelectItem> selectItemOverwrite = new ArrayList<>();
-			for (ProjectStt p : projections) {
+			final List<SelectItem> selectItemOverwrite = new ArrayList<>();
+			for (final ProjectStt p : projections) {
 				if (p.getAlias() != null) {// for quasar, always quoted select alias
 					p.setAlias(setAliasQuotMarks(p.getAlias()));
 				}
@@ -91,11 +92,11 @@ public class SolverQuasarImpl extends SolverSQLImpl {
 		if (groups == null || groups.isEmpty()) {
 			return groupex;
 		} else {
-			List<Expression> groupexaux = (groupex != null && !groupex.isEmpty() ? groupex
+			final List<Expression> groupexaux = (groupex != null && !groupex.isEmpty() ? groupex
 					: new ArrayList<Expression>());
 
-			for (String group : groups) {
-				Column col = new Column(findEndParamV2(group, realproject));
+			for (final String group : groups) {
+				final Column col = new Column(findEndParamV2(group, realproject));
 				groupexaux.add(col);
 			}
 			return groupexaux;
@@ -105,14 +106,14 @@ public class SolverQuasarImpl extends SolverSQLImpl {
 	@Override
 	protected Expression buildExpFromFilter(FilterStt f, List<SelectItem> realproject, String prefix)
 			throws JSQLParserException {
-		StringBuilder sb = new StringBuilder();
+		final StringBuilder sb = new StringBuilder();
 		sb.append(prefix);
 		sb.append(findEndParamV2(f.getField(), realproject));
 		sb.append(" ");
 		sb.append(f.getOp());
 		sb.append(" ");
 		sb.append(f.getExp());
-		Column col = new Column(sb.toString());
+		final Column col = new Column(sb.toString());
 		return col;
 	}
 

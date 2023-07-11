@@ -147,7 +147,7 @@
 															<label th:text="#{categorization.tree}"> Tree </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="1"/>
+															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
 															<label th:text="#{gen.created}"> Created At </label>
 														</span>
 														<span class="checkbox-column">
@@ -323,14 +323,15 @@
 	});
 	
 	// MAIN WHEN LOAD
-	$(window).load(function(){ 
+	$(window).on("load",function(){ 
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
 
 		var oTable = $('#categorizations').dataTable({
 	      "bAutoWidth": false
 	      }); 	
 
 		// HIDE COLUMN UPDATEDAT		
-		 $.each([1],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
+		 $.each([1],function(ind,value){  $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		// SHOW/HIDE DATATABLES COLUMN INIT 
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));		
 		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		

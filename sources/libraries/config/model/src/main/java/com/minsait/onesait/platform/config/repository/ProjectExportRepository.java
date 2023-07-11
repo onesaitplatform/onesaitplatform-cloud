@@ -21,7 +21,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import com.minsait.onesait.platform.config.model.ProjectExport;
 import com.minsait.onesait.platform.config.model.ProjectList;
-import com.minsait.onesait.platform.config.model.UserExport;
+import com.minsait.onesait.platform.config.model.User;
 
 public interface ProjectExportRepository extends JpaRepository<ProjectExport, String> {
 
@@ -35,7 +35,7 @@ public interface ProjectExportRepository extends JpaRepository<ProjectExport, St
 	@Query("SELECT o FROM ProjectList AS o")
 	public List<ProjectList> findAllForList();
 
-	public List<ProjectExport> findByUsersIn(List<UserExport> users);
+	public List<ProjectExport> findByUsersIn(List<User> users);
 
 	public List<ProjectExport> findByIdentification(String identification);
 

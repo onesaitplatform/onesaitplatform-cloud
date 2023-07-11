@@ -38,6 +38,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -135,6 +136,7 @@ public class MinioObjectStorageService implements ObjectStorageService {
 	@PostConstruct
 	public void init() {
 		restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
+		restTemplate.getMessageConverters().add(0, new MappingJackson2HttpMessageConverter());
 		restTemplate.setErrorHandler(new ResponseErrorHandler() {// This error handler allow to handle 40X codes
 
 			@Override
@@ -295,7 +297,6 @@ public class MinioObjectStorageService implements ObjectStorageService {
 		log.info("Log into MinIO system");
 
 		MinioLoginRequest credentials = new MinioLoginRequest(userAccesKey, userSecretKey);
-
 		ResponseEntity<MinioLoginResponse> response = restTemplate.postForEntity(serverUrl + "api/v1/login",
 				credentials, MinioLoginResponse.class);
 

@@ -3,7 +3,6 @@
 	"rol": "ROLE_DATASCIENTIST",
 	"noSession": "/console/login",
 	"navigation": [
-		
 		{
 			"title": {
 				"EN": "ANALYTICS TOOLS",
@@ -57,18 +56,18 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/predictors/list"
-				},{
-                    "title": {
-                        "EN": "My Data Labeling Tool",
-                        "ES": "Mi Herramienta De Etiquetado De Datos",
+				},
+				{
+					"title": {
+						"EN": "My Data Labeling Tool",
+						"ES": "Mi Herramienta De Etiquetado De Datos",
 						"FR": "Mon Outil D'étiquetage De Données"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/datalabeling/list"
+					},
+					"icon": "",
+					"url": "/controlpanel/datalabeling/list"
 				}
 			]
 		},
-
 		{
 			"title": {
 				"EN": "VISUALIZATION & GIS",
@@ -131,10 +130,65 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/layers/list"
+				},
+				{
+					"title": {
+						"EN": "My Maps Project ",
+						"ES": "Mis Proyectos de Mapas",
+						"FR": "Mes Cartes de projets"
+					},
+					"icon": "",
+					"url": "/controlpanel/mapsprojects/list"
 				}
 			]
 		},
-		
+		{
+			"title": {
+				"EN": "MAPS",
+				"ES": "MAPAS",
+				"FR": "PLANS"
+			},
+			"icon": "icon-map",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "My Maps Project ",
+						"ES": "Mis Proyectos Mapas",
+						"FR": "Mes Cartes de gestion de projet"
+					},
+					"icon": "",
+					"url": "/controlpanel/mapsproject/list"
+				},
+				{
+					"title": {
+						"EN": "My Maps",
+						"ES": "Mis Mapas",
+						"FR": "Mes Cartes"
+					},
+					"icon": "",
+					"url": "/controlpanel/mapsmap/list"
+				},
+				{
+					"title": {
+						"EN": "My Layers",
+						"ES": "Mis Capas",
+						"FR": "Mes Couches"
+					},
+					"icon": "",
+					"url": "/controlpanel/mapslayer/list"
+				},
+				{
+					"title": {
+						"EN": "My Styles",
+						"ES": "Mis Estilos",
+						"FR": "Mes Styles"
+					},
+					"icon": "",
+					"url": "/controlpanel/mapsstyle/list"
+				}
+			]
+		},
 		{
 			"title": {
 				"EN": "OPEN DATA",
@@ -179,10 +233,9 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/opendata/resources/list"
-				}	
+				}
 			]
 		},
-
 		{
 			"title": {
 				"EN": "DEVELOPMENT",
@@ -275,7 +328,6 @@
 				}
 			]
 		},
-
 		{
 			"title": {
 				"EN": "CLIENTS & DIGITAL TWINS",
@@ -367,7 +419,7 @@
 			},
 			"icon": "icon-monitoring",
 			"url": "",
-			"submenu": [			
+			"submenu": [
 				{
 					"title": {
 						"EN": "View Lineages",
@@ -378,23 +430,23 @@
 					"url": "/controlpanel/lineage/show"
 				},
 				{
-                    "title": {
-                        "EN": "My Data Refiner Projects",
-                        "ES": "Mis Proyectos Data Refiner",
+					"title": {
+						"EN": "My Data Refiner Projects",
+						"ES": "Mis Proyectos Data Refiner",
 						"FR": "Mes Projets DataRefiner"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/datacleanerui"
-                },
+					},
+					"icon": "",
+					"url": "/controlpanel/datacleanerui"
+				},
 				{
-                    "title": {
-                        "EN": "My Process Traceability",
-                        "ES": "Mis Trazabilidades de Procesos",
+					"title": {
+						"EN": "My Process Traceability",
+						"ES": "Mis Trazabilidades de Procesos",
 						"FR": "Traçabilité des processus"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/process/list"
-                }
+					},
+					"icon": "",
+					"url": "/controlpanel/process/list"
+				}
 			]
 		},
 		{
@@ -405,7 +457,7 @@
 			},
 			"icon": "icon-dev-tools",
 			"url": "",
-			"submenu": [			
+			"submenu": [
 				{
 					"title": {
 						"EN": "Data to Entities Import Tool",
@@ -434,14 +486,14 @@
 					"url": "/controlpanel/webprojects/list"
 				},
 				{
-                    "title": {
-                        "EN": "My Files",
-                        "ES": "Mis Ficheros",
-                        "FR": "Mes fichiers"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/files/list"
-                },
+					"title": {
+						"EN": "My Files",
+						"ES": "Mis Ficheros",
+						"FR": "Mes fichiers"
+					},
+					"icon": "",
+					"url": "/controlpanel/files/list"
+				},
 				{
 					"title": {
 						"EN": "My Configurations",
@@ -460,7 +512,7 @@
 					"icon": "",
 					"url": "/controlpanel/restplanner/list"
 				},
-                {
+				{
 					"title": {
 						"EN": "My Internationalizations i18n",
 						"ES": "Mis internacionalizaciones i18n",
@@ -489,7 +541,6 @@
 				}
 			]
 		},
-
 		{
 			"title": {
 				"EN": "TOOLS",
@@ -509,14 +560,14 @@
 					"url": "/controlpanel/querytool/show"
 				},
 				{
-                    "title": {
-                        "EN": "UI Generation Tools",
-                        "ES": "Herramientas de Generación de UI",
+					"title": {
+						"EN": "UI Generation Tools",
+						"ES": "Herramientas de Generación de UI",
 						"FR": "Outils de Génération d'interface Utilisateur"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/low-code/"
-                },
+					},
+					"icon": "",
+					"url": "/controlpanel/low-code/"
+				},
 				{
 					"title": {
 						"EN": "My Audit",

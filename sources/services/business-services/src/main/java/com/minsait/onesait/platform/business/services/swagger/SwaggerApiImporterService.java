@@ -26,6 +26,7 @@ public class SwaggerApiImporterService {
 	public String getApiDefinition(String url) {
 		String apiDoc = null;
 		final RestTemplate restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
+
 		final ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
 		apiDoc = response.getBody();
 		return apiDoc;

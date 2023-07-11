@@ -179,12 +179,14 @@ public interface OntologyService {
 
 	List<OntologyDTO> getAllOntologiesForListWithProjectsAccess(String sessionUserId);
 
-	List<OntologyDTO> getAllOntologiesForList(String sessionUserId, String identification, String description);
+	List<OntologyDTO> getOntologiesForList(String userId, String identification, String description, Boolean showOwned,
+			Boolean showAudit, Boolean showLog);
 
-	List<OntologyDTO> getOntologiesForListByUser(String sessionUserId, String identification, String description);
+	List<OntologyDTO> getAllOntologiesForList(String sessionUserId, String identification, String description,
+			String filterAudit, String filterLog);
 
 	List<OntologyDTO> getOntologiesForListByUserPropietary(String sessionUserId, String identification,
-			String description);
+			String description, String filterAudit, String filterLog);
 
 	List<Ontology> getOntologiesByOwner(String sessionUserId);
 
@@ -215,5 +217,11 @@ public interface OntologyService {
 
 	Map<String, OntologyFieldDTO> getOntologyFieldsAndDesc(String identification, String sessionUserId)
 			throws IOException;
+
+	List<Ontology> getOntologiesByUserIdOnly(String sessionUserId);
+
+	Ontology getOntologyByIdInsert(String ontologyId, String sessionUserId);
+
+	Ontology getOntologyByIdentificationInsert(String ontologyId, String sessionUserId);
 
 }

@@ -17,7 +17,7 @@
     });
 
   /** @ngInject */
-  function ElementController($compile,$log, $scope, $mdDialog, $sce, $rootScope, $timeout, interactionService,urlParamService,filterService,$mdSidenav,utilsService, httpService, __env) {
+  function ElementController($compile,$log, $scope, $mdDialog, $sce, $rootScope, $timeout, interactionService,urlParamService,filterService,$mdSidenav,utilsService, httpService, __env,$mdPanel) {
     var vm = this;
     vm.isMaximized = false;
     vm.datastatus;
@@ -142,10 +142,46 @@ vm.elemntbadgesclass = function(){
 
 
     vm.openEditGadgetIframe = function(ev) {
+
       if(vm.eventedit){
         vm.sendSelectEvent("gadgetselect",vm.element);
         return;
       }   
+      var exist = true;
+       
+      var gadgets = document.querySelectorAll('gadget,datadiscovery');
+      
+      
+      if (gadgets.length > 0) {
+        for (var index = 0; index < gadgets.length; index++) {
+          var gad = gadgets[index];
+          if(gad.classList.contains(vm.element.id)){
+          if( angular.element(gad) &&  angular.element(gad).children() && angular.element(gad).children()[0].classList ){
+           
+          if(angular.element(gad).children()[0].classList.contains('wasremoved')){
+            exist = false;
+             $mdDialog.show({
+               controller: function DialogController($scope, $mdDialog) {      
+                 $scope.closeDialog = function() {
+                   $mdDialog.hide();
+                 }
+               },
+               templateUrl: 'app/partials/edit/gadgetDeleted.html',
+               parent: angular.element(document.body),
+               targetEvent: ev,
+               clickOutsideToClose:true,
+               fullscreen: false  
+             })
+             .then(function(answer) {             
+             }, function() {             
+             });  
+             break;
+           }
+         }
+        }
+        }
+      }
+      if(exist){
       $mdDialog.show({
         parent: angular.element(document.body),
         targetEvent: ev,
@@ -183,7 +219,7 @@ vm.elemntbadgesclass = function(){
        }
       };
 
-
+    }
      };
 
      // toggle gadget to fullscreen and back.
@@ -523,6 +559,8 @@ vm.elemntbadgesclass = function(){
       });
     
     };
+    
+
 
     vm.openEditTemplateParamsDialog = function (ev) {
       if(vm.eventedit){
@@ -530,7 +568,7 @@ vm.elemntbadgesclass = function(){
         return;
       }
 
-      if (!vm.element.gadgetid) {
+      if (!vm.element.gadgetid) { 
         httpService.getGadgetTemplateByIdentification(vm.element.template).then(
           function(data){
             vm.contenteditor = {}
@@ -538,14 +576,21 @@ vm.elemntbadgesclass = function(){
             vm.contenteditor["contentcode"] = data.data.templateJS;
             vm.contenteditor["config"] = JSON.stringify(vm.element.params);
             vm.contenteditor["tconfig"] = data.data.config;
-            $mdDialog.show({
+            if(window.panelRef){
+              window.panelRef.close();
+            }
+            window.panelRef = {};
+            var configPanel = {
+              attachTo: angular.element(document.getElementById("divrightsidemenubody")),
               controller: 'editTemplateParamsController',
+              controllerAs: 'ctrl',
+             // position: panelPosition,
+              //animation: panelAnimation,
+              
               templateUrl: 'app/partials/edit/addGadgetTemplateParameterDialog.html',
-              parent: angular.element(document.body),
-              targetEvent: ev,
-              clickOutsideToClose:true,
-              multiple : true,
-              fullscreen: false, // Only for -xs, -sm breakpoints.
+              clickOutsideToClose: false,
+              escapeToClose: false,
+              focusOnOpen: true,
               locals: {
                 type: vm.element.type,
                 config: vm.contenteditor,
@@ -555,32 +600,73 @@ vm.elemntbadgesclass = function(){
                 create:false,
                 inline: true
               }
-            })
-            .then(function(answer) {           
-            }, function() {             
-              $scope.status = 'You cancelled the dialog.';
+            };
+            window.dispatchEvent(new CustomEvent('showMenurightsidebardashboard',{}));
+            window.removeEventListener('editTemplateParamsclose',function(a){
+              window.panelRef.close();
+              window.dispatchEvent(new CustomEvent('hideMenurightsidebardashboard',{}));
             });
+            window.addEventListener('editTemplateParamsclose',function(a){
+              window.panelRef.close();
+              window.dispatchEvent(new CustomEvent('hideMenurightsidebardashboard',{}));
+            });
+          
+            $mdPanel.open(configPanel)
+            .then(function(result) {
+              window.panelRef = result;
+            });
+
+ 
           }
         )
       } else {
-
         httpService.getGadgetConfigById(vm.element.gadgetid).then(
           function(data){
             
+            if(data.data==""){
+              $mdDialog.show({
+                controller: function DialogController($scope, $mdDialog) {      
+                  $scope.closeDialog = function() {
+                    $mdDialog.hide();
+                  }
+                },
+                templateUrl: 'app/partials/edit/gadgetDeleted.html',
+                parent: angular.element(document.body),
+                targetEvent: ev,
+                clickOutsideToClose:true,
+                fullscreen: false // Only for -xs, -sm breakpoints.
+              })
+              .then(function(answer) {
+                $scope.status = 'You said the information was "' + answer + '".';
+              }, function() {
+                $scope.status = 'You cancelled the dialog.';
+              });  
+
+              
+            }else{
+
+
             vm.contenteditor = {}
             vm.contenteditor["content"] = data.data.type.template;
             vm.contenteditor["contentcode"] = data.data.type.templateJS;
             vm.contenteditor["config"] = data.data.config;
             vm.contenteditor["tconfig"] = data.data.type.config;
+            if(window.panelRef){
+              window.panelRef.close();
+            }
+            window.panelRef = {};
 
-            $mdDialog.show({
+            var configPanel = {
+              attachTo: angular.element(document.getElementById("divrightsidemenubody")),
               controller: 'editTemplateParamsController',
+              controllerAs: 'ctrl',
+             // position: panelPosition,
+              //animation: panelAnimation,
+              
               templateUrl: 'app/partials/edit/addGadgetTemplateParameterDialog.html',
-              parent: angular.element(document.body),
-              targetEvent: ev,
-              clickOutsideToClose:true,
-              multiple : true,
-              fullscreen: false, // Only for -xs, -sm breakpoints.
+              clickOutsideToClose: false,
+              escapeToClose: false,
+              focusOnOpen: true,
               locals: {
                 type: vm.element.type,
                 config: vm.contenteditor,
@@ -590,12 +676,24 @@ vm.elemntbadgesclass = function(){
                 create:false,
                 inline: false
               }
-            })
-            .then(function(answer) {           
-            }, function() {             
-              $scope.status = 'You cancelled the dialog.';
+            };
+            window.dispatchEvent(new CustomEvent('showMenurightsidebardashboard',{}));
+            window.removeEventListener('editTemplateParamsclose',function(a){
+              window.panelRef.close();
+              window.dispatchEvent(new CustomEvent('hideMenurightsidebardashboard',{}));
             });
+            window.addEventListener('editTemplateParamsclose',function(a){
+              window.panelRef.close();
+              window.dispatchEvent(new CustomEvent('hideMenurightsidebardashboard',{}));
+            });
+             
+            $mdPanel.open(configPanel)
+            .then(function(result) {
+              window.panelRef = result;
+            });
+
           }
+        }
         )
       }
     };

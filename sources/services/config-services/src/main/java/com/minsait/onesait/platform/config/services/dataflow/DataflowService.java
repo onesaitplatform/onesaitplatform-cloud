@@ -20,7 +20,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.minsait.onesait.platform.config.dto.OPResourceDTO;
@@ -50,7 +49,7 @@ public interface DataflowService {
 
 	ResponseEntity<byte[]> getyHttpBinary(HttpServletRequest requestServlet, String body, String user);
 
-	byte[] getyHttpBinary( String lib, String id, HttpServletRequest requestServlet, String body, String user);
+	byte[] getyHttpBinary(String lib, String id, HttpServletRequest requestServlet, String body, String user);
 
 	Pipeline getPipelineById(String id);
 
@@ -141,4 +140,5 @@ public interface DataflowService {
 
 	ResponseEntity<String> getPipelineCommittedOffsets(String userId, String pipelineIdentification);
 
+	void deletePipeUserAccessForAUser(String userAccessId);
 }

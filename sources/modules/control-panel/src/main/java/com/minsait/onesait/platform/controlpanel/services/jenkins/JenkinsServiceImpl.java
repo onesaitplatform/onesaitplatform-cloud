@@ -150,6 +150,7 @@ public class JenkinsServiceImpl implements JenkinsService {
 
 	private <T> ResponseEntity<T> requestJenkins(String url, String username, String token, Class<T> responseType) {
 		final RestTemplate rt = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
+
 		final HttpHeaders headers = new HttpHeaders();
 		headers.add("Authorization",
 				"Basic " + Base64.getEncoder().encodeToString(username.concat(":").concat(token).getBytes()));

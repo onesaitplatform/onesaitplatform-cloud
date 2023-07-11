@@ -54,7 +54,7 @@
 						$.ajax({url : "/controlpanel/categorization/getCategorizationJson",
 								type : "GET",
 								headers: {[csrf_header]: csrf_value}
-						}).success(function(response){
+						}).done(function(response){
 							if (JSON.stringify(response) == "{}"){
 								return false;}
 							$('#graphInclude').attr("class", "col-md-8 margin-bottom-10");

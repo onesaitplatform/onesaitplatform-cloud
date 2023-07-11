@@ -14,13 +14,6 @@
  */
 package com.minsait.onesait.platform.persistence.presto.generator.model.statements;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
-import net.sf.jsqlparser.statement.create.table.CreateTable;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +24,13 @@ import com.minsait.onesait.platform.persistence.external.generator.SQLGenerator;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
 import com.minsait.onesait.platform.persistence.presto.generator.model.common.ColumnPresto;
 import com.minsait.onesait.platform.persistence.presto.generator.model.common.HistoricalOptions;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
+import net.sf.jsqlparser.statement.create.table.CreateTable;
 
 @NoArgsConstructor
 public class PrestoCreateStatement extends CreateTable {
@@ -47,8 +47,6 @@ public class PrestoCreateStatement extends CreateTable {
 	@Getter
 	@Setter
 	private String type = null;
-	@Getter
-	@Setter
 	List<ColumnPresto> columns = new ArrayList<>();
 	@Getter
 	@Setter
@@ -65,44 +63,52 @@ public class PrestoCreateStatement extends CreateTable {
 	public PrestoCreateStatement(CreateStatement stmt) {
 		this.sqlGenerator = stmt.getSqlGenerator();
 	}
-	
+
 	public PrestoCreateStatement setOntology(String ontology) {
-		if(ontology != null && !ontology.trim().isEmpty()) {
+		if (ontology != null && !ontology.trim().isEmpty()) {
 			this.ontology = ontology.trim();
 			this.setTable(new Table(this.ontology));
 		} else {
 			throw new IllegalArgumentException("Ontology in model can't be null or empty");
 		}
 		return this;
-		
+
 	}
-	
+
 	public PrestoCreateStatement addColumn(ColumnPresto col) {
-		List<String> colNames = new ArrayList<>();
-		List<ColumnDefinition> existentCols = getColumnDefinitions();
+		final List<String> colNames = new ArrayList<>();
+		final List<ColumnDefinition> existentCols = getColumnDefinitions();
 		if (existentCols != null) {
-			for (ColumnDefinition colDef: existentCols ) {
+			for (final ColumnDefinition colDef : existentCols) {
 				colNames.add(colDef.getColumnName());
 			}
 			if (colNames.contains(col.getColumnName())) {
-				throw new IllegalArgumentException("Invalid input: duplicated column name: " + col.getColumnName()); 
+				throw new IllegalArgumentException("Invalid input: duplicated column name: " + col.getColumnName());
 			}
 		}
 		this.columns.add(col);
 		return this;
 	}
-	
-    public String toString(boolean enClosePathElements) {
-    	if(enClosePathElements) {
-    		this.setTable(new Table((database == null || "".equals(database)?"":"\"" + database + "\".")
-				+ (schema == null || "".equals(schema)?"":"\"" + schema + "\".")
-				+ (ontology == null || "".equals(ontology)?"":"\"" + ontology + "\"")));
-    	} else {
-    		this.setTable(new Table((database == null || "".equals(database)?"":database + ".")
-    				+ (schema == null || "".equals(schema)?"":schema + ".")
-    				+ (ontology == null || "".equals(ontology)?"":ontology)));
-    	}
-        return super.toString();
+
+	public String toString(boolean enClosePathElements) {
+		if (enClosePathElements) {
+			this.setTable(new Table((database == null || "".equals(database) ? "" : "\"" + database + "\".")
+					+ (schema == null || "".equals(schema) ? "" : "\"" + schema + "\".")
+					+ (ontology == null || "".equals(ontology) ? "" : "\"" + ontology + "\"")));
+		} else {
+			this.setTable(new Table((database == null || "".equals(database) ? "" : database + ".")
+					+ (schema == null || "".equals(schema) ? "" : schema + ".")
+					+ (ontology == null || "".equals(ontology) ? "" : ontology)));
+		}
+		return super.toString();
+	}
+
+	public List<ColumnPresto> getColumnsPresto() {
+		return columns;
+	}
+
+	public void setColumnsPresto(List<ColumnPresto> columns) {
+		this.columns = columns;
 	}
 
 }

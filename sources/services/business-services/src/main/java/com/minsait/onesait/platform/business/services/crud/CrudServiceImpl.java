@@ -188,7 +188,7 @@ public class CrudServiceImpl implements CrudService {
 				}
 			}
 
-			if (datasource.equals(Ontology.RtdbDatasource.ELASTIC_SEARCH)) {
+			if (datasource.equals(Ontology.RtdbDatasource.ELASTIC_SEARCH) || datasource.equals(Ontology.RtdbDatasource.OPEN_SEARCH)) {
 				if (selectStatement.getColumns() == null) {
 					selectStatement.setColumns(new ArrayList<>());
 					selectStatement.getColumns().add("o.*");
@@ -250,7 +250,7 @@ public class CrudServiceImpl implements CrudService {
 
 		if (datasource.equals(Ontology.RtdbDatasource.VIRTUAL)) {
 			return virtualDatasourceService.getUniqueColumn(ontology);
-		} else if (datasource.equals(Ontology.RtdbDatasource.ELASTIC_SEARCH)) {
+		} else if (datasource.equals(Ontology.RtdbDatasource.ELASTIC_SEARCH) || datasource.equals(Ontology.RtdbDatasource.OPEN_SEARCH)) {
 			return "_id";
 		} else if (datasource.equals(Ontology.RtdbDatasource.COSMOS_DB)) {
 			return "id";

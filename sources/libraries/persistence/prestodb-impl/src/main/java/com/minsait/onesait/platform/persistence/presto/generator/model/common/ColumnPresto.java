@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.persistence.presto.generator.model.common;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,25 +29,25 @@ public class ColumnPresto extends ColumnDefinition {
 	private boolean notNull = false;
 	@Getter
 	@Setter
-    private String colComment = null;
-	
+	private String colComment = null;
+
 	public ColumnPresto(ColumnDefinition col) {
 		super();
 		this.setColumnName(col.getColumnName());
 		this.setColDataType(col.getColDataType());
-		this.setColumnSpecStrings(col.getColumnSpecStrings());
+		this.setColumnSpecs(col.getColumnSpecs());
 	}
-	
+
 	public void setColDataType(String dataType) {
 		this.getColDataType().setDataType(dataType);
 	}
-	
+
 	public void addSpecification(String spec) {
-		this.getColumnSpecStrings().add(spec);
+		this.getColumnSpecs().add(spec);
 	}
-	
+
 	public String getStringColDataType() {
 		return this.getColDataType().getDataType();
 	}
-	
+
 }

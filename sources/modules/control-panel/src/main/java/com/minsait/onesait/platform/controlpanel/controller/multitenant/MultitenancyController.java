@@ -42,6 +42,7 @@ import com.minsait.onesait.platform.controlpanel.controller.dashboard.dto.UserDT
 import com.minsait.onesait.platform.controlpanel.services.keycloak.KeycloakNotificator;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 import com.minsait.onesait.platform.multitenant.config.model.Tenant;
 import com.minsait.onesait.platform.multitenant.config.model.Vertical;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
@@ -64,8 +65,10 @@ public class MultitenancyController {
 
 	@Autowired
 	private IntegrationResourcesService resourcesService;
-	
-	@Autowired 
+	@Autowired
+	private MultitenantVerticalDeployer verticalDeployer;
+
+	@Autowired
 	private HttpSession httpSession;
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_PLATFORM_ADMIN')")
@@ -78,9 +81,9 @@ public class MultitenancyController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_PLATFORM_ADMIN,ROLE_ADMINISTRATOR')")
 	@GetMapping("tenants")
 	public String tenants(Model model) {
-		//CLEANING APP_ID FROM SESSION
+		// CLEANING APP_ID FROM SESSION
 		httpSession.removeAttribute(APP_ID);
-		
+
 		final Optional<Vertical> vertical = multitenancyService
 				.getVertical(MultitenancyContextHolder.getVerticalSchema());
 		model.addAttribute("tenants", tenants(vertical.get().getName()));
@@ -140,6 +143,7 @@ public class MultitenancyController {
 	@GetMapping("verticals/create")
 	public String verticalCreate(Model model) {
 		model.addAttribute(VERTICAL, new Vertical());
+
 		return "multitenancy/verticals/create";
 	}
 
@@ -157,11 +161,19 @@ public class MultitenancyController {
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_PLATFORM_ADMIN')")
 	@PostMapping("verticals/create")
-	public String createVertical(Model model, @ModelAttribute Vertical vertical) {
-		multitenancyService.createVertical(vertical);
-		if (keycloakNotificator != null) {
-			keycloakNotificator.notifyNewVerticalToKeycloak(vertical.getName());
+	public String createVertical(Model model, @ModelAttribute Vertical vertical, RedirectAttributes ra) {
+		try {
+			multitenancyService.createVertical(vertical);
+			if (keycloakNotificator != null) {
+				keycloakNotificator.notifyNewVerticalToKeycloak(vertical.getName());
+			}
+
+			verticalDeployer.createVertical(Tenant2SchemaMapper.DEFAULT_SCHEMA_PREFIX + vertical.getName(), null);
+		} catch (final Exception e) {
+			utils.addRedirectException(e, ra);
+			return "redirect:/multitenancy/verticals/create";
 		}
+
 		return "redirect:/multitenancy/verticals";
 	}
 

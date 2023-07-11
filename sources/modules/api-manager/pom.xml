@@ -17,7 +17,7 @@
 
 	<properties>
 		<license.dir>${project.parent.basedir}</license.dir>
-		<version.cxf>3.4.6</version.cxf>
+		<version.cxf>3.4.10</version.cxf>
 		<version.easyrules>3.1.0</version.easyrules>
 		<version.swaggerui>3.23.8</version.swaggerui>
 		<!-- version.prometheus>0.2.0</version.prometheus -->
@@ -26,6 +26,20 @@
 	</properties>
 
 	<dependencies>
+	
+	<dependency>
+        <groupId>com.sun.xml.bind</groupId>
+        <artifactId>jaxb-impl</artifactId>
+        <version>2.3.1</version>
+    </dependency>
+    <dependency>
+        <groupId>com.sun.xml.messaging.saaj</groupId>
+        <artifactId>saaj-impl</artifactId>
+        <version>1.5.1</version>
+    </dependency>
+
+	
+	
 		<!-- HERE TO USER THIS VERSION -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

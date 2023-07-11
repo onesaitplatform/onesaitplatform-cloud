@@ -41,6 +41,7 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.codec.Base64;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.google.gson.JsonArray;
@@ -108,7 +109,8 @@ public class NotebookServiceImpl implements NotebookService {
 	private static final String POST2_ERROR = "Exception in POST in creation POST: ";
 	private static final String POST_EXECUTING_ERROR = "Exception executing creation POST, status code: ";
 	private static final String POST_EXECUTING_DELETE_ERROR = "Exception executing delete notebook, status code: ";
-	private static final String NAME_STR = "{'name': '";
+	private static final String CREATE_NB_JSONSTR_START = "{'name': '";
+	private static final String CREATE_NB_JSONSTR_END = "','paragraphs':[{'title':'','text':'','config':{'title':true}}]}";
 	private static final String API_NOTEBOOK_STR = "/api/notebook/";
 	private static final String DUPLICATE_NOTEBOOK_NAME = "Error duplicate notebook name";
 	private static final String INVALID_FORMAT_NOTEBOOK = "Invalid format data in notebook";
@@ -231,7 +233,8 @@ public class NotebookServiceImpl implements NotebookService {
 
 		final User user = userRepository.findByUserId(userId);
 		if (!existNotebookIdentification(name)) {
-			return sendZeppelinCreatePost("/api/notebook", NAME_STR + name + "'}", name, user);
+			return sendZeppelinCreatePost("/api/notebook", CREATE_NB_JSONSTR_START + name + CREATE_NB_JSONSTR_END, name,
+					user);
 		} else {
 			log.error(DUPLICATE_NOTEBOOK_NAME);
 			throw new NotebookServiceException(Error.DUPLICATE_NOTEBOOK_NAME);
@@ -389,7 +392,8 @@ public class NotebookServiceImpl implements NotebookService {
 		final User user = userRepository.findByUserId(userId);
 		if (hasUserPermissionInNotebook(nt, userId)) {
 			if (!existNotebookIdentification(name)) {
-				return sendZeppelinCreatePost(API_NOTEBOOK_STR + idzep, NAME_STR + name + "'}", name, user);
+				return sendZeppelinCreatePost(API_NOTEBOOK_STR + idzep,
+						CREATE_NB_JSONSTR_START + name + CREATE_NB_JSONSTR_END, name, user);
 			} else {
 				log.error(DUPLICATE_NOTEBOOK_NAME);
 				throw new NotebookServiceException(Error.DUPLICATE_NOTEBOOK_NAME, DUPLICATE_NOTEBOOK_NAME);
@@ -422,7 +426,8 @@ public class NotebookServiceImpl implements NotebookService {
 		final Notebook nt = notebookRepository.findByIdzep(idzep);
 		final User user = userRepository.findByUserId(userId);
 		if (hasUserPermissionInNotebook(nt, user)) {
-			return sendZeppelinCreatePostWithoutDBC(API_NOTEBOOK_STR + idzep, NAME_STR + name + "'}", name, user);
+			return sendZeppelinCreatePostWithoutDBC(API_NOTEBOOK_STR + idzep,
+					CREATE_NB_JSONSTR_START + name + CREATE_NB_JSONSTR_END, name, user);
 		} else {
 			return null;
 		}
@@ -548,9 +553,11 @@ public class NotebookServiceImpl implements NotebookService {
 
 			final int statusCode = responseEntity.getStatusCodeValue();
 
-			if (statusCode != 200) {
+			if (statusCode != 200 && statusCode != 404) {
 				log.error(POST_EXECUTING_DELETE_ERROR + statusCode);
 				throw new NotebookServiceException(POST_EXECUTING_DELETE_ERROR + statusCode);
+			} else if (statusCode == 404) {
+				log.error("Notebook " + id + " not found in zeppelin, cleaning only onesaitplatform reference");
 			}
 
 			for (final NotebookUserAccess nua : notebookUserAccessRepository.findByNotebook(nt)) {
@@ -627,6 +634,7 @@ public class NotebookServiceImpl implements NotebookService {
 	public ResponseEntity<String> sendHttp(String url, HttpMethod httpMethod, String body, HttpHeaders headers)
 			throws URISyntaxException, IOException {
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+
 		headers.add("Authorization", encryptRestUserpass());
 		final org.springframework.http.HttpEntity<String> request = new org.springframework.http.HttpEntity<>(body,
 				headers);
@@ -636,6 +644,14 @@ public class NotebookServiceImpl implements NotebookService {
 			response = restTemplate.exchange(
 					new URI(configuration.getBaseURL() + url.substring(url.toLowerCase().indexOf("api"))), httpMethod,
 					request, String.class);
+		} catch (HttpClientErrorException e) {
+			if (e.getRawStatusCode() == 404) {
+				log.error("Not found in zeppelin");
+				return new ResponseEntity<>(response.getBody(), HttpStatus.valueOf(e.getRawStatusCode()));
+			} else {
+				log.error(e.getMessage());
+				return new ResponseEntity<>(response.getBody(), HttpStatus.valueOf(e.getRawStatusCode()));
+			}
 		} catch (final Exception e) {
 			log.error(e.getMessage());
 		}
@@ -705,7 +721,8 @@ public class NotebookServiceImpl implements NotebookService {
 	}
 
 	private boolean hasUserPermissionInNotebook(Notebook nt, User user) {
-		if (userService.isUserAdministrator(user) || nt.getUser().getUserId().equals(user.getUserId()) || nt.isPublic()) {
+		if (userService.isUserAdministrator(user) || nt.getUser().getUserId().equals(user.getUserId())
+				|| nt.isPublic()) {
 			return true;
 		} else { // TO-DO differentiate between access MANAGE/VIEW
 			for (final NotebookUserAccess notebookUserAccess : notebookUserAccessRepository.findByNotebookAndUser(nt,
@@ -826,7 +843,6 @@ public class NotebookServiceImpl implements NotebookService {
 
 	}
 
-
 	@Override
 	public ResponseEntity<String> runAllParagraphs(String zeppelinId) throws URISyntaxException, IOException {
 		return sendHttp(API_JOB_STR.concat(zeppelinId), HttpMethod.POST, "");
@@ -841,7 +857,6 @@ public class NotebookServiceImpl implements NotebookService {
 			log.error("Error while executing Async HTTP call to zeppelinId: {}", zeppelinId, e);
 		}
 	}
-
 
 	@Override
 	public ResponseEntity<String> getParagraphResult(String zeppelinId, String paragraphId)
@@ -1085,7 +1100,7 @@ public class NotebookServiceImpl implements NotebookService {
 				log.error(USER2 + user.getUserId() + HAS_NOT_PERMISSION_TO_RESTART_INTERPRETER + interpreterName);
 				final JSONObject responseBody = new JSONObject().put("error",
 						USER2 + user.getUserId() + HAS_NOT_PERMISSION_TO_RESTART_INTERPRETER + interpreterName
-						+ ". Check interpreter configuration.");
+								+ ". Check interpreter configuration.");
 				final HttpHeaders responseHeaders = new HttpHeaders();
 				responseHeaders.setContentType(MediaType.APPLICATION_JSON_UTF8);
 				return new ResponseEntity<>(responseBody.toString(), responseHeaders, HttpStatus.UNAUTHORIZED);
@@ -1179,7 +1194,7 @@ public class NotebookServiceImpl implements NotebookService {
 
 				} else {
 					log.error(USER2 + user.getUserId() + HAS_NOT_PERMISSION_TO_RESTART_INTERPRETER + entry.getKey()
-					+ ". Check interpreter configuration.");
+							+ ". Check interpreter configuration.");
 					responseBody.put(key, ERROR + USER2 + HAS_NOT_PERMISSION_TO_RESTART_INTERPRETER);
 				}
 			} catch (final Exception e) {
@@ -1300,7 +1315,7 @@ public class NotebookServiceImpl implements NotebookService {
 			securityService.setSecurityToInputList(notebookForLists, user, "Notebook");
 		}
 		final List<Notebook> notebookList = new ArrayList<>();
-		for (final NotebookForList n: notebookForLists) {
+		for (final NotebookForList n : notebookForLists) {
 			if (n.getAccessType() != null) {
 				final Notebook notebook = getNotebook(n.getId());
 				notebookList.add(notebook);

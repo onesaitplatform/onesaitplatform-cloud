@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.multitenant.config.services;
 import java.util.List;
 
 import com.minsait.onesait.platform.multitenant.config.model.MasterConfiguration;
+import com.minsait.onesait.platform.multitenant.pojo.CaaSConfiguration;
 import com.minsait.onesait.platform.multitenant.pojo.RTDBConfiguration;
 
 public interface MultitenantConfigurationService {
@@ -24,6 +25,8 @@ public interface MultitenantConfigurationService {
 	List<MasterConfiguration> getMasterConfigurations();
 
 	RTDBConfiguration getMultitenantRTDBConfiguration();
+
+	CaaSConfiguration getMultitenantCaaSConfiguration();
 
 	MasterConfiguration getConfiguration(String id);
 

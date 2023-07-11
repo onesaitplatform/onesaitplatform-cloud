@@ -42,6 +42,7 @@ import com.minsait.onesait.platform.config.model.AppExport;
 import com.minsait.onesait.platform.config.model.AppRoleChildExport;
 import com.minsait.onesait.platform.config.model.AppRoleExport;
 import com.minsait.onesait.platform.config.model.ProjectExport;
+import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserExport;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 
@@ -52,6 +53,8 @@ public class DataToDB {
 
 	private static final String PROJECT = "com.minsait.onesait.platform.config.model.ProjectExport";
 	private static final String PROJECT_RESOURCE_ACCESS = "com.minsait.onesait.platform.config.model.ProjectResourceAccessExport";
+	private static final String USER_EXPORT = "com.minsait.onesait.platform.config.model.UserExport";
+	private static final String USER = "com.minsait.onesait.platform.config.model.User";
 	private static final String WARN_MSG = "The entity is already in the database, nothing was done";
 
 	private class EntityCache {
@@ -164,7 +167,10 @@ public class DataToDB {
 							if (clazz.equals(UserExport.class)) {
 								final UserExport dbUser = (UserExport) dbInstance;
 								if (dbUser != null) {
-									final Map<String, Object> instanceData = data.getInstanceData(clazz, id);
+									Map<String, Object> instanceData = data.getInstanceData(Class.forName(USER_EXPORT), id);
+									if (instanceData == null) {
+										instanceData = data.getInstanceData(Class.forName(USER), id);
+									}
 									final List<String> projects = new ArrayList<>(
 											(Collection<String>) instanceData.get("projects"));
 									for (final ProjectExport p : dbUser.getProjects()) {
@@ -230,6 +236,8 @@ public class DataToDB {
 				instanceData = data.getInstanceData(AppRoleChildExport.class, id);
 			} else if (instanceData == null && clazz.equals(AppRoleChildExport.class)) {
 				instanceData = data.getInstanceData(AppRoleExport.class, id);
+			} else if (instanceData == null && clazz.equals(UserExport.class)) {
+				instanceData = data.getInstanceData(User.class, id);
 			}
 
 			clazz = data.getOPResourceClass(clazz, id);

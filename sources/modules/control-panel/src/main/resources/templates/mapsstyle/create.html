@@ -1,0 +1,1017 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2022 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org"
+	th:with="lang=${#locale.language}" th:lang="${lang}">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<meta http-equiv="Content-Language" th:content="${lang}" />
+<title th:text="#{name.app}" />
+<meta name="description" content="Map Styles create update" />
+<meta name="keywords" content="sofia2,smart,cities,platform,Indra" />
+<meta name="author" content="Indra Sistemas, S.A." />
+
+<input id="oauthtoken" type="hidden" th:value="${session.oauthToken}" />
+
+
+<!-- STYLE SHEETS -->
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/bootstrap.min.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/components.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/plugins.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/layout.css}" />
+
+<!-- THEME -->
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
+
+<!-- PLUGINS STYLE SHEETS -->
+<!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND VS  -->
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}" />
+<link rel="stylesheet" data-name="vs/editor/editor.main"
+	th:href="@{/static/vendor/vs/editor/editor.main.css}" />
+</head>
+
+<!-- page-sidebar-closed to start page with collapsed menu -->
+<body class="page-header-fixed  page-content-white page-sidebar-closed">
+	<style>
+		.help-block.help-block-error {
+			display: none;
+		}
+	</style>
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment"
+			class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+
+		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"></div>
+
+		<!-- BEGIN SIDEBAR -->
+		<div th:include="fragments/menu::#menuFragment"
+			class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+
+				<!-- BEGIN PAGE HEADER-->
+
+				<!-- BEGIN PAGE BAR AND BREADCRUM -->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/mapsstyle/list}"> <span
+								th:text="#{mapsstyle.my}">My Map Style</span></a><i
+							class="fa fa-angle-right"></i></li>
+						<li><span th:if="${element.id} != null"
+							th:text="#{mapsstyle.update.my}">Update</span> <span
+							th:if="${element.id} == null" th:text="#{mapsstyle.create.my}">New
+								Map Style</span></li>
+					</ul>
+				</div>
+				<!-- END PAGE BAR -->
+
+				<!-- BEGIN PAGE TITLE-->
+				<h1 th:if="${element.id} != null" class="page-title hide ">
+					<span th:text="#{mapsstyle.update.my}">Update </span>
+				</h1>
+				<h1 th:if="${element.id} == null" class="page-title hide ">
+					<span th:text="#{mapsstyle.create.my}">New Map Style</span>
+				</h1>
+				<!-- END PAGE TITLE-->
+
+				<!-- use an auxiliary form -->
+				<form role="form" id="aux_form" th:object="${element}" method="post"
+					class="form" enctype="multipart/form-data">
+					<!-- FORM ACTIONS FOR INSERT-->
+					<input th:if="${element.id} == null" type="hidden" name="action"
+						th:value="@{/mapsstyle/create}" />
+					<th:block th:include="versioning/fragments/form-commit"></th:block>
+					<!-- FORM ACTIONS FOR UPDATE -->
+					<input th:if="${element.id} != null" type="hidden" name="action"
+						th:value="@{/mapsstyle/update}" /> <input
+						th:if="${element.id} != null" type="hidden" name="_method"
+						value="PUT" /> <input id="identification_aux" type="hidden"
+						name="identification" th:field="*{identification}" /> <input
+						id="description_aux" type="hidden" name="description"
+						th:field="*{description}" /> <input id="config_aux" type="hidden"
+						name="config" th:field="*{config}" /> <input type="hidden"
+						th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+				</form>
+
+				<!-- END auxiliary form -->
+				<form id="delete_mapsstyle_form" class="delete-gadget hide"
+					th:action="@{'/mapsstyle/'+${element.id}}" method="post">
+					<input type="hidden" name="_method" value="DELETE" /> <input
+						type="hidden" name="id" th:value="${element.id}" /> <input
+						type="hidden" th:name="${_csrf.parameterName}"
+						th:value="${_csrf.token}" />
+				</form>
+
+				<form role="form" id="element_form" th:object="${element}"
+					method="post" class="form">
+					<input type="hidden" th:name="${_csrf.parameterName}"
+						th:value="${_csrf.token}" />
+					<!-- FORM ACTIONS FOR INSERT-->
+					<input th:if="${element.id} == null" type="hidden" name="action"
+						th:value="@{/mapsstyle/create}" />
+					<!-- FORM ACTIONS FOR UPDATE -->
+					<input th:if="${element.id} != null" type="hidden" name="action"
+						th:value="@{/mapsstyle/update}" /> <input
+						th:if="${element.id} != null" type="hidden" name="_method"
+						value="PUT" />
+					<!-- VERSIONING -->
+					<th:block th:include="versioning/fragments/form-commit"></th:block>
+					<input type="hidden" id="id" th:field="*{id}" />
+
+					<div id="header">
+						<div class="row pageCreateHeader">
+							<div class="col-md-6 col-sm-6 col-xs-12">
+								<div class="margin-top-4">
+									<span th:if="${element.id} == null"
+										th:text="#{mapsstyle.create.my}"> Create map style </span> <span
+										th:if="${element.id} != null"
+										th:text="${element.identification}"> Update map style </span>
+
+								</div>
+							</div>
+
+							<div class="col-md-6 col-sm-6 col-xs-12">
+								<div class="pull-right">
+									<!-- DELETE -->
+									<button th:if="${element.id} != null" id="deleteBtn"
+										type="button" class="btn btn-primary btn-primary-delete "
+										name="delete" th:value="#{gen.deleteBtn}"
+										th:attr="onclick='MapsStyleController.deleteStyle(\'' + ${element.id} + '\');'">
+										<i class="icon-delete"></i><span th:text="#{gen.deleteBtn}"
+											class="delete-btn-text"> Delete </span>
+									</button>
+
+									<span class="sep" th:if="(${element.id} != null)"></span>
+
+									<!-- CANCEL -->
+									<button id="cancelBtn" type="button"
+										class="btn btn-primary-cancel" name="cancel"
+										th:value="#{gen.cancelBtn}" value="cancel"
+										th:attr="onclick='javascript:MapsStyleController.go(\'' + ${element.id} + '\',\'' + @{/mapsstyle/list} + '\');'">
+										<span th:text="#{gen.cancelBtn}"> Cancel </span>
+									</button>
+
+									<!-- RESET -->
+									<button th:if="${element.id} == null" id="resetBtn"
+										type="button" class="btn btn-primary-cancel" name="reset"
+										th:value="#{gen.resetBtn}">
+										<span th:text="#{gen.resetBtn}"> Reset</span>
+									</button>
+									<button th:if="${element.id} != null" id="resetBtn"
+										type="button" class="btn btn-outline-search" name="reset"
+										th:value="#{gen.resetBtn}" disabled="true">
+										<span th:text="#{gen.resetBtn}"> Reset</span>
+									</button>
+
+									<span class="sep no-border" th:if="(${element.id} != null)"></span>
+
+									<!-- CREATE -->
+									<button th:if="${element.id} == null" id="createBtn"
+										type="submit" class="btn btn-primary btn-primary-save"
+										name="create" th:value="#{gen.createBtn}">
+										<span th:text="#{gen.createBtn}"> New</span>
+									</button>
+
+									<!-- UPDATE -->
+									<button th:if="${element.id} != null" id="updateBtn"
+										type="submit" class="btn btn-primary btn-primary-save"
+										name="update" th:value="#{gen.editBtn}">
+										<span th:text="#{gen.changes}"> Save Changes</span>
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+
+
+
+
+
+					<div class="row equal flex-container">
+						<div class="tabContainer flex-tabs-left">
+							<div id="tab-datos" class="option active">
+								<a href="#tab_1" data-toggle="tab" aria-expanded="false"> <!-- FORM TITLE -->
+									<span class="caption-subject "
+									th:text="#{gen.generalInformation}"> General Information</span>
+								</a>
+							</div>
+							<div id="tab-properties" class="option">
+								<a href="#tab_properties" data-toggle="tab" aria-expanded="true">
+									<span class="caption-subject "> Properties</span>
+								</a>
+							</div>
+							<div id="tab-stroke" class="option">
+								<a href="#tab_stroke" data-toggle="tab" aria-expanded="true">
+									<span class="caption-subject "> Stroke</span>
+								</a>
+							</div>
+							<div id="tab-text" class="option">
+								<a href="#tab_text" data-toggle="tab" aria-expanded="true">
+									<span class="caption-subject "> Text</span>
+								</a>
+							</div>
+							<div id="tab-image" class="option">
+								<a href="#tab_image" data-toggle="tab" aria-expanded="true">
+									<span class="caption-subject "> Image</span>
+								</a>
+							</div>
+							<div id="tab-icon" class="option">
+								<a href="#tab_icon" data-toggle="tab" aria-expanded="true">
+									<span class="caption-subject "> Icon</span>
+								</a>
+							</div>
+						</div>
+
+						<div class="tab-content flex-content-right">
+
+							<div class="tab-pane active" id="tab_1">
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{gen.generalInformation}">General
+											Information</span>
+									</div>
+									<div class="col-md-3 col-sm-3 col-xs-3">
+										<span th:text="#{gen.denotesRequired}" class="denotesRequired">*
+											Denotes Required Field</span>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-4 col-sm-12">
+										<div class="form-group">
+											<label class="control-label" th:text="#{gen.identification}">Identification</label><span
+												class="required"> *</span> <input id="identification"
+												type="text" name="identification" maxlength="100"
+												th:field="*{identification}" class="form-control "
+												th:readonly="*{id}" th:placeholder="#{gen.identification}" />
+										</div>
+									</div>
+									<div class="col-md-8 col-sm-12">
+										<div class="form-group">
+											<label class="control-label" th:text="#{gen.description}">Description</label><span
+												class="required"> *</span> <input id="description"
+												type="text" name="description" maxlength="100"
+												th:field="*{description}" class="form-control "
+												th:placeholder="#{gen.description}" />
+										</div>
+									</div>
+
+								</div>
+
+							</div>
+
+							<div class="tab-pane " id="tab_properties">
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span>Properties</span>
+									</div>
+									<div class="col-md-3 col-sm-3 col-xs-3">
+										<span th:text="#{gen.denotesRequired}" class="denotesRequired">*
+											Denotes Required Field</span>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-3 col-sm-3">
+										<div class="form-group">
+											<label class="control-label">style Type</label> <select
+												id="styleType" class="selectpicker form-control "
+												data-size="5" data-live-search="true" data-width="100%">
+												<option value=""></option>
+												<option value="Box">Box</option>
+												<option value="Circle">Circle</option>
+												<option value="GeometryCollection">GeometryCollection</option>
+												<option value="LinearRing">LinearRing</option>
+												<option value="LineString">LineString</option>
+												<option value="MultiLineString">MultiLineString</option>
+												<option value="MultiPoint">MultiPoint</option>
+												<option value="MultiPolygon">MultiPolygon</option>
+												<option value="Point">Point</option>
+												<option value="Polygon">Polygon</option>
+												<option value="LineString">Polyline</option>
+											</select>
+										</div>
+									</div>
+									<div class="col-md-3 col-sm-3">
+										<div class="form-group">
+											<label class="control-label">radius</label><span
+												class="required"> *</span> <input id="radius" type="range"
+												name="radius" min="1" max="50"
+												onchange="radiusValue.innerText = this.value">
+											<p id="radiusValue"></p>
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2">
+										<div class="form-group">
+											<label class="control-label">z Index</label><span
+												class="required"> *</span> <input id="zIndex"
+												class="form-control" type="number" name="zIndex">
+
+
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2">
+										<div class="mt-checkbox-list margin-top-20">
+											<label class="mt-checkbox popovers font-sm"
+												data-trigger="hover" data-placement="top"
+												data-container="body" data-content="circleVertex"
+												data-title="circleVertex">
+												<div class="inline font-xs">
+													circle Vertex <span class="required"
+														style="color: #A73535; font-size: 12px; padding-left: 2px;">
+														*</span>
+												</div> <input id="circleVertex" class="form-control"
+												name="circleVertex" type="checkbox" /> <span></span>
+											</label>
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2">
+										<div class="form-group">
+											<label class="control-label">fill</label><span
+												class="required"> *</span><br> <input type="color"
+												id="fill" value="#ff0000" style="width: 85%;">
+										</div>
+									</div>
+									<div class="clearfix"></div>
+								</div>
+							</div>
+
+							<div class="tab-pane " id="tab_stroke">
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span>Stroke</span>
+									</div>
+									<div class="col-md-3 col-sm-3 col-xs-3">
+										<span th:text="#{gen.denotesRequired}" class="denotesRequired">*
+											Denotes Required Field</span>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-2 col-sm-2">
+										<div class="form-group">
+											<label class="control-label">color</label><span
+												class="required"> *</span> <input type="color"
+												id="strokecolor" value="#ff0000" style="width: 85%;">
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2">
+										<label class="control-label">width</label><span
+											class="required"> *</span> <input id="strokewidth"
+											type="range" name="strokewidth" min="1" max="10"
+											onchange="strokewidthValue.innerText = this.value">
+										<p id="strokewidthValue"></p>
+									</div>
+									<div class="col-md-3 col-sm-3">
+										<label class="control-label">line Dash</label><br>
+										<div class="col-md-6 col-sm-6" style="padding-left: 0px;">
+											<input id="strokelinedash0" type="number"
+												class="form-control" name="strokelinedash0" min="0">
+										</div>
+										<div class="col-md-6 col-sm-6">
+											<input id="strokelinedash1" type="number"
+												class="form-control" name="strokelinedash1" min="0">
+										</div>
+									</div>
+									<div class="col-md-3 col-sm-3">
+										<label class="control-label">line Dash Offset</label><br>
+										<div class="col-md-6 col-sm-6" style="padding-left: 0px;">
+											<input id="strokelineDashOffset0" type="number"
+												class="form-control" name="strokelineDashOffset0" min="0">
+										</div>
+										<div class="col-md-6 col-sm-6">
+											<input id="strokelineDashOffset1" type="number"
+												class="form-control" name="strokelineDashOffset1" min="0">
+										</div>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-2 col-sm-2">
+										<div class="form-group">
+											<label class="control-label">line Cap</label> <select
+												id="strokelineCap" class="form-control selectpicker">
+												<option value=""></option>
+												<option value="butt">butt</option>
+												<option value="round">round</option>
+												<option value="square">square</option>
+											</select>
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2">
+										<div class="form-group">
+											<label class="control-label">line Join</label> <select
+												id="strokelineJoin" class="form-control selectpicker" onchange="MapsStyleController.showHide()">
+												<option value=""></option>
+												<option value="bevel">bevel</option>
+												<option value="round">round</option>
+												<option value="miter">miter</option>
+											</select>
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2" id="divmiterlimit">
+										<label class="control-label">miter Limit</label><br> <input
+											id="strokemiterLimit" type="number" class="form-control"
+											name="strokemiterLimit" min="0">
+									</div>
+									<div class="clearfix"></div>
+								</div>
+							</div>
+
+							<div class="tab-pane " id="tab_text">
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span>Text</span>
+									</div>
+									<div class="col-md-3 col-sm-3 col-xs-3">
+										<span th:text="#{gen.denotesRequired}" class="denotesRequired">*
+											Denotes Required Field</span>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-2 col-sm-2">
+										<label class="mt-checkbox popovers font-sm margin-top-20"
+											data-trigger="hover" data-placement="top"
+											data-container="body" data-content="texttextVisibility"
+											data-title="textVisibility">
+											<div class="inline font-xs">
+												text Visibility <span class="required"
+													style="color: #A73535; font-size: 12px; padding-left: 2px;">
+													*</span>
+											</div> <input id="texttextVisibility" class="form-control"
+											name="texttextVisibility" type="checkbox" onchange="MapsStyleController.showHide()"/> <span></span>
+										</label>
+									</div>
+									<div class="col-md-2 col-sm-2" id="divtextfillColor" >
+										<div class="form-group">
+											<label class="control-label">fill Color</label><span
+												class="required"> *</span> <input type="color"
+												id="textfillColor" value="#ff0000" style="width: 85%;">
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2" id="divtextstrokeColor">
+										<div class="form-group">
+											<label class="control-label">stroke Color</label><span
+												class="required"> *</span> <input type="color"
+												id="textstrokeColor" value="#ff0000" style="width: 85%;">
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2" id="divtextdefaultText">
+										<div class="form-group">
+											<label class="control-label">default Text</label><span
+												class="required"> *</span> <input id="textdefaultText"
+												type="text" name="textdefaultText" maxlength="100"
+												class="form-control " onchange="MapsStyleController.showHide()"/>
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2" id="divtexttextField">
+										<div class="form-group">
+											<label class="control-label">textField</label> <input
+												id="texttextField" type="text" name="texttextField"
+												maxlength="100" class="form-control " />
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2" id="divtextscale">
+										<div class="form-group">
+											<label class="control-label">scale</label><span
+												class="required"> *</span> <input id="textscale"
+												type="number" name="textscale" class="form-control " />
+										</div>
+									</div>
+								</div>
+								<div class="row main">
+								<!-- 
+									<div class="col-md-2 col-sm-2">
+										<div class="form-group">
+											<label>font</label> <input id="textFont" type="text"
+												name="textFont" class="form-control " />
+										</div>
+									</div> -->
+									<div class="col-md-2 col-sm-2" id="divtextplacement">
+										<div class="form-group">
+											<label class="control-label">placement</label> <select
+												id="textplacement" class="form-control selectpicker " onchange="MapsStyleController.showHide()">
+												<option value=""></option>
+												<option value="point">Point</option>
+												<option value="line">Line</option>
+											</select>
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2" id="divtexttextAlign">
+										<div class="form-group">
+											<label class="control-label">text Align</label> <select
+												id="texttextAlign" class="form-control selectpicker">
+												<option value=""></option>
+												<option value="left">Left</option>
+												<option value="right">Right</option>
+												<option value="center">Center</option>
+												<option value="end">End</option>
+												<option value="start">Start</option>
+											</select>
+										</div>
+									</div>
+
+									<div class="col-md-2 col-sm-2" id="divtextoffsetY">
+										<div class="form-group">
+											<label class="control-label">offset Y</label><span
+												class="required"> *</span> <input id="textoffsetY"
+												type="number" name="textoffsetY" class="form-control " />
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2" id="divtextoffsetX">
+										<div class="form-group">
+											<label class="control-label">offset X</label><span
+												class="required"> *</span> <input id="textoffsetX"
+												type="number" name="textoffsetX" class="form-control " />
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2" id="divtextrotation">
+										<div class="form-group">
+											<label class="control-label">rotation</label><span
+												class="required"> *</span> <input id="textrotation"
+												type="range" name="textrotation" min="-180" max="180"
+												onchange="textrotationValue.innerText = this.value">
+											<p id="textrotationValue"></p>
+										</div>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-2 col-sm-2" id="divtexttextBaseLine">
+										<div class="form-group">
+											<label class="control-label">text BaseLine</label> <select
+												id="texttextBaseLine" class="form-control selectpicker">
+												<option value=""></option>
+												<option value="bottom">Bottom</option>
+												<option value="top">Top</option>
+												<option value="middle">Middle</option>
+												<option value="alphabetic">Alphabetic</option>
+												<option value="hanging">Hanging</option>
+												<option value="ideographic">Ideographic</option>
+											</select>
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2" id="divtextoverflow">
+										<label class="mt-checkbox popovers font-sm margin-top-20"
+											data-trigger="hover" data-placement="top"
+											data-container="body" data-content="textoverflow"
+											data-title="textoverflow">
+											<div class="inline font-xs">
+												text overflow <span class="required"
+													style="color: #A73535; font-size: 12px; padding-left: 2px;">
+													*</span>
+											</div> <input id="textoverflow" class="form-control"
+											name="textoverflow" type="checkbox" /> <span></span>
+										</label>
+									</div>
+									<div class="col-md-2 col-sm-2" id="divtextrotateWithView">
+										<label class="mt-checkbox popovers font-sm margin-top-20"
+											data-trigger="hover" data-placement="top"
+											data-container="body" data-content="textrotateWithView"
+											data-title="textrotateWithView">
+											<div class="inline font-xs">
+												rotate With View <span class="required"
+													style="color: #A73535; font-size: 12px; padding-left: 2px;">
+													*</span>
+											</div> <input id="textrotateWithView" class="form-control"
+											name="textrotateWithView" type="checkbox" /> <span></span>
+										</label>
+									</div>
+									<div class="col-md-2 col-sm-2" id="divtextbackgroundFill">
+										<div class="form-group">
+											<label class="control-label">background Fill</label><span
+												class="required"> *</span> <input type="color"
+												id="textbackgroundFill" value="#ff0000" style="width: 85%;">
+										</div>
+									</div>
+									<div class="col-md-4 col-sm-4" id="divtextpadding">
+										<label class="control-label">padding</label><br>
+										<div class="col-md-3 col-sm-3" style="padding-left: 0px;">
+											<input id="textpadding0" type="number" class="form-control "
+												name="textpadding0">
+										</div>
+										<div class="col-md-3 col-sm-3">
+											<input id="textpadding1" type="number" class="form-control"
+												name="textpadding1">
+										</div>
+										<div class="col-md-3 col-sm-3">
+											<input id="textpadding2" type="number" class="form-control"
+												name="textpadding2">
+										</div>
+										<div class="col-md-3 col-sm-3">
+											<input id="textpadding3" type="number" class="form-control"
+												name="textpadding3">
+										</div>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-2 col-sm-2" id="divtextresolution">
+										<label class="control-label">resolution</label><br> <input
+											id="textresolution" type="number" class="form-control"
+											name="textresolution" min="0">
+
+									</div>
+								</div>
+							</div>
+
+							<div class="tab-pane " id="tab_image">
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span>Image</span>
+									</div>
+									<div class="col-md-3 col-sm-3 col-xs-3">
+										<span th:text="#{gen.denotesRequired}" class="denotesRequired">*
+											Denotes Required Field</span>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-6 col-sm-6">
+										<div class="form-group">
+											<label class="control-label">src</label><span
+												class="required"> *</span> <input id="imagesrc" type="text"
+												name="imagesrc" class="form-control " />
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2">
+										<div class="form-group">
+											<label class="control-label">scale</label><span
+												class="required"> *</span> <input id="imagescale"
+												type="number" name="imagescale" class="form-control " />
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2">
+										<div class="form-group">
+											<label class="control-label">position</label> <select
+												id="imageposition" class="form-control selectpicker">
+												<option value="bottom-left">Bottom Left</option>
+												<option value="bottom-center">Bottom Center</option>
+												<option value="bottom-right">Bottom Right</option>
+												<option value="center-left">Center Left</option>
+												<option value="center-center">Center Center</option>
+												<option value="center-right">Center Right</option>
+												<option value="top-left">Top Left</option>
+												<option value="top-center">Top Center</option>
+												<option value="top-right">Top Right</option>
+											</select>
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2">
+										<div class="mt-checkbox-list margin-top-20">
+											<label class="mt-checkbox popovers font-sm"
+												data-trigger="hover" data-placement="top"
+												data-container="body" data-content="imagerotateWithView"
+												data-title="imagerotateWithView">
+												<div class="inline font-xs">
+													rotate With View <span class="required"
+														style="color: #A73535; font-size: 12px; padding-left: 2px;">
+														*</span>
+												</div> <input id="imagerotateWithView" class="form-control"
+												name="imagerotateWithView" type="checkbox" /> <span></span>
+											</label>
+										</div>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-3 col-sm-3">
+										<label class="control-label">displacement</label><br>
+										<div class="col-md-6 col-sm-6" style="padding-left: 0px;">
+											<input id="imagedisplacement0" type="number"
+												class="form-control" name="imagedisplacement0" min="0">
+										</div>
+										<div class="col-md-6 col-sm-6">
+											<input id="imagedisplacement1" type="number"
+												class="form-control" name="imagedisplacement1" min="0">
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2">
+										<div class="form-group">
+											<label class="control-label">opacity</label> <input
+												id="imageopacity" type="range" name="imageopacity" min="0"
+												max="100"
+												onchange="imageopacityValue.innerText = this.value">
+											<p id="imageopacityValue"></p>
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2">
+										<div class="form-group">
+											<label class="control-label">rotation</label><span
+												class="required"> *</span> <input id="imagerotation"
+												type="range" name="radius" min="-180" max="180"
+												onchange="imagerotationValue.innerText = this.value">
+											<p id="imagerotationValue"></p>
+										</div>
+									</div>
+
+									<div class="col-md-2 col-sm-2">
+										<div class="form-group">
+											<label class="control-label">color</label><span
+												class="required"> *</span> <input type="color"
+												id="imagecolor" value="#ff0000" style="width: 85%;">
+										</div>
+									</div>
+									<div class="col-md-3 col-sm-3">
+										<label class="control-label">size</label><br>
+										<div class="col-md-6 col-sm-6" style="padding-left: 0px;">
+											<input id="imagesize0" type="number" class="form-control"
+												name="imagesize0" min="0">
+										</div>
+										<div class="col-md-6 col-sm-6">
+											<input id="imagesize1" type="number" class="form-control"
+												name="imagesize1" min="0">
+										</div>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-2 col-sm-2">
+										<div class="form-group">
+											<label class="control-label">resolution</label><span
+												class="required"> *</span> <input id="imageresolution"
+												type="number" name="imageresolution" class="form-control " />
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2">
+										<div class="form-group">
+											<label class="control-label">declutter mode</label> <select
+												id="imagedecluttermode" class="form-control selectpicker">
+												<option value=""></option>
+												<option value="declutter">declutter</option>
+												<option value="obstacle">obstacle</option>
+												<option value="none">none</option>
+											</select>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="tab-pane " id="tab_icon">
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span>Icon</span>
+									</div>
+									<div class="col-md-3 col-sm-3 col-xs-3">
+										<span th:text="#{gen.denotesRequired}" class="denotesRequired">*
+											Denotes Required Field</span>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-6 col-sm-6">
+										<div class="form-group">
+											<label class="control-label">src</label><span
+												class="required"> *</span> <input id="iconsrc" type="text"
+												name="iconsrc" class="form-control " />
+										</div>
+									</div>
+									<div class="col-md-3 col-sm-3">
+										<div class="form-group">
+											<label class="control-label">opacity</label> <input
+												id="iconopacity" type="range" name="iconopacity" min="0"
+												max="100" onchange="iconopacityValue.innerText = this.value">
+											<p id="iconopacityValue"></p>
+										</div>
+									</div>
+									<div class="col-md-3 col-sm-3">
+										<div class="form-group">
+											<label class="control-label">rotation</label><span
+												class="required"> *</span> <input id="iconrotation"
+												type="range" name="iconrotation" min="-180" max="180"
+												onchange="iconrotationValue.innerText = this.value">
+											<p id="iconrotationValue"></p>
+										</div>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-3 col-sm-3">
+										<label class="control-label">anchor</label><br>
+										<div class="col-md-6 col-sm-6" style="padding-left: 0px;">
+											<input id="iconanchor0" type="number" class="form-control"
+												name="iconanchor0">
+										</div>
+										<div class="col-md-6 col-sm-6">
+											<input id="iconanchor1" type="number" class="form-control"
+												name="iconanchor1">
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2">
+										<div class="form-group">
+											<label class="control-label">anchor Origin</label> <select
+												id="iconanchorOrigin" class="form-control selectpicker">
+												<option value=""></option>
+												<option value="bottom-left">Bottom Left</option>
+												<option value="bottom-right">Bottom Right</option>
+												<option value="top-left">Top Left</option>
+												<option value="top-right">Top Right</option>
+											</select>
+										</div>
+									</div>
+
+									<div class="col-md-2 col-sm-2">
+										<div class="form-group">
+											<label class="control-label">anchor X Units</label><span
+												class="required"> *</span> <input id="iconanchorXUnits"
+												type="number" name="iconanchorXUnits" class="form-control " />
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2">
+										<div class="form-group">
+											<label class="control-label">anchor Y Units</label><span
+												class="required"> *</span> <input id="iconanchorYUnits"
+												type="number" name="iconanchorYUnits" class="form-control " />
+										</div>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-3 col-sm-3">
+										<label class="control-label">offset</label><br>
+										<div class="col-md-6 col-sm-6" style="padding-left: 0px;">
+											<input id="iconoffset0" type="number" class="form-control"
+												name="iconoffset0">
+										</div>
+										<div class="col-md-6 col-sm-6">
+											<input id="iconoffset1" type="number" class="form-control"
+												name="iconoffset1">
+										</div>
+									</div>
+
+
+									<div class="col-md-2 col-sm-2">
+										<div class="form-group">
+											<label class="control-label">offset Origin</label> <select
+												id="iconoffsetOrigin" class="form-control selectpicker">
+												<option value=""></option>
+												<option value="bottom-left">Bottom Left</option>
+												<option value="bottom-right">Bottom Right</option>
+												<option value="top-left">Top Left</option>
+												<option value="top-right">Top Right</option>
+											</select>
+										</div>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-2 col-sm-2">
+										<div class="form-group">
+											<label class="control-label">scale</label><span
+												class="required"> *</span> <input id="iconscale"
+												type="number" name="iconscale" class="form-control " />
+										</div>
+									</div>
+
+									<div class="col-md-2 col-sm-2">
+										<div class="form-group">
+											<label class="control-label">position</label> <select
+												id="iconposition" class="form-control selectpicker">
+												<option value="bottom-left">Bottom Left</option>
+												<option value="bottom-center">Bottom Center</option>
+												<option value="bottom-right">Bottom Right</option>
+												<option value="center-left">Center Left</option>
+												<option value="center-center">Center Center</option>
+												<option value="center-right">Center Right</option>
+												<option value="top-left">Top Left</option>
+												<option value="top-center">Top Center</option>
+												<option value="top-right">Top Right</option>
+											</select>
+										</div>
+									</div>
+									<div class="col-md-3 col-sm-3">
+										<label class="control-label">displacement</label><br>
+										<div class="col-md-6 col-sm-6" style="padding-left: 0px;">
+											<input id="icondisplacement0" type="number"
+												class="form-control" name="icondisplacement0">
+										</div>
+										<div class="col-md-6 col-sm-6">
+											<input id="icondisplacement1" type="number"
+												class="form-control" name="icondisplacement1">
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2">
+										<div class="form-group">
+											<label class="control-label">color</label><span
+												class="required"> *</span> <input type="color"
+												id="iconcolor" value="#ff0000" style="width: 85%;">
+										</div>
+									</div>
+
+
+									<div class="col-md-2 col-sm-2">
+										<div class="form-group">
+											<label class="control-label">cross Origin</label><span
+												class="required"> *</span> <input id="iconcrossOrigin"
+												type="text" name="iconcrossOrigin" maxlength="100"
+												class="form-control " />
+										</div>
+									</div>
+									<div class="col-md-3 col-sm-3">
+										<label class="control-label">size</label><br>
+										<div class="col-md-6 col-sm-6" style="padding-left: 0px;">
+											<input id="iconsize0" type="number" class="form-control"
+												name="iconsize0" min="0">
+										</div>
+										<div class="col-md-6 col-sm-6">
+											<input id="iconsize1" type="number" class="form-control"
+												name="iconsize1" min="0">
+										</div>
+									</div>
+
+								</div>
+
+							</div>
+						</div>
+
+					</div>
+				</form>
+				<!-- END MAIN ROW -->
+			</div>
+			<!-- END CONTENT BODY -->
+		</div>
+		<!-- END CONTENT page-content-wrapper -->
+	</div>
+</body>
+
+<!-- END MAIN PAGE WRAPPER -->
+
+<!-- FOOTER-INCLUDE -->
+<footer th:include="fragments/footer::#footerFragment"
+	class="page-footer"> </footer>
+
+<!-- CORE CONTROLLERS -->
+
+
+<!-- TEMPLATE CONTROLLER  -->
+<script th:src="@{/static/js/pages/mapsStyleCreate.js}"></script>
+
+<script
+	th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}"
+	type="text/javascript"></script>
+<script
+	th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}"
+	type="text/javascript"></script>
+<script th:if="${lang} == 'es'"
+	th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}"
+	type="text/javascript"></script>
+
+<!-- PLUGINS -->
+<script
+	th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
+
+<!-- INPUTMASK -->
+<script
+	th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
+<script th:inline="javascript">
+	
+		// <![CDATA[
+		
+	var csrfParameter = [[${_csrf.parameterName}]];
+	var csrfValue = [[${_csrf.token}]];	
+		
+
+	 
+	// INPUT MASK FOR ontology identification allow only letters, numbers and -_
+	$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
+	
+	var elementID = /*[[${element?.id}]]*/ "";  
+	var conf = /*[[${element.config}]]*/ "{}"  ;
+	var config = JSON.parse(conf);
+	var configResponse = JSON.parse(conf);	
+	var elementJson = {
+			"language" : currentLanguage};
+		
+			
+		 
+		$( document ).ready(function() {
+		handleTabsChange();
+		
+		
+		});
+	// ]]>
+	
+	
+	</script>
+</html>

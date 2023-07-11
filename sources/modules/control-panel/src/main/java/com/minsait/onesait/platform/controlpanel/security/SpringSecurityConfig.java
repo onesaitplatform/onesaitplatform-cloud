@@ -272,7 +272,8 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 					new RegexRequestMatcher("^/users/reset-password", null),
 					new RegexRequestMatcher("^/actuator.*", null), new RegexRequestMatcher("^/opendata.*", null),
 					new RegexRequestMatcher("^/modelsmanager.*", null), new RegexRequestMatcher("^/process.*", null),
-					new RegexRequestMatcher("^/microservices.*", null));
+					new RegexRequestMatcher("^/microservices.*", null),
+					new RegexRequestMatcher("^/mapsproject.*", null));
 
 			// When using CsrfProtectionMatcher we need to explicitly declare allowed
 			// methods
@@ -294,72 +295,75 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 		final Integer maxSessionsPerUser = integrationResourcesService.getGlobalConfiguration().getEnv()
 				.getControlpanel() != null
 				&& integrationResourcesService.getGlobalConfiguration().getEnv().getControlpanel()
-				.get("maxSessionsPerUser") != null
-				? (Integer) integrationResourcesService.getGlobalConfiguration().getEnv()
-						.getControlpanel().get("maxSessionsPerUser")
-						: 10;
+						.get("maxSessionsPerUser") != null
+								? (Integer) integrationResourcesService.getGlobalConfiguration().getEnv()
+										.getControlpanel().get("maxSessionsPerUser")
+								: 10;
 
-						http.csrf().requireCsrfProtectionMatcher(csrfRequestMatcher);
+		http.csrf().requireCsrfProtectionMatcher(csrfRequestMatcher);
 
-						http.headers().frameOptions().disable();
-						http.authorizeRequests().antMatchers("/", "/home", "/favicon.ico", "/blocked", "/loginerror").permitAll()
-						.antMatchers("/api/applications", "/api/applications/").permitAll().antMatchers("/opendata/register")
-						.permitAll().antMatchers("/users/register", "/oauth/authorize", "/oauth/token", "/oauth/check_token")
-						.permitAll().antMatchers(HttpMethod.POST, "/users/reset-password").permitAll()
-						.antMatchers("/resources/**", "/static/**", "/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
-						.antMatchers(HttpMethod.PUT, "/users/update/**/**").permitAll()
-						.antMatchers(HttpMethod.GET, "/users/update/**/**").permitAll()
-						.antMatchers("/health/", "/info", "/metrics", "/trace", "/logfile").permitAll()
-						.antMatchers("/nodered/auth/**/**").permitAll()
-						.antMatchers("/actuator/**", "/api/**", "/dashboards/view/**", "/dashboards/model/**",
-								"/dashboards/editfulliframe/**", "/dashboards/viewiframe/**", "/viewers/view/**",
-								"/viewers/viewiframe/**", "/gadgets/**", "/viewers/**", "/datasources/**", "/v3/api-docs/",
-								"/v3/api-docs/**", "/swagger-resources/", "/swagger-resources/**", "/users/validateNewUserFromLogin/**","/users/showGeneratedCredentials/**",
-								"/users/createNewUserFromLogin","/users/validateResetPassword/**", "/users/resetPasswordFromLogin", "/swagger-ui.html", "/layer/**", "/notebooks/app/**", "/403",
-								"/gadgettemplates/getGadgetTemplateByIdentification/**", "/modelsmanager/api/**","/datamodelsjsonld/**")
-						.permitAll().antMatchers("/actuator/**").hasAnyRole("OPERATIONS", "ADMINISTRATOR");
+		http.headers().frameOptions().disable();
+		http.authorizeRequests().antMatchers("/", "/home", "/favicon.ico", "/blocked", "/loginerror").permitAll()
+				.antMatchers("/api/applications", "/api/applications/").permitAll().antMatchers("/opendata/register")
+				.permitAll().antMatchers("/users/register", "/oauth/authorize", "/oauth/token", "/oauth/check_token")
+				.permitAll().antMatchers(HttpMethod.POST, "/users/reset-password").permitAll()
+				.antMatchers("/resources/**", "/static/**", "/css/**", "/js/**", "/images/**", "/webjars/**")
+				.permitAll().antMatchers(HttpMethod.PUT, "/users/update/**/**").permitAll()
+				.antMatchers(HttpMethod.GET, "/users/update/**/**").permitAll()
+				.antMatchers("/health/", "/info", "/metrics", "/trace", "/logfile").permitAll()
+				.antMatchers("/nodered/auth/**/**").permitAll()
+				.antMatchers("/actuator/**", "/api/**", "/dashboards/view/**", "/dashboards/model/**",
+						"/dashboards/editfulliframe/**", "/dashboards/viewiframe/**", "/viewers/view/**",
+						"/viewers/viewiframe/**", "/gadgets/**", "/viewers/**", "/datasources/**", "/v3/api-docs/",
+						"/v3/api-docs/**", "/swagger-resources/", "/swagger-resources/**",
+						"/users/validateNewUserFromLogin/**", "/users/showGeneratedCredentials/**",
+						"/users/createNewUserFromLogin", "/users/validateResetPassword/**",
+						"/users/resetPasswordFromLogin", "/swagger-ui.html", "/layer/**", "/notebooks/app/**", "/403",
+						"/gadgettemplates/getGadgetTemplateByIdentification/**", "/modelsmanager/api/**",
+						"/datamodelsjsonld/**")
+				.permitAll().antMatchers("/actuator/**").hasAnyRole("OPERATIONS", "ADMINISTRATOR");
 
-						// This line deactivates login page when using SAML or other Auth Provider
-						// if (!authProvider.equalsIgnoreCase(CONFIGDB))
-						// http.authorizeRequests().antMatchers(LOGIN_STR).denyAll();
-						http.x509().subjectPrincipalRegex("CN=(.*?)(?:,|$)").userDetailsService(detailsService);
-						http.formLogin().successHandler(successHandler).failureHandler(failureHandler).permitAll();
-						http.authorizeRequests().regexMatchers("^/login/cas.*", "^/cas.*", "^/login*", "^/saml*").permitAll()
-						.antMatchers("/oauth/").permitAll().antMatchers("/api-ops", "/api-ops/**").permitAll()
-						.antMatchers("/management", "/management/**").permitAll()
-						.antMatchers("/notebook-ops", "/notebook-ops/**").permitAll().antMatchers(HttpMethod.GET, "/files/list")
-						.authenticated().antMatchers(HttpMethod.GET, "/files/**").permitAll()
-						.antMatchers(HttpMethod.POST, "/binary-repository", "/binary-repository/**").authenticated()
-						.antMatchers("/binary-repository", "/binary-repository/**").permitAll().antMatchers("/admin")
-						.hasAnyRole("ROLE_ADMINISTRATOR").antMatchers("/admin/**").hasAnyRole("ROLE_ADMINISTRATOR").anyRequest()
-						.authenticated();
-						http.logout().logoutSuccessHandler(logoutSuccessHandler).permitAll().and().sessionManagement()
-						.invalidSessionUrl("/").maximumSessions(maxSessionsPerUser).expiredUrl("/")
-						.maxSessionsPreventsLogin(false).sessionRegistry(sessionRegistry()).and().sessionFixation().none().and()
-						.exceptionHandling().accessDeniedHandler(accessDeniedHandler)
-						.authenticationEntryPoint(authenticationEntryPoint);
+		// This line deactivates login page when using SAML or other Auth Provider
+		// if (!authProvider.equalsIgnoreCase(CONFIGDB))
+		// http.authorizeRequests().antMatchers(LOGIN_STR).denyAll();
+		http.x509().subjectPrincipalRegex("CN=(.*?)(?:,|$)").userDetailsService(detailsService);
+		http.formLogin().successHandler(successHandler).failureHandler(failureHandler).permitAll();
+		http.authorizeRequests().regexMatchers("^/login/cas.*", "^/cas.*", "^/login*", "^/saml*").permitAll()
+				.antMatchers("/oauth/").permitAll().antMatchers("/api-ops", "/api-ops/**").permitAll()
+				.antMatchers("/management", "/management/**").permitAll()
+				.antMatchers("/notebook-ops", "/notebook-ops/**").permitAll().antMatchers(HttpMethod.GET, "/files/list")
+				.authenticated().antMatchers(HttpMethod.GET, "/files/**").permitAll()
+				.antMatchers(HttpMethod.POST, "/binary-repository", "/binary-repository/**").authenticated()
+				.antMatchers("/binary-repository", "/binary-repository/**").permitAll().antMatchers("/admin")
+				.hasAnyRole("ROLE_ADMINISTRATOR").antMatchers("/admin/**").hasAnyRole("ROLE_ADMINISTRATOR").anyRequest()
+				.authenticated();
+		http.logout().logoutSuccessHandler(logoutSuccessHandler).permitAll().and().sessionManagement()
+				.invalidSessionUrl("/").maximumSessions(maxSessionsPerUser).expiredUrl("/")
+				.maxSessionsPreventsLogin(false).sessionRegistry(sessionRegistry()).and().sessionFixation().none().and()
+				.exceptionHandling().accessDeniedHandler(accessDeniedHandler)
+				.authenticationEntryPoint(authenticationEntryPoint);
 
-						if (authProvider.equalsIgnoreCase(CAS)) {
-							http.addFilterBefore(singleSignOutFilter, CasAuthenticationFilter.class).addFilterBefore(logoutFilter,
-									LogoutFilter.class);
-						}
-						if (authProvider.equalsIgnoreCase(SAML)) {
-							http.addFilterBefore(metadataGeneratorFilter(), ChannelProcessingFilter.class).addFilterAfter(samlFilter(),
-									BasicAuthenticationFilter.class);
+		if (authProvider.equalsIgnoreCase(CAS)) {
+			http.addFilterBefore(singleSignOutFilter, CasAuthenticationFilter.class).addFilterBefore(logoutFilter,
+					LogoutFilter.class);
+		}
+		if (authProvider.equalsIgnoreCase(SAML)) {
+			http.addFilterBefore(metadataGeneratorFilter(), ChannelProcessingFilter.class).addFilterAfter(samlFilter(),
+					BasicAuthenticationFilter.class);
 
-						}
-						http.addFilterBefore(new BearerTokenFilter(), AnonymousAuthenticationFilter.class)
-						.addFilterBefore(new XOpAPIKeyFilter(), AnonymousAuthenticationFilter.class)
-						.addFilterBefore(new MicrosoftTeamsTokenFilter(), AnonymousAuthenticationFilter.class);
-						if(x509Enabled) {
-							http.addFilterBefore(new X509CertFilter(), AnonymousAuthenticationFilter.class);
-						}
-						if (oauthLogin) {
-							http.addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);
-						}
+		}
+		http.addFilterBefore(new BearerTokenFilter(), AnonymousAuthenticationFilter.class)
+				.addFilterBefore(new XOpAPIKeyFilter(), AnonymousAuthenticationFilter.class)
+				.addFilterBefore(new MicrosoftTeamsTokenFilter(), AnonymousAuthenticationFilter.class);
+		if (x509Enabled) {
+			http.addFilterBefore(new X509CertFilter(), AnonymousAuthenticationFilter.class);
+		}
+		if (oauthLogin) {
+			http.addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);
+		}
 
-						http.sessionManagement().invalidSessionStrategy(invalidSessionStrategy);
-						http.httpBasic();
+		http.sessionManagement().invalidSessionStrategy(invalidSessionStrategy);
+		http.httpBasic();
 
 	}
 
@@ -475,7 +479,6 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	public SessionRegistry sessionRegistry() {
 		return new SessionRegistryImpl();
 	}
-
 
 	@Override
 	public void configure(AuthenticationManagerBuilder auth) {
@@ -792,7 +795,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	public SAMLProcessingFilter samlWebSSOProcessingFilter() {
 		final SAMLProcessingFilter samlWebSSOProcessingFilter = new SAMLProcessingFilter();
 		samlWebSSOProcessingFilter
-		.setAuthenticationManager(new ProviderManager(Arrays.asList(samlAuthenticationProvider())));
+				.setAuthenticationManager(new ProviderManager(Arrays.asList(samlAuthenticationProvider())));
 		samlWebSSOProcessingFilter.setAuthenticationSuccessHandler(successHandler);
 		samlWebSSOProcessingFilter.setAuthenticationFailureHandler(authenticationFailureHandler());
 		return samlWebSSOProcessingFilter;

@@ -33,6 +33,7 @@ import com.minsait.onesait.platform.config.repository.GadgetRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.services.exceptions.GadgetFavoriteServiceException;
 import com.minsait.onesait.platform.config.services.gadgettemplate.GadgetTemplateService;
+import com.minsait.onesait.platform.config.services.user.UserService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,6 +51,9 @@ public class GadgetFavoriteServiceImpl implements GadgetFavoriteService {
 
 	@Autowired
 	private GadgetTemplateService gadgetTemplateService;
+	
+	@Autowired
+	private UserService userService;
 
 	@Autowired
 	private UserRepository userRepository;
@@ -99,8 +103,13 @@ public class GadgetFavoriteServiceImpl implements GadgetFavoriteService {
 	public void delete(String identification, String userId) {
 		final User user = userRepository.findByUserId(userId);
 		if (identification != null) {
-			List<GadgetFavorite> gadgets = gadgetFavoriteRepository.findByUserAndIdentificationContaining(user,
-					identification);
+			List<GadgetFavorite> gadgets;
+
+			if (userService.isUserAdministrator(user)) {
+				gadgets = gadgetFavoriteRepository.findByIdentificationContaining(identification);
+			} else {
+				gadgets = gadgetFavoriteRepository.findByUserAndIdentificationContaining(user, identification);
+			}
 			for (Iterator iterator = gadgets.iterator(); iterator.hasNext();) {
 				GadgetFavorite gadgetFavorite = (GadgetFavorite) iterator.next();
 				if (gadgetFavorite.getIdentification().equals(identification)) {
@@ -108,6 +117,35 @@ public class GadgetFavoriteServiceImpl implements GadgetFavoriteService {
 					break;
 				}
 			}
+		}
+	}
+	
+	@Override
+	public void deleteByUserId(String userlogged, String userId) {
+		final User user = userRepository.findByUserId(userId);
+		User userInvoker = userRepository.findByUserId(userlogged);
+		if (user == null) {
+			throw new GadgetFavoriteServiceException("The user entered does not exist");
+		}
+		
+		List<GadgetFavorite> gadgets;
+		
+		if (userService.isUserAdministrator(userInvoker)) {
+			gadgets = gadgetFavoriteRepository.findByUser(user);
+		} else {
+			if (!userId.equals(userlogged)) {
+				throw new GadgetFavoriteServiceException("Operation failed, you do not have administrator permission");
+			}
+			gadgets = gadgetFavoriteRepository.findByUser(userInvoker);
+		}
+			
+		for (Iterator iterator = gadgets.iterator(); iterator.hasNext();) {
+			GadgetFavorite gadgetFavorite = (GadgetFavorite) iterator.next();
+			gadgetFavoriteRepository.delete(gadgetFavorite);
+		}
+		
+		if (gadgets.size() == 0) {
+			throw new GadgetFavoriteServiceException("Operation failed, you don't have any favorite gadget");
 		}
 	}
 
@@ -135,7 +173,7 @@ public class GadgetFavoriteServiceImpl implements GadgetFavoriteService {
 				gadgetFavorite.setGadget(null);
 			}
 			if (null != idTemplate && idTemplate.length() > 0) {
-				GadgetTemplate gagetTemplate = gadgetTemplateService.getGadgetTemplateByIdentification(idGadget);
+				GadgetTemplate gagetTemplate = gadgetTemplateService.getGadgetTemplateByIdentification(idTemplate);
 				if (gagetTemplate == null) {
 					throw new GadgetFavoriteServiceException(GADGETTEMPLATE_NOT_EXIST);
 				}
@@ -166,15 +204,56 @@ public class GadgetFavoriteServiceImpl implements GadgetFavoriteService {
 	}
 
 	@Override
-	public List<GadgetFavorite> findAll(String userId) {
-		final User user = userRepository.findByUserId(userId);
+	public List<GadgetFavorite> findAll(String userlogged) {	
+		final User user = userRepository.findByUserId(userlogged);
 		return gadgetFavoriteRepository.findByUser(user);
+	}
+	
+	@Override
+	public List<GadgetFavorite> findAllGadgetFavorite(String userlogged, String userId) {	
+
+		User userInvoker = userRepository.findByUserId(userlogged);
+		
+		List<GadgetFavorite> gadgets;
+		
+		if ( userId == null && userService.isUserAdministrator(userInvoker)) {
+			gadgets = gadgetFavoriteRepository.findAllByOrderByIdentificationAsc();
+		} else if (userService.isUserAdministrator(userInvoker)) {
+			User user = userRepository.findByUserId(userId);
+			gadgets = gadgetFavoriteRepository.findByUser(user);
+		} else if(!userService.isUserAdministrator(userInvoker) && userId != null) { 
+			throw new GadgetFavoriteServiceException("If you are not an administrator, do not enter any UserId, you will only be able to see yours");
+		}else {
+			gadgets = gadgetFavoriteRepository.findByUser(userInvoker);
+		}
+		
+		final List<GadgetFavorite> identifications = new ArrayList<>();
+		for (Iterator iterator = gadgets.iterator(); iterator.hasNext();) {
+			GadgetFavorite gadgetFavorite = (GadgetFavorite) iterator.next();
+			identifications.add(gadgetFavorite);
+		}
+		
+		return identifications;
 	}
 
 	@Override
-	public List<String> getAllIdentifications(String userId) {
-		final User user = userRepository.findByUserId(userId);
-		List<GadgetFavorite> gadgets = gadgetFavoriteRepository.findByUser(user);
+	public List<String> getAllIdentifications(String userlogged, String userId) {
+		
+		User userInvoker = userRepository.findByUserId(userlogged);
+		
+		List<GadgetFavorite> gadgets;
+		
+		if ( userId == null && userService.isUserAdministrator(userInvoker)) {
+			gadgets = gadgetFavoriteRepository.findAllByOrderByIdentificationAsc();
+		} else if (userService.isUserAdministrator(userInvoker)) {
+			User user = userRepository.findByUserId(userId);
+			gadgets = gadgetFavoriteRepository.findByUser(user);
+		} else if(!userService.isUserAdministrator(userInvoker) && userId != null) { 
+			throw new GadgetFavoriteServiceException("If you are not an administrator, do not enter any UserId, you will only be able to see yours");
+		}else {
+			gadgets = gadgetFavoriteRepository.findByUser(userInvoker);
+		}
+		
 		final List<String> identifications = new ArrayList<>();
 		for (Iterator iterator = gadgets.iterator(); iterator.hasNext();) {
 			GadgetFavorite gadgetFavorite = (GadgetFavorite) iterator.next();
@@ -187,9 +266,17 @@ public class GadgetFavoriteServiceImpl implements GadgetFavoriteService {
 	@Override
 	public GadgetFavorite findByIdentification(String identification, String userId) {
 		final User user = userRepository.findByUserId(userId);
+		
 		if (identification != null) {
-			List<GadgetFavorite> gadgets = gadgetFavoriteRepository.findByUserAndIdentificationContaining(user,
-					identification);
+			
+			List<GadgetFavorite> gadgets;
+
+			if (userService.isUserAdministrator(user)) {
+				gadgets = gadgetFavoriteRepository.findByIdentificationContaining(identification);
+			} else {
+				gadgets = gadgetFavoriteRepository.findByUserAndIdentificationContaining(user, identification);
+			}
+			
 			for (Iterator iterator = gadgets.iterator(); iterator.hasNext();) {
 				GadgetFavorite gadgetFavorite = (GadgetFavorite) iterator.next();
 				if (gadgetFavorite.getIdentification().equals(identification)) {

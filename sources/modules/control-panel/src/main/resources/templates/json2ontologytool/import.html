@@ -118,7 +118,7 @@
 									<span class="sep no-border"></span>
 										
 									<!-- CREATE -->
-									<button id="createOnt" type="button" class="btn btn-outline btn-circle btn-primary" data-dismiss="modal" onclick="JsonToolController.processSubmit()"><span th:text="#{gen.createBtn}"> New</span></button>
+									<button id="createOnt" type="button" class="btn btn-outline btn-circle btn-primary" disabled="disabled" data-dismiss="modal" onclick="JsonToolController.processSubmit()"><span th:text="#{gen.createBtn}"> New</span></button>
 								</div>
 							</div>
 						</div>
@@ -213,7 +213,7 @@
 											<div class="form-group" >
 												<label class="control-label" th:text="#{ontology.name}">Name</label><span class="required"> *</span>
 												<input class="form-control no-remove" type="text" id="ontologyIdentification" pattern="[^\S*$]" placeholder="Ontology Identification"/>
-												<span id="ontologyIdentificationerror" class="help-block font-red hide" th:text="#{ontology.name.error}"></span>
+												<span id="ontologyIdentificationerror" class="help-block font-red hide" th:text="#{ontology.name.errorminfive}"></span>
 											</div>
 										</div>
 										<div class="row main">

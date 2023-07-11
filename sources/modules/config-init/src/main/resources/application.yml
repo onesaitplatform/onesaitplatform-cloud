@@ -29,9 +29,12 @@ onesaitplatform: #Config Sofia2 specific
       mongodb: true
       samples: true
       elasticdb: false
+      opensearchdb: false
       mailconfig: true
       multitenant.update-mode: true
+      multitenant.adminToken: 
       graylog: false
+      flowEngineMonitor: false
    database.mongodb:
       database: onesaitplatform_rtdb
       servers: localhost:27017
@@ -46,6 +49,16 @@ onesaitplatform: #Config Sofia2 specific
       sslEnabled: false
       useQuasar: false
    database.elasticsearch:
+      enabled: false
+      database: onesaitplatform_rtdb_es
+      sql.maxHttpConnections: 10
+      sql.maxHttpConnectionsPerRoute: 10
+      sql.connectionTimeout.millis: 10000
+      sql.connector.http.endpoint: http://localhost:9200
+      url: localhost
+      port: 9300
+   database.opensearch:
+      enabled: false
       database: onesaitplatform_rtdb_es
       sql.maxHttpConnections: 10
       sql.maxHttpConnectionsPerRoute: 10

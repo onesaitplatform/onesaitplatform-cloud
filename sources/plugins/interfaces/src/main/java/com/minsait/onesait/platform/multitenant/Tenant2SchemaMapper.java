@@ -55,9 +55,7 @@ public final class Tenant2SchemaMapper {
 
 	public static String getRtdbSchema() {
 		final String tenant = MultitenancyContextHolder.getTenantName();
-		final String verticalSchema = MultitenancyContextHolder.getVerticalSchema();
-		if (defaultTenantName(extractVerticalNameFromSchema(verticalSchema)).equals(tenant)
-				&& DEFAULT_SCHEMA.equals(verticalSchema)) {
+		if (tenant.equals(defaultTenantName(DEFAULT_VERTICAL_NAME))) {
 			return DEFAULT_RTDB_SCHEMA;
 		} else {
 			return DEFAULT_RTDB_SCHEMA_PREFIX + tenant;
@@ -88,6 +86,7 @@ public final class Tenant2SchemaMapper {
 		}
 		return verticalSchema;
 	}
+
 	public static String verticalToSchema(String vertical) {
 		if (vertical.equals(DEFAULT_VERTICAL_NAME)) {
 			return DEFAULT_SCHEMA;

@@ -21,7 +21,7 @@
 	<script type="text/javascript" th:src="@{/static/vendor/echarts/echarts.min.js}"></script>
 	
 	<!-- DASHBOARD SCRIPTS  -->
-	<script type="text/javascript" th:src="@{/static/vendor/jquery/jquery.waypoints.min.js}"></script>
+	 
 	<script type="text/javascript" th:src="@{/static/vendor/jquery/jquery.counterup.min.js}"></script>
 		
 	<!-- DASHBOARD CONTROLLER JS -->
@@ -240,7 +240,7 @@
 											<i class="flaticon-users" style="color: blue;"></i>
 										</div>
 										<h3 class="font-blue-sharp">
-											<span data-counter="counterup" th:attr="data-value=${kpis[0].value},data-counter='counterup'">0</span>
+											<span data-counter="counterup" class="counter"  th:attr="data-value=${kpis[0].value},data-counter='counterup'">[[${kpis[0].value]]</span>
 										</h3>
 										<span class="control-label" th:text="#{kpis.totalusers}" >Total users</span>
 									</div>
@@ -257,7 +257,7 @@
 											<i class="flaticon-users" style="color: orange;"></i>
 										</div>
 										<h3 class="font-blue-sharp">
-											<span data-counter="counterup" th:attr="data-value=${kpis[1].value},data-counter='counterup'">0</span>
+											<span data-counter="counterup" class="counter"  th:attr="data-value=${kpis[1].value},data-counter='counterup'">[[${kpis[1].value]]</span>
 										</h3>
 										<span class="control-label" th:text="#{kpis.newusers}">New users</span>
 									</div>
@@ -274,7 +274,7 @@
 											<i class="flaticon-users" style="color: green;"></i>
 										</div>
 										<h3 class="font-blue-sharp">
-											<span data-counter="counterup" th:attr="data-value=${kpis[2].value},data-counter='counterup'">0</span>
+											<span data-counter="counterup" class="counter"  th:attr="data-value=${kpis[2].value},data-counter='counterup'">[[${kpis[2].value]]</span>
 										</h3>
 										<span class="control-label" th:text="#{kpis.activeusers}">Active users</span>
 									</div>
@@ -291,7 +291,7 @@
 											<i class="flaticon-users" style="color: grey;"></i>
 										</div>
 										<h3 class="font-blue-sharp">
-											<span data-counter="counterup" th:attr="data-value=${kpis[3].value},data-counter='counterup'">0</span>
+											<span data-counter="counterup" class="counter"  th:attr="data-value=${kpis[3].value},data-counter='counterup'">[[${kpis[3].value]]</span>
 										</h3>
 										<span class="control-label" th:text="#{kpis.inactiveusers}">Inactive users</span>
 									</div>
@@ -757,6 +757,21 @@
 			
 			$('#groupmodulesdetails').removeClass('hidden');
 		}
+		
+		 const counterUp = window.counterUp.default
+			
+			$( document ).ready(function() {
+			   const counters = $( '.counter' )
+			   console.log(counters)
+			   for(let i=0;i<counters.length;i++){
+			   	counterUp( counters[i], {
+			    duration: 200,
+			    delay: 2
+			} )
+			   }
+			   
+			    
+			});
 	</script>
 </div>
 <!-- END DASHBOARD -->

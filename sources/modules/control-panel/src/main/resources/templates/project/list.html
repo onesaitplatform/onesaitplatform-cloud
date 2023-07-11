@@ -242,7 +242,7 @@
 														<label th:text="#{gen.owner}"> Owner </label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="2"/>
+														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
 														<label th:text="#{gen.type}"> Type</label>
 													</span>
 													<span class="checkbox-column">
@@ -399,13 +399,14 @@
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).load(function(){
+	$(window).on("load",function(){
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 
 		var oTable = $('#projects').dataTable({
 	      "bAutoWidth": false
 	      });  
 		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-		$.each([ 2 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
+		$.each([ 2 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));		

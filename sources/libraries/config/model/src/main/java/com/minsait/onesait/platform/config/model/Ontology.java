@@ -61,7 +61,7 @@ import lombok.ToString;
 @Entity
 @Table(name = "ONTOLOGY", uniqueConstraints = @UniqueConstraint(columnNames = { "IDENTIFICATION" }))
 @EntityListeners(AuditEntityListener.class)
-@ToString(exclude= {"ontologyAI", "jsonSchema"})
+@ToString(exclude = { "ontologyAI", "jsonSchema" })
 public class Ontology extends OPResource implements Versionable<Ontology> {
 
 	private static final long serialVersionUID = 1L;
@@ -71,7 +71,8 @@ public class Ontology extends OPResource implements Versionable<Ontology> {
 	}
 
 	public enum RtdbDatasource {
-		MONGO, ELASTIC_SEARCH, KUDU, API_REST, DIGITAL_TWIN, VIRTUAL, COSMOS_DB, NO_PERSISTENCE, PRESTO, TIMESCALE, AI_MINDS_DB, NEBULA_GRAPH
+		MONGO, ELASTIC_SEARCH, API_REST, DIGITAL_TWIN, VIRTUAL, COSMOS_DB, NO_PERSISTENCE, PRESTO, TIMESCALE,
+		AI_MINDS_DB, NEBULA_GRAPH, OPEN_SEARCH
 	}
 
 	public enum RtdbToHdbStorage {
@@ -249,6 +250,13 @@ public class Ontology extends OPResource implements Versionable<Ontology> {
 	// @Setter
 	// private String notificationTopic;
 
+	@Column(name = "ALLOW_CREATE_MQTT_TOPIC", nullable = false)
+	@Type(type = "org.hibernate.type.BooleanType")
+	@NotNull
+	@Getter
+	@Setter
+	private boolean allowsCreateMqttTopic;
+
 	@Column(name = "PARTITION_KEY", length = 256, nullable = true)
 	@Getter
 	@Setter
@@ -268,14 +276,14 @@ public class Ontology extends OPResource implements Versionable<Ontology> {
 	@Getter
 	@Setter
 	private String jsonLdContext;
-	
+
 	@Column(name = "ENABLE_DATACLASS", nullable = false)
-    @Type(type = "org.hibernate.type.BooleanType")
-    @ColumnDefault("false")
-    @NotNull
-    @Getter
-    @Setter
-    private boolean enableDataClass;
+	@Type(type = "org.hibernate.type.BooleanType")
+	@ColumnDefault("false")
+	@NotNull
+	@Getter
+	@Setter
+	private boolean enableDataClass;
 
 	public void addOntologyUserAccess(OntologyUserAccess ontologyUserAccess) {
 		ontologyUserAccess.setOntology(this);
@@ -410,7 +418,7 @@ public class Ontology extends OPResource implements Versionable<Ontology> {
 	public Versionable<Ontology> runExclusions(Map<String, Set<String>> excludedIds, Set<String> excludedUsers) {
 		Versionable<Ontology> o = Versionable.super.runExclusions(excludedIds, excludedUsers);
 		if (o != null) {
-			if(!ontologyUserAccesses.isEmpty() && !CollectionUtils.isEmpty(excludedUsers)){
+			if (!ontologyUserAccesses.isEmpty() && !CollectionUtils.isEmpty(excludedUsers)) {
 				ontologyUserAccesses.removeIf(oua -> excludedUsers.contains(oua.getUser().getUserId()));
 				o = this;
 			}
@@ -425,8 +433,7 @@ public class Ontology extends OPResource implements Versionable<Ontology> {
 				addIdToExclusions(this.getClass().getSimpleName(), getId(), excludedIds);
 				o = null;
 			}
-			if (ontologyKPI != null
-					&& !CollectionUtils.isEmpty(excludedIds.get(OntologyKPI.class.getSimpleName()))
+			if (ontologyKPI != null && !CollectionUtils.isEmpty(excludedIds.get(OntologyKPI.class.getSimpleName()))
 					&& excludedIds.get(OntologyKPI.class.getSimpleName()).contains(ontologyKPI.getId())) {
 				addIdToExclusions(this.getClass().getSimpleName(), getId(), excludedIds);
 				o = null;

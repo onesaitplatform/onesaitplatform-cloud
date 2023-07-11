@@ -104,7 +104,9 @@ public class VirtualRelationalOntologyManageDBRepository implements ManageDBRepo
 					statement = config.get(KEY_SQL_STATEMENT);
 
 					String statementDef = generateSchema(ontology, "{}", config);
-					statementDef = statementDef.substring(0, statementDef.indexOf("("));
+					if (statementDef.indexOf("(") > -1) {
+						statementDef = statementDef.substring(0, statementDef.indexOf("("));
+					}
 
 					if (!statement.toUpperCase().replace(" ", "")
 							.startsWith(statementDef.replace(" ", "").toUpperCase().trim())) {

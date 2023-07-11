@@ -210,11 +210,13 @@
 												<div class="form-group">																
 													<label class="control-label" id="id_endpoint_swagger_label" for="id_endpoint_swagger" th:text="#{apimanager.endpoint.swagger}">Swagger</label>
 													<br/>
-													<div class="col-md-1 col-sm-1 col-xs-1 no-padding-left">
-														<input id="html" disabled="disabled" class="form-control" style="min-width: 80px; text-align: center;" placeholder="HTML"/>
+													<div class="col-md-1 col-sm-1 col-xs-1 no-padding-left margin-right-5">
+														<button id="html" th:formaction="@{${apiSwaggerUI} + ${apiServices} + 'v' + ${api.numversion} + '/' + ${api.identification} + '/swagger.json'}" class="form-control" style="min-width: 80px; text-align: center;" />HTML		
 													</div>
-													<div class="col-md-11 col-sm-11 col-xs-11 no-padding-right">
-														<input class="form-control endpointSwaggerbox" type="text" th:value="${apiSwaggerUI} + ${apiServices} + 'v' + ${api.numversion} + '/' + ${api.identification} + '/swagger.json'"></input>
+													<div class="col-md-10 col-sm-10 col-xs-10 no-padding-right">
+														<a th:href="@{${apiSwaggerUI} + ${apiServices} + 'v' + ${api.numversion} + '/' + ${api.identification} + '/swagger.json'}"> 
+															<span th:text="${apiSwaggerUI} + ${apiServices} + 'v' + ${api.numversion} + '/' + ${api.identification} + '/swagger.json'" class="form-control endpointSwaggerbox table-long-text" style="margin-top: 5px;" ></span>
+														</a>
 													</div>
 												</div>		
 											</div>
@@ -695,7 +697,7 @@
    	});
 	
 	// MAIN WHEN LOAD
-	$(window).load(function(){  
+	$(window).on("load",function(){  
 		// init on load.	
 		
 		var htmlelement = document.getElementById('id_query_op_customsql');

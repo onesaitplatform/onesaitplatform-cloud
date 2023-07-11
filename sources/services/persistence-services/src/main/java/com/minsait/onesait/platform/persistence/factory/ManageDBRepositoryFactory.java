@@ -15,7 +15,6 @@
 package com.minsait.onesait.platform.persistence.factory;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.config.model.Ontology;
@@ -25,11 +24,11 @@ import com.minsait.onesait.platform.persistence.control.NoPersistenceManageDBRep
 import com.minsait.onesait.platform.persistence.cosmosdb.CosmosDBManageDBRepository;
 import com.minsait.onesait.platform.persistence.elasticsearch.ElasticSearchManageDBRepository;
 import com.minsait.onesait.platform.persistence.external.virtual.VirtualRelationalOntologyManageDBRepository;
-import com.minsait.onesait.platform.persistence.hadoop.common.NameBeanConst;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
 import com.minsait.onesait.platform.persistence.mindsdb.MindsDBManageDBRepository;
 import com.minsait.onesait.platform.persistence.mongodb.MongoNativeManageDBRepository;
 import com.minsait.onesait.platform.persistence.nebula.NebulaGraphDBManageDBRepository;
+import com.minsait.onesait.platform.persistence.opensearch.OpenSearchManageDBRepository;
 import com.minsait.onesait.platform.persistence.presto.PrestoManageDBRepository;
 import com.minsait.onesait.platform.persistence.timescaledb.TimescaleDBManageDBRepository;
 
@@ -41,6 +40,9 @@ public class ManageDBRepositoryFactory {
 
 	@Autowired(required = false)
 	private ElasticSearchManageDBRepository elasticManage;
+	
+	@Autowired(required = false)
+	private OpenSearchManageDBRepository opensearchManage;
 
 	@Autowired
 	private CosmosDBManageDBRepository cosmosDB;
@@ -53,10 +55,6 @@ public class ManageDBRepositoryFactory {
 
 	@Autowired
 	private TimescaleDBManageDBRepository timescaleManager;
-
-	@Autowired(required = false)
-	@Qualifier(NameBeanConst.KUDU_MANAGE_DB_REPO_BEAN_NAME)
-	private ManageDBRepository kuduManageDBRepository;
 
 	@Autowired
 	private PrestoManageDBRepository prestoManageDBRepository;
@@ -81,8 +79,8 @@ public class ManageDBRepositoryFactory {
 			return mongoManage;
 		} else if (dataSource.equals(RtdbDatasource.ELASTIC_SEARCH)) {
 			return elasticManage;
-		} else if (dataSource.equals(RtdbDatasource.KUDU)) {
-			return kuduManageDBRepository;
+		} else if (dataSource.equals(RtdbDatasource.OPEN_SEARCH)) {
+			return opensearchManage;
 		} else if (dataSource.equals(RtdbDatasource.VIRTUAL)) {
 			return relationalManager;
 		} else if (RtdbDatasource.COSMOS_DB.equals(dataSource)) {

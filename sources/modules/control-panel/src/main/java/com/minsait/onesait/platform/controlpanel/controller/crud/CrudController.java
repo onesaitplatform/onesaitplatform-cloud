@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.controlpanel.controller.crud;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -35,6 +36,7 @@ import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.controlpanel.controller.crud.dto.OntologyDTO;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.SelectStatement;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 @Controller
 @RequestMapping("/crud")
@@ -48,11 +50,17 @@ public class CrudController {
 	@Autowired
 	private AppWebUtils utils;
 
+	@Autowired
+	private IntegrationResourcesService resourcesService;
+
+	@Value("${onesaitplatform.database.mongodb.queries.defaultLimit:1000}")
+	private int queryDefaultLimit;
+
 	private static final String ERROR_TRUE = "{\"error\":\"true\"}";
 
 	@GetMapping(value = "/admin/{id}", produces = "text/html")
 	public String edit(Model model, @PathVariable("id") String id) {
-		final Ontology ontology = ontologyService.getOntologyById(id, utils.getUserId());
+		final Ontology ontology = ontologyService.getOntologyByIdInsert(id, utils.getUserId());
 		final OntologyDTO ontologyDTO = new OntologyDTO();
 		ontologyDTO.setIdentification(ontology.getIdentification());
 		ontologyDTO.setJsonSchema(ontology.getJsonSchema());
@@ -60,6 +68,7 @@ public class CrudController {
 		model.addAttribute("ontology", ontologyDTO);
 		model.addAttribute("uniqueId", crudService.getUniqueColumn(ontology.getIdentification(), false));
 		model.addAttribute("quasar", crudService.useQuasar());
+		model.addAttribute("querylimitdefined", getMaxRegisters());
 		return "crud/admin";
 	}
 
@@ -115,6 +124,15 @@ public class CrudController {
 			return crudService.processQuery("", ontologyID, ApiOperation.Type.PUT, body, oid, utils.getUserId());
 		} catch (final Exception e) {
 			return "{\"exception\":\"true\"}";
+		}
+	}
+
+	private int getMaxRegisters() {
+		try {
+			return ((Integer) resourcesService.getGlobalConfiguration().getEnv().getDatabase().get("queries-limit"))
+					.intValue();
+		} catch (final Exception e) {
+			return queryDefaultLimit;
 		}
 	}
 

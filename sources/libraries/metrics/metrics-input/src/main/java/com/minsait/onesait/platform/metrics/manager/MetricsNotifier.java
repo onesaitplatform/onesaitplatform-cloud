@@ -20,6 +20,7 @@ import org.jline.utils.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -47,6 +48,7 @@ public class MetricsNotifier {
 	@PostConstruct
 	public void init() {
 		restTemplate = new RestTemplate();
+		restTemplate.getMessageConverters().add(0, new MappingJackson2HttpMessageConverter());
 	}
 
 	@Scheduled(cron = "0 * * * * *")

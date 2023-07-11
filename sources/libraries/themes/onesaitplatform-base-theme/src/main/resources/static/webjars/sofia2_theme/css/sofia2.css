@@ -2103,3 +2103,16 @@ input[type=checkbox] {
 .invisible {
 	display: none;
 }
+table.dataTable tr th.select-checkbox.selected::after {
+    content: "✔";
+    margin-top: -11px;
+    margin-left: -4px;
+    text-align: center;
+    text-shadow: rgb(176, 190, 217) 1px 1px, rgb(176, 190, 217) -1px -1px, rgb(176, 190, 217) 1px -1px, rgb(176, 190, 217) -1px 1px;
+}
+table.dataTable, table.dataTable th.select-checkbox:before {
+	margin-top: -3px !important;
+}
+table.dataTable th.select-checkbox.selected::after {
+    margin-top: -8px !important;
+}

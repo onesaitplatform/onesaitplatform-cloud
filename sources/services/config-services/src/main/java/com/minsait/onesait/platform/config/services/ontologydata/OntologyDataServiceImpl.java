@@ -1098,7 +1098,8 @@ public class OntologyDataServiceImpl implements OntologyDataService {
 	    auditEvent.setOperationType(operationModel.getOperationType().name());
 	    auditEvent.setOntology(operationModel.getOntologyName());
 	    auditEvent.setUser(operationModel.getUser());
-	    auditEvent.setMethodName("dataClassError");
+	    auditEvent.setMethodName("dataClassError");        
+	    auditEvent.setErrorMessage(errorMsg);
 	    
         auditableAscpect.publish(auditEvent);
 	}

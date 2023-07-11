@@ -123,6 +123,7 @@ public class ReportController {
 	@PostConstruct
 	void setup() {
 		restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
+
 		restTemplate.getInterceptors().add((request, body, execution) -> {
 
 			request.getHeaders().add(HttpHeaders.AUTHORIZATION, "Bearer " + utils.getCurrentUserOauthToken());
@@ -272,10 +273,8 @@ public class ReportController {
 				log.error("Could not extract datasource from report, leaving empty");
 			}
 		}
-
 		model.addAttribute(REPORT, report);
-
-		return "fragments/report-edit";
+		return "/fragments/report-edit";
 	}
 
 	@PostMapping(value = "/save", produces = MediaType.TEXT_HTML_VALUE)
@@ -486,7 +485,7 @@ public class ReportController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@PutMapping("report/{report}/resource/{resource}")
+	@PostMapping("report/{report}/resource/{resource}")
 	@Transactional
 	public String updateResource(@PathVariable("report") String reportId, @PathVariable("resource") String resource,
 			@RequestParam("file") MultipartFile file, RedirectAttributes ra) {

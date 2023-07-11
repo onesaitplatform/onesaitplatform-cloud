@@ -18,11 +18,15 @@ import java.io.Serializable;
 
 import com.minsait.onesait.platform.config.model.Category.Type;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class CategoryDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;

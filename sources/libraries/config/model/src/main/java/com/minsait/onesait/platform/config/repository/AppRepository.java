@@ -58,7 +58,10 @@ public interface AppRepository extends JpaRepository<App, String> {
 	@Query("SELECT c.identification FROM AppList o JOIN o.childApps c WHERE (o.identification = :identification)")
 	List<String> findChildAppsList(@Param("identification") String identification);
 
-	App findByUser(User user);
+	List<App> findByUser(User user);
+
+	@Query("SELECT o FROM App As o where o.user=:user")
+	List<App> findAppsByUser(@Param("user") User user);
 
 	@Modifying
 	@Transactional

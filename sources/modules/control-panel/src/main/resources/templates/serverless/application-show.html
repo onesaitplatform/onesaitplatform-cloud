@@ -117,7 +117,7 @@
 									<span class="sep no-border"></span>
 										
 									<!-- UPDATE -->
-									<button id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:attr="onclick='javascript:navigateUrl(\'' + @{/serverless/applications/} + ${app.name} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
+									<button id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:attr="onclick='javascript:navigateUrl(\'' + @{/serverless/applications/} + ${app.name} + '/update\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
 										
 									<!-- CREATE FN -->
 									<button id="createBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:attr="onclick='javascript:navigateUrl(\'' + @{/serverless/applications/} + ${app.name} + '/functions\');'" ><span th:text="#{serverless.function.create}"> Create </span></button>
@@ -369,7 +369,7 @@
 		
 	});
 	
-	$(window).load(function() {
+	$(window).on("load",function() {
 		if(typeof $('#functions > tbody > tr').length =='undefined' || $('#functions > tbody > tr').length == 0){
 			$('#imageNoElementsOnTable').show();
 		}else{

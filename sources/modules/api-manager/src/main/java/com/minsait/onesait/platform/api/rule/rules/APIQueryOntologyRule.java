@@ -197,6 +197,7 @@ public class APIQueryOntologyRule extends DefaultRuleBase {
 			}
 			break;
 		case ELASTIC_SEARCH:
+		case OPEN_SEARCH:
 			queryDb = "select * from " + ontology.getIdentification() + " where _id = \"" + objectId + "\"";
 			break;
 		case COSMOS_DB:

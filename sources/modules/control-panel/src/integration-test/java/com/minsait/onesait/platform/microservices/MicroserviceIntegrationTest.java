@@ -93,10 +93,10 @@ public class MicroserviceIntegrationTest {
 
 	private String token;
 
-	private final TestRestTemplate restTemplate = new TestRestTemplate();;
+	private final TestRestTemplate restTemplate = new TestRestTemplate();
 
 	private MicroserviceDTO microservice;
-	private MicroserviceDTO microserviceInvalid;
+
 	private MSConfig msConfig;
 
 	public static final String MS_NAME = "restaurants-test";

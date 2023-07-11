@@ -52,6 +52,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -69,6 +70,7 @@ public class VersioningRestController {
 	private AppWebUtils utils;
 
 	@GetMapping("supported-classes")
+	@Operation(summary = "Supported classes by the versioning system")
 	@ApiOperation(value = "Supported classes by the versioning system")
 	@ApiResponse(code = 200, message = "OK", response = Map.class)
 	public ResponseEntity<?> restoreResource() {
@@ -80,6 +82,7 @@ public class VersioningRestController {
 	}
 
 	@GetMapping("restore/resource/{class}")
+	@Operation(summary = "Versionable resources in the system by fully qualified class name")
 	@ApiOperation(value = "Versionable resources in the system by fully qualified class name")
 	@ApiResponse(code = 200, message = "OK", response = Versionable[].class)
 	public ResponseEntity<?> restoreResourceGetEntites(
@@ -94,6 +97,7 @@ public class VersioningRestController {
 	}
 
 	@GetMapping("restore/resource/{id}/commits")
+	@Operation(summary = "Resource commits by fully qualified class name and ID")
 	@ApiOperation(value = "Resource commits by fully qualified class name and ID")
 	@ApiResponse(code = 200, message = "OK", response = CommitWrapper[].class)
 	public ResponseEntity<?> commitsForEntity(@PathVariable("id") String id,
@@ -113,6 +117,7 @@ public class VersioningRestController {
 	}
 
 	@PostMapping("restore/resource")
+	@Operation(summary = "Restore resource from commit")
 	@ApiOperation(value = "Restore resource from commit")
 	public ResponseEntity<String> restoreFile(@RequestBody RestoreRequestDTO restoreRequest) {
 		if (!versioningBusinessService.isActive()) {
@@ -140,6 +145,7 @@ public class VersioningRestController {
 	}
 
 	@GetMapping("restore/resource/{id}/commit/{commitId}/file-content")
+	@Operation(summary = "Resource serialized content by ID, commit SHA and fully qualified class name")
 	@ApiOperation(value = "Resource serialized content by ID, commit SHA and fully qualified class name")
 	@ApiResponse(code = 200, message = "OK", response = String.class)
 	public ResponseEntity<String> fileContent(@PathVariable("id") Object id, @PathVariable("commitId") String commitId,
@@ -155,6 +161,7 @@ public class VersioningRestController {
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping("git-config")
+	@Operation(summary = "Current GIT configuration for versioning system")
 	@ApiOperation(value = "Current GIT configuration for versioning system")
 	@ApiResponse(code = 200, message = "OK", response = GitlabConfiguration.class)
 	public ResponseEntity<?> gitConfig() {
@@ -168,6 +175,7 @@ public class VersioningRestController {
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping("git-config")
+	@Operation(summary = "Creates or modifies current GIT configuration")
 	@ApiOperation(value = "Creates or modifies current GIT configuration")
 	public ResponseEntity<String> gitConfigPost(@ModelAttribute GitlabConfiguration gitConfig,
 			@RequestParam(name = "createGit", required = false, defaultValue = "false") Boolean createGit) {
@@ -182,6 +190,7 @@ public class VersioningRestController {
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@DeleteMapping("git-config")
+	@Operation(summary = "Removes current GIT configuration")
 	@ApiOperation(value = "Removes current GIT configuration")
 	public ResponseEntity<String> deleteGitConfig() {
 		versioningBusinessService.removeGitConfiguration();
@@ -190,6 +199,7 @@ public class VersioningRestController {
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping("enable/{enable}")
+	@Operation(summary = "Enables or disables versioning of resources")
 	@ApiOperation(value = "Enables or disables versioning of resources")
 	public ResponseEntity<String> enableFeature(@PathVariable("enable") Boolean enable) {
 		if (!versioningBusinessService.isActive()) {
@@ -202,6 +212,7 @@ public class VersioningRestController {
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping("snapshot/platform")
+	@Operation(summary = "Creates a Snapshot of current resources in GIT (Async process)")
 	@ApiOperation(value = "Creates a Snapshot of current resources in GIT (Async process)")
 	public ResponseEntity<String> snapshotPlatform(@RequestParam(name = "tag-name", required = false) String tagName,
 			@RequestBody(required = false) Map<String, Set<String>> exclusions) {
@@ -223,6 +234,7 @@ public class VersioningRestController {
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping("process/execution/{executionId}")
+	@Operation(summary = "Result of the async process by execution ID")
 	@ApiOperation(value = "Result of the async process by execution ID")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Execution results", response = RestoreReport.class),
 		@ApiResponse(code = 204, message = "Execution did not finish or doesn't exist") })
@@ -241,6 +253,7 @@ public class VersioningRestController {
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping("restore/platform")
+	@Operation(summary = "Restores platform resources from GIT (Async process)")
 	@ApiOperation(value = "Restores platform resources from GIT (Async process)")
 	public ResponseEntity<String> restorePlatformPost(@ModelAttribute RestorePlatformDTO restoreDTO) {
 		if (!versioningBusinessService.isActive()) {
@@ -255,6 +268,7 @@ public class VersioningRestController {
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping("git-config/re-initialize")
+	@Operation(summary = "Re-initializes GIT local repository")
 	@ApiOperation(value = "Re-initializes GIT local repository")
 	public ResponseEntity<String> reinitGit() {
 		if (!versioningBusinessService.isActive()) {
@@ -266,6 +280,7 @@ public class VersioningRestController {
 	}
 
 	@PostMapping("git-config/sync-repo")
+	@Operation(summary = "Re-syncs GIT remote repository and database")
 	@ApiOperation(value = "Re-syncs GIT remote repository and database")
 	public ResponseEntity<String> syncGitAndDB() {
 		if (!versioningBusinessService.isActive()) {
@@ -278,6 +293,7 @@ public class VersioningRestController {
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping("/git-config/tag-valid")
+	@Operation(summary = "Check if GIT tag is valid")
 	@ApiOperation(value = "Check if GIT tag is valid")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Valid Tag"),
 		@ApiResponse(code = 400, message = "Invalid Tag") })
@@ -291,6 +307,7 @@ public class VersioningRestController {
 	}
 
 	@PostMapping("/commit/{versionable}/{id}")
+	@Operation(summary = "Commit special resource changes (Flows, dataflows, notebooks)")
 	@ApiOperation(value = "Commit special resource changes (Flows, dataflows, notebooks)")
 	public ResponseEntity<String> commitChangesSpecial(@PathVariable("id") String id,
 			@PathVariable("versionable") SpecialVersionable versionable, @RequestBody String commitMessage) {

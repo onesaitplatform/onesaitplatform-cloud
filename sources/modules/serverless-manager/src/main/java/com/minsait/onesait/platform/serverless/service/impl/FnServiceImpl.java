@@ -20,6 +20,7 @@ import java.io.InputStreamReader;
 import java.util.Base64;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -114,7 +115,7 @@ public class FnServiceImpl implements FnService {
 			}
 
 		} catch (final Exception e) {
-			log.error(COULD_NOT_EXECUTE_COMMAND + pb.command());
+			log.error(COULD_NOT_EXECUTE_COMMAND + pb.command(), e);
 			return false;
 		}
 
@@ -167,7 +168,7 @@ public class FnServiceImpl implements FnService {
 			}
 
 		} catch (final Exception e) {
-			log.error(COULD_NOT_EXECUTE_COMMAND + pb.command());
+			log.error(COULD_NOT_EXECUTE_COMMAND + pb.command(), e);
 			return false;
 		}
 
@@ -268,6 +269,7 @@ public class FnServiceImpl implements FnService {
 
 	@Override
 	public FnFunction deploy(Application app, Function function, String basePath) {
+		log.debug("Deploying app {}, function {}", app.getName(), function.getName());
 		final StringBuilder builder = new StringBuilder();
 		final ProcessBuilder pb = new ProcessBuilder(FN_CMD, VERBOSE, "deploy", "--app", app.getName());
 		pb.redirectErrorStream(true);
@@ -278,7 +280,7 @@ public class FnServiceImpl implements FnService {
 			final BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
 			String line = null;
-			p.waitFor();
+			p.waitFor(2, TimeUnit.MINUTES);
 			while ((line = reader.readLine()) != null) {
 				builder.append(line);
 				builder.append(System.getProperty(LINE_SEPARATOR));
@@ -292,7 +294,7 @@ public class FnServiceImpl implements FnService {
 			}
 
 		} catch (final Exception e) {
-			log.error(COULD_NOT_EXECUTE_COMMAND + pb.command());
+			log.error(COULD_NOT_EXECUTE_COMMAND + pb.command(), e);
 			return null;
 		}
 		final Matcher matcher = DEPLOY_PATTERN.matcher(builder.toString());
@@ -360,7 +362,7 @@ public class FnServiceImpl implements FnService {
 			log.debug(EXECUTED_COMMAND_WITH_RESULT, pb.command(), builder.toString());
 
 		} catch (final Exception e) {
-			log.error(COULD_NOT_EXECUTE_COMMAND + pb.command());
+			log.error(COULD_NOT_EXECUTE_COMMAND + pb.command(), e);
 
 		}
 

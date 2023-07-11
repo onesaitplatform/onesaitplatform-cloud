@@ -31,6 +31,8 @@ public interface ClientPlatformService {
 	Token createClientAndToken(List<Ontology> ontologies, ClientPlatform clientPlatform);
 
 	ClientPlatform getByIdentification(String identification);
+	
+	ClientPlatform  getIdByIdentification (String identification);
 
 	public List<ClientPlatform> getAllClientPlatforms();
 

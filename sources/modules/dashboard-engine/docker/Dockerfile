@@ -1,4 +1,4 @@
-FROM onesaitplatform/baseimage:latest
+FROM onesaitplatform/baseimage:latest-17
 
 # Metadata
 LABEL platform.image.name="dashboard"
@@ -56,17 +56,6 @@ ENV SERVER_NAME=localhost \
     AUDITGLOBALNOTIFY=true \
     QUASARHOST=quasar \
     QUASARPORT=10800 \
-    ENABLEHADOOP=false \
-	HDFSURL=hdfs://127.0.0.1:8020 \
-	HDFSPATH=/user/hdfs \
-	HIVEURL=jdbc:hive2://localhost:10000/default \
-	HIVEUSERNAME=cloudera-scm \
-	HIVEPASSWORD=cloudera-scm \
-	HIVEDRIVERCLASS=org.apache.hive.jdbc.HiveDriver \
-	IMPALAURL=jdbc:hive2://localhost:21050/default;auth=noSasl \
-	KUDUNUMREPLICAS=1 \
-	KUDUURL=localhost:7051 \
-	INCLUDEKUDUTABLENAME=false \
     HZ_SERVICE_DISCOVERY_STRATEGY=service \
     HZ_ZOOKEEPER_URL=zookeeper:2181 \
     REALTIMEDBNAME=onesaitplatform_rtdb \
@@ -108,7 +97,7 @@ ENV SERVER_NAME=localhost \
 	ENCRYPTION_KEY=ENC(VYVseIUh5xiRd8ws0prbEAg6bGq7vmbfi3gkM65HECy+YPbjz4f49w==) \
     ENCRYPTION_ITERATIONS=5 \
     QUERY_METRICS_ENABLED=false \
-    HTTP_LOG_LEVEL=TRACE
+    HTTP_LOG_LEVEL=INFO
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod ugo+x /usr/local/bin/docker-entrypoint.sh

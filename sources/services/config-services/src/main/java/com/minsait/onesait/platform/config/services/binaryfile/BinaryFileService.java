@@ -38,7 +38,7 @@ public interface BinaryFileService {
 
 	BinaryFile getFile(String fileId);
 
-	List<BinaryFile> getAllFiles(User user);
+	List<BinaryFile> getAllFiles(User user, Boolean showAuditFiles);
 
 	public void changePublic(String fileId);
 
@@ -69,5 +69,7 @@ public interface BinaryFileService {
 
 	long countBinaryFiles();
 
-	public List<BinaryFile> getAllFilesByName(User user, String name);
+	long countFiles(User user, Boolean showAuditFiles);
+
+	public List<BinaryFile> getAllFilesFiltered(User user, String fileName, String fileId, String fileExt, String metaData, String owner, Boolean showAuditFiles);
 }

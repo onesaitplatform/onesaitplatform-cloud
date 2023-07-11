@@ -18,7 +18,7 @@
     });
 
   /** @ngInject */
-  function MainController($window, $rootScope, $scope,  $mdDialog, $timeout,$interval,  httpService, interactionService,urlParamService, gadgetManagerService,filterService,utilsService,datasourceSolverService,favoriteGadgetService, $translate, localStorageService, __env, cacheBoard) {
+  function MainController($window, $rootScope, $scope,  $mdDialog,$mdPanel, $timeout,$interval,  httpService, interactionService,urlParamService, gadgetManagerService,filterService,utilsService,datasourceSolverService,favoriteGadgetService, $translate, localStorageService, __env, cacheBoard) {
     var vm = this;
     
     $window.onbeforeunload = function(){
@@ -1031,10 +1031,51 @@
           $scope.status = 'You cancelled the dialog.';
         });
       }
-
+       
       function showAddGadgetTemplateParameterDialog(type,config,layergrid,create,inline){
+       
         
-        $mdDialog.show({
+        if(window.panelRef){
+          window.panelRef.close();
+        }
+        window.panelRef = {};
+        var configPanel = {
+          attachTo: angular.element(document.getElementById("divrightsidemenubody")),
+          controller: 'editTemplateParamsController',
+          controllerAs: 'ctrl',
+         // position: panelPosition,
+          //animation: panelAnimation,
+          
+          templateUrl: 'app/partials/edit/addGadgetTemplateParameterDialog.html',
+          clickOutsideToClose: false,
+          escapeToClose: false,
+          focusOnOpen: true,
+          locals: {
+            type: type,
+            config: config,
+            element: null,
+            layergrid: layergrid,
+            edit: false,
+            create:create,
+            inline:inline
+          }
+        };
+        window.dispatchEvent(new CustomEvent('showMenurightsidebardashboard',{}));
+        window.removeEventListener('editTemplateParamsclose',function(a){
+          window.panelRef.close();
+          window.dispatchEvent(new CustomEvent('hideMenurightsidebardashboard',{}));
+        });
+        window.addEventListener('editTemplateParamsclose',function(a){
+          window.panelRef.close();
+          window.dispatchEvent(new CustomEvent('hideMenurightsidebardashboard',{}));
+        });
+      
+        $mdPanel.open(configPanel)
+        .then(function(result) {
+          window.panelRef = result;
+        });
+
+      /*  $mdDialog.show({
           controller: 'editTemplateParamsController',
           templateUrl: 'app/partials/edit/addGadgetTemplateParameterDialog.html',
           parent: angular.element(document.body),
@@ -1055,7 +1096,7 @@
         .then(function() {
         }, function() {
           $scope.status = 'You cancelled the dialog.';
-        });
+        });*/
       }
 
       function dropElementEvent(e,newElem){         

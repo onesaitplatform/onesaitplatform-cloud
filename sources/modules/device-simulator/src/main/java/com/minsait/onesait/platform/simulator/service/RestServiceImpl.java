@@ -40,6 +40,7 @@ public class RestServiceImpl implements RestService {
 	public JsonNode connectRest(String iotbrokerUrl, Token token, String clientPlatform,
 			String clientPlatformInstance) {
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+
 		final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(iotbrokerUrl + "/rest/client/join")
 				.queryParam("token", token.getTokenName()).queryParam("clientPlatform", clientPlatform)
 				.queryParam("clientPlatformId", clientPlatformInstance);
@@ -54,6 +55,7 @@ public class RestServiceImpl implements RestService {
 		headers.add("Content-Type", MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+
 		return restTemplate.exchange(iotbrokerUrl + "/rest/client/leave", HttpMethod.GET, new HttpEntity<>(headers),
 				String.class);
 	}

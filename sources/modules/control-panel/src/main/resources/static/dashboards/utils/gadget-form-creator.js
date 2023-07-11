@@ -199,7 +199,7 @@ Vue.component('nested-draggable', {
           </el-row>
         </el-col>
         <el-col :span="1">
-          <el-button type="text" @click="remove(elements,index)">X</el-button>
+          <el-button type="text" @click="remove(elements,index)"><img src="/controlpanel/static/images/dashboards/remove.svg" class="ng-scope"></el-button>
         </el-col>
       </el-row>
     </div>
@@ -272,13 +272,13 @@ Vue.component('section-array-drawer', {
 					<gform-drawer :fullmodelin="fullmodelin" :index="index" :showDatasource="false" :cdsfields="cdsfields" :elements="elements" v-model="arrayitem"></gform-drawer>
 				</el-col>
 				<el-col :span="1">
-					<el-button type="text" @click="remove(index)">X</el-button>
+					<el-button type="text" @click="remove(index)"><img src="/controlpanel/static/images/dashboards/remove.svg" class="ng-scope"></el-button>
 				</el-col>
 			</el-row>
 		</draggable>
 		<el-row>
 			<el-col :offset="23":span="1">
-				<el-button type="text" @click="add()">+</el-button>
+				<el-button type="text" @click="add()"><i style=" color: #606266;" class="el-icon-plus"></i></el-button>
 			</el-col>
 		</el-row>
 	</div>
@@ -549,7 +549,7 @@ Vue.component('gform-drawer', {
         <el-form-item v-if="!(element.elements)" :label="element.title ? element.title : element.name">
 		  <el-input v-if="element.type == 'autogenerate-id'" :value="localvalue[element.name]" :disabled="true"/>
           <el-input v-if="element.type == 'input-text'" :value="localvalue[element.name]" @input="updateElem(element.name,$event)"/>
-          <el-input type="number" style="width:100px" v-if="element.type == 'input-number'" :min="element.min" :max="element.max" precision="5" :value="localvalue[element.name]" @input="updateElem(element.name,$event)"/>
+          <el-input type="number" style="width:183px" v-if="element.type == 'input-number'" :min="element.min" :max="element.max" precision="5" :value="localvalue[element.name]" @input="updateElem(element.name,$event)"/>
           <el-checkbox v-if="element.type == 'checkbox'" :value="localvalue[element.name]" @input="updateElem(element.name,$event)"/>
           <el-select v-if="element.type == 'selector'" :multiple="element.multiple" :value="localvalue[element.name]" @input="updateElem(element.name,$event)">
             <el-option v-for="item in element.options" :key="item.value" :label="item.text" :value="item.value"></el-option>
@@ -557,15 +557,15 @@ Vue.component('gform-drawer', {
 		  <el-select v-if="element.type == 'model-selector'" :multiple="element.multiple" :value="localvalue[element.name]" @input="updateElem(element.name,$event)">
             <el-option v-for="item in generateValuesFromModelPath(element.path)" :key="item" :label="item" :value="item"></el-option>
           </el-select>
-          <el-color-picker :predefine="predefineColors" v-if="element.type == 'color-picker'" show-alpha :value="localvalue[element.name]" @input="updateElem(element.name,$event)"/>
+          <el-color-picker :predefine="predefineColors" style="width:183px" v-if="element.type == 'color-picker'" show-alpha :value="localvalue[element.name]" @input="updateElem(element.name,$event)"/>
           <el-select :placeholder="dsfields.length == 0 ? 'Select Datasource First' : 'Select Field'" v-if="element.type == 'ds-field' || element.type == 'ds-field(ds[0].)'" :multiple="element.multiple" :value="localvalue[element.name]" @input="element.type == 'ds-field' ? updateElem(element.name,$event) : updateElem(element.name,'ds[0].' + $event)">
             <el-option key="null" label="No field" :value="null"></el-option>
             <el-option v-for="item in dsfields" :key="item" :label="item" :value="item"></el-option>
           </el-select>
         </el-form-item>
         <span  v-if="element.elements">
-          <h5 v-if="showDatasource">{{element.title ? element.title : element.name}}</h5>
-		  <h6 v-if="!showDatasource">{{element.title ? element.title : element.name}}</h6>
+          <h5 v-if="showDatasource" class="section">{{element.title ? element.title : element.name}}</h5>
+		  <h6 v-if="!showDatasource" class="sub-section">{{element.title ? element.title : element.name}}</h6>
 		  <div style="margin-left: 20px">
           	<gform-drawer :index="index" :fullmodelin="fullmodel" v-if="element.type == 'section'" :showDatasource="false" :cdsfields="dsfields" :elements="element.elements" v-model="localvalue[element.name]"></gform-drawer>
 			<section-array-drawer :fullmodelin="fullmodel" v-if="element.type == 'section-array'" :showDatasource="false" :cdsfields="dsfields" :elements="element.elements" v-model="localvalue[element.name]"></gform-drawer>

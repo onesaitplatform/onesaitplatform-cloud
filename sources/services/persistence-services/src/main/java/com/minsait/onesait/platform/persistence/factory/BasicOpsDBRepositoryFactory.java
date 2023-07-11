@@ -15,7 +15,6 @@
 package com.minsait.onesait.platform.persistence.factory;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -27,11 +26,11 @@ import com.minsait.onesait.platform.persistence.cosmosdb.CosmosDBBasicOpsDBRepos
 import com.minsait.onesait.platform.persistence.elasticsearch.ElasticSearchBasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.external.api.rest.ExternalApiRestOpsDBRepository;
 import com.minsait.onesait.platform.persistence.external.virtual.VirtualOntologyOpsDBRepository;
-import com.minsait.onesait.platform.persistence.hadoop.common.NameBeanConst;
 import com.minsait.onesait.platform.persistence.interfaces.BasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.mindsdb.MindsDBBasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.mongodb.MongoBasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.nebula.NebulaGraphDBBasicOpsDBRepository;
+import com.minsait.onesait.platform.persistence.opensearch.OpenSearchBasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.presto.PrestoOntologyBasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.timescaledb.TimescaleDBBasicOpsDBRepository;
 
@@ -40,6 +39,9 @@ public class BasicOpsDBRepositoryFactory {
 
 	@Autowired(required = false)
 	private ElasticSearchBasicOpsDBRepository elasticBasicOps;
+	
+	@Autowired(required = false)
+	private OpenSearchBasicOpsDBRepository opensearchBasicOps;
 
 	@Autowired
 	private MongoBasicOpsDBRepository mongoBasicOps;
@@ -63,10 +65,6 @@ public class BasicOpsDBRepositoryFactory {
 	@Autowired
 	private TimescaleDBBasicOpsDBRepository timescaleDBBasicOpsDBRepository;
 
-	@Autowired(required = false)
-	@Qualifier(NameBeanConst.KUDU_BASIC_OPS_BEAN_NAME)
-	private BasicOpsDBRepository kuduBasicOpsDBRepository;
-
 	@Autowired
 	private PrestoOntologyBasicOpsDBRepository prestoBasicOpsDBRepository;
 
@@ -87,8 +85,8 @@ public class BasicOpsDBRepositoryFactory {
 			return mongoBasicOps;
 		} else if (RtdbDatasource.ELASTIC_SEARCH.equals(dataSource)) {
 			return elasticBasicOps;
-		} else if (RtdbDatasource.KUDU.equals(dataSource)) {
-			return kuduBasicOpsDBRepository;
+		} else if (RtdbDatasource.OPEN_SEARCH.equals(dataSource)) {
+			return opensearchBasicOps;
 		} else if (RtdbDatasource.API_REST.equals(dataSource)) {
 			return externalApiRest;
 		} else if (RtdbDatasource.VIRTUAL.equals(dataSource)) {

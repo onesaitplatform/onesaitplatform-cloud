@@ -55,6 +55,7 @@ public class DataFromDB {
 	private static final String OP_RESOURCES = "com.minsait.onesait.platform.config.model.base.OPResource";
 	private static final String PROJECT_EXPORT = "com.minsait.onesait.platform.config.model.ProjectExport";
 	private static final String USER_EXPORT = "com.minsait.onesait.platform.config.model.UserExport";
+	private static final String USER = "com.minsait.onesait.platform.config.model.User";
 
 	public DataFromDB() {
 
@@ -91,7 +92,11 @@ public class DataFromDB {
 				}
 			}
 		}
-		return data.get(clazz).get(id);
+		if (data.get(clazz) != null) {
+			return data.get(clazz).get(id);
+		} else {
+			return null;
+		}
 	}
 
 	public Class<?> getOPResourceClass(Class<?> clazz, Serializable id) {
@@ -271,47 +276,49 @@ public class DataFromDB {
 			Map<String, Object> attrs = obj.get(id);
 
 			for (Field field : fields.values()) {
-				Object value = processField(field, o, notFoundData);
-				if (clazz.getCanonicalName().equals(USER_EXPORT) && field.getName().equals("projects")
-						&& !value.toString().equals("[]")) {
-					attrs.put(field.getName(), new ArrayList<>());
-				} else {
-					attrs.put(field.getName(), value);
-				}
-				if (clazz.equals(AppExport.class) && field.getName().equals("childApps")
-						&& !value.toString().equals("[]")) {
-					String childs = value.toString().substring(1, value.toString().length() - 1);
-					for (int i = 0; i < childs.split(",").length; i++) {
-						String childId = childs.split(",")[i];
-						if (obj.containsKey(childId)) {
-							obj.remove(childId);
-							Object entity = em.find(AppChildExport.class, childId);
-							addEntity(entity, childId, em);
-						}
+				if (!field.getType().getName().equals("org.slf4j.Logger")) {
+					Object value = processField(field, o, notFoundData);
+					if (clazz.getCanonicalName().equals(USER_EXPORT) && field.getName().equals("projects")
+							&& !value.toString().equals("[]")) {
+						attrs.put(field.getName(), new ArrayList<>());
+					} else {
+						attrs.put(field.getName(), value);
 					}
+					if (clazz.equals(AppExport.class) && field.getName().equals("childApps")
+							&& !value.toString().equals("[]")) {
+						String childs = value.toString().substring(1, value.toString().length() - 1);
+						for (int i = 0; i < childs.split(",").length; i++) {
+							String childId = childs.split(",")[i];
+							if (obj.containsKey(childId)) {
+								obj.remove(childId);
+								Object entity = em.find(AppChildExport.class, childId);
+								addEntity(entity, childId, em);
+							}
+						}
 
-				}
-				if (clazz.equals(AppRoleExport.class) && field.getName().equals("childRoles")
-						&& !value.toString().equals("[]")) {
-					String childs = value.toString().substring(1, value.toString().length() - 1);
-					for (int i = 0; i < childs.split(",").length; i++) {
-						String childId = childs.split(",")[i];
-						if (obj.containsKey(childId)) {
-							obj.remove(childId);
-							Object entity = em.find(AppRoleChildExport.class, childId);
-							addEntity(entity, childId, em);
+					}
+					if (clazz.equals(AppRoleExport.class) && field.getName().equals("childRoles")
+							&& !value.toString().equals("[]")) {
+						String childs = value.toString().substring(1, value.toString().length() - 1);
+						for (int i = 0; i < childs.split(",").length; i++) {
+							String childId = childs.split(",")[i];
+							if (obj.containsKey(childId)) {
+								obj.remove(childId);
+								Object entity = em.find(AppRoleChildExport.class, childId);
+								addEntity(entity, childId, em);
+							}
 						}
 					}
-				}
-				if (clazz.equals(AppUserExport.class) && field.getName().equals("appUsers")
-						&& !value.toString().equals("[]")) {
-					String childs = value.toString().substring(1, value.toString().length() - 1);
-					for (int i = 0; i < childs.split(",").length; i++) {
-						String childId = childs.split(",")[i];
-						if (obj.containsKey(childId)) {
-							obj.remove(childId);
-							Object entity = em.find(AppUserChildExport.class, childId);
-							addEntity(entity, childId, em);
+					if (clazz.equals(AppUserExport.class) && field.getName().equals("appUsers")
+							&& !value.toString().equals("[]")) {
+						String childs = value.toString().substring(1, value.toString().length() - 1);
+						for (int i = 0; i < childs.split(",").length; i++) {
+							String childId = childs.split(",")[i];
+							if (obj.containsKey(childId)) {
+								obj.remove(childId);
+								Object entity = em.find(AppUserChildExport.class, childId);
+								addEntity(entity, childId, em);
+							}
 						}
 					}
 				}
@@ -370,21 +377,34 @@ public class DataFromDB {
 			Map<String, Object> attrs = obj.get(id);
 
 			for (Field field : fields.values()) {
-				Object value = processField(field, o, notFoundData);
-				if (clazz.getCanonicalName().equals(USER_EXPORT) && field.getName().equals("projects")
-						&& !value.toString().equals("[" + projectId.toString() + "]")) {
-					if (value.toString().contains(projectId.toString())) {
+				if (!field.getType().getName().equals("org.slf4j.Logger")) {
+					if (clazz.getCanonicalName().equals(USER) && field.getName().equals("projects")) {
+						// Because lazy of project in user we get ids manually
+						List<String> result = em
+								.createQuery("SELECT c.id FROM Project as c WHERE c.user.userId = :userId")
+								.setParameter("userId", ((User) o).getUserId()).getResultList();
 						List<String> ps = new ArrayList<>();
-						ps.add(projectId.toString());
+						if (result.toString().contains(projectId.toString())) {
+							ps.add(projectId.toString());
+						}
 						attrs.put(field.getName(), ps);
 					} else {
-						attrs.put(field.getName(), new ArrayList<>());
+
+						Object value = processField(field, o, notFoundData);
+						if (clazz.getCanonicalName().equals(USER_EXPORT) && field.getName().equals("projects")
+								&& !value.toString().equals("[" + projectId.toString() + "]")) {
+							if (value.toString().contains(projectId.toString())) {
+								List<String> ps = new ArrayList<>();
+								ps.add(projectId.toString());
+								attrs.put(field.getName(), ps);
+							} else {
+								attrs.put(field.getName(), new ArrayList<>());
+							}
+						} else {
+							attrs.put(field.getName(), value);
+						}
 					}
-
-				} else {
-					attrs.put(field.getName(), value);
 				}
-
 			}
 
 			if (clazz.equals(Gadget.class)) {

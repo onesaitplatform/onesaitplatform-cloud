@@ -806,7 +806,7 @@
 			var checked = $('#deleteCheckbox').is(':checked');
 			if(checked){
 				$('#errorSelectCheck').hide();
-				navigateUrl("/controlpanel/users/forgetDataUser/" +userId+"/true");
+				navigateUrl("/controlpanel/users/forgetDataUser/" +userId);
 			}else{
 				$('#errorSelectCheck').show();
 			}
@@ -818,7 +818,7 @@
 	 
 
 	// MAIN WHEN LOAD
-	$(window).load(function(){  
+	$(window).on("load",function(){  
 		var myTextArea = document.getElementById('jsonTextArea');
         codeEditor = monaco.editor.create(myTextArea, {
     		value: "{\n}",

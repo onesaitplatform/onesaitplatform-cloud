@@ -71,7 +71,7 @@
 							<div class="input-icon">
 
 									<i class="icon-search font-grey-mint"></i>
-								<input id="identification" th:placeholder="#{ontology.identification}"  name="identification" class="form-control" type="text" maxlength="50" value=""/>
+								<input id="identification" th:placeholder="#{ontology.identification}" name="identification" class="form-control" type="text" maxlength="50" value=""/>
 							</div>
 						</div>
 						<div class="col-md-3 col-sm-4 col-xs-12">
@@ -82,6 +82,9 @@
 								<input id="description" th:placeholder="#{gen.description}" name="description" class="form-control" type="text" maxlength="100" value=""/>
 							</div>
 						</div>
+						<input type="checkbox" id="showOwned" name="showOwned" th:value="${showOwned == null OR showOwned}"style="display:none;" checked>
+						<input type="checkbox" id="showAudit" name="showAudit" th:value="${showAudit != null AND showAudit}" style="display:none;" checked>
+						<input type="checkbox" id="showLog" name="showLog" th:value="${showLog != null AND showLog}"  style="display:none;" checked>
 						<div class="col-md-6 col-sm-4  col-xs-12">
 							<div class="pull-right">
 								<button type="button" id="reset_ontology" name="reset_ontology" value="Reset" class="btn btn-outline-search"  th:text="#{gen.resetBtn}">Reset</button>
@@ -133,15 +136,28 @@
 							<div class="mt-checkbox-list" style="height: 0px; display:inline-block; padding-left:20px; padding-top: 18px;">
 								<div class="switch">
 									<label>
-										<input th:if="${filterCheck}" class="form-control no-remove" type="checkbox" checked="checked" onclick="showMyOnt(this)"></input>
-										<input th:if="!${filterCheck}" class="form-control no-remove" type="checkbox" onclick="showMyOnt(this)"></input>
-										<span class="checkbox-slider round" th:field="${filterCheck}"></span>
+										<input class="form-control no-remove" th:checked="${showOwned}" type="checkbox" onclick="toggleValue(this, 'showOwned')"></input>
+										<span class="checkbox-slider round" th:field="${showOwned}"></span>
 									</label>
 								</div>
 								<div class="inline font-xs" th:text="#{ontology.showMyOnt}" style="margin-left:7px;color:#505D66;">Show my ontologies</div>
 							</div>
 							<div class="pull-right btn-group btn-title-group" id="divcreate" >
 								<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-primary button-plus-create"   onclick="location.href='../ontologies/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>
+							</div>
+							<div class="mt-checkbox-list pull-right" style="height: 0px; display:inline-block; padding-left:20px; padding-right:20px; padding-top: 18px;"> 
+								<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{ontology.logs.help},data-title=#{ontology.logs}">
+									<div class="inline font-xs" style="margin-left:7px;color:#505D66;" th:text="#{ontology.logs}">Log Entities</div>
+									<input id="log" class="form-control no-remove" th:checked="${showLog}" name="public" type="checkbox" onchange="toggleValue(this, 'showLog')"/>
+									<span></span><!-- necesario por estilos. -->
+								</label>
+							</div>
+							<div class="mt-checkbox-list pull-right" style="height: 0px; display:inline-block; padding-left:20px; padding-top: 18px;"> 
+								<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{ontology.audit.help},data-title=#{ontology.audit}">
+									<div class="inline font-xs no-remove" style="margin-left:7px;color:#505D66;" th:text="#{ontology.audit}">Audit Entities</div>
+									<input id="audit" class="form-control no-remove" th:checked="${showAudit}" name="public" type="checkbox" onchange="toggleValue(this, 'showAudit')"/>
+									<span></span><!-- necesario por estilos. -->
+								</label>
 							</div>
 						</div>
 						<div class="portlet-body" style="display: block; height: auto;">
@@ -155,8 +171,8 @@
 											<table id="ontologies" class="table table-hover table-striped"   dt:table="true" dt:paginationtype="full">
 												<thead>
 													<tr class="cabecera-tabla">
-														<th class="titulo-columnas text-left" th:text="#{ontology.identification}" >Identification</th>
-														<th class="titulo-columnas text-left"> <span th:text="#{ontology.userId}" >Owner</span></th>
+														<th class="titulo-columnas text-left" th:text="#{ontology.identification}">Identification</th>
+														<th class="titulo-columnas text-left"> <span th:text="#{ontology.userId}">Owner</span></th>
 														<th class="titulo-columnas text-left" th:text="#{ontology.description}">Description</th>
 														<th class="titulo-columnas text-left" th:text="#{ontology.rtdbinstance}">Database Instance</th>
 														<th class="titulo-columnas text-left" th:text="#{ontology.active}">Active</th>
@@ -260,6 +276,9 @@
 																			<span  th:if="${ontology.ontologyKPI} !=null  " class="btn btn-xs btn-circle btn-outline no-border" data-container="body" data-placement="bottom"  th:attr="onclick='javascript:executeKPI(\'' + ${ontology.id} + '\');'"><i class="icon-kpi"></i> <span class="span-title-three-dots-icons" th:text="#{ontology.kpi.execute}" >EXECUTE KPI</span></span>
 																		</li>
 																		<li>
+																			<span class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" ><i class="icon-url" th:attr="onclick='javascript:navigateUrl(\'' + @{|/ontologies/statistics/${ontology.identification}/|} + '\');'"></i><span class="span-title-three-dots-icons" th:text="#{ontology.statistics}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/ontologies/statistics/${ontology.identification}/|} + '\');'" >Statistics</span></span>
+																		</li>
+																		<li>
 																			<!-- DELETE -->
 																		    <span th:if="${#authentication.name} == ${ontology.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline color-red"  data-container="body" data-placement="bottom"  th:attr="onclick='deleteOntology(\'' + ${ontology.id} + '\');'"><i class="icon-delete"></i>  <span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >DELETE</span></span>
 																		</li>
@@ -306,7 +325,7 @@
 														<label th:text="#{ontology.authorizations}"> Authorizations</label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="7"/>
+														<input class="toggle-vis" type="checkbox" data-column="7" checked/>
 														<label th:text="#{ontology.datamodel}"> Datamodel</label>
 													</span>
 													<span class="checkbox-column">
@@ -351,7 +370,7 @@
 	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
 	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
 	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
-
+	 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
 	<script th:inline="javascript">
 
@@ -379,14 +398,10 @@
 	//<![CDATA[
 	function navigateUrl(url){  window.location.href = url;	}
 
-	function showMyOnt(label){
-		if (!label.checked){
-			navigateUrl('/controlpanel/ontologies/listAll');
-		} else{
-			navigateUrl('/controlpanel/ontologies/list');
-		}
+	function toggleValue(element, id){
+		$("#" + id).val(element.checked);
+		$('#form_ontology')[0].submit();
 	}
-
 
 	// DELETE ONTOLOGY
 	var deleteOntology = function(ontologyId){
@@ -448,14 +463,14 @@
 	});
 
 	// MAIN WHEN LOAD
-	$(window).load(function(){
-
+	$(window).on("load",function(){ 
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 		var oTable = $('#ontologies').dataTable({
 	      "bAutoWidth": false
 	      });
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)
 		//$.each([ 2,6,7 ],
-		$.each([ 7 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
+		$.each([ 7 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 
 		// SHOW/HIDE DATATABLES COLUMN INIT
 
@@ -573,6 +588,37 @@
 
 	var nebulaUI = (url) =>{
 		window.open(url, '_blank');
+	}
+	
+	var getStatistics = (identification) =>{
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+
+		$.ajax({ url: "/controlpanel/ontologies/statistics/" + identification, headers: {[csrf_header]: csrf_value}, type: 'GET',
+			success: function (source) {
+				$.alert({
+					title : [[#{ontology.kpi.success}]],
+					type : 'green',
+					theme : 'light',
+					content : source
+				});
+			},
+		 error: function(xhr, status, error) {
+
+
+			 var errorMessage = [[#{ontology.kpi.executed.error}]];
+			 if(typeof xhr.responseJSON !== 'undefined' &&
+					 typeof xhr.responseJSON.cause !== 'undefined' ){
+				 errorMessage = xhr.responseJSON.cause;
+			 }
+			 $.alert({
+					title : [[#{ontology.kpi.error}]],
+					type : 'red',
+					theme : 'light',
+					content :  errorMessage
+				});
+			}
+		});
 	}
 
 	function executeKPI(id) {

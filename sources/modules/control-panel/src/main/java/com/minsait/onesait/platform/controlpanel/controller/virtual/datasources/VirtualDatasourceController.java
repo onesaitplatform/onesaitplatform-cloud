@@ -105,7 +105,7 @@ public class VirtualDatasourceController {
 		model.addAttribute(DATASOURCE_STR, report);
 		model.addAttribute("rdbs",
 				Arrays.stream(VirtualDatasourceType.values())
-						.filter(o -> !o.equals(VirtualDatasourceType.KUDU) && !o.equals(VirtualDatasourceType.PRESTO))
+						.filter(o -> !o.equals(VirtualDatasourceType.PRESTO))
 						.collect(Collectors.toList()));
 		
 		final Object projectId = httpSession.getAttribute(APP_ID);
@@ -149,7 +149,7 @@ public class VirtualDatasourceController {
 				model.addAttribute("oldCredentials", datasource.getCredentials());
 				model.addAttribute("rdbs",
 						Arrays.stream(VirtualDatasourceType.values()).filter(
-								o -> !o.equals(VirtualDatasourceType.KUDU) && !o.equals(VirtualDatasourceType.PRESTO))
+								o -> !o.equals(VirtualDatasourceType.PRESTO))
 								.collect(Collectors.toList()));
 				return VIRTUAL_DATASOURCE_CREATE;
 			} else {

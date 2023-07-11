@@ -305,7 +305,7 @@
     		var targetfieldsLabel = [[#{predictor.targetfields}]]
     		var validationPrediction = [[#{predictor.validation.select}]]
     		
-    		$(window).load(function(){
+    		$(window).on("load",function(){
     			var htmlelement = document.getElementById('id_query_op_customsql');
     			var readonly = false;
     			

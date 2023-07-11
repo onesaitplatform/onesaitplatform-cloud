@@ -465,7 +465,7 @@
 			}
 		}
 
-		$(window).load(function(){
+		$(window).on("load",function(){
 			var htmlelement = document.getElementById('querySql');
 			codeEditor = monaco.editor.create(htmlelement, {
 			       language: 'sql',

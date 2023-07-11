@@ -242,7 +242,7 @@
 					*/
 				},
 				error: function(error){
-					alert(error);
+					console.log(error);
 				}
 			});
 		}
@@ -2173,7 +2173,7 @@ pre {
 		
 		});
 		//Refresh page and reset localStorage.clickount
-		$(window).unload(function(){
+		$(window).on("unload",function(){
 			  var clicks = localStorage.getItem('clickcount');
 			  if(clicks != null){
 				  for(var j=1;j<=3;j++){
@@ -2228,7 +2228,7 @@ pre {
 	    }
 	  }
 	
-	$(window).load(function(){
+	$(window).on("load",function(){
 		var htmlelement = document.getElementById('querySql');
 		codeEditor = monaco.editor.create(htmlelement, {
 		       language: 'sql', 

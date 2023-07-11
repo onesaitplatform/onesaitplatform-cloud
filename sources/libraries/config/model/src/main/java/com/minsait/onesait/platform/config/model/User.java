@@ -74,7 +74,7 @@ public class User extends UserParent implements Versionable<User> {
 	@Override
 	public Versionable<User> runExclusions(Map<String, Set<String>> excludedIds, Set<String> excludedUsers) {
 		Versionable<User> u = Versionable.super.runExclusions(excludedIds, excludedUsers);
-		if(u != null && !projects.isEmpty() && !CollectionUtils.isEmpty(excludedIds)
+		if (u != null && !projects.isEmpty() && !CollectionUtils.isEmpty(excludedIds)
 				&& !CollectionUtils.isEmpty(excludedIds.get(Project.class.getSimpleName()))) {
 			projects.removeIf(p -> excludedIds.get(Project.class.getSimpleName()).contains(p.getId()));
 			u = this;

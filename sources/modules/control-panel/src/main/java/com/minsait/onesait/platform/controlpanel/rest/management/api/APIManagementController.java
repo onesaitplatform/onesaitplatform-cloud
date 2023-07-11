@@ -215,8 +215,7 @@ public class APIManagementController {
 	public ResponseEntity<?> authorize(
 			@Parameter(description= "Api identification or id", required = true) @PathVariable("apiId") String apiId,
 			@Parameter(description= "User", required = true) @PathVariable(name = "userId") String userId,
-			@Parameter(description= "Version required if use identification (if not present it applies to all versions)", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion,
-			@RequestHeader("Authorization") String authorization) {
+			@Parameter(description= "Version required if use identification (if not present it applies to all versions)", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
 
 		ResponseEntity<?> response;
 		final List<UserApiSimplifiedResponseDTO> usersapiDto = new ArrayList<>();

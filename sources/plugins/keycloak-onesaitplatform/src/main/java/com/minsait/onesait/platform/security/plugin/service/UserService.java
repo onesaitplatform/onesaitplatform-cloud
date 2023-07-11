@@ -62,7 +62,8 @@ public class UserService {
 	@Cacheable(cacheNames = "userExists", unless = "#result==false")
 	public boolean userExists(String userId) {
 		try {
-			restTemplate.exchange(controlpanel + API_MASTER_USERS + userId + "/exists", HttpMethod.GET, null, String.class);
+			restTemplate.exchange(controlpanel + API_MASTER_USERS + userId + "/exists", HttpMethod.GET, null,
+					Void.class);
 			return true;
 		} catch (final HttpClientErrorException e) {
 			if (e.getStatusCode() == HttpStatus.NOT_FOUND) {

@@ -23,26 +23,23 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
-			<version>1.5.10.RELEASE</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
-			<version>1.5.10.RELEASE</version>
 			<scope>test</scope>
 		</dependency>
 		<!-- JSON -->
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20180130</version>
 		</dependency>
+		<!-- LOMBOK usamos la versión del Dependency Management --> 
 		<dependency>
-		<!-- LOMBOK -->
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.16.20</version>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
@@ -53,7 +50,11 @@
 		<dependency>
 		    <groupId>org.apache.httpcomponents</groupId>
 		    <artifactId>httpclient</artifactId>
-		    <version>4.5.13</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.openjdk.nashorn</groupId>
+    		<artifactId>nashorn-core</artifactId>
 		</dependency>
 		
 	</dependencies>

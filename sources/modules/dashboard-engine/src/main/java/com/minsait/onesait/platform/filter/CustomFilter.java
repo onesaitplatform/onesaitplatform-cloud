@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.filter;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -109,7 +110,8 @@ public class CustomFilter extends GenericFilterBean {
 					if (((HttpServletRequest) servletRequest).getServletPath().startsWith("/dsengine/solver")
 							|| ((HttpServletRequest) servletRequest).getServletPath().startsWith("/api")
 							|| ((HttpServletRequest) servletRequest).getServletPath().startsWith("/loginRest")
-							|| ((HttpServletRequest) servletRequest).getServletPath().startsWith("/dsengine/rest/solver")) {
+							|| ((HttpServletRequest) servletRequest).getServletPath()
+									.startsWith("/dsengine/rest/solver")) {
 						filterChain.doFilter(servletRequest, servletResponse);
 					} else {
 						return;
@@ -144,12 +146,12 @@ public class CustomFilter extends GenericFilterBean {
 
 	/**
 	 * Get the bearer token from the HTTP request. The token is in the HTTP request
-	 * "oauthtoken" queryparams in the form of: "oauthtoken=[token]"
-	 * "Authorization" header in the form of: "Bearer [token]"
+	 * "oauthtoken" queryparams in the form of: "oauthtoken=[token]" "Authorization"
+	 * header in the form of: "Bearer [token]"
 	 */
 	private String getBearerToken(HttpServletRequest request) {
 		final String authParam = request.getParameter(OAUTH2_QUERYPARAM);
-		if(authParam != null){
+		if (authParam != null) {
 			return authParam;
 		}
 		final String authHeader = request.getHeader(AUTH_HEADER_KEY);
@@ -161,7 +163,7 @@ public class CustomFilter extends GenericFilterBean {
 
 	private boolean isAnonymous(HttpServletRequest request) {
 		final String authParam = request.getParameter(AUTH_VALUE_ANONYMOUS);
-		if(authParam != null) {
+		if (authParam != null) {
 			return true;
 		}
 		final String authHeader = request.getHeader(AUTH_HEADER_KEY);
@@ -189,25 +191,27 @@ public class CustomFilter extends GenericFilterBean {
 	 */
 	private String validateTokenLegacy(String token) {
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+
 		final HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 
 		final HttpEntity<String> entity = new HttpEntity<>(token, headers);
-		final ResponseEntity<TokenResponse> response = restTemplate.exchange(onesaitPlatformTokenAuth, HttpMethod.POST , entity,
-				TokenResponse.class);
+		final ResponseEntity<TokenResponse> response = restTemplate.exchange(onesaitPlatformTokenAuth, HttpMethod.POST,
+				entity, TokenResponse.class);
 		if (response.getStatusCode() == HttpStatus.OK) {
 			return response.getBody().getPrincipal();
 		} else {
 			switch (response.getStatusCode()) {
-				case NOT_FOUND: 
-					throw new DashboardEngineException(DashboardEngineException.Error.NOT_FOUND);
-				case FORBIDDEN: 
-					throw new DashboardEngineException(DashboardEngineException.Error.PERMISSION_DENIED);
-				case UNAUTHORIZED: 
-					throw new DashboardEngineException(DashboardEngineException.Error.INVALID_AUTH);
-				default:
-					throw new DashboardEngineException("Error: " + response.getStatusCode() + " - " + response.toString());
-			} 
+			case NOT_FOUND:
+				throw new DashboardEngineException(DashboardEngineException.Error.NOT_FOUND);
+			case FORBIDDEN:
+				throw new DashboardEngineException(DashboardEngineException.Error.PERMISSION_DENIED);
+			case UNAUTHORIZED:
+				throw new DashboardEngineException(DashboardEngineException.Error.INVALID_AUTH);
+			default:
+				throw new DashboardEngineException("Error: " + response.getStatusCode() + " - " + response.toString());
+			}
 		}
 	}
 

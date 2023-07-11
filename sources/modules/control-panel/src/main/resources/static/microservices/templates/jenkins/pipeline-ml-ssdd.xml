@@ -105,12 +105,23 @@
         command:
           - cat
         tty: true
-      - name: docker
-        image: docker:dind
+      - name: docker-client
+        image: docker:19.03.1
+        command: ['sleep', '99d']
+        env:
+            - name: DOCKER_HOST
+              value: tcp://localhost:2375
+      - name: docker-daemon
+        image: docker:19.03.1-dind
+        env:
+          - name: DOCKER_TLS_CERTDIR
+            value: ""
         securityContext:
           privileged: true
+      - name: kubectl
+        image: lachlanevenson/k8s-kubectl:latest
         command:
-          - dockerd
+          - cat
         tty: true
 
   &quot;&quot;&quot;
@@ -184,13 +195,13 @@
            stage(&apos;build-image&apos;) {
               steps {
                // variable sustitution
-               container(&apos;docker&apos;){
+               container(&apos;docker-client&apos;){
                  dir(&quot;${env.BASEPATH}&quot;) {
                 	sh &quot;cp ${env.SOURCESPATH}/target/*.jar ${env.DOCKERPATH}&quot;
 		            sh &quot;cp -r ${env.SOURCESPATH}/flask ${env.DOCKERPATH}/flask&quot;
 		            
 		            script{
-		              img = docker.build("${params.DOCKER_USERNAMEVALUE}/${env.MICROSERVICE_NAME}:${params.DOCKER_MODULETAGVALUE}", "${env.DOCKERPATH}")
+		              img = docker.build("${params.DOCKER_USERNAMEVALUE}/${env.MICROSERVICE_NAME}:${params.DOCKER_MODULETAGVALUE}", "--network host ${env.DOCKERPATH}")
 		            }
 		          
 	           	  }
@@ -203,7 +214,7 @@
                 expression { params.DOCKER_PUSHREGISTRY_PRIVATE == &apos;true&apos; }
               }
               steps {
-                container(&apos;docker&apos;){
+                container(&apos;docker-client&apos;){
                    script {
                         docker.withRegistry('https://production-registry.devops.onesait.com', 'registry-onesait') {
                             img.push()

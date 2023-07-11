@@ -36,7 +36,28 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.select.AllColumns;
+import net.sf.jsqlparser.statement.select.AllTableColumns;
+import net.sf.jsqlparser.statement.select.Distinct;
+import net.sf.jsqlparser.statement.select.Fetch;
+import net.sf.jsqlparser.statement.select.First;
+import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.GroupByElement;
+import net.sf.jsqlparser.statement.select.Join;
+import net.sf.jsqlparser.statement.select.Limit;
+import net.sf.jsqlparser.statement.select.Offset;
+import net.sf.jsqlparser.statement.select.OrderByElement;
+import net.sf.jsqlparser.statement.select.Pivot;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
+import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.Skip;
+import net.sf.jsqlparser.statement.select.TableFunction;
+import net.sf.jsqlparser.statement.select.Top;
+import net.sf.jsqlparser.statement.select.Wait;
+import net.sf.jsqlparser.statement.select.WithItem;
 
 public class SqlComparator {
 
@@ -113,8 +134,7 @@ public class SqlComparator {
 
 		matchOrderByElements(plainSelect1.getOrderByElements(), plainSelect2.getOrderByElements(), result);
 
-		matchGroupBy(plainSelect1.getGroupBy(),
-				plainSelect2.getGroupBy(), result);
+		matchGroupBy(plainSelect1.getGroupBy(), plainSelect2.getGroupBy(), result);
 
 		matchHaving(plainSelect1.getHaving(), plainSelect2.getHaving(), result);
 
@@ -143,7 +163,8 @@ public class SqlComparator {
 		matchMySqlSqlCalcFoundRows(plainSelect1.getMySqlSqlCalcFoundRows(), plainSelect2.getMySqlSqlCalcFoundRows(),
 				result);
 
-		matchMySqlSqlNoCache(plainSelect1.getMySqlSqlNoCache(), plainSelect2.getMySqlSqlNoCache(), result);
+		matchMySqlSqlNoCache(plainSelect1.getMySqlSqlCacheFlag() != null, plainSelect2.getMySqlSqlCacheFlag() != null,
+				result);
 
 		matchOracleHierarchical(plainSelect1.getOracleHierarchical(), plainSelect2.getOracleHierarchical(), result);
 
@@ -162,17 +183,17 @@ public class SqlComparator {
 			} else if (selectItems2.size() == 1) {
 				// The template consists of a variable which will store some
 				// SelectExpressionItems in Array format
-			    //net.sf.jsqlparser.statement.select.AllColumns
-			    SelectItem selectItem = selectItems2.get(0);
-			    if (!(selectItem instanceof AllColumns)) {
-    				final SelectExpressionItem selectItem2 = (SelectExpressionItem) selectItems2.get(0);
-    				if (SelectExpressionItem.class.equals(selectItems2.get(0).getClass())
-    						&& UserVariable.class.equals(selectItem2.getExpression().getClass())) {
-    					final UserVariable userVariable = (UserVariable) selectItem2.getExpression();
-    					result.addVariable(userVariable.getName(), selectItems1.toString(), VariableData.Type.STRING);
-    					result.setResult(true);
-    				}
-			    }
+				// net.sf.jsqlparser.statement.select.AllColumns
+				final SelectItem selectItem = selectItems2.get(0);
+				if (!(selectItem instanceof AllColumns)) {
+					final SelectExpressionItem selectItem2 = (SelectExpressionItem) selectItems2.get(0);
+					if (SelectExpressionItem.class.equals(selectItems2.get(0).getClass())
+							&& UserVariable.class.equals(selectItem2.getExpression().getClass())) {
+						final UserVariable userVariable = (UserVariable) selectItem2.getExpression();
+						result.addVariable(userVariable.getName(), selectItems1.toString(), VariableData.Type.STRING);
+						result.setResult(true);
+					}
+				}
 			}
 		}
 	}
@@ -265,11 +286,10 @@ public class SqlComparator {
 		result.setResult(match);
 	}
 
-	private static void matchGroupBy(GroupByElement groupBy1,
-									 GroupByElement groupBy2, MatchResult result) {
+	private static void matchGroupBy(GroupByElement groupBy1, GroupByElement groupBy2, MatchResult result) {
 		checkNulls(groupBy1, groupBy2, result);
 		if (result.isMatch() && groupBy1 != null) {
-			matchGroupByColumnReferences(groupBy1.getGroupByExpressions(),groupBy2.getGroupByExpressions(),result);
+			matchGroupByColumnReferences(groupBy1.getGroupByExpressions(), groupBy2.getGroupByExpressions(), result);
 		}
 	}
 
@@ -418,7 +438,7 @@ public class SqlComparator {
 			if (result.isMatch()) {
 				result.setResult(offset1.getOffsetParam().equals(offset2.getOffsetParam()));
 				if (result.isMatch()) {
-					matchExpression(offset1.getOffsetJdbcParameter(), offset2.getOffsetJdbcParameter(), result);
+					matchExpression(offset1.getOffset(), offset2.getOffset(), result);
 				}
 			}
 		}

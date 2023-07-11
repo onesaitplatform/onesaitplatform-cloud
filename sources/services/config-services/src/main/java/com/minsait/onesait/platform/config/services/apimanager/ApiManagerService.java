@@ -139,11 +139,12 @@ public interface ApiManagerService {
 	public String cloneApi(String id, String identification, String userId);
 
 	public Boolean isGraviteeApi(String apiId);
-	
+
 	public void obfuscateUsersData(Api api);
 
 	public boolean permision(String apiId, String userId);
 
 	public List<ApiForList> loadAPISByFilterForList(String apiId, String state, String userId, String loggeduser);
 
+	void deleteUserApiForAUser(String userAccessId);
 }

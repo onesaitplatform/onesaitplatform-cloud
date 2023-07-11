@@ -20,7 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +36,6 @@ import com.minsait.onesait.platform.commons.model.TimeSeriesResult;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.interfaces.BasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.models.ErrorResult;
-import com.minsait.onesait.platform.persistence.models.ErrorResult.ErrorType;
 import com.minsait.onesait.platform.persistence.timescaledb.config.TimescaleDBConfiguration;
 import com.minsait.onesait.platform.persistence.timescaledb.parser.JSONTimescaleResultsetExtractor;
 import com.minsait.onesait.platform.persistence.timescaledb.processor.TimescaleDBTimeSeriesProcessor;
@@ -153,11 +152,11 @@ public class TimescaleDBBasicOpsDBRepository implements BasicOpsDBRepository {
 			Assert.isTrue(limit >= 1, "Limit must be greater or equal to 1");
 
 			// Parse query with JSQLParser and validate ontology
-			Statement statement = CCJSqlParserUtil.parse(query);
+			final Statement statement = CCJSqlParserUtil.parse(query);
 
-			TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
-			List<String> tableNames = tablesNamesFinder.getTableList(statement);
-			for (String tableName : tableNames) {
+			final TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+			final List<String> tableNames = tablesNamesFinder.getTableList(statement);
+			for (final String tableName : tableNames) {
 				if (!tableName.equalsIgnoreCase(ontology)
 						&& !tableName.toUpperCase().startsWith(ontology.toUpperCase() + "_")) {
 					throw new DBPersistenceException(new ErrorResult(ErrorResult.PersistenceType.TIMESCALE,
@@ -166,19 +165,19 @@ public class TimescaleDBBasicOpsDBRepository implements BasicOpsDBRepository {
 			}
 			// detect the type of query to execure right method: SELECT, UPDATE, DELETE
 			if (statement instanceof Select) {
-				Optional<PlainSelect> select = parseQuery(query);
+				final Optional<PlainSelect> select = parseQuery(query);
 				if (select.isPresent()) {
 					query = addLimit(select.get(), limit, offset).toString();
 				}
 				return timescaleDBJdbcTemplate.query(query, new JSONTimescaleResultsetExtractor(query));
 			} else if (statement instanceof Update) {
 				final int numRows = timescaleDBJdbcTemplate.update(query);
-				List<String> result = new ArrayList<>();
+				final List<String> result = new ArrayList<>();
 				result.add(String.format("{'updatedRows':%s}", numRows));
 				return result;
 			} else if (statement instanceof Delete) {
 				final int numRows = timescaleDBJdbcTemplate.update(query);
-				List<String> result = new ArrayList<>();
+				final List<String> result = new ArrayList<>();
 				result.add(String.format("{'deletedRows':%s}", numRows));
 				return result;
 			}
@@ -335,13 +334,13 @@ public class TimescaleDBBasicOpsDBRepository implements BasicOpsDBRepository {
 					|| (limitedSelect.getLimit() != null && limitedSelect.getLimit().getOffset() != null));
 			if (hasOffset) {
 				if (limitedSelect.getOffset() != null) {
-					limitedSelect.getOffset().setOffset(offset);
+					limitedSelect.getOffset().setOffset(new LongValue(offset));
 				} else {
 					limitedSelect.getLimit().setOffset(new LongValue(offset));
 				}
 			} else {
 				final Offset qOffset = new Offset();
-				qOffset.setOffset(offset);
+				qOffset.setOffset(new LongValue(offset));
 				limitedSelect.setOffset(qOffset);
 			}
 		}

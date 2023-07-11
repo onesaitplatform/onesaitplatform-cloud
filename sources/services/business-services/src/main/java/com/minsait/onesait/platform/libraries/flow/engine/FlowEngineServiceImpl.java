@@ -181,6 +181,7 @@ public class FlowEngineServiceImpl implements FlowEngineService {
 	@Override
 	public void deployFlowengineDomain(String domain, String data) {
 		final RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
+
 		try {
 
 			final String domainRecord = "{'domain':'" + domain + "'}";
@@ -206,6 +207,7 @@ public class FlowEngineServiceImpl implements FlowEngineService {
 	@Override
 	public String exportDomainFromFS(String domain) {
 		final RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
+
 		try {
 			return restTemplate.getForObject(restBaseUrl + "/exportDomainFromFS/" + domain, String.class);
 		} catch (final Exception e) {

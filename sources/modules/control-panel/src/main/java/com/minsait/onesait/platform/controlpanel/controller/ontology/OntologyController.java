@@ -15,6 +15,11 @@
 package com.minsait.onesait.platform.controlpanel.controller.ontology;
 
 import static com.minsait.onesait.platform.business.services.ontology.OntologyServiceStatusBean.MODULE_NOT_ACTIVE_KEY;
+import static tech.tablesaw.aggregate.AggregateFunctions.countNonMissing;
+import static tech.tablesaw.aggregate.AggregateFunctions.max;
+import static tech.tablesaw.aggregate.AggregateFunctions.mean;
+import static tech.tablesaw.aggregate.AggregateFunctions.min;
+import static tech.tablesaw.aggregate.AggregateFunctions.stdDev;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,6 +34,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -44,6 +50,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -83,6 +90,7 @@ import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
 import com.minsait.onesait.platform.config.model.Configuration;
+import com.minsait.onesait.platform.config.model.Configuration.Type;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.model.OntologyDataAccess;
@@ -101,12 +109,13 @@ import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.model.Configuration.Type;
 import com.minsait.onesait.platform.config.model.base.OPResource;
+import com.minsait.onesait.platform.config.model.security.UserPrincipal;
 import com.minsait.onesait.platform.config.repository.ApiRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformOntologyRepository;
 import com.minsait.onesait.platform.config.repository.ConfigurationRepository;
 import com.minsait.onesait.platform.config.repository.OntologyKPIRepository;
+import com.minsait.onesait.platform.config.repository.OntologyMqttTopicRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.services.app.AppService;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
@@ -135,6 +144,7 @@ import com.minsait.onesait.platform.controlpanel.controller.ontology.model.sql.H
 import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.OntologyVirtualDataSourceDTO;
 import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
+import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.factory.ManageDBRepositoryFactory;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
@@ -149,6 +159,15 @@ import com.minsait.onesait.platform.resources.service.IntegrationResourcesServic
 
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.extern.slf4j.Slf4j;
+import tech.tablesaw.aggregate.AggregateFunctions;
+import tech.tablesaw.api.ColumnType;
+import tech.tablesaw.api.NumericColumn;
+import tech.tablesaw.api.Table;
+import tech.tablesaw.columns.Column;
+import tech.tablesaw.io.Source;
+import tech.tablesaw.io.json.JsonReader;
+import tech.tablesaw.plotly.api.Histogram;
+import tech.tablesaw.plotly.traces.Trace;
 
 @Controller
 @RequestMapping("/ontologies")
@@ -234,6 +253,9 @@ public class OntologyController {
 	@Autowired
 	private PrestoDatasourceConfigurationService prestoDatasourceConfigurationService;
 
+	@Autowired
+	OntologyMqttTopicRepository ontologyMqttTopicRepo;
+
 	private static final String ONTOLOGIES_STR = "ontologies";
 	private static final String ONTOLOGY_STR = "ontology";
 	private static final String ONTOLOGY_REST_STR = "ontologyRest";
@@ -280,37 +302,17 @@ public class OntologyController {
 	private static final String APP_ID = "appId";
 	private static final String REDIRECT_PROJECT_SHOW = "/controlpanel/projects/update/";
 	private static final String ONTOLOGIES_CREATEPRESTO = "ontologies/createpresto";
+	private static final String MQTT_TOPIC_NAME = "mqttTopicPath";
 
 	private final ObjectMapper mapper = new ObjectMapper();
-
-	@GetMapping(value = "/listAll", produces = "text/html")
-	public String list(Model model, HttpServletRequest request,
-			@RequestParam(required = false, name = "identification") String identification,
-			@RequestParam(required = false, name = "description") String description) {
-
-		// CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-
-		// Scaping "" string values for parameters
-		if (identification != null && identification.equals("")) {
-			identification = null;
-		}
-		if (description != null && description.equals("")) {
-			description = null;
-		}
-
-		final List<OntologyDTO> ontologies = ontologyConfigService.getAllOntologiesForList(utils.getUserId(),
-				identification, description);
-		model.addAttribute(ONTOLOGIES_STR, ontologies);
-		model.addAttribute("filterCheck", false);
-		model.addAttribute("nebulaURL", resourcesService.getUrl(Module.NEBULA_GRAPH, ServiceUrl.BASE));
-		return ONTOLOGIES_LIST;
-	}
 
 	@GetMapping(value = "/list", produces = "text/html")
 	public String listAll(Model model, HttpServletRequest request,
 			@RequestParam(required = false, name = "identification") String identification,
-			@RequestParam(required = false, name = "description") String description) {
+			@RequestParam(required = false, name = "description") String description,
+			@RequestParam(required = false, name = "showOwned") Boolean showOwned,
+			@RequestParam(required = false, name = "showAudit") Boolean showAudit,
+			@RequestParam(required = false, name = "showLog") Boolean showLog) {
 
 		// Scaping "" string values for parameters
 		if (identification != null && identification.equals("")) {
@@ -319,11 +321,23 @@ public class OntologyController {
 		if (description != null && description.equals("")) {
 			description = null;
 		}
+		if (showOwned == null) {
+			showOwned = true;
+		}
+		if (showAudit == null) {
+			showAudit = false;
+		}
+		if (showLog == null) {
+			showLog = false;
+		}
 
-		final List<OntologyDTO> ontologies = ontologyConfigService
-				.getOntologiesForListByUserPropietary(utils.getUserId(), identification, description);
+		final List<OntologyDTO> ontologies = ontologyConfigService.getOntologiesForList(utils.getUserId(),
+				identification, description, showOwned, showAudit, showLog);
+
 		model.addAttribute(ONTOLOGIES_STR, ontologies);
-		model.addAttribute("filterCheck", true);
+		model.addAttribute("showOwned", showOwned);
+		model.addAttribute("showAudit", showAudit);
+		model.addAttribute("showLog", showLog);
 		model.addAttribute("nebulaURL", resourcesService.getUrl(Module.NEBULA_GRAPH, ServiceUrl.BASE));
 		return ONTOLOGIES_LIST;
 	}
@@ -359,14 +373,19 @@ public class OntologyController {
 	public String createWizard(Model model) {
 		Ontology ontology = (Ontology) model.asMap().get(ONTOLOGY_STR);
 		model.addAttribute(ONTOLOGY_ELASTIC_STR, getDefaultElasticValues());
+
 		if (ontology == null) {
 			ontology = new Ontology();
 			ontology.setPublic(false);
 			model.addAttribute(ONTOLOGY_STR, ontology);
 			model.addAttribute(MODEL_JSON_LD_URL, resourcesService.getUrl(Module.MODELJSONLD, ServiceUrl.BASE));
+			model.addAttribute(MQTT_TOPIC_NAME, getMqttTopicPath());
 		} else {
 			ontology.setId(null);
 			ontology.setPublic(false);
+			if (ontology.isAllowsCreateMqttTopic()) {
+				model.addAttribute(MQTT_TOPIC_NAME, ontologyMqttTopicRepo.findByOntology(ontology).getIdentification());
+			}
 			model.addAttribute(ONTOLOGY_STR, ontology);
 			model.addAttribute(MODEL_JSON_LD_URL, resourcesService.getUrl(Module.MODELJSONLD, ServiceUrl.BASE));
 		}
@@ -378,6 +397,22 @@ public class OntologyController {
 
 		populateForm(model);
 		return "ontologies/createwizard";
+	}
+
+	private String getMqttTopicPath() {
+		UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication()
+				.getPrincipal();
+		String vertical = null;
+		String tenant = null;
+
+		if (!userPrincipal.getVertical().equals(Tenant2SchemaMapper.DEFAULT_VERTICAL_NAME) || !userPrincipal.getTenant()
+				.equals(Tenant2SchemaMapper.defaultTenantName(Tenant2SchemaMapper.DEFAULT_VERTICAL_NAME))) {
+			vertical = userPrincipal.getVertical();
+			tenant = userPrincipal.getTenant();
+			return "/" + vertical + "/" + tenant + "/";
+		}
+		return "/";
+
 	}
 
 	@GetMapping(value = "/createapirest", produces = "text/html")
@@ -531,7 +566,6 @@ public class OntologyController {
 
 			if (ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)
 					|| ontology.getRtdbDatasource().equals(RtdbDatasource.API_REST)
-					|| ontology.getRtdbDatasource().equals(RtdbDatasource.KUDU)
 					|| ontology.getRtdbDatasource().equals(RtdbDatasource.PRESTO)) {
 				response.put(REDIRECT_STR, REDIRECT_ONTOLOGY_LIST);
 			}
@@ -813,6 +847,10 @@ public class OntologyController {
 				model.addAttribute(REALMS, realms);
 				model.addAttribute(PROPDATACLASSES, propdclasses);
 				model.addAttribute(ENTITYDATACLASSES, entitydclasses);
+				if (ontology.isAllowsCreateMqttTopic()) {
+					model.addAttribute(MQTT_TOPIC_NAME,
+							ontologyMqttTopicRepo.findByOntology(ontology).getIdentification());
+				}
 				final OntologyElasticDTO elasticOntologyDTO = getDefaultElasticValues();
 				// InUseService
 				if (resourcesInUseService != null) {
@@ -825,12 +863,7 @@ public class OntologyController {
 					populateRestForm(model, ontologyRest);
 					populateFormApiRest(model);
 					return "ontologies/createapirest";
-				} else if (ontology.getRtdbDatasource().equals(RtdbDatasource.KUDU)) {
-					final HashMap<String, String> dbProperties = ontologyBusinessService.getAditionalDBConfig(ontology);
-					for (final Map.Entry<String, String> entry : dbProperties.entrySet()) {
-						model.addAttribute(entry.getKey(), entry.getValue());
-					}
-				} else if (ontology.getRtdbDatasource().equals(RtdbDatasource.ELASTIC_SEARCH)) {
+				} else if (ontology.getRtdbDatasource().equals(RtdbDatasource.ELASTIC_SEARCH) || ontology.getRtdbDatasource().equals(RtdbDatasource.OPEN_SEARCH)) {
 					// GET OntologyElastic object
 					final OntologyElastic elasticOntology = ontologyConfigService
 							.getOntologyElasticByOntologyId(ontology);
@@ -1215,7 +1248,11 @@ public class OntologyController {
 				model.addAttribute(ONTOLOGYTSDTO, otsDTO);
 				model.addAttribute(ONTOLOGY_STR, ontology);
 				model.addAttribute(USER_ONTOLOGY_ACCESS, userOntologyAccess);
-
+				if (ontology.isAllowsCreateMqttTopic()) {
+					model.addAttribute(MQTT_TOPIC_NAME,
+							ontologyMqttTopicRepo.findByOntology(ontology).getIdentification() + "/"
+									+ ontology.getIdentification());
+				}
 				model.addAttribute(AUTHORIZATIONS, authorizationsDTO);
 				User sessionUser = userService.getUser(id);
 				for (OntologyUserAccessDTO permission : authorizationsDTO) {
@@ -1236,7 +1273,7 @@ public class OntologyController {
 						utils.addRedirectMessage("ontology.notfound.error", redirect);
 						return REDIRECT_ONTOLOGIES_LIST;
 					}
-				} else if (ontology.getRtdbDatasource().equals(RtdbDatasource.ELASTIC_SEARCH)) {
+				} else if (ontology.getRtdbDatasource().equals(RtdbDatasource.ELASTIC_SEARCH) || ontology.getRtdbDatasource().equals(RtdbDatasource.OPEN_SEARCH)) {
 					final OntologyElasticDTO elasticOntologyDTO = getDefaultElasticValues();
 					final OntologyElastic elasticOntology = ontologyConfigService
 							.getOntologyElasticByOntologyId(ontology);
@@ -1301,9 +1338,9 @@ public class OntologyController {
 		model.addAttribute(DATA_MODEL_TYPES_STR, ontologyConfigService.getAllDataModelTypes());
 
 		final List<Ontology.RtdbDatasource> listRtdbs = ontologyConfigService.getDatasources().stream()
-				.filter(o -> !Arrays.asList(RtdbDatasource.KUDU, RtdbDatasource.VIRTUAL, RtdbDatasource.API_REST,
-						RtdbDatasource.AI_MINDS_DB, RtdbDatasource.DIGITAL_TWIN, RtdbDatasource.PRESTO,
-						RtdbDatasource.TIMESCALE, RtdbDatasource.NEBULA_GRAPH).contains(o))
+				.filter(o -> !Arrays.asList(RtdbDatasource.VIRTUAL, RtdbDatasource.API_REST, RtdbDatasource.AI_MINDS_DB,
+						RtdbDatasource.DIGITAL_TWIN, RtdbDatasource.PRESTO, RtdbDatasource.TIMESCALE,
+						RtdbDatasource.NEBULA_GRAPH).contains(o))
 				.collect(Collectors.toList());
 		model.addAttribute(RTDBS, listRtdbs);
 		model.addAttribute(ONTOLOGIES_STR, ontologyConfigService.getOntologiesByUserId(utils.getUserId()));
@@ -1364,7 +1401,6 @@ public class OntologyController {
 			}
 		}
 		dsList.removeIf(ds -> (ds.getIdentification().equals(RtdbDatasource.PRESTO.toString())));
-		dsList.add(new VirtualDatasourceDTO(RtdbDatasource.KUDU.toString(), ""));
 		model.addAttribute("datasources", dsList);
 		model.addAttribute("collectionNames", new ArrayList<String>());
 
@@ -1997,6 +2033,96 @@ public class OntologyController {
 			propertyNames.add(otsp.getPropertyName());
 		}
 		return propertyNames;
+	}
+
+	@GetMapping("/statistics/{identification}")
+	public String getStatistics(Model model,
+			@Parameter(description = "Ontology identification") @PathVariable(required = true) String identification) {
+		try {
+
+			if (ontologyConfigService.hasUserPermissionForQuery(utils.getUserId(), identification)) {
+
+				String queryResult = queryToolService.querySQLAsJson(utils.getUserId(), identification,
+						"select * from " + identification + " limit 1000", 0);
+				Table table = new JsonReader().read(Source.fromString(queryResult));
+
+				List<OntologyStatisticsDTO> statistics = generateStatistics(queryResult, table);
+
+				model.addAttribute("statistics", statistics);
+			} else {
+				log.error("You don't have permissions for this ontology");
+				model.addAttribute("Statistics", utils.getMessage("querytool.ontology.access.denied.json",
+						"You don't have permissions for this ontology"));
+				return REDIRECT_ONTOLOGIES_LIST;
+			}
+
+		} catch (final Exception e) {
+			log.error("You don't have permissions for this ontology", e);
+			model.addAttribute("Statistics", e.getMessage());
+			return REDIRECT_ONTOLOGIES_LIST;
+		}
+		return "ontologies/showstatistics";
+	}
+
+	private List<OntologyStatisticsDTO> generateStatistics(String data, Table table) throws JsonProcessingException {
+		if (table.columnNames().contains("_id.$oid"))
+			table = table.rejectColumns("_id.$oid");
+		if (table.columnNames().contains("contextData.user"))
+			table = table.rejectColumns("contextData.user", "contextData.clientConnection", "contextData.timestamp",
+					"contextData.timestampMillis", "contextData.clientSession", "contextData.device",
+					"contextData.deviceTemplate", "contextData.source", "contextData.timezoneId");
+		List<OntologyStatisticsDTO> statistics = new ArrayList<>();
+		for (Column<?> c : table.columns()) {
+			OntologyStatisticsDTO ontStat = new OntologyStatisticsDTO();
+			ontStat.setField(c.name());
+			ontStat.setType(c.type().name());
+			Table sum = table.summarize(c, countNonMissing, mean, min, max, stdDev).apply();
+			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Count")))
+				ontStat.setCountNonNull(null);
+			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Mean")))
+				ontStat.setMean(null);
+			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Min")))
+				ontStat.setMin(null);
+			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Max")))
+				ontStat.setMax(null);
+			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Std")))
+				ontStat.setStd(null);
+
+			for (String cName : sum.columnNames()) {
+				double value = (double) sum.column(cName).get(0);
+				if (cName.startsWith("Count"))
+					ontStat.setCountNonNull(value);
+				else if (cName.startsWith("Mean"))
+					ontStat.setMean(value);
+				else if (cName.startsWith("Min"))
+					ontStat.setMin(value);
+				else if (cName.startsWith("Max"))
+					ontStat.setMax(value);
+				else if (cName.startsWith("Std"))
+					ontStat.setStd(value);
+			}
+
+			if (c.type().equals(ColumnType.DOUBLE) || c.type().equals(ColumnType.FLOAT)
+					|| c.type().equals(ColumnType.INTEGER) || c.type().equals(ColumnType.LONG)
+					|| c.type().equals(ColumnType.SHORT)) {
+				ontStat.setP25(AggregateFunctions.percentile((NumericColumn<?>) c, 0.25));
+				ontStat.setP50(AggregateFunctions.percentile((NumericColumn<?>) c, 0.50));
+				ontStat.setP75(AggregateFunctions.percentile((NumericColumn<?>) c, 0.75));
+				Trace t = Histogram.create("Distribution of " + c.name(), table, c.name()).getTraces()[0];
+				double[] graph = Stream.of(t.asJavascript(0).split("=")[1].split("x:")[1].split("opacity")[0]
+						.substring(2, t.asJavascript(0).split("=")[1].split("x:")[1].split("opacity")[0].length() - 3)
+						.trim().replace("\"", "").split(",")).mapToDouble(Double::parseDouble).toArray();
+
+				ontStat.setGraph(new ObjectMapper().writeValueAsString(graph));
+			} else {
+				ontStat.setP25(null);
+				ontStat.setP50(null);
+				ontStat.setP75(null);
+				ontStat.setGraph(null);
+			}
+			statistics.add(ontStat);
+		}
+		return statistics;
 	}
 
 	@GetMapping(value = "/freeResource/{id}")

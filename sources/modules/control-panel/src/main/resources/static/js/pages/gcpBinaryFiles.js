@@ -253,11 +253,14 @@ var BinaryFilesController = function() {
 	
 	
 	var getMaxsize = function(){
-		jQuery.get(maxsizePath, function(response){
-			setEventListeners(response.maxsize);
-			
-		});
+		if(typeof response.maxsize !== 'undefined') {
+			jQuery.get(maxsizePath, function(response){
+				setEventListeners(response.maxsize);
+				
+			});
+		}
 	}
+	
 	var setEventListeners = function(maxsize){
 		 $('#buttonLoadFile').bind('change', function() {
 	           if(this.files[0].size> maxsize){

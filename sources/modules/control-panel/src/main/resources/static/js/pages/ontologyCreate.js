@@ -1327,6 +1327,7 @@ var OntologyCreateController = function() {
             },
 			// ALL OK, THEN SUBMIT.
             submitHandler: function(form) {
+				
                 // VALIDATE JSON SCHEMA
 				validIdName = validateIdName();
 				if (validIdName){
@@ -1584,7 +1585,7 @@ var OntologyCreateController = function() {
 			}else{
 				$(".cosmosProps").addClass("hidden");
 			}
-			if(this.value == "ELASTIC_SEARCH"){
+			if(this.value == "ELASTIC_SEARCH" || this.value == "OPEN_SEARCH"){
 				$(".elasticProps").removeClass("hidden");
 			}else{
 				$(".elasticProps").addClass("hidden");
@@ -1627,7 +1628,19 @@ var OntologyCreateController = function() {
 		
 		$("#templateFunction").val($("#patternFunction").val()).change();
 		
-
+		$("#allowsCreateMqttTopic").change( function(){
+			if($("#allowsCreateMqttTopic").is(":checked")){
+				$("#mqttTopicName").removeClass("hidden");
+				$("#mqttTopicPath").text(ontologyCreateJson.mqttTopicPath + $("#identification").val());
+			}else{
+				$("#mqttTopicName").addClass("hidden");
+				$("#mqttTopicPath").text("");
+			}
+		});	
+		
+		$("#mqttTopicName").on('change', function(){
+			$('#nameTopicMqtt').val($("#mqttTopic").val().startsWith("/") ? $("#mqttTopic").val() : ("/" + $("#mqttTopic").val()) + $("#mqttTopicPath").text());
+		});
 
 		// INSERT MODE ACTIONS (ontologyCreateReg.actionMode = NULL )
 		if ( ontologyCreateReg.actionMode === null){
@@ -1643,6 +1656,11 @@ var OntologyCreateController = function() {
 		else {
 			logControl ? console.log('|---> Action-mode: UPDATE') : '';
 
+			if(ontologyCreateReg.allowsCreateMqttTopic){
+				$("#mqttTopicName").removeClass("hidden");
+				$("#mqttTopic").val(ontologyCreateReg.mqttTopicPath + "/" + ontologyCreateReg.ontologyIdentification);
+				$("#mqttTopic").attr("readonly","readonly");
+			}
 			// if ontology has authorizations we load it!.
 			authorizationsJson = ontologyCreateReg.authorizations;
 			if (authorizationsJson.length > 0 ){
@@ -1922,8 +1940,6 @@ var OntologyCreateController = function() {
 	var validateIdName = function(){
 		if ($('#identification').val().match(/^[0-9]/)) { $('#identificationerror').removeClass('hide').addClass('help-block-error font-red'); App.scrollTo(error1, -200);return false;  } else { return true;}
 	}
-
-
 	// JSON SCHEMA VALIDATION PROCESS
 	var validateJsonSchema = function(){
         logControl ? console.log('|--->   validateJsonSchema()') : '';
@@ -2771,7 +2787,6 @@ var OntologyCreateController = function() {
 		updateJsonschemaInput: function(){
 			$('#jsonschema').val(editor.getText());
 		},
-		
 		updateJsonschemaMongoHasRecordsInput: function(){
 			var jsonFromEditor = {};
 			jsonFromEditor = editor.get();

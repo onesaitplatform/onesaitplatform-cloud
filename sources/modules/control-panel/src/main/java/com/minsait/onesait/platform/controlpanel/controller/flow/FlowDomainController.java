@@ -92,8 +92,8 @@ public class FlowDomainController {
 
 	@Autowired
 	private NoderedAuthenticationServiceImpl noderedAuthService;
-	
-	@Autowired 
+
+	@Autowired
 	private HttpSession httpSession;
 
 	private FlowEngineService flowEngineService;
@@ -119,7 +119,7 @@ public class FlowDomainController {
 
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model) {
-		//CLEANING APP_ID FROM SESSION
+		// CLEANING APP_ID FROM SESSION
 		httpSession.removeAttribute(APP_ID);
 
 		final List<FlowEngineDomainStatus> domainStatusList = getUserDomains(model);
@@ -344,32 +344,6 @@ public class FlowDomainController {
 
 	}
 
-	@GetMapping(value = "/monitor/{domainId}", produces = "text/html")
-	public String showNodeRedMonitoringPanelForm(Model model, @PathVariable(value = "domainId") String domainId,
-			@RequestParam(value = "flow", required = false) String flowId) {
-		final FlowDomain domain = domainService.getFlowDomainByIdentification(domainId);
-		if (domainService.hasUserViewAccess(domain.getId(), utils.getUserId())) {
-			try {
-
-				final String accessToken = noderedAuthService.getNoderedAuthAccessToken(domain.getUser().getUserId(),
-						domainId);
-				String proxyUrlAndDomain = proxyUrl + domainId + "/appmetrics-dash/?x-op-nodekey=" + accessToken;
-				if (flowId != null) {
-					proxyUrlAndDomain += "#flow/" + flowId;
-				}
-
-				model.addAttribute("proxy", proxyUrlAndDomain);
-				return "flows/monitor";
-			} catch (final Exception e) {
-				return "flows/list";
-
-			}
-		} else {
-			return ERROR_403;
-		}
-
-	}
-
 	@GetMapping(value = "/check/available/{domainId}")
 	public @ResponseBody boolean checkAvailableDomainIdentifier(@PathVariable(value = "domainId") String domainId) {
 		return !domainService.domainExists(domainId);
@@ -430,6 +404,8 @@ public class FlowDomainController {
 			domainStatus.setMemory("--");
 			domainStatus.setUser(domain.getUser().getUserId());
 			domainStatus.setAutorecover(domain.getAutorecover());
+			domainStatus.setCreatedAt(domain.getCreatedAt());
+			domainStatus.setUpdatedAt(domain.getUpdatedAt());
 
 			final Optional<FlowEngineDomainStatus> status = domainStatusList.stream()
 					.filter(domStatus -> domStatus.getDomain().equals(domain.getIdentification())).findAny();

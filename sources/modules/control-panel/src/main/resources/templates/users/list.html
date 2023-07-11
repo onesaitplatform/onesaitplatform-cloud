@@ -261,6 +261,9 @@
 																		<!-- DELETE -->
 																		<span th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:attr="onclick='javascript:deleteUser(\'' + ${user.username}+ '\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete user</span></span>
 																		</li>
+																		<!-- HARD DELETE -->
+																		<span th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:attr="onclick='javascript:hardDeleteUser(\'' + ${user.username}+ '\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{user.template.list.hard.delete}" >Hard Delete user</span></span>
+																		</li>
 																	</ul>
 																	</span>
 																</div>
@@ -280,7 +283,7 @@
 															<label th:text="#{user.id}"> Id </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="1"/>
+															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
 															<label th:text="#{user.name}"> Name </label>
 														</span>
 														<span class="checkbox-column">
@@ -300,14 +303,14 @@
 															<label th:text="#{user.dateUpdated}"> Updated At</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="6"/>
+															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
 															<label th:text="#{user.dateDeleted}"> Deleted at</label>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="7" checked/>
 															<label th:text="#{user.active}"> Active </label>
 														</span>
 														<span th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')}" class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="8"/>
+															<input class="toggle-vis" type="checkbox" data-column="8" checked/>
 															<label th:text="#{multitenancy.tenant}"> Tenant </label>
 														</span>
 													</div>		
@@ -369,8 +372,10 @@
 	var confirmBtn = [[#{gen.confirmBtn}]] || 'Confirm';
 	var deleteTitle = [[#{user.delete.title}]] || 'Delete User';
 	var deleteText = [[#{user.hardDelete}]] || '';
+	var hardDeleteText = [[#{user.template.checkbox.hard.delete}]] || '';
 	var deleteError = [[#{user.deleteError}]] || 'Error!';
 	var deleteResourceError = [[#{user.delete.resource.error}]] || 'Error!';
+	var deleteResourceErrorAccess = [[#{user.delete.resource.error.access}]] || 'Error!';
 	
 	var deactivateTitle = [[#{user.deactivate.title}]] || 'Deactivate User';
 	var deactivateText = [[#{user.deactivateText}]] || '';
@@ -484,6 +489,16 @@
 									theme : 'light',
 									content :  deleteResourceError
 								});
+						    }
+						    else  if(dataError!=null && dataError.responseText!=null 
+						    	&& typeof dataError.responseText!='undefined' 
+						    	&& dataError.responseText.indexOf('cannot be deleted because there are access permissions assigned to the user')>-1){
+						      $.alert({
+									title : 'WARNING!',
+									type : 'orange',
+									theme : 'light',
+									content :  deleteResourceErrorAccess
+								});
 						    }else{
 						    $.alert({
 									title : 'ERROR!',
@@ -500,6 +515,68 @@
 			}
 		});
 	}
+	
+	function hardDeleteUser(id) {
+		
+		var csrf = {};
+		csrf[headerJson.csrfHeaderName] = headerJson.csrfToken;
+		
+		$.confirm({
+			title: deleteTitle,
+			theme: 'light',			
+			columnClass: 'medium',
+			content: hardDeleteText,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			buttons: {
+				close: {
+					text: cancelBtn,
+					btnClass: 'btn btn-circle btn-outline blue',
+					action: function (){} //GENERIC CLOSE.		
+				},
+				remove: {
+					text: confirmBtn,
+					btnClass: 'btn btn-primary',
+					action: function(){
+						$.ajax({
+							url : "/controlpanel/users/forgetDataUser/"+id,
+							type : "GET",
+							headers: csrf,
+							success : function(response){
+								location.reload();
+							},
+						    error :  function (dataError) {						    
+						    
+						    if(dataError!=null && dataError.responseText!=null 
+						    	&& typeof dataError.responseText!='undefined' 
+						    	&& dataError.responseText.indexOf(', there are resources owned')>-1){
+						    	
+						    
+						    $.alert({
+									title : 'WARNING!',
+									type : 'orange',
+									theme : 'light',
+									content :  deleteResourceError
+								});
+						    }else{
+						    $.alert({
+									title : 'ERROR!',
+									type : 'red',
+									theme : 'light',
+									content :  deleteError
+								});
+						    }
+						    	
+						    }
+						})
+					}
+				}
+			}
+		});
+	}
+	
+	
 	
 function modalMessage(message){
 	$.confirm({
@@ -586,8 +663,8 @@ function modalMessage(message){
 	}
 		 
 	// MAIN WHEN LOAD
-	$(window).load(function(){  
-		
+	$(window).on("load",function(){  
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
 		//DATATABLE 
 		var oTable = $('#users').DataTable({
 			"bAutoWidth": false
@@ -650,7 +727,7 @@ function modalMessage(message){
 		// HIDE COLUMNS 	
 		
 		
-		$.each([ 1,6,8 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
+		$.each([ 1,6,8 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		 yadcf.init(oTable, [			
 			    {column_number : 3,   filter_type: "select",filter_container_id:"rolefilter",filter_default_label: "[[#{user.rolTypeName}]]"}			 

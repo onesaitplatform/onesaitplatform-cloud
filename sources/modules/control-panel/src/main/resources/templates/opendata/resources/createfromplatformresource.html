@@ -616,7 +616,7 @@
 			ResourceFromPlatformController.init();
 		});
 		
-		$(window).load(function(){
+		$(window).on("load",function(){
 			if (actionMode == 'update'){
 				if (platformResource != null){
 					for (var i=0;i<datasets.length;i++){

@@ -300,7 +300,9 @@
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).load(function(){
+	$(window).on("load",function(){
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+				
 		var oTable = $('#processes').dataTable({
 	      "bAutoWidth": false
 	      });

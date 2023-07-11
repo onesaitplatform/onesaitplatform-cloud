@@ -740,4 +740,10 @@ public class RancherServiceImpl implements MSAService {
 		return CaaS.RANCHER.equals(caas);
 	}
 
+	@Override
+	public void runConfigInit(String server, String user, String credentials, String namespace, String verticalSchema,
+			String multitenantAPIKey, Map<String, Boolean> verticalCreation) {
+
+	}
+
 }

@@ -29,7 +29,7 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -181,13 +181,6 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 				// ORA-00933: SQL command not properly ended
 				affected = jdbcTemplate.update(sql.getStatement(), sql.getParams());
 				keyList = new ArrayList<>();
-			} else if (ontologyVirtualDatasource.getSgdb().equals(OntologyVirtualDatasource.VirtualDatasourceType.HIVE)
-					|| ontologyVirtualDatasource.getSgdb()
-							.equals(OntologyVirtualDatasource.VirtualDatasourceType.IMPALA)) {
-
-				jdbcTemplate.update(sql.getStatement(), new MapSqlParameterSource(sql.getParams()));
-				keyList = null;
-				affected = instances.size();
 			} else {
 				final GeneratedKeyHolder holder = new GeneratedKeyHolder();
 				affected = jdbcTemplate.update(sql.getStatement(), new MapSqlParameterSource(sql.getParams()), holder);
@@ -220,8 +213,6 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 					// else fallback
 				case ORACLE:
 				case ORACLE11:
-				case HIVE:
-				case IMPALA:
 				default:
 					return IntStream.range(0, affected).mapToObj(index -> new DBResult().setOk(true))
 							.collect(Collectors.toList());
@@ -833,7 +824,6 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 				return new JdbcTemplate(dataSource.getDatasource()).queryForList(helper.getDatabasesStatement(),
 						String.class);
 			} catch (final org.springframework.jdbc.IncorrectResultSetColumnCountException e) {
-				// CASE HIVE IMPALA
 				List<Map<String, Object>> listMap = new JdbcTemplate(dataSource.getDatasource())
 						.queryForList(helper.getDatabasesStatement());
 

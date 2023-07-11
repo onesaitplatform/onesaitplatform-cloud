@@ -76,7 +76,7 @@ public class SolverSQLImpl implements SolverInterface {
 		try {
 			return qts.querySQLAsJson(executeAs, ontology, buildQuery(query, maxreg, where, project, group, sort,
 					offset, limit, param, debug, executeAs, ontology, isSimpleMode), 0);
-		} catch (DBPersistenceException e) {
+		} catch (final DBPersistenceException e) {
 			throw new DashboardEngineException(DashboardEngineException.Error.GENERIC_EXCEPTION,
 					e.getDetailedMessage());
 		}
@@ -98,7 +98,7 @@ public class SolverSQLImpl implements SolverInterface {
 
 		log.info("Params overwrite Query: {}", trimParamsQuery);
 
-		HashMap<String, String> hashMapArrays = new HashMap<String, String>();
+		final HashMap<String, String> hashMapArrays = new HashMap<String, String>();
 		trimParamsQuery = parseArrays(trimParamsQuery, hashMapArrays);
 		trimParamsQuery = commentGroupByfunctions(trimParamsQuery);
 
@@ -115,7 +115,7 @@ public class SolverSQLImpl implements SolverInterface {
 				processedQuery = unparseArrays(processedQuery, hashMapArrays);
 				processedQuery = unCommentGroupByfunctions(processedQuery);
 			}
-		} catch (JSQLParserException e) {
+		} catch (final JSQLParserException e) {
 			throw new DashboardEngineException(DashboardEngineException.Error.PARSE_EXCEPTION, e.getCause());
 		}
 
@@ -126,12 +126,12 @@ public class SolverSQLImpl implements SolverInterface {
 	}
 
 	private String unCommentGroupByfunctions(String query) {
-		for (String espFunction : ESPECIAL_FUNCTIONS) {
-			int index = query.indexOf(espFunction);
+		for (final String espFunction : ESPECIAL_FUNCTIONS) {
+			final int index = query.indexOf(espFunction);
 			if (index >= 0) {
-				int indexleft = query.indexOf("(", index);
+				final int indexleft = query.indexOf("(", index);
 				query = query.substring(0, indexleft + 1) + query.substring(indexleft + 2, query.length());
-				int indexright = query.indexOf(")", indexleft);
+				final int indexright = query.indexOf(")", indexleft);
 				query = query.substring(0, indexright - 1) + query.substring(indexright, query.length());
 			}
 		}
@@ -140,12 +140,12 @@ public class SolverSQLImpl implements SolverInterface {
 	}
 
 	private String commentGroupByfunctions(String query) {
-		for (String espFunction : ESPECIAL_FUNCTIONS) {
-			int index = query.indexOf(espFunction);
+		for (final String espFunction : ESPECIAL_FUNCTIONS) {
+			final int index = query.indexOf(espFunction);
 			if (index >= 0) {
-				int indexleft = query.indexOf("(", index);
+				final int indexleft = query.indexOf("(", index);
 				query = query.substring(0, indexleft + 1) + "`" + query.substring(indexleft + 1, query.length());
-				int indexright = query.indexOf(")", indexleft);
+				final int indexright = query.indexOf(")", indexleft);
 				query = query.substring(0, indexright) + "`" + query.substring(indexright, query.length());
 			}
 		}
@@ -153,9 +153,9 @@ public class SolverSQLImpl implements SolverInterface {
 	}
 
 	private static String parseArrays(String query, HashMap<String, String> hasmap) {
-		StringTokenizer tokens = new StringTokenizer(query);
+		final StringTokenizer tokens = new StringTokenizer(query);
 		while (tokens.hasMoreTokens()) {
-			String str = tokens.nextToken();
+			final String str = tokens.nextToken();
 			String key = str;
 			if (str.indexOf('[') > 0) {
 				key = "aa" + UUID.randomUUID().toString().replace("-", "");
@@ -169,7 +169,7 @@ public class SolverSQLImpl implements SolverInterface {
 
 	private static String unparseArrays(String query, HashMap<String, String> hasmap) {
 
-		for (Map.Entry<String, String> pair : hasmap.entrySet()) {
+		for (final Map.Entry<String, String> pair : hasmap.entrySet()) {
 			query = query.replace(pair.getKey(), pair.getValue());
 		}
 
@@ -180,7 +180,7 @@ public class SolverSQLImpl implements SolverInterface {
 	// do it in datasource creation and save it with simple datasource flag in
 	// database
 	private boolean isSimpleDatasource(String queryOri) {
-		String query = queryOri.toLowerCase();
+		final String query = queryOri.toLowerCase();
 		return query.indexOf("inner join") == -1 && query.indexOf("select", 1) == -1
 				&& query.indexOf("outer join") == -1 && query.indexOf("full join") == -1 && query.indexOf("join") == -1;
 	}
@@ -191,17 +191,17 @@ public class SolverSQLImpl implements SolverInterface {
 			List<ProjectStt> project, List<String> group, List<OrderByStt> orderby, List<ParamStt> param)
 			throws JSQLParserException {
 
-		Statement statement = CCJSqlParserUtil.parse(query);
+		final Statement statement = CCJSqlParserUtil.parse(query);
 		log.debug("CCJSqlParserUtil.parse: {}", query);
-		PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
-		List<SelectItem> selectItems = select.getSelectItems();
+		final PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
+		final List<SelectItem> selectItems = select.getSelectItems();
 
 		if (project != null && !project.isEmpty()) {
 			select.setSelectItems(buildProjectV2(selectItems, project));
 			selectItems.addAll(select.getSelectItems());
 		}
 
-		Expression querywhere = select.getWhere();
+		final Expression querywhere = select.getWhere();
 
 		select.setWhere(buildWhereV2(where, "", selectItems, querywhere));
 
@@ -210,14 +210,14 @@ public class SolverSQLImpl implements SolverInterface {
 			if (select.getGroupBy() != null) {
 				querygroup = select.getGroupBy().getGroupByExpressions();
 			}
-			GroupByElement gbyelement = new GroupByElement();
+			final GroupByElement gbyelement = new GroupByElement();
 			gbyelement.setGroupByExpressions(buildGroupByV2(group, "", selectItems, querygroup));
 			select.setGroupByElement(gbyelement);
 			select.setHaving(buildHavingV2(where, "", selectItems, querywhere));
 		}
 
 		if (orderby != null && !orderby.isEmpty()) {
-			List<OrderByElement> queryorderby = select.getOrderByElements();
+			final List<OrderByElement> queryorderby = select.getOrderByElements();
 			select.setOrderByElements(buildOrderByV2(orderby, "", selectItems, queryorderby));
 		}
 
@@ -234,10 +234,10 @@ public class SolverSQLImpl implements SolverInterface {
 	}
 
 	protected String addLimitOffset(PlainSelect select, int maxreg, long offset, long limit) {
-		Limit querylimit = select.getLimit();
+		final Limit querylimit = select.getLimit();
 
 		Long min = (limit > 0 ? Math.min(maxreg, limit) : maxreg);
-		Limit laux = new Limit();
+		final Limit laux = new Limit();
 		if (querylimit != null) {
 			min = Math.min(min, ((LongValue) querylimit.getRowCount()).getValue());
 		}
@@ -246,8 +246,9 @@ public class SolverSQLImpl implements SolverInterface {
 		select.setLimit(laux);
 
 		if (offset > 0) {
-			Offset oaux = new Offset();
-			oaux.setOffset(offset);
+			final Expression offsetExp = new LongValue(offset);
+			final Offset oaux = new Offset();
+			oaux.setOffset(offsetExp);
 			select.setOffset(oaux);
 		}
 
@@ -263,15 +264,15 @@ public class SolverSQLImpl implements SolverInterface {
 	}
 
 	protected SelectItem generateSelectItemFromProject(ProjectStt pstt, List<SelectItem> selectItem) {
-		Column fieldValue = new Column(findEndParamV2(pstt.getField(), selectItem));
+		final Column fieldValue = new Column(findEndParamV2(pstt.getField(), selectItem));
 		SelectExpressionItem sitem;
 		if (pstt.getOp() != null && pstt.getOp().trim().length() > 0) {
-			List<Expression> expressions = new ArrayList<>();
+			final List<Expression> expressions = new ArrayList<>();
 			expressions.add(fieldValue);
-			ExpressionList expressionList = new ExpressionList();
+			final ExpressionList expressionList = new ExpressionList();
 			expressionList.setExpressions(expressions);
 
-			Function function = new Function();
+			final Function function = new Function();
 			function.setName(pstt.getOp());
 			function.setParameters(expressionList);
 			sitem = new SelectExpressionItem(function);
@@ -292,8 +293,8 @@ public class SolverSQLImpl implements SolverInterface {
 		if (projections == null || projections.isEmpty()) {
 			return selectItem;
 		} else {
-			List<SelectItem> selectItemOverwrite = new ArrayList<>();
-			for (ProjectStt p : projections) {
+			final List<SelectItem> selectItemOverwrite = new ArrayList<>();
+			for (final ProjectStt p : projections) {
 				selectItemOverwrite.add(generateSelectItemFromProject(p, selectItem));
 			}
 			return selectItemOverwrite;
@@ -302,7 +303,7 @@ public class SolverSQLImpl implements SolverInterface {
 
 	protected Expression buildExpFromFilter(FilterStt f, List<SelectItem> realproject, String prefix)
 			throws JSQLParserException {
-		StringBuilder sb = new StringBuilder();
+		final StringBuilder sb = new StringBuilder();
 		sb.append(prefix);
 		sb.append(findEndParamV2(f.getField(), realproject));
 		sb.append(" ");
@@ -313,7 +314,7 @@ public class SolverSQLImpl implements SolverInterface {
 	}
 
 	private boolean isHavingExp(String exp) {
-		String expaux = exp.toLowerCase().replace(" ", "");
+		final String expaux = exp.toLowerCase().replace(" ", "");
 		return (expaux.indexOf("sum(") != -1 || expaux.indexOf("max(") != -1 || expaux.indexOf("min(") != -1
 				|| expaux.indexOf("avg(") != -1 || expaux.indexOf("count(") != -1);
 	}
@@ -331,7 +332,7 @@ public class SolverSQLImpl implements SolverInterface {
 			} else {
 				boolean found = false;
 				while (startfindex < filters.size() && !found) {
-					String realField = findEndParamV2(filters.get(startfindex).getField(), realproject);
+					final String realField = findEndParamV2(filters.get(startfindex).getField(), realproject);
 					if (isHaving == isHavingExp(realField)) {
 						filterexaux = buildExpFromFilter(filters.get(startfindex), realproject, prefix);
 						found = true;
@@ -368,10 +369,10 @@ public class SolverSQLImpl implements SolverInterface {
 		if (groups == null || groups.isEmpty()) {
 			return groupex;
 		} else {
-			List<Expression> groupexaux = (groupex != null && !groupex.isEmpty() ? groupex
+			final List<Expression> groupexaux = (groupex != null && !groupex.isEmpty() ? groupex
 					: new ArrayList<Expression>());
 
-			for (String group : groups) {
+			for (final String group : groups) {
 				groupexaux.add(CCJSqlParserUtil.parseExpression(findEndParamV2(group, realproject)));
 			}
 			return groupexaux;
@@ -384,11 +385,11 @@ public class SolverSQLImpl implements SolverInterface {
 		if (orderbys == null || orderbys.isEmpty()) {
 			return orderbyex;
 		} else {
-			List<OrderByElement> orderbyexaux = (orderbyex != null && !orderbyex.isEmpty() ? orderbyex
+			final List<OrderByElement> orderbyexaux = (orderbyex != null && !orderbyex.isEmpty() ? orderbyex
 					: new ArrayList<OrderByElement>());
 
-			for (OrderByStt orderby : orderbys) {
-				OrderByElement newOrder = new OrderByElement();
+			for (final OrderByStt orderby : orderbys) {
+				final OrderByElement newOrder = new OrderByElement();
 				newOrder.setExpression(
 						CCJSqlParserUtil.parseExpression(findEndParamV2(orderby.getField(), realproject)));
 				newOrder.setAsc(orderby.isAsc());
@@ -399,10 +400,10 @@ public class SolverSQLImpl implements SolverInterface {
 	}
 
 	protected String findEndParamV2(String param, List<SelectItem> realproject) {
-		for (SelectItem s : realproject) {
-			String field = s.toString();
+		for (final SelectItem s : realproject) {
+			final String field = s.toString();
 			if (field.endsWith(param)) {
-				int asindex = field.toLowerCase().indexOf(" as ");
+				final int asindex = field.toLowerCase().indexOf(" as ");
 				if (asindex != -1 && field.substring(asindex + 4).equals(param)) {
 					return field.substring(0, asindex);
 				}
@@ -416,7 +417,7 @@ public class SolverSQLImpl implements SolverInterface {
 
 	private String processQueryParams(String trimquery, List<ParamStt> params) {
 		if (params != null && !params.isEmpty()) {
-			for (ParamStt param : params) {
+			for (final ParamStt param : params) {
 				trimquery = trimquery.replaceAll("\\{\\$" + param.getField() + "\\}", param.getValue());
 			}
 		}

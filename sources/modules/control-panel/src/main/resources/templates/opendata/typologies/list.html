@@ -384,7 +384,8 @@
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).load(function(){  
+	$(window).on("load",function(){  
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
         //DATATABLE 
         var oTable = $('#typologies').dataTable({
 	      "bAutoWidth": false

@@ -28,6 +28,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -56,6 +57,7 @@ public class NotificatorImpl implements Notificator {
 	@PostConstruct
 	public void init() {
 		restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+		restTemplate.getMessageConverters().add(0, new MappingJackson2HttpMessageConverter());
 		restTemplate.setRequestFactory(getRestTemplateRequestFactory());
 	}
 

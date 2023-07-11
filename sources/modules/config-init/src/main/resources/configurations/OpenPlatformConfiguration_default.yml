@@ -41,6 +41,25 @@ onesaitplatform:
         defaults:
           replicas: 0
           shards: 5
+      opensearch:
+        username: admin
+        password: admin
+        sql:
+          endpoint: http://localhost:9200
+          queryPath: /_plugins/_sql?format=json
+          baseQueryObject: query
+        dump:
+          path: /tmp/export/
+          elasticDumpCmd: S:/node_modules/.bin/elasticdump.cmd
+        enabled: true
+        servers:
+          -
+            host: localhost
+            port: 9200
+            protocol: http
+        defaults:
+          replicas: 0
+          shards: 5
       prestodb-historical-catalog: minio
       prestodb-historical-schema: default
       prestodb-realtimedb-catalog: realtimedb
@@ -58,6 +77,8 @@ onesaitplatform:
       signed: false
       keystorePath: /usr/local/add_keystore.p12
       keystorePassword: ENC(MXchpQGKyY2TTHRyEZDhP0gUtzc4a+en8zVU0hd0Uf+tcnPOfioCCwuzKEwgOJx8)
+      #options: mongodb, elasticsearch, opensearch
+      defaultRtdbDatasource: mongodb
     controlpanel:
       maxSessionsPerUser: 10
-      password-pattern: (?=^.{10,255}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$
+      password-pattern: (?=^.{10,255}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z])(?=.*[-@#!;_?¿$%^&+=.]).*$

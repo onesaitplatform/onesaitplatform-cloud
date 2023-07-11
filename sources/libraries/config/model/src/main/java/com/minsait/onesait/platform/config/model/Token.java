@@ -94,7 +94,7 @@ public class Token extends AuditableEntityWithUUID {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result
-				+ (getClientPlatform() == null ? 0 : getClientPlatform().getIdentification().hashCode());
+				+ (getClientPlatform() == null || getClientPlatform().getIdentification() == null ? 0 : getClientPlatform().getIdentification().hashCode());
 		result = prime * result + (getTokenName() == null ? 0 : getTokenName().hashCode());
 		return result;
 	}

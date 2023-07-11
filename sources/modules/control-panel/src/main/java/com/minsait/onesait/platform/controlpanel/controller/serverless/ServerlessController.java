@@ -29,13 +29,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.config.services.usertoken.UserTokenService;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.controlpanel.service.serverless.ServerlessService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
-
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
 @Controller
 @RequestMapping("serverless")
@@ -43,18 +43,20 @@ public class ServerlessController {
 
 	@Value("${onesaitplatform.gitlab.manager.server}")
 	private String gitlabManagerServer;
-	
+
 	@Autowired
 	UserService userservice;
-	
+
 	@Autowired
 	UserTokenService usertokenservice;
-	
+
 	@Autowired
 	private AppWebUtils utils;
-	
+
 	@Autowired
 	private ServerlessService serverlessService;
+
+	private static final ObjectMapper MAPPER = new ObjectMapper();
 
 	@GetMapping("applications")
 	public String applications(Model model) {
@@ -170,7 +172,8 @@ public class ServerlessController {
 
 	@PostMapping("applications/{appName}/functions/{fnName}/version")
 	public ResponseEntity<Object> updateVersion(@PathVariable("appName") String appName,
-			@PathVariable("fnName") String fnName, @RequestBody String version) {
+			@PathVariable("fnName") String fnName,
+			@org.springframework.web.bind.annotation.RequestBody String version) {
 		serverlessService.updateFunction(appName, fnName, version);
 		return ResponseEntity.ok().build();
 	}
@@ -184,8 +187,14 @@ public class ServerlessController {
 
 	@PostMapping("applications/{appName}/functions/{fnName}/environment")
 	public ResponseEntity<Object> updateEnvironment(@PathVariable("appName") String appName,
-			@PathVariable("fnName") String fnName, @RequestBody ObjectNode config) {
-		serverlessService.updateFunctionEnvironment(appName, fnName, config);
+			@PathVariable("fnName") String fnName,
+			@org.springframework.web.bind.annotation.RequestBody String configJson) {
+
+		try {
+			serverlessService.updateFunctionEnvironment(appName, fnName, MAPPER.readTree(configJson));
+		} catch (final JsonProcessingException e) {
+			return ResponseEntity.badRequest().body("Bad JSON");
+		}
 		return ResponseEntity.ok().build();
 	}
 

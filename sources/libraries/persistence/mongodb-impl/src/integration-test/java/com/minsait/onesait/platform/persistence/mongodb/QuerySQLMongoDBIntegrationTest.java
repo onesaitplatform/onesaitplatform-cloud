@@ -56,6 +56,7 @@ public class QuerySQLMongoDBIntegrationTest {
 		@Bean("dataHubRest")
 		public RestTemplate restTemplate() throws GenericOPException {
 			final RestTemplate rt = new RestTemplate();
+
 			return rt;
 		}
 	}
@@ -69,7 +70,6 @@ public class QuerySQLMongoDBIntegrationTest {
 	@Autowired
 	@Qualifier("MongoBasicOpsDBRepository")
 	BasicOpsDBRepository repository;
-
 
 	private static final String ONT_NAME = "contextData";
 	private static final String DATABASE = "onesaitplatform_rtdb";

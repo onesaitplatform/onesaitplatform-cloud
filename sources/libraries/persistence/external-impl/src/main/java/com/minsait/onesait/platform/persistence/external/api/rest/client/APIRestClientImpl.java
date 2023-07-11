@@ -46,7 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 public class APIRestClientImpl implements APIRestClient {
 
 	private final int timeout = (int) TimeUnit.SECONDS.toMillis(10);
-	
+
 	private static final String CONTENT_TYPE = "content-type";
 
 	private RestTemplate restTemplate;

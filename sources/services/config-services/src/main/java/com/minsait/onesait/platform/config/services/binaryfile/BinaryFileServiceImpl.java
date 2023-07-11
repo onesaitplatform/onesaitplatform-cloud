@@ -134,19 +134,52 @@ public class BinaryFileServiceImpl implements BinaryFileService {
 	}
 
 	@Override
-	public List<BinaryFile> getAllFiles(User user) {
+	public long countFiles(User user, Boolean showAuditFiles) {
 		if (userService.isUserAdministrator(user)) {
-			return binaryFileRepository.findAll();
+			if (showAuditFiles) {
+				return binaryFileRepository.count();
+			} else {
+				return binaryFileRepository.countNoAudit();
+			}
 		}
-		return binaryFileRepository.findByUser(user);
+		if (showAuditFiles) {
+			return binaryFileRepository.countByUser(user);
+		} else {
+			return binaryFileRepository.countByUserNoAudit(user);
+		}
+		
+	}
+	
+	@Override
+	public List<BinaryFile> getAllFiles(User user, Boolean showAuditFiles) {
+		if (userService.isUserAdministrator(user)) {
+			if (showAuditFiles) {
+				return binaryFileRepository.findAll();
+			} else {
+				return binaryFileRepository.findAllNoAudit();
+			}
+		}
+		if (showAuditFiles) {
+			return binaryFileRepository.findByUser(user);
+		} else {
+			return binaryFileRepository.findByUserNoAudit(user);
+		}
 	}
 
 	@Override
-	public List<BinaryFile> getAllFilesByName(User user, String name) {
+	public List<BinaryFile> getAllFilesFiltered(User user, String fileName, String fileId, String fileExt, String metaData, String owner, Boolean showAuditFiles) {
 		if (userService.isUserAdministrator(user)) {
-			return binaryFileRepository.findAllByFileName(name);
+			if (showAuditFiles) {
+				return binaryFileRepository.findAllByCriteria(fileName, fileId, fileExt, metaData, owner);
+			} else {
+				return binaryFileRepository.findAllByCriteriaNoAudit(fileName, fileId, fileExt, metaData, owner);
+			}
 		}
-		return binaryFileRepository.findByUserAndFileName(user, name);
+		if (showAuditFiles) {
+			return binaryFileRepository.findByUserByCriteria(user, fileName, fileId, fileExt, metaData);
+		} else {
+			return binaryFileRepository.findByUserByCriteriaNoAudit(user, fileName, fileId, fileExt, metaData);
+		}
 	}
 
 	@Override

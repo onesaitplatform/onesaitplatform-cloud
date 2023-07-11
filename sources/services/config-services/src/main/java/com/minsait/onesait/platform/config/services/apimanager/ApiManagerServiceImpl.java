@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.config.services.apimanager;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -50,6 +51,7 @@ import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserApi;
 import com.minsait.onesait.platform.config.repository.ApiOperationRepository;
 import com.minsait.onesait.platform.config.repository.ApiRepository;
+import com.minsait.onesait.platform.config.repository.OntologyUserAccessRepository;
 import com.minsait.onesait.platform.config.repository.UserApiRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.services.apimanager.authentication.AuthenticationJson;
@@ -60,7 +62,7 @@ import com.minsait.onesait.platform.config.services.exceptions.OPResourceService
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.config.services.usertoken.UserTokenService;
-import com.minsait.onesait.platform.config.repository.OntologyUserAccessRepository;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -128,13 +130,13 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 					user.getUserId(), user.getRole().getId(), apiId, Api.ApiStates.valueOf(state), userId);
 		}
 
-		apis.forEach(api->{
+		apis.forEach(api -> {
 			obfuscateUsersData(api);
 		});
 
 		return apis;
 	}
-	
+
 	@Override
 	public List<ApiForList> loadAPISByFilterForList(String apiId, String state, String userId, String loggeduser) {
 		List<ApiForList> apis = null;
@@ -151,8 +153,8 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 		}
 
 		if (state == null || "".equals(state)) {
-			apis = apiRepository.findApisByIdentificationOrUserForAdminOrOwnerOrPublicOrPermissionForList(user.getUserId(),
-					user.getRole().getId(), apiId, userId);
+			apis = apiRepository.findApisByIdentificationOrUserForAdminOrOwnerOrPublicOrPermissionForList(
+					user.getUserId(), user.getRole().getId(), apiId, userId);
 		} else {
 			apis = apiRepository.findApisByIdentificationOrStateOrUserForAdminOrOwnerOrPublicOrPermissionForList(
 					user.getUserId(), user.getRole().getId(), apiId, Api.ApiStates.valueOf(state), userId);
@@ -161,10 +163,9 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 //		apis.forEach(api->{
 //			obfuscateUsersData(api);
 //		});
-		
+
 		return apis;
 	}
-
 
 	@Override
 	public Integer calculateNumVersion(String identification, ApiType apiType) {
@@ -283,14 +284,14 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 				params = createQueryStrings(operation, operationJson.getQuerystrings());
 			}
 			operation.getApiqueryparameters().addAll(params);
-			//			apiOperationRepository.save(operation);
+			// apiOperationRepository.save(operation);
 			api.getApiOperations().add(operation);
 		}
-		//		apiRepository.save(api);
+		// apiRepository.save(api);
 	}
 
 	private List<ApiQueryParameter> createQueryStrings(ApiOperation operation, List<QueryStringJson> querystrings) {
-		return querystrings.stream().map(qsj ->{
+		return querystrings.stream().map(qsj -> {
 			final ApiQueryParameter apiQueryParameter = new ApiQueryParameter();
 			apiQueryParameter.setApiOperation(operation);
 			apiQueryParameter.setName(qsj.getName());
@@ -301,10 +302,10 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 			apiQueryParameter.setCondition(qsj.getCondition());
 			return apiQueryParameter;
 		}).collect(Collectors.toList());
-		//		for (final QueryStringJson queryStringJson : querystrings) {
+		// for (final QueryStringJson queryStringJson : querystrings) {
 		//
-		////			apiQueryParameterRepository.save(apiQueryParameter);
-		//		}
+		//// apiQueryParameterRepository.save(apiQueryParameter);
+		// }
 	}
 
 	@Override
@@ -360,7 +361,7 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 				if (apimemory.getApiType().equals(ApiType.INTERNAL_ONTOLOGY)) {
 					operationsJson = objectMapper.readValue(reformat(operationsObject),
 							new TypeReference<List<OperationJson>>() {
-					});
+							});
 					updateOperations(apimemory, operationsJson);
 				}
 			} catch (final IOException e) {
@@ -379,13 +380,15 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 	}
 
 	private void updateOperations(Api api, List<OperationJson> operationsJson) {
-		//		final List<ApiOperation> apiOperations = apiOperationRepository.findAllByApi(api);
-		//		for (final ApiOperation apiOperation : apiOperations) {
-		//			for (final ApiQueryParameter apiQueryParameter : apiOperation.getApiqueryparameters()) {
-		//				apiQueryParameterRepository.delete(apiQueryParameter);
-		//			}
-		//			apiOperationRepository.delete(apiOperation);
-		//		}
+		// final List<ApiOperation> apiOperations =
+		// apiOperationRepository.findAllByApi(api);
+		// for (final ApiOperation apiOperation : apiOperations) {
+		// for (final ApiQueryParameter apiQueryParameter :
+		// apiOperation.getApiqueryparameters()) {
+		// apiQueryParameterRepository.delete(apiQueryParameter);
+		// }
+		// apiOperationRepository.delete(apiOperation);
+		// }
 		api.getApiOperations().clear();
 		createOperations(api, operationsJson);
 
@@ -400,15 +403,16 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 				throw new OPResourceServiceException(
 						"This Api is shared within a Project, revoke access from project prior to deleting");
 			}
-			//			final List<ApiOperation> apiOperationList = apiOperationRepository.findByApiIdOrderByOperationDesc(id);
+			// final List<ApiOperation> apiOperationList =
+			// apiOperationRepository.findByApiIdOrderByOperationDesc(id);
 			//
-			//			apiOperationRepository.deleteAll(apiOperationList);
-			//			log.debug("API's operation deleted");
+			// apiOperationRepository.deleteAll(apiOperationList);
+			// log.debug("API's operation deleted");
 			//
-			//			final List<UserApi> userApiList = userApiRepository.findByApiId(id);
+			// final List<UserApi> userApiList = userApiRepository.findByApiId(id);
 			//
-			//			userApiRepository.deleteAll(userApiList);
-			//			log.debug("API's authorizations deleted");
+			// userApiRepository.deleteAll(userApiList);
+			// log.debug("API's authorizations deleted");
 
 			apiRepository.delete(apiremove);
 			log.debug("API deleted");
@@ -528,26 +532,20 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 
 	@Override
 	@Modifying
-	public boolean permision (String apiId, String userId) {
-		
+	public boolean permision(String apiId, String userId) {
+
 		String typeOntology = apiRepository.typeOntology(apiId);
-		
-		
-		if (typeOntology == "INTERNAL_ONTOLOGY"){
+
+		if (typeOntology == "INTERNAL_ONTOLOGY") {
 			String getOntologyId = apiRepository.getOntologyId(apiId);
 			String getPermision = ontologyUserAccessRepository.getPermision(userId, getOntologyId);
-			if (getPermision == null ) {
+			if (getPermision == null) {
 				return true;
 			}
 		}
 		return false;
 	}
-	
-	
-	
-	
-	
-	
+
 	@Override
 	public List<UserApi> updateAuthorizationAllVersions(String identification, String userId, User user) {
 		// for api+version: if possible: update auth, else: skip update auth
@@ -732,9 +730,9 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 	public boolean hasUserAccess(Api api, User user) {
 		return isUserOwnerOrAdmin(user, api)
 				|| (api.isPublic() || userApiRepository.findByApiIdAndUser(api.getId(), user.getUserId()) != null)
-				&& isApiStateValidForUserAccess(api)
+						&& isApiStateValidForUserAccess(api)
 				|| resourceService.hasAccess(user.getUserId(), api.getId(), ResourceAccessType.VIEW)
-				&& isApiStateValidForUserAccess(api);
+						&& isApiStateValidForUserAccess(api);
 	}
 
 	@Override
@@ -810,7 +808,8 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 		api.ifPresent(a -> {
 			if (a.getApiType().equals(ApiType.EXTERNAL_FROM_JSON)) {
 				// Only one operation should exist for this type of apis
-				//				ApiOperation operation = apiOperationRepository.findAllByApi(a).stream().findFirst().orElse(null);
+				// ApiOperation operation =
+				// apiOperationRepository.findAllByApi(a).stream().findFirst().orElse(null);
 				ApiOperation operation;
 				if (!a.getApiOperations().isEmpty()) {
 					operation = a.getApiOperations().iterator().next();
@@ -973,8 +972,6 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 				api.setNumversion(forcedNumVersion);
 			}
 
-
-
 			if (!authentications.isEmpty()) {
 				api.getUserApiAccesses().addAll(authentications);
 			}
@@ -1085,7 +1082,6 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 			api.setUser(lastApi.getUser());
 			api.setState(ApiStates.DEVELOPMENT);
 
-
 			if (!authentications.isEmpty()) {
 				api.getUserApiAccesses().addAll(authentications);
 			}
@@ -1170,19 +1166,19 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 			for (final ApiOperation operation : operations) {
 				operation.setApi(api);
 				api.getApiOperations().add(operation);
-				//				saveApiOperation(operation);
+				// saveApiOperation(operation);
 			}
 			apiRepository.save(api);
 		}
 	}
 
-	//	public void saveApiOperation(ApiOperation operation) {
-	//		apiOperationRepository.save(operation);
+	// public void saveApiOperation(ApiOperation operation) {
+	// apiOperationRepository.save(operation);
 	//
-	//		if (!operation.getApiqueryparameters().isEmpty()) {
-	//			apiQueryParameterRepository.saveAll(operation.getApiqueryparameters());
-	//		}
-	//	}
+	// if (!operation.getApiqueryparameters().isEmpty()) {
+	// apiQueryParameterRepository.saveAll(operation.getApiqueryparameters());
+	// }
+	// }
 
 	private void updateAuthorizationsRest(Api apimemory, List<UserApi> authentications) {
 		apimemory.getUserApiAccesses().clear();
@@ -1364,31 +1360,54 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 
 	@Override
 	public void obfuscateUsersData(Api api) {
-		final User obfuscatedUser=new User();
+		final User obfuscatedUser = new User();
 		obfuscatedUser.setUserId(api.getUser().getUserId());
 		obfuscatedUser.setFullName(api.getUser().getFullName());
 
 		api.setUser(obfuscatedUser);
 
-		api.getUserApiAccesses().forEach(userApi ->{
-			final User obfuscatedUserApi=new User();
+		api.getUserApiAccesses().forEach(userApi -> {
+			final User obfuscatedUserApi = new User();
 			obfuscatedUserApi.setUserId(userApi.getUser().getUserId());
 
 			userApi.setUser(obfuscatedUserApi);
 		});
 
-		final Ontology ontology=api.getOntology();
-		if(null != ontology) {
-			final User obfuscatedOntologyUser=new User();
+		final Ontology ontology = api.getOntology();
+		if (null != ontology) {
+			final User obfuscatedOntologyUser = new User();
 			obfuscatedOntologyUser.setUserId(ontology.getUser().getUserId());
 			obfuscatedUser.setFullName(api.getUser().getFullName());
 
 			ontology.setUser(obfuscatedOntologyUser);
 
-			final User obfuscatedDatamodelUser=new User();
+			final User obfuscatedDatamodelUser = new User();
 			obfuscatedDatamodelUser.setUserId(ontology.getDataModel().getUser().getUserId());
 
 			ontology.getDataModel().setUser(obfuscatedDatamodelUser);
 		}
 	}
+
+	@Override
+	@Modifying
+	public void deleteUserApiForAUser(String userAccessId) {
+
+		final User userAccess = userService.getUser(userAccessId);
+		List<UserApi> opt = userApiRepository.findByUser(userAccess);
+		for (Iterator iterator = opt.iterator(); iterator.hasNext();) {
+			UserApi userApi = (UserApi) iterator.next();
+
+			final Set<UserApi> accesses = userApi.getApi().getUserApiAccesses().stream()
+					.filter(a -> !a.getId().equals(userApi.getId())).collect(Collectors.toSet());
+
+			apiRepository.findById(userApi.getApi().getId()).ifPresent(api -> {
+				api.getUserApiAccesses().clear();
+				api.getUserApiAccesses().addAll(accesses);
+				apiRepository.save(api);
+			});
+
+		}
+
+	}
+
 }

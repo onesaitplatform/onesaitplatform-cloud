@@ -190,7 +190,7 @@
 		var predictorInfo = [[${predictorInfo}]]
 		headersObj[csrfHeader] = csrfToken;
 
-		$(window).load(function(){
+		$(window).on("load",function(){
 			createEditor(); 
 			$('#jsoneditor').attr('data-loaded', true);
 			delete predictorInfo.code;

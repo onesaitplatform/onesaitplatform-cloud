@@ -143,7 +143,9 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 		if (gadgetDatasource.getOntology() == null) {
 			throw new GadgetDatasourceServiceException("Ontology is a field required.");
 		}
-		if (gadgetDatasource.getOntology().getRtdbDatasource() != RtdbDatasource.NEBULA_GRAPH && !isOntologyOnQuery(gadgetDatasource.getOntology().getIdentification(), gadgetDatasource.getQuery())) {
+		if (gadgetDatasource.getOntology().getRtdbDatasource() != RtdbDatasource.NEBULA_GRAPH
+				&& !isOntologyOnQuery(gadgetDatasource.getOntology().getIdentification(),
+						gadgetDatasource.getQuery())) {
 			throw new GadgetDatasourceServiceException("The query: " + gadgetDatasource.getQuery()
 					+ " is not for the ontology selected: " + gadgetDatasource.getOntology().getIdentification());
 		}
@@ -177,7 +179,9 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 		if (gadgetDatasource.getOntology() == null) {
 			throw new GadgetDatasourceServiceException("Ontology is a field required.");
 		}
-		if (gadgetDatasource.getOntology().getRtdbDatasource() != RtdbDatasource.NEBULA_GRAPH && !isOntologyOnQuery(gadgetDatasource.getOntology().getIdentification(), gadgetDatasource.getQuery())) {
+		if (gadgetDatasource.getOntology().getRtdbDatasource() != RtdbDatasource.NEBULA_GRAPH
+				&& !isOntologyOnQuery(gadgetDatasource.getOntology().getIdentification(),
+						gadgetDatasource.getQuery())) {
 			throw new GadgetDatasourceServiceException("The query: " + gadgetDatasource.getQuery()
 					+ " is not for the ontology selected: " + gadgetDatasource.getOntology().getIdentification());
 		}
@@ -221,7 +225,8 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 		if (userService.isUserAdministrator(user)) {
 			return true;
 		} else if (gadgetDatasourceRepository.findById(id).isPresent()) {
-			return gadgetDatasourceRepository.findById(id).get().getUser().getUserId().equals(userId);
+			return gadgetDatasourceRepository.findById(id).get().getUser().getUserId().equals(userId)
+					|| gadgetDatasourceRepository.findById(id).get().getOntology().isPublic();
 		} else {
 			return resourceService.hasAccess(userId, id, ResourceAccessType.MANAGE);
 		}

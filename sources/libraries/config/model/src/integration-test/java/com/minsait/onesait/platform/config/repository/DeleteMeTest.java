@@ -77,8 +77,10 @@ public class DeleteMeTest {
 	public void testQuery() {
 		final HttpHeaders headers = new HttpHeaders();
 		headers.add(HttpHeaders.CONTENT_TYPE, "application/json");
-		final ResponseEntity<JsonNode> queryResponse = new RestTemplate().exchange(
-				"http://127.0.0.1:47334/api/sql/query", HttpMethod.POST,
+		RestTemplate restTemplate = new RestTemplate();
+
+		final ResponseEntity<JsonNode> queryResponse = restTemplate.exchange("http://127.0.0.1:47334/api/sql/query",
+				HttpMethod.POST,
 				new HttpEntity<>(
 						"{\"query\":\"SELECT * FROM mindsdb.strength_predictor where when_data='{\\\"age\\\": 28, \\\"superPlasticizer\\\": 2.5, \\\"slag\\\": 1, \\\"water\\\": 162, \\\"fineAggregate\\\": 1040}'\",\"context\":{\"db\":\"mindsdb\"}}",
 						headers),

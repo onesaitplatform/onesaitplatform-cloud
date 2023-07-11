@@ -15,7 +15,8 @@
 package com.minsait.onesait.platform.api.config;
 
 import java.security.Principal;
-
+import java.util.Arrays;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -39,11 +40,11 @@ import com.minsait.onesait.platform.security.PlugableOauthAuthenticator;
 public class OAuth2ResourceServerConfig extends ResourceServerConfigurerAdapter {
 
 	@Bean
-	public FilterRegistrationBean corsFilter() {
+	public FilterRegistrationBean corsFilter(@Value("${onesaitplatform.secure.cors:*}") String allowedURLs) {
 		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		final CorsConfiguration config = new CorsConfiguration();
 		config.setAllowCredentials(true);
-		config.addAllowedOrigin("*");
+		config.setAllowedOriginPatterns(Arrays.asList(allowedURLs.split(",")));
 		config.addAllowedHeader("*");
 		config.addAllowedMethod("*");
 		source.registerCorsConfiguration("/**", config);

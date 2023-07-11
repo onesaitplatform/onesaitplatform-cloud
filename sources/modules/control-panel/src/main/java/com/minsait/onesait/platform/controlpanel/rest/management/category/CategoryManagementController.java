@@ -180,7 +180,7 @@ public class CategoryManagementController {
 			return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, MSG_CATEGORY_NOT_EXIST), HttpStatus.NOT_FOUND);
 		} 
 		try {
-			categoryService.deleteCategory(category.getIdentification());
+			categoryService.deleteCategory(category.getId());
 			return new ResponseEntity<>(String.format(MSG_OK_JSON_RESPONSE, MSG_CATEGORY_DELETED), HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);	
@@ -255,7 +255,7 @@ public class CategoryManagementController {
 			return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, MSG_SUBCATEGORY_NOT_EXIST), HttpStatus.NOT_FOUND);
 		}
 		try {
-			subcategoryService.deleteSubcategory(subcategory.getIdentification());
+			subcategoryService.deleteSubcategory(subcategory.getId());
 			return new ResponseEntity<>(String.format(MSG_OK_JSON_RESPONSE, MSG_SUBCATEGORY_DELETED), HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);	

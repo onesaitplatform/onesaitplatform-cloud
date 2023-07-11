@@ -133,6 +133,10 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 	public ClientPlatform getByIdentification(String identification) {
 		return clientPlatformRepository.findByIdentification(identification);
 	}
+	
+	public ClientPlatform getIdByIdentification(String identification) {
+		return clientPlatformRepository.getIdByIdentification(identification);
+	}
 
 	@Override
 	public List<ClientPlatform> getAllClientPlatforms() {

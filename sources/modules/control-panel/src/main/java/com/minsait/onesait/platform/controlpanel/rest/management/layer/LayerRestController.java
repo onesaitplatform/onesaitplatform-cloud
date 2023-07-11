@@ -252,6 +252,7 @@ public class LayerRestController {
 		return ResponseEntity.ok().build();
 	}
 
+	@Operation(summary = "Create crud of the layer")
 	@PostMapping(value = { "/crud" }, produces = "text/plain")
 	public ResponseEntity<String> insert(String layerIdentification, @RequestBody Object data) {
 
@@ -274,6 +275,7 @@ public class LayerRestController {
 		}
 	}
 
+	@Operation(summary = "Update the crud of the layer by layerIdentification and oid")
 	@PutMapping(value = { "/crud" }, produces = "text/plain")
 	public ResponseEntity<String> update(String layerIdentification, @RequestBody Object data, String oid) {
 
@@ -294,7 +296,7 @@ public class LayerRestController {
 			return new ResponseEntity<>(ERROR_UPDATE_DATA, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-
+	@Operation(summary = "Delete the crud of the layer by layerIdentification and oid")
 	@DeleteMapping(value = { "/crud" }, produces = "text/plain")
 	public ResponseEntity<String> delete(String layerIdentification, String oid) {
 
@@ -316,6 +318,7 @@ public class LayerRestController {
 		}
 	}
 
+	@Operation(summary = "Get crud of the layer by layerIdentification")
 	@GetMapping(value = { "/crud" }, produces = "text/plain")
 	public ResponseEntity<String> list(String layerIdentification) {
 

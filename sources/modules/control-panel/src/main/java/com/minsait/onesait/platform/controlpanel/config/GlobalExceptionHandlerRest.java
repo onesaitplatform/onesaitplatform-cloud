@@ -14,8 +14,13 @@
  */
 package com.minsait.onesait.platform.controlpanel.config;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -39,7 +44,14 @@ public class GlobalExceptionHandlerRest extends ExceptionHandlerExceptionResolve
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<String> defaultErrorHandler(HttpServletRequest req, Exception e) {
 		log.error("Handling REST exception not handled");
-		log.debug(e.getMessage());
+		try {
+			InputStream requestInputStream = req.getInputStream();
+			log.error("REQUEST DATA: " + IOUtils.toString(requestInputStream, StandardCharsets.UTF_8));
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			log.error(e1.getMessage());
+		}
+		log.error(e.getMessage());
 		return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 

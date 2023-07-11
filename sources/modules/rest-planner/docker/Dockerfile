@@ -1,4 +1,4 @@
-FROM onesaitplatform/baseimage:latest
+FROM onesaitplatform/baseimage:latest-17
 
 # Metadata
 LABEL platform.image.name="rest-planner"

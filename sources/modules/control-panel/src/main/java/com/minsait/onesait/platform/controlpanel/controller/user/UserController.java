@@ -61,6 +61,7 @@ import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserToken;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
+import com.minsait.onesait.platform.config.services.deletion.EntityDeletionServiceImpl;
 import com.minsait.onesait.platform.config.services.exceptions.UserServiceException;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.user.UserService;
@@ -112,9 +113,12 @@ public class UserController {
 
 	@Autowired
 	private ConfigurationService configurationService;
-	
-	@Autowired 
+
+	@Autowired
 	private HttpSession httpSession;
+
+	@Autowired
+	private EntityDeletionServiceImpl deletionService;
 
 	@Value("${onesaitplatform.user.registry.validation.url:http://localhost:18000/controlpanel/users/validateNewUserFromLogin/}")
 	private String validationUrlNewUser;
@@ -221,7 +225,7 @@ public class UserController {
 			}
 			for (final String ontToDelete : data.getOntologies()) {
 				log.debug("remove: " + ontToDelete + " \n");
-				entityDeleteService.deleteOntology(ontToDelete, data.getUserId());
+				entityDeleteService.deleteOntology(ontToDelete, data.getUserId(), false);
 			}
 
 			return Collections.singletonMap("url", USERS_UPDATE_STR + data.getUserId() + TRUE_STR);
@@ -399,9 +403,9 @@ public class UserController {
 	public String list(Model model, @RequestParam(required = false) String userId,
 			@RequestParam(required = false) String fullName, @RequestParam(required = false) String roleType,
 			@RequestParam(required = false) String email, @RequestParam(required = false) Boolean active) {
-		//CLEANING APP_ID FROM SESSION
+		// CLEANING APP_ID FROM SESSION
 		httpSession.removeAttribute(APP_ID);
-		
+
 		if (userId != null && userId.equals("")) {
 			userId = null;
 		}
@@ -667,13 +671,13 @@ public class UserController {
 
 				utils.deactivateSessions(userId);
 				userService.deleteUser(userId);
-				
+
 			}
 
 			if (utils.isAdministrator()) {
 				return REDIRECT_USER_LIST;
 			} else {
-				return "redirect:/logout";
+				return "redirect:/logi";
 			}
 
 		} catch (final UserServiceException e) {
@@ -684,27 +688,22 @@ public class UserController {
 
 	}
 
-	@GetMapping(value = "/forgetDataUser/{userId}/{forgetMe}")
-	public String forgetDataUser(Model model, RedirectAttributes redirect, @PathVariable(name = "userId") String userId,
-			@PathVariable boolean forgetMe) {
+	@GetMapping(value = "/forgetDataUser/{userId}")
+	public String forgetDataUser(Model model, RedirectAttributes redirect,
+			@PathVariable(name = "userId") String userId) {
 
 		try {
 
-			if (!utils.isAdministrator() && utils.getUserId().equals(userId)
-					|| utils.isAdministrator() && !utils.getUserId().equals(userId)) {
-				for (Ontology ontToDelete : ontologyService.getAllOntologiesByUser(userId)) {
-					log.debug("remove: " + ontToDelete.getIdentification() + " \n");
-					entityDeleteService.deleteOntology(ontToDelete.getId(), userId);
-				}
-			}
+			deletionService.hardDeleteUser(userId);
 
 			if (utils.isAdministrator()) {
 				return REDIRECT_USER_LIST;
 			} else {
-				return REDIRECT_USER_SHOW + utils.getUserId() + "/";
+				return "redirect:/login";
 			}
 
-		} catch (final UserServiceException e) {
+		} catch (final Exception e) {
+
 			log.error("Cannot deleted  data user", e);
 			utils.addRedirectMessage(USER_REMOVE_DATA_ERROR, redirect);
 			return REDIRECT_USER_SHOW + utils.getUserId() + "/";

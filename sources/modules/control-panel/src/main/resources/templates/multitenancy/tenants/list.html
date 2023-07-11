@@ -240,7 +240,7 @@
 				$('#tenants').DataTable().column(0).search( $('#tenant-name').val()).draw();
 			});
 		});
-		$(window).load(function(){  
+		$(window).on("load",function(){  
 			
 			//DATATABLE 
 			var oTable = $('#verticals').DataTable({

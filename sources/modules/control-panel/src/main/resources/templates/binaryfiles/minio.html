@@ -353,7 +353,7 @@
 																	<ul class="dropdown-menu dropdown-menu-table download-menu">
 																		<li>
 																			<!-- Copy link, accesible always -->
-																			<span class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" th:attr="onclick='BinaryFilesController.copyS3AddressToClipboard(\''+|${s3Server}/|+${cFile.path}+ '\')'"><i class="icon-url"></i><span class="span-title-three-dots-icons" th:text="#{binaryfiles.copy}" >Copy URL</span></span>
+																			<span class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" th:attr="onclick='BinaryFilesController.getBinaryFileUrl(\''+${cFile.id}+'\')'"><i class="icon-url"></i><span class="span-title-three-dots-icons" th:text="#{binaryfiles.copy}" >Copy URL</span></span>
 																		</li>
 																		<li>
 																			<!-- SHARE -->	
@@ -409,11 +409,11 @@
 															<label th:text="#{binaryfiles.filename}"> File Name </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="1"/>
+															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
 															<label th:text="#{binaryfiles.fileid}"> File Id </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="2"/>
+															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
 															<label th:text="#{binaryfiles.metadata}"> Metadata</label>
 														</span>
 														<span class="checkbox-column">
@@ -422,17 +422,13 @@
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-															<label th:text="#{gen.created}"> Created At</label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 															<label th:text="#{gen.updated}"> Updated At</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 															<label th:text="#{binaryfiles.accesstypes}"> Access Types</label>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="7" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
 															<label th:text="#{gen.public}"> Public</label>
 														</span>
 													</div>
@@ -537,7 +533,8 @@
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).load(function(){  
+	$(window).on("load",function(){  
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
 	
 		//DATATABLE 
 		var oTable = $('#files').dataTable({
@@ -593,7 +590,7 @@
 		filtersResets.addClass('hide');
 		
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
-		$.each([1,2],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
+		$.each([1,2],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		$('#yadcf-filter--files-0').attr("placeholder", [[#{binaryfiles.text.placeholder}]]);
 		

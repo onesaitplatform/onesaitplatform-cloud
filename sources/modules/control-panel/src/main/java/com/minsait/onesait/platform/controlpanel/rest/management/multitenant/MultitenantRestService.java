@@ -28,14 +28,21 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.security.UserPrincipal;
 import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.controlpanel.controller.multitenant.MultitenantVerticalDeployer;
+import com.minsait.onesait.platform.controlpanel.services.keycloak.KeycloakNotificator;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUserToken;
 import com.minsait.onesait.platform.multitenant.config.model.Vertical;
@@ -55,10 +62,13 @@ public class MultitenantRestService {
 	private MultitenancyService multitenancyService;
 	@Autowired
 	private UserService userService;
+	@Autowired(required = false)
+	private KeycloakNotificator keycloakNotificator;
+	@Autowired
+	private MultitenantVerticalDeployer verticalDeployer;
 
-
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=String[].class))))
-	@Operation(summary="Get Verticals")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = String[].class))))
+	@Operation(summary = "Get Verticals")
 	@GetMapping("/verticals")
 	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR') or hasRole('ROLE_PLATFORM_ADMIN')")
 	public ResponseEntity<List<String>> verticals() {
@@ -67,8 +77,8 @@ public class MultitenantRestService {
 				HttpStatus.OK);
 	}
 
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=Map.class))))
-	@Operation(summary="Get Admin token for each vertical for management purposes")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = Map.class))))
+	@Operation(summary = "Get Admin token for each vertical for management purposes")
 	@GetMapping("/vertical-tokens")
 	@PreAuthorize("hasRole('ROLE_PLATFORM_ADMIN')")
 	public ResponseEntity<Map<String, String>> verticalManagementTokens() {
@@ -77,8 +87,8 @@ public class MultitenantRestService {
 		return new ResponseEntity<>(tokens, HttpStatus.OK);
 	}
 
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=String.class))))
-	@Operation(summary="User exists for management purposes")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = String.class))))
+	@Operation(summary = "User exists for management purposes")
 	@GetMapping("/users/{userId}/exists")
 	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR') or hasRole('ROLE_PLATFORM_ADMIN')")
 	public ResponseEntity<String> userExists(@PathVariable("userId") String userId) {
@@ -90,8 +100,8 @@ public class MultitenantRestService {
 		}
 	}
 
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=UserInfoDTO[].class))))
-	@Operation(summary="Get current user info")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = UserInfoDTO[].class))))
+	@Operation(summary = "Get current user info")
 	@GetMapping("/me")
 	public ResponseEntity<UserInfoDTO> currentUser(@RequestHeader("X-OP-APIKey") String header, Authentication auth) {
 		final Optional<MasterUserToken> tokenOpt = multitenancyService.getMasterTokenByToken(header);
@@ -99,12 +109,12 @@ public class MultitenantRestService {
 			final MasterUserToken masterToken = tokenOpt.get();
 			final MasterUser user = masterToken.getMasterUser();
 			final UserPrincipal principal = (UserPrincipal) auth.getPrincipal();
-			final UserInfoDTO payload =  UserInfoDTO.builder()
-					.authorities(
-							principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
+			final UserInfoDTO payload = UserInfoDTO.builder()
+					.authorities(principal.getAuthorities().stream().map(GrantedAuthority::getAuthority)
+							.collect(Collectors.toList()))
 					.username(user.getUserId()).name(user.getFullName()).tenant(masterToken.getTenant().getName())
-					.vertical(masterToken.getVertical().getName()).email(user.getEmail()).verticals(user.getTenant().getVerticals()
-							.stream().map(Vertical::getName).collect(Collectors.toList()))
+					.vertical(masterToken.getVertical().getName()).email(user.getEmail()).verticals(user.getTenant()
+							.getVerticals().stream().map(Vertical::getName).collect(Collectors.toList()))
 					.build();
 			return ResponseEntity.ok(payload);
 		} else {
@@ -112,8 +122,8 @@ public class MultitenantRestService {
 		}
 	}
 
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=UserInfoDTO[].class))))
-	@Operation(summary="Get current user info")
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = UserInfoDTO[].class))))
+	@Operation(summary = "Get current user info")
 	@GetMapping("/token/{token}")
 	public ResponseEntity<UserInfoDTO> userByToken(@PathVariable("token") String token, Authentication auth) {
 		final Optional<MasterUserToken> tokenOpt = multitenancyService.getMasterTokenByToken(token);
@@ -125,12 +135,10 @@ public class MultitenantRestService {
 			MultitenancyContextHolder.setTenantName(masterToken.getTenant().getName());
 			final User u = userService.getUser(principal.getUsername());
 			MultitenancyContextHolder.clear();
-			final UserInfoDTO payload = UserInfoDTO.builder()
-					.authorities(
-							Arrays.asList(u.getRole().getId()))
+			final UserInfoDTO payload = UserInfoDTO.builder().authorities(Arrays.asList(u.getRole().getId()))
 					.username(user.getUserId()).name(user.getFullName()).tenant(masterToken.getTenant().getName())
-					.vertical(masterToken.getVertical().getName()).email(user.getEmail()).verticals(user.getTenant().getVerticals()
-							.stream().map(Vertical::getName).collect(Collectors.toList()))
+					.vertical(masterToken.getVertical().getName()).email(user.getEmail()).verticals(user.getTenant()
+							.getVerticals().stream().map(Vertical::getName).collect(Collectors.toList()))
 					.build();
 			return ResponseEntity.ok(payload);
 		} else {
@@ -138,5 +146,44 @@ public class MultitenantRestService {
 		}
 	}
 
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
+	@Operation(summary = "Create vertical")
+	@PostMapping("/vertical/{name}")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR') or hasRole('ROLE_PLATFORM_ADMIN')")
+	public ResponseEntity<JsonNode> createVertical(@PathVariable("name") String name,
+			@RequestParam(required = false, value = "adminApiKey", defaultValue = "") String adminApiKey)
+			throws Exception {
+		try {
+			final Vertical v = new Vertical();
+			v.setName(name);
+			v.setSchema(Tenant2SchemaMapper.mapSchema(name));
+			multitenancyService.createVertical(v);
+			if (keycloakNotificator != null) {
+				keycloakNotificator.notifyNewVerticalToKeycloak(v.getName());
+			}
+
+			verticalDeployer.createVertical(Tenant2SchemaMapper.DEFAULT_SCHEMA_PREFIX + v.getName(), adminApiKey);
+		} catch (final Exception e) {
+			return ResponseEntity.badRequest()
+					.body(new ObjectMapper().readTree("{\"error\":\"" + e.getMessage() + "\"}"));
+		}
+
+		return ResponseEntity.ok().build();
+	}
+
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
+	@Operation(summary = "Create vertical")
+	@GetMapping("/vertical/{name}/created")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR') or hasRole('ROLE_PLATFORM_ADMIN')")
+	public ResponseEntity<JsonNode> isVerticalCreated(@PathVariable("name") String name) throws Exception {
+		try {
+			final boolean finished = verticalDeployer.hasFinished(Tenant2SchemaMapper.mapSchema(name));
+			return ResponseEntity.ok(new ObjectMapper().readTree("{\"finished\":" + finished + "}"));
+		} catch (final Exception e) {
+			return ResponseEntity.badRequest()
+					.body(new ObjectMapper().readTree("{\"error\":\"" + e.getMessage() + "\"}"));
+		}
+
+	}
 
 }

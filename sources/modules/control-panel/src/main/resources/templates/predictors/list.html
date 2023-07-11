@@ -204,11 +204,11 @@
 															<label th:text="#{gen.ontology}"> Ontology </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="2" />
+															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
 															<label th:text="#{predictor.aitable}"> Ontology AI</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="3" />
+															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
 															<label th:text="#{predictor.inputfields}"> Input fields </label>
 														</span>
 														<span class="checkbox-column">
@@ -228,7 +228,7 @@
 															<label th:text="#{predictor.winning.algorithm}"> Winning Algorithm</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="8"/>
+															<input class="toggle-vis" type="checkbox" data-column="8" checked/>
 															<label th:text="#{gen.owner}"> Owner</label>
 														</span>
 													</div>
@@ -388,11 +388,14 @@
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).load(function(){ 
+	$(window).on("load",function(){
+		
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+		 
 		var oTable = $('#predictors').dataTable({
 	      "bAutoWidth": false
 	      });
-		$.each([ 2,3,8 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
+		$.each([ 2,3,8 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));	
 		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');

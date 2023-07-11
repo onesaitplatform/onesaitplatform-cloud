@@ -74,6 +74,9 @@ onesaitplatform:
       realms:
          max.users.app.assign.table: ${MAX_USERS_APP_ASSIGN_TABLE}
          max.users.combo: ${MAX_USERS_COMBO}
+   binaryfiles: 
+          limit: ${BINARYFILESLIMIT}
+          showAuditFiles: ${BINARYFILESSHOWAUDITFILES}
    database.mongodb:
       database: ${REALTIMEDBNAME}
       servers: ${REALTIMEDBSERVERS}
@@ -83,31 +86,8 @@ onesaitplatform:
       password: ${REALTIMEDBPASS}
       writeConcern: ${REALTIMEDBWRITECONCERN}
       quasar.connector.http.endpoint: http://${QUASARHOST}:${QUASARPORT}/query/fs/
-   database.hadoop.enabled: ${ENABLEHADOOP}
-   database.hdfs:
-      url: ${HDFSURL}
-      basePath: ${HDFSPATH}
-   database.hive:
-      url: ${HIVEURL}
-      username: ${HIVEUSERNAME}
-      password: ${HIVEPASSWORD}
-      driverClassName: ${HIVEDRIVERCLASS}
-   database.impala:
-      url: ${IMPALAURL}
-   database.kudu:
-      numreplicas: ${KUDUNUMREPLICAS}
-      address: ${KUDUURL}
-      includeKudutableName: ${INCLUDEKUDUTABLENAME}
-      client:
-        sessionTimeout: ${KUDUCLIENTSESSIONTIMEOUT}
-        flushMode: ${KUDUCLIENTFLUSHMODE}
-        prefix: ${KUDUCLIENTIMPALAPREFIX}
-        bossThreadPool: ${KUDUCLIENTBOSSTHREADPOOL}
-        workerThreadPool: ${KUDUCLIENTWORKERTHREADPOOL}
-        operationTimeout: ${KUDUCLIENTOPTIMEOUT}
-        adminOperationTimeout: ${KUDUCLIENTADMINOPTIMEOUT}
-        socketReadTimeout: ${KUDUCLIENTSOCKETREADTIMEOUT}
    database.elasticsearch.enabled: ${ELASTICSEARCH_ENABLED}
+   database.opensearch.enabled: ${OPENSEARCH_ENABLED}
    database.minio:
       access-key: ${MINIO_ROOT_USER}
       secret-key: ${MINIO_ROOT_PASSWORD}

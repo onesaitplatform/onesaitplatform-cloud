@@ -69,6 +69,7 @@ public class KeycloakNotificator {
 		try {
 			final HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
+
 			return template.exchange(url, method, new HttpEntity<>(body, headers), clazz);
 		} catch (final HttpClientErrorException | HttpServerErrorException e) {
 			log.error("Error on request {}, code: {}, cause: {}", url, e.getRawStatusCode(),

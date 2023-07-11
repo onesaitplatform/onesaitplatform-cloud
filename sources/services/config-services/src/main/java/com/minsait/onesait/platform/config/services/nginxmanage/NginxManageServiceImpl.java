@@ -34,6 +34,7 @@ public class NginxManageServiceImpl implements NginxManageService {
 	@PostConstruct
 	public void init() {
 		this.restTemplate = new RestTemplate();
+
 	}
 
 	@Override

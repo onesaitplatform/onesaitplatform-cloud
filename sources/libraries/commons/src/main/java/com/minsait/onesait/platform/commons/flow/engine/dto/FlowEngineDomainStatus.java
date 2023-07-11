@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.commons.flow.engine.dto;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -57,6 +58,15 @@ public class FlowEngineDomainStatus extends FlowEngineDomain {
 	@Setter
 	private List<String> sockets;
 
+	@Getter
+	@Setter
+	private Date createdAt;
+	
+	@Getter
+	@Setter
+	private Date updatedAt;
+	
+	
 	public static Collection<FlowEngineDomainStatus> fromJsonArrayToDomainStatus(String json) throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
 

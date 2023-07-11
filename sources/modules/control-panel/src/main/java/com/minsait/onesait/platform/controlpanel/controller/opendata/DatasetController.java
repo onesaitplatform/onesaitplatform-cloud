@@ -162,7 +162,7 @@ public class DatasetController {
 				.collect(Collectors.toList());
 		final List<OpenDataLicense> licensesList = datasetService.getLicensesList();
 		final List<ODTypology> typologiesList = typologyService.getAllTypologies();
-		final List<BinaryFile> filesList = binaryFileService.getAllFiles(userService.getUser(utils.getUserId()));
+		final List<BinaryFile> filesList = binaryFileService.getAllFiles(userService.getUser(utils.getUserId()), true);
 
 		model.addAttribute("licensesList", licensesList);
 		model.addAttribute("dataset", new OpenDataPackageDTO());
@@ -301,7 +301,7 @@ public class DatasetController {
 				.collect(Collectors.toList());
 		final List<OpenDataLicense> licensesList = datasetService.getLicensesList();
 		final List<ODTypology> typologiesList = typologyService.getAllTypologies();
-		final List<BinaryFile> filesList = binaryFileService.getAllFiles(userService.getUser(utils.getUserId()));
+		final List<BinaryFile> filesList = binaryFileService.getAllFiles(userService.getUser(utils.getUserId()), true);
 
 		model.addAttribute("typologiesList", typologiesList);
 		model.addAttribute("filesList", filesList);

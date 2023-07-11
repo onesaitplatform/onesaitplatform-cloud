@@ -266,11 +266,7 @@
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="7" checked/>
 														<label > ID</label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="8" checked/>
-														<label th:text="#{gen.options}"> Options</label>
-													</span>						
+													</span>		
 												</div>
 											</div>
 																			
@@ -362,7 +358,7 @@
 						else {$.post(
 								"/controlpanel/dashboards/clone", 
 								{dashboardId : dashboardId, identification : $("#cloneIdentification").val()}
-							).success(function(){
+							).done(function(){
 								navigateUrl("/controlpanel/dashboards/list")
 								}
 							).fail(
@@ -952,7 +948,8 @@ var showExportImageDialog = function(id){
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).load(function(){  
+	$(window).on("load",function(){  
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
 		
 		var oTable = $('#dashboards').dataTable({
 		      "bAutoWidth": false

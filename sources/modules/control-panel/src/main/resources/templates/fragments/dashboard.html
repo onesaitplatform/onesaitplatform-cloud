@@ -17,8 +17,7 @@
 <!-- BEGIN DASHBOARD COMPONENT -->
 <div th:fragment="dashboardFragment" id="dashboardFragment">
 	
-	<!-- DASHBOARD SCRIPTS  -->
-	<script type="text/javascript" th:src="@{/static/vendor/jquery/jquery.waypoints.min.js}"></script>
+	<!-- DASHBOARD SCRIPTS -->
 	<script type="text/javascript" th:src="@{/static/vendor/jquery/jquery.counterup.min.js}"></script>
 		
 	<!-- DASHBOARD CONTROLLER JS -->
@@ -45,7 +44,7 @@
 												<i class="flaticon-network"></i>
 											</div>
 											<h3 class="font-blue-sharp">
-												<span data-counter="counterup" th:attr="data-value=${kpis[0].value},data-counter='counterup'">0</span>
+												<span data-counter="counterup" class="counter"  >[[${kpis[0].value}]]</span>
 											</h3>
 											<small  th:text="#{kpis.ontology}" >Entidades</small>
 										</div>
@@ -63,7 +62,7 @@
 												<i class="flaticon-users"></i>
 											</div>
 											<h3 class="font-blue-sharp">
-												<span data-counter="counterup" th:attr="data-value=${kpis[1].value},data-counter='counterup'">0</span>
+												<span data-counter="counterup" class="counter" th:attr="data-value=${kpis[1].value},data-counter='counterup'">[[${kpis[1].value}]]</span>
 											</h3>
 											<small th:text="#{kpis.users}">Users</small>
 										</div>
@@ -80,7 +79,7 @@
 												<i class="flaticon-multimedia"></i>
 											</div>
 											<h3 class="font-blue-sharp">
-												<span data-counter="counterup" th:attr="data-value=${kpis[2].value},data-counter='counterup'">0</span>
+												<span data-counter="counterup" class="counter" th:attr="data-value=${kpis[2].value},data-counter='counterup'">[[${kpis[2].value}]]</span>
 											</h3>
 											<small th:text="#{kpis.apis}">APIs</small>
 										</div>
@@ -97,7 +96,7 @@
 													<i class="flaticon-graph"></i>
 												</div>
 												<h3 class="font-blue-sharp">
-													<span data-counter="counterup" th:attr="data-value=${kpis[3].value},data-counter='counterup'">0</span>
+													<span data-counter="counterup" class="counter" th:attr="data-value=${kpis[3].value},data-counter='counterup'">[[${kpis[3].value}]]</span>
 												</h3>
 												<small th:text="#{kpis.dashboards}">DASHBOARDS</small>
 											</div>
@@ -116,7 +115,7 @@
 												<i class="flaticon-app"></i>
 											</div>
 											<h3 class="font-blue-sharp">
-												<span data-counter="counterup" th:attr="data-value=${kpis[4].value},data-counter='counterup'">0</span>
+												<span data-counter="counterup" class="counter" th:attr="data-value=${kpis[4].value},data-counter='counterup'">[[${kpis[4].value}]]</span>
 											</h3>
 											<small th:text="#{kpis.gadgets}">GADGETS</small>
 										</div>
@@ -133,7 +132,7 @@
 												<i class="flaticon-truck"></i>
 											</div>	
 											<h3 class="font-blue-sharp">
-												<span data-counter="counterup" th:attr="data-value=${kpis[5].value},data-counter='counterup'">0</span>
+												<span data-counter="counterup" class="counter" th:attr="data-value=${kpis[5].value},data-counter='counterup'">[[${kpis[5].value}]]</span>
 											</h3>
 											<small th:text="#{kpis.devices}">Devices</small>
 										</div>
@@ -150,7 +149,7 @@
 												<i class="flaticon-interface-5"></i>
 											</div>
 											<h3 class="font-blue-sharp">
-												<span data-counter="counterup" th:attr="data-value=${kpis[6].value},data-counter='counterup'">0</span>
+												<span data-counter="counterup" class="counter" th:attr="data-value=${kpis[6].value},data-counter='counterup'">[[${kpis[6].value}]]</span>
 											</h3>
 											<small  th:text="#{kpis.notebooks}" >Notebooks</small>
 										</div>
@@ -167,7 +166,7 @@
 												<i class="flaticon-technology"></i>
 											</div>
 											<h3 class="font-blue-sharp">
-												<span data-counter="counterup" th:attr="data-value=${kpis[7].value},data-counter='counterup'">0</span>
+												<span data-counter="counterup" class="counter" th:attr="data-value=${kpis[7].value},data-counter='counterup'">[[${kpis[7].value}]]</span>
 											</h3>
 											<small th:text="#{kpis.dataflows}">Dataflows</small>
 										</div>
@@ -186,7 +185,7 @@
 												<i class="flaticon-cart"></i>
 											</div>
 											<h3 class="font-blue-sharp">
-												<span data-counter="counterup" th:attr="data-value=${kpis[8].value},data-counter='counterup'">0</span>
+												<span data-counter="counterup" class="counter" th:attr="data-value=${kpis[8].value},data-counter='counterup'">[[${kpis[8].value}]]</span>
 											</h3>
 											<small th:text="#{kpis.assets}">Assets</small>
 										</div>
@@ -203,7 +202,7 @@
 												<i class="flaticon-suitcase"></i>
 											</div>
 											<h3 class="font-blue-sharp">
-												<span data-counter="counterup" th:attr="data-value=${kpis[9].value},data-counter='counterup'">0</span>
+												<span data-counter="counterup" class="counter" th:attr="data-value=${kpis[9].value},data-counter='counterup'">[[${kpis[9].value}]]</span>
 											</h3>
 											<small th:text="#{kpis.projects}">PROJECTS</small>
 										</div>
@@ -220,7 +219,7 @@
 												<i class="flaticon-analytics"></i>
 											</div>
 											<h3 class="font-blue-sharp">
-												<span data-counter="counterup" th:attr="data-value=${kpis[10].value},data-counter='counterup'">0</span>
+												<span data-counter="counterup" class="counter" th:attr="data-value=${kpis[10].value},data-counter='counterup'">[[${kpis[10].value}]]</span>
 											</h3>
 											<small th:text="#{kpis.iotflows}">IOT FLOWS</small>
 										</div>
@@ -237,7 +236,7 @@
 												<i class="flaticon-folder"></i>
 											</div>
 											<h3 class="font-blue-sharp">
-												<span data-counter="counterup" th:attr="data-value=${kpis[11].value},data-counter='counterup'">0</span>
+												<span data-counter="counterup" class="counter" th:attr="data-value=${kpis[11].value},data-counter='counterup'">[[${kpis[11].value}]]</span>
 											</h3>
 											<small th:text="#{kpis.binaryfiles}">Binary files</small>
 										</div>
@@ -261,6 +260,27 @@
 		};
 		// LOAD DATA TO USE IN GRAPHCONTROLLER
 		// DASHBOARD CONTROLLER LOAD AND INIT ITSELF
+		
+
+
+ const counterUp = window.counterUp.default
+
+$( document ).ready(function() {
+   const counters = $( '.counter' )
+   console.log(counters)
+   for(let i=0;i<counters.length;i++){
+   	counterUp( counters[i], {
+    duration: 200,
+    delay: 2
+} )
+   }
+   
+    
+});
+
+
+
+
 	</script>
 </div>
 <!-- END DASHBOARD -->

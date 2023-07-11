@@ -21,6 +21,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
@@ -44,6 +46,7 @@ import com.minsait.onesait.platform.config.repository.FlowDomainRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.services.client.ClientPlatformService;
 import com.minsait.onesait.platform.config.services.digitaltwin.device.DigitalTwinDeviceService;
+import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.config.services.usertoken.UserTokenService;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
@@ -111,6 +114,9 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 
 	@Value("${spring.datasource.hikari.jdbc-url:mysql}")
 	private String datasource;
+
+	private static final String PATTERN_VERTICAL = "^[a-z-_]{1,50}$";
+	private static final Pattern PATTERN = Pattern.compile(PATTERN_VERTICAL);
 
 	@Override
 	public Optional<MasterUser> findUser(String userId) {
@@ -192,13 +198,19 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 
 	@Override
 	public void createVertical(Vertical vertical) {
-		Tenant tenant = new Tenant();
-		tenant.setName(Tenant2SchemaMapper.defaultTenantName(vertical.getName()));
-		tenant = tenantRepository.save(tenant);
-		tenant.getVerticals().add(vertical);
-		vertical.setSchema(Tenant2SchemaMapper.mapSchema(vertical.getName()));
-		vertical.getTenants().add(tenant);
-		verticalRepository.save(vertical);
+		final Matcher m = PATTERN.matcher(vertical.getName());
+		if (m.matches()) {
+			Tenant tenant = new Tenant();
+			tenant.setName(Tenant2SchemaMapper.defaultTenantName(vertical.getName()));
+			tenant = tenantRepository.save(tenant);
+			tenant.getVerticals().add(vertical);
+			vertical.setSchema(Tenant2SchemaMapper.mapSchema(vertical.getName()));
+			vertical.getTenants().add(tenant);
+			verticalRepository.save(vertical);
+		} else {
+			throw new OPResourceServiceException(
+					"Vertical name " + vertical.getName() + " not valid. Must match pattern " + PATTERN);
+		}
 
 	}
 

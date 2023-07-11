@@ -1,4 +1,5 @@
-FROM maven:3.5.3-jdk-8-alpine
+#FROM maven:3.5.3-jdk-8-alpine
+FROM onesaitplatform/baseimage:latest-17
 
 # metadata
 LABEL module.maintainer="onesaitplatform@indra.es" \
@@ -26,12 +27,20 @@ RUN unzip /app.jar &&\
 # create sofia user/group
 RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait
 
-# Install git
+# Install git and maven
 RUN apk update && apk upgrade && \
-    apk add --no-cache bash git openssh
+    apk add --no-cache bash git openssh && \
+    wget https://archive.apache.org/dist/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz && \ 
+	tar -xvf apache-maven-3.8.6-bin.tar.gz && \
+	mv apache-maven-3.8.6 /opt/maven
+
+ENV M2_HOME='/opt/maven' \
+    PATH="${PATH}:/opt/maven/bin"
+	
+	
 
 RUN chown -R onesait:onesait /usr/local && \
-    chown -R onesait:onesait /usr/share/maven && \
+    chown -R onesait:onesait /opt/maven && \
     chown -R onesait:onesait /var/log/platform-logs && \
     chown -R onesait:onesait /application && \
     chmod -R 777 /var/log && \
@@ -42,7 +51,6 @@ RUN chown -R onesait:onesait /usr/local && \
 # libc6-compat package for GNU libc compatibility
 # needed for execute ocp binary
 ENV BOWTIE2_VERSION 2.2.8
-ENV ASPECTJ_VERSION 1.9.7
 
 RUN apk add --no-cache \
         bash \
@@ -60,10 +68,6 @@ RUN apk add --no-cache \
     && rm bowtie2-$BOWTIE2_VERSION-linux-x86_64.zip
 
 RUN cd /tmp/ \
-    && wget 'http://download.oracle.com/otn-pub/java/jce/8/jce_policy-8.zip' --header "Cookie: oraclelicense=accept-securebackup-cookie" \
-    && unzip jce_policy-8.zip \
-    && yes |cp -v /tmp/UnlimitedJCEPolicyJDK8/*.jar /usr/lib/jvm/java-1.8-openjdk/jre/lib/security \
-    && rm jce_policy-8.zip \
     && cd /usr/local \
     && wget https://repo1.maven.org/maven2/org/aspectj/aspectjweaver/$ASPECTJ_VERSION/aspectjweaver-$ASPECTJ_VERSION.jar
 
@@ -84,7 +88,7 @@ EXPOSE 18000 5701
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
 
-ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+ExitOnOutOfMemoryError -XX:+HeapDumpOnOutOfMemoryError -javaagent:/usr/local/aspectjweaver-$ASPECTJ_VERSION.jar" \
+ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+ExitOnOutOfMemoryError -XX:+HeapDumpOnOutOfMemoryError -javaagent:/usr/local/aspectjweaver-$ASPECTJ_VERSION.jar --add-opens java.base/java.lang=ALL-UNNAMED" \
     SERVER_NAME=localhost \
     KAFKAENABLED=false \
     KAFKABROKERS=none \
@@ -116,17 +120,6 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+ExitOnOutOfMemoryError -XX:+HeapDum
     FLOW_DOMAIN_MAX_PORT=28500 \
     KSQLSERVER=http://streamingflowengineservice:20200 \
     KSQLENABLE=false \
-    ENABLEHADOOP=false \
-	HDFSURL=hdfs://127.0.0.1:8020 \
-	HDFSPATH=/user/hdfs \
-	HIVEURL=jdbc:hive2://localhost:10000/default \
-	HIVEUSERNAME=cloudera-scm \
-	HIVEPASSWORD=cloudera-scm \
-	HIVEDRIVERCLASS=org.apache.hive.jdbc.HiveDriver \
-	IMPALAURL=jdbc:hive2://localhost:21050/default;auth=noSasl \
-	KUDUNUMREPLICAS=1 \
-	KUDUURL=localhost:7051 \
-	INCLUDEKUDUTABLENAME=false \
     GRAVITEE_ON=false \
     GRAVITEE_CLIENTID=onesait \
     GRAVITEE_CLIENTSECRET=admin \
@@ -211,6 +204,7 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+ExitOnOutOfMemoryError -XX:+HeapDum
     SPLASH_ON=false \
     SPLASH_EVERYXHOURS=24 \
     ELASTICSEARCH_ENABLED=false \
+    OPENSEARCH_ENABLED=false \
     NOTEBOOKPLATFORMAUTH=false \
     OPENDATA_URL=https://${SERVER_NAME}/opendata \
     OPENDATA_MAX_BULK_SIZE=10000 \
@@ -255,17 +249,18 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+ExitOnOutOfMemoryError -XX:+HeapDum
     DATALABELING_USER=user@datalabeling.com \
     DATALABELING_PASS=12345678 \
     QUERY_METRICS_ENABLED=false \
-    HTTP_LOG_LEVEL=TRACE \
+    HTTP_LOG_LEVEL=INFO \
     MAX_USERS_APP_ASSIGN_TABLE=0 \
     MAX_USERS_COMBO=0 \
+    BINARYFILESLIMIT=200 \
+    BINARYFILESSHOWAUDITFILES=false \
     GITLAB_MANAGER_URL=https://${SERVER_NAME}/gitlab \
     REMEDY_MS_ENABLED=false \
     REMEDY_MS_URL=https://integrationhub.ptmindra.net/v1/webhook/OpsDigitales/devops/PROD \
     REMEDY_MS_TOKEN=1
 
 
-
 COPY docker-entrypoint.sh /usr/local/bin/
-ENTRYPOINT ["docker-entrypoint.sh"]
+ENTRYPOINT ["docker-entrypoint.sh"] 
 
 #ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=docker -Dloader.path=file:/usr/local/themes/ -Djava.awt.headless=true -jar /app.jar

@@ -1,4 +1,4 @@
-FROM onesaitplatform/baseimage:latest
+FROM onesaitplatform/baseimage:latest-17
 
 # Metadata
 LABEL platform.image.name="apimanager"
@@ -67,7 +67,7 @@ ENV SERVER_NAME=localhost \
     SBA_USERNAME=operations \
 	SBA_SECRET=ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv) \
 	MAX_HTTP_HEADER_SIZE=20000 \
-	HTTP_LOG_LEVEL=TRACE \
+	HTTP_LOG_LEVEL=INFO \
     CORS_ALLOWED_URLS="*"
 
 COPY docker-entrypoint.sh /usr/local/bin/

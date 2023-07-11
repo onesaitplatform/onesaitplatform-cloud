@@ -47,10 +47,11 @@ public interface OntologyUserAccessRepository extends JpaRepository<OntologyUser
 
 	@Modifying
 	@Transactional
-
 	void deleteByOntology(Ontology ontology);
-	//select id from ontology_user_access where ontology_id= '1a02b3ab-44f4-4600-861d-6307e7b64fe8' and user_id = 'demo_developer';
+
+	// select id from ontology_user_access where ontology_id=
+	// '1a02b3ab-44f4-4600-861d-6307e7b64fe8' and user_id = 'demo_developer';
 	@Query("SELECT a.id FROM OntologyUserAccess as a WHERE a.user.id= :userId and a.ontology.id = :getOntologyId ")
-	String 	getPermision(@Param("userId") String userId, @Param("getOntologyId") String getOntologyId);
+	String getPermision(@Param("userId") String userId, @Param("getOntologyId") String getOntologyId);
 
 }

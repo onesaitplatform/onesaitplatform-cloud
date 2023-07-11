@@ -204,12 +204,14 @@
 													<input th:if="*{apiType?.name()}== 'NODE_RED'" id="apiType" class="hide" th:field="*{apiType}"  type="text" />
 												</div>
 											</div>
-											<div class="col-md-7 col-sm-7 col-xs-12">
-												<label id="label-selector-ontologia" class="control-label " for="id_ontology" th:text="#{apimanager.ontology}">Ontology</label>
-												<select id="ontology" class="selectpicker form-control" data-live-search="true" th:field="*{ontology}" disabled="disabled" th:attr="onchange='javascript:ApiCreateController.changeOntology()'">
-													<option value=""></option>
-				                                    <option th:each="ontology:${ontologies}" th:attr="data-rtdb=${ontology.rtdbDatasource}" th:value="${ontology.id}" th:text="${ontology.identification}">ontology</option>
-				                                   </select>
+											<div class="form-group-ontology">
+												<div class="col-md-7 col-sm-7 col-xs-12">
+													<label id="label-selector-ontologia" class="control-label " for="id_ontology" th:text="#{apimanager.ontology}">Ontology</label>
+													<select id="ontology" class="selectpicker form-control" th:required="${apiType?.name() == 'INTERNAL_ONTOLOGY'} ? 'true' : false" data-live-search="true" th:field="*{ontology}" disabled="disabled" th:attr="onchange='javascript:ApiCreateController.changeOntology()'">
+														<option value=""></option>
+					                                    <option th:each="ontology:${ontologies}" th:attr="data-rtdb=${ontology.rtdbDatasource}" th:value="${ontology.id}" th:text="${ontology.identification}">ontology</option>
+					                                   </select>
+												</div>
 											</div>
 										</div>
 										<div class="row main">
@@ -1141,7 +1143,7 @@
 	function navigateUrl(url){  window.location.href = url;	}
 	function navigateWindow(url){ window.open(url,'_blank');	}
 
-	$(window).load(function(){
+	$(window).on("load",function(){
 		var htmlelement = document.getElementById('id_query_op_customsql');
 
 		var readonly = false;

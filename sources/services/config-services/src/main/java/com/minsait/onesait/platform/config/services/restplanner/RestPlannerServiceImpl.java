@@ -143,9 +143,11 @@ public class RestPlannerServiceImpl implements RestPlannerService {
 		int statusCode;
 		if (checkSSL) {
 			restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+
 		} else {
 			restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
 		}
+
 		final HttpHeaders headers = toHttpHeaders(headersStr);
 		final org.springframework.http.HttpEntity<String> request = new org.springframework.http.HttpEntity<>(body,
 				headers);

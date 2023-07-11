@@ -268,7 +268,7 @@
 															<label th:text="#{configuration.environment}"> Environment</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="3"/>
+															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
 															<label th:text="#{configuration.userid}"> User</label>
 														</span>
 														<span class="checkbox-column">
@@ -374,7 +374,8 @@
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).load(function(){ 
+	$(window).on("load",function(){ 
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 
 		var oTable = $('#configurations').dataTable({
 	      "bAutoWidth": false
@@ -383,7 +384,7 @@
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		
 		$.each([3],function(ind,value){ 
-			$("input.toggle-vis[data-column='"+ value +"']").trigger('change'); 
+			$("input.toggle-vis[data-column='"+ value +"']").trigger('click'); 
 		});
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));
 		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		

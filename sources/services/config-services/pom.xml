@@ -13,7 +13,7 @@
 	<description>Services of the config module</description>
 	<properties>
 		<license.dir>${project.parent.basedir}</license.dir>
-        <groovy.version>4.0.6</groovy.version>
+        <groovy.version>4.0.9</groovy.version>
 	</properties>
 	<repositories>
 
@@ -159,6 +159,10 @@
 					<groupId>org.slf4j</groupId>
 					<artifactId>slf4j-log4j12</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>log4j</groupId>
+					<artifactId>log4j</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -197,6 +201,10 @@
 				<exclusion>
 					<groupId>com.fasterxml.jackson.core</groupId>
 					<artifactId>jackson-databind</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>io.confluent</groupId>
+				    <artifactId>confluent-log4j</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -296,6 +304,10 @@
 		    <groupId>com.google.cloud</groupId>
 		    <artifactId>google-cloud-storage</artifactId>
 		    <version>1.17.0</version>
+		</dependency>
+		<dependency>
+    		<groupId>org.openjdk.nashorn</groupId>
+    		<artifactId>nashorn-core</artifactId>
 		</dependency>
 	</dependencies>
 

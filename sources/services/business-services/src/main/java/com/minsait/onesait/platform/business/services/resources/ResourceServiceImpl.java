@@ -30,10 +30,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import javax.annotation.PostConstruct;
-
-import java.util.Optional;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -164,19 +163,19 @@ public class ResourceServiceImpl implements ResourceService {
 	private QueryToolService queryToolService;
 	@Autowired
 	private OntologyService ontologyService;
-	
+
 	@Autowired
 	private MultitenancyService multitenancyService;
-	
+
 	@Value("${onesaitplatform.multitenancy.enabled:false}")
 	private boolean multitenancyEnabled;
 
 	@Value("${opendata.max-bulk-size:10000}")
 	private int maxBulkSize;
-	
+
 	private String profile;
 	private final ObjectMapper mapper = new ObjectMapper();
-	
+
 	@PostConstruct
 	public void getActiveProfile() {
 		profile = profileDetector.getActiveProfile();
@@ -232,22 +231,23 @@ public class ResourceServiceImpl implements ResourceService {
 		}
 		return dtos;
 	}
-	
+
 	@Override
 	public boolean existsResource(OpenDataResourceDTO resourceDTO, String userToken) {
 		try {
 			final String resourceName = URLEncoder.encode(resourceDTO.getName(), StandardCharsets.UTF_8.toString());
-			final PackageSearchResponse responsePackages = (PackageSearchResponse) api
-					.getOperation("package_search?fq=res_name:" + resourceName + "&include_private=true", userToken, PackageSearchResponse.class);
-			
-			if (responsePackages.getSuccess() && responsePackages.getResult().getCount()>0) {
+			final PackageSearchResponse responsePackages = (PackageSearchResponse) api.getOperation(
+					"package_search?fq=res_name:" + resourceName + "&include_private=true", userToken,
+					PackageSearchResponse.class);
+
+			if (responsePackages.getSuccess() && responsePackages.getResult().getCount() > 0) {
 				return true;
 			} else {
 				return false;
 			}
 		} catch (final HttpClientErrorException | UnsupportedEncodingException e) {
 			return false;
-		} 
+		}
 	}
 
 	@Override
@@ -331,7 +331,7 @@ public class ResourceServiceImpl implements ResourceService {
 			apiRepository.save(api);
 			if (!resourceDTO.isGraviteeSwagger() || api.getGraviteeId() == null || api.getGraviteeId().equals("")) {
 				result = "v" + api.getNumversion() + "/" + api.getIdentification() + "/swagger.json";
-			}		
+			}
 		}
 		return result;
 	}
@@ -357,7 +357,7 @@ public class ResourceServiceImpl implements ResourceService {
 
 		api.postOperation("resource_view_create", userToken, view, ResourceViewCreateResponse.class);
 	}
-	
+
 	@Override
 	public OpenDataResource getResourceById(String userToken, String id) {
 		try {
@@ -433,9 +433,10 @@ public class ResourceServiceImpl implements ResourceService {
 
 		api.postOperation("resource_update", userToken, resource, ResourceShowResponse.class);
 	}
-	
+
 	@Override
-	public void updatePlatformResource(OpenDataResourceDTO resourceDTO, OpenDataResource resource, String resourceUrl, String userToken) {
+	public void updatePlatformResource(OpenDataResourceDTO resourceDTO, OpenDataResource resource, String resourceUrl,
+			String userToken) {
 		resource.setName(resourceDTO.getName());
 		if (resourceDTO.getDescription() != null) {
 			resource.setDescription(resourceDTO.getDescription());
@@ -448,8 +449,6 @@ public class ResourceServiceImpl implements ResourceService {
 
 		api.postOperation("resource_update", userToken, resource, ResourceShowResponse.class);
 	}
-	
-	
 
 	@Override
 	public void deleteResource(String userToken, String id) {
@@ -641,7 +640,9 @@ public class ResourceServiceImpl implements ResourceService {
 
 	@Override
 	public Api checkApiResource(String resourceUrl) {
-		Api api = null;
+		// IN CASE API HAS CHANGED, REFERENCE STILL NEEDS TO BE VALID IN ORDER TO
+		// UPDATE...
+		Api api = new Api();
 		if (platformApi.isPlatformApi(resourceUrl)) {
 			final String apiIdentification = platformApi.getApiIdentificationFromUrl(resourceUrl);
 			final List<Api> foundApi = apiRepository.findByIdentification(apiIdentification);
@@ -649,12 +650,14 @@ public class ResourceServiceImpl implements ResourceService {
 				api = foundApi.get(0);
 			}
 		} else if (graviteeApi.isGraviteeApi(resourceUrl)) {
-			String graviteeId = graviteeApi.getGraviteeIdFromUrl(resourceUrl);
-			List<Api> allApis = apiRepository.findAll();
-			Optional<Api> foundApi = allApis.stream().filter(elem -> elem.getGraviteeId() != null && elem.getGraviteeId().equals(graviteeId)).findFirst();
+			final String graviteeId = graviteeApi.getGraviteeIdFromUrl(resourceUrl);
+			final List<Api> allApis = apiRepository.findAll();
+			final Optional<Api> foundApi = allApis.stream()
+					.filter(elem -> elem.getGraviteeId() != null && elem.getGraviteeId().equals(graviteeId))
+					.findFirst();
 			if (foundApi.isPresent()) {
 				api = foundApi.get();
-			}			
+			}
 		}
 		return api;
 	}
@@ -693,15 +696,16 @@ public class ResourceServiceImpl implements ResourceService {
 		}
 		return result;
 	}
-	
+
 	@Override
 	public String getSwaggerGravitee(Api api) {
-		String graviteeId = api.getGraviteeId();
-		String pageId = graviteeApi.executePagesApi(graviteeId);
-		if (pageId == null || pageId.isEmpty())
+		final String graviteeId = api.getGraviteeId();
+		final String pageId = graviteeApi.executePagesApi(graviteeId);
+		if (pageId == null || pageId.isEmpty()) {
 			return null;
-		else 
-			return graviteeApi.getSwaggerGravitee(graviteeId,pageId);
+		} else {
+			return graviteeApi.getSwaggerGravitee(graviteeId, pageId);
+		}
 	}
 
 	public String getJsonFromCSV(InputStreamReader input) throws IOException {
@@ -750,10 +754,10 @@ public class ResourceServiceImpl implements ResourceService {
 		((ObjectNode) schemaSubTree).put("additionalProperties", true);
 		return schemaSubTree;
 	}
-	
+
 	@Override
 	public String getPlatformResourceUrl(OpenDataResourceDTO resourceDTO, String userToken) {
-		
+
 		String resourceUrl = "";
 		Dashboard dashboard = null;
 		Viewer viewer = null;
@@ -778,8 +782,9 @@ public class ResourceServiceImpl implements ResourceService {
 				api = apiRepository.findById(resourceDTO.getApiId()).get();
 				if (resourceDTO.isGraviteeSwagger() && api.getGraviteeId() != null && !api.getGraviteeId().equals("")) {
 					final String urlGravitee = getSwaggerGravitee(api);
-					if (urlGravitee != null)
+					if (urlGravitee != null) {
 						resourceUrl = getSwaggerGravitee(api);
+					}
 				}
 			}
 			updateApiPermissions(api, resourceDTO.getDataset(), userToken);
@@ -796,10 +801,10 @@ public class ResourceServiceImpl implements ResourceService {
 						+ MultitenancyContextHolder.getTenantName();
 			}
 		}
-		
+
 		return resourceUrl;
 	}
-	
+
 	@Override
 	public String getPlatformResourceFormat(OpenDataResourceDTO resourceDTO) {
 		String format = "";
@@ -814,11 +819,11 @@ public class ResourceServiceImpl implements ResourceService {
 			format = "openapi-json";
 			break;
 		default:
-			break;		
+			break;
 		}
 		return format;
 	}
-	
+
 	@Override
 	public List<Map<String, Object>> executeQuery(String ontology, String query, String userId) {
 		final List<Map<String, Object>> records = new ArrayList<>();
@@ -831,8 +836,9 @@ public class ResourceServiceImpl implements ResourceService {
 				try {
 					final String newQuery = "SELECT * FROM (" + query + ") AS c OFFSET " + offset;
 					final String resultQuery = queryToolService.querySQLAsJson(userId, ontology, newQuery, 0);
-					List<Map<String, Object>> resultList = mapper.readValue(resultQuery, new TypeReference<List<Map<String, Object>>>(){
-					});
+					final List<Map<String, Object>> resultList = mapper.readValue(resultQuery,
+							new TypeReference<List<Map<String, Object>>>() {
+							});
 					if (resultList.isEmpty()) {
 						break;
 					}
@@ -860,21 +866,22 @@ public class ResourceServiceImpl implements ResourceService {
 			}
 		}
 	}
-	
-	@Override 
-	public String createResourceIteration(OpenDataResourceDTO resourceDTO, String userToken, List<Map<String, Object>> records,
-			List<OpenDataField> fields) {	
+
+	@Override
+	public String createResourceIteration(OpenDataResourceDTO resourceDTO, String userToken,
+			List<Map<String, Object>> records, List<OpenDataField> fields) {
 		int init = 0;
 		String resourceId = null;
 		while (init < records.size()) {
-			List<Map<String, Object>> recordsToInsert = records.subList(init, Math.min(init + maxBulkSize, records.size()));
+			final List<Map<String, Object>> recordsToInsert = records.subList(init,
+					Math.min(init + maxBulkSize, records.size()));
 			resourceId = createResource(resourceDTO, userToken, recordsToInsert, fields);
 			resourceDTO.setId(resourceId);
 			init += maxBulkSize;
 		}
 		return resourceId;
 	}
-	
+
 	@Override
 	public List<OpenDataField> getResourceFields(String ontology, String userId) throws IOException {
 		final List<OpenDataField> fields = new ArrayList<>();
@@ -898,6 +905,7 @@ public class ResourceServiceImpl implements ResourceService {
 		}
 		return fields;
 	}
+
 	private String translateField(String ontologyFieldType) {
 		switch (ontologyFieldType) {
 		case "string":
@@ -937,54 +945,58 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	@Override
-	public OpenDataResourceDTO getDTOFromResource(OpenDataResource resource, DatasetResource configResource, String dataset) {
-		List<DatasetResource> configResources = new ArrayList<>();
-		if (configResource != null) 
+	public OpenDataResourceDTO getDTOFromResource(OpenDataResource resource, DatasetResource configResource,
+			String dataset) {
+		final List<DatasetResource> configResources = new ArrayList<>();
+		if (configResource != null) {
 			configResources.add(configResource);
+		}
 		return getDTOFromResource(resource, configResources, dataset);
 	}
-	
+
 	@Override
 	public String getJsonFromFile(MultipartFile file) {
-		String jsonData = null;	
+		String jsonData = null;
 		try {
-			String contentType = file.getContentType();
-			String fileName = file.getOriginalFilename();
-			InputStreamReader inputStream =  new InputStreamReader(file.getInputStream());
-							
+			final String contentType = file.getContentType();
+			final String fileName = file.getOriginalFilename();
+			final InputStreamReader inputStream = new InputStreamReader(file.getInputStream());
+
 			if (contentType.equals("text/csv") || fileName.contains(".csv")) {
 				jsonData = getJsonFromCSV(inputStream);
-	        } else if (contentType.equals("text/xml") || contentType.equals("application/xml") || fileName.contains(".xml")) {
-	        	jsonData = getJsonFromXML(inputStream);
-	        } else if (contentType.equals("application/json") || fileName.contains(".json")) {
-	        	BufferedReader reader = new BufferedReader(inputStream);
-	            StringBuilder responseStrBuilder = new StringBuilder();
-	            String str;
-	            while((str = reader.readLine())!= null){
-	            	responseStrBuilder.append(str);
-	            }
-	            jsonData = responseStrBuilder.toString();
-	        }
-			
-			if (jsonData != null && !jsonData.equals("") && jsonData.substring(0,1).equals("{")) {
-            	Map<String, Object> obj = mapper.readValue(jsonData, new TypeReference<Map<String, Object>>() {});
-    			List<Map<String,Object>> result = processMap(obj);
-    			jsonData = mapper.writeValueAsString(result);
+			} else if (contentType.equals("text/xml") || contentType.equals("application/xml")
+					|| fileName.contains(".xml")) {
+				jsonData = getJsonFromXML(inputStream);
+			} else if (contentType.equals("application/json") || fileName.contains(".json")) {
+				final BufferedReader reader = new BufferedReader(inputStream);
+				final StringBuilder responseStrBuilder = new StringBuilder();
+				String str;
+				while ((str = reader.readLine()) != null) {
+					responseStrBuilder.append(str);
+				}
+				jsonData = responseStrBuilder.toString();
+			}
+
+			if (jsonData != null && !jsonData.equals("") && jsonData.substring(0, 1).equals("{")) {
+				final Map<String, Object> obj = mapper.readValue(jsonData, new TypeReference<Map<String, Object>>() {
+				});
+				final List<Map<String, Object>> result = processMap(obj);
+				jsonData = mapper.writeValueAsString(result);
 			}
 			return jsonData;
-		} catch (IOException e1) {
+		} catch (final IOException e1) {
 			e1.printStackTrace();
 			return jsonData;
 		}
 	}
-	
+
 	@Override
 	public String getFirstElement(String jsonData) {
-		JSONArray jsonArray = new JSONArray(jsonData);
-		JSONObject firstElement = jsonArray.getJSONObject(0);
+		final JSONArray jsonArray = new JSONArray(jsonData);
+		final JSONObject firstElement = jsonArray.getJSONObject(0);
 		return firstElement.toString();
 	}
-	
+
 	@Override
 	public OpenDataPlatformResourceType getPlatformResourceTypeFromUrl(String resourceUrl) {
 		final Dashboard dashboard = checkDashboardResource(resourceUrl);

@@ -1634,6 +1634,7 @@ ed.showHideMoveToolBarButton = function () {
       
       
     };
+  
 
 
     ed.toolbarButtonsAssignclass  = function() {

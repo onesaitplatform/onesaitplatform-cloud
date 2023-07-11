@@ -78,8 +78,9 @@ import lombok.extern.slf4j.Slf4j;
 @Tag(name = "Reports")
 @RestController
 @RequestMapping("api/reports")
-@ApiResponses({ @ApiResponse(responseCode= "400", description= "Bad request"),
-	@ApiResponse(responseCode= "500", description= "Internal server error"), @ApiResponse(responseCode= "403", description= "Forbidden") })
+@ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
+		@ApiResponse(responseCode = "500", description = "Internal server error"),
+		@ApiResponse(responseCode = "403", description = "Forbidden") })
 @PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 @Slf4j
 public class ReportRestController {
@@ -121,15 +122,15 @@ public class ReportRestController {
 		});
 	}
 
-	@Operation(summary= "Download report")
+	@Operation(summary = "Download report")
 	@PostMapping("{id}/{extension}")
 	@Transactional
-	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String.class)), responseCode= "200", description= "OK"))
+	@ApiResponses(@ApiResponse(content = @Content(schema = @Schema(implementation = String.class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<?> downloadReport(
-			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id,
-			@Parameter(description= "Parameters") @RequestBody(required = false) ReportParameter[] params,
-			@Parameter(description= "Output file format", required = true) @PathVariable("extension") ReportType extension)
-					throws UnsupportedEncodingException {
+			@Parameter(description = "Report ID or Name", required = true) @PathVariable("id") String id,
+			@Parameter(description = "Parameters") @RequestBody(required = false) ReportParameter[] params,
+			@Parameter(description = "Output file format", required = true) @PathVariable("extension") ReportType extension)
+			throws UnsupportedEncodingException {
 		final Report entity = reportService.findByIdentificationOrId(id);
 
 		if (entity == null || entity.getFile() == null) {
@@ -153,12 +154,12 @@ public class ReportRestController {
 		}
 	}
 
-	@Operation(summary= "Retrieve declared parameters in Jasper Template when their default values")
-	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=ReportParameter[].class)), responseCode= "200", description= "OK"))
+	@Operation(summary = "Retrieve declared parameters in Jasper Template when their default values")
+	@ApiResponses(@ApiResponse(content = @Content(schema = @Schema(implementation = ReportParameter[].class)), responseCode = "200", description = "OK"))
 	@GetMapping(value = "/{id}/parameters", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> parameters(
-			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id)
-					throws UnsupportedEncodingException {
+			@Parameter(description = "Report ID or Name", required = true) @PathVariable("id") String id)
+			throws UnsupportedEncodingException {
 
 		final Report report = reportService.findByIdentificationOrId(id);
 		if (report == null) {
@@ -173,7 +174,7 @@ public class ReportRestController {
 		try {
 			final ResponseEntity<List<ReportParameter>> response = restTemplate.exchange(requestURL, HttpMethod.GET,
 					null, new ParameterizedTypeReference<List<ReportParameter>>() {
-			});
+					});
 
 			return new ResponseEntity<>(response.getBody(), HttpStatus.OK);
 		} catch (final HttpClientErrorException | HttpServerErrorException e) {
@@ -182,8 +183,8 @@ public class ReportRestController {
 		}
 	}
 
-	@Operation(summary= "Get all reports")
-	@ApiResponse(content=@Content(schema=@Schema(implementation=ReportDTO[].class)), responseCode= "200", description= "OK")
+	@Operation(summary = "Get all reports")
+	@ApiResponse(content = @Content(schema = @Schema(implementation = ReportDTO[].class)), responseCode = "200", description = "OK")
 	@GetMapping()
 	public ResponseEntity<List<ReportDTO>> getReports() {
 
@@ -202,12 +203,13 @@ public class ReportRestController {
 		return new ResponseEntity<>(listDTO, HttpStatus.OK);
 	}
 
-	@Operation(summary= "Get report by name or ID")
-	@ApiResponses(value = { @ApiResponse(content=@Content(schema=@Schema(implementation=ReportDTO.class)), responseCode= "200", description= "OK"),
-			@ApiResponse(responseCode= "404", description= "Not found") })
+	@Operation(summary = "Get report by name or ID")
+	@ApiResponses(value = {
+			@ApiResponse(content = @Content(schema = @Schema(implementation = ReportDTO.class)), responseCode = "200", description = "OK"),
+			@ApiResponse(responseCode = "404", description = "Not found") })
 	@GetMapping("/{id}")
 	public ResponseEntity<ReportDTO> getReportById(
-			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id) {
+			@Parameter(description = "Report ID or Name", required = true) @PathVariable("id") String id) {
 
 		final Report entity = reportService.findByIdentificationOrId(id);
 
@@ -227,8 +229,8 @@ public class ReportRestController {
 
 	}
 
-	@Operation(summary= "Create new report")
-	@ApiResponse(responseCode= "201", description= "CREATED")
+	@Operation(summary = "Create new report")
+	@ApiResponse(responseCode = "201", description = "CREATED")
 	@PostMapping(consumes = { "multipart/form-data" })
 	@Transactional
 	public ResponseEntity<Object> createNewReport(
@@ -273,12 +275,13 @@ public class ReportRestController {
 	}
 
 	@Deprecated
-	@Operation(summary= "Update report by ID")
-	@ApiResponses(value = { @ApiResponse(responseCode= "200", description= "OK"), @ApiResponse(responseCode= "404", description= "Not found") })
+	@Operation(summary = "Update report by ID")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "OK"),
+			@ApiResponse(responseCode = "404", description = "Not found") })
 	@PutMapping("/{id}")
 	@Transactional
 	public ResponseEntity<Object> updateReport(
-			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id,
+			@Parameter(description = "Report ID or Name", required = true) @PathVariable("id") String id,
 			@RequestParam(required = false, value = "description") String description,
 			@RequestParam(required = false, value = "identification") String identification,
 			@RequestParam(required = false, value = "file") MultipartFile file) {
@@ -313,12 +316,13 @@ public class ReportRestController {
 
 	}
 
-	@Operation(summary= "Update report by ID")
-	@ApiResponses(value = { @ApiResponse(responseCode= "200", description= "OK"), @ApiResponse(responseCode= "404", description= "Not found") })
+	@Operation(summary = "Update report by ID")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "OK"),
+			@ApiResponse(responseCode = "404", description = "Not found") })
 	@PostMapping(value = "/{id}", consumes = { "multipart/form-data" })
 	@Transactional
 	public ResponseEntity<Object> updateWithPostReport(
-			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id,
+			@Parameter(description = "Report ID or Name", required = true) @PathVariable("id") String id,
 			@RequestParam(required = false, value = "description") String description,
 			@RequestParam(required = false, value = "identification") String identification,
 			@RequestParam(required = false, value = "file") MultipartFile file) {
@@ -353,12 +357,12 @@ public class ReportRestController {
 
 	}
 
-	@Operation(summary= "Delete report by ID")
-	@ApiResponses(value = { @ApiResponse(responseCode= "200", description= "DELETED"),
-			@ApiResponse(responseCode= "404", description= "Not found") })
+	@Operation(summary = "Delete report by ID")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "DELETED"),
+			@ApiResponse(responseCode = "404", description = "Not found") })
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Object> deleteReport(
-			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id) {
+			@Parameter(description = "Report ID or Name", required = true) @PathVariable("id") String id) {
 		final Report entity = reportService.findByIdentificationOrId(id);
 
 		if (entity == null || entity.getFile() == null) {
@@ -373,12 +377,13 @@ public class ReportRestController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@Operation(summary= "Get file of report")
-	@ApiResponses(value = { @ApiResponse(responseCode= "200", description= "OK", content=@Content(schema=@Schema(implementation=String.class))),
-			@ApiResponse(responseCode= "404", description= "Not found") })
+	@Operation(summary = "Get file of report")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = String.class))),
+			@ApiResponse(responseCode = "404", description = "Not found") })
 	@GetMapping("/{id}/file")
 	public ResponseEntity<Object> getFileOfReport(
-			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id) {
+			@Parameter(description = "Report ID or Name", required = true) @PathVariable("id") String id) {
 
 		final Report entity = reportService.findByIdentificationOrId(id);
 

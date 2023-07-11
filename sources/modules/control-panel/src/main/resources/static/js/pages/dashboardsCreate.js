@@ -19,6 +19,87 @@ var DashboardsCreateController = function() {
         $('#showedImgPreview').attr('src', e.target.result);
        
     }
+    
+    if ($('#dashboard_autthorizations').find('tr.authorization-model')[0]){
+		mountableModel2 = $('#dashboard_autthorizations').find('tr.authorization-model')[0].outerHTML;
+	}
+	
+	function showHideImageTableOntology(){
+		if(typeof $('#dashboard_autthorizations > tbody > tr').length =='undefined' || $('#dashboard_autthorizations > tbody > tr').length == 0 || $('#dashboard_autthorizations > tbody > tr > td > input')[0].value==''){
+			$('#imageNoElementsOnTable').show();
+		}else{
+			$('#imageNoElementsOnTable').hide();
+		}
+	}
+	
+	 var refreshTable = function(){
+		
+		if(authorizationsArr.length != 0) {
+		oTable.clear();
+		oTable.destroy();
+		}
+		// TO-HTML
+		
+		$('#dashboard_autthorizations > tbody').html("");
+		$('#dashboard_autthorizations > tbody').append(mountableModel2);
+		
+	
+		$('#dashboard_autthorizations').mounTable(authorizationsArr,{
+			model: '.authorization-model',
+			noDebug: false							
+		});
+
+		// hide info , disable user and show table
+		$('#alert-authorizations').toggle($('#alert-authorizations').hasClass('hide'));			
+		$("#users").selectpicker('deselectAll');
+		$("#users").selectpicker('refresh');					
+	
+		if(authorizationsArr.length != 0) {
+		initTable();
+		}
+		
+		$('#authorizations').removeClass('hide');
+		$('#authorizations').attr('data-loaded',true);
+		showHideImageTableOntology();
+	}
+	
+	var initTable = function(){
+	    oTable = $('#dashboard_autthorizations').DataTable({
+			   columnDefs: [
+			      {
+			         targets: [0, 2],
+			         type: 'string',
+			         render: function(data, type, full, meta){
+			            if (type === 'filter' || type === 'sort') {
+			               var api = new $.fn.dataTable.Api(meta.settings);
+			               var td = api.cell({row: meta.row, column: meta.col}).node();
+			               data = $('select, input[type="text"]', td).val();
+			               if (!data){
+			            	   if (td.val){
+			            		   data = td.val;
+			            	   } else {
+			            		   data=td.innerHTML;
+			            	   }
+			               }
+			            }
+			            return data;
+			         }
+			      }
+			   ]
+			});
+			
+		$('#dashboard_autthorizations_wrapper div.dataTables_filter').addClass('hide');
+		$('#dashboard_autthorizations_wrapper > div.row').addClass('hide');
+		
+		$('#search-on-title').append($('#dashboard_autthorizations_wrapper div.dataTables_filter > label > input'));
+		$('#search-on-title > input').css('height', 'auto');
+		$('#search-on-title > input').removeClass('input-xsmall')
+		
+		if ($("#search-on-title").children().length>2){
+			$("#search-on-title").find('input:first').remove();
+		}
+		
+	}
 	// CONTROLLER PRIVATE FUNCTIONS	
 	
 	// REDIRECT URL
@@ -79,7 +160,9 @@ var DashboardsCreateController = function() {
 		if (action === 'insert'){	
 			var propAuth = {"users":user,"description":description,"accesstypes": accesstype};
 			
-			authorizationsArr.push(propAuth);	
+			authorizationsArr.push(propAuth);
+		
+				
 			// TO-HTML
 			if ($('#authorizations').attr('data-loaded') === 'true'){
 				$('#dashboard_autthorizations > tbody').html("");
@@ -98,11 +181,16 @@ var DashboardsCreateController = function() {
 			$("#users").selectpicker('refresh');
 			$('#authorizations').removeClass('hide');
 			$('#authorizations').attr('data-loaded',true);
+			
+			showHideImageTableOntology();
 		}
-	
+		
+		
 		if (action  === 'delete'){
 			
-			authorizationsArr.splice(user, 1);
+			 authorizationsArr = authorizationsArr.filter(item => item.users != user)
+			//authorizationsArr.splice(user, 1);
+			
 			// refresh interface				
 			
 				$(btn).closest('tr').remove();
@@ -115,7 +203,10 @@ var DashboardsCreateController = function() {
 					}		
 					$('#authorizations').addClass('hide');
 					
-				}	
+				}
+				
+				showHideImageTableOntology();
+				
 		}	
 	};
 	
@@ -282,8 +373,13 @@ var DashboardsCreateController = function() {
 		
 	$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
 			$('.form').validate().element('#' + event.target.id);                // checks form for validity
-		});			
+		});	
 		
+		
+		
+		$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
+			$('.form').validate().element('#' + event.target.id);                // checks form for validity
+		});		
 	// Reset form
 		$('#resetBtn').on('click',function(){ 
 			cleanFields('dashboard_create_form');
@@ -359,18 +455,42 @@ var DashboardsCreateController = function() {
 
 	}
 	
+	var showGenericErrorDialog= function(dialogTitle, dialogContent){		
+		logControl ? console.log('showErrorDialog()...') : '';
+		var Close = headerReg.btnCancelar;
+
+		// jquery-confirm DIALOG SYSTEM.
+		$.confirm({
+			title: dialogTitle,
+			theme: 'light',
+			content: dialogContent,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			buttons: {				
+				close: {
+					text: Close,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function (){} //GENERIC CLOSE.		
+				}
+			}
+		});			
+	}
+	
+	
 	 function validateImgSize() {
 	        if ($('#image').prop('files') && $('#image').prop('files')[0].size>60*1024){
-	        	showGenericErrorDialog('Error', marketAssetCreateReg.marketAssetmanager_image_error);
+	        	showGenericErrorDialog('Error', dashboardCreateJson.dashboards_image_error);
 	        	$("#image").val(null);
 	        	$('#showedImg').val("");
+				$('#hasImage').val(false);
+				$('#showedImgPreview').attr('src','/controlpanel/img/APPLICATION.png');
 	         } else if ($('#image').prop('files')) {
 	        	 reader.readAsDataURL($("#image").prop('files')[0]);	        	 
 	         }
 	    }
 	
 	// INIT CODEMIRROR
-		
 			logControl ? console.log('handleCodeMirror() on -> headerlibs') : '';
 	        var myTextArea = document.getElementById('headerlibs');
 	        myCodeMirror = CodeMirror.fromTextArea(myTextArea, {
@@ -408,11 +528,9 @@ var DashboardsCreateController = function() {
 				$("#dimensionsPanel").hide();
 			}
 			handleValidation();
-			
-		
 			initAccess();
 			initTemplateElements();
-		
+			initTable();
 		},
 		
 		// REDIRECT
@@ -445,17 +563,42 @@ var DashboardsCreateController = function() {
 		},// INSERT AUTHORIZATION
 		insertAuthorization: function(){
 			logControl ? console.log(LIB_TITLE + ': insertAuthorization()') : '';
-			
+			existe=false;
 				// UPDATE MODE ONLY AND VALUES on user and accesstype
+					
 			if (($('#users').val() !== '') && ($("#users option:selected").attr('disabled') !== 'disabled') && ($('#accesstypes').val() !== '')){
 					
 					// AJAX INSERT (ACTION,ONTOLOGYID,USER,ACCESSTYPE) returns object with data.
 					authorization('insert',$('#users').val(),$('#users')[0].selectedOptions[0].text,$('#accesstypes').val(),'');
-								
+					refreshTable();
+						
 				} else { 
+					  
+					if ($('#users').val() == '') {
+							toastr.error(messagesForms.validation.genFormError,'');
+					} else {
+						
 					
-					toastr.error(dashboardCreateReg.validations.authuser,''); 
+					
+					if ($("#dashboard_autthorizations > tbody > tr").size() > 0) {
+		                $("#dashboard_autthorizations > tbody > tr").each(
+			
+							function() {
+								let fila = $(this).children().eq(0);
+								if(fila.children().eq(0).val() == $('#users').val()){	
+								   existe=true;	
+								} 
+							}
+						);
+					}
+					if(!existe){
+						toastr.warning(messagesForms.validation.genOpexist,'');
+					}
+						
+					}
+					
 				}
+				
 			
 		},
 		
@@ -464,9 +607,14 @@ var DashboardsCreateController = function() {
 			logControl ? console.log(LIB_TITLE + ': removeAuthorization()') : '';
 				// AJAX REMOVE (ACTION,ONTOLOGYID,USER,ACCESSTYPE) returns object with data.
 				var selUser = $(obj).closest('tr').find("input[name='users\\[\\]']").val();					
-				authorization('delete', selUser, '','', obj );				
+				authorization('delete', selUser, '','', obj );
+				
 		
-		},		
+		},
+		showErrorDialog: function(dialogTitle, dialogContent) {
+			logControl ? console.log(LIB_TITLE + ': showErrorDialog(dialogTitle, dialogContent)') : '';
+			showGenericErrorDialog(dialogTitle, dialogContent);
+		},	
 		
 		// DELETE GADGET DATASOURCE 
 		deleteDashboard: function(dashboardId){

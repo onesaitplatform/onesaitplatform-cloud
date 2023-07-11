@@ -27,7 +27,7 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.xcontent.XContentType;
 import org.joda.time.DateTime;
 import org.joda.time.chrono.ISOChronology;
 import org.joda.time.format.DateTimeFormat;
@@ -70,8 +70,9 @@ public class ESInsertService {
 	private String fixPosibleNonCapitalizedGeometryPoint(String s) {
 		try {
 			final JsonObject o = new JsonParser().parse(s).getAsJsonObject();
-			if (o.get(SOURCE) != null && o.get(SOURCE).getAsString().equals("AUDIT"))
+			if (o.get(SOURCE) != null && o.get(SOURCE).getAsString().equals("AUDIT")) {
 				return s;
+			}
 			s = s.replaceAll("Point|POINT", POINT_STR)
 					.replaceAll("MultiPoint|MULTIPOINT|multiPoint|Multipoint", MULTIPOINT_STR)
 					.replaceAll("Polygon|POLYGON", POLYGON_STR)
@@ -94,14 +95,14 @@ public class ESInsertService {
 	private BulkResponse executeBulkInsert(BulkRequest bulkRequest) {
 		try {
 			return hlClient.bulk(bulkRequest, RequestOptions.DEFAULT);
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			log.error("Error inserting bulk documents ", e);
 			return null;
 		}
 	}
 
 	public ComplexWriteResult bulkInsert(OntologyElastic ontology, List<String> jsonDocs) {
-		BulkRequest bulkRequest = new BulkRequest();
+		final BulkRequest bulkRequest = new BulkRequest();
 
 		for (String s : jsonDocs) {
 			// fix instance
@@ -114,12 +115,12 @@ public class ESInsertService {
 			String idValue;
 
 			// Default indexRequest. This can change for templates and/or custom IDs
-			IndexRequest indexRequest = new IndexRequest(index).source(s, XContentType.JSON);
+			final IndexRequest indexRequest = new IndexRequest(index).source(s, XContentType.JSON);
 
 			if (Boolean.TRUE.equals(ontology.getCustomIdConfig())
 					|| Boolean.TRUE.equals(ontology.getTemplateConfig())) {
 				// We need to parse the instance to extract the index or the ID
-				JsonObject instanceObject = new JsonParser().parse(s).getAsJsonObject();
+				final JsonObject instanceObject = new JsonParser().parse(s).getAsJsonObject();
 				if (Boolean.TRUE.equals(ontology.getTemplateConfig())) {
 					index = getIndexFromInstance(ontology, instanceObject);
 					// IF template, then set the index according to the instance
@@ -139,27 +140,28 @@ public class ESInsertService {
 			bulkRequest.add(indexRequest);
 		}
 
-		BulkResponse bulkResponse = executeBulkInsert(bulkRequest);
+		final BulkResponse bulkResponse = executeBulkInsert(bulkRequest);
 
-		List<BulkWriteResult> listResult = new ArrayList<>();
+		final List<BulkWriteResult> listResult = new ArrayList<>();
 
-		for (BulkItemResponse bulkItemResponse : bulkResponse) {
+		for (final BulkItemResponse bulkItemResponse : bulkResponse) {
 			final BulkWriteResult bulkr = new BulkWriteResult();
 			bulkr.setId(bulkItemResponse.getId());
-			
-			DocWriteResponse itemResponse = bulkItemResponse.getResponse();
-			if(itemResponse == null || bulkItemResponse.getFailure() != null) {
-				//there is an error
+
+			final DocWriteResponse itemResponse = bulkItemResponse.getResponse();
+			if (itemResponse == null || bulkItemResponse.getFailure() != null) {
+				// there is an error
 				bulkr.setErrorMessage(bulkItemResponse.getFailureMessage());
-				bulkr.setOk(false);			
+				bulkr.setOk(false);
 			} else {
 				bulkr.setErrorMessage(itemResponse.toString());
-				bulkr.setOk(itemResponse.getResult().equals(Result.CREATED) || itemResponse.getResult().equals(Result.UPDATED));
-			}			
+				bulkr.setOk(itemResponse.getResult().equals(Result.CREATED)
+						|| itemResponse.getResult().equals(Result.UPDATED));
+			}
 			listResult.add(bulkr);
 		}
 
-		ComplexWriteResult complexWriteResult = new ComplexWriteResult();
+		final ComplexWriteResult complexWriteResult = new ComplexWriteResult();
 		complexWriteResult.setType(ComplexWriteResultType.BULK);
 		complexWriteResult.setData(listResult);
 
@@ -170,9 +172,9 @@ public class ESInsertService {
 	private String getIndexFromInstance(OntologyElastic ontology, JsonObject instanceObject) {
 		String index = "";
 		DateTime dateTime = null;
-		DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ").withLocale(Locale.ROOT)
-				.withChronology(ISOChronology.getInstanceUTC());
-		StringBuilder stringBuilder = new StringBuilder();
+		final DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ")
+				.withLocale(Locale.ROOT).withChronology(ISOChronology.getInstanceUTC());
+		final StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append(ontology.getOntologyId().getIdentification()).append(PATTERN_SEPARATOR);
 
 		// get value from field
@@ -186,7 +188,7 @@ public class ESInsertService {
 			if (fieldValue.length() <= ontology.getSubstringEnd()) {
 				// TODO: THrow exception out of bounds index
 			}
-			int endIndex = ontology.getSubstringEnd() == -1 ? fieldValue.length() : ontology.getSubstringEnd();
+			final int endIndex = ontology.getSubstringEnd() == -1 ? fieldValue.length() : ontology.getSubstringEnd();
 			fieldValue = fieldValue.substring(ontology.getSubstringStart(), endIndex);
 			index = stringBuilder.append(fieldValue).toString().toLowerCase();
 			break;
@@ -220,7 +222,7 @@ public class ESInsertService {
 	}
 
 	private String getValueFromInstanceField(JsonObject instanceObject, String field) {
-		String[] fields = field.split("\\.");
+		final String[] fields = field.split("\\.");
 		for (int i = 0; i < fields.length - 1; i++) {
 			instanceObject = instanceObject.getAsJsonObject(fields[i]);
 		}

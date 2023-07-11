@@ -74,24 +74,25 @@ public class BPMController {
 	private AppWebUtils utils;
 	@Autowired
 	private IntegrationResourcesService resourcesService;
-	@Autowired 
+	@Autowired
 	private HttpSession httpSession;
-	
+
 	private RestTemplate restTemplate;
-	
+
 	private static final String APP_ID = "appId";
 
 	@PostConstruct
 	void initRestTemplate() {
 		restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
+
 	}
 
 	@GetMapping("list")
 	public String list(Model model) {
-		
-		//CLEANING APP_ID FROM SESSION
+
+		// CLEANING APP_ID FROM SESSION
 		httpSession.removeAttribute(APP_ID);
-		
+
 		model.addAttribute("tenants", tenants());
 		model.addAttribute("camundaEndpoint", resourcesService.getUrl(Module.BPM_ENGINE, ServiceUrl.BASE));
 		model.addAttribute("users", userService.getAllUsers());

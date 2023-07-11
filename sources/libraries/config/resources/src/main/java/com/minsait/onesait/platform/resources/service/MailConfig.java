@@ -77,7 +77,6 @@ public class MailConfig {
 			log.warn("Could not trust all certificates Mail config");
 		}
 
-
 		if (configuration.getSmtp().getFrom() != null && !configuration.getSmtp().getFrom().isEmpty()) {
 			props.put("mail.smtp.from", configuration.getSmtp().getFrom());
 		}

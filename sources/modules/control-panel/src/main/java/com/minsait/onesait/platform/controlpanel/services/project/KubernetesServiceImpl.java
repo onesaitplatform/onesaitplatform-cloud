@@ -31,7 +31,9 @@ import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.yaml.snakeyaml.Yaml;
 
 import com.github.mustachejava.DefaultMustacheFactory;
@@ -43,6 +45,7 @@ import com.minsait.onesait.platform.config.components.RancherConfiguration;
 import com.minsait.onesait.platform.config.model.Microservice;
 import com.minsait.onesait.platform.config.model.Microservice.CaaS;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
+import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -67,10 +70,21 @@ public class KubernetesServiceImpl implements MSAService {
 		useContext();
 	}
 
+	private void setCredentialsAndContext(String server, String username, String credentials, String namespace) {
+		setCredentials(credentials);
+		setCluster(server);
+		setContext(namespace);
+		useContext();
+	}
+
 	private void setCredentials(CaasConfiguration caasConfiguration) {
+		setCredentials(caasConfiguration.getPassword());
+	}
+
+	private void setCredentials(String password) {
 		try {
 			final ProcessBuilder pb = new ProcessBuilder(KUBECTL, CONFIG, "set-credentials", ONESAIT_PLATFORM_MSA,
-					"--token=" + caasConfiguration.getPassword());
+					"--token=" + password);
 			pb.redirectErrorStream(true);
 			log.info(pb.command().toString());
 			executeAndReadOutput(pb.start());
@@ -81,9 +95,13 @@ public class KubernetesServiceImpl implements MSAService {
 	}
 
 	private void setCluster(CaasConfiguration caasConfiguration) {
+		setCluster(caasConfiguration.getUrl());
+	}
+
+	private void setCluster(String server) {
 		try {
 			final ProcessBuilder pb = new ProcessBuilder(KUBECTL, CONFIG, "set-cluster", ONESAIT_PLATFORM_MSA,
-					"--insecure-skip-tls-verify=true", "--server=" + caasConfiguration.getUrl());
+					"--insecure-skip-tls-verify=true", "--server=" + server);
 			pb.redirectErrorStream(true);
 			log.info(pb.command().toString());
 			executeAndReadOutput(pb.start());
@@ -454,5 +472,32 @@ public class KubernetesServiceImpl implements MSAService {
 	private boolean deleteTempYmlFile(String filename) {
 		final File file = new File(TMP_PATH + filename);
 		return file.delete();
+	}
+
+	@Async
+	@Override
+	public void runConfigInit(String server, String user, String credentials, String namespace, String verticalSchema,
+			String multitenantAPIKey, Map<String, Boolean> verticalCreation) {
+		verticalCreation.put(Tenant2SchemaMapper.extractVerticalNameFromSchema(verticalSchema), false);
+		setCredentialsAndContext(server, user, credentials, namespace);
+		scaleDeployment(MSAService.CONFIG_INIT, 0);
+		final Map<String, String> var = new HashMap<String, String>();
+		var.put(MSAService.MULTITENANT_SCHEMA_ENV, verticalSchema);
+		if (StringUtils.hasText(multitenantAPIKey)) {
+			var.put(MSAService.MULTITENANT_API_KEY, multitenantAPIKey);
+		}
+		setVarEnv(MSAService.CONFIG_INIT, var);
+		scaleDeployment(MSAService.CONFIG_INIT, 1);
+		try {
+			Thread.sleep(300000);
+			scaleDeployment(MSAService.CONFIG_INIT, 0);
+			var.put(MSAService.MULTITENANT_SCHEMA_ENV, "onesaitplatform_config");
+			var.put(MSAService.MULTITENANT_API_KEY, "");
+			setVarEnv(MSAService.CONFIG_INIT, var);
+			verticalCreation.put(Tenant2SchemaMapper.extractVerticalNameFromSchema(verticalSchema), true);
+		} catch (final InterruptedException e) {
+			log.error("Could not scale down config init", e);
+		}
+
 	}
 }

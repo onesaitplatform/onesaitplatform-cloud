@@ -43,8 +43,8 @@ import lombok.extern.slf4j.Slf4j;
 @Lazy(false)
 @Slf4j
 @ConditionalOnExpression("'${onesaitplatform.router.metrics.query.enabled}'=='true'")
-@ConditionalOnMissingClass(value="com.minsait.onesait.platform.router.service.app.service.crud.RouterCrudServiceImpl")
-@ConditionalOnClass(name="com.minsait.onesait.platform.persistence.services.QueryToolServiceImpl")
+@ConditionalOnMissingClass(value = "com.minsait.onesait.platform.router.service.app.service.crud.RouterCrudServiceImpl")
+@ConditionalOnClass(name = "com.minsait.onesait.platform.persistence.services.QueryToolServiceImpl")
 public class QueryMetricsAspectGeneric {
 
 	@Autowired(required = false)
@@ -108,7 +108,6 @@ public class QueryMetricsAspectGeneric {
 
 	}
 
-
 	private void sendQueryMetric(Long startMs, Long endMs, Long totalMs, String user, String query, String queryType,
 			Status status, String errorMessage, String ontology) throws JsonProcessingException {
 		if (metricsQueue != null && !"QueryMetrics".equals(ontology)) {
@@ -120,7 +119,6 @@ public class QueryMetricsAspectGeneric {
 			metricsQueue.offer(MAPPER.writeValueAsString(queryMetric));
 		}
 	}
-
 
 	private String getEntityDatasource(String entity) {
 		try {

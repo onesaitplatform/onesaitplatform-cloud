@@ -131,7 +131,7 @@ public class MigrationConfiguration {
 	public boolean addProject(Class<?> clazz, Serializable id, Serializable identification) {
 		if (!blackProjectlist.contains(clazz.getName())) {
 			if (clazz.getCanonicalName().equals(USER)) {
-				clazz = UserExport.class;
+				clazz = User.class;
 			} else if (clazz.getCanonicalName().equals(PROJECT)) {
 				clazz = ProjectExport.class;
 			} else if (clazz.getCanonicalName().equals(PROJECT_RESOURCE_ACCESS)) {

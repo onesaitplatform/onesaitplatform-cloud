@@ -158,14 +158,14 @@ public final class EntitiesCast {
 			ar.setApp(null);
 			final Set<AppUserExport> sau = new HashSet<AppUserExport>();
 			ar.setDescription(arl.getDescription());
-			ar.setAppUsers(sau);
+			ar.setAppUsers(null);
 			ar.setCreatedAt(arl.getCreatedAt());
 			ar.setCreatedAt(arl.getUpdatedAt());
 			ar.setName(arl.getName());
 			ar.setId(arl.getId());
-			for (final AppUserExport aul : arl.getAppUsers()) {
+			/*for (final AppUserExport aul : arl.getAppUsers()) {
 				sau.add(castAppUserExport(aul, ar));
-			}
+			}*/
 			return ar;
 		} else {
 			return null;

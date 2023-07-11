@@ -34,7 +34,7 @@ public interface MasterUserTokenRepository extends JpaRepository<MasterUserToken
 	@Query("SELECT t FROM MasterUserToken t WHERE t.masterUser.userId= :userId")
 	List<MasterUserToken> findByUserId(@Param("userId") String userId);
 
-	@Query("SELECT t FROM MasterUserToken t WHERE t.masterUser.userId LIKE '%administrator%'")
+	@Query("SELECT t FROM MasterUserToken t WHERE t.masterUser.userId LIKE '%administrator%' AND t.masterUser.active IS TRUE AND t.masterUser.userId NOT LIKE '%edge%'")
 	List<MasterUserToken> findAdminUsers();
 
 }

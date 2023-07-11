@@ -16,6 +16,7 @@ onesaitplatform: #Config onesaitplatform specific
             host: ${KAFKAHOST}
             port: ${KAFKAPORT}
    database.elasticsearch.enabled: ${ELASTICSEARCH_ENABLED}
+   database.opensearch.enabled: ${OPENSEARCH_ENABLED}
    database.mongodb:
       database: ${REALTIMEDBNAME}
       servers: ${REALTIMEDBSERVERS}
@@ -27,30 +28,6 @@ onesaitplatform: #Config onesaitplatform specific
       quasar.connector.http.endpoint: http://${QUASARHOST}:${QUASARPORT}/query/fs/
       quasar.maxHttpConnections: ${MAXCONN}
       quasar.maxHttpConnectionsPerRoute: ${MAXCONNROUTE}
-   database.hadoop.enabled: ${ENABLEHADOOP}
-   database.hdfs:
-      url: ${HDFSURL}
-      basePath: ${HDFSPATH}
-   database.hive:
-      url: ${HIVEURL}
-      username: ${HIVEUSERNAME}
-      password: ${HIVEPASSWORD}
-      driverClassName: ${HIVEDRIVERCLASS}
-   database.impala:
-      url: ${IMPALAURL}
-   database.kudu:
-      numreplicas: ${KUDUNUMREPLICAS}
-      address: ${KUDUURL}
-      includeKudutableName: ${INCLUDEKUDUTABLENAME}
-      client:
-        sessionTimeout: ${KUDUCLIENTSESSIONTIMEOUT}
-        flushMode: ${KUDUCLIENTFLUSHMODE}
-        prefix: ${KUDUCLIENTIMPALAPREFIX}
-        bossThreadPool: ${KUDUCLIENTBOSSTHREADPOOL}
-        workerThreadPool: ${KUDUCLIENTWORKERTHREADPOOL}
-        operationTimeout: ${KUDUCLIENTOPTIMEOUT}
-        adminOperationTimeout: ${KUDUCLIENTADMINOPTIMEOUT}
-        socketReadTimeout: ${KUDUCLIENTSOCKETREADTIMEOUT}
    database.timeseries.timezone: ${TIMESERIES_TIMEZONE}
    database.timescaledb:
       enabled: ${TIMESCALE_ENABLED}

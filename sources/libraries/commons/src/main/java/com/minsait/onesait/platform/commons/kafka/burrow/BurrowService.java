@@ -63,6 +63,7 @@ public class BurrowService {
 
 	public BurrowGroupStatusResponse getClientGroupStatus(String cluster, String clientGroup) {
 		RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
+
 		String requestResponse = null;
 		BurrowGroupStatusResponse state = null;
 		try {
@@ -104,6 +105,7 @@ public class BurrowService {
 
 	public BurrowConsumerGroupsResponse getAllClientGroups(String cluster) {
 		RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
+
 		String requestResponse = null;
 		BurrowConsumerGroupsResponse response = null;
 		try {
@@ -126,6 +128,7 @@ public class BurrowService {
 
 	public BurrowClustersResponse getAllClusters() {
 		RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
+
 		BurrowClustersResponse response = null;
 		String requestResponse = null;
 		try {
@@ -146,6 +149,7 @@ public class BurrowService {
 
 	private BurrowConsumerTopicInfoResponse getBurrowConsumerTopicInfo(String cluster, String consumer) {
 		RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
+
 		BurrowConsumerTopicInfoResponse response = null;
 		String requestResponse = null;
 

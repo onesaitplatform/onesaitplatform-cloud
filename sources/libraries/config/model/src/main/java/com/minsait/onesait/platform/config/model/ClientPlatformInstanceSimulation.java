@@ -52,7 +52,8 @@ import lombok.extern.slf4j.Slf4j;
 @Table(name = "CLIENT_PLATFORM_INSTANCE_SIMULATION")
 @Configurable
 @Slf4j
-public class ClientPlatformInstanceSimulation extends OPResource implements Versionable<ClientPlatformInstanceSimulation> {
+public class ClientPlatformInstanceSimulation extends OPResource
+		implements Versionable<ClientPlatformInstanceSimulation> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -145,7 +146,6 @@ public class ClientPlatformInstanceSimulation extends OPResource implements Vers
 		}
 	}
 
-
 	@JsonSetter("token")
 	public void setTokenJson(String id) {
 		if (StringUtils.hasText(id)) {
@@ -163,12 +163,13 @@ public class ClientPlatformInstanceSimulation extends OPResource implements Vers
 			return json;
 		}
 	}
+
 	@JsonSetter("json")
 	public void setJsonJson(Object node) {
 		try {
 			json = new ObjectMapper().writeValueAsString(node);
 		} catch (final JsonProcessingException e) {
-			//NO-OP
+			// NO-OP
 		}
 	}
 
@@ -195,6 +196,7 @@ public class ClientPlatformInstanceSimulation extends OPResource implements Vers
 			dateTo = new Date(millis);
 		}
 	}
+
 	@Override
 	public String serialize() throws IOException {
 		final YAMLMapper mapper = new YAMLMapper();
@@ -218,8 +220,10 @@ public class ClientPlatformInstanceSimulation extends OPResource implements Vers
 	}
 
 	@Override
-	public Versionable<ClientPlatformInstanceSimulation> runExclusions(Map<String, Set<String>> excludedIds, Set<String> excludedUsers) {
-		Versionable<ClientPlatformInstanceSimulation> client = Versionable.super.runExclusions(excludedIds, excludedUsers);
+	public Versionable<ClientPlatformInstanceSimulation> runExclusions(Map<String, Set<String>> excludedIds,
+			Set<String> excludedUsers) {
+		Versionable<ClientPlatformInstanceSimulation> client = Versionable.super.runExclusions(excludedIds,
+				excludedUsers);
 		if (client != null) {
 			if (ontology != null && !CollectionUtils.isEmpty(excludedIds)
 					&& !CollectionUtils.isEmpty(excludedIds.get(Ontology.class.getSimpleName()))

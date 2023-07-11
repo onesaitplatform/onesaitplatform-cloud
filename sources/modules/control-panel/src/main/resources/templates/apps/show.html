@@ -378,7 +378,7 @@
 	function navigateUrl(url){  window.location.href = url;	}
 	var oTable ;
 	// MAIN WHEN LOAD
-	$(window).load(function(){  
+	$(window).on("load",function(){  
 		// init on load.		
 		//DATATABLE 
 		oTable =  $('#authorizations').DataTable();

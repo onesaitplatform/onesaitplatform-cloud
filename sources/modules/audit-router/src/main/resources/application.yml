@@ -60,6 +60,7 @@ onesaitplatform: #Config onesaitplatform specific
             consumer.group : kafkaGroup
             consumer.maxPollRecords : 5000
    database.elasticsearch.enabled: false
+   database.opensearch.enabled: false
    database.mongodb:
       database: onesaitplatform_rtdb
       authenticationDatabase:  #admin
@@ -84,30 +85,6 @@ onesaitplatform: #Config onesaitplatform specific
       quasar.maxHttpConnectionsPerRoute: 100
       quasar.connectionTimeout.millis: 60000
       quasar.connector.http.endpoint: http://localhost:18200/query/fs/
-   database.hadoop.enabled: false
-   database.hdfs:
-      url: hdfs://127.0.0.1:8020
-      basePath: /user/hdfs
-   database.hive:
-      url: jdbc:hive2://localhost:10000/default
-      username: cloudera-scm
-      password:
-      driverClassName: org.apache.hive.jdbc.HiveDriver
-   database.impala:
-      url: jdbc:hive2://localhost:21050/default;auth=noSasl
-   database.kudu:
-      numreplicas: 1
-      address: localhost:7051
-      includeKudutableName: false
-      client:
-        sessionTimeout: 60000
-        flushMode: MANUAL_FLUSH
-        prefix: impala::default.
-        bossThreadPool: 1
-        workerThreadPool: 4
-        operationTimeout: 30000
-        adminOperationTimeout: 30000
-        socketReadTimeout: 10000
    database.timeseries.timezone: UTC
    database.timescaledb:
       enabled: false
@@ -164,7 +141,9 @@ spring: ## General Config
 #      driver-class-name: org.postgresql.Driver
       minimum-idle: 10
       maximum-pool-size: 30
-
+   autoconfigure:
+      exclude:
+         - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
     #tomcat:
       # Number of ms to wait before throwing an exception if no connection is available.
       #max-wait: 10000

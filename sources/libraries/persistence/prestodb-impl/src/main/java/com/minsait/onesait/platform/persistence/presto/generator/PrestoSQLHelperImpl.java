@@ -43,7 +43,6 @@ import net.sf.jsqlparser.statement.select.Select;
 @Component("PrestoSQLHelperImpl")
 public class PrestoSQLHelperImpl implements PrestoSQLHelper {
 
-
 	private static final String LIST_VALIDATE_QUERY = "SELECT 1";
 	private static final String LIST_TABLES_QUERY = "SHOW TABLES";
 	private static final String LIST_CATALOGS_QUERY = "SHOW CATALOGS";
@@ -53,22 +52,22 @@ public class PrestoSQLHelperImpl implements PrestoSQLHelper {
 	private static final String NOT_NULL = "NOT NULL";
 	private static final String COMMENT = "COMMENT";
 	private static final String QUOTE = "'";
-	
+
 	@Override
 	public String getValidateQuery() {
 		return LIST_VALIDATE_QUERY;
 	}
-	
+
 	@Override
 	public String getAllTablesStatement() {
 		return LIST_TABLES_QUERY;
 	}
-	
+
 	@Override
 	public boolean hasDatabase() {
 		return true;
 	}
-	
+
 	@Override
 	public boolean hasCrossDatabase() {
 		return true;
@@ -128,13 +127,13 @@ public class PrestoSQLHelperImpl implements PrestoSQLHelper {
 					|| (limitedSelect.getLimit() != null && limitedSelect.getLimit().getOffset() != null));
 			if (hasOffset) {
 				if (limitedSelect.getOffset() != null) {
-					limitedSelect.getOffset().setOffset(offset);
+					limitedSelect.getOffset().setOffset(new LongValue(offset));
 				} else {
 					limitedSelect.getLimit().setOffset(new LongValue(offset));
 				}
 			} else {
 				final Offset qOffset = new Offset();
-				qOffset.setOffset(offset);
+				qOffset.setOffset(new LongValue(offset));
 				limitedSelect.setOffset(qOffset);
 			}
 		}
@@ -180,7 +179,7 @@ public class PrestoSQLHelperImpl implements PrestoSQLHelper {
 	public String getFieldTypeString(String fieldOspType) {
 		String type = null;
 
-		OntologyVirtualSchemaFieldType fieldtype = OntologyVirtualSchemaFieldType.valueOff(fieldOspType);
+		final OntologyVirtualSchemaFieldType fieldtype = OntologyVirtualSchemaFieldType.valueOff(fieldOspType);
 		switch (fieldtype) {
 		case STRING:
 			type = "VARCHAR";
@@ -222,9 +221,9 @@ public class PrestoSQLHelperImpl implements PrestoSQLHelper {
 
 	@Override
 	public PrestoCreateStatement parseCreateStatementColumns(PrestoCreateStatement statement) {
-		List<ColumnPresto> columnsPresto = statement.getColumns();
-		List<ColumnDefinition> parsedOptions = new ArrayList<>();
-		for (ColumnPresto columnPresto : columnsPresto) {
+		final List<ColumnPresto> columnsPresto = statement.getColumnsPresto();
+		final List<ColumnDefinition> parsedOptions = new ArrayList<>();
+		for (final ColumnPresto columnPresto : columnsPresto) {
 			parsedOptions.add(getColumnWithSpecs(columnPresto));
 		}
 		statement.setColumnDefinitions(parsedOptions);
@@ -233,7 +232,7 @@ public class PrestoSQLHelperImpl implements PrestoSQLHelper {
 
 	@Override
 	public ColumnPresto getColumnWithSpecs(final ColumnPresto col) {
-		List<String> colSpecs = col.getColumnSpecStrings();
+		List<String> colSpecs = col.getColumnSpecs();
 		if (colSpecs == null) {
 			colSpecs = new ArrayList<>();
 		}
@@ -244,15 +243,16 @@ public class PrestoSQLHelperImpl implements PrestoSQLHelper {
 			colSpecs.add(COMMENT + QUOTE + col.getColComment() + QUOTE);
 		}
 		col.setColDataType(getFieldTypeString(col.getStringColDataType()));
-		col.setColumnSpecStrings(colSpecs);
+		col.setColumnSpecs(colSpecs);
 		return col;
 	}
 
 	@Override
 	public PrestoCreateStatement parseHistoricalOptionsStatement(PrestoCreateStatement statement) {
 		final HistoricalOptions ho = statement.getHistoricalOptions();
-		if (ho != null)
+		if (ho != null) {
 			statement.setTableOptionsStrings(ho.buildHistoricalOptions());
+		}
 		return statement;
 	}
 

@@ -142,10 +142,12 @@ public class ProjectResourceAccess extends ProjectResourceAccessParent {
 			user = u;
 		}
 	}
+
 	@JsonGetter("user")
 	public String getUserJson() {
 		return user == null ? null : user.getUserId();
 	}
+
 	@JsonSetter("appRole")
 	public void setAppRoleJson(String id) {
 		if (StringUtils.hasText(id)) {
@@ -154,6 +156,7 @@ public class ProjectResourceAccess extends ProjectResourceAccessParent {
 			appRole = ar;
 		}
 	}
+
 	@JsonGetter("appRole")
 	public String getAppRoleJson() {
 		return appRole == null ? null : appRole.getId();
@@ -177,7 +180,8 @@ public class ProjectResourceAccess extends ProjectResourceAccessParent {
 	public void setResourceJson(String id) throws Exception {
 		if (StringUtils.hasText(id)) {
 			final String[] parts = id.split("@");
-			final OPResource p = (OPResource) Class.forName(VersioningIOService.CONFIG_MODEL_CLASS_PREFIX + parts[1]).newInstance();
+			final OPResource p = (OPResource) Class.forName(VersioningIOService.CONFIG_MODEL_CLASS_PREFIX + parts[1])
+					.newInstance();
 			p.setId(parts[0]);
 			resource = p;
 		}
@@ -185,7 +189,7 @@ public class ProjectResourceAccess extends ProjectResourceAccessParent {
 
 	@JsonGetter("resource")
 	public String getResourceJson() {
-		return resource == null ? null : resource.getId()+"@"+resource.getClass().getSimpleName();
+		return resource == null ? null : resource.getId() + "@" + resource.getClass().getSimpleName();
 	}
 
 }

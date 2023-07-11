@@ -475,7 +475,7 @@
 	if ( languageJson ){ $.extend( true, $.fn.dataTable.defaults, { language: languageJson }); }
 	
 
-	$(window).load(function(){ 
+	$(window).on("load",function(){ 
 
 		var offsetsTable = $('#topics').dataTable({
 	      "bAutoWidth": false

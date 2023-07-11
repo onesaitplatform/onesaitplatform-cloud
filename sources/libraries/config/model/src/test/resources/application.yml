@@ -203,30 +203,6 @@ onesaitplatform: #Config onesait Platform specific
       tools.useSequentialOps: true
       digitaltwin.database: digital_twin
       quasar.connector.http.endpoint: http://localhost:18200/query/fs/
-   database.hadoop.enabled: false
-   database.hdfs:
-      url: hdfs://127.0.0.1:8020
-      basePath: /user/hdfs
-   database.hive:
-      url: jdbc:hive2://localhost:10000/default
-      username: cloudera-scm
-      password: 
-      driverClassName: org.apache.hive.jdbc.HiveDriver
-   database.impala:
-      url: jdbc:hive2://localhost:21050/default;auth=noSasl
-   database.kudu:
-      numreplicas: 1
-      address: localhost:7051
-      includeKudutableName: false
-      client:
-        sessionTimeout: 60000
-        flushMode: MANUAL_FLUSH
-        prefix: impala::default.
-        bossThreadPool: 1
-        workerThreadPool: 4
-        operationTimeout: 30000
-        adminOperationTimeout: 30000
-        socketReadTimeout: 10000
    database.timescaledb:
       enabled: false
       url: jdbc:postgresql://localhost:5432/?currentSchema=public

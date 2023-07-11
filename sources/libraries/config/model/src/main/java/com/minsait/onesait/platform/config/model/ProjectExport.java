@@ -50,7 +50,7 @@ public class ProjectExport extends ProjectParent {
 	@Getter
 	@Setter
 	@JsonIgnore
-	private Set<UserExport> users = new HashSet<>();
+	private Set<User> users = new HashSet<>();
 
 	@Column(name = "TYPE")
 	@Enumerated(EnumType.STRING)

@@ -1,4 +1,4 @@
-FROM onesaitplatform/baseimage:latest
+FROM onesaitplatform/baseimage:latest-17
 
 # Metadata
 LABEL platform.image.name="rtdbmaintainer"
@@ -62,7 +62,7 @@ RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s 
 
 # Install mongodb tools and node-npm
 RUN apk add --no-cache mongodb-tools && \
-	apk add --update nodejs nodejs-npm
+	apk add --update nodejs npm
 
 # Install elasticdump globally
 RUN npm install elasticdump -g

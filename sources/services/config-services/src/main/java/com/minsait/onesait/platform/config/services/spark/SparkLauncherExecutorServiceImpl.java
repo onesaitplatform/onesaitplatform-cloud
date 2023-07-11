@@ -57,6 +57,7 @@ public class SparkLauncherExecutorServiceImpl implements SparkLauncherExecutorSe
 	@PostConstruct
 	public void init() {
 		restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
+
 		restTemplate.setErrorHandler(new ResponseErrorHandler() {// This error handler allow to handle 40X codes
 
 			@Override

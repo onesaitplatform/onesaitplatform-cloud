@@ -17,15 +17,11 @@ package com.minsait.onesait.platform.libraries.integration.testing.controlpanel.
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.FixMethodOrder;
-import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -34,9 +30,7 @@ import com.minsait.onesait.platform.libraries.integration.testing.IntegrationTes
 
 import lombok.extern.slf4j.Slf4j;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest(classes = IntegrationTestingApp.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Slf4j
 public class TestLogin extends AbstractTestNGSpringContextTests {
 
@@ -46,7 +40,7 @@ public class TestLogin extends AbstractTestNGSpringContextTests {
 
 	// private String host = "https://development.onesaitplatform.com/";
 	// @Value("${host:http://localhost:18000/}")
-	private String host = "http://localhost:18000/";
+	private final String host = "http://localhost:18000/";
 	@Value("${username:developer}")
 	private String username;
 	@Value("${password:Changed2019!}")
@@ -66,9 +60,9 @@ public class TestLogin extends AbstractTestNGSpringContextTests {
 
 	@org.testng.annotations.Test
 	public void op144testLogin() {
-		SignInPage signInPage = new SignInPage(driver);
+		final SignInPage signInPage = new SignInPage(driver);
 		signInPage.loginValidUser(host);
-		MainPage homePage = signInPage.loginValidUser(username, pass_word);
+		final MainPage homePage = signInPage.loginValidUser(username, pass_word);
 		assert (homePage.testloadmain());
 	}
 

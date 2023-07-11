@@ -58,6 +58,7 @@ import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -73,6 +74,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 
 public class BinaryRepositoryRestService {
+
+	public enum Type {
+		MONGO_GRIDFS, FILE, GCP
+	}
 
 	@Autowired
 	private UserService userService;
@@ -97,24 +102,27 @@ public class BinaryRepositoryRestService {
 	private static final String WRONG_ACCESS_TYPE = "Access type must be %s or %s";
 	private static final String AUTH_DELETED = "Authorization deleted successfully";
 	private static final String AUTH_UPDATED = "Authorization updated successfully";
-
+	
+	
+	@Operation(summary= "Create File")
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> addBinary(@Parameter @RequestPart("file") MultipartFile file,
 			@RequestParam(value = "metadata", required = false) String metadata,
-			@RequestParam(value = "repository", required = false) RepositoryType repository) {
+			@RequestParam(value = "repository", required = false) Type repository) {
 		try {
 			if (file.getSize() > getMaxSize().longValue()) {
 				return new ResponseEntity<>("File is larger than max size allowed", HttpStatus.INTERNAL_SERVER_ERROR);
 			}
-			final String fileId = binaryFactory
-					.getInstance(repository != null ? repository : RepositoryType.MONGO_GRIDFS)
-					.addBinary(file, metadata, repository, null);
+			RepositoryType type = repository != null ? BinaryFile.RepositoryType.valueOf(repository.name())
+					: BinaryFile.RepositoryType.valueOf(RepositoryType.MONGO_GRIDFS.name());
+			final String fileId = binaryFactory.getInstance(type).addBinary(file, metadata, type, null);
 			return new ResponseEntity<>(fileId, HttpStatus.CREATED);
 		} catch (final Exception e) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
+	@Operation(summary= "Change the file to public")
 	@PostMapping("/public")
 	@ResponseBody
 	public ResponseEntity<String> changePublic(@RequestParam("id") String fileId) {
@@ -125,13 +133,14 @@ public class BinaryRepositoryRestService {
 			return ResponseEntity.badRequest().build();
 		}
 	}
-
+	@Operation(summary= "Get file data by id")
 	@GetMapping("/{id}")
 	public ResponseEntity<?> getBinary(@PathVariable("id") String fileId,
-			@RequestParam(value = "repository", required = false) RepositoryType repository) {
+			@RequestParam(value = "repository", required = false) Type repository) {
 		try {
-			final BinaryFileData file = binaryFactory
-					.getInstance(repository != null ? repository : RepositoryType.MONGO_GRIDFS).getBinaryFile(fileId);
+			RepositoryType type = repository != null ? BinaryFile.RepositoryType.valueOf(repository.name())
+					: BinaryFile.RepositoryType.valueOf(RepositoryType.MONGO_GRIDFS.name());
+			final BinaryFileData file = binaryFactory.getInstance(type).getBinaryFile(fileId);
 			return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(new BinaryFileDTO(file));
 		} catch (final BinaryRepositoryException e) {
 
@@ -141,7 +150,7 @@ public class BinaryRepositoryRestService {
 		}
 
 	}
-
+	@Operation(summary= "Get all files data")
 	@GetMapping("/")
 	public ResponseEntity<?> getAll() {
 		List<BinaryFileSimpleDTO> binaryFiles;
@@ -167,15 +176,16 @@ public class BinaryRepositoryRestService {
 
 		return binaryFileSimpleList;
 	}
-
+	
+	@Operation(summary= "Download File by Id")
 	@GetMapping("/download/{id}")
 	public ResponseEntity<ByteArrayResource> getBinary(@PathVariable("id") String fileId,
 			@RequestParam(value = "disposition", required = false) String disposition,
-			@RequestParam(value = "repository", required = false) RepositoryType repository) {
+			@RequestParam(value = "repository", required = false) Type repository) {
 		try {
-
-			final BinaryFileData file = binaryFactory
-					.getInstance(repository != null ? repository : RepositoryType.MONGO_GRIDFS).getBinaryFile(fileId);
+			RepositoryType type = repository != null ? BinaryFile.RepositoryType.valueOf(repository.name())
+					: BinaryFile.RepositoryType.valueOf(RepositoryType.MONGO_GRIDFS.name());
+			final BinaryFileData file = binaryFactory.getInstance(type).getBinaryFile(fileId);
 			final ByteArrayResource resource = new ByteArrayResource(
 					((ByteArrayOutputStream) file.getData()).toByteArray());
 
@@ -204,10 +214,11 @@ public class BinaryRepositoryRestService {
 	public ResponseEntity<?> updateBinary(@PathVariable("id") String fileId,
 			@Parameter @RequestPart("file") MultipartFile file,
 			@RequestParam(value = "metadata", required = false) String metadata,
-			@RequestParam(value = "repository", required = false) RepositoryType repository) throws IOException {
+			@RequestParam(value = "repository", required = false) Type repository) throws IOException {
 		try {
-			binaryFactory.getInstance(repository != null ? repository : RepositoryType.MONGO_GRIDFS)
-					.updateBinary(fileId, file, metadata);
+			RepositoryType type = repository != null ? BinaryFile.RepositoryType.valueOf(repository.name())
+					: BinaryFile.RepositoryType.valueOf(RepositoryType.MONGO_GRIDFS.name());
+			binaryFactory.getInstance(type).updateBinary(fileId, file, metadata);
 			return new ResponseEntity<>(HttpStatus.ACCEPTED);
 		} catch (final BinaryRepositoryException e) {
 
@@ -217,15 +228,17 @@ public class BinaryRepositoryRestService {
 		}
 
 	}
-
+	
+	@Operation(summary= "Update file by id")
 	@PostMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> update(@PathVariable("id") String fileId,
 			@Parameter @RequestPart("file") MultipartFile file,
 			@RequestParam(value = "metadata", required = false) String metadata,
-			@RequestParam(value = "repository", required = false) RepositoryType repository) throws IOException {
+			@RequestParam(value = "repository", required = false) Type repository) throws IOException {
 		try {
-			binaryFactory.getInstance(repository != null ? repository : RepositoryType.MONGO_GRIDFS)
-					.updateBinary(fileId, file, metadata);
+			RepositoryType type = repository != null ? BinaryFile.RepositoryType.valueOf(repository.name())
+					: BinaryFile.RepositoryType.valueOf(RepositoryType.MONGO_GRIDFS.name());
+			binaryFactory.getInstance(type).updateBinary(fileId, file, metadata);
 			return new ResponseEntity<>(HttpStatus.ACCEPTED);
 		} catch (final BinaryRepositoryException e) {
 
@@ -235,19 +248,20 @@ public class BinaryRepositoryRestService {
 		}
 
 	}
-
+	@Operation(summary= "Delete file by id")
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> deleteBinary(@PathVariable("id") String fileId,
-			@RequestParam(value = "repository", required = false) RepositoryType repository) {
+			@RequestParam(value = "repository", required = false) Type repository) {
 		try {
-			binaryFactory.getInstance(repository != null ? repository : RepositoryType.MONGO_GRIDFS)
-					.removeBinary(fileId);
+			RepositoryType type = repository != null ? BinaryFile.RepositoryType.valueOf(repository.name())
+					: BinaryFile.RepositoryType.valueOf(RepositoryType.MONGO_GRIDFS.name());
+			binaryFactory.getInstance(type).removeBinary(fileId);
 			return new ResponseEntity<>(HttpStatus.ACCEPTED);
 		} catch (final BinaryRepositoryException e) {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
 	}
-
+	@Operation(summary= "Delete files that have a date equal to or less than the timestamp entered")
 	@DeleteMapping("/before/{timestamp}")
 	public ResponseEntity<?> deleteBinary(@PathVariable("timestamp") Long timestamp,
 			@RequestParam(value = "repository", required = false) RepositoryType repository) {
@@ -263,16 +277,18 @@ public class BinaryRepositoryRestService {
 		return new ResponseEntity<>(HttpStatus.ACCEPTED);
 
 	}
-
+	@Operation(summary= "Create a file in /tmp/files with the content of the lines entered in the document pagination by entering its id")
 	@GetMapping("/{id}/paginate")
 	public ResponseEntity<String> paginate(@PathVariable("id") String fileId,
 			@RequestParam(value = "startLine", required = true) Long startLine,
 			@RequestParam(value = "maxLines", required = true) Long maxLines,
 			@RequestParam(value = "skipHeaders", required = true) Boolean skipHeaders,
-			@RequestParam(value = "repository", required = false) RepositoryType repository) {
+			@RequestParam(value = "repository", required = false) Type repository) {
 		try {
-			final String file = binaryFactory.getInstance(repository != null ? repository : RepositoryType.MONGO_GRIDFS)
-					.downloadForPagination(fileId, startLine, maxLines, skipHeaders);
+			RepositoryType type = repository != null ? BinaryFile.RepositoryType.valueOf(repository.name())
+					: BinaryFile.RepositoryType.valueOf(RepositoryType.MONGO_GRIDFS.name());
+			final String file = binaryFactory.getInstance(type).downloadForPagination(fileId, startLine, maxLines,
+					skipHeaders);
 			return ResponseEntity.ok().body(file);
 
 		} catch (final BinaryRepositoryException e) {
@@ -282,13 +298,14 @@ public class BinaryRepositoryRestService {
 		}
 
 	}
-
+	@Operation(summary= "Delete the file created in /tmp/files with the content of the lines entered in the document pagination by entering its id")
 	@GetMapping("/{id}/paginate/close")
 	public ResponseEntity<String> closePaginate(@PathVariable("id") String fileId,
-			@RequestParam(value = "repository", required = false) RepositoryType repository) {
+			@RequestParam(value = "repository", required = false) Type repository) {
 		try {
-			final boolean isOk = binaryFactory
-					.getInstance(repository != null ? repository : RepositoryType.MONGO_GRIDFS).closePagination(fileId);
+			RepositoryType type = repository != null ? BinaryFile.RepositoryType.valueOf(repository.name())
+					: BinaryFile.RepositoryType.valueOf(RepositoryType.MONGO_GRIDFS.name());
+			final boolean isOk = binaryFactory.getInstance(type).closePagination(fileId);
 			if (isOk) {
 				return ResponseEntity.ok().build();
 			}
@@ -306,6 +323,7 @@ public class BinaryRepositoryRestService {
 		return (Long) resourcesService.getGlobalConfiguration().getEnv().getFiles().get("max-size");
 	}
 
+	@Operation(summary= "Get file authorizations by Id")
 	@GetMapping(value = "/{id}/authorizations")
 	public ResponseEntity<?> getAuthorizations(@PathVariable("id") String fileId) {
 
@@ -326,6 +344,7 @@ public class BinaryRepositoryRestService {
 		}
 	}
 
+	@Operation(summary= "Create file authorizations by Id, adding userId and accessType")
 	@PostMapping(value = "/{id}/authorizations")
 	public ResponseEntity<?> setAuthorizations(@Parameter(description = "id") @PathVariable(value = "id") String fileId,
 			@Valid @RequestBody BinaryFileAccessSimplifiedDTO binaryFileAccess,
@@ -354,12 +373,13 @@ public class BinaryRepositoryRestService {
 
 		return new ResponseEntity<>(AUTH_UPDATED, HttpStatus.OK);
 	}
-
+	
+	@Operation(summary= "Delete user authorizations by Id")
 	@DeleteMapping(value = "/{id}/authorizations/{userId}")
 	public ResponseEntity<?> removeAuthorizations(
 			@Parameter(description = "id") @PathVariable(value = "id") String fileId,
 			@Parameter(description = "userId") @PathVariable(value = "userId") String userId,
-			@RequestParam(value = "repository", required = false) RepositoryType repository) {
+			@RequestParam(value = "repository", required = false) Type repository) {
 
 		if (binaryFileService.getFile(fileId) == null) {
 			return new ResponseEntity<>(FILE_NOT_EXISTS, HttpStatus.NOT_FOUND);
@@ -368,8 +388,9 @@ public class BinaryRepositoryRestService {
 			return new ResponseEntity<>(UNAUTHORIZED_USER, HttpStatus.UNAUTHORIZED);
 		}
 		try {
-			binaryFactory.getInstance(repository != null ? repository : RepositoryType.MONGO_GRIDFS)
-					.deleteAuthorization(fileId, userId);
+			RepositoryType type = repository != null ? BinaryFile.RepositoryType.valueOf(repository.name())
+					: BinaryFile.RepositoryType.valueOf(RepositoryType.MONGO_GRIDFS.name());
+			binaryFactory.getInstance(type).deleteAuthorization(fileId, userId);
 		} catch (final BinaryRepositoryException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}

@@ -69,7 +69,7 @@ public class GadgetDatasource extends OPResource implements Versionable<GadgetDa
 
 	@ManyToOne
 	// @OnDelete(action = OnDeleteAction.CASCADE)
-	@JoinColumn(name = "ONTOLOGY_ID", referencedColumnName = "ID", nullable = true)
+	@JoinColumn(name = "ONTOLOGY_ID", referencedColumnName = "ID", nullable = false)
 	@Getter
 	@Setter
 	private Ontology ontology;

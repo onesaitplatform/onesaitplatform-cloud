@@ -297,7 +297,8 @@
 		
 	});
 	
-	$(window).load(function() {
+	$(window).on("load",function() {
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 		var dTable = $('#domains').DataTable({
 	      "bAutoWidth": false
 	      });
@@ -306,7 +307,7 @@
 			initCompleteCallback();
 		} );
 		
-		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
+		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
 		
 		//TABLE STYLES
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));		

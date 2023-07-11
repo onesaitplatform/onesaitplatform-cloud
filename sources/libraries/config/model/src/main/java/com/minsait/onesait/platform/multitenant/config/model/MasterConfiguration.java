@@ -45,7 +45,7 @@ public class MasterConfiguration extends AuditableEntityWithUUID {
 	private static final long serialVersionUID = 1L;
 
 	public enum Type {
-		RTDB
+		RTDB, CaaS
 	}
 
 	@Column(name = "YML_CONFIG", nullable = false)

@@ -7,18 +7,25 @@ LABEL platform.image.support="support@onesaitplatform.com"
 LABEL platform.image.license="Apache Software License 2"
 
 RUN apk update && apk upgrade && \
-	apk add --no-cache libc6-compat \
+    apk add --no-cache libc6-compat \
     curl \
-    openjdk8 \
-    git
+    git 
+   
+RUN apk add --no-cache --repository=http://dl-cdn.alpinelinux.org/alpine/v3.15/community/ --allow-untrusted openjdk17-jre-headless=17.0.7_p7-r0
+
+
+ENV PATH="$PATH:/usr/lib/jvm/java-17-openjdk/bin" 
     
 RUN curl -LSs https://raw.githubusercontent.com/fnproject/cli/master/install | sh
 	
 ADD *.jar /app.jar
 
+RUN mkdir -p /var/log/platform-logs
+
 EXPOSE 8086
 
-ENV FN_API_URL=https://development.onesaitplatform.com/fn \
+ENV PATH="$PATH:/usr/lib/jvm/java-17-openjdk/bin" \
+    FN_API_URL=https://development.onesaitplatform.com/fn \
     FN_REGISTRY=registry.onesaitplatform.com \
     SERVER_NAME=localhost \
     ACCESS_TOKEN_URL=https://${SERVER_NAME}/auth/realms/onesaitplatform/protocol/openid-connect/token \
@@ -36,7 +43,8 @@ ENV FN_API_URL=https://development.onesaitplatform.com/fn \
     MINSAIT_LOG_LEVEL=INFO \
     SPRING_LOG_LEVEL=INFO \
     GATEWAY_USER=operations \
-    GATEWAY_SECRET=operations
+    GATEWAY_SECRET=operations \
+    HTTP_LOG_LEVEL=INFO
     
     
 CMD ["java","-Dspring.profiles.active=docker","-jar","/app.jar"]

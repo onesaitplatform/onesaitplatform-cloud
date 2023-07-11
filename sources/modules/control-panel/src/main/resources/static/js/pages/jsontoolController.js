@@ -11,7 +11,7 @@ var JsonToolController = function(){
 	var counter= 0;
 	var arrayJson;
 	var ontologyId;
-	var RegExPattern = /^[A-Z-a-z_][\w\d\s]{5,}$/;
+	var RegExPattern = /^[A-Z-a-z_][\w\d\s]{4,}$/;
 	var handleCodeMirror = function () {
 		
         var myTextArea = document.getElementById('jsonTextArea');
@@ -39,6 +39,7 @@ var JsonToolController = function(){
     var generateSchema = function (){
     	if(JSON.parse(myCodeMirror.getValue()).length == null){
     		myCodeMirrorSchema.setValue(processJSON(myCodeMirror.getValue()));
+    		
     	}else{
     		var json = JSON.parse(myCodeMirror.getValue())[0];
     		myCodeMirrorSchema.setValue(processJSON(JSON.stringify(json)));
@@ -49,6 +50,7 @@ var JsonToolController = function(){
     var beautifyJson = function() {
 		myCodeMirror.getAction('editor.action.formatDocument').run()
 		//myCodeMirrorJsonImport.setValue(js_beautify(myCodeMirrorJsonImport.getValue()));
+		$('#createOnt').removeClass('disabled').removeAttr('disabled');
 	};
 	var modalOntology = function() {
 		if (myCodeMirrorSchema.getValue()==null || myCodeMirrorSchema.getValue()=="" || myCodeMirrorSchema.getValue()=="{\n}"){
@@ -545,7 +547,7 @@ var JsonToolController = function(){
 			handleCodeMirror();
 			
 			// INPUT MASK FOR ontology identification allow only letters, numbers and -_
-			$("#ontologyIdentification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
+			$("#ontologyIdentification").inputmask({ regex: "[a-zA-Z0-9_]*", greedy: false });
 			
 			$(function() {
 			    $('#ontologyIdentification').on('keypress', function(e) {
@@ -573,6 +575,7 @@ var JsonToolController = function(){
 					$('#ontologyDescription').closest('.form-group').removeClass('has-error');
 				}
 			})
+			
 		},
 		generateSchema : function(){
 			generateSchema();

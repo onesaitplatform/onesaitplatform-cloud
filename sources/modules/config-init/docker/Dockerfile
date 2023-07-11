@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk-alpine
+FROM onesaitplatform/baseimage:latest-17
 
 # Metadata
 LABEL module.maintainer="onesaitplatform@indra.es" \
@@ -53,12 +53,18 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G" \
     DBADDPROPS="" \
     ELASTICDBHOST=elasticdb \
     ELASTICDBPORT=9200 \
+    OPENSEARCHDBHOST=opensearchdb \
+    OPENSEARCHDBPORT=9200 \
+    ELASTICSEARCH_ENABLED=false \
+    OPENSEARCH_ENABLED=false \
     LOADCONFIGDB=true \
     LOADMONGODB=false \
     LOADTESTDATA=false \
     LOADELASTICDB=false \
+    LOADOPENSEARCHDB=false \
     LOADMAILCONFIG=false \
     LOADGRAYLOGDB=false \
+    LOADFLOWENGINEMONITOR=false \
     REALTIMEDBNAME=onesaitplatform_rtdb \
     RTDB_EXECUTION_TIMEOUT=10000 \
     RTDB_QUERIES_LIMIT=2000 \
@@ -83,6 +89,7 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G" \
 	TIMESCALE_URL=jdbc:postgresql://timeseriesdb:5432/?currentSchema=public \
 	TIMESCALE_USER=ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot) \
 	TIMESCALE_PASS=ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c) \
-	SERVER_BASE_DOMAIN_MINIO_AUTH=onesaitplatform.com
+	SERVER_BASE_DOMAIN_MINIO_AUTH=onesaitplatform.com \
+	ADMIN_VERTICAL_TOKEN=
 
 ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=docker -jar /app.jar

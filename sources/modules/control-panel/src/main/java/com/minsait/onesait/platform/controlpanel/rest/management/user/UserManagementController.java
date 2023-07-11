@@ -520,6 +520,25 @@ public class UserManagementController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 	
+	
+	
+
+	@Operation(summary = "Deactivate user")
+	@PostMapping("/deactivate/{userId}")
+	public ResponseEntity<String> deactivate(@PathVariable("userId") String userId) {
+		if (isUserAdminOrSameAsRequest(userId)) {
+			if (userService.getUser(userId) == null) {
+				return new ResponseEntity<>(USER_STR + userId + DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
+			}
+			userService.deleteUser(userId);
+		} else {
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		}
+
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+	
+	
 	@Operation(summary = "Activate multiple users by ids")
 	@PostMapping("/activate")
 	public ResponseEntity<String> activateMultiple(
@@ -538,6 +557,25 @@ public class UserManagementController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
+		
+	@Operation(summary = "Deactivate multiple users by ids")
+	@PostMapping("/deactivate")
+	public ResponseEntity<String> deactivateMultiple(
+			@Parameter(description = "User ids", example = "developer,guest,observer", required = true) @RequestBody @Valid List<UserId> userIds) {
+		try {
+			if (utils.isAdministrator()) {
+				for (final UserId userId : userIds) {
+					userService.deleteUser(userId.getId());
+				}
+			} else {
+				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			}
+		} catch (final Exception e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+	
 	@Operation(summary = "Changes a password")
 	@PostMapping("/{userId}/change-password")
 	public ResponseEntity<?> changePassword(@ApiParam("User id") @PathVariable("userId") String userId,

@@ -14,12 +14,12 @@
  */
 package com.minsait.onesait.platform.router.service.app.service;
 
+import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 import javax.annotation.PostConstruct;
-
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -27,6 +27,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpRequest;
+import org.springframework.http.client.ClientHttpRequestExecution;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
@@ -62,6 +67,11 @@ public class RouterServiceImpl implements RouterService, RouterClient<Notificati
 	private boolean multitenancyEnabled;
 
 	private String routerStandaloneURL;
+	
+
+	@Autowired
+	@Qualifier("routerClientRest")
+	private RestTemplate restTemplate;
 
 	@PostConstruct
 	public void postConstruct() {
@@ -78,12 +88,19 @@ public class RouterServiceImpl implements RouterService, RouterClient<Notificati
 		} catch (final KeyManagementException | NoSuchAlgorithmException e) {
 			log.info(e.getMessage(), e);
 		}
-
+		restTemplate.setMessageConverters(Arrays.asList(new MappingJackson2HttpMessageConverter()));
+		restTemplate.getInterceptors().add(new ClientHttpRequestInterceptor() {
+			
+			@Override
+			public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
+					throws IOException {
+				request.getHeaders().remove("Content-Type");
+				request.getHeaders().add("Content-Type", "application/json");
+				return execution.execute(request, body);
+			}
+		});
 	}
 
-	@Autowired
-	@Qualifier("routerClientRest")
-	private RestTemplate restTemplate;
 
 	@Override
 	public OperationResultModel execute(NotificationModel input) {
@@ -93,7 +110,7 @@ public class RouterServiceImpl implements RouterService, RouterClient<Notificati
 			final String operation = model.getOperationType().name();
 
 			OperationResultModel quote = new OperationResultModel();
-
+			
 			if (operation.equalsIgnoreCase("POST")
 					|| operation.equalsIgnoreCase(OperationModel.OperationType.INSERT.name())) {
 				quote = restTemplate.exchange(routerStandaloneURL + "/insert", HttpMethod.POST,
@@ -193,7 +210,6 @@ public class RouterServiceImpl implements RouterService, RouterClient<Notificati
 		headers.add(CorrelationInterceptor.CORRELATION_ID_HEADER_NAME, correlationID);
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-
 		addMultitenancyHeaders(headers);
 
 		return headers;

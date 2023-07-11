@@ -37,10 +37,10 @@
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 		<dependency>
-	        <groupId>io.micrometer</groupId>
+			<groupId>io.micrometer</groupId>
 			<artifactId>micrometer-registry-prometheus</artifactId>
-            <scope>runtime</scope>
-        </dependency>
+			<scope>runtime</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -87,36 +87,37 @@
 				<exclusion>
 					<groupId>com.fasterxml.jackson.core</groupId>
 					<artifactId>jackson-databind</artifactId>
-				</exclusion>				
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<!-- JASPER REPORTS -->
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports</artifactId>
-			<version>6.8.0</version>
+			<version>6.20.0</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports-functions</artifactId>
-			<version>6.8.0</version>
+			<version>6.20.0</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports-chart-themes</artifactId>
-			<version>6.8.0</version>
+			<version>6.20.0</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/net.sf.jasperreports/jasperreports-annotation-processors -->
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports-annotation-processors</artifactId>
-			<version>6.8.0</version>
+			<version>6.20.0</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports-fonts</artifactId>
-			<version>6.8.0</version>
+			<version>6.20.0</version>
 		</dependency>
+
 		<dependency>
 			<groupId>com.jaspersoft.adapter.webservice</groupId>
 			<artifactId>jaspersoft-webservices-dataadapter</artifactId>
@@ -153,7 +154,7 @@
 		</dependency>
 
 	</dependencies>
-	<repositories>	
+	<repositories>
 		<repository>
 			<id>Jasper</id>
 			<url>https://maven.xwiki.org/externals</url>

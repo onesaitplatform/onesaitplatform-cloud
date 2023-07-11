@@ -27,11 +27,13 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
@@ -67,12 +69,14 @@ public class ServerlessServiceImpl implements ServerlessService {
 
 	@PostConstruct
 	public void setUp() {
+		restTemplate.getMessageConverters().add(0, new MappingJackson2HttpMessageConverter());
 		restTemplate.getInterceptors().add((request, body, execution) -> {
 			String token = utils.getCurrentUserOauthToken();
 			if (token.toLowerCase().startsWith(BEARER)) {
 				token = token.substring(BEARER.length());
 			}
 			request.getHeaders().add(HttpHeaders.AUTHORIZATION, BEARER + token);
+			request.getHeaders().add(HttpHeaders.CONTENT_TYPE, "application/json");
 			return execution.execute(request, body);
 		});
 		serverlessBaseURL = integrationResourcesService.getUrl(Module.SERVERLESS, ServiceUrl.BASE);
@@ -115,6 +119,7 @@ public class ServerlessServiceImpl implements ServerlessService {
 	private <T> ResponseEntity<List<T>> executeRequest(String url, HttpMethod method, HttpEntity<Object> requestEntity,
 			ParameterizedTypeReference<List<T>> parameterizedTypeReference) {
 		try {
+
 			return restTemplate.exchange(url, method, requestEntity, parameterizedTypeReference);
 
 		} catch (final HttpClientErrorException | HttpServerErrorException e) {
@@ -251,7 +256,7 @@ public class ServerlessServiceImpl implements ServerlessService {
 	}
 
 	@Override
-	public void updateFunctionEnvironment(String appName, String fnName, ObjectNode config) {
+	public void updateFunctionEnvironment(String appName, String fnName, JsonNode config) {
 		try {
 			executeRequest(
 					serverlessBaseURL + API_APPLICATIONS + "/"

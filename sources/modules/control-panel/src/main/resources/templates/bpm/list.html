@@ -194,7 +194,7 @@
 													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
 													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="0"/>
+															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
 															<label th:text="#{gen.identification}"> Id </label>
 														</span>
 														<span class="checkbox-column">
@@ -431,7 +431,8 @@
 
 		});
 		
-		$(window).load(function(){  
+		$(window).on("load",function(){  
+			$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
 			
 			//DATATABLE 
 			var oTable = $('#tenants').DataTable({
@@ -444,7 +445,7 @@
 			} );
 
 			// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-			$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
+			$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 			
 			// SHOW/HIDE DATATABLES COLUMN INIT 
 			$('#divcreate').prepend($('#dataTable-vis-toggle'));	

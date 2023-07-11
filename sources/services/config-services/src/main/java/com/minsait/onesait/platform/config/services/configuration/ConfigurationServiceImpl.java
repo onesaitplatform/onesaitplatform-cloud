@@ -365,37 +365,13 @@ public class ConfigurationServiceImpl implements ConfigurationService {
                 if(rule.get("ruletype").equals("property")) {
                     ArrayList<Map<String, Object>> changes = (ArrayList<Map<String, Object>>)rule.get("changes");
                     if(changes != null) {
-                        for(Map<String, Object> change: changes) {
-                            Object scriptT = change.get("script");
-                            if(scriptT != null && !scriptT.toString().contains("toDate(")) {
-                                String [] scriptArray = scriptT.toString().split("\n", 2);
-                                String scriptType = scriptArray[0];
-                                String script = scriptArray[1];
-                                if("groovy".equals(scriptType)) {
-                                    try {
-                                        Binding binding = new Binding();
-                                        binding.setVariable("value", "valueTest");
-                                        GroovyShell shell = new GroovyShell(binding);
-                                        shell.evaluate(script);
-                                    } catch(CompilationFailedException e) {
-                                        throw new ConfigServiceException("There are errors in the " + change.get("name") + " change script: " + e.getMessage());   
-                                    }
-                                } else if("javascript".equals(scriptType)) {
-                                    try {
-                                        final String scriptPostprocessFunction = "function preprocess(value){ " + script + " }";
-                                        final ByteArrayInputStream scriptInputStream = new ByteArrayInputStream(
-                                                scriptPostprocessFunction.getBytes(StandardCharsets.UTF_8));
-                                        scriptEngine.eval(new InputStreamReader(scriptInputStream));
-                                        final Invocable inv = (Invocable) scriptEngine;
-                                        inv.invokeFunction("preprocess", "valueTest");
-                                    } catch (NoSuchMethodException e) {
-                                        throw new ConfigServiceException("There are errors in the " + change.get("name") + " change script: " + e.getMessage());
-                                    } catch (ScriptException ex) {
-                                        throw new ConfigServiceException("There are errors in the " + change.get("name") + " change script: " + ex.getMessage());
-                                    }
-                                }
-                            }
+                        checkScript(changes);
+                    } else {
+                        ArrayList<Map<String, Object>> validations = (ArrayList<Map<String, Object>>)rule.get("validations");
+                        if(validations != null) {
+                            checkScript(validations);
                         }
+                        
                     }
                 } else if(rule.get("ruletype").equals("entity")) {
                     ArrayList<Map<String, Object>> validations = (ArrayList<Map<String, Object>>)rule.get("validations");
@@ -434,4 +410,39 @@ public class ConfigurationServiceImpl implements ConfigurationService {
             }
         }
 	}
+	
+	private void checkScript(ArrayList<Map<String, Object>> changes) {
+        for(Map<String, Object> change: changes) {
+            Object scriptT = change.get("script");
+            if(scriptT != null && !scriptT.toString().contains("toDate(")) {
+                String [] scriptArray = scriptT.toString().split("\n", 2);
+                String scriptType = scriptArray[0];
+                String script = scriptArray[1];
+                if("groovy".equals(scriptType)) {
+                    try {
+                        Binding binding = new Binding();
+                        binding.setVariable("value", "valueTest");
+                        GroovyShell shell = new GroovyShell(binding);
+                        shell.evaluate(script);
+                    } catch(CompilationFailedException e) {
+                        throw new ConfigServiceException("There are errors in the " + change.get("name") + " change script: " + e.getMessage());   
+                    }
+                } else if("javascript".equals(scriptType)) {
+                    try {
+                        final String scriptPostprocessFunction = "function preprocess(value){ " + script + " }";
+                        final ByteArrayInputStream scriptInputStream = new ByteArrayInputStream(
+                                scriptPostprocessFunction.getBytes(StandardCharsets.UTF_8));
+                        scriptEngine.eval(new InputStreamReader(scriptInputStream));
+                        final Invocable inv = (Invocable) scriptEngine;
+                        inv.invokeFunction("preprocess", "valueTest");
+                    } catch (NoSuchMethodException e) {
+                        throw new ConfigServiceException("There are errors in the " + change.get("name") + " change script: " + e.getMessage());
+                    } catch (ScriptException ex) {
+                        throw new ConfigServiceException("There are errors in the " + change.get("name") + " change script: " + ex.getMessage());
+                    }
+                }
+            }
+        }
+    }
+	
 }

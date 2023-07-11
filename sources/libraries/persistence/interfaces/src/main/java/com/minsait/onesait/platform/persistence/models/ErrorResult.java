@@ -79,10 +79,7 @@ public class ErrorResult  {
 		ORACLE("Oracle"), 
 		SQLSERVER("SQLServer"), 
 		ELASTIC("Elasticsearch"), 
-		KUDU("Kudu"), 
-		IMPALA("Impala"),
-		API("Impala"), 
-		HIVE("Hive"),
+		API("Api"), 
 		TIMESCALE("TimescaleDB"),
 		PRESTO("Presto");
 		

@@ -138,14 +138,14 @@
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).load(function(){  
+	$(window).on("load",function(){  
 		// init on load.		
 		showLog ? console.log('SHOW Keycloak console load()...') : '';
 			
 	
 	});
 	//Refresh page 
-	$(window).unload(function(){
+	$(window).on("unload",function(){
 		  localStorage.removeItem('sessionId');
 		  localStorage.removeItem('username');
 		});	

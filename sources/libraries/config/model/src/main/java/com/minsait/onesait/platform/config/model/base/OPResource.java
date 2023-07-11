@@ -38,11 +38,11 @@ import lombok.Setter;
 
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-public abstract class OPResource extends AuditableEntity{
+public abstract class OPResource extends AuditableEntity {
 
 	public enum Resources {
-		API, BINARYFILE, CLIENTPLATFORM, CONFIGURATION, DATAFLOW, DASHBOARD, DIGITALTWINDEVICE, ONTOLOGY, ONTOLOGYVIRTUALDATASOURCE, FLOWDOMAIN, GADGET, GADGETDATASOURCE, GADGETTEMPLATE,
-		NOTEBOOK, REPORT
+		API, BINARYFILE, CLIENTPLATFORM, CONFIGURATION, DATAFLOW, DASHBOARD, DIGITALTWINDEVICE, ONTOLOGY,
+		ONTOLOGYVIRTUALDATASOURCE, FLOWDOMAIN, GADGET, GADGETDATASOURCE, GADGETTEMPLATE, NOTEBOOK, REPORT
 
 	}
 
@@ -80,6 +80,7 @@ public abstract class OPResource extends AuditableEntity{
 		u.setUserId(userId);
 		user = u;
 	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == null) {

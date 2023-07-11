@@ -535,7 +535,7 @@ var InternationalizationCreateController = function() {
 }();
 
 // AUTO INIT CONTROLLER WHEN READY
-$(window).load(function() {	
+$(window).on("load",function() {	
 	InternationalizationCreateController.load(i18nJson);
 	// AUTO INIT CONTROLLER.
 	InternationalizationCreateController.init();

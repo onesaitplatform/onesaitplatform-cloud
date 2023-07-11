@@ -111,11 +111,14 @@ public class ServicesClientRestConfig {
 
 	@Bean("serviceClientRest")
 	public RestTemplate restTemplate() throws GenericOPException {
-		return new RestTemplate(requestFactory());
+		RestTemplate restTemplate = new RestTemplate(requestFactory());
+
+		return restTemplate;
 	}
 
 	@Bean("serviceClientIdleConnectionMonitor")
-	public Runnable idleConnectionMonitor(@Qualifier("servicesClientConnectionManager") final PoolingHttpClientConnectionManager connectionManager) {
+	public Runnable idleConnectionMonitor(
+			@Qualifier("servicesClientConnectionManager") final PoolingHttpClientConnectionManager connectionManager) {
 		return new Runnable() {
 			@Override
 			@Scheduled(fixedDelay = 10000)

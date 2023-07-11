@@ -122,7 +122,7 @@ public interface DashboardService {
 	List<String> getIdentificationsByUserId(String userId);
 
 	List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification, String description);
-	
+
 	String getProtocol();
 
 	void setImage(Dashboard dashboard, byte[] image);
@@ -131,7 +131,6 @@ public interface DashboardService {
 
 	void createModifyI18nResource(String id, DashboardCreateDTO dashboard, String userId);
 
-	// List<DashboardUserAccess> addDashboardUserAccess(List<DashboardUserAccess>
-	// usersAccessType, boolean updated);
+	void deleteDashboardUserAccessForAUser(String userAccessId);
 
 }

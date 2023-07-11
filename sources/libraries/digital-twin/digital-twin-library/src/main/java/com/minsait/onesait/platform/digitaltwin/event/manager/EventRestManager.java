@@ -61,7 +61,7 @@ import lombok.extern.slf4j.Slf4j;
 public class EventRestManager implements EventManager {
 
 	private final int timeOut = (int) TimeUnit.SECONDS.toMillis(10);
-	
+
 	private static final String BROKERMESSAGE = "Broker message {}";
 
 	@Value("${api.key}")
@@ -127,7 +127,6 @@ public class EventRestManager implements EventManager {
 		httpRequestFactory.setHttpClient(httpClient);
 
 		this.restTemplate = new RestTemplate(httpRequestFactory);
-
 		this.headers = new HttpHeaders();
 		this.headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 		this.headers.setContentType(MediaType.APPLICATION_JSON);

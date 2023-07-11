@@ -141,7 +141,7 @@ public class InitGraylog {
 				log.info("GELF TCP Input created.");
 				// CREATE INPUT - UDP
 				log.info("Creating UDP INPUT...");
-				createGraylogInput(sessionToken.getSession_id(),DEFAULT_UDP_INPUT_NAME,
+				createGraylogInput(sessionToken.getSession_id(), DEFAULT_UDP_INPUT_NAME,
 						"org.graylog2.inputs.gelf.udp.GELFUDPInput", master);
 				log.info("GELF UDP Input created.");
 				// CREATE STREAM (starting and sharing)

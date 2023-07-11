@@ -26,12 +26,16 @@ public interface GadgetFavoriteService {
 			String config, String metainf, String userId);
 
 	public void delete(String identification, String userId);
+	
+	public void deleteByUserId(String userlogged, String userId);
 
 	public Boolean existWithIdentification(String identification);
 
-	public List<GadgetFavorite> findAll(String userId);
-
-	public List<String> getAllIdentifications(String userId);
+	public List<GadgetFavorite> findAll(String userlogged);
+	
+	public List<GadgetFavorite> findAllGadgetFavorite(String userlogged , String userId);
+	
+	public List<String> getAllIdentifications(String userlogged, String userId);
 
 	public GadgetFavorite findByIdentification(String identification, String userId);
 

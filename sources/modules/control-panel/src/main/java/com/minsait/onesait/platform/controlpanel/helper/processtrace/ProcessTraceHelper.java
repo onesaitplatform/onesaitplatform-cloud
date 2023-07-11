@@ -117,7 +117,7 @@ public class ProcessTraceHelper {
 	private boolean isElasticOntology(String ontologyId) {
 		Ontology ontology = ontologyService.getOntologyByIdentification(ontologyId);
 		if (ontology != null)
-			return ontology.getRtdbDatasource().equals(RtdbDatasource.ELASTIC_SEARCH);
+			return ontology.getRtdbDatasource().equals(RtdbDatasource.ELASTIC_SEARCH) || ontology.getRtdbDatasource().equals(RtdbDatasource.OPEN_SEARCH) ;
 		return false;
 	}
 

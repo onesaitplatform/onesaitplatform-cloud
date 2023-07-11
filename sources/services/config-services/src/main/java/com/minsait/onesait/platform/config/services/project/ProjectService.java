@@ -93,4 +93,6 @@ public interface ProjectService {
 
 	boolean isUserInProjectWithoutOwner(String userId, String projectId);
 
+	List<ProjectList> getProjectByUser(String userId);
+
 }

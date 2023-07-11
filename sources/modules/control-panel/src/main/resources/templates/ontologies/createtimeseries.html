@@ -2319,7 +2319,13 @@
 							form1.ajaxSubmit({type: 'post', success : function(data){
 									console.log(data);
 									toastr.success(messagesForms.validation.genFormSuccess,'');
-									$('#modal-created').modal('show');
+									
+									if(form.baseURI.includes('/updatetimeseries')){ //update entity timeseries
+											navigateUrl(data.redirect);
+									}else { //create entity timeseries
+											$('#modal-created').modal('show');
+									}
+								
 								//	navigateUrl(data.redirect);
 								}, error: function(data){
 									toastr.error(messagesForms.operations.genOpError,data.responseJSON.cause);
@@ -2775,7 +2781,7 @@
 		},
 		"appId" : [[${appId}]]
 	};
-	$(window).load(function(){
+	$(window).on("load",function(){
 		var htmlelement = document.getElementById('querySql');
 		codeEditor = monaco.editor.create(htmlelement, {
 		       language: 'sql', 

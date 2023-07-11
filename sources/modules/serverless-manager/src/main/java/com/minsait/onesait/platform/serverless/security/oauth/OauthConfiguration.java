@@ -55,7 +55,8 @@ public class OauthConfiguration {
 
 	@Bean
 	@Primary
-	public UserInfoTokenServices userInfoTokenServices() throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
+	public UserInfoTokenServices userInfoTokenServices()
+			throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
 		final AuthorizationCodeResourceDetails oauthClient = oauthClient();
 		if (!StringUtils.isEmpty(preEstablishedRedirectUri)) {
 			oauthClient.setPreEstablishedRedirectUri(preEstablishedRedirectUri);
@@ -85,7 +86,7 @@ public class OauthConfiguration {
 	}
 
 	@Bean("pluginRestTemplate")
-	public RestTemplate restTemplate(){
+	public RestTemplate restTemplate() {
 
 		final RestTemplate restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
 		restTemplate.getInterceptors().add((r, b, e) -> {
@@ -94,6 +95,5 @@ public class OauthConfiguration {
 		});
 		return restTemplate;
 	}
-
 
 }

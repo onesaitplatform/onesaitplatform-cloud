@@ -60,6 +60,7 @@ public class GadgetTemplateController {
 	private static final String MESSAGE = "message";
 	private static final String CATEGORIES = "categories";
 	private static final String DATASOURCES = "datasources";
+	private static final String GADGETTYPE = "gadgetType";
 
 	@Autowired
 	private GadgetTemplateService gadgetTemplateService;
@@ -99,6 +100,8 @@ public class GadgetTemplateController {
 		model.addAttribute(GADGET_TEMPLATE_TYPES, this.gadgetTemplateService.getTemplateTypes());
 		model.addAttribute(CATEGORIES, categoryService.getCategoriesByTypeAndGeneralType(Category.Type.GADGET));
 		model.addAttribute(DATASOURCES, gadgetDatasourceService.getAllIdentificationsByUser(utils.getUserId()));
+		
+		httpSession.setAttribute(GADGETTYPE, "gadgetTemplate");
 		
 		final Object projectId = httpSession.getAttribute(APP_ID);
 		if (projectId!=null) {
@@ -157,6 +160,8 @@ public class GadgetTemplateController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/update/{gadgetTemplateId}", produces = "text/html")
 	public String createGadget(Model model, @PathVariable("gadgetTemplateId") String gadgetTemplateId) {
+		
+		httpSession.setAttribute(GADGETTYPE, "gadgetTemplate");
 		model.addAttribute(GADGET_TEMPLATE, this.gadgetTemplateService.getGadgetTemplateDTOById(gadgetTemplateId));
 		model.addAttribute(GADGET_TEMPLATE_TYPES, this.gadgetTemplateService.getTemplateTypes());
 		model.addAttribute(ResourcesInUseService.RESOURCEINUSE,
@@ -170,6 +175,7 @@ public class GadgetTemplateController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/view/{gadgetTemplateId}", produces = "text/html")
 	public String showGadget(Model model, @PathVariable("gadgetTemplateId") String gadgetTemplateId) {
+		httpSession.setAttribute(GADGETTYPE, "gadgetTemplate");
 		model.addAttribute(GADGET_TEMPLATE, this.gadgetTemplateService.getGadgetTemplateDTOById(gadgetTemplateId));
 		return "gadgettemplates/show";
 	}
@@ -195,6 +201,7 @@ public class GadgetTemplateController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@DeleteMapping("/{id}")
 	public String delete(Model model, @PathVariable("id") String id) {
+		httpSession.setAttribute(GADGETTYPE, "gadgetTemplate");
 		this.gadgetTemplateService.deleteGadgetTemplate(id, utils.getUserId());
 		return REDIRECT_GADGET_TEMP_LIST;
 	}
@@ -203,7 +210,7 @@ public class GadgetTemplateController {
 	@PutMapping(value = "/update/{id}", produces = "text/html")
 	public String updateGadget(Model model, @PathVariable("id") String id, @Valid GadgetTemplateDTO gadgetTemplate,
 			BindingResult bindingResult, RedirectAttributes redirect) {
-
+		httpSession.setAttribute(GADGETTYPE, "gadgetTemplate");
 		if (bindingResult.hasErrors()) {
 			log.debug("Some GadgetTemplate properties missing");
 			utils.addRedirectMessage("gadgets.validation.error", redirect);

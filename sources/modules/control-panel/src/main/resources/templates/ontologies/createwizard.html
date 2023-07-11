@@ -112,6 +112,7 @@
 					<input id="jsonschema"  class="hidden-validation" type="hidden" th:required="true" th:field="*{jsonSchema}"  />
 					<input id="rtdb" name="rtdb" type="hidden" value="MONGO" th:field="*{rtdbDatasource}"/>
 					<input id="rtdbCleanLapse" type="hidden" value="NEVER" th:field="*{rtdbCleanLapse}"/>
+					<input id="nameTopicMqtt"  type="hidden" name="nameTopicMqtt"  />
 					<th:block th:include="versioning/fragments/form-commit"></th:block>
 					<!-- FORM ACTIONS FOR INSERT-->
 					<input th:if="${ontology.id} == null" type="hidden" name="action" th:value="@{/ontologies/createwizard}"/>
@@ -782,6 +783,23 @@
 											<label class="control-label margin-right-5 popovers" th:text="#{ontology.allowsCreateNotificationTopic}">Allow Create Notification Topic</label>
 											<i class="la la-info-circle popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.allowsCreateNotificationTopic.help},data-title=#{ontology.allowsCreateNotificationTopic}"></i>
 										</div>
+										<!-- MQTT SELECTION -->
+										<div class="mt-checkbox-list col-md-3 col-sm-6 col-xs-12">
+											<input id="allowsCreateMqttTopic" class="margin-right-10" name="allowsCreateMqttTopic" type="checkbox" th:field="*{allowsCreateMqttTopic}" th:checked="checked"/>
+											<label class="control-label margin-right-5 popovers" th:text="#{ontology.allowsCreateMqttTopic}">Allow Create MQTT Topic</label>
+											<i class="la la-info-circle popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.allowsCreateMqttTopic.help},data-title=#{ontology.allowsCreateMqttTopic}"></i>
+										</div>
+										<div id="mqttTopicName" class="form-group hidden col-md-12 col-sm-6 col-xs-12">
+											<div class="col-md-3">
+												<label class="control-label" th:text="#{ontology.mqtt.topic.name}">Topic name</label>
+												<input th:tabindex="1" id="mqttTopic" type="text" class="form-control"/>
+												<span id="mqttTopicErrorInfo" class="help-block" th:text="#{ontology.mqtt.topic.name.error}"><i class="la la-warning"></i></span>
+											</div>
+											<div class="col-md-6" style="margin-top: 24px;margin-left: -25px;">
+												<p id="mqttTopicPath" class="form-control-static-block"></p>
+											</div>
+											
+										</div>
 									</div>
 								</div>
 								<div class="row main" th:if="${ontology.id == null}">
@@ -822,7 +840,7 @@
 								<!-- ElasticSearch new properties -->
 								<div class="elasticProps">
 								    <!--  Custom id properties -->
-								    <div class="row main elasticProps " th:classappend="(${ontology.id == null or ontology.rtdbDatasource.name() != 'ELASTIC_SEARCH'}? hidden : '')" id="elasticCustomIdConfig">
+								    <div class="row main elasticProps " th:classappend="(${ontology.id == null or (ontology.rtdbDatasource.name() != 'ELASTIC_SEARCH' and ontology.rtdbDatasource.name() != 'OPEN_SEARCH')}? hidden : '')" id="elasticCustomIdConfig">
 										<div class="col-md-3 col-sm-6 col-xs-12">
 											<!-- ElasticSearch allow custom id -->
 											<div class="mt-checkbox-list">
@@ -832,7 +850,7 @@
 											</div>
 										</div>
 									</div>
-									<div class="row main elasticProps elasticCustomIdConfig" th:classappend="(${ontology.id == null or ontology.rtdbDatasource.name() != 'ELASTIC_SEARCH'}? hidden : '')" id="elasticCustomIdFieldConfig">
+									<div class="row main elasticProps elasticCustomIdConfig" th:classappend="(${ontology.id == null or (ontology.rtdbDatasource.name() != 'ELASTIC_SEARCH' and ontology.rtdbDatasource.name() != 'OPEN_SEARCH')}? hidden : '')" id="elasticCustomIdFieldConfig">
 										<div class="elasticCustomIdConfig col-md-3 col-sm-6 col-xs-12" th:classappend="(${ontology.id == null} ? hidden : '')">
 											<!-- ELASTIC SHARDS-->
 											<div class="form-group">
@@ -843,7 +861,7 @@
 											</div>
 										</div>
 									</div>
-									<div class="row main elasticProps elasticCustomIdConfig" th:classappend="(${ontology.id == null or ontology.rtdbDatasource.name() != 'ELASTIC_SEARCH'}? hidden : '')" id="elasticCustomIdAllowUpsert">
+									<div class="row main elasticProps elasticCustomIdConfig" th:classappend="(${ontology.id == null or (ontology.rtdbDatasource.name() != 'ELASTIC_SEARCH' and ontology.rtdbDatasource.name() != 'OPEN_SEARCH')}? hidden : '')" id="elasticCustomIdAllowUpsert">
 										<div class="elasticCustomIdConfig col-md-3 col-sm-6 col-xs-12" th:classappend="(${ontology.id == null} ? hidden : '')">
 											<!-- ElasticSearch allow custom id -->
 											<div class="mt-checkbox-list">
@@ -854,7 +872,7 @@
 										</div>
 									</div>
 									<!--  Custom index properties  -->
-									<div class="row main elasticProps " th:classappend="(${ontology.id == null or ontology.rtdbDatasource.name() != 'ELASTIC_SEARCH'}? hidden : '')" id="elasticProps">
+									<div class="row main elasticProps " th:classappend="(${ontology.id == null or (ontology.rtdbDatasource.name() != 'ELASTIC_SEARCH' and ontology.rtdbDatasource.name() != 'OPEN_SEARCH')}? hidden : '')" id="elasticProps">
 										<div class="col-md-3 col-sm-6 col-xs-12">
 											<!-- ElasticSearch allow custom prop -->
 											<div class="mt-checkbox-list">
@@ -864,7 +882,7 @@
 											</div>
 										</div>
 									</div>
-									<div class="row main elasticProps elasticPropsCustom" th:classappend="(${ontology.id == null or ontology.rtdbDatasource.name() != 'ELASTIC_SEARCH'}? hidden : '')" id="elasticProps2">
+									<div class="row main elasticProps elasticPropsCustom" th:classappend="(${ontology.id == null or (ontology.rtdbDatasource.name() != 'ELASTIC_SEARCH' and ontology.rtdbDatasource.name() != 'OPEN_SEARCH')}? hidden : '')" id="elasticProps2">
 										<div class="elasticPropsCustom col-md-3 col-sm-6 col-xs-12" th:classappend="(${ontology.id == null} ? hidden : '')">
 											<!-- ELASTIC SHARDS-->
 											<div class="form-group">
@@ -883,7 +901,7 @@
 										</div>
 									</div>
 
-									<div class="row main elasticPropsCustom elasticPropsCustom " th:classappend="(${ontology.id == null or ontology.rtdbDatasource.name() != 'ELASTIC_SEARCH'}? hidden : '')" id="elasticTemplate">
+									<div class="row main elasticPropsCustom elasticPropsCustom " th:classappend="(${ontology.id == null or (ontology.rtdbDatasource.name() != 'ELASTIC_SEARCH' and ontology.rtdbDatasource.name() != 'OPEN_SEARCH')}? hidden : '')" id="elasticTemplate">
 										<div class="col-md-3 col-sm-6 col-xs-12">
 											<!-- ElasticSearch allow template -->
 											<div class="mt-checkbox-list">
@@ -893,7 +911,7 @@
 											</div>
 										</div>
 									</div>
-									<div class="row main elasticPropsCustom elasticPropsTemplate " th:classappend="(${ontology.id == null or ontology.rtdbDatasource.name() != 'ELASTIC_SEARCH'}? hidden : '')" id="elasticProps3">
+									<div class="row main elasticPropsCustom elasticPropsTemplate " th:classappend="(${ontology.id == null or (ontology.rtdbDatasource.name() != 'ELASTIC_SEARCH' and ontology.rtdbDatasource.name() != 'OPEN_SEARCH')}? hidden : '')" id="elasticProps3">
 										<div class=" elasticPropsTemplate  col-md-3 col-sm-6 col-xs-12" th:classappend="(${ontology.id == null} ? hidden : '')">
 											<!-- FIELD FOR PATTERN-->
 											<div class="form-group">
@@ -1419,6 +1437,7 @@
 		"dataModelSelection" : [[#{ontology.datamodel.selection}]],
 		"datamodel": [[#{ontology.datamodel}]],
 		"ontologyId": [[${ontology?.id}]],
+		"ontologyIdentification": [[${ontology?.identification}]],
 		"authorizations" : [[${authorizations}]],
 		"dataaccesses" : [[${dataaccesses}]],
 		"confirmBtn" : [[#{gen.confirmBtn}]],
@@ -1449,7 +1468,9 @@
 		"appId" : [[${appId}]],
 		"vertices": [[${nebulaTags}]],
 		"edges": [[${nebulaEdges}]],
-		"rtdbDatasource": [[${ontology.rtdbDatasource?.name()}]]
+		"rtdbDatasource": [[${ontology.rtdbDatasource?.name()}]],
+		"mqttTopicPath": [[${mqttTopicPath}]],
+		"allowsCreateMqttTopic": [[${ontology?.allowsCreateMqttTopic}]]
 	};
 
 	function openCronDialog(){

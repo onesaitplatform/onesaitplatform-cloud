@@ -193,6 +193,13 @@
             <scope>runtime</scope>
         </dependency>
 		
+		<!-- https://mvnrepository.com/artifact/au.com.bytecode/opencsv -->
+		<dependency>
+		    <groupId>au.com.bytecode</groupId>
+		    <artifactId>opencsv</artifactId>
+		    <version>2.4</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>

@@ -151,7 +151,7 @@ Microservice.Create = (function(){
 		})
 		.then(r => {
 			if(r.ok){
-				r.json()
+				return r.json()
 			}else{
 				throw Error();
 			}
@@ -211,7 +211,7 @@ Microservice.Create = (function(){
 		})
 		.then(r => {
 			if(r.ok){
-				r.json()
+				return r.json()
 			}else{
 				throw Error()
 			}

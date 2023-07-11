@@ -148,6 +148,8 @@ public class GadgetController {
 	private static final String CATEGORIES = "categories";
 	private static final String APP_ID = "appId";
 	private static final String REDIRECT_PROJECT_SHOW = "redirect:/projects/update/";
+	private static final String GADGETTYPE = "gadgetType";
+
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	@RequestMapping(value = "/list", produces = "text/html")
@@ -164,6 +166,15 @@ public class GadgetController {
 		String identification = request.getParameter("name");
 		String type = request.getParameter("type");
 		String currentTab = request.getParameter("current_tab");
+		
+		String gadgetType = (String) httpSession.getAttribute(GADGETTYPE);
+
+		if (gadgetType!=null) {
+
+		currentTab="tab-templates";
+
+		}
+		httpSession.removeAttribute(GADGETTYPE);
 
 		if (identification != null && identification.equals("")) {
 			identification = null;
@@ -405,7 +416,7 @@ public class GadgetController {
     @PostMapping(value = { "/clone" })
     public ResponseEntity<String> cloneGadget(Model model, @RequestParam String gadgetId,
             @RequestParam String identification) {
-
+    	
         try {
             String id = "";
             final String userId = utils.getUserId();
@@ -427,7 +438,7 @@ public class GadgetController {
     @PostMapping(value = { "/gadgettemplates/clone" })
     public ResponseEntity<String> cloneGadgetTemplate(Model model, @RequestParam String gadgetId,
             @RequestParam String identification) {
-
+    	httpSession.setAttribute(GADGETTYPE, "gadgetTemplate");
         try {
             String id = "";
             final String userId = utils.getUserId();
@@ -558,6 +569,7 @@ public class GadgetController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@DeleteMapping("/{id}")
 	public String delete(Model model, @PathVariable("id") String id, RedirectAttributes ra) {
+	
 		try {
 			gadgetService.deleteGadget(id, utils.getUserId());
 		} catch (final RuntimeException e) {
@@ -571,6 +583,7 @@ public class GadgetController {
 	public String delete(Model model, @PathVariable("id") String id) {
 		log.info("Controlador");
 		this.gadgetTemplateService.deleteGadgetTemplate(id, utils.getUserId());
+		httpSession.setAttribute(GADGETTYPE, "gadgetTemplate");
 		return REDIRECT_GADGETS_LIST;
 	}
 
@@ -578,7 +591,7 @@ public class GadgetController {
 	@PutMapping(value = "/update/{id}", produces = "text/html")
 	public String updateGadget(Model model, @PathVariable("id") String id, @Valid GadgetDTO gadget, String jsonMeasures,
 			String datasourcesMeasures, BindingResult bindingResult, RedirectAttributes redirect) {
-
+		
 		if (bindingResult.hasErrors()) {
 			log.debug("Some Gadget properties missing");
 			utils.addRedirectMessage("gadgets.validation.error", redirect);

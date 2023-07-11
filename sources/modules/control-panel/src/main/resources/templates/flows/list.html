@@ -189,7 +189,7 @@
 								</div>
 								<!--<div class="actions ">-->
 									<div class="btn-group pull-right btn-title-group" id="divcreate" >	
-										<a type="button" id="btn-domains-reload" name="btn-domains-reload" value="Reload" class="btn btn-primary button-dropdown-table-columns" style="border: none;" ><i class="icon-reload"></i></a>													
+										<a type="button" id="btn-domains-reload" name="btn-domains-reload" value="Reload" th:title="#{gen.reload}" class="btn btn-primary button-dropdown-table-columns  tooltips" style="border: none;" ><i class="icon-reload"></i></a>													
 										<button th:if="${#strings.arrayJoin(#authentication.authorities,'') != 'ROLE_ADMINISTRATOR' AND (domains==null or domains.empty)}" type="button" class="btn btn-primary button-plus-create" onclick="location.href='../flows/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>									
 										<!-- Reload button  -->
 																					
@@ -248,8 +248,10 @@
 															<th dt:property="state"  dt:renderFunction="dtRenderState" class="titulo-columnas" th:text="#{domain.state}">State</th>
 															<th dt:property="cpu" dt:renderFunction="dtRenderNonNullCpu" class="titulo-columnas" th:text="#{domain.cpu.use}">Cpu</th>
 															<th dt:property="memory" dt:renderFunction="dtRenderNonNullMem" class="titulo-columnas" th:text="#{domain.memory}">memory</th>
-															<th dt:property="memory" dt:renderFunction="dtRenderNonNullReboot" class="titulo-columnas" th:text="#{domain.reboot.on.failure}">Reboot on failure</th>
-															<th dt:sortable="false" dt:renderFunction="dtRenderOptions" class="titulo-columnas text-center" style="width:85px"><span th:text="#{gen.options}">Options</span></th>
+															<th dt:property="memory" dt:renderFunction="dtRenderNonNullReboot" class="titulo-columnas " th:text="#{domain.reboot.on.failure}">Reboot on failure</th>
+															<th class="titulo-columnas text-left" ><span th:text="#{ontology.createdAt}">Created At</span></th>
+															<th class="titulo-columnas text-left" ><span th:text="#{ontology.updatedAt}">Updated At</span></th>
+															<th dt:sortable="false" dt:renderFunction="dtRenderOptions" class="titulo-columnas text-center" style="width:125px"><span th:text="#{gen.options}">Options</span></th>
 														</tr>
 													</thead>
 													<tbody th:remove="all-but-first">
@@ -270,7 +272,12 @@
 															<td th:if="${domain.memory == null}" class="text-left ">--</td>
 															<td th:if="${(domain.autorecover == null) OR (domain.autorecover == false)}" class="text-left" ><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="#{gen.inactive}" style="color: #A73535; padding-left: 5px;"></span></td>
 															<td th:if="${(domain.autorecover != null) AND (domain.autorecover == true)}" class="text-left" ><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span th:text="#{gen.active}" style="color: #2E6B33; padding-left: 5px;"></span></td>
-															 
+															<!-- DATE -->
+															<td class="text-left" th:if="${domain.createdAt!=null}"><span th:text="${#dates.format(domain.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(domain.createdAt,'dd/MM/yyyy')}" ></span></td>
+															<td class="text-left" th:if="${domain.createdAt==null}" th:text="'---'"></td>
+															<!-- UPDATE -->
+															<td class="text-left" th:if="${domain.updatedAt!=null}"><span th:text="${#dates.format(domain.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(domain.updatedAt,'dd/MM/yyyy')}" ></span></td>
+															<td class="text-left" th:if="${domain.updatedAt==null}" th:text="'---'"></td>
 															<td>
 																<div class="grupo-iconos text-center">
 																	<span th:if="${domain.state == 'START'}" th:title="#{gen.stop}" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{gen.stop}" th:attr="onclick='javascript:getDomainStopFragment(\''+${domain.domain}+ '\',event,this);'"><i class="icon-stop"></i></span>
@@ -283,10 +290,6 @@
 																		<ul class="dropdown-menu dropdown-menu-table download-menu">																			
 																			<li>
 																				<span th:attr="onclick='javascript:navigateUrl(\'' + @{|/flows/update/${domain.domain}|} + '\');'" ><span th:attr="data-id=${domain.domain}" class="btn btn-xs btn-no-border btn-circle btn-outline" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{gen.edit}"><i class="icon-edit"></i><span class="span-title-three-dots-icons" th:text="#{gen.edit}" >EDIT</span></span></span>																	
-																			</li>
-																			<li>
-																			    <span th:if="${domain.state == 'START' AND flowEngineActive == true}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/flows/monitor/${domain.domain}|} + '\');'" ><span th:attr="data-id=${domain.domain}" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" ><i class="la la la-line-chart font-hg"></i><span class="span-title-three-dots-icons" th:text="#{domain.monitor}" >MONITOR</span></span></span>
-																				<span th:if="${domain.state == null OR domain.state == 'STOP' OR flowEngineActive == false}"    ><span disabled="true" th:attr="data-id=${domain.domain}" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" ><i class="la la la-line-chart font-hg"></i><span class="span-title-three-dots-icons" th:text="#{domain.monitor}" >MONITOR</span></span></span>
 																			</li>
 																			<li>
 																				<span sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" th:if="${#authentication.name} == ${domain.user} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'"  th:attr="onclick='javascript:deleteFlowDomainConfirmation(\''+${domain.domain}+ '\');',data-id=${domain.domain}" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" style="margin-top: 10px;" data-container="body" data-placement="bottom" ><i class="icon-delete"></i>  <span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >DELETE</span></span>																	
@@ -327,6 +330,14 @@
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 															<label  th:text="#{domain.reboot.on.failure}"> Reboot on failure</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
+															<label  th:text="#{ontology.createdAt}">Created At</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="7" checked/>
+															<label  th:text="#{ontology.updatedAt}">Updated At</label>
 														</span>
 																												
 													</div>
@@ -378,6 +389,8 @@
 			go: [[#{microservice.link.go}]],
 			stop: [[#{gen.stop}]],
 			start: [[#{domain.start}]],
+			
+			reload: [[#{gen.reload}]],
 			genDelete: [[#{gen.deleteBtn}]],
 			genUpdate:  [[#{gen.edit}]],
 			genView:  [[#{gen.view}]],
@@ -445,7 +458,8 @@
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).load(function(){  
+	$(window).on("load",function(){  
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 		var dTable = $('#domains').DataTable();
 		dTable.page.len(10);
 		$('#domains').on('draw.dt', function () {
@@ -538,10 +552,10 @@
 			html +='<span th:title="'+constants.stop+'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="'+constants.stop+'" onclick="getDomainStopFragment(\'' + row.domain + '\')"><i class="icon-stop"></i></span>';
 		}else
 			html +='<span th:title="'+constants.start+'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="'+constants.start+'" onclick="getDomainStartFragment(\'' + row.domain + '\')"><i class="icon-play"></i></span>';
-		if(row.state == 'START' && active == true) {
+		/*if(row.state == 'START' && active == true) {
 			html+= '<a  href="/controlpanel/flows/show/'+row.domain+'"><span data-id="' + row.id + '" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genView+'"><i class="la la-eye font-hg"></i></span></a>'
 			html+= '<a  href="/controlpanel/flows/monitor/'+row.domain+'"><span data-id="' + row.id + '" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genUpdate+'"><i class="la la la-area-chart font-hg"></i></span></a>'
-		}
+		}*/
 		html+= '<a  href="/controlpanel/flows/update/'+row.domain+'"><span data-id="' + row.id + '" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genUpdate+'"><i class="la la-edit font-hg"></i></span></a>'
 		html+= '<span data-id="' + row.id + '" onclick="deleteFlowDomainConfirmation(\''+row.domain+'\');" class="icon-microservice-trash btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genDelete+'"><i class="la la-trash font-hg"></i></span>'																											
 		html+= '</div>';

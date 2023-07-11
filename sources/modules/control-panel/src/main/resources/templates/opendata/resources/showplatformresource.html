@@ -224,7 +224,7 @@
 			HeaderController.showResourceConfirmDialog(resourceId);	
 		}	
 
-		$(window).load(function(){
+		$(window).on("load",function(){
 			if (platformResource != null){
 				var divElement = '#' + platformResource + '-div';
 				$(divElement).removeClass('hide');

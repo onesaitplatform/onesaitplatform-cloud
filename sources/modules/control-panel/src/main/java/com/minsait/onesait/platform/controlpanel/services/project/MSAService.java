@@ -23,6 +23,10 @@ import com.minsait.onesait.platform.config.model.Microservice.CaaS;
 
 public interface MSAService {
 
+	public static final String MULTITENANT_SCHEMA_ENV = "CONFIGDB_SCHEMA";
+	public static final String MULTITENANT_API_KEY = "ADMIN_VERTICAL_TOKEN";
+	public static final String CONFIG_INIT = "configinit";
+
 	public List<String> getNamespacesOrProjects(String configId);
 
 	public List<String> getNamespacesOrProjects(String configId, String url);
@@ -65,6 +69,9 @@ public interface MSAService {
 			String onesaitServerName, String stack);
 
 	public List<String> getRancherStacks(RancherConfiguration rancherConfig, String env);
+
+	public void runConfigInit(String server, String user, String credentials, String namespace, String verticalSchema,
+			String multitenantAPIKey, Map<String, Boolean> verticalCreation);
 
 	public boolean supports(CaaS caas);
 }

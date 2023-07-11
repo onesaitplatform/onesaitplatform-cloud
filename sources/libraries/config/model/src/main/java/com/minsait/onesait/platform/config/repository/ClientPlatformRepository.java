@@ -65,6 +65,9 @@ public interface ClientPlatformRepository extends JpaRepository<ClientPlatform, 
 	@Query("SELECT cp FROM ClientPlatform cp WHERE cp.identification like %:identification%")	
 	List<ClientPlatform> findByIdentificationLike(@Param("identification") String identification);
 	
+	@Query("SELECT cp FROM ClientPlatform cp WHERE cp.identification = :identification")	
+	ClientPlatform getIdByIdentification(@Param("identification") String identification);
+	
 	@Query("SELECT cp FROM ClientPlatform cp WHERE cp.user= :user and cp.identification like %:identification%")
 	List<ClientPlatform> findByUserAndIdentificationLike(@Param("user") User user, @Param("identification") String identification);
 

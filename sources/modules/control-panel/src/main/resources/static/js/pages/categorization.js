@@ -213,8 +213,8 @@ var insertData = function(url) {
 		type : "GET",
 		headers: {
 			[csrf_header]: csrf_value
-	    }
-	}).success(function(response){
+	    },
+		success : function(response){
 		elementos = response;
 		var options = [];
 		$('#selectElements').empty();
@@ -224,7 +224,7 @@ var insertData = function(url) {
 		$('#selectElements').html(options);
 		$('#selectElements').selectpicker('refresh'); 
 		}
-	).fail(function(response, data){
+	}).fail(function(response, data){
 		toastr.error(messagesForms.operations.genOpError,errorMsg);
 		console.log("Error: ", response);}		
 	)

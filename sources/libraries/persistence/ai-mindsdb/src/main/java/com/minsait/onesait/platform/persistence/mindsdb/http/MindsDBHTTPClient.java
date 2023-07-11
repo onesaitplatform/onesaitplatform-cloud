@@ -14,10 +14,13 @@
  */
 package com.minsait.onesait.platform.persistence.mindsdb.http;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -41,6 +44,7 @@ public class MindsDBHTTPClient {
 	public static final String API_DATASOURCES_URL = "/api/datasources";
 	public static final String API_PREDICTORS_URL = "/api/predictors";
 	private static final ObjectMapper mapper = new ObjectMapper();
+	 
 
 	public JsonNode createMindsDBDatasource(MindsDBPredictorDatasource ds) {
 		return executeHttp(DEFAULT_MINDSDB_HTTP_API_URL + API_DATASOURCES_URL + "/" + ds.getName(), HttpMethod.PUT, ds);
@@ -55,11 +59,11 @@ public class MindsDBHTTPClient {
 	}
 
 	public JsonNode getPredictor(String predictor) {
-		return executeHttp(DEFAULT_MINDSDB_HTTP_API_URL + API_PREDICTORS_URL + "/" + predictor , HttpMethod.GET, null);
+		return executeHttp(DEFAULT_MINDSDB_HTTP_API_URL + API_PREDICTORS_URL + "/" + predictor, HttpMethod.GET, null);
 	}
 
 	public JsonNode getDatasource(String name) {
-		return executeHttp(DEFAULT_MINDSDB_HTTP_API_URL + API_DATASOURCES_URL + "/" + name , HttpMethod.GET, null);
+		return executeHttp(DEFAULT_MINDSDB_HTTP_API_URL + API_DATASOURCES_URL + "/" + name, HttpMethod.GET, null);
 	}
 
 	public JsonNode createMindsDBPredictor(MindsDBPredictorPayload pds) {
@@ -91,9 +95,8 @@ public class MindsDBHTTPClient {
 		try {
 			final HttpHeaders headers = new HttpHeaders();
 			headers.add(HttpHeaders.CONTENT_TYPE, "application/json");
-			final ResponseEntity<JsonNode> queryResponse = client.exchange(url, method, new HttpEntity<>(
-					reqEntity,
-					headers), JsonNode.class);
+			final ResponseEntity<JsonNode> queryResponse = client.exchange(url, method,
+					new HttpEntity<>(reqEntity, headers), JsonNode.class);
 			return queryResponse.getBody();
 		} catch (final HttpClientErrorException | HttpServerErrorException e) {
 			throw new RuntimeException(

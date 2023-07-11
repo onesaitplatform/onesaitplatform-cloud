@@ -195,7 +195,12 @@ var ApiCreateController = function() {
         	$('#divCUSTOMSQL').addClass('hide');
         	$('#row-json').removeClass('hide');
         	$('#row-panel-info').removeClass('hide');
+        	$('.form-group-ontology').removeClass('has-error');
+        	$('span[id^="ontology-error"]').remove();
         	myCodeMirror.refresh();
+           
+            
+			
         }
  		
     }
@@ -471,12 +476,17 @@ var ApiCreateController = function() {
             },
             highlight: function(element) { // hightlight error inputs
                 $(element).closest('.form-group').addClass('has-error'); 
+                $(element).closest('.form-group-ontology').addClass('has-error'); 
             },
             unhighlight: function(element) { // revert the change done by hightlight
                 $(element).closest('.form-group').removeClass('has-error');
+                $(element).closest('.form-group-ontology').removeClass('has-error');
+               
             },
             success: function(label) {
                 label.closest('.form-group').removeClass('has-error');
+                label.closest('.form-group-ontology').removeClass('has-error');
+                
             },
 			// ALL OK, THEN SUBMIT.
             submitHandler: function(form) {
@@ -1152,7 +1162,7 @@ var ApiCreateController = function() {
 				// UPDATE MODE ONLY AND VALUES on user
 				if (($('#users').val() !== '') && ($("#users option:selected").attr('disabled') !== 'disabled')){
 					
-				    if ($("#api_authorizations > tbody > tr").size() > 0) {
+				    if ($("#api_authorizations > tbody > tr").length > 0) {
 		                $("#api_authorizations > tbody > tr").each(
 			
 							function() {

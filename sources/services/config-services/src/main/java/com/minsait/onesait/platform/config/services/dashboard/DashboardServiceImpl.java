@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -38,6 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -115,6 +117,7 @@ import com.minsait.onesait.platform.config.services.generic.security.SecuritySer
 import com.minsait.onesait.platform.config.services.internationalization.InternationalizationService;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.subcategory.SubcategoryService;
+import com.minsait.onesait.platform.config.services.user.UserService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -161,6 +164,9 @@ public class DashboardServiceImpl implements DashboardService {
 	private FavoriteService favoriteService;
 	@Autowired
 	private InternationalizationService internationalizationService;
+	@Autowired
+	@Lazy
+	private UserService userService;
 
 	@Value("${onesaitplatform.controlpanel.url:http://localhost:18000/controlpanel}")
 	private String basePath;
@@ -225,6 +231,7 @@ public class DashboardServiceImpl implements DashboardService {
 	private static final String DATA = "data";
 	private static final String DS = "ds";
 	private static final String NAME = "name";
+	private static final String USER_UNAUTH_STR = "The user is not authorized";
 
 	@Override
 	public List<DashboardDTO> findDashboardWithIdentificationAndDescription(String identification, String description,
@@ -346,7 +353,7 @@ public class DashboardServiceImpl implements DashboardService {
 			}
 			i18nRR.deleteAll(i18nRR.findByOPResourceId(dashboard.getId()));
 			categoryRelationService.deleteCategoryRelation(dashboard.getId());
-			//			dashboardUserAccessRepository.deleteByDashboard(dashboard);
+			// dashboardUserAccessRepository.deleteByDashboard(dashboard);
 
 			final Favorite fav = favoriteService.findByFavoriteIdAndType(dashboard.getId(), Type.DASHBOARD, userId);
 			if (fav != null) {
@@ -654,7 +661,9 @@ public class DashboardServiceImpl implements DashboardService {
 		d.setCustomjs("");
 		d.setJsoni18n("");
 		try {
-			d.setImage(dashboard.getImage() != null ? dashboard.getImage().getBytes() : null);
+			if (dashboard.getImage() != null) {
+				d.setImage(dashboard.getImage().getSize() != 0 ? dashboard.getImage().getBytes() : null);
+			}
 		} catch (final IOException e1) {
 			log.error("Could not read image");
 		}
@@ -696,7 +705,8 @@ public class DashboardServiceImpl implements DashboardService {
 		}
 		Subcategory subcategory = new Subcategory();
 		if (!StringUtils.isEmpty(dashboard.getSubcategory())) {
-			subcategory = subcategoryService.getSubcategoryByIdentificationAndCategory(dashboard.getSubcategory(), category);
+			subcategory = subcategoryService.getSubcategoryByIdentificationAndCategory(dashboard.getSubcategory(),
+					category);
 			if (subcategory == null) {
 				log.error(CATEGORY_SUBCATEGORY_NOTFOUND);
 				throw new DashboardServiceException(CATEGORY_SUBCATEGORY_NOTFOUND);
@@ -718,7 +728,8 @@ public class DashboardServiceImpl implements DashboardService {
 			final Category category = categoryService.getCategoryByIdentification(dashboard.getCategory());
 			Subcategory subcategory = new Subcategory();
 			if (!StringUtils.isEmpty(dashboard.getSubcategory())) {
-				subcategory = subcategoryService.getSubcategoryByIdentificationAndCategory(dashboard.getSubcategory(), category);
+				subcategory = subcategoryService.getSubcategoryByIdentificationAndCategory(dashboard.getSubcategory(),
+						category);
 			}
 
 			categoryRelationService.createCategoryRelation(id, category, subcategory, Category.Type.DASHBOARD);
@@ -777,9 +788,9 @@ public class DashboardServiceImpl implements DashboardService {
 							.findByName(dashboardAccessDTO.getAccesstypes());
 					final DashboardUserAccessType managedType = managedTypes != null
 							&& !CollectionUtils.isEmpty(managedTypes) ? managedTypes.get(0) : null;
-							dua.setDashboardUserAccessType(managedType);
-							dua.setUser(userRepository.findByUserId(dashboardAccessDTO.getUsers()));
-							dAux.getAccesses().add(dua);
+					dua.setDashboardUserAccessType(managedType);
+					dua.setUser(userRepository.findByUserId(dashboardAccessDTO.getUsers()));
+					dAux.getAccesses().add(dua);
 				}
 				dashboardRepository.save(dAux);
 
@@ -923,9 +934,9 @@ public class DashboardServiceImpl implements DashboardService {
 								.findByName(dashboardAccessDTO.getAccesstypes());
 						final DashboardUserAccessType managedType = managedTypes != null
 								&& !CollectionUtils.isEmpty(managedTypes) ? managedTypes.get(0) : null;
-								dua.setDashboardUserAccessType(managedType);
-								dua.setUser(userRepository.findByUserId(dashboardAccessDTO.getUsers()));
-								d.get().getAccesses().add(dua);
+						dua.setDashboardUserAccessType(managedType);
+						dua.setUser(userRepository.findByUserId(dashboardAccessDTO.getUsers()));
+						d.get().getAccesses().add(dua);
 					}
 					dashboardRepository.save(d.get());
 				}
@@ -969,7 +980,8 @@ public class DashboardServiceImpl implements DashboardService {
 				final Category category = categoryService.getCategoryByIdentification(dashboard.getCategory());
 				Subcategory subcategory = new Subcategory();
 				if (!StringUtils.isEmpty(dashboard.getSubcategory())) {
-					subcategory = subcategoryService.getSubcategoryByIdentificationAndCategory(dashboard.getSubcategory(), category);
+					subcategory = subcategoryService
+							.getSubcategoryByIdentificationAndCategory(dashboard.getSubcategory(), category);
 				}
 				createOrUpdateCategoryRelation(dashboard, dAux.getId());
 			} else {
@@ -1384,7 +1396,7 @@ public class DashboardServiceImpl implements DashboardService {
 			dashboardUA.setDashboardUserAccessType(managedType);
 			dashboardUA.setUser(userRepository.findByUserId(dashboardUADTO.getUserId()));
 
-					d.getAccesses().add(dashboardUA);
+			d.getAccesses().add(dashboardUA);
 		}
 		dashboardRepository.save(d);
 	}
@@ -1982,6 +1994,7 @@ public class DashboardServiceImpl implements DashboardService {
 				FileUtils.writeByteArrayToFile(tempFile, response.getBody());
 
 				final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+
 				final MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
 				parameters.add("file", new FileSystemResource(tempFile));
 
@@ -2009,6 +2022,28 @@ public class DashboardServiceImpl implements DashboardService {
 				}
 			}
 		};
+	}
+
+	@Override
+	@Modifying
+	public void deleteDashboardUserAccessForAUser(String userAccessId) {
+
+		final User userAccess = userService.getUser(userAccessId);
+		List<DashboardUserAccess> opt = dashboardUserAccessRepository.findByUser(userAccess);
+		for (Iterator iterator = opt.iterator(); iterator.hasNext();) {
+			DashboardUserAccess dashboardUserAccess = (DashboardUserAccess) iterator.next();
+
+			final Set<DashboardUserAccess> accesses = dashboardUserAccess.getDashboard().getAccesses().stream()
+					.filter(a -> !a.getId().equals(dashboardUserAccess.getId())).collect(Collectors.toSet());
+
+			dashboardRepository.findById(dashboardUserAccess.getDashboard().getId()).ifPresent(dashboard -> {
+				dashboard.getAccesses().clear();
+				dashboard.getAccesses().addAll(accesses);
+				dashboardRepository.save(dashboard);
+			});
+
+		}
+
 	}
 
 }

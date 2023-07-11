@@ -70,10 +70,10 @@ public class ProjectResourceAccessExport extends ProjectResourceAccessParent {
 	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = true)
 	@Getter
 	@Setter
-	private UserExport user;
+	private User user;
 
 	@Builder
-	public ProjectResourceAccessExport(UserExport user, ResourceAccessType access, OPResource resource,
+	public ProjectResourceAccessExport(User user, ResourceAccessType access, OPResource resource,
 			ProjectExport project, AppRoleExport appRole) {
 		super(access);
 		this.resource = resource;

@@ -143,7 +143,7 @@ var TypologyCreateController = function() {
 }();
 
 // AUTO INIT CONTROLLER WHEN READY
-$(window).load(function() {	
+$(window).on("load",function() {	
 	
 	// AUTO INIT CONTROLLER.
 	TypologyCreateController.init();

@@ -63,16 +63,13 @@ public class JSONResultsetExtractor implements ResultSetExtractor<List<String>> 
 			List<String> resultJson = new ArrayList<String>();
 			ResultSetMetaData rsmd = rs.getMetaData();
 
-			// Check hive resulset, that don't have getTableName method
-			boolean hiveRS = rsmd instanceof org.apache.hive.jdbc.HiveResultSetMetaData;
-
 			while (rs.next()) {
 				int numColumns = rsmd.getColumnCount();
 				JSONObject obj = new JSONObject();
 
 				for (int i = 1; i < numColumns + 1; i++) {
 					String columnName = rsmd.getColumnLabel(i);
-					String tableName = (hiveRS ? null : rsmd.getTableName(i));
+					String tableName = rsmd.getTableName(i);
 					if (tableName == null || tableName.equals("")) {
 						tableName = table;
 					}

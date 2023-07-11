@@ -263,7 +263,7 @@
 													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
 													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="0"/>
+															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
 															<label th:text="#{datamodel.id}"> Identification </label>
 														</span>
 														<span class="checkbox-column">
@@ -271,7 +271,7 @@
 															<label th:text="#{datamodel.name}"> Name </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="2"/>
+															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
 															<label th:text="#{datamodel.description}"> Description</label>
 														</span>
 														<span class="checkbox-column">
@@ -294,7 +294,7 @@
 															<label th:text="#{gen.updated}"> Updated at</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="8"/>
+															<input class="toggle-vis" type="checkbox" data-column="8" checked/>
 															<label th:text="#{datamodel.jsonschema}"> JSON Schema</label>
 														</span>
 													</div>												
@@ -474,7 +474,9 @@
 	}	
 		 
 	// MAIN WHEN LOAD
-	$(window).load(function(){  
+	$(window).on("load",function(){  
+		
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
 		
 		//DATATABLE 
 		var oTable = $('#datamodels').DataTable({
@@ -516,7 +518,7 @@
 		handleSingleSelection('datamodels');
 		
 		// HIDE COLUMNS 4,5,6 (DETELEDAT,CREATEDAT,ACTIVE)		
-		$.each([ 0,2,8 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
+		$.each([ 0,2,8 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 				
 		 yadcf.init(oTable, [	 			
 			    {column_number : 3,   filter_type: "select",filter_container_id:"typefilter",filter_default_label: "[[#{datamodel.type}]]"}				 

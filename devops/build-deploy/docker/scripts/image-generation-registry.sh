@@ -215,19 +215,19 @@ buildKsql()
 buildZeppelin()
 {
 	echo "Apache Zeppelin image generation with Docker CLI: "
-	docker build --squash -t $USERNAME/notebook:$1 .
+	docker build --network host --squash -t $USERNAME/notebook:$1 .
 }
 
 buildStreamsets()
 {
 	echo "Streamsets image generation with Docker CLI: "
-	docker build -t $USERNAME/streamsets:$1 .
+	docker build --network host -t $USERNAME/streamsets:$1 .
 }
 
 buildDashboardExporter()
 {
 	echo "Dashboard Exporter image generation with Docker CLI: "
-	docker build -t $USERNAME/dashboardexporter:$1 .
+	docker build --network host -t $USERNAME/dashboardexporter:$1 .
 }
 
 buildChatbot()

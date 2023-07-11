@@ -391,7 +391,7 @@
 	var navigateUrl = function(url){ window.location.href = url; }
 								
 	// MAIN WHEN LOAD
-	$(window).load(function(){  
+	$(window).on("load",function(){  
 		var json_desc = JSON.parse(/*[[${json_desc}]]*/);
 		
 		$('#title').text(json_desc.title);

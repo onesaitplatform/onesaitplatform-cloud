@@ -26,6 +26,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import com.hazelcast.topic.ITopic;
 import com.minsait.onesait.platform.config.services.processtrace.dto.OperationStatus;
+import com.minsait.onesait.platform.iotbroker.plugable.impl.gateway.reference.mqtt.MqttSession;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.gateway.reference.mqtt.NotificatorServiceImpl;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.gateway.reference.websocket.NotificatorWSServiceImpl;
 
@@ -57,7 +58,8 @@ public class HazelcastCacheConfig {
 	public ITopic<String> hazelcastNotificationWS() {
 		ITopic<String> topic = hazelcastInstance.getTopic("notificationWS");
 		String registerId = topic
-				.addMessageListener(msg -> notificationWSService.notifyHazelcastTopic(msg.getMessageObject())).toString();
+				.addMessageListener(msg -> notificationWSService.notifyHazelcastTopic(msg.getMessageObject()))
+				.toString();
 		log.info("WS listener created with id: {}", registerId);
 		return topic;
 	}
@@ -75,6 +77,11 @@ public class HazelcastCacheConfig {
 	@Bean(name = "processExecutionMap")
 	public Map<String, LinkedHashSet<OperationStatus>> processExecutionMap() {
 		return hazelcastInstance.getMap("processExecutionMap");
+	}
+
+	@Bean(name = "mqttClientSessions")
+	public IMap<String, MqttSession> mqttClientSessions() {
+		return hazelcastInstance.getMap("mqttClientSessions");
 	}
 
 }

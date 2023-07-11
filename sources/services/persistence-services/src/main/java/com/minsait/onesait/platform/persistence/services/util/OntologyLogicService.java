@@ -26,6 +26,7 @@ import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;
 import com.minsait.onesait.platform.config.services.ontology.OntologyServiceImpl;
+import com.minsait.onesait.platform.config.services.ontologymqtttopic.OntologyMqttTopicService;
 import com.minsait.onesait.platform.persistence.factory.ManageDBRepositoryFactory;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
 
@@ -41,38 +42,41 @@ public class OntologyLogicService {
 	@Autowired
 	private OntologyServiceImpl ontologyService;
 
-	
+	@Autowired
+	private OntologyMqttTopicService mqttTopicService;
+
 	public void createOntology(Ontology ontology, Map<String, String> config) {
 
 		try {
 			if (!ontology.getRtdbDatasource().equals(Ontology.RtdbDatasource.API_REST)) {
 
 				log.debug("create ontology in db " + ontology.getRtdbDatasource());
-				
+
 				String jsonschema = ontology.getJsonSchema();
-                JSONObject json = new JSONObject(jsonschema);
-                
-                if (jsonschema.contains("hasrecords") && !jsonschema.contains("keeprecords")) { 
-                    removeOntology(ontology);
-                    json.remove("hasrecords");
-                    ontology.setJsonSchema(json.toString());
-                }
+				JSONObject json = new JSONObject(jsonschema);
+
+				if (jsonschema.contains("hasrecords") && !jsonschema.contains("keeprecords")) {
+					removeOntology(ontology);
+					json.remove("hasrecords");
+					ontology.setJsonSchema(json.toString());
+				}
 
 				this.getInstance(ontology.getRtdbDatasource()).createTable4Ontology(ontology.getIdentification(),
 						ontology.getJsonSchema(), config);
-				
-				if(jsonschema.contains("keeprecords")) {
-                    json.remove("keeprecords");
-                    json.remove("hasrecords");
-                    ontology.setJsonSchema(json.toString());
-                }
+
+				if (jsonschema.contains("keeprecords")) {
+					json.remove("keeprecords");
+					json.remove("hasrecords");
+					ontology.setJsonSchema(json.toString());
+				}
+			}
+
+			if (ontology.isAllowsCreateMqttTopic()) {
+				mqttTopicService.createMqttTopic(ontology, config.get("mqttTopicName"));
 			}
 
 		} catch (final Exception e) {
-			log.error("Error creaing ontology", e);
-			if (ontology.getRtdbDatasource().equals(RtdbDatasource.KUDU) && ontologyService.existsOntology(ontology.getIdentification())) {
-				ontologyService.delete(ontology);
-			}
+			log.error("Error creating ontology", e);
 			throw new OntologyServiceException("Problems creating table for ontology." + e.getMessage(), e);
 		}
 

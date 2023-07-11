@@ -272,6 +272,53 @@
 		},
 		{
 			"title": {
+				"EN": "MAPS",
+				"ES": "MAPAS",
+				"FR": "PLANS"
+			},
+			"icon": "icon-map",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "Maps Project Management",
+						"ES": "Gestión Proyectos Mapas",
+						"FR": "Cartes de gestion de projet"
+					},
+					"icon": "",
+					"url": "/controlpanel/mapsproject/list"
+				},
+				{
+					"title": {
+						"EN": "Maps Management",
+						"ES": "Gestión de Mapas",
+						"FR": "Cartes de gestion"
+					},
+					"icon": "",
+					"url": "/controlpanel/mapsmap/list"
+				},
+				{
+					"title": {
+						"EN": "Layers Management",
+						"ES": "Gestión Capas",
+						"FR": "Couches de gestion"
+					},
+					"icon": "",
+					"url": "/controlpanel/mapslayer/list"
+				},
+				{
+					"title": {
+						"EN": "Styles Management",
+						"ES": "Gestión Estilos",
+						"FR": "Styles de gestion"
+					},
+					"icon": "",
+					"url": "/controlpanel/mapsstyle/list"
+				}
+			]
+		},
+		{
+			"title": {
 				"EN": "ANALYTICS TOOLS",
 				"ES": "HERR. ANALÍTICA",
 				"FR": "OUTILS D'ANALYSE"
@@ -323,14 +370,15 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/predictors/list"
-				},{
-                    "title": {
-                        "EN": "Data Labeling Management",
-                        "ES": "Gestión De Etiquetado De Datos",
+				},
+				{
+					"title": {
+						"EN": "Data Labeling Management",
+						"ES": "Gestión De Etiquetado De Datos",
 						"FR": "Gestion des étiquetage De Données"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/datalabeling/list"
+					},
+					"icon": "",
+					"url": "/controlpanel/datalabeling/list"
 				}
 			]
 		},

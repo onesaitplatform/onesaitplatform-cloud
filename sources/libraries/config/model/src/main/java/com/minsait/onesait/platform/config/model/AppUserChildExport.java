@@ -54,6 +54,6 @@ public class AppUserChildExport extends AppUserParent {
 	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = false)
 	@Getter
 	@Setter
-	private UserExport user;
+	private User user;
 
 }

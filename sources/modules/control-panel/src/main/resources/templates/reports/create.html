@@ -103,7 +103,7 @@
                                 <div class="col-md-6 col-sm-6 col-xs-12">
                                     <div class="pull-right">
                                         <!-- REMOVE -->
-                                        <button th:if="${report.id} != null" id="btn-report-delete" type="button" class="btn btn-primary btn-primary-delete" name="delete" value="Remove"> <i class="icon-delete"></i> <span  th:text="#{gen.deleteBtn}"> Delete </span> </button>                                             
+                                        <button th:if="${report.id} != null" id="btn-report-delete" type="button" class="btn-delete-reports btn btn-primary btn-primary-delete" name="delete" value="Remove"> <i class="icon-delete"></i> <span  th:text="#{gen.deleteBtn}"> Delete </span> </button>                                             
                                         <span th:if="${report.id} != null" class="sep no-border" ></span>
                                         
                                         <!-- CANCEL --> 
@@ -216,12 +216,12 @@
     		</div>
     	</div><!-- // Modal error -->
     	<!-- Modal RESOURCES -->
-    	<div id="modal-add-resources" class="modal fade" role="dialog">
+    	<div id="modal-add-resources" data-backdrop="static" class="modal fade" role="dialog">
     		<div class="modal-dialog modal-sm">
     			<!-- Modal content-->
-    			<div class="modal-content">
+    			<div class="modal-content  data-backdrop="static"">
     				<div class="modal-header">
-    					<button type="button" class="close" data-dismiss="modal"></button>
+    					<button type="button" class="close close-add-resources" data-dismiss="modal"></button>
     					<h4 class="modal-title" th:text="#{reports.existing.resources}"></h4>
     				</div>				
     				<div class="modal-body">
@@ -258,7 +258,7 @@
     					</div>
     				</div>							      
     				<div class="modal-footer">
-    					<button type="button" class="btn btn-default" data-dismiss="modal" th:text="#{binaryfiles.close}">Close</button>
+    					<button type="button" class="btn btn-default close-add-resources" data-dismiss="modal" th:text="#{binaryfiles.close}">Close</button>
     				</div>
     			</div>
     		</div>

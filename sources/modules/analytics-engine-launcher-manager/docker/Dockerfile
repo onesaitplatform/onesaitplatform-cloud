@@ -1,4 +1,4 @@
-FROM onesaitplatform/baseimage:latest
+FROM onesaitplatform/baseimage:latest-17
 
 # metadata
 LABEL platform.image.name="spark-launcher-manager"
@@ -23,12 +23,11 @@ RUN chown -R onesait:onesait /usr/local && \
     chmod -R 777 /var/log && \
     chmod -R 777 /usr/local
 
-ENV ASPECTJ_VERSION=1.9.7 \
-	SPARK_VERSION=3.2.1 \
+ENV SPARK_VERSION=3.2.1 \
 	HADOOP_VERSION=3.2 \
 	SPARK_HOME=/opt/spark \
 	PYTHONHASHSEED=1 \
-	JAVA_HOME=/usr/local/openjdk-11
+	JAVA_HOME=/usr/lib/jvm/java-17-openjdk
 
 RUN cd /usr/local \
     && wget https://repo1.maven.org/maven2/org/aspectj/aspectjweaver/${ASPECTJ_VERSION}/aspectjweaver-$ASPECTJ_VERSION.jar \
@@ -37,7 +36,7 @@ RUN cd /usr/local \
 	&& tar -xf apache-spark.tgz -C /opt/spark --strip-components=1 \
 	&& rm apache-spark.tgz \
 	&& rm -f /opt/spark/jars/* \
-	&& ln -s /usr/lib/jvm/java-1.8-openjdk /usr/local/openjdk-11
+	&& ln -s /usr/lib/jvm/java-17-openjdk /usr/local/openjdk-11
 
 ADD ./jars/ /opt/spark/jars/
 

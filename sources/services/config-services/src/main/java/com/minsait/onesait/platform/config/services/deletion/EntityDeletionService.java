@@ -23,7 +23,7 @@ import com.minsait.onesait.platform.config.model.TwitterListening;
 
 public interface EntityDeletionService {
 
-	void deleteOntology(String id, String userId);
+	void deleteOntology(String id, String userId, Boolean isHardDeleted);
 
 	void deleteTwitterListening(TwitterListening twitterListening);
 
@@ -46,4 +46,14 @@ public interface EntityDeletionService {
 	void deactivateUser(List<String> userIds);
 
 	void invalidateUserTokens(String userId);
+
+	void hardDeleteUser(String userId);
+	
+	void deleteMapsStyle(String id, String userId);
+
+	void deleteMapsLayer(String id, String userId);
+
+	void deleteMapsMap(String id, String userId);
+
+	void deleteMapsProject(String id, String userId);
 }

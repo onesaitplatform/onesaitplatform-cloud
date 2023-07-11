@@ -38,6 +38,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -127,7 +128,6 @@ public class GraviteeServiceImpl implements GraviteeService {
 	@Value("${gravitee.corsEnabled:true}")
 	private boolean corsEnabled;
 
-
 	@Autowired
 	private AppWebUtils utils;
 	@Autowired
@@ -138,6 +138,7 @@ public class GraviteeServiceImpl implements GraviteeService {
 	@PostConstruct
 	void initRestTemplate() {
 		restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
+		restTemplate.getMessageConverters().add(0, new MappingJackson2HttpMessageConverter());
 
 		if (!oauthIdentityManagerExists()) {
 			try {
@@ -188,7 +189,8 @@ public class GraviteeServiceImpl implements GraviteeService {
 
 			// create Docs
 			if (!api.getApiType().equals(ApiType.EXTERNAL_FROM_JSON)) {
-				final String url = resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERJSON) + "v" + api.getNumversion() + "/" + api.getIdentification() + "/swagger.json";
+				final String url = resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERJSON) + "v"
+						+ api.getNumversion() + "/" + api.getIdentification() + "/swagger.json";
 				api.setSwaggerJson(getText(url));
 			}
 			createSwaggerDocPage(apiId, api);
@@ -225,7 +227,7 @@ public class GraviteeServiceImpl implements GraviteeService {
 		((ObjectNode) api.getProxy()).set(CORS, CorsApi.defaultCorsPolicy(corsEnabled).toJsonNode());
 
 		((ArrayNode) api.getProxy().path("groups").path(0).path("endpoints"))
-		.forEach(e -> ((ObjectNode) e).set(SSL, getSSLIgnoreConfig()));
+				.forEach(e -> ((ObjectNode) e).set(SSL, getSSLIgnoreConfig()));
 
 		return this.executeRequest(
 				resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.MANAGEMENT) + APIS_ENDPOINT + "/" + apiId,
@@ -345,7 +347,7 @@ public class GraviteeServiceImpl implements GraviteeService {
 	public List<ApiPlan> getApiPlans(String apiId) throws GenericOPException {
 		return this.executeRequest(
 				resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.MANAGEMENT) + APIS_ENDPOINT + "/" + apiId
-				+ PLANS_ENDPOINT,
+						+ PLANS_ENDPOINT,
 				HttpMethod.GET, this.getRequestEntity(null), new ParameterizedTypeReference<List<ApiPlan>>() {
 				}).getBody();
 	}
@@ -422,7 +424,7 @@ public class GraviteeServiceImpl implements GraviteeService {
 
 		final ApiUpdate apiUpdate = this.executeRequest(
 				resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.MANAGEMENT) + APIS_ENDPOINT + IMPORT_ENDPOINT
-				+ SWAGGER_ENDPOINT,
+						+ SWAGGER_ENDPOINT,
 				HttpMethod.POST,
 				this.getRequestEntity(ImportSwaggerDescriptor.builder().withDocumentation(true).withPathMapping(true)
 						.withPolicyPaths(true).type(Type.INLINE).payload(api.getSwaggerJson()).build()),
@@ -465,10 +467,10 @@ public class GraviteeServiceImpl implements GraviteeService {
 		this.executeRequest(
 				resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.MANAGEMENT) + IDENTITIES_ENDPOINT + "/"
 						+ IDENTITY_PROVIDER_ID,
-						HttpMethod.PUT,
-						new HttpEntity<>(IdentityProvider.getFromString(IdentityProvider.DEFAULT_OAUTH_RESOURCE_2_UPDATE),
-								headers),
-						IdentityProvider.class);
+				HttpMethod.PUT,
+				new HttpEntity<>(IdentityProvider.getFromString(IdentityProvider.DEFAULT_OAUTH_RESOURCE_2_UPDATE),
+						headers),
+				IdentityProvider.class);
 
 	}
 
@@ -496,7 +498,7 @@ public class GraviteeServiceImpl implements GraviteeService {
 		final HttpEntity<Object> entity = new HttpEntity<>(headers);
 		return this.executeRequest(
 				resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.MANAGEMENT) + APIS_ENDPOINT + "/" + apiId
-				+ PAGES_ENDPOINT,
+						+ PAGES_ENDPOINT,
 				HttpMethod.GET, entity, new ParameterizedTypeReference<List<ApiPageResponse>>() {
 				}).getBody();
 	}
@@ -505,9 +507,8 @@ public class GraviteeServiceImpl implements GraviteeService {
 	public ApiPageResponse updateApiPage(String apiId, String pageId, ApiPageUpdate apiPage) throws GenericOPException {
 		return this.executeRequest(
 				resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.MANAGEMENT) + APIS_ENDPOINT + "/" + apiId
-				+ PAGES_ENDPOINT + "/" + pageId,
-				HttpMethod.PUT, this.getRequestEntity(apiPage), ApiPageResponse.class)
-				.getBody();
+						+ PAGES_ENDPOINT + "/" + pageId,
+				HttpMethod.PUT, this.getRequestEntity(apiPage), ApiPageResponse.class).getBody();
 	}
 
 	private String getText(String url) {
@@ -523,9 +524,7 @@ public class GraviteeServiceImpl implements GraviteeService {
 				inputStream = connection.getErrorStream();
 			}
 
-			final BufferedReader in = new BufferedReader(
-					new InputStreamReader(
-							inputStream));
+			final BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
 
 			final StringBuilder response = new StringBuilder();
 			String currentLine;
@@ -548,14 +547,14 @@ public class GraviteeServiceImpl implements GraviteeService {
 		if (!list.isEmpty()) {
 			final String finalContent = processSwaggerJSON(content, api);
 			final ApiPageResponse updateApiPage = list.get(0);
-			final ApiPageUpdate apiPage = new ApiPageUpdate(finalContent, updateApiPage.getOrder(), updateApiPage.isHomepage(),
-					updateApiPage.isPublished(), updateApiPage.getName(), updateApiPage.getConfiguration());
+			final ApiPageUpdate apiPage = new ApiPageUpdate(finalContent, updateApiPage.getOrder(),
+					updateApiPage.isHomepage(), updateApiPage.isPublished(), updateApiPage.getName(),
+					updateApiPage.getConfiguration());
 			apiPage.setContent(finalContent);
 			return updateApiPage(updateApiPage.getApi(), updateApiPage.getId(), apiPage);
 		}
 		return new ApiPageResponse();
 	}
-
 
 	private String processSwaggerJSON(String content, Api api) {
 		final SwaggerParser swaggerParser = new SwaggerParser();
@@ -568,8 +567,7 @@ public class GraviteeServiceImpl implements GraviteeService {
 		} else {
 			// OPENAPI PARSER
 			final OpenAPIParser openAPIParser = new OpenAPIParser();
-			final SwaggerParseResult swaggerParseResult = openAPIParser.readContents(content, null,
-					null);
+			final SwaggerParseResult swaggerParseResult = openAPIParser.readContents(content, null, null);
 			final OpenAPI openAPI = swaggerParseResult.getOpenAPI();
 			final Server server = new Server();
 			server.setUrl(resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.GATEWAY) + getGraviteeBasePath(api));
@@ -581,10 +579,9 @@ public class GraviteeServiceImpl implements GraviteeService {
 	private String getGraviteeBasePath(Api api) {
 		return "/".concat(api.getIdentification().concat("/v").concat(String.valueOf(api.getNumversion())));
 	}
+
 	private String getGraviteeHost() {
 		return resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.GATEWAY).replaceAll("^(http://|https://)", "");
 	}
-
-
 
 }

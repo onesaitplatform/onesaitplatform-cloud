@@ -58,7 +58,7 @@ public class AppChildExport extends AppParent {
 	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = false)
 	@Getter
 	@Setter
-	private UserExport user;
+	private User user;
 
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "app", cascade = CascadeType.ALL, orphanRemoval = true)
 	@OnDelete(action = OnDeleteAction.CASCADE)
@@ -79,7 +79,7 @@ public class AppChildExport extends AppParent {
 	public AppChildExport() {
 	};
 
-	public AppChildExport(String id, String identification, String description, UserExport user, String secret,
+	public AppChildExport(String id, String identification, String description, User user, String secret,
 			String user_extra_fields, int tokenValiditySeconds, AppRoleChildExport appRole, Date createAt,
 			Date updateAt) {
 		this.setId(id);

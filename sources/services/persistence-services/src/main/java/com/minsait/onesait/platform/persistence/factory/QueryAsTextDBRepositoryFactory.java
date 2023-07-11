@@ -17,7 +17,6 @@ package com.minsait.onesait.platform.persistence.factory;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.config.model.ClientPlatform;
@@ -30,11 +29,11 @@ import com.minsait.onesait.platform.persistence.cosmosdb.CosmosDBQueryAsTextDBRe
 import com.minsait.onesait.platform.persistence.elasticsearch.ElasticSearchQueryAsTextDBRepository;
 import com.minsait.onesait.platform.persistence.external.api.rest.QueryAsTextRestDBImpl;
 import com.minsait.onesait.platform.persistence.external.virtual.QueryAsTextVirtualDBImpl;
-import com.minsait.onesait.platform.persistence.hadoop.common.NameBeanConst;
 import com.minsait.onesait.platform.persistence.interfaces.QueryAsTextDBRepository;
 import com.minsait.onesait.platform.persistence.mindsdb.MindsDBQueryAsTextDBRepository;
 import com.minsait.onesait.platform.persistence.mongodb.services.QueryAsTextMongoDBImpl;
 import com.minsait.onesait.platform.persistence.nebula.NebulaGraphDBQueryAsTextDBRepository;
+import com.minsait.onesait.platform.persistence.opensearch.OpenSearchQueryAsTextDBRepository;
 import com.minsait.onesait.platform.persistence.presto.QueryAsTextPrestoDBImpl;
 import com.minsait.onesait.platform.persistence.timescaledb.TimescaleDBQueryAsTextDBRepository;
 
@@ -48,8 +47,7 @@ public class QueryAsTextDBRepositoryFactory {
 	private ElasticSearchQueryAsTextDBRepository queryElasticSearch;
 
 	@Autowired(required = false)
-	@Qualifier(NameBeanConst.KUDU_QUERY_REPO_BEAN_NAME)
-	private QueryAsTextDBRepository kuduQueryAsTextDBRepository;
+	private OpenSearchQueryAsTextDBRepository queryOpenSearch;
 
 	@Autowired
 	private OntologyService ontologyService;
@@ -108,8 +106,8 @@ public class QueryAsTextDBRepositoryFactory {
 			return queryMongo;
 		} else if (dataSource.equals(RtdbDatasource.ELASTIC_SEARCH)) {
 			return queryElasticSearch;
-		} else if (dataSource.equals(RtdbDatasource.KUDU)) {
-			return kuduQueryAsTextDBRepository;
+		} else if (dataSource.equals(RtdbDatasource.OPEN_SEARCH)) {
+			return queryOpenSearch;
 		} else if (dataSource.equals(RtdbDatasource.VIRTUAL)) {
 			return queryVirtual;
 		} else if (dataSource.equals(RtdbDatasource.API_REST)) {

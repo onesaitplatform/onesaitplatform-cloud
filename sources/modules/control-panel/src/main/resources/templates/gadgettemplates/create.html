@@ -352,7 +352,7 @@
 	  $("#config").val(JSON.stringify({gform:vueapp._data.list2}));
     });
 
-	$(window).load(function () {GadgetsTemplateCreateController.updatePreview();});
+	$(window).on("load",function () {GadgetsTemplateCreateController.updatePreview();});
 	 
 	 
 		var gadgetTemplateCreateJson = { 		

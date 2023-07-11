@@ -53,6 +53,7 @@ public class RestActionNotifier implements ActionNotifier {
 	@PostConstruct
 	public void init() {
 		restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+
 		restTemplate.setRequestFactory(getRestTemplateRequestFactory());
 	}
 

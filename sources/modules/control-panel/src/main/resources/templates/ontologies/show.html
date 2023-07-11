@@ -111,7 +111,7 @@
 										
 									<!-- CANCEL -->											
 									<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-									<button sec:authorize="!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button sec:authorize="!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 									
 									<span class="sep no-border" th:if="${ontology?.id} != null"></span>
 										
@@ -331,6 +331,16 @@
 									<div th:if="${ontology.rtdbDatasource.name() != 'PRESTO'}" class="col-md-12 col-xs-12">
 										<input id="allowsCreateNotificationTopic" class="margin-right-10" name="allowsCreateNotificationTopic" type="checkbox" checked="checked" th:field="*{allowsCreateNotificationTopic}" disabled="disabled" />
 										<label class="control-label margin-right-5" th:text="#{ontology.allowsCreateNotificationTopic}">Kafka Notification</label>
+									</div>
+									<div class="col-md-12 col-xs-12">
+										<input id="allowsCreateMqttTopic" class="margin-right-10" name="allowsCreateMqttTopic" type="checkbox" checked="checked" th:field="*{allowsCreateMqttTopic}" disabled="disabled" />
+										<label class="control-label margin-right-5" th:text="#{ontology.allowsCreateMqttTopic}">MQTT topic</label>
+									</div>
+									<div th:if="${ontology.allowsCreateMqttTopic}" class="form-group col-md-12 col-sm-6 col-xs-12">
+										<div class="col-md-3">
+											<label class="control-label" th:text="#{ontology.mqtt.topic.name}">Topic name</label>
+											<input th:tabindex="1" id="mqttTopic" type="text" class="form-control" th:value="${mqttTopicPath}" readonly="readonly"/>
+										</div>
 									</div>
 									
 									<div th:if="${ontologyElastic} != null and ${ontologyElastic.customIdConfig} == true"  class="col-md-12 col-xs-12 form-group">
@@ -1160,7 +1170,7 @@
 	}
 	
 	// MAIN WHEN LOAD
-	$(window).load(function(){  
+	$(window).on("load",function(){  
 		// init on load.		
 		showLog ? console.log('SHOW ontology load()...') : '';
 		

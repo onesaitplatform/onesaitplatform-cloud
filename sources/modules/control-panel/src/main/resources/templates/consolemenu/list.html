@@ -139,7 +139,7 @@
 														<label th:text="#{consolemenu.role}"> Role </label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="1"/>
+														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
 														<label th:text="#{gen.created}"> Created At </label>
 													</span>
 													<span class="checkbox-column">
@@ -272,7 +272,7 @@
 								headers: {
 									[csrf_header]: csrf_value
 							    }
-						}).success(function(){
+						}).done(function(){
 							$.alert({
 								title : Done,
 								theme : 'light',
@@ -323,14 +323,15 @@
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).load(function(){ 
+	$(window).on("load",function(){ 
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
 
 		var oTable = $('#consolemenus').dataTable({
 	      "bAutoWidth": false
 	      });
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
-		$.each([1],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
+		$.each([1],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));
 		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		

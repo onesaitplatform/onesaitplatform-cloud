@@ -28,9 +28,7 @@ var OntologyCreateController = function() {
 	var validJsonSchema = false;
 	var validMetaInf = false;
 	var hasId = false; // instance
-	const KUDU = "KUDU";
 	const PRESTO = "PRESTO"
-	var isKuduOntology = false;
 	var databasesrequired = false;
 	var schemasrequired = false;
 	var geometryObject = {"coordinates": {
@@ -399,105 +397,55 @@ var OntologyCreateController = function() {
 		$("#databases").val("");
 		$("#schemas").val("");
 
-		if(this.value === KUDU){
-			$("#databases").parent().parent().addClass("hidden");
-			$("#schemas").parent().parent().addClass("hidden");
-			databasesrequired=false;
-			schemasrequired=false;
-			isKuduOntology = true;
-			$("#allowsCreateTable").prop("checked", true);
-			$("#allowsCreateTable").prop("disabled", true);
-			//toggleFieldCreation();
-
-			editor.setText("{}");
-			$("#datasources").prop('disabled', false);
+		$('#autoIncrementalColumn').show();
+		$('#dbConnectionsButton').show();
+		if ($("#allowsCreateTable").is(':checked')) {
 			$('#fieldCreationForm').show();
-			$('#autoIncrementalColumn').hide();
-			$('#partitionsCreationForm').show();
-			$('#constraintsCreationForm').hide();
-			$('#selectTable').hide();
-			$('#selectTableAssociated').hide();
-			$('#asociateIdTableCheck').hide();
-			$('#asociateIdTable').hide();
-			$('#asociateGeometryTableCheck').hide();
-			$('#asociateGeometryTable').hide();
-			$('#fieldsFromExistingTable').hide();
-			$('#sqlEditorRow').show();
+			$('#constraintsCreationForm').show();
+		}
 			
-			
-			creationConfig['allowsCreationTable'] = true;
-			identification.readOnly = false;
-			//identification.value = "";
-			//	this.generateFieldSchema();
-			$('#dbConnectionsButton').hide();
-			
-			selectedDatasource = {'sgbd' : $("#datasources").val()};
-			$("#datasource").val($("#datasources").val());
-			
-			if (ontologyCreateJson.actionMode==null){
-				manageWizardStep();
-			}
-		} else {
-			$('#autoIncrementalColumn').show();
-			$('#dbConnectionsButton').show();
-			if ($("#allowsCreateTable").is(':checked')) {
-				$('#fieldCreationForm').show();
-				$('#constraintsCreationForm').show();
-			}
-			$('#partitionsCreationForm').hide();			
-				
-			$.ajax({
-				url : "/controlpanel/ontologies/getDatasourceInfo/"+ $("#datasources").val(),
-				headers: {
-					[csrf_header]: csrf_value
-			    },
-				type : 'GET',
-				dataType: 'text', 
-				contentType: 'text/plain',
-				mimeType: 'text/plain',
-				success : function(data, _textStatus, xhr) {
-					infojson = JSON.parse(data);
-					if (infojson.hasDatabase) {
-						$("#databases").parent().parent().removeClass("hidden");
-						databasesrequired=true;
-					} else {
-						$("#databases").parent().parent().addClass("hidden");
-						databasesrequired=false;
-					}
-					if (infojson.hasSchema) {
-						$("#schemas").parent().parent().removeClass("hidden");
-						schemasrequired=true;
-					} else {
-						$("#schemas").parent().parent().addClass("hidden");
-						schemasrequired=false;
-					}
-					if (infojson.hasDatabase) {
-                        getDatabases($("#datasources").val(), infojson);
-					} else if (infojson.hasSchema) {
-                        getSchemas($("#datasources").val(), infojson);
-					} else {
-						toastr.error(messagesForms.operations.genOpError, "Datasource without database and schemas");
-						$('#collections').empty();
-						$('#collections').prop('disabled', true);
-						$('#collections').selectpicker('refresh');
-					}
-					if (ontologyCreateJson.actionMode==null){
-						manageWizardStep();
-					}
+		$.ajax({
+			url : "/controlpanel/ontologies/getDatasourceInfo/"+ $("#datasources").val(),
+			headers: {
+				[csrf_header]: csrf_value
+		    },
+			type : 'GET',
+			dataType: 'text', 
+			contentType: 'text/plain',
+			mimeType: 'text/plain',
+			success : function(data, _textStatus, xhr) {
+				infojson = JSON.parse(data);
+				if (infojson.hasDatabase) {
+					$("#databases").parent().parent().removeClass("hidden");
+					databasesrequired=true;
+				} else {
+					$("#databases").parent().parent().addClass("hidden");
+					databasesrequired=false;
 				}
-			});
-		}
-	});
+				if (infojson.hasSchema) {
+					$("#schemas").parent().parent().removeClass("hidden");
+					schemasrequired=true;
+				} else {
+					$("#schemas").parent().parent().addClass("hidden");
+					schemasrequired=false;
+				}
+				if (infojson.hasDatabase) {
+                    getDatabases($("#datasources").val(), infojson);
+				} else if (infojson.hasSchema) {
+                    getSchemas($("#datasources").val(), infojson);
+				} else {
+					toastr.error(messagesForms.operations.genOpError, "Datasource without database and schemas");
+					$('#collections').empty();
+					$('#collections').prop('disabled', true);
+					$('#collections').selectpicker('refresh');
+				}
+				if (ontologyCreateJson.actionMode==null){
+					manageWizardStep();
+				}
+			}
+		});
 
-	$("#enablePartitionIndexes").on('click', function(){
-		if($('#enablePartitionIndexes').is(':checked')){
-			$(".kuduAdvancedProps").removeClass("hidden");
-		}
-		else{
-			$(".kuduAdvancedProps").addClass("hidden");
-		}
 	});
-	
 	
 	$("#generateSchema").on("click", function(){
 		OntologyCreateController.generateSchema();
@@ -631,7 +579,7 @@ var OntologyCreateController = function() {
 	var wizardStepValid = function(){
 		
 		if (wizardStep == 1){
-			return ((!$("#datasources").is(":visible")||($('#datasources').val().length >= 2 || $('#datasources').val()=='KUDU' )) &&
+			return ((!$("#datasources").is(":visible")||($('#datasources').val().length >= 2)) &&
 					(!databasesrequired || $('#databases').val().length >= 2) &&
 					(!schemasrequired || $('#schemas').val().length >= 2) &&
 					$('#identification').val().length >= 5 && 
@@ -1576,7 +1524,6 @@ var OntologyCreateController = function() {
 			});
 	        
 	       	function genSchema(constr) {
-		    	event.preventDefault();
 		    	if(JsonSchema.INPUT_VALUE==undefined){
 					$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: ontologyCreateReg.validations.schema}); 
 					return;
@@ -1658,110 +1605,8 @@ var OntologyCreateController = function() {
 				}
 			}
 		},
-		
-		setTimestampFieldsForKudu: function() {
-			//if not kudu return;
-			if (!isKuduOntology) {
-				return;
-			}
-			var sch = JSON.parse(editor.getText());
-			var reloadEditor = false;
-						
-			if (createColumns.length > 0 && sch.hasOwnProperty("properties")) {
-				var index = 0;
-				while (index < createColumns.length) {
-					var name = createColumns[index]['name'];
-					var type = createColumns[index]['type'];
-					if (type === "timestamp" && sch['properties'].hasOwnProperty(name)) {
-                        sch['properties'][name]['format'] = 'date-time';
-                        reloadEditor = true;
-						}
 				
-					index++;
-				}
-
-                if (sch.hasOwnProperty("properties")) {
-                	var props = sch['properties']
-                	
-                }
-
-				if (reloadEditor) {
-					editor.setText(JSON.stringify(sch));
-				}
-			}
-		},
-		
-		setGeometryFieldsForKudu: function() {
-			//if not kudu return;
-			if (!isKuduOntology) {
-				return;
-			}
-			var sch = JSON.parse(editor.getText());
-			var reloadEditor = false;
-						
-			if (createColumns.length > 0 && sch.hasOwnProperty("properties")) {
-				var index = 0;
-				while (index < createColumns.length) {
-					var name = createColumns[index]['name'];
-					var type = createColumns[index]['type'];
-					if (type === "geometry" && sch['properties'].hasOwnProperty(name)) {
-                        sch['properties'][name]['type'] = 'object';
-                        sch['properties'][name]['properties'] = geometryObject;
-                        sch['properties'][name]['additionalProperties'] = false;
-
-                        reloadEditor = true;
-					}
-					index++;
-				}
-
-                if (sch.hasOwnProperty("properties")) {
-                	var props = sch['properties']
-                }
-
-				if (reloadEditor) {
-					editor.setText(JSON.stringify(sch));
-				}
-			}
-		},
-		
-		setDefaultValueAndCommentForKudu: function() {
-			//if not kudu return;
-			if (!isKuduOntology) {
-				return;
-			}
-			var sch = JSON.parse(editor.getText());
-			var reloadEditor = false;
-						
-			if (createColumns.length > 0 && sch.hasOwnProperty("properties")) {
-				var index = 0;
-				while (index < createColumns.length) {
-					var name = createColumns[index]['name'];
-					var defaultValue = createColumns[index]['defautlValue'];
-					var colComment = createColumns[index]['colComment'];
-					if (defaultValue !== null && defaultValue !== '') {
-                        sch['properties'][name]['default'] = defaultValue;
-                        reloadEditor = true;
-					}
-					if (colComment !== null && colComment !== '') {
-						 sch['properties'][name]['description'] = colComment;
-						 reloadEditor = true;
-					}
-					index++;
-				}
-
-                if (sch.hasOwnProperty("properties")) {
-                	var props = sch['properties']
-                }
-
-				if (reloadEditor) {
-					editor.setText(JSON.stringify(sch));
-				}
-			}
-		},
-		
-		
 	    generateSchema: function() {
-	    	event.preventDefault();
 	    	if(JsonSchema.INPUT_VALUE==undefined){
 				$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: ontologyCreateReg.validations.schema}); 
 				return;
@@ -1797,9 +1642,6 @@ var OntologyCreateController = function() {
 		        editor.setMode("tree");
 		        editor.setText(spStaticV.render());
 		        this.setRequiredFields();
-		        this.setTimestampFieldsForKudu();
-		        this.setGeometryFieldsForKudu();
-		        this.setDefaultValueAndCommentForKudu();
 		        $("#jsonschema").val(editor.getText());
 		        
 	    	} else {
@@ -2400,13 +2242,6 @@ var OntologyCreateController = function() {
 				"ontology": $("#identification").val(),
 				"columnsRelational": createColumns,
 				"columnConstraints": createConstrains
-			}
-			
-			if ($('#enablePartitionIndexes').prop('checked') && selectedDatasource === KUDU) {
-				body.partitions = $('#partitions').val();
-				body.npartitions = $('#npartitions').val();
-				body.primaryKey = $('#primarykey').val();
-				body.enablePartitionIndexes = $('#enablePartitionIndexes').prop('checked');
 			}
 			
 			if (ontologyCreateJson.historical) {

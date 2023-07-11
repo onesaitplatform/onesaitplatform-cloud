@@ -17,7 +17,7 @@
 <th:block th:if="${session.versioningEnabled}">
 	<input id="commit-msg-input" type="hidden" name="commit-msg-inputs"/>
 	<script th:inline="javascript">
-	 	$(window).load(function(){
+	 	$(window).on("load",function(){
 	 		var commitInfo = [[#{versioning.commit.enabled.content}]];
 	 		var setCommitMessage = (e) =>{
 				e.preventDefault();

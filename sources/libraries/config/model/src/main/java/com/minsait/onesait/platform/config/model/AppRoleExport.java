@@ -65,6 +65,6 @@ public class AppRoleExport extends AppRoleParent {
 	@Getter
 	@Setter
 	@JsonIgnore
-	private Set<AppUserExport> appUsers = new HashSet<>();
+	private Set<AppUser> appUsers = new HashSet<>();
 
 }

@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.serverless.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -107,6 +108,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 			app.setName(appUpdate.getName());
 		}
 		fnService.update(appUpdate, app.getAppId());
+		applicationRepository.save(app);
 		return mergeApp(app);
 	}
 
@@ -145,8 +147,13 @@ public class ApplicationServiceImpl implements ApplicationService {
 
 	@Override
 	public List<ApplicationInfo> list() {
-		final List<Application> apps = applicationRepository.findAll();
-		return mergeApps(apps);
+		try {
+			final List<Application> apps = applicationRepository.findAll();
+			return mergeApps(apps);
+		} catch (final Exception e) {
+			log.error("Error listing apps", e);
+			throw new RuntimeException("Error listing apps " + e.getMessage());
+		}
 	}
 
 	@Override
@@ -199,27 +206,33 @@ public class ApplicationServiceImpl implements ApplicationService {
 	}
 
 	private List<FunctionInfo> mergeFunctions(Set<Function> functions) {
-		return functions.stream().map(this::mergeFunction).collect(Collectors.toList());
+		return functions.stream().map(this::mergeFunction).filter(Objects::nonNull).collect(Collectors.toList());
 	}
 
 	private FunctionInfo mergeFunction(Function function) {
 		final FunctionInfo fn = new FunctionInfo(function);
 		if (function.getFnId() != null) {
 			final FnFunction fnFunction = fnService.getFunction(function.getFnId());
-			fn.setEnvironment(fnFunction.getConfig());
-			fn.setMemory(fnFunction.getMemory());
-			fn.setImage(fnFunction.getImage());
-			if (fnFunction.getAnnotations().get(FnFunction.INVOKE_ANNOTATION) != null) {
-				fn.getInvokeEndpoints().add(((String) fnFunction.getAnnotations().get(FnFunction.INVOKE_ANNOTATION))
-						.replace(FN_DEFAULT_URL, baseURL));
-			}
-			if (fnFunction.getTriggers() != null) {
-				fnFunction.getTriggers().stream().forEach(t -> {
-					if (t.getAnnotations().get(FnFunction.INVOKE_HTTP_ANNOTATION) != null) {
-						fn.getInvokeEndpoints().add(((String) t.getAnnotations().get(FnFunction.INVOKE_HTTP_ANNOTATION))
-								.replace(FN_DEFAULT_URL, baseURL));
-					}
-				});
+			if (fnFunction != null) {
+				fn.setEnvironment(fnFunction.getConfig());
+				fn.setMemory(fnFunction.getMemory());
+				fn.setImage(fnFunction.getImage());
+				if (fnFunction.getAnnotations().get(FnFunction.INVOKE_ANNOTATION) != null) {
+					fn.getInvokeEndpoints().add(((String) fnFunction.getAnnotations().get(FnFunction.INVOKE_ANNOTATION))
+							.replace(FN_DEFAULT_URL, baseURL));
+				}
+				if (fnFunction.getTriggers() != null) {
+					fnFunction.getTriggers().stream().forEach(t -> {
+						if (t.getAnnotations().get(FnFunction.INVOKE_HTTP_ANNOTATION) != null) {
+							fn.getInvokeEndpoints()
+									.add(((String) t.getAnnotations().get(FnFunction.INVOKE_HTTP_ANNOTATION))
+											.replace(FN_DEFAULT_URL, baseURL));
+						}
+					});
+				}
+			} else {
+				log.warn("Function {} does not exist in fnproject", function.getName());
+				return null;
 			}
 		}
 		return fn;
@@ -319,7 +332,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 		}
 		final Function function = optFunction.get();
 		fnService.deleteFunction(function.getFnId());
-		app.getFunctions().remove(function);
+		app.getFunctions().removeIf(f -> f.getName().equals(function.getName()));
 		applicationRepository.save(app);
 
 	}

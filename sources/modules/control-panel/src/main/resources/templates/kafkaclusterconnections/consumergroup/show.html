@@ -365,7 +365,7 @@
 	datatable_lang = [[#{datatables_lang}]];	
 	var languageJson = JSON.parse(datatable_lang);
 	if ( languageJson ){ $.extend( true, $.fn.dataTable.defaults, { language: languageJson }); }
-	$(window).load(function(){ 
+	$(window).on("load",function(){ 
 
 		var offsetsTable = $('#consumergroupoffsets').dataTable({
 	      "bAutoWidth": false

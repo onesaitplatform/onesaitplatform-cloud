@@ -433,7 +433,7 @@
 				</div><!-- END MAIN ROW -->
 				<form id="delete_gadget_template_form" class="delete-gadget hide" method="post">
 					<input type="hidden" name="_method" value="DELETE"/>
-					<input type="hidden" id="delete-id" name="id" />
+					<input type="hidden" id="delete-id-template" name="id" />
 					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 				</form>
 
@@ -515,41 +515,14 @@
 		showConfirmDeleteTemplateDialog(id);
 	}
 
+	var deleteTemplUrl = [[@{/gadgettemplates}]];
 
 	var showConfirmDeleteTemplateDialog = function(id){
 
-		//i18 labels
-		var Close = headerReg.btnCancelar;
-		var Remove = headerReg.btnEliminar;
-		var Content = [[#{gadgettemplates.del.confirm}]];
-		var Title = headerReg.gadgetTemplateDelete;
+		$('#delete_gadget_template_form').attr('action', deleteTemplUrl + '/' + id);
+		$('#delete-id-template').val(id);
+		HeaderController.showConfirmDialogGadgetTemplate('delete_gadget_template_form');
 
-		// jquery-confirm DIALOG SYSTEM.
-		$.confirm({
-			title: Title,
-			theme: 'light',
-			columnClass: 'medium',
-			content: Content,
-			draggable: true,
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			buttons: {
-				close: {
-					text: Close,
-					btnClass: 'btn btn-outline blue dialog',
-					action: function (){} //GENERIC CLOSE.
-				},
-				remove: {
-					text: Remove,
-					btnClass: 'btn btn-primary',
-					action: function(){
-						url = '/controlpanel/gadgets/gadgettemplates/'+id;
-						$.post(url).done(function(){navigateUrl("/controlpanel/gadgets/list");})
-
-					}
-				}
-			}
-		});
 	}
 
 	var cloneGadgetDialog = function(gadgetId, identification){
@@ -580,7 +553,7 @@
 						else {$.post(
 								"/controlpanel/gadgets/clone",
 								{gadgetId : gadgetId, identification : $("#cloneIdentification").val()}
-							).success(function(){
+							).done(function(){
 								navigateUrl("/controlpanel/gadgets/list")
 								}
 							).fail(
@@ -623,7 +596,7 @@
 						else {$.post(
 								"/controlpanel/gadgets/gadgettemplates/clone",
 								{gadgetId : gadgetId, identification : $("#cloneIdentification").val()}
-							).success(function(){
+							).done(function(){
 								navigateUrl("/controlpanel/gadgets/list")
 								}
 							).fail(
@@ -739,8 +712,9 @@
 	 }
 
 	// MAIN WHEN LOAD
-	$(window).load(function(){
-
+	$(window).on("load",function(){
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+		$('#column_toggler_template').find("input[type='checkbox']").prop('checked', true);
 		var oTable = $('#gadgets').dataTable({
 		      "bAutoWidth": false
 		      });

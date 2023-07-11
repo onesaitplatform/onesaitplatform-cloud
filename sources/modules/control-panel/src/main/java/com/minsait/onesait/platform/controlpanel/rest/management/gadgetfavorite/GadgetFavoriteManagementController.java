@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -77,7 +78,7 @@ public class GadgetFavoriteManagementController {
 		final String user = utils.getUserId();
 		final GadgetFavorite gadgetFavorite = gadgetFavoriteService.findByIdentification(identification, user);
 		if (gadgetFavorite == null) {
-			return new ResponseEntity<>("The gadget favorite does not exist", HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>("The favorite gadget does not exist or you do not have administrator permission", HttpStatus.NOT_FOUND);
 		}
 		return new ResponseEntity<>(toGadgetFavoriteDTO(gadgetFavorite), HttpStatus.OK);
 	}
@@ -86,9 +87,9 @@ public class GadgetFavoriteManagementController {
 	@Operation(summary = "Get all favorite gadgets identifications")
 	@GetMapping("/getallidentifications")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
-	public ResponseEntity<?> getAllIdentifications() {
-		final String user = utils.getUserId();
-		final List<String> list = gadgetFavoriteService.getAllIdentifications(user);
+	public ResponseEntity<?> getAllIdentifications(@Parameter(description = "If you do not enter user id it will show you all with the administrator token, if you put user id it will show you those of that user and if you are not an administrator it will show you only yours", name = "userId")@RequestParam(value = "userId", required = false) String userId) {
+		final String userlogged = utils.getUserId();	
+		final List<String> list = gadgetFavoriteService.getAllIdentifications(userlogged, userId);
 		return new ResponseEntity<>(list, HttpStatus.OK);
 	}
 
@@ -96,9 +97,9 @@ public class GadgetFavoriteManagementController {
 	@Operation(summary = "Get all gadgets favorite ")
 	@GetMapping("/getall")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
-	public ResponseEntity<?> getAllGadgetsFavorite() {
-		final String user = utils.getUserId();
-		final List<GadgetFavorite> listResults = gadgetFavoriteService.findAll(user);
+	public ResponseEntity<?> getAllGadgetsFavorite(@Parameter(description = "If you do not enter user id it will show you all with the administrator token, if you put user id it will show you those of that user and if you are not an administrator it will show you only yours", name = "userId")@RequestParam(value = "userId", required = false) String userId) {
+		final String userlogged = utils.getUserId();
+		final List<GadgetFavorite> listResults = gadgetFavoriteService.findAllGadgetFavorite(userlogged, userId);
 		final List<GadgetFavoriteDTO> list = new ArrayList<GadgetFavoriteDTO>();
 		for (final GadgetFavorite gadgetFavorite : listResults) {
 			list.add(toGadgetFavoriteDTO(gadgetFavorite));
@@ -110,9 +111,9 @@ public class GadgetFavoriteManagementController {
 	@Operation(summary = "Get all gadgets favorite fields identification and metadata")
 	@GetMapping("/getallbyapp")
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
-	public ResponseEntity<?> getAllByApp() {
-		final String user = utils.getUserId();
-		final List<GadgetFavorite> listResults = gadgetFavoriteService.findAll(user);
+	public ResponseEntity<?> getAllByApp(@Parameter(description = "If you do not enter user id it will show you all with the administrator token, if you put user id it will show you those of that user and if you are not an administrator it will show you only yours", name = "userId")@RequestParam(value = "userId", required = false) String userId) {
+		final String userlogged = utils.getUserId();
+		final List<GadgetFavorite> listResults = gadgetFavoriteService.findAllGadgetFavorite(userlogged, userId);
 		final List<GadgetFavoriteDTO> list = new ArrayList<GadgetFavoriteDTO>();
 		for (final GadgetFavorite gadgetFavorite : listResults) {
 			list.add(toGadgetFavoriteDTOByApp(gadgetFavorite));
@@ -181,8 +182,9 @@ public class GadgetFavoriteManagementController {
 
 		final GadgetFavorite gadgetFavorite = gadgetFavoriteService
 				.findByIdentification(gadgetFavoriteDTO.getIdentification(), user);
+		
 		if (gadgetFavorite == null) {
-			final String eMessage = "The favorite gadget does not exist. Identification = "
+			final String eMessage = " You do not have administrator permission or the favorite gadget does not exist. Identification = "
 					+ gadgetFavoriteDTO.getIdentification();
 			return new ResponseEntity<>(eMessage, HttpStatus.NOT_FOUND);
 		}
@@ -215,7 +217,7 @@ public class GadgetFavoriteManagementController {
 		final String user = utils.getUserId();
 		final GadgetFavorite gadgetFavorite = gadgetFavoriteService.findByIdentification(identification, user);
 		if (gadgetFavorite == null) {
-			final String eMessage = "The favorite gadget does not exist. Identification = " + identification;
+			final String eMessage = "You do not have administrator permission or the favorite gadget does not exist. Identification = " + identification;
 			return new ResponseEntity<>(eMessage, HttpStatus.NOT_FOUND);
 		}
 		gadgetFavoriteService.delete(identification, user);
@@ -231,6 +233,32 @@ public class GadgetFavoriteManagementController {
 		}
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
+	
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
+	@Operation(summary = "Delete favorite gadget by userId")
+	@DeleteMapping("/deleteByUser/{userId}")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
+	public ResponseEntity<?> deleteByUserId(
+			@Parameter(description= "userId") @PathVariable("userId") String userId) {
+		if (userId == null || userId.isEmpty()) {
+			return new ResponseEntity<>("Missing required fields. Required = [userId]", HttpStatus.BAD_REQUEST);
+		}
+		final String userlogged = utils.getUserId();
+		
+		gadgetFavoriteService.deleteByUserId(userlogged, userId);
+
+		final ObjectMapper mapper = new ObjectMapper();
+		final ObjectNode rootNode = mapper.createObjectNode();
+		rootNode.put("message", "Favorite gadget deleted");
+		String result = null;
+		try {
+			result = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
+		} catch (final JsonProcessingException e) {
+			e.printStackTrace();
+		}
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+
 
 	private GadgetFavoriteDTO toGadgetFavoriteDTO(GadgetFavorite gf) {
 		final GadgetFavoriteDTO newGf = new GadgetFavoriteDTO();

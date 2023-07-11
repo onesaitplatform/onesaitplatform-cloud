@@ -513,7 +513,7 @@
 			});
 		});
 
-		$(window).load(function(){
+		$(window).on("load",function(){
 		codeEditor = monaco.editor.create($("#querySql")[0], {
 		       language: 'sql', 
 		       scrollBeyondLastLine: false,	 

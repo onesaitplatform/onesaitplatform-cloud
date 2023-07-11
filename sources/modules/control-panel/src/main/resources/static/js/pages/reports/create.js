@@ -38,9 +38,63 @@ Report.Create = (function() {
 		$('.btn-download-resource').each(function() {
 			$(this).on('click', function (e) {
 				var id = $(this).data('id');
-				window.location = filesPath + id;
+				window.location = filesPath+ 'gridfs/' + id;
 			});
 		});
+		
+		$('.close-add-resources').each(function() {
+			$(this).on('click', function (e) {
+				location.reload();
+			});
+		});
+		
+		$('.btn-delete-reports').each(function() {
+			$(this).off().on('click', function (e) {
+				e.preventDefault(); 
+				var id = data.actionMode;
+				deleteReportDialog(id);
+			});
+		});
+		
+		var deleteReportDialog = function(id) {
+		$.confirm({
+			title: headerReg.reportDelete,
+			theme: 'light',
+			columnClass: 'medium',
+			content: headerReg.reportConfirm,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			buttons: {
+				close: {
+					text: headerReg.btnCancelar,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function (){} //GENERIC CLOSE.		
+				},
+				Ok: {
+					text: headerReg.btnEliminar,
+					btnClass: 'btn btn-primary',
+					action: function() { 
+						$.ajax({ 
+							headers: headersObj,
+						    url : '/controlpanel/reports/delete/' + id,
+						    type : 'DELETE'
+						}).done(function( result ) {							
+							window.location = '/controlpanel/reports/list';
+						}).fail(function( error ) {
+							$.alert({
+								title : 'ERROR!',
+								type : 'red',
+								theme : 'light',
+								content : 'Could not delete report' + error.responseText
+							});
+						}).always(function() {
+						});
+					}											
+				}					
+			}
+		});
+	}
 		
 		$('.btn-update-resource').each(function() {
 			$(this).on('click', function (e) {
@@ -53,16 +107,36 @@ Report.Create = (function() {
 			});
 		});
 		
+		
+		/*$('.btn-delete-reports').each(function() {
+			$(this).on('click', function (e) {
+				 binaryId = data.actionMode;
+				 reportId = $(this).data('report');
+				$.ajax({
+		       	 	url : '/controlpanel/reports/delete/' + binaryId ,  
+		       	 	headers: headersObj,
+		            type : 'DELETE'
+		        }).done(function(data) {
+		        	window.location = '/controlpanel/reports/list';
+		        }).fail(function(error) {
+					toastr.error( error.responseText,'');
+				});
+				
+			});
+		});*/
+		
 		$('.btn-delete-resource').each(function() {
 			$(this).on('click', function (e) {
 				var binaryId = $(this).data('id');
 				var reportId = $(this).data('report');
+				 reportId = $(this).data('report');
 				$.ajax({
 		       	 	url : reportsPath + 'report/' +reportId + '/resource/' + binaryId ,  
 		       	 	headers: headersObj,
 		            type : 'DELETE'
 		        }).done(function(data) {
 		        	location.reload();
+		        	window.location = '/controlpanel/reports/edit/' + reportId;
 		        }).fail(function(error) {
 					toastr.error( error.responseText,'');
 				});
@@ -164,7 +238,7 @@ Report.Create = (function() {
 		
 		if (noerrors) {
 			$form.attr('action', action + "?" + csrfParameter + "=" + csrfValue);
-			$form.attr('method', 'post');
+			$form.attr('method', method);
 			toastr.success(messagesForms.validation.genFormSuccess,'');
 			$form[0].submit();
 		}
@@ -308,4 +382,5 @@ Report.Create = (function() {
 $(document).ready(function() {	
 	
 	Report.Create.init(reportsCreateJson);
+	
 });

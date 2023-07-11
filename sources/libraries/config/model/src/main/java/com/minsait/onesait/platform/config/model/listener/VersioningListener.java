@@ -33,6 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 public class VersioningListener {
 
 	private static VersioningManager versioningManager;
+	private static String ANONYMOUS_USER = "anonymousUser";
 
 	public static void initialize() {
 		try {
@@ -50,8 +51,8 @@ public class VersioningListener {
 			final Versionable<T> versionable = (Versionable<T>) o;
 			log.debug("Fired serialization for new Versionable Entity of type {}",
 					versionable.getClass().getSimpleName());
-			versioningManager.serialize(versionable, getCurrentUser(),
-					VersioningCommitContextHolder.getCommitMessage(), EventType.CREATE);
+			versioningManager.serialize(versionable, getCurrentUser(), VersioningCommitContextHolder.getCommitMessage(),
+					EventType.CREATE);
 		}
 	}
 
@@ -63,8 +64,8 @@ public class VersioningListener {
 			final Versionable<T> versionable = (Versionable<T>) o;
 			log.debug("Fired serialization for updated Versionable Entity of type {} with id {}",
 					versionable.getClass().getSimpleName(), versionable.getId());
-			versioningManager.serialize(versionable, getCurrentUser(),
-					VersioningCommitContextHolder.getCommitMessage(),EventType.UPDATE);
+			versioningManager.serialize(versionable, getCurrentUser(), VersioningCommitContextHolder.getCommitMessage(),
+					EventType.UPDATE);
 		}
 	}
 
@@ -82,9 +83,15 @@ public class VersioningListener {
 	}
 
 	private String getCurrentUser() {
-		return StringUtils.hasText(VersioningCommitContextHolder.getUserId())
-				? VersioningCommitContextHolder.getUserId()
-				: SecurityContextHolder.getContext().getAuthentication().getName();
-	}
+		if (StringUtils.hasText(VersioningCommitContextHolder.getUserId())) {
+			return VersioningCommitContextHolder.getUserId();
+		} else {
+			if (SecurityContextHolder.getContext().getAuthentication() != null) {
+				return SecurityContextHolder.getContext().getAuthentication().getName();
+			} else {
+				return ANONYMOUS_USER;
+			}
+		}
 
+	}
 }

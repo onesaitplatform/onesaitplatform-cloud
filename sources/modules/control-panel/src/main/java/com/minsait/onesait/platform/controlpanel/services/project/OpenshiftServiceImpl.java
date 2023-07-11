@@ -39,6 +39,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
@@ -60,6 +61,7 @@ import com.minsait.onesait.platform.config.model.Microservice.CaaS;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 import com.minsait.onesait.platform.git.GitlabConfiguration;
 import com.minsait.onesait.platform.git.GitlabException;
+import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 
 import avro.shaded.com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
@@ -214,8 +216,12 @@ public class OpenshiftServiceImpl implements MSAService {
 	}
 
 	private void loginOc(CaasConfiguration openshift) {
-		final ProcessBuilder pb = new ProcessBuilder("oc", "login", openshift.getUrl(), "-u", openshift.getUser(), "-p",
-				openshift.getPassword(), "--insecure-skip-tls-verify");
+		loginOc(openshift.getUrl(), openshift.getUser(), openshift.getPassword());
+	}
+
+	private void loginOc(String server, String user, String credentials) {
+		final ProcessBuilder pb = new ProcessBuilder("oc", "login", server, "-u", user, "-p", credentials,
+				"--insecure-skip-tls-verify");
 		try {
 			pb.redirectErrorStream(true);
 			executeProcess(pb);
@@ -703,6 +709,34 @@ public class OpenshiftServiceImpl implements MSAService {
 		} catch (final Exception e) {
 			log.error("Remedy webhooks are enabled, couldn't complete webhook request for service: {} in namespace: {}",
 					microservice, project, e);
+		}
+
+	}
+
+	@Async
+	@Override
+	public void runConfigInit(String server, String user, String credentials, String namespace, String verticalSchema,
+			String multitenantAPIKey, Map<String, Boolean> verticalCreation) {
+		verticalCreation.put(Tenant2SchemaMapper.extractVerticalNameFromSchema(verticalSchema), false);
+		loginOc(server, user, credentials);
+		setProject(namespace);
+		scaleDown(MSAService.CONFIG_INIT);
+		final Map<String, String> var = new HashMap<String, String>();
+		var.put(MSAService.MULTITENANT_SCHEMA_ENV, verticalSchema);
+		if (StringUtils.hasText(multitenantAPIKey)) {
+			var.put(MSAService.MULTITENANT_API_KEY, multitenantAPIKey);
+		}
+		setVarEnv(MSAService.CONFIG_INIT, var);
+		scaleUp(MSAService.CONFIG_INIT);
+		try {
+			Thread.sleep(300000);
+			scaleDown(MSAService.CONFIG_INIT);
+			var.put(MSAService.MULTITENANT_SCHEMA_ENV, "onesaitplatform_config");
+			var.put(MSAService.MULTITENANT_API_KEY, "");
+			setVarEnv(MSAService.CONFIG_INIT, var);
+			verticalCreation.put(Tenant2SchemaMapper.extractVerticalNameFromSchema(verticalSchema), true);
+		} catch (final InterruptedException e) {
+			log.error("Could not scale down config init", e);
 		}
 
 	}

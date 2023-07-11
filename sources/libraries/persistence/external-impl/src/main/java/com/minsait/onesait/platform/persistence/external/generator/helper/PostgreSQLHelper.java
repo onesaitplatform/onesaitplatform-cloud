@@ -147,7 +147,7 @@ public class PostgreSQLHelper extends SQLHelperImpl implements SQLHelper {
 
 	@Override
 	public ColumnRelational getColumnWithSpecs(final ColumnRelational col) {
-		List<String> colSpecs = col.getColumnSpecStrings();
+		List<String> colSpecs = col.getColumnSpecs();
 		if (colSpecs == null) {
 			colSpecs = new ArrayList<>();
 		}
@@ -162,7 +162,7 @@ public class PostgreSQLHelper extends SQLHelperImpl implements SQLHelper {
 			if (col.getColDefautlValue() != null && !col.getColDefautlValue().equals("")) {
 				if (col.getColDefautlValue() instanceof String) {
 					String defValue = (String) col.getColDefautlValue();
-					OntologyVirtualSchemaFieldType fieldtype = OntologyVirtualSchemaFieldType
+					final OntologyVirtualSchemaFieldType fieldtype = OntologyVirtualSchemaFieldType
 							.valueOff(col.getStringColDataType());
 					if (fieldtype.equals(OntologyVirtualSchemaFieldType.STRING) && !defValue.startsWith("'")) {
 						defValue = "'" + defValue + "'";
@@ -173,7 +173,7 @@ public class PostgreSQLHelper extends SQLHelperImpl implements SQLHelper {
 				}
 			}
 
-			col.setColumnSpecStrings(colSpecs);
+			col.setColumnSpecs(colSpecs);
 			col.getColDataType().setDataType(getFieldTypeString(col.getColDataType().getDataType()));
 		}
 		return col;
@@ -181,21 +181,21 @@ public class PostgreSQLHelper extends SQLHelperImpl implements SQLHelper {
 
 	@Override
 	public String parseGeometryFields(String query, String ontology) throws JSQLParserException {
-		Ontology o = ontologyVirtualRepository.findOntology(ontology);
-		OntologyVirtual virtual = ontologyVirtualRepository.findByOntologyId(o);
-		String jsonSchema = o.getJsonSchema();
-		JSONObject obj = new JSONObject(jsonSchema);
-		JSONObject columns = obj.getJSONObject("properties");
+		final Ontology o = ontologyVirtualRepository.findOntology(ontology);
+		final OntologyVirtual virtual = ontologyVirtualRepository.findByOntologyId(o);
+		final String jsonSchema = o.getJsonSchema();
+		final JSONObject obj = new JSONObject(jsonSchema);
+		final JSONObject columns = obj.getJSONObject("properties");
 		if (query.contains("_id,")) {
 			query = query.replace("_id,", "");
 		}
 
 		if (virtual.getObjectGeometry() != null && !virtual.getObjectGeometry().trim().equals("")) {
-			Select selectStatement = (Select) CCJSqlParserUtil.parse(query);
-			PlainSelect plainSelect = (PlainSelect) selectStatement.getSelectBody();
-			Alias alias = plainSelect.getFromItem().getAlias();
-			List<SelectItem> selectItems = plainSelect.getSelectItems();
-			for (SelectItem item : selectItems) {
+			final Select selectStatement = (Select) CCJSqlParserUtil.parse(query);
+			final PlainSelect plainSelect = (PlainSelect) selectStatement.getSelectBody();
+			final Alias alias = plainSelect.getFromItem().getAlias();
+			final List<SelectItem> selectItems = plainSelect.getSelectItems();
+			for (final SelectItem item : selectItems) {
 				if (item.toString().equals("*") || (alias != null && item.toString().equals(alias.getName()))) {
 					return refactorQueryAll(columns, virtual, selectStatement, alias, item.toString());
 				} else {

@@ -24,6 +24,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.ProjectList;
 import com.minsait.onesait.platform.config.model.User;
@@ -43,6 +44,8 @@ public interface ProjectRepository extends JpaRepository<Project, String> {
 
 	public List<Project> findByUsersIn(List<User> users);
 
+	public Project findByApp(App app);
+
 	public List<Project> findByIdentification(String identification);
 
 	@Query("SELECT o FROM ProjectList AS o Where o.id = :id")
@@ -51,7 +54,8 @@ public interface ProjectRepository extends JpaRepository<Project, String> {
 	@Query("SELECT o FROM ProjectList AS o Where o.identification = :identification")
 	public List<ProjectList> findByIdentificationForList(@Param("identification") String identification);
 
-	List<Project> findByUser(User user);
+	@Query("SELECT o.id FROM Project AS o Where o.user = :user")
+	List<String> findIdsByUser(@Param("user") User user);
 
 	@Modifying
 	@Transactional

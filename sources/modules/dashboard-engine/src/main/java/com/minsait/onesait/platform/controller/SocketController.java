@@ -68,7 +68,7 @@ public class SocketController {
 	        produces = "application/json")
 	    public @ResponseBody ResponseEntity<OutputMessage> restResponse(@PathParam("datasource") String datasource, @Valid @RequestBody final InputMessage msg) {
 		OutputMessage out = executeInputMsg(msg);
-		return new ResponseEntity<>(executeInputMsg(msg), HttpStatus.valueOf(out.getCode()));
+		return new ResponseEntity<>(out, HttpStatus.valueOf(out.getCode()));
 	}
 	
 	private OutputMessage executeInputMsg(InputMessage msg) {

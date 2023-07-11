@@ -28,9 +28,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
-import com.minsait.onesait.platform.commons.ssl.SSLUtil;
 import com.minsait.onesait.platform.config.model.ApiOperation.Type;
 import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.User;
@@ -45,8 +43,6 @@ import com.minsait.onesait.platform.flowengine.api.rest.service.impl.OpenAPI3Uti
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
 import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepository;
-import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import io.swagger.parser.OpenAPIParser;
 import io.swagger.v3.oas.models.PathItem;
@@ -65,7 +61,8 @@ public class FlowEngineControlPanelApiService {
 	@Value("${onesaitplatform.platform.base.url:http://controlpanelservice:18000/controlpanel}")
 	private String controlpanelUrl;
 
-	private final RestTemplate restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
+	// private final RestTemplate restTemplate = new
+	// RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
 	private SwaggerParseResult swagger;
 	private static final String ERROR_DOMAIN = "{'error':'Domain ";
 
@@ -74,8 +71,8 @@ public class FlowEngineControlPanelApiService {
 
 	@Autowired
 	private FlowEngineValidationNodeService flowEngineValidationNodeService;
-	@Autowired
-	private IntegrationResourcesService resourcesService;
+	// @Autowired
+	// private IntegrationResourcesService resourcesService;
 	@Autowired
 	private ApiInvokerUtils apiInvokerUtils;
 	@Autowired
@@ -84,7 +81,6 @@ public class FlowEngineControlPanelApiService {
 	private OpenAPI3Utils openapiutils;
 	@Autowired
 	private MasterUserRepository masterUserRepository;
-
 
 	@PostConstruct
 	private void init() {

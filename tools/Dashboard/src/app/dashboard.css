@@ -575,8 +575,19 @@ md-dialog > form {
   /*padding: 1rem 0;*/
   box-sizing: border-box;
 }
-
+.menurightsidebardashboard {
+  position: fixed;
+  height: 100%;
+  width: 0;
+  top: 0;
+  right: 0;
+  z-index: 9000;
+  overflow-x: hidden;
+  transition: 0.4s;
+  /*padding: 1rem 0;*/
+  box-sizing: border-box;
+}
 .dashboardcontent {
-  transition: margin-left .4s;
+  transition: margin-right .4s;
   /*padding: 1rem;*/
 }

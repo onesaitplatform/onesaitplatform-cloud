@@ -73,7 +73,6 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 	@Qualifier("ldapAuthenticationProvider")
 	private AuthenticationProvider authProviderLdap;
 
-
 	@Autowired
 	private UserDetailsService userDetailsService;
 
@@ -88,13 +87,11 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 		security.tokenKeyAccess("permitAll()").checkTokenAccess("permitAll()").allowFormAuthenticationForClients();
 	}
 
-
 	PreAuthenticatedAuthenticationProvider preauthAuthProvider() {
 		final PreAuthenticatedAuthenticationProvider provider = new PreAuthenticatedAuthenticationProvider();
 		provider.setPreAuthenticatedUserDetailsService(userDetailsServiceWrapper());
 		return provider;
 	}
-
 
 	UserDetailsByNameServiceWrapper<PreAuthenticatedAuthenticationToken> userDetailsServiceWrapper() {
 		final UserDetailsByNameServiceWrapper<PreAuthenticatedAuthenticationToken> wrapper = new UserDetailsByNameServiceWrapper<>();
@@ -108,13 +105,15 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 		tokenEnhancerChain.setTokenEnhancers(Arrays.asList(tokenEnhancer(), jwtAccessTokenConverter));
 
 		endpoints.tokenEnhancer(tokenEnhancerChain);
-		endpoints.authenticationManager(new ProviderManager(
-				Stream.of(authProvider, authProviderLdap, preauthAuthProvider()).filter(Objects::nonNull).collect(Collectors.toList())));
+		endpoints.authenticationManager(
+				new ProviderManager(Stream.of(authProvider, authProviderLdap, preauthAuthProvider())
+						.filter(Objects::nonNull).collect(Collectors.toList())));
 		endpoints.userDetailsService(userDetailsService);
 		endpoints.tokenStore(tokenStore);
 		endpoints.accessTokenConverter(jwtAccessTokenConverter);
 		endpoints.reuseRefreshTokens(false);
 		endpoints.tokenServices(defaultTokenServices(tokenStore, tokenEnhancerChain));
+		endpoints.redirectResolver((requestedRedirect, client) -> requestedRedirect);
 
 	}
 
@@ -125,8 +124,9 @@ public class OAuth2AuthorizationServerConfigJwt extends AuthorizationServerConfi
 		tokenServices.setTokenStore(tokenStore);
 		tokenServices.setTokenEnhancer(tokenEnhancerChain);
 		tokenServices.setClientDetailsService(clientDetailsService());
-		tokenServices.setAuthenticationManager(new ProviderManager(
-				Stream.of(authProvider, authProviderLdap, preauthAuthProvider()).filter(Objects::nonNull).collect(Collectors.toList())));
+		tokenServices.setAuthenticationManager(
+				new ProviderManager(Stream.of(authProvider, authProviderLdap, preauthAuthProvider())
+						.filter(Objects::nonNull).collect(Collectors.toList())));
 		tokenServices.setReuseRefreshToken(false);
 		tokenServices.setSupportRefreshToken(true);
 		return tokenServices;

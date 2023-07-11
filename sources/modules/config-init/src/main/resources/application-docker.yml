@@ -13,9 +13,12 @@ onesaitplatform:
       mongodb: ${LOADMONGODB}
       samples: ${LOADTESTDATA}
       elasticdb: ${LOADELASTICDB}
+      opensearchdb: ${LOADOPENSEARCHDB}
       mailconfig: ${LOADMAILCONFIG}
       multitenant.update-mode: ${UPDATE_MODE_MULTITENANT}
       graylog: ${LOADGRAYLOGDB}
+      multitenant.adminToken: ${ADMIN_VERTICAL_TOKEN}
+      flowEngineMonitor: ${LOADFLOWENGINEMONITOR}
    database.mongodb:
       database: ${REALTIMEDBNAME}
       servers: ${REALTIMEDBSERVERS}
@@ -33,8 +36,14 @@ onesaitplatform:
       sslEnabled: ${MONGO_SSL_ENABLED}
       useQuasar: ${MONGO_USE_QUASAR}
    database.elasticsearch:
+      enabled: ${ELASTICSEARCH_ENABLED}
       sql.connector.http.endpoint: http://${ELASTICDBHOST}:${ELASTICDBPORT}
       url: ${ELASTICDBHOST}
+      port: 9300
+   database.opensearch:
+      enabled: ${OPENSEARCH_ENABLED}
+      sql.connector.http.endpoint: http://${OPENSEARCHDBHOST}:${OPENSEARCHDBPORT}
+      url: ${OPENSEARCHDBHOST}
       port: 9300
    database.timescaledb:
       enabled: ${TIMESCALE_ENABLED}

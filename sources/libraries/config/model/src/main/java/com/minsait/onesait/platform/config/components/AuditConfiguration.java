@@ -26,5 +26,5 @@ public class AuditConfiguration {
 	private String keystorePath;
 	@Encryptable
 	private String keystorePassword;
-
+	private String defaultRtdbDatasource;
 }

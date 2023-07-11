@@ -324,6 +324,16 @@
 			<artifactId>javax.mail</artifactId>
 			<version>1.6.1</version>
 		</dependency>
+		<dependency>
+        <groupId>com.sun.xml.bind</groupId>
+        <artifactId>jaxb-impl</artifactId>
+        <version>2.3.1</version>
+    </dependency>
+    <dependency>
+        <groupId>com.sun.xml.messaging.saaj</groupId>
+        <artifactId>saaj-impl</artifactId>
+        <version>1.5.1</version>
+    </dependency>
 
 
 		<dependency>
@@ -342,7 +352,7 @@
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports</artifactId>
-			<version>6.7.0</version>
+			<version>6.20.0</version>
 
 		</dependency>
 
@@ -464,6 +474,53 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
 		</dependency>
+		
+		
+		<!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-core -->
+		<dependency>
+			<groupId>com.sun.xml.bind</groupId>
+        	<artifactId>jaxb-impl</artifactId>
+        	<version>2.3.1</version>
+    	</dependency>
+    	
+    	<!-- https://mvnrepository.com/artifact/tech.tablesaw/tablesaw-jsplot -->
+    	<dependency>
+		  	<groupId>tech.tablesaw</groupId>
+		  	<artifactId>tablesaw-core</artifactId>
+		  	<version>0.43.1</version>
+		</dependency>
+		<dependency>
+		    <groupId>tech.tablesaw</groupId>
+		    <artifactId>tablesaw-jsplot</artifactId>
+		    <version>0.43.1</version>
+		</dependency>
+		<dependency>
+		  	<groupId>tech.tablesaw</groupId>
+		  	<artifactId>tablesaw-json</artifactId>
+		  	<version>0.43.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/au.com.bytecode/opencsv -->
+		<dependency>
+		    <groupId>au.com.bytecode</groupId>
+		    <artifactId>opencsv</artifactId>
+		    <version>2.4</version>
+		</dependency>
+			<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjrt</artifactId>
+			<version>1.9.8</version>
+		</dependency>
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjweaver</artifactId>
+			<version>1.9.8</version>
+		</dependency>
+		 <dependency>
+      <groupId>org.aspectj</groupId>
+      <artifactId>aspectjtools</artifactId>
+      <version>1.9.8</version>
+          
+    </dependency>
 	</dependencies>
 
 	<repositories>

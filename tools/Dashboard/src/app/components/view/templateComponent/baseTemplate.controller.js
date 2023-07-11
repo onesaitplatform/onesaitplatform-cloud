@@ -133,7 +133,7 @@
         }
 
         function loadGadget(config){
-          if(config===""){
+          if(config===""|| config.data===""){
             throw new Error('Gadget was deleted');
           }    
           vm.gadget = config.data;

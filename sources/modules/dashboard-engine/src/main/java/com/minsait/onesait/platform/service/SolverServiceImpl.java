@@ -120,6 +120,7 @@ public class SolverServiceImpl implements SolverService {
 	private SolverInterface getSolverByDatasource(RtdbDatasource datasource, String ontology) {
 		switch (datasource) {
 			case ELASTIC_SEARCH:
+			case OPEN_SEARCH:
 				return sqlSolver;
 			case VIRTUAL:
 				final OntologyVirtualDatasource ontologyDatasource = ontologyVirtualRepository
@@ -134,8 +135,6 @@ public class SolverServiceImpl implements SolverService {
 					default:
 						return sqlSolver;
 				}
-			case KUDU:
-				return sqlSolver;
 			case NEBULA_GRAPH:
 				return nebulaGraphSolver;
 			default:

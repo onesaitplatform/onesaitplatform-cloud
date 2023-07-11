@@ -270,7 +270,7 @@
 								type : "POST",
 								data : { "id" : [[${categorization.Id}]]},
 								headers: {[csrf_header]: csrf_value}
-						}).success(function(response){
+						}).done(function(response){
 							return cb(response);
 							}
 						).fail(function(response, data){

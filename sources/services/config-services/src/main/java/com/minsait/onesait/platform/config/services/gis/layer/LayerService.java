@@ -68,4 +68,8 @@ public interface LayerService {
 
 	void deleteLayerByIdentification(String identification, String userId);
 
+	Layer layerCleanViewer(String layerIdentification, String viewerIdentification);
+
+	Layer layerAddViewer(String layerIdentification, String viewerIdentification);
+
 }

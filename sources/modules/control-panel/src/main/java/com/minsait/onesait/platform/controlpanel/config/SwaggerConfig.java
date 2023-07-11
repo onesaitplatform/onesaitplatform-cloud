@@ -358,12 +358,19 @@ public class SwaggerConfig {
 	}
 
 	@Bean
+	public GroupedOpenApi mapsProjectAPI() {
+		return GroupedOpenApi.builder().group("Maps Project").pathsToMatch("/api/mapsproject", "/api/mapsproject/**")
+				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+
+	}
+
+	@Bean
 	public GroupedOpenApi versioningAPI() {
 		return GroupedOpenApi.builder().group("Versioning").pathsToMatch("/api/versioning", "/api/versioning/**")
 				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
 
 	}
-	
+
 	@Bean
 	public GroupedOpenApi sparkLauncherAPI() {
 		return GroupedOpenApi.builder().group("Spark Launcher Management")

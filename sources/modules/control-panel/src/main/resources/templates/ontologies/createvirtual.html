@@ -140,7 +140,7 @@
 				
 					<input id="datamodelid" class="hidden-validation" type="hidden" th:required="true" th:field="*{dataModel}" />											
 					<input id="jsonschema"  class="hidden-validation" type="hidden" th:required="true" th:field="*{jsonSchema}"  />
-					<input th:if="${selectedDatasource != 'KUDU'}" id="rtdb" name="rtdb" type="hidden" th:value="${historical} == true ? 'PRESTO' : 'VIRTUAL'" th:field="*{rtdbDatasource}"/>
+					<input id="rtdb" name="rtdb" type="hidden" th:value="${historical} == true ? 'PRESTO' : 'VIRTUAL'" th:field="*{rtdbDatasource}"/>
 					<input id="authMethod" name="authMethod" type="hidden" value=''/>
 					<input id="datasource" name="datasource" type="hidden" th:value="${historical} == true ? 'PRESTO' : ''"/>
 					<input id="datasourceTableName" name="datasourceTableName" type="hidden" value=""/>
@@ -285,7 +285,7 @@
 											<option th:each="datasource :${datasources}" th:value="${datasource.identification}" th:id="${datasource.identification}" th:text="${datasource.identification}" ></option>														
 										</select>
 										<select th:if="${ontology?.id} != null" id="datasources" class="selectpicker form-control no-remove" th:title="#{ontology.virtual.datasource.combo}" data-live-search="true" data-width="100%" disabled="disabled">
-											<option th:each="datasource :${datasources}" th:value="${datasource.identification}" th:id="${datasource.identification}" th:text="${datasource.identification}" ></option>														
+											<option th:value="${datasource.identification}" th:id="${datasource.identification}" th:text="${datasource.identification}" selected="selected"></option>													
 										</select>
 									</div>
 									<div class="form-group col-xs-2" th:classappend="| ${(#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR' ? 'col-md-2'  : 'col-md-3')}  ${((databaseName == null || ''.equals(databaseName)) ? 'hidden':'')} |">
@@ -333,7 +333,7 @@
 											</select>
 												
 											<select th:if="${ontology?.id} != null" id="collections" class="selectpicker select show-tick form-control no-remove" th:title="#{ontology.virtual.collection}" data-live-search="true" data-width="100%" disabled="disabled">
-												<option th:id="${tableName}" th:value="${tableName}" th:text="${tableName}"></option>
+												<option th:id="${tableName}" th:value="${tableName}" th:text="${tableName}" selected="selected"></option>
 											</select>
 										</div>
 									</div>
@@ -549,40 +549,6 @@
 													</table>
 												</div>
 											</div>
-										</div>
-									</div>
-								</div>
-								<!-- KUDU PARTITIONS FORM -->
-								<div class="row main no-margin-bottom" th:if="${ontology?.id} == null and ${historical} == false" id="partitionsCreationForm" style="display: none;">
-									<div class="col-md-12 col-sm-12 col-xs-12 margin-top-10">
-										<i class="icon-edit font-grey-mint padding-right-5"></i><span style="margin-left" th:text="#{ontology.advanced.partitions.title}">Partitions</span>
-									</div>
-									<!-- KUDU ENABLE PARTITION INDEXES SELECTION -->
-									<div class="col-md-12">
-										<input  id="enablePartitionIndexes" class="margin-right-10"  name="enablePartitionIndexes" type="checkbox" />
-										<label class="control-label margin-right-5" th:text="#{ontology.advanced.partition.enable}">Enable partition and indexes</label>
-									</div>
-									<div class="kuduAdvancedProps col-md-4" th:classappend="(${ontology.id == null} ? hidden : '')">
-									<!-- KUDU PRIMARY KEY SELECTION -->
-										<div class="form-group">
-											<label th:text="#{ontology.advanced.primarykey}+ ':'" class="popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr=" data-content=#{ontology.advanced.primarykey.help},data-title=#{ontology.advanced.primarykey}"> Primary key fields</label><span class="required"> *</span>
-											<input data-msg="Please fill this field" th:tabindex="2" id="primarykey" name="primarykey" data-role="tagsinput" class="form-control tagsinput" type="text" data-minlength="1" pattern=".{1,}" min="1" th:required="true" th:value="_id"></input>																
-											<span id="primarykeyerror" class="help-block font-red hide" th:text="#{gen.requiredField}"><i class="la la-warning"></i> Required field</span>
-										</div>
-									</div> 
-									<div class="kuduAdvancedProps col-md-4" th:classappend="(${ontology.id == null} ? hidden : '')">
-										<!-- KUDU PARTITIONS FIELDS SELECTION --> 
-										<div class="form-group">
-											<label th:text="#{ontology.advanced.partitions}" class="popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr=" data-content=#{ontology.advanced.partitions.help},data-title=#{ontology.advanced.partitions}"> Partition fields</label><span class="required"> *</span>
-											<input  data-msg="Please fill this field" th:tabindex="2" id="partitions" name="partitions" data-role="tagsinput" class="form-control tagsinput" type="text" data-minlength="1" pattern=".{1,}" min="1" th:required="true" th:value="${partitions}"></input>
-											<span id="partitionserror" class="help-block font-red hide" th:text="#{gen.requiredField}"><i class="la la-warning"></i> Required field</span>
-										</div>
-									</div>
-									<div class="kuduAdvancedProps col-md-2" th:classappend="(${ontology.id == null} ? hidden : '')">
-										<!-- KUDU PARTITION NUMBER -->
-										<div class="form-group">
-											<label class="control-label popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr=" data-content=#{ontology.advanced.npartitions.help},data-title=#{ontology.advanced.npartitions}"><span th:text="#{ontology.advanced.npartitions} + ':'">Number of partitions</span></label>
-											<input id="npartitions" type="number" min="1" max="1000" name="npartitions" th:required="true"  value="1" th:value="1" class="form-control "  />
 										</div>
 									</div>
 								</div>

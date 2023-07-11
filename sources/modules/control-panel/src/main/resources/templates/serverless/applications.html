@@ -194,10 +194,6 @@
 															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
 															<label>Functions</label>
 														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-															<label>Options</label>
-														</span>
 													</div>
 												</div>
 											</div>
@@ -275,13 +271,14 @@
 		
 	});
 	
-	$(window).load(function() {
+	$(window).on("load",function() {
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 		var oTable = $('#applications').DataTable({
 	      "bAutoWidth": false
 	      });
 		oTable.page.len(10);
 		// HIDE COLUMNS		
-		$.each([ ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
+		$.each([ ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 	
 		//oTable.destroy();

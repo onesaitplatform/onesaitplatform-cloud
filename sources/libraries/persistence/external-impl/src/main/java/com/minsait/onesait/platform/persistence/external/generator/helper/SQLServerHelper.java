@@ -44,11 +44,12 @@ public class SQLServerHelper extends SQLHelperImpl implements SQLHelper {
 	private static final String LIST_TABLES_IN_DATABASE_IN_SCHEMA_QUERY = ""
 			+ "DECLARE @SQL VARCHAR(MAX) = 'use %s;SELECT table_name FROM information_schema.tables WHERE table_schema = ''%s''';"
 			+ "EXEC(@SQL);";
+
 	@Override
 	public String getAllTablesStatement() {
 		return LIST_TABLES_QUERY;
 	}
-	
+
 	@Override
 	public boolean hasDatabase() {
 		return true;
@@ -58,7 +59,7 @@ public class SQLServerHelper extends SQLHelperImpl implements SQLHelper {
 	public boolean hasSchema() {
 		return true;
 	}
-	
+
 	@Override
 	public String getDatabaseStatement() {
 		return GET_CURRENT_DATABASE_QUERY;
@@ -134,10 +135,10 @@ public class SQLServerHelper extends SQLHelperImpl implements SQLHelper {
 
 			// Set new offset
 			if (hasOffset) {
-				limitedSelect.getOffset().setOffset(offset);
+				limitedSelect.getOffset().setOffset(new LongValue(offset));
 			} else {
 				final Offset newOffset = new Offset();
-				newOffset.setOffset(offset);
+				newOffset.setOffset(new LongValue(offset));
 				newOffset.setOffsetParam("ROWS");
 				limitedSelect.setOffset(newOffset);
 			}
@@ -149,7 +150,7 @@ public class SQLServerHelper extends SQLHelperImpl implements SQLHelper {
 	public String getFieldTypeString(String fieldOspType) {
 		String type = null;
 
-		OntologyVirtualSchemaFieldType fieldtype = OntologyVirtualSchemaFieldType.valueOff(fieldOspType);
+		final OntologyVirtualSchemaFieldType fieldtype = OntologyVirtualSchemaFieldType.valueOff(fieldOspType);
 		switch (fieldtype) {
 		case STRING:
 			type = "VARCHAR(255)";

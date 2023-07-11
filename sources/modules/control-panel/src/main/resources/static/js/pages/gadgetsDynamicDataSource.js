@@ -724,7 +724,7 @@
 				
 				});
 				//Refresh page and reset localStorage.clickount
-				$(window).unload(function(){
+				$(window).on("unload",function(){
 					  localStorage.clickcount = 0;
 					  localStorage.clear();
 					});

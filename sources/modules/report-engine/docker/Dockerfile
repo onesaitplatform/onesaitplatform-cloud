@@ -1,4 +1,4 @@
-FROM onesaitplatform/baseimage:latest
+FROM onesaitplatform/baseimage:latest-17
 
 # metadata
 LABEL platform.image.name="onesaitplatform-report-engine"
@@ -39,6 +39,7 @@ RUN apk add --no-cache \
         libc6-compat \
         libstdc++ \
         nss \
+        openjdk17-jre \
         fontconfig \
         ttf-dejavu
 
@@ -93,9 +94,10 @@ ENV SERVER_NAME=localhost \
     SBA_USERNAME=operations \
 	SBA_SECRET=changeIt2019! \
 	MAX_HTTP_HEADER_SIZE=20000 \
-	HTTP_LOG_LEVEL=TRACE
+	HTTP_LOG_LEVEL=INFO \
+    JAVA_HOME=/usr/lib/jvm/java-17-openjdk/jre
 
-ENV JAVA_OPTS="$JAVA_OPTS -Duser.language=$REPORT_LOCALE_LANG -Duser.country=$REPORT_LOCALE_COUNTRY"
+ENV JAVA_OPTS="$JAVA_OPTS -Duser.language=$REPORT_LOCALE_LANG -Duser.country=$REPORT_LOCALE_COUNTRY -Djava.awt.headless=true"
 
 
 COPY docker-entrypoint.sh /usr/local/bin/

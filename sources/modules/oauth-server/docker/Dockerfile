@@ -1,4 +1,4 @@
-FROM onesaitplatform/baseimage:latest
+FROM onesaitplatform/baseimage:latest-17
 
 # Metadata
 LABEL platform.image.name="oauthserver"
@@ -66,7 +66,7 @@ ENV SERVER_NAME=localhost \
 	LDAP_GROUP_WHITELIST= \
     LDAP_AUTH_REGEX=(.*) \
     JWT_EXPIRATION_TIME=44000 \
-    HTTP_LOG_LEVEL=TRACE
+    HTTP_LOG_LEVEL=INFO
 
 # Timezone
 RUN apk add --no-cache tzdata \

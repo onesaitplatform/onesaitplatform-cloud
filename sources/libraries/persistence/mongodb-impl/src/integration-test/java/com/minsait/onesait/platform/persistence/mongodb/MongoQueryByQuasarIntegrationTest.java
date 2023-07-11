@@ -68,6 +68,7 @@ public class MongoQueryByQuasarIntegrationTest {
 		@Bean("dataHubRest")
 		public RestTemplate restTemplate() throws GenericOPException {
 			final RestTemplate rt = new RestTemplate();
+
 			return rt;
 		}
 	}

@@ -9,7 +9,8 @@
 # - Run this container as 'root' user
 #
 ############################################################
-FROM openjdk:8-jre-alpine
+#FROM openjdk:8-jre-alpine
+FROM onesaitplatform/baseimage:latest-17
 
 # metadata
 LABEL platform.image.name="bpm-engine"
@@ -17,8 +18,7 @@ LABEL platform.image.name="bpm-engine"
 ADD *-exec.jar app.jar
 
 # Timezone
-RUN apk add --no-cache tzdata \
-    bash
+RUN apk add --no-cache tzdata bash
 
 # web projects folder & logs folder
 RUN mkdir -p /var/log/platform-logs && \
@@ -42,7 +42,6 @@ RUN chown -R onesait:onesait /usr/local && \
 # libc6-compat package for GNU libc compatibility
 # needed for execute ocp binary
 ENV BOWTIE2_VERSION 2.2.8
-ENV ASPECTJ_VERSION 1.9.7
 
 RUN apk add --no-cache \
         wget \

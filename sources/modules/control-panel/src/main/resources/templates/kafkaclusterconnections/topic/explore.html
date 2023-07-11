@@ -547,7 +547,7 @@
 		}
 	}
 	//SET TABLES AND FORMATS ON LOAD
-	$(window).load(function(){ 
+	$(window).on("load",function(){ 
 
 		createDatatables();
 		var htmlelement = document.getElementById('dataToInsert');

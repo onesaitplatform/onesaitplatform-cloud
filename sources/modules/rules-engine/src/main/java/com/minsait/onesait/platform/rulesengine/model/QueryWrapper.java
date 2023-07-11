@@ -18,11 +18,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -68,7 +71,10 @@ public class QueryWrapper {
 	private String iotbrokerUrl;
 
 	private final RestTemplate restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
+
 	private ObjectMapper mapper = new ObjectMapper();
+
+	 
 
 	public QueryWrapper(String ontology, String query, String clientPlatform, String token, String iotbrokerUrl) {
 		log.debug("New QueryWrapper object created for ontology {} with query: {}", ontology, query);

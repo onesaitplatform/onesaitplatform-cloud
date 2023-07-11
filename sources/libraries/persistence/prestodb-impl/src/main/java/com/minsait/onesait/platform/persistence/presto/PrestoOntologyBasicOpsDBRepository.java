@@ -25,9 +25,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -483,9 +483,9 @@ public class PrestoOntologyBasicOpsDBRepository implements PrestoOntologyOpsDBRe
 			throw new IllegalArgumentException("Ontology schema not found in ontology");
 		}
 		final List<ColumnPresto> cols = generateColumns(schema);
-		CreateStatement cs = sqlGenerator.buildCreate().setOntology(ontology);
-		PrestoCreateStatement createStatement = new PrestoCreateStatement(cs);
-		createStatement.setColumns(cols);
+		final CreateStatement cs = sqlGenerator.buildCreate().setOntology(ontology);
+		final PrestoCreateStatement createStatement = new PrestoCreateStatement(cs);
+		createStatement.setColumnsPresto(cols);
 
 		return this.getSQLCreateStatment(createStatement);
 	}
@@ -639,7 +639,7 @@ public class PrestoOntologyBasicOpsDBRepository implements PrestoOntologyOpsDBRe
 	@Override
 	public List<String> getCatalogs() {
 		try {
-			List<String> catalogs = new JdbcTemplate(prestoDatasourceManager.getDatasource())
+			final List<String> catalogs = new JdbcTemplate(prestoDatasourceManager.getDatasource())
 					.queryForList(prestoSQLHelper.getDatabasesStatement(), String.class);
 			return catalogs.stream().filter(c -> !c.equals(SYSTEM_CATALOG)).collect(Collectors.toList());
 		} catch (final Exception e) {
@@ -651,10 +651,11 @@ public class PrestoOntologyBasicOpsDBRepository implements PrestoOntologyOpsDBRe
 	@Override
 	public List<String> getSchemas(String catalog) {
 		try {
-			List<String> schemas = new JdbcTemplate(prestoDatasourceManager.getDatasource(catalog, ""))
+			final List<String> schemas = new JdbcTemplate(prestoDatasourceManager.getDatasource(catalog, ""))
 					.queryForList(prestoSQLHelper.getSchemasStatement(catalog), String.class);
 			if (catalog.equals(realtimedbCatalog)) {
-				return schemas.stream().filter(sch -> sch.equals(Tenant2SchemaMapper.getRtdbSchema())).collect(Collectors.toList());
+				return schemas.stream().filter(sch -> sch.equals(Tenant2SchemaMapper.getRtdbSchema()))
+						.collect(Collectors.toList());
 			}
 			return schemas.stream().filter(sch -> !sch.equals(INFORMATION_SCHEMA)).collect(Collectors.toList());
 		} catch (final Exception e) {
@@ -676,19 +677,19 @@ public class PrestoOntologyBasicOpsDBRepository implements PrestoOntologyOpsDBRe
 	}
 
 	private List<ColumnPresto> generateColumns(final String ontologyJsonSchema) {
-		List<ColumnPresto> cols = new ArrayList<>();
+		final List<ColumnPresto> cols = new ArrayList<>();
 		try {
-			JsonParser parser = new JsonParser();
-			JsonElement jsonTree = parser.parse(ontologyJsonSchema);
+			final JsonParser parser = new JsonParser();
+			final JsonElement jsonTree = parser.parse(ontologyJsonSchema);
 			if (jsonTree.isJsonObject()) {
-				JsonObject jsonObject = jsonTree.getAsJsonObject();
+				final JsonObject jsonObject = jsonTree.getAsJsonObject();
 				extractAllFieldsFromJson(cols, jsonObject);
 			} else {
 				throw new OPResourceServiceException(
 						"Invalid schema to be converted to SQL schema: " + ontologyJsonSchema);
 			}
 
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			Log.warn("Not possible to convert schema to SQL schema: ", e.getMessage());
 			throw new OPResourceServiceException("Not possible to convert schema to SQL schema: " + e.getMessage());
 		}
@@ -697,17 +698,17 @@ public class PrestoOntologyBasicOpsDBRepository implements PrestoOntologyOpsDBRe
 
 	private void extractAllFieldsFromJson(List<ColumnPresto> cols, JsonObject datosJson) {
 		if (datosJson.has("properties")) {
-			JsonObject propertiesJson = datosJson.get("properties").getAsJsonObject();
-			Set<Entry<String, JsonElement>> keyValues = propertiesJson.entrySet();
-			for (Entry<String, JsonElement> entry : keyValues) {
-				String fieldName = entry.getKey();
-				JsonObject fieldSpec = entry.getValue().getAsJsonObject();
-				boolean fieldIsRequired = fieldSpec.get("required").getAsBoolean();
-				String fieldDescription = fieldSpec.get("id").getAsString();
-				String fieldType = fieldSpec.get("type").getAsString();
+			final JsonObject propertiesJson = datosJson.get("properties").getAsJsonObject();
+			final Set<Entry<String, JsonElement>> keyValues = propertiesJson.entrySet();
+			for (final Entry<String, JsonElement> entry : keyValues) {
+				final String fieldName = entry.getKey();
+				final JsonObject fieldSpec = entry.getValue().getAsJsonObject();
+				final boolean fieldIsRequired = fieldSpec.get("required").getAsBoolean();
+				final String fieldDescription = fieldSpec.get("id").getAsString();
+				final String fieldType = fieldSpec.get("type").getAsString();
 
-				ColumnPresto col = new ColumnPresto();
-				ColDataType colDT = new ColDataType();
+				final ColumnPresto col = new ColumnPresto();
+				final ColDataType colDT = new ColDataType();
 				colDT.setDataType(fieldType);
 				col.setColDataType(colDT);
 				col.setColumnName(fieldName);

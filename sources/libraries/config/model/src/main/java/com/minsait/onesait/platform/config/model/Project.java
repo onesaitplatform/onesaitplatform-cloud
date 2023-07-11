@@ -58,7 +58,7 @@ public class Project extends ProjectParent implements Versionable<Project> {
 	}
 
 	@Fetch(FetchMode.JOIN)
-	@ManyToMany( mappedBy = "projects", fetch = FetchType.EAGER)
+	@ManyToMany(mappedBy = "projects", fetch = FetchType.EAGER)
 	@Getter
 	@Setter
 	private Set<User> users = new HashSet<>();
@@ -69,7 +69,7 @@ public class Project extends ProjectParent implements Versionable<Project> {
 	@Setter
 	private ProjectType type;
 
-	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@Getter
 	@Setter
 	private Set<ProjectResourceAccess> projectResourceAccesses = new HashSet<>();
@@ -137,10 +137,10 @@ public class Project extends ProjectParent implements Versionable<Project> {
 		}
 
 		final Project that = (Project) obj;
-		if(that.getId() != null && getId() != null) {
+		if (that.getId() != null && getId() != null) {
 			return that.getId().equals(getId());
 		}
-		if(that.getIdentification()!= null && getIdentification() != null) {
+		if (that.getIdentification() != null && getIdentification() != null) {
 			return that.getIdentification().equals(getIdentification());
 		}
 
@@ -155,22 +155,25 @@ public class Project extends ProjectParent implements Versionable<Project> {
 	@Override
 	public Versionable<Project> runExclusions(Map<String, Set<String>> excludedIds, Set<String> excludedUsers) {
 		Versionable<Project> p = Versionable.super.runExclusions(excludedIds, excludedUsers);
-		if(p!=null) {
-			if(app != null && !CollectionUtils.isEmpty(excludedIds)
+		if (p != null) {
+			if (app != null && !CollectionUtils.isEmpty(excludedIds)
 					&& !CollectionUtils.isEmpty(excludedIds.get(App.class.getSimpleName()))
 					&& excludedIds.get(App.class.getSimpleName()).contains(app.getId())) {
 				setApp(null);
 				projectResourceAccesses.removeIf(pra -> pra.getAppRole() != null);
 				p = this;
 			}
-			if(!users.isEmpty() && !CollectionUtils.isEmpty(excludedUsers)) {
+			if (!users.isEmpty() && !CollectionUtils.isEmpty(excludedUsers)) {
 				users.removeIf(u -> excludedUsers.contains(u.getUserId()));
-				projectResourceAccesses.removeIf(pra -> pra.getUser() != null && excludedUsers.contains(pra.getUser().getUserId()));
-				p= this;
+				projectResourceAccesses
+						.removeIf(pra -> pra.getUser() != null && excludedUsers.contains(pra.getUser().getUserId()));
+				p = this;
 			}
-			if(!projectResourceAccesses.isEmpty() && !CollectionUtils.isEmpty(excludedIds)) {
-				projectResourceAccesses.removeIf(pra -> !CollectionUtils.isEmpty(excludedIds.get(pra.getResource().getClass().getSimpleName())) &&
-						excludedIds.get(pra.getResource().getClass().getSimpleName()).contains(pra.getResource().getId()));
+			if (!projectResourceAccesses.isEmpty() && !CollectionUtils.isEmpty(excludedIds)) {
+				projectResourceAccesses.removeIf(
+						pra -> !CollectionUtils.isEmpty(excludedIds.get(pra.getResource().getClass().getSimpleName()))
+								&& excludedIds.get(pra.getResource().getClass().getSimpleName())
+										.contains(pra.getResource().getId()));
 				p = this;
 			}
 		}

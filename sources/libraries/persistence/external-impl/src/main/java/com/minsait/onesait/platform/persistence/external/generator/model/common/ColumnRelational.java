@@ -14,13 +14,10 @@
  */
 package com.minsait.onesait.platform.persistence.external.generator.model.common;
 
-import java.util.ArrayList;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 
 @NoArgsConstructor
@@ -35,28 +32,28 @@ public class ColumnRelational extends ColumnDefinition {
 	private boolean autoIncrement = false;
 	@Getter
 	@Setter
-    private Object colDefautlValue = null;
+	private Object colDefautlValue = null;
 	@Getter
 	@Setter
-    private String colComment = null;
-	
+	private String colComment = null;
+
 	public ColumnRelational(ColumnDefinition col) {
 		super();
 		this.setColumnName(col.getColumnName());
 		this.setColDataType(col.getColDataType());
-		this.setColumnSpecStrings(col.getColumnSpecStrings());
+		this.setColumnSpecs(col.getColumnSpecs());
 	}
-	
+
 	public void setColDataType(String dataType) {
 		this.getColDataType().setDataType(dataType);
 	}
-	
+
 	public void addSpecification(String spec) {
-		this.getColumnSpecStrings().add(spec);
+		this.getColumnSpecs().add(spec);
 	}
-	
+
 	public String getStringColDataType() {
 		return this.getColDataType().getDataType();
 	}
-	
+
 }

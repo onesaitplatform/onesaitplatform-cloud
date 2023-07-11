@@ -68,30 +68,6 @@ onesaitplatform:
       password: ${REALTIMEDBPASS}
       writeConcern: ${REALTIMEDBWRITECONCERN}
       quasar.connector.http.endpoint: http://${QUASARHOST}:${QUASARPORT}/query/fs/
-   database.hadoop.enabled: ${ENABLEHADOOP}
-   database.hdfs:
-      url: ${HDFSURL}
-      basePath: ${HDFSPATH}
-   database.hive:
-      url: ${HIVEURL}
-      username: ${HIVEUSERNAME}
-      password: ${HIVEPASSWORD}
-      driverClassName: ${HIVEDRIVERCLASS}
-   database.impala:
-      url: ${IMPALAURL}
-   database.kudu:
-      numreplicas: ${KUDUNUMREPLICAS}
-      address: ${KUDUURL}
-      includeKudutableName: ${INCLUDEKUDUTABLENAME}
-      client:
-        sessionTimeout: ${KUDUCLIENTSESSIONTIMEOUT}
-        flushMode: ${KUDUCLIENTFLUSHMODE}
-        prefix: ${KUDUCLIENTIMPALAPREFIX}
-        bossThreadPool: ${KUDUCLIENTBOSSTHREADPOOL}
-        workerThreadPool: ${KUDUCLIENTWORKERTHREADPOOL}
-        operationTimeout: ${KUDUCLIENTOPTIMEOUT}
-        adminOperationTimeout: ${KUDUCLIENTADMINOPTIMEOUT}
-        socketReadTimeout: ${KUDUCLIENTSOCKETREADTIMEOUT}
    database.elasticsearch.enabled: ${ELASTICSEARCH_ENABLED}
    router.alternativeURL: http://routerservice:20000/router/router/
    router.metrics.query.enabled: ${QUERY_METRICS_ENABLED}

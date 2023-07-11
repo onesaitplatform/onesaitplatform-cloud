@@ -330,7 +330,7 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 						if (rtdbDatasource.equals(RtdbDatasource.MONGO)) {// OID Search explicit return of OID
 							query = getQueryForOid(ontologyName, objectId);
 							output = executeSQLQuery(query, ontologyName, user, clientPlatform);
-						} else if (rtdbDatasource.equals(RtdbDatasource.ELASTIC_SEARCH)) {// _id Search explicit return
+						} else if (rtdbDatasource.equals(RtdbDatasource.ELASTIC_SEARCH) || rtdbDatasource.equals(RtdbDatasource.OPEN_SEARCH)) {// _id Search explicit return
 							// _id
 							query = getQueryForId(ontologyName, objectId);
 							output = executeSQLQuery(query, ontologyName, user, clientPlatform);

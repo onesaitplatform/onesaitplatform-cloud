@@ -40,13 +40,14 @@ public class ModelsManagerServiceImpl implements ModelsManagerService {
 
 	@Autowired
 	private ModelsManagerServiceConfiguration configuration;
-	
+
 	private static String PATH_MODELSMANAGER = "/modelsmanager/";
 
 	@Override
 	public ResponseEntity<String> sendHttp(HttpServletRequest requestServlet, HttpMethod httpMethod, String body)
 			throws URISyntaxException, IOException {
-		return sendHttp(requestServlet.getServletPath(), httpMethod, body, requestServlet.getQueryString() == null ? "" : "?" + requestServlet.getQueryString());
+		return sendHttp(requestServlet.getServletPath(), httpMethod, body,
+				requestServlet.getQueryString() == null ? "" : "?" + requestServlet.getQueryString());
 	}
 
 	@Override
@@ -58,22 +59,22 @@ public class ModelsManagerServiceImpl implements ModelsManagerService {
 	}
 
 	@Override
-	public ResponseEntity<String> sendHttp(String url, HttpMethod httpMethod, String body, HttpHeaders headers, String queryString)
-			throws URISyntaxException, IOException {
+	public ResponseEntity<String> sendHttp(String url, HttpMethod httpMethod, String body, HttpHeaders headers,
+			String queryString) throws URISyntaxException, IOException {
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
-		//headers.add("Authorization", encryptRestUserpass());
+
+		// headers.add("Authorization", encryptRestUserpass());
 		final org.springframework.http.HttpEntity<String> request = new org.springframework.http.HttpEntity<>(body,
 				headers);
 		log.debug("Sending method " + httpMethod.toString() + " Models Manager");
 		ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.ACCEPTED);
 		try {
 			response = restTemplate.exchange(
-					new URI(configuration.getBaseURL() + url.substring(PATH_MODELSMANAGER.length()) + queryString), httpMethod,
-					request, String.class);
+					new URI(configuration.getBaseURL() + url.substring(PATH_MODELSMANAGER.length()) + queryString),
+					httpMethod, request, String.class);
 		} catch (final Exception e) {
 			log.error(e.getMessage());
-			return new ResponseEntity<>(e.getMessage(), null,
-					HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>(e.getMessage(), null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		log.debug("Execute method " + httpMethod.toString() + " '" + url + "' Models Manager");
 		final HttpHeaders responseHeaders = new HttpHeaders();

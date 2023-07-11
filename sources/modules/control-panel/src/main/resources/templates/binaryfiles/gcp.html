@@ -413,11 +413,11 @@
 															<label th:text="#{binaryfiles.filename}"> File Name </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="1"/>
+															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
 															<label th:text="#{binaryfiles.fileid}"> File Id </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="2"/>
+															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
 															<label th:text="#{binaryfiles.metadata}"> Metadata</label>
 														</span>
 														<span class="checkbox-column">
@@ -521,7 +521,9 @@
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).load(function(){  
+	$(window).on("load",function(){ 
+		
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
 	
 		//DATATABLE 
 		var oTable = $('#files').dataTable({
@@ -577,7 +579,7 @@
 		filtersResets.addClass('hide');
 		
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
-		$.each([1,2],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
+		$.each([1,2],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		$('#yadcf-filter--files-0').attr("placeholder", [[#{binaryfiles.text.placeholder}]]);
 		

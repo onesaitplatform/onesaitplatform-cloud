@@ -47,10 +47,12 @@
           function(){
             console.log("Opening new connection after " + (__env.globalSockMaxWaitTimeout || 5000) + " ms");
             initConnection();
+            vm.reactivateHeartbeatTimeout()
         });
       }
       else{
         initConnection();
+        vm.reactivateHeartbeatTimeout()
       }
     }
 

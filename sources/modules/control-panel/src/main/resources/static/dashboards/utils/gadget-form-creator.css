@@ -21,3 +21,26 @@
 b.el-form-item__label {
   line-height: 28px;
 }
+#gform .el-form-item__content{
+	display:block;
+}
+
+#gform .section{
+font-size: 14px;
+    margin-block-start: 1.67em;
+    margin-block-end: 1.67em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+    font-weight: bold;
+}
+#gform .sub-section{
+font-size: 12px;
+    margin-block-start: 1.67em;
+    margin-block-end: 1.67em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+    font-weight: bold;
+}
+#gform .el-color-picker__trigger{
+	width:206px;
+}

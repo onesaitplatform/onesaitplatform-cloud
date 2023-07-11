@@ -14,6 +14,12 @@
  */
 package com.minsait.onesait.platform.controlpanel.rest.management.ontology;
 
+import static tech.tablesaw.aggregate.AggregateFunctions.countNonMissing;
+import static tech.tablesaw.aggregate.AggregateFunctions.max;
+import static tech.tablesaw.aggregate.AggregateFunctions.mean;
+import static tech.tablesaw.aggregate.AggregateFunctions.min;
+import static tech.tablesaw.aggregate.AggregateFunctions.stdDev;
+
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -24,6 +30,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -46,6 +53,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -88,6 +96,7 @@ import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUna
 import com.minsait.onesait.platform.config.services.ontologyrest.OntologyRestService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.controller.jsontool.JsonToolUtils;
+import com.minsait.onesait.platform.controlpanel.controller.ontology.OntologyStatisticsDTO;
 import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.KpiDTO;
 import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.OntologyCreateDTO;
 import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.OntologyDTO;
@@ -116,6 +125,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import tech.tablesaw.aggregate.AggregateFunctions;
+import tech.tablesaw.api.ColumnType;
+import tech.tablesaw.api.NumericColumn;
+import tech.tablesaw.api.Table;
+import tech.tablesaw.columns.Column;
+import tech.tablesaw.io.Source;
+import tech.tablesaw.io.json.JsonReader;
+import tech.tablesaw.plotly.api.Histogram;
+import tech.tablesaw.plotly.traces.Trace;
 
 @Tag(name = "Ontology Management")
 @RestController
@@ -210,17 +228,17 @@ public class OntologyManagementController {
 		try {
 			final Ontology ontology = ontologyService.getOntologyByIdentification(ontologyIdentification,
 					utils.getUserId());
-			
+
 			if (ontology == null) {
 				return new ResponseEntity<>(ONTOLOGY_STR + ontologyIdentification + NOT_EXIST, HttpStatus.BAD_REQUEST);
 			}
-			//final User user = userService.getUser(utils.getUserId());
-			if((utils.isAdministrator()) || ontology.getUser().getUserId().equals(utils.getUserId())) {
-					ontologyBusinessService.deleteOntology(ontology.getId(), utils.getUserId());
+			// final User user = userService.getUser(utils.getUserId());
+			if ((utils.isAdministrator()) || ontology.getUser().getUserId().equals(utils.getUserId())) {
+				ontologyBusinessService.deleteOntology(ontology.getId(), utils.getUserId());
 			} else {
 				return new ResponseEntity<>(USER_IS_NOT_AUTH, HttpStatus.UNAUTHORIZED);
 			}
-			
+
 		} catch (final OntologyServiceException exception) {
 			return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
 		}
@@ -311,7 +329,7 @@ public class OntologyManagementController {
 
 		final Ontology ontology = ontologyDTOConverter.ontologyCreateDTOToOntology(ontologyCreate, user);
 		final OntologyConfiguration ontologyConfig = new OntologyConfiguration();
-		if (ontology.getRtdbDatasource().equals(Ontology.RtdbDatasource.ELASTIC_SEARCH)) {
+		if (ontology.getRtdbDatasource().equals(Ontology.RtdbDatasource.ELASTIC_SEARCH) || ontology.getRtdbDatasource().equals(RtdbDatasource.OPEN_SEARCH)) {
 			ontologyConfig.setAllowsCustomElasticConfig(true);
 			ontologyConfig.setShards(String.valueOf(ontologyCreate.getShards()));
 			ontologyConfig.setReplicas(String.valueOf(ontologyCreate.getReplicas()));
@@ -431,8 +449,8 @@ public class OntologyManagementController {
 		return new ResponseEntity<>(MSG_ONTOLOGY_CREATED_SUCCESS, HttpStatus.OK);
 	}
 
+	@Operation(summary = "Create new timeseries ontology")
 	@PostMapping(value = { "/timeseries" })
-
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public ResponseEntity<?> createTSOntology(@Valid @RequestBody OntologyTimeSeriesDTO ontologyTimeSeriesDTO) {
 
@@ -543,7 +561,8 @@ public class OntologyManagementController {
 			return new ResponseEntity<>(exception.getMessage(), HttpStatus.UNAUTHORIZED);
 		}
 	}
-
+	
+	@Operation(summary = "Create new kpi ontology")
 	@PostMapping(value = { "/kpi" })
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	@Transactional
@@ -1014,6 +1033,90 @@ public class OntologyManagementController {
 		}
 
 		return new ResponseEntity<>(MSG_ONTOLOGY_UPDATED_SUCCESS, HttpStatus.OK);
+	}
+
+	@Operation(summary = "Get Statistics")
+	@GetMapping("/{identification}/statistics")
+	public ResponseEntity<?> getStatistics(
+			@Parameter(description = "Ontology identification", required = true) @PathVariable("identification") String identification) {
+
+		try {
+			if (ontologyConfigService.hasUserPermissionForQuery(utils.getUserId(), identification)) {
+
+				String queryResult = queryToolService.querySQLAsJson(utils.getUserId(), identification,
+						"select * from " + identification + " limit 1000", 0);
+				Table table = new JsonReader().read(Source.fromString(queryResult));
+
+				List<OntologyStatisticsDTO> statistics = generateStatistics(queryResult, table);
+				return new ResponseEntity<>(statistics, HttpStatus.OK);
+			} else {
+				log.error("You don't have permissions for this ontology");
+				return new ResponseEntity<>("You don't have permissions for this ontology", HttpStatus.UNAUTHORIZED);
+			}
+		} catch (final Exception exception) {
+			return new ResponseEntity<>(exception.getMessage(), HttpStatus.UNAUTHORIZED);
+		}
+	}
+
+	private List<OntologyStatisticsDTO> generateStatistics(String data, Table table) throws JsonProcessingException {
+		if (table.columnNames().contains("_id.$oid"))
+			table = table.rejectColumns("_id.$oid");
+		if (table.columnNames().contains("contextData.user"))
+			table = table.rejectColumns("contextData.user", "contextData.clientConnection", "contextData.timestamp",
+					"contextData.timestampMillis", "contextData.clientSession", "contextData.device",
+					"contextData.deviceTemplate", "contextData.source", "contextData.timezoneId");
+		List<OntologyStatisticsDTO> statistics = new ArrayList<>();
+		for (Column<?> c : table.columns()) {
+			OntologyStatisticsDTO ontStat = new OntologyStatisticsDTO();
+			ontStat.setField(c.name());
+			ontStat.setType(c.type().name());
+			Table sum = table.summarize(c, countNonMissing, mean, min, max, stdDev).apply();
+			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Count")))
+				ontStat.setCountNonNull(null);
+			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Mean")))
+				ontStat.setMean(null);
+			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Min")))
+				ontStat.setMin(null);
+			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Max")))
+				ontStat.setMax(null);
+			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Std")))
+				ontStat.setStd(null);
+
+			for (String cName : sum.columnNames()) {
+				double value = (double) sum.column(cName).get(0);
+				if (cName.startsWith("Count"))
+					ontStat.setCountNonNull(value);
+				else if (cName.startsWith("Mean"))
+					ontStat.setMean(value);
+				else if (cName.startsWith("Min"))
+					ontStat.setMin(value);
+				else if (cName.startsWith("Max"))
+					ontStat.setMax(value);
+				else if (cName.startsWith("Std"))
+					ontStat.setStd(value);
+			}
+
+			if (c.type().equals(ColumnType.DOUBLE) || c.type().equals(ColumnType.FLOAT)
+					|| c.type().equals(ColumnType.INTEGER) || c.type().equals(ColumnType.LONG)
+					|| c.type().equals(ColumnType.SHORT)) {
+				ontStat.setP25(AggregateFunctions.percentile((NumericColumn<?>) c, 0.25));
+				ontStat.setP50(AggregateFunctions.percentile((NumericColumn<?>) c, 0.50));
+				ontStat.setP75(AggregateFunctions.percentile((NumericColumn<?>) c, 0.75));
+				Trace t = Histogram.create("Distribution of " + c.name(), table, c.name()).getTraces()[0];
+				double[] graph = Stream.of(t.asJavascript(0).split("=")[1].split("x:")[1].split("opacity")[0]
+						.substring(2, t.asJavascript(0).split("=")[1].split("x:")[1].split("opacity")[0].length() - 3)
+						.trim().replace("\"", "").split(",")).mapToDouble(Double::parseDouble).toArray();
+
+				ontStat.setGraph(new ObjectMapper().writeValueAsString(graph));
+			} else {
+				ontStat.setP25(null);
+				ontStat.setP50(null);
+				ontStat.setP75(null);
+				ontStat.setGraph(null);
+			}
+			statistics.add(ontStat);
+		}
+		return statistics;
 	}
 
 	private JsonObject importAuthorizations(OntologyDTO ontologyDTO, Ontology ontology) {

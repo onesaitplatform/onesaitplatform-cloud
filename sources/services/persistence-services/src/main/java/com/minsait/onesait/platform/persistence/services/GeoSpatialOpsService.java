@@ -111,7 +111,7 @@ public class GeoSpatialOpsService {
 
 		String partialConverted = "";
 
-		if (dataSource.equals(RtdbDatasource.ELASTIC_SEARCH)) {
+		if (dataSource.equals(RtdbDatasource.ELASTIC_SEARCH) || dataSource.equals(RtdbDatasource.OPEN_SEARCH)) {
 			partialConverted = String.format("{\"type\":\"%s\", \"coordinates\": %s}", type.toLowerCase(),
 					Arrays.deepToString(coordinates));
 			return partialConverted;
