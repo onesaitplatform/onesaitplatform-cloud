@@ -14,7 +14,7 @@
 	<properties>
 
 
-		<revision>5.1.1-survivor</revision>
+		<revision>5.1.0-ce</revision>
 		<docker.image.username>onesaitplatform</docker.image.username>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
