@@ -72,7 +72,7 @@
 						<div class="col-md-3 col-sm-4 col-xs-12">														
 							<div class="input-icon">
 								<i class="icon-search font-grey-mint"></i>									 														
-								<input id="name" th:placeholder="#{gen.name}" name="name" class="form-control" type="text" maxlength="50" value=""/>
+								<input id="name" th:placeholder="#{gen.identification}" name="name" class="form-control" type="text" maxlength="50" value=""/>
 							</div>
 						</div>
 						
@@ -138,30 +138,34 @@
 												<thead>
 													<tr class="cabecera-tabla">
 														<th class="titulo-columnas" th:text="#{gen.name}">Name</th>
+														<th class="titulo-columnas" th:text="#{gen.identification}">Identification</th>
 														<th class="titulo-columnas text-center" ><span th:text="#{gen.owner}" >Owner</span></th>
 														<th class="titulo-columnas" th:text="#{gen.description}">Description</th>														
-																											
+														<th class="titulo-columnas text-center" ><span > ID </span></th>												
 														<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
 														<th class="titulo-columnas text-center" ><span th:text="#{gen.updated}"> Updated At </span></th>
-														<th class="titulo-columnas text-center" ><span > ID </span></th>
 														<th class="titulo-columnas text-center" dt:sortable="false" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
 													</tr>
 												</thead>
 												<tbody th:remove="all-but-first">
-													<tr th:each="mapsstyle : ${mapsstyles}" pages:paginate="10">
-														<!-- IDENTIFICATION/NAME -->
+													<tr th:each="mapsstyle : ${mapsstyles}" pages:paginate="10">													 
+													<!--  NAME -->
+														<td class="text-left" th:text="${ mapsstyle.name != '' ? mapsstyle.name : mapsstyle.identification }"></td>			
+														<!-- IDENTIFICATION  -->
 														<td class="text-left" th:text="${mapsstyle.identification}"></td>															
 														<!-- USER -->
-														<td class="text-center " th:text="${mapsstyle.user.userId}"></td>
+														<td class="text-center " th:text="${mapsstyle.user}"></td>
 														<!-- DESCRIPTION -->
 														<td class="text-left text-truncate-sm" th:title="${mapsstyle.description}" th:text="${mapsstyle.description}"></td>														
+														<!-- ID --> 
+														<td class="text-center " th:text="${mapsstyle.id}"></td>
 														<!-- DATE --> 
 		 												<td class="text-center" th:if="${mapsstyle.createdAt!=null}"><span th:text="${#dates.format(mapsstyle.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(mapsstyle.createdAt,'dd/MM/yyyy')}" ></span></td>
 														<td class="text-center" th:if="${mapsstyle.createdAt==null}" th:text="'---'"></td>
 														<!-- UPDATE --> 
 		 												<td class="text-center" th:if="${mapsstyle.updatedAt!=null}"><span th:text="${#dates.format(mapsstyle.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(mapsstyle.updatedAt,'dd/MM/yyyy')}" ></span></td>
 														<td class="text-center" th:if="${mapsstyle.updatedAt==null}" th:text="'---'"></td>
-														<td class="text-center " th:text="${mapsstyle.id}"></td>
+														
 														<!-- OPTIONS -->
 														<td class="icon" style="white-space: nowrap">
 															<div class="grupo-iconos text-center">
@@ -198,25 +202,29 @@
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-														<label th:text="#{gen.owner}"> Owner </label>
+														<label th:text="#{gen.identification}"> Identification </label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-														<label th:text="#{gen.description}"> Description </label>
+														<label th:text="#{gen.owner}"> Owner </label>
 													</span>
-													
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
-														<label th:text="#{gen.created}"> Created at</label>
+														<label th:text="#{gen.description}"> Description </label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-														<label th:text="#{gen.updated}"> Updatet at</label>
+														<label > ID</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
-														<label > ID</label>
+														<label th:text="#{gen.created}"> Created at</label>
 													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="6" checked/>
+														<label th:text="#{gen.updated}"> Updatet at</label>
+													</span>
+													
 																
 												</div>
 											</div>
@@ -356,6 +364,8 @@
 	var deleteUrl =  [[@{/mapsstyle}]];
 	
 	var showConfirmDeleteDialog = function(id){	
+		console.log(deleteUrl)
+		debugger
 		$('#delete_mapsstyle_form').attr('action', deleteUrl + '/' + id);
 		$('#delete-id').val(id);
 		HeaderController.showConfirmDialogMapsGeneric('delete_mapsstyle_form');	
@@ -368,7 +378,12 @@
 			document.execCommand("copy");
 			$temp.remove();
 			
-	}		
+	}
+	
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([4],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});		
 
 	// MAIN WHEN READY
 	$( document ).ready(function() {
@@ -439,17 +454,14 @@
 		// SEARCH FORM
 		$('#search_mapsstyle').on('click',function(){ $('#form_mapsstyle')[0].submit(); });
 		
-	});
-	 
-	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
-		
+ 
+		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 		var oTable = $('#mapsstyle').dataTable({
 		      "bAutoWidth": false
 		      });
 		
 		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-		$.each([5],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		//$.each([4],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));	

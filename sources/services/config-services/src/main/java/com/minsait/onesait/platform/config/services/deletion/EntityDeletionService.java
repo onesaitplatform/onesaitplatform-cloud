@@ -55,5 +55,5 @@ public interface EntityDeletionService {
 
 	void deleteMapsMap(String id, String userId);
 
-	void deleteMapsProject(String id, String userId);
+	void deleteMapsProject(String id, boolean deleteDepencies,String userId);
 }

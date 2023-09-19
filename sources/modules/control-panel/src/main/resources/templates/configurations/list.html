@@ -210,9 +210,9 @@
 													<thead>
 														<tr class="cabecera-tabla">
 															<th class="titulo-columnas text-left" > <span th:text="#{gen.identification}">Identification</span></th>
+															<th class="titulo-columnas" ><span th:text="#{gen.owner}" >Name</span></th>
 															<th class="titulo-columnas text-left" > <span th:text="#{configurations.type}" >Configuration Type</span></th>
 															<th class="titulo-columnas text-left" > <span th:text="#{configuration.environment}" >Environment</span></th>
-															<th class="titulo-columnas" ><span th:text="#{configuration.userid}" >Name</span></th>
 															<th class="titulo-columnas text-left" > <span th:text="#{configuration.description}">Description</span></th>
 															<th class="titulo-columnas text-left" ><span th:text="#{gen.created}"> Created At </span></th>
 															<th class="titulo-columnas text-left" ><span th:text="#{gen.updated}"> Updated At </span></th>
@@ -223,12 +223,13 @@
 													<tbody th:remove="all-but-first">
 														<tr th:each="configuration : ${configurations}" pages:paginate="10">
 															<td class="text-left no-wrap" th:text="${configuration.identification}"></td>
+															<!-- USERID -->
+															<td class="text-left no-wrap " th:text="${configuration.user.userId}"></td>
 															<!-- CONFIGURATION TYPE -->														
 															<td class="text-left text-truncate-sm no-wrap " th:text="${configuration.type}"></td>	
 															<!-- ENVIRONMENT -->
 															<td class="text-left no-wrap " th:text="${configuration.environment}"></td>
-															<!-- USERID -->
-															<td class="text-left no-wrap " th:text="${configuration.user.userId}"></td>
+															
 															<!-- DESCRIPTION -->
 															<td class="text-left no-wrap" th:text="${configuration.description}"></td>
 															<!-- DATE --> 
@@ -261,16 +262,17 @@
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-															<label th:text="#{configurations.type}"> Type </label>
+															<label th:text="#{gen.owner}"> owner</label>
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-															<label th:text="#{configuration.environment}"> Environment</label>
+															<label th:text="#{configurations.type}"> Type </label>
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
-															<label th:text="#{configuration.userid}"> User</label>
+															<label th:text="#{configuration.environment}"> Environment</label>
 														</span>
+														
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
 															<label th:text="#{configuration.description}"> Description</label>
@@ -370,11 +372,7 @@
 		$('#search_config').on('click',function(){ 
 			$('#configurations').DataTable().column(0).search( $('#config-identification').val()).draw();
 		});
-		
-	});
-	 
-	// MAIN WHEN LOAD
-	$(window).on("load",function(){ 
+		 
 		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 
 		var oTable = $('#configurations').dataTable({
@@ -383,7 +381,7 @@
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		
-		$.each([3],function(ind,value){ 
+		$.each([],function(ind,value){ 
 			$("input.toggle-vis[data-column='"+ value +"']").trigger('click'); 
 		});
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));

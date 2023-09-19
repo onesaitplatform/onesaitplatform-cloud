@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.persistence.external.generator.helper;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -43,12 +44,16 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.Index;
+import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.Offset;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.SetOperationList;
+import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.util.SelectUtils;
 
 @Slf4j
@@ -180,7 +185,7 @@ public class SQLHelperImpl implements SQLHelper {
 		try {
 			final Statement statement = CCJSqlParserUtil.parse(query);
 			if (statement instanceof Select) {
-				return Optional.ofNullable((PlainSelect) ((Select) statement).getSelectBody());
+				return Optional.ofNullable(getPlainSelectFromSelect(((Select) statement).getSelectBody()));
 			} else {
 				log.debug("The statement passed as argument is not a select query, returning the original");
 				return Optional.empty();
@@ -188,6 +193,25 @@ public class SQLHelperImpl implements SQLHelper {
 		} catch (final JSQLParserException e) {
 			log.debug("Could not parse the query with JSQL returning the original. ", e);
 			return Optional.empty();
+		}
+	}
+	
+	private PlainSelect getPlainSelectFromSelect(SelectBody selectBody) {
+		if (SetOperationList.class.isInstance(selectBody)) { // union
+			PlainSelect plainSelect = new PlainSelect();
+
+			List<SelectItem> ls = new LinkedList<>();
+			ls.add(new AllColumns());
+			plainSelect.setSelectItems(ls);
+			
+			SubSelect subSelect = new SubSelect();
+			subSelect.setSelectBody(selectBody);
+			subSelect.setAlias(new Alias("U"));
+			plainSelect.setFromItem(subSelect);
+						
+			return plainSelect;
+		} else {
+			return (PlainSelect) selectBody;
 		}
 	}
 

@@ -117,7 +117,12 @@ public interface ProjectResourceAccessRepository extends JpaRepository<ProjectRe
 	@Modifying
 	@Query("delete from ProjectResourceAccess p where p.id = :id")
 	void deleteById(@Param("id") String id);
-	
+
+	@Transactional
+	@Modifying
+	@Query("delete from ProjectResourceAccess p where p.project.id = :id")
+	void deleteByProjectId(@Param("id") String id);
+
 	@Query("SELECT pra FROM ProjectResourceAccessList pra WHERE pra.resource.id= :id")
 	public ProjectResourceAccessList getResource_id(@Param("id") String id);
 

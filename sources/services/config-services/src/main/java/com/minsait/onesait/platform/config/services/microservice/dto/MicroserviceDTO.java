@@ -64,8 +64,9 @@ public class MicroserviceDTO {
 	private int port;
 	private String jobName;
 	@Schema(required = true)
-	TemplateType template;
+	String template;
 
 	ZipMicroservice zipInfo;
 	GitTemplateMicroservice gitTemplate;
+	private String jobUrl;
 }

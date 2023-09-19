@@ -65,7 +65,7 @@ public class VirtualRelationalOntologyManageDBRepository implements ManageDBRepo
 	@Autowired
 	private SQLGenerator sqlGenerator;
 
-	private SQLGeneratorOps sqlGeneratorOps = new SQLGeneratorOpsImpl();
+	private final SQLGeneratorOps sqlGeneratorOps = new SQLGeneratorOpsImpl();
 
 	private JdbcTemplate getJdbTemplate(final String ontology) {
 		try {
@@ -138,7 +138,7 @@ public class VirtualRelationalOntologyManageDBRepository implements ManageDBRepo
 
 	private String generateSchema(String ontology, String schema, Map<String, String> config) {
 		final List<ColumnRelational> cols = sqlGeneratorOps.generateColumnsRelational(schema);
-		CreateStatement createStatement = sqlGenerator.buildCreate().setOntology(ontology);
+		final CreateStatement createStatement = sqlGenerator.buildCreate().setOntology(ontology);
 		createStatement.setDatabase(config.get(KEY_DATABASE));
 		createStatement.setSchema(config.get(KEY_SCHEMA));
 		createStatement.setColumnsRelational(cols);
@@ -245,6 +245,12 @@ public class VirtualRelationalOntologyManageDBRepository implements ManageDBRepo
 	@Override
 	public String updateTable4Ontology(String identification, String jsonSchema, Map<String, String> config) {
 		throw new DBPersistenceException(NOT_IMPLEMENTED_METHOD);
+	}
+
+	@Override
+	public void createTTLIndex(String ontology, String attribute, Long seconds) {
+		throw new DBPersistenceException(NOT_IMPLEMENTED_METHOD);
+
 	}
 
 }

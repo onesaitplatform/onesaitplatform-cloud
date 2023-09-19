@@ -149,16 +149,16 @@
 										<label th:if="${#strings.toUpperCase(type)} == 'ONTOLOGY'" class="control-label margin-left-5 small" th:text="${#strings.toUpperCase('__#{gen.ontology}__')}">Type</label>
 										<label th:if="${#strings.toUpperCase(type)} == 'ONTOLOGYVIRTUALDATASOURCE'" class="control-label margin-left-5 small" th:text="${#strings.toUpperCase('__#{datasource.breadcrumb.list}__')}">Type</label>
 										<label th:if="${#strings.toUpperCase(type)} != 'ONTOLOGY' AND ${#strings.toUpperCase(type)} != 'ONTOLOGYVIRTUALDATASOURCE'"class="control-label margin-left-5 small" th:text="${type}">Type</label>
-										<span th:if="${#strings.toUpperCase(type)} == 'DATAFLOW' AND ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_DATASCIENTIST'" th:id="'new_' + ${type}" class='pull-right badge badge-primary-action text-light' th:attr="onclick='javascript:navigateUrl(\'' + @{|/${urlsMap.get(#strings.toUpperCase(type))}/${(#strings.toUpperCase(type) == 'BINARYFILE' || #strings.toUpperCase(type) == 'DATAFLOW' || #strings.toUpperCase(type) == 'NOTEBOOK') ? 'list/true' : 'create'}|} + '\');'">+</span>
-										<span th:if="${#strings.toUpperCase(type)} == 'NOTEBOOK' AND ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_DATASCIENTIST'" th:id="'new_' + ${type}" class='pull-right badge badge-primary-action text-light' th:attr="onclick='javascript:navigateUrl(\'' + @{|/${urlsMap.get(#strings.toUpperCase(type))}/${(#strings.toUpperCase(type) == 'BINARYFILE' || #strings.toUpperCase(type) == 'DATAFLOW' || #strings.toUpperCase(type) == 'NOTEBOOK') ? 'list/true' : 'create'}|} + '\');'">+</span>
-										<span th:if="${#strings.toUpperCase(type)} != 'NOTEBOOK' AND ${#strings.toUpperCase(type)} != 'DATAFLOW'" th:id="'new_' + ${type}" class='pull-right badge badge-primary-action text-light' th:attr="onclick='javascript:navigateUrl(\'' + @{|/${urlsMap.get(#strings.toUpperCase(type))}/${(#strings.toUpperCase(type) == 'BINARYFILE' || #strings.toUpperCase(type) == 'DATAFLOW' || #strings.toUpperCase(type) == 'NOTEBOOK') ? 'list/true' : 'create'}|} + '\');'">+</span>
+										<span th:if="${#strings.toUpperCase(type)} == 'DATAFLOW' AND ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_DATASCIENTIST'" th:id="'new_' + ${type}" class='pull-right badge badge-primary-action text-light' th:attr="onclick='javascript:navigateUrl(\'' + @{|/${urlsMap.get(#strings.toUpperCase(type))}/${(#strings.toUpperCase(type) == 'BINARYFILE' || #strings.toUpperCase(type) == 'DATAFLOW' || #strings.toUpperCase(type) == 'NOTEBOOK') ? 'list/true' : 'create'}|} + '\');'" th:title="#{project.resources.tooltip}">+</span>
+										<span th:if="${#strings.toUpperCase(type)} == 'NOTEBOOK' AND ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_DATASCIENTIST'" th:id="'new_' + ${type}" class='pull-right badge badge-primary-action text-light' th:attr="onclick='javascript:navigateUrl(\'' + @{|/${urlsMap.get(#strings.toUpperCase(type))}/${(#strings.toUpperCase(type) == 'BINARYFILE' || #strings.toUpperCase(type) == 'DATAFLOW' || #strings.toUpperCase(type) == 'NOTEBOOK') ? 'list/true' : 'create'}|} + '\');'" th:title="#{project.resources.tooltip}">+</span>
+										<span th:if="${#strings.toUpperCase(type)} != 'NOTEBOOK' AND ${#strings.toUpperCase(type)} != 'DATAFLOW'" th:id="'new_' + ${type}" class='pull-right badge badge-primary-action text-light' th:attr="onclick='javascript:navigateUrl(\'' + @{|/${urlsMap.get(#strings.toUpperCase(type))}/${(#strings.toUpperCase(type) == 'BINARYFILE' || #strings.toUpperCase(type) == 'DATAFLOW' || #strings.toUpperCase(type) == 'NOTEBOOK') ? 'list/true' : 'create'}|} + '\');'" th:title="#{project.resources.tooltip}">+</span>
 										<span th:id="'count_' + ${type}" class='pull-right badge badge-info'></span>										
 	                            	</div>
                             	</th:block>
 							</div>
                             <div id="tab-webproject" class="option">
                                 <a href="#tab_4" data-toggle="tab" th:classappend="${projectObj?.id} == null ? disabled : ''" aria-expanded="true">
-                                    <span class="" th:text="#{marketasset.webproject}">WEB PROJECT </span>
+                                    <span class="" th:text="#{gen.webproject}">WEB PROJECT </span>
                                 </a>
                             </div>
                         </div>
@@ -238,7 +238,7 @@
 										<span id="accessfilter" class="hide" style="display:inline-block" > </span>
 										<span class="separator"></span>
 										<div class="pull-right btn-group " id="divcreate" style="margin-left:30px;">
-											<button type="button" class="btn btn-primary button-plus-create" onclick="$('#resources-modal').modal('show');" ><a><i class="icon-new" style="color:white;"></i></a></button>
+											<button type="button" class="btn btn-primary button-plus-create" th:title="#{project.resources.add}" onclick="$('#resources-modal').modal('show');" ><a><i class="icon-new" style="color:white;"></i></a></button>
 											<button type="button" class="btn btn-primary btn-primary-delete margin-left-5" style="min-width: 34px!important;" th:attr="onclick='ProjectCreateController.removeAllAuthorizationsConfirm(\''+${projectObj.id}+'\');'" ><a><i class="icon-delete" style="color:white;"></i></a></button>
 										</div>		
 									</div>	

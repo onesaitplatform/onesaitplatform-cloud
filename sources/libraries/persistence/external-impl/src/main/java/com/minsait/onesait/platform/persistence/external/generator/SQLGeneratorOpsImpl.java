@@ -537,10 +537,16 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 		final Update update = new Update();
 
 		update.setTable(new Table(updateStatement.getOntology()));
-		update.setColumns(this.generateSQLColumns(new ArrayList<>(updateStatement.getValues().keySet())));
+
 		final Sequence seq = new Sequence();
-		update.setExpressions(this.generateSQLExpressionListForVirtual(updateStatement.getValues(),
-				virtualDatasourceType, tableColumnTypes, seq, jdbcParams, withParams).getExpressions());
+		List<Column> columns = this.generateSQLColumns(new ArrayList<>(updateStatement.getValues().keySet()));
+		List<Expression> expresions = this.generateSQLExpressionListForVirtual(updateStatement.getValues(),
+				virtualDatasourceType, tableColumnTypes, seq, jdbcParams, withParams).getExpressions();
+
+		for (int i = 0; i < columns.size(); i++) {
+			update.addUpdateSet(columns.get(i), expresions.get(i));
+		}
+
 		update.setWhere(this.getWhereForVirtual(updateStatement.getWhere(), virtualDatasourceType, tableColumnTypes,
 				seq, jdbcParams, withParams));
 

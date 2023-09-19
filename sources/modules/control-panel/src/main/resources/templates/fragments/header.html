@@ -149,6 +149,14 @@ style>.dropdown-submenu {
 								class="icon-API"></i><span class="">APIs</span>
 						</a></li>
 						<!-- END APIS -->
+						
+						<!-- BEGIN BUNDLE MARKET -->
+						<li><a data-original-title="Bundle Repository"
+							style="padding-right: 8px !important;"
+							th:href=" @{'/bundlerepository/list'}"> <i
+								class="icon-store"></i><span class="">Bundle Repository</span>
+						</a></li>
+						<!-- END BUNDLE MARKET -->
 
 						<!-- BEGIN SEARCH CONFLUENCE -->
 						<li><a th:attr="data-original-title=#{head.search}"	style="padding-right: 10px !important" onclick="javascript:$('#confluenceSearch').modal('show');"><i class="icon-search"></i><span th:text="#{menu.modal.search}"></span></a>
@@ -345,6 +353,7 @@ style>.dropdown-submenu {
 			"errores": errores,
 			"informacion": informacion,
 			"btnEliminar": [[#{gen.deleteBtn}]],
+			"btnDeleteToo": [[#{mapsproject.remove.dependencies.too}]],
 			"btnEditar": [[#{gen.editBtn}]],
 			"btnCancelar": [[#{gen.cancelBtn}]],
 			"btnClose": [[#{gen.closeBtn}]],
@@ -366,6 +375,7 @@ style>.dropdown-submenu {
 			"subcategoryDelete":[[#{subcategory.delete.title}]],
 			"virtualDatasourceConfirm":[[#{datasource.delete.confirm}]],
 			"virtualDatasourceDelete":[[#{datasource.delete.title}]],
+			"virtualDatasourceDeleteOntologyAssociate":[[#{datasource.delete.accociation.ontology}]],
 			"prestoDatasourceConfirm":[[#{presto.datasource.delete.confirm}]],
 			"prestoDatasourceDelete":[[#{presto.datasource.delete.title}]],
 			"digitalTwinDeviceConfirm":[[#{digitaltwindevice.delete.confirm}]],
@@ -425,6 +435,8 @@ style>.dropdown-submenu {
 			"microserviceUrl":[[#{microservice.url.title}]],
 			"appDelete":[[#{app.delete.title}]],
 			"processDelete":[[#{process.delete.title}]],
+			"emailConfirm":[[#{emails.delete.confirm}]],
+			"emailDelete":[[#{emails.delete.title}]],
 			"reportConfirm":[[#{reports.delete.confirm}]],
 			"reportDelete":[[#{reports.delete.title}]],
 			"apiDelete":[[#{apimanager.delete.title}]],

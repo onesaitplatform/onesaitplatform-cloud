@@ -348,7 +348,11 @@
 	headersObj[csrfHeader] = csrfToken;
 	
 	var versionTitle = [[#{serverless.deploy.version.title}]];
-		
+	
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});	
 	$(document).ready(function() {
 		
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
@@ -367,9 +371,8 @@
 		});
 		handleTabsChange();
 		
-	});
-	
-	$(window).on("load",function() {
+		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+		
 		if(typeof $('#functions > tbody > tr').length =='undefined' || $('#functions > tbody > tr').length == 0){
 			$('#imageNoElementsOnTable').show();
 		}else{
@@ -381,7 +384,7 @@
 	      });
 		oTable.page.len(10);
 		// HIDE COLUMNS		
-		$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
+		//$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
 		
 	
 		//oTable.destroy();

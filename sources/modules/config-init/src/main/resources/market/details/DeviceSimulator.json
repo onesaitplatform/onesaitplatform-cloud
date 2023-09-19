@@ -1,8 +1,0 @@
-{
-	"title":"Device Simulator JAVA",
-	"technologies":"Java,JAR",
-	"description":"A Java Application for simulating devices. It simulates several device connections through MQTT.",
-	"detailedDescription":"This an example application which simulates several device connections through MQTT protocol. It may be used for testing device management functionality.",
-	"installation":"Download the .jar file. You can use it by executing \"java -jar device-simulator.jar\" with argument \"N\" which must be a number between 1-50, and it is optional (default is 50)",
-	"functionality":""
-}

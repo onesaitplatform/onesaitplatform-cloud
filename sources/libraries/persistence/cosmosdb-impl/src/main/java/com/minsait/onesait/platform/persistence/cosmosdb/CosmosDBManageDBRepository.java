@@ -201,12 +201,19 @@ public class CosmosDBManageDBRepository implements ManageDBRepository {
 		try {
 			final ResourceResponse<DocumentCollection> coll = cosmosClient
 					.readCollection(CosmosDBUtils.collectionLink(collection), new RequestOptions());
-			if (coll.getStatusCode() == 200)
+			if (coll.getStatusCode() == 200) {
 				return true;
+			}
 		} catch (final DocumentClientException e) {
 			log.debug("Collection doesn't exist");
 		}
 		return false;
+	}
+
+	@Override
+	public void createTTLIndex(String ontology, String attribute, Long seconds) {
+		throw new DBPersistenceException("Not implemented");
+
 	}
 
 }

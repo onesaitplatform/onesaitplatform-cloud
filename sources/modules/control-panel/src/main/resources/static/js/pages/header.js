@@ -739,15 +739,53 @@ var HeaderController = function() {
 	}
 	
 	// VIRTUAL-DATASOURCE-CONFIRM-DIALOG
+	var showConfirmDialogVirtualDatasourceWithExternalDatabaseConnections = function(formId, listEntitiesConnection){		
+		logControl ? console.log('showConfirmDialogVirtualDatasource()...') : '';
+
+		// i18 labels
+		var Close = headerReg.btnCancelar;
+		var Title = headerReg.virtualDatasourceDelete;		
+		var Content = "";
+		
+		if (listEntitiesConnection.length>0) {
+			Content = headerReg.virtualDatasourceDeleteOntologyAssociate +'<BR><BR>';
+		    for( var i = 0; i < listEntitiesConnection.length; i++ ){
+				Content = Content + listEntitiesConnection[i];
+				if(i+1 < listEntitiesConnection.length){
+					Content = Content + '<BR>';
+
+				}
+			}
+		}
+		// jquery-confirm DIALOG SYSTEM.
+		$.confirm({
+			title: Title,
+			theme: 'light',			
+			columnClass: 'medium',
+			content: Content,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			buttons: {
+				close: {
+					text: Close,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function (){} //GENERIC CLOSE.		
+				}
+			}
+		});
+
+	}
+	
 	var showConfirmDialogVirtualDatasource = function(formId){		
 		logControl ? console.log('showConfirmDialogVirtualDatasource()...') : '';
 
 		// i18 labels
 		var Remove = headerReg.btnEliminar;
 		var Close = headerReg.btnCancelar;
-		var Content = headerReg.virtualDatasourceConfirm;
 		var Title = headerReg.virtualDatasourceDelete;		
-
+		var Content = headerReg.virtualDatasourceConfirm;
+		
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
 			title: Title,
@@ -1632,6 +1670,50 @@ var HeaderController = function() {
 		});
 	}
 
+ // DASHBOARDS-CONFIRM-DIALOG
+	var showConfirmDialogMapsProject = function(formId,deleteUrl,id){	
+		//i18 labels
+		var Close = headerReg.btnCancelar;
+		var Remove = headerReg.btnEliminar;
+		var RemoveToo = headerReg.btnDeleteToo;
+		var Content = headerReg.delete;
+		var Title = headerReg.deleteTitle;
+
+		// jquery-confirm DIALOG SYSTEM.
+		$.confirm({
+			title: Title,
+			theme: 'light',
+			columnClass: 'medium',
+			content: Content,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			buttons: {
+				close: {
+					text: Close,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function (){} //GENERIC CLOSE.		
+				},
+				remove: {
+					text: Remove,
+					btnClass: 'btn btn-primary',
+					action: function(){ 
+						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
+					}											
+				},
+				removeToo: {
+					text: RemoveToo,
+					btnClass: 'btn btn-primary',
+					action: function(){ 
+						if ( document.forms[formId] ) { 
+							$('#'+formId).attr('action', deleteUrl + '/full/' + id);
+							document.forms[formId].submit();
+							 } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
+					}											
+				}
+			}
+		});
+	}
 
 	// SERVER ERRORS-DIALOG
 	var errors = function(){		
@@ -1768,10 +1850,16 @@ var HeaderController = function() {
 			showConfirmDialogSubcategory(formId);
 		},
 		// DATASOURCE VIRTUAL-CONFIRM-DIALOG
+		showConfirmDialogVirtualDatasourceWithExternalDatabaseConnections : function(formId, listEntitiesConnection){		
+			logControl ? console.log('showConfirmDialogVirtualDatasource()...') : '';
+			showConfirmDialogVirtualDatasourceWithExternalDatabaseConnections(formId, listEntitiesConnection);
+		},
+		// DATASOURCE VIRTUAL-CONFIRM-DIALOG
 		showConfirmDialogVirtualDatasource : function(formId){		
 			logControl ? console.log('showConfirmDialogVirtualDatasource()...') : '';
 			showConfirmDialogVirtualDatasource(formId);
 		},
+		
 		// DATASOURCE PRESTO-CONFIRM-DIALOG
 		showConfirmDialogPrestoDatasource : function(formId){		
 			logControl ? console.log('showConfirmDialogPrestoDatasource()...') : '';
@@ -1915,6 +2003,11 @@ var HeaderController = function() {
 		showConfirmDialogMapsGeneric : function(formId){		
 			logControl ? console.log('showConfirmDialogMapsGeneric()...') : '';
 			showConfirmDialogMapsGeneric(formId);
+		},
+		// MAPSSTYLE-CONFIRM-DIALOG
+		showConfirmDialogMapsProject : function(formId,deleteUrl,id){		
+			logControl ? console.log('showConfirmDialogMapsProject()...') : '';
+			showConfirmDialogMapsProject(formId,deleteUrl,id);
 		}
 	};
 }();

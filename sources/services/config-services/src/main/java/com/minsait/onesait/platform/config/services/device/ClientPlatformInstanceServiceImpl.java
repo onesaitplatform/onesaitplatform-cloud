@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -96,12 +97,20 @@ public class ClientPlatformInstanceServiceImpl implements ClientPlatformInstance
 			cpDTO = new ClientPlatformSimplifiedDTO(cp.getId(), cp.getIdentification());
 		}
 		int inserted = 0;
-		if(datasource.contains("postgresql")){
-			inserted = cpiRepository.createOrUpdateClientPlatformInstancePSQL(clientPlatformInstance, cpDTO.getClientPlatformId(), maxvalue);
-		}else {
-			inserted = cpiRepository.createOrUpdateClientPlatformInstance(clientPlatformInstance, cpDTO.getClientPlatformId(), maxvalue);
+		int	 updated = 0;
+		clientPlatformInstance.setId(UUID.randomUUID().toString());
+		int getClientPlatformInstance = cpiRepository.getClientPlatformInstance(clientPlatformInstance, cpDTO.getClientPlatformId());
+		
+		if(getClientPlatformInstance == 0) {
+
+			inserted = cpiRepository.createClientPlatformInstance(clientPlatformInstance, cpDTO.getClientPlatformId());
+				
+		} else {
+			
+			updated = cpiRepository.updateClientPlatformInstance(clientPlatformInstance, cpDTO.getClientPlatformId());
 		}
-		if (inserted > 0) {
+		
+		if (inserted > 0 || updated > 0) {
 			if (log.isDebugEnabled()) {
 				log.debug("Created or modified device. Identification: {}, clientPlatformId: {}",
 						clientPlatformInstance.getIdentification(),

@@ -63,6 +63,10 @@ public class DashboardDTO extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private byte[] image;
+	
+	@Getter
+	@Setter
+	private String Base64image;
 
 	@Getter
 	@Setter

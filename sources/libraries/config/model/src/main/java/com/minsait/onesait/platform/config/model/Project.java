@@ -179,4 +179,11 @@ public class Project extends ProjectParent implements Versionable<Project> {
 		}
 		return p;
 	}
+
+	@Override
+	public void setOwnerUserId(String userId) {
+		final User u = new User();
+		u.setUserId(userId);
+		setUser(u);
+	}
 }

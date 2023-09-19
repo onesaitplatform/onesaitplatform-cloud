@@ -42,7 +42,7 @@ import lombok.Setter;
 @Configurable
 @Entity
 @Table(name = "dataflow_instances", uniqueConstraints = @UniqueConstraint(name = "instance_ident_UQ", columnNames = {
-"IDENTIFICATION" }))
+		"IDENTIFICATION" }))
 public class DataflowInstance implements Serializable, Versionable<DataflowInstance> {
 
 	private static final long serialVersionUID = 1L;
@@ -141,12 +141,19 @@ public class DataflowInstance implements Serializable, Versionable<DataflowInsta
 
 	@Override
 	public String fileName() {
-		return getIdentification() +  ".yaml";
+		return getIdentification() + ".yaml";
 	}
 
 	@JsonIgnore
 	@Override
 	public String getUserJson() {
 		return getUserIdentification();
+	}
+
+	@Override
+	public void setOwnerUserId(String userId) {
+		final User u = new User();
+		u.setUserId(userId);
+		setUser(u);
 	}
 }

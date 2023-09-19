@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -50,6 +51,7 @@ import com.minsait.onesait.platform.config.model.Report.ReportExtension;
 import com.minsait.onesait.platform.config.services.binaryfile.BinaryFileService;
 import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
 import com.minsait.onesait.platform.config.services.reports.ReportService;
+import com.minsait.onesait.platform.config.services.templates.poi.PoiTemplatesUtil;
 import com.minsait.onesait.platform.report.custom.CustomRepositoryService;
 import com.minsait.onesait.platform.report.exception.GenerateReportException;
 import com.minsait.onesait.platform.report.exception.ReportInfoException;
@@ -127,7 +129,7 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 			break;
 
 		default:
-			throw new GenerateReportException("Unknown extension, must be jrxml or jasper");
+			throw new GenerateReportException("Unknown extension, must be jrxml, jasper");
 		}
 
 		return reportInfo;

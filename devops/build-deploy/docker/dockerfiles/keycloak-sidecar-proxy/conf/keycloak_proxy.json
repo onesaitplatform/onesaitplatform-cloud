@@ -1,0 +1,44 @@
+{
+    "target-url": "${env.TARGET_URL}",
+    "bind-address": "0.0.0.0",
+    "http-port": "${env.HTTP_PORT}",
+    "https-port": "${env.HTTPS_PORT}",
+    "keystore": "${env.KEYSTORE}",
+    "keystore-password": "${env.KEYSTORE_PASSWORD}",
+    "key-password": "${env.KEY_PASSWORD}",
+    "applications": [
+        {
+            "proxy-address-forwarding": true,
+            "base-path": "${env.BASE_PATH}",
+            "adapter-config": {
+                "realm": "${env.REALM_NAME}",
+                "auth-server-url": "${env.AUTH_SERVER_URL}",
+                "resource": "${env.CLIENT_ID}",
+                "ssl-required": "${env.SSL_REQUIRED}",
+                "public-client": "${env.PUBLIC_CLIENT}",
+                "credentials": {
+                    "secret": "${env.CREDENTIAL_SECRET}"
+                },
+                "bearer-only" : "${env.BEARER_ONLY}",
+                "truststore": "${env.TRUSTSTORE}",
+                "truststore-password": "${env.TRUSTSTORE_PASSWORD}",
+                "allow-any-hostname": "${env.ALLOW_ANY_HOSTNAME}"
+            },
+            "constraints": [
+                {
+                    "pattern": "/*",
+                    "methods": [
+                        "OPTIONS"
+                    ],
+                    "permit": true
+                },
+                {
+                    "pattern": "/*",
+                    "roles-allowed": [
+                        "${env.ROLE_ALLOWED}"
+                    ]
+                }
+            ]
+        }
+    ]
+}

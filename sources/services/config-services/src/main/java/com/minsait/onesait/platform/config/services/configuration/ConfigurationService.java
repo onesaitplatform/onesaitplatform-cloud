@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import com.minsait.onesait.platform.config.components.BundleConfiguration;
 import com.minsait.onesait.platform.config.components.CaasConfiguration;
 import com.minsait.onesait.platform.config.components.GlobalConfiguration;
 import com.minsait.onesait.platform.config.components.GoogleAnalyticsConfiguration;
@@ -98,5 +99,7 @@ public interface ConfigurationService {
 	GoogleAnalyticsConfiguration getGoogleAnalyticsConfiguration(String environment);
 
 	CaasConfiguration getCaasConfiguration(String id);
+
+	BundleConfiguration getBundleConfiguration();
 
 }

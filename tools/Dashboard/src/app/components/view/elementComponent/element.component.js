@@ -350,6 +350,82 @@ vm.elemntbadgesclass = function(){
       };
     }
 
+    vm.openSaveAsPrebuildGadgetDialog = function (ev) {      
+      if(vm.eventedit){
+        vm.sendSelectEvent("saveAsPrebuildGadget",vm.element);
+        return;
+      }
+
+      $mdDialog.show({
+        controller: SaveAsPrebuildGadgetDialog,
+        templateUrl: 'app/partials/edit/saveAsPrebuildGadgetDialog.html',
+        parent: angular.element(document.body),
+        targetEvent: ev,
+        clickOutsideToClose:false,
+        multiple : true,
+        fullscreen: false, // Only for -xs, -sm breakpoints.
+        locals: {
+          element: vm.element
+        }
+      })
+      .then(function(answer) {
+      }, function() {
+        $scope.status = 'You cancelled the dialog.';
+      });
+    };
+
+    function SaveAsPrebuildGadgetDialog($scope, $mdDialog, httpService, utilsService, element) {
+      $scope.identification = "";
+      $scope.description = "";
+
+      $scope.element = element;
+
+      $scope.saveAsPrebuildGadget = function() {
+        var gadget = {
+          "identification": $scope.identification,
+          "description": $scope.description,               
+          "config": JSON.stringify(utilsService.deepMerge(element.tparams,element.params)),
+          "gadgetMeasures": [],
+          "type": element.tempId,
+          "instance":true
+        }
+        if( element.datasource){     
+          gadget["datasource"]= {
+            "identification": element.datasource.name,
+            "query": element.datasource.query,
+            "refresh": element.datasource.refresh,
+            "maxValues": element.datasource.maxValues,
+            "description": element.datasource.description
+          }
+        }
+
+        httpService.createGadget(gadget).then(
+          function(response){
+            var config = {}
+            config.type = element.template;                 
+            config.params = element.params;
+            config.tparams = element.tparams;
+            config.gadgetid = response.data.id;
+            config.datasource = element.tparams.datasource;
+            window.dispatchEvent(new CustomEvent("newprebuildgadgetcreated",{detail: gadget}));
+            $scope.hide();
+          },
+          function(e){
+            console.log("Error create Custom Gadget: " +  JSON.stringify(e))
+          }
+        )
+      }
+
+      $scope.hide = function() {
+        $mdDialog.hide();
+      };
+
+      $scope.cancel = function() {
+        $mdDialog.cancel();
+      };
+
+    }
+
     function EditGadgetDialog($scope, $timeout,$mdDialog,  element, contenteditor, httpService) {
       $scope.initMonaco = function(){
         vm.VSHTML = monaco.editor.create(document.querySelector("#htmleditor"), {

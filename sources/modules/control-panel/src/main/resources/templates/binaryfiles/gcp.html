@@ -309,13 +309,13 @@
 													<thead>
 														<tr class="cabecera-tabla">
 															<th class="titulo-columnas text-left" dt:filterable="true" dt:filterCssClass="input-small" dt:selector="fileFilter"><span th:text="#{binaryfiles.filename}"> filename </span></th>
+															<th class="titulo-columnas text-left "  ><span th:text="#{binaryfiles.owner}">Owner</span></th>
 															<th class="titulo-columnas text-left" ><span th:text="#{binaryfiles.fileid}">file id</span></th>
 															<th class="titulo-columnas text-left" ><span th:text="#{binaryfiles.metadata }">Metadata</span></th>
-															<th class="titulo-columnas text-left "  ><span th:text="#{binaryfiles.owner}">Owner</span></th>
-															<th class="titulo-columnas text-left" > <span th:text="#{gen.created}">Created At</span></th>
-															<th class="titulo-columnas text-left" > <span th:text="#{gen.updated}">Updated At</span></th>
 															<th class="titulo-columnas text-left" ><span th:text="#{binaryfiles.accesstypes}" >Access types</span></th>
 															<th class="titulo-columnas text-left"><span th:text="#{gen.public}">Public</span></th>
+															<th class="titulo-columnas text-left" > <span th:text="#{gen.created}">Created At</span></th>
+															<th class="titulo-columnas text-left" > <span th:text="#{gen.updated}">Updated At</span></th>
 															<th class="titulo-columnas text-center" dt:sortable="false" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
 														</tr>
 													</thead>
@@ -323,24 +323,24 @@
 														<tr th:each="file : ${files}" pages:paginate="10">
 															<!-- File name -->
 															<td class="text-left bold no-wrap" th:text="${file.fileName}"></td>
+															<!-- OWNER -->
+															<td class="text-left no-wrap " th:text="${file.user.userId}"></td>
 															<!-- File id -->
 															<td class="text-left no-wrap text-truncate-md" th:text="${file.identification}"></td>
 															<!-- Metadata -->
-															<td class="text-left no-wrap text-truncate-md" th:text="${file.metadata}"></td>
-															<!-- OWNER -->
-															<td class="text-left no-wrap " th:text="${file.user.userId}"></td>
-															<!-- DATE -->
-															<td class="text-left" th:if="${file.createdAt!=null}"><span th:text="${#dates.format(file.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(file.createdAt,'dd/MM/yyyy')}" ></span></td>
-															<td class="text-left" th:if="${file.createdAt==null}" th:text="'---'"></td>
-															<!-- UPDATE -->
-															<td class="text-left" th:if="${file.updatedAt!=null}"><span th:text="${#dates.format(file.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(file.updatedAt,'dd/MM/yyyy')}" ></span></td>
-															<td class="text-left" th:if="${file.updatedAt==null}" th:text="'---'"></td>										
+															<td class="text-left no-wrap text-truncate-md" th:text="${file.metadata}"></td>															
 															<!-- Access -->
 															<td class="text-left" th:if="${(file.user.userId eq #authentication.getName()) OR (accessMap.get(file.id) eq 'WRITE') OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR')}"><span th:text="1" style="display:none" ></span><i class="la la-pencil text-success font-hg"></i></td>
 															<td class="text-left" th:if="${!(file.user.userId eq #authentication.getName()) AND !(#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR') AND !(accessMap.get(file.id) eq 'WRITE')}"><span th:text="0" style="display:none" ></span><i class="la la-book text-danger font-hg"></i></td>
 															<!-- PUBLIC -->
 															<td class="text-left" th:if="${file.public}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"></i><span th:text="' '+#{gen.public}" style="color: #2E6B33;"></span></td>
 															<td class="text-left" th:if="${!file.public}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.private}" style="color: #A73535;"></span></td>
+															<!-- DATE -->
+															<td class="text-left" th:if="${file.createdAt!=null}"><span th:text="${#dates.format(file.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(file.createdAt,'dd/MM/yyyy')}" ></span></td>
+															<td class="text-left" th:if="${file.createdAt==null}" th:text="'---'"></td>
+															<!-- UPDATE -->
+															<td class="text-left" th:if="${file.updatedAt!=null}"><span th:text="${#dates.format(file.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(file.updatedAt,'dd/MM/yyyy')}" ></span></td>
+															<td class="text-left" th:if="${file.updatedAt==null}" th:text="'---'"></td>										
 															
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="text-align: center; white-space: nowrap">
@@ -414,30 +414,30 @@
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-															<label th:text="#{binaryfiles.fileid}"> File Id </label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-															<label th:text="#{binaryfiles.metadata}"> Metadata</label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
 															<label th:text="#{binaryfiles.owner}"> Owner</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-															<label th:text="#{gen.created}"> Created At</label>
+															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
+															<label th:text="#{binaryfiles.fileid}"> File Id </label>
 														</span>
 														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<label th:text="#{binaryfiles.metadata}"> Metadata</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+															<label th:text="#{binaryfiles.accesstypes}"> Access Types</label>
+														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
-															<label th:text="#{gen.updated}"> Updated At</label>
+															<label th:text="#{gen.public}"> Public</label>
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
-															<label th:text="#{binaryfiles.accesstypes}"> Access Types</label>
+															<label th:text="#{gen.created}"> Created At</label>
+														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="7" checked/>
-															<label th:text="#{gen.public}"> Public</label>
+															<label th:text="#{gen.updated}"> Updated At</label>
 														</span>
 													</div>
 												</div>
@@ -486,6 +486,11 @@
 	var errorMaxSize = [[#{binaryfiles.maxsize.error}]];
 	function navigateUrl(url){  window.location.href = url;	}
 	function navigateWindow(url){ window.open(url,'_blank');	}
+	
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		$.each([2,3],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		//var currentMode = $('#repositories').text();
@@ -518,12 +523,7 @@
 		});
 		
 		
-	});
-	 
-	// MAIN WHEN LOAD
-	$(window).on("load",function(){ 
-		
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
+		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
 	
 		//DATATABLE 
 		var oTable = $('#files').dataTable({
@@ -579,7 +579,7 @@
 		filtersResets.addClass('hide');
 		
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
-		$.each([1,2],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		//$.each([2,3],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		$('#yadcf-filter--files-0').attr("placeholder", [[#{binaryfiles.text.placeholder}]]);
 		

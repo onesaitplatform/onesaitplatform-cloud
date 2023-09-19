@@ -161,4 +161,9 @@ public class ManageDBPersistenceServiceFacade implements ManageDBRepository, Nat
 		return manageDBRepositoryFactory.getInstance(ontology).updateTable4Ontology(ontology, jsonSchema, config);
 	}
 
+	@Override
+	public void createTTLIndex(String ontology, String attribute, Long seconds) {
+		manageDBRepositoryFactory.getInstance(ontology).createTTLIndex(ontology, attribute, seconds);
+	}
+
 }

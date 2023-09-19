@@ -118,13 +118,12 @@
 												<thead>
 													<tr class="cabecera-tabla">
 														<th class="titulo-columnas" th:text="#{gen.name}">Name</th>
-														
-														 
-														<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>					
+																		
 														<th class="titulo-columnas text-center" ><span th:text="#{datalabeling.tasknumber}">  Task Number </span></th>	
 														<th class="titulo-columnas text-center" ><span th:text="#{datalabeling.totalAnnotationsNumber}"> Total Annotations Number </span></th>	
 														<th class="titulo-columnas text-center" ><span th:text="#{datalabeling.totalPredictionsNumber}"> Total Predictions Number </span></th>														
 														<th class="titulo-columnas text-center" ><span > ID </span></th>
+														<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
 													    <th class="titulo-columnas text-center" dt:sortable="false" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
 													</tr>
 												</thead>
@@ -133,9 +132,6 @@
 														<!-- IDENTIFICATION/NAME -->
 														<td class="text-left" th:text="${project.title}"></td>															
 													 
-														<!-- DATE --> 
-		 												<td class="text-center" th:if="${project.createdAt!=null}"><span th:text="${project.createdAt}" style="display:none" ></span><span th:text="${project.createdAt}" ></span></td>
-														<td class="text-center" th:if="${project.createdAt==null}" th:text="'---'"></td>
 														<!-- TASK NUMBER --> 
 														<td class="text-left" th:text="${project.taskNumber}"></td>	
 														<!-- TOTAL ANNOTATIONS NUMBER --> 
@@ -146,6 +142,9 @@
 														<td class="text-center " th:text="${project.identification}"></td>
 														
 														
+														<!-- DATE --> 
+		 												<td class="text-center" th:if="${project.createdAt!=null}"><span th:text="${project.createdAt}" style="display:none" ></span><span th:text="${project.createdAt}" ></span></td>
+														<td class="text-center" th:if="${project.createdAt==null}" th:text="'---'"></td>
 														
 														<!-- OPTIONS -->
 														<td class="icon" style="white-space: nowrap">
@@ -187,25 +186,26 @@
 														<input class="toggle-vis" type="checkbox" data-column="0" checked/>
 														<label th:text="#{gen.name}"> Name </label>
 													</span>
+													
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-														<label th:text="#{gen.created}"> Created at</label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
 														<label th:text="#{datalabeling.tasknumber}"> Task Number</label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
 														<label th:text="#{datalabeling.totalAnnotationsNumber}"> Total Annotations Number</label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
 														<label th:text="#{datalabeling.totalPredictionsNumber}"> Total Predictions Number</label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
 														<label > ID</label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
+														<label th:text="#{gen.created}"> Created at</label>
 													</span>
 																	
 												</div>
@@ -274,6 +274,25 @@
 	
 
 
+	
+	 
+	 
+	var  deleteProjectConfirmation = function (id){
+	
+		showConfirmDeleteDialog(id);	
+	} 
+	
+	var deleteUrl =  [[@{/datalabeling/deleteproject}]];
+	var showConfirmDeleteDialog = function(id){	
+		$('#delete_project_form').attr('action', deleteUrl + '/' + id);
+		$('#delete-id').val(id);
+		HeaderController.showConfirmDialogDataLabelingProjectDelete('delete_project_form');	
+	}
+	
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([4],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 	
@@ -294,34 +313,14 @@
 			$('#form_dashboard')[0].submit();
 		});
 		
-	});
-	 
-	 
-	 
-	var  deleteProjectConfirmation = function (id){
-	
-		showConfirmDeleteDialog(id);	
-	} 
-	
-	var deleteUrl =  [[@{/datalabeling/deleteproject}]];
-	var showConfirmDeleteDialog = function(id){	
-		$('#delete_project_form').attr('action', deleteUrl + '/' + id);
-		$('#delete-id').val(id);
-		HeaderController.showConfirmDialogDataLabelingProjectDelete('delete_project_form');	
-	}
-	
-	
-	// MAIN WHEN LOAD
-	$(window).on("load",function(){ 
-		
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 		
 		var oTable = $('#dashboards').dataTable({
 		      "bAutoWidth": false
 		      });
 		
 		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-		$.each([5],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		//$.each([4],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));	

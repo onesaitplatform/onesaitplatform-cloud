@@ -122,4 +122,11 @@ public class MapsStyle extends OPResource implements Versionable<MapsStyle> {
 		}
 		return mapsStyle;
 	}
+
+	@Override
+	public void setOwnerUserId(String userId) {
+		final User u = new User();
+		u.setUserId(userId);
+		setUser(u);
+	}
 }

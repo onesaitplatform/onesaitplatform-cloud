@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -36,6 +37,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.commons.model.DescribeColumnData;
 import com.minsait.onesait.platform.commons.rtdbmaintainer.dto.ExportData;
@@ -57,6 +59,8 @@ import lombok.extern.slf4j.Slf4j;
 @Lazy
 @Slf4j
 public class MongoNativeManageDBRepository implements ManageDBRepository {
+
+	private static final String EXPIRE_AFTER_SECONDS = "expireAfterSeconds";
 
 	@Autowired
 	private UtilMongoDB util;
@@ -108,7 +112,8 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 				 * Permitir creación solamente si no tiene elementos: usa la que existe sin
 				 * registros
 				 */
-				final long countCollection = mongoDbConnector.count(Tenant2SchemaMapper.getRtdbSchema(), collection, "{}");
+				final long countCollection = mongoDbConnector.count(Tenant2SchemaMapper.getRtdbSchema(), collection,
+						"{}");
 				if (countCollection > 0 && !schema.contains("keeprecords")) {
 					log.error("The collection {} already exists and has records", collection);
 					throw new DBPersistenceException("The collection already exists and has records");
@@ -154,6 +159,12 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 	}
 
 	@Override
+	public void createTTLIndex(String ontology, String attribute, Long seconds) {
+		createIndex(
+				"db." + ontology + ".createIndex({\"" + attribute + "\": 1},{\"expireAfterSeconds\":" + seconds + "})");
+	}
+
+	@Override
 	public void createIndex(String sentence) {
 		log.debug(CREATE_INDEX, sentence);
 		String pquery = null;
@@ -185,14 +196,22 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 				indexKeys = objectMapper.readValue(keyElements.get(0), new TypeReference<Map<String, Integer>>() {
 				});
 				if (keyElements.size() == 2) {
-					indexOptions = objectMapper.readValue(keyElements.get(1), IndexOptions.class);
+					if (keyElements.get(1).contains(EXPIRE_AFTER_SECONDS)) {
+						// expireAfterSeconds cannot be read into IndexOptions
+						final JsonNode iOptsJson = objectMapper.readValue(keyElements.get(1), JsonNode.class);
+						indexOptions = new IndexOptions();
+						indexOptions.expireAfter(iOptsJson.get(EXPIRE_AFTER_SECONDS).asLong(), TimeUnit.SECONDS);
+					} else {
+						indexOptions = objectMapper.readValue(keyElements.get(1), IndexOptions.class);
+					}
 				}
 			} catch (final IOException e) {
 				log.error("Invalid index key or index options. Sentence = {}, cause = {}, errorMessage = {}.", sentence,
 						e.getCause(), e.getMessage());
 				throw new DBPersistenceException("Invalid index key or index options", e);
 			}
-			mongoDbConnector.createIndex(Tenant2SchemaMapper.getRtdbSchema(), collection, new MongoDbIndex(indexKeys, indexOptions));
+			mongoDbConnector.createIndex(Tenant2SchemaMapper.getRtdbSchema(), collection,
+					new MongoDbIndex(indexKeys, indexOptions));
 
 		} catch (final DBPersistenceException e) {
 			log.error(CREATE_INDEX + e.getMessage());
@@ -321,7 +340,7 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 				try {
 					final Map<String, Object> obj2 = objectMapper.readValue(esquema,
 							new TypeReference<Map<String, Object>>() {
-					});
+							});
 					List<String> names;
 					if (obj2.containsKey("properties")) {
 
@@ -394,24 +413,22 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 
 		if (pathToFile.equals("default")) {
 			path = exportPath + ontology + format.format(new Date()) + ".json";
-		}
-		else {
+		} else {
 			path = pathToFile;
 		}
-
 
 		if (mongoDbConnector.count(Tenant2SchemaMapper.getRtdbSchema(), ontology, "count(" + query + ")") > 0) {
 			ProcessBuilder pb = null;
 			if (mongoDbConnector.getCredentials().isEnableMongoDbAuthentication()) {
-				pb = new ProcessBuilder("mongoexport", "--host",
-						mongoDbConnector.getReplicaSetMaster().getHost(), "--db", Tenant2SchemaMapper.getRtdbSchema(),
-						"--username", mongoDbConnector.getCredentials().getUsername(), "--password",
+				pb = new ProcessBuilder("mongoexport", "--host", mongoDbConnector.getReplicaSetMaster().getHost(),
+						"--db", Tenant2SchemaMapper.getRtdbSchema(), "--username",
+						mongoDbConnector.getCredentials().getUsername(), "--password",
 						mongoDbConnector.getCredentials().getPassword(), "--collection", ontology, "--query", query,
 						"--out", path, "--authenticationDatabase",
 						mongoDbConnector.getCredentials().getAuthenticationDatabase());
 			} else {
-				pb = new ProcessBuilder("mongoexport", "--db", Tenant2SchemaMapper.getRtdbSchema(), "--collection", ontology, "--query", query,
-						"--out", path);
+				pb = new ProcessBuilder("mongoexport", "--db", Tenant2SchemaMapper.getRtdbSchema(), "--collection",
+						ontology, "--query", query, "--out", path);
 			}
 
 			try {

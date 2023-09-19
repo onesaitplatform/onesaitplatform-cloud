@@ -15,35 +15,50 @@
 package com.minsait.onesait.platform.persistence.opensearch.api;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
 import org.elasticsearch.ElasticsearchStatusException;
-import org.opensearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.opensearch.action.support.master.AcknowledgedResponse;
-import org.opensearch.action.update.UpdateRequest;
-import org.opensearch.action.update.UpdateResponse;
-import org.opensearch.client.RequestOptions;
-import org.opensearch.client.RestHighLevelClient;
-import org.opensearch.client.indices.CreateIndexRequest;
-import org.opensearch.client.indices.CreateIndexResponse;
-import org.opensearch.client.indices.GetIndexRequest;
-import org.opensearch.client.indices.GetIndexResponse;
-import org.opensearch.client.indices.PutComposableIndexTemplateRequest;
-import org.opensearch.cluster.metadata.AliasMetadata;
-import org.opensearch.cluster.metadata.ComposableIndexTemplate;
-import org.opensearch.cluster.metadata.Template;
-import org.opensearch.common.compress.CompressedXContent;
-import org.opensearch.common.settings.Settings;
-import org.opensearch.common.xcontent.XContentType;
+import org.opensearch.client.opensearch.OpenSearchClient;
+import org.opensearch.client.opensearch._types.ErrorResponse;
+import org.opensearch.client.opensearch._types.OpenSearchException;
+import org.opensearch.client.opensearch._types.mapping.Property;
+import org.opensearch.client.opensearch._types.mapping.TypeMapping;
+import org.opensearch.client.opensearch.cat.IndicesResponse;
+import org.opensearch.client.opensearch.core.UpdateRequest;
+import org.opensearch.client.opensearch.core.UpdateResponse;
+import org.opensearch.client.opensearch.indices.Alias;
+import org.opensearch.client.opensearch.indices.CreateIndexRequest;
+import org.opensearch.client.opensearch.indices.CreateIndexResponse;
+import org.opensearch.client.opensearch.indices.DeleteIndexRequest;
+import org.opensearch.client.opensearch.indices.DeleteIndexResponse;
+import org.opensearch.client.opensearch.indices.DeleteIndexTemplateRequest;
+import org.opensearch.client.opensearch.indices.IndexSettings;
+import org.opensearch.client.opensearch.indices.PutIndexTemplateRequest;
+import org.opensearch.client.opensearch.indices.PutIndexTemplateResponse;
+import org.opensearch.client.opensearch.indices.put_index_template.IndexTemplateMapping;
+import org.opensearch.client.transport.JsonEndpoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.persistence.OpensearchEnabledCondition;
+import com.minsait.onesait.platform.persistence.opensearch.api.client.requests.policy.add.AddISMPolicyToIndicesRequest;
+import com.minsait.onesait.platform.persistence.opensearch.api.client.requests.policy.add.AddISMPolicyToIndicesResponse;
+import com.minsait.onesait.platform.persistence.opensearch.api.client.requests.policy.create.CreateISMPolicyRequest;
+import com.minsait.onesait.platform.persistence.opensearch.api.client.requests.policy.create.CreateISMPolicyResponse;
+import com.minsait.onesait.platform.persistence.opensearch.api.client.requests.policy.create.body.ISMPolicy;
+import com.minsait.onesait.platform.persistence.opensearch.api.client.requests.policy.create.body.ISMPolicyAction;
+import com.minsait.onesait.platform.persistence.opensearch.api.client.requests.policy.create.body.ISMTemplate;
+import com.minsait.onesait.platform.persistence.opensearch.api.client.requests.policy.create.body.PolicyState;
+import com.minsait.onesait.platform.persistence.opensearch.api.client.requests.policy.create.body.PolicyStateTransition;
+import com.minsait.onesait.platform.persistence.opensearch.api.client.requests.policy.create.body.PolicyStateTransitionCondition;
+import com.minsait.onesait.platform.persistence.opensearch.api.client.requests.policy.delete.DeleteISMPolicyRequest;
+import com.minsait.onesait.platform.persistence.opensearch.api.client.requests.policy.delete.DeleteISMPolicyResponse;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -54,13 +69,13 @@ import lombok.extern.slf4j.Slf4j;
 public class OSBaseApi {
 
 	@Autowired
-	private RestHighLevelClient hlClient;
+	private OpenSearchClient javaClient;
 
 	@Autowired
 	private IntegrationResourcesService resourcesService;
 
-	private int defaultReplicas = 0;
-	private int defaultShards = 5;
+	private String defaultReplicas = "0";
+	private String defaultShards = "5";
 	final static String TEMPLATE_SEPARATOR = "-";
 
 	@PostConstruct
@@ -72,45 +87,44 @@ public class OSBaseApi {
 
 		@SuppressWarnings("unchecked")
 		final Map<String, Object> defaults = (Map<String, Object>) elasticsearch.get("defaults");
-
-		defaultReplicas = (int) defaults.get("replicas");
-		defaultShards = (int) defaults.get("shards");
+		defaultReplicas = String.valueOf((int) defaults.get("replicas"));
+		defaultShards = String.valueOf((int) defaults.get("shards"));
 	}
 
-	public boolean createIndex(String index, String dataMapping, Map<String, String> config) {
+	public boolean createIndex(String index, Map<String, Property> dataMapping, Map<String, String> config) {
 
-		final CreateIndexRequest request = new CreateIndexRequest(index);
-		Integer shards = defaultShards;
-		Integer replicas = defaultReplicas;
+		String shards = defaultShards;
+		String replicas = defaultReplicas;
 		if (config == null) {
 			config = new HashMap<>();
 		}
 		// add advanced index creation: shards, replicas, etc.
 		if (!config.isEmpty()) {
 			try {
-				shards = Integer.parseInt(config.get("shards"));
+				shards = config.get("shards");
 			} catch (final Exception e) {
 				log.info("No shard config definition was found. Using defaualt value");
 			}
 			try {
-				replicas = Integer.parseInt(config.get("replicas"));
+				replicas = config.get("replicas");
 			} catch (final Exception e) {
 				log.info("No replicas config definition was found. Using defaualt value");
 			}
 		}
+		IndexSettings indexSettings = new IndexSettings.Builder().numberOfShards(shards).numberOfReplicas(replicas)
+				.build();
+		CreateIndexRequest.Builder request = new CreateIndexRequest.Builder().index(index).settings(indexSettings);
 
-		request.settings(
-				Settings.builder().put("index.number_of_shards", shards).put("index.number_of_replicas", replicas));
 		// Add mapping if defined
 		if (!dataMapping.isEmpty()) {
-			request.mapping(dataMapping, XContentType.JSON);
+			TypeMapping.Builder mappingBuilder = new TypeMapping.Builder();
+			mappingBuilder.properties(dataMapping);
+			request.mappings(mappingBuilder.build());
 		}
 
 		try {
-			final CreateIndexResponse createIndexResponse = hlClient.indices().create(request, RequestOptions.DEFAULT);
-
-			// TODO change return data or use void
-			return createIndexResponse.isAcknowledged();
+			CreateIndexResponse createIndexResponse = javaClient.indices().create(request.build());
+			return createIndexResponse.acknowledged();
 		} catch (final ElasticsearchStatusException e) {
 			if (e.getMessage().contains("already exists")) {
 				log.warn("Index {} on ElasticSerach already exists, so skipping creation", index);
@@ -126,22 +140,25 @@ public class OSBaseApi {
 
 	public String[] getIndexes() {
 		try {
-			final GetIndexRequest request = new GetIndexRequest("*");
-			final GetIndexResponse response = hlClient.indices().get(request, RequestOptions.DEFAULT);
-			return response.getIndices();
+			// NOTE: GetIndexRequest call does not use _cat/indices. It GETs /*, so all the
+			// mappings try to be parsed. Graylog indexes throw exception on parsing. Use
+			// _cat/indices instead	
+			IndicesResponse resp = javaClient.cat().indices();
+			return resp.valueBody().stream().map(record -> record.index()).toArray(String[]::new);
 		} catch (final IOException e) {
 			log.error("Error getIndexes ", e);
 			return new String[0];
 		}
 	}
 
-	// TODO check if this method was thought for documents or indices
+	// TODO check if this method was thought for documents or indices, Is this
+	// method ever used?
 	public String updateDocument(String index, String id, String jsonData) {
 		try {
-			final UpdateRequest request = new UpdateRequest(index, id);
-			request.doc(jsonData, XContentType.JSON);
-			final UpdateResponse updateResponse = hlClient.update(request, RequestOptions.DEFAULT);
-			return updateResponse.getResult().toString();
+			final UpdateRequest<String, String> updateRequest = new UpdateRequest.Builder<String, String>().index(index)
+					.id(id).doc(jsonData).build();
+			final UpdateResponse<String> resp = javaClient.update(updateRequest, String.class);
+			return resp.result().toString();
 		} catch (final IOException e) {
 			log.error("UpdateIndex", e);
 			return null;
@@ -149,11 +166,11 @@ public class OSBaseApi {
 	}
 
 	public boolean deleteIndex(String index) {
-		final DeleteIndexRequest request = new DeleteIndexRequest(index);
+		final DeleteIndexRequest deleteRequest = new DeleteIndexRequest.Builder().index(index).build();
 		try {
-			final AcknowledgedResponse deleteIndexResponse = hlClient.indices().delete(request, RequestOptions.DEFAULT);
-			log.info("Delete index result :" + deleteIndexResponse.isAcknowledged());
-			return deleteIndexResponse.isAcknowledged();
+			final DeleteIndexResponse response = javaClient.indices().delete(deleteRequest);
+			log.info("Delete index result :" + response.acknowledged());
+			return response.acknowledged();
 		} catch (final IOException e) {
 			log.error("Error Deleting Type " + e.getMessage());
 			return false;
@@ -166,15 +183,24 @@ public class OSBaseApi {
 
 				throw e;
 			}
+		} catch (final OpenSearchException e ) {
+			if (e.response().error().type().equals("index_not_found_exception")) {
+				log.error("Error Deleting Type " + e.getMessage());
+				return false;
+			} else {
+
+				throw e;
+			}
 		}
 	}
 
-	public boolean createTemplate(String indexPrefix, String dataMapping, Map<String, String> config) {
+	public boolean createTemplate(String indexPrefix, Map<String, Property> dataMapping, Map<String, String> config) {
+		final IndexTemplateMapping.Builder templateMappingBuilder = new IndexTemplateMapping.Builder();
+		final PutIndexTemplateRequest.Builder putIndexTemplateRequest = new PutIndexTemplateRequest.Builder()
+				.name(indexPrefix);
 
-		final PutComposableIndexTemplateRequest request = new PutComposableIndexTemplateRequest().name(indexPrefix);
-
-		Integer shards = defaultShards;
-		Integer replicas = defaultReplicas;
+		Integer shards = 5;// defaultShards;
+		Integer replicas = 0;// defaultReplicas;
 		if (config == null) {
 			config = new HashMap<>();
 		}
@@ -191,39 +217,110 @@ public class OSBaseApi {
 				log.info("No replicas config definition was found. Using defaualt value");
 			}
 		}
-		final AliasMetadata placeholderAlias = AliasMetadata.builder(indexPrefix).build();
-		final Map<String, AliasMetadata> aliases = new HashMap<>();
-		aliases.put(indexPrefix, placeholderAlias);
-		final Settings settings = Settings.builder().put("index.number_of_shards", shards)
-				.put("index.number_of_replicas", replicas).build();
-		// Add mapping if defined
-		CompressedXContent mapping = null;
+
+		IndexSettings indexSettings = new IndexSettings.Builder().numberOfShards(String.valueOf(shards))
+				.numberOfReplicas(String.valueOf(replicas)).build();
+		templateMappingBuilder.settings(indexSettings);
+		final Map<String, Alias> aliasesMap = new HashMap<>();
+		final Alias alias = new Alias.Builder().build();
+		aliasesMap.put(indexPrefix, alias);
+		templateMappingBuilder.aliases(aliasesMap);
+
 		if (!dataMapping.isEmpty()) {
-			try {
-				mapping = new CompressedXContent(dataMapping);
-			} catch (final Exception e) {
-				log.error("Error on mapping while creating Index Template {}. Message:{}, Cause: {}", indexPrefix,
-						e.getMessage(), e.getCause());
-				return false;
-			}
+			TypeMapping.Builder typeMapping = new TypeMapping.Builder();
+			typeMapping.properties(dataMapping);
+			templateMappingBuilder.mappings(typeMapping.build());
 		}
-		final Template template = new Template(settings, mapping, aliases);
-
-		final ComposableIndexTemplate composableIndexTemplate = new ComposableIndexTemplate(
-				Arrays.asList(indexPrefix + TEMPLATE_SEPARATOR + "*"), template, null, 200L, null, null);
-		request.indexTemplate(composableIndexTemplate);
-
 		// do not allow update
-		request.create(true);
+		// request.create(true);
+		// is it necessary to force "not update"?
+		
+		putIndexTemplateRequest.indexPatterns(indexPrefix + TEMPLATE_SEPARATOR + "*");
 		try {
-			final AcknowledgedResponse putTemplateResponse = hlClient.indices().putIndexTemplate(request,
-					RequestOptions.DEFAULT);
-			// TODO change return data or use void
-			return putTemplateResponse.isAcknowledged();
-		} catch (final IOException e) {
-			log.error("Error Creating Index Template {}. Message:{}, Cause: {}", indexPrefix, e.getMessage(),
-					e.getCause());
+			putIndexTemplateRequest.template(templateMappingBuilder.build());
+
+			PutIndexTemplateResponse putIndexTemplateResponse = javaClient.indices()
+					.putIndexTemplate(putIndexTemplateRequest.build());
+			return putIndexTemplateResponse.acknowledged();
+		} catch (final OpenSearchException | IOException e1) {
+			log.error("Error Creating Index Template {}. Message:{}, Cause: {}", indexPrefix, e1.getMessage(),
+					e1.getCause());
 			return false;
 		}
 	}
+	
+	public boolean deleteTemplate(String template) {
+		DeleteIndexTemplateRequest request = new DeleteIndexTemplateRequest.Builder().name(template).build();
+		try {
+			javaClient.indices().deleteIndexTemplate(request);
+		} catch (OpenSearchException | IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return false;
+	}
+
+	public boolean createTTLPolicy(String policyName, String alias, String period, int priority) {
+
+		JsonEndpoint<CreateISMPolicyRequest, CreateISMPolicyResponse, ErrorResponse> endpoint = (JsonEndpoint<CreateISMPolicyRequest, CreateISMPolicyResponse, ErrorResponse>) CreateISMPolicyRequest._ENDPOINT;
+		// Create states
+		List<PolicyState> states = new ArrayList<>();
+		// HOT State
+		PolicyStateTransitionCondition condition = new PolicyStateTransitionCondition.Builder().min_index_age(period)
+				.build();
+		PolicyStateTransition transition = new PolicyStateTransition.Builder().state_name("deleted")
+				.conditions(condition).build();
+		states.add(new PolicyState.Builder().name("hot").transitions(transition).build());
+		// DELETED state
+		ISMPolicyAction action = new ISMPolicyAction.Builder().name("delete").build();
+		states.add(new PolicyState.Builder().name("deleted").actions(action).build());
+		// Create ISM Template
+		ISMTemplate applyPolicyToTemplates = new ISMTemplate.Builder().index_patterns(alias).priority(priority).build();
+		// Create policy
+		String description = "Retention Policy for " + alias + " indexes";
+		ISMPolicy policy = new ISMPolicy.Builder().description(description).default_state("hot")
+				.ism_template(applyPolicyToTemplates).states(states).build();
+		// Add policy to request
+		CreateISMPolicyRequest request = new CreateISMPolicyRequest.Builder().name(policyName).policy(policy).build();
+		try {
+			javaClient._transport().performRequest(request, endpoint, javaClient._transportOptions());
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			return false;
+		}
+
+		return true;
+	}
+	
+	public boolean deleteTTLPolicy(String policyName) {
+		JsonEndpoint<DeleteISMPolicyRequest, DeleteISMPolicyResponse, ErrorResponse> endpoint = (JsonEndpoint<DeleteISMPolicyRequest, DeleteISMPolicyResponse, ErrorResponse>) DeleteISMPolicyRequest._ENDPOINT;
+		DeleteISMPolicyRequest request = new DeleteISMPolicyRequest.Builder().name(policyName).build();
+		try {
+			javaClient._transport().performRequest(request, endpoint, javaClient._transportOptions());
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			return false;
+		} catch (OpenSearchException e) {
+			if (e.response().status()==404){
+				// Trying to delete non existing Policy, go on.
+				return true;
+			}
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+	
+	public boolean addPolicyToIndices(String policy_id, String indicesRegex) {
+		JsonEndpoint<AddISMPolicyToIndicesRequest, AddISMPolicyToIndicesResponse, ErrorResponse> endpoint = (JsonEndpoint<AddISMPolicyToIndicesRequest, AddISMPolicyToIndicesResponse, ErrorResponse>) AddISMPolicyToIndicesRequest._ENDPOINT;
+		AddISMPolicyToIndicesRequest request = new AddISMPolicyToIndicesRequest.Builder().indices(indicesRegex).policy_id(policy_id).build();
+		try {
+			javaClient._transport().performRequest(request, endpoint, javaClient._transportOptions());
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			return false;
+		} 
+		return true;
+	}
+
 }

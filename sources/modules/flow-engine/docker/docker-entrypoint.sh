@@ -3,6 +3,7 @@
 echo "Sustituyendo variables de entorno en ficheros de propiedades de onesaitplatform"
 
 grep -rl '${SERVERNAME}' /opt/nodeRed/Flow-Engine-Manager/node_modules/@node-red/editor-client/public/config/onesait-platform-config.js | xargs sed -i 's/${SERVERNAME}/'"$SERVERNAME"'/g'
+grep -rl '${FLOWENGINESERVICE}' /opt/nodeRed/Flow-Engine-Manager/node_modules/@node-red/editor-client/public/config/onesait-platform-config.js | xargs sed -i 's/${FLOWENGINESERVICE}/'"$FLOWENGINESERVICE"'/g'
 grep -rl '${SOCKETTIMEOUT}' /opt/nodeRed/Flow-Engine-Manager/child.js | xargs sed -i 's/${SOCKETTIMEOUT}/'"$SOCKETTIMEOUT"'/g'
 grep -rl '${HTTPREQUESTTIMEOUT}' /opt/nodeRed/Flow-Engine-Manager/child.js | xargs sed -i 's/${HTTPREQUESTTIMEOUT}/'"$HTTPREQUESTTIMEOUT"'/g'
 # NOT in use

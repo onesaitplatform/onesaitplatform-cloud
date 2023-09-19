@@ -1,6 +1,0 @@
-{
-	"title":"Digital Twin SenseHat",
-	"technologies":"java",
-	"description":"DigitalTwin App for a SenseHat Demo",
-	"detailedDescription":"### openPlatform Digital Twin Demo\n\n============================\n\n**How to use: **\n\n- To execute the demo directly:\n\n  - Unzip on a directory the files.\n\n - Modify application.yml for your configuration.\n\n - Compile using maven.\n\n - Go to /SensehatHelsinki/target\n\n and copy the SensehatHelsinki-0.0.1.jar on a directory of the RaspberryPi. \n\n  - Open a cmd on the Raspberry and go to the directory where you copy the JAR file\n\n  - Execute the comand ```\njava -jar SensehatHelsinki-0.0.1.jar\n``` . \n\n- To extend the code, load the SpringBoot Application into a eclipse and modify the code, then compile the project and follow the previous steps.\n\nTo Access the demo go to Digital Twin Web on the Market and follow the steps. "
-}

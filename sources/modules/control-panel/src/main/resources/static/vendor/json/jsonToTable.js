@@ -102,7 +102,28 @@
 		var isObject = false;
 		var objKey = '';
 		var keyType = '';
+		var keys = [];
+		let result = [];
+		let json = {};
+		   console.log(' Data: ' + JSON.stringify(data) + ' colspan: ' + colspan);
 		
+		 for (var p = 0; p < data.length; p++) {					
+            $.each(data[p], function (key, value) {
+				keys.push(key);
+				result = keys.filter((item,index)=>{
+    			return keys.indexOf(item) === index;
+				 })
+			 });
+		}
+			var arrayObject ="{";
+			for (var h = 0; h < result.length ; h++) {
+				arrayObject = arrayObject + "\""+result[h]+"\":\"null\"";
+				  if (h < result.length - 1) {
+				        arrayObject = arrayObject + ",";
+				  }
+			}
+			arrayObject = arrayObject + "}";
+ 
 				
 		console.log(' Data: ' + JSON.stringify(data) + ' colspan: ' + colspan);
 		
@@ -111,10 +132,19 @@
             $.each(data[i], function (key, value) {
 				isObject = false;
 				console.log('key: ' + key);
+				
+				json = JSON.parse(arrayObject);
+				data[i] = Object.assign(json, data[i]);
+				console.log("pruebaaaaaaaaaa",data[i], i);
+
+				
                 if (thead === true) {
                     if (i === $.fn.createTable.getHighestColumnCount(data).when) {
-						if(typeof value == 'object'){ keyType = "<small>(Object)</small>";   } else { keyType = ''; }
-                        row += '<th>' + $.fn.humanize(key) + ' ' + keyType + '</th>';
+						  for (var j = 0; j < result.length; j++) {			
+								if(typeof value == 'object'){ keyType = "<small>(Object)</small>";   } else { keyType = ''; }
+		                        row += '<th>' + $.fn.humanize(result[j]) + ' ' + keyType + '</th>'; 
+                    	   } 
+                    	   result = [];
                     }
                 } else if (thead === false) {
                 	if(typeof value =='object'){

@@ -1,8 +1,0 @@
-{
-	"title":"OAuth2 Authentication Example",
-	"technologies":"java,Oauth2,html",
-	"description":"An Example that shows how to connect with operations from the Platform's API manager through OAUTH2 Security protocol",
-	"detailedDescription":"**OAuth2 Authentication Example**\n\nThis example shows how easily you can connect with operations from the Platform's API manager through OAUTH2 Security protocol that is implemented and deployed in the API Manager itself.\n\nIt assumes requests to the API manager need to be authenticated even if the published API is public.",
-	"installation":"Download the zip file and read the OAuth2 Authentication Example.pdf.",
-	"functionality":""
-}

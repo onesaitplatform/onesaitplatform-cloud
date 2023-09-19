@@ -36,7 +36,7 @@ import com.minsait.onesait.platform.config.model.UserExport;
 import com.minsait.onesait.platform.config.model.base.AuditableEntity;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
-import avro.shaded.com.google.common.collect.Sets;
+import com.google.common.collect.Sets;
 import lombok.Getter;
 
 public class MigrationConfiguration {

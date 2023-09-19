@@ -126,7 +126,7 @@ var MapsProjectController = function() {
 					},
 					"inline": true
 				},
-				"mesaureToolOptions": {
+				"measureToolOptions": {
 					"style": {
 						"labelVisibility": true,
 						"circleVertex": true,
@@ -261,68 +261,41 @@ var MapsProjectController = function() {
 					"processLimitMiliSeconds": 10000
 				},
 				"geocoderToolOptions": {
-					"provider": "esri",
+					"provider": "esri",					
 					"authMode": "apikey",
-					"address": null,
-					"address2": null,
-					"address3": null,
-					"city": null,
-					"neighborhood": null,
-					"postalCode": 10004,
-					"postalExt": null,
-					"region": "Extremadura",
-					"state": null,
-					"subregion": null,
-					"country": [],
-					"reverseCoordinates": [],
-					"token": "",
-					"mode": "direct",
-					"structured": "structured",
-					"categories": [
-						"Address",
-						"Postal"
-					],
-					"countryCode": [
-						"es",
-						"pt"
-					],
-					"langCode": "ja",
-					"location": [],
-					"locationType": null,
-					"numberCandidates": 15,
-					"scoreLimit": 0,
-					"searchExtent": [],
-					"searchZoom": 16,
-					"style": {
-						"circleVertex": false,
-						"fill": {
-							"color": "rgba(106, 90, 205, 0.7)"
-						},
-						"stroke": {
-							"color": "rgba(255, 0, 0, 1)",
-							"width": 3
-						},
-						"labelVisibility": true
-					},
-					"styleSelect": {
-						"radius": 15,
-						"image": {
-							"src": "../assets/images/location_red.png",
-							"scale": 1
-						},
-						"text": {
-							"fillColor": "rgba(0, 0, 0, 1)",
-							"backgroundFill": "rgba(0, 0, 0, 0)",
-							"padding": [
-								2,
-								2,
-								2,
-								2
-							]
-						}
-					},
+					"style": null,
+					"styleSelect": null,
 					"inline": true,
-					"zoomDuration": 300
+					"zoomDuration": 300,
+					"search": {
+					  "city": null,
+					  "county": null,
+					  "neighborhood": null,
+					  "postalCode": null,
+					  "postalExt": null,
+					  "region": null,
+					  "state": null,
+					  "subregion": null,
+					  "country": [],
+						},
+						"options": {
+				          "token": "",
+				          "mode": "direct",
+				          "structured": "structured",
+				          "categories": ["Address", "Postal"],
+				          "countryCode": ["es", "pt"],
+				          "langCode": "ja",	
+				          "location":"",			           
+				          "locationType": null,
+				          "numberCandidates": 15,				        
+				          "searchZoom": 16,
+				          "sourceCountry": ["es"],
+				          "scoreLimit": 0,
+				          "searchExtent": []
+				        }
+					
+					 
+					
 				},
 				"routingToolOptions": {
 					"provider": "OpenRoute Service",
@@ -400,7 +373,7 @@ var MapsProjectController = function() {
 
 	var navigateUrl = function(url) { window.location.href = url; }
 
-	var deleteProject = function(id) {
+	/*var deleteProject = function(id) {
 		console.log('deleteConfirmation() -> formId: ' + id);
 
 		// no Id no fun!
@@ -412,7 +385,7 @@ var MapsProjectController = function() {
 
 		HeaderController.showConfirmDialogMapsGeneric('delete_mapsproject_form');
 
-	}
+	}*/
 
 
 	// FORM VALIDATION
@@ -571,7 +544,8 @@ var MapsProjectController = function() {
 			if(c.mapConfig.exportConfigOptions.imageExportOptions){
 				$("#exportConfigOptionsimageExportOptionspageSize").val(c.mapConfig.exportConfigOptions.imageExportOptions.pageSize).change();
 				$("#exportConfigOptionsimageExportOptionsimageFormat").val(c.mapConfig.exportConfigOptions.imageExportOptions.imageFormat).change();
-				$("#exportConfigOptionsimageExportOptionsresolution").val(c.mapConfig.exportConfigOptions.imageExportOptions.resolution).change();				
+				$("#exportConfigOptionsimageExportOptionsresolution").val(c.mapConfig.exportConfigOptions.imageExportOptions.resolution).change();		
+				$("#exportConfigOptionsimageExportOptionsoutputName").val(c.mapConfig.exportConfigOptions.imageExportOptions.outputName).change();	
 			}
 			}
 			//if(c.mapConfig.loggerOptions){}
@@ -602,17 +576,17 @@ var MapsProjectController = function() {
 						$("#toolsOptionsshowCoordToolOptionsinline").prop('checked', true);
 					}					 
 				}
-				if(c.mapConfig.toolsOptions.mesaureToolOptions){
-					$("#toolsOptionsmesaureToolOptionsenable").val(c.mapConfig.toolsOptions.mesaureToolOptions.enable).change();
-					if (c.mapConfig.toolsOptions.mesaureToolOptions.enable) {
-						$("#toolsOptionsmesaureToolOptionsenable").prop('checked', true);
+				if(c.mapConfig.toolsOptions.measureToolOptions){
+					$("#toolsOptionsmeasureToolOptionsenable").val(c.mapConfig.toolsOptions.measureToolOptions.enable).change();
+					if (c.mapConfig.toolsOptions.measureToolOptions.enable) {
+						$("#toolsOptionsmeasureToolOptionsenable").prop('checked', true);
 					}					
-					$("#toolsOptionsmesaureToolOptionsstyle").val(c.mapConfig.toolsOptions.mesaureToolOptions.style).change();					
-					$("#toolsOptionsmesaureToolOptionsinline").val(c.mapConfig.toolsOptions.mesaureToolOptions.inline).change();
-					if (c.mapConfig.toolsOptions.mesaureToolOptions.inline) {
-						$("#toolsOptionsmesaureToolOptionsinline").prop('checked', true);
+					$("#toolsOptionsmeasureToolOptionsstyle").val(c.mapConfig.toolsOptions.measureToolOptions.style).change();					
+					$("#toolsOptionsmeasureToolOptionsinline").val(c.mapConfig.toolsOptions.measureToolOptions.inline).change();
+					if (c.mapConfig.toolsOptions.measureToolOptions.inline) {
+						$("#toolsOptionsmeasureToolOptionsinline").prop('checked', true);
 					}
-					$("#toolsOptionsmesaureToolOptionszoomDuration").val(c.mapConfig.toolsOptions.mesaureToolOptions.zoomDuration).change();				
+					$("#toolsOptionsmeasureToolOptionszoomDuration").val(c.mapConfig.toolsOptions.measureToolOptions.zoomDuration).change();				
 				}
 				if(c.mapConfig.toolsOptions.infoToolOptions){
 					$("#toolsOptionsinfoToolOptionsenable").val(c.mapConfig.toolsOptions.infoToolOptions.enable).change();
@@ -719,6 +693,7 @@ var MapsProjectController = function() {
 						 $('#toolsOptionsgeocoderToolOptionsauthMode').attr('disabled',false).selectpicker('refresh'); 					 
 					}
 				});
+				
 				if(c.mapConfig.toolsOptions.geocoderToolOptions){
 					$("#toolsOptionsgeocoderToolOptionsenable").val(c.mapConfig.toolsOptions.geocoderToolOptions.enable).change();
 					if (c.mapConfig.toolsOptions.geocoderToolOptions.enable) {
@@ -732,31 +707,35 @@ var MapsProjectController = function() {
 					$("#toolsOptionsgeocoderToolOptionszoomDuration").val(c.mapConfig.toolsOptions.geocoderToolOptions.zoomDuration).change();								
 					$("#toolsOptionsgeocoderToolOptionsprovider").val(c.mapConfig.toolsOptions.geocoderToolOptions.provider).change();
 					$("#toolsOptionsgeocoderToolOptionsauthMode").val(c.mapConfig.toolsOptions.geocoderToolOptions.authMode).change();
-					$("#toolsOptionsgeocoderToolOptionsaddress").val(c.mapConfig.toolsOptions.geocoderToolOptions.address).change();	
-					$("#toolsOptionsgeocoderToolOptionsaddress2").val(c.mapConfig.toolsOptions.geocoderToolOptions.address2).change();	
-					$("#toolsOptionsgeocoderToolOptionsaddress3").val(c.mapConfig.toolsOptions.geocoderToolOptions.address3).change();	
-					$("#toolsOptionsgeocoderToolOptionscity").val(c.mapConfig.toolsOptions.geocoderToolOptions.city).change();	
-					$("#toolsOptionsgeocoderToolOptionsneighborhood").val(c.mapConfig.toolsOptions.geocoderToolOptions.neighborhood).change();	
-					$("#toolsOptionsgeocoderToolOptionspostalCode").val(c.mapConfig.toolsOptions.geocoderToolOptions.postalCode).change();	
-					$("#toolsOptionsgeocoderToolOptionspostalExt").val(c.mapConfig.toolsOptions.geocoderToolOptions.postalExt).change();	
-					$("#toolsOptionsgeocoderToolOptionsregion").val(c.mapConfig.toolsOptions.geocoderToolOptions.region).change();	
-					$("#toolsOptionsgeocoderToolOptionsstate").val(c.mapConfig.toolsOptions.geocoderToolOptions.state).change();	
-					$("#toolsOptionsgeocoderToolOptionssubregion").val(c.mapConfig.toolsOptions.geocoderToolOptions.subregion).change();	
-					$("#toolsOptionsgeocoderToolOptionscountry").val(c.mapConfig.toolsOptions.geocoderToolOptions.country).change();	
-					$("#toolsOptionsgeocoderToolOptionsreverseCoordinates").val(c.mapConfig.toolsOptions.geocoderToolOptions.reverseCoordinates).change();	
-					$("#toolsOptionsgeocoderToolOptionstoken").val(c.mapConfig.toolsOptions.geocoderToolOptions.token).change();	
-					$("#toolsOptionsgeocoderToolOptionsmode").val(c.mapConfig.toolsOptions.geocoderToolOptions.mode).change();	
-					$("#toolsOptionsgeocoderToolOptionsstructured").val(c.mapConfig.toolsOptions.geocoderToolOptions.structured).change();	
-					$("#toolsOptionsgeocoderToolOptionscategories").val(c.mapConfig.toolsOptions.geocoderToolOptions.categories).change();	
-					$("#toolsOptionsgeocoderToolOptionscountryCode").val(c.mapConfig.toolsOptions.geocoderToolOptions.countryCode).change();	
-					$("#toolsOptionsgeocoderToolOptionslangCode").val(c.mapConfig.toolsOptions.geocoderToolOptions.langCode).change();	
-					$("#toolsOptionsgeocoderToolOptionslocation").val(c.mapConfig.toolsOptions.geocoderToolOptions.location).change();	
-					$("#toolsOptionsgeocoderToolOptionslocationType").val(c.mapConfig.toolsOptions.geocoderToolOptions.locationType).change();			
-					$("#toolsOptionsgeocoderToolOptionsnumberCandidates").val(c.mapConfig.toolsOptions.geocoderToolOptions.numberCandidates).change();	
-					$("#toolsOptionsgeocoderToolOptionsscoreLimit").val(c.mapConfig.toolsOptions.geocoderToolOptions.scoreLimit).change();	
-					$("#toolsOptionsgeocoderToolOptionssearchExtent").val(c.mapConfig.toolsOptions.geocoderToolOptions.searchExtent).change();	
-					$("#toolsOptionsgeocoderToolOptionssearchZoom").val(c.mapConfig.toolsOptions.geocoderToolOptions.searchZoom).change();	
-					$("#toolsOptionsgeocoderToolOptionsstyleSelect").val(c.mapConfig.toolsOptions.geocoderToolOptions.styleSelect).change();						 
+				    $("#toolsOptionsgeocoderToolOptionsstyleSelect").val(c.mapConfig.toolsOptions.geocoderToolOptions.styleSelect).change();	
+					if(c.mapConfig.toolsOptions.geocoderToolOptions.search){
+						$("#toolsOptionsgeocoderToolOptionssearchcity").val(c.mapConfig.toolsOptions.geocoderToolOptions.search.city).change();	
+						$("#toolsOptionsgeocoderToolOptionssearchcounty").val(c.mapConfig.toolsOptions.geocoderToolOptions.search.county).change();	
+						$("#toolsOptionsgeocoderToolOptionssearchneighborhood").val(c.mapConfig.toolsOptions.geocoderToolOptions.search.neighborhood).change();	
+						$("#toolsOptionsgeocoderToolOptionssearchpostalCode").val(c.mapConfig.toolsOptions.geocoderToolOptions.search.postalCode).change();
+						$("#toolsOptionsgeocoderToolOptionssearchpostalExt").val(c.mapConfig.toolsOptions.geocoderToolOptions.search.postalExt).change();
+						$("#toolsOptionsgeocoderToolOptionssearchregion").val(c.mapConfig.toolsOptions.geocoderToolOptions.search.region).change();	
+					    $("#toolsOptionsgeocoderToolOptionssearchstate").val(c.mapConfig.toolsOptions.geocoderToolOptions.search.state).change();	
+					    $("#toolsOptionsgeocoderToolOptionssearchsubregion").val(c.mapConfig.toolsOptions.geocoderToolOptions.search.subregion).change();	
+					    $("#toolsOptionsgeocoderToolOptionssearchcountry").val(c.mapConfig.toolsOptions.geocoderToolOptions.search.country).change();	
+						
+					}
+					if(c.mapConfig.toolsOptions.geocoderToolOptions.options){
+						
+						$("#toolsOptionsgeocoderToolOptionsoptionstoken").val(c.mapConfig.toolsOptions.geocoderToolOptions.options.token).change();	
+						$("#toolsOptionsgeocoderToolOptionsoptionsmode").val(c.mapConfig.toolsOptions.geocoderToolOptions.options.mode).change();	
+						$("#toolsOptionsgeocoderToolOptionsoptionsstructured").val(c.mapConfig.toolsOptions.geocoderToolOptions.options.structured).change();	
+						$("#toolsOptionsgeocoderToolOptionsoptionscategories").val(c.mapConfig.toolsOptions.geocoderToolOptions.options.categories).change();	
+						$("#toolsOptionsgeocoderToolOptionsoptionscountryCode").val(c.mapConfig.toolsOptions.geocoderToolOptions.options.countryCode).change();	
+						$("#toolsOptionsgeocoderToolOptionsoptionslangCode").val(c.mapConfig.toolsOptions.geocoderToolOptions.options.langCode).change();	
+						$("#toolsOptionsgeocoderToolOptionsoptionslocation").val(c.mapConfig.toolsOptions.geocoderToolOptions.options.location).change();	
+						$("#toolsOptionsgeocoderToolOptionsoptionslocationType").val(c.mapConfig.toolsOptions.geocoderToolOptions.options.locationType).change();			
+						$("#toolsOptionsgeocoderToolOptionsoptionsnumberCandidates").val(c.mapConfig.toolsOptions.geocoderToolOptions.options.numberCandidates).change();	
+						$("#toolsOptionsgeocoderToolOptionsoptionsscoreLimit").val(c.mapConfig.toolsOptions.geocoderToolOptions.options.scoreLimit).change();	
+						$("#toolsOptionsgeocoderToolOptionsoptionssearchExtent").val(c.mapConfig.toolsOptions.geocoderToolOptions.options.searchExtent).change();	
+						$("#toolsOptionsgeocoderToolOptionsoptionssearchZoom").val(c.mapConfig.toolsOptions.geocoderToolOptions.options.searchZoom).change();	
+						$("#toolsOptionsgeocoderToolOptionssourceCountry").val(c.mapConfig.toolsOptions.geocoderToolOptions.options.sourceCountry).change();						
+					}					 
 				}
 				
 				
@@ -893,6 +872,12 @@ var updateConfig = function() {
 		if(!c.mapConfig.exportConfigOptions){
 			c.mapConfig.exportConfigOptions={'pdfExportOptions':{},'imageExportOptions':{}}
 			}
+			if(!c.mapConfig.exportConfigOptions.pdfExportOptions){
+				c.mapConfig.exportConfigOptions.pdfExportOptions={};
+			}
+			if(!c.mapConfig.exportConfigOptions.imageExportOptions){
+				c.mapConfig.exportConfigOptions.imageExportOptions={};
+			}
 			c.mapConfig.exportConfigOptions.pdfExportOptions.orientation=get('exportConfigOptionspdfExportOptionsorientation');
 			c.mapConfig.exportConfigOptions.pdfExportOptions.pageSize=toNum(get('exportConfigOptionspdfExportOptionspageSize'));
 		    c.mapConfig.exportConfigOptions.pdfExportOptions.imageMargin =valFourValues(get('exportConfigOptionspdfExportOptionspageimageMargin0','exportConfigOptionspdfExportOptionspageimageMargin1','exportConfigOptionspdfExportOptionspageimageMargin2','exportConfigOptionspdfExportOptionspageimageMargin3'))
@@ -911,6 +896,7 @@ var updateConfig = function() {
 			c.mapConfig.exportConfigOptions.imageExportOptions.pageSize=toNum(get('exportConfigOptionsimageExportOptionspageSize'));	
 			c.mapConfig.exportConfigOptions.imageExportOptions.resolution=toNum(get('exportConfigOptionsimageExportOptionsresolution'));	
 			c.mapConfig.exportConfigOptions.imageExportOptions.imageFormat=get('exportConfigOptionsimageExportOptionsimageFormat');
+			c.mapConfig.exportConfigOptions.imageExportOptions.outputName=get('exportConfigOptionsimageExportOptionsoutputName');
 			
 			
 			//if(c.mapConfig.loggerOptions){}
@@ -943,15 +929,15 @@ var updateConfig = function() {
 				 
 				
 				
-				if(!c.mapConfig.toolsOptions.mesaureToolOptions)
+				if(!c.mapConfig.toolsOptions.measureToolOptions)
 				{
-					c.mapConfig.toolsOptions.mesaureToolOptions = {};
+					c.mapConfig.toolsOptions.measureToolOptions = {};
 				}
 				 
-					c.mapConfig.toolsOptions.mesaureToolOptions.enable=getCheck('toolsOptionsmesaureToolOptionsenable');					
-					c.mapConfig.toolsOptions.mesaureToolOptions.style=get('toolsOptionsmesaureToolOptionsstyle');					
-					c.mapConfig.toolsOptions.mesaureToolOptions.inline=getCheck('toolsOptionsmesaureToolOptionsinline')
-					c.mapConfig.toolsOptions.mesaureToolOptions.zoomDuration=toNum(get('toolsOptionsmesaureToolOptionszoomDuration'));
+					c.mapConfig.toolsOptions.measureToolOptions.enable=getCheck('toolsOptionsmeasureToolOptionsenable');					
+					c.mapConfig.toolsOptions.measureToolOptions.style=get('toolsOptionsmeasureToolOptionsstyle');					
+					c.mapConfig.toolsOptions.measureToolOptions.inline=getCheck('toolsOptionsmeasureToolOptionsinline')
+					c.mapConfig.toolsOptions.measureToolOptions.zoomDuration=toNum(get('toolsOptionsmeasureToolOptionszoomDuration'));
 					
 					
 				 
@@ -1044,39 +1030,58 @@ var updateConfig = function() {
 				{
 					c.mapConfig.toolsOptions.geocoderToolOptions = {};
 				}
+				
+				
+				
+				
+				
+				
+				
+				
 				 
 					c.mapConfig.toolsOptions.geocoderToolOptions.enable = getCheck('toolsOptionsgeocoderToolOptionsenable');					
 					c.mapConfig.toolsOptions.geocoderToolOptions.style=get('toolsOptionsgeocoderToolOptionsstyle');					
-					c.mapConfig.toolsOptions.geocoderToolOptions.inline=getCheck('toolsOptionsgeocoderToolOptionsinline')
+					c.mapConfig.toolsOptions.geocoderToolOptions.inline=getCheck('toolsOptionsgeocoderToolOptionsinline');
 					c.mapConfig.toolsOptions.geocoderToolOptions.zoomDuration=toNum(get('toolsOptionsgeocoderToolOptionszoomDuration'));
 					c.mapConfig.toolsOptions.geocoderToolOptions.provider=get('toolsOptionsgeocoderToolOptionsprovider');
+					c.mapConfig.toolsOptions.geocoderToolOptions.styleSelect=get('toolsOptionsgeocoderToolOptionsstyleSelect');					
 					c.mapConfig.toolsOptions.geocoderToolOptions.authMode=get('toolsOptionsgeocoderToolOptionsauthMode');
-					c.mapConfig.toolsOptions.geocoderToolOptions.address=get('toolsOptionsgeocoderToolOptionsaddress');
-					c.mapConfig.toolsOptions.geocoderToolOptions.address2=get('toolsOptionsgeocoderToolOptionsaddress2');
-					c.mapConfig.toolsOptions.geocoderToolOptions.address3=get('toolsOptionsgeocoderToolOptionsaddress3');
-					c.mapConfig.toolsOptions.geocoderToolOptions.city=get('toolsOptionsgeocoderToolOptionscity');					
-					c.mapConfig.toolsOptions.geocoderToolOptions.neighborhood=get('toolsOptionsgeocoderToolOptionsneighborhood');
-					c.mapConfig.toolsOptions.geocoderToolOptions.postalCode=toNum(get('toolsOptionsgeocoderToolOptionspostalCode'));
-					c.mapConfig.toolsOptions.geocoderToolOptions.postalExt=toNum(get('toolsOptionsgeocoderToolOptionspostalExt'));
-					c.mapConfig.toolsOptions.geocoderToolOptions.region=get('toolsOptionsgeocoderToolOptionsregion');
-					c.mapConfig.toolsOptions.geocoderToolOptions.state=get('toolsOptionsgeocoderToolOptionsstate');
-					c.mapConfig.toolsOptions.geocoderToolOptions.subregion=get('toolsOptionsgeocoderToolOptionssubregion');
-					c.mapConfig.toolsOptions.geocoderToolOptions.country=get('toolsOptionsgeocoderToolOptionscountry');
-					c.mapConfig.toolsOptions.geocoderToolOptions.reverseCoordinates=get('toolsOptionsgeocoderToolOptionsreverseCoordinates');
-					c.mapConfig.toolsOptions.geocoderToolOptions.token=get('toolsOptionsgeocoderToolOptionstoken');
-					c.mapConfig.toolsOptions.geocoderToolOptions.mode=get('toolsOptionsgeocoderToolOptionsmode');
-					c.mapConfig.toolsOptions.geocoderToolOptions.structured=get('toolsOptionsgeocoderToolOptionsstructured');
-					c.mapConfig.toolsOptions.geocoderToolOptions.categories=get('toolsOptionsgeocoderToolOptionscategories');
-					c.mapConfig.toolsOptions.geocoderToolOptions.countryCode=get('toolsOptionsgeocoderToolOptionscountryCode');
-					c.mapConfig.toolsOptions.geocoderToolOptions.langCode=get('toolsOptionsgeocoderToolOptionslangCode');
-					c.mapConfig.toolsOptions.geocoderToolOptions.location=get('toolsOptionsgeocoderToolOptionslocation');
-					c.mapConfig.toolsOptions.geocoderToolOptions.locationType=get('toolsOptionsgeocoderToolOptionslocationType');
-					c.mapConfig.toolsOptions.geocoderToolOptions.numberCandidates=toNum(get('toolsOptionsgeocoderToolOptionsnumberCandidates'));
-					c.mapConfig.toolsOptions.geocoderToolOptions.scoreLimit=toNum(get('toolsOptionsgeocoderToolOptionsscoreLimit'));
-					c.mapConfig.toolsOptions.geocoderToolOptions.searchExtent=get('toolsOptionsgeocoderToolOptionssearchExtent');
-					c.mapConfig.toolsOptions.geocoderToolOptions.searchZoom=toNum(get('toolsOptionsgeocoderToolOptionssearchZoom'));
-					c.mapConfig.toolsOptions.geocoderToolOptions.styleSelect=get('toolsOptionsgeocoderToolOptionsstyleSelect');
-				 
+					 if(!c.mapConfig.toolsOptions.geocoderToolOptions.search)
+					{
+						c.mapConfig.toolsOptions.geocoderToolOptions.search = {};
+					}
+					
+					 
+					c.mapConfig.toolsOptions.geocoderToolOptions.search.city=get('toolsOptionsgeocoderToolOptionssearchcity');					
+					c.mapConfig.toolsOptions.geocoderToolOptions.search.county=get('toolsOptionsgeocoderToolOptionssearchcounty');
+					c.mapConfig.toolsOptions.geocoderToolOptions.search.neighborhood=get('toolsOptionsgeocoderToolOptionssearchneighborhood');
+					c.mapConfig.toolsOptions.geocoderToolOptions.search.postalCode=toNum(get('toolsOptionsgeocoderToolOptionssearchpostalCode'));
+					c.mapConfig.toolsOptions.geocoderToolOptions.search.postalExt=toNum(get('toolsOptionsgeocoderToolOptionssearchpostalExt'));
+					c.mapConfig.toolsOptions.geocoderToolOptions.search.region=get('toolsOptionsgeocoderToolOptionssearchregion');
+					c.mapConfig.toolsOptions.geocoderToolOptions.search.state=get('toolsOptionsgeocoderToolOptionssearchstate');
+					c.mapConfig.toolsOptions.geocoderToolOptions.search.subregion=get('toolsOptionsgeocoderToolOptionssearchsubregion');
+					c.mapConfig.toolsOptions.geocoderToolOptions.search.country=get('toolsOptionsgeocoderToolOptionssearchcountry');
+					
+					
+					 if(!c.mapConfig.toolsOptions.geocoderToolOptions.options)
+					{
+						c.mapConfig.toolsOptions.geocoderToolOptions.options = {};
+					}
+					
+					
+					c.mapConfig.toolsOptions.geocoderToolOptions.options.token=get('toolsOptionsgeocoderToolOptionsoptionstoken');
+					c.mapConfig.toolsOptions.geocoderToolOptions.options.mode=get('toolsOptionsgeocoderToolOptionsoptionsmode');
+					c.mapConfig.toolsOptions.geocoderToolOptions.options.structured=get('toolsOptionsgeocoderToolOptionsoptionsstructured');
+					c.mapConfig.toolsOptions.geocoderToolOptions.options.categories=get('toolsOptionsgeocoderToolOptionsoptionscategories');
+					c.mapConfig.toolsOptions.geocoderToolOptions.options.countryCode=get('toolsOptionsgeocoderToolOptionsoptionscountryCode');
+					c.mapConfig.toolsOptions.geocoderToolOptions.options.langCode=get('toolsOptionsgeocoderToolOptionsoptionslangCode');
+					c.mapConfig.toolsOptions.geocoderToolOptions.options.location=get('toolsOptionsgeocoderToolOptionsoptionslocation');
+					c.mapConfig.toolsOptions.geocoderToolOptions.options.locationType=get('toolsOptionsgeocoderToolOptionsoptionslocationType');
+					c.mapConfig.toolsOptions.geocoderToolOptions.options.numberCandidates=toNum(get('toolsOptionsgeocoderToolOptionsoptionsnumberCandidates'));
+					c.mapConfig.toolsOptions.geocoderToolOptions.options.scoreLimit=toNum(get('toolsOptionsgeocoderToolOptionsoptionsscoreLimit'));
+					c.mapConfig.toolsOptions.geocoderToolOptions.options.searchExtent=get('toolsOptionsgeocoderToolOptionsoptionssearchExtent');
+					c.mapConfig.toolsOptions.geocoderToolOptions.options.searchZoom=toNum(get('toolsOptionsgeocoderToolOptionsoptionssearchZoom'));
+					c.mapConfig.toolsOptions.geocoderToolOptions.options.sourceCountry=get('toolsOptionsgeocoderToolOptionssourceCountry');
 			 if(!c.mapConfig.toolsOptions.routingToolOptions)
 				{
 					c.mapConfig.toolsOptions.routingToolOptions = {};
@@ -1205,10 +1210,11 @@ var updateConfig = function() {
 			navigateUrl(url);
 		},
 
-		// DELETE INITIAL DASHBOARD CONF
+	/*	// DELETE INITIAL DASHBOARD CONF
 		deleteProject: function(id) {
 			deleteProject(id);
-		}, showHideByProjectType: function() {
+		},*/
+		 showHideByProjectType: function() {
 			showHideByProjectType();
 		}
 	};

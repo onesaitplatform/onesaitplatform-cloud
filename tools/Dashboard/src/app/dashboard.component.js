@@ -203,7 +203,7 @@
           function(data){loadDashboard(data.data);}
         ).catch(
           function(error){      
-            if(__env.dashboardEngineOauthtoken != null){
+            if(sessionStorage.getItem("dashboardEngineOauthtoken") != null){
               document.getElementsByTagName("dashboard")[0].innerHTML = "<div style='padding:15px;background:#fbecec'><div class='no-data-title'>Dashboard Engine Error " + (error.status?error.status:"") + "</div><div class='no-data-text'>" + (error.config?"Rest Call: " + error.config.url + ". ":"") + "Detail: " + (error.data?JSON.stringify(error.data):error) + "</div></div>";
               window.dispatchEvent(new CustomEvent('errordashboardengine', { detail: {
                 "type": "failLoadDashboard",
@@ -429,16 +429,9 @@
 //------------------------------------------------------------------------------------------
       
       function newTemplateDialog(identification,inline,config,layergrid){
-        httpService.getUserGadgetTemplate().then(
-          function(templates){           
-           var template = templates.data.filter(function(itm){
-              return itm.identification===identification;
-            });
-            template = template[0];
-            if(!template) return;   
-            //type htmlive  
-            // $scope.config.type = $scope.type;
-
+        httpService.getUserGadgetTemplateByIdentification(identification).then(
+          function(data){     
+            var template = data.data      
             config.type = 'livehtml';
             //subtype angularJS, ...
             config.subtype = template.type;
@@ -447,11 +440,14 @@
             config.template = template.identification;
             config.tempId = template.id
             config.tconfig = template.config
-            showAddGadgetTemplateParameterDialog(config.type,config,layergrid,true,inline);
-
-            
+            function contextShowAddGadgetTemplateParameterDialog () {
+              showAddGadgetTemplateParameterDialog(config.type,config,layergrid,true,inline);
+            }
+            checkHeaderLibsInDashboard(template.headerlibs, contextShowAddGadgetTemplateParameterDialog)
           }
-        );
+        ).catch(function (error) {
+          console.error('Can not load gadget template: ', error)
+        });;
       }
 
 
@@ -862,8 +858,12 @@
                             description:configGadet.datasource.description}
               }
               config.gadgetid = gadget.id;
-              layergrid.push(config);
-              window.dispatchEvent(new CustomEvent("newgadgetcreated",{detail: config}));
+
+              function contextEndAddCustomGadget () {
+                layergrid.push(config);
+                window.dispatchEvent(new CustomEvent("newgadgetcreated",{detail: config}));
+              }
+              checkHeaderLibsInDashboard(template.headerlibs, contextEndAddCustomGadget)
           }            
         ,function(e){
           if(e.message==='Gadget was deleted'){
@@ -1099,6 +1099,89 @@
         });*/
       }
 
+      function AddDashboardHeaderLibsController($scope, httpService, $mdDialog, $window, gadgetlibs, dashboardlibs) {
+          $timeout(function(){
+            document.querySelector("#headerlibseditor").style.height= window.getComputedStyle(document.querySelector("md-dialog")).height + "px"
+            document.querySelector("#headerlibseditor").style.width= "800px"
+            $scope.VSheaderlibseditor = monaco.editor.createDiffEditor(document.querySelector("#headerlibseditor"), {
+              readOnly: false,
+              scrollBeyondLastLine: false,
+              theme: "vs-dark",
+              automaticLayout: true,
+              renderSideBySide: false
+            })
+
+          var originalModel = monaco.editor.createModel(
+            dashboardlibs,
+            "html"
+          );
+
+          var newModel = monaco.editor.createModel(
+            dashboardlibs + "\n" + gadgetlibs,
+            "html"
+          );
+
+          $scope.VSheaderlibseditor.setModel({
+            original: originalModel,
+            modified: newModel
+          });
+
+          $scope.VSheaderlibseditor.revealLine(newModel.getLineCount())
+
+        },0);
+  
+        $scope.hide = function() {
+          $mdDialog.hide();
+        };
+  
+        $scope.cancel = function() {
+          $mdDialog.cancel();
+        };
+  
+        $scope.saveAndReload = function() {
+          httpService.saveHeaderLibsById(vm.id,$scope.VSheaderlibseditor.getModifiedEditor().getValue()).then(
+            function(){
+              $window.location.reload();
+            }
+          );
+        };
+  
+      }
+
+      function checkHeaderLibsInDashboard(gadgetlibs, callback) {
+        if (__env.dashboardCheckHeaderLibs) {
+          httpService.getHeaderLibsById(vm.id).then(
+            function (data) {
+              if (utilsService.isLibsinHLibs(gadgetlibs, data.data)) {
+                callback();
+              } else {
+                $mdDialog.show({
+                  controller: AddDashboardHeaderLibsController,
+                  templateUrl: 'app/partials/edit/askAddHeaderLibsToDashboardDialog.html',
+                  parent: angular.element(document.body),
+                  clickOutsideToClose: true,
+                  fullscreen: false, // Only for -xs, -sm breakpoints.
+                  openFrom: '.sidenav-fab',
+                  closeTo: angular.element(document.querySelector('.sidenav-fab')),
+                  locals: {
+                    gadgetlibs: gadgetlibs,
+                    dashboardlibs: data.data
+                  }
+                })
+                  .then(function () {
+
+                  }, function () {
+                    $scope.status = 'You cancelled the dialog.';
+                    callback();
+                  });
+              }
+            }
+          )
+        } else {
+          callback();
+        }
+      }
+
       function dropElementEvent(e,newElem){         
         var type = (!e.dataTransfer?(vm.dashboard.gridOptions.dragGadgetType?vm.dashboard.gridOptions.dragGadgetType:'livehtml'):e.dataTransfer.getData("type"));
         var id = (!e.dataTransfer?null:e.dataTransfer.getData("gid"));
@@ -1158,7 +1241,7 @@
           else if(type == 'favoritegadget'){         
             showAddFavoriteGadgetDialog(newElem,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard);
           } 
-          else if(type == 'customgadget'){ 
+          else if(type == 'customgadget'){ //New (Inline or not) of Custom Gadget
            // showAddTemplateDialog(newElem,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard);
             newTemplateDialog(customType,inLine,newElem,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard);
           }          
@@ -1173,10 +1256,10 @@
             }
           }
         }
-        else{
+        else{ //Prevous created favorite, gadget custom, base gadget
           if(type=='favoritegadget'){
             addFavoriteGadget(id,newElem,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard);
-          } else if(type == 'customgadget'){         
+          } else if(type == 'customgadget'){   
             addCustomGadget(id,newElem,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard);
           }else{
             addGadgetGeneric(type,newElem,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard);

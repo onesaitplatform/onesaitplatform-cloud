@@ -192,6 +192,7 @@
 											<table id="gadgets" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
 												<thead>
 													<tr class="cabecera-tabla">
+														<th class="titulo-columnas text-center" ><span th:text="#{gen.id}"> ID </span></th>
 														<th dt:sortInitDirection="asc" dt:sortInitOrder="0" class="titulo-columnas" th:text="#{gen.name}">Name</th>
 														<th class="titulo-columnas text-center" th:text="#{gen.owner}" >Owner</th>
 														<!-- <th class="titulo-columnas text-center" th:text="#{gen.public}" >Public</th> -->
@@ -203,6 +204,8 @@
 												</thead>
 												<tbody>
 													<tr th:each="gadget : ${gadgets}" pages:paginate="10">
+														<!-- ID -->
+														<td class="text-left " th:text="${gadget.id}"></td>
 														<!-- IDENTIFICATION/NAME -->
 														<td class="text-left " th:text="${gadget.identification}"></td>
 														<!-- USER -->
@@ -252,27 +255,27 @@
 												 <a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
 												<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="0" checked/>
-														<label th:text="#{gen.name}"> identification </label>
+														<input class="toggle-vis" type="checkbox" data-column="0"/>
+														<label th:text="#{gen.id}"> id </label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-														<label th:text="#{gen.owner}"> Owner </label>
+														<label th:text="#{gen.name}"> identification </label>
 													</span>
-													<!-- <span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="2" />
-														<label th:text="#{gen.public}"> Public</label>
-													</span> -->
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-														<label th:text="#{gen.type}"> Type</label>
+														<label th:text="#{gen.owner}"> Owner </label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
-														<label th:text="#{gen.created}"> Created at</label>
+														<label th:text="#{gen.type}"> Type</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+														<label th:text="#{gen.created}"> Created at</label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 														<label th:text="#{gen.updated}"> Updatet at</label>
 													</span>
 
@@ -334,6 +337,7 @@
 											<table id="templates" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
 												<thead>
 													<tr class="cabecera-tabla">
+														<th class="titulo-columnas text-center" th:text="#{gen.id}" >Id</th>
 														<th dt:sortInitDirection="asc" dt:sortInitOrder="0" class="titulo-columnas" th:text="#{gen.name}">Name</th>
 														<th class="titulo-columnas text-center" th:text="#{gen.owner}" >Owner</th>
 														<th class="titulo-columnas text-center" ><span th:text="#{gen.public}"> Public </span></th>
@@ -344,6 +348,8 @@
 												</thead>
 												<tbody>
 													<tr th:each="gadgettemp : ${gadgetTemplates}" pages:paginate="10">
+														<!-- ID -->
+														<td class="text-left " th:text="${gadgettemp.id}"></td>
 														<!-- IDENTIFICATION/NAME -->
 														<td class="text-left " th:text="${gadgettemp.identification}"></td>
 														<!-- USER -->
@@ -402,23 +408,27 @@
 												 <a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
 												<div id="column_toggler_template" data-container="body" class="dropdown-menu hold-on-click pull-right">
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="0" checked/>
-														<label th:text="#{gen.name}"> identification </label>
+														<input class="toggle-vis" type="checkbox" data-column="0"/>
+														<label th:text="#{gen.id}"> id </label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-														<label th:text="#{gen.owner}"> Owner </label>
+														<label th:text="#{gen.name}"> identification </label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-														<label th:text="#{gen.public}"> Public </label>
+														<label th:text="#{gen.owner}"> Owner </label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
-														<label th:text="#{gen.created}"> Created at</label>
+														<label th:text="#{gen.public}"> Public </label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+														<label th:text="#{gen.created}"> Created at</label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 														<label th:text="#{gen.updated}"> Update at</label>
 													</span>
 
@@ -627,6 +637,11 @@
 	}
 
 
+	$(window).on('pageshow', function(event) {	
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+		$('#column_toggler_template').find("input[type='checkbox']").prop('checked', true);
+  		$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});
 
 	// MAIN WHEN READY
 	$( document ).ready(function() {
@@ -675,6 +690,7 @@
 
 		// SEARCH FORM RESET
 		$('#reset_gadget').on('click',function(){
+			setCurrentTab();
 			$('#form_gadget')[0].reset();
 			$('#form_gadget')[0].submit();
 		});
@@ -704,17 +720,8 @@
              },200);
          }
 		
-	});
-
-
-	 function refreshTables(){
-
-	 }
-
-	// MAIN WHEN LOAD
-	$(window).on("load",function(){
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-		$('#column_toggler_template').find("input[type='checkbox']").prop('checked', true);
+		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+		//$('#column_toggler_template').find("input[type='checkbox']").prop('checked', true);
 		var oTable = $('#gadgets').dataTable({
 		      "bAutoWidth": false
 		      });
@@ -725,13 +732,7 @@
 	      });
 
 		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)
-		$.each([ 0 ],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
-		$.each([ 0 ],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
-		// SHOW/HIDE DATATABLES COLUMN INIT
-		//$('.dataTables_filter')[0].append($('#dataTable-vis-toggle'));
-		// HIDE COLUMNS (PUBLIC)
-		//$.each([ 2 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
-
+		//$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 
 		//TABLE STYLES
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));

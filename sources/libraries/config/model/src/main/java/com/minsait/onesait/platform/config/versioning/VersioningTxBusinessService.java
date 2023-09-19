@@ -22,13 +22,25 @@ import com.minsait.onesait.platform.commons.git.GitlabConfiguration;
 
 public interface VersioningTxBusinessService {
 
-	public void generateSnapShot(String tagName, @NotNull RestoreReport report, Map<String, String> versionableClasses, GitlabConfiguration configuration);
+	public void generateSnapShot(String tagName, @NotNull RestoreReport report, Map<String, String> versionableClasses,
+			GitlabConfiguration configuration);
 
-	public void restorePlatform(RestorePlatformDTO restoreDTO, RestoreReport report, Map<String, String> versionableClasses, GitlabConfiguration gitConfig);
+	public void createBundle(@NotNull RestoreReport report, Map<String, String> versionableClasses,
+			GitlabConfiguration configuration, String directory, BundleGenerateDTO bundle);
+
+	void createZipBundle(@NotNull RestoreReport report, Map<String, String> versionableClasses, String directory,
+			BundleGenerateDTO bundle);
+
+	public void restorePlatform(RestorePlatformDTO restoreDTO, RestoreReport report,
+			Map<String, String> versionableClasses, GitlabConfiguration gitConfig);
 
 	public void syncOriginAndDB();
 
 	public void syncOriginAndDB(String originSHA);
 
 	void deleteUser(String userId);
+
+	void restoreBundle(RestoreReport report, Map<String, String> versionableClasses, String directory,
+			String folderName, String userId);
+
 }

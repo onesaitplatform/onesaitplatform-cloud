@@ -2,18 +2,18 @@
     <form ng-cloak>
         <md-dialog-content >
             <div class="md-dialog-content" layout="column" layout-align="center center" >
-                <div class="md-dialog-alert-title" >Dashboard Editor</div>
+                <div class="md-dialog-alert-title" >Dashboard Delete</div>
                 <div class="md-dialog-alert-text" >
-                    Your dashboard was successfully saved!
+                    Do you want to delete this dashboard?
                 </div>
              </div>
         </md-dialog-content>
         <md-dialog-actions layout="row" layout-align="center center" >
-            <md-button class="cancel-button"  ng-click="answer('CLOSE')">
-                CLOSE
+            <md-button class="md-raised md-secondary"  ng-click="answer('CLOSE')">
+                Close
             </md-button>
-            <md-button class="ok-button"  ng-click="answer('DELETE')">
-                DELETE
+            <md-button class="md-raised md-primary"  ng-click="answer('DELETE')">
+                Delete
             </md-button>
         </md-dialog-actions>
     </form>

@@ -120,9 +120,8 @@ public class OntologyAI extends AuditableEntityWithUUID implements Versionable<O
 		try {
 			final MindsDBPredictorGeneric service = BeanUtil.getBean(MindsDBPredictorGeneric.class);
 			final PredictorDTO p = PredictorDTO.builder().targetFields(o.getTargetProperties())
-					.inputFields(o.getInputProperties()).name(o.getPredictor())
-					.ontology(o.getSourceEntity()).connName(o.getConnectionName()).user(o.getUserJson())
-					.build();
+					.inputFields(o.getInputProperties()).name(o.getPredictor()).ontology(o.getSourceEntity())
+					.connName(o.getConnectionName()).user(o.getUserJson()).build();
 			service.createPredictor(p);
 		} catch (final Exception e) {
 			e.printStackTrace();
@@ -154,6 +153,10 @@ public class OntologyAI extends AuditableEntityWithUUID implements Versionable<O
 			o = null;
 		}
 		return o;
+	}
+
+	@Override
+	public void setOwnerUserId(String userId) {
 	}
 
 }

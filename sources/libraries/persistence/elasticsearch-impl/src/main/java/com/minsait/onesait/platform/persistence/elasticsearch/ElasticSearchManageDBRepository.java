@@ -85,16 +85,13 @@ public class ElasticSearchManageDBRepository implements ManageDBRepository {
 		final Map<String, Object> database = resourcesService.getGlobalConfiguration().getEnv().getDatabase();
 
 		@SuppressWarnings("unchecked")
-		final
-		Map<String, Object> elasticsearch = (Map<String, Object>) database.get("elasticsearch");
+		final Map<String, Object> elasticsearch = (Map<String, Object>) database.get("elasticsearch");
 
 		@SuppressWarnings("unchecked")
-		final
-		Map<String, Object> sql = (Map<String, Object>) elasticsearch.get("sql");
+		final Map<String, Object> sql = (Map<String, Object>) elasticsearch.get("sql");
 
 		@SuppressWarnings("unchecked")
-		final
-		Map<String, Object> dump = (Map<String, Object>) elasticsearch.get("dump");
+		final Map<String, Object> dump = (Map<String, Object>) elasticsearch.get("dump");
 
 		elasticSearchEndpoint = (String) sql.get("endpoint");
 
@@ -115,7 +112,8 @@ public class ElasticSearchManageDBRepository implements ManageDBRepository {
 
 				final String mapping = JSONPersistenceUtilsElasticSearch.getElasticSearchSchemaFromJSONSchema(schema);
 				try {
-					if (config!= null && config.get(ALLOWS_TEMPLATE_CONFIG) != null && !config.get(ALLOWS_TEMPLATE_CONFIG).isEmpty()
+					if (config != null && config.get(ALLOWS_TEMPLATE_CONFIG) != null
+							&& !config.get(ALLOWS_TEMPLATE_CONFIG).isEmpty()
 							&& Boolean.parseBoolean(config.get(ALLOWS_TEMPLATE_CONFIG))) {
 						log.info("Creating ElasticSearch template for ontology: {}", ontology);
 						final boolean res = connector.createTemplate(ontology.toLowerCase(), mapping, config);
@@ -280,6 +278,12 @@ public class ElasticSearchManageDBRepository implements ManageDBRepository {
 	@Override
 	public String updateTable4Ontology(String identification, String jsonSchema, Map<String, String> config) {
 		throw new DBPersistenceException(NOT_IMPLEMENTED_ALREADY);
+	}
+
+	@Override
+	public void createTTLIndex(String ontology, String attribute, Long seconds) {
+		throw new DBPersistenceException(NOT_IMPLEMENTED_ALREADY);
+
 	}
 
 }

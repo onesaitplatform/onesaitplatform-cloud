@@ -645,7 +645,7 @@ public class RouterCrudServiceImpl implements RouterCrudService {
 	}
 
 	private String getQueryForId(String ontology, String oid) {
-		return "select c,_id from ".concat(ontology).concat(" as c where _id=\"").concat(oid).concat("\"");
+		return "select c.*,_id from ".concat(ontology).concat(" as c where _id='").concat(oid).concat("'");
 	}
 
 	private String getQueryForOid(String ontology, String oid) {

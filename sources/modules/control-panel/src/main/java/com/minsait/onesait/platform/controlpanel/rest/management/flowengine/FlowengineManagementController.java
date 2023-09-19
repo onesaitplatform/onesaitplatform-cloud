@@ -64,7 +64,6 @@ import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.OntologySimplified;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.libraries.flow.engine.FlowEngineService;
-import com.minsait.onesait.platform.libraries.flow.engine.FlowEngineServiceFactory;
 import com.minsait.onesait.platform.libraries.flow.engine.exception.FlowEngineServiceException;
 import com.minsait.onesait.platform.libraries.nodered.auth.NoderedAuthenticationService;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
@@ -94,7 +93,6 @@ public class FlowengineManagementController {
 	@Value("${onesaitplatform.flowengine.startupdomain.wait.seconds:2}")
 	private int secondsToWaitDomainStartup;
 	private HttpComponentsClientHttpRequestFactory httpRequestFactory;
-	private String proxyUrl;
 	@Value("${onesaitplatform.flowengine.services.request.timeout.ms:5000}")
 	private int restRequestTimeout;
 	@Autowired
@@ -106,7 +104,7 @@ public class FlowengineManagementController {
 	private UserService userService;
 	@Autowired
 	private FlowDomainService flowDomainService;
-
+	@Autowired
 	private FlowEngineService flowEngineService;
 
 	@Autowired
@@ -124,18 +122,16 @@ public class FlowengineManagementController {
 
 	@PostConstruct
 	public void init() {
-		proxyUrl = resourcesService.getUrl(Module.FLOWENGINE, ServiceUrl.ADVICE);
 		if (avoidSSLVerification) {
 			httpRequestFactory = SSLUtil.getHttpRequestFactoryAvoidingSSLVerification();
 		} else {
 			httpRequestFactory = new HttpComponentsClientHttpRequestFactory();
 		}
-
 		httpRequestFactory.setConnectTimeout(restRequestTimeout);
-		proxyUrl = resourcesService.getUrl(Module.FLOWENGINE, ServiceUrl.PROXYURL);
-		final String baseUrl = resourcesService.getUrl(Module.FLOWENGINE, ServiceUrl.BASE); // <host>/flowengine/admin
-		flowEngineService = FlowEngineServiceFactory.getFlowEngineService(baseUrl, restRequestTimeout,
-				avoidSSLVerification);
+	}
+
+	private String getProxyUrl() {
+		return resourcesService.getUrl(Module.FLOWENGINE, ServiceUrl.PROXYURL);
 	}
 
 	@Operation(summary = "Export Flow Domain by identification (Administrator only)")
@@ -186,7 +182,7 @@ public class FlowengineManagementController {
 		if (domain != null) {
 			final RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
 
-			final String url = proxyUrl + domain.getIdentification() + FLOW_PATH + "/" + noderedFlowId;
+			final String url = getProxyUrl() + domain.getIdentification() + FLOW_PATH + "/" + noderedFlowId;
 			final HttpHeaders headers = new HttpHeaders();
 			headers.set(AUTHORIZATION, BEARER
 					+ noderedAuthService.getNoderedAuthAccessToken(utils.getUserId(), domain.getIdentification()));
@@ -243,7 +239,7 @@ public class FlowengineManagementController {
 
 		final RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
 
-		final String url = proxyUrl + domain.getIdentification() + FLOWS_PATH;
+		final String url = getProxyUrl() + domain.getIdentification() + FLOWS_PATH;
 		final HttpHeaders headers = new HttpHeaders();
 		headers.set(AUTHORIZATION,
 				BEARER + noderedAuthService.getNoderedAuthAccessToken(utils.getUserId(), domain.getIdentification()));
@@ -270,7 +266,7 @@ public class FlowengineManagementController {
 		if (domain.isPresent()) {
 			final RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
 
-			final String url = proxyUrl + domain.get().getIdentification() + FLOW_PATH + "/" + noderedId;
+			final String url = getProxyUrl() + domain.get().getIdentification() + FLOW_PATH + "/" + noderedId;
 			final HttpHeaders headers = new HttpHeaders();
 			headers.set(AUTHORIZATION, BEARER + noderedAuthService.getNoderedAuthAccessToken(utils.getUserId(),
 					domain.get().getIdentification()));
@@ -332,7 +328,7 @@ public class FlowengineManagementController {
 	private ResponseEntity<String> deleteDomainFlow(FlowDomain domain, String noderedFlowId) {
 		final RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
 
-		final String url = proxyUrl + domain.getIdentification() + FLOW_PATH + "/" + noderedFlowId;
+		final String url = getProxyUrl() + domain.getIdentification() + FLOW_PATH + "/" + noderedFlowId;
 		final HttpHeaders headers = new HttpHeaders();
 		headers.set(AUTHORIZATION,
 				BEARER + noderedAuthService.getNoderedAuthAccessToken(utils.getUserId(), domain.getIdentification()));
@@ -452,7 +448,7 @@ public class FlowengineManagementController {
 
 		final RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
 		restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
-		final String url = proxyUrl + domainName + FLOWS_PATH;
+		final String url = getProxyUrl() + domainName + FLOWS_PATH;
 		final HttpHeaders headers = new HttpHeaders();
 		headers.set(AUTHORIZATION, BEARER + noderedAuthService.getNoderedAuthAccessToken(userId, domainName));
 		headers.setContentType(MediaType.APPLICATION_JSON);
@@ -495,7 +491,7 @@ public class FlowengineManagementController {
 		// import the FLow in NodeRED
 		final RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
 		restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
-		final String url = proxyUrl + domainName + FLOW_PATH;
+		final String url = getProxyUrl() + domainName + FLOW_PATH;
 		final HttpHeaders headers = new HttpHeaders();
 		headers.set(AUTHORIZATION, BEARER + noderedAuthService.getNoderedAuthAccessToken(userId, domainName));
 		headers.setContentType(MediaType.APPLICATION_JSON);

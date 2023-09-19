@@ -50,5 +50,13 @@ public class GadgetAndTemplateDTO implements Serializable {
 	@Getter
 	@Setter
 	private String typeElem;
+	
+	@Getter
+	@Setter
+	private String config;
+	
+	@Getter
+	@Setter
+	private byte [] image;
 
 }

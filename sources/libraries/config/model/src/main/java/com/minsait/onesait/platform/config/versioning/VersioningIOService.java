@@ -26,6 +26,8 @@ public interface VersioningIOService {
 
 	public <T> void serializeToFileSystem(Versionable<T> versionable);
 
+	public <T> void serializeToFileSystem(Versionable<T> versionable, String directory);
+
 	public <T> void restoreFromFileSystem(Versionable<T> versionable);
 
 	public <T> void removeFromFileSystem(Versionable<T> versionable);
@@ -35,6 +37,8 @@ public interface VersioningIOService {
 	public <T> String relativePath(Versionable<T> versionable);
 
 	public List<Versionable<?>> readAllVersionables(String directory);
+
+	public List<Versionable<?>> readAllVersionables();
 
 	public String getClassNameFromPath(String path);
 

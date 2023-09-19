@@ -1783,7 +1783,7 @@ pre {
 				hayCondicion = true;
 				condicion = condiciones.attr('condition');
 				condicion = obtainCondition(condicion);
-				if(rtdb !== "ORACLE" && rtdb !== "ORACLE"){
+				if(rtdb !== "ORACLE" && rtdb !== "ORACLE11" && rtdb !== "TIMESCALE" && rtdb !== "POSTGRESQL"){
 					condicion = condicion.replace(/'/g,"\"");
 				}
 				condicion= "c." + condicion;

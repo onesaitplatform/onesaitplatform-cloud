@@ -21,6 +21,7 @@ import java.util.List;
 
 import javax.transaction.Transactional;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -55,7 +56,7 @@ public class MapsStyleServiceImpl implements MapsStyleService {
 
 	@Override
 	@Transactional
-	public List<MapsStyle> getStylesForUser(String userId, String identification) {
+	public List<MapsStyleDTO> getStylesForUser(String userId, String identification) {
 		final User user = userService.getUserNoCache(userId);
 		List<MapsStyle> mapsStyles = new LinkedList<>();
 		if (user.isAdmin()) {
@@ -71,7 +72,22 @@ public class MapsStyleServiceImpl implements MapsStyleService {
 				mapsStyles = mapsStyleRepository.findByUserIdentificationContaining(user, identification);
 			}
 		}
-		return mapsStyles;
+		return mapArrayToDTO(mapsStyles);
+	}
+
+	private List<MapsStyleDTO> styleArrayToDTO(List<MapsStyle> styleMaps) {
+
+		List<MapsStyleDTO> styleMapDTOs = new LinkedList<>();
+
+		if (styleMaps != null && styleMaps.size() > 0) {
+			for (Iterator iterator = styleMaps.iterator(); iterator.hasNext();) {
+				MapsStyle mapsStyle = (MapsStyle) iterator.next();
+				styleMapDTOs.add(mapToDTO(mapsStyle));
+
+			}
+		}
+		return styleMapDTOs;
+
 	}
 
 	@Override
@@ -119,6 +135,13 @@ public class MapsStyleServiceImpl implements MapsStyleService {
 		dto.setIdentification(mapsStyle.getIdentification());
 		dto.setCreatedAt(mapsStyle.getCreatedAt());
 		dto.setUpdatedAt(mapsStyle.getUpdatedAt());
+		dto.setName("");
+		if (mapsStyle.getConfig() != null) {
+			JSONObject objexp = new JSONObject(mapsStyle.getConfig());
+			if (objexp.has("name")) {
+				dto.setName(objexp.getString("name"));
+			}
+		}
 		if (mapsStyle.getUser() != null) {
 			dto.setUser(mapsStyle.getUser().getUserId());
 		}
@@ -147,6 +170,17 @@ public class MapsStyleServiceImpl implements MapsStyleService {
 			return mapsStyleRepository.findById(id).orElse(null);
 		}
 		throw new MapsStyleServiceException("Cannot getMapsStyle does not exist or don't have permission");
+	}
+
+	@Override
+	@Transactional
+	public MapsStyle getByIdentificationANDUser(String id, String userId) {
+
+		final User user = userRepository.findByUserId(userId);
+		if (mapsStyleRepository.findByUserIdentificationContaining(user, id).size() > 0) {
+			return mapsStyleRepository.findByUserIdentificationContaining(user, id).get(0);
+		}
+		return null;
 	}
 
 	@Override
@@ -233,6 +267,20 @@ public class MapsStyleServiceImpl implements MapsStyleService {
 			}
 		}
 
+	}
+
+	@Override
+	public void deleteByIdentification(String identification, String userId) {
+
+		List<MapsStyle> maps = mapsStyleRepository.findByIdentification(identification);
+		if (maps != null && maps.size() > 0) {
+
+			if (hasUserEditPermission(maps.get(0).getId(), userId)) {
+
+				mapsStyleRepository.delete(maps.get(0));
+			}
+
+		}
 	}
 
 	@Override

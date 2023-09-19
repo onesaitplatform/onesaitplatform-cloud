@@ -117,4 +117,9 @@ public interface MultitenancyService {
 	long countTenantUsers(String tenantName);
 
 	List<?> getAllLazy();
+
+	boolean checkCurrentPasword(String userId, String Pass);
+
+	public void replicateUser(String userId, String vertical, String tenant);
+
 }

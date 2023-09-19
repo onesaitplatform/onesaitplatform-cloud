@@ -49,4 +49,16 @@ public abstract class GitRestService {
 
 	public abstract List<CommitWrapper> getCommitsForFile(GitlabConfiguration gitConfiguration, String filePath,
 			String branch);
+
+	public abstract List<String> getRepoDirectories(GitlabConfiguration gitConfiguration, String branch);
+
+	public abstract String getBase64ForFile(GitlabConfiguration gitConfiguration, String branch, String filePath);
+
+	public String getSiteFromProjectURL(String projectURL) {
+		return projectURL.substring(0, projectURL.indexOf(".com") + 4);
+	}
+
+	public String getProjectPathFromURL(String projectURL) {
+		return projectURL.substring(projectURL.indexOf(".com") + 5).replace(".git", "");
+	}
 }

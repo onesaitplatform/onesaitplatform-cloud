@@ -134,6 +134,7 @@
 											<table id="datasources" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
 												<thead>
 													<tr class="cabecera-tabla">
+														<th class="titulo-columnas text-center" ><span th:text="#{gen.id}" >id</span></th>
 														<th class="titulo-columnas text-left" dt:sortInitDirection="asc" dt:sortInitOrder="0" th:text="#{gen.name}">Name</th>
 														<th class="titulo-columnas text-center" ><span th:text="#{gen.owner}" >Owner</span></th>
 														<th class="titulo-columnas text-center" th:text="#{datasources.mode}">Mode</th>
@@ -149,6 +150,8 @@
 												</thead>
 												<tbody th:remove="all-but-first">
 													<tr th:each="datasource : ${datasources}" pages:paginate="10">
+														<!-- ID -->
+														<td class="text-left no-wrap" th:text="${datasource.id}"></td>
 														<!-- IDENTIFICATION/NAME -->
 														<td class="text-left no-wrap" th:text="${datasource.identification}"></td>
 														<!-- USER -->
@@ -192,39 +195,43 @@
 
 												<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="0" checked/>
-														<label th:text="#{gen.name}"> Name</label>
+														<input class="toggle-vis" type="checkbox" data-column="0"/>
+														<label th:text="#{gen.id}"> Id</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-														<label th:text="#{gen.owner}"> Owner</label>
+														<label th:text="#{gen.name}"> Name</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-														<label th:text="#{datasources.mode}"> Mode</label>
+														<label th:text="#{gen.owner}"> Owner</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
-														<label th:text="#{datasources.db}"> Type</label>
+														<label th:text="#{datasources.mode}"> Mode</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-														<label th:text="#{datasources.ontoquery}"> Ontology/Query</label>
+														<label th:text="#{datasources.db}"> Type</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
-														<label th:text="#{datasources.maxvalue}"> Max. Value</label>
+														<label th:text="#{datasources.ontoquery}"> Ontology/Query</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="6" checked/>
-														<label th:text="#{datasources.refresh}"> Refresh</label>
+														<label th:text="#{datasources.maxvalue}"> Max. Value</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="7" checked/>
-														<label th:text="#{gen.created}"> Created At</label>
+														<label th:text="#{datasources.refresh}"> Refresh</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="8" checked/>
+														<label th:text="#{gen.created}"> Created At</label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="9" checked/>
 														<label th:text="#{gen.updated}"> Updated At</label>
 													</span>
 												</div>
@@ -328,6 +335,11 @@
 			}
 		});
 	}
+	
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([ 0,6,7 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});
 
 	// MAIN WHEN READY
 	$( document ).ready(function() {
@@ -372,17 +384,14 @@
 
 		// SEARCH FORM
 		$('#search_datasource').on('click',function(){ $('#form_datasource')[0].submit(); });
-	});
 
-	// MAIN WHEN LOAD
-	$(window).on("load",function(){
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
+		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
 		var oTable = $('#datasources').dataTable({
 		      "bAutoWidth": false
 		      });
 
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)
-		$.each([ 1,5,6 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		//$.each([ 0,6,7 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		// SHOW/HIDE DATATABLES COLUMN INIT
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));
 		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));

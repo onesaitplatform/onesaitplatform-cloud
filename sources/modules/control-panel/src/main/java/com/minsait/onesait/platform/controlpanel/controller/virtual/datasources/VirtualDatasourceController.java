@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.controlpanel.controller.virtual.datasources;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -43,6 +44,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.minsait.onesait.platform.business.services.virtual.datasources.VirtualDatasourceService;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
@@ -228,19 +230,24 @@ public class VirtualDatasourceController {
 
 		final OntologyVirtualDatasource datasource = virtualDatasourceService.getDatasourceByIdAndUserId(id,
 				utils.getUserId());
+		
+		final List <OntologyVirtual> associationExternalDatabase = virtualDatasourceService.getAssociationExternalDatabase(datasource.getId());
+		
 		if (datasource != null) {
 			try {
-				virtualDatasourceService.deleteDatasource(datasource);
-
+				if(associationExternalDatabase != null && !associationExternalDatabase.isEmpty()){
+					utils.addRedirectMessage("External Database Connections cannot be removed, as it is associated with an entity", redirect);
+					return REDIRECT_VIRT_DS_LIST;	
+				} else {
+					virtualDatasourceService.deleteDatasource(datasource);
+				}
 			} catch (final Exception e) {
 				utils.addRedirectMessage("datasource.delete.error", redirect);
 				log.error("Error deleting virtual datasource. ", e);
 				return REDIRECT_VIRT_DS_LIST;
 			}
-			return REDIRECT_VIRT_DS_LIST;
-		} else {
-			return REDIRECT_VIRT_DS_LIST;
 		}
+		return REDIRECT_VIRT_DS_LIST;
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
@@ -250,6 +257,23 @@ public class VirtualDatasourceController {
 		Collections.sort(datasources);
 		return datasources;
 	}
+	
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@GetMapping(value = "/getEntitiesDatabaseConections/{id}", produces = "application/json")
+	public @ResponseBody List<String> getEntitiesDatabaseConections( @PathVariable("id") String id) {
+		
+		final OntologyVirtualDatasource datasource = virtualDatasourceService.getDatasourceByIdAndUserId(id,
+				utils.getUserId());
+		List<String> entityList = new ArrayList<String>();
+		final List <OntologyVirtual> associationExternalDatabase = virtualDatasourceService.getAssociationExternalDatabase(datasource.getId());
+		if(associationExternalDatabase != null){
+			for( var i = 0; i < associationExternalDatabase.size(); i++ ){
+				entityList.add(associationExternalDatabase.get(i).getOntologyId().getIdentification());
+			}
+		} 
+		return entityList;
+		}
+	
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PostMapping(value = "/checkConnection")

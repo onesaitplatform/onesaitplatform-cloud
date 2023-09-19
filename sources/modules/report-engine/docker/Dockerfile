@@ -33,6 +33,11 @@ RUN chown -R onesait:onesait /usr/local && \
     chmod -R 777 /usr/local && \
     chmod -R 777 /etc/ssl/certs/java
 
+# distribute tracing with opentelemetry agent
+RUN cd /usr/local \
+    && wget https://repo1.maven.org/maven2/io/opentelemetry/javaagent/opentelemetry-javaagent/1.27.0/opentelemetry-javaagent-1.27.0.jar
+
+
 
 RUN apk add --no-cache \
         wget \
@@ -95,9 +100,13 @@ ENV SERVER_NAME=localhost \
 	SBA_SECRET=changeIt2019! \
 	MAX_HTTP_HEADER_SIZE=20000 \
 	HTTP_LOG_LEVEL=INFO \
-    JAVA_HOME=/usr/lib/jvm/java-17-openjdk/jre
+    JAVA_HOME=/usr/lib/jvm/java-17-openjdk/jre \
+    OTEL_JAVAAGENT_ENABLED=false \
+	OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-service:4317 \
+	OTEL_SERVICE_NAME=report-engine \
+	OTEL_METRICS_EXPORTER=none
 
-ENV JAVA_OPTS="$JAVA_OPTS -Duser.language=$REPORT_LOCALE_LANG -Duser.country=$REPORT_LOCALE_COUNTRY -Djava.awt.headless=true"
+ENV JAVA_OPTS="$JAVA_OPTS -Duser.language=$REPORT_LOCALE_LANG -Duser.country=$REPORT_LOCALE_COUNTRY -Djava.awt.headless=true -javaagent:/usr/local/opentelemetry-javaagent-1.27.0.jar"
 
 
 COPY docker-entrypoint.sh /usr/local/bin/

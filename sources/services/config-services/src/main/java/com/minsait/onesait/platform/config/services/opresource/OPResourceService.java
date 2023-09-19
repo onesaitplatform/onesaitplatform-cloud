@@ -83,4 +83,6 @@ public interface OPResourceService {
 
 	OPResource getResourceByIdentification(String identification);
 
+	List<ProjectResourceAccess> getProjectsByResource(OPResource resource);
+
 }

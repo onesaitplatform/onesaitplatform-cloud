@@ -96,4 +96,11 @@ public class DataModel extends OPResource implements Versionable<DataModel> {
 		return getIdentification() + type + ".yaml";
 	}
 
+	@Override
+	public void setOwnerUserId(String userId) {
+		final User u = new User();
+		u.setUserId(userId);
+		setUser(u);
+	}
+
 }

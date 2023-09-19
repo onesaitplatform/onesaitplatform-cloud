@@ -40,6 +40,7 @@
 	<!-- PLUGINS STYLE SHEETS -->
 	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}"/>		
 	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>
+	<link rel="stylesheet" type="text/css" th:href="@{/static/vendor/datatable/select.dataTables.min.css}">
 
 	<style>
 		#editor_holder h3 > span{
@@ -236,6 +237,7 @@
 											<a href="" class="fullscreen" data-original-title="" title=""> </a>
 										</div>
 										<div class="pull-right btn-group btn-title-group" id="divcreate" >
+											<button id="deleteAllBtn" type="button" class="btn btn-primary btn-primary-delete" onclick="deleteMultiple()" name="delete" style="margin-right: 10px;" value="Remove" aria-invalid="false"><i class="icon-delete"></i><span class="delete-btn-text">Delete</span></button>
 											<button id="createBtn" type="button" class="btn btn-primary button-plus-create"   onclick="cleanJSONEditor();" ><a><i class="icon-new" style="color:white;"></i></a></button>		
 										</div>
 									</div>
@@ -249,6 +251,7 @@
 														<table id="records" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
 															<thead>
 															<tr class="cabecera-tabla">
+																<th><input type="checkbox" id="checkAll" name="checkAll" onclick="selectCheckboxAll()"></th>
 																<th class="titulo-columnas" th:text="#{ontology.identification}">Identification</th>
 																<th class="titulo-columnas" th:text="#{crud.record}">record</th>
 																<th class="titulo-columnas text-center" style="width:85px" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
@@ -258,7 +261,6 @@
 
 															</tbody>
 														</table>
-														
 													</div>
 												</div>
 											</div>
@@ -461,8 +463,8 @@ var $query;
 	$(window).on("load",function(){
 
 		var oTable = $('#records').dataTable({
-	      "bAutoWidth": false
-	      });
+	      	"bAutoWidth": false,
+	    });	
 
 		$('.dataTables_info').addClass('col-md-6 col-sm-6');
 		$('.dataTables_length').addClass('col-md-6 col-sm-6');
@@ -581,8 +583,9 @@ var $query;
 				
 				$dataSetMapped = map_IdFromDataSet(dataSet);
 				for(var i =0; i<$dataSetMapped.length;i++){
+					var espacio = '<div class="check"><input type="checkbox" id="multiCheck" name="multibox" data-placement="bottom" data-container="body"></div>';
 					var buttons = '<div class="grupo-iconos">'+
-					'<span   class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" onclick="editRecord(\''+$dataSetMapped[i].id+'\')" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" ><i class="icon-edit"></i></span>'+
+					'<span  class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" onclick="editRecord(\''+$dataSetMapped[i].id+'\')" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" ><i class="icon-edit"></i></span>'+
 					'<span  class="btn btn-xs btn-no-border icon-on-table color-red tooltips" data-container="body" onclick="deleteRecord(\''+$dataSetMapped[i].id+'\')" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn}" ><i class="icon-delete"></i></span>'+
 					'</div>';
 					var text = JSON.stringify($dataSetMapped[i].data);
@@ -593,7 +596,7 @@ var $query;
 
 					var recordText = createTableFromJson($dataSetMapped[i].data);
 
-					t.row.add( [$dataSetMapped[i].id,recordText,buttons ]);
+					t.row.add( [espacio,$dataSetMapped[i].id,recordText,buttons ]);
 
 				}
 				t.order([]);
@@ -625,6 +628,60 @@ var $query;
 		var thead = "<tr>"+theadContent+"</tr>";
 		var table = "<table class='table table-condensed' style='margin-bottom:0px' >"+thead+tbody+"</table>";
 		return table;
+	}
+
+	//Select all checkbox
+	function selectCheckboxAll(){	
+		var checkboxes = document.getElementsByName("multibox");
+		if (document.getElementById("checkAll").checked==true){
+			for(var i=0, n=checkboxes.length;i<n;i++) {
+    			checkboxes[i].checked = true;
+  			}
+		}else{
+			for(var i=0, n=checkboxes.length;i<n;i++) {
+    			checkboxes[i].checked = false;
+  			}
+		}
+	}
+
+	//Delete de varios registros
+	function deleteMultiple(){
+		var checkboxes = document.getElementsByName("multibox");
+		var ids = []
+
+		var params = createParametersMap();
+		if(params!==undefined && params.where !== undefined && params.where.length>0 ){
+			for(var i=0;i<params.where.length;i++){
+				if(params.where[i].operator==="&#60;"){
+					params.where[i].operator="<";
+				}else if(params.where[i].operator==="&#60;="){
+					params.where[i].operator="<=";
+				}
+			}
+		}
+		
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+
+		$.ajax({
+			url: '/controlpanel/crud/queryParams',
+			headers: {
+				[csrf_header]: csrf_value
+		    },
+			type: 'POST',
+			contentType: "application/json",
+			data: JSON.stringify(params),
+			success: function(dataSet) {
+				$dataSetMapped = map_IdFromDataSet(dataSet);
+			
+				for(var i=0, n=checkboxes.length;i<n;i++) {
+					if ( checkboxes[i].checked==true){
+						ids.push($dataSetMapped[i].id)
+					}
+				}
+			}
+		})
+		showConfirmMultipleDeleteDialog(ids);
 	}
 
 	function recursiveTitle(data,stack){
@@ -699,7 +756,43 @@ var $query;
 	});
 	}
 
+	function deleteMultileRecord(ids){
+		showConfirmMultipleDeleteDialog(ids);
+	}
 
+	var showConfirmMultipleDeleteDialog = function(ids){
+		var close = headerReg.btnCancelar;
+		var remove = headerReg.btnEliminar;
+		var content = 'You are going to delete '+ ids.length +' records.' +'<br><br>'+  [[#{crud.confirm.delete.sure}]];
+		var title = headerReg.crudDelete;
+
+		$.confirm({
+			title: title,
+			theme: 'light',
+			columnClass: 'medium',
+			content: content,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			buttons: {
+				close: {
+					text: close,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function (){} //GENERIC CLOSE.
+				},
+				remove: {
+					text: remove,
+					btnClass: 'btn btn-primary',
+					action: function(){
+						ids.forEach(id => {
+							deleteForId(id);
+						});
+					}
+				}
+
+			}
+		});
+	}
 
 	function deleteRecord(id){
 		showConfirmDeleteDialog(id);

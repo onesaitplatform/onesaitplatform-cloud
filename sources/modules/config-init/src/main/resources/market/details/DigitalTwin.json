@@ -1,6 +1,0 @@
-{
-	"title":"Digital Twin Example",
-	"technologies":"java,html",
-	"description":"A complete example of the platform's Digital Twin implementation",
-	"detailedDescription":"**Digital Twin**\n\nA complete example of a Digital Twin Device is provided. A Digital Twin Type named Turbine has been created and also a Digital Twin Device name TurbineHelsinki, which is an implementation of the type Turbine.\n\nIt's been defined Javascript logic inside the Digital Twin so when Digital Twin's logic runs it initializes the shadow of the Digital Twin.\nAfter initialization it can be increased the temperature until it reaches 30C limit. In this moment it sends a high temperature alert to the platform.\n\nHow to do it:\n\n1. Download the example from Below.\n2. Modify application.yml for your configuration.\n3. Compile using maven.\n4. Go to \\TurbineHelsinki\\target , open a cmd line command.\n5. Execute java –jar TurbineHelsinki-0.0.1.jar. This action will run the logic of the Digital Twin Device defined before (you can see the logs on the console).\n6. Access the control panel menu option DIGITAL TWIN > Monitoring of Devices and you can show the logs send from Digital Twin Device, the shadow and differents events."
-}

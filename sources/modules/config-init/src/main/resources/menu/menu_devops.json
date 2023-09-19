@@ -49,6 +49,15 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/microservices/list"
+				},
+				{
+					"title": {
+						"EN": "My Microservices Templates",
+						"ES": "Mis Plantillas de MicroServicios",
+						"FR": "Mes Modèles de microservices"
+					},
+					"icon": "",
+					"url": "/controlpanel/mstemplates/list"
 				}
 			]
 		},
@@ -142,12 +151,12 @@
 				},
 				{
 					"title": {
-						"EN": "My Market",
-						"ES": "Mi Market",
-						"FR": "Mon Marché"
+						"EN": "Bundle Repository",
+						"ES": "Repositorio de Bundles",
+						"FR": "Référentiel du groupées groupé"
 					},
 					"icon": "",
-					"url": "/controlpanel/marketasset/list"
+					"url": "/controlpanel/bundlerepository/list"
 				}
 			]
 		}

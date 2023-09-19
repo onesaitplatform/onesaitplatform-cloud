@@ -156,7 +156,7 @@
 													dt:filterSelector="#filterButton" dt:filterClearSelector="#filterClearButton" > <!-- dt:dom="l0frtip" -->
 													<thead>
 														<tr class="cabecera-tabla">
-															<th dt:property="id" class="titulo-columnas text-left" th:text="#{gen.identification}">id</th>
+															<th dt:property="id" class="titulo-columnas text-left" th:text="#{gen.id}">id</th>
 															<th dt:property="name" class="titulo-columnas text-left" th:text="#{gen.name}">Name</th>
 															<th dt:property="owner" class="titulo-columnas text-left" th:text="#{gen.owner}">Owner</th>
 															<th class="titulo-columnas text-left" th:text="#{domain.state}" dt:renderFunction="RuleDomain.List.dtRenderState">State</th>
@@ -191,7 +191,11 @@
 													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
 													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="0"/>
+															<label th:text="#{gen.id}"> ID </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="1"/>
 															<label th:text="#{gen.name}"> Name </label>
 														</span>
 														<span class="checkbox-column">
@@ -267,6 +271,11 @@
 		genDelete: [[#{gen.deleteBtn}]],
 		genView:  [[#{gen.view}]]
 	};
+	
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([1],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});
 	$(document).ready(function() {
 		
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
@@ -295,10 +304,7 @@
 			$('#domains').DataTable().column(1).search( $('#rules-name').val()).draw();
 		});
 		
-	});
-	
-	$(window).on("load",function() {
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 		var dTable = $('#domains').DataTable({
 	      "bAutoWidth": false
 	      });
@@ -307,7 +313,7 @@
 			initCompleteCallback();
 		} );
 		
-		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
+		//$.each([1],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
 		
 		//TABLE STYLES
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));		

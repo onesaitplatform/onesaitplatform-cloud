@@ -39,7 +39,7 @@
 		    window.__env.endpointDashboardEngine = '/dashboardengine';
 		    window.__env.dashboardEngineUsername = '';
 			window.__env.dashboardEnginePassword = '';
-			window.__env.dashboardEngineOauthtoken = document.getElementById("oauthtoken").value;
+			sessionStorage.setItem("dashboardEngineOauthtoken",document.getElementById("oauthtoken").value);
 		    window.__env.dashboardEngineLoginRest = '/loginRest';
 		    window.__env.enableDebug = false;
 		    window.__env.urlParameters = {};		   

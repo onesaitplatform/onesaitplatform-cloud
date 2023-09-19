@@ -342,7 +342,13 @@
 		})
 
 	}
-
+	
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
+		 $.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
+	});
+	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
@@ -363,16 +369,13 @@
 		$('#search_instance').on('click',function(){
 			$('#instances').DataTable().column(0).search( $('#instance-identification').val()).draw();
 		});
-	});
-	 
-	// MAIN WHEN LOAD
-	$(window).on("load",function(){ 
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
+		
+		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
 		var oTable = $('#instances').dataTable({
 	      "bAutoWidth": false
 	      });
-		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
-		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
+		//$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
+		//$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
 		// SHOW/HIDE DATATABLES COLUMN INIT
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));			
 		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		

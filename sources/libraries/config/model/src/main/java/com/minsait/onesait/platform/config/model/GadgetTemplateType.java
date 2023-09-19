@@ -106,4 +106,8 @@ public class GadgetTemplateType extends AuditableEntityWithUUID implements Versi
 	public String getUserJson() {
 		return null;
 	}
+
+	@Override
+	public void setOwnerUserId(String userId) {
+	}
 }

@@ -59,12 +59,12 @@
 			"submenu": [
 				{
 					"title": {
-						"EN": "My Market",
-						"ES": "Mi Market",
-						"FR": "Mon Marché"
+						"EN": "Bundle Repository",
+						"ES": "Repositorio de Bundles",
+						"FR": "Référentiel du groupées groupé"
 					},
 					"icon": "",
-					"url": "/controlpanel/marketasset/list"
+					"url": "/controlpanel/bundlerepository/list"
 				}
 			]
 		},

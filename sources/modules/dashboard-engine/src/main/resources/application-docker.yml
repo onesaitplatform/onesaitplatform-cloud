@@ -69,6 +69,11 @@ onesaitplatform:
       writeConcern: ${REALTIMEDBWRITECONCERN}
       quasar.connector.http.endpoint: http://${QUASARHOST}:${QUASARPORT}/query/fs/
    database.elasticsearch.enabled: ${ELASTICSEARCH_ENABLED}
+   database.timescaledb:
+      enabled: ${TIMESCALE_ENABLED}
+      url: ${TIMESCALE_URL}
+      user: ${TIMESCALE_USER}
+      password: ${TIMESCALE_PASS}
    router.alternativeURL: http://routerservice:20000/router/router/
    router.metrics.query.enabled: ${QUERY_METRICS_ENABLED}
    audit.global.notify: ${AUDITGLOBALNOTIFY}   

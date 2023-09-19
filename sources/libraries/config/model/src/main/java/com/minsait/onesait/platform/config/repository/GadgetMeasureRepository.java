@@ -45,6 +45,6 @@ public interface GadgetMeasureRepository extends JpaRepository<GadgetMeasure, St
 	@Transactional
 	void deleteByIdNotIn(Collection<String> ids);
 
-	@Query("SELECT new com.minsait.onesait.platform.config.versioning.VersionableVO(o.gadget.id, o.id, 'GadgetMeasure') FROM GadgetMeasure AS o")
+	@Query("SELECT new com.minsait.onesait.platform.config.versioning.VersionableVO(o.gadget.identification, o.id, 'GadgetMeasure', o.gadget.user.userId) FROM GadgetMeasure AS o")
 	public List<VersionableVO> findVersionableViews();
 }

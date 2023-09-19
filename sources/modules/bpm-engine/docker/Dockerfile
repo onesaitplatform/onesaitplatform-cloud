@@ -49,13 +49,18 @@ RUN apk add --no-cache \
         libstdc++ \
         nss
 
+# distribute tracing with opentelemetry agent
+RUN  cd /usr/local \
+    && wget https://repo1.maven.org/maven2/io/opentelemetry/javaagent/opentelemetry-javaagent/1.27.0/opentelemetry-javaagent-1.27.0.jar
+    
 VOLUME ["/var/log/platform-logs"]
 
 USER onesait
 
 EXPOSE 27000
 
-ENV SERVER_NAME=localhost \
+ENV JAVA_OPTS="$JAVA_OPTS -javaagent:/usr/local/opentelemetry-javaagent-1.27.0.jar" \
+	SERVER_NAME=localhost \
     REALTIMEDBSERVERS=realtimedb:27017 \
     REALTIMEDBAUTHDB=admin \
 	REALTIMEDBUSEAUTH=true \
@@ -98,7 +103,11 @@ ENV SERVER_NAME=localhost \
     USE_KEYCLOAK=false \
     SBA_USERNAME=operations \
 	SBA_SECRET=changeIt2019! \
-	MAX_HTTP_HEADER_SIZE=20000
+	MAX_HTTP_HEADER_SIZE=20000 \
+	OTEL_JAVAAGENT_ENABLED=false \
+	OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-service:4317 \
+	OTEL_SERVICE_NAME=bpm-engine \
+	OTEL_METRICS_EXPORTER=none
 
 COPY docker-entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["docker-entrypoint.sh"]

@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -472,7 +473,7 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 	}
 
 	@Override
-	public void deleteOntology(String id, String userId) {
+	public void deleteOntology(String id, String userId) throws JsonProcessingException {
 		final Ontology o = ontologyService.getOntologyByIdForDelete(id, userId);
 		final String identification = o.getIdentification();
 		// IF IT'S A COSMOSDB COLLECTION AND NO RECORDS REMOVE IT
@@ -505,7 +506,7 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 
 	@Override
 	public void deleteOntologyAndData(String id, String userId, boolean deleteData)
-			throws OntologyBusinessServiceException {
+			throws OntologyBusinessServiceException, JsonProcessingException {
 		final Ontology o = ontologyService.getOntologyByIdForDelete(id, userId);
 		final String identification = o.getIdentification();
 		if (!RtdbDatasource.PRESTO.equals(o.getRtdbDatasource())) {

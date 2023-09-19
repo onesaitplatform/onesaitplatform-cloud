@@ -145,7 +145,8 @@ public class OntologyTimeSeries extends AuditableEntityWithUUID implements Versi
 	}
 
 	@Override
-	public Versionable<OntologyTimeSeries> runExclusions(Map<String, Set<String>> excludedIds, Set<String> excludedUsers) {
+	public Versionable<OntologyTimeSeries> runExclusions(Map<String, Set<String>> excludedIds,
+			Set<String> excludedUsers) {
 		Versionable<OntologyTimeSeries> o = Versionable.super.runExclusions(excludedIds, excludedUsers);
 		if (o != null && ontology != null && !CollectionUtils.isEmpty(excludedIds)
 				&& !CollectionUtils.isEmpty(excludedIds.get(Ontology.class.getSimpleName()))
@@ -154,6 +155,11 @@ public class OntologyTimeSeries extends AuditableEntityWithUUID implements Versi
 			o = null;
 		}
 		return o;
+	}
+
+	@Override
+	public void setOwnerUserId(String userId) {
+
 	}
 
 }

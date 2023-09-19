@@ -73,7 +73,7 @@
          <hudson.model.StringParameterDefinition>
           <name>PRIVATE_REGISTRY</name>
           <description>URL to the docker registry</description>
-          <defaultValue>production-registry.devops.onesait.com</defaultValue>
+          <defaultValue>dcme-npro-onst-prd-devops-00/production-registry</defaultValue>
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
@@ -86,13 +86,13 @@
     <script>pipeline {  
    agent {
           kubernetes {
-              defaultContainer &apos;jnlp&apos;
-              yaml &quot;&quot;&quot;
+              defaultContainer 'jnlp'
+              yaml """
   apiVersion: v1
   kind: Pod
   metadata:
     labels:
-      maven-version: &quot;3.6.0&quot;
+      maven-version: "3.6.0"
   spec:
     containers:
       - name: git
@@ -124,84 +124,86 @@
           - cat
         tty: true
 
-  &quot;&quot;&quot;
+  """
           }
       }
    
 
    environment {          
 
-      BASEPATH = &apos;{{MICROSERVICE_NAME}}&apos;
-      SOURCESPATH = &apos;{{SOURCES_PATH}}&apos;
-      DOCKERPATH = &apos;{{DOCKER_PATH}}&apos;
-      MICROSERVICE_NAME = &apos;{{MICROSERVICE_NAME}}&apos;
+      BASEPATH = '{{MICROSERVICE_NAME}}'
+      SOURCESPATH = '{{SOURCES_PATH}}'
+      DOCKERPATH = '{{DOCKER_PATH}}'
+      MICROSERVICE_NAME = '{{MICROSERVICE_NAME}}'
   
    }
    
    parameters { 
-       string(name: &apos;GIT_URL&apos;, 
-              defaultValue: &apos;{{GIT_REPOSITORY}}&apos;, 
-              description: &apos;URL Git Repository&apos;)
-       string(name: &apos;GIT_TOKEN&apos;, 
-              defaultValue: &apos;{{GIT_TOKEN}}&apos;, 
-              description: &apos;Git private tokeny&apos;)
-       string(name: &apos;GIT_USER&apos;, 
-              defaultValue: &apos;{{GIT_USER}}&apos;, 
-              description: &apos;URL Git user&apos;)
-       string(name: &apos;GIT_BRANCHNAME&apos;, 
-              defaultValue: &apos;master&apos;, 
-              description: &apos;compilation branch name&apos;)
-       string(name: &apos;DOCKER_MODULETAGVALUE&apos;, 
-              defaultValue: &apos;latest&apos;, 
-              description: &apos;Image generation tag value&apos;)
-       string(name: &apos;DOCKER_USERNAMEVALUE&apos;, 
-              defaultValue: &apos;onesaitplatform&apos;, 
-              description: &apos;Image registry image namespace&apos;)
-       string(name: &apos;DOCKER_PUSHREGISTRY_PRIVATE&apos;, 
-              defaultValue: &apos;true&apos;, 
-              description: &apos;Push image to private registry&apos;)
-      
+       string(name: 'GIT_URL', 
+              defaultValue: '{{GIT_REPOSITORY}}', 
+              description: 'URL Git Repository')
+       string(name: 'GIT_TOKEN', 
+              defaultValue: '{{GIT_TOKEN}}', 
+              description: 'Git private tokeny')
+       string(name: 'GIT_USER', 
+              defaultValue: '{{GIT_USER}}', 
+              description: 'URL Git user')
+       string(name: 'GIT_BRANCHNAME', 
+              defaultValue: 'master', 
+              description: 'compilation branch name')
+       string(name: 'DOCKER_MODULETAGVALUE', 
+              defaultValue: 'latest', 
+              description: 'Image generation tag value')
+       string(name: 'DOCKER_USERNAMEVALUE', 
+              defaultValue: 'onesaitplatform', 
+              description: 'Image registry image namespace')
+       string(name: 'DOCKER_PUSHREGISTRY_PRIVATE', 
+              defaultValue: 'true', 
+              description: 'Push image to private registry')
+       string(name: 'PRIVATE_REGISTRY', 
+              defaultValue: 'dcme-npro-onst-prd-devops-00/production-registry', 
+              description: 'URL to the docker registry')      
    }    
    
    stages {
-        stage(&apos;fetch&apos;) {  
+        stage('fetch') {  
           steps {  
-            container(&apos;git&apos;) {
+            container('git') {
 
-                 sh &quot;git clone \$(echo ${params.GIT_URL} | sed -e &apos;s/:\\/\\//:\\/\\/${params.GIT_USER}:${params.GIT_TOKEN}@/&apos;) ${env.BASEPATH}&quot;
-                 dir(&quot;${env.BASEPATH}&quot;){
-                   sh &quot;git checkout ${params.GIT_BRANCHNAME}&quot;
-                   sh &apos;chmod 777 -R .&apos;
+                 sh "git clone \$(echo ${params.GIT_URL} | sed -e 's/:\\/\\//:\\/\\/${params.GIT_USER}:${params.GIT_TOKEN}@/') ${env.BASEPATH}"
+                 dir("${env.BASEPATH}"){
+                   sh "git checkout ${params.GIT_BRANCHNAME}"
+                   sh 'chmod 777 -R .'
                  }
                
             }       
           }          
          }
      
-     stage(&apos;build&apos;) {
+     stage('build') {
           steps {
-            container(&apos;maven&apos;) {
-            dir(&quot;${env.BASEPATH}/${env.SOURCESPATH}&quot;){
-                sh &apos;mkdir -p $HOME/.m2&apos;
-                sh &apos;mvn clean install -DskipTests=true&apos;
+            container('maven') {
+            dir("${env.BASEPATH}/${env.SOURCESPATH}"){
+                sh 'mkdir -p $HOME/.m2'
+                sh 'mvn clean install -DskipTests=true'
                 }
             }
              
           }
        }
        
-       stage(&apos;deliver&apos;) {
+       stage('deliver') {
         stages{
-           stage(&apos;build-image&apos;) {
+           stage('build-image') {
               steps {
                // variable sustitution
-               container(&apos;docker-client&apos;){
-                 dir(&quot;${env.BASEPATH}&quot;) {
-                	sh &quot;cp ${env.SOURCESPATH}/target/*.jar ${env.DOCKERPATH}&quot;
-		            sh &quot;cp -r ${env.SOURCESPATH}/flask ${env.DOCKERPATH}/flask&quot;
+               container('docker-client'){
+                 dir("${env.BASEPATH}") {
+                	sh "cp ${env.SOURCESPATH}/target/*.jar ${env.DOCKERPATH}"
+		            sh "cp -r ${env.SOURCESPATH}/flask ${env.DOCKERPATH}/flask"
 		            
 		            script{
-		              img = docker.build("${params.DOCKER_USERNAMEVALUE}/${env.MICROSERVICE_NAME}:${params.DOCKER_MODULETAGVALUE}", "--network host ${env.DOCKERPATH}")
+		              img = docker.build("${PRIVATE_REGISTRY}/${env.MICROSERVICE_NAME}:${params.DOCKER_MODULETAGVALUE}", "--network host ${env.DOCKERPATH}")
 		            }
 		          
 	           	  }
@@ -209,16 +211,15 @@
               }
            }
 
-           stage(&apos;deliver image&apos;) {
+           stage('deliver image') {
               when {
-                expression { params.DOCKER_PUSHREGISTRY_PRIVATE == &apos;true&apos; }
+                expression { params.DOCKER_PUSHREGISTRY_PRIVATE == 'true' }
               }
               steps {
-                container(&apos;docker-client&apos;){
+                container('docker-client'){
                    script {
-                        docker.withRegistry('https://production-registry.devops.onesait.com', 'registry-onesait') {
+                        docker.withRegistry("https://europe-docker.pkg.dev", "production-registry-write") {
                             img.push()
-                            img.push("latest")
                    }
                 }
               }

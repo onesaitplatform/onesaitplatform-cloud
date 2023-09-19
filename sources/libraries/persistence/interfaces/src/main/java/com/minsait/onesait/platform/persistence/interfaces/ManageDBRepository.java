@@ -41,6 +41,8 @@ public interface ManageDBRepository {
 
 	public void createIndex(String sentence);
 
+	public void createTTLIndex(String ontology, String attribute, Long seconds);
+
 	public void dropIndex(String ontology, String indexName);
 
 	public List<String> getListIndexes(String ontology);

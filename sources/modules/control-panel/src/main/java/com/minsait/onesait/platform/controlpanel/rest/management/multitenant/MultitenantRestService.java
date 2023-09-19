@@ -100,6 +100,17 @@ public class MultitenantRestService {
 		}
 	}
 
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = String.class))))
+	@Operation(summary = "Replicates user")
+	@PostMapping("/users/{userId}/replicate")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR') or hasRole('ROLE_PLATFORM_ADMIN')")
+	public ResponseEntity<String> replicateUser(@PathVariable("userId") String userId,
+			@RequestParam("tenant") String tenant, @RequestParam String vertical) {
+		multitenancyService.replicateUser(userId, vertical, tenant);
+		return ResponseEntity.ok().build();
+
+	}
+
 	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = UserInfoDTO[].class))))
 	@Operation(summary = "Get current user info")
 	@GetMapping("/me")

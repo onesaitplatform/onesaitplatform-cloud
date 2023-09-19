@@ -358,7 +358,7 @@ public class InitFlowEngineLogMonitoring {
 
 	private void initGadgetMeasuresFlowEngine() {
 		for (int i = 0; i < DASHBOARD_FLOW_ENGINE_GADGET_MEASURE_ID.length; i++) {
-			if (gadgetMeasureRepository.findById(DASHBOARD_FLOW_ENGINE_GADGET_MEASURE_ID[i]).isEmpty()) {
+			if (!gadgetMeasureRepository.findById(DASHBOARD_FLOW_ENGINE_GADGET_MEASURE_ID[i]).isEmpty()) {
 				log.info("Creating " + DASHBOARD_FLOW_ENGINE_GADGET_MEASURE_ID[i] + " Gadget Measures...");
 				final GadgetMeasure gadgetMeasure = new GadgetMeasure();
 				gadgetMeasure.setId(DASHBOARD_FLOW_ENGINE_GADGET_MEASURE_ID[i]);

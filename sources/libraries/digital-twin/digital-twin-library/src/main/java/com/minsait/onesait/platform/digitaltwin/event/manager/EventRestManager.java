@@ -152,7 +152,7 @@ public class EventRestManager implements EventManager {
 		public void run() {
 
 			try {
-				if (ip == null)
+				if (ip == null || ip.isEmpty())
 					ip = getLocalIp();
 			} catch (Exception e) {
 				log.error("Unable to get local IP to register device in broker", e);

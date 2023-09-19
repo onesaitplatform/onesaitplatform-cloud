@@ -273,7 +273,7 @@ public class ApiManagerHelper {
 
 		if (apiMultipart.getApicachetimeout() != null) {
 
-			if (apiMultipart.getApicachetimeout() > 1000 || apiMultipart.getApicachetimeout() < 10) {
+			if (apiMultipart.getApicachetimeout() > 1000 || apiMultipart.getApicachetimeout() <= 0) {
 				// throw new Exception("Cache Limits exceded");
 			} else {
 				api.setApicachetimeout(apiMultipart.getApicachetimeout());

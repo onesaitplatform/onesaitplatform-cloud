@@ -72,7 +72,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 
 	@Override
 	List<User> findAll();
-	
+
 	@Query("SELECT o.email FROM User AS o WHERE o.userId !=:userId")
 	List<String> findAllEmailsNotUser(@Param("userId") String userId);
 
@@ -143,8 +143,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 		deleteByUserIdNotIn(ids);
 	}
 
-	@Query("SELECT new com.minsait.onesait.platform.config.versioning.VersionableVO(o.userId, o.userId, 'User') FROM User AS o")
+	@Query("SELECT new com.minsait.onesait.platform.config.versioning.VersionableVO(o.userId, o.userId, 'User', o.userId) FROM User AS o")
 	public List<VersionableVO> findVersionableViews();
-	
 
 }

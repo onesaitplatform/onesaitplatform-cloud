@@ -156,20 +156,23 @@
 												<table id="apis" class="table table-hover table-striped" dt:table="true"  dt:paginationtype="full">
 													<thead>
 														<tr class="cabecera-tabla">
+															<th class="titulo-columnas text-left" ><span th:text="#{gen.id}"> id </span></th>
 															<th class="titulo-columnas text-left" ><span th:text="#{apimanager.image}"> image </span></th>
 															<th class="titulo-columnas text-left" ><span th:text="#{apimanager.id} + ' - ' + #{apimanager.numversion}">Identification</span><span ></span></th>
+															<th class="titulo-columnas text-left" ><span th:text="#{gen.owner}" >Name</span></th>
 															<th class="titulo-columnas text-left "  ><span th:text="#{apimanager.description}">Description</span></th>
+															<th class="titulo-columnas text-left"><span th:text="#{gen.public}">Public</span></th>
+															<th class="titulo-columnas text-left"><span th:text="#{apimanager.state}" >State</span></th>
 															<th class="titulo-columnas text-left" > <span th:text="#{gen.created}">Created At</span></th>
 															<th class="titulo-columnas text-left" > <span th:text="#{gen.updated}">Updated At</span></th>
-															<th class="titulo-columnas text-left"><span th:text="#{gen.public}">Public</span></th>
-															<th class="titulo-columnas text-left" ><span th:text="#{gen.owner}" >Name</span></th>
-															<th class="titulo-columnas text-left"><span th:text="#{apimanager.state}" >State</span><span   ></span></th>
 															<th class="titulo-columnas text-center" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
 														</tr>
 
 													</thead>
 													<tbody th:remove="all-but-first">
 														<tr th:each="api : ${apis}" pages:paginate="10">
+															<!-- ID -->
+															<td class="text-left no-wrap text-truncate-md" th:text="${api.id}"></td>
 															<!-- IMAGE -->
 															<td class="text-left no-wrap">
 																<img class="img-responsive thumbnail" style="max-width: 125px; margin-bottom: 0px;" th:if="${not #lists.isEmpty(api.image)}" th:src="@{${api.id} + '/getImage'}" />
@@ -177,21 +180,21 @@
 															</td>
 															<!-- IDENTIFICATION - VERSION -->
 															<td class="text-left no-wrap" th:text="${api.identification} + ' - V' + ${api.numversion}"></td>
+															<!-- OWNER -->
+															<td class="text-left no-wrap " th:text="${api.user.userId}"></td>
 															<!-- DESCRIPTION -->
 															<td class="text-left no-wrap text-truncate-md" th:text="${api.description}"></td>
+															<!-- PUBLIC -->
+															<td class="text-left" th:if="${api.public}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"></i><span th:text="' '+#{gen.public}" style="color: #2E6B33;"></span></td>
+															<td class="text-left" th:if="${!api.public}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.private}" style="color: #A73535;"></span></td>
+															<!-- STATE -->
+															<td class="text-left no-wrap " th:text="#{apimanager.state.__${api.state}__}"></td>
 															<!-- DATE -->
 															<td class="text-left" th:if="${api.createdAt!=null}"><span th:text="${#dates.format(api.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(api.createdAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${api.createdAt==null}" th:text="'---'"></td>
 															<!-- UPDATE -->
 															<td class="text-left" th:if="${api.updatedAt!=null}"><span th:text="${#dates.format(api.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(api.updatedAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${api.updatedAt==null}" th:text="'---'"></td>
-															<!-- PUBLIC -->
-															<td class="text-left" th:if="${api.public}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"></i><span th:text="' '+#{gen.public}" style="color: #2E6B33;"></span></td>
-															<td class="text-left" th:if="${!api.public}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.private}" style="color: #A73535;"></span></td>
-															<!-- OWNER -->
-															<td class="text-left no-wrap " th:text="${api.user.userId}"></td>
-															<!-- STATE -->
-															<td class="text-left no-wrap " th:text="#{apimanager.state.__${api.state}__}"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
@@ -288,35 +291,42 @@
 													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="0"/>
+															<label th:text="#{gen.id}"> ID </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="1"/>
 															<label th:text="#{apimanager.image}"> Image </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
 															<label th:text="#{apimanager.id} + ' - ' + #{apimanager.numversion}"> Id + Version </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="2"/>
+															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<label th:text="#{gen.owner}"> Owner</label>
+														</span>	
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="4"/>
 															<label th:text="#{apimanager.description}"> Description</label>
 														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
-															<label th:text="#{gen.created}"> Created At</label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-															<label th:text="#{gen.updated}"> Updated At</label>
-														</span>
+														
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 															<label th:text="#{gen.public}"> Public</label>
 														</span>
-														<span class="checkbox-column">
+													<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
-															<label th:text="#{gen.owner}"> Owner</label>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="7" checked/>
 															<label th:text="#{apimanager.state}"> State</label>
 														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="7" checked/>
+															<label th:text="#{gen.created}"> Created At</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="8" checked/>
+															<label th:text="#{gen.updated}"> Updated At</label>
+														</span>
+														
 													</div>
 												</div>
 											</div>
@@ -505,7 +515,12 @@
 						    type: 'DELETE',
 						    success: function(result) {
 						    	console.log(result);
-						    	navigateUrl('/controlpanel/apimanager/list');
+						    	if(result == "/controlpanel/apimanager/list"){
+									navigateUrl('/controlpanel/apimanager/list');
+								} else {
+								 	toastr.error(result);	
+								}
+						    	
 						    }
 						});
 					}
@@ -665,47 +680,7 @@
 	}
 
 	// MAIN WHEN READY
-	$( document ).ready(function() {
-
-
-		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-		$('input.toggle-vis').on( 'change', function (e) {
-			e.preventDefault();
-			// Get the column API object
-			var column = $('#apis').DataTable().column( $(this).attr('data-column') );
-			// Toggle the visibility
-			column.visible( ! column.visible() );
-			// toggle Text
-			//$(this).toggleClass('text-muted line-through');
-		});
-
-
-		// SEARCH FORM RESET
-		$('#reset_api').on('click',function(){
-			$('#form_api')[0].reset();
-			$('#form_api')[0].submit();
-		});
-
-		// SEARCH FORM
-		$('#search_api').on('click',function(){ $('#form_api')[0].submit(); });
-
-
-		//Stretchy
-	   loadStretchy();
-
-	   $('.btn-client-gen').each(function() {
-			$(this).on('click', function (e) {
-				e.preventDefault();
-				var id = $(this).data('id');
-				resetTable();
-				$("#clientGenModal").modal('show');
-			});
-		});
-
-	   $('.btn-generate').off().on('click', function(e){
-		   generateClientRequest();
-	   })
-	});
+	
 
 	generateClientRequest = () =>{
 		var framework = $('#framework').val();
@@ -805,15 +780,60 @@
 		});
 	}
 
-	// MAIN WHEN LOAD
-	$(window).on("load",function(){
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
+$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([ 0,1,4 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});
+
+$( document ).ready(function() {
+
+
+		//SHOW/HIDE DATATABLE COLUMNS HANDLER
+		$('input.toggle-vis').on( 'change', function (e) {
+			e.preventDefault();
+			// Get the column API object
+			var column = $('#apis').DataTable().column( $(this).attr('data-column') );
+			// Toggle the visibility
+			column.visible( ! column.visible() );
+			// toggle Text
+			//$(this).toggleClass('text-muted line-through');
+		});
+
+
+		// SEARCH FORM RESET
+		$('#reset_api').on('click',function(){
+			$('#form_api')[0].reset();
+			$('#form_api')[0].submit();
+		});
+
+		// SEARCH FORM
+		$('#search_api').on('click',function(){ $('#form_api')[0].submit(); });
+
+
+		//Stretchy
+	   loadStretchy();
+
+	   $('.btn-client-gen').each(function() {
+			$(this).on('click', function (e) {
+				e.preventDefault();
+				var id = $(this).data('id');
+				resetTable();
+				$("#clientGenModal").modal('show');
+			});
+		});
+
+	   $('.btn-generate').off().on('click', function(e){
+		   generateClientRequest();
+	   })
+	   
+	   
+	//	$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
 		var oTable = $('#apis').DataTable({
 	      "bAutoWidth": false
 	      });
 
 		// SHOW/HIDE DATATABLES COLUMN INIT
-		$.each([ 0,2,8 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
+	//	$.each([ 0,1,4 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 
 		//TABLE STYLES
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));
@@ -851,7 +871,7 @@
 		});
 
 		yadcf.init(oTable, [
-			    {column_number : 7,   filter_type: "select",filter_container_id:"statefilter",filter_default_label: [[#{apimanager.state}]]}
+			    {column_number : 6,   filter_type: "select",filter_container_id:"statefilter",filter_default_label: [[#{apimanager.state}]]}
 			  ]);
 
 

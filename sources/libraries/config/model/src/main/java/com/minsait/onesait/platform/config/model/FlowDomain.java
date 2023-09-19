@@ -212,4 +212,11 @@ public class FlowDomain extends OPResource implements Versionable<FlowDomain> {
 		}
 		return domain;
 	}
+
+	@Override
+	public void setOwnerUserId(String userId) {
+		final User u = new User();
+		u.setUserId(userId);
+		setUser(u);
+	}
 }

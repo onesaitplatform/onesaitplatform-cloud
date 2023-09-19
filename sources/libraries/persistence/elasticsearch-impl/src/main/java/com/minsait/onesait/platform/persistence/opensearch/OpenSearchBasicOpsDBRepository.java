@@ -450,7 +450,16 @@ public class OpenSearchBasicOpsDBRepository implements BasicOpsDBRepository {
 		try {
 			Assert.hasLength(ontology, ERROR_ONTOLOGY_CANT_BE_NULL);
 			Assert.hasLength(objectId, ERROR_ID_CANT_BE_NULL);
-			final boolean all = eSDeleteService.deleteById(ontology.toLowerCase(), objectId);
+			final Ontology dbOntology = ontologyRepository.findByIdentification(ontology);
+			final OntologyElastic elasticOntology = ontologyElasticRepository.findByOntologyId(dbOntology);
+			boolean all=false;
+			if(elasticOntology.getTemplateConfig() && elasticOntology.getPatternField()!= null) {
+				//this is a template so index will not be the same as the ontology identification
+				 all = eSDeleteService.deleteByIdFromTemplate(ontology.toLowerCase(), objectId);
+			} else {
+				 all = eSDeleteService.deleteById(ontology.toLowerCase(), objectId);
+			}
+			
 			final MultiDocumentOperationResult result = new MultiDocumentOperationResult();
 			if (all) {
 				result.setCount(1);
@@ -474,7 +483,18 @@ public class OpenSearchBasicOpsDBRepository implements BasicOpsDBRepository {
 			Assert.hasLength(ontology, ERROR_ONTOLOGY_CANT_BE_NULL);
 			Assert.hasLength(objectId, ERROR_ID_CANT_BE_NULL);
 			Assert.hasLength(body, "Body can't be null or empty");
-			final boolean response = eSUpdateService.updateIndex(ontology.toLowerCase(), objectId, body);
+			
+
+			final Ontology dbOntology = ontologyRepository.findByIdentification(ontology);
+			final OntologyElastic elasticOntology = ontologyElasticRepository.findByOntologyId(dbOntology);
+			boolean response=false;
+			if(elasticOntology.getTemplateConfig() && elasticOntology.getPatternField()!= null) {
+				//this is a template so index will not be the same as the ontology identification
+				response = eSUpdateService.updateIndexFromTemplate(elasticOntology, objectId, body);
+			} else {
+				response = eSUpdateService.updateIndex(ontology.toLowerCase(), objectId, body);
+			}
+			//final boolean response = eSUpdateService.updateIndex(ontology.toLowerCase(), objectId, body);
 			final MultiDocumentOperationResult result = new MultiDocumentOperationResult();
 			if (response) {
 				result.setCount(1);

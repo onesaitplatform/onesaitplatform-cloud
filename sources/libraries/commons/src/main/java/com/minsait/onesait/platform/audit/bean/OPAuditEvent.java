@@ -33,7 +33,8 @@ public class OPAuditEvent implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	public enum EventType {
-		USER, SECURITY, ERROR, DATA, GENERAL, IOTBROKER, APIMANAGER, FLOWENGINE, BATCH, QUERY, SYSTEM, PROCESS_EXECUTION, WARNING
+		USER, SECURITY, ERROR, DATA, GENERAL, IOTBROKER, APIMANAGER, FLOWENGINE, BATCH, QUERY, SYSTEM,
+		PROCESS_EXECUTION, WARNING
 	}
 
 	public enum Module {
@@ -72,7 +73,6 @@ public class OPAuditEvent implements Serializable {
 	protected long timeStamp;
 
 	@Getter
-	@Setter
 	protected String formatedTimeStamp;
 
 	@Getter
@@ -107,6 +107,10 @@ public class OPAuditEvent implements Serializable {
 	@Setter
 	protected int version;
 
+	@Getter
+	@Setter
+	protected MongoDate mongoTimestamp;
+
 	public OPAuditEvent() {
 		super();
 	}
@@ -120,6 +124,7 @@ public class OPAuditEvent implements Serializable {
 		this.type = type;
 		this.timeStamp = timeStamp;
 		this.formatedTimeStamp = formatedTimeStamp;
+		this.mongoTimestamp = MongoDate.builder().date(formatedTimeStamp).build();
 		this.user = user;
 		this.ontology = ontology;
 		this.operationType = operationType;
@@ -139,6 +144,11 @@ public class OPAuditEvent implements Serializable {
 	}
 
 	private static final ObjectMapper mapper = new ObjectMapper();
+
+	public void setFormatedTimeStamp(String formatedTimestamp) {
+		this.formatedTimeStamp = formatedTimestamp;
+		this.mongoTimestamp = MongoDate.builder().date(formatedTimeStamp).build();
+	}
 
 	public String toJson() {
 

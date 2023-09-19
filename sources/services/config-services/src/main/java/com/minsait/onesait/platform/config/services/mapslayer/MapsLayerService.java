@@ -48,4 +48,6 @@ public interface MapsLayerService {
 
 	public String clone(MapsLayer originalMapsLayer, String identification, User user);
 
+	public MapsLayer getByIdentificationANDUser(String identification, String userId);
+
 }

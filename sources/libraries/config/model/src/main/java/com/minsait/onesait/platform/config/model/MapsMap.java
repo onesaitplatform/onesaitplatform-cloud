@@ -127,4 +127,11 @@ public class MapsMap extends OPResource implements Versionable<MapsMap> {
 		}
 		return mapsMap;
 	}
+
+	@Override
+	public void setOwnerUserId(String userId) {
+		final User u = new User();
+		u.setUserId(userId);
+		setUser(u);
+	}
 }

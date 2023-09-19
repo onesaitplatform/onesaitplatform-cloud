@@ -1,8 +1,0 @@
-{
-	"title":"Airports Dashboard",
-	"technologies":"HTML",
-	"description":"onesait Platform's dashboard with information about flights and airports",
-	"detailedDescription":"**Airports and Flight Dashboard**\n\nThe URL below will navigate to an onesait Platform's Dashboard with information about airports and flights. It includes several statistics and information relative to number of flights by airport, top origin and destiny countries and number of routes.\n\nIt is designed using onesait platform graphical capabilities.\n\n[Airport Dashboard] (https://development.onesaitplatform.com/controlpanel/dashboards/view/MASTER-Dashboard-2/)",
-	"functionality":"",
-	"id_endpoint":"https://development.onesaitplatform.com/controlpanel/dashboards/view/MASTER-Dashboard-2/"
-}

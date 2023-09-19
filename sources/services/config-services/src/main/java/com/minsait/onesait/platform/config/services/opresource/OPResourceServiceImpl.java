@@ -172,7 +172,8 @@ public class OPResourceServiceImpl implements OPResourceService {
 
 	@Override
 	public Collection<OPResource> getAllResourcesVersionablesVOs() {
-		return resourceRepository.findAll().stream().filter(o -> o instanceof Versionable<?>).collect(Collectors.toList());
+		return resourceRepository.findAll().stream().filter(o -> o instanceof Versionable<?>)
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -250,14 +251,12 @@ public class OPResourceServiceImpl implements OPResourceService {
 	@Override
 	@Transactional
 	public void removeAuthorization(String id, String projectId, String userId) throws GenericOPException {
-		final Project project = projectService.getById(projectId);
 		resourceAccessRepository.findById(id).ifPresent(pra -> {
 			if (!projectService.isUserAuthorized(projectId, userId)
 					&& !isUserAuthorized(userId, pra.getResource().getId())) {
 				return;
 			}
-			project.getProjectResourceAccesses().removeIf(p -> p.equals(pra));
-			projectService.updateProject(project);
+			resourceAccessRepository.deleteById(id);
 		});
 
 	}
@@ -455,6 +454,11 @@ public class OPResourceServiceImpl implements OPResourceService {
 	}
 
 	@Override
+	public List<ProjectResourceAccess> getProjectsByResource(OPResource resource) {
+		return resourceAccessRepository.findByResource(resource);
+	}
+
+	@Override
 	public Collection<OPResource> getResourcesForUserAndType(User user, String type) {
 		final List<AppUser> appUsers = appUserRepository.findByUser(user);
 		final Set<OPResource> resources = new HashSet<>();
@@ -476,17 +480,16 @@ public class OPResourceServiceImpl implements OPResourceService {
 		return resources;
 	}
 
-
 	@Override
 	@Transactional
 	public Collection<Versionable<?>> getResourcesVersionablesForUserAndType(User user, Class<?> type) {
 		final long start = System.currentTimeMillis();
 		final List<OPResource> res = resourceRepository.findByUser(user).stream().filter(r -> r.getClass().equals(type))
 				.collect(Collectors.toList());
-		log.debug("First collect took time: {} ms", System.currentTimeMillis()-start);
+		log.debug("First collect took time: {} ms", System.currentTimeMillis() - start);
 		final Collection<OPResource> projectResources = getResourcesForUserAndType(user, type.getSimpleName(),
 				ResourceAccessType.MANAGE);
-		log.debug("After second collect took total time: {} ms", System.currentTimeMillis()-start);
+		log.debug("After second collect took total time: {} ms", System.currentTimeMillis() - start);
 		return Stream.of(res, projectResources).flatMap(Collection::stream).map(opr -> (Versionable<?>) opr)
 				.collect(Collectors.toList());
 
@@ -769,7 +772,7 @@ public class OPResourceServiceImpl implements OPResourceService {
 
 	private void deleteResourceAccessRealm(String projectName, String realmId, String roleId, String resourceId,
 			String version, String resourceType, String resourceAccessType, String currentUserId)
-					throws GenericOPException {
+			throws GenericOPException {
 
 		if (!projectName.equals("") && !realmId.equals("") && !resourceId.equals("") && !resourceType.equals("")
 				&& !roleId.equals("")) {

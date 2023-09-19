@@ -1,6 +1,0 @@
-{
-	"title":"onesait Platform Notebook",
-	"technologies":"Python",
-	"description":"Compares Linear, Ridge and Lasso regression algorithms",
-	"detailedDescription":"This Notebook allows to compare the Linear, Ridge and Lasso regression algorithms to predict house prizing on the Boston dataset.\n\nThe machine learning library used is scikit-learn.\n\nThis notebook uses exclusive features of Apache Zeppelin to represent some data.\n\nCreate a new Notebook and include the code included in the js below."
-}

@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.business.services.ontology.timeseries;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.services.ontology.OntologyConfiguration;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyTimeSeriesServiceDTO;
@@ -22,15 +23,18 @@ import com.minsait.onesait.platform.config.services.ontology.dto.TimescaleContin
 public interface TimeSeriesOntologyBusinessService {
 
 	public Ontology createOntology(OntologyTimeSeriesServiceDTO ontology, OntologyConfiguration config,
-			boolean parseProperties, boolean parseWindow) throws TimeSerieOntologyBusinessServiceException;
+			boolean parseProperties, boolean parseWindow)
+			throws TimeSerieOntologyBusinessServiceException, JsonProcessingException;
 
 	public void updateOntology(OntologyTimeSeriesServiceDTO ontologyTimeSeriesDTO, String sessionUserId,
 			OntologyConfiguration config, boolean hasDocuments) throws TimeSerieOntologyBusinessServiceException;
 
-	public void createContinuousAggregate(String ontologyIdentification, String sessionUser, TimescaleContinuousAggregateRequest request) throws TimeSerieOntologyBusinessServiceException;
-	
-	public void deleteContinuousAggregate(String ontologyIdentification, String sessionUser, String name) throws TimeSerieOntologyBusinessServiceException;
-	
+	public void createContinuousAggregate(String ontologyIdentification, String sessionUser,
+			TimescaleContinuousAggregateRequest request) throws TimeSerieOntologyBusinessServiceException;
+
+	public void deleteContinuousAggregate(String ontologyIdentification, String sessionUser, String name)
+			throws TimeSerieOntologyBusinessServiceException;
+
 	public void deleteOntology(String id, String userId);
 
 }

@@ -124,56 +124,12 @@
 								</div>
 								<div class="pull-right btn-group btn-title-group" id="divcreate" >
 									<button type="button" class="btn btn-primary button-plus-create" onclick="location.href='../layers/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>		
-								</div>							
-								<!--<div class="actions margin-right-20">
-									<div class="btn-group">									
-										<button id="search-toggle" type="button" class="btn btn-outline btn-circle blue" onclick="$('#searchFilter').toggleClass('hide')"><span th:text="#{gen.search}"> Search </span></button>									
-										<button type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='../layers/create'" ><span th:text="#{gen.create}">New </span></button>									
-									</div>										
-								</div>-->								
+								</div>					
 							</div>
 							<div class="portlet-body" style="display: block; height: auto;">
 							
 								<div class="row main">
-									<!--<div class="col-md-12 alert-zone">
-										// ALERT ZONE																			
-									</div>-->
-									<!--<div class="col-md-12">
-									// SEARCH FORM 
-										<form id="form_layer" action="list.html" th:action="@{/layers/list}" class="" role="form" method="get">											
-											<div id="searchFilter" class="form-body hide" style="border-bottom: 1px solid #eef1f5;">
-												<div class="row">
-													<div class="col-md-2 col-sm-4 col-xs-12">
-														<div class="form-group">															
-															<div class="input-group">
-																<span class="input-group-addon">
-																	<i class="fa fa-tag font-grey-mint"></i>
-																</span>															
-																<input id="identification" th:placeholder="#{gen.identification}"  name="identification" class="form-control" type="text" maxlength="50" value=""/>
-															</div>
-														</div>
-													</div>
-													<div class="col-md-2 col-sm-4 col-xs-12">
-														<div class="form-group">															
-															<div class="input-group">
-																<span class="input-group-addon">
-																	<i class="fa fa-tag font-grey-mint"></i>
-																</span>
-																<input id="description" th:placeholder="#{gen.description}" name="description" class="form-control" type="text" maxlength="100" value=""/>
-															</div>
-														</div>
-													</div>
-													<div class="col-md-8 col-sm-4  col-xs-12">
-														<div class="btn-group margin-bottom-10">
-															<button type="button" id="search_layer" name="search_layer" th:title="#{gen.search}" class="btn btn-sm btn-outline btn-circle blue" th:text="#{gen.search}">Search</button>
-															<button type="button" id="reset_layer" name="reset_layer" value="Reset" class="btn  btn-sm btn-outline btn-circle blue" title="Reset"><i class="la la-refresh"></i>&nbsp;</button>
-														</div>
-													</div>
-												</div>
-											</div>											
-										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>								
-									</div>-->
-									<!-- ONTOLOGY LIST -->
+									<!-- LAYER LIST -->
 									<div class="col-md-12">						
 										<div id="contenedor-tabla-outside" class="contiene hidden">																				
 											<div>
@@ -181,6 +137,7 @@
 												<table id="layers" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
 													<thead>
 														<tr class="cabecera-tabla">
+															<th class="titulo-columnas" th:text="#{gen.id}">Id</th>
 															<th class="titulo-columnas" th:text="#{gen.identification}">Identification</th>
 															<th class="titulo-columnas text-left"> <span th:text="#{ontology.userId}" >Owner</span></th>
 															<th class="titulo-columnas" th:text="#{gen.description}">Description</th>
@@ -193,6 +150,8 @@
 													</thead>
 													<tbody th:remove="all-but-first">
 														<tr th:each="layer : ${layers}" pages:paginate="10">
+															<!-- ID -->
+															<td class="text-left no-wrap " th:text="${layer.id}"></td>
 															<!-- IDENTIFICATION/NAME -->
 															<td class="text-left no-wrap " th:text="${layer.identification}"></td>
 															<!-- USER -->
@@ -250,23 +209,27 @@
 													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
 													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
-															<label th:text="#{gen.identification}"> Identification </label>
+															<input class="toggle-vis" type="checkbox" data-column="0"/>
+															<label th:text="#{gen.id}"> Id </label>
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-															<label th:text="#{ontology.userId}"> Owner </label>
+															<label th:text="#{gen.identification}"> Identification </label>
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-															<label th:text="#{gen.description}"> Description</label>
+															<label th:text="#{ontology.userId}"> Owner </label>
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
-															<label th:text="#{ontology.public}"> Public</label>
+															<label th:text="#{gen.description}"> Description</label>
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+															<label th:text="#{ontology.public}"> Public</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 															<label th:text="#{gen.type}"> Type</label>
 														</span>
 														<span class="checkbox-column">
@@ -354,6 +317,11 @@
 		navigateUrl("/create/" + categoryId);
 	}
 	
+	$(window).on('pageshow', function(event) {
+ 		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});
+	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 	
@@ -398,18 +366,14 @@
 		});
 		
 		// SEARCH FORM
-		$('#search_layer').on('click',function(){ $('#form_layer')[0].submit(); });
-	});
-	 
-	// MAIN WHEN LOAD
-	$(window).on("load",function(){
+		//$('#search_layer').on('click',function(){ $('#form_layer')[0].submit(); });
+	
 		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 		var oTable = $('#layers').dataTable({
 	      "bAutoWidth": false
 	      });
 
-		$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
-		$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
+		//$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));	

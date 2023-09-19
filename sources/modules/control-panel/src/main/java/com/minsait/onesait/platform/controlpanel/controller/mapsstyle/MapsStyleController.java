@@ -14,11 +14,13 @@
  */
 package com.minsait.onesait.platform.controlpanel.controller.mapsstyle;
 
+import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +39,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.minsait.onesait.platform.config.model.MapsStyle;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
 import com.minsait.onesait.platform.config.services.exceptions.MapsStyleServiceException;
+import com.minsait.onesait.platform.config.services.mapsmap.dto.MapsMapDTO;
 import com.minsait.onesait.platform.config.services.mapsstyle.MapsStyleService;
 import com.minsait.onesait.platform.config.services.mapsstyle.dto.MapsStyleDTO;
 import com.minsait.onesait.platform.config.services.user.UserService;
@@ -78,6 +81,7 @@ public class MapsStyleController {
 		return STYLE_LIST;
 	}
 
+	 
 	@GetMapping(value = "/create")
 	public String create(Model model) {
 		MapsStyle maps = new MapsStyle();

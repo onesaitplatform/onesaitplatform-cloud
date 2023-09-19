@@ -63,7 +63,7 @@ import com.minsait.onesait.platform.git.GitlabConfiguration;
 import com.minsait.onesait.platform.git.GitlabException;
 import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 
-import avro.shaded.com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 
 @Service

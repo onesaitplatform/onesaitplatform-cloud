@@ -475,6 +475,11 @@
 			});
 		}
 		
+		$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([4],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		});
+		
 		// MAIN WHEN READY
 		$( document ).ready(function() {
 			var csrf_value = $("meta[name='_csrf']").attr("content");
@@ -524,11 +529,8 @@
 			$('#resetBtn').on('click',function(){
 				cleanFields('ksql_flow_create_form');
 			});
-		});
-		 
-		// MAIN WHEN LOAD
-		$(window).on("load",function(){ 
-			$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+		
+			//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 			var oTable = $('#ksqlRelations').dataTable({
 		      "bAutoWidth": false
 		      }); 
@@ -550,7 +552,7 @@
 			$('.dataTables_paginate').attr('style', 'float:right !important');
 			
 			// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
-			$.each([4],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+			//$.each([4],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 
 			$("#contenedor-tabla-outside").removeClass("hidden");
 			

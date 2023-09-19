@@ -25,6 +25,7 @@ onesaitplatform: #Config Sofia2 specific
          schema:
              ignore-case-properties: true
    init:
+      metrics.indexes: false
       configdb: true
       mongodb: true
       samples: true
@@ -66,6 +67,13 @@ onesaitplatform: #Config Sofia2 specific
       sql.connector.http.endpoint: http://localhost:9200
       url: localhost
       port: 9300
+      default:
+        replicas: 0
+        shards: 1
+        ttlPatternField: formatedTimeStamp
+        ttlPatternFunction: YEAR_MONTH
+        ttlRetentionPeriod: 30d
+        ttlPriority: 10
    database.timescaledb:
       enabled: false
       url: jdbc:postgresql://localhost:5432/?currentSchema=public
@@ -87,6 +95,7 @@ onesaitplatform: #Config Sofia2 specific
          externalUri: http://127.0.0.1:9000
          plugin.auth.path.token: http://localhost:21000/oauth-server/oauth/token
          plugin.auth.path.userinfo: http://localhost:21000/oauth-server/oidc/userinfo
+   dataflow.create.vertical.instance: false
 spring:
    ## GENERAL CONFIG
    application.name: systemconfig-init

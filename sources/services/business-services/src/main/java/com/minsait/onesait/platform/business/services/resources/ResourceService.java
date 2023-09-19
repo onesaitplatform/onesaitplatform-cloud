@@ -18,11 +18,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
-import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.minsait.onesait.platform.config.model.Api;
@@ -79,7 +76,7 @@ public interface ResourceService {
 	public void cleanAllRecords(String id, String userToken);
 
 	public List<Map<String, Object>> getResourceFromUrl(String url, Map<String, String> resultMap)
-			throws IOException, ParserConfigurationException, SAXException;
+			throws IOException;
 
 	public Ontology createOntology(String ontologyIdentification, String ontologyDescription, String schema,
 			String userId) throws IOException;

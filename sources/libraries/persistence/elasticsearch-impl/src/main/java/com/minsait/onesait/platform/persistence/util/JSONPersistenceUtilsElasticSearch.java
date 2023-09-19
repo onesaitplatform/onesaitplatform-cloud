@@ -16,9 +16,31 @@ package com.minsait.onesait.platform.persistence.util;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
+import org.opensearch.client.opensearch._types.mapping.BooleanProperty;
+import org.opensearch.client.opensearch._types.mapping.ByteNumberProperty;
+import org.opensearch.client.opensearch._types.mapping.DateProperty;
+import org.opensearch.client.opensearch._types.mapping.DoubleNumberProperty;
+import org.opensearch.client.opensearch._types.mapping.FloatNumberProperty;
+import org.opensearch.client.opensearch._types.mapping.GeoShapeProperty;
+import org.opensearch.client.opensearch._types.mapping.HalfFloatNumberProperty;
+import org.opensearch.client.opensearch._types.mapping.IntegerNumberProperty;
+import org.opensearch.client.opensearch._types.mapping.KeywordProperty;
+import org.opensearch.client.opensearch._types.mapping.LongNumberProperty;
+import org.opensearch.client.opensearch._types.mapping.NestedProperty;
+import org.opensearch.client.opensearch._types.mapping.ObjectProperty;
+import org.opensearch.client.opensearch._types.mapping.Property;
+import org.opensearch.client.opensearch._types.mapping.Property.Kind;
+import org.opensearch.client.opensearch._types.mapping.ScaledFloatNumberProperty;
+import org.opensearch.client.opensearch._types.mapping.ShortNumberProperty;
+import org.opensearch.client.opensearch._types.mapping.TextProperty;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -78,6 +100,30 @@ public class JSONPersistenceUtilsElasticSearch {
                 return getElasticIndexFromObject(jsonSchema, jsonSchema, PROPERTIES).toString();
             else
                 return "";
+        } catch (final JsonParseException e) {
+            log.error(PARSING_SCHEMA_ERROR, e);
+            throw e;
+        }
+    }
+    
+    /**
+     * Gets the elastic search index from json schema
+     * 
+     * @param schemaString
+     * @return String containing a json with the elastic search index
+     * @throws JsonSyntaxException
+     * @throws JsonParseException
+     */
+    public static Map<String, Property> getOpenSearchSchemaFromJSONSchema(final String schemaString) {
+        try {
+            final JsonObject jsonSchema = new JsonParser().parse(schemaString).getAsJsonObject();
+            if (jsonSchema.has(PROPERTIES) && jsonSchema.get(PROPERTIES).isJsonObject()
+                    && !jsonSchema.getAsJsonObject(PROPERTIES).entrySet().isEmpty()) {
+                final JsonObject jsonMapping = getElasticIndexFromObject(jsonSchema, jsonSchema, PROPERTIES);
+            	return getOpenSearchMapping(jsonMapping, "properties");
+            }else {
+                return new HashMap<String, Property>();
+            }
         } catch (final JsonParseException e) {
             log.error(PARSING_SCHEMA_ERROR, e);
             throw e;
@@ -260,6 +306,68 @@ public class JSONPersistenceUtilsElasticSearch {
         return elasticProperties;
     }
 
+    public static Map<String, Property> getOpenSearchMapping(final JsonObject jsonObject, final String property) {
+    	Map<String, Property> mapping=new HashMap<>();
+    	//TODO: transform each JsonObject into a MAP of properties.
+    	Set<Entry<String, JsonElement>> elements = jsonObject.getAsJsonObject(property).entrySet();
+    	for(Entry<String, JsonElement> entry:elements) {
+    		if(entry.getValue().isJsonObject()) {
+    			if(entry.getValue().getAsJsonObject().has("properties")) {
+    				//is an object with more properties
+    				final Map<String, Property> newProps = getOpenSearchMapping(entry.getValue().getAsJsonObject(),"properties");
+    				Property complexObj = new Property(new ObjectProperty.Builder().properties(newProps).build());
+    				mapping.put(entry.getKey(),complexObj);
+    			}
+    			else if(entry.getValue().getAsJsonObject().has("type")) {
+    				//is a field with data type
+    				final String format = entry.getValue().getAsJsonObject().get("format")==null?null:entry.getValue().getAsJsonObject().get("format").getAsString();
+    				mapping.put(entry.getKey(), getOpenSearchMappingType(entry.getValue().getAsJsonObject().get("type").getAsString(),format));
+    			}
+    		}
+    	}
+    	return mapping;
+    }
+    
+    private static Property getOpenSearchMappingType(String propType,String format) {
+    	
+    	switch(propType) {
+    	case "text":
+    		return new Property(new TextProperty.Builder().build());
+    	case "keyword":
+    		return new Property(new KeywordProperty.Builder().build());
+    	case "float":
+    		return new Property(new FloatNumberProperty.Builder().build());
+    	case "double":
+    		return new Property(new DoubleNumberProperty.Builder().build());
+    	case "half_float":
+    		return new Property(new HalfFloatNumberProperty.Builder().build());
+    	case "scaled_float":
+    		return new Property(new ScaledFloatNumberProperty.Builder().build());
+    	case "integer":
+    		return new Property(new IntegerNumberProperty.Builder().build());
+    	case "long":
+    		return new Property(new LongNumberProperty.Builder().build());
+    	case "short":
+    		return new Property(new ShortNumberProperty.Builder().build());
+    	case "byte":
+    		return new Property(new ByteNumberProperty.Builder().build());
+    	case "nested":
+    		return new Property(new NestedProperty.Builder().build());
+    	case "object":
+    		return new Property(new ObjectProperty.Builder().build());
+    	case "boolean":
+    		return new Property(new BooleanProperty.Builder().build());
+    	case "geo_shape":
+    		return new Property(new GeoShapeProperty.Builder().build());
+    	case "date": 
+    		if(format!=null)
+    			return new Property(new DateProperty.Builder().format(format).build());
+    		return new Property(new DateProperty.Builder().build());
+    	default:
+    		throw new JsonSyntaxException(MessageFormat.format("The type {0} is not supported by OpenSearch", propType));
+    	}
+    }
+    
     private static void addAdditionalParameters(JsonObject elasticProperties, JsonObject property,
             String elasticsearchType) {
         if (elasticsearchType != null && "scaled_float".equals(elasticsearchType)

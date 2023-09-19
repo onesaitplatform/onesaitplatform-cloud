@@ -48,8 +48,7 @@ public class Microservice extends OPResource {
 	private static final long serialVersionUID = 1L;
 
 	public enum TemplateType {
-		IOT_CLIENT_ARCHETYPE, DIGITAL_TWIN, ML_MODEL_ARCHETYPE, NOTEBOOK_ARCHETYPE, ARCHITECTURE_ARCHETYPE,
-		IMPORT_FROM_GIT, IMPORT_FROM_ZIP, MLFLOW_MODEL
+		DIGITAL_TWIN, ARCHITECTURE_ARCHETYPE, IMPORT_FROM_GIT, IMPORT_FROM_ZIP, MLFLOW_MODEL
 	}
 
 	public enum CaaS {
@@ -119,8 +118,7 @@ public class Microservice extends OPResource {
 	private String dockerImage;
 
 	@Column(name = "TEMPLATE_TYPE")
-	@Enumerated(EnumType.STRING)
-	private TemplateType templateType;
+	private String templateType;
 
 	@Column(name = "ACTIVE", nullable = false)
 	@Type(type = "org.hibernate.type.BooleanType")

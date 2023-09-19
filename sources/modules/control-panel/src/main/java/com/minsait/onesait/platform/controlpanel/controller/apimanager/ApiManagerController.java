@@ -277,11 +277,11 @@ public class ApiManagerController {
 
 		} catch (final RuntimeException e) {
 			utils.addRedirectException(e, redirect);
-
+			return e.getMessage();
 		} catch (final Exception e) {
 			log.error("Exception reached " + e.getMessage(), e);
 			utils.addRedirectMessage("apimanager.delete.error", redirect);
-			return "/controlpanel/apimanager/list";
+			return e.getMessage();
 		}
 
 		return "/controlpanel/apimanager/list";

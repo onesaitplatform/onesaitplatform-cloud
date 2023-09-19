@@ -36,6 +36,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.minsait.onesait.platform.config.dto.OPResourceDTO;
@@ -248,13 +249,20 @@ public class GadgetServiceImpl implements GadgetService {
 	}
 
 	@Override
-	public void deleteGadget(String gadgetId, String userId) {
+	public void deleteGadget(String gadgetId, String userId) throws JsonProcessingException {
 		if (hasUserPermission(gadgetId, userId)) {
 			final Gadget gadget = gadgetRepository.findById(gadgetId).orElse(null);
 			if (gadget != null) {
-				if (resourceService.isResourceSharedInAnyProject(gadget))
-					throw new OPResourceServiceException(
-							"This gadget is shared within a Project, revoke access from project prior to deleting");
+				if (resourceService.isResourceSharedInAnyProject(gadget)) {
+					List<String> projects = new ArrayList<>();
+					resourceService.getProjectsByResource(gadget).forEach(pra -> {
+						if (!projects.contains(pra.getProject().getIdentification()))
+							projects.add(pra.getProject().getIdentification());
+					});
+					throw new OPResourceServiceException(" This Gadget is shared within the Projects: "
+							+ new ObjectMapper().writeValueAsString(projects)
+							+ " , revoke access from projects prior to deleting");
+				}
 				final List<GadgetMeasure> lgmeasure = gadgetMeasureRepository.findByGadget(gadget);
 				for (final GadgetMeasure gm : lgmeasure) {
 					gadgetMeasureRepository.delete(gm);

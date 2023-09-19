@@ -98,6 +98,8 @@ public class MicroserviceServiceImpl implements MicroserviceService {
 		mDB.setOpenshiftConfiguration(service.getOpenshiftConfiguration());
 		if (StringUtils.hasText(service.getContextPath()))
 			mDB.setContextPath(service.getContextPath());
+		mDB.setJobUrl(service.getJobUrl());
+		mDB.setGitlabRepository(service.getGitlab());
 		return save(mDB);
 	}
 

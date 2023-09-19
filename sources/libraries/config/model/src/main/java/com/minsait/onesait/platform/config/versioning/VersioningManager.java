@@ -28,11 +28,13 @@ public interface VersioningManager {
 	public static final String DEFAULT_RESTORE_COMMIT_MESSAGE = "Restored file %s by user %s from commit %s";
 	public static final String DEFAULT_RESTORE_COMMIT_MESSAGE_NO_USER = "Restored file %s from commit %s";
 
-	public enum EventType{
+	public enum EventType {
 		UPDATE, CREATE, DELETE
 	}
 
 	public <T> void serialize(Versionable<T> versionable);
+
+	public <T> void serialize(Versionable<T> versionable, String directory);
 
 	public <T> void serialize(Versionable<T> versionable, String userId, String message, EventType eventType);
 
@@ -42,7 +44,7 @@ public interface VersioningManager {
 
 	public <T> void restoreSerialization(Versionable<T> versionable, String commitId);
 
-	public <T> void restoreSerialization(Versionable<T> versionable, String commitId,String userId, String message);
+	public <T> void restoreSerialization(Versionable<T> versionable, String commitId, String userId, String message);
 
 	public <T> void commit(Versionable<T> versionable, String userId, String message, EventType eventType);
 

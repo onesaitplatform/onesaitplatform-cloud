@@ -26,6 +26,10 @@ RUN chown -R onesait:onesait /usr/local && \
     chmod -R 777 /application && \
     chmod -R 777 /var/log && \
     chmod -R 777 /usr/local
+ 
+# distribute tracing with opentelemetry agent
+RUN  cd /usr/local \
+    && wget https://repo1.maven.org/maven2/io/opentelemetry/javaagent/opentelemetry-javaagent/1.27.0/opentelemetry-javaagent-1.27.0.jar
 
 VOLUME ["/tmp", "/var/log/platform-logs"]
 
@@ -35,7 +39,8 @@ EXPOSE 19100
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
 
-ENV SERVER_NAME=localhost \
+ENV JAVA_OPTS="$JAVA_OPTS -javaagent:/usr/local/opentelemetry-javaagent-1.27.0.jar" \
+    SERVER_NAME=localhost \
     REALTIMEDBSERVERS=realtimedb:27017 \
 	CONFIGDBMASTERURL="jdbc:mysql://configdb:3306/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
 	CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \
@@ -68,7 +73,11 @@ ENV SERVER_NAME=localhost \
 	SBA_SECRET=ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv) \
 	MAX_HTTP_HEADER_SIZE=20000 \
 	HTTP_LOG_LEVEL=INFO \
-    CORS_ALLOWED_URLS="*"
+    CORS_ALLOWED_URLS="*" \
+    OTEL_JAVAAGENT_ENABLED=false \
+	OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-service:4317 \
+	OTEL_SERVICE_NAME=api-manager \
+	OTEL_METRICS_EXPORTER=none
 
 COPY docker-entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["docker-entrypoint.sh"]

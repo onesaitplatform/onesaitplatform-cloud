@@ -282,6 +282,10 @@
 	
 	<script th:inline="javascript">	
 	
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([ 4 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 	
@@ -300,19 +304,15 @@
 			// toggle Text
 			//$(this).toggleClass('text-muted line-through');			
 		});	
-		
-	});
-	
-	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
+		 
+		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
 		//DATATABLE 
 		var oTable = $('#notifications').dataTable({
 	      "bAutoWidth": false
 	      });
 
 	      // HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-		$.each([ 4 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });  
+		//$.each([ 4 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });  
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT
 		$('#divcreate').prepend($('#dataTable-vis-toggle')); 		

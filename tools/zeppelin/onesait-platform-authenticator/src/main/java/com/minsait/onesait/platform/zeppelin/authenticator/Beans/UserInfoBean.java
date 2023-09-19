@@ -1,9 +1,10 @@
 package com.minsait.onesait.platform.zeppelin.authenticator.Beans;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
-public class UserInfoBean {
+public class UserInfoBean implements Principal{
 	
 	private String access_token;
 	private String token_type;
@@ -60,6 +61,8 @@ public class UserInfoBean {
 	public void setClientId(String clientId) {
 		this.clientId = clientId;
 	}
+	
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -91,6 +94,7 @@ public class UserInfoBean {
 		this.authorities = authorities;
 	}
 	
+	@Override
 	public String toString() {
 		return this.name;
 	}

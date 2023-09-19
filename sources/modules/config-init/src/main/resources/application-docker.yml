@@ -9,6 +9,7 @@ master:
 
 onesaitplatform:
    init:
+      metrics.indexes: ${LOADMETRICS}
       configdb: ${LOADCONFIGDB}
       mongodb: ${LOADMONGODB}
       samples: ${LOADTESTDATA}
@@ -45,6 +46,13 @@ onesaitplatform:
       sql.connector.http.endpoint: http://${OPENSEARCHDBHOST}:${OPENSEARCHDBPORT}
       url: ${OPENSEARCHDBHOST}
       port: 9300
+      default:
+        replicas: ${OPENSEARCH_TTL_REPLICAS}
+        shards: ${OPENSEARCH_TTL_SHARDS}
+        ttlPatternField: ${OPENSEARCH_TTL_PATTERN_FIELD}
+        ttlPatternFunction: ${OPENSEARCH_TTL_PATTERN_FUNCTION}
+        ttlRetentionPeriod: ${OPENSEARCH_TTL_RETENTION_PERIOD}
+        ttlPriority: ${OPENSEARCH_TTL_PRIORITY}
    database.timescaledb:
       enabled: ${TIMESCALE_ENABLED}
       url: ${TIMESCALE_URL}
@@ -67,6 +75,7 @@ onesaitplatform:
          externalUri: ${GRAYLOG_EXTERNAL_URI}
          plugin.auth.path.token: ${GRAYLOG_PLUGIN_AUTH_PATH_TOKEN}
          plugin.auth.path.userinfo: ${GRAYLOG_PLUGIN_AUTH_PATH_USERINFO}
+   dataflow.create.vertical.instance: ${CREATE_DATAFLOW_INSTANCE_VERTICAL}
          
 spring:
    datasource:

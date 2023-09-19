@@ -56,7 +56,7 @@ public class ReportDto implements Serializable {
 	private String fileName;
 
 	private String dataSourceUrl;
-
+	
 	private List<MultipartFile> additionalFiles;
 
 	private List<ReportResourceDTO> resources;

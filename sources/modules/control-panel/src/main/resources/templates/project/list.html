@@ -164,6 +164,7 @@
 												dt:table="true" dt:paginationtype="full">
 												<thead>
 													<tr class="cabecera-tabla">
+														<th class="titulo-columnas text-left"><span th:text="#{gen.id}"> ID </span></th>
 														<th dt:sortInitDirection="asc" dt:sortInitOrder="0" class="titulo-columnas" th:text="#{gen.name}">Name</th>
 														<th class="titulo-columnas text-left" th:text="#{gen.owner}">Owner</th>
 														<th dt:sortInitDirection="dsc" dt:sortInitOrder="1" class="titulo-columnas text-left" th:text="#{gen.type}">Type</th>
@@ -177,6 +178,8 @@
 												</thead>
 												<tbody th:remove="all-but-first">
 													<tr th:each="p : ${projects}" pages:paginate="10">
+														<!-- ID -->
+														<td class="text-left " th:text="${p.id}"></td>
 														<!-- IDENTIFICATION/NAME -->
 														<td class="text-left " th:text="${p.identification}"></td>
 														<!-- USER -->
@@ -234,35 +237,39 @@
 												<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
 												<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="0" checked/>
-														<label th:text="#{gen.name}"> Name </label>
+														<input class="toggle-vis" type="checkbox" data-column="0"/>
+														<label th:text="#{gen.id}"> ID </label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-														<label th:text="#{gen.owner}"> Owner </label>
+														<label th:text="#{gen.name}"> Name </label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-														<label th:text="#{gen.type}"> Type</label>
+														<label th:text="#{gen.owner}"> Owner </label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
-														<label th:text="#{gen.description}"> Description</label>
+														<label th:text="#{gen.type}"> Type</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-														<label th:text="#{app.realm}"> Realm</label>
+														<label th:text="#{gen.description}"> Description</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
-														<label th:text="#{marketasset.webproject}"> Web project</label>
+														<label th:text="#{app.realm}"> Realm</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="6" checked/>
-														<label th:text="#{gen.created}"> Created at</label>
+														<label th:text="#{marketasset.webproject}"> Web project</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="7" checked/>
+														<label th:text="#{gen.created}"> Created at</label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="8" checked/>
 														<label th:text="#{gen.updated}"> Updated at</label>
 													</span>
 												</div>
@@ -368,7 +375,11 @@
 			}
 		});
 	}	
-
+	
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([ 0, 3 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});	
 	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
@@ -395,18 +406,14 @@
 		$('#search_project').on('click',function(){
 			$('#projects').DataTable().column(0).search( $('#project-name').val()).draw();
 		});
-		
-	});
-	 
-	// MAIN WHEN LOAD
-	$(window).on("load",function(){
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+
+		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 
 		var oTable = $('#projects').dataTable({
 	      "bAutoWidth": false
 	      });  
 		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-		$.each([ 2 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		//$.each([ 0, 3 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));		

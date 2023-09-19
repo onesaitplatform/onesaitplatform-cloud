@@ -20,6 +20,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.core.ParameterizedTypeReference;
@@ -45,7 +46,9 @@ public class GitHubRestService extends GitRestService {
 	private static final String USERNAME_STR = "login";
 	private static final String USER_REPOS = "/user/repos";
 	private static final String REPOS = "/repos/%s/%s";
+	private static final String REPO_BASE = "/repos";
 	private static final String COMMITS = "/commits";
+	private static final String CONTENTS = "/contents";
 
 	@Override
 	public GitlabConfiguration getGitlabConfigurationFromPrivateToken(String url, String privateToken) {
@@ -144,7 +147,7 @@ public class GitHubRestService extends GitRestService {
 			}
 			final ResponseEntity<List<CommitWrapper>> response = execute(url, HttpMethod.GET, null,
 					gitConfiguration.getPrivateToken(), new ParameterizedTypeReference<List<CommitWrapper>>() {
-			});
+					});
 			return response.getBody();
 		} catch (final UnsupportedEncodingException e) {
 			throw new GitException("Invalid filepath name: " + filePath, e);
@@ -190,6 +193,41 @@ public class GitHubRestService extends GitRestService {
 					e.getResponseBodyAsString());
 			throw e;
 		}
+	}
+
+	@Override
+	public List<String> getRepoDirectories(GitlabConfiguration gitConfiguration, String branch) {
+
+		try {
+			final List<String> directories = new ArrayList<>();
+			final ResponseEntity<JsonNode> response = sendHttp(
+					GITHUB_BASE_URL + REPO_BASE + "/" + getProjectPathFromURL(gitConfiguration.getProjectURL())
+							+ CONTENTS + "?ref=" + gitConfiguration.getBranch(),
+					HttpMethod.GET, null, gitConfiguration.getPrivateToken());
+			response.getBody().forEach(n -> {
+				if (n.get("type").asText().equals("dir")) {
+					directories.add(n.get("name").asText());
+				}
+			});
+			return directories;
+		} catch (final Exception e) {
+			log.error("Error while getting repo directories", e);
+		}
+		return null;
+	}
+
+	@Override
+	public String getBase64ForFile(GitlabConfiguration gitConfiguration, String branch, String filePath) {
+		try {
+			final ResponseEntity<JsonNode> response = sendHttp(
+					GITHUB_BASE_URL + REPO_BASE + "/" + getProjectPathFromURL(gitConfiguration.getProjectURL())
+							+ CONTENTS + "/" + filePath + "?ref=" + gitConfiguration.getBranch(),
+					HttpMethod.GET, null, gitConfiguration.getPrivateToken());
+			return response.getBody().get("content").asText().replace("\n", "");
+		} catch (final Exception e) {
+			log.error("Error while getting repo directories", e);
+		}
+		return null;
 	}
 
 }

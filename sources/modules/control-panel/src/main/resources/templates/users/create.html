@@ -242,24 +242,37 @@
 									</div>
 								</div>
 								<div class="row main">
-									<div class="col-md-4 col-sm-5 col-xs-12">
-										<div class="form-group">
+									<div th:if="${user.userId} != null AND ${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" class="col-md-3 col-sm-5 col-xs-12">
+										<div  class="form-group">
+											<label class="popovers" data-trigger="hover" data-placement="bottom" data-container="body" th:attr="data-content=#{user.password.help},data-title=#{user.password}"><span th:text="#{user.current.password}" >Password</span></label><span class="required"> *</span>
+											<input id="passwordbox" name="passwordbox" type="password" th:required="true" maxlength="128" class="form-control" placeholder="Password"  th:pattern="${passwordPattern}" />   
+										</div>
+									</div>
+								</div>
+								<div class="row main">	
+									<div class="col-md-3 col-sm-5 col-xs-12">
+									<div class="form-group">
 											<label class="popovers" data-trigger="hover" data-placement="bottom" data-container="body" th:attr="data-content=#{user.password.help},data-title=#{user.password}"><span th:text="#{user.new.password}" >Password</span></label><span class="required"> *</span>
 											<input id="newpasswordbox" name="newpasswordbox" type="password" th:required="true" maxlength="128" class="form-control" placeholder="Password"  th:pattern="${passwordPattern}" />   
 										</div>
 									</div>
-									<div class="col-md-4 col-sm-5 col-xs-12">
+								</div>	
+								<div class="row main">
+									<div class="col-md-3 col-sm-5 col-xs-12">
 										<div class="form-group">
 											<label class="popovers" data-trigger="hover" data-placement="bottom" data-container="body" th:attr="data-content=#{user.password.help},data-title=#{user.password}"><span th:text="#{user.repeat.password}" >Password</span></label><span class="required"> *</span>
 											<input id="repeatpasswordbox" name="repeatpasswordbox" type="password" th:required="true" maxlength="128" class="form-control" placeholder="Password" data-rule-equalTo="#newpasswordbox"  th:pattern="${passwordPattern}" /> 
 										</div>
 									</div>
+								</div>
+									
+									<div class="row main">
 									<div class="col-md-4 col-sm-5 col-xs-12">
 										<div class="form-group">
 											<label></label>
-											<span id="passwordmsg" style="position:relative;margin-top: 25px;display:  block;"></span>
+											<span id="passwordmsg" style="position:relative;display:  block;"></span>
 										</div>
-									</div>	
+									</div>
 								</div>													
 							</div>
 

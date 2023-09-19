@@ -43,7 +43,7 @@ public class Configuration extends OPResource implements Versionable<Configurati
 	public enum Type {
 		ENDPOINT_MODULES, TWITTER, MAIL, RTDB, MONITORING, SCHEDULING, GITLAB, RANCHER, OPENSHIFT, DOCKER, NGINX,
 		OPEN_PLATFORM, JENKINS, GOOGLE_ANALYTICS, CUSTOM, EXPIRATIONUSERS, SQLENGINE, EXTERNAL_CONFIG, LINEAGE,
-		VERSIONING, KAFKA_PROPERTIES, DATACLASS, PRESTO_PROPERTIES, MAPS_PROJECT
+		VERSIONING, KAFKA_PROPERTIES, KAFKA_INTERNAL_CLIENT_PROPERTIES, DATACLASS, PRESTO_PROPERTIES, MAPS_PROJECT, BUNDLE_GIT
 	}
 
 	@Column(name = "YML_CONFIG", nullable = false)
@@ -127,4 +127,10 @@ public class Configuration extends OPResource implements Versionable<Configurati
 		return getIdentification() + "_" + getId() + ".yaml";
 	}
 
+	@Override
+	public void setOwnerUserId(String userId) {
+		final User u = new User();
+		u.setUserId(userId);
+		setUser(u);
+	}
 }

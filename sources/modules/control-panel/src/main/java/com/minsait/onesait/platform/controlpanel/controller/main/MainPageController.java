@@ -14,7 +14,9 @@
  */
 package com.minsait.onesait.platform.controlpanel.controller.main;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -33,6 +35,7 @@ import com.minsait.onesait.platform.config.model.CategorizationUser;
 import com.minsait.onesait.platform.business.services.prometheus.PrometheusService;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.model.base.OPResource.Resources;
 import com.minsait.onesait.platform.config.repository.ApiRepository;
 import com.minsait.onesait.platform.config.repository.CategorizationUserRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
@@ -90,6 +93,7 @@ public class MainPageController {
 		if(model.asMap().containsKey(MESSAGE)) {
 			model.addAttribute(MESSAGE, model.asMap().get(MESSAGE));
 		}
+		model.addAttribute("urlsMap", getUrlsMap());
 		// Load menu by role in session
 		final String jsonMenu = menuService.loadMenuByRole(userService.getUser(utils.getUserId()));
 		// Remove PrettyPrinted
@@ -124,7 +128,7 @@ public class MainPageController {
 
 			return "main";
 		} else if (userService.isUserUser(user)) {
-			return "redirect:/marketasset/mainuser";
+			return "redirect:/dashboards/viewerlist";
 		} else if (utils.getRole().equals(Role.Type.ROLE_PLATFORM_ADMIN.name())) {
 			return "redirect:/multitenancy/verticals";
 		} else if (utils.getRole().equals(Role.Type.ROLE_DATAVIEWER.name())) {
@@ -172,5 +176,25 @@ public class MainPageController {
 		} catch (final RuntimeException e) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
+	}
+	
+	private Map<String, String> getUrlsMap() {
+		final Map<String, String> urls = new HashMap<>();
+		urls.put(Resources.API.name(), "apimanager");
+		urls.put(Resources.CLIENTPLATFORM.name(), "devices");
+		urls.put(Resources.BINARYFILE.name(), "files");
+		urls.put(Resources.DASHBOARD.name(), "dashboards");
+		urls.put(Resources.GADGET.name(), "gadgets");
+		urls.put(Resources.DIGITALTWINDEVICE.name(), "digitaltwindevices");
+		urls.put(Resources.FLOWDOMAIN.name(), "flows");
+		urls.put(Resources.NOTEBOOK.name(), "notebooks");
+		urls.put(Resources.ONTOLOGY.name(), "ontologies");
+		urls.put(Resources.DATAFLOW.name(), "dataflow");
+		urls.put(Resources.GADGETDATASOURCE.name(), "datasources");
+		urls.put(Resources.ONTOLOGYVIRTUALDATASOURCE.name(), "virtualdatasources");
+		urls.put(Resources.CONFIGURATION.name(), "configurations");
+		urls.put(Resources.GADGETTEMPLATE.name(), "gadgettemplates");
+		urls.put(Resources.REPORT.name(), "reports");
+		return urls;
 	}
 }

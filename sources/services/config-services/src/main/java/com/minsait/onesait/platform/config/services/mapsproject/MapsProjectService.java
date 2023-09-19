@@ -44,9 +44,9 @@ public interface MapsProjectService {
 
 	boolean hasUserEditPermission(String id, String userId);
 
-	void delete(String id, String userId);
+	void delete(String id,boolean deleteDepencies ,String userId);
 
-	String clone(MapsProject originalMapsProject, String identification, User user);
+	String clone(MapsProject originalMapsProject, String identification, User targetUser,User sessionUser);
 
 	String importMapsProject(String originalMapProject, boolean overwrite, User user);
 

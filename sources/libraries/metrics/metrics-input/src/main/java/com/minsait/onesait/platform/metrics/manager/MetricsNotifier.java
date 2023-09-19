@@ -16,7 +16,6 @@ package com.minsait.onesait.platform.metrics.manager;
 
 import javax.annotation.PostConstruct;
 
-import org.jline.utils.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -29,9 +28,12 @@ import org.springframework.web.client.RestTemplate;
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
 import com.minsait.onesait.platform.commons.model.MetricsPlatformDto;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Component
 @ConditionalOnProperty(name = "onesaitplatform.metrics.collector.endpoint", matchIfMissing = false)
 @EnableScheduling
+@Slf4j
 public class MetricsNotifier {
 
 	@Value("${onesaitplatform.metrics.collector.endpoint:http://auditrouter:20002/router/metrics-collector/refresh}")
@@ -63,7 +65,7 @@ public class MetricsNotifier {
 					restTemplate.postForLocation(metricsCollectorEndpoint, dto);
 				}
 			} catch (final Exception e) {
-				Log.error("Error notifing metrics", e);
+				log.error("Error notifing metrics", e);
 			}
 		}
 	}

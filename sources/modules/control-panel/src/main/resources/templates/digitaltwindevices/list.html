@@ -138,6 +138,7 @@
 											<table id="digital_twin_types" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
 												<thead>
 													<tr class="cabecera-tabla">
+														<th class="titulo-columnas text-left" th:text="#{gen.id}">Id</th>
 														<th class="titulo-columnas text-left" th:text="#{digitaltwindevice.identification}">Identification</th>
 														<th class="titulo-columnas text-left" ><span th:text="#{ontology.userId}" >Owner</span></th>
 														<th class="titulo-columnas text-left" th:text="#{digitaltwindevice.type}">Digital Twin Type</th>
@@ -147,6 +148,8 @@
 												</thead>
 												<tbody th:remove="all-but-first">
 													<tr th:each="device : ${digitalTwinDevices}" pages:paginate="10">
+														<!-- ID -->
+														<td class="text-left no-wrap " th:text="${device.id}"></td>
 														<!-- IDENTIFICATION/NAME -->
 														<td class="text-left no-wrap " th:text="${device.identification}"></td>
 														<!-- USER -->
@@ -178,19 +181,23 @@
 												
 													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="0" checked/>
-														<label th:text="#{ontology.identification}"> identification </label>
+														<input class="toggle-vis" type="checkbox" data-column="0"/>
+														<label th:text="#{gen.id}"> id </label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-														<label th:text="#{ontology.userId}"> Owner </label>
+														<label th:text="#{ontology.identification}"> identification </label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-														<label th:text="#{digitaltwindevice.type}"> Digital Twin Type </label>
+														<label th:text="#{ontology.userId}"> Owner </label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+														<label th:text="#{digitaltwindevice.type}"> Digital Twin Type </label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
 														<label th:text="#{ontology.createdAt}"> Created At </label>
 													</span>
 												</div>
@@ -266,6 +273,11 @@
 		HeaderController.showConfirmDialogDigitalTwinDevice('delete_device_form');
 	}
 	
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});
+	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		var csrf_value = $("meta[name='_csrf']").attr("content");
@@ -310,14 +322,11 @@
 		
 		// SEARCH FORM
 		$('#search_digital_device').on('click',function(){ $('#form_digital_twin_device')[0].submit(); });
-	});
-	 
-	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
+
 		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
-		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
-		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
+		$.each([0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		// SHOW/HIDE DATATABLES COLUMN INIT 
 		
 		

@@ -34,6 +34,7 @@ import com.minsait.onesait.platform.config.components.RancherConfiguration;
 import com.minsait.onesait.platform.config.model.Microservice;
 import com.minsait.onesait.platform.config.model.Microservice.CaaS;
 import com.minsait.onesait.platform.config.model.Microservice.TemplateType;
+import com.minsait.onesait.platform.config.model.MicroserviceTemplate;
 import com.minsait.onesait.platform.git.GitlabConfiguration;
 
 @RunWith(SpringRunner.class)
@@ -50,6 +51,8 @@ public class MicroserviceRepositoryTest {
 	private UserRepository userRepository;
 	@Autowired
 	private MicroserviceRepository microserviceRepository;
+	@Autowired
+	private MicroserviceTemplateRepository mstemplateRepository;
 
 	private final static String JENKINS_XML = "<?xml version='1.1' encoding='UTF-8'?>\n"
 			+ "<flow-definition plugin=\"workflow-job@2.12.2\">\n" + "  <actions>\n"
@@ -214,25 +217,28 @@ public class MicroserviceRepositoryTest {
 	@Test
 	@Transactional
 	public void createMicroserviceWithConfigurations() {
+		MicroserviceTemplate mstemplate = mstemplateRepository.findMicroserviceTemplateById("MSTEMPLATE_IOT_CLIENT_ARCHETYPE");
+		if(mstemplate != null) {
+			
+			final Microservice microservice = new Microservice();
+			microservice.setIdentification("microservice-test");
+			microservice.setUser(userRepository.findByUserId("administrator"));
+			microservice.setDockerImage("registry.onesaitplatform.com/onesaitplatform/microservice:latest");
+			microservice.setJenkinsConfiguration(jenkinsConfiguration);
+			microservice.setJenkinsXML(JENKINS_XML);
+			microservice.setJobName("microservice");
+			microservice.setRancherConfiguration(rancherConfiguration);
+			microservice.setGitlabConfiguration(gitlabConfiguration);
+			microservice.setGitlabRepository("https://onesait-git.cwbyminsait.com/microservice/microservice");
+			microservice.setRancherEnv("1a68");
+			microservice.setRancherStack("microservices-stack");
+			microservice.setCaas(CaaS.RANCHER);
+			microservice.setTemplateType(mstemplate.getIdentification());
+			microservice.setContextPath("/");
+			microservice.setPort(40000);
+			microserviceRepository.save(microservice);
 
-		final Microservice microservice = new Microservice();
-		microservice.setIdentification("microservice-test");
-		microservice.setUser(userRepository.findByUserId("administrator"));
-		microservice.setDockerImage("registry.onesaitplatform.com/onesaitplatform/microservice:latest");
-		microservice.setJenkinsConfiguration(jenkinsConfiguration);
-		microservice.setJenkinsXML(JENKINS_XML);
-		microservice.setJobName("microservice");
-		microservice.setRancherConfiguration(rancherConfiguration);
-		microservice.setGitlabConfiguration(gitlabConfiguration);
-		microservice.setGitlabRepository("https://onesait-git.cwbyminsait.com/microservice/microservice");
-		microservice.setRancherEnv("1a68");
-		microservice.setRancherStack("microservices-stack");
-		microservice.setCaas(CaaS.RANCHER);
-		microservice.setTemplateType(TemplateType.IOT_CLIENT_ARCHETYPE);
-		microservice.setContextPath("/");
-		microservice.setPort(40000);
-		microserviceRepository.save(microservice);
-
+		}
 		final Microservice dbMicroservice = microserviceRepository.findAll().get(0);
 
 		assertNotNull(dbMicroservice.getJenkinsConfiguration().getJenkinsUrl());

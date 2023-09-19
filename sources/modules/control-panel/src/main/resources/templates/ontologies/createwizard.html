@@ -954,6 +954,11 @@
 												<span id="substringenderror" class="help-block font-red hide" th:text="#{gen.requiredField}"><i class="la la-warning"></i> Required field</span>
 											</div>
 										</div>
+										<div class="elasticPropsTemplate " th:classappend="(${ontology.id == null or (ontology.rtdbDatasource.name() != 'ELASTIC_SEARCH' and ontology.rtdbDatasource.name() != 'OPEN_SEARCH')}? hidden : '')" id="elasticPropsWarn">
+											<div class="col-md-3 col-sm-3 col-xs-3 margin-top-20">
+												<b th:text="#{ontology.elastic.template.warning}">Warning!</b><br/>
+											</div>
+										</div>
 									</div>
 								</div>
 							</div>

@@ -48,8 +48,8 @@ public class NebulaGraphDBManageDBRepository implements ManageDBRepository {
 	@Override
 	public String createTable4Ontology(String ontology, String schema, Map<String, String> config) {
 		nebulaGraphService
-		.createSpace(NebulaSpace.builder().name(ontology).replicaFactor(NebulaSpace.DEFAULT_REPLICA_FACTOR)
-				.partitionNum(NebulaSpace.DEFAULT_PARTITION_NUM).build());
+				.createSpace(NebulaSpace.builder().name(ontology).replicaFactor(NebulaSpace.DEFAULT_REPLICA_FACTOR)
+						.partitionNum(NebulaSpace.DEFAULT_PARTITION_NUM).build());
 		return ontology;
 	}
 
@@ -133,6 +133,11 @@ public class NebulaGraphDBManageDBRepository implements ManageDBRepository {
 	public String updateTable4Ontology(String identification, String jsonSchema, Map<String, String> config) {
 		log.debug(NO_OP_CONTROL_ONTOLOGY);
 		return identification;
+	}
+
+	@Override
+	public void createTTLIndex(String ontology, String attribute, Long seconds) {
+		log.debug(NO_OP_CONTROL_ONTOLOGY);
 	}
 
 }

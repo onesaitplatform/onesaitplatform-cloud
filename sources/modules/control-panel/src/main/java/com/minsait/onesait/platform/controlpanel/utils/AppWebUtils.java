@@ -116,6 +116,15 @@ public class AppWebUtils {
 		}
 		return auth.getAuthorities().toArray()[0].toString();
 	}
+	
+	public String getRoleOrParent() {
+		final Role role = roleRepository.findById(getRole()).orElse(null);
+		if(role.getRoleParent() != null) {
+			return role.getRoleParent().getId();
+		} else {
+			return role.getId();
+		}
+	}
 
 	public boolean isAdministrator() {
 		final Role role = roleRepository.findById(getRole()).orElse(null);

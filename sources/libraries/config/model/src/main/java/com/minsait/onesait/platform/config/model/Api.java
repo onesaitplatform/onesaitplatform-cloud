@@ -71,7 +71,8 @@ public class Api extends OPResource implements Versionable<Api> {
 	}
 
 	public enum ApiCategories {
-		ALL, ADVERTISING, BUSINESS, COMMUNICATION, EDUCATION, ENTERTAINMENT, MEDIA, MEDICAL, OTHER, SOCIAL, SPORTS, TOOLS, TRAVEL;
+		ALL, ADVERTISING, BUSINESS, COMMUNICATION, EDUCATION, ENTERTAINMENT, MEDIA, MEDICAL, OTHER, SOCIAL, SPORTS,
+		TOOLS, TRAVEL;
 	}
 
 	public enum ApiType {
@@ -264,7 +265,7 @@ public class Api extends OPResource implements Versionable<Api> {
 	public Versionable<Api> runExclusions(Map<String, Set<String>> excludedIds, Set<String> excludedUsers) {
 		Versionable<Api> api = Versionable.super.runExclusions(excludedIds, excludedUsers);
 		if (api != null) {
-			if(!userApiAccesses.isEmpty() && !CollectionUtils.isEmpty(excludedUsers)) {
+			if (!userApiAccesses.isEmpty() && !CollectionUtils.isEmpty(excludedUsers)) {
 				userApiAccesses.removeIf(ua -> excludedUsers.contains(ua.getUser().getUserId()));
 				api = this;
 			}
@@ -276,6 +277,13 @@ public class Api extends OPResource implements Versionable<Api> {
 			}
 		}
 		return api;
+	}
+
+	@Override
+	public void setOwnerUserId(String userId) {
+		final User u = new User();
+		u.setUserId(userId);
+		setUser(u);
 	}
 
 }

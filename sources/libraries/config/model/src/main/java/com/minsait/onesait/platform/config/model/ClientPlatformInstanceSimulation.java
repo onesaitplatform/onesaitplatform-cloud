@@ -240,4 +240,11 @@ public class ClientPlatformInstanceSimulation extends OPResource
 		}
 		return client;
 	}
+
+	@Override
+	public void setOwnerUserId(String userId) {
+		final User u = new User();
+		u.setUserId(userId);
+		setUser(u);
+	}
 }

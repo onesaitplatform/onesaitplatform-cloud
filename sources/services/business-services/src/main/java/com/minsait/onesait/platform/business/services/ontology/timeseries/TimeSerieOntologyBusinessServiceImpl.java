@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessService;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
@@ -54,7 +55,8 @@ public class TimeSerieOntologyBusinessServiceImpl implements TimeSeriesOntologyB
 
 	@Override
 	public Ontology createOntology(OntologyTimeSeriesServiceDTO ontologyTimeSeriesDTO, OntologyConfiguration config,
-			boolean parseProperties, boolean parseWindow) throws TimeSerieOntologyBusinessServiceException {
+			boolean parseProperties, boolean parseWindow)
+			throws TimeSerieOntologyBusinessServiceException, JsonProcessingException {
 		Ontology createdOnt = null;
 		try {
 			// create ontology
@@ -76,8 +78,8 @@ public class TimeSerieOntologyBusinessServiceImpl implements TimeSeriesOntologyB
 	public void updateOntology(OntologyTimeSeriesServiceDTO ontologyTimeSeriesDTO, String sessionUserId,
 			OntologyConfiguration config, boolean hasDocuments) throws TimeSerieOntologyBusinessServiceException {
 
-		final Ontology ontology = ontologyService
-				.getOntologyByIdentification(ontologyTimeSeriesDTO.getIdentification(), sessionUserId);
+		final Ontology ontology = ontologyService.getOntologyByIdentification(ontologyTimeSeriesDTO.getIdentification(),
+				sessionUserId);
 		if (ontologyTimeSeriesDTO.getRtdbDatasource().equals(RtdbDatasource.TIMESCALE.toString())) {
 			// If TImescaleDB we need to alter the table first
 			final OntologyTimeSeries ontologyTimeserie = ontologyTimeSeriesService.getOntologyByOntology(ontology);
@@ -101,7 +103,7 @@ public class TimeSerieOntologyBusinessServiceImpl implements TimeSeriesOntologyB
 					ontologyTimeSeriesDTO.getJsonSchema(), newFields);
 		}
 		ontologyTimeSeriesService.updateOntologyTimeSeries(ontologyTimeSeriesDTO, sessionUserId, config);
- 		
+
 		kafkaAuthorizationService.checkOntologyAclAfterUpdate(ontology);
 	}
 

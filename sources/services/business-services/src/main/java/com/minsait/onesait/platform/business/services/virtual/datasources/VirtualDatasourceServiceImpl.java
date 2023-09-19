@@ -26,6 +26,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
@@ -235,6 +236,13 @@ public class VirtualDatasourceServiceImpl implements VirtualDatasourceService {
 	}
 
 	@Override
+	public List <OntologyVirtual> getAssociationExternalDatabase(String datasourcesId) {
+		
+		return ontologyVirtualRepository.findByDatasourcesId(datasourcesId);
+	}
+	
+		
+	@Override
 	public OntologyVirtualDatasource getDatasourceByIdAndUserIdOrIsPublic(String id, String sessionUserId,
 			ResourceAccessType type) {
 
@@ -259,7 +267,7 @@ public class VirtualDatasourceServiceImpl implements VirtualDatasourceService {
 			return true;
 		} else if (datasource.getUser().getUserId().equals(user.getUserId())) {
 			return true;
-		} else if (datasource.isPublic()) {
+		} else if (datasource.isPublic() && type.equals(ResourceAccessType.VIEW)) {
 			return true;
 		} else {
 			return resourceService.hasAccess(user.getUserId(), datasource.getId(), type);

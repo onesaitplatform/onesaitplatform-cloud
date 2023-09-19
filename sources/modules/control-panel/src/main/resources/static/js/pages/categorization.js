@@ -9,7 +9,7 @@ var setActiveTree = function (id) {
 		headers: {
 			[csrf_header]: csrf_value
 	    }
-	}).success(function(response){
+	}).done(function(response){
 		navigateUrl("/controlpanel/categorization/list");}
 	).fail(function(response, data){
 		toastr.error(messagesForms.operations.genOpError,errorMsg);
@@ -44,7 +44,7 @@ var deleteTree = function (id) {
 						headers: {
 							[csrf_header]: csrf_value
 					    }
-					}).success(function(response){
+					}).done(function(response){
 						toastr.success(messagesForms.operations.genOpSuccess,'');
 						navigateUrl("/controlpanel/categorization/list");}
 					).fail(function(response, data){
@@ -66,7 +66,7 @@ var deactivateTree = function (id) {
 		headers: {
 			[csrf_header]: csrf_value
 	    }
-	}).success(function(response){
+	}).done(function(response){
 		console.log("success"+response);
 		navigateUrl("/controlpanel/categorization/list");}
 	).fail(function(response, data){
@@ -124,7 +124,7 @@ var create = function() {
 			headers: {
 				[csrf_header]: csrf_value
 		    }
-		}).success(function(response, data){
+		}).done(function(response, data){
 			toastr.success(messagesForms.validation.genFormSuccess,'');
 			navigateUrl("/controlpanel/categorization/list/");
 			}
@@ -148,7 +148,7 @@ var edit = function(id) {
 		headers: {
 			[csrf_header]: csrf_value
 	    }
-	}).success(function(response, data){
+	}).done(function(response, data){
 		navigateUrl("/controlpanel/categorization/list/");
 		}
 	).fail(function(response, data){
@@ -192,7 +192,7 @@ var getElements = function(type){
 			headers: {
 				[csrf_header]: csrf_value
 		    }
-		}).success(function(response){
+		}).done(function(response){
 			var options = [];
 			$('#selectElements').empty();
 			options.push('<option value="'+response+'">'+response+'</option>');

@@ -113,7 +113,18 @@
     					<div class="row main">
     						<div class="col-md-4 col-sm-4 col-xs-4 panelHeader">
 								<span th:text="#{versioning.snapshot.selection}">Selection of resources</span>
+								<div class="pull-right" style="margin-right: 10%;">
+	                                 <!-- UNCHECK  -->
+	                                 <button th:attr="onclick='$(\'#versionablesJsTree\').jstree().uncheck_all(true);'" id="btn-cancel" name="btn-cancel" type="button" class="btn btn-circle btn-outline blue no-border" value="cancel"><span th:text="#{versioning.uncheck.all}"> Uncheck all </span>
+	                                 </button>
+	                              
+	                                 <!-- CHECK-->
+	                                 <button th:attr="onclick='$(\'#versionablesJsTree\').jstree().check_all(true);'" id="btn-save" type="button" class="btn btn-circle btn-outline btn-primary">
+	                                     <span th:text="#{versioning.check.all}"> Check </span>
+	                                 </button>         
+                            	 </div>
 							</div>
+							
                              <div class="col-md-8 col-sm-8 col-xs-8 panelHeader">
                                 <span th:text="#{versioning.snapshot.params}">Git TAG params</span>
                              </div>

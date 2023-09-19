@@ -41,6 +41,7 @@ import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.update.Update;
+import net.sf.jsqlparser.statement.update.UpdateSet;
 
 @Component
 @Slf4j
@@ -192,8 +193,7 @@ public class Sql2NativeTool {
 	private static String translateUpdate(String query) throws JSQLParserException {
 		final StringBuilder mongoDbQuery = new StringBuilder();
 		final Update statement = (Update) parserManager.parse(new StringReader(query));
-		final List<Column> columns = statement.getColumns();
-		final List<Expression> expressions = statement.getExpressions();
+		final List<UpdateSet> updateSet = statement.getUpdateSets();
 
 		mongoDbQuery.append("db.".concat(statement.getTable().getFullyQualifiedName()).concat(".update("));
 		final Expression where = statement.getWhere();
@@ -209,18 +209,25 @@ public class Sql2NativeTool {
 		// currently we only support $push operations
 		final StringBuilder spOps = new StringBuilder();
 		final StringBuilder update = new StringBuilder();
-		IntStream.range(0, columns.size()).forEach(i -> {
-			final StringBuilder filter = new StringBuilder();
-			if (i != 0) {
-				filter.append(",");
-			}
-			filter.append("'" + columns.get(i).getFullyQualifiedName() + "':");
-			expressions.get(i).accept(new UpdateSetVisitorAdapter(filter, i));
-			if (filter.indexOf("$push") != -1) {
-				spOps.append(filter);
-			} else {
-				update.append(filter);
-			}
+		IntStream.range(0, updateSet.size()).forEach(i -> {
+			final List<Column> columns = updateSet.get(i).getColumns();
+			final List<Expression> expressions = updateSet.get(i).getExpressions();
+			IntStream.range(0, columns.size()).forEach(j -> {
+				final StringBuilder filter = new StringBuilder();
+				if (i != 0 ) {
+					filter.append(",");
+				} else if(j != 0) {
+					filter.append(",");
+				}
+				filter.append("'" + columns.get(j).getFullyQualifiedName() + "':");
+				//This only supports set expressions with one value, which is 99.9% of the cases
+				expressions.get(0).accept(new UpdateSetVisitorAdapter(filter, j));
+				if (filter.indexOf("$push") != -1) {
+					spOps.append(filter);
+				} else {
+					update.append(filter);
+				}
+			});
 		});
 		if (spOps.length() > 0) {
 			if (spOps.charAt(0) == ',') {

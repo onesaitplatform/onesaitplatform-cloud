@@ -129,11 +129,10 @@ public class GadgetMeasure extends AuditableEntityWithUUID implements Versionabl
 	@Override
 	@JsonIgnore
 	public String getUserJson() {
-		if(gadget != null) {
+		if (gadget != null) {
 			return gadget.getUserJson();
 		}
-		if(datasource != null)
-		{
+		if (datasource != null) {
 			return datasource.getUserJson();
 		}
 		return null;
@@ -141,20 +140,24 @@ public class GadgetMeasure extends AuditableEntityWithUUID implements Versionabl
 
 	@Override
 	public Versionable<GadgetMeasure> runExclusions(Map<String, Set<String>> excludedIds, Set<String> excludedUsers) {
-		Versionable<GadgetMeasure> gm =  Versionable.super.runExclusions(excludedIds, excludedUsers);
-		if(gm != null) {
-			if(gadget != null && !CollectionUtils.isEmpty(excludedIds.get(Gadget.class.getSimpleName()))
+		Versionable<GadgetMeasure> gm = Versionable.super.runExclusions(excludedIds, excludedUsers);
+		if (gm != null) {
+			if (gadget != null && !CollectionUtils.isEmpty(excludedIds.get(Gadget.class.getSimpleName()))
 					&& excludedIds.get(Gadget.class.getSimpleName()).contains(gadget.getId())) {
 				addIdToExclusions(this.getClass().getSimpleName(), getId(), excludedIds);
 				gm = null;
 			}
-			if(datasource != null && !CollectionUtils.isEmpty(excludedIds.get(GadgetDatasource.class.getSimpleName()))
-					&& excludedIds.get(GadgetDatasource.class.getSimpleName()).contains(datasource.getId()) ) {
+			if (datasource != null && !CollectionUtils.isEmpty(excludedIds.get(GadgetDatasource.class.getSimpleName()))
+					&& excludedIds.get(GadgetDatasource.class.getSimpleName()).contains(datasource.getId())) {
 				addIdToExclusions(this.getClass().getSimpleName(), getId(), excludedIds);
 				gm = null;
 			}
 		}
 
 		return gm;
+	}
+
+	@Override
+	public void setOwnerUserId(String userId) {
 	}
 }

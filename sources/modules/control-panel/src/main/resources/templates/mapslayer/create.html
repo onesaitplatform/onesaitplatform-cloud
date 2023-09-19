@@ -459,7 +459,7 @@
 											</div>
 										</div>
 									</div>
-									<div class="col-md-4 col-sm-4 col-xs-12">
+									<div id="divstyleselect"class="col-md-4 col-sm-4 col-xs-12">
 										<label class="control-label"> Style Select</label>
 										<div class="form-group">
 											<div class="col-md-6 col-sm-6  "
@@ -592,23 +592,23 @@
 									<div class="col-md-2 col-sm-2">
 										<div class="form-group">
 											<label class="control-label">Data Projection</label> <select
-												id="entitysourcedataProjection" disabled="disabled"
+												id="entitysourcedataProjection"  
 												class="form-control selectpicker">
 												<option value="EPSG:4326">EPSG:4326</option>
 												<option value="EPSG:3857">EPSG:3857</option>
 											</select>
 										</div>
 									</div>
-									<div class="col-md-2 col-sm-2">
+									<!--<div class="col-md-2 col-sm-2">
 										<div class="form-group">
 											<label class="control-label">Projection</label> <select
-												id="entitysourceprojection" disabled="disabled"
+												id="entitysourceprojection" 
 												class="form-control selectpicker">
 												<option value="EPSG:3857">EPSG:3857</option>
 												<option value="EPSG:4326">EPSG:4326</option>
 											</select>
 										</div>
-									</div>
+									</div>-->
 									<div class="col-md-2 col-sm-2">
 										<div class="form-group">
 											<label class="control-label">srs</label> <select
@@ -690,7 +690,7 @@
 									<div class="col-md-2 col-sm-2">
 										<div class="form-group">
 											<label class="control-label">Data Projection</label> <select
-												id="wsourcedataProjection" disabled="disabled"
+												id="wsourcedataProjection" 
 												class="form-control selectpicker">
 												<option value="EPSG:4326">EPSG:4326</option>
 												<option value="EPSG:3857">EPSG:3857</option>
@@ -699,16 +699,16 @@
 									</div>
 									
 									
-									<div class="col-md-2 col-sm-2">
+									<!--<div class="col-md-2 col-sm-2">
 										<div class="form-group">
 											<label class="control-label">Projection</label> <select
-												id="wsourceprojection" disabled="disabled"
+												id="wsourceprojection" 
 												class="form-control selectpicker">
 												<option value="EPSG:3857">EPSG:3857</option>
 												<option value="EPSG:4326">EPSG:4326</option>
 											</select>
 										</div>
-									</div>
+									</div>-->
 									<div class="col-md-2 col-sm-2">
 										<div class="form-group">
 											<label class="control-label">srs</label> <select
@@ -760,16 +760,16 @@
 									</div>
 
 								</div>
-								<div class="col-md-2 col-sm-2">
+							<!--	<div class="col-md-2 col-sm-2">
 										<div class="form-group">
 											<label class="control-label">Projection</label> <select
-												id="arcgissourceprojection" disabled="disabled"
+												id="arcgissourceprojection"  
 												class="form-control selectpicker">
 												<option value="EPSG:3857">EPSG:3857</option>
 												<option value="EPSG:4326">EPSG:4326</option>
 											</select>
 										</div>
-									</div>
+									</div> -->
 									<div class="col-md-2 col-sm-2">
 										<div class="form-group">
 											<label class="control-label">srs</label> <select
@@ -801,7 +801,9 @@
 	class="page-footer"> </footer>
 
 <!-- CORE CONTROLLERS -->
-
+ 
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 
 <!-- TEMPLATE CONTROLLER  -->
 <script th:src="@{/static/js/pages/mapsLayerCreate.js}"></script>
@@ -930,7 +932,7 @@
 	  }
 
 	function drawWMS(xml){
-
+ 
 
 	const x2js = new X2JS()
 		 var json = x2js.xml_str2json(xml);
@@ -945,7 +947,7 @@
 		 
 	     layers.forEach(function (layer, index, array){
 	
-	    var textSelect = '<tr id="tablewm_'+index+'"> <td><label><input type="checkbox"  idname="'+layer.Name+'"  style="margin-right: 10px;">   '+layer.Title+'</label></td> <td>	 <select  idname="'+layer.Name+'" class="form-control selectpicker selectstylepicker">';
+	    var textSelect = '<tr id="tablewm_'+index+'"> <td><label  style="padding-right: 25px;"><input type="checkbox"  idname="'+layer.Name+'"  style="margin-right: 10px;">   '+layer.Title+'</label></td> <td>	 <select  idname="'+layer.Name+'" class="form-control selectpicker selectstylepicker">';
 	    let styles = layer.Style;          
             if (styles) {             
               if (!Array.isArray(styles)) {
@@ -974,31 +976,14 @@
 	    	var selectedLayers = config.source.params.layers.split(",");
 	    	var selectedStyles = config.source.params.styles.split(",");
 	    	for(var j = 0 ;j<selectedLayers.length;j++){
-	    		$('input[type=checkbox ][idname='+selectedLayers[j]+']').prop('checked', true);
-	    		$('select[idname='+selectedLayers[j]+']').val(selectedStyles[j]);
+	    		$('input[type=checkbox ][idname="'+selectedLayers[j]+'"]').prop('checked', true);
+	    		$('select[idname="'+selectedLayers[j]+'"]').val(selectedStyles[j]);
 	    	}
 			  
 		  }
 	   
 	}
 	
-	function loadwmtsSelected(){
-	
-		var selected = [];
-		$('td  input[type=checkbox ]:checked').each(function() {
-	    selected.push($(this).attr('idname'));
-			});
-			return selected.join(",");
-	}
-	
-	function loadwmtsStyleSelected(){
-	
-		var selected = [];
-		$('td  input[type=checkbox ]:checked').each(function() {
-	    selected.push($('select[idname='+$(this).attr('idname')+']').val());
-			});
-			return selected.join(",");
-	}
 	
 	function updateSelectStyleWMTS(){
 	

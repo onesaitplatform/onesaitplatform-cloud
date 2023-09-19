@@ -76,7 +76,7 @@ public class InitGraylog {
 	@Value("${onesaitplatform.graylog.password}")
 	@Encryptable
 	private String graylogPassword;
-	@Value("${onesaitplatform.graylog.externalUri:http://127.0.0.1:9000}")
+	@Value("${onesaitplatform.graylog.externalUri:http://127.0.0.1:9000/log-centralizer}")
 	String graylogExternalUri;
 
 	private static final String SESSION_PATH = "/api/system/sessions";

@@ -33,7 +33,7 @@ import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
 import com.minsait.onesait.platform.config.repository.DashboardRepository;
 import com.minsait.onesait.platform.config.repository.FlowDomainRepository;
 import com.minsait.onesait.platform.config.repository.GadgetRepository;
-import com.minsait.onesait.platform.config.repository.MarketAssetRepository;
+import com.minsait.onesait.platform.config.repository.MicroserviceRepository;
 import com.minsait.onesait.platform.config.repository.NotebookRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.repository.PipelineRepository;
@@ -75,9 +75,6 @@ public class MainServiceImpl implements MainService {
     private PipelineRepository dataflowRepository;
 
     @Autowired
-    private MarketAssetRepository assetRepository;
-
-    @Autowired
     private ProjectRepository projectRepository;
 
     @Autowired
@@ -88,6 +85,9 @@ public class MainServiceImpl implements MainService {
 
     @Autowired
     private ConfigurationService configurationService;
+    
+    @Autowired
+    private MicroserviceRepository microservicesRepository;
 
     @Override
     public ArrayList<KpisDTO> createKPIs() {
@@ -159,14 +159,6 @@ public class MainServiceImpl implements MainService {
 
         kpisDTOList.add(kpisDTO);
 
-        // KPI Assets Number
-        kpisDTO = new KpisDTO();
-        final long assetsNumber = assetRepository.count();
-        kpisDTO.setValue(assetsNumber);
-        kpisDTO.setIdentification("Assets");
-
-        kpisDTOList.add(kpisDTO);
-
         // KPI Projects Number
         kpisDTO = new KpisDTO();
         final long projectNumber = projectRepository.count();
@@ -188,6 +180,15 @@ public class MainServiceImpl implements MainService {
         final long binaryfilesNumber = binaryfilesRepository.count();
         kpisDTO.setValue(binaryfilesNumber);
         kpisDTO.setIdentification("BinaryFiles");
+
+        kpisDTOList.add(kpisDTO);
+        
+        // KPI Microservices Number
+        kpisDTO = new KpisDTO();
+        //final long microservicesNumber = microservicesRepository.count();
+        final long microservicesNumber = microservicesRepository.findByActiveTrue().size();
+        kpisDTO.setValue(microservicesNumber);
+        kpisDTO.setIdentification("Microservices");
 
         kpisDTOList.add(kpisDTO);
 

@@ -141,10 +141,11 @@
 														<th class="titulo-columnas text-center" ><span th:text="#{gen.owner}" >Owner</span></th>
 														<th class="titulo-columnas" th:text="#{gen.description}">Description</th>														
 														 <th class="titulo-columnas text-center" th:text="#{gen.public}">Public</th>	
-														<!-- <th class="titulo-columnas text-center" th:text="#{gen.active}">Active</th>	 -->														
+														<!-- <th class="titulo-columnas text-center" th:text="#{gen.active}">Active</th>	 -->
+														<th class="titulo-columnas text-center" ><span > ID </span></th>														
 														<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
 														<th class="titulo-columnas text-center" ><span th:text="#{gen.updated}"> Updated At </span></th>
-														<th class="titulo-columnas text-center" ><span > ID </span></th>
+														
 														<th class="titulo-columnas text-center" dt:sortable="false" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
 													</tr>
 												</thead>
@@ -163,13 +164,16 @@
 														<!-- ACTIVE 
 														<td class="text-left" th:if="${mapsproject.active}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"></i><span th:text="' '+#{gen.active}" style="color: #2E6B33;"></span></span></td>
 														<td class="text-left" th:if="${!mapsproject.active}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.inactive}" style="color: #A73535;"></span></td>
-														--><!-- DATE --> 
+														-->
+														<!-- ID --> 
+														<td class="text-center " th:text="${mapsproject.id}"></td>
+														<!-- DATE --> 
 		 												<td class="text-center" th:if="${mapsproject.createdAt!=null}"><span th:text="${#dates.format(mapsproject.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(mapsproject.createdAt,'dd/MM/yyyy')}" ></span></td>
 														<td class="text-center" th:if="${mapsproject.createdAt==null}" th:text="'---'"></td>
 														<!-- UPDATE --> 
 		 												<td class="text-center" th:if="${mapsproject.updatedAt!=null}"><span th:text="${#dates.format(mapsproject.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(mapsproject.updatedAt,'dd/MM/yyyy')}" ></span></td>
 														<td class="text-center" th:if="${mapsproject.updatedAt==null}" th:text="'---'"></td>
-														<td class="text-center " th:text="${mapsproject.id}"></td>
+													
 														<!-- OPTIONS -->
 														<td class="icon" style="white-space: nowrap">
 															<div class="grupo-iconos text-center">
@@ -205,7 +209,7 @@
 																		  
 																		    <!-- DOWNLOAD -->
 																		    <li>																   
-																		    	<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:title="#{mapsproject.download}" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{mapsproject.download}"   th:attr="onclick='javascript:navigateUrl(\'' + @{|/mapsproject/exportMapsProject/${mapsproject.identification}/|} + '\');'"><i class="la la-download font-hg"></i><span class="span-title-three-dots-icons" th:text="#{mapsproject.download}" >Download</span></span>
+																		    	<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:title="#{gen.download}" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{gen.download}"   th:attr="onclick='javascript:navigateUrl(\'' + @{|/mapsproject/exportMapsProject/${mapsproject.identification}/|} + '\');'"><i class="la la-download font-hg"></i><span class="span-title-three-dots-icons" th:text="#{gen.download}" >Download</span></span>
 																		    </li>
 																		    <!-- VIEW -->
 																		    <li>																   
@@ -253,16 +257,17 @@
 													</span> -->
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-														<label th:text="#{gen.created}"> Created at</label>
+														<label > ID</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
-														<label th:text="#{gen.updated}"> Updatet at</label>
+														<label th:text="#{gen.created}"> Created at</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="6" checked/>
-														<label > ID</label>
+														<label th:text="#{gen.updated}"> Updatet at</label>
 													</span>
+													
 																
 												</div>
 											</div>
@@ -334,11 +339,12 @@
 	var optionName = 'mapsproject';
 	
 	var cloneDashboardDialog = function(mapsprojectId, identification){
+		var name = [[#{gen.name}]];
 		$.confirm({
 			title: cloneTitle,
 			theme: 'light',
 			columnClass: 'medium',
-			content: "<input class='col-md-12 form-control' type=text id='cloneIdentification' placeholder='"+MinLen+"'"+"></input>",
+			content: "<label>"+name+"</label><span class='required' style='color: #A73535;'> *</span></br><input class='col-md-12 form-control' type=text id='cloneIdentification' placeholder='"+MinLen+"'"+"></input>",
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
@@ -358,7 +364,7 @@
 					action: function(){ 
 						if($("#cloneIdentification").val()=="" || !$("#cloneIdentification").val() ||
 							$("#cloneIdentification").val().length < 5){
-			                cloneFail();
+			                cloneFailMinLength();
 						}
 						else {$.post(
 								"/controlpanel/mapsproject/clone", 
@@ -392,14 +398,29 @@
 				},
 			})
 	}
+	var cloneFailMinLength = function (){
+		$.alert({
+			title : "Error",
+			theme : 'light',
+			content : MinLen,
+			buttons: {
+				Ok: {
+					text: Close,
+					btnClass: 'btn btn-primary',
+					action: function (){}		
+					}
+				},
+			})
+	}
 	
 
 var cloneUsersDashboardDialog = function(mapsprojectId, identification){
+	
 		$.confirm({
 			title: cloneTitleUsers,
 			theme: 'light',
 			columnClass: 'medium',
-			content: "<div style='height:500px;'><label class='control-label'> Identification </label><br><input class='col-md-12 form-control' type=text id='cloneUserIdentification'></input><br/><label id='patternAlertCloneUsers' class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_- ]+</label><br/><br><label class='control-label'> Select users </label><br><select id='userList' class='selectpicker form-control ' data-size='10' multiple='multiple' data-live-search='true' data-actions-box='true' data-width='100%' >	</select></div>",
+			content: "<div style='height:500px;'><label class='control-label'> Identification </label><span class='required' style='color: #A73535;'> *</span></br><input class='col-md-12 form-control' type=text id='cloneUserIdentification'></input><br/><label id='patternAlertCloneUsers' class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_- ]+</label><br/><br><label class='control-label'> Select users </label><span class='required' style='color: #A73535;'> *</span><br><select id='userList' class='selectpicker form-control ' data-size='10' multiple='multiple' data-live-search='true' data-actions-box='true' data-width='100%' >	</select></div>",
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
@@ -431,7 +452,7 @@ var cloneUsersDashboardDialog = function(mapsprojectId, identification){
 					var mapsprojectName = $("#cloneUserIdentification").val();
 						if($("#cloneUserIdentification").val()=="" || !$("#cloneUserIdentification").val() ||
 							$("#cloneUserIdentification").val().length < 5){
-			                cloneFail();
+			                cloneFailMinLength();
 						}
 						else {	
 							$.post(
@@ -469,10 +490,11 @@ var cloneUsersDashboardDialog = function(mapsprojectId, identification){
 	
 	var deleteUrl =  [[@{/mapsproject}]];
 	
+	
 	var showConfirmDeleteDialog = function(id){	
 		$('#delete_mapsproject_form').attr('action', deleteUrl + '/' + id);
 		$('#delete-id').val(id);
-		HeaderController.showConfirmDialogMapsGeneric('delete_mapsproject_form');	
+		HeaderController.showConfirmDialogMapsProject('delete_mapsproject_form',deleteUrl,id);	
 	}
 	
 	var copyURL = function(url){
@@ -482,7 +504,11 @@ var cloneUsersDashboardDialog = function(mapsprojectId, identification){
 			document.execCommand("copy");
 			$temp.remove();
 			
-	}		
+	}
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([4],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});		
 
 	// MAIN WHEN READY
 	$( document ).ready(function() {
@@ -513,17 +539,13 @@ var cloneUsersDashboardDialog = function(mapsprojectId, identification){
 		// SEARCH FORM
 		$('#search_mapsproject').on('click',function(){ $('#form_mapsproject')[0].submit(); });
 		
-	});
-	 
-	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
-		
+		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 		var oTable = $('#mapsproject').dataTable({
 		      "bAutoWidth": false
 		      });
 		
 		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-		$.each([7],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		//$.each([4],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));	
@@ -563,17 +585,16 @@ var cloneUsersDashboardDialog = function(mapsprojectId, identification){
 		$("#contenedor-tabla-outside").removeClass("hidden");
 	});	
 	
-	
-	
 	var showImportMapsProjectDialog = function(){
 		var textCreated =  [[#{mapsproject.ontologies.must.be.created}]];
 		var textOverwrite = [[#{mapsproject.overwrite}]];
 		var textimportAuth = [[#{mapsproject.importAuthorizations}]];
+		var name = [[#{gen.name}]];
 		$.confirm({
 			title: [[#{mapsproject.importmapsproject}]],
 			theme: 'light',
 			columnClass: 'medium',
-			content: "<input class='element text form-control' type='text' id='newImport' placeholder=''/><br/><label id='patternAlert' class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_- ]+</label><br/><input type='hidden' id='dataJSONImport' /><input class='element text form-control' type='file' accept='.json' id='jsonInputData' onchange='fileImportChange(this.files[0])' /><div class='form-group'><div class='mt-checkbox-list'> <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs' >"+textOverwrite+"</div>        <input id='overwritecheck' name='overwritecheck' type='checkbox' class='no-remove' checked='checked'/>        <span></span><!-- needed by styles -->    </label>     </div></div>",
+			content: "<label>"+name+"</label><span class='required' style='color: #A73535;'> *</span></br> <div class='form-group'> <input class='element text form-control' type='text' id='newImport' placeholder=''/><span hidden='hidden' id='name-error'>Name must have at least 5 characteres</span> </div><br/><label id='patternAlert' class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_- ]+</label><br/><input type='hidden' id='dataJSONImport' /><div class='form-group2'><input class='element text form-control' type='file' accept='.json' id='jsonInputData' onchange='fileImportChange(this.files[0])' /></div><div class='form-group'><div class='mt-checkbox-list'> <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs' >"+textOverwrite+"</div>        <input id='overwritecheck' name='overwritecheck' type='checkbox' class='no-remove' checked='checked'/>        <span></span><!-- needed by styles -->    </label>     </div></div>",
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: false,
@@ -581,6 +602,7 @@ var cloneUsersDashboardDialog = function(mapsprojectId, identification){
 				// INPUT MASK FOR identification allow only letters, numbers and -_
 					$("#newImport").inputmask({ regex: "[a-zA-Z 0-9_-]*", greedy: false });
 				},
+
 			buttons: {
 				close: {
 					text: Cancel,
@@ -589,29 +611,40 @@ var cloneUsersDashboardDialog = function(mapsprojectId, identification){
 				},
 				Ok: {
 					text: Confirm,
-					btnClass: 'btn btn-primary',
+					btnClass: 'btn btn-blue', 
 					action: function() {
-						
 						if($("#newImport").val()=="" || !$("#jsonInputData").val() || $("#jsonInputData").val()=="" || !$("#newImport").val()){
+							if($("#newImport").val().length < 5) {
 							console.log("empty file or identity fields");
-							toastr.error('Error', "empty file or identity fields" );
-							return;
-						}
-						var mapsprojectName = $("#newImport").val().trim();
-						var mapsprojectExtension = $("#jsonInputData").val().split('.').pop();
-						if(/^[a-zA-Z0-9_\- ]+$/.test(mapsprojectName)){
-							importMapsProject(mapsprojectName,$("#dataJSONImport").val(), mapsprojectExtension,$("#overwritecheck").is(":checked"));
-						}
-						else{
-							$("#patternAlert").removeClass("hidden");
+							$('#newImport').closest('.form-group').addClass('has-error');
+							$('#name-error').addClass('help-block help-block-error');
+							//toastr.error('Error', "Name must have at least 5 characteres" );
+							} else {
+								$('#newImport').closest('.form-group').removeClass('has-error');
+								$('#name-error').removeClass('help-block help-block-error');
+							}
+							
+							if (!$("#jsonInputData").val() || $("#jsonInputData").val()==""){
+								$('#jsonInputData').closest('.form-group2').addClass('has-error');
+							} else {
+								$('#jsonInputData').closest('.form-group2').removeClass('has-error');
+							}
 							return false;
+						}else {
+							var mapsprojectName = $("#newImport").val().trim();
+							var mapsprojectExtension = $("#jsonInputData").val().split('.').pop();
+							if(/^[a-zA-Z0-9_\- ]+$/.test(mapsprojectName)){
+								importMapsProject(mapsprojectName,$("#dataJSONImport").val(), mapsprojectExtension,$("#overwritecheck").is(":checked"));
+							}else{
+								$("#patternAlert").removeClass("hidden");
+								return false;
+							}
 						}
 					}									
 				}
 			}
 		});
 	}
-
 	
 	function navigateUrl(url,reload){ 
 		if(reload){

@@ -151,4 +151,11 @@ public class GadgetDatasource extends OPResource implements Versionable<GadgetDa
 		}
 		return gadgetds;
 	}
+
+	@Override
+	public void setOwnerUserId(String userId) {
+		final User u = new User();
+		u.setUserId(userId);
+		setUser(u);
+	}
 }

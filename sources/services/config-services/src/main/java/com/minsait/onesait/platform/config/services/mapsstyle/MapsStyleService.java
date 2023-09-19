@@ -22,7 +22,7 @@ import com.minsait.onesait.platform.config.services.mapsstyle.dto.MapsStyleDTO;
 
 public interface MapsStyleService {
 
-	public List<MapsStyle> getStylesForUser(String userId, String identification);
+	public List<MapsStyleDTO> getStylesForUser(String userId, String identification);
 
 	public List<MapsStyle> getByIdentifier(String identification);
 
@@ -49,5 +49,9 @@ public interface MapsStyleService {
 	public String clone(MapsStyle originalMapsStyle, String identification, User user);
 
 	List<MapsStyleDTO> getStylesForUserWithEmpty(String userId, String identification);
+
+	void deleteByIdentification(String identification, String userId);
+
+	public MapsStyle getByIdentificationANDUser(String id, String userId);
 
 }

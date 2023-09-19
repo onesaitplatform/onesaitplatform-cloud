@@ -62,7 +62,7 @@ public class MapsProject extends OPResource implements Versionable<MapsProject> 
 	@Getter
 	@Setter
 	private boolean isPublic;
-	
+
 	@Column(name = "CONFIG")
 	@Lob
 	@Type(type = "org.hibernate.type.TextType")
@@ -127,5 +127,12 @@ public class MapsProject extends OPResource implements Versionable<MapsProject> 
 			mapsProject = null;
 		}
 		return mapsProject;
+	}
+
+	@Override
+	public void setOwnerUserId(String userId) {
+		final User u = new User();
+		u.setUserId(userId);
+		setUser(u);
 	}
 }

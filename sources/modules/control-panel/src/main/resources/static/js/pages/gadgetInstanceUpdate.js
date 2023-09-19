@@ -233,55 +233,53 @@ var GadgetsTemplateCreateController = function() {
         }
     }
     
-	var addConfig = function(){
+	var addConfig = function() {
+		
 		$("#type").val(gadgetTemplateInit.id);
 		$("#instance").val(true);
 		$("#config").val(JSON.stringify(vueapp._data.gformvalue));
-		
+
 		var identV = jQuery('#gadget_create_form').validate().element("#identification");
 		var descV = jQuery('#gadget_create_form').validate().element("#description");
-		var validateExist = false;
-		if(typeof gadget.id =='undefined' || gadget.id==null){
-		 	if(identV){
-	Promise.all([validateGadgetIdentification()]).then((data) => { 
-			var valid = "false"
-			 if(data[0].exist === "true"){	
-	                	toastr.error(gadgetTemplateCreateJson.existIdent, '');
-	                	valid = false	            	   
-		                                 
-		               }else{		            	   
-		            	  valid =  true	                
-		               }
-			
-		   if(identV && descV && valid ){
-				toastr.success(messagesForms.validation.genFormSuccess,'');
-								jQuery("#type").val(gadgetTemplateInit.id);		
-								jQuery("#instance").val(true);			 
-								jQuery("#public").val(false);
-								jQuery("#config").val(JSON.stringify(GadgetsTemplateCreateController.getNewConfig()));
-							    jQuery("#gadget_create_form").get(0).submit();		 
-			}
-	  }).catch((response) => {	    
-	  })
-	}
-	
-	
-		}else{
-			if( descV  ){
-				toastr.success(messagesForms.validation.genFormSuccess,'');
-								jQuery("#type").val(gadgetTemplateInit.id);		
-								jQuery("#instance").val(true);			 
-								jQuery("#public").val(false);
-								jQuery("#config").val(JSON.stringify(GadgetsTemplateCreateController.getNewConfig()));
-							    jQuery("#gadget_create_form").get(0).submit();		 
-			}
-		}	
 		 
-		
-			 
-		
-		
-    }
+		if (typeof gadget.id == 'undefined' || gadget.id == null) {
+			if (identV) {
+				Promise.all([validateGadgetIdentification()]).then((data) => {
+					var valid = "false"
+					if (data[0].exist === "true") {
+						toastr.error(gadgetTemplateCreateJson.existIdent, '');
+						valid = false
+
+					} else {
+						valid = true
+					}
+
+					if (identV && descV && valid) {
+						toastr.success(messagesForms.validation.genFormSuccess, '');
+						jQuery("#type").val(gadgetTemplateInit.id);
+						jQuery("#instance").val(true);
+						jQuery("#public").val(false);
+						jQuery("#config").val(JSON.stringify(GadgetsTemplateCreateController.getNewConfig()));
+						
+						jQuery("#gadget_create_form").get(0).submit();
+					}
+				}).catch((response) => {
+				})
+			}
+
+
+		} else {
+			if (descV) {
+				toastr.success(messagesForms.validation.genFormSuccess, '');
+				jQuery("#type").val(gadgetTemplateInit.id);
+				jQuery("#instance").val(true);
+				jQuery("#public").val(false);
+				jQuery("#config").val(JSON.stringify(GadgetsTemplateCreateController.getNewConfig()));
+				
+				jQuery("#gadget_create_form").get(0).submit();
+			}
+		}
+	}
 	
 	// FORM VALIDATION
 	var handleValidation = function() {
@@ -508,8 +506,11 @@ var GadgetsTemplateCreateController = function() {
 	function getNewConfig(){
 		
 			try{
+				
 					var gadConf={};
-					paramsValueGadget = parameters;
+					vueapp._data.gformvalue; 
+					//paramsValueGadget = paramMap.parameters;
+					paramsValueGadget = vueapp._data.gformvalue.parameters;
 					if(typeof paramsValueGadget !='undefined' && paramsValueGadget!=null && paramsValueGadget.length>0){
 						for(var i = 0 ; i < paramsValueGadget.length;i++){							
 							if(paramsValueGadget[i].type =="labelsds"){
@@ -535,12 +536,16 @@ var GadgetsTemplateCreateController = function() {
 							}						
 						}					
 					}	
-					gadConf.parameters=paramsValueGadget;							
+					
+					 
+					gadConf.parameters=paramsValueGadget;
+					// currentDatasource = paramMap.datasource;
+						currentDatasource = vueapp._data.gformvalue.datasource;						
 					if(typeof currentDatasource!='undefined' && currentDatasource!=null ){
 						gadConf.datasource = {
-						    name: currentDatasource.identification,
+						    name: currentDatasource.name,
 						    refresh: currentDatasource.refresh,
-						    type: currentDatasource.mode,
+						    type: typeof currentDatasource.mode ==='undefined'?'query':currentDatasource.mode,
 						    id: currentDatasource.id,
 						    query: currentDatasource.query,
 						    description: currentDatasource.description
@@ -810,6 +815,7 @@ var GadgetsTemplateCreateController = function() {
 	var getConfig = function (){				
 		if(gadget!=null){
 			try{
+				
 					var gadConf =  JSON.parse(gadget.config);
 					paramsValueGadget = gadConf.parameters;
 					if(typeof paramsValueGadget !='undefined' && paramsValueGadget!=null && paramsValueGadget.length>0){
@@ -829,7 +835,7 @@ var GadgetsTemplateCreateController = function() {
 					}								
 					if(typeof currentDatasource!='undefined' && currentDatasource!=null ){
 						gadConf.datasource = {
-						    name: currentDatasource.identification,
+						    name: currentDatasource.name,
 						    refresh: currentDatasource.refresh,
 						    type: currentDatasource.mode,
 						    id: currentDatasource.id,

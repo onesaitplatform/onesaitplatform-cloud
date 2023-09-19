@@ -135,4 +135,9 @@ public class MindsDBManageDBRepository implements ManageDBRepository {
 		log.debug(NO_OP_CONTROL_ONTOLOGY);
 		return identification;
 	}
+
+	@Override
+	public void createTTLIndex(String ontology, String attribute, Long seconds) {
+		log.debug(NO_OP_CONTROL_ONTOLOGY);
+	}
 }

@@ -14,7 +14,10 @@
  */
 package com.minsait.onesait.platform.controlpanel.rest.report;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -53,11 +56,13 @@ import com.google.common.net.HttpHeaders;
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
 import com.minsait.onesait.platform.config.dto.report.ReportParameter;
 import com.minsait.onesait.platform.config.dto.report.ReportType;
+import com.minsait.onesait.platform.config.dto.report.ReportTypeSwagger;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.Report;
 import com.minsait.onesait.platform.config.model.Report.ReportExtension;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.reports.ReportService;
+import com.minsait.onesait.platform.config.services.templates.poi.PoiTemplatesUtil;
 import com.minsait.onesait.platform.controlpanel.rest.report.model.ReportDTO;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
@@ -66,6 +71,8 @@ import com.minsait.onesait.platform.resources.service.IntegrationResourcesServic
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
+import fr.opensagres.xdocreport.converter.XDocConverterException;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -87,6 +94,9 @@ public class ReportRestController {
 
 	@Autowired
 	private ReportService reportService;
+
+	@Autowired
+	private PoiTemplatesUtil poiTemplatesUtil;
 
 	@Autowired
 	private IntegrationResourcesService resourcesService;
@@ -409,5 +419,55 @@ public class ReportRestController {
 				.header(HttpHeaders.CACHE_CONTROL, "max-age=60, must-revalidate").contentLength(byteArray.length)
 				.header(HttpHeaders.SET_COOKIE, "fileDownload=true").body(byteArray);
 
+	}
+
+	@Operation(summary = "Download report from MS Word Template")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "OK"),
+			@ApiResponse(responseCode = "404", description = "Not found") })
+	@PostMapping("/downloadMSWordTemplate/{id}")
+	public ResponseEntity<?> generateAndDownloadReport(@PathVariable("id") String id,
+			@RequestParam("parameters") String params, @RequestParam("extension") ReportTypeSwagger extension)
+			throws IOException {
+		Report report = reportService.findById(id);
+
+		String wordPath = poiTemplatesUtil.generateReport(params, report.getFile());
+
+		if (extension.name().equals("DOCX")) {
+			InputStream docxstream = new FileInputStream(wordPath);
+
+			ResponseEntity<?> response = generateAttachmentResponse(docxstream.readAllBytes(),
+					ReportTypeSwagger.DOCX.contentType(), report.getIdentification() + "." + extension.extension());
+
+			File file = new File(wordPath);
+			file.delete();
+			docxstream.close();
+			return response;
+
+		} else if (extension.name().equals("PDF")) {
+			String pdfFilePath;
+			try {
+				pdfFilePath = poiTemplatesUtil.convertToPdf(wordPath);
+			} catch (IOException | XDocConverterException e) {
+				return new ResponseEntity<>("PDF conversion failed", HttpStatus.BAD_REQUEST);
+
+			}
+			InputStream pdfstream = new FileInputStream(pdfFilePath);
+
+			ResponseEntity<?> response = generateAttachmentResponse(pdfstream.readAllBytes(),
+					ReportTypeSwagger.PDF.contentType(), report.getIdentification() + "." + extension.extension());
+			pdfstream.close();
+			File file = new File(wordPath);
+			file.delete();
+
+			File filePdf = new File(pdfFilePath);
+			filePdf.delete();
+
+			return response;
+
+		}else {
+			return new ResponseEntity<>("Extension is not valid", HttpStatus.BAD_REQUEST);
+		}
+
+	
 	}
 }

@@ -217,8 +217,8 @@ public class Dashboard extends OPResource implements Versionable<Dashboard> {
 				final Map<String, Object> layer = (Map<String, Object>) layers.get(0);
 				final ArrayList<Object> gridboard = (ArrayList<Object>) layer.get("gridboard");
 				// reset gridboard
-				for (int j = 0; j < gridboard.size(); j++) {
-					final Map<String, Object> grid = (Map<String, Object>) gridboard.get(j);
+				for (final Object element : gridboard) {
+					final Map<String, Object> grid = (Map<String, Object>) element;
 					if (grid.get("content") != null && ((String) grid.get("content")).contains("<")) {
 						grid.put("content", new HTML((String) grid.get("content")));
 					}
@@ -238,6 +238,13 @@ public class Dashboard extends OPResource implements Versionable<Dashboard> {
 			dashboard = this;
 		}
 		return dashboard;
+	}
+
+	@Override
+	public void setOwnerUserId(String userId) {
+		final User u = new User();
+		u.setUserId(userId);
+		setUser(u);
 	}
 
 }

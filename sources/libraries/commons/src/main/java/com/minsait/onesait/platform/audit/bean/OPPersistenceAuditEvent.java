@@ -52,6 +52,7 @@ public class OPPersistenceAuditEvent extends OPAuditEvent {
 		this.type = type;
 		this.timeStamp = timeStamp;
 		this.formatedTimeStamp = formatedTimeStamp;
+		this.mongoTimestamp = MongoDate.builder().date(formatedTimeStamp).build();
 		this.user = user;
 		this.ontology = ontology;
 		this.operationType = operationType;

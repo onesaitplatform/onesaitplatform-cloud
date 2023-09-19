@@ -45,7 +45,7 @@ onesaitplatform:
       advice: http://rules-engine-service:20200/rules-engine/advice
     bpmEngine:
       base: https://${SERVER_NAME}/bpm-engine
-      deployment: https://${SERVER_NAME}/bpm-engine/rest/deployment/create
+      deployment: https://${SERVER_NAME}/bpm-engine/engine-rest/deployment/create
     dashboardEngine:
       edit: https://${SERVER_NAME}/controlpanel/dashboards/editfulliframe/
       view: https://${SERVER_NAME}/controlpanel/dashboards/viewiframe/
@@ -93,4 +93,5 @@ onesaitplatform:
       analyticsEngineLauncherManagerBase: http://analyticsenginelauncherservice:23000/sparklauncher/
       masterUIBase: https://${SERVER_NAME}/spark/master
       masterBase: spark://spark-master:7077
-
+    tracingUI:
+      base: https://${SERVER_NAME}/jaeger

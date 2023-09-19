@@ -534,3 +534,10 @@ opendata:
 proxy-mail:
   host: localhost
   port: 8080
+  
+#open-telemetry
+#config spring sleuth      
+spring.sleuth.otel.config.trace-id-ratio-based: 1.0
+#spring.sleuth.otel.exporter.otlp.endpoint: http://collector:4317      
+spring.sleuth.otel.exporter.otlp.endpoint: http://localhost:4317
+#open-telemetry

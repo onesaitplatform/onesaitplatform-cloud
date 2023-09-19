@@ -17,4 +17,6 @@ package com.minsait.onesait.platform.controlpanel.rest.management.mail;
 public interface MailManagementUrl {
 
 	public static final String OP_MAIL = "/mail";
+	public static final String OP_TEMPLATE = "/email-template";
+
 }

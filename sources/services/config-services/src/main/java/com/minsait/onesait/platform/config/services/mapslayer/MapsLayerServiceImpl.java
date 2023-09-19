@@ -114,6 +114,18 @@ public class MapsLayerServiceImpl implements MapsLayerService {
 
 	@Override
 	@Transactional
+	public MapsLayer getByIdentificationANDUser(String identification, String userId) {
+		final User user = userRepository.findByUserId(userId);
+		if (mapsLayerRepository.findByUserIdentificationContaining(user, identification).size() > 0) {
+			return mapsLayerRepository.findByUserIdentificationContaining(user, identification).get(0);
+		} else {
+			return null;
+		}
+
+	}
+
+	@Override
+	@Transactional
 	public MapsLayer getById(String identification) {
 
 		return mapsLayerRepository.findById(identification).orElse(null);

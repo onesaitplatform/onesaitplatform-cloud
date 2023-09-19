@@ -199,6 +199,7 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 	private AppService appService;
 
 	private static final String ADMINISTRATOR = "administrator";
+	@Autowired
 	private MapsStyleService mapsStyleService;
 	@Autowired
 	private MapsLayerService mapsLayerService;
@@ -514,7 +515,9 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 
 				if (resources.size() == 1 && resources.get(0) instanceof Ontology
 						&& resources.get(0).getIdentification().toLowerCase().contains("audit")) {
-					resourceRepository.deleteById(resources.get(0).getId());
+					//Use Ontology repository to force cache eviction!! 
+					ontologyRepository.delete((Ontology)resources.get(0));
+					//resourceRepository.deleteById(resources.get(0).getId());
 					userRepository.deleteByUserId(userId);
 					invalidateUserTokens(userId);
 					return;
@@ -751,8 +754,8 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 
 	@Override
 	@Transactional
-	public void deleteMapsProject(String id, String userId) {
-		if (mapsMapService.hasUserPermission(id, userId)) {
+	public void deleteMapsProject(String id, boolean deleteDepencies, String userId) {
+		if (mapsProjectService.hasUserPermission(id, userId)) {
 			final MapsProject mapsProject = mapsProjectService.getById(id);
 			if (mapsProject != null) {
 				if (resourceService.isResourceSharedInAnyProject(mapsProject)) {
@@ -761,7 +764,7 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 				}
 				// TODO validate if is used on maps
 
-				mapsProjectService.delete(id, userId);
+				mapsProjectService.delete(id, deleteDepencies, userId);
 			} else {
 				throw new OntologyServiceException("Couldn't delete Map");
 			}

@@ -51,6 +51,8 @@
 	th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}" />
 <link rel="stylesheet" data-name="vs/editor/editor.main"
 	th:href="@{/static/vendor/vs/editor/editor.main.css}" />
+<link rel="stylesheet"  type="text/css" media="all"
+	th:href="@{/static/vendor/coloris/coloris.min.css}" />	
 </head>
 
 <!-- page-sidebar-closed to start page with collapsed menu -->
@@ -235,25 +237,21 @@
 								</a>
 							</div>
 							<div id="tab-stroke" class="option">
-								<a href="#tab_stroke" data-toggle="tab" aria-expanded="true">
+								<a href="#tab_stroke" data-toggle="tab" aria-expanded="true" class="noheat">
 									<span class="caption-subject "> Stroke</span>
 								</a>
 							</div>
 							<div id="tab-text" class="option">
-								<a href="#tab_text" data-toggle="tab" aria-expanded="true">
+								<a href="#tab_text" data-toggle="tab" aria-expanded="true" class="noheat">
 									<span class="caption-subject "> Text</span>
 								</a>
 							</div>
 							<div id="tab-image" class="option">
-								<a href="#tab_image" data-toggle="tab" aria-expanded="true">
+								<a href="#tab_image" data-toggle="tab" aria-expanded="true" class="noheat">
 									<span class="caption-subject "> Image</span>
 								</a>
 							</div>
-							<div id="tab-icon" class="option">
-								<a href="#tab_icon" data-toggle="tab" aria-expanded="true">
-									<span class="caption-subject "> Icon</span>
-								</a>
-							</div>
+							 
 						</div>
 
 						<div class="tab-content flex-content-right">
@@ -303,37 +301,29 @@
 											Denotes Required Field</span>
 									</div>
 								</div>
-								<div class="row main">
+								<div class="row main">	
+									<div class="col-md-4 col-sm-12">
+										<div class="form-group">
+											<label class="control-label">Name</label><input id="name"
+												type="text" name="name" class="form-control " />
+										</div>
+									</div>
 									<div class="col-md-3 col-sm-3">
 										<div class="form-group">
-											<label class="control-label">style Type</label> <select
+											<label class="control-label">Style Type</label> <select
 												id="styleType" class="selectpicker form-control "
-												data-size="5" data-live-search="true" data-width="100%">
-												<option value=""></option>
-												<option value="Box">Box</option>
-												<option value="Circle">Circle</option>
-												<option value="GeometryCollection">GeometryCollection</option>
-												<option value="LinearRing">LinearRing</option>
-												<option value="LineString">LineString</option>
-												<option value="MultiLineString">MultiLineString</option>
-												<option value="MultiPoint">MultiPoint</option>
-												<option value="MultiPolygon">MultiPolygon</option>
-												<option value="Point">Point</option>
-												<option value="Polygon">Polygon</option>
-												<option value="LineString">Polyline</option>
+												data-size="5" data-live-search="true" data-width="100%">											 						
+												<option value="simple">SIMPLE</option>									
+												<option value="heatmap">HEATMAP</option>
+												<!--<option value="categorized">CATEGORIZED</option>
+												<option value="byrule">BYRULE</option>-->
+												<option value="cluster">CLUSTER</option>
+											 
 											</select>
 										</div>
 									</div>
-									<div class="col-md-3 col-sm-3">
-										<div class="form-group">
-											<label class="control-label">radius</label><span
-												class="required"> *</span> <input id="radius" type="range"
-												name="radius" min="1" max="50"
-												onchange="radiusValue.innerText = this.value">
-											<p id="radiusValue"></p>
-										</div>
-									</div>
-									<div class="col-md-2 col-sm-2">
+									
+									<!--<div class="col-md-2 col-sm-2">
 										<div class="form-group">
 											<label class="control-label">z Index</label><span
 												class="required"> *</span> <input id="zIndex"
@@ -341,30 +331,80 @@
 
 
 										</div>
-									</div>
-									<div class="col-md-2 col-sm-2">
+									</div>-->
+									
+								 
+								</div>
+								<div class="row main">
+									<div class="col-md-2 col-sm-2 noheat"  >
 										<div class="mt-checkbox-list margin-top-20">
 											<label class="mt-checkbox popovers font-sm"
 												data-trigger="hover" data-placement="top"
 												data-container="body" data-content="circleVertex"
 												data-title="circleVertex">
 												<div class="inline font-xs">
-													circle Vertex <span class="required"
-														style="color: #A73535; font-size: 12px; padding-left: 2px;">
-														*</span>
+													Circle Vertex  
 												</div> <input id="circleVertex" class="form-control"
 												name="circleVertex" type="checkbox" /> <span></span>
 											</label>
 										</div>
 									</div>
-									<div class="col-md-2 col-sm-2">
+									<div class="col-md-2 col-sm-2 noheat"  >
 										<div class="form-group">
-											<label class="control-label">fill</label><span
-												class="required"> *</span><br> <input type="color"
-												id="fill" value="#ff0000" style="width: 85%;">
+											<label class="control-label">Fill Color</label> <br> <input type="text"
+												class="coloris colorisfull form-control " id="fill" value="#ff0000" style="width: 85%;">
 										</div>
 									</div>
-									<div class="clearfix"></div>
+									<div class="col-md-3 col-sm-3">
+										<div class="form-group">
+											<label class="control-label">Blur</label>  <input id="blur" type="range"
+												name="blur" min="0" max="100"
+												onchange="blurValue.innerText = this.value">
+											<p id="blurValue"></p>
+										</div>
+									</div>
+									<div class="col-md-3 col-sm-3">
+										<div class="form-group">
+											<label class="control-label">Point Radius</label>  <input id="radius" type="range"
+												name="radius" min="1" max="50"
+												onchange="radiusValue.innerText = this.value">
+											<p id="radiusValue"></p>
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2 noheat">
+										<div class="mt-checkbox-list margin-top-20">
+											<label class="mt-checkbox popovers font-sm"
+												data-trigger="hover" data-placement="top"
+												data-container="body" data-content="labelVisibility"
+												data-title="labelVisibility">
+												<div class="inline font-xs">
+													Show Labels  
+												</div> <input id="labelVisibility" class="form-control"
+												name="labelVisibility" type="checkbox" /> <span></span>
+											</label>
+										</div>
+									</div>
+									
+								</div>
+								<div class="row main" style="display: none;">
+									<div class="col-md-2 col-sm-2" >
+										<div class="form-group">
+											<label class="control-label">Initial Ramp Color</label> <br> <input type="text"
+												class="coloris colorisfull form-control " id="initialRampColor" value="#ff0000" style="width: 85%;">
+										</div>
+									</div>
+									<div class="col-md-2 col-sm-2">
+										<div class="form-group">
+											<label class="control-label">Final Ramp Color</label> <br> <input type="text" class="coloris colorisfull form-control "
+												id="finalRampColor" value="#ff0000" style="width: 85%;">
+										</div>
+									</div>
+									<div class="col-md-4 col-sm-12">
+										<div class="form-group">
+											<label class="control-label">Field To Classify</label><input id="fieldToClassify"
+												type="text" name="fieldToClassify" class="form-control " />
+										</div>
+									</div>
 								</div>
 							</div>
 
@@ -381,66 +421,75 @@
 								<div class="row main">
 									<div class="col-md-2 col-sm-2">
 										<div class="form-group">
-											<label class="control-label">color</label><span
-												class="required"> *</span> <input type="color"
+											<label class="control-label">Stroke Color</label> <input type="text" class="coloris colorisfull form-control "
 												id="strokecolor" value="#ff0000" style="width: 85%;">
 										</div>
 									</div>
 									<div class="col-md-2 col-sm-2">
-										<label class="control-label">width</label><span
-											class="required"> *</span> <input id="strokewidth"
+										<label class="control-label">Width</label> <input id="strokewidth"
 											type="range" name="strokewidth" min="1" max="10"
 											onchange="strokewidthValue.innerText = this.value">
 										<p id="strokewidthValue"></p>
 									</div>
+									
+									<div class="col-md-2 col-sm-2">
+										<div class="mt-checkbox-list margin-top-20">
+											<label class="mt-checkbox popovers font-sm"
+												data-trigger="hover" data-placement="top"
+												data-container="body" data-content="useStrokeLine"
+												data-title="useStrokeLine">
+												<div class="inline font-xs">
+													Apply Dashed?   
+												</div> <input id="useStrokeLine" class="form-control"
+												name="useStrokeLine" type="checkbox" /> <span></span>
+											</label>
+										</div>
+									</div>
 									<div class="col-md-3 col-sm-3">
-										<label class="control-label">line Dash</label><br>
-										<div class="col-md-6 col-sm-6" style="padding-left: 0px;">
+										<label class="control-label">Line Dash</label><br>
+										<div class="col-md-6 col-sm-6" style="padding-left: 0px;padding-right: 5px;">
 											<input id="strokelinedash0" type="number"
 												class="form-control" name="strokelinedash0" min="0">
 										</div>
-										<div class="col-md-6 col-sm-6">
+										<div class="col-md-6 col-sm-6" style="padding-right: 0px;padding-left: 5px;">
 											<input id="strokelinedash1" type="number"
 												class="form-control" name="strokelinedash1" min="0">
 										</div>
 									</div>
 									<div class="col-md-3 col-sm-3">
-										<label class="control-label">line Dash Offset</label><br>
+										<label class="control-label">Line Dash Offset</label><br>
 										<div class="col-md-6 col-sm-6" style="padding-left: 0px;">
 											<input id="strokelineDashOffset0" type="number"
 												class="form-control" name="strokelineDashOffset0" min="0">
 										</div>
-										<div class="col-md-6 col-sm-6">
-											<input id="strokelineDashOffset1" type="number"
-												class="form-control" name="strokelineDashOffset1" min="0">
-										</div>
+										
 									</div>
 								</div>
 								<div class="row main">
 									<div class="col-md-2 col-sm-2">
 										<div class="form-group">
-											<label class="control-label">line Cap</label> <select
+											<label class="control-label">Line Cap Style</label> <select
 												id="strokelineCap" class="form-control selectpicker">
 												<option value=""></option>
-												<option value="butt">butt</option>
-												<option value="round">round</option>
-												<option value="square">square</option>
+												<option value="butt">BUTT</option>
+												<option value="round">ROUND</option>
+												<option value="square">SQUARE</option>
 											</select>
 										</div>
 									</div>
 									<div class="col-md-2 col-sm-2">
 										<div class="form-group">
-											<label class="control-label">line Join</label> <select
+											<label class="control-label">Line Join Style</label> <select
 												id="strokelineJoin" class="form-control selectpicker" onchange="MapsStyleController.showHide()">
 												<option value=""></option>
-												<option value="bevel">bevel</option>
-												<option value="round">round</option>
-												<option value="miter">miter</option>
+												<option value="bevel">BEVEL</option>
+												<option value="round">ROUND</option>
+												<option value="miter">MITER</option>
 											</select>
 										</div>
 									</div>
 									<div class="col-md-2 col-sm-2" id="divmiterlimit">
-										<label class="control-label">miter Limit</label><br> <input
+										<label class="control-label">Miter Limit</label><br> <input
 											id="strokemiterLimit" type="number" class="form-control"
 											name="strokemiterLimit" min="0">
 									</div>
@@ -465,46 +514,40 @@
 											data-container="body" data-content="texttextVisibility"
 											data-title="textVisibility">
 											<div class="inline font-xs">
-												text Visibility <span class="required"
-													style="color: #A73535; font-size: 12px; padding-left: 2px;">
-													*</span>
+												Text Visibility  
 											</div> <input id="texttextVisibility" class="form-control"
 											name="texttextVisibility" type="checkbox" onchange="MapsStyleController.showHide()"/> <span></span>
 										</label>
 									</div>
 									<div class="col-md-2 col-sm-2" id="divtextfillColor" >
 										<div class="form-group">
-											<label class="control-label">fill Color</label><span
-												class="required"> *</span> <input type="color"
+											<label class="control-label">Fill Color</label>  <input type="text" class="coloris colorisfull form-control "
 												id="textfillColor" value="#ff0000" style="width: 85%;">
 										</div>
 									</div>
 									<div class="col-md-2 col-sm-2" id="divtextstrokeColor">
 										<div class="form-group">
-											<label class="control-label">stroke Color</label><span
-												class="required"> *</span> <input type="color"
+											<label class="control-label">Stroke Color</label> <input type="text" class="coloris colorisfull form-control "
 												id="textstrokeColor" value="#ff0000" style="width: 85%;">
 										</div>
 									</div>
 									<div class="col-md-2 col-sm-2" id="divtextdefaultText">
 										<div class="form-group">
-											<label class="control-label">default Text</label><span
-												class="required"> *</span> <input id="textdefaultText"
+											<label class="control-label">Default Text</label>  <input id="textdefaultText"
 												type="text" name="textdefaultText" maxlength="100"
 												class="form-control " onchange="MapsStyleController.showHide()"/>
 										</div>
 									</div>
 									<div class="col-md-2 col-sm-2" id="divtexttextField">
 										<div class="form-group">
-											<label class="control-label">textField</label> <input
+											<label class="control-label">Text Field</label> <input
 												id="texttextField" type="text" name="texttextField"
 												maxlength="100" class="form-control " />
 										</div>
 									</div>
 									<div class="col-md-2 col-sm-2" id="divtextscale">
 										<div class="form-group">
-											<label class="control-label">scale</label><span
-												class="required"> *</span> <input id="textscale"
+											<label class="control-label">Scale</label>  <input id="textscale"
 												type="number" name="textscale" class="form-control " />
 										</div>
 									</div>
@@ -519,7 +562,7 @@
 									</div> -->
 									<div class="col-md-2 col-sm-2" id="divtextplacement">
 										<div class="form-group">
-											<label class="control-label">placement</label> <select
+											<label class="control-label">Placement</label> <select
 												id="textplacement" class="form-control selectpicker " onchange="MapsStyleController.showHide()">
 												<option value=""></option>
 												<option value="point">Point</option>
@@ -529,7 +572,7 @@
 									</div>
 									<div class="col-md-2 col-sm-2" id="divtexttextAlign">
 										<div class="form-group">
-											<label class="control-label">text Align</label> <select
+											<label class="control-label">Text Align</label> <select
 												id="texttextAlign" class="form-control selectpicker">
 												<option value=""></option>
 												<option value="left">Left</option>
@@ -543,22 +586,19 @@
 
 									<div class="col-md-2 col-sm-2" id="divtextoffsetY">
 										<div class="form-group">
-											<label class="control-label">offset Y</label><span
-												class="required"> *</span> <input id="textoffsetY"
+											<label class="control-label">Offset Y</label>  <input id="textoffsetY"
 												type="number" name="textoffsetY" class="form-control " />
 										</div>
 									</div>
 									<div class="col-md-2 col-sm-2" id="divtextoffsetX">
 										<div class="form-group">
-											<label class="control-label">offset X</label><span
-												class="required"> *</span> <input id="textoffsetX"
+											<label class="control-label">Offset X</label>  <input id="textoffsetX"
 												type="number" name="textoffsetX" class="form-control " />
 										</div>
 									</div>
 									<div class="col-md-2 col-sm-2" id="divtextrotation">
 										<div class="form-group">
-											<label class="control-label">rotation</label><span
-												class="required"> *</span> <input id="textrotation"
+											<label class="control-label">Rotation</label> <input id="textrotation"
 												type="range" name="textrotation" min="-180" max="180"
 												onchange="textrotationValue.innerText = this.value">
 											<p id="textrotationValue"></p>
@@ -568,15 +608,15 @@
 								<div class="row main">
 									<div class="col-md-2 col-sm-2" id="divtexttextBaseLine">
 										<div class="form-group">
-											<label class="control-label">text BaseLine</label> <select
+											<label class="control-label">Text BaseLine</label> <select
 												id="texttextBaseLine" class="form-control selectpicker">
 												<option value=""></option>
-												<option value="bottom">Bottom</option>
-												<option value="top">Top</option>
-												<option value="middle">Middle</option>
-												<option value="alphabetic">Alphabetic</option>
-												<option value="hanging">Hanging</option>
-												<option value="ideographic">Ideographic</option>
+												<option value="bottom">BOTTOM</option>
+												<option value="top">TOP</option>
+												<option value="middle">MIDDLE</option>
+												<option value="alphabetic">ALPHABETIC</option>
+												<option value="hanging">HANGING</option>
+												<option value="ideographic">IDEOGRAPHIC</option>
 											</select>
 										</div>
 									</div>
@@ -586,9 +626,7 @@
 											data-container="body" data-content="textoverflow"
 											data-title="textoverflow">
 											<div class="inline font-xs">
-												text overflow <span class="required"
-													style="color: #A73535; font-size: 12px; padding-left: 2px;">
-													*</span>
+												Text Overflow  
 											</div> <input id="textoverflow" class="form-control"
 											name="textoverflow" type="checkbox" /> <span></span>
 										</label>
@@ -599,35 +637,32 @@
 											data-container="body" data-content="textrotateWithView"
 											data-title="textrotateWithView">
 											<div class="inline font-xs">
-												rotate With View <span class="required"
-													style="color: #A73535; font-size: 12px; padding-left: 2px;">
-													*</span>
+												Rotate With View  
 											</div> <input id="textrotateWithView" class="form-control"
 											name="textrotateWithView" type="checkbox" /> <span></span>
 										</label>
 									</div>
 									<div class="col-md-2 col-sm-2" id="divtextbackgroundFill">
 										<div class="form-group">
-											<label class="control-label">background Fill</label><span
-												class="required"> *</span> <input type="color"
+											<label class="control-label">Background Fill</label>  <input type="text" class="coloris colorisfull form-control "
 												id="textbackgroundFill" value="#ff0000" style="width: 85%;">
 										</div>
 									</div>
 									<div class="col-md-4 col-sm-4" id="divtextpadding">
-										<label class="control-label">padding</label><br>
-										<div class="col-md-3 col-sm-3" style="padding-left: 0px;">
+										<label class="control-label">Padding</label><br>
+										<div class="col-md-3 col-sm-3" style="padding-left: 0px; padding-right: 5px;">
 											<input id="textpadding0" type="number" class="form-control "
 												name="textpadding0">
 										</div>
-										<div class="col-md-3 col-sm-3">
+										<div class="col-md-3 col-sm-3" style="padding-right: 5px; padding-left: 5px;">
 											<input id="textpadding1" type="number" class="form-control"
 												name="textpadding1">
 										</div>
-										<div class="col-md-3 col-sm-3">
+										<div class="col-md-3 col-sm-3"style="padding-right: 5px; padding-left: 5px;">
 											<input id="textpadding2" type="number" class="form-control"
 												name="textpadding2">
 										</div>
-										<div class="col-md-3 col-sm-3">
+										<div class="col-md-3 col-sm-3" style="padding-right: 0px; padding-left: 5px;">
 											<input id="textpadding3" type="number" class="form-control"
 												name="textpadding3">
 										</div>
@@ -635,7 +670,7 @@
 								</div>
 								<div class="row main">
 									<div class="col-md-2 col-sm-2" id="divtextresolution">
-										<label class="control-label">resolution</label><br> <input
+										<label class="control-label">Resolution</label><br> <input
 											id="textresolution" type="number" class="form-control"
 											name="textresolution" min="0">
 
@@ -656,15 +691,13 @@
 								<div class="row main">
 									<div class="col-md-6 col-sm-6">
 										<div class="form-group">
-											<label class="control-label">src</label><span
-												class="required"> *</span> <input id="imagesrc" type="text"
+											<label class="control-label">Label: Path of the Image (URL or Local Path)</label>  <input id="imagesrc" type="text"
 												name="imagesrc" class="form-control " />
 										</div>
 									</div>
 									<div class="col-md-2 col-sm-2">
 										<div class="form-group">
-											<label class="control-label">scale</label><span
-												class="required"> *</span> <input id="imagescale"
+											<label class="control-label">Image Scale</label> <input id="imagescale"
 												type="number" name="imagescale" class="form-control " />
 										</div>
 									</div>
@@ -672,277 +705,55 @@
 										<div class="form-group">
 											<label class="control-label">position</label> <select
 												id="imageposition" class="form-control selectpicker">
-												<option value="bottom-left">Bottom Left</option>
-												<option value="bottom-center">Bottom Center</option>
-												<option value="bottom-right">Bottom Right</option>
-												<option value="center-left">Center Left</option>
-												<option value="center-center">Center Center</option>
-												<option value="center-right">Center Right</option>
-												<option value="top-left">Top Left</option>
-												<option value="top-center">Top Center</option>
-												<option value="top-right">Top Right</option>
+												<option value="bottom-left">BOTTOM LEFT</option>
+												<option value="bottom-center">BOTTOM CENTER</option>
+												<option value="bottom-right">BOTTOM RIGHT</option>
+												<option value="center-left">CENTER LEFT</option>
+												<option value="center-center">CENTER CENTER</option>
+												<option value="center-right">CENTER RIGHT</option>
+												<option value="top-left">TOP LEFT</option>
+												<option value="top-center">TOP CENTER</option>
+												<option value="top-right">TOP RIGHT</option>
 											</select>
 										</div>
 									</div>
-									<div class="col-md-2 col-sm-2">
-										<div class="mt-checkbox-list margin-top-20">
-											<label class="mt-checkbox popovers font-sm"
-												data-trigger="hover" data-placement="top"
-												data-container="body" data-content="imagerotateWithView"
-												data-title="imagerotateWithView">
-												<div class="inline font-xs">
-													rotate With View <span class="required"
-														style="color: #A73535; font-size: 12px; padding-left: 2px;">
-														*</span>
-												</div> <input id="imagerotateWithView" class="form-control"
-												name="imagerotateWithView" type="checkbox" /> <span></span>
-											</label>
-										</div>
-									</div>
+									 
 								</div>
 								<div class="row main">
 									<div class="col-md-3 col-sm-3">
-										<label class="control-label">displacement</label><br>
-										<div class="col-md-6 col-sm-6" style="padding-left: 0px;">
+										<label class="control-label">Displacement</label><br>
+										<div class="col-md-6 col-sm-6" style="padding-left: 0px;padding-right: 5px;">
 											<input id="imagedisplacement0" type="number"
 												class="form-control" name="imagedisplacement0" min="0">
 										</div>
-										<div class="col-md-6 col-sm-6">
+										<div class="col-md-6 col-sm-6" style="padding-left: 5px;padding-right: 0px;">
 											<input id="imagedisplacement1" type="number"
 												class="form-control" name="imagedisplacement1" min="0">
 										</div>
 									</div>
 									<div class="col-md-2 col-sm-2">
 										<div class="form-group">
-											<label class="control-label">opacity</label> <input
+											<label class="control-label">Opacity</label> <input
 												id="imageopacity" type="range" name="imageopacity" min="0"
 												max="100"
 												onchange="imageopacityValue.innerText = this.value">
 											<p id="imageopacityValue"></p>
 										</div>
 									</div>
-									<div class="col-md-2 col-sm-2">
-										<div class="form-group">
-											<label class="control-label">rotation</label><span
-												class="required"> *</span> <input id="imagerotation"
-												type="range" name="radius" min="-180" max="180"
-												onchange="imagerotationValue.innerText = this.value">
-											<p id="imagerotationValue"></p>
-										</div>
-									</div>
+									 
 
 									<div class="col-md-2 col-sm-2">
 										<div class="form-group">
-											<label class="control-label">color</label><span
-												class="required"> *</span> <input type="color"
+											<label class="control-label">Image Coloring</label>  <input type="text" class="coloris colorisfull form-control "
 												id="imagecolor" value="#ff0000" style="width: 85%;">
 										</div>
 									</div>
-									<div class="col-md-3 col-sm-3">
-										<label class="control-label">size</label><br>
-										<div class="col-md-6 col-sm-6" style="padding-left: 0px;">
-											<input id="imagesize0" type="number" class="form-control"
-												name="imagesize0" min="0">
-										</div>
-										<div class="col-md-6 col-sm-6">
-											<input id="imagesize1" type="number" class="form-control"
-												name="imagesize1" min="0">
-										</div>
-									</div>
+							 
 								</div>
-								<div class="row main">
-									<div class="col-md-2 col-sm-2">
-										<div class="form-group">
-											<label class="control-label">resolution</label><span
-												class="required"> *</span> <input id="imageresolution"
-												type="number" name="imageresolution" class="form-control " />
-										</div>
-									</div>
-									<div class="col-md-2 col-sm-2">
-										<div class="form-group">
-											<label class="control-label">declutter mode</label> <select
-												id="imagedecluttermode" class="form-control selectpicker">
-												<option value=""></option>
-												<option value="declutter">declutter</option>
-												<option value="obstacle">obstacle</option>
-												<option value="none">none</option>
-											</select>
-										</div>
-									</div>
-								</div>
+								 
 							</div>
 
-							<div class="tab-pane " id="tab_icon">
-								<div class="row main">
-									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
-										<span>Icon</span>
-									</div>
-									<div class="col-md-3 col-sm-3 col-xs-3">
-										<span th:text="#{gen.denotesRequired}" class="denotesRequired">*
-											Denotes Required Field</span>
-									</div>
-								</div>
-								<div class="row main">
-									<div class="col-md-6 col-sm-6">
-										<div class="form-group">
-											<label class="control-label">src</label><span
-												class="required"> *</span> <input id="iconsrc" type="text"
-												name="iconsrc" class="form-control " />
-										</div>
-									</div>
-									<div class="col-md-3 col-sm-3">
-										<div class="form-group">
-											<label class="control-label">opacity</label> <input
-												id="iconopacity" type="range" name="iconopacity" min="0"
-												max="100" onchange="iconopacityValue.innerText = this.value">
-											<p id="iconopacityValue"></p>
-										</div>
-									</div>
-									<div class="col-md-3 col-sm-3">
-										<div class="form-group">
-											<label class="control-label">rotation</label><span
-												class="required"> *</span> <input id="iconrotation"
-												type="range" name="iconrotation" min="-180" max="180"
-												onchange="iconrotationValue.innerText = this.value">
-											<p id="iconrotationValue"></p>
-										</div>
-									</div>
-								</div>
-								<div class="row main">
-									<div class="col-md-3 col-sm-3">
-										<label class="control-label">anchor</label><br>
-										<div class="col-md-6 col-sm-6" style="padding-left: 0px;">
-											<input id="iconanchor0" type="number" class="form-control"
-												name="iconanchor0">
-										</div>
-										<div class="col-md-6 col-sm-6">
-											<input id="iconanchor1" type="number" class="form-control"
-												name="iconanchor1">
-										</div>
-									</div>
-									<div class="col-md-2 col-sm-2">
-										<div class="form-group">
-											<label class="control-label">anchor Origin</label> <select
-												id="iconanchorOrigin" class="form-control selectpicker">
-												<option value=""></option>
-												<option value="bottom-left">Bottom Left</option>
-												<option value="bottom-right">Bottom Right</option>
-												<option value="top-left">Top Left</option>
-												<option value="top-right">Top Right</option>
-											</select>
-										</div>
-									</div>
-
-									<div class="col-md-2 col-sm-2">
-										<div class="form-group">
-											<label class="control-label">anchor X Units</label><span
-												class="required"> *</span> <input id="iconanchorXUnits"
-												type="number" name="iconanchorXUnits" class="form-control " />
-										</div>
-									</div>
-									<div class="col-md-2 col-sm-2">
-										<div class="form-group">
-											<label class="control-label">anchor Y Units</label><span
-												class="required"> *</span> <input id="iconanchorYUnits"
-												type="number" name="iconanchorYUnits" class="form-control " />
-										</div>
-									</div>
-								</div>
-								<div class="row main">
-									<div class="col-md-3 col-sm-3">
-										<label class="control-label">offset</label><br>
-										<div class="col-md-6 col-sm-6" style="padding-left: 0px;">
-											<input id="iconoffset0" type="number" class="form-control"
-												name="iconoffset0">
-										</div>
-										<div class="col-md-6 col-sm-6">
-											<input id="iconoffset1" type="number" class="form-control"
-												name="iconoffset1">
-										</div>
-									</div>
-
-
-									<div class="col-md-2 col-sm-2">
-										<div class="form-group">
-											<label class="control-label">offset Origin</label> <select
-												id="iconoffsetOrigin" class="form-control selectpicker">
-												<option value=""></option>
-												<option value="bottom-left">Bottom Left</option>
-												<option value="bottom-right">Bottom Right</option>
-												<option value="top-left">Top Left</option>
-												<option value="top-right">Top Right</option>
-											</select>
-										</div>
-									</div>
-								</div>
-								<div class="row main">
-									<div class="col-md-2 col-sm-2">
-										<div class="form-group">
-											<label class="control-label">scale</label><span
-												class="required"> *</span> <input id="iconscale"
-												type="number" name="iconscale" class="form-control " />
-										</div>
-									</div>
-
-									<div class="col-md-2 col-sm-2">
-										<div class="form-group">
-											<label class="control-label">position</label> <select
-												id="iconposition" class="form-control selectpicker">
-												<option value="bottom-left">Bottom Left</option>
-												<option value="bottom-center">Bottom Center</option>
-												<option value="bottom-right">Bottom Right</option>
-												<option value="center-left">Center Left</option>
-												<option value="center-center">Center Center</option>
-												<option value="center-right">Center Right</option>
-												<option value="top-left">Top Left</option>
-												<option value="top-center">Top Center</option>
-												<option value="top-right">Top Right</option>
-											</select>
-										</div>
-									</div>
-									<div class="col-md-3 col-sm-3">
-										<label class="control-label">displacement</label><br>
-										<div class="col-md-6 col-sm-6" style="padding-left: 0px;">
-											<input id="icondisplacement0" type="number"
-												class="form-control" name="icondisplacement0">
-										</div>
-										<div class="col-md-6 col-sm-6">
-											<input id="icondisplacement1" type="number"
-												class="form-control" name="icondisplacement1">
-										</div>
-									</div>
-									<div class="col-md-2 col-sm-2">
-										<div class="form-group">
-											<label class="control-label">color</label><span
-												class="required"> *</span> <input type="color"
-												id="iconcolor" value="#ff0000" style="width: 85%;">
-										</div>
-									</div>
-
-
-									<div class="col-md-2 col-sm-2">
-										<div class="form-group">
-											<label class="control-label">cross Origin</label><span
-												class="required"> *</span> <input id="iconcrossOrigin"
-												type="text" name="iconcrossOrigin" maxlength="100"
-												class="form-control " />
-										</div>
-									</div>
-									<div class="col-md-3 col-sm-3">
-										<label class="control-label">size</label><br>
-										<div class="col-md-6 col-sm-6" style="padding-left: 0px;">
-											<input id="iconsize0" type="number" class="form-control"
-												name="iconsize0" min="0">
-										</div>
-										<div class="col-md-6 col-sm-6">
-											<input id="iconsize1" type="number" class="form-control"
-												name="iconsize1" min="0">
-										</div>
-									</div>
-
-								</div>
-
-							</div>
+						
 						</div>
 
 					</div>
@@ -961,8 +772,10 @@
 <footer th:include="fragments/footer::#footerFragment"
 	class="page-footer"> </footer>
 
-<!-- CORE CONTROLLERS -->
-
+ 
+	<!-- CORE CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 
 <!-- TEMPLATE CONTROLLER  -->
 <script th:src="@{/static/js/pages/mapsStyleCreate.js}"></script>
@@ -980,7 +793,9 @@
 <!-- PLUGINS -->
 <script
 	th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
-
+	
+<script
+	th:src="@{/static/vendor/coloris/coloris.min.js}"></script>
 <!-- INPUTMASK -->
 <script
 	th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
@@ -1008,7 +823,22 @@
 		$( document ).ready(function() {
 		handleTabsChange();
 		
-		
+	 Coloris({el: '.coloris'});
+     Coloris.setInstance('.colorisfull', {
+      theme: 'pill',
+      themeMode: 'light',
+      formatToggle: true,
+      closeButton: true,
+      clearButton: true,
+      swatches: [
+        '#067bc2',
+        '#84bcda',
+        '#80e377',
+        '#ecc30b',
+        '#f37748',
+        '#d56062'
+      ]
+    });
 		});
 	// ]]>
 	

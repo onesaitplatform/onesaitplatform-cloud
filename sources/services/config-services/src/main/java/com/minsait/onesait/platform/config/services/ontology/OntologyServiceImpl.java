@@ -44,6 +44,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonschema.core.report.ProcessingMessage;
@@ -1010,7 +1011,7 @@ public class OntologyServiceImpl implements OntologyService {
 			}
 		}
 		// add Context to fields for query
-		if (!context.equals("")) {
+		if (!context.equals("") && ontology.getRtdbDatasource()!=RtdbDatasource.TIMESCALE) {
 			final Map<String, String> fieldsForQuery = new TreeMap<>();
 			for (final Map.Entry<String, String> field : fields.entrySet()) {
 				final String key = field.getKey();
@@ -1246,7 +1247,7 @@ public class OntologyServiceImpl implements OntologyService {
 			boolean hasDocuments) {
 		ontologyRepository.findById(ontology.getId()).ifPresent(o -> {
 			if (hasDocuments) {
-				ontologyDataService.checkSameSchema(o.getJsonSchema(), ontology.getJsonSchema());
+				ontologyDataService.checkRequiredFields(o.getJsonSchema(), ontology.getJsonSchema());
 			}
 			ontology.setCreatedAt(o.getCreatedAt());
 			ontology.setPartitionKey(o.getPartitionKey());
@@ -1341,7 +1342,8 @@ public class OntologyServiceImpl implements OntologyService {
 					createVirtualOntology(ontology, config.getDatasource(), config.getDatasourceTableName(),
 							config.getDatasourceDatabase(), config.getDatasourceSchema(), config.getObjectId(),
 							config.getObjectGeometry());
-				} else if (ontology.getRtdbDatasource().equals(RtdbDatasource.ELASTIC_SEARCH) || ontology.getRtdbDatasource().equals(RtdbDatasource.OPEN_SEARCH)) {
+				} else if (ontology.getRtdbDatasource().equals(RtdbDatasource.ELASTIC_SEARCH)
+						|| ontology.getRtdbDatasource().equals(RtdbDatasource.OPEN_SEARCH)) {
 					createElasticOntology(ontology, config);
 				} else if (ontology.getRtdbDatasource().equals(RtdbDatasource.PRESTO)) {
 					createPrestoOntology(ontology, VirtualDatasourceType.PRESTO.toString(),
@@ -2363,12 +2365,18 @@ public class OntologyServiceImpl implements OntologyService {
 	}
 
 	@Override
-	public Ontology getOntologyByIdForDelete(String ontologyId, String sessionUserId) {
+	public Ontology getOntologyByIdForDelete(String ontologyId, String sessionUserId) throws JsonProcessingException {
 		final Ontology ontology = ontologyRepository.findById(ontologyId).orElse(null);
 		final User sessionUser = userService.getUser(sessionUserId);
 		if (resourceService.isResourceSharedInAnyProject(ontology)) {
+			List<String> projects = new ArrayList<>();
+			resourceService.getProjectsByResource(ontology).forEach(pra -> {
+				if (!projects.contains(pra.getProject().getIdentification()))
+					projects.add(pra.getProject().getIdentification());
+			});
 			throw new OPResourceServiceException(
-					" This Ontology is shared within a Project, revoke access from project prior to deleting");
+					" This Ontology is shared within the Projects: " + new ObjectMapper().writeValueAsString(projects)
+							+ " , revoke access from projects prior to deleting");
 		}
 		if (hasUserPermisionForChangeOntology(sessionUser, ontology)) {
 			return ontology;

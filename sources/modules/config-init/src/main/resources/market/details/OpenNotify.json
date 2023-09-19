@@ -1,6 +1,0 @@
-{
-	"title":"Open Notify example",
-	"technologies":"Node-Red",
-	"description":"External API REST Integration using Node-Red flows",
-	"detailedDescription":"This Node-Red Flow includes all interconnection logic to connect to a External API REST.\n\n For more detail: [**FlowEngine_tutorial**] (https://onesaitplatform.atlassian.net/wiki/spaces/OP/pages/147062790/FlowEngine+ES+C+mo+disponibilizar+un+servicio+externo+como+una+API+del+Flow+Engine)"
-}

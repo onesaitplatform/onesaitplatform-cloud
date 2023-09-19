@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.minsait.onesait.platform</groupId>
+		<artifactId>onesaitplatform-parent</artifactId>
+		<version>${revision}</version>
+		<relativePath>../../..</relativePath>
+	</parent>		
+	<artifactId>command-executor-library</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>command-executor-library</name>
+	<description>Command Executor Library</description>
+
+	<properties>
+        <license.dir>${project.parent.basedir}</license.dir>
+	</properties>	
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>com.jcraft</groupId>
+		    <artifactId>jsch</artifactId>
+		    <version>0.1.55</version>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
+	</dependencies>
+
+	<profiles>
+	    <profile>
+	      <id>releases</id>
+	      <activation>
+		      <activeByDefault>false</activeByDefault>
+	      </activation>      
+	      <distributionManagement>
+				<repository>
+					<id>releases</id>
+					<url>https://nexus.onesaitplatform.com/nexus/content/repositories/releases/</url>
+				</repository>	      
+	      </distributionManagement>
+	    </profile>
+	    
+	    <profile>
+	      <id>snapshots</id>
+	      <activation>
+		      <activeByDefault>false</activeByDefault>
+	      </activation>      
+	      <distributionManagement>
+				<repository>
+					<id>snapshots</id>
+					<url>https://nexus.onesaitplatform.com/nexus/content/repositories/snapshots/</url>
+				</repository>	      
+	      </distributionManagement>
+	    </profile>	    
+	</profiles>	
+	
+</project>

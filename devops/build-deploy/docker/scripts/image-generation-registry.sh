@@ -35,7 +35,7 @@ buildImageSB2()
 	echo "Docker image generation for onesaitplatform module: "$2
 	cd $1/docker
 	cp $1/target/*.jar $1/docker/
-	docker build -t $USERNAME/$2:$3 .
+	docker build --network host -t $USERNAME/$2:$3 .
 	rm $1/docker/*.jar
 }
 
@@ -43,7 +43,7 @@ buildImageKeycloakManager(){
 	echo "Docker image generation for onesaitplatform module: "$2
 	cd $1/docker
 	cp $1/target/*.jar $1/docker/
-	docker build -t $USERNAME/$2:$3 .
+	docker build --network host -t $USERNAME/$2:$3 .
 	rm $1/docker/*.jar
 }
 buildImageTelegraf()
@@ -82,13 +82,21 @@ buildCas(){
 }
 
 buildKeycloakInfra(){
+	echo "Building default MariaDB image"
 	cd $1/onesaitplatform-keycloak-storage-provider
-	mvn package
-	cp target/onesaitplatform-keycloak-storage-provider.jar $1/server/
+	cp onesaitplatform-keycloak-storage-provider.jar $1/server/
 	cd $1/server
 	docker build -t $USERNAME/keycloak:$2 .
 	rm onesaitplatform-keycloak-storage-provider.jar
-
+	cd $1/onesaitplatform-keycloak-storage-provider
+	rm onesaitplatform-keycloak-storage-provider.jar
+	echo "Building PostgreSQL image"
+	cp onesaitplatform-keycloak-storage-provider-psql.jar $1/server/
+	cd $1/server
+	docker build --no-cache -t $USERNAME/keycloak:$2-postgres .
+	rm onesaitplatform-keycloak-storage-provider-psql.jar
+	cd $1/onesaitplatform-keycloak-storage-provider
+	rm onesaitplatform-keycloak-storage-provider-psql.jar
 }
 
 buildPrestoInfra() {
@@ -101,7 +109,7 @@ buildPrestoInfra() {
 buildMLFlow()
 {
 	echo "MLFlow image generation with Docker CLI: "
-	docker build --squash -t $USERNAME/modelsmanager:$1 .
+	docker build --squash --network host -t $USERNAME/modelsmanager:$1 .
 }
 
 buildConfigDB()
@@ -133,37 +141,37 @@ buildSchedulerDB()
 buildRealTimeDB()
 {
 	echo "RealTimeDB image generation with Docker CLI: "
-	docker build -t $USERNAME/realtimedb:$1 .
+	docker build --network host -t $USERNAME/realtimedb:$1 .
 
 	echo "RealTimeDB image generation with Docker CLI: - No Auth"
-	docker build -t $USERNAME/realtimedb:$1-noauth -f Dockerfile.noauth .
+	docker build --network host -t $USERNAME/realtimedb:$1-noauth -f Dockerfile.noauth .
 }
 
 buildRealTimeDB40()
 {
 	echo "RealTimeDB image generation with Docker CLI: "
-	docker build -t $USERNAME/realtimedb:$1 .
+	docker build --network host -t $USERNAME/realtimedb:$1 .
 
 	echo "RealTimeDB image generation with Docker CLI: - No Auth"
-	docker build -t $USERNAME/realtimedb:$1-noauth -f Dockerfile.noauth .
+	docker build --network host -t $USERNAME/realtimedb:$1-noauth -f Dockerfile.noauth .
 }
 
 buildRealTimeDB50()
 {
 	echo "RealTimeDB image generation with Docker CLI: "
-	docker build -t $USERNAME/realtimedb:$1 .
+	docker build --network host -t $USERNAME/realtimedb:$1 .
 
 	echo "RealTimeDB image generation with Docker CLI: - No Auth"
-	docker build -t $USERNAME/realtimedb:$1-noauth -f Dockerfile.noauth .
+	docker build --network host -t $USERNAME/realtimedb:$1-noauth -f Dockerfile.noauth .
 }
 
 buildRealTimeDB36()
 {
 	echo "RealTimeDB image generation with Docker CLI: "
-	docker build -t $USERNAME/realtimedb:$1 .
+	docker build --network host -t $USERNAME/realtimedb:$1 .
 
 	echo "RealTimeDB image generation with Docker CLI: - No Auth"
-	docker build -t $USERNAME/realtimedb:$1-noauth -f Dockerfile.noauth .
+	docker build --network host -t $USERNAME/realtimedb:$1-noauth -f Dockerfile.noauth .
 }
 
 buildMongoExpress()
@@ -181,14 +189,20 @@ buildElasticSearchDB()
 buildAuditDB()
 {
 	echo "Audit database image generation with Docker CLI: "
-	docker build --squash -t $USERNAME/auditdb:$1 .
+	docker build --network host --squash -t $USERNAME/auditdb:$1 .
+}
+
+buildOpenSearch()
+{
+	echo "Open Search database image generation with Docker CLI: "
+	docker build --network host --squash -t $USERNAME/auditdb:$1 .
 }
 
 buildKafka()
 {
 	echo "KAFKA image generation with Docker CLI: "
 	cp $homepath/../../../../sources/libraries/security/kafka-login/target/*.jar .
-	docker build --squash -t $USERNAME/kafka-secured:$1 .
+	docker build --network host --squash -t $USERNAME/kafka-secured:$1 .
 	rm onesaitplatform-kafka-login*.jar
 }
 
@@ -196,14 +210,14 @@ buildZookeeper()
 {
 	echo "ZOOKEEPER image generation with Docker CLI: "
 	cp $homepath/../../../../sources/libraries/security/kafka-login/target/*.jar .
-	docker build --squash -t $USERNAME/zookeeper-secured:$1 .
+	docker build --network host --squash -t $USERNAME/zookeeper-secured:$1 .
 	rm onesaitplatform-kafka-login*.jar
 }
 
 buildBurrow()
 {
 	echo "Burrow Kafka monitoring image generation with Docker CLI: "
-	docker build -t $USERNAME/burrow:$1 .
+	docker build --network host -t $USERNAME/burrow:$1 .
 }
 
 buildKsql()
@@ -264,7 +278,7 @@ buildDynamicLB()
 buildLoadBalancer()
 {
 	echo "Load Balancer image generation with Docker CLI: "
-	docker build -t $USERNAME/loadbalancer:$1 .
+	docker build --network host -t $USERNAME/loadbalancer:$1 .
 
 }
 
@@ -336,10 +350,22 @@ buildDataCleaner()
     cp -r $homepath/../../../../tools/OpenRefine/3.4 $homepath/../../../../devops/build-deploy/docker/dockerfiles/data-cleaner/OpenRefine34
 
 	echo "DataCleaner image generation with Docker CLI: "
-	docker build -t $USERNAME/data-cleaner:$1 .
+	docker build --network host -t $USERNAME/data-cleaner:$1 .
 
 	echo "Cleaning OpenRefine sources"
 	rm -rf $homepath/../../../../devops/build-deploy/docker/dockerfiles/data-cleaner/OpenRefine34
+}
+
+buildDataCleaner372()
+{
+    echo "Copying OpenRefine sources to target directory"
+    cp -r $homepath/../../../../tools/OpenRefine/3.7.2 $homepath/../../../../devops/build-deploy/docker/dockerfiles/data-cleaner-372/OpenRefine372
+
+	echo "DataCleaner image generation with Docker CLI: "
+	docker build --network host -t $USERNAME/data-cleaner:$1 .
+
+	echo "Cleaning OpenRefine sources"
+	rm -rf $homepath/../../../../devops/build-deploy/docker/dockerfiles/data-cleaner-372/OpenRefine372
 }
 
 buildLogCentralizer()
@@ -510,8 +536,8 @@ buildDataLabeling()
     cp  $homepath/../../../../devops/build-deploy/docker/dockerfiles/datalabeling/Dockerfile $homepath/../../../../devops/build-deploy/docker/dockerfiles/datalabeling/label-studio/
     echo "DataLabeling image generation with Docker CLI: "
     cd $homepath/../dockerfiles/datalabeling/label-studio/
-    docker build -t $USERNAME/datalabeling:$1 .
-    cd $homepath/../dockerfiles/datalabeling	
+    docker build --network host -t $USERNAME/datalabeling:$1 .
+    cd $homepath/../dockerfiles/datalabeling
     echo "Cleaning DataLabeling sources"
     rm -rf $homepath/../../../../devops/build-deploy/docker/dockerfiles/datalabeling/label-studio
 }
@@ -743,6 +769,11 @@ if [[ "$PERSISTENCE_REALTIMEDB_50" = true && "$(docker images -q $USERNAME/realt
 	buildRealTimeDB50 $PERSISTENCE_TAG
 fi
 
+if [[ "$PERSISTENCE_REALTIMEDB_60" = true && "$(docker images -q $USERNAME/realtimedb:6.0 2> /dev/null)" == "" ]]; then
+        cd $homepath/../dockerfiles/realtimedb60
+        buildRealTimeDB $PERSISTENCE_TAG
+fi
+
 if [[ "$PERSISTENCE_REALTIMEDB_36" = true && "$(docker images -q $USERNAME/realtimedb:36 2> /dev/null)" == "" ]]; then
 	cd $homepath/../dockerfiles/realtimedb36
 	buildRealTimeDB36 $PERSISTENCE_TAG
@@ -756,6 +787,11 @@ fi
 if [[ "$PERSISTENCE_AUDITOPDISTRO" = true && "$(docker images -q $USERNAME/auditdb 2> /dev/null)" == "" ]]; then
 	cd $homepath/../dockerfiles/opendistro
 	buildAuditDB $PERSISTENCE_TAG
+fi
+
+if [[ "$PERSISTENCE_OPENSEARCH" = true && "$(docker images -q $USERNAME/auditdb 2> /dev/null)" == "" ]]; then
+	cd $homepath/../dockerfiles/opensearch
+	buildOpenSearch $PERSISTENCE_TAG
 fi
 
 if [[ "$PERSISTENCE_KAFKA" = true && "$(docker images -q $USERNAME/kafka-secured 2> /dev/null)" == "" ]]; then
@@ -869,6 +905,11 @@ if [[ "$INFRA_STREAMSETS323" = true && "$(docker images -q $USERNAME/streamsets 
         buildStreamsets $INFRA_TAG
 fi
 
+if [[ "$INFRA_STREAMSETS3231" = true && "$(docker images -q $USERNAME/streamsets 2> /dev/null)" == "" ]]; then
+        cd $homepath/../dockerfiles/streamsets3231
+        buildStreamsets $INFRA_TAG
+fi
+
 if [[ "$INFRA_DASHBOARDEXPORTER" = true && "$(docker images -q $USERNAME/dashboardexporter 2> /dev/null)" == "" ]]; then
 	cd $homepath/../dockerfiles/dashboardexporter
 	buildDashboardExporter $INFRA_TAG
@@ -918,6 +959,11 @@ if [[ "$INFRA_DATACLEANER" = true && "$(docker images -q $USERNAME/data-cleaner 
     buildDataCleaner $INFRA_TAG
 fi
 
+if [[ "$INFRA_DATACLEANER372" = true && "$(docker images -q $USERNAME/data-cleaner 2> /dev/null)" == "" ]]; then
+	cd $homepath/../dockerfiles/data-cleaner-372
+    buildDataCleaner372 $INFRA_TAG
+fi
+
 if [[ "$INFRA_LOGCENTRALIZER" = true && "$(docker images -q $USERNAME/data-cleaner 2> /dev/null)" == "" ]]; then
 	cd $homepath/../dockerfiles/log-centralizer
     buildLogCentralizer $INFRA_TAG
@@ -946,11 +992,11 @@ if [[ "$INFRA_MLFLOW" = true && "$(docker images -q $USERNAME/modelsmanager 2> /
 	buildMLFlow $INFRA_TAG
 fi
 
-if [[ "$INFRA_DATALABELING" = true && "$(docker images -q $USERNAME/modelsmanager 2> /dev/null)" == "" ]]; then	
+if [[ "$INFRA_DATALABELING" = true && "$(docker images -q $USERNAME/modelsmanager 2> /dev/null)" == "" ]]; then
         cd $homepath/../dockerfiles/datalabeling
         buildDataLabeling $INFRA_TAG
-	
-	
+
+
 fi
 
 echo "Docker images successfully generated!"
@@ -963,6 +1009,7 @@ if [ "$PUSH2GCPREGISTRY" = true ]; then
 	pushImage2GCPRegistry realtimedb $PERSISTENCE_TAG
 	pushImage2GCPRegistry realtimedb $PERSISTENCE_TAG-noauth
 	pushImage2GCPRegistry elasticdb $PERSISTENCE_TAG
+	pushImage2GCPRegistry opensearch $PERSISTENCE_TAG
 	pushImage2GCPRegistry zookeeper-secured $PERSISTENCE_TAG
 	pushImage2GCPRegistry kafka-secured $PERSISTENCE_TAG
 	pushImage2GCPRegistry ksql-server $PERSISTENCE_TAG
@@ -1016,6 +1063,7 @@ if [ "$PUSH2GCPREGISTRY" = true ]; then
 	pushImage2GCPRegistry data-cleaner $INFRA_TAG
 	pushImage2GCPRegistry log-centralizer $INFRA_TAG
 	pushImage2GCPRegistry keycloak $INFRA_TAG
+	pushImage2GCPRegistry keycloak $INFRA_TAG-postgres
 	pushImage2GCPRegistry presto-server $INFRA_TAG
 	pushImage2GCPRegistry presto-metastore-server $INFRA_TAG
 	pushImage2GCPRegistry modelsmanager $INFRA_TAG
@@ -1031,6 +1079,7 @@ if [ "$PUSH2DOCKERHUBREGISTRY" = true ]; then
 	pushImage2Registry realtimedb $PERSISTENCE_TAG-noauth
 	pushImage2Registry elasticdb $PERSISTENCE_TAG
 	pushImage2Registry auditdb $PERSISTENCE_TAG
+	pushImage2Registry opensearch $PERSISTENCE_TAG
 	pushImage2Registry zookeeper-secured $PERSISTENCE_TAG
 	pushImage2Registry kafka-secured $PERSISTENCE_TAG
 	pushImage2Registry ksql-server $PERSISTENCE_TAG
@@ -1086,6 +1135,7 @@ if [ "$PUSH2DOCKERHUBREGISTRY" = true ]; then
 	pushImage2Registry jdbc4datahub $INFRA_TAG
 	pushImage2Registry data-cleaner $INFRA_TAG
 	pushImage2Registry keycloak $INFRA_TAG
+	pushImage2Registry keycloak $INFRA_TAG-postgres
 	pushImage2Registry presto-server $INFRA_TAG
 	pushImage2Registry presto-metastore-server $INFRA_TAG
 	pushImage2Registry modelsmanager $INFRA_TAG
@@ -1101,6 +1151,7 @@ if [ "$PUSH2PRIVREGISTRY" = true ]; then
 	pushImage2Registry realtimedb $PERSISTENCE_TAG-noauth $PRIVATE_REGISTRY/
 	pushImage2Registry elasticdb $PERSISTENCE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry auditdb $PERSISTENCE_TAG $PRIVATE_REGISTRY/
+	pushImage2Registry opensearch $PERSISTENCE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry zookeeper-secured $PERSISTENCE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry kafka-secured $PERSISTENCE_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry ksql-server $PERSISTENCE_TAG $PRIVATE_REGISTRY/
@@ -1158,6 +1209,7 @@ if [ "$PUSH2PRIVREGISTRY" = true ]; then
 	pushImage2Registry log-centralizer $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry agent-metric-collector $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry keycloak $INFRA_TAG $PRIVATE_REGISTRY/
+	pushImage2Registry keycloak $INFRA_TAG-postgres $PRIVATE_REGISTRY/
 	pushImage2Registry presto-server $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry presto-metastore-server $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry modelsmanager $INFRA_TAG $PRIVATE_REGISTRY/

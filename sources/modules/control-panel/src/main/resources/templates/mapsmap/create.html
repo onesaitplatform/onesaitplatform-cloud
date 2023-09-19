@@ -307,8 +307,15 @@
 											</select>
 										</div>
 									</div>
-
-									<div class="col-md-3 col-sm-2">
+									<div class="col-md-3 col-sm-3">
+										<div class="form-group">
+											<label class="control-label">Opacity</label> <input
+												id="opacity" type="range" name="opacity" min="0" max="1"
+												step="0.01" onchange="opacityValue.innerText = this.value">
+											<p id="opacityValue"></p>
+										</div>
+									</div>
+									<div class="col-md-3 col-sm-2" style="display: none;">
 										<div class="form-group">
 											<label class="control-label">Z Index</label> <input  disabled="disabled"
 												id="zIndex" class="form-control" type="number" name="zIndex">
@@ -341,14 +348,7 @@
 										</div>
 									</div>
 
-									<div class="col-md-3 col-sm-3">
-										<div class="form-group">
-											<label class="control-label">Opacity</label> <input
-												id="opacity" type="range" name="opacity" min="0" max="1"
-												step="0.01" onchange="opacityValue.innerText = this.value">
-											<p id="opacityValue"></p>
-										</div>
-									</div>
+									
 								</div>
 								<div class="row main">
 									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
@@ -385,10 +385,16 @@
 									<div class="col-md-2 col-sm-2">
 										<div class="form-group">
 											<label class="control-label">Projection</label> <select
-												id="optionViewProjection" disabled="disabled"
-												class="form-control selectpicker">
-												<option value="EPSG:4326">EPSG:4326</option>
-												<option value="EPSG:3857">EPSG:3857</option>
+												id="optionViewProjection"  
+												class="form-control selectpicker" editable="true">
+												<option value="EPSG:4326">WGS84 (EPSG:4326)</option>
+												<option value="EPSG:3857">WGS84-PseudoMercator (EPSG:3857)</option>												
+												<option value="EPSG:25828">ETRS89 UTM 28N (EPSG:25828)</option>
+												<option value="EPSG:25829">ETRS89 UTM 29N  (EPSG:25829)</option>
+												<option value="EPSG:25830">ETRS89 UTM 30N (EPSG:25830))</option>
+												<option value="EPSG:25831">ETRS89 UTM 31N (EPSG:25831)</option>
+												<option value="EPSG:4230">ED50 (EPSG:4230)</option>
+												<option value="EPSG:4258">ETRS89 (EPSG:4258)</option>
 											</select>
 										</div>
 									</div>
@@ -470,17 +476,15 @@
 										<div class="btn-group btn-group-xs" role="group">
 											<button type="button"
 												class="btn btn-primary btn-primary-save" id="button2"
+												th:title="#{gen.add}"
 												onclick="addLayerRow()">
 												<span>Add</span>
 											</button>
-											<button type="button"
-												class="btn btn-primary button-plus-create"
-												onclick="editLayer($('#selectLayer option:selected').attr('id'),1)">
-												<a><i class="icon-edit" style="color: white;"></i></a>
-											</button>
+											 
 											<button type="button"
 													class="btn btn-primary button-plus-create"
-													onclick="updateLayerList()">
+													onclick="updateLayerList()"
+													th:title="#{mapsproject.update.list}">
 													<a><i class="icon-reload" style="color: white;"></i></a>
 												</button>
 										 
@@ -542,7 +546,9 @@
 <footer th:include="fragments/footer::#footerFragment"
 	class="page-footer"> </footer>
 
-<!-- CORE CONTROLLERS -->
+	<!-- CORE CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 
 
 <!-- TEMPLATE CONTROLLER  -->
@@ -708,7 +714,8 @@
 	  
 		var updateLayerList = function(){
 		$.get("/controlpanel/mapslayer/getLayersList/").done(
-						function(data){					
+						function(data){	
+							  mapslayers = data;				
 							if(data && data.length>0 ){
 								$('#selectLayer').empty();
 								for(var i=0;i<data.length;i++){
@@ -723,9 +730,77 @@
 		 
 		$( document ).ready(function() {
 		handleTabsChange();
-		 
+		var content = "<input type='text' class='bss-input' onKeyDown='event.stopPropagation();' onKeyPress='addSelectInpKeyPress(this,event)' onClick='event.stopPropagation()' placeholder='Add item'> <span class='glyphicon glyphicon-plus addnewicon' onClick='addSelectItem(this,event,1);'></span>";
+ 
+  var divider = $('<option/>')
+          .addClass('dropdown-divider')
+          .data('divider', true);
+          
+ 
+  var addoption = $('<option/>', {class: 'addItem'})
+          .data('content', content)
+      
+  $('#optionViewProjection')
+         // .append(divider)
+          .prepend(addoption)
+          .selectpicker();
 		
 		});
+		
+		
+		
+		 
+function appendInput(){
+  var content = "<input type='text' class='bss-input' onKeyDown='event.stopPropagation();' onKeyPress='addSelectInpKeyPress(this,event)' onClick='event.stopPropagation()' placeholder='Add item'> <span class='bx bx-plus addnewicon' onClick='addSelectItem(this,event,1);'></span>";
+  var inputEle = $('.addItem.dropdown-item span.text');
+  $('.addItem.dropdown-item span.text').each(function(index, el) {
+    if ($(this).text() == '') {
+      $(this).html(content);
+    }
+  });
+}
+
+$('body').on('click', '.dropdown-toggle', function(event) {
+  event.preventDefault();
+  / Act on the event /
+  appendInput();
+});
+ 
+function addSelectItem(t,ev)
+{
+   ev.stopPropagation();
+   
+   var bs = $(t).closest('.bootstrap-select')
+   var txt=bs.find('.bss-input').val().replace(/[|]/g,"");
+   var txt=$(t).prev().val().replace(/[|]/g,"");
+   if ($.trim(txt)=='') return;
+   
+   // Changed from previous version to cater to new
+   // layout used by bootstrap-select.
+   var p=bs.find('select');
+   var o=$('option', p).eq(-2);
+   o.before( $("<option>", { "selected": false, "text": txt}) );
+   p.selectpicker('refresh');
+	appendInput();
+}
+ 
+function addSelectInpKeyPress(t,ev)
+{
+   ev.stopPropagation();
+ 
+   // do not allow pipe character
+   if (ev.which==124) ev.preventDefault();
+ 
+   // enter character adds the option
+   if (ev.which==13)
+   {
+      ev.preventDefault();
+      addSelectItem($(t).next(),ev);
+   }
+}
+		
+		
+		
 	// ]]>
 	
 	

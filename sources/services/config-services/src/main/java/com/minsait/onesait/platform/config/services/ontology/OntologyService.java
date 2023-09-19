@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.dto.OntologyForList;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
@@ -213,7 +214,7 @@ public interface OntologyService {
 
 	OntologyPresto getOntologyPrestoByOntologyId(Ontology ontology);
 
-	Ontology getOntologyByIdForDelete(String ontologyId, String sessionUserId);
+	Ontology getOntologyByIdForDelete(String ontologyId, String sessionUserId) throws JsonProcessingException;
 
 	Map<String, OntologyFieldDTO> getOntologyFieldsAndDesc(String identification, String sessionUserId)
 			throws IOException;

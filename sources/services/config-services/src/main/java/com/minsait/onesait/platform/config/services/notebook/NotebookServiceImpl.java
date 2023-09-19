@@ -49,6 +49,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.minsait.onesait.platform.config.dto.NotebookForList;
+import com.minsait.onesait.platform.config.dto.NotebookForListExt;
 import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.model.NotebookUserAccess;
@@ -59,6 +60,7 @@ import com.minsait.onesait.platform.config.repository.NotebookRepository;
 import com.minsait.onesait.platform.config.repository.NotebookUserAccessRepository;
 import com.minsait.onesait.platform.config.repository.NotebookUserAccessTypeRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
+import com.minsait.onesait.platform.config.services.entity.cast.EntitiesCast;
 import com.minsait.onesait.platform.config.services.exceptions.NotebookServiceException;
 import com.minsait.onesait.platform.config.services.exceptions.NotebookServiceException.Error;
 import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
@@ -138,6 +140,7 @@ public class NotebookServiceImpl implements NotebookService {
 	private static final String USER2 = "User ";
 	private static final String UNABLE_TO_GET_INTERPRETER = "Unable to get interpreter ";
 	private static final String UNABLE_TO_GET_DEFAULT_INTERPRETER = "Unable to get default interpreter";
+	private static final String EDIT_ACCESSTYPE = "EDIT";
 
 	private String encryptRestUserpass() {
 		String key = configuration.getRestUsername() + ":" + configuration.getRestPass();
@@ -691,16 +694,43 @@ public class NotebookServiceImpl implements NotebookService {
 			return notebookRepository.findAllByOrderByIdentificationAsc();
 		}
 	}
+	
+	@Override
+	public List<NotebookForListExt> getNotebooksForListExt(String userId) {
+		final User user = userRepository.findByUserId(userId);
+		final List<NotebookForListExt> notebookForLists;
+		if (userService.isUserAdministrator(user)) {
+			notebookForLists = notebookRepository.findAllNotebookListExt();
+			notebookForLists
+					.stream()
+					.map(nt -> {
+						nt.setAccessType(EDIT_ACCESSTYPE);
+						return nt;
+					})
+					.collect(Collectors.toList());
+		} else {
+			notebookForLists = notebookRepository.findUserNotebookListExt(user);
+		}
+		securityService.setSecurityToInputList(notebookForLists, user, "Notebook");
+		return notebookForLists;
+	}
 
 	@Override
 	public List<NotebookForList> getNotebooksAndByProjects(String userId) {
 		final User user = userRepository.findByUserId(userId);
 		final List<NotebookForList> notebookForLists = notebookRepository.findAllNotebookList();
 		if (user.isAdmin()) {
-			return notebookForLists;
-		} else {
+			return notebookForLists
+					.stream()
+					.map(nt -> {
+						nt.setAccessType(EDIT_ACCESSTYPE);
+						return nt;
+					})
+					.collect(Collectors.toList());
+			}
+		else {
 			securityService.setSecurityToInputList(notebookForLists, user, "Notebook");
-			return notebookForLists.stream().filter(n -> "EDIT".equals(n.getAccessType())).collect(Collectors.toList());
+			return notebookForLists;
 		}
 	}
 
@@ -719,12 +749,24 @@ public class NotebookServiceImpl implements NotebookService {
 		final User user = userRepository.findByUserId(userId);
 		return hasUserPermissionInNotebook(nt, user);
 	}
+	
+	@Override
+	public boolean hasUserPermissionReadInNotebook(Notebook nt, String userId) {
+		final User user = userRepository.findByUserId(userId);
+		return hasUserPermissionReadInNotebook(nt, user);
+	}
+	
+	@Override
+	public boolean hasUserPermissionRunInNotebook(Notebook nt, String userId) {
+		final User user = userRepository.findByUserId(userId);
+		return hasUserPermissionRunInNotebook(nt, user);
+	}
 
 	private boolean hasUserPermissionInNotebook(Notebook nt, User user) {
 		if (userService.isUserAdministrator(user) || nt.getUser().getUserId().equals(user.getUserId())
 				|| nt.isPublic()) {
 			return true;
-		} else { // TO-DO differentiate between access MANAGE/VIEW
+		} else {
 			for (final NotebookUserAccess notebookUserAccess : notebookUserAccessRepository.findByNotebookAndUser(nt,
 					user)) {
 				if (notebookUserAccess.getNotebookUserAccessType().getId().equals("ACCESS-TYPE-1")) {
@@ -732,10 +774,50 @@ public class NotebookServiceImpl implements NotebookService {
 				}
 			}
 			return resourceService.hasAccess(user.getUserId(), nt.getId(),
-					ProjectResourceAccessParent.ResourceAccessType.VIEW);
+					ProjectResourceAccessParent.ResourceAccessType.MANAGE);
 		}
 	}
 
+	private boolean hasUserPermissionReadInNotebook(Notebook nt, User user) {
+		if (userService.isUserAdministrator(user) || nt.getUser().getUserId().equals(user.getUserId())
+				|| nt.isPublic()) {
+			return true;
+		} else {
+			for (final NotebookUserAccess notebookUserAccess : notebookUserAccessRepository.findByNotebookAndUser(nt,
+					user)) {
+				if (notebookUserAccess.getNotebookUserAccessType().getId().equals("ACCESS-TYPE-1")) {
+					return true;
+				}
+				if (notebookUserAccess.getNotebookUserAccessType().getId().equals("ACCESS-TYPE-2")) {
+					return true;
+				}
+				if (notebookUserAccess.getNotebookUserAccessType().getId().equals("ACCESS-TYPE-3")) {
+					return true;
+				}
+			}
+			return resourceService.hasAccess(user.getUserId(), nt.getId(),
+					ProjectResourceAccessParent.ResourceAccessType.VIEW);
+		}
+	}
+	
+	private boolean hasUserPermissionRunInNotebook(Notebook nt, User user) {
+		if (userService.isUserAdministrator(user) || nt.getUser().getUserId().equals(user.getUserId())) {
+			return true;
+		} else {
+			for (final NotebookUserAccess notebookUserAccess : notebookUserAccessRepository.findByNotebookAndUser(nt,
+					user)) {
+				if (notebookUserAccess.getNotebookUserAccessType().getId().equals("ACCESS-TYPE-1")) {
+					return true;
+				}
+				if (notebookUserAccess.getNotebookUserAccessType().getId().equals("ACCESS-TYPE-3")) {
+					return true;
+				}
+			}
+			return resourceService.hasAccess(user.getUserId(), nt.getId(),
+					ProjectResourceAccessParent.ResourceAccessType.MANAGE);
+		}
+	}
+	
 	@Override
 	public boolean isUserOwnerOfNotebook(String userId, Notebook notebook) {
 		return notebook.getUser().getUserId().equals(userId);
@@ -760,6 +842,24 @@ public class NotebookServiceImpl implements NotebookService {
 		final Notebook nt = notebookRepository.findByIdzep(zeppelinId);
 		if (nt != null) {
 			return this.hasUserPermissionInNotebook(nt, userId);
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean hasUserPermissionReadForNotebook(String zeppelinId, String userId) {
+		final Notebook nt = notebookRepository.findByIdzep(zeppelinId);
+		if (nt != null) {
+			return this.hasUserPermissionReadInNotebook(nt, userId);
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean hasUserPermissionRunForNotebook(String zeppelinId, String userId) {
+		final Notebook nt = notebookRepository.findByIdzep(zeppelinId);
+		if (nt != null) {
+			return this.hasUserPermissionRunInNotebook(nt, userId);
 		}
 		return false;
 	}
@@ -1033,7 +1133,7 @@ public class NotebookServiceImpl implements NotebookService {
 	public String notebookNameByIdZep(String idzep, String userId) {
 
 		final Notebook nt = notebookRepository.findByIdzep(idzep);
-		if (hasUserPermissionInNotebook(nt, userId)) {
+		if (hasUserPermissionReadInNotebook(nt, userId)) {
 			return nt.getIdentification();
 		} else {
 			log.error(PERMISSION_DENIED);

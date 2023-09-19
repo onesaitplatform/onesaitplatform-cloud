@@ -109,6 +109,16 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 		</dependency>
+		<dependency>
+	      <groupId>jakarta.json.bind</groupId>
+	      <artifactId>jakarta.json.bind-api</artifactId>
+	      <version>3.0.0</version>
+	    </dependency>
+		<dependency>
+		    <groupId>jakarta.json</groupId>
+		    <artifactId>jakarta.json-api</artifactId>
+		    <version>2.1.0</version>
+		</dependency>
 
 	</dependencies>
 

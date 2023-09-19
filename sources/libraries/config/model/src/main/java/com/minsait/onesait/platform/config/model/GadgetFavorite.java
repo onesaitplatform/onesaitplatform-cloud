@@ -45,7 +45,7 @@ import lombok.Setter;
 @Configurable
 @Entity
 @Table(name = "GADGET_FAVORITE", uniqueConstraints = @UniqueConstraint(columnNames = { "IDENTIFICATION" }))
-public class GadgetFavorite extends OPResource implements Versionable<GadgetFavorite>{
+public class GadgetFavorite extends OPResource implements Versionable<GadgetFavorite> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -95,6 +95,7 @@ public class GadgetFavorite extends OPResource implements Versionable<GadgetFavo
 			return config;
 		}
 	}
+
 	@JsonSetter("config")
 	public void setConfigJson(Object node) {
 		try {
@@ -104,11 +105,11 @@ public class GadgetFavorite extends OPResource implements Versionable<GadgetFavo
 		}
 	}
 
-
 	@JsonGetter("gadget")
 	public String getGadgetJson() {
-		return gadget == null ? null: gadget.getId();
+		return gadget == null ? null : gadget.getId();
 	}
+
 	@JsonSetter("gadget")
 	public void setGadgetJson(String id) {
 		if (StringUtils.hasText(id)) {
@@ -120,8 +121,9 @@ public class GadgetFavorite extends OPResource implements Versionable<GadgetFavo
 
 	@JsonGetter("gadgetTemplate")
 	public String getGadgetTemplateJson() {
-		return gadgetTemplate == null ? null: gadgetTemplate.getId();
+		return gadgetTemplate == null ? null : gadgetTemplate.getId();
 	}
+
 	@JsonSetter("gadgetTemplate")
 	public void setGadgetTemplateJson(String id) {
 		if (StringUtils.hasText(id)) {
@@ -130,10 +132,12 @@ public class GadgetFavorite extends OPResource implements Versionable<GadgetFavo
 			gadgetTemplate = g;
 		}
 	}
+
 	@JsonGetter("datasource")
 	public String getDatasourceJson() {
-		return datasource == null ? null: datasource.getId();
+		return datasource == null ? null : datasource.getId();
 	}
+
 	@JsonSetter("datasource")
 	public void setDatasourceJson(String id) {
 		if (StringUtils.hasText(id)) {
@@ -150,26 +154,34 @@ public class GadgetFavorite extends OPResource implements Versionable<GadgetFavo
 
 	@Override
 	public Versionable<GadgetFavorite> runExclusions(Map<String, Set<String>> excludedIds, Set<String> excludedUsers) {
-		Versionable<GadgetFavorite> gf =  Versionable.super.runExclusions(excludedIds, excludedUsers);
-		if(gf != null) {
-			if(gadget != null && !CollectionUtils.isEmpty(excludedIds.get(Gadget.class.getSimpleName()))
+		Versionable<GadgetFavorite> gf = Versionable.super.runExclusions(excludedIds, excludedUsers);
+		if (gf != null) {
+			if (gadget != null && !CollectionUtils.isEmpty(excludedIds.get(Gadget.class.getSimpleName()))
 					&& excludedIds.get(Gadget.class.getSimpleName()).contains(gadget.getId())) {
 				addIdToExclusions(this.getClass().getSimpleName(), getId(), excludedIds);
 				gf = null;
 			}
-			if(gadgetTemplate != null && !CollectionUtils.isEmpty(excludedIds.get(GadgetTemplate.class.getSimpleName()))
-					&& excludedIds.get(GadgetTemplate.class.getSimpleName()).contains(gadgetTemplate.getId()) ) {
+			if (gadgetTemplate != null
+					&& !CollectionUtils.isEmpty(excludedIds.get(GadgetTemplate.class.getSimpleName()))
+					&& excludedIds.get(GadgetTemplate.class.getSimpleName()).contains(gadgetTemplate.getId())) {
 				addIdToExclusions(this.getClass().getSimpleName(), getId(), excludedIds);
 				gf = null;
 			}
-			if(datasource != null && !CollectionUtils.isEmpty(excludedIds.get(GadgetDatasource.class.getSimpleName()))
-					&& excludedIds.get(GadgetDatasource.class.getSimpleName()).contains(datasource.getId()) ) {
+			if (datasource != null && !CollectionUtils.isEmpty(excludedIds.get(GadgetDatasource.class.getSimpleName()))
+					&& excludedIds.get(GadgetDatasource.class.getSimpleName()).contains(datasource.getId())) {
 				addIdToExclusions(this.getClass().getSimpleName(), getId(), excludedIds);
 				gf = null;
 			}
 		}
 
 		return gf;
+	}
+
+	@Override
+	public void setOwnerUserId(String userId) {
+		final User u = new User();
+		u.setUserId(userId);
+		setUser(u);
 	}
 
 }

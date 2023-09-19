@@ -55,6 +55,7 @@ public class SecurityServiceImpl implements SecurityService {
 	private static final String SETELEMENTUSERACCESSTYPE = "setAccessType";
 	private static final String EDITSTR = "EDIT";
 	private static final String VIEWSTR = "VIEW";
+	private static final String RUNSTR = "RUN";
 	private static final String METHOD_NOT_FOUND_ERROR = "Security service for {}, user: {}, method not found";
 	private static final String METHOD_ILLEGAL_ACCESS_ERROR = "Security service for {}, user: {}, invoke method illegal access";
 	private static final String METHOD_ILLEGAL_ARGUMENT_ERROR = "Security service for %s, user: %s, invoke method illegal argument";
@@ -185,6 +186,8 @@ public class SecurityServiceImpl implements SecurityService {
 			}
 			if (mratAccessType != null && mratAccessType == ProjectResourceAccess.ResourceAccessType.MANAGE) {
 				return EDITSTR;
+			} else if (meatAccessType != null && meatAccessType.equals(RUNSTR)) {
+				return RUNSTR;
 			} else if ((mratAccessType != null && mratAccessType == ProjectResourceAccess.ResourceAccessType.VIEW)
 					|| (meatAccessType != null && meatAccessType.equals(VIEWSTR))) {
 				return VIEWSTR;

@@ -75,9 +75,9 @@
 			"submenu": [			
 				{
 					"title": {
-						"EN": "My Files",
-						"ES": "Mis Ficheros",
-						"FR": "Mes fichiers"
+						"EN": "Files Management",
+						"ES": "Gestión de Fichero",
+						"FR": "Gestion des fichiers"
 					},
 					"icon": "",
 					"url": "/controlpanel/files/list"
@@ -114,16 +114,15 @@
 				},
 				{
 					"title": {
-						"EN": "My Market",
-						"ES": "Mi Market",
-						"FR": "Mon Marché"
+						"EN": "Bundle Repository",
+						"ES": "Repositorio de Bundles",
+						"FR": "Référentiel du groupées groupé"
 					},
 					"icon": "",
-					"url": "/controlpanel/marketasset/list"
+					"url": "/controlpanel/bundlerepository/list"
 				}
 			]
 		},
-		
 		{
 			"title": {
 				"EN": "OPEN DATA",

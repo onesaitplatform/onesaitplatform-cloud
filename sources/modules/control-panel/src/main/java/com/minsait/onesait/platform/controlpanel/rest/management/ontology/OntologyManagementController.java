@@ -239,7 +239,7 @@ public class OntologyManagementController {
 				return new ResponseEntity<>(USER_IS_NOT_AUTH, HttpStatus.UNAUTHORIZED);
 			}
 
-		} catch (final OntologyServiceException exception) {
+		} catch (final OntologyServiceException | JsonProcessingException exception) {
 			return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 		return new ResponseEntity<>("Ontology deleted successfully", HttpStatus.OK);
@@ -329,7 +329,8 @@ public class OntologyManagementController {
 
 		final Ontology ontology = ontologyDTOConverter.ontologyCreateDTOToOntology(ontologyCreate, user);
 		final OntologyConfiguration ontologyConfig = new OntologyConfiguration();
-		if (ontology.getRtdbDatasource().equals(Ontology.RtdbDatasource.ELASTIC_SEARCH) || ontology.getRtdbDatasource().equals(RtdbDatasource.OPEN_SEARCH)) {
+		if (ontology.getRtdbDatasource().equals(Ontology.RtdbDatasource.ELASTIC_SEARCH)
+				|| ontology.getRtdbDatasource().equals(RtdbDatasource.OPEN_SEARCH)) {
 			ontologyConfig.setAllowsCustomElasticConfig(true);
 			ontologyConfig.setShards(String.valueOf(ontologyCreate.getShards()));
 			ontologyConfig.setReplicas(String.valueOf(ontologyCreate.getReplicas()));
@@ -561,7 +562,7 @@ public class OntologyManagementController {
 			return new ResponseEntity<>(exception.getMessage(), HttpStatus.UNAUTHORIZED);
 		}
 	}
-	
+
 	@Operation(summary = "Create new kpi ontology")
 	@PostMapping(value = { "/kpi" })
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
@@ -629,6 +630,9 @@ public class OntologyManagementController {
 			if (ontologyUpdate.getActive() != null) {
 				ontology.setActive(ontologyUpdate.getActive());
 			}
+			if (ontologyUpdate.getIsPublic() != null) {
+				ontology.setPublic(ontologyUpdate.getIsPublic());;
+			}
 			if (ontologyUpdate.getAllowsCypherFields() != null) {
 				ontology.setAllowsCypherFields(ontologyUpdate.getAllowsCypherFields());
 			}
@@ -637,13 +641,27 @@ public class OntologyManagementController {
 			}
 			if (ontologyUpdate.getRtdbClean() != null) {
 				ontology.setRtdbClean(ontologyUpdate.getRtdbClean());
-				if (ontology.isRtdbClean()) {
-					ontologyUpdate.setRtdbCleanLapse(ontologyUpdate.getRtdbCleanLapse());
-				}
+				
+			}
+			if (ontologyUpdate.getRtdbCleanLapse() != null) {
+				ontology.setRtdbCleanLapse(ontologyUpdate.getRtdbCleanLapse());
 			}
 			if (ontologyUpdate.getRtdbToHdb() != null) {
 				ontology.setRtdbToHdb(ontologyUpdate.getRtdbToHdb());
 			}
+			if (ontologyUpdate.getRtdbToHdbStorage() != null) {
+				ontology.setRtdbToHdbStorage(ontologyUpdate.getRtdbToHdbStorage());
+			}
+			if (ontologyUpdate.getAllowsCreateTopic() != null) {
+				ontology.setAllowsCreateTopic(ontologyUpdate.getAllowsCreateTopic());
+			}
+			if (ontologyUpdate.getAllowsCreateNotificationTopic() != null) {
+				ontology.setAllowsCreateNotificationTopic(ontologyUpdate.getAllowsCreateNotificationTopic());
+			}
+			if (ontologyUpdate.getContextDataEnabled() != null) {
+				ontology.setContextDataEnabled(ontologyUpdate.getContextDataEnabled());
+			}
+			
 			final OntologyConfiguration ontologyConfig = new OntologyConfiguration();
 			try {
 				ontologyService.updateOntology(ontology, utils.getUserId(), ontologyConfig, count > 0 ? true : false);

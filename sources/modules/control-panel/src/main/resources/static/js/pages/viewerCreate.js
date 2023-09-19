@@ -269,7 +269,9 @@ var ViewerCreateController = function() {
 				return this;
 			};
 			
-			loadHTMLBase();
+			if ($("#technology").val()!="") {
+				loadHTMLBase();
+			}
 						
 			// INSERT MODE ACTIONS  (ontologyCreateReg.actionMode = NULL ) 
 			if ( viewerCreateJson.actionMode === null){
@@ -496,7 +498,6 @@ var ViewerCreateController = function() {
 			iframe_doc.open();
 			iframe_doc.write(src);
 			iframe_doc.close();
-			
 		},
 		changeTechology : function(){
 			

@@ -39,6 +39,7 @@ import com.minsait.onesait.platform.config.model.Dashboard;
 import com.minsait.onesait.platform.config.model.DigitalTwinDevice;
 import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.Gadget;
+import com.minsait.onesait.platform.config.model.Microservice;
 import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Pipeline;
@@ -53,6 +54,7 @@ import com.minsait.onesait.platform.config.services.apimanager.ApiManagerService
 import com.minsait.onesait.platform.config.services.dataflow.DataflowService;
 import com.minsait.onesait.platform.config.services.digitaltwin.device.DigitalTwinDeviceService;
 import com.minsait.onesait.platform.config.services.flowdomain.FlowDomainService;
+import com.minsait.onesait.platform.config.services.microservice.MicroserviceService;
 import com.minsait.onesait.platform.config.services.notebook.NotebookService;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyRelation;
 import com.minsait.onesait.platform.config.services.user.UserService;
@@ -78,6 +80,7 @@ public class GraphUtil {
 	private String urlWebProjects;
 	private String urlNotebook;
 	private String urlDataflow;
+	private String urlMicroservice;
 	private static final String GENERIC_USER_NAME = "USER";
 	@Autowired
 	private OntologyRepository ontologyRepository;
@@ -104,6 +107,8 @@ public class GraphUtil {
 	@Autowired
 	private DataflowService dataflowService;
 	@Autowired
+	private MicroserviceService microserviceService;
+	@Autowired
 	private ClientPlatformOntologyRepository clientPlatformOntologyRepo;
 	@Autowired
 	private ApiOperationRepository apiOperationRepository;
@@ -129,6 +134,7 @@ public class GraphUtil {
 		urlWebProjects = url + "/webprojects/";
 		urlNotebook = url + "/notebooks/";
 		urlDataflow = url + "/dataflow/";
+		urlMicroservice = url + "/microservices/";
 
 	}
 
@@ -515,6 +521,32 @@ public class GraphUtil {
 
 	}
 
+	public List<GraphDTO> constructGraphWithMicroservices(List<Microservice> microservices, User user) {
+
+		final List<GraphDTO> arrayLinks = new LinkedList<>();
+		final String name = utils.getMessage("name.microservice", "MICROSERVICES");
+		final String description = utils.getMessage("tooltip_microservices", null);
+
+		if (microservices == null) {
+			User userUtils= userService.getUser(utils.getUserId());
+			microservices = microserviceService.getMicroservices(userUtils);
+		}
+		if (null != user)
+			microservices = microservices.stream().filter(o -> o.getUser().equals(user)).collect(Collectors.toList());
+		try {
+			arrayLinks.add(new GraphDTO(GENERIC_USER_NAME, name, null, urlMicroservice + "list", GENERIC_USER_NAME,
+					"microservices", utils.getUserId(), name, "suit", description, urlMicroservice + CREATE_STR));
+			microservices.forEach(dt -> {
+				arrayLinks.add(new GraphDTO(name, dt.getId(), urlMicroservice + "list",
+						urlMicroservice + "update/" + dt.getId(), name, "microservice", name, dt.getIdentification(),
+						LICENSING_STR, dt.getIdentification()));
+			});
+		} catch (final Exception e) {
+			log.error("An error has ocurred loading graph with dataflows", e);
+		}
+		return arrayLinks;
+	}
+	
 	public List<String> getGadgetIdsFromModel(String modelJson) throws IOException {
 		final List<String> gadgetIds = new LinkedList<>();
 		final ObjectMapper objectMapper = new ObjectMapper();

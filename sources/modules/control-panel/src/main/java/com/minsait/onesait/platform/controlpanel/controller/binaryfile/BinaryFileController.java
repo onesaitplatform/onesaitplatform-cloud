@@ -153,7 +153,7 @@ public class BinaryFileController {
 	}
 
 	@GetMapping(value = { "/list/{redirect}", "/list" })
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_USER')")
 	public String create(Model model, @PathVariable("redirect") Optional<Boolean> redirect) {
 		if (model.asMap().containsKey(MODULE_NOT_ACTIVE_KEY)) {
 			model.addAttribute("message", model.asMap().get(MODULE_NOT_ACTIVE_KEY));
@@ -1224,7 +1224,7 @@ public class BinaryFileController {
 
 		} catch (final Exception e) {
 			log.error("Could not update binary file: {}", e);
-			webUtils.addRedirectMessage("binaryfiles.error", redirectAttributes);
+			webUtils.addRedirectException(e, redirectAttributes);
 			return REDIRECT_GCP_FILES_LIST;
 		}
 

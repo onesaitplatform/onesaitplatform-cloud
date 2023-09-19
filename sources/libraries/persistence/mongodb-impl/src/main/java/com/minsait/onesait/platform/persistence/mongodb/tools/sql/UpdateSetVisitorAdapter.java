@@ -197,7 +197,8 @@ public class UpdateSetVisitorAdapter extends ExpressionVisitorAdapter {
 			value = value.replaceAll("'", "\"").replaceAll("\\\\\"", "\"");
 			if (value.startsWith("\"") && value.endsWith("\""))
 				value = value.substring(0 + 1, value.length() - 1);
-			mapper.readTree(value);
+			if (mapper.readTree(value).isNumber())
+				return false;			
 			return true;
 		} catch (final Exception e) {
 			return false;

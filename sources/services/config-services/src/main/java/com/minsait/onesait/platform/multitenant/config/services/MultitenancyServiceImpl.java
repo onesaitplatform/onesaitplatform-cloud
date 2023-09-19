@@ -299,6 +299,11 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 		});
 	}
 
+	@Override
+	public void replicateUser(String userId, String vertical, String tenant) {
+		getUserOrReplicate(userId, this.verticalRepository.findByName(vertical), tenant);
+	}
+
 	private User getUserOrReplicate(String userId, Vertical vertical, String tenant) {
 		MultitenancyContextHolder.setVerticalSchema(vertical.getSchema());
 		final User user = userService.getUser(userId);
@@ -435,6 +440,23 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 		}
 		return true;
 
+	}
+	
+	@Override
+	public boolean checkCurrentPasword(String userId, String Pass) {
+		
+		int limit = 1;
+		final List<MasterUserHistoric> list = masterUserHistoricRepository.findByMasterUserLastNvalues(userId,
+				limit);
+		final JPAHAS256ConverterCustom converter = new JPAHAS256ConverterCustom();
+		final String newPassConverted = converter.convertToDatabaseColumn(Pass);
+		
+		if (list.get(0).getPassword().equals(newPassConverted)) {
+		return true;
+		}else {
+		return false;
+		}
+		
 	}
 
 	@Override

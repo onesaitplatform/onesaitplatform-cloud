@@ -14,6 +14,8 @@
  */
 package com.minsait.onesait.platform.controlpanel.rest.management.restplanner;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -27,6 +29,7 @@ import org.quartz.CronExpression;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,6 +47,7 @@ import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.restplanner.RestPlannerService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.config.services.usertoken.UserTokenService;
+import com.minsait.onesait.platform.controlpanel.rest.management.client.ClientPlatformManagementController;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.quartz.services.restplanner.RestPlannerQuartzService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
@@ -57,12 +61,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
+@Slf4j
 @Tag(name = "Rest Planner management")
 @RestController
 @RequestMapping("api/restplanner")
+@CrossOrigin(origins = "*")
 public class RestPlannerManagementController {
 
 	@Autowired
@@ -85,10 +92,11 @@ public class RestPlannerManagementController {
 	private static final String ENV = "${ENV}";
 	private static final String ERROR_STR = "error";
 	private static final String STATUS_STR = "status";
+	final DateFormat dateFormat = new SimpleDateFormat("dd/MM/YYYY");
 
 	@Operation(summary = "List rest planners")
 	@GetMapping(value = "/")
-	public ResponseEntity<?> listRestPlanners(@RequestHeader("Authorization") String authorization) {
+	public ResponseEntity<?> listRestPlanners() {
 		try {
 
 			final String userId = utils.getUserId();
@@ -99,21 +107,27 @@ public class RestPlannerManagementController {
 
 			JSONArray responseInfo = new JSONArray();
 			List<RestPlanner> restPlanners;
-			if (userService.isUserAdministrator(user))
+			if (userService.isUserAdministrator(user)) {
 				restPlanners = restPlannerService.getAllRestPlanners();
-			else
+			} else {
 				restPlanners = restPlannerService.getAllRestPlannersByUser(userId);
-
-			Iterator<RestPlanner> i1 = restPlanners.iterator();
-			while (i1.hasNext()) {
-				RestPlanner currentRestPlanner = i1.next();
+			}
+			
+			for (RestPlanner restPlanner : restPlanners) {
 				JSONObject jsonAccess = new JSONObject();
-				jsonAccess.put("identification", currentRestPlanner.getIdentification());
-				jsonAccess.put("description", currentRestPlanner.getDescription());
-				jsonAccess.put("active", currentRestPlanner.isActive());
-				jsonAccess.put("method", currentRestPlanner.getMethod());
-				jsonAccess.put("URL", currentRestPlanner.getUrl());
-				jsonAccess.put("user", currentRestPlanner.getUser());
+				jsonAccess.put("identification", restPlanner.getIdentification());
+				jsonAccess.put("description", restPlanner.getDescription());
+				jsonAccess.put("active", restPlanner.isActive());
+				jsonAccess.put("method", restPlanner.getMethod());
+				jsonAccess.put("URL", restPlanner.getUrl());
+				jsonAccess.put("CRON", restPlanner.getCron());
+				jsonAccess.put("user", restPlanner.getUser().getUserId());
+				jsonAccess.put("createdAt", dateFormat.format(restPlanner.getCreatedAt()));
+				jsonAccess.put("updatedAt", dateFormat.format(restPlanner.getUpdatedAt()));
+				jsonAccess.put("dateFrom", restPlanner.getDateFrom());
+				jsonAccess.put("dateTo", restPlanner.getDateTo());
+				jsonAccess.put("headers", restPlanner.getHeaders());
+				jsonAccess.put("body", restPlanner.getBody());
 				responseInfo.put(jsonAccess);
 			}
 
@@ -127,8 +141,7 @@ public class RestPlannerManagementController {
 	@Operation(summary = "Get rest planner by identification")
 	@GetMapping(value = "/{restplanner}")
 	public ResponseEntity<?> getByIdentification(
-			@Parameter(description= "Rest Planner Identification", required = true) @PathVariable("restplanner") String restPlannerId,
-			@RequestHeader("Authorization") String authorization) {
+			@Parameter(description= "Rest Planner Identification", required = true) @PathVariable("identification") String restPlannerId) {
 		try {
 
 			final RestPlanner restPlanner = restPlannerService.getRestPlannerByIdentification(restPlannerId);
@@ -159,7 +172,11 @@ public class RestPlannerManagementController {
 			jsonAccess.put("method", currentRestPlanner.getMethod());
 			jsonAccess.put("URL", currentRestPlanner.getUrl());
 			jsonAccess.put("CRON", currentRestPlanner.getCron());
-			jsonAccess.put("user", currentRestPlanner.getUser());
+			jsonAccess.put("user", currentRestPlanner.getUser().getUserId());
+			jsonAccess.put("createdAt", dateFormat.format(restPlanner.getCreatedAt()));
+			jsonAccess.put("updatedAt", dateFormat.format(restPlanner.getUpdatedAt()));
+			jsonAccess.put("dateFrom", restPlanner.getDateFrom());
+			jsonAccess.put("dateTo", restPlanner.getDateTo());
 			jsonAccess.put("headers", currentRestPlanner.getHeaders());
 			jsonAccess.put("body", currentRestPlanner.getBody());
 			responseInfo.put(jsonAccess);
@@ -173,8 +190,7 @@ public class RestPlannerManagementController {
 
 	@Operation(summary = "Create rest planner")
 	@PostMapping(value = "/")
-	public ResponseEntity<?> newRestPlanner(@Valid @RequestBody RestPlannerDTO restPlannerDTO,
-			@RequestHeader("Authorization") String authorization) {
+	public ResponseEntity<?> newRestPlanner(@Valid @RequestBody RestPlannerDTO restPlannerDTO) {
 
 		try {
 
@@ -244,8 +260,7 @@ public class RestPlannerManagementController {
 	@Operation(summary = "Delete rest planner")
 	@DeleteMapping(value = "/{restplanner}")
 	public ResponseEntity<?> deleteRestPlanner(
-			@Parameter(description= "Rest Planner Identification", required = true) @PathVariable("restplanner") String restPlannerId,
-			@RequestHeader("Authorization") String authorization) {
+			@Parameter(description= "Rest Planner Identification", required = true) @PathVariable("identification") String restPlannerId) {
 
 		try {
 			final RestPlanner restPlanner = restPlannerService.getRestPlannerByIdentification(restPlannerId);
@@ -280,8 +295,7 @@ public class RestPlannerManagementController {
 
 	@Operation(summary = "Update rest planner")
 	@PutMapping(value = "/{restplanner}")
-	public ResponseEntity<?> updateRestPlanner(@Valid @RequestBody RestPlannerDTO restPlannerDTO,
-			@RequestHeader("Authorization") String authorization) {
+	public ResponseEntity<?> updateRestPlanner(@Valid @RequestBody RestPlannerDTO restPlannerDTO) {
 
 		try {
 			final String userId = utils.getUserId();
@@ -331,8 +345,7 @@ public class RestPlannerManagementController {
 	@Operation(summary = "Start rest planner")
 	@PostMapping(value = "/{restplanner}/start")
 	public ResponseEntity<?> startRestPlanner(
-			@Parameter(description= "Rest Planner Identification", required = true) @PathVariable("restplanner") String restPlannerId,
-			@RequestHeader("Authorization") String authorization) {
+			@Parameter(description= "Rest Planner Identification", required = true) @PathVariable("identification") String restPlannerId) {
 
 		try {
 
@@ -371,8 +384,7 @@ public class RestPlannerManagementController {
 	@Operation(summary = "Stop rest planner")
 	@PostMapping(value = "/{restplanner}/stop")
 	public ResponseEntity<?> stopRestPlanner(
-			@Parameter(description= "Rest Planner Identification", required = true) @PathVariable("restplanner") String restPlannerId,
-			@RequestHeader("Authorization") String authorization) {
+			@Parameter(description= "Rest Planner Identification", required = true) @PathVariable("identification") String restPlannerId) {
 
 		try {
 
@@ -410,8 +422,7 @@ public class RestPlannerManagementController {
 	@Operation(summary = "Execute rest planner")
 	@PostMapping(value = "/{restplanner}/execute")
 	public ResponseEntity<?> execute(
-			@Parameter(description= "Rest Planner Identification", required = true) @PathVariable("restplanner") String restPlannerId,
-			@RequestHeader("Authorization") String authorization) {
+			@Parameter(description= "Rest Planner Identification", required = true) @PathVariable("identification") String restPlannerId) {
 
 		try {
 

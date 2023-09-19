@@ -242,7 +242,7 @@ public class NotebookController {
 	@GetMapping(value = { "/list", "/list/{redirect}" }, produces = "text/html")
 	public String list(Model uiModel, @PathVariable("redirect") Optional<Boolean> redirect) {
 
-		uiModel.addAttribute("lnt", notebookService.getNotebooks(utils.getUserId()));
+		uiModel.addAttribute("lnt", notebookService.getNotebooksForListExt(utils.getUserId()));
 		uiModel.addAttribute("user", utils.getUserId());
 		uiModel.addAttribute("userRole", utils.getRole());
 

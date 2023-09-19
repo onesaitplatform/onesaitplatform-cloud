@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.config.model.listener;
 
 import java.lang.reflect.Field;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import javax.persistence.Id;
@@ -33,6 +34,8 @@ import com.minsait.onesait.platform.audit.bean.OPAuditEvent.OperationType;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.ResultOperationType;
 import com.minsait.onesait.platform.audit.bean.OPPersistenceAuditEvent;
 import com.minsait.onesait.platform.commons.audit.producer.EventProducer;
+import com.minsait.onesait.platform.config.model.base.OPResource;
+import com.minsait.onesait.platform.config.repository.TagRepository;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.util.BeanUtil;
 
@@ -55,6 +58,7 @@ public class AuditEntityListener {
 		} catch (final Exception e) {
 			eventProducer = null;
 		}
+
 	}
 
 	@PostRemove
@@ -72,7 +76,7 @@ public class AuditEntityListener {
 			try {
 				entityPayload = mapper.writeValueAsString(entity);
 			} catch (final Exception e) {
-				//NO-OP
+				// NO-OP
 			}
 			final OPPersistenceAuditEvent event = new OPPersistenceAuditEvent(message, UUID.randomUUID().toString(),
 					EventType.SYSTEM, today.getTime(), null, SYS_ADMIN, null, OperationType.DELETE.name(),
@@ -81,7 +85,14 @@ public class AuditEntityListener {
 					id, entityPayload, tab.name(), user);
 			eventProducer.publish(event);
 		}
+		removeReferenceFromTags(entity);
 
+	}
+
+	private void removeReferenceFromTags(Object entity) {
+		if (entity instanceof OPResource) {
+			BeanUtil.getBean(TagRepository.class).deleteByResourceId(List.of(((OPResource) entity).getId()));
+		}
 	}
 
 	@PostUpdate
@@ -99,7 +110,7 @@ public class AuditEntityListener {
 			try {
 				entityPayload = mapper.writeValueAsString(entity);
 			} catch (final Exception e) {
-				//NO-OP
+				// NO-OP
 			}
 
 			final OPPersistenceAuditEvent event = new OPPersistenceAuditEvent(message, UUID.randomUUID().toString(),
@@ -126,7 +137,7 @@ public class AuditEntityListener {
 			try {
 				entityPayload = mapper.writeValueAsString(entity);
 			} catch (final Exception e) {
-				//NO-OP
+				// NO-OP
 			}
 			final OPPersistenceAuditEvent event = new OPPersistenceAuditEvent(message, UUID.randomUUID().toString(),
 					EventType.SYSTEM, today.getTime(), null, SYS_ADMIN, null, OperationType.INSERT.name(),

@@ -105,7 +105,7 @@ public class MicroservicesRestController {
 
 		final Microservice microservice = new Microservice();
 		microservice.setIdentification(microserviceName);
-		microservice.setTemplateType(template);
+		microservice.setTemplateType(template.toString());
 		microservice.setCaas(CaaS.RANCHER);
 
 		// TO-DO Decide how to implement via REST

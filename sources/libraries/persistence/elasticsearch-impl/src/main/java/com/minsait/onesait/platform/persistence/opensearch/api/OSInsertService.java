@@ -15,23 +15,20 @@
 package com.minsait.onesait.platform.persistence.opensearch.api;
 
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
-import org.joda.time.DateTime;
-import org.joda.time.chrono.ISOChronology;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import org.opensearch.action.DocWriteResponse;
-import org.opensearch.action.DocWriteResponse.Result;
-import org.opensearch.action.bulk.BulkItemResponse;
-import org.opensearch.action.bulk.BulkRequest;
-import org.opensearch.action.bulk.BulkResponse;
-import org.opensearch.action.index.IndexRequest;
-import org.opensearch.client.RequestOptions;
-import org.opensearch.client.RestHighLevelClient;
-import org.opensearch.common.xcontent.XContentType;
+import org.opensearch.client.json.JsonData;
+import org.opensearch.client.json.JsonpMapper;
+import org.opensearch.client.opensearch.OpenSearchClient;
+import org.opensearch.client.opensearch.core.BulkRequest;
+import org.opensearch.client.opensearch.core.BulkResponse;
+import org.opensearch.client.opensearch.core.bulk.BulkOperation;
+import org.opensearch.client.opensearch.core.bulk.BulkResponseItem;
+import org.opensearch.client.opensearch.core.bulk.IndexOperation;
+import org.opensearch.client.opensearch.core.bulk.UpdateOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
@@ -44,6 +41,7 @@ import com.minsait.onesait.platform.commons.model.ComplexWriteResultType;
 import com.minsait.onesait.platform.config.model.OntologyElastic;
 import com.minsait.onesait.platform.persistence.OpensearchEnabledCondition;
 
+import jakarta.json.spi.JsonProvider;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -51,10 +49,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OSInsertService {
 
-
 	@Autowired
-	private RestHighLevelClient hlClient;
-	
+	private OpenSearchClient javaClient;
+
 	private static final String GEOMERY_STR = "geometry";
 	private static final String GEOMERYCOLLECTION_STR = "geometrycollection";
 	private static final String POLYGON_STR = "polygon";
@@ -66,7 +63,6 @@ public class OSInsertService {
 	private static final String FEATURE_STR = "feature";
 	private static final String FEATURECOLLECTION_STR = "featurecollection";
 	private static final String SOURCE = "source";
-	private static final String PATTERN_SEPARATOR = "-";
 
 	private String fixPosibleNonCapitalizedGeometryPoint(String s) {
 		try {
@@ -95,7 +91,7 @@ public class OSInsertService {
 
 	private BulkResponse executeBulkInsert(BulkRequest bulkRequest) {
 		try {
-			return hlClient.bulk(bulkRequest, RequestOptions.DEFAULT);
+			return javaClient.bulk(bulkRequest);
 		} catch (final IOException e) {
 			log.error("Error inserting bulk documents ", e);
 			return null;
@@ -103,61 +99,72 @@ public class OSInsertService {
 	}
 
 	public ComplexWriteResult bulkInsert(OntologyElastic ontology, List<String> jsonDocs) {
-		final BulkRequest bulkRequest = new BulkRequest();
 
+		final List<BulkOperation> bulkOpsList = new ArrayList<>();
 		for (String s : jsonDocs) {
 			// fix instance
 			s = s.replace("\\n", "");
 			s = s.replace("\\r", "");
 			s = fixPosibleNonCapitalizedGeometryPoint(s);
-
 			// Get index and ID if defined
 			String index = ontology.getOntologyId().getIdentification().toLowerCase();
 			String idValue;
 
 			// Default indexRequest. This can change for templates and/or custom IDs
-			final IndexRequest indexRequest = new IndexRequest(index).source(s, XContentType.JSON);
+			JsonpMapper jsonpMapper = javaClient._transport().jsonpMapper();
+			JsonProvider jsonProvider = jsonpMapper.jsonProvider();
+			Reader reader = new StringReader(s);
+			JsonData jd = JsonData.from(jsonProvider.createParser(reader), jsonpMapper);
+
+			IndexOperation.Builder<JsonData> indexOpBuilder = new IndexOperation.Builder<JsonData>().document(jd)
+					.index(index);
+			UpdateOperation.Builder<JsonData> updateOpBuilder = null;
 
 			if (Boolean.TRUE.equals(ontology.getCustomIdConfig())
 					|| Boolean.TRUE.equals(ontology.getTemplateConfig())) {
 				// We need to parse the instance to extract the index or the ID
 				final JsonObject instanceObject = new JsonParser().parse(s).getAsJsonObject();
 				if (Boolean.TRUE.equals(ontology.getTemplateConfig())) {
-					index = getIndexFromInstance(ontology, instanceObject);
+					index = OSTemplateHelper.getIndexFromInstance(ontology, instanceObject);
 					// IF template, then set the index according to the instance
-					indexRequest.index(index);
+					indexOpBuilder.index(index);
 				}
 
 				if (Boolean.TRUE.equals(ontology.getCustomIdConfig())) {
-					idValue = getValueFromInstanceField(instanceObject, ontology.getIdField());
+					idValue = OSTemplateHelper.getValueFromInstanceField(instanceObject, ontology.getIdField());
 					// IF custom ID, set the ID Value and UPSERT
-
-					indexRequest.id(idValue)
-							.create(ontology.getAllowsUpsertById() == null ? true : !ontology.getAllowsUpsertById());
+					if (ontology.getAllowsUpsertById() == null ? false : ontology.getAllowsUpsertById()) {
+						// requires upsert by id as it is a different BulkOperation Object
+						updateOpBuilder = new UpdateOperation.Builder<JsonData>().id(idValue).docAsUpsert(true)
+								.document(jd).index(index);
+					}
 				}
 			}
 
 			// Create Request
-			bulkRequest.add(indexRequest);
+			if (updateOpBuilder == null) {
+				bulkOpsList.add(new BulkOperation.Builder().index(indexOpBuilder.build()).build());
+			} else {
+				bulkOpsList.add(new BulkOperation.Builder().update(updateOpBuilder.build()).build());
+			}
 		}
-
-		final BulkResponse bulkResponse = executeBulkInsert(bulkRequest);
+		final BulkRequest bulkReq = new BulkRequest.Builder().operations(bulkOpsList).build();
+		final BulkResponse bulkResponse = executeBulkInsert(bulkReq);
 
 		final List<BulkWriteResult> listResult = new ArrayList<>();
 
-		for (final BulkItemResponse bulkItemResponse : bulkResponse) {
+		for (final BulkResponseItem bulkItemResponse : bulkResponse.items()) {
 			final BulkWriteResult bulkr = new BulkWriteResult();
-			bulkr.setId(bulkItemResponse.getId());
-
-			final DocWriteResponse itemResponse = bulkItemResponse.getResponse();
-			if (itemResponse == null || bulkItemResponse.getFailure() != null) {
+			bulkr.setId(bulkItemResponse.id());
+			bulkItemResponse.result();
+			if (bulkItemResponse == null || bulkItemResponse.error() != null) {
 				// there is an error
-				bulkr.setErrorMessage(bulkItemResponse.getFailureMessage());
+				bulkr.setErrorMessage(bulkItemResponse.error().reason());
 				bulkr.setOk(false);
 			} else {
-				bulkr.setErrorMessage(itemResponse.toString());
-				bulkr.setOk(itemResponse.getResult().equals(Result.CREATED)
-						|| itemResponse.getResult().equals(Result.UPDATED));
+				bulkr.setErrorMessage(bulkItemResponse.result());
+				// check if status is a valid http response status code
+				bulkr.setOk(bulkItemResponse.status() >= 200 && bulkItemResponse.status() <= 299);
 			}
 			listResult.add(bulkr);
 		}
@@ -169,66 +176,4 @@ public class OSInsertService {
 		return complexWriteResult;
 
 	}
-
-	private String getIndexFromInstance(OntologyElastic ontology, JsonObject instanceObject) {
-		String index = "";
-		DateTime dateTime = null;
-		final DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ")
-				.withLocale(Locale.ROOT).withChronology(ISOChronology.getInstanceUTC());
-		final StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append(ontology.getOntologyId().getIdentification()).append(PATTERN_SEPARATOR);
-
-		// get value from field
-		String fieldValue = getValueFromInstanceField(instanceObject, ontology.getPatternField());
-
-		switch (ontology.getPatternFunction()) {
-		case NONE:
-			index = stringBuilder.append(fieldValue).toString().toLowerCase();
-			break;
-		case SUBSTR:
-			if (fieldValue.length() <= ontology.getSubstringEnd()) {
-				// TODO: THrow exception out of bounds index
-			}
-			final int endIndex = ontology.getSubstringEnd() == -1 ? fieldValue.length() : ontology.getSubstringEnd();
-			fieldValue = fieldValue.substring(ontology.getSubstringStart(), endIndex);
-			index = stringBuilder.append(fieldValue).toString().toLowerCase();
-			break;
-		case YEAR:
-			dateTime = DateTime.parse(fieldValue, formatter);
-			index = stringBuilder.append(dateTime.getYear()).toString().toLowerCase();
-			break;
-		case YEAR_MONTH:
-			dateTime = DateTime.parse(fieldValue, formatter);
-			index = stringBuilder.append(dateTime.getYear()).append(PATTERN_SEPARATOR)
-					.append(String.format("%02d", dateTime.getMonthOfYear())).toString().toLowerCase();
-			break;
-		case YEAR_MONTH_DAY:
-			dateTime = DateTime.parse(fieldValue, formatter);
-			index = stringBuilder.append(dateTime.getYear()).append(PATTERN_SEPARATOR)
-					.append(String.format("%02d", dateTime.getMonthOfYear())).append(PATTERN_SEPARATOR)
-					.append(String.format("%02d", dateTime.getDayOfMonth())).toString().toLowerCase();
-			break;
-		case MONTH:
-			dateTime = DateTime.parse(fieldValue, formatter);
-			index = stringBuilder.append(String.format("%02d", dateTime.getMonthOfYear())).toString().toLowerCase();
-			break;
-		case DAY:
-			dateTime = DateTime.parse(fieldValue, formatter);
-			index = stringBuilder.append(String.format("%03d", dateTime.getDayOfYear())).toString().toLowerCase();
-			break;
-		default:
-			// TODO: Throw exception
-		}
-		return index;
-	}
-
-	private String getValueFromInstanceField(JsonObject instanceObject, String field) {
-		final String[] fields = field.split("\\.");
-		for (int i = 0; i < fields.length - 1; i++) {
-			instanceObject = instanceObject.getAsJsonObject(fields[i]);
-		}
-		return instanceObject.get(fields[fields.length - 1]).getAsString();
-
-	}
-	
 }

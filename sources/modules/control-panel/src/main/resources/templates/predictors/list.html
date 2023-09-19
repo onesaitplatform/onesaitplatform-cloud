@@ -136,6 +136,7 @@
 													<thead> 
 														<tr class="cabecera-tabla">
 															<th class="titulo-columnas" th:text="#{predictor.name}">Predictor</th>
+															<th class="titulo-columnas" th:text="#{gen.owner}">User</th>
 															<th class="titulo-columnas" th:text="#{gen.ontology}">Ontology</th>
 															<th class="titulo-columnas" th:text="#{predictor.aitable}">Ontology</th>
 															<th class="titulo-columnas" th:text="#{predictor.inputfields}">Input fields</th>
@@ -143,7 +144,7 @@
 															<th class="titulo-columnas" th:text="#{device.status}">Status</th>
 															<th class="titulo-columnas" th:text="#{predictor.accuracy}">Accuracy</th>
 															<th class="titulo-columnas" th:text="#{predictor.winning.algorithm}">Winning algorithm</th>
-															<th class="titulo-columnas" th:text="#{gen.owner}">User</th>
+															
 															<th class="titulo-columnas text-center" dt:sortable="false" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
 														</tr>
 													</thead>
@@ -151,6 +152,8 @@
 														<tr th:each="predictor : ${predictors}" pages:paginate="10">
 															<!-- IDENTIFICATION/NAME -->
 															<td class="text-left no-wrap " th:text="${predictor.name}"></td>
+																<!-- User -->
+															<td class="text-left text-truncate-xxs" th:title="${predictor.user}" th:text="${predictor.user}"></td>
 															<td class="text-left text-truncate-xxs" th:title="${predictor.ontology}" th:text="${predictor.ontology}"></td>
 															<td class="text-left text-truncate-xxs" th:title="${predictor.ontology}" th:text="${predictor.aiTable}"></td>
 															<td class="text-left text-truncate-xxs" th:title="${predictor.inputFields}" th:text="${predictor.inputFields}"></td>
@@ -158,8 +161,7 @@
 															<td class="text-left text-truncate-xxs" th:title="${predictor.status}" th:text="${predictor.status}"></td>
 															<td class="text-left text-truncate-xxs" th:title="${predictor.accuracy}" th:text="${predictor.accuracy}"></td>
 															<td class="text-left text-truncate-xxs" th:title="${predictor.winningAlgorithm}" th:text="${predictor.winningAlgorithm}"></td>
-															<!-- User -->
-															<td class="text-left text-truncate-xxs" th:title="${predictor.user}" th:text="${predictor.user}"></td>
+														
 															
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
@@ -201,36 +203,37 @@
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-															<label th:text="#{gen.ontology}"> Ontology </label>
+															<label th:text="#{gen.owner}"> Owner</label>
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-															<label th:text="#{predictor.aitable}"> Ontology AI</label>
+															<label th:text="#{gen.ontology}"> Ontology </label>
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
-															<label th:text="#{predictor.inputfields}"> Input fields </label>
+															<label th:text="#{predictor.aitable}"> Ontology AI</label>
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-															<label th:text="#{predictor.targetfields}"> Predicted fields</label>
+															<label th:text="#{predictor.inputfields}"> Input fields </label>
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
-															<label th:text="#{device.status}"> Status</label>
+															<label th:text="#{predictor.targetfields}"> Predicted fields</label>
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
-															<label th:text="#{predictor.accuracy}"> Accuracy</label>
+															<label th:text="#{device.status}"> Status</label>
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="7" checked/>
-															<label th:text="#{predictor.winning.algorithm}"> Winning Algorithm</label>
+															<label th:text="#{predictor.accuracy}"> Accuracy</label>
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="8" checked/>
-															<label th:text="#{gen.owner}"> Owner</label>
+															<label th:text="#{predictor.winning.algorithm}"> Winning Algorithm</label>
 														</span>
+														
 													</div>
 												</div>						
 											</div>
@@ -346,6 +349,11 @@
 		
 	}
 	
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([ 3,4 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});	
+	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 	
@@ -385,17 +393,13 @@
 			//$('#form_model')[0].submit(); 
 			$('#predictors').DataTable().column(0).search( $('#identification').val()).draw();
 		});
-	});
-	 
-	// MAIN WHEN LOAD
-	$(window).on("load",function(){
 		
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 		 
 		var oTable = $('#predictors').dataTable({
 	      "bAutoWidth": false
 	      });
-		$.each([ 2,3,8 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		//$.each([ 3,4 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));	
 		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');

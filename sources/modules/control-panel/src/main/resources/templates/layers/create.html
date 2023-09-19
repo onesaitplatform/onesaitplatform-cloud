@@ -83,7 +83,7 @@
 					</div>
 					<div class="col-md-12">
 					
-						<div class="portlet light no-top-pad">
+						<div class="portlet light no-top-pad-layer-create">
 							<!--<div class="portlet-title hide">
 								<div class="caption ">								
 									<span  th:text="#{layer.wizard}" class="caption-subject"> Layer Wizard </span>										
@@ -105,8 +105,8 @@
 												<!-- Creation IoT -->
 												<a sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" onclick="location.href='../layers/createiot'" class="col-md-4 col-sm-6 col-xs-12 grid__item grid__item--c1" style="text-decoration: none">
 													<div>
-														<div class="icon-cards"><i class="icon-step-by-step"></i></div>
-														<h3 class="grid__item-title" th:text="#{layer.create.iot}" >Creation IoT Layer</h3>	
+														<div class="icon-cards"><i class="icon-step-by-step" ></i></div>
+														<h3 class="grid__item-title" style="margin-left:1em;" th:text="#{layer.create.iot}" >Creation IoT Layer</h3>	
 													</div>
 													<div class="col-md-12 column column--right">
 														<span class="column__text" th:text="#{layer.create.iot.desc}" >Creation Creation IoT Description</span>

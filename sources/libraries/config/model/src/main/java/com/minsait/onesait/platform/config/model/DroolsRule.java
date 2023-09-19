@@ -176,4 +176,11 @@ public class DroolsRule extends OPResource implements Versionable<DroolsRule> {
 
 		return v;
 	}
+
+	@Override
+	public void setOwnerUserId(String userId) {
+		final User u = new User();
+		u.setUserId(userId);
+		setUser(u);
+	}
 }

@@ -438,7 +438,7 @@ public class ClientPlatformManagementController {
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@Operation(summary = "Create new token in the digital client by identification")
 	@PostMapping(value = "/{identification}/token")
-	public ResponseEntity<GenerateTokensResponse> generateTokens(@PathVariable("identification") String identification,
+	public ResponseEntity<?> generateTokens(@PathVariable("identification") String identification,
 			@RequestParam(value = "tenant", required = false) String tenant) {
 		if (!StringUtils.isEmpty(tenant)) {
 			multitenancyService.getTenant(tenant).ifPresent(t -> MultitenancyContextHolder.setTenantName(t.getName()));
@@ -449,8 +449,13 @@ public class ClientPlatformManagementController {
 		if (!check && tokenService
 				.generateTokenForClient(clientPlatformService.getByIdentification(identification)) != null) {
 			response.setOk(true);
+			Token token = tokenService.generateTokenForClient(clientPlatformService.getByIdentification(identification));
+			return ResponseEntity.ok().body("Token: " + token.getTokenName());
+		} else {
+			return ResponseEntity.ok().body(response);
 		}
-		return ResponseEntity.ok().body(response);
+		
+		
 	}
 
 }

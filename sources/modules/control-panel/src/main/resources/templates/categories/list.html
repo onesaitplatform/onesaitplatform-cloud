@@ -324,7 +324,10 @@
 	}
 	
 	
-	
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([ 2 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		var csrf_value = $("meta[name='_csrf']").attr("content");
@@ -370,18 +373,15 @@
 		// SEARCH FORM
 		$('#search_category').on('click',function(){ $('#form_category')[0].submit(); });
 		
-	});
-	 
-	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
+		
+		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
 		var oTable = $('#categories').dataTable({
 	      "bAutoWidth": false
 	      });  
 		
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
 		//$.each([ 2,6,7 ],
-		$.each([ 2 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		//$.each([ 2 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));	

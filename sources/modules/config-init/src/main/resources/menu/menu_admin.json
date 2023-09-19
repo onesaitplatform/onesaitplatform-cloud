@@ -41,12 +41,12 @@
 				},
 				{
 					"title": {
-						"EN": "Market Assets Management",
-						"ES": "Gestión de Activos del Market",
-						"FR": "Gestion des actifs du marché"
+						"EN": "Bundle Repository",
+						"ES": "Repositorio de Bundles",
+						"FR": "Référentiel du groupées groupé"
 					},
 					"icon": "",
-					"url": "/controlpanel/marketasset/list"
+					"url": "/controlpanel/bundlerepository/list"
 				},
 				{
 					"title": {
@@ -114,6 +114,15 @@
 			"url": "",
 			"submenu": [
 				{
+                    "title": {
+                        "EN": "Tags Management",
+                        "ES": "Gestión de Etiquetas",
+                        "FR": "Gestion de Tags"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/tags"
+                },
+				{
 					"title": {
 						"EN": "Applications Management",
 						"ES": "Gestión de Aplicaciones",
@@ -166,6 +175,15 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/microservices/list"
+				},	
+				{
+					"title": {
+						"EN": "Microservices Templates",
+						"ES": "Plantillas de MicroServicios",
+						"FR": "Modèles de microservices"
+					},
+					"icon": "",
+					"url": "/controlpanel/mstemplates/list"
 				},
 				{
 					"title": {
@@ -250,6 +268,15 @@
 					"icon": "",
 					"url": "/controlpanel/reports/list"
 				},
+				{
+                    "title": {
+                        "EN": "Email Templates",
+                        "ES": "Platillas de Email",
+                        "FR": "Modèles d'e-mails"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/emails/list"
+                },
 				{
 					"title": {
 						"EN": "GIS Viewers Management",
@@ -713,7 +740,15 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/low-code/"
-				},
+				}, {
+                    "title": {
+                        "EN": "Tracing",
+                        "ES": "Tracing",
+                        "FR": "Tracing"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/tracing/"
+                },
 				{
 					"title": {
 						"EN": "System Audit",
@@ -832,7 +867,25 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/versioning/restore/resource"
-				}
+				},
+				{
+                    "title": {
+                        "EN": "Bundle generation",
+                        "ES": "Generación de paquetes de recursos",
+                        "FR": "Generation de colis"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/bundles/generate"
+                },
+                {
+                    "title": {
+                        "EN": "Bundle load",
+                        "ES": "Carga de paquetes de recursos",
+                        "FR": "Charger des ressources"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/bundles/load"
+                }
 			]
 		}
 	]

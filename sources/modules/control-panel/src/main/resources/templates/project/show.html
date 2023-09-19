@@ -275,6 +275,9 @@
 													</th:block>
 													<!-- Notebook specific -->
 													<th:block th:if="${access.resource.class.simpleName == 'Notebook'}">
+														<span th:if="${access.access.name() != 'MANAGE'}" th:title="#{gen.view}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{gen.view}" th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/notebooks/app/#/notebook/${access.resource.idzep}/|} + '\');'">
+															<i class="la la-eye font-hg"></i>
+														</span>
 														<span th:if="${access.access.name() == 'MANAGE'}" th:title="#{gen.edit}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{gen.edit}" th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/notebooks/app/#/notebook/${access.resource.idzep}/|} + '\');'">
 															<i class="la la-pencil font-hg"></i>
 														</span>
@@ -544,7 +547,7 @@
 			title: [[#{notebook.newnotebook.popup}]],
 			theme: 'light',
 			columnClass: 'medium',
-			content: "<input class='col-md-12 form-control' type=text id='newNotebook'></input><br/><label id='patternAlert'  class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_ ]+</label>",
+			content: "<input class='col-md-12 form-control' type=text id='newNotebook' minlength='5'></input><br/><label id='patternAlert'  class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_ ]+</label>",
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,

@@ -17,9 +17,8 @@ package com.minsait.onesait.platform.config.services.processtrace;
 import java.io.IOException;
 import java.util.List;
 
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.JsonMappingException;
-
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.minsait.onesait.platform.config.model.ProcessTrace;
 import com.minsait.onesait.platform.config.model.User;
 
@@ -38,6 +37,8 @@ public interface ProcessTraceService {
 	public ProcessTrace getByIdentification(String identification);
 
 	public List<ProcessTrace> getAll();
+	
+	
 
 	public void checkProcessExecution(String processId)
 			throws JsonGenerationException, JsonMappingException, IOException;

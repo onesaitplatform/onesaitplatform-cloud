@@ -173,7 +173,7 @@ public class SwaggerConfig {
 		return GroupedOpenApi.builder().group("Ontologies").pathsToMatch("/api/ontologies", "/api/ontologies/**")
 				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
 	}
-
+	
 	@Bean
 	public GroupedOpenApi reportsApi() {
 		return GroupedOpenApi.builder().group("Reports").pathsToMatch("/api/reports", "/api/reports/**")
@@ -375,6 +375,20 @@ public class SwaggerConfig {
 	public GroupedOpenApi sparkLauncherAPI() {
 		return GroupedOpenApi.builder().group("Spark Launcher Management")
 				.pathsToMatch("/api/sparklauncher", "/api/sparklauncher/**")
+				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+
+	}
+
+	@Bean
+	public GroupedOpenApi tagsAPI() {
+		return GroupedOpenApi.builder().group("Tags").pathsToMatch("/api/tags", "/api/tags/**")
+				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+
+	}
+
+	@Bean
+	public GroupedOpenApi bundlesAPI() {
+		return GroupedOpenApi.builder().group("Bundles").pathsToMatch("/api/bundles", "/api/bundles/**")
 				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
 
 	}

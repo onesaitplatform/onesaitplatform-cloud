@@ -413,7 +413,7 @@ md-dialog>md-toolbar{
 
 md-dialog>md-toolbar h2 {
   font-weight: 500 !important;
-  font-size: 20px !important;
+  font-size: 17px !important;
 }
 
 .md-subheader.md-default-theme.md-primary, .md-subheader.md-primary {
@@ -422,8 +422,8 @@ md-dialog>md-toolbar h2 {
 }
 
 .md-button.md-primary.md-raised:not(.lf-ng-md-file-input-button){
-  border-radius: 30px !important;
-  padding: 11px 40px !important;
+  border-radius: 2px !important;
+  padding: 6px 12px !important;
   background-color: #2a638c !important;
   line-height: 16px !important;
 }
@@ -437,7 +437,9 @@ md-dialog>md-toolbar h2 {
 }
 
 .md-button.md-raised:not([disabled]) {
-  box-shadow: none !important
+  box-shadow: none !important;
+  font-size: 12px !important;
+  text-transform: capitalize !important;
 }
 
 ._md-nav-bar-list{
@@ -590,4 +592,9 @@ md-dialog > form {
 .dashboardcontent {
   transition: margin-right .4s;
   /*padding: 1rem;*/
+}
+
+.md-subheader .md-subheader-content {
+  font-size: 13px !important;
+  text-transform: none !important;
 }

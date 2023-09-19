@@ -56,7 +56,7 @@ public class LogFileBeanConfiguration {
 	}
 
 	@Scheduled(fixedDelay = 600000)
-	private void refreshLogFileProperty() {
+	protected void refreshLogFileProperty() {
 		log.debug("Refreshing property file");
 		final LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
 		for (final Logger logger : context.getLoggerList()) {

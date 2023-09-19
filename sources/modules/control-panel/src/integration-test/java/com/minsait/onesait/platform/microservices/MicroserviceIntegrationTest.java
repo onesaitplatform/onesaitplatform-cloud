@@ -45,8 +45,10 @@ import com.minsait.onesait.platform.commons.testing.IntegrationTest;
 import com.minsait.onesait.platform.config.components.JenkinsConfiguration;
 import com.minsait.onesait.platform.config.components.RancherConfiguration;
 import com.minsait.onesait.platform.config.model.Microservice.TemplateType;
+import com.minsait.onesait.platform.config.model.MicroserviceTemplate;
 import com.minsait.onesait.platform.config.model.UserToken;
 import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
+import com.minsait.onesait.platform.config.repository.MicroserviceTemplateRepository;
 import com.minsait.onesait.platform.config.repository.UserTokenRepository;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
 import com.minsait.onesait.platform.config.services.microservice.dto.JenkinsParameter;
@@ -79,6 +81,8 @@ public class MicroserviceIntegrationTest {
 	private UserService userService;
 	@Autowired
 	private ClientPlatformRepository clientPlatformRepository;
+	@Autowired
+	private MicroserviceTemplateRepository mstemplateRepository;
 
 	@Autowired
 	private MicroservicesGitServiceManager gitServiceManager;
@@ -117,12 +121,15 @@ public class MicroserviceIntegrationTest {
 
 	@Before
 	public void setUp() {
-		microservice = MicroserviceDTO.builder().contextPath(MS_CTXT_PATH).port(PORT).name(MS_NAME)
-				.gitlabConfiguration(gitlabConfiguration).jenkinsConfiguration(jenkinsConfiguration)
-				.rancherConfiguration(rancherConfiguration).template(TemplateType.IOT_CLIENT_ARCHETYPE).build();
-		msConfig = MSConfig.builder().createGitlab(true).defaultCaaS(false).defaultGitlab(false).defaultJenkins(false)
-				.docker(DOCKER_PATH).sources(SOURCES_PATH).ontology(ONTOLOGY).build();
-		setXOPAPIKey();
+		MicroserviceTemplate mstemplate = mstemplateRepository.findMicroserviceTemplateById("MSTEMPLATE_IOT_CLIENT_ARCHETYPE");
+		if(mstemplate != null) {
+			microservice = MicroserviceDTO.builder().contextPath(MS_CTXT_PATH).port(PORT).name(MS_NAME)
+					.gitlabConfiguration(gitlabConfiguration).jenkinsConfiguration(jenkinsConfiguration)
+					.rancherConfiguration(rancherConfiguration).template(mstemplate.getIdentification()).build();
+			msConfig = MSConfig.builder().createGitlab(true).defaultCaaS(false).defaultGitlab(false).defaultJenkins(false)
+					.docker(DOCKER_PATH).sources(SOURCES_PATH).ontology(ONTOLOGY).build();
+			setXOPAPIKey();
+		}
 
 	}
 

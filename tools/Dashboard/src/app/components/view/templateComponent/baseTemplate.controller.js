@@ -48,7 +48,7 @@
               }            
             ,function(e){
               if(e.message==='Gadget was deleted'){
-                  vm.type='removed'
+                  vm.datastatus='removed'
                   console.log('Gadget was deleted');
               }else{
                   vm.type = 'nodata'
@@ -134,6 +134,7 @@
 
         function loadGadget(config){
           if(config===""|| config.data===""){
+            vm.datastatus = "removed"
             throw new Error('Gadget was deleted');
           }    
           vm.gadget = config.data;

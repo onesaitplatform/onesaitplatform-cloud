@@ -916,7 +916,7 @@ var OntologyCreateController = function() {
 
 			OntologyCreateController.changeCollection(0);
 			OntologyCreateController.generateSchema();
-			
+			addNullSchemaPropertiesRequired();
 			if(ontologyCreateReg.objectId != null && ontologyCreateReg.objectId != undefined && ontologyCreateReg.objectId != ""){
 				
 				$("#id").attr("checked", "checked");
@@ -1292,6 +1292,22 @@ var OntologyCreateController = function() {
 			)		
 	}
 	
+	var addNullSchemaPropertiesRequired = function(){
+		var schem = JSON.parse($("#jsonschema").val());
+		 if(schem.properties){
+			 Object.keys(schem.properties).forEach(key => {
+				if(!schem.properties[key].required){
+					if(!Array.isArray( schem.properties[key].type)){
+						schem.properties[key].type=[schem.properties[key].type,'null'];
+					}
+				}			  
+			});
+		 }
+		$("#jsonschema").val(JSON.stringify(schem));
+		editor.setText(JSON.stringify(schem));
+	}
+	
+	
 	// CONTROLLER PUBLIC FUNCTIONS 
 	return{
 
@@ -1558,6 +1574,7 @@ var OntologyCreateController = function() {
 						editor.setText(spStaticV.render());
 			        
 						$("#jsonschema").val(spStaticV.render());
+						addNullSchemaPropertiesRequired();
 					}
 			        
 			     // CHANGE TO SCHEMA TAB.
@@ -1603,6 +1620,7 @@ var OntologyCreateController = function() {
 				if (reloadEditor) {
 					editor.setText(JSON.stringify(sch));
 				}
+				//addNullSchemaPropertiesRequired();
 			}
 		},
 				
@@ -2089,7 +2107,7 @@ var OntologyCreateController = function() {
 				
 				JsonSchema.INPUT_VALUE = JSON.stringify(fieldsSchema);
 				this.generateSchema();
-				
+				addNullSchemaPropertiesRequired();
 			} else {
 				editor.setText("{}");
 			}

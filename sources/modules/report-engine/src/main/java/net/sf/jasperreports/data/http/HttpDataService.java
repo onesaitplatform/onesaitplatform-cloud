@@ -23,6 +23,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -217,7 +218,31 @@ public class HttpDataService implements DataFileService
 	public HttpDataService(ParameterContributorContext context, HttpDataLocation dataLocation)
 	{
 		this.context = context;
-		this.dataLocation = dataLocation;
+		this.dataLocation = parseParameters(context,dataLocation);
+	}
+
+	private HttpDataLocation parseParameters(ParameterContributorContext context, HttpDataLocation dataLocation) {
+		
+		if(context.getParameterValues().containsKey("MAIN_PARAMETERS")) {
+			dataLocation.setUrl(replaceTextParam((Map<String, Object>)context.getParameterValues().get("MAIN_PARAMETERS"), dataLocation.getUrl()));
+			if(dataLocation.getHeaders()!=null) {
+				for (Iterator iterator = dataLocation.getHeaders().iterator(); iterator.hasNext();) {
+					HttpLocationParameter httpLocationParam = (HttpLocationParameter) iterator.next();
+					httpLocationParam.setValue(replaceTextParam((Map<String, Object>)context.getParameterValues().get("MAIN_PARAMETERS"), httpLocationParam.getValue()));				
+				}
+			}
+		}else {
+			dataLocation.setUrl(replaceTextParam(context.getParameterValues(), dataLocation.getUrl()));
+			if(dataLocation.getHeaders()!=null) {
+				for (Iterator iterator = dataLocation.getHeaders().iterator(); iterator.hasNext();) {
+					HttpLocationParameter httpLocationParam = (HttpLocationParameter) iterator.next();
+					httpLocationParam.setValue(replaceTextParam(context.getParameterValues(), httpLocationParam.getValue()));				
+				}
+			}
+		}
+	
+		
+		return dataLocation;
 	}
 
 	@Override
@@ -591,7 +616,8 @@ public class HttpDataService implements DataFileService
 
 	protected URI getRequestURI(Map<String, Object> parameters)
 	{
-		final String url = getURL(parameters);
+		 String url = getURL(parameters);
+		 url = replaceTextParam(parameters, url);		 
 		if (url == null)
 		{
 			throw
@@ -620,6 +646,46 @@ public class HttpDataService implements DataFileService
 		{
 			throw new JRRuntimeException(e);
 		}
+	}
+
+	/*For one unique parameter
+	 * private String replaceTextParam(Map<String, Object> parameters, String text) {
+		if(text != null) {
+		 String temp = text.replaceAll(" ","");
+			if(temp.startsWith("$P{")) {
+				temp = temp.substring(3,temp.indexOf("}"));
+				if(parameters.containsKey(temp)) {
+					text = (String)parameters.get(temp);
+				}
+			}
+		 }
+		return text;
+	}*/
+	//For Multiple parameters
+	private static String replaceTextParam(Map<String, Object> parameters, String string) {		
+		String temp = string.replaceAll(" ","");
+		
+		String[] tokens=temp.split("\\$+P+\\{+");
+		if(tokens.length>1) {
+			string="";
+		 for (int i = 0; i < tokens.length; i++) {
+			 string+=replaceParameterForValue(parameters, tokens[i]);
+		}
+		}
+		return string;
+	}
+
+	private static String replaceParameterForValue(Map<String, Object> parameters,   String temp) {
+		if(temp.indexOf("}")>=0) {
+			String var = temp.substring(0,temp.indexOf("}"));		
+			if(parameters.containsKey(var)) {
+				String value = (String)parameters.get(var);
+			 return temp.replace(var+"}",value);
+			}else {
+				return "$P{"+temp;
+			}
+		}
+		return temp;
 	}
 
 	protected String getURL(Map<String, Object> parameters)

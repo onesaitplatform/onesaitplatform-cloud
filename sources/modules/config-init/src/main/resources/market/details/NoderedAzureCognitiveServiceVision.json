@@ -1,6 +1,0 @@
-{
-	"title":"ACS (Vision) Node-Red flow",
-	"technologies":"Node-Red",
-	"description":"Azure Cognitive Services (Vision) integration",
-	"detailedDescription":"This Node-Red Flow includes all interconnection logic to provide all Azuure Cognitive Services (Vision related) as REST API."
-}

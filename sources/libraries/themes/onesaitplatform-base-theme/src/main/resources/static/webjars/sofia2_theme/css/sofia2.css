@@ -1859,6 +1859,87 @@ div.dataTables_length > label > select{
 	border-width: 0 2px 2px 0
 }
 
+.bundleCard {
+	display: inline-block;
+    margin-bottom: 20px;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
+    margin: 20px;
+    text-align: center;
+}
+
+.bundleCardImagediv {
+	width: 100%;
+	height: 170px;
+	vertical-align: middle;
+}
+
+.bundleCardContentTittle {
+	margin-top: 10px;
+	min-height: 20px;
+	font-size: 12px;
+    font-weight: 500;
+    line-height: 20px;
+    font-family: "Soho";
+    color:rgb(0, 0, 0);
+    letter-spacing: normal;
+    font-stretch: normal;
+    white-space: nowrap;
+    text-align: left;
+}
+
+.bundleCardContentDesc {
+	margin-top: 10px;
+	min-height: 60px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: -webkit-box;
+	-webkit-line-clamp: 3; /* number of lines to show */
+			line-clamp: 3;
+	-webkit-box-orient: vertical;
+	text-align: justify;
+}
+
+.bundleCardContentDescExpanded {
+	margin-top: 10px;
+	min-height: 150px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: -webkit-box;
+	-webkit-line-clamp: 5; /* number of lines to show */
+			line-clamp: 5;
+	-webkit-box-orient: vertical;
+	text-align: justify;
+}
+
+.bundleCardFooter {
+   min-height: 20px;
+}
+
+.bundleCardGeneralInfo {
+   border-bottom-style: solid;
+   border-bottom-color: #c0c0c0;
+   border-bottom-width: 1px;
+   padding-top: 15px;
+   padding-bottom: 10px;
+   padding-left: 35px;
+}
+
+.bundleCardShortDescription {
+  	border-bottom-style: solid;
+  	border-bottom-color: #c0c0c0;
+  	border-bottom-width: 1px;
+  	padding-top: 10px;
+  	padding-bottom: 10px;
+  	padding-left: 35px;
+}
+
+.bundleCardShortDetails {
+  	padding-top: 10px;
+  	padding-bottom: 10px;
+  	padding-left: 35px;
+}
+
+
 .endpointSwaggerbox{
 	border: none !important;
 	background-color: white !important;

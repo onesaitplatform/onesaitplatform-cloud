@@ -38,6 +38,14 @@ public interface DashboardService {
 			String user);
 
 	List<DashboardDTO> findDashboardWithIdentificationAndType(String identification, String type, String user);
+	
+	List<DashboardDTO> findDashboardIdentification(String identification, String columName, String order,  String user, int page, int limit);
+	
+	Integer countDashboardIdentification(String identification,  String user);
+	
+	Integer countSynopticIdentification(String identification, String user);
+	
+	List<DashboardDTO> findSynopticsIdentification(String identification,String user, String columName, String order, int page, int limit);
 
 	List<String> getAllIdentifications();
 
@@ -47,7 +55,7 @@ public interface DashboardService {
 
 	Dashboard getDashboardById(String id, String userId);
 
-	String cloneDashboard(Dashboard originalDashboard, String identification, User user);
+	String cloneDashboard(Dashboard originalDashboard, String identification, String userId);
 
 	String createNewDashboard(DashboardCreateDTO dashboardCreateDTO, String userId);
 
@@ -132,5 +140,7 @@ public interface DashboardService {
 	void createModifyI18nResource(String id, DashboardCreateDTO dashboard, String userId);
 
 	void deleteDashboardUserAccessForAUser(String userAccessId);
+	
+	
 
 }

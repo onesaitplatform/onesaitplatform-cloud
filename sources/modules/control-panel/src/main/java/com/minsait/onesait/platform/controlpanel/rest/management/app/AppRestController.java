@@ -1297,7 +1297,8 @@ public class AppRestController {
 	@Operation(summary = "Get a list of realms where the current user is member of")
 	@GetMapping("/member")
 	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String[].class)), responseCode = "200", description = "OK"))
-	public ResponseEntity<List<String>> getRealmsForUser(){
+	public ResponseEntity<List<String>> getRealmsForUser(HttpServletResponse response){
+		utils.cleanInvalidSpringCookie(response);
 		return new ResponseEntity<>(appService.getAppNamesByUserIn(utils.getUserId()), HttpStatus.OK);
 	}
 

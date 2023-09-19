@@ -46,6 +46,8 @@ import com.minsait.onesait.platform.config.services.webproject.WebProjectDTO;
 import com.minsait.onesait.platform.config.services.webproject.WebProjectService;
 import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -65,6 +67,12 @@ public class WebProjectController {
 	
 	@Autowired 
 	private HttpSession httpSession;
+	
+	@Autowired
+	private MultitenancyService masterUserService;
+	
+	private static final String DEFAULT_VERTICAL = "onesaitplatform";
+
 
 	@Value("${onesaitplatform.webproject.baseurl:https://localhost:18000/web/}")
 	private String rootWWW;
@@ -86,7 +94,15 @@ public class WebProjectController {
 		final List<WebProjectDTO> webprojects = webProjectService
 				.getWebProjectsWithDescriptionAndIdentification(utils.getUserId(), identification, description);
 		model.addAttribute("webprojects", webprojects);
-		model.addAttribute("rootWWW", rootWWW);
+		String vertical_name = masterUserService.getVerticalFromSchema(MultitenancyContextHolder.getVerticalSchema()).getName();
+		if(vertical_name.equals(DEFAULT_VERTICAL)) {
+			model.addAttribute("rootWWW", rootWWW);
+
+		}else {
+			model.addAttribute("rootWWW", rootWWW+vertical_name + "/");
+
+		}
+		
 
 		return "webprojects/list";
 	}

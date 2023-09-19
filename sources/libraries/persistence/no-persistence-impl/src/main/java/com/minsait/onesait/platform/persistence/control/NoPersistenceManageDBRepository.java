@@ -136,4 +136,10 @@ public class NoPersistenceManageDBRepository implements ManageDBRepository {
 		return identification;
 	}
 
+	@Override
+	public void createTTLIndex(String ontology, String attribute, Long seconds) {
+		log.debug(NO_OP_CONTROL_ONTOLOGY);
+
+	}
+
 }

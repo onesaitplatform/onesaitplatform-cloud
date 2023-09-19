@@ -176,7 +176,7 @@
 									<span th:text="#{ontology.timeseries.continuous.aggregates}" >Continuous aggregates </span>
 								</a>
 							</div>
-							<div id="tab-data" th:style="${rtdbDatasourceType}!=null or ${ontologyTSDTO.rtdbDatasource}!= null? 'display:none' : 'display:block'" class="option">
+							<div id="tab-data" th:style="(${rtdbDatasourceType}!=null or ${ontologyTSDTO.rtdbDatasource}!= null) and ${ontology.dataModel.id} != 'MASTER-DataModel-30' ? 'display:none' : 'display:block'" class="option">
 								<a href="#tab_data" data-toggle="tab" th:classappend="${ontology?.id} == null ? disabled : ''" aria-expanded="true">
 									<span th:if="${userOntologyAccess} == 'ALL'" th:text="#{ontology.dataaccess}" >Data Access Settings </span>
 								</a>

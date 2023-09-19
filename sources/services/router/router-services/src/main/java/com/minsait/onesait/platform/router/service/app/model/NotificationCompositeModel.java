@@ -83,4 +83,14 @@ public class NotificationCompositeModel implements Serializable {
 	@Setter
 	@JsonIgnore
 	private String domainOwner;
+	
+	@Getter
+	@Setter
+	@JsonIgnore
+	private String vertical;
+	
+	@Getter
+	@Setter
+	@JsonIgnore
+	private String tenant;
 }

@@ -28,6 +28,7 @@ public class MapsStyleDTO implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private String id;
 	private String identification;
+	private String name;
 	private String description;
 	private String config;
 	private Date updatedAt;

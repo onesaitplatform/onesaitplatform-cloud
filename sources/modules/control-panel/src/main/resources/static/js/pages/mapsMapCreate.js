@@ -29,9 +29,9 @@ var MapsMapController = function() {
 		}
 	}
 
+var projections =['EPSG:4326','EPSG:3857','EPSG:25828','EPSG:25829','EPSG:25830','EPSG:25831','EPSG:4230','EPSG:4258']
 
-
-
+ 
 	// CONTROLLER PRIVATE FUNCTIONS	
 
 
@@ -164,7 +164,7 @@ var MapsMapController = function() {
 		$("#idDiv").val(config.idDiv).change();
 		$("#providerMap").val(config.providerMap).change();
 		$("#zIndex").val(config.zIndex).change();
-		$("#opacity").val(config.opacity).change();
+		$("#opacity").val(typeof config.opacity ==='undefined'?1:config.opacity).change();
 		$("#active").val(config.active).change();
 		if (config.active) {
 			$("#active").prop('checked', true);
@@ -178,7 +178,12 @@ var MapsMapController = function() {
 		var maxZoom = 32;
 		if (config.optionView) {
 			$("#optionViewId").val(config.optionView.id).change();
-			$("#optionViewZoom").val(config.optionView.zoom).change();
+			$("#optionViewZoom").val(config.optionView.zoom).change();			
+			if(config.optionView.projection && config.optionView.projection.length>0){
+				if(!projections.includes(config.optionView.projection)){
+					$("#optionViewProjection").append('<option value="'+config.optionView.projection+'">'+config.optionView.projection+'</option>');
+				}
+			}			
 			$("#optionViewProjection").val(config.optionView.projection).change();
 			$("#optionViewRotation").val(config.optionView.rotation).change();
 			if (typeof config.optionView.center != 'undefined' && config.optionView.center != null && config.optionView.center.length > 0) {

@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.controlpanel.rest.management.ontology.model
 import javax.validation.constraints.NotNull;
 
 import com.minsait.onesait.platform.config.model.Ontology.RtdbCleanLapse;
+import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbToHdbStorage;
 
 import lombok.AllArgsConstructor;
@@ -76,5 +77,15 @@ public class OntologyUpdate {
 	@Getter
 	@Setter
 	private Boolean allowsCreateTopic;
+
+	@Getter
+	@Setter
+	private Boolean allowsCreateNotificationTopic;
+
+	@Getter
+	@Setter
+	private Boolean contextDataEnabled;
+
+
 
 }

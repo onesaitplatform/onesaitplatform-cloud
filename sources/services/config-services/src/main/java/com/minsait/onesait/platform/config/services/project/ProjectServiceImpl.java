@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import com.google.common.collect.Lists;
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
 import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.AppRole;
@@ -49,8 +50,6 @@ import com.minsait.onesait.platform.config.services.exceptions.ProjectServiceExc
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.config.services.webproject.WebProjectDTO;
 import com.minsait.onesait.platform.config.services.webproject.WebProjectService;
-
-import avro.shaded.com.google.common.collect.Lists;
 
 @Service
 public class ProjectServiceImpl implements ProjectService {
@@ -343,6 +342,7 @@ public class ProjectServiceImpl implements ProjectService {
 				app.setProject(null);
 				project.getProjectResourceAccesses().clear();
 				projectRepository.save(project);
+				projectResourceAccessRepository.deleteByProjectId(projectId);
 				appService.updateApp(app);
 			});
 
@@ -530,7 +530,7 @@ public class ProjectServiceImpl implements ProjectService {
 		List<Project> projects = new ArrayList<>();
 		try {
 			projects = getProjectsWithResource(resourceId);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 		}
 		projects.forEach(
 				p -> p.getProjectResourceAccesses().removeIf(pra -> pra.getResource().getId().equals(resourceId)));

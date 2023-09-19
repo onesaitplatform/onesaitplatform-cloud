@@ -34,7 +34,8 @@ public interface GitOperations {
 
 	public void commit(String message, String directory, String author);
 
-	public void push(String sshUrl, String username, String password, String branch, String directory, boolean mirror) throws GitSyncException;
+	public void push(String sshUrl, String username, String password, String branch, String directory, boolean mirror)
+			throws GitSyncException;
 
 	void push(String sshUrl, String username, String password, String branch, String directory, boolean mirror,
 			boolean force) throws GitSyncException;
@@ -82,4 +83,6 @@ public interface GitOperations {
 
 	public void pullWithNoPrompt(String directory);
 
+	public void cloneRepository(String directory, String url, String user, String token, String branch,
+			boolean cloneToSpecificDir, String cloneDir);
 }

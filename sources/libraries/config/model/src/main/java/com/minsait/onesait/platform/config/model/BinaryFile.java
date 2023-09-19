@@ -147,4 +147,11 @@ public class BinaryFile extends OPResource implements Versionable<BinaryFile> {
 		return binaryFile;
 	}
 
+	@Override
+	public void setOwnerUserId(String userId) {
+		final User u = new User();
+		u.setUserId(userId);
+		setUser(u);
+	}
+
 }

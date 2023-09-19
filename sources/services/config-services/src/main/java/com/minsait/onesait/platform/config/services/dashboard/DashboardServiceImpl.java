@@ -39,6 +39,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -85,6 +88,7 @@ import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.repository.DashboardConfRepository;
 import com.minsait.onesait.platform.config.repository.DashboardRepository;
+import com.minsait.onesait.platform.config.repository.DashboardRepositoryPageable;
 import com.minsait.onesait.platform.config.repository.DashboardUserAccessRepository;
 import com.minsait.onesait.platform.config.repository.DashboardUserAccessTypeRepository;
 import com.minsait.onesait.platform.config.repository.GadgetDatasourceRepository;
@@ -133,6 +137,8 @@ public class DashboardServiceImpl implements DashboardService {
 	private DashboardUserAccessTypeRepository dashboardUserAccessTypeRepository;
 	@Autowired
 	private UserRepository userRepository;
+	@Autowired
+	private DashboardRepositoryPageable dashboardRepositoryPageable;
 	@Autowired
 	@Lazy
 	private OPResourceService resourceService;
@@ -279,15 +285,14 @@ public class DashboardServiceImpl implements DashboardService {
 		List<DashboardForList> dashboardsForList = new ArrayList<>();
 
 		final User sessionUser = userRepository.findByUserId(user);
-
 		try {
 			if (sessionUser.isAdmin()) {
 				if (type == null) {
 					dashboardsForList = dashboardRepository.findByIdentificationContainingFofList(identification);
 				} else {
-					if (type.equals("")) {
+					if (type.equals(Dashboard.DashboardType.DASHBOARD.name()) || type.equals("")) {
 						dashboardsForList = dashboardRepository
-								.findDashboardByIdentificationContainingAndType(identification);
+								.findByIdentificationContainingAndTypeOrNull(identification,DashboardType.valueOf(type));
 					} else {
 						dashboardsForList = dashboardRepository.findByIdentificationContainingAndType(identification,
 								DashboardType.valueOf(type));
@@ -298,10 +303,10 @@ public class DashboardServiceImpl implements DashboardService {
 					dashboardsForList = dashboardRepository
 							.findByUserAndPermissionsANDIdentificationContaining(sessionUser, identification);
 				} else {
-					if (type.equals("")) {
+					if (type.equals(Dashboard.DashboardType.DASHBOARD.name()) || type.equals("")) {
 						dashboardsForList = dashboardRepository
-								.findDashboardByUserAndPermissionsANDIdentificationContaining(sessionUser,
-										identification);
+								.findByUserAndPermissionsANDIdentificationContainingAndTypeForListOrNull(sessionUser,
+										identification, DashboardType.valueOf(type));
 					} else {
 						dashboardsForList = dashboardRepository
 								.findByUserAndPermissionsANDIdentificationContainingAndTypeForList(sessionUser,
@@ -322,6 +327,7 @@ public class DashboardServiceImpl implements DashboardService {
 			obj.setIdentification(temp.getIdentification());
 			obj.setHasImage(Boolean.TRUE);
 			obj.setPublic(temp.isPublic());
+			obj.setImage(temp.getImage());
 			obj.setUpdatedAt(temp.getUpdated_at());
 			obj.setUserAccessType(temp.getAccessType());
 			obj.setUser(temp.getUser());
@@ -329,7 +335,150 @@ public class DashboardServiceImpl implements DashboardService {
 			return obj;
 		}).collect(Collectors.toList());
 	}
+	
+	@Override
+	public List<DashboardDTO> findDashboardIdentification (String identification, String columName, String order, String user,  int page, int limit) {
+		List<DashboardForList> dashboardsForList = new ArrayList<>();
+		
+		DashboardType typeDashboard = Dashboard.DashboardType.DASHBOARD;
+		int offset = page;
+		if(page != 0) {
+			offset = (page / limit);
+		}
+		if(identification == null ) {
+			identification = "";
+		}
+			
+		
+		
+		final User sessionUser = userRepository.findByUserId(user);
+		
+		try {
+			if (sessionUser.isAdmin()) {
+				
+				dashboardsForList =  dashboardRepositoryPageable.findByIdentificationDashboarContainingAndType(identification, typeDashboard,  PageRequest.of(offset, limit, Sort.by(Direction.fromString(order.toUpperCase()), columName)));
+				
+			} else {
+				dashboardsForList =  dashboardRepositoryPageable.findByUserAndPermissionsDashboards(sessionUser, identification, typeDashboard, PageRequest.of(offset, limit, Sort.by(Direction.fromString(order.toUpperCase()), columName)));
+			}
+				securityService.setSecurityToInputList(dashboardsForList, sessionUser, "Dashboard");
+		} catch (final Exception e) {
+			log.error(e.getMessage());
+		}
+		
+		return dashboardsForList.stream().map(temp -> {
+			final DashboardDTO obj = new DashboardDTO();
+			obj.setCreatedAt(temp.getCreated_at());
+			obj.setDescription(temp.getDescription());
+			obj.setId(temp.getId());
+			obj.setIdentification(temp.getIdentification());
+			obj.setHasImage(Boolean.TRUE);
+			obj.setPublic(temp.isPublic());
+			obj.setImage(temp.getImage());
+			obj.setUpdatedAt(temp.getUpdated_at());
+			obj.setUserAccessType(temp.getAccessType());
+			obj.setUser(temp.getUser());
+			obj.setType(temp.getType());
+			return obj;
+		}).collect(Collectors.toList());
+		
+	}
+	@Override
+	public List<DashboardDTO> findSynopticsIdentification(String identification, String columName, String order,String user,  int page, int limit) {
+		List<DashboardForList> synopticsForList = new ArrayList<>();
+		
+		DashboardType typeDashboard = Dashboard.DashboardType.SYNOPTIC;
+		int offset = page;
+		if(page != 0) {
+			offset = (page / limit);
+		}
+		if(identification == null ) {
+			identification = "";
+		}
+		
+		final User sessionUser = userRepository.findByUserId(user);
+		
+		try {
+			if (sessionUser.isAdmin()) {
+				
+				synopticsForList =  dashboardRepositoryPageable.findByIdentificationSynopticsContainingAndType(identification, typeDashboard, PageRequest.of(offset, limit, Sort.by(Direction.fromString(order.toUpperCase()), columName)));
+				
+			} else {
+				synopticsForList =  dashboardRepositoryPageable.findByUserAndPermissionsSynoptics(sessionUser, identification, typeDashboard, PageRequest.of(offset, limit, Sort.by(Direction.fromString(order.toUpperCase()), columName)));
+			}
+				securityService.setSecurityToInputList(synopticsForList, sessionUser, "Synoptics");
+		} catch (final Exception e) {
+			log.error(e.getMessage());
+		}
+		
+		return synopticsForList.stream().map(temp -> {
+			final DashboardDTO obj = new DashboardDTO();
+			obj.setCreatedAt(temp.getCreated_at());
+			obj.setDescription(temp.getDescription());
+			obj.setId(temp.getId());
+			obj.setIdentification(temp.getIdentification());
+			obj.setHasImage(Boolean.TRUE);
+			obj.setPublic(temp.isPublic());
+			obj.setImage(temp.getImage());
+			obj.setUpdatedAt(temp.getUpdated_at());
+			obj.setUserAccessType(temp.getAccessType());
+			obj.setUser(temp.getUser());
+			obj.setType(temp.getType());
+			return obj;
+		}).collect(Collectors.toList());
+		
+	}
+	
+	
+	public Integer countDashboardIdentification(String identification, String user) {
+		Integer numDashboards = 0;
+		
+		DashboardType typeDashboard = Dashboard.DashboardType.DASHBOARD;
+		if(identification == null ) {
+			identification = "";
+		}		
+		final User sessionUser = userRepository.findByUserId(user);
+		try {
+			if (sessionUser.isAdmin()) {
+				
+				numDashboards =  dashboardRepositoryPageable.countByIdentificationDashboardContainingAndType(identification, typeDashboard);
 
+			} else {
+				numDashboards = dashboardRepositoryPageable.countByUserAndPermissionsDashboards(sessionUser, identification, typeDashboard);
+			}
+		} catch (final Exception e) {
+			log.error(e.getMessage());
+		}
+		return numDashboards;
+		
+	}
+	
+	public Integer countSynopticIdentification(String identification, String user) {
+		Integer numSynoptics = 0;
+		
+		
+		DashboardType typeSynoptics = Dashboard.DashboardType.SYNOPTIC;
+		if(identification == null ) {
+			identification = "";
+		}	
+		final User sessionUser = userRepository.findByUserId(user);
+		try {
+			if (sessionUser.isAdmin()) {
+				
+				numSynoptics =  dashboardRepositoryPageable.countByIdentificationSynopticsContainingAndType(identification, typeSynoptics);
+
+			} else {
+				numSynoptics = dashboardRepositoryPageable.countByUserAndPermissionsSynoptycs(sessionUser, identification, typeSynoptics);
+			}
+		} catch (final Exception e) {
+			log.error(e.getMessage());
+		}
+		
+		return numSynoptics;
+		
+	}
+
+	
 	@Override
 	public List<String> getAllIdentifications() {
 		final List<Dashboard> dashboards = dashboardRepository.findAllByOrderByIdentificationAsc();
@@ -612,11 +761,11 @@ public class DashboardServiceImpl implements DashboardService {
 	}
 
 	@Override
-	public String cloneDashboard(Dashboard originalDashboard, String identification, User user) {
+	public String cloneDashboard(Dashboard originalDashboard, String identification, String userId) {
 		final Dashboard cloneDashboard = new Dashboard();
 
 		try {
-
+			User user = userRepository.findByUserId(userId);
 			cloneDashboard.setIdentification(identification);
 			cloneDashboard.setUser(user);
 			cloneDashboard.setCustomcss(originalDashboard.getCustomcss());
@@ -628,7 +777,6 @@ public class DashboardServiceImpl implements DashboardService {
 			cloneDashboard.setJsoni18n(originalDashboard.getJsoni18n());
 			cloneDashboard.setModel(originalDashboard.getModel());
 			cloneDashboard.setType(originalDashboard.getType());
-
 			dashboardRepository.save(cloneDashboard);
 			cloneI18nResource(originalDashboard, cloneDashboard, user);
 			return cloneDashboard.getId();
@@ -1820,11 +1968,13 @@ public class DashboardServiceImpl implements DashboardService {
 		String categoryIdentification = null;
 		String subCategoryIdentification = null;
 		if (categoryRelationship != null) {
-			final Category category = categoryService.getCategoryByIdentification(categoryRelationship.getCategory());
+			final Category category = categoryService.getCategoryById(categoryRelationship.getCategory());
 			final Subcategory subcategory = subcategoryService
 					.getSubcategoryById(categoryRelationship.getSubcategory());
-			categoryIdentification = category.getIdentification();
-			subCategoryIdentification = subcategory.getIdentification();
+			if (category != null)
+				categoryIdentification = category.getIdentification();
+			if (subcategory != null)
+				subCategoryIdentification = subcategory.getIdentification();
 		}
 
 		final List<String> i18n = new ArrayList<String>();

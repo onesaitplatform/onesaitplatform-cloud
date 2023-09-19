@@ -23,17 +23,24 @@ public class VersionableVO {
 	private String name;
 	private String id;
 	private String className;
+	private String userId;
 
 	public VersionableVO(String name, String id) {
 		this.name = name;
 		this.id = id;
 	}
 
-
 	public VersionableVO(String name, String id, String className) {
 		this.name = name;
 		this.id = id;
 		this.className = className;
+	}
+
+	public VersionableVO(String name, String id, String className, String userId) {
+		this.name = name;
+		this.id = id;
+		this.className = className;
+		this.userId = userId;
 	}
 
 }

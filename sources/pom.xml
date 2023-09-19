@@ -13,7 +13,8 @@
 
 	<properties>
 
-		<revision>5.0.0-ce</revision>
+
+		<revision>5.1.1-survivor</revision>
 		<docker.image.username>onesaitplatform</docker.image.username>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -27,8 +28,8 @@
 
 		<commons-io.version>2.4</commons-io.version>
 		<javafaker.version>0.14</javafaker.version>
-		<spring-boot.version>2.7.9</spring-boot.version>
-		 <aspectj.version>1.9.8</aspectj.version>
+		<spring-boot.version>2.7.11</spring-boot.version>
+		<aspectj.version>1.9.8</aspectj.version>
 		
 		<spring-boot-admin-server.version>2.6.2</spring-boot-admin-server.version>
 		<spring-boot-admin-starter-client.version>2.6.2</spring-boot-admin-starter-client.version>
@@ -55,7 +56,7 @@
 		<onesaitplatform.client.version>3.2.0-RELEASE</onesaitplatform.client.version>
 		<hazelcast-client.version>3.12.12</hazelcast-client.version>
 		<hazelcast.zookeeper.version>4.0.2</hazelcast.zookeeper.version>
-		<hazelcast.version>5.1</hazelcast.version>
+		<hazelcast.version>5.1.3</hazelcast.version>
 		<curator.version>5.4.0</curator.version>
 		<jasypt.version>2.0.0</jasypt.version>
 		<saml2.version>1.0.3.RELEASE</saml2.version>
@@ -344,10 +345,6 @@
 			<url>https://nexus.onesaitplatform.com/nexus/content/repositories/snapshots/</url>
 		</repository>
 		<repository>
-			<id>mavencentral</id>
-			<url>https://repo.spring.io/milestone</url>
-		</repository>
-		<repository>
 			<id>central Maven</id>
 			<url>https://repo1.maven.org</url>
 			<!-- TEMPORAL <url>https://central.maven.org/maven2/</url> -->
@@ -398,6 +395,7 @@
 
 		<!--DIGITAL TWIN -->
 		<module>libraries/digital-twin/digital-twin-library</module>
+		<module>libraries/digital-twin/command-executor-library</module>
 		<!-- module>libraries/digital-twin/sensehat-library</module -->
 
 		<!--CONFIG -->

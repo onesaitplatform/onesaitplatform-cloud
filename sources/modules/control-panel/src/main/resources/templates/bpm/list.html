@@ -155,8 +155,8 @@
 													dt:reloadSelector="#btn-tenants-reload" dt:reloadFunction="Bpm.List.reloadTable"
 													dt:filterSelector="#filterButton" dt:filterClearSelector="#filterClearButton" > <!-- dt:dom="l0frtip" -->
 													<thead>
-														<tr class="cabecera-tabla">
-															<th dt:property="id" class="titulo-columnas" th:text="#{gen.identification}">Identification</th>
+														<tr class="cabecera-tabla">	
+															<th dt:property="id" class="titulo-columnas" th:text="#{gen.id}">Id</th>
 															<th dt:property="name" class="titulo-columnas" th:text="#{gen.name}">Name</th>
 															<th dt:property="owner" class="titulo-columnas" th:text="#{gen.owner}">Owner</th>															
 															<th dt:sortable="false" dt:renderFunction="Bpm.List.dtRenderOptions" class="titulo-columnas text-center" style="width:85px;"><span th:text="#{gen.options}">Options</span></th>
@@ -195,7 +195,7 @@
 													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
-															<label th:text="#{gen.identification}"> Id </label>
+															<label th:text="#{gen.id}"> Id </label>
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
@@ -401,6 +401,11 @@
 		genView:  [[#{gen.view}]],
 		upload: [[#{gen.uploadBtn}]]
 	};
+	
+	$(window).on('pageshow', function(event) {
+ 		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});
 		$(document).ready(function() {
 			
 			//SHOW/HIDE DATATABLE COLUMNS HANDLER
@@ -428,11 +433,9 @@
 			$('#search_bpm').on('click',function(){
 				$('#tenants').DataTable().column(1).search( $('#bpm-name').val()).draw();
 			});
-
-		});
-		
-		$(window).on("load",function(){  
-			$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
+			
+			
+			//$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
 			
 			//DATATABLE 
 			var oTable = $('#tenants').DataTable({
@@ -445,7 +448,7 @@
 			} );
 
 			// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-			$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+			//$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 			
 			// SHOW/HIDE DATATABLES COLUMN INIT 
 			$('#divcreate').prepend($('#dataTable-vis-toggle'));	

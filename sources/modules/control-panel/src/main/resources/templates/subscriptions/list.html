@@ -277,7 +277,11 @@
 		var subscriptionId = split[split.length - 1];
 		navigateUrl("/create/" + subscriptionId);
 	}
-	
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
+		 $.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
+	});
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		
@@ -301,11 +305,8 @@
 		
 		// SEARCH FORM
 		$('#search_subscription').on('click',function(){ $('#form_subscription')[0].submit(); });
-	});
-	  
-	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+ 
+		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 	
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
 		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });

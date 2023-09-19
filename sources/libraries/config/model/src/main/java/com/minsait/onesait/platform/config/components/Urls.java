@@ -87,8 +87,11 @@ public class Urls {
 	private Modeljsonld modeljsonld;
 
 	private Datalabeling datalabeling;
+
 	private Nebula nebula;
 
 	private Spark spark;
+
+	private TracingUI tracingUI;
 
 }

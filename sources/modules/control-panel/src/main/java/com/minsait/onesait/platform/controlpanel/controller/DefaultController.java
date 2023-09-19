@@ -111,9 +111,7 @@ public class DefaultController {
 		httpSession.removeAttribute(APP_ID);
 		
 		if (utils.isAuthenticated()) {
-			if (utils.isUser()) {
-				return "redirect:/marketasset/list";
-			} else if (utils.isDataViewer()) {
+			if (utils.isDataViewer()) {
 				return "redirect:/dashboards/viewerlist";
 			}
 			return "redirect:/main";

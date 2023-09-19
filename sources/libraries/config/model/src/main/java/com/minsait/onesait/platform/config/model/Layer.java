@@ -225,7 +225,7 @@ public class Layer extends OPResource implements Versionable<Layer> {
 
 	@JsonGetter("ontology")
 	public String getOntologyJson() {
-		if(ontology != null) {
+		if (ontology != null) {
 			return ontology.getId();
 		}
 		return null;
@@ -250,6 +250,13 @@ public class Layer extends OPResource implements Versionable<Layer> {
 			}
 		}
 		return o;
+	}
+
+	@Override
+	public void setOwnerUserId(String userId) {
+		final User u = new User();
+		u.setUserId(userId);
+		setUser(u);
 	}
 
 }

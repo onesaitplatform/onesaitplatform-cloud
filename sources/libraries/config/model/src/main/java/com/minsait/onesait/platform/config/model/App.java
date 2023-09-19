@@ -207,8 +207,8 @@ public class App extends AppParent implements Versionable<App> {
 				appRoles.forEach(ar -> {
 					ar.getAppUsers().removeIf(au -> excludedUsers.contains(au.getUser().getUserId()));
 					ar.getChildRoles()
-					.removeIf(r -> !CollectionUtils.isEmpty(excludedIds.get(App.class.getSimpleName()))
-							&& excludedIds.get(App.class.getSimpleName()).contains(r.getApp().getId()));
+							.removeIf(r -> !CollectionUtils.isEmpty(excludedIds.get(App.class.getSimpleName()))
+									&& excludedIds.get(App.class.getSimpleName()).contains(r.getApp().getId()));
 				});
 
 				app = this;
@@ -222,4 +222,10 @@ public class App extends AppParent implements Versionable<App> {
 		return app;
 	}
 
+	@Override
+	public void setOwnerUserId(String userId) {
+		final User u = new User();
+		u.setUserId(userId);
+		setUser(u);
+	}
 }

@@ -1640,7 +1640,6 @@ label {
 .border-right {
 	border-right-style: solid;
 	border-right-color: #c0c0c0;
-	border-right-width: 1px;
 }
 
 .border-left {
@@ -1924,6 +1923,7 @@ Utilities
 .padding-bottom-10 { padding-bottom: 10px !important; }
 
 .no-padding-top { padding-top: 0px !important; }
+.padding-top-5 { padding-top: 5px !important; }
 .padding-top-8 { padding-top: 8px !important; }
 .padding-top-10 { padding-top: 10px !important; }
 
@@ -1943,6 +1943,8 @@ Utilities
 .no-padding-both { padding-left: 0px !important; padding-right: 0px !important; }
 .padding-both-5 { padding-right: 5px !important;  padding-left: 5px !important; }
 .padding-both-10{ padding-right: 10px !important; padding-left: 10px !important; }
+
+.no-padding-all { padding-left: 0px !important; padding-right: 0px !important; padding-top: 0px !important; padding-bottom: 0px !important;}
 
 /* IE8 & IE9 mode utilities */
 .visible-ie8 {
@@ -2917,8 +2919,9 @@ Custom Bootstrap Badges
 }
 
 .text-light{
-  color:#fff; !important;
+  color:#fff !important;
 }
+
 .text-light:hover{
   cursor: pointer;
 }
@@ -9055,6 +9058,11 @@ padding: 0px 0px 12px 0px;
 
 .portlet.light.no-top-pad {
 padding: 0px 40px 32px 60px;
+}
+
+.portlet.light.no-top-pad-layer-create {
+padding: 0px 40px 32px 0px;
+word-break: break-all;
 }
 
 	
@@ -24199,6 +24207,7 @@ margin-right: 8px; }
 		color: #616161!important;
 		flex-grow: 1;
 }
+
 @media (max-width: 767px) {
   /* 767px */
   .mt-content-row {
@@ -24256,7 +24265,7 @@ margin-right: 8px; }
     text-align: center;
     margin-right: 15px;
     margin-bottom: 15px;
-    border-radius: 2px;    
+    border-radius: 2px;   
 }
 
 .icon-arrow-cards {
@@ -24282,3 +24291,4 @@ margin-right: 8px; }
   .modal-xl {
     max-width: 1300px;
   }
+ }

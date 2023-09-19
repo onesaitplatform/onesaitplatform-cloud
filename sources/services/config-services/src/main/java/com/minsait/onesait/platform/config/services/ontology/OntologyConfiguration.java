@@ -101,8 +101,8 @@ public class OntologyConfiguration {
 
 	private boolean allowsCustomIdConfig = false;
 	private boolean allowsUpsertById = false;
-
 	private String customIdField;
+	private String ttlRetentionPeriod;
 
 	private String datasourceCatalog;
 	private String bucketName;
@@ -182,7 +182,7 @@ public class OntologyConfiguration {
 		}
 
 		customIdField = request.getParameter("customIdField");
-
+		ttlRetentionPeriod = request.getParameter("ttlRetentionPeriod");
 		// presto
 
 		datasourceCatalog = request.getParameter("datasourceCatalog");

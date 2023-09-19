@@ -1488,20 +1488,28 @@
       "zoom_out_map"
     ]
 
-vm.getInsensitiveProperty = function (elem,label){
-  if(elem == null || typeof elem == 'undefined' || label == null || typeof label == 'undefined' ){
-    return undefined;
-  }
-  if(label in elem){
-    return elem[label];
-  }else if(label.toUpperCase() in elem){
-    return elem[label.toUpperCase()]
-  }else if(label.toLowerCase() in elem){
-    return elem[label.toLowerCase()]
-  }else{
-    return undefined;
-  }
- 
-}
+    vm.getInsensitiveProperty = function (elem,label) {
+      if (elem == null || typeof elem == 'undefined' || label == null || typeof label == 'undefined' ) {
+        return undefined;
+      }
+      if (label in elem) {
+        return elem[label];
+      } else if (label.toUpperCase() in elem) {
+        return elem[label.toUpperCase()]
+      } else if (label.toLowerCase() in elem) {
+        return elem[label.toLowerCase()]
+      } else {
+        return undefined;
+      }
+    
+    }
+
+    vm.cleanHTMLJSComments = function (libs) {
+      return libs.slice().replace(/<!--(?!>)[\S\s]*?-->/g, '').replace(/(\r\n|\n|\r| )/gm, "");
+    }
+
+    vm.isLibsinHLibs = function (libs, hlibs) {
+      return vm.cleanHTMLJSComments(hlibs).indexOf(vm.cleanHTMLJSComments(libs)) != -1;
+    }
   };
 })();

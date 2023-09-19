@@ -1,0 +1,232 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.12.2">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@1.1.9">
+      <jobProperties/>
+      <triggers/>
+      <parameters>
+        <string>DOCKER_MODULETAGVALUE</string>
+        <string>DOCKER_USERNAMEVALUE</string>
+        <string>DOCKER_PUSHREGISTRY_PRIVATE</string>
+        <string>GIT_URL</string>
+        <string>GIT_BRANCHNAME</string>
+        <string>PRIVATE_REGISTRY</string>
+      </parameters>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+  </actions>
+  <description>Microservice CI pipeline</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>1</daysToKeep>
+        <numToKeep>1</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <org.jenkinsci.plugins.workflow.job.properties.DisableConcurrentBuildsJobProperty/>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>GIT_URL</name>
+          <description>URL to the Git Repository</description>
+          <defaultValue>{{GIT_REPOSITORY}}</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+         <hudson.model.StringParameterDefinition>
+          <name>GIT_BRANCHNAME</name>
+          <description>compilation branch name</description>
+          <defaultValue>master</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>GIT_USER</name>
+          <description>Git User</description>
+          <defaultValue>{{GIT_USER}}</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>GIT_TOKEN</name>
+          <description>Git Private token</description>
+          <defaultValue>{{GIT_TOKEN}}</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>DOCKER_MODULETAGVALUE</name>
+          <description>Image generation tag value</description>
+          <defaultValue>latest</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+       
+        <hudson.model.StringParameterDefinition>
+          <name>DOCKER_PUSHREGISTRY_PRIVATE</name>
+          <description>Push image to private registry</description>
+          <defaultValue>true</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+         <hudson.model.StringParameterDefinition>
+          <name>PRIVATE_REGISTRY</name>
+          <description>URL to the docker registry</description>
+          <defaultValue>dcme-npro-onst-prd-devops-00/production-registry</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers/>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.39">
+    <script>pipeline {  
+   agent {
+          kubernetes {
+              defaultContainer &apos;jnlp&apos;
+              yaml &quot;&quot;&quot;
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    labels:
+      maven-version: &quot;3.6.0&quot;
+  spec:
+    containers:
+      - name: git
+        image: alpine/git:latest
+        command:
+          - cat
+        tty: true
+      - name: maven
+        image: maven:3.6.0-jdk-8-slim
+        command:
+          - cat
+        tty: true
+      - name: docker-client
+        image: docker:19.03.1
+        command: ['sleep', '99d']
+        env:
+            - name: DOCKER_HOST
+              value: tcp://localhost:2375
+      - name: docker-daemon
+        image: docker:19.03.1-dind
+        env:
+          - name: DOCKER_TLS_CERTDIR
+            value: ""
+        securityContext:
+          privileged: true
+      - name: kubectl
+        image: lachlanevenson/k8s-kubectl:latest
+        command:
+          - cat
+        tty: true
+
+  &quot;&quot;&quot;
+          }
+      }
+   
+
+   environment {          
+
+      BASEPATH = &apos;{{MICROSERVICE_NAME}}&apos;
+      SOURCESPATH = &apos;{{SOURCES_PATH}}&apos;
+      DOCKERPATH = &apos;{{DOCKER_PATH}}&apos;
+      MICROSERVICE_NAME = &apos;{{MICROSERVICE_NAME}}&apos;
+  
+   }
+   
+   parameters { 
+       string(name: &apos;GIT_URL&apos;, 
+              defaultValue: &apos;{{GIT_REPOSITORY}}&apos;, 
+              description: &apos;URL Git Repository&apos;)
+       string(name: &apos;GIT_TOKEN&apos;, 
+              defaultValue: &apos;{{GIT_TOKEN}}&apos;, 
+              description: &apos;Git private tokeny&apos;)
+       string(name: &apos;GIT_USER&apos;, 
+              defaultValue: &apos;{{GIT_USER}}&apos;, 
+              description: &apos;URL Git user&apos;)
+       string(name: &apos;GIT_BRANCHNAME&apos;, 
+              defaultValue: &apos;master&apos;, 
+              description: &apos;compilation branch name&apos;)
+       string(name: &apos;DOCKER_MODULETAGVALUE&apos;, 
+              defaultValue: &apos;latest&apos;, 
+              description: &apos;Image generation tag value&apos;)
+       string(name: &apos;DOCKER_PUSHREGISTRY_PRIVATE&apos;, 
+              defaultValue: &apos;true&apos;, 
+              description: &apos;Push image to private registry&apos;)
+       string(name: 'PRIVATE_REGISTRY', 
+              defaultValue: 'dcme-npro-onst-prd-devops-00/production-registry', 
+              description: 'URL to the docker registry')
+      
+   }    
+   
+   stages {
+        stage(&apos;fetch&apos;) {  
+          steps {  
+            container(&apos;git&apos;) {
+
+                 sh &quot;git clone \$(echo ${params.GIT_URL} | sed -e &apos;s/:\\/\\//:\\/\\/${params.GIT_USER}:${params.GIT_TOKEN}@/&apos;) ${env.BASEPATH}&quot;
+                 dir(&quot;${env.BASEPATH}&quot;){
+                   sh &quot;git checkout ${params.GIT_BRANCHNAME}&quot;
+                   sh &apos;chmod 777 -R .&apos;
+                 }
+               
+            }       
+          }          
+         }
+     
+     stage(&apos;build&apos;) {
+          steps {
+            container(&apos;maven&apos;) {
+            dir(&quot;${env.BASEPATH}/${env.SOURCESPATH}&quot;){
+                sh &apos;mkdir -p $HOME/.m2&apos;
+                sh &apos;mvn clean install -DskipTests=true&apos;
+                }
+            }
+             
+          }
+       }
+       
+       stage(&apos;deliver&apos;) {
+        stages{
+           stage(&apos;build-image&apos;) {
+              steps {
+               // variable sustitution
+               container(&apos;docker-client&apos;){
+                 dir(&quot;${env.BASEPATH}&quot;) {
+                	sh &quot;cp ${env.SOURCESPATH}/target/*.jar ${env.DOCKERPATH}&quot;
+		            sh &quot;cp -r ${env.SOURCESPATH}/flask ${env.DOCKERPATH}/flask&quot;
+		            
+		            script{
+		              img = docker.build("${PRIVATE_REGISTRY}/${env.MICROSERVICE_NAME}:${params.DOCKER_MODULETAGVALUE}", "--network host ${env.DOCKERPATH}")
+		            }
+		          
+	           	  }
+                }
+              }
+           }
+
+           stage(&apos;deliver image&apos;) {
+              when {
+                expression { params.DOCKER_PUSHREGISTRY_PRIVATE == &apos;true&apos; }
+              }
+              steps {
+                container(&apos;docker-client&apos;){
+                   script {
+                        docker.withRegistry("https://europe-docker.pkg.dev", "production-registry-write") {
+                            img.push()
+                        }
+                    }
+              }
+           }
+        }
+      }
+         
+   }
+
+    
+ } 
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

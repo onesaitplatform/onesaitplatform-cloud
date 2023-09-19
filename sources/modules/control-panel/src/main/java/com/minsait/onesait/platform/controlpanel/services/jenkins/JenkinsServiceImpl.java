@@ -26,7 +26,6 @@ import java.util.Properties;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.io.IOUtils;
-import org.jclouds.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -172,8 +171,8 @@ public class JenkinsServiceImpl implements JenkinsService {
 
 	private Properties overrideSSLProperties() {
 		final Properties overrides = new Properties();
-		overrides.setProperty(Constants.PROPERTY_RELAX_HOSTNAME, "true");
-		overrides.setProperty(Constants.PROPERTY_TRUST_ALL_CERTS, "true");
+		overrides.setProperty("jclouds.relax-hostname", "true");
+		overrides.setProperty("jclouds.trust-all-certs", "true");
 		return overrides;
 	}
 

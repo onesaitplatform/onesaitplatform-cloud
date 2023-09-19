@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.inject.Inject;
-
 import com.google.gson.reflect.TypeToken;
 import com.minsait.onesait.platform.zeppelin.authenticator.Beans.NotebookInfoBean;
 import com.minsait.onesait.platform.zeppelin.authenticator.Beans.UserInfoBean;
@@ -36,7 +34,6 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.zeppelin.notebook.AuthorizationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.ServiceLocatorFactory;
 
 import com.google.gson.Gson;
@@ -65,6 +62,10 @@ public class OnesaitplatformRealm extends AuthorizingRealm {
 	
 	private boolean keycloakEnabled;
 	private String KEYCLOAK_ENV_KEY = "USE_KEYCLOAK";
+	
+	private String READ_ACCESSTYPE = "VIEW";
+	private String EDIT_ACCESSTYPE = "EDIT";
+	private String RUN_ACCESSTYPE = "RUN";
 	
 	private static final Logger LOG = LoggerFactory.getLogger(OnesaitplatformRealm.class);
 	public static final String SERVICE_LOCATOR_NAME= "shared-locator";
@@ -134,7 +135,7 @@ public class OnesaitplatformRealm extends AuthorizingRealm {
 			role_set.add("admin");
 		}
 		else {
-			role_set.add("anaytics");
+			role_set.add("analytics");
 		}
 		return new SimpleAuthorizationInfo(role_set);
 	}
@@ -212,14 +213,47 @@ public class OnesaitplatformRealm extends AuthorizingRealm {
 			Type listType = new TypeToken<List<NotebookInfoBean>>() {}.getType();
 			List<NotebookInfoBean> lnib = gsonParser.fromJson(jsonAnswer, listType);
 			
+			Set<String> defaultEntities = new HashSet<>();
+			defaultEntities.add("admin");
+			
 			for(NotebookInfoBean nib : lnib){
 				String idzep = nib.getIdzep();
-				Set oldWritters = authorizationService.getWriters(idzep);
-				if (oldWritters.isEmpty()) {
+				
+				//Set default
+				authorizationService.setReaders(idzep, defaultEntities, true);
+				authorizationService.setWriters(idzep, defaultEntities, true);
+				authorizationService.setRunners(idzep, defaultEntities, true);
+				authorizationService.setOwners(idzep, defaultEntities, true);
+				
+				Set previousSet;
+				if (READ_ACCESSTYPE.equals(nib.getAccessType())) {
+					previousSet = authorizationService.getReaders(idzep);
+					LOG.info("ReadOnly: {} with {} ",idzep, previousSet);
+				} else if (RUN_ACCESSTYPE.equals(nib.getAccessType())) {
+					previousSet = authorizationService.getReaders(idzep);
+					LOG.info("ReadOnly: {} with {} ",idzep, previousSet);
+					previousSet = authorizationService.getRunners(idzep);
+					LOG.info("Runner: {} with {} ",idzep, previousSet);
+				} else {
+					previousSet = authorizationService.getWriters(idzep);
+					LOG.info("WriteAccess: {} with {} ", idzep,previousSet);
+				}
+				if (previousSet == null) {
 					LOG.error("Notebook: " + nib.getIdentification() + " with NoteId: " + idzep + " doesn't exist in zeppelin, please remove it from onesait platform");
 				} else {
-					oldWritters.add(infoUser.getPrincipal());
-					authorizationService.setWriters(idzep, oldWritters);
+					previousSet.add(infoUser.getPrincipal());
+					if (READ_ACCESSTYPE.equals(nib.getAccessType())) {
+						authorizationService.setReaders(idzep, previousSet, true);
+						LOG.info("Setting New ReadOnly: {} with {} ", idzep, previousSet);
+					} else if (RUN_ACCESSTYPE.equals(nib.getAccessType())) {
+						authorizationService.setReaders(idzep, previousSet, true);
+						LOG.info("Setting New ReadOnly: {} with {} ", idzep, previousSet);
+						authorizationService.setRunners(idzep, previousSet, true);
+						LOG.info("Setting New Runner: {} with {} ", idzep, previousSet);
+					} else if (EDIT_ACCESSTYPE.equals(nib.getAccessType())) {
+						authorizationService.setWriters(idzep, previousSet, true);
+						LOG.info("Setting New WriteAccess: {} with {} ", idzep, previousSet);
+					}
 				}
 			}
 	    } catch (Exception e) {

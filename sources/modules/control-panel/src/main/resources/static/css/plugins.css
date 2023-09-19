@@ -2119,6 +2119,7 @@ font-size: 17px;
 font-weight: 500;
 line-height: 24px;
 text-decoration: none;
+word-break: break-word;
 }
 
 .column {	
@@ -2136,7 +2137,6 @@ text-decoration: none;
 
 .column__text {	
 	display: block;
-	
 }
 
 .column--left .column__text {
@@ -2158,11 +2158,26 @@ text-decoration: none;
 
 /* jquery confirm content height */
 .jconfirm .jconfirm-box div.jconfirm-content-pane .jconfirm-content { 
-    min-height: 100px;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+  color: #505D66;
+  min-height: 100px;
 }
 .jconfirm .jconfirm-box .jconfirm-buttons button {
      font-weight: normal !important;
      font-size: 11px !important;
+}
+
+.jconfirm .jconfirm-box div.jconfirm-title-c {
+    display: block;
+    font-size: 17px !important;
+    line-height: 24px !important;
+    font-weight: 500;
+}
+
+.jconfirm .jconfirm-box {
+    padding: 24px 24px 0px 24px !important;
 }
 
 

@@ -26,4 +26,5 @@ public class EnvVariables {
 	private Map<String, Object> iotbroker;
 	private AuditConfiguration audit;
 	private Map<String, Object> controlpanel;
+	private Map<String, Object> report;
 }

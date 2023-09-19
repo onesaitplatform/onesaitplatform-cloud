@@ -20,9 +20,8 @@ Microservice.List = (function() {
 	
 	var dtRenderOptions = function (data, type, row) {
 		return '<div class="grupo-iconos text-center">'
-		+ '<span data-id="' + row.id + '" data-contextPath="' + row.contextPath + '" data-caas="' + row.caas + '" data-deployed="' + row.deployed + '" data-url="' + row.deploymentUrl + '" class="btn-url btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genUrl+'"><i class="la la-eye font-hg"></i></span></a>'
+		+ '<span data-id="' + row.id + '" data-contextPath="' + row.contextPath + '" data-caas="' + row.caas + '" data-deployed="' + row.deployed + '" data-url="' + row.deploymentUrl + '" class="btn-url btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genUrl+'"><i class="icon-url"></i></span></a>'
 		+ '<span data-id="' + row.id + '" class="icon-microservice-edit btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genUpdate+'"><i class="icon-edit"></i></span>'
-		+ '<a target="_blank" href="'+row.deploymentUrl+'"><span data-id="' + row.id + '" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genView+'"><i class="icon-url"></i></span></a>'
 		+ '<span data-id="' + row.id + '" class="icon-microservice-trash btn btn-xs btn-no-border icon-on-table color-red tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genDelete+'"><i class="icon-delete"></i></span>'																											
 		+ '</div>';
 	};
@@ -99,20 +98,27 @@ Microservice.List = (function() {
 
 	function createRows(data){
 		if(data!== null && typeof data!='undefined' && data.length>0){
-			$('#microservices tbody').empty();
+			//$('#microservices tbody').empty();
+			var table = $('#microservices').DataTable(); 
+			table.clear().draw();
 			for(var i = 0; i<data.length;i++){
 				var tr = '<tr>';
 				tr  +=createTrContent(data[i]);
 				tr +='</tr>';
-				$('#microservices tbody').append(tr);
+				table.row.add($(tr)).draw();
+				//$('#microservices tbody').append(tr);
 			}
+  			//table.data.reload().draw();
+  			
+			// HIDE COLUMNS		
+		//$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		}
 		return null;
 	}
 	
 	function createTrContent(data){		
 
-		var html = '<td class="text-left hide">'+data.id+'</td>';
+		var html = '<td class="text-left ">'+data.id+'</td>';
 		html += '<td class="text-left ">'+data.name+'</td>';
 		html += '<td class="text-left ">'+data.owner+'</td>';
 		html += '<td>'+dtRenderLinks(data.gitlab,null,data)+'</td>';

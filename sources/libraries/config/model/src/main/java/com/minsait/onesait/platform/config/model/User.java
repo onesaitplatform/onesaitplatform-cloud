@@ -82,4 +82,8 @@ public class User extends UserParent implements Versionable<User> {
 		return u;
 	}
 
+	@Override
+	public void setOwnerUserId(String userId) {
+
+	}
 }

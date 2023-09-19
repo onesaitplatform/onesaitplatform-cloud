@@ -252,6 +252,10 @@
 	}
 	function navigateUrl(url){  window.location.href = url;	}
 	
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});
 	$(document).ready(function() {
 		
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
@@ -268,17 +272,14 @@
 			// toggle Text
 			//$(this).toggleClass('text-muted line-through');			
 		});
-		
-	});
 	
-	$(window).on("load",function() {
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 		var oTable = $('#applications').DataTable({
 	      "bAutoWidth": false
 	      });
 		oTable.page.len(10);
 		// HIDE COLUMNS		
-		$.each([ ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		//$.each([ ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 	
 		//oTable.destroy();

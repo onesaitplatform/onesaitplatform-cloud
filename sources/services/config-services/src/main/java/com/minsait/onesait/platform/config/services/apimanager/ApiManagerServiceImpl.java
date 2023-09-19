@@ -1168,7 +1168,7 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 				api.getApiOperations().add(operation);
 				// saveApiOperation(operation);
 			}
-			apiRepository.save(api);
+			//apiRepository.save(api);
 		}
 	}
 

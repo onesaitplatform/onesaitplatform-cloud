@@ -353,7 +353,7 @@
 																	<ul class="dropdown-menu dropdown-menu-table download-menu">
 																		<li>
 																			<!-- Copy link, accesible always -->
-																			<span class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" th:attr="onclick='BinaryFilesController.getBinaryFileUrl(\''+${cFile.id}+'\')'"><i class="icon-url"></i><span class="span-title-three-dots-icons" th:text="#{binaryfiles.copy}" >Copy URL</span></span>
+																			<span class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" th:attr="onclick='BinaryFilesController.getBinaryFileUrl(\''+${cFile.id}+ '?vertical=' + ${#strings.toLowerCase(#authentication.getPrincipal().getVertical())}+ '\')'"><i class="icon-url"></i><span class="span-title-three-dots-icons" th:text="#{binaryfiles.copy}" >Copy URL</span></span>
 																		</li>
 																		<li>
 																			<!-- SHARE -->	
@@ -498,6 +498,11 @@
 	var errorMaxSize = [[#{binaryfiles.maxsize.error}]];
 	function navigateUrl(url){  window.location.href = url;	}
 	function navigateWindow(url){ window.open(url,'_blank');	}
+	
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		$.each([1,2],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		//var currentMode = $('#repositories').text();
@@ -529,12 +534,7 @@
 			$('#files').DataTable().column(0).search( $('#file-name').val()).draw();
 		});
 		
-		
-	});
-	 
-	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
+		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
 	
 		//DATATABLE 
 		var oTable = $('#files').dataTable({
@@ -590,7 +590,7 @@
 		filtersResets.addClass('hide');
 		
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
-		$.each([1,2],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		//$.each([1,2],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		$('#yadcf-filter--files-0').attr("placeholder", [[#{binaryfiles.text.placeholder}]]);
 		

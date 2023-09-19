@@ -14,7 +14,7 @@
  */
 package com.minsait.onesait.platform.api.processor.utils;
 
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.swagger.models.Swagger;
 import io.swagger.parser.SwaggerParser;

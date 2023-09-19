@@ -100,7 +100,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 
 		final String userId = utils.getUserId();
 		final Notebook nt = notebookService.getNotebook(notebookId);
-		final boolean authorized = notebookService.hasUserPermissionForNotebook(nt.getIdzep(), userId);
+		final boolean authorized = notebookService.hasUserPermissionRunForNotebook(nt.getIdzep(), userId);
 
 		if (authorized) {
 			try {
@@ -123,7 +123,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 
 		final String userId = utils.getUserId();
 		final Notebook nt = notebookService.getNotebook(notebookId);
-		final boolean authorized = notebookService.hasUserPermissionForNotebook(nt.getIdzep(), userId);
+		final boolean authorized = notebookService.hasUserPermissionRunForNotebook(nt.getIdzep(), userId);
 
 		if (authorized) {
 			try {
@@ -146,7 +146,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 
 		final String userId = utils.getUserId();
 		final Notebook nt = notebookService.getNotebook(notebookId);
-		final boolean authorized = notebookService.hasUserPermissionForNotebook(nt.getIdzep(), userId);
+		final boolean authorized = notebookService.hasUserPermissionRunForNotebook(nt.getIdzep(), userId);
 
 		if (authorized) {
 			try {
@@ -167,7 +167,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 
 		final String userId = utils.getUserId();
 		final Notebook nt = notebookService.getNotebook(notebookId);
-		final boolean authorized = notebookService.hasUserPermissionForNotebook(nt.getIdzep(), userId);
+		final boolean authorized = notebookService.hasUserPermissionRunForNotebook(nt.getIdzep(), userId);
 
 		if (authorized) {
 			try {
@@ -191,7 +191,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 
 		final String userId = utils.getUserId();
 		final Notebook nt = notebookService.getNotebook(notebookId);
-		final boolean authorized = notebookService.hasUserPermissionForNotebook(nt.getIdzep(), userId);
+		final boolean authorized = notebookService.hasUserPermissionReadForNotebook(nt.getIdzep(), userId);
 
 		if (authorized) {
 			try {
@@ -212,7 +212,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 
 		final String userId = utils.getUserId();
 		final Notebook nt = notebookService.getNotebook(notebookId);
-		final boolean authorized = notebookService.hasUserPermissionForNotebook(nt.getIdzep(), userId);
+		final boolean authorized = notebookService.hasUserPermissionReadForNotebook(nt.getIdzep(), userId);
 
 		if (authorized) {
 			try {
@@ -234,7 +234,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 
 		final String userId = utils.getUserId();
 		final Notebook nt = notebookService.getNotebook(notebookId);
-		final boolean authorized = notebookService.hasUserPermissionForNotebook(nt.getIdzep(), userId);
+		final boolean authorized = notebookService.hasUserPermissionReadForNotebook(nt.getIdzep(), userId);
 
 		if (authorized) {
 
@@ -263,7 +263,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 
 		final String userId = utils.getUserId();
 		final Notebook nt = notebookService.getNotebook(notebookId);
-		final boolean authorized = notebookService.hasUserPermissionForNotebook(nt.getIdzep(), userId);
+		final boolean authorized = notebookService.hasUserPermissionReadForNotebook(nt.getIdzep(), userId);
 
 		if (authorized) {
 
@@ -336,7 +336,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 
 		final String userId = utils.getUserId();
 		final Notebook nt = notebookService.getNotebook(notebookId);
-		final boolean authorized = notebookService.hasUserPermissionForNotebook(nt.getIdzep(), userId);
+		final boolean authorized = notebookService.hasUserPermissionReadForNotebook(nt.getIdzep(), userId);
 
 		if (authorized) {
 			try {
@@ -404,7 +404,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 
 		final String userId = utils.getUserId();
 		final Notebook nt = notebookService.getNotebook(notebookId);
-		final boolean authorized = notebookService.hasUserPermissionInNotebook(nt, userId);
+		final boolean authorized = notebookService.hasUserPermissionReadInNotebook(nt, userId);
 
 		if (authorized) {
 			try {
@@ -673,7 +673,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 		final String userId = utils.getUserId();
 		final Notebook nt = notebookService.getNotebook(notebookId);
 		final User user = userService.getUser(userId);
-		final boolean authorized = notebookService.hasUserPermissionForNotebook(nt.getIdzep(), userId);
+		final boolean authorized = notebookService.hasUserPermissionRunForNotebook(nt.getIdzep(), userId);
 
 		if (authorized) {
 			try {
@@ -697,7 +697,7 @@ public class NotebookManagementController extends NotebookOpsRestServices {
 		final String userId = utils.getUserId();
 		final Notebook nt = notebookService.getNotebook(notebookId);
 		final User user = userService.getUser(userId);
-		final boolean authorized = notebookService.hasUserPermissionForNotebook(nt.getIdzep(), userId);
+		final boolean authorized = notebookService.hasUserPermissionRunForNotebook(nt.getIdzep(), userId);
 
 		if (authorized) {
 			try {

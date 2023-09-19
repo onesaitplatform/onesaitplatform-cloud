@@ -40,7 +40,7 @@
 	    window.__env.endpointDashboardEngine = '/dashboardengine';
 	    window.__env.dashboardEngineUsername = '';
 		window.__env.dashboardEnginePassword = '';
-		window.__env.dashboardEngineOauthtoken = getOauthtoken();
+		getOauthtoken();
 	    window.__env.dashboardEngineLoginRest = '/loginRest';
 	    window.__env.enableDebug = false;
 	    window.__env.restUrl = '';
@@ -85,11 +85,11 @@
      
 	     function getOauthtoken(){
 	 		if(typeof document.getElementById("oauthtoken").value!== "undefined" && document.getElementById("oauthtoken").value.length>0 ){
-	 		
-	 			return  document.getElementById("oauthtoken").value;
+	 			sessionStorage.setItem("dashboardEngineOauthtoken",document.getElementById("oauthtoken").value);
 	 		}else{
-	 		
-	 			return getURLParameterOauthtoken();
+	 			if (getURLParameterOauthtoken() !== null) {
+	 				sessionStorage.setItem("dashboardEngineOauthtoken", getURLParameterOauthtoken());
+	 			}
 	 		}
 	 	}
 	     

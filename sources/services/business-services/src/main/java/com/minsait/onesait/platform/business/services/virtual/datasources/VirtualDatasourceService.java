@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.business.services.virtual.datasources;
 import java.util.List;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.User;
@@ -30,6 +31,7 @@ public interface VirtualDatasourceService {
 	void createDatasource(OntologyVirtualDatasource datasource) throws GenericOPException;
 
 	OntologyVirtualDatasource getDatasourceById(String id);
+	
 
 	void updateOntology(OntologyVirtualDatasource datasource, Boolean maintainCredentials, String oldCredentials);
 
@@ -49,6 +51,8 @@ public interface VirtualDatasourceService {
 	List<OntologyVirtualDatasource> getAllDatasourcesByUser(User user);
 
 	OntologyVirtualDatasource getDatasourceByIdAndUserId(String id, String sessionUserId);
+	
+	List <OntologyVirtual> getAssociationExternalDatabase(String id);
 
 	OntologyVirtualDatasource getDatasourceByIdAndUserIdOrIsPublic(String id, String sessionUserId,
 			ResourceAccessType type);

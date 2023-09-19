@@ -75,6 +75,7 @@ import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardAcces
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardCreateDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardExportDTO;
+import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardTablePaginationDTO;
 import com.minsait.onesait.platform.config.services.exceptions.DashboardServiceException;
 import com.minsait.onesait.platform.config.services.internationalization.InternationalizationService;
 import com.minsait.onesait.platform.config.services.oauth.JWTService;
@@ -124,8 +125,8 @@ public class DashboardController {
 	private SubcategoryRepository subcategoryRepository;
 	@Autowired
 	private CategoryRelationRepository categoryRelationRepository;
-	
-	@Autowired 
+
+	@Autowired
 	private HttpSession httpSession;
 
 	@Autowired()
@@ -176,18 +177,13 @@ public class DashboardController {
 			@RequestParam(required = false, name = "type") String type) {
 
 		// Scaping "" string values for parameters
+		String currentTab = request.getParameter("current_tab");
 		if (identification == null) {
 			identification = "";
 		}
-		if (type != null && type.equals("")) {
-			type = null;
-		} else if (type != null && type.equals(Dashboard.DashboardType.DASHBOARD.name())) {
-			type = "";
-		}
-
-		final List<DashboardDTO> dashboard = dashboardService.findDashboardWithIdentificationAndType(identification,
-				type, utils.getUserId());
-
+		
+		final String userRole = utils.getRoleOrParent();
+		
 		if (multitenancyEnabled) {
 			multitenancyService.getVertical(MultitenancyContextHolder.getVerticalSchema()).ifPresent(v -> {
 				uiModel.addAttribute("tenant", MultitenancyContextHolder.getTenantName());
@@ -195,10 +191,92 @@ public class DashboardController {
 			});
 
 		}
-		uiModel.addAttribute("dashboards", dashboard);
+		
+		uiModel.addAttribute("userRole", userRole);
+	
+		uiModel.addAttribute("currentTab", currentTab);
 
 		return "dashboards/list";
 
+	}
+	
+	@PostMapping(value = "listdashboardpageable")
+	public @ResponseBody DashboardTablePaginationDTO listDahboardpageable (HttpServletRequest request , 
+			@RequestParam(required = false, name = "name") String identification) {
+		
+		
+		
+		Integer page = Integer.valueOf( request.getParameter("start"));
+		Integer	limit = Integer.valueOf( request.getParameter("length"));
+		Integer	draw = Integer.valueOf( request.getParameter("draw"));
+		String filter = request.getParameter("search[value]");
+		
+		
+		String columnIndex = request.getParameter("order[0][column]");
+		String columName = request.getParameter("columns[" + columnIndex + "][name]");
+		String order = request.getParameter("order[0][dir]");
+		
+		if(columName == null) {
+			columName = "identification";
+		}
+		if(order == null) {
+			order = "ASC";
+		}
+			
+		final List<DashboardDTO> dashboardList  = dashboardService.findDashboardIdentification(filter, columName, order, utils.getUserId(), page, limit);
+		final Integer countDashboard  = dashboardService.countDashboardIdentification(filter, utils.getUserId());
+		
+		
+			
+		DashboardTablePaginationDTO dashboardTable = new DashboardTablePaginationDTO();
+				
+		dashboardTable.setITotalRecords(countDashboard);		
+		dashboardTable.setITotalDisplayRecords(countDashboard);
+		dashboardTable.setDraw(draw);
+		dashboardTable.setAaData(dashboardList);
+						
+		return dashboardTable;
+			
+			
+	}
+		
+	
+	@PostMapping(value = "listsynopticspageable")
+	public @ResponseBody DashboardTablePaginationDTO listsynopticspageable (HttpServletRequest request , 
+			@RequestParam(required = false, name = "name") String identification){
+		
+		Integer page = Integer.valueOf( request.getParameter("start"));
+		Integer	limit = Integer.valueOf( request.getParameter("length"));
+		Integer	draw = Integer.valueOf( request.getParameter("draw"));
+		String filter = request.getParameter("search[value]");
+		
+		String columnIndex = request.getParameter("order[0][column]");
+		String columName = request.getParameter("columns[" + columnIndex + "][name]");
+		String order = request.getParameter("order[0][dir]");
+		
+		if(columName == null) {
+			columName = "identification";
+		}
+		if(order == null) {
+			order = "ASC";
+		}
+		
+		
+		final List<DashboardDTO> synopticsList  = dashboardService.findSynopticsIdentification(filter, columName, order, utils.getUserId(), page, limit);
+		final Integer countSynoptics  = dashboardService.countSynopticIdentification(filter, utils.getUserId());
+		
+		
+			
+		DashboardTablePaginationDTO synopticsTable = new DashboardTablePaginationDTO();
+				
+		synopticsTable.setITotalRecords(countSynoptics);		
+		synopticsTable.setITotalDisplayRecords(countSynoptics);
+		synopticsTable.setDraw(draw);
+		synopticsTable.setAaData(synopticsList);
+						
+		return synopticsTable;
+			
+			
 	}
 
 	@RequestMapping(value = "/viewerlist", produces = "text/html")
@@ -224,14 +302,16 @@ public class DashboardController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/create")
 	public String create(Model model) {
-		model.addAttribute(DASHBOARD_STR, new DashboardCreateDTO());
+		final DashboardCreateDTO dash = new DashboardCreateDTO();
+		dash.setType(DashboardType.DASHBOARD);
+		model.addAttribute(DASHBOARD_STR, dash);
 		model.addAttribute(USERS, getUserListDTO());
 		model.addAttribute(CATEGORIES, categoryService.getCategoriesByTypeAndGeneralType(Category.Type.DASHBOARD));
 		model.addAttribute(I18NS, internationalizationService.getByUserIdOrPublic(utils.getUserId()));
 		model.addAttribute("schema", dashboardConfRepository.findAllByOrderByIdentificationAsc());
-		
+
 		final Object projectId = httpSession.getAttribute(APP_ID);
-		if (projectId!=null) {
+		if (projectId != null) {
 			model.addAttribute(APP_ID, projectId.toString());
 		}
 
@@ -299,9 +379,8 @@ public class DashboardController {
 		try {
 			String id = "";
 			final String userId = utils.getUserId();
-
 			id = dashboardService.cloneDashboard(dashboardService.getDashboardById(dashboardId, userId), identification,
-					userService.getUser(userId));
+					userId);
 			final Optional<Dashboard> opt = dashboardRepository.findById(id);
 			if (!opt.isPresent()) {
 				return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -401,7 +480,7 @@ public class DashboardController {
 			dashBDTO.setHeaderlibs(dashboard.getHeaderlibs());
 			dashBDTO.setType(dashboard.getType());
 			dashBDTO.setGenerateImage(dashboard.isGenerateImage());
-			if (null != dashboard.getImage()) {
+			if (null != dashboard.getImage() && dashboard.getImage().length > 10 ) {
 				dashBDTO.setHasImage(Boolean.TRUE);
 			} else {
 				dashBDTO.setHasImage(Boolean.FALSE);
@@ -514,7 +593,8 @@ public class DashboardController {
 	}
 
 	@GetMapping(value = "/bunglemodel/{id}", produces = "application/json")
-	public @ResponseBody ResponseEntity<DashboardExportDTO> getBungleModelById(@PathVariable("id") String id, HttpServletResponse response) {
+	public @ResponseBody ResponseEntity<DashboardExportDTO> getBungleModelById(@PathVariable("id") String id,
+			HttpServletResponse response) {
 		utils.cleanInvalidSpringCookie(response);
 		ResponseEntity<DashboardExportDTO> dashboardResponse;
 		try {
@@ -559,7 +639,8 @@ public class DashboardController {
 
 	@GetMapping(value = "/viewiframe/{id}", produces = "text/html")
 	public String viewerDashboardIframe(Model model, @PathVariable("id") String id,
-			@RequestParam(value = "oauthtoken", required = false) String oauthtoken, HttpServletRequest request, HttpServletResponse response) {
+			@RequestParam(value = "oauthtoken", required = false) String oauthtoken, HttpServletRequest request,
+			HttpServletResponse response) {
 		utils.cleanInvalidSpringCookie(response);
 		return openDashboard(model, id, oauthtoken, request, VIEWIFRAME);
 

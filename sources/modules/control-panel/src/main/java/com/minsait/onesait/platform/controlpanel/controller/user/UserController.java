@@ -59,6 +59,7 @@ import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyUserAccess;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserToken;
+import com.minsait.onesait.platform.config.model.Role.Type;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionServiceImpl;
@@ -278,8 +279,11 @@ public class UserController {
 			return ERROR_403;
 		}
 
+		final String Pass = request.getParameter("passwordbox");
 		final String newPass = request.getParameter("newpasswordbox");
 		final String repeatPass = request.getParameter("repeatpasswordbox");
+	
+
 
 		if (bindingResult.hasErrors()) {
 			log.error("Some user properties missing: ");
@@ -308,10 +312,19 @@ public class UserController {
 								.fromYaml(configuration.getYmlConfig()).get("Authentication");
 						final int numberLastEntriesToCheck = (Integer) ymlExpirationUsersPassConfig
 								.get("numberLastEntriesToCheck");
-
+						 	
+						
+						if (!utils.isAdministrator()) {
+							if(!multitenancyService.checkCurrentPasword(user.getUserId(), Pass)) {
+								throw new UserServiceException(
+										"The current password is not correct, please check the current password or contact the administrator");
+							}
+						}
+						
 						if (!multitenancyService.isValidPass(user.getUserId(), newPass, numberLastEntriesToCheck)) {
 							throw new UserServiceException(
 									"Password not valid because it has already been used before");
+						
 						}
 						userService.updatePassword(user);
 						userService.updateUser(user);

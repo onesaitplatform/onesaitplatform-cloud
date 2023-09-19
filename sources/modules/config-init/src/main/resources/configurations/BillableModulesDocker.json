@@ -103,7 +103,7 @@
 {
     "module": "nebulagraph",
     "name": "Nebula Graph DB",
-    "servicename": "localhost",
+    "servicename": "graphd.nebula",
     "port": 9669
 },
 {

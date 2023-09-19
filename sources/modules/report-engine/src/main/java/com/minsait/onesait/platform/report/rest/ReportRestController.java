@@ -31,6 +31,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,12 +43,14 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.common.net.HttpHeaders;
 import com.minsait.onesait.platform.config.dto.report.ParameterMapConverter;
 import com.minsait.onesait.platform.config.dto.report.ReportInfoDto;
+import com.minsait.onesait.platform.config.dto.report.ReportInfoMSTemplateDTO;
 import com.minsait.onesait.platform.config.dto.report.ReportParameter;
 import com.minsait.onesait.platform.config.dto.report.ReportParameterType;
 import com.minsait.onesait.platform.config.dto.report.ReportType;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.Report;
 import com.minsait.onesait.platform.config.services.reports.ReportService;
+import com.minsait.onesait.platform.config.services.templates.poi.PoiTemplatesUtil;
 import com.minsait.onesait.platform.report.service.ReportInfoService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -143,6 +146,7 @@ public class ReportRestController {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+
 
 	@Operation(summary = "Retrieve datasource from Jasper Report")
 	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=ReportParameter[].class)) , responseCode = "200", description = "OK"))

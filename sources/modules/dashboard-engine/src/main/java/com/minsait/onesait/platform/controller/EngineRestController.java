@@ -111,7 +111,7 @@ public class EngineRestController {
 	private int queryDefaultLimit;
 
 	private static final String ERROR_TRUE = "{\"error\":\"true\"}";
-	private static final String EMPTY = "[ ]";
+	private static final String EMPTY = "[]";
 
 	@GetMapping(value = "/getEntityCrudInfo/{id}")
 	public @ResponseBody ResponseEntity<OntologyCrudDTO> getEntityCrudInfo(@PathVariable("id") String id) {
@@ -505,7 +505,9 @@ public class EngineRestController {
 			String rootName = prop.keys().next();
 			String finalschema = "{\"" + rootName + "\": {\"type\":\"object\",\"properties\":" + schema.toString()
 					+ "}}";
-			schema = new JSONObject(finalschema);
+			if (!ontology.getRtdbDatasource().equals(Ontology.RtdbDatasource.TIMESCALE)) {
+				schema = new JSONObject(finalschema);
+			}
 		} catch (JSONException e) {
 			schema = jsonSchema.getJSONObject("properties");
 		}
@@ -838,13 +840,13 @@ public class EngineRestController {
 		List<String[]> csvData = new ArrayList<>();
 		csvData.add(headerList.toArray(new String[0]));
 		long max = getMaxRegisters();
-		while (!suboutput.equals(EMPTY)) {
+		while (!suboutput.replaceAll("\\s", "").equals(EMPTY)) {
 			selectStatement = new SelectStatement();
 			selectStatement.setOntology(ontologyName);
 			selectStatement.setLimit(max);
 			selectStatement.setOffset(offset);
 			suboutput = crudService.queryParams(selectStatement, utils.getUserId());
-			if (!suboutput.equals(EMPTY)) {
+			if (!suboutput.replaceAll("\\s", "").equals(EMPTY)) {
 				offset += max;
 				JSONArray jsonArray = new JSONArray(suboutput);
 				for (Object o : jsonArray) {
@@ -879,13 +881,13 @@ public class EngineRestController {
 		String suboutput = "";
 		int offset = 0;
 		long max = getMaxRegisters();
-		while (!suboutput.equals(EMPTY)) {
+		while (!suboutput.replaceAll("\\s", "").equals(EMPTY)) {
 			SelectStatement selectStatement = new SelectStatement();
 			selectStatement.setOntology(ontologyName);
 			selectStatement.setLimit(max);
 			selectStatement.setOffset(offset);
 			suboutput = crudService.queryParams(selectStatement, utils.getUserId());
-			if (!suboutput.equals(EMPTY)) {
+			if (!suboutput.replaceAll("\\s", "").equals(EMPTY)) {
 				offset += max;
 				JSONArray jsonArray = new JSONArray(suboutput);
 				suboutput = deleteIdAndContext(jsonArray);
@@ -977,7 +979,7 @@ public class EngineRestController {
 			selectStatement.setLimit(setedLimit);
 			selectStatement.setOffset(offset);
 			suboutput = crudService.queryParams(selectStatement, utils.getUserId());
-			if (suboutput.equals(EMPTY)) {
+			if (suboutput.replaceAll("\\s", "").equals(EMPTY)) {
 				total = 0;
 
 			} else {
@@ -1144,7 +1146,7 @@ public class EngineRestController {
 			selectStatement.setLimit(setedLimit);
 			selectStatement.setOffset(offset);
 			suboutput = crudService.queryParams(selectStatement, utils.getUserId());
-			if (suboutput.equals(EMPTY)) {
+			if (suboutput.replaceAll("\\s", "").equals(EMPTY)) {
 				total = 0;
 				outputJsonFile = outputJsonFile + ",";
 			} else {

@@ -154,7 +154,7 @@
 													dt:filterSelector="#filterButton" dt:filterClearSelector="#filterClearButton" > <!-- dt:dom="l0frtip" -->
 													<thead>
 														<tr class="cabecera-tabla">
-															<th dt:visible="false" dt:property="id" class="titulo-columnas" th:text="#{gen.identification}">Identification</th>
+															<th dt:property="id" class="titulo-columnas" th:text="#{gen.identification}">Identification</th>
 															<th dt:property="name" class="titulo-columnas" th:text="#{gen.name}">Name</th>
 															<th dt:property="owner" class="titulo-columnas" th:text="#{gen.owner}">Owner</th>
 															<th dt:property="gitlab"  dt:renderFunction="Microservice.List.dtRenderLinks" class="titulo-columnas">Gitlab URL</th>
@@ -170,10 +170,9 @@
 												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
 												<div id="dataTable-vis-toggle" class="btn-group hide">
 													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
-													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
-														<span class="checkbox-column">
+													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right"><span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
-															<label th:text="#{gen.identification}"> id </label>
+															<label th:text="#{gen.id}"> Identification </label>
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
@@ -186,6 +185,7 @@
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
 															<label> Gitlab URL</label>
+															</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
 															<label>Jenkins URL</label>
@@ -200,7 +200,7 @@
 										</div>											
 									</div>
 									<!-- Modal Parameters Jenkins-->
-									<div id="parametersModal" class="modal fade" role="dialog">
+									<div id="parametersModal" class="modal fade" role="dialog" style="display: table;padding-right: 7px;width: 80%">
 									  <div class="modal-dialog modal-xl">
 									    <!-- Modal content-->
 									    <div class="modal-content">
@@ -345,7 +345,10 @@
 	
 	
 	
-	
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});	
 	
 	
 	$(document).ready(function() {
@@ -376,16 +379,14 @@
 			$('#microservices').DataTable().column(0).search( $('#microservice-name').val()).draw();
 		});
 		
-	});
 	
-	$(window).on("load",function() {
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 		var oTable = $('#microservices').DataTable({
 	      "bAutoWidth": false
 	      });
 		oTable.page.len(10);
 		// HIDE COLUMNS		
-		$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		//$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		$('#microservices').on('draw.dt', function () {
 			Microservice.List.initCompleteCallback();

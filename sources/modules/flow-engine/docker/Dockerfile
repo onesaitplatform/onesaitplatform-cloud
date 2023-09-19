@@ -11,7 +11,12 @@ LABEL module.maintainer="onesaitplatform@indra.es" \
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
 
-ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx2G -javaagent:/usr/local/aspectjweaver-$ASPECTJ_VERSION.jar" \
+# distribute tracing with opentelemetry agent
+RUN cd /usr/local \
+    && wget https://repo1.maven.org/maven2/io/opentelemetry/javaagent/opentelemetry-javaagent/1.27.0/opentelemetry-javaagent-1.27.0.jar
+
+
+ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx2G -javaagent:/usr/local/aspectjweaver-$ASPECTJ_VERSION.jar -javaagent:/usr/local/opentelemetry-javaagent-1.27.0.jar" \
 	SERVERNAME=localhost \
 	PROTOCOL=https \
     REALTIMEDBSERVERS=realtimedb:27017 \
@@ -49,7 +54,12 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx2G -javaagent:/usr/local/aspectjweaver-$ASP
     TIMESCALE_PASS=ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c) \
     PROMETHEUS_ENABLED=false \
     FLOW_SECRET=n0-s3cr3T \
-    HTTP_LOG_LEVEL=INFO
+    HTTP_LOG_LEVEL=INFO \
+    OTEL_JAVAAGENT_ENABLED=false \
+	OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-service:4317 \
+	OTEL_SERVICE_NAME=flow-engine \
+	OTEL_METRICS_EXPORTER=none \
+    FLOWENGINESERVICE=flowengine  
 
 COPY --from=nodebase /usr/local/bin/node /bin
 COPY --from=nodebase /usr/lib /usr/lib

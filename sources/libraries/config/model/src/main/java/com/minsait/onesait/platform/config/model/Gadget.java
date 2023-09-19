@@ -17,9 +17,11 @@ package com.minsait.onesait.platform.config.model;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
@@ -86,6 +88,14 @@ public class Gadget extends OPResource implements Versionable<Gadget> {
 	@Getter
 	@Setter
 	private String config;
+	
+	@Basic(fetch = FetchType.EAGER)
+	@Column(name = "IMAGE", length = 50000)
+	@Lob
+	@Type(type = "org.hibernate.type.BinaryType")
+	@Getter
+	@Setter
+	private byte[] image;
 
 	@Override
 	public boolean equals(Object o) {
@@ -154,5 +164,12 @@ public class Gadget extends OPResource implements Versionable<Gadget> {
 			gadget = null;
 		}
 		return gadget;
+	}
+
+	@Override
+	public void setOwnerUserId(String userId) {
+		final User u = new User();
+		u.setUserId(userId);
+		setUser(u);
 	}
 }

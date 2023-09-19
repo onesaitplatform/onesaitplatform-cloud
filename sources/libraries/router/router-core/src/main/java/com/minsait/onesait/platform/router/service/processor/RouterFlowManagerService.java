@@ -393,10 +393,13 @@ public class RouterFlowManagerService {
 		}
 		// try to send notification model
 		try {
+			MultitenancyContextHolder.setTenantName(compositeModel.getTenant());
+			MultitenancyContextHolder.setVerticalSchema(compositeModel.getVertical());
 			// Check NodeRED Authentication
 			compositeModel.setHeaderAuthValue(noderedAthService.getNoderedAuthAccessToken(
 					compositeModel.getDomainOwner(), compositeModel.getDomainIdentification()));
 			adviceServiceImpl.execute(compositeModel);
+			MultitenancyContextHolder.clear();
 		} catch (Exception e) {
 			// If not successfully, requeue
 			log.error("Error sending NodeRED Notification");
@@ -423,7 +426,7 @@ public class RouterFlowManagerService {
 
 					final NotificationCompositeModel compositeModelTemp = new NotificationCompositeModel();
 					compositeModelTemp.setNotificationModel(compositeModel.getNotificationModel());
-
+					compositeModelTemp.setOperationResultModel(compositeModel.getOperationResultModel());
 					compositeModelTemp.setUrl(entity.getUrl());
 					compositeModelTemp.setNotificationEntityId(entity.getEntityId());
 
@@ -455,6 +458,8 @@ public class RouterFlowManagerService {
 					compositeModelTemp.setDomainIdentification(entity.getDomainIdentification());
 					compositeModelTemp.setDomainOwner(entity.getDomainOwner());
 					compositeModelTemp.setRetriedNotification(false);
+					compositeModelTemp.setVertical(vertical);
+					compositeModelTemp.setTenant(tenant);
 					// set to the queue
 					notificationAdviceNodeRED.add(compositeModelTemp);
 					MultitenancyContextHolder.clear();
@@ -488,7 +493,7 @@ public class RouterFlowManagerService {
 		final String payload = model.getBody();
 
 		if (messageType == OperationType.POST || messageType == OperationType.INSERT) {
-						
+			log.debug("Sendign KSQL/kafka notification for ontology:{}, Payload:{}.", ontologyName, payload);			
 			// KSQL Notification to ORIGINS
 			notifyKafkaKsqlTopics(ontologyName, payload);
 
@@ -540,6 +545,14 @@ public class RouterFlowManagerService {
 				MultitenancyContextHolder.setVerticalSchema(vertical);
 				final KafkaTopicOntologyNotificationService service = item.getValue();
 				final String kafkaTopic = service.getKafkaTopicOntologyNotification(ontologyName);
+				log.debug("Sendign KSQL/kafka notification for Kafka topic{}", kafkaTopic);
+				//TODO REMOVE THIS TRACE!!
+					for(Entry<String, Object> op: kafkaTemplate.getProducerFactory().getConfigurationProperties().entrySet()) {
+						if(op.getValue().getClass()==String.class) {
+							String propertyVal = (String)op.getValue(); 
+							log.debug("KafkaTemplate Producer -- {}: {}",op.getKey(),propertyVal);
+						}
+					}
 				MultitenancyContextHolder.clear();
 				if (kafkaTopic != null) {
 					kafkaTemplate.send(kafkaTopic, payload);

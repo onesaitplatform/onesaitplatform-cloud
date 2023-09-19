@@ -105,7 +105,7 @@
 
 
 	<properties>
-		<cloud.version>3.1.1</cloud.version>
+		<cloud.version>3.1.7</cloud.version>
 		<hibernate-validator.version>7.0.4.Final</hibernate-validator.version>
 		<reactor-netty-version>0.7.15.RELEASE</reactor-netty-version>
 		<license.dir>${project.parent.basedir}</license.dir>

@@ -8,12 +8,45 @@
         var agc = this;
 
         agc.$onInit = function () {
-          if (!$scope.config.tconfig) {
+          if (!$scope.config.tconfig || (Object.keys($scope.config.tconfig).length == 1 && "metainf" in $scope.config.tconfig)) {
             $scope.getPredefinedParameters($scope.config.content);
             $scope.getPredefinedParameters($scope.config.contentcode);
           } else {
             $scope.parameters = JSON.parse(JSON.stringify($scope.config.tconfig)).gform;
           }
+          showEditInlineStyle();
+        }
+
+        function showEditInlineStyle() {
+          if (create) {
+            var tempg = JSON.parse(JSON.stringify($scope.config));
+            tempg.tempgadget = true;
+            $scope.layergrid.push(tempg);
+          }
+          showNoCheckEditInlineStyle();
+        }
+
+        function showNoCheckEditInlineStyle() {
+          window.setTimeout(function(){
+            $("#" + (element && element.id?element.id:$scope.config.id) + " gridster-item").css("border","1px solid #c6c6c6");
+          }, 100)
+        }
+
+        function clearTempGadgets() {
+          if($scope.layergrid && $scope.layergrid.length>0){
+            var index = $scope.layergrid.findIndex(function (element){return element.tempgadget});
+            if (index != -1) {
+              $scope.layergrid.splice(index, 1);
+            }
+          }
+          utilsService.forceRender($scope);
+        }
+
+        function hideEditInlineStyle() {
+          if (create) {
+            clearTempGadgets();
+          }
+          $("#" + (element && element.id?element.id:$scope.config.id) + " gridster-item").css("border","none");
         }
 
         window.setTimeout(
@@ -84,7 +117,7 @@
 
         $scope.close = function() {
           window.dispatchEvent(new CustomEvent('editTemplateParamsclose',{}));
-        
+          hideEditInlineStyle();
         };        
 
        
@@ -181,7 +214,8 @@
       }
 
 
-        $scope.save = function() { 
+        $scope.save = function() {
+          clearTempGadgets();
           $scope.parameters = $scope.vueapp._data.gformvalue;
           if(!edit){
             if(create){
@@ -298,6 +332,8 @@
               //$scope.close();
             }
           }
+
+          showNoCheckEditInlineStyle();
         
         };
       

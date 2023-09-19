@@ -15,15 +15,16 @@
 package com.minsait.onesait.platform.persistence.opensearch.api;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
-import org.opensearch.action.search.SearchRequest;
-import org.opensearch.action.search.SearchResponse;
-import org.opensearch.client.RequestOptions;
-import org.opensearch.client.RestHighLevelClient;
-import org.opensearch.index.query.QueryBuilder;
-import org.opensearch.index.query.QueryBuilders;
-import org.opensearch.search.builder.SearchSourceBuilder;
+import org.opensearch.client.opensearch.OpenSearchClient;
+import org.opensearch.client.opensearch._types.query_dsl.IdsQuery;
+import org.opensearch.client.opensearch._types.query_dsl.MatchAllQuery;
+import org.opensearch.client.opensearch._types.query_dsl.Query;
+import org.opensearch.client.opensearch._types.query_dsl.QueryStringQuery;
+import org.opensearch.client.opensearch.core.SearchRequest;
+import org.opensearch.client.opensearch.core.SearchResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
@@ -38,85 +39,90 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OSSearchService {
 
-
 	@Autowired
-	private RestHighLevelClient hlClient;
-	
-	private SearchResponse search(QueryBuilder queryBuilder, String...indices) {        
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder(); 
-        searchSourceBuilder.query(queryBuilder);         
-        return executeSearch(searchSourceBuilder, indices);
+	private OpenSearchClient javaClient;
+
+	private SearchResponse<Object> search(Query query, String... indices) {
+		SearchRequest searchRequest = new SearchRequest.Builder().query(query).index(Arrays.asList(indices)).build();
+		return executeSearch(searchRequest, indices);
 	}
-	
-	private SearchResponse search(QueryBuilder queryBuilder, int size, String...indices) {        
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder(); 
-        searchSourceBuilder.query(queryBuilder);
-        searchSourceBuilder.size(size);
-        return executeSearch(searchSourceBuilder, indices);
-    }
-	
-	private SearchResponse search(QueryBuilder queryBuilder, int from, int size, String...indices) {
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder(); 
-        searchSourceBuilder.query(queryBuilder); 
-        searchSourceBuilder.size(size);
-        searchSourceBuilder.from(from);        
-        return executeSearch(searchSourceBuilder, indices);
-    }
 
-    private SearchResponse executeSearch(SearchSourceBuilder searchSourceBuilder, String... indices) {
-        SearchRequest searchRequest = new SearchRequest(indices);
-        searchRequest.source(searchSourceBuilder);              
-        try {                       
-            return hlClient.search(searchRequest, RequestOptions.DEFAULT);                             
-        } catch (final IOException e) {
-            log.error("Error in search query ", e);
-            return null;
-        }
-    }	
+	private SearchResponse<Object> search(Query query, int size, String... indices) {
+		SearchRequest searchRequest = new SearchRequest.Builder().query(query).index(Arrays.asList(indices)).size(size)
+				.build();
+		return executeSearch(searchRequest, indices);
+	}
 
-	public List<String> findQueryData(String jsonQuery, String... indices) {	    
-		SearchResponse searchResponse = search(QueryBuilders.wrapperQuery(jsonQuery), indices);
+	private SearchResponse<Object> search(Query query, int from, int size, String... indices) {
+		SearchRequest searchRequest = new SearchRequest.Builder().query(query).index(Arrays.asList(indices)).size(size)
+				.from(from).build();
+		return executeSearch(searchRequest, indices);
+	}
+
+	private SearchResponse<Object> executeSearch(SearchRequest searchRequest, String... indices) {
+		try {
+			return javaClient.search(searchRequest, Object.class);
+		} catch (final IOException e) {
+			log.error("Error in search query ", e);
+			return null;
+		}
+	}
+
+	public List<String> findQueryData(String jsonQuery, String... indices) {
+		final Query q = new Query.Builder().queryString(new QueryStringQuery.Builder().query(jsonQuery).build())
+				.build();
+		SearchResponse<Object> searchResponse = search(q, indices);
 		return OpenSearchUtil.processSearchResponseToStringList(searchResponse);
-	}    
+	}
 
-	public String findQueryDataAsJson(String jsonQuery, String... indices) {	    
-		SearchResponse searchResponse = search(QueryBuilders.wrapperQuery(jsonQuery), indices);		
+	public String findQueryDataAsJson(String jsonQuery, String... indices) {
+		final Query q = new Query.Builder().queryString(new QueryStringQuery.Builder().query(jsonQuery).build())
+				.build();
+		SearchResponse<Object> searchResponse = search(q, indices);
 		return OpenSearchUtil.processSearchResponseToJson(searchResponse);
 	}
 
-	public String findByIndex(String index, String documentId) {	   
-	    SearchResponse searchResponse = search(QueryBuilders.idsQuery().addIds(documentId), index);	    
-	    return OpenSearchUtil.processSearchResponseToJson(searchResponse);
+	public String findByIndex(String index, String documentId) {
+		final Query q = new Query.Builder().ids(new IdsQuery.Builder().values(documentId).build()).build();
+		SearchResponse<Object> searchResponse = search(q, index);
+		return OpenSearchUtil.processSearchResponseToJson(searchResponse);
 	}
 
 	public List<String> findAll(String index) {
-		SearchResponse searchResponse = search(QueryBuilders.matchAllQuery(), index);
+		final Query q = new Query.Builder().matchAll(new MatchAllQuery.Builder().build()).build();
+		SearchResponse<Object> searchResponse = search(q, index);
 		return OpenSearchUtil.processSearchResponseToStringList(searchResponse);
 	}
 
 	public List<String> findAll(String index, int from, int size) {
-	    SearchResponse searchResponse = search(QueryBuilders.matchAllQuery(), from, size, index);
-	    return OpenSearchUtil.processSearchResponseToStringList(searchResponse);
+		final Query q = new Query.Builder().matchAll(new MatchAllQuery.Builder().build()).build();
+		SearchResponse<Object> searchResponse = search(q, from, size, index);
+		return OpenSearchUtil.processSearchResponseToStringList(searchResponse);
 	}
 
 	public List<String> findAll(String index, String jsonQuery, int from, int size) {
-	    SearchResponse searchResponse = search(QueryBuilders.wrapperQuery(jsonQuery), from, size, index);
-        return OpenSearchUtil.processSearchResponseToStringList(searchResponse);
+		final Query q = new Query.Builder().queryString(new QueryStringQuery.Builder().query(jsonQuery).build())
+				.build();
+		SearchResponse<Object> searchResponse = search(q, from, size, index);
+		return OpenSearchUtil.processSearchResponseToStringList(searchResponse);
 	}
 
 	public List<String> findAll(String index, int size) {
-	    SearchResponse searchResponse = search(QueryBuilders.matchAllQuery(), size, index);
-        return OpenSearchUtil.processSearchResponseToStringList(searchResponse);
+		final Query q = new Query.Builder().matchAll(new MatchAllQuery.Builder().build()).build();
+		SearchResponse<Object> searchResponse = search(q, size, index);
+		return OpenSearchUtil.processSearchResponseToStringList(searchResponse);
 	}
 
 	public String findAllAsJson(String index, int size) {
-	    SearchResponse searchResponse = search(QueryBuilders.matchAllQuery(), size, index);
-        return OpenSearchUtil.processSearchResponseToJson(searchResponse);
+		final Query q = new Query.Builder().matchAll(new MatchAllQuery.Builder().build()).build();
+		SearchResponse<Object> searchResponse = search(q, size, index);
+		return OpenSearchUtil.processSearchResponseToJson(searchResponse);
 	}
 
 	public String findAllAsJson(String index, int from, int size) {
-        SearchResponse searchResponse = search(QueryBuilders.matchAllQuery(), from, size, index);
-        return OpenSearchUtil.processSearchResponseToJson(searchResponse);	    
+		final Query q = new Query.Builder().matchAll(new MatchAllQuery.Builder().build()).build();
+		SearchResponse<Object> searchResponse = search(q, from, size, index);
+		return OpenSearchUtil.processSearchResponseToJson(searchResponse);
 	}
-	
+
 }

@@ -39,7 +39,7 @@ public interface ProjectRepository extends JpaRepository<Project, String> {
 	@Override
 	void delete(Project project);
 
-	@Query("SELECT o FROM ProjectList AS o")
+	@Query("SELECT o FROM ProjectList AS o order by o.identification asc")
 	public List<ProjectList> findAllForList();
 
 	public List<Project> findByUsersIn(List<User> users);

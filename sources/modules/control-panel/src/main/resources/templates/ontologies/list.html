@@ -171,6 +171,7 @@
 											<table id="ontologies" class="table table-hover table-striped"   dt:table="true" dt:paginationtype="full">
 												<thead>
 													<tr class="cabecera-tabla">
+														<th class="titulo-columnas text-left" th:text="#{gen.id}">Id</th>
 														<th class="titulo-columnas text-left" th:text="#{ontology.identification}">Identification</th>
 														<th class="titulo-columnas text-left"> <span th:text="#{ontology.userId}">Owner</span></th>
 														<th class="titulo-columnas text-left" th:text="#{ontology.description}">Description</th>
@@ -186,6 +187,8 @@
 												</thead>
 												<tbody th:remove="all-but-first">
 													<tr th:each="ontology : ${ontologies}" pages:paginate="10">
+														<!-- ID -->
+														<td class="text-left no-wrap " th:text="${ontology.id}"></td>
 														<!-- IDENTIFICATION/NAME -->
 														<td class="text-left no-wrap " th:text="${ontology.identification}"></td>
 														<!-- USER -->
@@ -242,7 +245,7 @@
 																<!-- EDIT TIMESERIES DISABLED IF NO PERMISSIONS -->
 																<th:block  th:if="(${'SystemOntology' != ontology.dataModel?.type} AND ${'DigitalTwin' != ontology.rtdbDatasource.name()} AND !((${#authentication.name} == ${ontology.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))) AND ${'MASTER-DataModel-30' == ontology.dataModel.id}">
 																	<span  th:each="ontologyAccess: ${ontology.ontologyUserAccesses}" th:if="${ontologyAccess.user.userId} == ${#authentication.name} AND ${ontologyAccess.ontologyUserAccessType.name} != 'ALL'" disabled="true" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/ontologies/updatetimeseries/${ontology.id}/|} + '\');'"><i class="icon-edit"></i></span>
-																	<span  th:if="${#lists.isEmpty(ontology.ontologyUserAccesses)} AND ${ontology.public} == true" disabled="true" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/ontologies/updatetimeseries/${ontology.id}/|} + '\');'"><i class="icon-edit"></i></span>
+																	<span  th:if="${#lists.isEmpty(ontology.ontologyUserAccesses)} AND ${ontology.public} == true" disabled="true" readonly class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" ><i class="icon-edit"></i></span>
 																	<span  th:if="${!#lists.isEmpty(ontology.ontologyUserAccesses)} AND ${ontology.public} == true AND ${ontology.ontologyUserAccesses.?[user.userId == #authentication.name].isEmpty()}" disabled="true" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/ontologies/updatetimeseries/${ontology.id}/|} + '\');'"><i class="icon-edit"></i></span>
 																</th:block>
 
@@ -298,42 +301,46 @@
 												<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="0" checked/>
-														<label th:text="#{ontology.identification}"> identification </label>
+														<label th:text="#{gen.id}"> id </label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-														<label th:text="#{ontology.userId}"> Owner </label>
+														<label th:text="#{ontology.identification}"> identification </label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-														<label th:text="#{ontology.description}"> Description</label>
+														<label th:text="#{ontology.userId}"> Owner </label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
-														<label th:text="#{ontology.rtdbinstance}"> Database Instance</label>
+														<label th:text="#{ontology.description}"> Description</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-														<label th:text="#{ontology.active}"> Active</label>
+														<label th:text="#{ontology.rtdbinstance}"> Database Instance</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
-														<label th:text="#{ontology.public}"> Public</label>
+														<label th:text="#{ontology.active}"> Active</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="6" checked/>
-														<label th:text="#{ontology.authorizations}"> Authorizations</label>
+														<label th:text="#{ontology.public}"> Public</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="7" checked/>
-														<label th:text="#{ontology.datamodel}"> Datamodel</label>
+														<label th:text="#{ontology.authorizations}"> Authorizations</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="8" checked/>
-														<label th:text="#{ontology.createdAt}"> Created At</label>
+														<label th:text="#{ontology.datamodel}"> Datamodel</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="9" checked/>
+														<label th:text="#{ontology.createdAt}"> Created At</label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="10" checked/>
 														<label th:text="#{ontology.updatedAt}"> Updated At</label>
 													</span>
 												</div>
@@ -379,6 +386,7 @@
 	var search = [[${param.identification}]] || [];
 	var description = [[${param.description}]] || '';
 	var deleteUrl =  [[@{/ontologies}]];
+	let readyEjecutado = false;
 
 	search[0] ? $('#identification').val(search[0]) : search[0] = '';
 	description ? $('#description').val(description) : description = '';
@@ -415,29 +423,15 @@
 		HeaderController.showConfirmDialogOntologia('delete_ontology_form', ontologyId);
 	}
 
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([ 0, 8 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		var csrf_value = $("meta[name='_csrf']").attr("content");
 		var csrf_header = $("meta[name='_csrf_header']").attr("content");
-
-		// AUTO COMPLETE ON ONTOLOGY IDENTIFICATION/NAME
-		$.ajax({ url: "/controlpanel/ontologies/getNamesForAutocomplete", headers: {[csrf_header]: csrf_value}, type: 'POST', dataType: 'json', contentType: 'text/html', mimeType: 'application/json',
-			success: function (source) {
-						var namesArray = new Array();
-						for( var i = 0; i < source.length; i++ ){
-							namesArray[i] = { value: source[i] , data: source[i]};
-						}
-
-						// INIT AJAX AUTO COMPLETE
-				$('#identification').autocomplete({
-					lookup: namesArray,
-					lookupFilter: function(suggestion, originalQuery, queryLowerCase) {
-						var re = new RegExp('\\b' + $.Autocomplete.utils.escapeRegExChars(queryLowerCase), 'gi');
-						return re.test(suggestion.value);
-					}
-				});
-			}
-		});
+		
 
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
 		$('input.toggle-vis').on( 'change', function (e) {
@@ -459,18 +453,15 @@
 
 		// SEARCH FORM
 		$('#search_ontology').on('click',function(){ $('#form_ontology')[0].submit(); });
-
-	});
-
-	// MAIN WHEN LOAD
-	$(window).on("load",function(){ 
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+		
+	
+	//	$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 		var oTable = $('#ontologies').dataTable({
 	      "bAutoWidth": false
 	      });
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)
 		//$.each([ 2,6,7 ],
-		$.each([ 7 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	//	$.each([ 0, 8 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 
 		// SHOW/HIDE DATATABLES COLUMN INIT
 
@@ -505,6 +496,7 @@
 	     });
 
 		$("#contenedor-tabla-outside").removeClass("hidden");
+		
 	});
 
 	function startStopKPI(id) {

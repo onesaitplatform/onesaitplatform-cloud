@@ -82,7 +82,12 @@ public class VersioningManagerImpl implements VersioningManager {
 
 	@Override
 	public <T> void serialize(Versionable<T> versionable) {
-		versioningIOService.serializeToFileSystem(versionable);
+		serialize(versionable, null);
+	}
+
+	@Override
+	public <T> void serialize(Versionable<T> versionable, String directory) {
+		versioningIOService.serializeToFileSystem(versionable, directory);
 	}
 
 	@Override

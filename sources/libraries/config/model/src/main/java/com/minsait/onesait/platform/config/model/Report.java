@@ -53,12 +53,12 @@ import lombok.ToString;
 @Configurable
 @Getter
 @Setter
-@ToString(exclude= {"file"})
+@ToString(exclude = { "file" })
 @Entity
 @Table(name = "REPORT", uniqueConstraints = @UniqueConstraint(columnNames = { "IDENTIFICATION" }))
-public class Report extends OPResource implements Versionable<Report>{
+public class Report extends OPResource implements Versionable<Report> {
 	public enum ReportExtension {
-		JRXML, JASPER;
+		JRXML, JASPER, DOCX;
 	}
 
 	private static final long serialVersionUID = -3383279797731473231L;
@@ -94,7 +94,7 @@ public class Report extends OPResource implements Versionable<Report>{
 
 	@ManyToMany
 	@JoinTable(name = "REPORT_RESOURCES", uniqueConstraints = @UniqueConstraint(columnNames = { "REPORT_ID",
-	"RESOURCES_ID" }), joinColumns = @JoinColumn(name = "REPORT_ID"), inverseJoinColumns = @JoinColumn(name = "RESOURCES_ID"))
+			"RESOURCES_ID" }), joinColumns = @JoinColumn(name = "REPORT_ID"), inverseJoinColumns = @JoinColumn(name = "RESOURCES_ID"))
 	@Getter
 	@Setter
 	private Set<BinaryFile> resources = new HashSet<>();
@@ -109,6 +109,7 @@ public class Report extends OPResource implements Versionable<Report>{
 			}
 		}
 	}
+
 	@JsonGetter("file")
 	public String getFileJson() {
 		if (file != null && file.length > 0) {
@@ -137,7 +138,6 @@ public class Report extends OPResource implements Versionable<Report>{
 		});
 	}
 
-
 	@Override
 	public String fileName() {
 		return getIdentification() + ".yaml";
@@ -146,12 +146,19 @@ public class Report extends OPResource implements Versionable<Report>{
 	@Override
 	public Versionable<Report> runExclusions(Map<String, Set<String>> excludedIds, Set<String> excludedUsers) {
 		Versionable<Report> r = Versionable.super.runExclusions(excludedIds, excludedUsers);
-		if(r !=null && !resources.isEmpty() && !CollectionUtils.isEmpty(excludedIds)
+		if (r != null && !resources.isEmpty() && !CollectionUtils.isEmpty(excludedIds)
 				&& !CollectionUtils.isEmpty(excludedIds.get(BinaryFile.class.getSimpleName()))) {
 			resources.removeIf(bf -> excludedIds.get(BinaryFile.class.getSimpleName()).contains(bf.getId()));
 			r = this;
 		}
 		return r;
+	}
+
+	@Override
+	public void setOwnerUserId(String userId) {
+		final User u = new User();
+		u.setUserId(userId);
+		setUser(u);
 	}
 
 }

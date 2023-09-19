@@ -27,6 +27,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 
 import com.minsait.onesait.platform.config.dto.NotebookForList;
+import com.minsait.onesait.platform.config.dto.NotebookForListExt;
 import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.model.NotebookUserAccess;
@@ -100,6 +101,10 @@ public interface NotebookService {
 	public String cloneNotebookOnlyZeppelin(String nameClone, String notebookZepId, String userId);
 
 	public boolean hasUserPermissionInNotebook(Notebook nt, String userId);
+	
+	public boolean hasUserPermissionReadInNotebook(Notebook nt, String userId);
+	
+	public boolean hasUserPermissionRunInNotebook(Notebook nt, String userId);
 
 	List<NotebookUserAccess> getUserAccess(String notebookId);
 
@@ -154,5 +159,11 @@ public interface NotebookService {
 	List<Notebook> getNotebooksForListWithProjectsAccess(String userId);
 
 	public List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification);
+
+	public List<NotebookForListExt> getNotebooksForListExt(String userId);
+
+	public boolean hasUserPermissionReadForNotebook(String zeppelinId, String userId);
+	
+	public boolean hasUserPermissionRunForNotebook(String zeppelinId, String userId);
 
 }

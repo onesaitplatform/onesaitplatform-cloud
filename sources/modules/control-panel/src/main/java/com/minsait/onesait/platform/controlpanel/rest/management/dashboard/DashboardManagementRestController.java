@@ -72,14 +72,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-
-
 @RestController
 @CrossOrigin(origins = "*")
 @Tag(name = "Dashboard Management")
 @RequestMapping("api/dashboards")
 @ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
-	@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden") })
+		@ApiResponse(responseCode = "500", description = "Internal server error"),
+		@ApiResponse(responseCode = "403", description = "Forbidden") })
 public class DashboardManagementRestController {
 
 	private static final String PATH = "/dashboard";
@@ -93,6 +92,7 @@ public class DashboardManagementRestController {
 	private static final String FILE_SIZE_IS_LARGER_THAN_MAX_ALLOWED = "\"File size is larger than max allowed\"";
 	private static final String FILE_EXTENSION_NOT_ALLOWED = "\"File Extension not allowed\"";
 	private static final String ATTACHMENT_COULDN_T_BE_FOUND = "\"Attachment couldn't be found\"";
+	private static final String MSG_ERROR_5_CHARACTERS = "\"The identifier must have at least 5 characters\"";
 
 	@Autowired
 	private DashboardFIQL dashboardFIQL;
@@ -120,7 +120,7 @@ public class DashboardManagementRestController {
 
 	protected ObjectMapper objectMapper;
 
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=DashboardDTO[].class))))
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = DashboardDTO[].class))))
 	@Operation(summary = "Get dashboards")
 	@GetMapping
 	public ResponseEntity<DashboardDTO[]> getAll(
@@ -131,7 +131,8 @@ public class DashboardManagementRestController {
 		final List<Dashboard> dashboards = dashboardService.getByUserIdOrdered(utils.getUserId(), order);
 		final List<DashboardDTO> dashboardsDTO = new ArrayList<>();
 		for (final Dashboard dashboard : dashboards) {
-			if (type == null || type.equals(Dashboard.DashboardType.DASHBOARD) && dashboard.getType()==null || type.equals(dashboard.getType())) {
+			if (type == null || type.equals(Dashboard.DashboardType.DASHBOARD) && dashboard.getType() == null
+					|| type.equals(dashboard.getType())) {
 				final CategoryRelation categoryRelationship = categoryRelationService.getByIdType(dashboard.getId());
 				String categoryIdentification = null;
 				String subCategoryIdentification = null;
@@ -153,8 +154,8 @@ public class DashboardManagementRestController {
 					dashaccesses.addAll(dashboardService.getDashboardUserAccesses(dashboard));
 				}
 
-				final DashboardDTO dashboardDTO = dashboardFIQL.toDashboardDTO(dashboard, url, viewUrl, categoryIdentification,
-						subCategoryIdentification, ngadgets, dashaccesses);
+				final DashboardDTO dashboardDTO = dashboardFIQL.toDashboardDTO(dashboard, url, viewUrl,
+						categoryIdentification, subCategoryIdentification, ngadgets, dashaccesses);
 
 				if (!includeImage) {
 					dashboardDTO.setImage(null);
@@ -166,11 +167,12 @@ public class DashboardManagementRestController {
 		return new ResponseEntity<>(dashboardsDTO.toArray(new DashboardDTO[0]), HttpStatus.OK);
 	}
 
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=DashboardDTO.class))))
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = DashboardDTO.class))))
 	@Operation(summary = "Get dashboard by identification or id")
 	@GetMapping(PATH + "/{identification}")
 	public ResponseEntity<DashboardDTO> getDashboardByIdentification(
-			@Parameter(description= "dashboard identification or id", required = true) @PathVariable("identification") String identification, HttpServletResponse response) {
+			@Parameter(description = "dashboard identification or id", required = true) @PathVariable("identification") String identification,
+			HttpServletResponse response) {
 		utils.cleanInvalidSpringCookie(response);
 		Dashboard dashboard = dashboardService.getDashboardByIdentification(identification, utils.getUserId());
 		if (dashboard == null) {
@@ -211,13 +213,15 @@ public class DashboardManagementRestController {
 		return new ResponseEntity<>(dashboardDTO, HttpStatus.OK);
 	}
 
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=DashboardDTO.class))))
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = DashboardDTO.class))))
 	@Operation(summary = "Create new dashboard")
 	@PostMapping
 	public ResponseEntity<?> create(
-			@Parameter(description= "CommandDTO", required = true) @Valid @RequestBody CommandDTO commandDTO, Errors errors) {
+			@Parameter(description = "CommandDTO", required = true) @Valid @RequestBody CommandDTO commandDTO,
+			Errors errors) {
 		try {
-			final DashboardCreateDTO dashboardCreateDTO = dashboardFIQL.fromCommandToDashboardCreate(commandDTO, null, utils.getUserId());
+			final DashboardCreateDTO dashboardCreateDTO = dashboardFIQL.fromCommandToDashboardCreate(commandDTO, null,
+					utils.getUserId());
 
 			if (!dashboardCreateDTO.getIdentification().matches(AppWebUtils.IDENTIFICATION_PATERN_SPACES)) {
 				return new ResponseEntity<>("Identification Error: Use alphanumeric characters and '-', '_', ' '",
@@ -245,7 +249,7 @@ public class DashboardManagementRestController {
 	@Operation(summary = "Delete dashboard by identification or id")
 	@DeleteMapping("/{identification}")
 	public ResponseEntity<?> delete(
-			@Parameter(description= "dashboard identification or id", example = "dashboardId", required = true) @PathVariable("identification") String identification) {
+			@Parameter(description = "dashboard identification or id", example = "dashboardId", required = true) @PathVariable("identification") String identification) {
 		try {
 			Dashboard dashboard = dashboardService.getDashboardByIdentification(identification, utils.getUserId());
 			if (dashboard == null) {
@@ -266,12 +270,12 @@ public class DashboardManagementRestController {
 		}
 	}
 
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=DashboardDTO.class))))
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = DashboardDTO.class))))
 	@Operation(summary = "Update dashboard")
 	@PutMapping("/{identification}")
 	public ResponseEntity<?> update(
-			@Parameter(description= "dashboard identification or id") @PathVariable(value = "identification") String identification,
-			@Parameter(description= "CommandDTO", required = true) @Valid @RequestBody UpdateCommandDTO updateDTO,
+			@Parameter(description = "dashboard identification or id") @PathVariable(value = "identification") String identification,
+			@Parameter(description = "CommandDTO", required = true) @Valid @RequestBody UpdateCommandDTO updateDTO,
 			Errors errors) {
 		try {
 
@@ -311,7 +315,8 @@ public class DashboardManagementRestController {
 				}
 
 				dashboardService.updateDashboardSimplified(dashboard.getId(), dashSimplified, utils.getUserId());
-				final Dashboard dashboardUpdated = dashboardService.getDashboardById(dashboard.getId(), utils.getUserId());
+				final Dashboard dashboardUpdated = dashboardService.getDashboardById(dashboard.getId(),
+						utils.getUserId());
 				dashboardService.generateDashboardImage(dashboard.getId(), utils.getCurrentUserOauthToken());
 				final DashboardDTO dashboardDTO = dashboardFIQL.toDashboardDTO(dashboardUpdated, url, viewUrl, null,
 						null, dashboardService.getNumGadgets(dashboardUpdated),
@@ -319,8 +324,8 @@ public class DashboardManagementRestController {
 				return new ResponseEntity<>(dashboardDTO, HttpStatus.OK);
 			} else {
 
-				final DashboardCreateDTO dashboardCreateDTO = dashboardFIQL
-						.fromCommandToDashboardCreate(dashboardFIQL.fromUpdateToCommand(updateDTO), dashboard.getId(), utils.getUserId());
+				final DashboardCreateDTO dashboardCreateDTO = dashboardFIQL.fromCommandToDashboardCreate(
+						dashboardFIQL.fromUpdateToCommand(updateDTO), dashboard.getId(), utils.getUserId());
 
 				if (!dashboard.getIdentification().equals(dashboardCreateDTO.getIdentification())
 						&& dashboardService.getDashboardByIdentification(dashboardCreateDTO.getIdentification(),
@@ -328,7 +333,8 @@ public class DashboardManagementRestController {
 					return new ResponseEntity<>("The identification is already used by another dashboard",
 							HttpStatus.BAD_REQUEST);
 				}
-				final String dashboardId = dashboardService.updatePublicDashboard(dashboardCreateDTO, utils.getUserId());
+				final String dashboardId = dashboardService.updatePublicDashboard(dashboardCreateDTO,
+						utils.getUserId());
 
 				final Dashboard dashboardUpdated = dashboardService.getDashboardById(dashboardId, utils.getUserId());
 
@@ -346,11 +352,11 @@ public class DashboardManagementRestController {
 		}
 	}
 
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=DashboardExportDTO.class))))
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = DashboardExportDTO.class))))
 	@Operation(summary = "Export dashboard by id")
 	@GetMapping("/export/{id}")
 	public ResponseEntity<?> exportDashboard(
-			@Parameter(description= "dashboard id", required = true) @PathVariable("id") String dashboardId) {
+			@Parameter(description = "dashboard id", required = true) @PathVariable("id") String dashboardId) {
 		DashboardExportDTO dashboardExportDTO;
 		try {
 			dashboardExportDTO = dashboardService.exportDashboardDTO(dashboardId, utils.getUserId());
@@ -367,13 +373,13 @@ public class DashboardManagementRestController {
 		return new ResponseEntity<>(dashboardExportDTO, HttpStatus.OK);
 	}
 
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=DashboardDTO.class))))
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = DashboardDTO.class))))
 	@Operation(summary = "Import dashboard")
 	@PostMapping("/import")
 	public ResponseEntity<?> importDashboard(
-			@Parameter(description= "Overwrite Dashboard if exists") @RequestParam(required = false, defaultValue = "false") boolean overwrite,
-			@Parameter(description= "Import authorizations if exist") @RequestParam(required = false, defaultValue = "false") boolean importAuthorizations,
-			@Parameter(description= "DashboardDTO", required = true) @Valid @RequestBody DashboardExportDTO dashboardimportDTO,
+			@Parameter(description = "Overwrite Dashboard if exists") @RequestParam(required = false, defaultValue = "false") boolean overwrite,
+			@Parameter(description = "Import authorizations if exist") @RequestParam(required = false, defaultValue = "false") boolean importAuthorizations,
+			@Parameter(description = "DashboardDTO", required = true) @Valid @RequestBody DashboardExportDTO dashboardimportDTO,
 			Errors errors) {
 
 		if (!dashboardimportDTO.getIdentification().matches(AppWebUtils.IDENTIFICATION_PATERN_SPACES)) {
@@ -392,16 +398,16 @@ public class DashboardManagementRestController {
 		}
 	}
 
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=byte[].class))))
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = byte[].class))))
 	@Operation(summary = "Generate image of dashboard")
 	@GetMapping(PATH + "/generateDashboardImage/{identification}")
 	public ResponseEntity<byte[]> generateDashboardImage(@RequestHeader(value = "Authorization") String bearerToken,
-			@Parameter(description= "Dashboard ID", required = true) @PathVariable("identification") String id,
-			@Parameter(description= "Wait time (ms) for rendering dashboard", required = true) @RequestParam("waittime") int waittime,
-			@Parameter(description= "Render Height", required = true) @RequestParam("height") int height,
-			@Parameter(description= "Render Width", required = true) @RequestParam("width") int width,
-			@Parameter(description= "Fullpage", required = false) @RequestParam(value="fullpage", defaultValue = "false") Boolean fullpage,
-			@Parameter(description= "Dashboard Params", required = false) @RequestParam(value = "params", required = false) String params) {
+			@Parameter(description = "Dashboard ID", required = true) @PathVariable("identification") String id,
+			@Parameter(description = "Wait time (ms) for rendering dashboard", required = true) @RequestParam("waittime") int waittime,
+			@Parameter(description = "Render Height", required = true) @RequestParam("height") int height,
+			@Parameter(description = "Render Width", required = true) @RequestParam("width") int width,
+			@Parameter(description = "Fullpage", required = false) @RequestParam(value = "fullpage", defaultValue = "false") Boolean fullpage,
+			@Parameter(description = "Dashboard Params", required = false) @RequestParam(value = "params", required = false) String params) {
 		final Dashboard dashboard = dashboardService.getDashboardById(id, utils.getUserId());
 		if (dashboard == null) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
@@ -413,15 +419,15 @@ public class DashboardManagementRestController {
 				fullpage == null ? false : fullpage, params, prepareRequestToken(bearerToken));
 	}
 
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=byte[].class))))
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = byte[].class))))
 	@Operation(summary = "Generate PDF of dashboard")
 	@GetMapping(PATH + "/generatePDFImage/{identification}")
 	public ResponseEntity<byte[]> generatePDFImage(@RequestHeader(value = "Authorization") String bearerToken,
-			@Parameter(description= "Dashboard ID", required = true) @PathVariable("identification") String id,
-			@Parameter(description= "Wait time (ms) for rendering dashboard", required = true) @RequestParam("waittime") int waittime,
-			@Parameter(description= "Render Height", required = true) @RequestParam("height") int height,
-			@Parameter(description= "Render Width", required = true) @RequestParam("width") int width,
-			@Parameter(description= "Dashboard Params", required = false) @RequestParam(value = "params", required = false) String params) {
+			@Parameter(description = "Dashboard ID", required = true) @PathVariable("identification") String id,
+			@Parameter(description = "Wait time (ms) for rendering dashboard", required = true) @RequestParam("waittime") int waittime,
+			@Parameter(description = "Render Height", required = true) @RequestParam("height") int height,
+			@Parameter(description = "Render Width", required = true) @RequestParam("width") int width,
+			@Parameter(description = "Dashboard Params", required = false) @RequestParam(value = "params", required = false) String params) {
 		final Dashboard dashboard = dashboardService.getDashboardById(id, utils.getUserId());
 		if (dashboard == null) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
@@ -433,11 +439,11 @@ public class DashboardManagementRestController {
 				prepareRequestToken(bearerToken));
 	}
 
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=DashboardUserAccessDTO.class))))
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = DashboardUserAccessDTO.class))))
 	@Operation(summary = "Get dashboard authorizations by identification")
 	@GetMapping(PATH + "/{identification}/authorizations")
 	public ResponseEntity<?> getDashboardAuthorizationsByIdentification(
-			@Parameter(description= "dashboard identification", required = true) @PathVariable("identification") String identification) {
+			@Parameter(description = "dashboard identification", required = true) @PathVariable("identification") String identification) {
 
 		final Dashboard dashboard = dashboardService.getDashboardByIdentification(identification, utils.getUserId());
 		if (dashboard == null) {
@@ -454,12 +460,12 @@ public class DashboardManagementRestController {
 		return new ResponseEntity<>(dashAccessesDto, HttpStatus.OK);
 	}
 
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=DashboardDTO.class))))
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = DashboardDTO.class))))
 	@Operation(summary = "Create dashboard authorization")
 	@PostMapping(PATH + "/{identification}/authorizations")
 	public ResponseEntity<?> createDashboardAuthorizations(
-			@Parameter(description= "dashboard identification", required = true) @PathVariable("identification") String identification,
-			@Parameter(description= "UserAccessDTO", required = true) @Valid @RequestBody List<DashboardUserAccessDTO> usersAccessDTO,
+			@Parameter(description = "dashboard identification", required = true) @PathVariable("identification") String identification,
+			@Parameter(description = "UserAccessDTO", required = true) @Valid @RequestBody List<DashboardUserAccessDTO> usersAccessDTO,
 			Errors errors) {
 
 		final Dashboard dashboard = dashboardService.getDashboardByIdentification(identification, utils.getUserId());
@@ -482,7 +488,7 @@ public class DashboardManagementRestController {
 	@Operation(summary = "Get all Gadgets from a list of Dashboards")
 	@PostMapping(PATH + "/gadgetsFromDashboards")
 	public ResponseEntity<?> gadgetsFromDashboards(
-			@Parameter(description= "Dashboards id list", required = true) @RequestBody List<String> dashboardsList,
+			@Parameter(description = "Dashboards id list", required = true) @RequestBody List<String> dashboardsList,
 			Errors errors) {
 		JSONArray result = new JSONArray();
 		result = dashboardService.getGadgets(dashboardsList, utils.getUserId());
@@ -490,12 +496,12 @@ public class DashboardManagementRestController {
 		return new ResponseEntity<>(result.toString(), HttpStatus.OK);
 	}
 
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=DashboardDTO.class))))
+	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = DashboardDTO.class))))
 	@Operation(summary = "Update dashboard authorization")
 	@PutMapping(PATH + "/{identification}/authorizations")
 	public ResponseEntity<?> updateDashboardAuthorizations(
-			@Parameter(description= "dashboard id or identification", required = true) @PathVariable("identification") String identification,
-			@Parameter(description= "UserAccessDTO", required = true) @Valid @RequestBody List<DashboardUserAccessDTO> uADTOs,
+			@Parameter(description = "dashboard id or identification", required = true) @PathVariable("identification") String identification,
+			@Parameter(description = "UserAccessDTO", required = true) @Valid @RequestBody List<DashboardUserAccessDTO> uADTOs,
 			Errors errors) {
 
 		Dashboard dashboard = dashboardService.getDashboardByIdentification(identification, utils.getUserId());
@@ -518,8 +524,8 @@ public class DashboardManagementRestController {
 	@Operation(summary = "Delete dashboard authorization")
 	@DeleteMapping("/{identification}/authorizations/{userId}")
 	public ResponseEntity<?> deleteDashboardAuthorization(
-			@Parameter(description= "dashboard id or identification", example = "developer", required = true) @PathVariable("identification") String identification,
-			@Parameter(description= "userId", required = true) @PathVariable("userId") String userId) {
+			@Parameter(description = "dashboard id or identification", example = "developer", required = true) @PathVariable("identification") String identification,
+			@Parameter(description = "userId", required = true) @PathVariable("userId") String userId) {
 
 		Dashboard dashboard = dashboardService.getDashboardByIdentification(identification, utils.getUserId());
 		if (dashboard == null) {
@@ -547,8 +553,8 @@ public class DashboardManagementRestController {
 	@Operation(summary = "Delete several dashboard authorizations")
 	@DeleteMapping("/{identification}/authorizations")
 	public ResponseEntity<?> deleteDashboardAuthorizations(
-			@Parameter(description= "dashboard identification or id", example = "developer", required = true) @PathVariable("identification") String identification,
-			@Parameter(description= "UserAccessDTO", required = true) @Valid @RequestBody List<DashboardUserAccessDTO> uADTOs,
+			@Parameter(description = "dashboard identification or id", example = "developer", required = true) @PathVariable("identification") String identification,
+			@Parameter(description = "UserAccessDTO", required = true) @Valid @RequestBody List<DashboardUserAccessDTO> uADTOs,
 			Errors errors) {
 
 		Dashboard dashboard = dashboardService.getDashboardByIdentification(identification, utils.getUserId());
@@ -577,34 +583,40 @@ public class DashboardManagementRestController {
 	}
 
 	@Operation(summary = "Set image to dashboard")
-	@PostMapping(value="/{identification}/image",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@PostMapping(value = "/{identification}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<String> setImage(
-			@Parameter(description= "dashboard identification or id", required = true) @PathVariable("identification") String identification,
+			@Parameter(description = "dashboard identification or id", required = true) @PathVariable("identification") String identification,
 			@RequestParam("file") MultipartFile imageFile) throws IOException {
 
 		Dashboard dashboard = dashboardService.getDashboardByIdentification(identification, utils.getUserId());
 		if (dashboard == null) {
 			dashboard = dashboardService.getDashboardById(identification, utils.getUserId());
 			if (dashboard == null) {
-				return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, CONSTANT_DASHBOARD_NOT_FOUND), HttpStatus.NOT_FOUND);
+				return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, CONSTANT_DASHBOARD_NOT_FOUND),
+						HttpStatus.NOT_FOUND);
 			}
 		}
 		if (!dashboardService.hasUserEditPermission(dashboard.getId(), utils.getUserId())) {
-			return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, USER_NOT_AUTHORIZED), HttpStatus.UNAUTHORIZED);
+			return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, USER_NOT_AUTHORIZED),
+					HttpStatus.UNAUTHORIZED);
 		}
 		if (imageFile.getSize() <= 0) {
-			return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, ATTACHMENT_COULDN_T_BE_FOUND), HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, ATTACHMENT_COULDN_T_BE_FOUND),
+					HttpStatus.BAD_REQUEST);
 		}
 		if (utils.isFileExtensionForbidden(imageFile)) {
-			return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, FILE_EXTENSION_NOT_ALLOWED), HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, FILE_EXTENSION_NOT_ALLOWED),
+					HttpStatus.BAD_REQUEST);
 		}
 		if (imageFile.getSize() > utils.getMaxFileSizeAllowed().longValue()) {
-			return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, FILE_SIZE_IS_LARGER_THAN_MAX_ALLOWED), HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, FILE_SIZE_IS_LARGER_THAN_MAX_ALLOWED),
+					HttpStatus.BAD_REQUEST);
 		}
 
 		try {
 			dashboardService.setImage(dashboard, imageFile.getBytes());
-			return new ResponseEntity<>(String.format(MSG_OK_JSON_RESPONSE, IMAGE_SUCCESSFULLY_UPLOADED), HttpStatus.OK);
+			return new ResponseEntity<>(String.format(MSG_OK_JSON_RESPONSE, IMAGE_SUCCESSFULLY_UPLOADED),
+					HttpStatus.OK);
 		} catch (final Exception e) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -613,17 +625,19 @@ public class DashboardManagementRestController {
 	@Operation(summary = "Delete image from dashboard")
 	@DeleteMapping("/{identification}/image")
 	public ResponseEntity<String> deleteImage(
-			@Parameter(description= "dashboard identification or id", required = true) @PathVariable("identification") String identification) {
+			@Parameter(description = "dashboard identification or id", required = true) @PathVariable("identification") String identification) {
 
 		Dashboard dashboard = dashboardService.getDashboardByIdentification(identification, utils.getUserId());
 		if (dashboard == null) {
 			dashboard = dashboardService.getDashboardById(identification, utils.getUserId());
 			if (dashboard == null) {
-				return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, CONSTANT_DASHBOARD_NOT_FOUND), HttpStatus.NOT_FOUND);
+				return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, CONSTANT_DASHBOARD_NOT_FOUND),
+						HttpStatus.NOT_FOUND);
 			}
 		}
 		if (!dashboardService.hasUserEditPermission(dashboard.getId(), utils.getUserId())) {
-			return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, USER_NOT_AUTHORIZED), HttpStatus.UNAUTHORIZED);
+			return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, USER_NOT_AUTHORIZED),
+					HttpStatus.UNAUTHORIZED);
 		}
 
 		try {
@@ -633,4 +647,32 @@ public class DashboardManagementRestController {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+
+	@Operation(summary = "Clone Dashboard by identification")
+	@PostMapping(value = { "/clone" })
+	public ResponseEntity<String> cloneDashboard(
+			@Parameter(description = "Dashboard identifier to clone") @RequestParam(required = true) String identification,
+			@Parameter(description = "New dashboard identifier") @RequestParam(required = true) String newIdentification) {
+
+		try {
+			if (newIdentification == null || newIdentification.trim().length() < 5) {
+				return new ResponseEntity<>(String.format(MSG_ERROR_JSON_RESPONSE, MSG_ERROR_5_CHARACTERS),
+						HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+
+			String id = "";
+			final String userId = utils.getUserId();
+
+			id = dashboardService.cloneDashboard(dashboardService.getDashboardByIdentification(identification, userId),
+					newIdentification, userId);
+
+			if (!dashboardService.dashboardExistsById(id)) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+			}
+			return new ResponseEntity<>(String.format(MSG_OK_JSON_RESPONSE, id), HttpStatus.OK);
+		} catch (final Exception e) {
+			return new ResponseEntity<>("{\"status\" : \"fail\"}", HttpStatus.BAD_REQUEST);
+		}
+	}
+
 }

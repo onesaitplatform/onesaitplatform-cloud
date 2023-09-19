@@ -58,7 +58,13 @@
                       <img ng-src="{{vm.baseimg}}/static/images/dashboards/icon_menu_filter.svg" >
                       <span>Edit Filters</span>
                       </md-button>             
-                </md-menu-item>  
+                </md-menu-item>
+                  <md-menu-item ng-if="(!vm.iframe || vm.iframe && vm.editbuttonsiframe.saveAsPrebuildGadget) && vm.editmode && (vm.element.type == 'livehtml' ||  vm.element.type == 'vuetemplate' ||  vm.element.type == 'reacttemplate') && !vm.element.gadgetid && !vm.element.tempgadget">
+                    <md-button  ng-click="vm.openSaveAsPrebuildGadgetDialog()"  aria-label="Save as Prebuild Gadget" >
+                      <img ng-src="{{vm.baseimg}}/static/images/dashboards/icon_button_download_black.svg" >
+                      <span>Save as Prebuild Gadget</span>
+                      </md-button>             
+                  </md-menu-item>
                 <md-menu-item ng-if="!vm.iframe && vm.editmode && vm.element.type === 'livehtml'">
                   <md-button  ng-click="vm.openEditCustomMenuOptionsDialog()"  aria-label="Custom Menu Options" >
                     <img ng-src="{{vm.baseimg}}/static/images/dashboards/icon_button_menu.svg" style="height:20px;">
@@ -281,6 +287,17 @@
           <filter id="vm.element.id" datasource="vm.element.datasource" config="vm.config" hidebuttonclear="vm.element.hidebuttonclear" buttonbig="false" ></filter> 
       </div>        
     </md-content>
+
+    <div ng-if="vm.datastatus == 'removed'" class="no-data-gadget wasremoved" layout="column"  >
+      <div class="no-data-title">NO DATA</div>
+      <div class="no-data-text">
+          Sorry, we couldn´t load the visual
+          information for this gadget.
+          This gadget was removed.
+          <br/>
+          Internal ID: {{vm.element.gadgetid}}
+      </div>
+    </div>
 
   </div>
 </gridster-item>

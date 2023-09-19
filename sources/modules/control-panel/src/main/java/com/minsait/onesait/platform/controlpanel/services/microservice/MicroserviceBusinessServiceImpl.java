@@ -190,7 +190,7 @@ public class MicroserviceBusinessServiceImpl implements MicroserviceBusinessServ
 	public Microservice createMicroserviceFromDigitalTwin(DigitalTwinDevice device, File file,
 			GitlabConfiguration configuration, String sources, String docker) {
 		final MicroserviceDTO microservice = MicroserviceDTO.builder().name(device.getIdentification().toLowerCase())
-				.contextPath(device.getContextPath()).port(device.getPort()).template(TemplateType.DIGITAL_TWIN)
+				.contextPath(device.getContextPath()).port(device.getPort()).template(TemplateType.DIGITAL_TWIN.toString())
 				.gitlabConfiguration(configuration).owner(device.getUser().getUserId()).build();
 
 		final MSConfig config = MSConfig.builder().createGitlab(true).defaultCaaS(true)
@@ -201,22 +201,6 @@ public class MicroserviceBusinessServiceImpl implements MicroserviceBusinessServ
 		return createMicroservice(microservice, config, file);
 	}
 
-	public Microservice createMicroserviceFromNotebook(Notebook notebook, File file,
-			GitlabConfiguration configuration) {
-
-		final String notebookIdentification = notebook.getIdentification().trim().toLowerCase();
-		final MicroserviceDTO microservice = MicroserviceDTO.builder().name(notebookIdentification)
-				.contextPath("/" + notebookIdentification).port(8080).template(TemplateType.NOTEBOOK_ARCHETYPE)
-				.gitlabConfiguration(configuration).owner(notebook.getUser().getUserId()).build();
-
-		final MSConfig config = MSConfig.builder().createGitlab(true).defaultCaaS(true)
-				.defaultGitlab(!StringUtils.hasText(configuration.getPrivateToken())
-						|| !StringUtils.hasText(configuration.getSite()))
-				.defaultJenkins(true).notebook(notebook.getIdentification()).build();
-
-		return createMicroservice(microservice, config, file);
-
-	}
 
 	@Override
 	public String createJenkinsPipeline(Microservice microservice) {
@@ -488,7 +472,7 @@ public class MicroserviceBusinessServiceImpl implements MicroserviceBusinessServ
 		} else {
 			setOpenshiftConfiguration(config, microservice, ms);
 		}
-		if (!microservice.getTemplate().equals(Microservice.TemplateType.MLFLOW_MODEL)) {
+		if (!microservice.getTemplate().equals(Microservice.TemplateType.MLFLOW_MODEL.toString())) {
 			setGitlabConfiguration(config, microservice, ms);
 		}
 

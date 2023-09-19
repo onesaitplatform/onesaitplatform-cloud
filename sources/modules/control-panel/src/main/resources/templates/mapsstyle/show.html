@@ -51,6 +51,7 @@
 	th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}" />
 <link rel="stylesheet" data-name="vs/editor/editor.main"
 	th:href="@{/static/vendor/vs/editor/editor.main.css}" />
+ 
 </head>
 
 <!-- page-sidebar-closed to start page with collapsed menu -->
@@ -297,8 +298,8 @@
 										<div class="form-group">
 											<label class="control-label">fill</label><br> <span
 												id="fill" class="form-control-static-block "> </span> <input
-												type="color" disabled="disabled" id="fillin" value="#ff0000"
-												style="width: 10%;">
+												type="text"   disabled="disabled" id="fillin"  style=" width: 300px;" 
+												>
 										</div>
 									</div>
 									<div class="clearfix"></div>
@@ -317,8 +318,8 @@
 										<div class="form-group">
 											<label class="control-label">color</label> <label
 												id="strokecolor" class="form-control-static-block ">
-											</label> <input disabled="disabled" type="color" id="strokecolorin"
-												value="#ff0000" style="width: 10%;">
+											</label> <input disabled="disabled" type="text" class="form-control " id="strokecolorin"
+												   style=" width: 300px;">
 										</div>
 									</div>
 									<div class="col-md-12 col-sm-12">
@@ -385,16 +386,16 @@
 										<div class="form-group">
 											<label class="control-label">fill Color</label><br> <span
 												id="textfillColor" class="form-control-static-block ">
-											</span> <input type="color" id="textfillColorin" disabled="disabled"
-												value="#ff0000" style="width: 10%;">
+											</span> <input type="text" class=" form-control " id="textfillColorin" disabled="disabled"
+												 style=" width: 300px;" >
 										</div>
 									</div>
 									<div class="col-md-6 col-sm-6">
 										<div class="form-group">
 											<label class="control-label">stroke Color</label><br> <span
 												id="textstrokeColor" class="form-control-static-block ">
-											</span> <input type="color" id="textstrokeColorin"
-												disabled="disabled" value="#ff0000" style="width: 10%;">
+											</span> <input type="text" class="  form-control " id="textstrokeColorin"
+												disabled="disabled"  style=" width: 300px;" >
 										</div>
 									</div>
 									<div class="col-md-6 col-sm-6">
@@ -492,8 +493,8 @@
 										<div class="form-group">
 											<label class="control-label">background Fill</label><br>
 											<span id="textbackgroundFill"> </span><br> <input
-												type="color" id="textbackgroundFillin" disabled="disabled"
-												value="#ff0000" style="width: 10%;">
+												type="text" class="  form-control " id="textbackgroundFillin" disabled="disabled"
+												  style=" width: 300px;">
 										</div>
 									</div>
 									<div class="col-md-6 col-sm-6">
@@ -573,9 +574,9 @@
 									<div class="col-md-12 col-sm-12">
 										<div class="form-group">
 											<label class="control-label">color</label><br> <span
-												id="imagecolor"> </span> <br> <input type="color"
-												id="imagecolorin" disabled="disabled" value="#ff0000"
-												style="width: 10%;">
+												id="imagecolor"> </span> <br> <input type="text" class="  form-control "
+												id="imagecolorin" disabled="disabled"  style=" width: 300px;"
+												 >
 										</div>
 									</div>
 									<div class="col-md-12 col-sm-12">
@@ -690,9 +691,9 @@
 									<div class="col-md-12 col-sm-12">
 										<div class="form-group">
 											<label class="control-label">color</label><br> <span
-												id="iconcolor"> </span><br> <input type="color"
-												id="iconcolorin" disabled="disabled" value="#ff0000"
-												style="width: 10%;">
+												id="iconcolor"> </span><br> <input type="text" class=" form-control "
+												id="iconcolorin" disabled="disabled"   style=" width: 300px;"
+												 >
 
 										</div>
 									</div>
@@ -731,7 +732,9 @@
 <footer th:include="fragments/footer::#footerFragment"
 	class="page-footer"> </footer>
 
-<!-- CORE CONTROLLERS -->
+	<!-- CORE CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
 
 
 <!-- TEMPLATE CONTROLLER  
@@ -746,6 +749,7 @@
 <script th:if="${lang} == 'es'"
 	th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}"
 	type="text/javascript"></script>
+ 
 >
 <!-- INPUTMASK -->
 <script
@@ -773,7 +777,7 @@
 		$( document ).ready(function() {
 		handleTabsChange();
 		initfields();
-		
+ 
 		});
 		
 		
@@ -792,13 +796,14 @@
 			if (config.circleVertex) {
 				$("#circleVertex").prop('checked', true);
 			}
-			$("#fill").text(config.fill).change();
-			$("#fillin").val(config.fill).change();
+			$("#fill").text(config.fill.color).change();
+			$("#fillin").css('background',config.fill.color) ;
 
 			if (typeof config.stroke != 'undefined' && config.stroke != null) {
 				//STROKE
 				$("#strokecolor").text(config.stroke.color).change();
-				$("#strokecolorin").val(config.stroke.color).change();
+				 
+				$("#strokecolorin").css('background',config.stroke.color) ;
 				$("#strokewidth").text(config.stroke.width).change();
 
 				if (typeof config.stroke.lineDash != 'undefined' && config.stroke.lineDash != null && config.stroke.lineDash.length > 0) {
@@ -821,9 +826,11 @@
 					$("#texttextVisibility").prop('checked', true);
 				}
 				$("#textfillColor").text(config.text.fillColor).change();
-				$("#textfillColorin").val(config.text.fillColor).change();
+				//$("#textfillColorin").val(config.text.fillColor).change();
+				$("#textfillColorin").css('background',config.text.fillColor) ;
 				$("#textstrokeColor").text(config.text.strokeColor).change();
-				$("#textstrokeColorin").val(config.text.strokeColor).change();
+				$("#textstrokeColorin").css('background',config.text.strokeColor) ;
+				//$("#textstrokeColorin").val(config.text.strokeColor).change();
 				$("#textdefaultText").text(config.text.defaultText).change();
 				$("#texttextField").text(config.text.textField).change();
 				$("#textscale").text(config.text.scale).change();
@@ -868,7 +875,8 @@
 				$("#imageopacity").text(config.image.opacity).change();
 				$("#imagerotation").text(config.image.rotation).change();
 				$("#imagecolor").text(config.image.color).change();
-				$("#imagecolorin").val(config.image.color).change();
+				$("#imagecolorin").css('background',config.image.color) ;
+				//$("#imagecolorin").val(config.image.color).change();
 				if (typeof config.image.size != 'undefined' && config.image.size != null && config.image.size.length > 0) {
 					$("#imagesize0").text(config.image.size[0]).change();
 					$("#imagesize1").text(config.image.size[1]).change();
@@ -900,7 +908,8 @@
 					$("#icondisplacement1").text(config.icon.displacement[1]).change();
 				}
 				$("#iconcolor").text(config.icon.color).change();
-				$("#iconcolorin").val(config.icon.color).change();
+				//$("#iconcolorin").val(config.icon.color).change();
+				$("#iconcolorin").css('background',config.icon.color) ;
 				$("#iconcrossOrigin").text(config.crossOrigin).change();
 				if (typeof config.icon.size != 'undefined' && config.icon.size != null && config.icon.size.length > 0) {
 					$("#iconsize0").text(config.icon.size[0]).change();

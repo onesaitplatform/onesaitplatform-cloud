@@ -36,6 +36,10 @@ public class FlowEngineDomainStatus extends FlowEngineDomain {
 
 	@Getter
 	@Setter
+	private String id;
+
+	@Getter
+	@Setter
 	private String runtimeState;
 
 	@Getter
@@ -49,11 +53,11 @@ public class FlowEngineDomainStatus extends FlowEngineDomain {
 	@Getter
 	@Setter
 	private String user;
-	
+
 	@Getter
 	@Setter
 	private Boolean autorecover;
-	
+
 	@Getter
 	@Setter
 	private List<String> sockets;
@@ -61,12 +65,11 @@ public class FlowEngineDomainStatus extends FlowEngineDomain {
 	@Getter
 	@Setter
 	private Date createdAt;
-	
+
 	@Getter
 	@Setter
 	private Date updatedAt;
-	
-	
+
 	public static Collection<FlowEngineDomainStatus> fromJsonArrayToDomainStatus(String json) throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
 

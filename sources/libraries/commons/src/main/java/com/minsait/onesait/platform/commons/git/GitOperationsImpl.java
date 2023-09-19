@@ -47,10 +47,14 @@ public class GitOperationsImpl implements GitOperations {
 	private static final String COULD_NOT_PUSH_TO_ORIGIN = "Could not push to origin";
 	public static final String CLONED_FOLDER = "cloned";
 
+	/**
+	 * on windows --> change var directory!! (e.g. "c:\\Users\\mywindowsuser\\test")
+	 * final ProcessBuilder pb = new ProcessBuilder("cmd.exe", " /c", "mkdir",
+	 * directory);
+	 */
 	@Override
 	public void createDirectory(String directory) {
 		try {
-
 			final ProcessBuilder pb = new ProcessBuilder("mkdir", directory);
 			pb.redirectErrorStream(true);
 			executeAndReadOutput(pb.start());
@@ -62,6 +66,20 @@ public class GitOperationsImpl implements GitOperations {
 
 	}
 
+//	@Override
+//	public void createDirectoryTEST(String directory) {
+//		try {
+//	     	final ProcessBuilder pb = new ProcessBuilder("cmd.exe", " /c", "mkdir",  directory);
+//			pb.redirectErrorStream(true);
+//			executeAndReadOutput(pb.start());
+//
+//		} catch (final Exception e) {
+//			log.error("Could not create directory {}", e.getMessage());
+//			throw new GitException("Could not create directory", e);
+//		}
+//
+//	}
+
 	@Override
 	public void configureGitlabAndInit(String user, String email, String directory) {
 		try {
@@ -69,15 +87,19 @@ public class GitOperationsImpl implements GitOperations {
 			ProcessBuilder pb = new ProcessBuilder("git", "init");
 			pb.redirectErrorStream(true);
 			pb.directory(new File(directory));
+			log.info("Executing cmd {}", pb.command());
 			executeAndReadOutput(pb.start());
 			pb = new ProcessBuilder("git", CONFIG_STR, "user.name", user);
 			pb.directory(new File(directory));
+			log.info("Executing cmd {}", pb.command());
 			executeAndReadOutput(pb.start());
 			pb = new ProcessBuilder("git", CONFIG_STR, "user.email", email);
 			pb.directory(new File(directory));
+			log.info("Executing cmd {}", pb.command());
 			executeAndReadOutput(pb.start());
 			pb = new ProcessBuilder("git", CONFIG_STR, "http.sslVerify", "false");
 			pb.directory(new File(directory));
+			log.info("Executing cmd {}", pb.command());
 			executeAndReadOutput(pb.start());
 
 		} catch (final Exception e) {
@@ -162,7 +184,8 @@ public class GitOperationsImpl implements GitOperations {
 	}
 
 	@Override
-	public void push(String sshUrl, String username, String password, String branch, String directory, boolean mirror) throws GitSyncException {
+	public void push(String sshUrl, String username, String password, String branch, String directory, boolean mirror)
+			throws GitSyncException {
 		push(sshUrl, username, password, branch, directory, mirror, false);
 
 	}
@@ -195,11 +218,11 @@ public class GitOperationsImpl implements GitOperations {
 			log.info(pb.command().toString());
 			pb.directory(new File(directory));
 			final String pushResult = executeAndReadOutput(pb.start());
-			if(pushResult.contains("[rejected]")) {
+			if (pushResult.contains("[rejected]")) {
 				log.warn("Handling a rejected push: {}", pushResult);
 				throw new GitSyncException("Push was rejected, fetch changes first");
 			}
-		}catch (final GitSyncException e) {
+		} catch (final GitSyncException e) {
 			throw e;
 
 		} catch (final Exception e) {
@@ -375,10 +398,14 @@ public class GitOperationsImpl implements GitOperations {
 
 	}
 
+	/**
+	 * on windows --> change var directory!! (e.g. "c:\\Users\\mywindowsuser\\test")
+	 * final ProcessBuilder pb = new ProcessBuilder("cmd.exe", " /c", "rm", "-r",
+	 * directory);
+	 */
 	@Override
 	public void deleteDirectory(String directory) {
 		try {
-
 			final ProcessBuilder pb = new ProcessBuilder("rm", "-r", directory);
 			pb.redirectErrorStream(true);
 			executeAndReadOutput(pb.start());
@@ -389,6 +416,20 @@ public class GitOperationsImpl implements GitOperations {
 		}
 
 	}
+
+//	@Override
+//	public void deleteDirectoryTEST(String directory) {
+//		try {
+//			final ProcessBuilder pb = new ProcessBuilder("cmd.exe", " /c", "rmdir", "-r", directory);
+//			pb.redirectErrorStream(true);
+//			executeAndReadOutput(pb.start());
+//
+//		} catch (final Exception e) {
+//			log.error("Could not delete directory {}", e.getMessage());
+//			throw new GitException("Could not delete directory", e);
+//		}
+//
+//	}
 
 	@Override
 	public void cloneRepository(String directory, GitlabConfiguration remoteConfig) {
@@ -448,6 +489,29 @@ public class GitOperationsImpl implements GitOperations {
 	}
 
 	@Override
+	public void cloneRepository(String directory, String url, String user, String token, String branch,
+			boolean cloneToSpecificDir, String cloneFolder) {
+		try {
+			if (StringUtils.hasText(user) && StringUtils.hasText(token)) {
+				url = url.replaceAll("://", "://" + user + ":" + token + "@");
+			}
+			final ProcessBuilder pb;
+			if (cloneToSpecificDir) {
+				pb = new ProcessBuilder("git", "clone", "-b", branch, url, cloneFolder);
+			} else {
+				pb = new ProcessBuilder("git", "clone", "-b", branch, url, CLONED_FOLDER);
+			}
+			pb.redirectErrorStream(true);
+			log.info(pb.command().toString());
+			pb.directory(new File(directory));
+			executeAndReadOutput(pb.start());
+		} catch (final Exception e) {
+			log.error(COULD_NOT_PUSH_TO_ORIGIN_MSSG, e.getMessage());
+			throw new GitException(COULD_NOT_PUSH_TO_ORIGIN, e);
+		}
+	}
+
+	@Override
 	public void createBranch(String branch, String directory) {
 		try {
 
@@ -481,18 +545,22 @@ public class GitOperationsImpl implements GitOperations {
 			ProcessBuilder pb = new ProcessBuilder("git", "init");
 			pb.redirectErrorStream(true);
 			pb.directory(new File(directory));
+			log.info("Executing cmd {}", pb.command());
 			executeAndReadOutput(pb.start());
 			pb = new ProcessBuilder("git", CONFIG_STR, "user.name", user);
 			pb.directory(new File(directory));
+			log.info("Executing cmd {}", pb.command());
 			executeAndReadOutput(pb.start());
 			if (email != null) {
 				pb = new ProcessBuilder("git", CONFIG_STR, "user.email", email);
 				pb.directory(new File(directory));
+				log.info("Executing cmd {}", pb.command());
 				executeAndReadOutput(pb.start());
 			}
 
 			pb = new ProcessBuilder("git", CONFIG_STR, "http.sslVerify", "false");
 			pb.directory(new File(directory));
+			log.info("Executing cmd {}", pb.command());
 			executeAndReadOutput(pb.start());
 
 		} catch (final Exception e) {
@@ -509,7 +577,7 @@ public class GitOperationsImpl implements GitOperations {
 			pb.redirectErrorStream(true);
 			log.info(pb.command().toString());
 			pb.directory(new File(directory));
-			executeAndReadOutput(pb.start(),  10L);
+			executeAndReadOutput(pb.start(), 10L);
 		} catch (final Exception e) {
 			log.error("Could not rollback file {} on commitId {}", relativeFilePath, commitId, e.getMessage());
 			throw new GitException("Could not rollback file ", e);
@@ -541,7 +609,7 @@ public class GitOperationsImpl implements GitOperations {
 			pb.redirectErrorStream(true);
 			log.info(pb.command().toString());
 			pb.directory(new File(directory));
-			executeAndReadOutput(pb.start(),5L);
+			executeAndReadOutput(pb.start(), 5L);
 		} catch (final Exception e) {
 			throw new GitException("Could not change remote", e);
 		}
@@ -571,11 +639,11 @@ public class GitOperationsImpl implements GitOperations {
 			log.info(pb.command().toString());
 			pb.directory(new File(directory));
 			final String pushResult = executeAndReadOutput(pb.start());
-			if(pushResult.contains("[rejected]")) {
+			if (pushResult.contains("[rejected]")) {
 				log.warn("Handling a rejected push: {}", pushResult);
 				throw new GitSyncException("Push was rejected, fetch changes first");
 			}
-		}catch (final GitSyncException e) {
+		} catch (final GitSyncException e) {
 			throw e;
 
 		} catch (final Exception e) {

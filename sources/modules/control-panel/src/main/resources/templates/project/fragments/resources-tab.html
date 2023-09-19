@@ -69,7 +69,7 @@
 							<input type="text" name="users[]" readonly="readonly"  class="margin-top-4 no-border" style="width: -webkit-fill-available;" th:value="${access.appRole.name}  +' ('+ ${access.appRole.app.identification} +')'"/>
 						</td>											
 						<td class="no-wrap text-center">											
-							<button type="button" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" th:attr="onclick='javascript:ProjectCreateController.removeAuthorization(\''+|${access.id}|+'\')'"><i class="icon-delete"></i></button>
+							<button type="button" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" th:attr="onclick='javascript:ProjectCreateController.removeAuthorization(\''+|${access.id}|+'\')'" th:title="#{project.resources.tooltip}"><i class="icon-delete"></i></button>
 						</td>			
 					</tr>
 				</th:block>

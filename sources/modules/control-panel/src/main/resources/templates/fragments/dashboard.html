@@ -177,23 +177,6 @@
 					</div>
 					<div class="widget-row ">
 						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12" style="margin-top: 20px;">
-							<a class="nav-link nav-toggle nav-hover" href="/controlpanel/marketasset/list">
-								<div class="dashboard-stat2">
-									<div class="display">
-										<div class="number" style="width: 110px">
-											<div class="icon">
-												<i class="flaticon-cart"></i>
-											</div>
-											<h3 class="font-blue-sharp">
-												<span data-counter="counterup" class="counter" th:attr="data-value=${kpis[8].value},data-counter='counterup'">[[${kpis[8].value}]]</span>
-											</h3>
-											<small th:text="#{kpis.assets}">Assets</small>
-										</div>
-									</div>
-								</div>
-							</a>
-						</div>
-						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12" style="margin-top: 20px;">
 							<a class="nav-link nav-toggle nav-hover" href="/controlpanel/projects/list">
 								<div class="dashboard-stat2">
 									<div class="display">
@@ -202,7 +185,7 @@
 												<i class="flaticon-suitcase"></i>
 											</div>
 											<h3 class="font-blue-sharp">
-												<span data-counter="counterup" class="counter" th:attr="data-value=${kpis[9].value},data-counter='counterup'">[[${kpis[9].value}]]</span>
+												<span data-counter="counterup" class="counter" th:attr="data-value=${kpis[8].value},data-counter='counterup'">[[${kpis[8].value}]]</span>
 											</h3>
 											<small th:text="#{kpis.projects}">PROJECTS</small>
 										</div>
@@ -219,7 +202,7 @@
 												<i class="flaticon-analytics"></i>
 											</div>
 											<h3 class="font-blue-sharp">
-												<span data-counter="counterup" class="counter" th:attr="data-value=${kpis[10].value},data-counter='counterup'">[[${kpis[10].value}]]</span>
+												<span data-counter="counterup" class="counter" th:attr="data-value=${kpis[9].value},data-counter='counterup'">[[${kpis[9].value}]]</span>
 											</h3>
 											<small th:text="#{kpis.iotflows}">IOT FLOWS</small>
 										</div>
@@ -236,9 +219,26 @@
 												<i class="flaticon-folder"></i>
 											</div>
 											<h3 class="font-blue-sharp">
-												<span data-counter="counterup" class="counter" th:attr="data-value=${kpis[11].value},data-counter='counterup'">[[${kpis[11].value}]]</span>
+												<span data-counter="counterup" class="counter" th:attr="data-value=${kpis[10].value},data-counter='counterup'">[[${kpis[10].value}]]</span>
 											</h3>
 											<small th:text="#{kpis.binaryfiles}">Binary files</small>
+										</div>
+									</div>
+								</div>
+							</a>
+						</div>
+						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12" style="margin-top: 20px;">
+							<a class="nav-link nav-toggle nav-hover" href="/controlpanel/microservices/list">
+								<div class="dashboard-stat2">
+									<div class="display">
+										<div class="number" style="width: 110px">
+											<div class="icon">
+												<i class="flaticon-network"></i>
+											</div>
+											<h3 class="font-blue-sharp">
+												<span data-counter="counterup" class="counter" th:attr="data-value=${kpis[11].value},data-counter='counterup'">[[${kpis[11].value}]]</span>
+											</h3>
+											<small th:text="#{lineage.microservices}">Microservices</small>
 										</div>
 									</div>
 								</div>

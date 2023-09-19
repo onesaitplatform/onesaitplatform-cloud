@@ -256,6 +256,8 @@ public class CrudServiceImpl implements CrudService {
 			return "id";
 		} else if (datasource.equals(Ontology.RtdbDatasource.PRESTO)) {
 			return "";
+		} else if (datasource.equals(Ontology.RtdbDatasource.TIMESCALE)) {
+			return null;
 		} else {
 			if (useQuasar() || useLegacySQL() || findById) {
 				return "_id";

@@ -45,6 +45,8 @@ import com.minsait.onesait.platform.config.model.WebProject;
 import com.minsait.onesait.platform.config.repository.WebProjectRepository;
 import com.minsait.onesait.platform.config.services.exceptions.WebProjectServiceException;
 import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -60,9 +62,13 @@ public class WebProjectServiceImpl implements WebProjectService {
 	@Autowired
 	private UserService userService;
 
+	@Autowired
+	private MultitenancyService masterUserService;
+
 	private static final String USER_UNAUTH = "The user is not authorized";
 	private static final String SLASH_STRING = "/";
 	private static final String ERROR_DELETING_FOLDER = "Error deleting folder: {}";
+	private static final String DEFAULT_VERTICAL = "onesaitplatform";
 
 	@Value("${onesaitplatform.webproject.baseurl:https://localhost:18080/web/}")
 	private String rootWWW;
@@ -210,7 +216,9 @@ public class WebProjectServiceImpl implements WebProjectService {
 			final User user = userService.getUser(userId);
 
 			if (hasUserPermissionToEditWebProject(user, wp)) {
-				deleteFolder(rootFolder + wp.getIdentification() + SLASH_STRING);
+				String vertical_name = masterUserService
+						.getVerticalFromSchema(MultitenancyContextHolder.getVerticalSchema()).getName();
+				deleteFolder(rootFolder + vertical_name + SLASH_STRING + wp.getIdentification() + SLASH_STRING);
 				webProjectRepository.delete(wp);
 			} else {
 				throw new WebProjectServiceException(USER_UNAUTH);
@@ -225,7 +233,9 @@ public class WebProjectServiceImpl implements WebProjectService {
 			final User user = userService.getUser(userId);
 
 			if (hasUserPermissionToEditWebProject(user, wp)) {
-				deleteFolder(rootFolder + wp.getIdentification() + SLASH_STRING);
+				String vertical_name = masterUserService
+						.getVerticalFromSchema(MultitenancyContextHolder.getVerticalSchema()).getName();
+				deleteFolder(rootFolder + vertical_name + SLASH_STRING + wp.getIdentification() + SLASH_STRING);
 				webProjectRepository.delete(wp);
 			} else {
 				throw new WebProjectServiceException(USER_UNAUTH);
@@ -236,8 +246,14 @@ public class WebProjectServiceImpl implements WebProjectService {
 
 	@Override
 	public void uploadZip(MultipartFile file, String userId) {
-
-		final String folder = rootFolder + userId + SLASH_STRING;
+		String vertical_name = masterUserService.getVerticalFromSchema(MultitenancyContextHolder.getVerticalSchema())
+				.getName();
+		String folder;
+		if (vertical_name.equals(DEFAULT_VERTICAL)) {
+			folder = rootFolder + userId + SLASH_STRING;
+		} else {
+			folder = rootFolder + vertical_name + SLASH_STRING + userId + SLASH_STRING;
+		}
 
 		deleteFolder(folder);
 		uploadFileToFolder(file, folder);
@@ -246,8 +262,15 @@ public class WebProjectServiceImpl implements WebProjectService {
 
 	@Override
 	public void uploadWebTemplate(String userId) {
+		String vertical_name = masterUserService.getVerticalFromSchema(MultitenancyContextHolder.getVerticalSchema())
+				.getName();
 
-		final String folder = rootFolder + userId + SLASH_STRING;
+		String folder;
+		if (vertical_name.equals(DEFAULT_VERTICAL)) {
+			folder = rootFolder + userId + SLASH_STRING;
+		} else {
+			folder = rootFolder + vertical_name + SLASH_STRING + userId + SLASH_STRING;
+		}
 		deleteFolder(folder);
 		uploadWebTemplateToFolder(folder);
 		unzipFile(folder, WTOP_ZIP);
@@ -331,9 +354,21 @@ public class WebProjectServiceImpl implements WebProjectService {
 
 	private void createFolderWebProject(String identification, String userId) {
 
-		final File file = new File(rootFolder + userId + SLASH_STRING);
+		String vertical_name = masterUserService.getVerticalFromSchema(MultitenancyContextHolder.getVerticalSchema())
+				.getName();
+		File file = null;
+		if (vertical_name.equals(DEFAULT_VERTICAL)) {
+			file = new File(rootFolder + SLASH_STRING + userId + SLASH_STRING);
+		} else {
+			file = new File(rootFolder + vertical_name + SLASH_STRING + userId + SLASH_STRING);
+		}
 		if (file.exists() && file.isDirectory()) {
-			final File newFile = new File(rootFolder + identification + SLASH_STRING);
+			File newFile = null;
+			if (vertical_name.equals(DEFAULT_VERTICAL)) {
+				newFile = new File(rootFolder + SLASH_STRING + identification + SLASH_STRING);
+			} else {
+				newFile = new File(rootFolder + vertical_name + SLASH_STRING + identification + SLASH_STRING);
+			}
 			if (!file.renameTo(newFile)) {
 				throw new WebProjectServiceException("Cannot create web project folder " + identification);
 			}
@@ -342,11 +377,23 @@ public class WebProjectServiceImpl implements WebProjectService {
 	}
 
 	private void updateFolderWebProject(String identification, String userId) {
-
-		final File file = new File(rootFolder + userId + SLASH_STRING);
+		String vertical_name = masterUserService.getVerticalFromSchema(MultitenancyContextHolder.getVerticalSchema())
+				.getName();
+		File file = null;
+		if (vertical_name.equals(DEFAULT_VERTICAL)) {
+			file = new File(rootFolder + SLASH_STRING + userId + SLASH_STRING);
+		} else {
+			file = new File(rootFolder + vertical_name + SLASH_STRING + userId + SLASH_STRING);
+		}
 		if (file.exists() && file.isDirectory()) {
-			deleteFolder(rootFolder + identification + SLASH_STRING);
-			final File newFile = new File(rootFolder + identification + SLASH_STRING);
+			File newFile = null;
+			if (vertical_name.equals(DEFAULT_VERTICAL)) {
+				deleteFolder(rootFolder + SLASH_STRING + identification + SLASH_STRING);
+				newFile = new File(rootFolder + SLASH_STRING + identification + SLASH_STRING);
+			} else {
+				deleteFolder(rootFolder + vertical_name + SLASH_STRING + identification + SLASH_STRING);
+				newFile = new File(rootFolder + vertical_name + SLASH_STRING + identification + SLASH_STRING);
+			}
 			if (!file.renameTo(newFile)) {
 				throw new WebProjectServiceException("Cannot create web project folder " + identification);
 			}
@@ -408,12 +455,15 @@ public class WebProjectServiceImpl implements WebProjectService {
 	public byte[] downloadZip(String identification, String userId) {
 
 		final String path = rootFolder;
+		String vertical_name = masterUserService.getVerticalFromSchema(MultitenancyContextHolder.getVerticalSchema())
+				.getName();
+
 		final String fileName = identification + ".zip";
 
 		final ByteArrayOutputStream zipByte = new ByteArrayOutputStream();
 		final ZipOutputStream zipOut = new ZipOutputStream(zipByte);
 
-		final File fileToZip = new File(path + identification);
+		final File fileToZip = new File(rootFolder + vertical_name + SLASH_STRING + userId + SLASH_STRING);
 
 		log.debug("Zipping file: " + path + fileName);
 

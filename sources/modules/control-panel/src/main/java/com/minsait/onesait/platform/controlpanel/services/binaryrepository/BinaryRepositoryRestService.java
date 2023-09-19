@@ -102,27 +102,27 @@ public class BinaryRepositoryRestService {
 	private static final String WRONG_ACCESS_TYPE = "Access type must be %s or %s";
 	private static final String AUTH_DELETED = "Authorization deleted successfully";
 	private static final String AUTH_UPDATED = "Authorization updated successfully";
-	
-	
-	@Operation(summary= "Create File")
+
+	@Operation(summary = "Create File")
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> addBinary(@Parameter @RequestPart("file") MultipartFile file,
 			@RequestParam(value = "metadata", required = false) String metadata,
-			@RequestParam(value = "repository", required = false) Type repository) {
+			@RequestParam(value = "repository", required = false) Type repository,
+			@RequestParam(value = "filePath", required = false) String filePath) {
 		try {
 			if (file.getSize() > getMaxSize().longValue()) {
 				return new ResponseEntity<>("File is larger than max size allowed", HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 			RepositoryType type = repository != null ? BinaryFile.RepositoryType.valueOf(repository.name())
 					: BinaryFile.RepositoryType.valueOf(RepositoryType.MONGO_GRIDFS.name());
-			final String fileId = binaryFactory.getInstance(type).addBinary(file, metadata, type, null);
+			final String fileId = binaryFactory.getInstance(type).addBinary(file, metadata, type, filePath);
 			return new ResponseEntity<>(fileId, HttpStatus.CREATED);
 		} catch (final Exception e) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
-	@Operation(summary= "Change the file to public")
+	@Operation(summary = "Change the file to public")
 	@PostMapping("/public")
 	@ResponseBody
 	public ResponseEntity<String> changePublic(@RequestParam("id") String fileId) {
@@ -133,7 +133,8 @@ public class BinaryRepositoryRestService {
 			return ResponseEntity.badRequest().build();
 		}
 	}
-	@Operation(summary= "Get file data by id")
+
+	@Operation(summary = "Get file data by id")
 	@GetMapping("/{id}")
 	public ResponseEntity<?> getBinary(@PathVariable("id") String fileId,
 			@RequestParam(value = "repository", required = false) Type repository) {
@@ -150,7 +151,8 @@ public class BinaryRepositoryRestService {
 		}
 
 	}
-	@Operation(summary= "Get all files data")
+
+	@Operation(summary = "Get all files data")
 	@GetMapping("/")
 	public ResponseEntity<?> getAll() {
 		List<BinaryFileSimpleDTO> binaryFiles;
@@ -176,8 +178,8 @@ public class BinaryRepositoryRestService {
 
 		return binaryFileSimpleList;
 	}
-	
-	@Operation(summary= "Download File by Id")
+
+	@Operation(summary = "Download File by Id")
 	@GetMapping("/download/{id}")
 	public ResponseEntity<ByteArrayResource> getBinary(@PathVariable("id") String fileId,
 			@RequestParam(value = "disposition", required = false) String disposition,
@@ -228,8 +230,8 @@ public class BinaryRepositoryRestService {
 		}
 
 	}
-	
-	@Operation(summary= "Update file by id")
+
+	@Operation(summary = "Update file by id")
 	@PostMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<?> update(@PathVariable("id") String fileId,
 			@Parameter @RequestPart("file") MultipartFile file,
@@ -248,7 +250,8 @@ public class BinaryRepositoryRestService {
 		}
 
 	}
-	@Operation(summary= "Delete file by id")
+
+	@Operation(summary = "Delete file by id")
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> deleteBinary(@PathVariable("id") String fileId,
 			@RequestParam(value = "repository", required = false) Type repository) {
@@ -261,7 +264,8 @@ public class BinaryRepositoryRestService {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
 	}
-	@Operation(summary= "Delete files that have a date equal to or less than the timestamp entered")
+
+	@Operation(summary = "Delete files that have a date equal to or less than the timestamp entered")
 	@DeleteMapping("/before/{timestamp}")
 	public ResponseEntity<?> deleteBinary(@PathVariable("timestamp") Long timestamp,
 			@RequestParam(value = "repository", required = false) RepositoryType repository) {
@@ -277,7 +281,8 @@ public class BinaryRepositoryRestService {
 		return new ResponseEntity<>(HttpStatus.ACCEPTED);
 
 	}
-	@Operation(summary= "Create a file in /tmp/files with the content of the lines entered in the document pagination by entering its id")
+
+	@Operation(summary = "Create a file in /tmp/files with the content of the lines entered in the document pagination by entering its id")
 	@GetMapping("/{id}/paginate")
 	public ResponseEntity<String> paginate(@PathVariable("id") String fileId,
 			@RequestParam(value = "startLine", required = true) Long startLine,
@@ -298,7 +303,8 @@ public class BinaryRepositoryRestService {
 		}
 
 	}
-	@Operation(summary= "Delete the file created in /tmp/files with the content of the lines entered in the document pagination by entering its id")
+
+	@Operation(summary = "Delete the file created in /tmp/files with the content of the lines entered in the document pagination by entering its id")
 	@GetMapping("/{id}/paginate/close")
 	public ResponseEntity<String> closePaginate(@PathVariable("id") String fileId,
 			@RequestParam(value = "repository", required = false) Type repository) {
@@ -323,7 +329,7 @@ public class BinaryRepositoryRestService {
 		return (Long) resourcesService.getGlobalConfiguration().getEnv().getFiles().get("max-size");
 	}
 
-	@Operation(summary= "Get file authorizations by Id")
+	@Operation(summary = "Get file authorizations by Id")
 	@GetMapping(value = "/{id}/authorizations")
 	public ResponseEntity<?> getAuthorizations(@PathVariable("id") String fileId) {
 
@@ -344,7 +350,7 @@ public class BinaryRepositoryRestService {
 		}
 	}
 
-	@Operation(summary= "Create file authorizations by Id, adding userId and accessType")
+	@Operation(summary = "Create file authorizations by Id, adding userId and accessType")
 	@PostMapping(value = "/{id}/authorizations")
 	public ResponseEntity<?> setAuthorizations(@Parameter(description = "id") @PathVariable(value = "id") String fileId,
 			@Valid @RequestBody BinaryFileAccessSimplifiedDTO binaryFileAccess,
@@ -373,8 +379,8 @@ public class BinaryRepositoryRestService {
 
 		return new ResponseEntity<>(AUTH_UPDATED, HttpStatus.OK);
 	}
-	
-	@Operation(summary= "Delete user authorizations by Id")
+
+	@Operation(summary = "Delete user authorizations by Id")
 	@DeleteMapping(value = "/{id}/authorizations/{userId}")
 	public ResponseEntity<?> removeAuthorizations(
 			@Parameter(description = "id") @PathVariable(value = "id") String fileId,

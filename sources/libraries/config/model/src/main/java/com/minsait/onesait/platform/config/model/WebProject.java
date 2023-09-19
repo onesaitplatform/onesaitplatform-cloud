@@ -106,7 +106,7 @@ public class WebProject extends OPResource implements Versionable<WebProject> {
 	@Override
 	public String pathToVersionable(boolean toYamlFile) {
 		final String path = Versionable.super.pathToVersionable(toYamlFile);
-		if(toYamlFile) {
+		if (toYamlFile) {
 			return path;
 		} else {
 			return path + File.separator + getIdentification();
@@ -118,6 +118,13 @@ public class WebProject extends OPResource implements Versionable<WebProject> {
 		final ArrayList<String> list = new ArrayList<>();
 		list.add(pathToVersionable(false) + File.separator + getIdentification() + ".zip");
 		return list;
+	}
+
+	@Override
+	public void setOwnerUserId(String userId) {
+		final User u = new User();
+		u.setUserId(userId);
+		setUser(u);
 	}
 
 }

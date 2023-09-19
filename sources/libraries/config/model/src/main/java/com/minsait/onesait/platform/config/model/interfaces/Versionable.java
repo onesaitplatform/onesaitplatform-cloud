@@ -26,6 +26,7 @@ import org.springframework.util.CollectionUtils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import com.minsait.onesait.platform.commons.git.IEResourcesContextHolder;
 import com.minsait.onesait.platform.config.versioning.VersioningIOServiceImpl;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
@@ -73,12 +74,19 @@ public interface Versionable<T> {
 
 	public String getUserJson();
 
+	public void setOwnerUserId(String userId);
+
 	public default String pathToVersionable(boolean toYamlFile) {
 		String path = VersioningIOServiceImpl.DIR
 				+ Tenant2SchemaMapper.extractVerticalNameFromSchema(MultitenancyContextHolder.getVerticalSchema()) + "/"
 				+ getClass().getSimpleName();
 		if (toYamlFile) {
 			path = path + "/" + this.fileName();
+		} else {
+			// TO-DO look for thread local IE resources
+			if (IEResourcesContextHolder.getDirectory() != null) {
+				path = IEResourcesContextHolder.getDirectory() + "/" + getClass().getSimpleName();
+			}
 		}
 		return path;
 
@@ -105,6 +113,27 @@ public interface Versionable<T> {
 			return null;
 		}
 		return this;
+	}
+
+	public default Versionable<T> runInclusions(Map<String, Set<String>> includedIds) {
+		if (!CollectionUtils.isEmpty(includedIds)
+				&& !CollectionUtils.isEmpty(includedIds.get(getClass().getSimpleName()))
+				&& includedIds.get(getClass().getSimpleName()).contains(getId())) {
+			addIdToInclusions(getClass().getSimpleName(), (String) this.getId(), includedIds);
+			return this;
+		}
+		return null;
+	}
+
+	public default void addIdToInclusions(String className, String id, Map<String, Set<String>> includedIds) {
+		LogHolder.log.debug("Excluding versionable with id {} of class {}", id, className);
+		if (CollectionUtils.isEmpty(includedIds)) {
+			includedIds = new HashMap<>();
+		}
+		if (CollectionUtils.isEmpty(includedIds.get(className))) {
+			includedIds.put(className, new HashSet<>());
+		}
+		includedIds.get(className).add(id);
 	}
 
 	public default void addIdToExclusions(String className, String id, Map<String, Set<String>> excludedIds) {

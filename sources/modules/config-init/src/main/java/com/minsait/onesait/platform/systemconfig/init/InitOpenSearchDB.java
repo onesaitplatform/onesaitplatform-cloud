@@ -19,7 +19,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -27,7 +29,9 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.opensearch.client.opensearch._types.mapping.Property;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.stereotype.Component;
@@ -40,12 +44,14 @@ import com.minsait.onesait.platform.config.model.OntologyElastic;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.DataModelRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
+import com.minsait.onesait.platform.config.services.ontology.OntologyConfiguration;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.utils.ServiceUtils;
 import com.minsait.onesait.platform.persistence.opensearch.api.OSBaseApi;
 import com.minsait.onesait.platform.persistence.opensearch.api.OSInsertService;
 import com.minsait.onesait.platform.persistence.services.ManageDBPersistenceServiceFacade;
 import com.minsait.onesait.platform.persistence.util.ElasticSearchFileUtil;
+import com.minsait.onesait.platform.persistence.util.JSONPersistenceUtilsElasticSearch;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -85,12 +91,25 @@ public class InitOpenSearchDB {
 	@Autowired
 	OSInsertService sSInsertService;
 
+	@Value("${onesaitplatform.database.opensearch.default.replicas:0}")
+	private Integer defaultReplicas;
+	@Value("${onesaitplatform.database.opensearch.default.shards:1}")
+	private Integer defaultShards;
+	@Value("${onesaitplatform.database.opensearch.default.ttlPatternField:formatedTimeStamp}")
+	private String defaultTtlPatternField;
+	@Value("${onesaitplatform.database.opensearch.default.ttlPatternFunction:YEAR_MONTH}")
+	private String defaultTtlPatternFunction;
+	@Value("${onesaitplatform.database.opensearch.default.ttlRetentionPeriod:30d}")
+	private String defaultTtlRetentionPeriod;
+	@Value("${onesaitplatform.database.opensearch.default.ttlPriority:10}")
+	private Integer defaultTtlPriority;
+
 	@PostConstruct
 	@Test
 	public void init() {
 		if (!started) {
 			started = true;
-			initAccountsDataSet();
+			// initAccountsDataSet();
 			// we suppose that we have created Users and roles
 			initAuditOntology();
 			log.info("OK init_AuditOntology");
@@ -147,15 +166,18 @@ public class InitOpenSearchDB {
 					+ "          \"address\": {\n" + TYPE_TEXT + FIELDDATA_TRUE + "          },"
 					+ "          \"state\": {\n" + TYPE_TEXT + FIELDDATA_TRUE + "          }" + "       }" + "   }"
 					+ "}";
-			connector.createIndex(INDEX_NAME, dataMapping, null);
-			//connector.prepareIndex(INDEX_NAME, dataMapping);
+			final Map<String, Property> mapping = JSONPersistenceUtilsElasticSearch
+					.getOpenSearchSchemaFromJSONSchema(dataMapping);
+			connector.createIndex(INDEX_NAME, mapping, null);
+			// connector.prepareIndex(INDEX_NAME, dataMapping);
 
 			final List<String> list = ElasticSearchFileUtil.readLines(
 					new File(getClass().getClassLoader().getResource("examples/Accounts-dataset.json").getFile()));
 
 			final List<String> result = list.stream().filter(x -> x.startsWith("{\"account_number\""))
 					.collect(Collectors.toList());
-			OntologyElastic elasticOntol = ontologyService.getOntologyElasticByOntologyId(ontologyService.getOntologyByIdentification(ACCOUNTS_STR, getUserDeveloper().getUserId()));
+			OntologyElastic elasticOntol = ontologyService.getOntologyElasticByOntologyId(
+					ontologyService.getOntologyByIdentification(ACCOUNTS_STR, getUserDeveloper().getUserId()));
 			sSInsertService.bulkInsert(elasticOntol, result);
 
 		} catch (final Exception e) {
@@ -226,8 +248,14 @@ public class InitOpenSearchDB {
 			ontology.setPublic(false);
 			ontology.setUser(user);
 			ontology.setRtdbDatasource(RtdbDatasource.OPEN_SEARCH);
-
-			ontologyService.createOntology(ontology, null);
+			OntologyConfiguration config = new OntologyConfiguration();
+			// Get default TTL config from centralized config
+			config.setShards(String.valueOf(defaultShards));
+			config.setReplicas(String.valueOf(defaultReplicas));
+			config.setPatternField(defaultTtlPatternField);
+			config.setPatternFunction(defaultTtlPatternFunction);
+			config.setAllowsTemplateConfig(true);
+			ontologyService.createOntology(ontology, config);
 
 		}
 
@@ -245,7 +273,14 @@ public class InitOpenSearchDB {
 
 	public void createPostOntologyUser(User user, String collectionAuditName) {
 		try {
-			manageFacade.createTable4Ontology(collectionAuditName, "{}", null);
+			final DataModel dataModel = datamodelRepository.findDatamodelsByIdentification("AuditPlatform");
+			HashMap<String, String> config = new HashMap<>();
+			config.put("allowsTemplateConfig", "true");
+			config.put("shards", String.valueOf(defaultShards));
+			config.put("replicas", String.valueOf(defaultReplicas));
+			config.put("patternField", String.valueOf(defaultTtlPatternField));
+			config.put("patternFunction", String.valueOf(defaultTtlPatternFunction));
+			manageFacade.createTable4Ontology(collectionAuditName, dataModel.getJsonSchema(), config);
 		} catch (final Exception e) {
 			log.error("Audit ontology couldn't be created in OpenSearch, so we need Mongo to Store Something");
 			update(user, collectionAuditName, RtdbDatasource.MONGO);
@@ -258,6 +293,20 @@ public class InitOpenSearchDB {
 	}
 
 	public void initAuditOntology() {
+		log.info("create deletion policy - TTL for old audit indexes");
+		
+		//recreate audit_ policy
+		connector.deleteTTLPolicy("platform-audit-policy");
+		connector.createTTLPolicy("platform-audit-policy", "audit_*", defaultTtlRetentionPeriod, defaultTtlPriority);
+		
+		//recreate Gravitee plolicy
+		connector.deleteTTLPolicy("gravitee-ttl-policy");
+		connector.createTTLPolicy("gravitee-ttl-policy", "gravitee-*", defaultTtlRetentionPeriod, defaultTtlPriority);
+		
+		//apply policies to existing Indices
+		connector.addPolicyToIndices("platform-audit-policy", "audit_*");
+		connector.addPolicyToIndices("gravitee-ttl-policy", "gravitee-*");
+		
 		log.info("adding audit ontologies...");
 
 		createPostOperationsUser(getUserAdministrator());

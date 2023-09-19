@@ -273,6 +273,15 @@
 					"url": "/controlpanel/apimanager/list"
 				},
 				{
+                    "title": {
+                        "EN": "Tags",
+                        "ES": "Etiquetas",
+                        "FR": "Tags"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/tags"
+                },
+				{
 					"title": {
 						"EN": "My Flows",
 						"ES": "Mis Flujos",
@@ -298,6 +307,15 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/microservices/list"
+				},
+				{
+					"title": {
+						"EN": "My Microservices Templates",
+						"ES": "Mis Plantillas de MicroServicios",
+						"FR": "Mes Modèles de microservices"
+					},
+					"icon": "",
+					"url": "/controlpanel/mstemplates/list"
 				},
 				{
 					"title": {
@@ -579,12 +597,12 @@
 				},
 				{
 					"title": {
-						"EN": "My Market",
-						"ES": "Mi Market",
-						"FR": "Mon Marché"
+						"EN": "Bundle Repository",
+						"ES": "Repositorio de Bundles",
+						"FR": "Référentiel du groupées groupé"
 					},
 					"icon": "",
-					"url": "/controlpanel/marketasset/list"
+					"url": "/controlpanel/bundlerepository/list"
 				},
 				{
 					"title": {
@@ -623,7 +641,25 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/versioning/restore/resource"
-				}
+				},
+				{
+                    "title": {
+                        "EN": "Bundle generation",
+                        "ES": "Generación de paquetes de recursos",
+                        "FR": "Generation de colis"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/bundles/generate"
+                },
+                {
+                    "title": {
+                        "EN": "Bundle load",
+                        "ES": "Carga de paquetes de recursos",
+                        "FR": "Charger des ressources"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/bundles/load"
+                }
 			]
 		}
 	]

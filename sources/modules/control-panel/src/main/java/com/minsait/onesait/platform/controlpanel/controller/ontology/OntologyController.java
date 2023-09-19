@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -863,7 +864,8 @@ public class OntologyController {
 					populateRestForm(model, ontologyRest);
 					populateFormApiRest(model);
 					return "ontologies/createapirest";
-				} else if (ontology.getRtdbDatasource().equals(RtdbDatasource.ELASTIC_SEARCH) || ontology.getRtdbDatasource().equals(RtdbDatasource.OPEN_SEARCH)) {
+				} else if (ontology.getRtdbDatasource().equals(RtdbDatasource.ELASTIC_SEARCH)
+						|| ontology.getRtdbDatasource().equals(RtdbDatasource.OPEN_SEARCH)) {
 					// GET OntologyElastic object
 					final OntologyElastic elasticOntology = ontologyConfigService
 							.getOntologyElasticByOntologyId(ontology);
@@ -964,6 +966,18 @@ public class OntologyController {
 					populateFormTimeseries(model);
 				}
 
+				final List<OntologyDataAccess> dataAccesses = ontologyConfigService
+						.getOntologyUserDataAccesses(ontology.getId(), utils.getUserId());
+				final List<OntologyDataAccessDTO> dataAccessesDTO = new ArrayList<>();
+
+				for (final OntologyDataAccess dataAccess : dataAccesses) {
+					if (dataAccess.getUser() != null && dataAccess.getUser().isActive()
+							|| dataAccess.getAppRole() != null) {
+						dataAccessesDTO.add(new OntologyDataAccessDTO(dataAccess));
+					}
+				}
+
+				model.addAttribute(DATAACCESSES, dataAccessesDTO);
 				model.addAttribute(AUTHORIZATIONS, authorizationsDTO);
 				model.addAttribute(ONTOLOGY_STR, ontology);
 				model.addAttribute(ONTOLOGYTSDTO, otsDTO);
@@ -1273,7 +1287,8 @@ public class OntologyController {
 						utils.addRedirectMessage("ontology.notfound.error", redirect);
 						return REDIRECT_ONTOLOGIES_LIST;
 					}
-				} else if (ontology.getRtdbDatasource().equals(RtdbDatasource.ELASTIC_SEARCH) || ontology.getRtdbDatasource().equals(RtdbDatasource.OPEN_SEARCH)) {
+				} else if (ontology.getRtdbDatasource().equals(RtdbDatasource.ELASTIC_SEARCH)
+						|| ontology.getRtdbDatasource().equals(RtdbDatasource.OPEN_SEARCH)) {
 					final OntologyElasticDTO elasticOntologyDTO = getDefaultElasticValues();
 					final OntologyElastic elasticOntology = ontologyConfigService
 							.getOntologyElasticByOntologyId(ontology);
@@ -1368,11 +1383,42 @@ public class OntologyController {
 		model.addAttribute(ENTITYDATACLASSES, entitydclasses);
 	}
 
+	private List<RtdbDatasource> filterRtdbForKPIs(List<RtdbDatasource> list) {
+		List<RtdbDatasource> result = new ArrayList<RtdbDatasource>();
+		for (Iterator iterator = list.iterator(); iterator.hasNext();) {
+			RtdbDatasource rtdbDatasource = (RtdbDatasource) iterator.next();
+			if (rtdbDatasource.name().equals("MONGO") || rtdbDatasource.name().equals("ELASTIC_SEARCH")
+					|| rtdbDatasource.name().equals("OPEN_SEARCH") || rtdbDatasource.name().equals("COSMOS_DB")) {
+				result.add(rtdbDatasource);
+			}
+
+		}
+
+		return result;
+	}
+
+	private List<Ontology> filterOntologyForKPIs(List<Ontology> list) {
+		List<Ontology> result = new ArrayList<Ontology>();
+		for (Iterator iterator = list.iterator(); iterator.hasNext();) {
+			Ontology onto = (Ontology) iterator.next();
+			if (onto.getRtdbDatasource().name().equals("MONGO")
+					|| onto.getRtdbDatasource().name().equals("ELASTIC_SEARCH")
+					|| onto.getRtdbDatasource().name().equals("OPEN_SEARCH")
+					|| onto.getRtdbDatasource().name().equals("COSMOS_DB")) {
+				result.add(onto);
+			}
+
+		}
+
+		return result;
+	}
+
 	private void populateKPIForm(Model model) {
 		model.addAttribute(DATA_MODELS_STR, ontologyConfigService.getAllDataModels());
 		model.addAttribute(DATA_MODEL_TYPES_STR, ontologyConfigService.getAllDataModelTypes());
-		model.addAttribute(RTDBS, ontologyConfigService.getDatasources());
-		model.addAttribute(ONTOLOGIES_STR, ontologyConfigService.getOntologiesByUserId(utils.getUserId()));
+		model.addAttribute(RTDBS, filterRtdbForKPIs(ontologyConfigService.getDatasources()));
+		model.addAttribute(ONTOLOGIES_STR,
+				filterOntologyForKPIs(ontologyConfigService.getOntologiesByUserId(utils.getUserId())));
 
 	}
 

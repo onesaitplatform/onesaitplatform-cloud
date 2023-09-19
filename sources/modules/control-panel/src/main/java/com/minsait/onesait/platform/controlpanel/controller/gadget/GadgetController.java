@@ -46,6 +46,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.minsait.onesait.platform.config.model.Category;
 import com.minsait.onesait.platform.config.model.CategoryRelation;
 import com.minsait.onesait.platform.config.model.Gadget;
@@ -120,14 +121,14 @@ public class GadgetController {
 	private SubcategoryService subcategoryService;
 
 	@Autowired
-    private GadgetRepository gadgetRepository;    
+	private GadgetRepository gadgetRepository;
 
-    @Autowired
-    private GadgetTemplateRepository gadgetTemplateRepository;
+	@Autowired
+	private GadgetTemplateRepository gadgetTemplateRepository;
 
-	@Autowired 
+	@Autowired
 	private HttpSession httpSession;
-    
+
 	private static final String IFRAME_STR = "iframe";
 	private static final String GADGET_STR = "gadget";
 	private static final String DATASOURCES_STR = "datasources";
@@ -155,9 +156,9 @@ public class GadgetController {
 	@RequestMapping(value = "/list", produces = "text/html")
 	public String list(Model uiModel, HttpServletRequest request) {
 
-		//CLEANING APP_ID FROM SESSION
+		// CLEANING APP_ID FROM SESSION
 		httpSession.removeAttribute(APP_ID);
-		
+
 		uiModel.addAttribute("user", utils.getUserId());
 		uiModel.addAttribute("userRole", utils.getRole());
 
@@ -166,7 +167,7 @@ public class GadgetController {
 		String identification = request.getParameter("name");
 		String type = request.getParameter("type");
 		String currentTab = request.getParameter("current_tab");
-		
+
 		String gadgetType = (String) httpSession.getAttribute(GADGETTYPE);
 
 		if (gadgetType!=null) {
@@ -227,8 +228,6 @@ public class GadgetController {
 
 		List<GadgetTemplate> gadgetTemplate = this.gadgetTemplateService
 				.findGadgetTemplateWithIdentificationAndDescription(null, null, utils.getUserId());
-		List<GadgetTemplate> gadgetTemplateList = gadgetTemplate.stream().filter(temp -> !temp.getType().equals("base"))
-				.collect(Collectors.toList());
 
 		List<GadgetFavorite> gadgetFavorites = gadgetFavoriteService.findAll(utils.getUserId());
 
@@ -249,7 +248,7 @@ public class GadgetController {
 			resultList.add(elem);
 		}
 
-		for (Iterator iterator = gadgetTemplateList.iterator(); iterator.hasNext();) {
+		for (Iterator iterator = gadgetTemplate.iterator(); iterator.hasNext();) {
 			GadgetTemplate gadgetTemp = (GadgetTemplate) iterator.next();
 			GadgetAndTemplateDTO elem = new GadgetAndTemplateDTO();
 			elem.setId(gadgetTemp.getId());
@@ -257,7 +256,8 @@ public class GadgetController {
 			elem.setDescription(gadgetTemp.getDescription());
 			elem.setIsTemplate(true);
 			elem.setType(gadgetTemp.getType());
-			elem.setTypeElem("template");
+			elem.setConfig(gadgetTemp.getConfig());
+			elem.setImage(gadgetTemp.getImage());
 			resultList.add(elem);
 		}
 
@@ -266,7 +266,6 @@ public class GadgetController {
 			GadgetAndTemplateDTO elem = new GadgetAndTemplateDTO();
 			elem.setId(gadgetTemp.getId());
 			elem.setIdentification(gadgetTemp.getIdentification());
-
 			elem.setIsTemplate(false);
 			elem.setType(gadgetTemp.getType());
 			elem.setTypeElem("favorite");
@@ -295,12 +294,12 @@ public class GadgetController {
 		model.addAttribute(GADGET_STR, new Gadget());
 		model.addAttribute(DATASOURCES_STR, gadgetDatasourceService.getUserGadgetDatasourcesForList(utils.getUserId()));
 		model.addAttribute(ONTOLOGIES_STR, getOntologiesDTO());
-		
+
 		final Object projectId = httpSession.getAttribute(APP_ID);
-		if (projectId!=null) {
+		if (projectId != null) {
 			model.addAttribute(APP_ID, projectId.toString());
 		}
-		
+
 		return GADGETS_CREATE;
 
 	}
@@ -333,15 +332,15 @@ public class GadgetController {
 			utils.addRedirectMessage("gadgetDatasource.create.error", redirect);
 			return REDIRECT_GADGETS_CREATE;
 		}
-		
+
 		final Object projectId = httpSession.getAttribute(APP_ID);
-		if (projectId!=null) {
+		if (projectId != null) {
 			httpSession.setAttribute("resourceTypeAdded", OPResource.Resources.GADGET.toString());
 			httpSession.setAttribute("resourceIdentificationAdded", gadget.getIdentification());
 			httpSession.removeAttribute(APP_ID);
 			return REDIRECT_PROJECT_SHOW + projectId.toString();
 		}
-		
+
 		return REDIRECT_GADGETS_LIST;
 
 	}
@@ -411,50 +410,50 @@ public class GadgetController {
 		model.addAttribute(ELEMENT, elem);
 		return GADGETS_SHOW;
 	}
+
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PostMapping(value = { "/clone" })
+	public ResponseEntity<String> cloneGadget(Model model, @RequestParam String gadgetId,
+			@RequestParam String identification) {
+
+		try {
+			String id = "";
+			final String userId = utils.getUserId();
+
+			id = gadgetService.cloneGadget(gadgetService.getGadgetById(userId, gadgetId), identification,
+					userService.getUser(userId));
+			final Optional<Gadget> opt = gadgetRepository.findById(id);
+			if (!opt.isPresent())
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+			final Gadget gadget = opt.get();
+			return new ResponseEntity<>(gadget.getId(), HttpStatus.OK);
+		} catch (final Exception e) {
+			log.error(e.getMessage());
+			return new ResponseEntity<>("{\"status\" : \"fail\"}", HttpStatus.BAD_REQUEST);
+		}
+	}
 	
-    @PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
-    @PostMapping(value = { "/clone" })
-    public ResponseEntity<String> cloneGadget(Model model, @RequestParam String gadgetId,
-            @RequestParam String identification) {
-    	
-        try {
-            String id = "";
-            final String userId = utils.getUserId();
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PostMapping(value = { "/gadgettemplates/clone" })
+	public ResponseEntity<String> cloneGadgetTemplate(Model model, @RequestParam String gadgetId,
+			@RequestParam String identification) {
+		try {
+			httpSession.setAttribute(GADGETTYPE, "gadgetTemplate");
+			String id = "";
+			final String userId = utils.getUserId();
 
-            id = gadgetService.cloneGadget(gadgetService.getGadgetById(userId, gadgetId), identification,
-                    userService.getUser(userId));
-            final Optional<Gadget> opt = gadgetRepository.findById(id);
-            if (!opt.isPresent())
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            final Gadget gadget = opt.get();
-            return new ResponseEntity<>(gadget.getId(), HttpStatus.OK);
-        } catch (final Exception e) {
-            log.error(e.getMessage());
-            return new ResponseEntity<>("{\"status\" : \"fail\"}", HttpStatus.BAD_REQUEST);
-        }
-    }
-    
-    @PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
-    @PostMapping(value = { "/gadgettemplates/clone" })
-    public ResponseEntity<String> cloneGadgetTemplate(Model model, @RequestParam String gadgetId,
-            @RequestParam String identification) {
-    	httpSession.setAttribute(GADGETTYPE, "gadgetTemplate");
-        try {
-            String id = "";
-            final String userId = utils.getUserId();
-
-            id = gadgetTemplateService.cloneGadgetTemplate(gadgetTemplateService.getGadgetTemplateById(gadgetId), identification,
-                    userService.getUser(userId));
-            final Optional<GadgetTemplate> opt = gadgetTemplateRepository.findById(id);
-            if (!opt.isPresent())
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-            final GadgetTemplate gadget = opt.get();
-            return new ResponseEntity<>(gadget.getId(), HttpStatus.OK);
-        } catch (final Exception e) {
-            log.error(e.getMessage());
-            return new ResponseEntity<>("{\"status\" : \"fail\"}", HttpStatus.BAD_REQUEST);
-        }
-    }
+			id = gadgetTemplateService.cloneGadgetTemplate(gadgetTemplateService.getGadgetTemplateById(gadgetId),
+					identification, userService.getUser(userId));
+			final Optional<GadgetTemplate> opt = gadgetTemplateRepository.findById(id);
+			if (!opt.isPresent())
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+			final GadgetTemplate gadget = opt.get();
+			return new ResponseEntity<>(gadget.getId(), HttpStatus.OK);
+		} catch (final Exception e) {
+			log.error(e.getMessage());
+			return new ResponseEntity<>("{\"status\" : \"fail\"}", HttpStatus.BAD_REQUEST);
+		}
+	}
 
 	private JSONObject createElementGadgetJSON(String gadgetId, Gadget gad) {
 		JSONObject header = new JSONObject();
@@ -569,10 +568,10 @@ public class GadgetController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@DeleteMapping("/{id}")
 	public String delete(Model model, @PathVariable("id") String id, RedirectAttributes ra) {
-	
+
 		try {
 			gadgetService.deleteGadget(id, utils.getUserId());
-		} catch (final RuntimeException e) {
+		} catch (final RuntimeException | JsonProcessingException e) {
 			utils.addRedirectException(e, ra);
 		}
 		return REDIRECT_GADGETS_LIST;
@@ -591,7 +590,7 @@ public class GadgetController {
 	@PutMapping(value = "/update/{id}", produces = "text/html")
 	public String updateGadget(Model model, @PathVariable("id") String id, @Valid GadgetDTO gadget, String jsonMeasures,
 			String datasourcesMeasures, BindingResult bindingResult, RedirectAttributes redirect) {
-		
+
 		if (bindingResult.hasErrors()) {
 			log.debug("Some Gadget properties missing");
 			utils.addRedirectMessage("gadgets.validation.error", redirect);

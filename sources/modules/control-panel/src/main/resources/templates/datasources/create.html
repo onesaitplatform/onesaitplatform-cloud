@@ -80,23 +80,30 @@
 			
 			if (isNative(query)){
 				$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: [[#{datasources.queryError}]]});
-			}
-			if(typeof query !=='undefined'){
-				var testOntology = getOntologyFromQuery(query);
-				console.log('ontologia: ' + testOntology);
-
-				var csrf_value = $("meta[name='_csrf']").attr("content");
-				var csrf_header = $("meta[name='_csrf_header']").attr("content");
+			}else{
+				if(typeof query !=='undefined'){
+					var testOntology = getOntologyFromQuery(query);
+					console.log('ontologia: ' + testOntology);
+	
+					var csrf_value = $("meta[name='_csrf']").attr("content");
+					var csrf_header = $("meta[name='_csrf_header']").attr("content");
+					
+					$.ajaxSetup({'headers': {
+						[csrf_header]: csrf_value
+					}});
+					
+					query = getMonacoValue();
+					if(query.indexOf(" limit ") < 0){						
+						query = query + " limit "+$('#maxvalues').val();
+					}
+					
+					timeStart = Date.now();	
+					$("#Canvasrespuesta").load('/controlpanel/querytool/query', { 'query': query, 'queryType': 'SQL', 'ontologyIdentification': testOntology},function(response){
+						callbackQuery(response);
+					});	
 				
-				$.ajaxSetup({'headers': {
-					[csrf_header]: csrf_value
-				}});
-				timeStart = Date.now();	
-				$("#Canvasrespuesta").load('/controlpanel/querytool/query', { 'query': getMonacoValue(), 'queryType': 'SQL', 'ontologyIdentification': testOntology},function(response){
-					callbackQuery(response);
-				});	
-			
-				$("#dimensionsPanel").show();
+					$("#dimensionsPanel").show();
+				}
 			}
 		}
 	

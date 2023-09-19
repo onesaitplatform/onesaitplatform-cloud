@@ -131,8 +131,8 @@
                                 </div>
 		                        <div class="col-md-3 col-sm-3 col-xs-12" >							
 									<div class="form-group">								
-										<label class="description" th:text="#{database.ontology}" > ONTOLOGIES </label>												
-										<select class="selectpicker  select show-tick form-control" id="ontologies-select" data-live-search="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%" th:title="#{database.ontologies} +'...'">
+										<label class="description" th:text="#{database.ontology}" > ONTOLOGIES </label><span class="required"> *</span>												
+										<select class="selectpicker  select show-tick form-control" id="ontologies-select" data-live-search="true"  th:required="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%" th:title="#{database.ontologies} +'...'">
 										  <optgroup th:label="#{database.generic}">
 											<option th:each="ontology : ${ontologies}" th:id="${ontology.user.userId}" th:data-description="${ontology.description}" data-type="general" th:value="${ontology.identification}" th:text="${ontology.identification}"  ></option>
 										  </optgroup>											

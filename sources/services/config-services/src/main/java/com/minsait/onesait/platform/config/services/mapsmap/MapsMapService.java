@@ -48,4 +48,6 @@ public interface MapsMapService {
 
 	public MapsMap getById(String identification);
 
+	public MapsMap getByIdentificationANDUser(String identification, String userId);
+
 }
