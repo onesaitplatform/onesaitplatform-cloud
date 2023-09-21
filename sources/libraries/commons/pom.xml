@@ -178,7 +178,7 @@
 			<distributionManagement>
 				<repository>
 					<id>releases</id>
-					<url>https://nexus.onesaitplatform.com/nexus/content/repositories/releases/</url>
+					<url>https://nexus.onesaitplatform.com/nexus/repository/releases/</url>
 				</repository>
 			</distributionManagement>
 		</profile>
@@ -191,7 +191,7 @@
 			<distributionManagement>
 				<repository>
 					<id>snapshots</id>
-					<url>https://nexus.onesaitplatform.com/nexus/content/repositories/snapshots/</url>
+					<url>https://nexus.onesaitplatform.com/nexus/repository/snapshots/</url>
 				</repository>
 			</distributionManagement>
 		</profile>
@@ -204,7 +204,7 @@
 		</repository>
 		<repository>
 			<id>snapshots</id>
-			<url>https://nexus.onesaitplatform.com/nexus/content/repositories/snapshots/</url>
+			<url>https://nexus.onesaitplatform.com/nexus/repository/snapshots/</url>
 		</repository>
 	</repositories>
 

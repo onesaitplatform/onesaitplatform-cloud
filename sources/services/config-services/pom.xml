@@ -22,7 +22,7 @@
 		</repository>
 		<repository>
 			<id>snapshots</id>
-			<url>https://nexus.onesaitplatform.com/nexus/content/repositories/snapshots/</url>
+			<url>https://nexus.onesaitplatform.com/nexus/repository/snapshots/</url>
 		</repository>
 		<repository>
 			<id>Spring Plugins</id>
