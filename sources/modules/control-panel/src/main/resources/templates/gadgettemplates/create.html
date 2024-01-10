@@ -178,7 +178,7 @@
 									<div class="col-md-6 col-sm-12 col-xs-12">
 										<div class="form-group">
 											<label class="control-label"  th:text="#{gadgettemplates.description} ">Description</label><span class="required"> *</span>																							
-											<input id="description" type="text" name="description"  th:required="true"   maxlength="50" th:field="*{description}" th:readonly="*{id}" class="form-control " th:placeholder="#{gadgettemplates.description}" />
+											<input id="description" type="text" name="description"  th:required="true"   maxlength="512" th:field="*{description}" class="form-control " th:placeholder="#{gadgettemplates.description}" />
 										</div>
 									</div>		
 									<div class="col-md-3 col-sm-12 col-xs-12">
@@ -366,6 +366,47 @@
 				"actionMode" : [[${gadgetTemplate?.id}]],
 				"category" : [[${gadgetTemplate?.category}]],
 				"subcategoryField" : [[${gadgetTemplate?.subcategory}]]};
+				
+	if ($("#id").val()) {
+		document.addEventListener("keydown", function(e) { // Ctrl + s to ajax save
+		  if (e.keyCode === 83 && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)) {
+		    e.preventDefault();
+		    GadgetsTemplateCreateController.refreshEditorContent();
+		    $("#config").val(JSON.stringify({gform:vueapp._data.list2}));
+		    
+		    var gadgetTemplateDTO =  {
+				"identification": $("#identification").val(),
+				"description": $("#description").val(),
+				"html": $("#templateCode").val(),
+				"js": $("#templateCodeJS").val(),
+				"type": $("#type").val(),
+				"category": $("#categories_select").val(),
+				"subcategory": $("#subcategories").val(),
+				"config": $("#config").val(),
+				"headerlibs": $("#headerlibsCode").val(),
+				"public": $("#public").val() === "true"
+			}
+		    fetch("/controlpanel/api/gadgettemplates",
+					{
+					    method: "PUT",
+					    body: JSON.stringify(gadgetTemplateDTO),
+					    headers: {
+					  	  'Accept': 'application/json',
+					   	  'Content-Type': 'application/json'
+					  	}
+					})
+					.then(function(res){
+						if (res.ok) {
+							toastr.success("Gadget Template");
+						} else {
+							toastr.error("Gadget Template", "Error");
+						}
+					}).catch(function(e){
+						toastr.error("Gadget Template", "Error: " + e);
+					})
+		  }
+		}, false);
+	}
 			
 		
 	// ]]>

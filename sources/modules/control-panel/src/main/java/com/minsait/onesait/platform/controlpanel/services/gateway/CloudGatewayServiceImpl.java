@@ -93,8 +93,10 @@ public class CloudGatewayServiceImpl implements CloudGatewayService {
 			}
 			final ObjectNode route = generateJsonRoute(microservice.getIdentification(), microservice.getContextPath(),
 					redirectToHost,
-					templatetype.equals(MicroserviceTemplate.Language.NOTEBOOK_ARCHETYPE.toString()) || microservice
-							.getTemplateType().equals(Microservice.TemplateType.MLFLOW_MODEL.toString()));
+					microservice.isStripRoutePrefix()
+							|| templatetype.equals(MicroserviceTemplate.Language.NOTEBOOK_ARCHETYPE.toString())
+							|| microservice.getTemplateType()
+									.equals(Microservice.TemplateType.MLFLOW_MODEL.toString()));
 			final HttpEntity<ObjectNode> request = this.getRequestEntity(route);
 			this.executeRequest(gatewayUrl.concat(ROUTES_PATH).concat("/").concat(microservice.getIdentification()),
 					HttpMethod.POST, request, String.class);

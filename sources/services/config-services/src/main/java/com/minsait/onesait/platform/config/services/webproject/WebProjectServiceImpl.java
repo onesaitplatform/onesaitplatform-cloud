@@ -28,12 +28,16 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+import org.zeroturnaround.zip.ZipUtil;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.ivy.plugins.matcher.NoMatcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -42,9 +46,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.WebProject;
+import com.minsait.onesait.platform.config.model.GitEditorConfig;
+import com.minsait.onesait.platform.config.repository.GitEditorConfigRepository;
 import com.minsait.onesait.platform.config.repository.WebProjectRepository;
 import com.minsait.onesait.platform.config.services.exceptions.WebProjectServiceException;
 import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.config.services.webproject.NPMCommandResult.NPMCommandResultStatus;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 
@@ -60,10 +67,23 @@ public class WebProjectServiceImpl implements WebProjectService {
 	private WebProjectRepository webProjectRepository;
 
 	@Autowired
+	private GitEditorConfigRepository gitEditorConfigRepository;
+	
+	private boolean npmInstall = false;
+	
+	private NPMCommandResultStatus npmStatus;
+
+	@Autowired
 	private UserService userService;
 
 	@Autowired
+	private WebProjectNPMHelper webProjectNPMHelper;
+
+	@Autowired
 	private MultitenancyService masterUserService;
+
+	@Value("${digitaltwin.temp.dir:/tmp}")
+	private String tmpDirectory;
 
 	private static final String USER_UNAUTH = "The user is not authorized";
 	private static final String SLASH_STRING = "/";
@@ -78,6 +98,9 @@ public class WebProjectServiceImpl implements WebProjectService {
 
 	@Value("${onesaitplatform.webproject.template.zip:http://localhost:18000/controlpanel/static/wtop/wtop.zip}")
 	private String wtop;
+
+	private ExecutorService exService = Executors.newSingleThreadExecutor();
+
 
 	@Override
 	public List<WebProjectDTO> getWebProjectsWithDescriptionAndIdentification(String userId, String identification,
@@ -141,11 +164,29 @@ public class WebProjectServiceImpl implements WebProjectService {
 			log.debug("Web Project does not exist, creating..");
 			final User user = userService.getUser(userId);
 			final WebProject wp = WebProjectDTO.convert(webProject, user);
+
 			if (wp.getMainFile().isEmpty()) {
-				wp.setMainFile("index.html");
+				if(webProject.getNpm()) {
+					wp.setMainFile("");
+				}else {
+					wp.setMainFile("index.html");
+
+				}
+				
 			}
+
 			createFolderWebProject(wp.getIdentification(), userId);
-			webProjectRepository.save(wp);
+			WebProject web = webProjectRepository.save(wp);
+
+			if (!webProject.getGitUrl().isBlank() && !webProject.getGitToken().isBlank()) {
+				GitEditorConfig gitConfig = new GitEditorConfig();
+				gitConfig.setGitToken(webProject.getGitToken());
+				gitConfig.setGitUrl(webProject.getGitUrl());
+				gitConfig.setType("WEB_PROJECT");
+				gitConfig.setResourceId(web.getId());
+				gitEditorConfigRepository.save(gitConfig);
+
+			}
 
 		} else {
 			throw new WebProjectServiceException(
@@ -166,6 +207,58 @@ public class WebProjectServiceImpl implements WebProjectService {
 		} else {
 			return null;
 		}
+
+	}
+
+	@Override
+	public void loadGitDetails(WebProjectDTO web) {
+		GitEditorConfig gitConfig = gitEditorConfigRepository.findByResourceId(web.getId());
+		if (gitConfig != null) {
+			web.setGitToken(gitConfig.getGitToken());
+			web.setGitUrl(gitConfig.getGitUrl());
+		}
+
+	}
+
+	@Override
+	public void compileNPM(WebProjectDTO web, String userId) throws IOException {
+		String path = tmpDirectory + SLASH_STRING + web.getIdentification();
+
+		exService.submit(new Runnable() {
+
+			@Override
+			public void run() {
+				NPMCommandResult npmResult= webProjectNPMHelper.executeNPMInstall(path, web.getRunCommand());
+				
+				if (npmResult.getStatus() == NPMCommandResultStatus.OK) {
+					npmStatus = npmResult.getStatus();
+					npmInstall = false;
+					String route = tmpDirectory + SLASH_STRING + web.getIdentification() + SLASH_STRING
+							+ web.getTargetDirectory();
+					ZipUtil.pack(new File(route), new File(route + ".zip"));
+					File zipNPM = new File(route + ".zip");
+					uploadZip(zipNPM, userId);
+					updateWebProject(web, userId);
+					deleteFolder(tmpDirectory + SLASH_STRING + web.getIdentification());
+				}else {
+					npmStatus = npmResult.getStatus();
+					npmInstall = false;
+				}
+				
+			}
+		});
+
+	}
+
+	@Override
+	public String getCurrentStatus() {
+		
+		return this.webProjectNPMHelper.getCurrentStatus();
+	}
+
+	@Override
+	public void resetCurrentStatus() {
+		this.webProjectNPMHelper.deleteCurrentStatus();
 
 	}
 
@@ -193,8 +286,35 @@ public class WebProjectServiceImpl implements WebProjectService {
 					if (StringUtils.hasText(webProject.getDescription())) {
 						wp.setDescription(webProject.getDescription());
 					}
-					if (StringUtils.hasText(webProject.getMainFile())) {
+					if (StringUtils.hasText(webProject.getMainFile()) || webProject.getNpm()) {
 						wp.setMainFile(webProject.getMainFile());
+					}
+					if (StringUtils.hasText(webProject.getRunCommand())) {
+						wp.setRunCommand(webProject.getRunCommand());
+					}
+					if (StringUtils.hasText(webProject.getTargetDirectory())) {
+						wp.setTargetDirectory(webProject.getTargetDirectory());
+					}
+					if (webProject.getNpm() != null) {
+						wp.setNpm(webProject.getNpm());
+					}
+
+					if (!webProject.getGitUrl().isBlank() || !webProject.getGitUrl().isBlank()) {
+						GitEditorConfig gitConfig = gitEditorConfigRepository.findByResourceId(wp.getId());
+						if (gitConfig == null) {
+							gitConfig = new GitEditorConfig();
+							gitConfig.setResourceId(webProject.getId());
+							gitConfig.setType("WEB_PROJECT");
+
+							gitConfig.setGitUrl(webProject.getGitUrl());
+							gitConfig.setGitToken(webProject.getGitToken());
+							gitEditorConfigRepository.save(gitConfig);
+						} else {
+							gitConfig.setGitUrl(webProject.getGitUrl());
+							gitConfig.setGitToken(webProject.getGitToken());
+							gitEditorConfigRepository.save(gitConfig);
+						}
+
 					}
 					updateFolderWebProject(webProject.getIdentification(), userId);
 					webProjectRepository.save(wp);
@@ -218,8 +338,16 @@ public class WebProjectServiceImpl implements WebProjectService {
 			if (hasUserPermissionToEditWebProject(user, wp)) {
 				String vertical_name = masterUserService
 						.getVerticalFromSchema(MultitenancyContextHolder.getVerticalSchema()).getName();
-				deleteFolder(rootFolder + vertical_name + SLASH_STRING + wp.getIdentification() + SLASH_STRING);
+				if (vertical_name.equals(DEFAULT_VERTICAL)) {
+					deleteFolder(rootFolder + wp.getIdentification() + SLASH_STRING);
+				} else {
+					deleteFolder(rootFolder + vertical_name + SLASH_STRING + wp.getIdentification() + SLASH_STRING);
+				}
 				webProjectRepository.delete(wp);
+				if (gitEditorConfigRepository.findByResourceId(wp.getId()) != null) {
+					gitEditorConfigRepository.deleteByResourceId(wp.getId());
+				}
+
 			} else {
 				throw new WebProjectServiceException(USER_UNAUTH);
 			}
@@ -235,8 +363,17 @@ public class WebProjectServiceImpl implements WebProjectService {
 			if (hasUserPermissionToEditWebProject(user, wp)) {
 				String vertical_name = masterUserService
 						.getVerticalFromSchema(MultitenancyContextHolder.getVerticalSchema()).getName();
-				deleteFolder(rootFolder + vertical_name + SLASH_STRING + wp.getIdentification() + SLASH_STRING);
+
+				if (vertical_name.equals(DEFAULT_VERTICAL)) {
+					deleteFolder(rootFolder + wp.getIdentification() + SLASH_STRING);
+				} else {
+
+					deleteFolder(rootFolder + vertical_name + SLASH_STRING + wp.getIdentification() + SLASH_STRING);
+				}
 				webProjectRepository.delete(wp);
+				if (gitEditorConfigRepository.findByResourceId(wp.getId()) != null) {
+					gitEditorConfigRepository.deleteByResourceId(wp.getId());
+				}
 			} else {
 				throw new WebProjectServiceException(USER_UNAUTH);
 			}
@@ -258,6 +395,22 @@ public class WebProjectServiceImpl implements WebProjectService {
 		deleteFolder(folder);
 		uploadFileToFolder(file, folder);
 		unzipFile(folder, file.getOriginalFilename());
+	}
+
+	@Override
+	public void uploadZip(File file, String userId) {
+		String vertical_name = masterUserService.getVerticalFromSchema(MultitenancyContextHolder.getVerticalSchema())
+				.getName();
+		String folder;
+		if (vertical_name.equals(DEFAULT_VERTICAL)) {
+			folder = rootFolder + userId + SLASH_STRING;
+		} else {
+			folder = rootFolder + vertical_name + SLASH_STRING + userId + SLASH_STRING;
+		}
+
+		deleteFolder(folder);
+		uploadFileToFolder(file, folder);
+		unzipFile(folder, file.getName());
 	}
 
 	@Override
@@ -297,8 +450,9 @@ public class WebProjectServiceImpl implements WebProjectService {
 		} catch (final IOException e) {
 			throw new WebProjectServiceException("Error uploading files " + e);
 		}
-
-		log.debug("File: " + path + fileName + " uploaded");
+		if (log.isDebugEnabled()) {
+			log.debug("File: {}{} uploaded", path, fileName);
+		}
 	}
 
 	private void uploadFileToFolder(MultipartFile file, String path) {
@@ -325,11 +479,42 @@ public class WebProjectServiceImpl implements WebProjectService {
 		} catch (final IOException e) {
 			throw new WebProjectServiceException("Error uploading files " + e);
 		}
+		if (log.isDebugEnabled()) {
+			log.debug("File: {}{} uploaded", path, fileName);
+		}
+	}
+
+	private void uploadFileToFolder(File file, String path) {
+
+		final String fileName = file.getName();
+		byte[] bytes;
+		try {
+			InputStream stream = new FileInputStream(file);
+
+			bytes = stream.readAllBytes();
+			final InputStream is = new ByteArrayInputStream(bytes);
+			stream.close();
+			final File folder = new File(path);
+			if (!folder.exists()) {
+				folder.mkdirs();
+			}
+
+			final String fullPath = path + fileName;
+			final OutputStream os = new FileOutputStream(new File(fullPath));
+
+			IOUtils.copy(is, os);
+
+			is.close();
+			os.close();
+		} catch (final IOException e) {
+			throw new WebProjectServiceException("Error uploading files " + e);
+		}
 
 		log.debug("File: " + path + fileName + " uploaded");
 	}
 
-	private void deleteFolder(String path) {
+	@Override
+	public void deleteFolder(String path) {
 		final File folder = new File(path);
 		final File[] files = folder.listFiles();
 		if (files != null) {
@@ -358,21 +543,23 @@ public class WebProjectServiceImpl implements WebProjectService {
 				.getName();
 		File file = null;
 		if (vertical_name.equals(DEFAULT_VERTICAL)) {
-			file = new File(rootFolder + SLASH_STRING + userId + SLASH_STRING);
+			file = new File(rootFolder + userId + SLASH_STRING);
 		} else {
 			file = new File(rootFolder + vertical_name + SLASH_STRING + userId + SLASH_STRING);
 		}
 		if (file.exists() && file.isDirectory()) {
 			File newFile = null;
 			if (vertical_name.equals(DEFAULT_VERTICAL)) {
-				newFile = new File(rootFolder + SLASH_STRING + identification + SLASH_STRING);
+				newFile = new File(rootFolder + identification + SLASH_STRING);
 			} else {
 				newFile = new File(rootFolder + vertical_name + SLASH_STRING + identification + SLASH_STRING);
 			}
 			if (!file.renameTo(newFile)) {
 				throw new WebProjectServiceException("Cannot create web project folder " + identification);
 			}
-			log.debug("New folder for Web Project " + identification + " has been created");
+			if (log.isDebugEnabled()) {
+				log.debug("New folder for Web Project {} has been created", identification);
+			}
 		}
 	}
 
@@ -381,15 +568,15 @@ public class WebProjectServiceImpl implements WebProjectService {
 				.getName();
 		File file = null;
 		if (vertical_name.equals(DEFAULT_VERTICAL)) {
-			file = new File(rootFolder + SLASH_STRING + userId + SLASH_STRING);
+			file = new File(rootFolder + userId + SLASH_STRING);
 		} else {
 			file = new File(rootFolder + vertical_name + SLASH_STRING + userId + SLASH_STRING);
 		}
 		if (file.exists() && file.isDirectory()) {
 			File newFile = null;
 			if (vertical_name.equals(DEFAULT_VERTICAL)) {
-				deleteFolder(rootFolder + SLASH_STRING + identification + SLASH_STRING);
-				newFile = new File(rootFolder + SLASH_STRING + identification + SLASH_STRING);
+				deleteFolder(rootFolder + identification + SLASH_STRING);
+				newFile = new File(rootFolder + identification + SLASH_STRING);
 			} else {
 				deleteFolder(rootFolder + vertical_name + SLASH_STRING + identification + SLASH_STRING);
 				newFile = new File(rootFolder + vertical_name + SLASH_STRING + identification + SLASH_STRING);
@@ -397,14 +584,19 @@ public class WebProjectServiceImpl implements WebProjectService {
 			if (!file.renameTo(newFile)) {
 				throw new WebProjectServiceException("Cannot create web project folder " + identification);
 			}
-			log.debug("Folder for Web Project " + identification + " has been created");
+			if (log.isDebugEnabled()) {
+				log.debug("Folder for Web Project {} has been created", identification);
+			}
 		}
 	}
 
-	private void unzipFile(String path, String fileName) {
+	@Override
+	public void unzipFile(String path, String fileName) {
 
 		final File folder = new File(path + fileName);
-		log.debug("Unzipping zip file: " + folder);
+		if (log.isDebugEnabled()) {
+			log.debug("Unzipping zip file: {}", folder);
+		}
 
 		DataInputStream is = null;
 		try (ZipInputStream zis = new ZipInputStream(new FileInputStream(folder))) {
@@ -425,7 +617,9 @@ public class WebProjectServiceImpl implements WebProjectService {
 					final File f = new File(path + ze.getName());
 					f.mkdirs();
 				} else {
-					log.debug("Unzipping file: " + ze.getName());
+					if (log.isDebugEnabled()) {
+						log.debug("Unzipping file: {}", ze.getName());
+					}
 					final FileOutputStream fos = new FileOutputStream(path + ze.getName());
 					IOUtils.copy(zis, fos);
 					fos.close();
@@ -440,7 +634,9 @@ public class WebProjectServiceImpl implements WebProjectService {
 				try {
 					is.close();
 				} catch (final IOException e) {
-					log.debug("Error: " + e);
+					if (log.isDebugEnabled()) {
+						log.debug("Error: {}", e);
+					}
 				}
 			}
 		}
@@ -462,9 +658,12 @@ public class WebProjectServiceImpl implements WebProjectService {
 
 		final ByteArrayOutputStream zipByte = new ByteArrayOutputStream();
 		final ZipOutputStream zipOut = new ZipOutputStream(zipByte);
-
-		final File fileToZip = new File(rootFolder + vertical_name + SLASH_STRING + userId + SLASH_STRING);
-
+		File fileToZip = null;
+		if (vertical_name.equals(DEFAULT_VERTICAL)) {
+			fileToZip = new File(rootFolder + identification + SLASH_STRING);
+		} else {
+			fileToZip = new File(rootFolder + vertical_name + SLASH_STRING + identification + SLASH_STRING);
+		}
 		log.debug("Zipping file: " + path + fileName);
 
 		try {
@@ -541,5 +740,23 @@ public class WebProjectServiceImpl implements WebProjectService {
 	public List<WebProjectDTO> getAllWebProjects() {
 		return webProjectRepository.findAll().stream().map(WebProjectDTO::convert).collect(Collectors.toList());
 	}
+
+	@Override
+	public boolean isNpmInstall() {
+		return npmInstall;
+	}
+	
+	@Override
+	public void setNpmInstall(boolean val) {
+		npmInstall = val;
+	}
+
+	@Override
+	public NPMCommandResultStatus getNpmStatus() {
+		return npmStatus;
+	}
+	 
+	
+	
 
 }

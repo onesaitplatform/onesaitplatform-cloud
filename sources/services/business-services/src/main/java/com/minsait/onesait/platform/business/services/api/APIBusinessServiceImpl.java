@@ -87,12 +87,16 @@ public class APIBusinessServiceImpl implements APIBusinessService {
 			final String basePath = TMP_DIR + File.separator + userId + File.separator + JS_FOLDER;
 			log.debug("Creating DIRs");
 			fileUtils.createDirs(basePath);
-			log.debug("Unzipping {} to path {}", pathToZip, basePath);
+			if (log.isDebugEnabled()) {
+				log.debug("Unzipping {} to path {}", pathToZip, basePath);
+			}
 			fileUtils.unzipToPath(pathToZip, basePath);
 			final List<Api> apis = apiIds.stream().map(apiManagerService::getById).collect(Collectors.toList());
 			log.debug("Compiling templates");
 			compileTemplates(basePath, apis);
-			log.debug("Zipping files to {}", basePath + File.separator + OUTPUT_ZIP);
+			if (log.isDebugEnabled()) {
+				log.debug("Zipping files to {}", basePath + File.separator + OUTPUT_ZIP);
+			}
 			return fileUtils.zipFiles(basePath, TMP_DIR + File.separator + userId + File.separator + OUTPUT_ZIP);
 		} catch (final Exception e) {
 			log.error("Error while generating JS client", e);
@@ -122,7 +126,9 @@ public class APIBusinessServiceImpl implements APIBusinessService {
 	}
 
 	private void compileTemplate(String writePath, Map<String, Object> scopes) throws IOException {
-		log.debug("Compiling template {}", writePath);
+		if (log.isDebugEnabled()) {
+			log.debug("Compiling template {}", writePath);
+		}
 		final String content = new String(Files.readAllBytes(Paths.get(writePath)));
 
 		try (Writer writer = new FileWriter(writePath)) {
@@ -140,7 +146,9 @@ public class APIBusinessServiceImpl implements APIBusinessService {
 	private JsonNode getSample(Ontology ontology) {
 		final String result = basicOpsDBRepositoryFactory.getInstance(ontology.getRtdbDatasource())
 				.findAllAsJson(ontology.getIdentification(), 1);
-		log.debug("Getting sample for ontology {}", ontology.getIdentification());
+		if (log.isDebugEnabled()) {
+			log.debug("Getting sample for ontology {}", ontology.getIdentification());
+		}
 		ArrayNode arrayResult = null;
 		try {
 			arrayResult = mapper.readValue(result, ArrayNode.class);

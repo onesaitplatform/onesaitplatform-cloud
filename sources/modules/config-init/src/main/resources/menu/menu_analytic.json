@@ -76,7 +76,16 @@
 			},
 			"icon": "icon-visualization",
 			"url": "",
-			"submenu": [
+			"submenu": [ 
+				{
+                    "title": {
+                        "EN": "My Forms",
+                        "ES": "Mis Formularios",
+                        "FR": "Mes Formes"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/forms/list"
+                } ,
 				{
 					"title": {
 						"EN": "My Dashboards",
@@ -310,6 +319,15 @@
 				},
 				{
 					"title": {
+						"EN": "My Git Projects",
+						"ES": "Mis Proyectos Git", 
+						"FR": "Mes Projets Git"
+					},
+					"icon": "",
+					"url": "/controlpanel/codeproject/list"
+				},
+				{
+					"title": {
 						"EN": "My Microservices Templates",
 						"ES": "Mis Plantillas de MicroServicios",
 						"FR": "Mes Modèles de microservices"
@@ -496,9 +514,9 @@
 				},
 				{
 					"title": {
-						"EN": "My Web Projects",
-						"ES": "Mis Proyectos Web",
-						"FR": "Mes Projets Web"
+						"EN": "My WebApps",
+						"ES": "Mis WebApps",
+						"FR": "Mes WebApps"
 					},
 					"icon": "",
 					"url": "/controlpanel/webprojects/list"

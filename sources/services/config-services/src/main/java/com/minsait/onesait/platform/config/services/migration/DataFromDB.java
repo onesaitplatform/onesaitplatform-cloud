@@ -129,12 +129,18 @@ public class DataFromDB {
 
 		Set<Class<?>> types = config.getTypes();
 		for (Class<?> type : types) {
-			log.debug("*********** DBEXPORT:         " + type.getCanonicalName());
+			if (log.isDebugEnabled()) {
+				log.debug("*********** DBEXPORT:         {}", type.getCanonicalName());
+			}
+			
 			Set<Serializable> ids = config.get(type);
 			if (ids != null) {
 
 				for (Serializable id : ids) {
-					log.debug("*********** DBEXPORT:ID       " + id);
+					if (log.isDebugEnabled()) {
+						log.debug("*********** DBEXPORT:ID       {}", id);
+					}
+					
 					Object entity = em.find(type, id);
 					Instance instanceToExport = new Instance(type, id, null, null);
 					if (entity == null || MigrationUtils.getId(entity) == null) {
@@ -182,12 +188,17 @@ public class DataFromDB {
 
 		Set<Class<?>> types = config.getTypes();
 		for (Class<?> type : types) {
-			log.debug("*********** DBEXPORT:         " + type.getCanonicalName());
+			if (log.isDebugEnabled()) {
+				log.debug("*********** DBEXPORT:         {}", type.getCanonicalName());
+			}
+			
 			Set<Serializable> ids = config.get(type);
 			if (ids != null) {
 
 				for (Serializable id : ids) {
-					log.debug("*********** DBEXPORT:ID       " + id);
+					if (log.isDebugEnabled()) {
+						log.debug("*********** DBEXPORT:ID       {}", id);
+					}					
 
 					Object entity = em.find(type, id);
 

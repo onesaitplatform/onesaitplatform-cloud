@@ -15,6 +15,7 @@
 package com.minsait.onesait.platform.bpm.security;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -36,7 +37,10 @@ import com.minsait.onesait.platform.config.model.security.UserPrincipal;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.security.PlugableOauthAuthenticator;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Component
+@Slf4j
 public class SuccessHandler implements AuthenticationSuccessHandler {
 
 	@Value("${server.servlet.contextPath:/}")
@@ -69,8 +73,16 @@ public class SuccessHandler implements AuthenticationSuccessHandler {
 			MultitenancyContextHolder.setTenantName(((UserPrincipal) oauth.getPrincipal()).getTenant());
 
 		}
+
 		if (!userService.userExistsInDB(loggedUserId)) {
 			userService.createUser(authentication);
+		} else {
+			final List<String> auths = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+					.map(g -> g.getAuthority()).toList();
+			if (log.isDebugEnabled()) {
+				log.debug("SuccessHandler -> auths are: {} for user {}", String.join(";", auths), loggedUserId);
+			userService.updateGroups(loggedUserId, auths);
+			}
 		}
 		userService.createTenants(authentication);
 		MultitenancyContextHolder.clear();

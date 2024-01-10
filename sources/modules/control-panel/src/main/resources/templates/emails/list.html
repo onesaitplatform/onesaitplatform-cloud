@@ -579,8 +579,7 @@
 				return false;
 			}
 		};
-
-
+		
 		$(document).ready(function () {
 
 
@@ -607,13 +606,13 @@
 
 			// SEARCH FORM RESET
 			$('#reset_email').on('click', function () {
-				$('#email-name').val('');
-				$('#emails').DataTable().column(0).search('').draw();
+				$('#form_dashboard')[0].reset();
+				$('#form_dashboard')[0].submit();
 			});
 
 			// SEARCH FORM
 			$('#search_email').on('click', function () {
-				$('#emails').DataTable().column(0).search($('#email-name').val()).draw();
+				$('#emails').DataTable().column(1).search($('#email-name').val()).draw();
 			});
 		});
 
@@ -630,9 +629,11 @@
 				"bAutoWidth": false
 			});
 			oTable.page.len(10);
+			/*
 			$('#emails').on('draw.dt', function () {
 				Email.List.initTableEvents();
 			});
+			*/
 			// SHOW/HIDE DATATABLES COLUMN INIT 
 			$('#divcreate').prepend($('#dataTable-vis-toggle'));
 			//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
@@ -696,7 +697,7 @@
 			});
 
 			// HIDE COLUMNS 		
-			$.each([0, 2, 4], function (ind, value) {$("input.toggle-vis[data-column='" + value + "']").trigger('click');});
+			$.each([0, 2], function (ind, value) {$("input.toggle-vis[data-column='" + value + "']").trigger('click');});
 			$('.tooltips').tooltip('destroy');
 			$('.tooltips').tooltip();
 

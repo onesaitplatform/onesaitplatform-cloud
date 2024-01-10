@@ -13,6 +13,7 @@ var vueapp = new Vue({
       { type: "section-array", id: 9, elements: [] },
       { type: "autogenerate-id", id: 10, "prefix": "#" },
       { type: "model-selector", id: 11 },
+      { type: "datasource-picker", id: 12 },
     ],
     list2: (window.gformconfig ?  window.gformconfig : []),
     gformvalue: (window.gformvalue ?  window.gformvalue : {})

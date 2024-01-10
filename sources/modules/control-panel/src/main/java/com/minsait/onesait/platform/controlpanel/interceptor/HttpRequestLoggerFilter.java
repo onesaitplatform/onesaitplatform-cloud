@@ -52,16 +52,22 @@ public class HttpRequestLoggerFilter implements Filter {
 			throws IOException, ServletException {
 		final HttpServletRequest httpRequest = (HttpServletRequest) request;
 		try {
-			log.debug("Request URL {}",
+			if (log.isDebugEnabled()) {
+				log.debug("Request URL {}",
 					httpRequest.getScheme() + "://" + httpRequest.getServerName() + ":" + httpRequest.getServerPort()
 					+ httpRequest.getRequestURI() + "?"
 					+ (httpRequest.getQueryString() == null ? "" : httpRequest.getQueryString()));
+			}
 			if (httpRequest.getHeader(HttpHeaders.AUTHORIZATION) != null) {
-				log.debug("Header authorization {}", httpRequest.getHeader(HttpHeaders.AUTHORIZATION));
+				if (log.isDebugEnabled()) {
+					log.debug("Header authorization {}", httpRequest.getHeader(HttpHeaders.AUTHORIZATION));
+				}
 			}
 
 			if (httpRequest.getSession() != null && httpRequest.getSession().getAttribute(BLOCK_PRIOR_LOGIN) != null) {
-				log.debug("Attribute block prior login {} ", httpRequest.getSession().getAttribute(BLOCK_PRIOR_LOGIN));
+				if (log.isDebugEnabled()) {
+					log.debug("Attribute block prior login {} ", httpRequest.getSession().getAttribute(BLOCK_PRIOR_LOGIN));
+				}
 			}
 			if (httpRequest.getSession() != null
 					&& httpRequest.getSession().getAttribute(BLOCK_PRIOR_LOGIN_PARAMS) != null) {
@@ -72,7 +78,9 @@ public class HttpRequestLoggerFilter implements Filter {
 					final String serializedParams = "?" + URLEncodedUtils.format(params.entrySet().stream()
 							.map(e -> new BasicNameValuePair(e.getKey(), e.getValue()[0])).collect(Collectors.toList()),
 							StandardCharsets.UTF_8);
-					log.debug("Retrieved parameters from request to session: {}", serializedParams);
+					if (log.isDebugEnabled()) {
+						log.debug("Retrieved parameters from request to session: {}", serializedParams);
+					}
 				}
 			}
 			chain.doFilter(request, response);

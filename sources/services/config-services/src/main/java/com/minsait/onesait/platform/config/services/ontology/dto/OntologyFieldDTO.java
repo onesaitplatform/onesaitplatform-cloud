@@ -34,4 +34,8 @@ public class OntologyFieldDTO extends AuditableEntityWithUUID {
 	@Setter
 	private String path;
 
+	@Getter
+	@Setter
+	private String format;
+
 }

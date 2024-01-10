@@ -144,7 +144,7 @@
             				</div>
                         </div>
                         <div class="row main">
-                       		<div th:if="${gitConfig.site == null}" id="gitlab-group" class="col-md-4 col-sm-4 col-xs-12 form-group">
+                       		<div  id="gitlab-group" class="col-md-4 col-sm-4 col-xs-12 form-group">
             					<label class="popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.gitlab.group.help},data-title=#{microservice.gitlab.group}"> <div class="inline font-xs" th:text="#{microservice.gitlab.group} + ' '">Gitlab Group Name</div><i class="la la-info-circle font-md"></i> </label>
             					<input id="gitlab-group" type="text" name="gitlabGroup"  th:field="*{gitlabGroup}" class="form-control " placeholder="Gitlab Group Name"/>
             				</div>
@@ -357,7 +357,7 @@
 		    		$('#git-project-url').prop('required',true);
 		    		$('#gitlab-site-input').addClass('hide');
 		    		$('#gitlab-site').prop('required',false);
-		    		$('#gitlab-group').addClass('hide');
+		    		//$('#gitlab-group').addClass('hide');
 		    		$('#project-name-input').addClass('hide');
 		    		$('#project-name').prop('required',false);
 		    		$('#createGit').val('false');

@@ -225,7 +225,7 @@ public class JenkinsTest {
 	@Test
 	@Order(2)
 	public void testB_WhenJobExists_ThenWeFetchPipelineParametersAreFetched() {
-		final Map<String, String> parameters = jenkinsService.getParametersFromJob(JENKINS_URL, USERNAME, TOKEN,
+		final Map<String, Object> parameters = jenkinsService.getParametersFromJob(JENKINS_URL, USERNAME, TOKEN,
 				NEW_JOB_NAME);
 		assertTrue(parameters.containsKey(DOCKER_PARAM));
 		assertTrue(parameters.containsKey(GIT_PARAM));

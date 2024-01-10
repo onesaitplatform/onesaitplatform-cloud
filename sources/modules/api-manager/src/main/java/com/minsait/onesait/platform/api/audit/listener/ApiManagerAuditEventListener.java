@@ -34,7 +34,9 @@ public class ApiManagerAuditEventListener {
 	@EventListener
 	@Async
 	public void handleSofia2AuditErrorEvent(ApiManagerAuditEvent event) {
-		log.debug("api manager audit event: {}",event.toString());
+		if (log.isDebugEnabled()) {
+			log.debug("api manager audit event: {}",event.toString());
+		}
 		eventRouter.notify(event.toJson());
 	}
 }

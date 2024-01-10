@@ -228,14 +228,7 @@ var GadgetsTemplateCreateController = function() {
                 clearTimeout(timerWrite)
             }
             timerWrite = window.setTimeout(
-                function(){
-                    $('#templateCode').val(myVSHTML.getValue());
-                    $('#templateCodeJS').val(myVSJS.getValue());
-                    $('#headerlibsCode').val(myVSHL.getValue());
-                    var inlinegform = searchProperties(myVSHTML.getValue(),myVSJS.getValue());
-					addNotFound(vueapp._data.list2, inlinegform);
-                    updatePreview();
-                },2000
+                refreshEditorContent(),2000
             );
         }
 
@@ -248,16 +241,6 @@ var GadgetsTemplateCreateController = function() {
 			}
 			return false;
 		} 
-
-		/* Add params not found in gform */
-		function addNotFound (gform, newparams) {
-			for (iparam in newparams) {
-				var param = newparams[iparam];
-				if (!findInGform(gform, param.name)) {
-					gform.push(param);
-				}
-			}
-		}
 
         myVSHTML.onDidChangeModelContent(modelChange);
     	myVSJS.onDidChangeModelContent(modelChange);
@@ -826,6 +809,25 @@ var GadgetsTemplateCreateController = function() {
 		}
 	}
 	
+	/* Add params not found in gform */
+	function addNotFound (gform, newparams) {
+		for (iparam in newparams) {
+			var param = newparams[iparam];
+			if (!findInGform(gform, param.name)) {
+				gform.push(param);
+			}
+		}
+	}
+	
+	var refreshEditorContent = function () {
+		$('#templateCode').val(myVSHTML.getValue());
+            $('#templateCodeJS').val(myVSJS.getValue());
+            $('#headerlibsCode').val(myVSHL.getValue());
+            var inlinegform = searchProperties(myVSHTML.getValue(),myVSJS.getValue());
+			addNotFound(vueapp._data.list2, inlinegform);
+            updatePreview();
+	}
+	
 	// CONTROLLER PUBLIC FUNCTIONS 
 	return{		
 		// LOAD() JSON LOAD FROM TEMPLATE TO CONTROLLER
@@ -895,6 +897,9 @@ var GadgetsTemplateCreateController = function() {
 		},
 		getSubcategories: function() {
 			getSubcategories();
+		},
+		refreshEditorContent: function() {
+			refreshEditorContent();
 		}
 		
 	};

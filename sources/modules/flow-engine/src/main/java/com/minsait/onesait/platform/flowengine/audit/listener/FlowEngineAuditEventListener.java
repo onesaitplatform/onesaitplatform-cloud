@@ -34,7 +34,9 @@ public class FlowEngineAuditEventListener {
 	@EventListener
 	@Async
 	public void handleSofia2AuditErrorEvent(FlowEngineAuditEvent event) {
-		log.debug("flow engine audit event: " + event.toString());
+		if (log.isDebugEnabled()) {
+			log.debug("flow engine audit event: {}", event.toString());
+		}		
 		eventRouter.notify(event.toJson());
 	}
 }

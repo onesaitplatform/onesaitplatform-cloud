@@ -746,4 +746,9 @@ public class RancherServiceImpl implements MSAService {
 
 	}
 
+	@Override
+	public String getCurrentDockerImage(Microservice microservice, String openshiftNamespace) {
+		throw new RuntimeException("Not implemented");
+	}
+
 }

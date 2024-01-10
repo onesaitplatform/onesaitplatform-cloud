@@ -15,6 +15,8 @@
 package com.minsait.onesait.platform.config.services.dashboard.dto;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,5 +34,7 @@ public class DashboardImportResponsetDTO implements Serializable {
 	private String id;
 
 	private String identification;
+	
+	private List<HashMap<String, String>> errorOntologies;
 
 }

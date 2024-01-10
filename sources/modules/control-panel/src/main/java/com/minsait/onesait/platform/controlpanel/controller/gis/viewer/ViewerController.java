@@ -180,6 +180,7 @@ public class ViewerController {
 		viewer.setUser(user);
 		viewer.setIdentification(viewerDTO.getIdentification());
 		viewer.setDescription(viewerDTO.getDescription());
+		viewer.setPublic(viewerDTO.getIsPublic());
 		viewer.setJs(httpServletRequest.getParameter("jsViewer"));
 		viewer.setLatitude(viewerDTO.getLatitude().toString());
 		viewer.setLongitude(viewerDTO.getLongitude().toString());

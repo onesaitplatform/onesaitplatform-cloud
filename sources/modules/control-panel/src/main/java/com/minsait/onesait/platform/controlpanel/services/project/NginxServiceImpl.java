@@ -107,10 +107,14 @@ public class NginxServiceImpl implements NginxService {
 		final File file = new File(tmpPath + CONF_FILE);
 		if (file.exists() && file.isFile()) {
 			boolean deleted = file.delete();
-			log.debug("deleted:"+deleted);
+			if (log.isDebugEnabled()) {
+				log.debug("deleted:{}",deleted);
+			}
 		}
 		boolean newFile = file.createNewFile();
-		log.debug("created:"+newFile);
+		if (log.isDebugEnabled()) {
+			log.debug("created:{}",newFile);
+		}
 
 		try (final FileWriter writer = new FileWriter(tmpPath + CONF_FILE)) {
 			writer.write(nginxDump);

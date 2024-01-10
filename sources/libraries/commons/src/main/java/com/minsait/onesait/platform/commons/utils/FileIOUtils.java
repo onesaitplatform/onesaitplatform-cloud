@@ -142,7 +142,9 @@ public class FileIOUtils {
 	}
 
 	private void zipFile(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException {
-		log.debug("zipping file  {}", fileToZip.getAbsolutePath());
+		if (log.isDebugEnabled()) {
+			log.debug("zipping file  {}", fileToZip.getAbsolutePath());
+		}
 		try {
 			if (fileToZip.isDirectory()) {
 				if (fileName.endsWith("/")) {

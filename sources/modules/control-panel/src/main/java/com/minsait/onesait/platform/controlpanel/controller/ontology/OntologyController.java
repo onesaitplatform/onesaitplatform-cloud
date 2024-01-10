@@ -38,12 +38,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
+
 import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
 import org.hibernate.exception.ConstraintViolationException;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -86,7 +90,9 @@ import com.minsait.onesait.platform.business.services.ontology.timeseries.TimeSe
 import com.minsait.onesait.platform.business.services.presto.datasource.PrestoDatasourceConfigurationService;
 import com.minsait.onesait.platform.business.services.presto.datasource.PrestoDatasourceService;
 import com.minsait.onesait.platform.business.services.swagger.SwaggerApiImporterService;
+import com.minsait.onesait.platform.business.services.virtual.datasources.VirtualDatasourceService;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
+
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
@@ -130,6 +136,8 @@ import com.minsait.onesait.platform.config.services.ontology.dto.GenerateTimesca
 import com.minsait.onesait.platform.config.services.ontology.dto.GenerateTimescaleContinuousAggregateResponse.ErrorType;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyKPIDTO;
+import com.minsait.onesait.platform.config.services.ontology.dto.OntologyListIndexMongoConfDTO;
+import com.minsait.onesait.platform.config.services.ontology.dto.OntologyPropertiesIndexConfDTO;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyTimeSeriesServiceDTO;
 import com.minsait.onesait.platform.config.services.ontology.dto.TimescaleContinuousAggregateRequest;
 import com.minsait.onesait.platform.config.services.ontology.dto.VirtualDatasourceDTO;
@@ -147,8 +155,10 @@ import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.Resourc
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
+import com.minsait.onesait.platform.persistence.external.virtual.VirtualRelationalOntologyManageDBRepository;
 import com.minsait.onesait.platform.persistence.factory.ManageDBRepositoryFactory;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
+import com.minsait.onesait.platform.persistence.mongodb.MongoNativeManageDBRepository;
 import com.minsait.onesait.platform.persistence.nebula.service.NebulaGraphService;
 import com.minsait.onesait.platform.persistence.services.BasicOpsPersistenceServiceFacade;
 import com.minsait.onesait.platform.persistence.services.QueryToolService;
@@ -174,6 +184,9 @@ import tech.tablesaw.plotly.traces.Trace;
 @RequestMapping("/ontologies")
 @Slf4j
 public class OntologyController {
+
+	@Autowired
+	private VirtualDatasourceService virtualDatasourceService;
 
 	@Autowired
 	private OntologyService ontologyConfigService;
@@ -249,10 +262,16 @@ public class OntologyController {
 	private MessageSource messageSource;
 
 	@Autowired
+	private MongoNativeManageDBRepository MongoNativeDBRepository;
+
+	@Autowired
 	private PrestoDatasourceService prestoDatasourceService;
 
 	@Autowired
 	private PrestoDatasourceConfigurationService prestoDatasourceConfigurationService;
+
+	@Autowired
+	private VirtualRelationalOntologyManageDBRepository virtualRelationalOntologyManageDBRepository;
 
 	@Autowired
 	OntologyMqttTopicRepository ontologyMqttTopicRepo;
@@ -262,6 +281,7 @@ public class OntologyController {
 	private static final String ONTOLOGY_REST_STR = "ontologyRest";
 	private static final String ONTOLOGY_ELASTIC_STR = "ontologyElastic";
 	private static final String ONTOLOGIES_CREATE = "ontologies/create";
+	private static final String ONTOLOGIES_CREATE_INDEX = "ontologies/createindex";
 	private static final String ONTOLOGIES_CREATE_TS = "ontologies/createtimeseries";
 	private static final String ONTOLOGIES_LIST = "ontologies/list";
 	private static final String REDIRECT_ONTOLOGY_LIST = "/controlpanel/ontologies/list";
@@ -275,6 +295,8 @@ public class OntologyController {
 	private static final String REDIRECT_STR = "redirect";
 	private static final String GEN_INTERN_ERROR_CREATE_ONT = "Generic internal error creating ontology: ";
 	private static final String REDIRECT_ONTOLOGIES_LIST = "redirect:/ontologies/list";
+	private static final String ONTOLOGIES_BULK_CREATE = "ontologies/bulkcreation";
+	private static final String REDIRECT_ONTOLOGIES_BULK_CREATE = "redirect:/ontologies/bulkcreation";
 	private static final String DATA_MODELS_STR = "dataModels";
 	private static final String DATA_MODEL_TYPES_STR = "dataModelTypes";
 	private static final String RTDBS = "rtdbs";
@@ -283,6 +305,7 @@ public class OntologyController {
 	private static final String ERROR_IN_RUNQUERY = "Error in runQuery";
 	private static final String TIMESERIES_DATAMODEL = "MASTER-DataModel-30";
 	private static final String ONTOLOGYTSDTO = "ontologyTSDTO";
+	private static final String ONTOLOGYPROPINDEXCONFSDTO = "OntologyPropertiesIndexConfDTO";
 	private static final String AUTHORIZATIONS = "authorizations";
 	private static final String USERS = "users";
 	private static final String REALMS = "realms";
@@ -304,6 +327,10 @@ public class OntologyController {
 	private static final String REDIRECT_PROJECT_SHOW = "/controlpanel/projects/update/";
 	private static final String ONTOLOGIES_CREATEPRESTO = "ontologies/createpresto";
 	private static final String MQTT_TOPIC_NAME = "mqttTopicPath";
+	private static final String TIMESERIESDB = "timeseriesdb";
+
+	@Value("${onesaitplatform.database.timescaledb.connectionName:op_timeseriesdb}")
+	private String timeseriesdbConnection;
 
 	private final ObjectMapper mapper = new ObjectMapper();
 
@@ -349,6 +376,127 @@ public class OntologyController {
 		httpSession.removeAttribute(APP_ID);
 
 		return ontologyConfigService.getAllIdentificationsByUser(utils.getUserId());
+	}
+
+	@GetMapping(value = "/createindex/{id}")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	public String createindex(Model model, @PathVariable("id") String id) {
+
+		final Ontology ontology = ontologyConfigService.getOntologyById(id, utils.getUserId());
+
+		List<String> listIndexTrue = new ArrayList<>();
+		Map<String, List<String>> virtualIndexConfigMap = new HashMap<>();
+		List<OntologyPropertiesIndexConfDTO> listProperties = new ArrayList<OntologyPropertiesIndexConfDTO>();
+
+		if (ontology.getRtdbDatasource().name() == "VIRTUAL") {
+			final OntologyVirtual ontologyVirtual = ontologyConfigService.getOntologyVirtualByOntologyId(ontology);
+			virtualIndexConfigMap = virtualRelationalOntologyManageDBRepository
+					.getListIndexes(ontologyVirtual.getDatasourceTableName(), ontology.getIdentification());
+			listProperties = ontologyConfigService.getPropertiesOntologyVirtual(ontology, virtualIndexConfigMap);
+
+		}
+
+		model.addAttribute(ONTOLOGYPROPINDEXCONFSDTO, listProperties);
+		model.addAttribute(ONTOLOGYTSDTO, ontology);
+		model.addAttribute("listIndexTrue", listIndexTrue);
+
+		return ONTOLOGIES_CREATE_INDEX;
+	}
+
+	@PostMapping(value = "/createindexdatabase")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	public @ResponseBody ResponseEntity<String> createindexdatabase(Model model, HttpServletRequest request,
+			@RequestBody String dataIndex) {
+
+		JSONObject data = new JSONObject(dataIndex);
+		final Ontology ontology = ontologyConfigService.getOntologyById(data.getString("id"), utils.getUserId());
+		ResponseEntity<String> response = null;
+		if (ontology != null) {
+
+			String ontologyName = data.getString("ontology");
+			String typeIndex = data.getString("typeIndex");
+			String indexName = data.getString("indexName");
+			boolean unique = data.getBoolean("unique");
+			boolean background = data.getBoolean("background");
+			boolean sparse = data.getBoolean("sparse");
+			boolean ttl = data.getBoolean("ttl");
+			String timesecondsTTL = data.get("timesecondsTTL").toString();
+			JSONArray checkboxValuesArray = data.getJSONArray("checkboxValues");
+
+			if (ontology.getRtdbDatasource().name() == "MONGO") {
+
+				try {
+					MongoNativeDBRepository.createIndexWithParameter(ontologyName, typeIndex, indexName, unique,
+							background, sparse, ttl, timesecondsTTL, checkboxValuesArray);
+					response = new ResponseEntity<>("Create Index successfully", HttpStatus.OK);
+				} catch (DBPersistenceException e) {
+					if (e.getMessage().contains("already exists with a different")) {
+						response = new ResponseEntity<>("messageErrorIndexAlreadyExist", HttpStatus.BAD_REQUEST);
+					} else if (e.getMessage().contains("E11000 duplicate key error collection")) {
+						response = new ResponseEntity<>("messageErrorViolatesIndexUnique", HttpStatus.BAD_REQUEST);
+					} else if (e.getMessage().contains("An existing index has the same name as the requested index")) {
+						response = new ResponseEntity<>("messageErrorIndexName", HttpStatus.BAD_REQUEST);
+					} else if (e.getMessage().contains("An equivalent index already exists ")) {
+						response = new ResponseEntity<>("messageErrorIndexExistButDifferentOptions",
+								HttpStatus.BAD_REQUEST);
+					} else {
+						response = new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+					}
+				}
+			}
+			// if(ontology.getRtdbDatasource().name() == "VIRTUAL"){
+			// if(state == true) {
+			// final OntologyVirtual ontologyVirtual =
+			// ontologyConfigService.getOntologyVirtualByOntologyId(ontology);
+			// virtualRelationalOntologyManageDBRepository.createIndex(ontologyVirtual.getDatasourceTableName(),
+			// ontology.getIdentification(),name);
+			// response = new ResponseEntity<>("Create Index successfully",HttpStatus.OK);
+			// }
+			// }
+
+			return response;
+		} else {
+			return new ResponseEntity<>("", HttpStatus.BAD_REQUEST);
+		}
+
+	}
+
+	@PostMapping(value = "/dropindexdatabase")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	public @ResponseBody ResponseEntity<String> dropindexdatabase(Model model, HttpServletRequest request,
+			@RequestBody String dataIndex) {
+
+		JSONObject data = new JSONObject(dataIndex);
+		final Ontology ontology = ontologyConfigService.getOntologyById(data.getString("id"), utils.getUserId());
+		if (ontology != null) {
+			ResponseEntity<String> response = null;
+			String ontologyName = data.getString("ontology");
+			String indexName = data.getString("indexName");
+			String property = data.getString("property");
+
+			if (property.equals("_id")) {
+				response = new ResponseEntity<>("meessageCannotdelete_id", HttpStatus.BAD_REQUEST);
+			} else {
+				if (ontology.getRtdbDatasource().name() == "MONGO") {
+					MongoNativeDBRepository.dropIndex(ontologyName, indexName);
+					response = new ResponseEntity<>("Delete Index successfully", HttpStatus.OK);
+				}
+			}
+
+			// if(ontology.getRtdbDatasource().name() == "VIRTUAL"){
+
+			// final OntologyVirtual ontologyVirtual =
+			// ontologyConfigService.getOntologyVirtualByOntologyId(ontology);
+			// virtualRelationalOntologyManageDBRepository.dropIndex(ontology.getIdentification(),ontologyVirtual.getDatasourceTableName(),
+			// name);
+			// response = new ResponseEntity<>("Delete Index successfully",HttpStatus.OK);
+
+			// }
+			return response;
+		} else {
+			return new ResponseEntity<>("", HttpStatus.BAD_REQUEST);
+		}
+
 	}
 
 	@GetMapping(value = "/create")
@@ -932,6 +1080,21 @@ public class OntologyController {
 					populateForm(model);
 				}
 				model.addAttribute(ONTOLOGY_ELASTIC_STR, elasticOntologyDTO);
+
+				if (ontology.getRtdbDatasource().equals(RtdbDatasource.MONGO)) {
+					List<String> listIndexTrue = new ArrayList<>();
+					List<OntologyPropertiesIndexConfDTO> listProperties = new ArrayList<OntologyPropertiesIndexConfDTO>();
+					List<OntologyListIndexMongoConfDTO> listIndex = new ArrayList<OntologyListIndexMongoConfDTO>();
+
+					String getindexMongoDB = MongoNativeDBRepository.getIndexesOptions(ontology.getIdentification());
+					listIndex = ontologyConfigService.getIndexTrue(getindexMongoDB);
+					listProperties = ontologyConfigService.getPropertiesOntology(ontology, listIndexTrue);
+
+					model.addAttribute(ONTOLOGYPROPINDEXCONFSDTO, listProperties);
+					model.addAttribute(ONTOLOGYTSDTO, ontology);
+					model.addAttribute("listIndex", listIndex);
+
+				}
 				return "ontologies/createwizard";
 
 			} else {
@@ -1046,12 +1209,7 @@ public class OntologyController {
 
 		try {
 
-			long count = 0;
-			if (ontology.getRtdbDatasource() != RtdbDatasource.API_REST
-					&& ontology.getRtdbDatasource() != RtdbDatasource.PRESTO) {
-				count = basicOpsRepository.count(ontology.getIdentification());
-
-			}
+			boolean hasDocuments = ontologyBusinessService.hasDocuments(ontology);
 
 			final OntologyConfiguration config = new OntologyConfiguration(request);
 
@@ -1072,9 +1230,9 @@ public class OntologyController {
 				ontology.setOntologyKPI(null);
 			}
 
-			ontologyBusinessService.updateOntology(ontology, config, count > 0 ? true : false);
+			ontologyBusinessService.updateOntology(ontology, config, hasDocuments);
 
-			ontologyConfigService.updateOntology(ontology, utils.getUserId(), config, count > 0 ? true : false);
+			ontologyConfigService.updateOntology(ontology, utils.getUserId(), config, hasDocuments);
 
 			if (ontologyFound != null && ontologyFound.getOntologyKPI() != null
 					&& ontologyFound.getOntologyKPI().getId() != null) {
@@ -1321,7 +1479,20 @@ public class OntologyController {
 				} else {
 					model.addAttribute(IS_ONTOLOGY_REST, false);
 				}
+				if (ontology.getRtdbDatasource().equals(RtdbDatasource.MONGO)) {
 
+					List<OntologyListIndexMongoConfDTO> listIndex = new ArrayList<OntologyListIndexMongoConfDTO>();
+
+					if (ontology.getRtdbDatasource().name() == "MONGO") {
+						// String getindexMongoDB =
+						// MongoNativeDBRepository.getIndexes(entity.getIdentification());
+						String getindexMongoDB = MongoNativeDBRepository
+								.getIndexesOptions(ontology.getIdentification());
+						listIndex = ontologyConfigService.getIndexTrue(getindexMongoDB);
+
+					}
+					model.addAttribute("listIndex", listIndex);
+				}
 				return "ontologies/show";
 
 			} else {
@@ -1453,6 +1624,8 @@ public class OntologyController {
 		model.addAttribute("datasource", new OntologyVirtualDatasource());
 		model.addAttribute(USER_BUCKET_ONTOLOGY_PATH, minioObjectStoreService.getUserBucketName(utils.getUserId())
 				+ MinioObjectStorageService.ONTOLOGIES_DIR);
+
+		model.addAttribute(TIMESERIESDB, timeseriesdbConnection);
 	}
 
 	private void populateFormTimeseries(Model model) {
@@ -1594,6 +1767,27 @@ public class OntologyController {
 		return getSchemasDB(datasource, null);
 	}
 
+	@GetMapping(value = "/getInfoDto/{datasource}")
+	public @ResponseBody ResponseEntity<?> getInfoDto(@PathVariable("datasource") String datasourceIdentification) {
+
+		VirtualDatasourceInfoDTO infoDTO = ontologyBusinessService.getInfoFromDatasource(datasourceIdentification);
+		return new ResponseEntity<>(infoDTO, HttpStatus.OK);
+	}
+
+	@GetMapping(value = "/getDomain/{datasource}")
+	public @ResponseBody ResponseEntity<?> getDomain(@PathVariable("datasource") String datasourceIdentification) {
+		User user = userService.getUser(utils.getUserId());
+
+		List<OntologyVirtualDatasource> datasources = virtualDatasourceService.getAllDatasourcesByUser(user);
+
+		for (OntologyVirtualDatasource datasource : datasources) {
+			if (datasource.getIdentification().equals(datasourceIdentification)) {
+				return new ResponseEntity<>(datasource.getDatasourceDomain(), HttpStatus.OK);
+			}
+		}
+		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
 	@GetMapping(value = "/getSchemas/{datasource}/{database}")
 	public @ResponseBody ResponseEntity<?> getSchemasDB(@PathVariable("datasource") String datasource,
 			@PathVariable("database") String database) {
@@ -1603,6 +1797,94 @@ public class OntologyController {
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			} else {
 				return new ResponseEntity<>(tables, HttpStatus.OK);
+			}
+		} catch (final Exception e) {
+			return new ResponseEntity<>("Error processing the request: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+		}
+	}
+
+	@GetMapping(value = "/getTableInformation/{datasource}/db/{database}")
+	public @ResponseBody ResponseEntity<?> getTableInformationDB(@PathVariable("datasource") String datasource,
+			@PathVariable("database") String database) {
+		return getTableInformationDBSC(datasource, database, null);
+	}
+
+	@GetMapping(value = "/getTableInformation/{datasource}/sc/{schema}")
+	public @ResponseBody ResponseEntity<?> getTableInformationSC(@PathVariable("datasource") String datasource,
+			@PathVariable("schema") String schema) {
+		return getTableInformationDBSC(datasource, null, schema);
+	}
+
+	@GetMapping(value = "/getTableInformation/{datasource}/db/{database}/sc/{schema}")
+	public @ResponseBody ResponseEntity<?> getTableInformationDBSC(@PathVariable("datasource") String datasource,
+			@PathVariable("database") String database, @PathVariable("schema") String schema) {
+		try {
+			final List<Map<String, Object>> columns = ontologyBusinessService
+					.getTableInformationFromDatasource(datasource, database, schema);
+			List<Map<String, Object>> tablesPKInformation = ontologyBusinessService.getTablePKInformation(datasource,
+					database, schema);
+			if (columns.isEmpty()) {
+				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+			} else {
+				Map<String, JSONArray> tableInfMap = new HashMap<>();
+
+				for (Map<String, Object> tableColumnInf : columns) {
+
+					if (tableInfMap.get(tableColumnInf.get("TABLE_NAME")) == null) {
+						JSONArray columnInfArray = new JSONArray();
+						JSONObject columnInf = new JSONObject();
+						columnInf.put("COLUMN_NAME", (String) tableColumnInf.get("COLUMN_NAME"));
+
+						for (Map<String, Object> pkInf : tablesPKInformation) {
+							if (tableColumnInf.get("TABLE_NAME").equals(pkInf.get("TABLE_NAME"))
+									&& tableColumnInf.get("COLUMN_NAME").equals(pkInf.get("COLUMN_NAME"))) {
+								columnInf.put("PK", true);
+								break;
+							} else {
+								columnInf.put("PK", false);
+							}
+						}
+						columnInfArray.put(columnInf);
+						tableInfMap.put((String) tableColumnInf.get("TABLE_NAME"), columnInfArray);
+					} else {
+						JSONObject columnInf = new JSONObject();
+						columnInf.put("COLUMN_NAME", (String) tableColumnInf.get("COLUMN_NAME"));
+
+						for (Map<String, Object> pkInf : tablesPKInformation) {
+							if (tableColumnInf.get("TABLE_NAME").equals(pkInf.get("TABLE_NAME"))
+									&& tableColumnInf.get("COLUMN_NAME").equals(pkInf.get("COLUMN_NAME"))) {
+								columnInf.put("PK", true);
+								break;
+							} else {
+								columnInf.put("PK", false);
+							}
+						}
+						tableInfMap.get(tableColumnInf.get("TABLE_NAME")).put(columnInf);
+					}
+				}
+
+				JSONArray tableInfArray = new JSONArray();
+
+				for (String tableName : tableInfMap.keySet()) {
+
+					JSONObject tableInf = new JSONObject();
+					tableInf.put("TABLE_NAME", tableName);
+					tableInf.put("COLUMS_NAMES", tableInfMap.get(tableName));
+					tableInfArray.put(tableInf);
+				}
+
+				if (datasource.equals(RtdbDatasource.PRESTO.toString())
+						&& (prestoDatasourceConfigurationService.isHistoricalCatalog(database)
+								|| prestoDatasourceConfigurationService.isRealtimedbCatalog(database))) {
+					List<String> ontologies = ontologyConfigService.getAllIdentificationsByUser(utils.getUserId());
+
+					List<String> authorizedEntities = ontologies.stream().map(s -> s.toLowerCase())
+							.filter(columns::contains).collect(Collectors.toList());
+
+					return new ResponseEntity<>(authorizedEntities, HttpStatus.OK);
+				} else {
+					return new ResponseEntity<>(tableInfArray.toString(), HttpStatus.OK);
+				}
 			}
 		} catch (final Exception e) {
 			return new ResponseEntity<>("Error processing the request: " + e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -1666,14 +1948,7 @@ public class OntologyController {
 		try {
 			final Ontology ontology = ontologyConfigService.getOntologyById(id, utils.getUserId());
 
-			long count = 0;
-			if (ontology.getRtdbDatasource() != RtdbDatasource.API_REST) {
-				count = basicOpsRepository.count(ontology.getIdentification());
-			}
-
-			final Boolean hasDocuments = count > 0 ? true : false;
-
-			return new ResponseEntity<>(hasDocuments, HttpStatus.OK);
+			return new ResponseEntity<>(new Boolean(ontologyBusinessService.hasDocuments(ontology)), HttpStatus.OK);
 
 		} catch (final Exception e) {
 			return new ResponseEntity<>("Error processing the request: " + e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -2415,7 +2690,6 @@ public class OntologyController {
 			timeSeriesBusinessService.deleteContinuousAggregate(ontologyIdentification, utils.getUserId(),
 					aggregateName);
 		} catch (final Exception e) {
-			// TODO Auto-generated catch block
 			log.error("Error while deleting Timescale Aggregate for ontology {}. Cause={}, message={}",
 					ontologyIdentification, e.getCause(), e.getMessage());
 			response.setOk(false);
@@ -2484,14 +2758,47 @@ public class OntologyController {
 	private void populateFormPresto(Model model) {
 
 		final List<String> catalogList = prestoDatasourceService.getPrestoCatalogsByUser(utils.getUserId());
-		model.addAttribute("catalogs", catalogList);
-
 		final OntologyVirtualDatasource ds = new OntologyVirtualDatasource();
+
 		ds.setIdentification(VirtualDatasourceType.PRESTO.toString());
+		model.addAttribute("catalogs", catalogList);
 		model.addAttribute("datasource", ds);
-
 		model.addAttribute("tableNames", new ArrayList<String>());
-
 	}
 
+	@GetMapping(value = "/bulkcreation", produces = "text/html")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	public String bulkCreation(Model model) {
+
+		User user = userService.getUser(utils.getUserId());
+		List<OntologyVirtualDatasource> datasources = virtualDatasourceService.getAllDatasourcesByUser(user).stream()
+				.filter(ovd -> !ovd.getIdentification().equals(timeseriesdbConnection)).collect(Collectors.toList());
+		final List<User> users = userService.getAllActiveUsers();
+		model.addAttribute("datasources", datasources);
+		model.addAttribute("users", users);
+
+		return ONTOLOGIES_BULK_CREATE;
+	}
+
+	@PostMapping(value = "/bulkcreation/create")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	public ResponseEntity<Map<String, String>> ontologiesBulkCreation(Model model, RedirectAttributes redirect,
+			HttpServletRequest request) throws IOException {
+
+		JSONArray failedOntologies = ontologyBusinessService.ontologyBulkGeneration(request, utils.getUserId());
+		final Map<String, String> response = new HashMap<>();
+
+		if (failedOntologies.length() == 0) {
+			response.put(REDIRECT_STR, REDIRECT_ONTOLOGY_LIST);
+			response.put(STATUS_STR, "ok");
+			return new ResponseEntity<>(response, HttpStatus.CREATED);
+		} else {
+
+			response.put(STATUS_STR, ERROR_STR);
+			response.put(CAUSE_STR, "error.");
+			response.put("failedOntologies", failedOntologies.toString());
+			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+
+		}
+	}
 }

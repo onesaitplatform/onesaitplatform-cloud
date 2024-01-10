@@ -48,13 +48,17 @@ public class CustomAuthenticationEntryPoint extends LoginUrlAuthenticationEntryP
 		if (request.getServletPath().equals(LOGINURL) && request.getParameterMap() != null
 				&& request.getParameterMap().get(LANG) != null) {
 			request.getSession().setAttribute(LOGIN_LOCALE, request.getParameterMap().get(LANG)[0]);
-			log.debug("Adding parameters from request to session {} only location", request.getParameterMap());
+			if (log.isDebugEnabled()) {
+				log.debug("Adding parameters from request to session {} only location", request.getParameterMap());
+			}
 		} else {
 			if (request.getSession().getAttribute(BLOCK_PRIOR_LOGIN) == null)
 				request.getSession().setAttribute(BLOCK_PRIOR_LOGIN, request.getServletPath());
 
 			if (request.getParameterMap() != null && !request.getParameterMap().isEmpty()) {
-				log.debug("Request contains parameters, adding to redirect through session");
+				if (log.isDebugEnabled()) {
+					log.debug("Request contains parameters, adding to redirect through session");
+				}
 				final HashMap<String, String[]> parameterMap = request.getParameterMap().entrySet().stream().collect(
 						Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (prev, next) -> next, HashMap::new));
 				request.getSession().setAttribute(BLOCK_PRIOR_LOGIN_PARAMS, parameterMap);

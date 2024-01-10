@@ -13,8 +13,7 @@
 
 	<properties>
 
-
-		<revision>5.1.0-ce</revision>
+		<revision>5.2.1-topgun</revision>
 		<docker.image.username>onesaitplatform</docker.image.username>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -28,7 +27,7 @@
 
 		<commons-io.version>2.4</commons-io.version>
 		<javafaker.version>0.14</javafaker.version>
-		<spring-boot.version>2.7.11</spring-boot.version>
+		<spring-boot.version>2.7.15</spring-boot.version>
 		<aspectj.version>1.9.8</aspectj.version>
 		
 		<spring-boot-admin-server.version>2.6.2</spring-boot-admin-server.version>
@@ -74,7 +73,7 @@
 		<spring.security.oauth.version>2.5.2.RELEASE</spring.security.oauth.version>
 		<spring.security.oauth-autoconfigure.version>2.6.7</spring.security.oauth-autoconfigure.version>
 		<minio.version>7.1.4</minio.version> <!-- Versiones 8+ son incompatibles con la version actual de Hazelcast -->
-		<json-ld.version>1.2.0-java8</json-ld.version>
+		<json-ld.version>1.3.3</json-ld.version>
 		<snakeyaml.version>1.30</snakeyaml.version>
 		<thymeleaf-extras-springsecurity4.version>3.0.4.RELEASE</thymeleaf-extras-springsecurity4.version>
 		<nashorn.version>15.4</nashorn.version>
@@ -345,6 +344,10 @@
 			<url>https://nexus.onesaitplatform.com/nexus/repository/snapshots/</url>
 		</repository>
 		<repository>
+            <id>mavencentral</id>
+            <url>https://repo.spring.io/milestone</url>
+        </repository>
+		<repository>
 			<id>central Maven</id>
 			<url>https://repo1.maven.org</url>
 			<!-- TEMPORAL <url>https://central.maven.org/maven2/</url> -->
@@ -452,6 +455,7 @@
 		<module>modules/report-engine</module>
 		<module>modules/serverless-manager</module>
 		<module>modules/analytics-engine-launcher-manager</module>
+		<module>modules/plugin-manager</module>
 
 
 		<!--<module>modules/scripting-engine</module -->

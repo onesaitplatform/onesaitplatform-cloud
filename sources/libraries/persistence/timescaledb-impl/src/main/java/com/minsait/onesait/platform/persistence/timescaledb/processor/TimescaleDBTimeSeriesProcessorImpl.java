@@ -223,7 +223,8 @@ public class TimescaleDBTimeSeriesProcessorImpl implements TimescaleDBTimeSeries
 			final JSONObject timestamp = (JSONObject) instanceData.get(TIMESTAMP_PROPERTY);
 			String formattedDate = (String) timestamp.get(SDATE);
 			// TODO: Round date to frequency
-			if (timeseriesOntology.getTimeSeriesTimescaleProperties().getFrecuencyUnit() != FrecuencyUnit.NONE) {
+			if (timeseriesOntology.getTimeSeriesTimescaleProperties().getFrecuencyUnit() != FrecuencyUnit.NONE
+					&& timeseriesOntology.getTimeSeriesTimescaleProperties().getFrecuencyUnit() != FrecuencyUnit.NODUPS) {
 
 				final SimpleDateFormat sdfSeconds = new SimpleDateFormat(FORMAT_WINDOW_SECONDS);
 				final Calendar calendar = Calendar.getInstance();
@@ -241,8 +242,10 @@ public class TimescaleDBTimeSeriesProcessorImpl implements TimescaleDBTimeSeries
 			}
 			// Process Instance
 			try {
-				log.debug("Process TimescaleDB timeserie for ontology {}",
+				if (log.isDebugEnabled()) {
+					log.debug("Process TimescaleDB timeserie for ontology {}",
 						timeseriesOntology.getOntology().getIdentification());
+				}				
 				DateTime dateTime = new DateTime(formattedDate);
 				params.put(TIMESTAMP_PROPERTY + index, new Timestamp(dateTime.getMillis()));
 				params.putAll(generateValueClauseForInstance(tags, fields, formattedDate, instanceData, index));

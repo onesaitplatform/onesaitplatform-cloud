@@ -72,4 +72,8 @@ public class GadgetTemplateDTOList {
 	@Lob
 	private String config;
 	
+	@Getter
+	@Setter
+	private String headerlibs;
+	
 }

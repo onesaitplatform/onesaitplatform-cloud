@@ -244,6 +244,7 @@
 	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
 	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
 	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
 	
 	<!-- INPUTMASK -->
 	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
@@ -316,7 +317,20 @@
 		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 		
 		var oTable = $('#dashboards').dataTable({
-		      "bAutoWidth": false
+		      "bAutoWidth": false,
+		    columnDefs: [
+            {
+				//Ordenation colum date
+                targets: 5, 
+                type: 'date-euro', 
+                render: function(data, type, row) {
+                    if (type === 'sort') {
+                        return moment(data, 'DD/MM/YYYY').toDate();
+                    }
+                    return data;
+                }
+            }
+        ]
 		      });
 		
 		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		

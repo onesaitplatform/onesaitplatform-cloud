@@ -98,8 +98,9 @@ public class LayerRestController {
 	@PostMapping("/")
 	public ResponseEntity<String> create(@RequestBody(required = true) LayerDTO layerDto)
 			throws JsonProcessingException {
-
-		log.debug("Recieved request to create a new layer {}", layerDto.getIdentification());
+		if (log.isDebugEnabled()) {
+			log.debug("Recieved request to create a new layer {}", layerDto.getIdentification());
+		}
 
 		User user = userService.getUserByIdentification(utils.getUserId());
 
@@ -162,7 +163,9 @@ public class LayerRestController {
 	@Operation(summary = "Get layer by identification")
 	@GetMapping("/{identification}")
 	public ResponseEntity<LayerDTO> getLayer(@PathVariable("identification") String identification) {
-		log.debug("Get layer {}", identification);
+		if (log.isDebugEnabled()) {
+			log.debug("Get layer {}", identification);
+		}
 		try {
 			Layer layer = layerService.findByIdentification(identification);
 			LayerDTO dto = new LayerDTO();
@@ -180,7 +183,9 @@ public class LayerRestController {
 	@Operation(summary = "Get ontology schema from layer identification")
 	@GetMapping("/{identification}/schema")
 	public ResponseEntity<String> getOntologySchema(@PathVariable("identification") String identification) {
-		log.debug("Get Ontology schema from layer {}", identification);
+		if (log.isDebugEnabled()) {
+			log.debug("Get Ontology schema from layer {}", identification);
+		}
 		try {
 			Layer layer = layerService.findByIdentification(identification);
 			if (layer == null) {

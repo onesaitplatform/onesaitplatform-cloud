@@ -38,6 +38,7 @@ import com.minsait.onesait.platform.config.model.OntologyTimeSeriesProperty.Prop
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesProperty.PropertyType;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow.FrecuencyUnit;
 import com.minsait.onesait.platform.config.model.OntologyTimeseriesTimescaleAggregates;
+import com.minsait.onesait.platform.config.model.OntologyTimeseriesTimescaleProperties;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyTimeSeriesService;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
@@ -113,18 +114,23 @@ public class TimescaleDBManageDBRepository implements ManageDBRepository {
 			timescaleDBJdbcTemplate.execute(query.toString());
 		} catch (final Exception e) {
 			final String errorMessage = String.format(
-					"Error creating table for ontology %s in TimescaleDB.Query=%s, Cause=%s, Messaje=%s", ontology,
+					"Error creating table for ontology %s in TimescaleDB.Query=%s, Cause=%s, Message=%s", ontology,
 					query.toString(), e.getCause(), e.getMessage());
 			log.error(errorMessage);
 			throw new DBPersistenceException(errorMessage, e);
 		}
 		// Hypertable creation
 		createHypertable(ontologyTimeserie);
-		// SET data compression policies
-		activateCompressionPolicy(ontologyTimeserie);
-		// SET old data retention policies
-		activateRetentionPolicy(ontologyTimeserie);
-
+		try {
+			// SET data compression policies
+			activateCompressionPolicy(ontologyTimeserie);
+			// SET old data retention policies
+			activateRetentionPolicy(ontologyTimeserie);
+		} catch (DBPersistenceException e) {
+			// Delete original table
+			rollbackProcedure(ontology);
+			throw e;
+		}
 		return null;
 	}
 
@@ -151,6 +157,9 @@ public class TimescaleDBManageDBRepository implements ManageDBRepository {
 		case TIMESTAMP:
 			dataType = "TIMESTAMPTZ";
 			break;
+		case BOOLEAN:
+			dataType = "BOOLEAN";
+			break;
 		default:
 			break;
 		}
@@ -164,7 +173,7 @@ public class TimescaleDBManageDBRepository implements ManageDBRepository {
 			timescaleDBJdbcTemplate.execute(hypertableQuery);
 		} catch (final Exception e) {
 			final String errorMessage = String.format(
-					"Error creating HyperTable for ontology %s in TimescaleDB.Query=%s, Cause=%s, Messaje=%s",
+					"Error creating HyperTable for ontology %s in TimescaleDB.Query=%s, Cause=%s, Message=%s",
 					ontologyTimeserie.getOntology().getIdentification(), hypertableQuery, e.getCause(), e.getMessage());
 			log.error(errorMessage);
 			rollbackProcedure(ontologyTimeserie.getOntology().getIdentification());
@@ -175,63 +184,98 @@ public class TimescaleDBManageDBRepository implements ManageDBRepository {
 	void activateCompressionPolicy(OntologyTimeSeries ontologyTimeserie) {
 		final String ontology = ontologyTimeserie.getOntology().getIdentification();
 		if (ontologyTimeserie.getTimeSeriesTimescaleProperties().isCompressionActive()) {
-			// compression policy
-			final String compressionInterval = ontologyTimeserie.getTimeSeriesTimescaleProperties()
-					.getCompressionAfter() + " "
-					+ ontologyTimeserie.getTimeSeriesTimescaleProperties().getCompressionUnit().toString();
-			final StringBuilder compressionPolicy = new StringBuilder().append("SELECT add_compression_policy('")
-					.append(ontology).append("', INTERVAL '").append(compressionInterval).append("');");
-			// Alter table for TimescaleDB -> Add policy but not active
-			try {
-				timescaleDBJdbcTemplate
-						.execute(ontologyTimeserie.getTimeSeriesTimescaleProperties().getCompressionQuery());
-			} catch (final Exception e) {
-				final String errorMessage = String.format(
-						"Error altering table for compression policy. Ontology %s in TimescaleDB. Query=%s, Cause=%s, Messaje=%s",
-						ontology, ontologyTimeserie.getTimeSeriesTimescaleProperties().getCompressionQuery(),
-						e.getCause(), e.getMessage());
-				log.error(errorMessage);
-				// Delete original table
-				rollbackProcedure(ontology);
-				throw new DBPersistenceException(errorMessage, e);
-			}
+			activateCompressionPolicy(ontology, ontologyTimeserie.getTimeSeriesTimescaleProperties());
+		}
+	}
 
-			// Activate policy
-			try {
-				timescaleDBJdbcTemplate.execute(compressionPolicy.toString());
-			} catch (final Exception e) {
-				final String errorMessage = String.format(
-						"Error activating compression policy. Ontology %s in TimescaleDB. Query=%s, Cause=%s, Messaje=%s",
-						ontology, compressionPolicy.toString(), e.getCause(), e.getMessage());
-				log.error(errorMessage);
+	public void activateCompressionPolicy(String ontology,
+			OntologyTimeseriesTimescaleProperties ontologyTimeseriesTimescaleProperties) {
+		final String compressionInterval = ontologyTimeseriesTimescaleProperties.getCompressionAfter() + " "
+				+ ontologyTimeseriesTimescaleProperties.getCompressionUnit().toString();
+		final StringBuilder compressionPolicy = new StringBuilder().append("SELECT add_compression_policy('")
+				.append(ontology).append("', INTERVAL '").append(compressionInterval).append("');");
+		// Alter table for TimescaleDB -> Add policy but not active
+		try {
+			timescaleDBJdbcTemplate.execute(ontologyTimeseriesTimescaleProperties.getCompressionQuery());
+		} catch (final Exception e) {
+			final String errorMessage = String.format(
+					"Error altering table for compression policy. Ontology %s in TimescaleDB. Query=%s, Cause=%s, Message=%s",
+					ontology, ontologyTimeseriesTimescaleProperties.getCompressionQuery(), e.getCause(),
+					e.getMessage());
+			log.error(errorMessage);
+			throw new DBPersistenceException(errorMessage, e);
+		}
 
-				// Delete original table
-				rollbackProcedure(ontology);
-				throw new DBPersistenceException(errorMessage, e);
-			}
+		// Activate policy
+		try {
+			timescaleDBJdbcTemplate.execute(compressionPolicy.toString());
+		} catch (final Exception e) {
+			final String errorMessage = String.format(
+					"Error activating compression policy. Ontology %s in TimescaleDB. Query=%s, Cause=%s, Message=%s",
+					ontology, compressionPolicy.toString(), e.getCause(), e.getMessage());
+			log.error(errorMessage);
+
+			throw new DBPersistenceException(errorMessage, e);
+		}
+	}
+
+	public void deactivateCompressionPolicy(String ontology) {
+		final StringBuilder retentionPolicy = new StringBuilder().append("SELECT remove_compression_policy('")
+				.append(ontology).append("');");
+		try {
+			timescaleDBJdbcTemplate.execute(retentionPolicy.toString());
+		} catch (final Exception e) {
+			final String errorMessage = String.format(
+					"Error deactivating compression policy. Ontology %s in TimescaleDB. Query=%s, Cause=%s, Message=%s",
+					ontology, retentionPolicy.toString(), e.getCause(), e.getMessage());
+			log.error(errorMessage);
+
+			throw new DBPersistenceException(errorMessage, e);
 		}
 	}
 
 	void activateRetentionPolicy(OntologyTimeSeries ontologyTimeserie) {
 		final String ontology = ontologyTimeserie.getOntology().getIdentification();
-		if (ontologyTimeserie.getTimeSeriesTimescaleProperties().isRetentionActive()) {
-			final String retentionInterval = ontologyTimeserie.getTimeSeriesTimescaleProperties().getRetentionBefore()
-					.toString() + " " + ontologyTimeserie.getTimeSeriesTimescaleProperties().getRetentionUnit();
-			final StringBuilder retentionPolicy = new StringBuilder().append("SELECT add_retention_policy('")
-					.append(ontology).append("', INTERVAL '").append(retentionInterval).append("');");
-			try {
-				timescaleDBJdbcTemplate.execute(retentionPolicy.toString());
-			} catch (final Exception e) {
-				final String errorMessage = String.format(
-						"Error activating retention policy. Ontology %s in TimescaleDB. Query=%s, Cause=%s, Messaje=%s",
-						ontology, retentionPolicy.toString(), e.getCause(), e.getMessage());
-				log.error(errorMessage);
 
-				// Delete original table
-				rollbackProcedure(ontology);
-				throw new DBPersistenceException(errorMessage, e);
-			}
+		if (ontologyTimeserie.getTimeSeriesTimescaleProperties().isRetentionActive()) {
+			activateRetentionPolicy(ontology, ontologyTimeserie.getTimeSeriesTimescaleProperties());
 		}
+	}
+
+	public void activateRetentionPolicy(String ontology,
+			OntologyTimeseriesTimescaleProperties ontologyTimeseriesTimescaleProperties) {
+		final String retentionInterval = ontologyTimeseriesTimescaleProperties.getRetentionBefore().toString() + " "
+				+ ontologyTimeseriesTimescaleProperties.getRetentionUnit();
+		final StringBuilder retentionPolicy = new StringBuilder().append("SELECT add_retention_policy('")
+				.append(ontology).append("', INTERVAL '").append(retentionInterval).append("');");
+		try {
+			timescaleDBJdbcTemplate.execute(retentionPolicy.toString());
+		} catch (final Exception e) {
+			final String errorMessage = String.format(
+					"Error activating retention policy. Ontology %s in TimescaleDB. Query=%s, Cause=%s, Message=%s",
+					ontology, retentionPolicy.toString(), e.getCause(), e.getMessage());
+			log.error(errorMessage);
+
+			// Delete original table
+			rollbackProcedure(ontology);
+			throw new DBPersistenceException(errorMessage, e);
+		}
+	}
+
+	public void deactivateRetentionPolicy(String ontology) {
+		final StringBuilder retentionPolicy = new StringBuilder().append("SELECT remove_retention_policy('")
+				.append(ontology).append("');");
+		try {
+			timescaleDBJdbcTemplate.execute(retentionPolicy.toString());
+		} catch (final Exception e) {
+			final String errorMessage = String.format(
+					"Error deactivating retention policy. Ontology %s in TimescaleDB. Query=%s, Cause=%s, Message=%s",
+					ontology, retentionPolicy.toString(), e.getCause(), e.getMessage());
+			log.error(errorMessage);
+
+			throw new DBPersistenceException(errorMessage, e);
+		}
+
 	}
 
 	@Override
@@ -247,7 +291,7 @@ public class TimescaleDBManageDBRepository implements ManageDBRepository {
 					String.class, ontology.toLowerCase() + "%", ontology.toLowerCase() + "\\.%");
 		} catch (final Exception e) {
 			final String errorMessage = String.format(
-					"Error listing tables for ontology %s in TimescaleDB. Cause=%s, Messaje=%s", ontology, e.getCause(),
+					"Error listing tables for ontology %s in TimescaleDB. Cause=%s, Message=%s", ontology, e.getCause(),
 					e.getMessage());
 			log.error(errorMessage);
 			throw new DBPersistenceException(errorMessage, e);
@@ -260,7 +304,7 @@ public class TimescaleDBManageDBRepository implements ManageDBRepository {
 			timescaleDBJdbcTemplate.execute(String.format("DROP TABLE  %s CASCADE;", ontology));
 		} catch (final Exception e) {
 			final String errorMessage = String.format(
-					"Error deleting table %s from user in TimescaleDB. Cause=%s, Messaje=%s", ontology, e.getCause(),
+					"Error deleting table %s from user in TimescaleDB. Cause=%s, Message=%s", ontology, e.getCause(),
 					e.getMessage());
 			log.error(errorMessage);
 			throw new DBPersistenceException(errorMessage, e);
@@ -274,7 +318,7 @@ public class TimescaleDBManageDBRepository implements ManageDBRepository {
 			timescaleDBJdbcTemplate.execute(statement);
 		} catch (final Exception e) {
 			final String errorMessage = String.format(
-					"Error creating index on table %s in TimescaleDB. Cause=%s, Messaje=%s", ontology, e.getCause(),
+					"Error creating index on table %s in TimescaleDB. Cause=%s, Message=%s", ontology, e.getCause(),
 					e.getMessage());
 			log.error(errorMessage);
 			throw new DBPersistenceException(errorMessage, e);
@@ -289,7 +333,7 @@ public class TimescaleDBManageDBRepository implements ManageDBRepository {
 			timescaleDBJdbcTemplate.execute(statement);
 		} catch (final Exception e) {
 			final String errorMessage = String.format(
-					"Error creating named index %s on table %s in TimescaleDB. Cause=%s, Messaje=%s", nameIndex,
+					"Error creating named index %s on table %s in TimescaleDB. Cause=%s, Message=%s", nameIndex,
 					ontology, e.getCause(), e.getMessage());
 			log.error(errorMessage);
 			throw new DBPersistenceException(errorMessage, e);
@@ -302,7 +346,7 @@ public class TimescaleDBManageDBRepository implements ManageDBRepository {
 			timescaleDBJdbcTemplate.execute(sentence);
 		} catch (final Exception e) {
 			final String errorMessage = String.format(
-					"Error creating index with statement %s in TimescaleDB. Cause=%s, Messaje=%s", sentence,
+					"Error creating index with statement %s in TimescaleDB. Cause=%s, Message=%s", sentence,
 					e.getCause(), e.getMessage());
 			log.error(errorMessage);
 			throw new DBPersistenceException(errorMessage, e);
@@ -316,7 +360,7 @@ public class TimescaleDBManageDBRepository implements ManageDBRepository {
 			timescaleDBJdbcTemplate.execute(statement);
 		} catch (final Exception e) {
 			final String errorMessage = String.format(
-					"Error dropping named index %s on table %s in TimescaleDB. Cause=%s, Messaje=%s", indexName,
+					"Error dropping named index %s on table %s in TimescaleDB. Cause=%s, Message=%s", indexName,
 					ontology, e.getCause(), e.getMessage());
 			log.error(errorMessage);
 			throw new DBPersistenceException(errorMessage, e);
@@ -331,7 +375,7 @@ public class TimescaleDBManageDBRepository implements ManageDBRepository {
 					String.class, ontology + "%", ontology + "\\.%");
 		} catch (final Exception e) {
 			final String errorMessage = String.format(
-					"Error listing indexes for table %s in TimescaleDB. Cause=%s, Messaje=%s", ontology, e.getCause(),
+					"Error listing indexes for table %s in TimescaleDB. Cause=%s, Message=%s", ontology, e.getCause(),
 					e.getMessage());
 			log.error(errorMessage);
 			throw new DBPersistenceException(errorMessage, e);
@@ -344,7 +388,7 @@ public class TimescaleDBManageDBRepository implements ManageDBRepository {
 			return objectMapper.writeValueAsString(getListIndexes(ontology));
 		} catch (final Exception e) {
 			final String errorMessage = String.format(
-					"Error listing indexes for table %s in TimescaleDB. Cause=%s, Messaje=%s", ontology, e.getCause(),
+					"Error listing indexes for table %s in TimescaleDB. Cause=%s, Message=%s", ontology, e.getCause(),
 					e.getMessage());
 			log.error(errorMessage);
 			throw new DBPersistenceException(errorMessage, e);
@@ -377,7 +421,7 @@ public class TimescaleDBManageDBRepository implements ManageDBRepository {
 			descriptors = timescaleDBJdbcTemplate.query(sql, new TimescaleDBDescribeColumnRowMapper());
 
 		} catch (final DataAccessException e) {
-			final String errorMessage = String.format("Error describing table %s in TimescaleDB. Cause=%s, Messaje=%s",
+			final String errorMessage = String.format("Error describing table %s in TimescaleDB. Cause=%s, Message=%s",
 					name, e.getCause(), e.getMessage());
 			log.error(errorMessage);
 			throw new DBPersistenceException(errorMessage, e);
@@ -408,7 +452,7 @@ public class TimescaleDBManageDBRepository implements ManageDBRepository {
 			} catch (final Exception e) {
 
 				final String errorMessage = String.format(
-						"Error while updating timescaleDB ontology %s table. Query=%s, Cause=%s, Messaje=%s",
+						"Error while updating timescaleDB ontology %s table. Query=%s, Cause=%s, Message=%s",
 						identification, query.toString(), e.getCause(), e.getMessage());
 				log.error(errorMessage);
 				throw new DBPersistenceException(errorMessage, e);
@@ -424,7 +468,7 @@ public class TimescaleDBManageDBRepository implements ManageDBRepository {
 
 		} catch (final DataAccessException e) {
 			final String errorMessage = String.format(
-					"Error while rolling back table creation.Table %s in TimescaleDB. Cause=%s, Messaje=%s", ontology,
+					"Error while rolling back table creation.Table %s in TimescaleDB. Cause=%s, Message=%s", ontology,
 					e.getCause(), e.getMessage());
 			log.error(errorMessage);
 			throw new DBPersistenceException(errorMessage, e);
@@ -438,7 +482,7 @@ public class TimescaleDBManageDBRepository implements ManageDBRepository {
 			timescaleDBJdbcTemplate.execute(aggregate.getAggregateQuery());
 		} catch (final DataAccessException e) {
 			final String errorMessage = String.format(
-					"Error while creating aggregate %s for timeserie %s in TimescaleDB. Cause=%s, Messaje=%s",
+					"Error while creating aggregate %s for timeserie %s in TimescaleDB. Cause=%s, Message=%s",
 					aggregate.getName(), aggregate.getOntologyTimeSeries().getOntology().getIdentification(),
 					e.getCause(), e.getMessage());
 			log.error(errorMessage);
@@ -460,7 +504,7 @@ public class TimescaleDBManageDBRepository implements ManageDBRepository {
 			timescaleDBJdbcTemplate.execute(policyQuery);
 		} catch (final DataAccessException e) {
 			final String errorMessage = String.format(
-					"Error while creating aggregate policy %s for timeserie %s in TimescaleDB. Cause=%s, Messaje=%s",
+					"Error while creating aggregate policy %s for timeserie %s in TimescaleDB. Cause=%s, Message=%s",
 					aggregate.getName(), aggregate.getOntologyTimeSeries().getOntology().getIdentification(),
 					e.getCause(), e.getMessage());
 			log.error(errorMessage);
@@ -477,7 +521,7 @@ public class TimescaleDBManageDBRepository implements ManageDBRepository {
 			timescaleDBJdbcTemplate.execute(query);
 		} catch (final DataAccessException e) {
 			final String errorMessage = String.format(
-					"Error while removing aggregate policy %s for timeserie %s in TimescaleDB. Cause=%s, Messaje=%s",
+					"Error while removing aggregate policy %s for timeserie %s in TimescaleDB. Cause=%s, Message=%s",
 					aggregateName, ontologyTimeserie.getOntology().getIdentification(), e.getCause(), e.getMessage());
 			log.error(errorMessage);
 			throw new DBPersistenceException(errorMessage, e);
@@ -486,6 +530,29 @@ public class TimescaleDBManageDBRepository implements ManageDBRepository {
 
 	@Override
 	public void createTTLIndex(String ontology, String attribute, Long seconds) {
+		throw new DBPersistenceException(NOT_IMPLEMENTED_METHOD);
+
+	}
+
+	@Override
+	public Map<String, List<String>> getListIndexes(String datatableName, String ontology) {
+		throw new DBPersistenceException(NOT_IMPLEMENTED_METHOD);
+	}
+
+	@Override
+	public void dropIndex(String ontology, String ontologyVirtual, String indexName) {
+		throw new DBPersistenceException(NOT_IMPLEMENTED_METHOD);
+
+	}
+
+	@Override
+	public String getIndexesOptions(String ontology) {
+		throw new DBPersistenceException(NOT_IMPLEMENTED_METHOD);
+	}
+
+	@Override
+	public void createIndexWithParameter(String ontologyName, String typeIndex, String indexName, boolean unique,
+			boolean background, boolean sparse, boolean ttl, String timesecondsTTL, Object checkboxValuesArray) {
 		throw new DBPersistenceException(NOT_IMPLEMENTED_METHOD);
 
 	}

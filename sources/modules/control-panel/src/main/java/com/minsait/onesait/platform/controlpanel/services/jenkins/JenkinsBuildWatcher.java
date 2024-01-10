@@ -51,7 +51,9 @@ public class JenkinsBuildWatcher implements Runnable {
 					if (queueItem.cancelled()) {
 						log.warn("Build was cancelled");
 					} else {
-						log.debug("Build is executing with build number: " + queueItem.executable().number());
+						if (log.isDebugEnabled()) {
+							log.debug("Build is executing with build number: {}", queueItem.executable().number());
+						}						
 					}
 					break;
 				}
@@ -68,7 +70,9 @@ public class JenkinsBuildWatcher implements Runnable {
 				buildInfo = client.api().jobsApi().buildInfo(null, microservice.getJobName(),
 						queueItem.executable().number());
 			}
-			log.debug("Build status: " + buildInfo.result());
+			if (log.isDebugEnabled()) {
+				log.debug("Build status: {}", buildInfo.result());
+			}			
 		} catch (final Exception e) {
 			log.error("Something happened, could not wait until pipeline", e);
 

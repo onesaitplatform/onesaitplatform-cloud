@@ -173,7 +173,7 @@ public class SwaggerConfig {
 		return GroupedOpenApi.builder().group("Ontologies").pathsToMatch("/api/ontologies", "/api/ontologies/**")
 				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
 	}
-	
+
 	@Bean
 	public GroupedOpenApi reportsApi() {
 		return GroupedOpenApi.builder().group("Reports").pathsToMatch("/api/reports", "/api/reports/**")
@@ -392,5 +392,25 @@ public class SwaggerConfig {
 				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
 
 	}
+	
+	@Bean
+	public GroupedOpenApi aiAPI() {
+		return GroupedOpenApi.builder().group("AI").pathsToMatch("/api/ai", "/api/ai/**")
+				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
 
+	}
+
+	@Bean
+	public GroupedOpenApi formsAPI() {
+		return GroupedOpenApi.builder().group("Forms").pathsToMatch("/api/forms", "/api/forms/**")
+				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+
+	}
+
+	@Bean
+	public GroupedOpenApi codeprojectApi() {
+		return GroupedOpenApi.builder().group("Codeproject")
+				.pathsToMatch("/api/codeproject", "/api/codeproject/**")
+				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	}
 }

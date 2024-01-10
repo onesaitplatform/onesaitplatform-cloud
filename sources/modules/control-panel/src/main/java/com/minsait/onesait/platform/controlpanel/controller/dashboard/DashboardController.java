@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
+import org.elasticsearch.core.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +77,7 @@ import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardAcces
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardCreateDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardExportDTO;
+import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardImportResponsetDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardTablePaginationDTO;
 import com.minsait.onesait.platform.config.services.exceptions.DashboardServiceException;
 import com.minsait.onesait.platform.config.services.internationalization.InternationalizationService;
@@ -338,7 +341,7 @@ public class DashboardController {
 		return DASHB_CREATE;
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/edit/{id}", produces = "text/html")
 	public String edit(Model model, @PathVariable("id") String id) {
 		model.addAttribute(DASHBOARD_STR, dashboardService.getDashboardEditById(id, utils.getUserId()));
@@ -346,7 +349,7 @@ public class DashboardController {
 
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@PutMapping(value = "/edit/{id}", produces = "text/html")
 	public String updateEditDashboardModel(Model model, @PathVariable("id") String id, @Valid Dashboard dashboard,
 			BindingResult bindingResult, RedirectAttributes redirect) {
@@ -876,12 +879,32 @@ public class DashboardController {
 			@RequestParam(required = false, defaultValue = "true") boolean overwrite,
 			@RequestParam(required = false, defaultValue = "true") boolean importAuthorizations) {
 		try {
+			
 			final JSONObject response = new JSONObject();
-			final String identification = dashboardService
-					.importDashboard(dashboardimportDTO, utils.getUserId(), overwrite, importAuthorizations)
-					.getIdentification();
-			response.put("status", HttpStatus.OK);
-			response.put("message", identification);
+			final DashboardImportResponsetDTO dashboardImport = dashboardService.importDashboard(dashboardimportDTO, utils.getUserId(), overwrite, importAuthorizations);
+			final String identification = dashboardService.importDashboard(dashboardimportDTO, utils.getUserId(), overwrite, importAuthorizations).getIdentification();
+			
+			if(dashboardImport.getErrorOntologies().size() == 0) {
+				response.put("status", HttpStatus.OK);
+				response.put("message", identification);
+			} else {
+				List<String> messageontologies = new ArrayList<>();	
+				List<String> messagedatasources = new ArrayList<>();	
+				
+				List<HashMap<String, String>> list = dashboardImport.getErrorOntologies();
+				for(HashMap<String, String> hashmap : list) {
+					for(String clave : hashmap.keySet()) {
+						String valor = hashmap.get(clave);
+						messagedatasources.add(clave);
+						messageontologies.add(valor);
+					}
+				}
+				response.put("status", HttpStatus.INTERNAL_SERVER_ERROR);
+				response.put("datasources", messagedatasources);
+				response.put("ontologyDatasource", messageontologies);
+			}
+					
+			
 			return response.toString();
 
 		} catch (final DashboardServiceException e) {

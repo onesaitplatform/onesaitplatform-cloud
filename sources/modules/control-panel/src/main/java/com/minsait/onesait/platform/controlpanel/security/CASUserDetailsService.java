@@ -67,7 +67,9 @@ public class CASUserDetailsService extends AbstractCasAssertionUserDetailsServic
 
 	@Override
 	protected UserDetails loadUserDetails(Assertion assertion) {
-		log.debug("New user logged from CAS server {}", assertion.getPrincipal().getName());
+		if (log.isDebugEnabled()) {
+			log.debug("New user logged from CAS server {}", assertion.getPrincipal().getName());
+		}		
 		final String username = assertion.getPrincipal().getName();
 		MasterUser user = masterUserRepository.findByUserId(username);
 

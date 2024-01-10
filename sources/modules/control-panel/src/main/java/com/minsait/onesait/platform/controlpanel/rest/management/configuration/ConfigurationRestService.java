@@ -60,7 +60,6 @@ import io.swagger.annotations.ApiParam;
 @ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
 		@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden") })
 @RequestMapping("/api/configurations")
-@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 public class ConfigurationRestService {
 
 	@Autowired
@@ -72,6 +71,7 @@ public class ConfigurationRestService {
 	@Autowired
 	private OPResourceService resourceService;
 
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@Operation(summary="Get all configurations")
 	@GetMapping
 	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ConfigurationSimplified[].class))))
@@ -83,7 +83,8 @@ public class ConfigurationRestService {
 		return new ResponseEntity<>(configurations, HttpStatus.OK);
 
 	}
-
+	
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@Operation(summary="Get configuration by parameters")
 	@GetMapping("/type/{type}/environment/{environment}/realm/{realm}")
 	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ConfigurationSimplified.class))))
@@ -163,6 +164,7 @@ public class ConfigurationRestService {
 
 	}
 
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@Operation(summary="Get configuration by parameters")
 	@GetMapping("/type/{type}/real/{realm}")
 	@Deprecated
@@ -239,6 +241,7 @@ public class ConfigurationRestService {
 		}
 	}
 
+	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@Operation(summary="Create configuration")
 	@PostMapping
 	public ResponseEntity<?> create(

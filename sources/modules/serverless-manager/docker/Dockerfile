@@ -18,6 +18,9 @@ ENV PATH="$PATH:/usr/lib/jvm/java-17-openjdk/bin"
 
 #RUN curl -LSs https://raw.githubusercontent.com/fnproject/cli/0.6.24/install | sh
 
+# create onesait user/group
+RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait
+
 ADD install.sh /install.sh
 RUN chmod +x /install.sh
 RUN /install.sh
@@ -25,6 +28,14 @@ RUN /install.sh
 ADD *.jar /app.jar
 
 RUN mkdir -p /var/log/platform-logs
+
+RUN chown -R onesait:onesait /usr/local && \
+    chown -R onesait:onesait /var/log/platform-logs && \
+    chown onesait:onesait app.jar && \
+    chmod -R 777 /var/log && \
+    chmod -R 777 /usr/local
+
+VOLUME ["/tmp", "/var/log/platform-logs"]
 
 EXPOSE 8086
 

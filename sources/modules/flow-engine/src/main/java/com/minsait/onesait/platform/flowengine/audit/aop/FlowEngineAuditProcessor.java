@@ -79,8 +79,9 @@ public class FlowEngineAuditProcessor {
 
 	public FlowEngineAuditEvent getEvent(String methodName, String retVal, FlowEngineDomain domain,
 			OperationType operation) {
-
-		log.debug("getEvent for operation " + methodName + " and return value " + retVal);
+		if (log.isDebugEnabled()) {
+			log.debug("getEvent for operation {} and return value {}", methodName, retVal);
+		}		
 		String userId = getUserId(domain);
 
 		FlowEngineAuditEventBuilder builder = FlowEngineAuditEvent.builder();
@@ -101,8 +102,9 @@ public class FlowEngineAuditProcessor {
 	}
 
 	public FlowEngineAuditEvent getEvent(String methodName, String domainId, OperationType operation) {
-
-		log.debug("getEvent for operation " + methodName + " and domain " + domainId);
+		if (log.isDebugEnabled()) {
+			log.debug("getEvent for operation {} and domain {}", methodName, domainId);
+		}		
 		String userId = getUserId(domainId);
 
 		String message = "Executed operation " + methodName + " for domain " + domainId + " by user " + userId;
@@ -232,8 +234,9 @@ public class FlowEngineAuditProcessor {
 	}
 
 	public OPAuditError getErrorEvent(String methodName, FlowEngineDomain domain, Exception ex) {
-
-		log.debug("getEventError for operation " + methodName);
+		if (log.isDebugEnabled()) {
+			log.debug("getEventError for operation {}", methodName);
+		}		
 		String userId = getUserId(domain);
 		String messageOperation = "Exception Detected while executing " + methodName + " for domain : "
 				+ domain.getDomain();

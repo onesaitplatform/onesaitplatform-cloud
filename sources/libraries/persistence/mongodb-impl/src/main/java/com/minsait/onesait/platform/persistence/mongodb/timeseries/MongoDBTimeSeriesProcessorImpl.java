@@ -41,7 +41,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import com.minsait.onesait.platform.commons.model.TimeSeriesResult;
-import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesProperty;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesProperty.PropertyDataType;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesProperty.PropertyType;
@@ -58,6 +57,7 @@ import com.minsait.onesait.platform.persistence.mongodb.timeseries.exception.Tim
 import com.minsait.onesait.platform.persistence.mongodb.timeseries.exception.TimeSeriesUnableToUpdateException;
 import com.minsait.onesait.platform.persistence.mongodb.timeseries.exception.WindowNotSupportedException;
 import com.mongodb.BasicDBObject;
+import com.mongodb.client.result.UpdateResult;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -127,6 +127,10 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 	protected ObjectMapper objectMapper;
 	private IMap<MongoDBTimeSeriesInstanceKey, String> timeseriesUpdateTransactionMap;
 
+	private Map<String, TimeseriesConfigData> timeseriesConfigData;
+	@Value("${onesaitplatform.database.timeseries.mongodb.config.cache.ttl:120000}")
+	private long timeseriesConfigTtl;
+
 	@PostConstruct
 	public void init() {
 		objectMapper = new ObjectMapper();
@@ -136,6 +140,7 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 		} else {
 			timeseriesUpdateTransactionMap = hazelcastInstance.getMap("timeseriesUpdateTransaction");
 		}
+		timeseriesConfigData = new HashMap<>();
 	}
 
 	@Override
@@ -144,13 +149,12 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 		log.info("Process TimeSerie instance for ontology {}", ontology);
 		final List<TimeSeriesResult> result = new ArrayList<>();
 
+		final TimeseriesConfigData timeseriesConfigData = getTimeseriesConfigData(ontology);
 		// Get Properties declared for the Timeserie ontology
-		final List<OntologyTimeSeriesProperty> lProperties = ontologyTimeSeriesPropertyRepository
-				.findByOntologyIdentificaton(ontology);
+		final List<OntologyTimeSeriesProperty> lProperties = timeseriesConfigData.getProperties();
 
 		// Get Windows declared for the Timeserie ontology
-		final List<OntologyTimeSeriesWindow> lTimeSeriesWindows = ontologyTimeSeriesWindowRepository
-				.findByOntologyIdentificaton(ontology);
+		final List<OntologyTimeSeriesWindow> lTimeSeriesWindows = timeseriesConfigData.getWindows();
 
 		// Divide Root element and Data of the instance
 		final JSONObject oInstance = new JSONObject(instance);
@@ -182,7 +186,9 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 		// Process Instance for each declared window
 		lTimeSeriesWindows.forEach(window -> {
 			try {
-				log.debug("Process window {} for ontology {}", window.getWindowType().name(), ontology);
+				if (log.isDebugEnabled()) {
+					log.debug("Process window {} for ontology {}", window.getWindowType().name(), ontology);
+				}				
 				result.addAll(manageWindow(database, ontology, rootkey, mTags, mFields, formattedDate, window,
 						getWindowAggregationType(window)));
 			} catch (TimeSeriesFrecuencyNotSupportedException | WindowNotSupportedException | ParseException e) {
@@ -255,7 +261,9 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 			String formattedDate, OntologyTimeSeriesWindow window, UPDATE_TYPE updateType)
 			throws TimeSeriesFrecuencyNotSupportedException, WindowNotSupportedException, ParseException {
 
-		final Ontology stats = ontologyRepository.findByIdentification(ontology + "_stats");
+
+		final TimeseriesConfigData timeseriesConfigData = getTimeseriesConfigData(ontology);
+		//final Ontology stats = timeseriesConfigData.getOntologyStats();
 
 		final List<TimeSeriesResult> result = new ArrayList<>();
 
@@ -283,7 +291,8 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 				final BasicDBObject objQuery = new BasicDBObject();
 				mTags.forEach((key, value) -> {
 					if (key.getPropertyDataType().equals(PropertyDataType.OBJECT)) {
-						objQuery.put(propertyPrefix.concat(key.getPropertyName()), BasicDBObject.parse(value.toString()));
+						objQuery.put(propertyPrefix.concat(key.getPropertyName()),
+								BasicDBObject.parse(value.toString()));
 					} else {
 						objQuery.put(propertyPrefix.concat(key.getPropertyName()), value);
 					}
@@ -306,7 +315,7 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 				objQuery.put(propertyPrefix.concat(TIMESTAMP_PROPERTY), dInstance);
 
 				// Add stats if allowed
-				if (stats != null) {
+				if (timeseriesConfigData.getOntologyStats() != null) {
 					final BasicDBObject objStat = new BasicDBObject();
 					final ArrayList<BasicDBObject> tags = new ArrayList<>();
 					for (final Entry<OntologyTimeSeriesProperty, Object> tag : mTags.entrySet()) {
@@ -332,114 +341,116 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 					}
 					objStat.put("lastValue", lastValue);
 					final BasicDBObject sample = new BasicDBObject(statsPrefix, objStat);
-					mongoDbConnector.insert(database, stats.getIdentification(), sample);
+					mongoDbConnector.insert(database, timeseriesConfigData.getOntologyStats().getIdentification(), sample);
 				}
 
 				// Build update
 				final String update = buildUpdate(propertyPrefix, field, calendar, window, updateType);
-
-				log.debug("Try to update TimeSeries ontology {} for window {}", ontology,
+				if (log.isDebugEnabled()) {
+					log.debug("Try to update TimeSeries ontology {} for window {}", ontology,
 						window.getWindowType().name());
+				}				
 
 				// try to update the document --> Consider it exists, if not, it will be created
-				long nUpdated = mongoDbConnector.update(database, ontology, objQuery.toString(), update, false, false)
-						.getCount();
+				UpdateResult updated = mongoDbConnector.updateWithOriginalTemplateResult(database, ontology, objQuery.toString(),
+						update, false, false);
+				
+				if (updated.getModifiedCount() == 0 && updated.getModifiedCount() == 0) {
+					// Document does not exist, as no match has occured
+					log.debug("CREATING DOC TimeSeries ontology {} for window {}");
+					timeserieInstanceKey = new MongoDBTimeSeriesInstanceKey();
+					timeserieInstanceKey.setOntology(ontology);
+					timeserieInstanceKey.setSignal(field.getKey().getPropertyName());
+					timeserieInstanceKey.setTimestamp(dInstance);
+					timeserieInstanceKey.setWindow(window.getId());
+					final List<String> tags = new ArrayList<>();
+					for (final Entry<OntologyTimeSeriesProperty, Object> tag : mTags.entrySet()) {
+						final StringBuffer tagRecord = new StringBuffer().append(tag.getKey().getPropertyName())
+								.append(";").append(tag.getValue().toString());
+						tags.add(tagRecord.toString());
+					}
+					java.util.Collections.sort(tags);
+					timeserieInstanceKey.setTags(tags);
+					Thread currentThread = Thread.currentThread();// +UUID
 
-				if (nUpdated == 0) {// Check if exists and previously created. If not, Build the document
-					log.debug("Check if document exits for TimeSeries ontology {} for window {}", ontology,
-							window.getWindowType().name());
-					final boolean documentExists = mongoDbConnector
-							.find(database, ontology, objQuery, null, null, 0, 1, 10000).iterator().hasNext();
+					UUID uuid = UUID.randomUUID();
+					StringBuffer value = new StringBuffer().append(currentThread.toString())
+							.append(uuid.toString());
+					log.debug("TSCON1_NOUPDATE {}", timeserieInstanceKey.printkeys());
+					String retrievedValue = timeseriesUpdateTransactionMap.putIfAbsent(timeserieInstanceKey,
+							value.toString());
+					if (retrievedValue != null && !retrievedValue.equals(value.toString())) {
+						log.debug("COLISION, waiting TimeSeries ontology {} for window {}");
+						log.debug("TSCON1B_COLLISION {}", timeserieInstanceKey.printkeys());
+						// wait for T ms to retry
+						Long startTime = new Date().getTime();
 
-					if (!documentExists) {// Document not exists, create new one and insert it
-						log.debug("CREATING DOC TimeSeries ontology {} for window {}");
-						timeserieInstanceKey = new MongoDBTimeSeriesInstanceKey();
-						timeserieInstanceKey.setOntology(ontology);
-						timeserieInstanceKey.setSignal(field.getKey().getPropertyName());
-						timeserieInstanceKey.setTimestamp(dInstance);
-						timeserieInstanceKey.setWindow(window.getId());
-						final List<String> tags = new ArrayList<>();
-						for (final Entry<OntologyTimeSeriesProperty, Object> tag : mTags.entrySet()) {
-							final StringBuffer tagRecord = new StringBuffer().append(tag.getKey().getPropertyName())
-									.append(";").append(tag.getValue().toString());
-							tags.add(tagRecord.toString());
-						}
-						java.util.Collections.sort(tags);
-						timeserieInstanceKey.setTags(tags);
-						Thread currentThread = Thread.currentThread();// +UUID
+						do {
+							Thread.sleep(waitBetweenChecks);
+							retrievedValue = timeseriesUpdateTransactionMap.get(timeserieInstanceKey);
+						} while (startTime + waitChecksTimeout > new Date().getTime() && retrievedValue != null);
 
-						UUID uuid = UUID.randomUUID();
-						StringBuffer value = new StringBuffer().append(currentThread.toString())
-								.append(uuid.toString());
-						String retrievedValue = timeseriesUpdateTransactionMap.putIfAbsent(timeserieInstanceKey,
-								value.toString());
-						if (retrievedValue != null && !retrievedValue.equals(value.toString())) {
-							log.debug("COLISION, waiting TimeSeries ontology {} for window {}");
-							// wait for T ms to retry
-							Long startTime = new Date().getTime();
-
-							do {
-								Thread.sleep(waitBetweenChecks);
-								retrievedValue = timeseriesUpdateTransactionMap.get(timeserieInstanceKey);
-							} while (startTime + waitChecksTimeout > new Date().getTime() && retrievedValue != null);
-
-							if (retrievedValue != null) {
-								// if exists, then timeout has passed and we have to discard the record -> ERROR
-								// Throw timeout exception
+						if (retrievedValue != null) {
+							// if exists, then timeout has passed and we have to discard the record -> ERROR
+							// Throw timeout exception
+							final StringBuffer errorMessage = new StringBuffer();
+							errorMessage.append(
+									"Error while waiting blocking insert to resolve. Timeout elapsed. Ontology: ")
+									.append(ontology).append(" Field: ").append(timeserieInstanceKey.getSignal())
+									.append(" Timestamp: ").append(timeserieInstanceKey.getTimestamp());
+							log.error(errorMessage.toString());
+							throw new TimeSeriesInsertLockTimeoutException(errorMessage.toString());
+						} else {
+							// if not exists, then the other process has created the insert and we can
+							// update
+							updated = mongoDbConnector.updateWithOriginalTemplateResult(database, ontology, objQuery.toString(), update, false,
+									false);
+							log.debug("TSCON1B_COLLISION_UPDATED {}", timeserieInstanceKey.printkeys());
+							if (updated.getModifiedCount() == 0 && updated.getMatchedCount() == 0) {
+								// if no record matches, then the previous insert did fail and the
+								// document has not been persisted -> ERROR
+								// Throw unable to update exception
 								final StringBuffer errorMessage = new StringBuffer();
 								errorMessage.append(
-										"Error while waiting blocking insert to resolve. Timeout elapsed. Ontology: ")
+										"Error while waiting blocking insert to resolve. Unable to update. Ontology: ")
 										.append(ontology).append(" Field: ").append(timeserieInstanceKey.getSignal())
 										.append(" Timestamp: ").append(timeserieInstanceKey.getTimestamp());
 								log.error(errorMessage.toString());
-								throw new TimeSeriesInsertLockTimeoutException(errorMessage.toString());
-							} else {
-								// if not exists, then the other process has created the insert and we can
-								// update
-								nUpdated = mongoDbConnector
-										.update(database, ontology, objQuery.toString(), update, false, false)
-										.getCount();
-								if (nUpdated == 0) {
-									// if no record has been updated, then the previous insert did fail and the
-									// document has not been persisted -> ERROR
-									// Throw unable to update exception
-									final StringBuffer errorMessage = new StringBuffer();
-									errorMessage.append(
-											"Error while waiting blocking insert to resolve. Unable to update. Ontology: ")
-											.append(ontology).append(" Field: ")
-											.append(timeserieInstanceKey.getSignal()).append(" Timestamp: ")
-											.append(timeserieInstanceKey.getTimestamp());
-									log.error(errorMessage.toString());
-									throw new TimeSeriesUnableToUpdateException(errorMessage.toString());
-								}
-							}
-						} else {
-							// Retry update after locking key, in case any other thread did
-							// lock-insert-unlock between this update error and the pending insert
-							nUpdated = mongoDbConnector
-									.update(database, ontology, objQuery.toString(), update, false, false).getCount();
-							// if there was an updated record, an other thread would have created the key
-							// first between the first update fail and the lock of this thread
-							if (nUpdated == 0) {// Check if exists and previously created. If not, Build the
-												// document
-								log.debug("Check if document exits for TimeSeries ontology {} for window {}", ontology,
-										window.getWindowType().name());
-								final boolean documentExistsAgain = mongoDbConnector
-										.find(database, ontology, objQuery, null, null, 0, 1, 10000).iterator()
-										.hasNext();
-
-								if (!documentExistsAgain) {
-									final BasicDBObject timeIntance = buildDocument(rootElement, calendar, field,
-											dInstance, mTags, window, updateType == UPDATE_TYPE.SUM ? 0 : null);
-									mongoDbConnector.insert(database, ontology, timeIntance);
-									timeseriesUpdateTransactionMap.remove(timeserieInstanceKey);
-									log.debug("Created new document for TimeSeries ontology {} for window {}", ontology,
-											window.getWindowType().name());
-								}
+								throw new TimeSeriesUnableToUpdateException(errorMessage.toString());
 							}
 						}
+					} else {
+						log.debug("TSCON1A_UPDATE {}", timeserieInstanceKey.printkeys());
+						// Retry update after locking key, in case any other thread did
+						// lock-insert-unlock between this update error and the pending insert
+						updated = mongoDbConnector.updateWithOriginalTemplateResult(database, ontology, objQuery.toString(), update, false,
+								false);
+						// if there was an updated record, an other thread would have created the key
+						// first between the first update fail and the lock of this thread
+						if (updated.getModifiedCount() == 0 && updated.getMatchedCount() == 0) {// Check if exists and previously created. If not, Build the
+											// document
+							if (log.isDebugEnabled()) {
+								log.debug("Check if document exits for TimeSeries ontology {} for window {}", ontology,
+									window.getWindowType().name());
+								log.debug("TSCON1A_NOUPDATED {}", timeserieInstanceKey.printkeys());
+							}
 
+								final BasicDBObject timeIntance = buildDocument(rootElement, calendar, field, dInstance,
+										mTags, window, updateType == UPDATE_TYPE.SUM ? 0 : null);
+								mongoDbConnector.insert(database, ontology, timeIntance);
+								timeseriesUpdateTransactionMap.remove(timeserieInstanceKey);
+								if (log.isDebugEnabled()) {
+									log.debug("Created new document for TimeSeries ontology {} for window {}", ontology,
+										window.getWindowType().name());
+									log.debug("TSCON1A_INSERTED {}", timeserieInstanceKey.printkeys());
+								}
+						} else {
+							// TODO Delete this else after testing
+							timeseriesUpdateTransactionMap.remove(timeserieInstanceKey);
+							log.debug("TSCON1A_UPDATED {}", timeserieInstanceKey.printkeys());
+						}
 					}
+
 				}
 
 				final TimeSeriesResult partialResult = new TimeSeriesResult();
@@ -749,9 +760,9 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 			case SECONDS:
 				((Map<String, Object>) ((Map<String, Object>) vMeasures
 						.get(Integer.toString(calendar.get(Calendar.HOUR_OF_DAY))))
-								.get(Integer.toString(calendar.get(Calendar.MINUTE)))).put(Integer.toString(
-										calendar.get(Calendar.SECOND) - calendar.get(Calendar.SECOND) % frecuency),
-										value);
+						.get(Integer.toString(calendar.get(Calendar.MINUTE))))
+						.put(Integer.toString(
+								calendar.get(Calendar.SECOND) - calendar.get(Calendar.SECOND) % frecuency), value);
 
 				break;
 
@@ -776,19 +787,19 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 			case SECONDS:
 				((Map<String, Object>) ((Map<String, Object>) ((Map<String, Object>) vMeasures
 						.get(Integer.toString(calendar.get(Calendar.DAY_OF_MONTH))))
-								.get(Integer.toString(calendar.get(Calendar.HOUR_OF_DAY))))
-										.get(Integer.toString(calendar.get(Calendar.MINUTE))))
-												.put(Integer.toString(calendar.get(Calendar.SECOND)
-														- calendar.get(Calendar.SECOND) % frecuency), value);
+						.get(Integer.toString(calendar.get(Calendar.HOUR_OF_DAY))))
+						.get(Integer.toString(calendar.get(Calendar.MINUTE))))
+						.put(Integer.toString(
+								calendar.get(Calendar.SECOND) - calendar.get(Calendar.SECOND) % frecuency), value);
 
 				break;
 
 			case MINUTES:
 				((Map<String, Object>) ((Map<String, Object>) vMeasures
 						.get(Integer.toString(calendar.get(Calendar.DAY_OF_MONTH))))
-								.get(Integer.toString(calendar.get(Calendar.HOUR_OF_DAY)))).put(Integer.toString(
-										calendar.get(Calendar.MINUTE) - calendar.get(Calendar.MINUTE) % frecuency),
-										value);
+						.get(Integer.toString(calendar.get(Calendar.HOUR_OF_DAY))))
+						.put(Integer.toString(
+								calendar.get(Calendar.MINUTE) - calendar.get(Calendar.MINUTE) % frecuency), value);
 				break;
 			case HOURS:
 				((Map<String, Object>) vMeasures.get(Integer.toString(calendar.get(Calendar.DAY_OF_MONTH)))).put(
@@ -811,28 +822,29 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 			case SECONDS:
 				((Map<String, Object>) ((Map<String, Object>) ((Map<String, Object>) ((Map<String, Object>) vMeasures
 						.get(Integer.toString(calendar.get(Calendar.MONTH) + 1)))
-								.get(Integer.toString(calendar.get(Calendar.DAY_OF_MONTH))))
-										.get(Integer.toString(calendar.get(Calendar.HOUR_OF_DAY))))
-												.get(Integer.toString(calendar.get(Calendar.MINUTE))))
-														.put(Integer.toString(calendar.get(Calendar.SECOND)
-																- calendar.get(Calendar.SECOND) % frecuency), value);
+						.get(Integer.toString(calendar.get(Calendar.DAY_OF_MONTH))))
+						.get(Integer.toString(calendar.get(Calendar.HOUR_OF_DAY))))
+						.get(Integer.toString(calendar.get(Calendar.MINUTE))))
+						.put(Integer.toString(
+								calendar.get(Calendar.SECOND) - calendar.get(Calendar.SECOND) % frecuency), value);
 
 				break;
 
 			case MINUTES:
 				((Map<String, Object>) ((Map<String, Object>) ((Map<String, Object>) vMeasures
 						.get(Integer.toString(calendar.get(Calendar.MONTH) + 1)))
-								.get(Integer.toString(calendar.get(Calendar.DAY_OF_MONTH))))
-										.get(Integer.toString(calendar.get(Calendar.HOUR_OF_DAY))))
-												.put(Integer.toString(calendar.get(Calendar.MINUTE)
-														- calendar.get(Calendar.MINUTE) % frecuency), value);
+						.get(Integer.toString(calendar.get(Calendar.DAY_OF_MONTH))))
+						.get(Integer.toString(calendar.get(Calendar.HOUR_OF_DAY))))
+						.put(Integer.toString(
+								calendar.get(Calendar.MINUTE) - calendar.get(Calendar.MINUTE) % frecuency), value);
 				break;
 			case HOURS:
 				((Map<String, Object>) ((Map<String, Object>) vMeasures
 						.get(Integer.toString(calendar.get(Calendar.MONTH) + 1)))
-								.get(Integer.toString(calendar.get(Calendar.DAY_OF_MONTH))))
-										.put(Integer.toString(calendar.get(Calendar.HOUR_OF_DAY)
-												- calendar.get(Calendar.HOUR_OF_DAY) % frecuency), value);
+						.get(Integer.toString(calendar.get(Calendar.DAY_OF_MONTH))))
+						.put(Integer.toString(
+								calendar.get(Calendar.HOUR_OF_DAY) - calendar.get(Calendar.HOUR_OF_DAY) % frecuency),
+								value);
 				break;
 			case DAYS:
 				((Map<String, Object>) vMeasures.get(Integer.toString(calendar.get(Calendar.MONTH) + 1))).put(
@@ -952,6 +964,21 @@ public class MongoDBTimeSeriesProcessorImpl implements MongoDBTimeSeriesProcesso
 			base = rootElement.get() + ".";
 		}
 		return base;
+	}
+	
+
+	private TimeseriesConfigData getTimeseriesConfigData(String ontology) {
+		TimeseriesConfigData result = timeseriesConfigData.get(ontology);
+		if (result == null || result.getCreationTimestamp() + timeseriesConfigTtl < System.currentTimeMillis()) {
+			// refresh al data
+			result = new TimeseriesConfigData();
+			result.setProperties(ontologyTimeSeriesPropertyRepository.findByOntologyIdentificaton(ontology));
+			result.setWindows(ontologyTimeSeriesWindowRepository.findByOntologyIdentificaton(ontology));
+			result.setOntologyStats(ontologyRepository.findByIdentification(ontology + "_stats"));
+			result.setCreationTimestamp(System.currentTimeMillis());
+			timeseriesConfigData.put(ontology, result);
+		}
+		return result;
 	}
 
 }

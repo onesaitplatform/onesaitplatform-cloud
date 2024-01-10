@@ -170,7 +170,7 @@
 														<th dt:sortInitDirection="dsc" dt:sortInitOrder="1" class="titulo-columnas text-left" th:text="#{gen.type}">Type</th>
 														<th class="titulo-columnas text-left"><span th:text="#{gen.description}"> Description </span></th>
 														<th class="titulo-columnas text-left"><span th:text="#{app.realm}"> Realm </span></th>
-														<th class="titulo-columnas text-left"><span	th:text="#{marketasset.webproject}">Webproject </span></th>
+														<th class="titulo-columnas text-left"><span	th:text="#{gen.webproject}">Webproject </span></th>
 														<th class="titulo-columnas text-left"><span	th:text="#{gen.created}"> Created At </span></th>
 														<th class="titulo-columnas text-left"><span th:text="#{gen.updated}"> Updated At </span></th>
 														<th class="titulo-columnas text-center" style="width:85px;"></th>
@@ -398,13 +398,14 @@
 
 		// SEARCH FORM RESET
 		$('#reset_project').on('click',function(){
-			$('#project-name').val('');
-			$('#projects').DataTable().column(0).search('').draw();
+			$('#form_project')[0].reset();
+			$('#form_project')[0].submit();
 		});
 
 		// SEARCH FORM
 		$('#search_project').on('click',function(){
-			$('#projects').DataTable().column(0).search( $('#project-name').val()).draw();
+			$('#projects').DataTable().column(1).search($('#project-name').val()).draw();
+			
 		});
 
 		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);

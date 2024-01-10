@@ -166,7 +166,7 @@
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
-																	<th:block th:if="${predictor.status != 'complete'}">
+																	<th:block th:if="${predictor.status != 'complete' && predictor.status != 'error'}">
 																		<!-- VIEW -->															
 																		<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips disabled" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" ><i class="la la-eye font-hg"></i></span>
 																																																				
@@ -176,6 +176,17 @@
 																		<span  class="btn btn-xs btn-no-border icon-on-table color-blue tooltips disabled" data-container="body" data-placement="bottom" th:title="#{predictor.downloadcode}" th:data-original-title="#{predictor.downloadcode}" ><i class="la la-download font-lg"></i></span>
 																		
 																		<span  class="btn btn-xs btn-no-border icon-on-table tooltips color-red disabled"  data-container="body" data-placement="bottom"  th:title="#{gen.deleteBtn}" th:data-original-title="#{gen.deleteBtn}"><i class="icon-delete"></i></span>
+																	</th:block>
+																	<th:block th:if="${predictor.status == 'error'}">
+																		<!-- VIEW -->															
+																		<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips disabled" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" ><i class="la la-eye font-hg"></i></span>
+																																																				
+																		<!-- RETRAIN -->
+																		<span  class="btn btn-xs btn-no-border icon-on-table color-blue tooltips disabled" data-container="body" data-placement="bottom" th:title="#{predictor.retrain}" th:data-original-title="#{predictor.retrain}"><i class="la la-redo-alt font-lg"></i></span>
+																		<!-- DOWNLOAD CODE -->
+																		<span  class="btn btn-xs btn-no-border icon-on-table color-blue tooltips disabled" data-container="body" data-placement="bottom" th:title="#{predictor.downloadcode}" th:data-original-title="#{predictor.downloadcode}" ><i class="la la-download font-lg"></i></span>
+																		
+																		<span  class="btn btn-xs btn-no-border icon-on-table tooltips color-red"  data-container="body" data-placement="bottom"  th:title="#{gen.deleteBtn}" th:data-original-title="#{gen.deleteBtn}" th:attr="onclick='deletePredictor(\'' + ${predictor.name} + '\',\''+ ${predictor.connName} +'\');'"><i class="icon-delete"></i></span>
 																	</th:block>
 																	<th:block th:if="${predictor.status == 'complete'}">
 																		<!-- VIEW -->															

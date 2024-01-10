@@ -143,7 +143,7 @@ public class UpdateProcessor implements MessageTypeProcessor {
 				responseMessage.getBody().setData(objectMapper.readTree("{\"id\":\"" + sequenceNumber + "\"}"));
 			}
 		} catch (final Exception e) {
-			log.error("Error in process:" + e.getMessage());
+			log.error("Error in process:{}", e.getMessage());
 			final String error = MessageException.ERR_DATABASE;
 			responseMessage = SSAPUtils.generateErrorMessage(updateMessage, SSAPErrorCode.PROCESSOR, error);
 			if (messageStr != null) {
@@ -227,7 +227,7 @@ public class UpdateProcessor implements MessageTypeProcessor {
 			}
 
 		} catch (final Exception e) {
-			log.error("Error in process:" + e.getMessage());
+			log.error("Error in process:{}", e.getMessage());
 			final String error = MessageException.ERR_DATABASE;
 			responseMessage = SSAPUtils.generateErrorMessage(updateMessage, SSAPErrorCode.PROCESSOR, error);
 			if (messageStr != null) {

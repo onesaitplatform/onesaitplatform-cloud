@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.persistence.mongodb.index;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import org.bson.Document;
 
@@ -78,6 +79,10 @@ public class MongoDbIndex {
 			indexOptions.sparse(index_asDocument.getBoolean("sparse"));
 		if (index_asDocument.getBoolean("background") != null)
 			indexOptions.background(index_asDocument.getBoolean("background"));
+		if (index_asDocument.getInteger("expireAfterSeconds") != null)
+			indexOptions.expireAfter(index_asDocument.getInteger("expireAfterSeconds").longValue(), TimeUnit.SECONDS);
+		
+		
 		index.setIndexOptions(indexOptions);
 		return index;
 	}

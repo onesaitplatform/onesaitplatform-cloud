@@ -318,6 +318,77 @@
 				return '<span class="' + cls + '">' + match + '</span>';
 			});
 		};
+		
+		var aiPrevText = "";
+		
+		function textToSQL(callback) {
+			aiPrevText = $("#textToSQL").val()
+			fetch("/controlpanel/api/ai/textToSQL",
+				{
+				    method: "POST",
+				    body: aiPrevText,
+				    headers: {
+				  	  'Accept': 'text/plain',
+				   	  'Content-Type': 'text/plain'
+				  	}
+				})
+				.then(function(res){
+					if (res.ok) {
+						return res.text();
+					} else {
+						showErrorNoToken();
+					}
+				})
+				.then(function(text){
+					if (text) {
+						$('#querySql').innerHTML = text;  
+					   	setMonacoValue(text);
+					   	if (callback) {
+							callback();
+						}
+					}
+				})
+		}
+		
+		var showDialogTextToSQL = function(){
+				$.confirm({
+					title: ai.sqltitle,
+					theme: 'light',
+					columnClass: 'medium',
+					content: "<textarea id='textToSQL' style='height:200px;width:100%' placeholder='" + ai.sqlinserttext + "'>" + aiPrevText + "</textarea >",
+					draggable: true,
+					dragWindowGap: 100,
+					backgroundDismiss: true,
+					onContentReady: function () {
+					},
+					buttons: {
+						"close": {
+							text: "Close",
+							btnClass: 'btn btn-outline blue dialog',
+							action: function (){} //GENERIC CLOSE.
+						},
+						"To_SQL": {
+							text: "To SQL",
+							btnClass: 'btn btn-primary',
+							action: function (){
+								textToSQL();
+							}
+						},
+						"To_SQL_Execute": {
+							text: "To SQL & Execute",
+							btnClass: 'btn btn-primary',
+							action: function() {
+								textToSQL(getQueryExecutedFragment);
+							}
+						}
+					}
+				});
+				window.setTimeout(function() {
+					document.getElementById("textToSQL").focus();
+				},0)
+				
+			}
+		
 		//]]>
 		</script>
 		
@@ -614,11 +685,12 @@ pre {
 														
 														</div>
 														
-													</div>	
-													<div class="panelHeader col-md-12 col-sm-12 col-xs-12">										
-												<div style="height:200px; resize: vertical; overflow: auto;" id="querySql"></div>
-												</div> 	
-												</div> 
+													</div>
+													<div class="panelHeader col-md-12 col-sm-12 col-xs-12">
+														<img class="ailogobutton" height="50" width="50" src="/controlpanel/static/img/ailogo.png" onclick="showDialogTextToSQL()"/>
+														<div style="height:200px; resize: vertical; overflow: auto;" id="querySql"></div>
+													</div> 	
+												</t>
 											</div>
 										</div>								
 									</div>
@@ -2083,6 +2155,10 @@ pre {
 		"close" : [[#{gen.closeBtn}]],		
 		"language" : currentLanguage		
 	};
+	var ai = {
+		sqltitle: [[#{ai.sql.title}]],
+		sqlinserttext: [[#{ai.sql.insertquery.text}]]
+	}
 						
 	// LOAD DATA TO USE IN BDTRCONTROLLER
 	// BDTR CONTROLLER LOAD AND INIT ITSELF

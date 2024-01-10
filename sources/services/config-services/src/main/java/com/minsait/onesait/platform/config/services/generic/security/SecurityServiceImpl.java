@@ -113,8 +113,9 @@ public class SecurityServiceImpl implements SecurityService {
 		final Map<String, String> elemAccessMap = new HashMap<>();
 		final Class<?> entityUserAccessClass = getEntityClass(String.format(ENTITY_USER_ACCESS, type));
 		if (entityUserAccessClass == null) {// Not entity UserAccess Found for element security so we skip this
-			log.debug("Not entity UserAccess found: " + String.format(ENTITY_USER_ACCESS, type)
-					+ ", skipping this security control");
+			if (log.isDebugEnabled()) {
+				log.debug("Not entity UserAccess found: {}, skipping this security control", String.format(ENTITY_USER_ACCESS, type));
+			}			
 		} else {
 			final Repositories repositories = new Repositories(listableBeanFactory);
 			Object repositoryUserAccessBean;

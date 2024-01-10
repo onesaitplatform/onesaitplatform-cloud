@@ -74,4 +74,6 @@ public interface MSAService {
 			String multitenantAPIKey, Map<String, Boolean> verticalCreation);
 
 	public boolean supports(CaaS caas);
+
+	public String getCurrentDockerImage(Microservice microservice, String openshiftNamespace);
 }

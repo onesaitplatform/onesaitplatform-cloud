@@ -99,7 +99,9 @@ public class Sql2NativeTool {
 	// }
 
 	public static String translateSql(String query) {
-		log.debug("Query to be translated {}", query);
+		if (log.isDebugEnabled()) {
+			log.debug("Query to be translated {}", query);
+		}		
 		String result = null;
 		try {
 			if (query.trim().toLowerCase().startsWith(UPDATE)) {
@@ -144,14 +146,14 @@ public class Sql2NativeTool {
 			log.error("Error executing query", e);
 
 			throw new DBPersistenceException(
-					"{\"error\": \"Syntax Error. try the following Syntax-> SELECT * FROM table_name WHERE condition;\" }");
+					"{\"error\": \"Syntax Error. try the following Syntax-> SELECT * FROM table_name WHERE condition;\" }",e);
 
 		} catch (final DBPersistenceException e) {
 			log.error("Error executing query", e);
 			throw e;
 		} catch (final Exception e) {
 			log.error("Error executing query", e);
-			throw new DBPersistenceException("Invalid SQL Syntax");
+			throw new DBPersistenceException("Invalid SQL Syntax", e);
 		}
 
 		return result;
@@ -172,7 +174,7 @@ public class Sql2NativeTool {
 			}
 			return translatedQueries;
 		} catch (final JSQLParserException | ParseException e) {
-			throw new DBPersistenceException("Invalid SQL syntax");
+			throw new DBPersistenceException("Invalid SQL syntax", e);
 		}
 	}
 

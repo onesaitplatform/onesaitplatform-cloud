@@ -35,6 +35,8 @@ public interface VirtualOntologyOpsDBRepository extends BasicOpsDBRepository {
 
 	public List<String> getTables(String datasource, String database, String schema);
 	
+	public List<Map<String, Object>> getTableInformation(String datasource, String database, String schema);
+	
 	/**
 	 * Returns the first element of the table. Used to generate document schemas.
 	 * @param datasource
@@ -57,4 +59,5 @@ public interface VirtualOntologyOpsDBRepository extends BasicOpsDBRepository {
 
 	public List<String> getStringSupportedConstraintTypes();
 
+	List<Map<String, Object>> getTablePKInformation(String datasourceName, String database, String schema);
 }

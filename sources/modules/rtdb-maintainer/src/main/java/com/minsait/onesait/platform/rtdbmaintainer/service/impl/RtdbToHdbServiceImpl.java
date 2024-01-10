@@ -60,7 +60,10 @@ public class RtdbToHdbServiceImpl implements RtdbToHdbService {
 				binaryFile.setUser(ontology.getUser());
 				binaryFileService.createBinaryFile(binaryFile);
 				final boolean delete = file.delete();
-				log.debug("delete:" + delete);
+				if (log.isDebugEnabled()) {
+					log.debug("delete:{}", delete);
+				}
+				
 			} catch (FileNotFoundException | BinaryRepositoryException e) {
 				log.error("Could not store file {} on Binary Repository: {}", file.getName(), e.getMessage());
 			}
@@ -88,7 +91,10 @@ public class RtdbToHdbServiceImpl implements RtdbToHdbService {
 		final File file = new File(exportData.getPath());
 		if (file.exists()) {
 			final boolean delete = file.delete();
-			log.debug("delete:" + delete);
+			if (log.isDebugEnabled()) {
+				log.debug("delete:{}", delete);
+			}
+			
 		}
 	}
 }

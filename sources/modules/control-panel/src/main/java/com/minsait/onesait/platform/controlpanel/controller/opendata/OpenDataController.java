@@ -199,7 +199,9 @@ public class OpenDataController {
 						return "redirect:" + openDataUrl;
 
 					} else {// There is a previous request in flight
-						log.debug("There is a previous request to create a user using email: {}", user.getEmail());
+						if (log.isDebugEnabled()) {
+							log.debug("There is a previous request to create a user using email: {}", user.getEmail());
+						}
 						utils.addRedirectMessage("user.create.mail.inflight", redirectAttributes);
 						return REDIRECT_REGISTER;
 					}

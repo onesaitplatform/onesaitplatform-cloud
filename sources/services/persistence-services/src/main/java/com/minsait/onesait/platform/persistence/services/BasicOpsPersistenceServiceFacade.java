@@ -15,6 +15,7 @@
 package com.minsait.onesait.platform.persistence.services;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -232,5 +233,4 @@ public class BasicOpsPersistenceServiceFacade implements BasicOpsDBRepository, N
 	public ComplexWriteResult updateBulk(String collection, String queries, boolean includeIds) {
 		return basicOpsDBRepositoryFactory.getInstance(collection).updateBulk(collection, queries, includeIds);
 	}
-
 }

@@ -25,24 +25,25 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
+import org.camunda.bpm.engine.IdentityService;
 import org.camunda.bpm.engine.ProcessEngine;
+import org.camunda.bpm.engine.identity.Tenant;
 import org.camunda.bpm.engine.rest.util.EngineUtil;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.minsait.onesait.platform.bpm.util.RoleConverterUtil;
-import com.minsait.onesait.platform.config.services.bpm.BPMTenantService;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class StatelessUserAuthenticationFilter implements Filter {
 
-	private final BPMTenantService bpmTenantService;
+	private final IdentityService identityService;
 
-	public StatelessUserAuthenticationFilter(BPMTenantService bpmTenantService) {
-		this.bpmTenantService = bpmTenantService;
+	public StatelessUserAuthenticationFilter(IdentityService identityService) {
+		this.identityService = identityService;
 	}
 
 	@Override
@@ -68,10 +69,11 @@ public class StatelessUserAuthenticationFilter implements Filter {
 		}
 
 		try {
-			engine.getIdentityService().setAuthentication(username, getUserGroups(),
-					bpmTenantService.getTenantNamesForUser(username));
+			engine.getIdentityService().setAuthentication(username, getUserGroups(), identityService.createTenantQuery()
+					.userMember(username).list().stream().map(Tenant::getId).toList());
 			log.info("Authentication success webapp ROLE: {}, TENANTS: {}", String.join(",", getUserGroups()),
-					String.join(",", bpmTenantService.getTenantNamesForUser(username)));
+					String.join(",", identityService.createTenantQuery().userMember(username).list().stream()
+							.map(Tenant::getId).toList()));
 			chain.doFilter(request, response);
 		} finally {
 			clearAuthentication(engine);

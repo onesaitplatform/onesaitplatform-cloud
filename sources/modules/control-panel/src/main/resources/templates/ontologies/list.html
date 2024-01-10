@@ -168,7 +168,7 @@
 									<div id="contenedor-tabla-outside" class="contiene hidden">
 										<div>
 											<!-- DATATABLE DANDELION CONF.  -->
-											<table id="ontologies" class="table table-hover table-striped"   dt:table="true" dt:paginationtype="full">
+											<table id="ontologies" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
 												<thead>
 													<tr class="cabecera-tabla">
 														<th class="titulo-columnas text-left" th:text="#{gen.id}">Id</th>
@@ -254,7 +254,7 @@
 
 																	<ul  th:if="(${ontology.isAuthorizationsPermissions} == 'ALL')" class="dropdown-menu dropdown-menu-table download-menu">
 																		<!-- BEGIN APIS -->
-
+																			
 																		<li>
 																			<!-- CLONE -->
 																			<span th:if="(${ontology.isAuthorizationsPermissions} == 'ALL')" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" ><i class="icon-clone" th:attr="onclick='javascript:cloneOntology(\''+${ontology.id}+'\',false)'"></i><span class="span-title-three-dots-icons" th:text="#{gen.clone}" th:attr="onclick='javascript:cloneOntology(\''+${ontology.id}+'\',false)'">CLONE</span></span>
@@ -271,6 +271,7 @@
 																			</th:block>
 																		</li>
 																		<li>
+																		
 																			<!-- START/STOP/EXECUTE -->
 																			<span  th:if="${ontology.ontologyKPI} !=null  AND ${ontology.ontologyKPI.active}" class="btn btn-xs btn-circle btn-outline no-border" data-container="body" data-placement="bottom"  th:attr="onclick='javascript:startStopKPI(\'' + ${ontology.id} + '\');'"><i class="icon-stop"></i> <span class="span-title-three-dots-icons" th:text="#{gen.stop}" >STOP</span></span>
 																			<span  th:if="${ontology.ontologyKPI} !=null  AND !${ontology.ontologyKPI.active}" class="btn btn-xs btn-circle btn-outline no-border" data-container="body" data-placement="bottom"  th:attr="onclick='javascript:startStopKPI(\'' + ${ontology.id} + '\');'"><i class="icon-play"></i> <span class="span-title-three-dots-icons" th:text="#{gen.play}" >PLAY</span></span>
@@ -282,7 +283,8 @@
 																			<span class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" ><i class="icon-url" th:attr="onclick='javascript:navigateUrl(\'' + @{|/ontologies/statistics/${ontology.identification}/|} + '\');'"></i><span class="span-title-three-dots-icons" th:text="#{ontology.statistics}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/ontologies/statistics/${ontology.identification}/|} + '\');'" >Statistics</span></span>
 																		</li>
 																		<li>
-																			<!-- DELETE -->
+																		
+																		<!-- DELETE -->
 																		    <span th:if="${#authentication.name} == ${ontology.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline color-red"  data-container="body" data-placement="bottom"  th:attr="onclick='deleteOntology(\'' + ${ontology.id} + '\');'"><i class="icon-delete"></i>  <span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >DELETE</span></span>
 																		</li>
 																	</ul>

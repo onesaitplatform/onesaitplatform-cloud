@@ -16,8 +16,13 @@ package com.minsait.onesait.platform.business.services.cache;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +48,10 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class CacheBusinessServiceImpl implements CacheBusinessService {
-
+	
+	@Autowired
+	private CacheBusinessService cacheBS;
+	
 	@Autowired
 	private CacheService cacheService;
 
@@ -181,10 +189,40 @@ public class CacheBusinessServiceImpl implements CacheBusinessService {
 	public <K, V> void putIntoMap(String identification, K key, V value, User user)
 			throws CacheBusinessServiceException {
 		final Cache cacheCnf = cacheService.getCacheConfiguration(identification, user);
-
+		 Map<String, String> values = cacheBS.getAllFromMap(identification, user);
+		 
 		if (cacheCnf != null) {
-			hazelcastInstance.<K, V>getMap(Tenant2SchemaMapper.getCachePrefix() + cacheCnf.getIdentification()).put(key,
-					value);
+			
+			if((cacheCnf.getSize() > values.size()) || values.containsKey(key)) {
+				hazelcastInstance.<K, V>getMap(Tenant2SchemaMapper.getCachePrefix() + cacheCnf.getIdentification()).put(key,
+				value);	
+			} else {
+				
+				List<String> keysList = new ArrayList<>(values.keySet());
+				String searchKey = key.toString();
+				switch (cacheCnf.getEvictionPolicy().name()) {
+					case "LRU": {
+						searchKey = keysList.get(0);
+						  break;
+					}
+					case "LFU": {
+						searchKey = keysList.get(keysList.size() - 1);
+						  break;
+					}
+					case "RANDOM": {
+						Random random = new Random();
+				        int randomIndex = random.nextInt(keysList.size());
+				        searchKey = keysList.get(randomIndex);
+				        break;
+					}
+				}
+				
+				hazelcastInstance.<K, V>getMap(Tenant2SchemaMapper.getCachePrefix() + cacheCnf.getIdentification()).remove(searchKey);
+				hazelcastInstance.<K, V>getMap(Tenant2SchemaMapper.getCachePrefix() + cacheCnf.getIdentification()).put(key,
+						value);
+				
+			}
+			
 		} else {
 			throw new CacheBusinessServiceException(CacheBusinessServiceException.Error.CACHE_DOES_NOT_EXIST,
 					MSG_NOT_EXIST_HEADER + identification + MSG_NOT_EXIST_FOOTER);
@@ -194,16 +232,85 @@ public class CacheBusinessServiceImpl implements CacheBusinessService {
 	@Override
 	public <K, V> void putAllIntoMap(String identification, Map<K, V> map, User user)
 			throws CacheBusinessServiceException {
-		final Cache cacheCnf = cacheService.getCacheConfiguration(identification, user);
+		
+		 final Cache cacheCnf = cacheService.getCacheConfiguration(identification, user);
+		 Map<String, String> values = cacheBS.getAllFromMap(identification, user);
+		 
+		
+		 Map<String, String> totalValues = new HashMap<>();
+		 totalValues.putAll(values);
+		 totalValues.putAll((Map<String, String>) map);
+		 
+	     Integer totalNoRep = totalValues.size();
+	     Integer additionalCacheNeeded =  totalNoRep - cacheCnf.getSize();
 
-		if (cacheCnf != null) {
-			hazelcastInstance.<K, V>getMap(Tenant2SchemaMapper.getCachePrefix() + cacheCnf.getIdentification())
-			.putAll(map);
-		} else {
-			throw new CacheBusinessServiceException(CacheBusinessServiceException.Error.CACHE_DOES_NOT_EXIST,
-					MSG_NOT_EXIST_HEADER + identification + MSG_NOT_EXIST_FOOTER);
-		}
+	     List<String>  keysList = new ArrayList<>(totalValues.keySet());
+		 String searchKey = "";
+		 
+		 HashSet keysDistinct = new HashSet<>(map.keySet());
+         keysDistinct.addAll(values.keySet());
+         keysDistinct.removeAll(map.keySet());
 
+		 
+	     if(additionalCacheNeeded > 0){
+	    	 
+	    	 additionalCacheNeeded = Math.abs(additionalCacheNeeded - keysDistinct.size());
+	    
+	    	 if(keysDistinct.size() != 0) {
+	    		 Iterator iterator = keysDistinct.iterator();
+	    		 for (int i = 0; i <= additionalCacheNeeded; i++) {
+		    		 Object key = iterator.next();
+		    		 hazelcastInstance.<K, V>getMap(Tenant2SchemaMapper.getCachePrefix() + cacheCnf.getIdentification()).remove(key);
+		    		 totalValues.remove(key);
+	    		 }
+	    		 hazelcastInstance.<K, V>getMap(Tenant2SchemaMapper.getCachePrefix() + cacheCnf.getIdentification()).putAll((Map<K, V>)totalValues);
+	    	 }
+	    	 
+	    	 
+			 if(totalValues.size() > cacheCnf.getSize()) {
+				 Integer cacheEvictionNumber = totalValues.size() - cacheCnf.getSize();
+				 switch (cacheCnf.getEvictionPolicy().name()) {
+					case "LRU":{
+						for(int i = 0; i < cacheEvictionNumber; i++ ) {
+							searchKey = keysList.get(i);
+							totalValues.remove(searchKey);
+							if( values.containsKey(searchKey)) {
+								 hazelcastInstance.<K, V>getMap(Tenant2SchemaMapper.getCachePrefix() + cacheCnf.getIdentification()).remove(searchKey);
+							 }
+						}
+						break;
+					}
+					case "LFU": {
+						for(int i = 0; i < cacheEvictionNumber; i++ ) {
+							 searchKey = keysList.get(keysList.size() - 1);
+							 totalValues.remove(searchKey);
+							 if(values.containsKey(searchKey)) {
+								 hazelcastInstance.<K, V>getMap(Tenant2SchemaMapper.getCachePrefix() + cacheCnf.getIdentification()).remove(searchKey);
+							 }
+						}
+						break;
+					}
+					case "RANDOM": {
+						for(int i = 0; i < cacheEvictionNumber; i++ ) {
+							
+							Random random = new Random();
+					        int randomIndex = random.nextInt(keysList.size());
+					        searchKey = keysList.get(randomIndex);
+					        totalValues.remove(searchKey);
+					        if( values.containsKey(searchKey)) {
+					        	hazelcastInstance.<K, V>getMap(Tenant2SchemaMapper.getCachePrefix() + cacheCnf.getIdentification()).remove(searchKey);
+							 }
+						}
+						break;
+					}
+				}
+				hazelcastInstance.<K, V>getMap(Tenant2SchemaMapper.getCachePrefix() + cacheCnf.getIdentification()).putAll((Map<K, V>)totalValues);				 
+			 }
+			
+		}else{	
+		 hazelcastInstance.<K, V>getMap(Tenant2SchemaMapper.getCachePrefix() + cacheCnf.getIdentification())
+		 .putAll(map);
+		}				
 	}
 
 	@Override
@@ -247,13 +354,54 @@ public class CacheBusinessServiceImpl implements CacheBusinessService {
 	}
 
 	@Override
-	public void updateCache(String identification, Cache editCache) {
+	public void updateCache(String identification, Cache editCache, User user) throws CacheBusinessServiceException {
 		final Cache cache = cacheRepository.findCacheByIdentification(identification);
-		if (cache != null) {
+		 Map<String, String> values = cacheBS.getAllFromMap(identification, user);
+		 List<String> keysList = new ArrayList<>(values.keySet());
+		 String searchKey = "";
+		 
+		 if (cache != null) {
 			cache.setType(editCache.getType());
 			cache.setEvictionPolicy(editCache.getEvictionPolicy());
 			cache.setMaxSizePolicy(editCache.getMaxSizePolicy());
-			cache.setSize(editCache.getSize());
+			
+			if(cache.getSize() <= editCache.getSize() || editCache.getSize() >= values.size()) {
+				cache.setSize(editCache.getSize());
+				
+			}else {
+			
+			Integer	totalDeleteCache = values.size() - editCache.getSize();
+				switch (cache.getEvictionPolicy().name()) {
+				case "LRU": {
+					for(int i = 0; i < totalDeleteCache; i++ ) {
+						searchKey = keysList.get(i);
+						hazelcastInstance.getMap(Tenant2SchemaMapper.getCachePrefix() + identification).remove(searchKey);
+					}
+					break;
+				}
+				case "LFU": {
+					for(int i = 0; i < totalDeleteCache; i++ ) {
+						searchKey = keysList.get(keysList.size() - 1);
+						keysList.remove(searchKey);
+						hazelcastInstance.getMap(Tenant2SchemaMapper.getCachePrefix() + identification).remove(searchKey);
+					}
+					break;
+				}
+				case "RANDOM": {
+					for(int i = 0; i < totalDeleteCache; i++ ) {
+						Random random = new Random();
+				        int randomIndex = random.nextInt(keysList.size());
+				        searchKey = keysList.get(randomIndex);
+				        keysList.remove(searchKey);
+				        hazelcastInstance.getMap(Tenant2SchemaMapper.getCachePrefix() + identification).remove(searchKey);
+					}
+			        break;
+				}
+			}
+			
+				cache.setSize(editCache.getSize());
+			}
+			
 			cacheRepository.save(cache);
 		}
 	}

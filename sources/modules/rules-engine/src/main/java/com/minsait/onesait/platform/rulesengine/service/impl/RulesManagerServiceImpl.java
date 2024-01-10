@@ -47,7 +47,9 @@ public class RulesManagerServiceImpl implements RulesManagerService {
 
 	@Override
 	public void manageRule(HazelcastRuleObject rule) {
-		log.debug("Managing changes for rule {} of user {}", rule.getIdentification(), rule.getUserId());
+		if (log.isDebugEnabled()) {
+			log.debug("Managing changes for rule {} of user {}", rule.getIdentification(), rule.getUserId());
+		}		
 		final DroolsRule droolsRule = droolsRuleService.getRule(rule.getIdentification());
 		if (droolsRule == null && StringUtils.isEmpty(rule.getDRL()) && rule.getDecisionTable() == null)
 			kieServicesManager.removeRule(rule.getUserId(), rule.getIdentification(), rule.getExtension());
@@ -68,7 +70,9 @@ public class RulesManagerServiceImpl implements RulesManagerService {
 
 	@Override
 	public void manageDomain(HazelcastRuleDomainObject domain) {
-		log.debug("Manging changes for rule domain of user {}", domain.getUserId());
+		if (log.isDebugEnabled()) {
+			log.debug("Manging changes for rule domain of user {}", domain.getUserId());
+		}		
 		final DroolsRuleDomain droolsDomain = droolsRuleService.getDomain(domain.getId());
 		if (droolsDomain == null || !droolsDomain.isActive())
 			kieServicesManager.removeServices(domain.getUserId());

@@ -43,7 +43,7 @@ public class OntologyTimeSeriesProperty extends AuditableEntityWithUUID {
 	}
 
 	public enum PropertyDataType {
-		STRING, INTEGER, NUMBER, OBJECT, ARRAY, TIMESTAMP
+		STRING, INTEGER, NUMBER, OBJECT, ARRAY, TIMESTAMP, BOOLEAN
 	}
 
 	public enum AggregationFunction {

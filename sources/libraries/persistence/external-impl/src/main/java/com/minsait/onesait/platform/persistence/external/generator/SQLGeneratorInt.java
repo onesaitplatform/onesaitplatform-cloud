@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.persistence.external.generator;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.DeleteStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.DropStatement;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.GetIndexStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.InsertStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.PreparedStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.SelectStatement;
@@ -35,6 +36,8 @@ public interface SQLGeneratorInt {
 	
 	PreparedStatement generate(CreateStatement createStatement);
 	
+	PreparedStatement generate(GetIndexStatement getIndexStatement);
+	
 	SelectStatement buildSelect();
 
 	InsertStatement buildInsert();
@@ -46,6 +49,10 @@ public interface SQLGeneratorInt {
 	DropStatement buildDrop();
 	
 	CreateStatement buildCreate();
+
+	GetIndexStatement buildGetIndex();
+
+	
 
 	
 	

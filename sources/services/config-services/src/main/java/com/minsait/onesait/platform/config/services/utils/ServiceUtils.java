@@ -62,7 +62,9 @@ public class ServiceUtils {
 		try {
 			return messageSource.getMessage(key, null, LocaleContextHolder.getLocale());
 		} catch (final Exception e) {
-			log.debug("Key:" + key + " not found. Returns:" + valueDefault);
+			if (log.isDebugEnabled()) {
+				log.debug("Key:{} not found. Returns:{}", key, valueDefault);
+			}
 			return valueDefault;
 		}
 	}
@@ -81,7 +83,7 @@ public class ServiceUtils {
 			formattedJson = tree.toString();
 			return formattedJson;
 		} catch (final Exception e) {
-			log.error("Exception reached " + e.getMessage(), e);
+			log.error("Exception reached {}", e.getMessage(), e);
 			return null;
 		}
 	}

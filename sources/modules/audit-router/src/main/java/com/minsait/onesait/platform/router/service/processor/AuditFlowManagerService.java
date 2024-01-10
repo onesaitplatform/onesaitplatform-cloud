@@ -115,7 +115,9 @@ public class AuditFlowManagerService {
 							}
 							try {
 								audit(event);
-								log.debug("Procesa auditoria: " + event);
+								if (log.isDebugEnabled()) {
+									log.debug("Procesa auditoria: {}", event);
+								}
 							} catch (final JSONException e2) {
 								log.error(AUDIT_EVENT_ERROR, e2);
 							} catch (final RouterCrudServiceException e3) {
@@ -167,10 +169,12 @@ public class AuditFlowManagerService {
 			mapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
 
 			final KeyStore keyStore = KeyStore.getInstance("PKCS12");
-			log.debug("Load keystore with key-store-path= {} and password={}.", getKeyStorePath(),
-					getKeystorePassword());
+			if (log.isDebugEnabled()) {
+				log.debug("Load keystore with key-store-path= {} and password={}.", getKeyStorePath(),getKeystorePassword());
+			}
 			keyStore.load(new FileInputStream(getKeyStorePath()), getKeystorePassword().toCharArray());
-			final PrivateKey privateKey = (PrivateKey) keyStore.getKey("auditKeys", getKeystorePassword().toCharArray());
+			final PrivateKey privateKey = (PrivateKey) keyStore.getKey("auditKeys",
+					getKeystorePassword().toCharArray());
 
 			final JsonNode json = mapper.readTree(item);
 			final byte[] msg = item.getBytes();
@@ -217,7 +221,7 @@ public class AuditFlowManagerService {
 				// Create ontology audit for user or anonymous if not exists
 				if (commonParams.getUser().equals(AuditConst.ANONYMOUS_USER)) {
 					if (ontologyService.getOntologyByIdentification(ontology, AuditConst.ADMIN_USER) == null) {
-						log.info("Creating audit ontology for user{}", commonParams.getUser());
+						log.info("Creating audit ontology for user {}", commonParams.getUser());
 						try {
 							userOperationsService.createAuditOntology(commonParams.getUser());
 						} catch (final Exception e) {
@@ -261,7 +265,7 @@ public class AuditFlowManagerService {
 			}
 
 		} catch (final Exception e) {
-			log.error("executeAuditOperations, error item: {}", item,e);
+			log.error("executeAuditOperations, error item: {}", item, e);
 		}
 	}
 

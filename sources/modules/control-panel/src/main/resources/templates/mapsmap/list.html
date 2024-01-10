@@ -137,8 +137,8 @@
 											<table id="mapsmap" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
 												<thead>
 													<tr class="cabecera-tabla">
-													<th class="titulo-columnas" th:text="#{gen.name}">Name</th>
 														<th class="titulo-columnas" th:text="#{gen.identification}">Identification</th>
+														<th class="titulo-columnas" th:text="#{gen.name}">Name</th>
 														<th class="titulo-columnas text-center" ><span th:text="#{gen.owner}" >Owner</span></th>
 														<th class="titulo-columnas" th:text="#{gen.description}">Description</th>														
 														<th class="titulo-columnas text-center" ><span > ID </span></th>													
@@ -149,10 +149,10 @@
 												</thead>
 												<tbody th:remove="all-but-first">
 													<tr th:each="mapsmap : ${mapsmaps}" pages:paginate="10">
-													<!--  NAME -->
-														<td class="text-left" th:text="${ mapsmap.name != '' ? mapsmap.name : mapsmap.identification }"></td>			
 														<!-- IDENTIFICATION  -->
 														<td class="text-left" th:text="${mapsmap.identification}"></td>															
+														<!--  NAME -->													
+														<td class="text-left" th:text="${ mapsmap.name != '' ? mapsmap.name : mapsmap.identification }"></td>	
 														<!-- USER -->
 														<td class="text-center " th:text="${mapsmap.user}"></td>
 														<!-- DESCRIPTION -->

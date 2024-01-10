@@ -36,14 +36,17 @@ import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
 public final class SSLUtil {
 
 	private static final TrustManager[] UNQUESTIONING_TRUST_MANAGER = new TrustManager[] { new X509TrustManager() {
+		@Override
 		public java.security.cert.X509Certificate[] getAcceptedIssuers() {
 			return new X509Certificate[0];
 		}
 
+		@Override
 		public void checkClientTrusted(X509Certificate[] certs, String authType) {
 			// This function is empty
 		}
 
+		@Override
 		public void checkServerTrusted(X509Certificate[] certs, String authType) {
 			// This function is empty
 		}
@@ -58,7 +61,7 @@ public final class SSLUtil {
 	}
 
 	public static HttpComponentsClientHttpRequestFactory getHttpRequestFactoryAvoidingSSLVerification() {
-		TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
+		final TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
 
 		SSLContext sslContext;
 
@@ -69,52 +72,56 @@ public final class SSLUtil {
 			throw new GenericRuntimeOPException("Problem configuring SSL verification", e);
 		}
 
-		SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
+		final SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext,
+				NoopHostnameVerifier.INSTANCE);
 
-		CloseableHttpClient httpClient = closeableHttpClientWithProxySettings(csf);
+		final CloseableHttpClient httpClient = closeableHttpClientWithProxySettings(csf);
 
-		HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory();
+		final HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory();
 		httpRequestFactory.setHttpClient(httpClient);
 		return httpRequestFactory;
 	}
-	
+
 	private static CloseableHttpClient closeableHttpClientWithProxySettings(SSLConnectionSocketFactory csf) {
 		CloseableHttpClient httpClient;
-		
-		boolean configureSystemProperties=false;
-		
-		String httpProxyHost=System.getenv("http.proxyHost");
-		String httpProxyPort=System.getenv("http.proxyPort");
-		String httpNonProxyHosts=System.getenv("http.nonProxyHosts");
-		
-		if(httpProxyHost!=null && httpProxyHost.trim().length()>0 && httpProxyPort!=null && httpProxyPort.trim().length()>0) {
+
+		boolean configureSystemProperties = false;
+
+		final String httpProxyHost = System.getenv("http.proxyHost");
+		final String httpProxyPort = System.getenv("http.proxyPort");
+		final String httpNonProxyHosts = System.getenv("http.nonProxyHosts");
+
+		if (httpProxyHost != null && httpProxyHost.trim().length() > 0 && httpProxyPort != null
+				&& httpProxyPort.trim().length() > 0) {
 			System.setProperty("http.proxyHost", httpProxyHost);
 			System.setProperty("http.proxyPort", httpProxyPort);
-			if(httpNonProxyHosts!=null && httpNonProxyHosts.trim().length()>0) {
+			if (httpNonProxyHosts != null && httpNonProxyHosts.trim().length() > 0) {
 				System.setProperty("http.nonProxyHosts", httpNonProxyHosts);
 			}
-			configureSystemProperties=true;
+			configureSystemProperties = true;
 		}
-		
-		String httpsProxyHost=System.getenv("https.proxyHost");
-		String httpsProxyPort=System.getenv("https.proxyPort");
-		if(httpsProxyHost!=null && httpsProxyHost.trim().length()>0 && httpsProxyPort!=null && httpsProxyPort.trim().length()>0) {
+
+		final String httpsProxyHost = System.getenv("https.proxyHost");
+		final String httpsProxyPort = System.getenv("https.proxyPort");
+		if (httpsProxyHost != null && httpsProxyHost.trim().length() > 0 && httpsProxyPort != null
+				&& httpsProxyPort.trim().length() > 0) {
 			System.setProperty("https.proxyHost", httpsProxyHost);
 			System.setProperty("https.proxyPort", httpsProxyPort);
-			if(httpNonProxyHosts!=null && httpNonProxyHosts.trim().length()>0) { //No existe https.nonProxyHosts
+			if (httpNonProxyHosts != null && httpNonProxyHosts.trim().length() > 0) { // No existe https.nonProxyHosts
 				System.setProperty("http.nonProxyHosts", httpNonProxyHosts);
 			}
-			configureSystemProperties=true;
+			configureSystemProperties = true;
 		}
-		
-		if(configureSystemProperties) {
-			httpClient = HttpClients.custom().useSystemProperties().setMaxConnPerRoute(200).setMaxConnTotal(200).setSSLSocketFactory(csf)
-					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build(); 
-		}else {
-			httpClient = HttpClients.custom().setMaxConnPerRoute(200).setMaxConnTotal(200).setSSLSocketFactory(csf)
-					.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+
+		if (configureSystemProperties) {
+			httpClient = HttpClients.custom().disableCookieManagement().useSystemProperties().setMaxConnPerRoute(200)
+					.setMaxConnTotal(200).setSSLSocketFactory(csf).setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+					.build();
+		} else {
+			httpClient = HttpClients.custom().disableCookieManagement().setMaxConnPerRoute(200).setMaxConnTotal(200)
+					.setSSLSocketFactory(csf).setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
 		}
-		
+
 		return httpClient;
 	}
 

@@ -151,7 +151,9 @@ public class MainPageController {
 			prometheusService.getCpuStats("onesait-platform");
 			return true;
 		} catch (final RuntimeException e) {
-			log.debug("Error getting prometheus metrics: " + e);
+			if (log.isDebugEnabled()) {
+				log.debug("Error getting prometheus metrics: {}", e);
+			}
 			return false;
 		}
 	}

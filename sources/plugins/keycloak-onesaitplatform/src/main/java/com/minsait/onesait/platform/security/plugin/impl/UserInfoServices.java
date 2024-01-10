@@ -77,7 +77,9 @@ public class UserInfoServices extends UserInfoTokenServices {
 			throws AuthenticationException, InvalidTokenException {
 		final Map<String, Object> map = getMap(computeUserInfoURL(accessToken), accessToken);
 		if (map.containsKey("error")) {
-			log.debug("userinfo returned error: " + map.get("error"));
+			if (log.isDebugEnabled()) {
+				log.debug("userinfo returned error: " + map.get("error"));
+			}			
 			throw new InvalidTokenException(accessToken);
 		}
 		return extractAuthentication(map);
@@ -106,7 +108,9 @@ public class UserInfoServices extends UserInfoTokenServices {
 
 	@SuppressWarnings({ "unchecked" })
 	private Map<String, Object> getMap(String path, String accessToken) {
-		log.debug("Getting user info from: " + path);
+		if (log.isDebugEnabled()) {
+			log.debug("Getting user info from: " + path);
+		}		
 		try {
 			OAuth2RestOperations restTemplate = this.restTemplate;
 			if (restTemplate == null) {

@@ -125,6 +125,17 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 			throw new DBPersistenceException("Error listing tables from user in external database", e);
 		}
 	}
+	
+	@Override
+	public List<Map<String, Object>> getTablePKInformation(String datasourceName, String database, String schema) {
+		
+		final VirtualDataSourceDescriptor dataSource = virtualDatasourcesManager
+				.getDataSourceDescriptor(datasourceName);
+		final SQLHelper helper = virtualDatasourcesManager.getOntologyHelper(dataSource.getVirtualDatasourceType());
+		
+		return new JdbcTemplate(dataSource.getDatasource()).queryForList(helper.getTableIndexes(database, schema));
+	}
+	
 
 	@Override
 	public String insert(final String ontology, final String instance) {
@@ -192,7 +203,7 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 				case MYSQL:
 				case MARIADB:
 					return IntStream.range(0, affected)
-							.mapToObj(index -> String.valueOf(keyList.get(index).get("insert_id")))
+							.mapToObj(index -> String.valueOf(keyList.get(index).get("GENERATED_KEY")))
 							.map(id -> new DBResult().setId(id).setOk(true)).collect(Collectors.toList());
 				case SQLSERVER:
 					// Only last inserted id recoverable
@@ -661,7 +672,6 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 		case Types.BOOLEAN:
 		case Types.BIT:
 		case Types.TINYINT:
-
 			return Boolean.TRUE;
 		case Types.INTEGER:
 		case Types.SMALLINT:
@@ -674,15 +684,17 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 		case Types.FLOAT:
 		case Types.REAL:
 			return 1.1;
+		case Types.TIMESTAMP:
+			return "datetime";
+		case Types.DATE:
+			return "date";
 		case Types.CHAR:
 		case Types.VARCHAR:
 		case Types.LONGVARCHAR:
 		case Types.NCHAR:
 		case Types.NVARCHAR:
 		case Types.LONGNVARCHAR:
-		case Types.TIMESTAMP:
 		case Types.TIMESTAMP_WITH_TIMEZONE:
-		case Types.DATE:
 		case Types.TIME:
 		case Types.TIME_WITH_TIMEZONE:
 		case Types.SQLXML:
@@ -856,6 +868,23 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 		}
 	}
 
+	@Override
+	public List<Map<String, Object>> getTableInformation(String datasource, String database, String schema) {
+		try {
+			Assert.hasLength(datasource, "Datasource name can't be null or empty");
+
+			final VirtualDataSourceDescriptor dataSource = virtualDatasourcesManager
+					.getDataSourceDescriptor(datasource);
+			final SQLHelper helper = virtualDatasourcesManager.getOntologyHelper(dataSource.getVirtualDatasourceType());
+			
+			return new JdbcTemplate(dataSource.getDatasource())
+					.queryForList(helper.getTableInformationStatement(database, schema));
+		} catch (final Exception e) {
+			log.error("Error listing databases from user in external database", e);
+			throw new DBPersistenceException("Error listing databases from user in external database", e);
+		}
+	}
+	
 	@Override
 	public List<String> getTables(String datasource, String database, String schema) {
 		try {

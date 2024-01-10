@@ -35,7 +35,7 @@ public interface DataflowService {
 
 	Pipeline createPipeline(Pipeline pipeline, String userId);
 
-	void removePipeline(String id, String userId);
+	void deleteHardPipeline(String id, String userId);
 
 	ResponseEntity<String> sendHttp(HttpServletRequest requestServlet, HttpMethod httpMethod, Object body, String user);
 
@@ -63,7 +63,7 @@ public interface DataflowService {
 
 	List<Pipeline> getPipelines(String userId);
 
-	void removeHardPipeline(String pipelineId, String userId);
+	void deletePipeline(String pipelineId, String userId);
 
 	Pipeline renamePipeline(String pipelineId, String userId, String newIdentification);
 

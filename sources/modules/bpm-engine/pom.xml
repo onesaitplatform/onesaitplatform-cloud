@@ -8,9 +8,7 @@
 		<version>${revision}</version>
 		<relativePath>../..</relativePath>
 	</parent>
-
 	<artifactId>onesaitplatform-bpm-engine</artifactId>
-
 	<name>onesaitplatform-bpm-engine</name>
 	<description>BPM Engine Service		</description>
 	<properties>
@@ -19,18 +17,14 @@
 		<version.connect>1.5.3</version.connect>
 		<license.dir>${project.parent.basedir}</license.dir>
 		<lombok.version>1.16.18</lombok.version>
-
 	</properties>
-
 	<dependencies>
-
 		<!-- mysql dependency -->
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>${mysql.driver.version}</version>
 		</dependency>
-
 		<!-- postgresql dependency -->
 		<dependency>
 			<groupId>org.postgresql</groupId>
@@ -85,12 +79,10 @@
 			<groupId>org.camunda.connect</groupId>
 			<artifactId>camunda-connect-core</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.camunda.connect</groupId>
 			<artifactId>camunda-connect-connectors-all</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.camunda.spin</groupId>
 			<artifactId>camunda-spin-dataformat-json-jackson</artifactId>
@@ -120,7 +112,6 @@
 			<artifactId>micrometer-registry-prometheus</artifactId>
 			<scope>runtime</scope>
 		</dependency>
-
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
@@ -145,7 +136,6 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-
 		</dependencies>
 	</dependencyManagement>
 	<repositories>
@@ -154,9 +144,7 @@
 			<name>camunda-bpm-nexus</name>
 			<url>https://app.camunda.com/nexus/content/groups/public</url>
 		</repository>
-
 	</repositories>
-
 	<build>
 		<resources>
 			<resource>
@@ -188,13 +176,13 @@
 				</includes>
 			</resource>
 		</resources>
-
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<layout>ZIP</layout>
+					<mainClass>com.minsait.onesait.platform.bpm.BPMEngineBootstrapApplication</mainClass>
+					<!--<layout>ZIP</layout>-->
 				</configuration>
 				<executions>
 					<execution>
@@ -203,7 +191,7 @@
 						</goals>
 						<configuration>
 							<classifier>exec</classifier>
-							<layout>ZIP</layout> <!-- to use PropertiesLaunchar -->
+							<layout>JAR</layout> <!-- to use PropertiesLaunchar -->
 						</configuration>
 					</execution>
 				</executions>

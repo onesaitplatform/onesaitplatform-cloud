@@ -48,8 +48,10 @@ public class DataFromDBJsonSerializer extends StdSerializer<DataFromDB> {
 			gen.writeStartObject();
 			gen.writeStringField("class", clazz.getName());
 			gen.writeArrayFieldStart("instances");
-			log.debug("********* SERIALIZE			: " + clazz.getName());
-
+			if (log.isDebugEnabled()) {
+				log.debug("********* SERIALIZE			: {}", clazz.getName());
+			}
+			
 			Map<Serializable, Map<String, Object>> instance = value.data.get(clazz);
 			Set<Serializable> ids = instance.keySet();
 			for (Serializable id : ids) {
@@ -58,11 +60,17 @@ public class DataFromDBJsonSerializer extends StdSerializer<DataFromDB> {
 				gen.writeObjectFieldStart("data");
 				Map<String, Object> data = instance.get(id);
 				Set<String> fields = data.keySet();
-				log.debug("********* ID			: " + id);
+				if (log.isDebugEnabled()) {
+					log.debug("********* ID			: {}", id);
+				}				
 				for (String field : fields) {
-					log.debug("********* FIELD			: " + field);
+					if (log.isDebugEnabled()) {
+						log.debug("********* FIELD			: {}", field);
+					}					
 					Object object = data.get(field);
-					log.debug("                 value			: " + (object != null ? object.getClass() : null));
+					if (log.isDebugEnabled()) {
+						log.debug("                 value			: {}", (object != null ? object.getClass() : null));
+					}					
 					gen.writeObjectField(field, object);
 				}
 				gen.writeEndObject();

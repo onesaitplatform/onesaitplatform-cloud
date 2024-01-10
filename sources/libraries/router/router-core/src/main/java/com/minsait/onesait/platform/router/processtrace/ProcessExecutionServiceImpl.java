@@ -79,10 +79,14 @@ public class ProcessExecutionServiceImpl implements ProcessExecutionService {
 		if (operation.getOntologyName() != null) {
 			List<ProcessOperation> operations = processOperationRepo
 					.findByOntologyId(ontologyService.getOntologyByIdentification(operation.getOntologyName()));
-			log.debug("Checking if exist a process with operations on the ontology {}", operation.getOntologyName());
+			if (log.isDebugEnabled()) {
+				log.debug("Checking if exist a process with operations on the ontology {}", operation.getOntologyName());
+			}
 			operations.forEach(op -> {
 				if (op.getProcessTraceId().getIsActive()) {
-					log.debug("TypeOperation: {} --- Source Operation: {}", op.getType().name(), op.getSources());
+					if (log.isDebugEnabled()) {
+						log.debug("TypeOperation: {} --- Source Operation: {}", op.getType().name(), op.getSources());
+					}
 					List<String> sourceList = new ArrayList<>(Arrays.asList(op.getSources().split(",")));
 					if (op.getType().name().equals(operation.getOperationType().name())
 							&& (sourceList.contains(operation.getSource().name().toLowerCase())
@@ -99,8 +103,9 @@ public class ProcessExecutionServiceImpl implements ProcessExecutionService {
 											: new LinkedHashSet<>();
 							OperationStatus opStatus = OpStatusList.stream()
 									.filter(o -> o.getOperationId().equals(op.getId())).findFirst().orElse(null);
-
-							log.debug("Operation in process: {}", op.getProcessTraceId().getIdentification());
+							if (log.isDebugEnabled()) {
+								log.debug("Operation in process: {}", op.getProcessTraceId().getIdentification());
+							}
 
 							if (opStatus == null) {
 								opStatus = new OperationStatus();
@@ -110,8 +115,10 @@ public class ProcessExecutionServiceImpl implements ProcessExecutionService {
 								}
 								opStatus.setIsOk(result.isStatus());
 								opStatus.setMessage(result.getMessage());
-								log.debug("Execution success for operation {} in process {}", op.getId(),
+								if (log.isDebugEnabled()) {
+									log.debug("Execution success for operation {} in process {}", op.getId(),
 										op.getProcessTraceId().getIdentification());
+								}
 
 							} else {
 								OpStatusList.remove(opStatus);
@@ -120,8 +127,10 @@ public class ProcessExecutionServiceImpl implements ProcessExecutionService {
 								}
 								opStatus.setIsOk(result.isStatus());
 								opStatus.setMessage(result.getMessage());
-								log.debug("Execution success for operation {} in process {}", op.getId(),
+								if (log.isDebugEnabled()) {
+									log.debug("Execution success for operation {} in process {}", op.getId(),
 										op.getProcessTraceId().getIdentification());
+								}
 							}
 
 							OpStatusList.add(opStatus);
@@ -189,7 +198,9 @@ public class ProcessExecutionServiceImpl implements ProcessExecutionService {
 	@Override
 	public void checkProcessExecution(String processId)
 			throws JsonGenerationException, JsonMappingException, IOException {
-		log.debug("Checking Process Execution with id: {}", processId);
+		if (log.isDebugEnabled()) {
+			log.debug("Checking Process Execution with id: {}", processId);
+		}
 		ProcessTrace process = processTraceService.getById(processId);
 		if (process.getIsActive()) {
 			Integer numOpSuccess = 0;
@@ -229,8 +240,11 @@ public class ProcessExecutionServiceImpl implements ProcessExecutionService {
 						ObjectNode obj = mapper.createObjectNode();
 						try {
 							OperationStatus exOp = executedOpsList.get(i);
-							log.debug("Check Operation: {} --- Status: {} --- Message: {}", op.getId(), exOp.getIsOk(),
+							if (log.isDebugEnabled()) {
+								log.debug("Check Operation: {} --- Status: {} --- Message: {}", op.getId(), exOp.getIsOk(),
 									exOp.getMessage());
+							}
+							
 							if (!exOp.getOperationId().equals(op.getId())) {
 								log.debug("Operation KO");
 								success = false;
@@ -333,8 +347,9 @@ public class ProcessExecutionServiceImpl implements ProcessExecutionService {
 			auditEvent.setExtraData(extraData);
 			eventRouter.notify(new ObjectMapper().writeValueAsString(auditEvent));
 		}
-
-		log.debug("Clear hazelcast map for process: {}", processId);
+		if (log.isDebugEnabled()) {
+			log.debug("Clear hazelcast map for process: {}", processId);
+		}
 		processExecutionMap.put(processId, new LinkedHashSet<OperationStatus>());
 
 	}

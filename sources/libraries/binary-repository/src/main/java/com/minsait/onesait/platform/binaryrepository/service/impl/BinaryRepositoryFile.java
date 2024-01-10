@@ -134,7 +134,9 @@ public class BinaryRepositoryFile implements BinaryRepository {
 
 		file.getParentFile().mkdirs();
 		boolean newFile = file.createNewFile();
-		log.debug("Created new File:" + newFile);
+		if (log.isDebugEnabled()) {
+			log.debug("Created new File:{}", newFile);
+		}
 		return file;
 	}
 

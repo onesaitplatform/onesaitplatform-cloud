@@ -39,7 +39,7 @@ public interface CacheBusinessService {
 
     public <K,V> Map<K, V> getManyFromMap(String identification, User user, Set<K> keys) throws CacheBusinessServiceException;
 
-    public void updateCache(String identification, Cache editCache);
+    public void updateCache(String identification, Cache editCache, User user) throws CacheBusinessServiceException;
     
     public void initializeAll();
     

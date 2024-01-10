@@ -251,7 +251,9 @@ public class FlowEngineDeploymentProcessorService {
 				if (record.getDomain() != null && deployedAPisInfo.getDomain() != null) {
 					domainService.deleteFlowDomainFlows(record.getDomain(), deployedAPisInfo.getDomain().getUser());
 				} else {
-					log.debug("Deployment record = {}", record.toString());
+					if (log.isDebugEnabled()) {
+						log.debug("Deployment record = {}", record.toString());
+					}					
 					processSingleDeployRecor(record, deployedAPisInfo);
 				}
 			}

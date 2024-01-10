@@ -86,7 +86,7 @@ public class OPResourceRepositoryTest {
 		project.setUser(user);
 
 		project.getProjectResourceAccesses()
-				.add(new ProjectResourceAccess(user, ResourceAccessType.MANAGE, resource, project, null));
+				.add(new ProjectResourceAccess(user, ResourceAccessType.MANAGE, resource, project, null, false));
 
 		project = projectRepository.save(project);
 		Assert.assertTrue(project.getProjectResourceAccesses().size() > 0);
@@ -111,7 +111,7 @@ public class OPResourceRepositoryTest {
 		final Set<ProjectResourceAccess> accesses = new HashSet<>();
 
 		resourceRepository.findAll().stream().forEach(
-				r -> accesses.add(new ProjectResourceAccess(user, ResourceAccessType.MANAGE, r, project, null)));
+				r -> accesses.add(new ProjectResourceAccess(user, ResourceAccessType.MANAGE, r, project, null, false)));
 
 		project.getProjectResourceAccesses().addAll(accesses);
 		projectRepository.save(project);
@@ -132,7 +132,7 @@ public class OPResourceRepositoryTest {
 		final Set<ProjectResourceAccess> accesses = new HashSet<>();
 
 		resourceRepository.findAll().stream().forEach(
-				r -> accesses.add(new ProjectResourceAccess(user, ResourceAccessType.MANAGE, r, project, null)));
+				r -> accesses.add(new ProjectResourceAccess(user, ResourceAccessType.MANAGE, r, project, null, false)));
 
 		project.getProjectResourceAccesses().addAll(accesses);
 		Project pdb = projectRepository.save(project);

@@ -701,13 +701,14 @@
 
 		// SEARCH FORM RESET
 		$('#reset_dataflow').on('click',function(){
-			$('#dataflow-name').val('');
-			$('#pipelines').DataTable().column(1).search('').draw();
+			$('#form_dataflow')[0].reset();
+			$('#form_dataflow')[0].submit();
 		});
 
 		// SEARCH FORM
 		$('#search_dataflow').on('click',function(){
-			$('#pipelines').DataTable().column(1).search( $('#dataflow-name').val()).draw();
+			$('#pipelines').DataTable().column(2).search( $('#dataflow-name').val()).draw();
+			
 		});
 		
 		var oTable = $('#pipelines').DataTable({

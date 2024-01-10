@@ -160,7 +160,7 @@
 															<td th:if="${instance.defaultInstance}" th:text="'(*) '+${instance.identification}" ></td>
 															<td th:if="${!instance.defaultInstance}" th:text="${instance.identification}" ></td>
 															<td th:text="${instance.url}"></td>
-															<td th:text="${instance.user}"></td>
+															<td th:text="${instance.user?.userId}"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos text-center" th:if="${instance.id}" >

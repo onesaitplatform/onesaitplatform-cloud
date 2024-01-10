@@ -151,13 +151,19 @@ public class RestPlannerServiceImpl implements RestPlannerService {
 		final HttpHeaders headers = toHttpHeaders(headersStr);
 		final org.springframework.http.HttpEntity<String> request = new org.springframework.http.HttpEntity<>(body,
 				headers);
-		log.debug("Sending method " + httpMethod.toString());
+		if (log.isDebugEnabled()) {
+			log.debug("Sending method {}", httpMethod.toString());
+		}
 		ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.ACCEPTED);
 		try {
-			log.debug("Execute method " + httpMethod.toString() + " " + url);
+			if (log.isDebugEnabled()) {
+				log.debug("Execute method {} {}", httpMethod.toString(), url);
+			}
 			response = restTemplate.exchange(new URI(url), httpMethod, request, String.class);
 		} catch (final Exception e) {
-			log.debug(e.getMessage());
+			if (log.isDebugEnabled()) {
+				log.debug(e.getMessage());
+			}
 			statusCode = getStatusCode(e.getMessage());
 			return new ResponseEntity<>(e.getMessage(), new HttpHeaders(), HttpStatus.valueOf(statusCode));
 		}

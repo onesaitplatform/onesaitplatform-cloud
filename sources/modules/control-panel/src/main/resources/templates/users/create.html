@@ -181,13 +181,13 @@
 									<div class="col-md-4 col-sm-6 col-xs-12">
 										<div class="form-group">
 											<label class="control-label" th:text="#{user.name}">Name</label><span class="required"> *</span>
-											<input id="fullName" type="text"  th:required="true"  maxlength="50" th:field="*{fullName}" class="form-control " th:placeholder="#{user.name}"/>
+											<input id="fullName" type="text" th:readonly="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" th:required="true"  maxlength="50" th:field="*{fullName}" class="form-control " th:placeholder="#{user.name}"/>
 										</div>
 									</div>
 									<div class="col-md-4 col-sm-6 col-xs-12">
 										<div class="form-group">
 											<label class="control-label"> <span th:text="#{user.email}">eMail</span></label><span class="required"> *</span>
-											<input id="email" type="text"  th:required="true"  maxlength="50" th:field="*{email}" class="form-control " th:placeholder="#{user.email}"/>
+											<input id="email" type="text" th:readonly="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" th:required="true"  maxlength="50" th:field="*{email}" class="form-control " th:placeholder="#{user.email}"/>
 										</div>
 									</div>													
 								</div>
@@ -210,14 +210,14 @@
 									<div class="col-md-2 col-sm-6 col-xs-12">
 										<div class="form-group">
 											<label class="control-label"> <span th:text="#{user.dateDeleted}">Deleted At</span></label>
-											<input id="datedeleted" th:field="*{dateDeleted}" type="text" maxlength="50" class="form-control datetime"  />
+											<input id="datedeleted" th:field="*{dateDeleted}" th:disabled="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" type="text" maxlength="50" class="form-control datetime"  />
 										</div>
 									</div>
 									<div class="col-md-1 col-sm-1 col-xs-12" sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')">
 										<div class="form-group">
 											<div class="mt-checkbox-list margin-top-20">
 												<label class="mt-checkbox font-md popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{user.active.help},data-title=#{user.active}"><div class="inline font-xs" th:text="#{user.active}">User Active?</div>
-													<input id="checkboxactive" name="active" type="checkbox" class="form-control" th:field="*{active}" th:checked="checked"/>
+													<input id="checkboxactive" name="active" type="checkbox" th:disabled="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" class="form-control" th:field="*{active}" th:checked="checked"/>
 													<span></span><!-- needed by styles -->
 												</label>																													
 											</div>

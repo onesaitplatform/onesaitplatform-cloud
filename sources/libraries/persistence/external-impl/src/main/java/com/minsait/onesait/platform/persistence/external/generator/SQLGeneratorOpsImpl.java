@@ -43,9 +43,12 @@ import com.minsait.onesait.platform.persistence.external.generator.helper.SQLSer
 import com.minsait.onesait.platform.persistence.external.generator.model.common.ColumnRelational;
 import com.minsait.onesait.platform.persistence.external.generator.model.common.OrderByStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.common.WhereStatement;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateIndexStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.DeleteStatement;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.DropIndexStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.DropStatement;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.GetIndexStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.InsertStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.PreparedStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.SelectStatement;
@@ -85,6 +88,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.show.ShowIndexStatement;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 import net.sf.jsqlparser.util.SelectUtils;
@@ -741,6 +745,7 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 	public PreparedStatement getStandardCreate(CreateStatement createStatement) {
 		createStatement = sqlHelper.parseCreateStatementColumns(createStatement);
 		createStatement = sqlHelper.parseCreateStatementConstraints(createStatement);
+		
 		return new PreparedStatement(createStatement.toString());
 	}
 
@@ -776,5 +781,22 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 		}
 
 	}
+	
+	@Override
+	public PreparedStatement getIndexStatement(GetIndexStatement getIndexStatement) {
+		return new PreparedStatement(getIndexStatement.toString());
+	}	
+	
+	@Override
+	public PreparedStatement createIndex(CreateIndexStatement createIndexStatement) {
+		return new PreparedStatement(createIndexStatement.toString());
+	}	
+	
+	@Override
+	public PreparedStatement dropIndex(DropIndexStatement dropIndexStatement) {
+		return new PreparedStatement(dropIndexStatement.toString());
+	}	
+	
+	
 
 }

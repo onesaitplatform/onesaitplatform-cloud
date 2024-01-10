@@ -345,7 +345,9 @@ public class TokenController {
 				if(StringUtils.hasText(verticalAtt)) {
 					final Optional<Vertical> vertical = multitenancyService.getVertical(verticalAtt);
 					vertical.ifPresent(v -> {
-						log.debug("Loading user from vertical {}", v);
+						if (log.isDebugEnabled()) {
+							log.debug("Loading user from vertical {}", v);
+						}						
 						MultitenancyContextHolder.setVerticalSchema(v.getSchema());
 						MultitenancyContextHolder.setForced(true);
 					});

@@ -165,6 +165,8 @@ public class VideoBrokerController {
 
 	public void createEvent(String id) {
 		boolean createdEvent =videoQueue.offer(id);
-		log.debug("createEvent:"+createdEvent);
+		if (log.isDebugEnabled()) {
+			log.debug("createEvent:{}",createdEvent);
+		}
 	}
 }

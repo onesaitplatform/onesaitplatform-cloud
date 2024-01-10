@@ -64,15 +64,15 @@ public class BaseAspect {
 		}
 
 		if (elapsedTime > methodWarningThreshold) {
-			log.warn("method warning: Class : " + className + " Method: " + methodName + "(), cnt = " + stats.count
-					+ ", lastTime = " + elapsedTime + ", maxTime = " + stats.maxTime);
+			log.warn("method warning: Class : {} Method: {}(), cnt = {}, lastTime = {}, maxTime = {}", className,
+					methodName, stats.count, elapsedTime, stats.maxTime);
 		}
 
 		if (stats.count % statLogFrequency == 0) {
 			long avgTime = stats.totalTime / stats.count;
 			long runningAvg = (stats.totalTime - stats.lastTotalTime) / statLogFrequency;
-			log.info(" Class: {}, Method: {} cnt: {}, lastTime: {}, avgTime: {}, runningAvg: {}, maxTime: {} "
-				,className,stats.count,elapsedTime,avgTime,runningAvg, stats.maxTime);
+			log.info(" Class: {}, Method: {} cnt: {}, lastTime: {}, avgTime: {}, runningAvg: {}, maxTime: {} ",
+					className, stats.count, elapsedTime, avgTime, runningAvg, stats.maxTime);
 
 			// reset the last total time
 			stats.lastTotalTime = stats.totalTime;

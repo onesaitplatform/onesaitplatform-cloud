@@ -66,7 +66,7 @@ public class FlowEngineValidationNodeServiceImpl implements FlowEngineValidation
 				throw new ResourceNotFoundException(USER_NOT_EXIST);
 			}
 			if (!sofia2User.getPassword().equals(credentials)) {
-				log.error("Credentials for user " + userId + " does not match.");
+				log.error("Credentials for user {} does not match.", userId);
 				throw new NotAuthorizedException("Credentials for user " + userId + " does not match.");
 			}
 		} catch (final Exception e) {

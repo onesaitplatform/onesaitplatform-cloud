@@ -47,7 +47,7 @@ public class OntologyTimeSeriesWindow extends AuditableEntityWithUUID {
 
 	public enum FrecuencyUnit {
 
-		NONE, SECONDS, MINUTES, HOURS, DAYS, MONTHS
+		NONE, SECONDS, MINUTES, HOURS, DAYS, MONTHS, NODUPS
 	}
 
 	public enum AggregationFunction {

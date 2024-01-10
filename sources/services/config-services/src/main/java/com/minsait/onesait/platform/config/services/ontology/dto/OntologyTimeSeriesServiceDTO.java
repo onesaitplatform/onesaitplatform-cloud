@@ -15,15 +15,9 @@
 package com.minsait.onesait.platform.config.services.ontology.dto;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.validation.constraints.NotNull;
-
 import org.apache.kafka.connect.data.Timestamp;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.Type;
 
 import com.minsait.onesait.platform.config.model.DataModel;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
@@ -311,6 +305,9 @@ public class OntologyTimeSeriesServiceDTO {
 		if (this.freqtypes[0].equalsIgnoreCase("NONE")) {
 			ontologyTimescaleProperties.setFrecuency(0);
 			ontologyTimescaleProperties.setFrecuencyUnit(OntologyTimeSeriesWindow.FrecuencyUnit.valueOf("NONE"));
+		} else if (this.freqtypes[0].equalsIgnoreCase("NODUPS")) {
+			ontologyTimescaleProperties.setFrecuency(0);
+			ontologyTimescaleProperties.setFrecuencyUnit(OntologyTimeSeriesWindow.FrecuencyUnit.valueOf("NODUPS"));	
 		} else {
 			int freqnum = Integer.parseInt(this.freqtypes[0].trim().split(" ")[0]);
 			String frequnit = this.freqtypes[0].trim().split(" ")[1];
@@ -322,30 +319,24 @@ public class OntologyTimeSeriesServiceDTO {
 		// Compression
 		ontologyTimescaleProperties.setCompressionActive(compressionActive);
 		int compressionAfter = 0;
-		String compressionUnit = "days";
+		String compressionUnit = "DAYS";
 		if (compressionActive) {
-			compressionAfter = Integer.parseInt(this.compressionConfig.trim().split(" ")[0]);
-			compressionUnit = this.compressionConfig.trim().split(" ")[1];
-			if (!compressionUnit.endsWith("s")) {
-				compressionUnit = compressionUnit + "s";
-			}
+			compressionAfter = Integer.parseInt(this.compressionConfig.trim().split("_")[0]);
+			compressionUnit = this.compressionConfig.trim().split("_")[1];
 		}
 		ontologyTimescaleProperties.setCompressionAfter(compressionAfter);
-		ontologyTimescaleProperties.setCompressionUnit(RetentionUnit.valueOf(compressionUnit.toUpperCase()));
+		ontologyTimescaleProperties.setCompressionUnit(RetentionUnit.valueOf(compressionUnit));
 		ontologyTimescaleProperties.setCompressionQuery(compressionQuery);
 		// Deletion
 		ontologyTimescaleProperties.setRetentionActive(rtdbClean);
 		int retentionBefore = 0;
-		String retentionUnit = "days";
+		String retentionUnit = "DAYS";
 		if (rtdbClean) {
-			retentionBefore = Integer.parseInt(this.rtdbCleanLapse.trim().split(" ")[0]);
-			retentionUnit = this.rtdbCleanLapse.trim().split(" ")[1];
-			ontologyTimescaleProperties.setRetentionBefore(retentionBefore);
-			if (!retentionUnit.endsWith("s")) {
-				retentionUnit = retentionUnit + "s";
-			}
+			retentionBefore = Integer.parseInt(this.rtdbCleanLapse.trim().split("_")[0]);
+			retentionUnit = this.rtdbCleanLapse.trim().split("_")[1];
 		}
-		ontologyTimescaleProperties.setRetentionUnit(RetentionUnit.valueOf(retentionUnit.toUpperCase()));
+		ontologyTimescaleProperties.setRetentionBefore(retentionBefore);
+		ontologyTimescaleProperties.setRetentionUnit(RetentionUnit.valueOf(retentionUnit));
 		return ontologyTimescaleProperties;
 	}
 	

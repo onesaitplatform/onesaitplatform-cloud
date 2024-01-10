@@ -147,7 +147,7 @@
 															<label th:text="#{categorization.tree}"> Tree </label>
 														</span>
 														
-														<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" class="checkbox-column">
+														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
 															<label th:text="#{gen.active}"> Active</label>
 														</span>

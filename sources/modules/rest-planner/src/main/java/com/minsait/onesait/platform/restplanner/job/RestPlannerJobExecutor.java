@@ -38,7 +38,9 @@ public class RestPlannerJobExecutor implements BatchGenericExecutor {
 		try {
 			if (context.getScheduler().getSchedulerName().equals(SchedulerType.RESTPLANNER.getSchedulerName())) {
 				restPlannerJob.executeJob(context);
-				log.debug("Rest Planner " + context.getJobDetail().getJobDataMap().getString("id") + " executed");
+				if (log.isDebugEnabled()) {
+					log.debug("Rest Planner {} executed", context.getJobDetail().getJobDataMap().getString("id"));
+				}
 			}
 
 		} catch (final Exception e) {

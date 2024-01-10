@@ -1,0 +1,194 @@
+{
+	"metainf": {
+		"category": "Predefined",
+		"order": -97
+	},
+	"gform": [
+		{
+			"id": 8,
+			"type": "section",
+			"elements": [
+				{
+					"id": 4,
+					"type": "checkbox",
+					"name": "showLegend",
+					"default": true,
+					"title": "Show Legend"
+				},
+				{
+					"id": 4,
+					"type": "checkbox",
+					"name": "showTooltip",
+					"default": true,
+					"title": "Show Tooltip"
+				}
+			],
+			"name": "general",
+			"title": "General"
+		},
+		{
+			"id": 8,
+			"type": "section",
+			"elements": [
+				{
+					"id": 8,
+					"type": "section",
+					"elements": [
+						{
+							"id": 1,
+							"type": "input-text",
+							"name": "label",
+							"default": "",
+							"title": ""
+						},
+						{
+							"id": 6,
+							"type": "ds-field",
+							"name": "field"
+						},
+						{
+							"id": 4,
+							"type": "checkbox",
+							"name": "showZoom",
+							"default": false,
+							"title": "Show Zoom"
+						}
+					],
+					"name": "xAxis",
+					"title": "X Axis "
+				},
+				{
+					"id": 9,
+					"type": "section-array",
+					"elements": [
+						{
+							"id": 10,
+							"type": "autogenerate-id",
+							"name": "id",
+							"prefix": ""
+						},
+						{
+							"id": 1,
+							"type": "input-text",
+							"name": "label",
+							"default": ""
+						},
+						{
+							"id": 3,
+							"type": "selector",
+							"name": "position",
+							"options": [
+								{
+									"value": "left",
+									"text": ""
+								},
+								{
+									"value": "right",
+									"text": ""
+								}
+							],
+							"default": "left"
+						},
+						{
+							"id": 3,
+							"type": "selector",
+							"name": "type",
+							"options": [
+								{
+									"value": "value",
+									"text": "Linear"
+								},
+								{
+									"value": "log",
+									"text": "Logarithmic"
+								}
+							],
+							"default": "value"
+						},
+						{
+							"id": 2,
+							"type": "input-number",
+							"name": "min",
+							"default": "0"
+						},
+						{
+							"id": 2,
+							"type": "input-number",
+							"name": "max",
+							"default": ""
+						},
+						{
+							"id": 2,
+							"type": "input-number",
+							"name": "offset",
+							"default": "0"
+						}
+					],
+					"name": "yAxis",
+					"title": "Y Axes"
+				}
+			],
+			"name": "axes",
+			"title": "Axes Config"
+		},
+		{
+			"id": 9,
+			"type": "section-array",
+			"elements": [
+				{
+					"id": 6,
+					"type": "ds-field",
+					"name": "field"
+				},
+				{
+					"id": 1,
+					"type": "input-text",
+					"name": "label",
+					"default": ""
+				},
+				{
+					"id": 5,
+					"type": "color-picker",
+					"name": "color",
+					"default": "rgba(30, 144, 255, 1)"
+				},
+				{
+					"id": 3,
+					"type": "selector",
+					"name": "type",
+					"options": [
+						{
+							"value": "bar",
+							"text": ""
+						},
+						{
+							"value": "line",
+							"text": ""
+						},
+						{
+							"value": "point",
+							"text": ""
+						},
+						{
+							"value": "dashed",
+							"text": "line dashed"
+						},
+						{
+							"value": "dotted",
+							"text": "line dotted"
+						}
+					],
+					"default": "line"
+				},
+				{
+					"id": 11,
+					"type": "model-selector",
+					"name": "yAxis",
+					"path": "axes.yAxis.*.id"
+				}
+			],
+			"name": "series",
+			"title": "Data Series"
+		}
+	]
+}

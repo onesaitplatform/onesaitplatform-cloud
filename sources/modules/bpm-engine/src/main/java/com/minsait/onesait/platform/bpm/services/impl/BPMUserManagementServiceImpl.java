@@ -19,7 +19,9 @@ import static org.camunda.bpm.engine.authorization.Authorization.AUTH_TYPE_GRANT
 import static org.camunda.bpm.engine.authorization.Permissions.ALL;
 import static org.camunda.bpm.engine.authorization.Resources.APPLICATION;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -37,11 +39,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.minsait.onesait.platform.bpm.model.Groups;
+import com.minsait.onesait.platform.bpm.services.AuthorizationManagementService;
 import com.minsait.onesait.platform.bpm.services.BPMUserManagementService;
-import com.minsait.onesait.platform.bpm.util.BPMConstants;
+import com.minsait.onesait.platform.config.model.App;
+import com.minsait.onesait.platform.config.model.AppUser;
+import com.minsait.onesait.platform.config.services.app.AppService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 import com.minsait.onesait.platform.multitenant.config.model.Vertical;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 
@@ -50,17 +57,27 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class BPMUserManagementServiceImpl implements BPMUserManagementService {
+
+	private static final String DEFAULT_CLIENT_ID = "onesaitplatform";
 	@Autowired
 	private ProcessEngine processEngine;
 	@Autowired
 	private UserService userService;
 	@Autowired
+	private AppService appService;
+	@Autowired
 	private MultitenancyService multitenancyService;
+	@Autowired
+	private AuthorizationManagementService authorizationManagementService;
+
 	@Value("${onesaitplatform.camunda.import-users:false}")
 	private boolean importUsers;
 
 	@Value("${onesaitplatform.camunda.admin-user:administrator}")
 	private String adminUser;
+
+	@Value("${security.oauth2.client.clientId}")
+	private String clientId;
 
 	private IdentityServiceImpl identityService;
 	private AuthorizationService authorizationService;
@@ -79,6 +96,14 @@ public class BPMUserManagementServiceImpl implements BPMUserManagementService {
 
 	@Override
 	public void syncUsers() {
+		if (DEFAULT_CLIENT_ID.equals(clientId)) {
+			syncUsersGeneric();
+		} else {
+			syncUsersRealms();
+		}
+	}
+
+	private void syncUsersGeneric() {
 		multitenancyService.getUsers().stream().forEach(m -> {
 			if (!userExistsInDB(m.getUserId())) {
 				try {
@@ -98,20 +123,51 @@ public class BPMUserManagementServiceImpl implements BPMUserManagementService {
 					MultitenancyContextHolder.clear();
 				}
 			}
-			createTenants(m.getUserId());
+//			createTenants(m.getUserId());
 		});
 	}
 
-	private void createTenants(String user) {
-
-		if (identityService.createTenantQuery().tenantId(BPMConstants.TENANT_PREFIX.concat(user)).count() == 0) {
-			final Tenant tenant = identityService.newTenant(BPMConstants.TENANT_PREFIX.concat(user));
-			tenant.setName("Tenant for user " + user);
-			identityService.saveTenant(tenant);
-			identityService.createTenantUserMembership(tenant.getId(), user);
-		}
+	private void syncUsersRealms() {
+		multitenancyService.getAllVerticals().forEach(v -> {
+			MultitenancyContextHolder.setVerticalSchema(v.getSchema());
+			authorizationManagementService.syncRealmMappings();
+			final JsonNode config = authorizationManagementService.getConfigMap();
+			if (config != null) {
+				config.get(AuthorizationManagementServiceImpl.ROOT_NODE_REALMS).fields().forEachRemaining(r -> {
+					final String realm = r.getKey();
+					final List<String> roles = new ArrayList<>();
+					r.getValue().fieldNames().forEachRemaining(roles::add);
+					final App app = appService.getAppByIdentification(realm);
+					if (app != null) {
+						app.getAppRoles().stream().filter(ar -> roles.contains(ar.getName())).forEach(ar -> {
+							final Set<AppUser> appUsers = ar.getAppUsers();
+							appUsers.forEach(au -> {
+								if (!userExistsInDB(au.getUser().getUserId())) {
+									createUser(au.getUser().getUserId(), ar.getName());
+								}
+							});
+						});
+					}
+				});
+			}
+			MultitenancyContextHolder.clear();
+		});
 
 	}
+
+//	private void createTenants(String user) {
+//		final String v = Tenant2SchemaMapper
+//				.extractVerticalNameFromSchema(MultitenancyContextHolder.getVerticalSchema());
+//		final String t = MultitenancyContextHolder.getTenantName();
+//		final String camundaTenantName = v + "_" + t;
+//		if (identityService.createTenantQuery().tenantId(BPMConstants.TENANT_PREFIX.concat(user)).count() == 0) {
+//			final Tenant tenant = identityService.newTenant(BPMConstants.TENANT_PREFIX.concat(user));
+//			tenant.setName("Tenant for user " + user);
+//			identityService.saveTenant(tenant);
+//			identityService.createTenantUserMembership(tenant.getId(), user);
+//		}
+//
+//	}
 
 	@Override
 	public boolean userExistsInDB(String userId) {
@@ -120,7 +176,11 @@ public class BPMUserManagementServiceImpl implements BPMUserManagementService {
 
 	@Override
 	public void createUser(Authentication auth) {
-		this.createUser(auth.getName());
+		if (DEFAULT_CLIENT_ID.equals(clientId)) {
+			this.createUser(auth.getName());
+		} else {
+			this.createUser(auth.getName(), auth.getAuthorities().iterator().next().getAuthority());
+		}
 
 	}
 
@@ -162,13 +222,18 @@ public class BPMUserManagementServiceImpl implements BPMUserManagementService {
 
 	@Override
 	public void createTenants(Authentication auth) {
-
-		if (identityService.createTenantQuery().tenantId(BPMConstants.TENANT_PREFIX.concat(auth.getName()))
-				.count() == 0) {
-			final Tenant tenant = identityService.newTenant(BPMConstants.TENANT_PREFIX.concat(auth.getName()));
-			tenant.setName("Tenant for user " + auth.getName());
+		final String v = Tenant2SchemaMapper
+				.extractVerticalNameFromSchema(MultitenancyContextHolder.getVerticalSchema());
+		final String t = MultitenancyContextHolder.getTenantName();
+		final String camundaTenantName = v + "_" + t;
+		if (identityService.createTenantQuery().tenantId(camundaTenantName).count() == 0) {
+			final Tenant tenant = identityService.newTenant(camundaTenantName);
+			tenant.setName("Tenant for " + camundaTenantName);
 			identityService.saveTenant(tenant);
-			identityService.createTenantUserMembership(tenant.getId(), auth.getName());
+		}
+		if (identityService.createTenantQuery().userMember(auth.getName()).list().stream()
+				.noneMatch(d -> d.getId().equals(camundaTenantName))) {
+			identityService.createTenantUserMembership(camundaTenantName, auth.getName());
 		}
 
 	}
@@ -191,6 +256,21 @@ public class BPMUserManagementServiceImpl implements BPMUserManagementService {
 		identityService.saveUser(user);
 		identityService.createMembership(user.getId(), assignGroup(userOP));
 		// To-DO close somewhere contextholder?
+
+	}
+
+	private void createUser(String userId, String groupName) {
+		authorizationManagementService.syncRealmMappings();
+
+		final com.minsait.onesait.platform.config.model.User userOP = userService.getUser(userId);
+
+		final User user = identityService.newUser(userOP.getUserId());
+		user.setFirstName(userOP.getFullName());
+		user.setLastName("");
+		user.setPassword(userOP.getPassword());
+		user.setEmail(userOP.getEmail());
+		identityService.saveUser(user);
+		identityService.createMembership(user.getId(), groupName);
 
 	}
 
@@ -382,6 +462,31 @@ public class BPMUserManagementServiceImpl implements BPMUserManagementService {
 			authorizationService.saveAuthorization(accountingTasklistAuth);
 		}
 
+	}
+
+	@Override
+	public void updateGroups(String userId, List<String> groupNames) {
+		// check membership
+		final List<String> currentGroups = identityService.createGroupQuery().groupMember(userId).list().stream()
+				.map(Group::getId).toList();
+		try {
+			if (DEFAULT_CLIENT_ID.equals(clientId)) {
+				final String group = assignGroup(userService.getUser(userId));
+				if (!currentGroups.contains(group)) {
+					identityService.createMembership(userId, group);
+					currentGroups.forEach(s -> identityService.deleteMembership(userId, s));
+				}
+
+			} else {
+				groupNames.stream().filter(g -> !currentGroups.contains(g))
+						.forEach(s -> identityService.createMembership(userId, s));
+				currentGroups.stream()
+						.filter(g -> !groupNames.contains(g) && !Groups.CAMUNDA_ADMIN.getValue().equals(g))
+						.forEach(s -> identityService.deleteMembership(userId, s));
+			}
+		} catch (final Exception e) {
+			log.error("Could not update roles");
+		}
 	}
 
 }

@@ -47,6 +47,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -61,6 +62,7 @@ import com.minsait.onesait.platform.config.model.MigrationData.Status;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.services.ai.AIService;
 import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;
 import com.minsait.onesait.platform.config.services.migration.MigrationService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
@@ -111,7 +113,7 @@ public class QueryToolController {
 	
 	@Autowired 
 	private HttpSession httpSession;
-
+	
 	@Value("${onesaitplatform.queryTool.allowedOperations:false}")
 	private Boolean queryToolAllowedOperations;
 
@@ -237,7 +239,7 @@ public class QueryToolController {
 			return QUERY_TOOL_SHOW_QUERY;
 		} catch (final DBPersistenceException e) {
 			log.error(RUNQUERYERROR, e);
-			model.addAttribute(QUERY_RESULT_STR, e.getDetailedMessage());
+			model.addAttribute(QUERY_RESULT_STR, e.getDetailedMessage() + (e.getCause()==null?"":"\n\nCause is: " + e.getCause().getMessage()));
 			return QUERY_TOOL_SHOW_QUERY;
 		} catch (final OntologyServiceException e) {
 			model.addAttribute(QUERY_RESULT_STR, utils.getMessage("querytool.ontology.access.denied.json",

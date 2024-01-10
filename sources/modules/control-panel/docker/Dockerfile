@@ -22,12 +22,13 @@ RUN mkdir -p /usr/local/webprojects && \
 	mkdir -p /usr/local/themes && \
     mkdir -p /usr/local/files && \
 	mkdir -p /var/log/platform-logs && \
-	mkdir /application
+	mkdir /application && \
+	mkdir /application/plugins
 
 
 WORKDIR /application
-RUN unzip /app.jar &&\
-	rm /app.jar
+#RUN unzip /app.jar &&\
+#	rm /app.jar
 
 # create sofia user/group
 RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait

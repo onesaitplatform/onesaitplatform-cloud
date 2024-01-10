@@ -41,6 +41,7 @@ public class SQLServerHelper extends SQLHelperImpl implements SQLHelper {
 	private static final String LIST_SCHEMAS_QUERY = ""
 			+ "DECLARE @SQL VARCHAR(MAX) = 'use %s;SELECT schema_name FROM information_schema.schemata;'"
 			+ "EXEC(@SQL);";
+	private static final String LIST_TABLE_INFORMATION_QUERY = "SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = '%s'";
 	private static final String LIST_TABLES_IN_DATABASE_IN_SCHEMA_QUERY = ""
 			+ "DECLARE @SQL VARCHAR(MAX) = 'use %s;SELECT table_name FROM information_schema.tables WHERE table_schema = ''%s''';"
 			+ "EXEC(@SQL);";

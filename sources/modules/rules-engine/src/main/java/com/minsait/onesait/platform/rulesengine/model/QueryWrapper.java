@@ -77,7 +77,9 @@ public class QueryWrapper {
 	 
 
 	public QueryWrapper(String ontology, String query, String clientPlatform, String token, String iotbrokerUrl) {
-		log.debug("New QueryWrapper object created for ontology {} with query: {}", ontology, query);
+		if (log.isDebugEnabled()) {
+			log.debug("New QueryWrapper object created for ontology {} with query: {}", ontology, query);
+		}		
 		this.ontology = ontology;
 		this.query = query;
 		this.clientPlatform = clientPlatform;

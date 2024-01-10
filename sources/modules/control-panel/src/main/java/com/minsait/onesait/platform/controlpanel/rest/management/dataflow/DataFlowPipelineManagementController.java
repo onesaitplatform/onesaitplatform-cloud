@@ -75,7 +75,8 @@ public class DataFlowPipelineManagementController {
 		if (parameters == null || parameters.equals("")) {
 			parameters = "{}";
 		}
-		return dataflowService.startPipeline(utils.getUserId(), identification, parameters);
+		ResponseEntity<String> response = dataflowService.startPipeline(utils.getUserId(), identification, parameters);
+		return new ResponseEntity<String>(response.getBody(), response.getStatusCode());
 	}
 
 	@Operation(summary = "Stop a pipeline")
@@ -88,7 +89,8 @@ public class DataFlowPipelineManagementController {
 			@Parameter(description= "Dataflow pipeline identification", required = true) @PathVariable("identification") String pipelineIdentification)
 					throws UnsupportedEncodingException {
 		final String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
-		return dataflowService.stopPipeline(utils.getUserId(), identification);
+		ResponseEntity<String> response = dataflowService.stopPipeline(utils.getUserId(), identification);
+		return new ResponseEntity<String>(response.getBody(), response.getStatusCode());
 	}
 
 	@Operation(summary = "Pipeline status")
@@ -101,7 +103,8 @@ public class DataFlowPipelineManagementController {
 			@Parameter(description= "Dataflow pipeline identification", required = true) @PathVariable("identification") String pipelineIdentification)
 					throws UnsupportedEncodingException {
 		final String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
-		return dataflowService.statusPipeline(utils.getUserId(), identification);
+		ResponseEntity<String> response = dataflowService.statusPipeline(utils.getUserId(), identification);
+		return new ResponseEntity<String>(response.getBody(), response.getStatusCode());
 	}
 
 	@Operation(summary = "Pipelines status")
@@ -112,7 +115,8 @@ public class DataFlowPipelineManagementController {
 			@ApiResponse(responseCode = "403", description = "Forbidden"), @ApiResponse(responseCode = "404", description = "Not Found"),
 			@ApiResponse(responseCode = "500", description = "Internal Server Error") })
 	public ResponseEntity<String> statusPipelines() {
-		return dataflowService.getPipelinesStatus(utils.getUserId());
+		ResponseEntity<String> response = dataflowService.getPipelinesStatus(utils.getUserId());
+		return new ResponseEntity<String>(response.getBody(), response.getStatusCode());
 	}
 
 	@Operation(summary = "Get a pipeline metrics")
@@ -125,7 +129,8 @@ public class DataFlowPipelineManagementController {
 			@Parameter(description= "Dataflow pipeline identification", required = true) @PathVariable("identification") String pipelineIdentification)
 					throws UnsupportedEncodingException {
 		final String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
-		return dataflowService.metricsPipeline(utils.getUserId(), identification);
+		ResponseEntity<String> response = dataflowService.metricsPipeline(utils.getUserId(), identification);
+		return new ResponseEntity<String>(response.getBody(), response.getStatusCode());
 	}
 
 	@Operation(summary = "Reset Origin offset")
@@ -138,7 +143,8 @@ public class DataFlowPipelineManagementController {
 	@PathVariable("identification") String pipelineIdentification)
 			throws UnsupportedEncodingException {
 		final String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
-		return dataflowService.resetOffsetPipeline(utils.getUserId(), identification);
+		ResponseEntity<String> response = dataflowService.resetOffsetPipeline(utils.getUserId(), identification);
+		return new ResponseEntity<String>(response.getBody(), response.getStatusCode());
 	}
 
 	@Operation(summary = "Get a pipeline committed offsets")
@@ -151,7 +157,8 @@ public class DataFlowPipelineManagementController {
 	@PathVariable("identification") String pipelineIdentification)
 			throws UnsupportedEncodingException {
 		final String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
-		return dataflowService.getPipelineCommittedOffsets(utils.getUserId(), identification);
+		ResponseEntity<String> response = dataflowService.getPipelineCommittedOffsets(utils.getUserId(), identification);
+		return new ResponseEntity<String>(response.getBody(), response.getStatusCode());
 	}
 
 	/* EXCEPTION HANDLERS */

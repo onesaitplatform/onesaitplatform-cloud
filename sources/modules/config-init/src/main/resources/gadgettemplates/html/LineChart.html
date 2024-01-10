@@ -1,0 +1,30 @@
+<!--Focus here and F11 or F10 to full screen editor-->
+<!-- Write your CSS <style></style> here -->
+<style>
+	.fullsize {
+		height: 100%;
+		width: 100%;
+	}
+
+	 .widget-maximize {
+      left: 0px !important;
+      top: 0px !important;
+      width: 99% !important;
+      height: 100% !important;
+      z-index: 500;
+	  margin:0 !important;
+   }
+</style>
+<div class="gadget-app-lineChart" style="width:100%; height:100%; padding:24px;">
+	<div class="fullsize" v-if="chartShow">
+		<v-chart :option="option" @click='handleClickEvent' @restore='handleRestore' @datazoom='handleDataZoom' autoresize />
+	</div>
+	<div v-else>
+		<div style="height: 100%;display: flex;justify-content: center;align-items: flex-start;width:100%;">
+			<div style="display: flex;height: auto;flex-direction: column;align-items: center;">
+				<p style="margin-bottom: 1rem; margin-top: 25%">{{ noData }}</p>
+				<ods-icon name="error-alert" size="30" color="#404040" />
+			</div>
+		</div>
+	</div>
+</div>

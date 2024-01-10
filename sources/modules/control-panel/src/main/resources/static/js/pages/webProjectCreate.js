@@ -29,7 +29,6 @@ var WebProjectCreateController = function() {
             rules: {
 				identification:		{ required: true, minlength: 5 },
 				description:		{ required: true, minlength: 5 },
-				mainFile:			{ required: true }
             },
             invalidHandler: function(event, validator) { //display error alert on form submit
             	toastr.error(messagesForms.validation.genFormError);
@@ -55,7 +54,7 @@ var WebProjectCreateController = function() {
 						toastr.success(messagesForms.validation.genFormSuccess);             
 	                    form.submit();					
 				}else{
-	            	if ($("#buttonLoadRootZip").val() != "" ||
+	            	if ($("#buttonLoadRootZip").val() != "" || $("#createMode").val() == "Git" ||
 	            		(webProjectCreateJson.actionMode != null && !webProjectModified) ||
 	            		(webProjectCreateJson.actionMode != null && webProjectModified && webProjectUploaded)){
 	            		toastr.success(messagesForms.validation.genFormSuccess);             

@@ -33,6 +33,7 @@ import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.NullValue;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.schema.Column;
 
 @AllArgsConstructor
 public class UpdateSetVisitorAdapter extends ExpressionVisitorAdapter {
@@ -61,7 +62,13 @@ public class UpdateSetVisitorAdapter extends ExpressionVisitorAdapter {
 			builder.append(stringValue);
 
 	}
-
+	
+	
+	@Override
+	public void visit(Column column) {
+		builder.append(column.getColumnName());
+	}
+	
 	@Override
 	public void visit(LongValue longValue) {
 		builder.append(longValue.getStringValue());

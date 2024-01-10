@@ -64,7 +64,9 @@ public class ExtendedTokenEnhancer implements TokenEnhancer {
 		additionalInfo.put("parameters", authentication.getOAuth2Request().getRequestParameters());
 		additionalInfo.put("clientId", authentication.getOAuth2Request().getClientId());
 		additionalInfo.put("grantType", authentication.getOAuth2Request().getGrantType());
-		log.debug("Extended token enhancer before first query {}ms", System.currentTimeMillis() - start);
+		if (log.isDebugEnabled()) {
+			log.debug("Extended token enhancer before first query {}ms", System.currentTimeMillis() - start);
+		}		
 		if (multitenancyEnabled) {
 			multitenancyService.findUser(authentication.getName()).ifPresent(u -> {
 				additionalInfo.put(VERTICAL,
@@ -79,7 +81,9 @@ public class ExtendedTokenEnhancer implements TokenEnhancer {
 		if (clientId.equals(defaultClientId)) {
 			additionalInfo.put("authorities", getPlatformAuthorities(authentication));
 		} else {
-			log.debug("Extended token enhancer before queries {}ms", System.currentTimeMillis() - start);
+			if (log.isDebugEnabled()) {
+				log.debug("Extended token enhancer before queries {}ms", System.currentTimeMillis() - start);
+			}			
 			final long now = System.currentTimeMillis();
 			final String userId = authentication.getUserAuthentication().getName();
 			final List<AppRoleListOauth> roles = tokenUtil.getAppRoles(userId, clientId);
@@ -87,10 +91,14 @@ public class ExtendedTokenEnhancer implements TokenEnhancer {
 			childRoles = tokenUtil.addChildRolesNotAssociated(userId, clientId, childRoles);
 			additionalInfo.put("apps", childRoles);
 			additionalInfo.put("authorities", getAuthorities(roles));
-			log.debug("Extended token enhancer after queries {}ms", System.currentTimeMillis() - now);
+			if (log.isDebugEnabled()) {
+				log.debug("Extended token enhancer after queries {}ms", System.currentTimeMillis() - now);
+			}			
 		}
 		((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(additionalInfo);
-		log.debug("End token enhancer chain, time: {}", System.currentTimeMillis() - start);
+		if (log.isDebugEnabled()) {
+			log.debug("End token enhancer chain, time: {}", System.currentTimeMillis() - start);
+		}		
 		return accessToken;
 	}
 

@@ -149,7 +149,7 @@ public class MicroservicesRestController {
 		}
 
 		try {
-			final Map<String, String> parameters = jenkinsService.getParametersFromJob(pipeline.getJenkinsUrl(),
+			final Map<String, Object> parameters = jenkinsService.getParametersFromJob(pipeline.getJenkinsUrl(),
 					pipeline.getUsername(), pipeline.getToken(), pipeline.getJobName());
 			return new ResponseEntity<>(parameters, HttpStatus.OK);
 		} catch (final JenkinsException e) {

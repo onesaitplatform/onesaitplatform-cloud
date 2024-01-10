@@ -613,7 +613,7 @@ var cloneUsersDashboardDialog = function(mapsprojectId, identification){
 					text: Confirm,
 					btnClass: 'btn btn-blue', 
 					action: function() {
-						if($("#newImport").val()=="" || !$("#jsonInputData").val() || $("#jsonInputData").val()=="" || !$("#newImport").val()){
+						if($("#newImport").val()=="" || !$("#jsonInputData").val() || $("#jsonInputData").val()=="" || !$("#newImport").val() || $("#newImport").val().length < 5){
 							if($("#newImport").val().length < 5) {
 							console.log("empty file or identity fields");
 							$('#newImport').closest('.form-group').addClass('has-error');

@@ -52,7 +52,6 @@ public class HazelcastCacheLoaderClient {
 		log.info("Configured Local Cache with data: Name : {} Instance Name {} Group Name: {}", configFile,
 				config.getInstanceName());
 
-
 		config.addNearCacheConfig(new NearCacheConfig("MasterUserRepository"));
 		config.addNearCacheConfig(new NearCacheConfig("VerticalRepository"));
 		config.addNearCacheConfig(new NearCacheConfig("MasterUserRepositoryLazy"));
@@ -75,9 +74,8 @@ public class HazelcastCacheLoaderClient {
 		xmlClientConfigBuilder.setProperties(props);
 		final ClientConfig config = xmlClientConfigBuilder.build();
 
-		log.info("Configured Local Cache with data: Name : " + configFile + " Instance Name: "
-				+ config.getInstanceName() + " Group Name: ");
-
+		log.info("Configured Local Cache with data: Name : {} Instance Name: {} Group Name: ", configFile,
+				config.getInstanceName());
 
 		config.addNearCacheConfig(new NearCacheConfig("MasterUserRepository"));
 		config.addNearCacheConfig(new NearCacheConfig("VerticalRepository"));
@@ -93,8 +91,5 @@ public class HazelcastCacheLoaderClient {
 			return new NoOpCacheManager();
 		}
 	}
-
-
-
 
 }

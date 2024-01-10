@@ -54,12 +54,16 @@ public class AnsibleCommandExecutor implements CommandExecutor {
 			while ((line = reader.readLine()) != null) {
 				output.append(line);
 				output.append(System.getProperty("line.separator"));
-				log.debug("output: {}", line);
+				if (log.isDebugEnabled()) {
+					log.debug("output: {}", line);
+				}				
 			}
 			log.debug("waitfor");
 			p.waitFor();
 			result.setResult(output.toString());
-			log.debug("Ansible command executed, output.toString(): {}", output.toString());
+			if (log.isDebugEnabled()) {
+				log.debug("Ansible command executed, output.toString(): {}", output.toString());
+			}			
 			return result;
 
 		} catch (Exception e) {
@@ -73,7 +77,9 @@ public class AnsibleCommandExecutor implements CommandExecutor {
 	private String writeHostFile(String ip, String user) throws IOException {
 		File file = new File("/etc/ansible/host_" + UUID.randomUUID());
 		Files.write(file.toPath(), (ip + " ansible_user=" + user).getBytes());
-		log.debug("hostPath: {}", file.getAbsolutePath());
+		if (log.isDebugEnabled()) {
+			log.debug("hostPath: {}", file.getAbsolutePath());
+		}		
 		return file.getAbsolutePath();
 	}
 

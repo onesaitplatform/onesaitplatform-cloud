@@ -14,34 +14,39 @@
     limitations under the License.
 
 -->
-<html xmlns:th="http://www.thymeleaf.org"  th:with="lang=${#locale.language}" th:lang="${lang}">
-	<head>
-		<meta name="_csrf" th:content="${_csrf.token}"/>
-		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	
-		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
-		<meta http-equiv="Content-Language" th:content="${lang}"/>
-		<title th:text="#{name.app}"/>
+<html xmlns:th="http://www.thymeleaf.org" th:with="lang=${#locale.language}" th:lang="${lang}">
 
-		<!-- STYLE SHEETS -->
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
-		<!-- THEME -->
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+<head>
+	<meta name="_csrf" th:content="${_csrf.token}" />
+	<meta name="_csrf_header" th:content="${_csrf.headerName}" />
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
-		<!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND BOOSTRAP-TIMEPICKER, TAGSINPUT, JSONEDITOR  -->
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}"/>
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css}"/>
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.css}"/>
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}"/>
-			
-	</head>	
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+	<meta http-equiv="Content-Language" th:content="${lang}" />
+	<title th:text="#{name.app}" />
 
-	<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
-	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+	<!-- STYLE SHEETS -->
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}" />
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}" />
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}" />
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}" />
+	<!-- THEME -->
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
+
+	<!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND BOOSTRAP-TIMEPICKER, TAGSINPUT, JSONEDITOR  -->
+	<link rel="stylesheet" type="text/css" media="all"
+		th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}" />
+	<link rel="stylesheet" type="text/css" media="all"
+		th:href="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css}" />
+	<link rel="stylesheet" type="text/css" media="all"
+		th:href="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.css}" />
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}" />
+
+</head>
+
+<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
+
+<body class="page-header-fixed  page-content-white page-sidebar-closed">
 
 	<!-- MAIN PAGE WRAPPER -->
 	<div class="page-wrapper" id="createWebprojectDiv">
@@ -56,90 +61,124 @@
 		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
 		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
 		<!-- END SIDEBAR -->
-			
+
 		<!-- BEGIN CONTENT -->
 		<div class="page-content-wrapper">
-			
+
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
-			
+
 				<div class="alert alert-success display-hide">
 					<span th:text="${globalMessage}"></span>
 				</div>
-				
+
 				<!-- BEGIN PAGE BAR AND BREADCRUM-->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><a th:href="@{/webprojects/list}"> <span th:text="#{webproject.breadcrumb.list}"> Web Projects List </span></a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/webprojects/list}"> <span th:text="#{webproject.breadcrumb.list}"> Web
+									Projects List </span></a><i class="fa fa-angle-right"></i></li>
 						<li>
-							<span th:if="${webproject?.id} == null" th:text="#{webproject.breadcrumb.create}"> New Web Project </span>
-							<span th:if="${webproject?.id} != null" th:text="#{webproject.breadcrumb.update}"> Update Web Project </span>
+							<span th:if="${webproject?.id} == null" th:text="#{webproject.breadcrumb.create}"> New Web
+								Project </span>
+							<span th:if="${webproject?.id} != null" th:text="#{webproject.breadcrumb.update}"> Update
+								Web Project </span>
 						</li>
-					</ul>						
+					</ul>
 				</div>
 				<!-- END PAGE BAR -->
 
 				<!-- BEGIN PAGE TITLE-->
 				<h1 class="page-title hide ">
-					<span th:if="${webproject?.id} == null" th:text="#{webproject.template.create}"> Create New Web Project </span>
-					<span th:if="${webproject?.id} != null" th:text="#{webproject.template.update} + ' ' + ${webproject.identification}"> Update Web Project </span>				
+					<span th:if="${webproject?.id} == null" th:text="#{webproject.template.create}"> Create New Web
+						Project </span>
+					<span th:if="${webproject?.id} != null"
+						th:text="#{webproject.template.update} + ' ' + ${webproject.identification}"> Update Web Project
+					</span>
 				</h1>
 				<!-- END PAGE TITLE-->
-			
+
 				<!-- AUXILIAR FORM TO DELETE WEBPROJECT -->
-				<form id="delete_webproject_form" class="delete-webproject hide"  th:action="@{'/webprojects/'+${webproject.id}}"  method="post">
-					<input type="hidden" name="_method" value="DELETE"/>
-					<input id="delete-webprojectId" type="hidden" name="webprojectId" th:value="${webproject.id}"/>
+				<form id="delete_webproject_form" class="delete-webproject hide"
+					th:action="@{'/webprojects/'+${webproject.id}}" method="post">
+					<input type="hidden" name="_method" value="DELETE" />
+					<input id="delete-webprojectId" type="hidden" name="webprojectId" th:value="${webproject.id}" />
 					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 				</form>
 				<!-- AUXILIAR FORM TO UPLOAD ZIP -->
-				<form id="upload_zip" enctype="multipart/form-data" method="post" th:action="@{'/webprojects/uploadZip'}+ '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}">
-					<input class="form-group button_text" id="buttonLoadRootZip" type="file" accept=".zip" style="display:none" onchange="WebProjectCreateController.uploadZip()" th:for="#{webproject.uploadZIP}" th:name="#{webproject.uploadZIP}"/>
-					<input type="hidden" id="pathZipUpload" name="path" for="path" value=""/>
+				<form id="upload_zip" enctype="multipart/form-data" method="post"
+					th:action="@{'/webprojects/uploadZip'}+ '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}"
+					th:required="true">
+					<input class="form-group button_text" id="buttonLoadRootZip" type="file" accept=".zip"
+						style="display:none" onchange="WebProjectCreateController.uploadZip()"
+						th:for="#{webproject.uploadZIP}" th:name="#{webproject.uploadZIP}" />
+					<input type="hidden" id="createMode" value="Zip" />
+					<input type="hidden" id="pathZipUpload" name="path" for="path" value="" />
 					<input type="submit" style="display:none" value="submitLoadZip" id="submitLoadZip" />
 					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 				</form>
-				
+
 				<form role="form" id="webproject_create_form" th:object="${webproject}" method="post" class="form">
 					<th:block th:include="versioning/fragments/form-commit"></th:block>
 					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+					<input type="hidden" name="current_tab" id="current_tab" />
+
 					<!-- FORM ACTIONS FOR INSERT-->
-					<input th:if="${webproject.id} == null" type="hidden" name="action" th:value="@{/webprojects/create}"/>
-					
+					<input th:if="${webproject.id} == null" type="hidden" name="action"
+						th:value="@{/webprojects/create}" />
+
 					<!-- FORM ACTIONS FOR UPDATE -->
-					<input th:if="${webproject?.id} != null" type="hidden" name="action" th:value="@{'/webprojects/update/'+${webproject.id}}"/>
-					<input th:if="${webproject?.id} != null" type="hidden" name="_method" value="POST"/>
-						
+					<input th:if="${webproject?.id} != null" type="hidden" name="action"
+						th:value="@{'/webprojects/update/'+${webproject.id}}" />
+					<input th:if="${webproject?.id} != null" type="hidden" name="_method" value="POST" />
+
 					<div id="header">
 						<div class="row pageCreateHeader">
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="margin-top-4">
-									<span th:if="${webproject?.id} == null" th:text="#{webproject.breadcrumb.new}">New Data Model</span>
-									<span th:if="${webproject?.id} != null" th:text="${webproject.identification}">Update Data Model</span>
+									<span th:if="${webproject?.id} == null" th:text="#{webproject.breadcrumb.new}">New
+										Data Model</span>
+									<span th:if="${webproject?.id} != null"
+										th:text="${webproject.identification}">Update Data Model</span>
 								</div>
 							</div>
-							
+
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="${webproject?.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='javascript:WebProjectCreateController.go(\'' + @{/webprojects/delete/} + ${webproject.id} + '\');'"><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
-																								
+									<button th:if="${webproject?.id} != null" id="deleteBtn" type="button"
+										class="btn btn-primary btn-primary-delete" name="delete" value="Remove"
+										th:attr="onclick='javascript:WebProjectCreateController.go(\'' + @{/webprojects/delete/} + ${webproject.id} + '\');'"><i
+											class="icon-delete"></i><span th:text="#{gen.deleteBtn}"
+											class="delete-btn-text"> Delete </span></button>
+
 									<span class="sep" th:if="${webproject?.id} != null"></span>
-										
-									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:WebProjectCreateController.cancel(\''+ ${webproject.id} + '\',\'' + @{/webprojects/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-		
+
+									<!-- CANCEL -->
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"
+										th:value="#{gen.cancelBtn}" value="cancel"
+										th:attr="onclick='javascript:WebProjectCreateController.cancel(\''+ ${webproject.id} + '\',\'' + @{/webprojects/list} + '\');'"><span
+											th:text="#{gen.cancelBtn}"> Cancel </span></button>
+
 									<!-- RESET -->
-									<button th:if="${webproject?.id} == null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" > <span th:text="#{gen.resetBtn}"> Reset</span></button>
-									<button th:if="${webproject?.id} != null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" disabled="true" > <span th:text="#{gen.resetBtn}"> Reset</span></button>
-										
+									<button th:if="${webproject?.id} == null" id="resetBtn" type="button"
+										class="btn btn-outline-search" name="reset" th:value="#{gen.resetBtn}"> <span
+											th:text="#{gen.resetBtn}"> Reset</span></button>
+									<button th:if="${webproject?.id} != null" id="resetBtn" type="button"
+										class="btn btn-outline-search" name="reset" th:value="#{gen.resetBtn}"
+										disabled="true"> <span th:text="#{gen.resetBtn}"> Reset</span></button>
+
 									<span class="sep no-border" th:if="(${webproject?.id} != null)"></span>
-										
+
 									<!-- CREATE -->
-									<button th:if="${webproject?.id} == null" id="createBtn" class="btn btn-primary btn-primary-save" type="submit" name="create"><span th:text="#{gen.createBtn}"> New</span></button>
-										
+									<button th:if="${webproject?.id} == null" id="createBtn"
+										class="btn btn-primary btn-primary-save" type="submit" name="create"><span
+											th:text="#{gen.createBtn}"> New</span></button>
+
 									<!-- UPDATE -->
-									<button th:if="${webproject?.id} != null" id="updateBtn" class="btn btn-primary btn-primary-save" type="submit" name="update" th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>
+									<button th:if="${webproject?.id} != null" id="updateBtn"
+										class="btn btn-primary btn-primary-save" type="submit" name="update"
+										th:value="#{gen.editBtn}"><span th:text="#{gen.changes}"> Save
+											Changes</span></button>
 								</div>
 							</div>
 						</div>
@@ -147,13 +186,16 @@
 					<!-- MAIN ROW -->
 					<div class="mainPanel">
 						<div class="row display-hide">
-							<!-- BEGIN ALERTS ZONE -->		
+							<!-- BEGIN ALERTS ZONE -->
 							<div class="col-md-12 alert-zone">
 								<div class="alert alert-danger display-hide">
-									<button class="close" data-close="alert"></button> <span th:text="#{gen.form.error}">You have some form errors. Please check below.</span>
+									<button class="close" data-close="alert"></button> <span
+										th:text="#{gen.form.error}">You have some form errors. Please check
+										below.</span>
 								</div>
 								<div class="alert alert-success display-hide">
-									<button class="close" data-close="alert"></button> <span th:text="#{gen.form.success}">Your form validation is successful!</span>
+									<button class="close" data-close="alert"></button> <span
+										th:text="#{gen.form.success}">Your form validation is successful!</span>
 								</div>
 							</div>
 						</div>
@@ -163,62 +205,157 @@
 								<span th:text="#{gen.generalInformation}">General Information</span>
 							</div>
 							<div class="col-md-3 col-sm-3 col-xs-3">
-								<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
-							</div>
-						</div>							
-						<div class="row main">																									
-							<div class="col-md-12 col-sm-12 col-xs-12">
-								<div class="form-group">
-									<label class="" th:text="#{webproject.name}"> Name </label><span class="required"> *</span>
-									<input th:if="${webproject?.id} == null" th:tabindex="1" id="identification" type="text" maxlength="50" th:field="*{identification}" class="form-control"  th:placeholder="#{webproject.name}" th:required="true"/>
-									<input th:if="${webproject?.id} != null" th:tabindex="1" id="identification" type="text" maxlength="50" th:field="*{identification}" class="form-control no-remove"  th:placeholder="#{webproject.name}" readonly="readonly"/>																
-								</div>
+								<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required
+									Field</span>
 							</div>
 						</div>
-						<div class="row main">	
+						<div class="row main">
 							<div class="col-md-12 col-sm-12 col-xs-12">
 								<div class="form-group">
-									<label th:text="#{webproject.description}"> Description </label><span class="required"> *</span>
-									<textarea th:tabindex="3" class="element textarea small form-control" id="description" name="description" th:placeholder="#{webproject.description}" maxlength="512" th:field="*{description}" cols="" rows="" th:required="true"></textarea>
-								</div>
-							</div>
-						</div>
-						<div class="row main">	
-							<div class="col-md-12 col-sm-12 col-xs-12">
-								<div class="form-group">
-									<label th:text="#{webproject.mainFile} + ' (' + #{webproject.indexFile.info} + ')'"> Main File </label><span class="required"> *</span>
-									<input th:tabindex="1" id="mainFile" type="text" maxlength="100" th:field="*{mainFile}" class="form-control " th:placeholder="index.html" value="" th:required="true"/>														
+									<label class="" th:text="#{webproject.name}"> Name </label><span class="required">
+										*</span>
+									<input th:if="${webproject?.id} == null" th:tabindex="1" id="identification"
+										type="text" maxlength="50" th:field="*{identification}" class="form-control"
+										th:placeholder="#{webproject.name}" th:required="true" />
+									<input th:if="${webproject?.id} != null" th:tabindex="1" id="identification"
+										type="text" maxlength="50" th:field="*{identification}"
+										class="form-control no-remove" th:placeholder="#{webproject.name}"
+										readonly="readonly" />
 								</div>
 							</div>
 						</div>
 						<div class="row main">
-							<div th:if="${webproject?.id} == null" class="col-md-3 col-sm-3 col-xs-12" id ="switch-upload">			
-								<div class="mt-checkbox-list" style="height: 0px; display:inline-block;  padding-top: 30px;">
-									<div class="switch"> 
+							<div class="col-md-12 col-sm-12 col-xs-12">
+								<div class="form-group">
+									<label th:text="#{webproject.description}"> Description </label><span
+										class="required"> *</span>
+									<textarea th:tabindex="3" class="element textarea small form-control"
+										id="description" name="description" th:placeholder="#{webproject.description}"
+										maxlength="512" th:field="*{description}" cols="" rows=""
+										th:required="true"></textarea>
+								</div>
+							</div>
+						</div>
+						<div class="row main">
+							<div class="col-md-12 col-sm-12 col-xs-12">
+								<div id="mainFileDiv" class="form-group">
+									<label th:text="#{webproject.mainFile} + ' (' + #{webproject.indexFile.info} + ')'">
+										Main File </label><span class="required"> *</span>
+									<input th:tabindex="1" id="mainFile" type="text" maxlength="100"
+										th:field="*{mainFile}" class="form-control " th:placeholder="index.html"
+										value="" th:required="true" />
+								</div>
+							</div>
+						</div>
+
+						<div class="tab">
+							<button class="btn btn-primary" style="margin-bottom: 15px;" type="button"
+								onclick="changeTab(event, 'Zip')">Zip</button>
+							<button class="btn btn-primary" style="margin-bottom: 15px;" type="button"
+								onclick="changeTab(event, 'Git')">Git</button>
+						</div>
+
+						<div id="Zip" class="tabcontent">
+
+							<div class="col-md-6 col-sm-6 col-xs-6 margin-top-20 " id="div-uploadZIP">
+								<div id="alert-apis-modal" class="alert alert-info">
+									<i class="fa fa-info-circle"></i> <span th:text="#{webproject.useZip.info}"></span>
+								</div>
+								<div class="form-group">
+									<button id="uploadZIP" type="button" class="btn btn-circle btn-outline blue"
+										name="uploadZIP" th:value="#{webproject.uploadZIP}"
+										onclick="$('#buttonLoadRootZip').click();"> <i class="fa fa-file-archive-o"
+											style="padding-right:4px;"></i><span th:text="#{webproject.uploadZIP}">
+											Upload ZIP </span></button><span class="required"> *</span>
+									<span id="zipNameS"></span>
+								</div>
+							</div>
+							<div th:if="${webproject?.id} == null" class="col-md-6 col-sm-6 col-xs-6 margin-top-20 "
+								style="display:none" id="div-usePlatformTemplate">
+								<div id="alert-apis-modal" class="alert alert-info">
+									<i class="fa fa-info-circle"></i> <span th:text="#{webproject.useTemplate.info}">
+									</span>
+									<bold><a th:href="#{webproject.useTemplate.info.link}" target="_blank"
+											th:text="#{webproject.useTemplate.info.link.description}"></a></bold>
+								</div>
+							</div>
+							<div th:if="${webproject?.id} == null" class="col-md-3 col-sm-3 col-xs-12"
+								id="switch-upload">
+								<div class="mt-checkbox-list"
+									style="height: 0px; display:inline-block;  padding-top: 30px;">
+									<div class="switch">
 										<label>
-											<input id="switchTemplate"  class="form-control no-remove" type="checkbox"  onclick="WebProjectCreateController.showHideUseTemplate();"></input>											
+											<input id="switchTemplate" class="form-control no-remove" type="checkbox"
+												onclick="WebProjectCreateController.showHideUseTemplate();"></input>
 											<span class="checkbox-slider round" th:field="${filterCheck}"></span>
 										</label>
 									</div>
-									<div class="inline font-xs" th:text="#{webproject.useTemplate.switch}" style="margin-left:7px;color:#505D66;">Use web project template
+									<div class="inline font-xs" th:text="#{webproject.useTemplate.switch}"
+										style="margin-left:7px;color:#505D66;">Use web project template
 									</div>
 								</div>
-							</div>	
-							<div class="col-md-6 col-sm-6 col-xs-6 margin-top-20 " id="div-uploadZIP">
-								 <div id="alert-apis-modal" class="alert alert-info">
-										<i class="fa fa-info-circle"></i> <span th:text="#{webproject.useZip.info}"></span>
-									</div>
-								<div class="form-group">																	
-									<button id="uploadZIP" type="button" class="btn btn-circle btn-outline blue" name="uploadZIP"  th:value="#{webproject.uploadZIP}" onclick="$('#buttonLoadRootZip').click();"> <i class="fa fa-file-archive-o" style="padding-right:4px;"></i><span th:text="#{webproject.uploadZIP}"> Upload ZIP </span></button><span class="required"> *</span> 
-									<span id="zipNameS"></span>
-                                </div>
 							</div>
-							<div th:if="${webproject?.id} == null" class="col-md-6 col-sm-6 col-xs-6 margin-top-20 " style="display:none" id="div-usePlatformTemplate">
-								<div id="alert-apis-modal" class="alert alert-info">
-									<i class="fa fa-info-circle"></i> <span th:text="#{webproject.useTemplate.info}"> </span>
-									<bold><a th:href="#{webproject.useTemplate.info.link}" target="_blank" th:text="#{webproject.useTemplate.info.link.description}" ></a></bold>
+						</div>
+						<div id="Git" class="tabcontent" hidden="true">
+							<div class="col-md-12 col-sm-6 col-xs-16">
+								<div class="alert alert-info alert-dismissable">
+									<button type="button" class="close" data-dismiss="alert"
+										aria-hidden="true"></button>
+									<i class="fa fa-info-circle"></i>
+									<span th:text="#{webproject.create.alert}"></span>
 								</div>
-                           </div>
+							</div>
+							<div class="row main">
+								<div class="col-md-12 col-sm-12 col-xs-12">
+									<div class="form-group">
+										<label th:text="GitUrl"> GitUrl </label><span class="required"> *</span>
+										<textarea th:tabindex="3" class="element textarea small form-control"
+											id="gitUrl" name="gitUrl" maxlength="512" th:field="*{gitUrl}" cols=""
+											rows="" th:required="true"></textarea>
+									</div>
+								</div>
+							</div>
+							<div class="row main">
+								<div class="col-md-12 col-sm-12 col-xs-12">
+									<div class="form-group">
+										<label th:text="Token"> GitToken </label><span class="required"> *</span>
+										<textarea th:tabindex="3" class="element textarea small form-control"
+											id="gitToken" name="gitToken" maxlength="512" th:field="*{gitToken}" cols=""
+											rows="" th:required="true"></textarea>
+									</div>
+								</div>
+							</div>
+							<div class="row main">
+								<div class="col-md-12 col-sm-12 col-xs-12">
+									<div class="form-group">
+										<label>
+											<input id="npmCheck" type="checkbox" name="mycheckbox" th:field="*{npm}"
+												onchange="showCommand()">
+										</label>
+										<div class="inline font-xs" th:text="#{webproject.npm.switch}"
+											style="margin-left:7px;color:#505D66;">NPM Project
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row main">
+								<div class="col-md-12 col-sm-12 col-xs-12">
+									<div id="runCommandDiv" hidden="true" class="form-group">
+										<label th:text="'Run Command'"> Run Command </label><span class="required">
+											*</span>
+										<textarea th:tabindex="3" class="element textarea small form-control"
+											id="runCommand" name="runCommand" maxlength="512" th:field="*{runCommand}"
+											th:required="true"></textarea>
+									</div>
+									<div id="targetDirectoryDiv" hidden="true" class="form-group">
+										<label th:text="'Target Directory'"> Run Command </label><span class="required">
+											*</span>
+										<textarea th:tabindex="3" class="element textarea small form-control"
+											id="targetDirectory" name="targetDirectory" maxlength="512"
+											th:field="*{targetDirectory}" th:required="true"></textarea>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div><!-- END MAIN ROW -->
 				</form>
@@ -238,44 +375,47 @@
 	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
 	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
 	<!-- LOADING DEFAULT DATES IF NEEDED -->
-	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}" type="text/javascript"></script>
-	
+	<script th:if="${lang} == 'es'"
+		th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}"
+		type="text/javascript"></script>
+
 	<script th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}" type="text/javascript"></script>
-    <script th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
+	<script th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
 	<!-- LOADING DEFAULT LANG MESSAGES IF NEEDED -->
-	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}" type="text/javascript"></script>
+	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}"
+		type="text/javascript"></script>
 
 	<script th:src="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js}" type="text/javascript"></script>
 	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
-	
+
 	<!-- JSON EDITOR -->
 	<script th:src="@{/static/vendor/json/json2.min.js}"></script>
 	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>
-	
+
 	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
 	<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
 	<script th:src="@{/static/vendor/ace/theme-monokai.js}"></script>
-	
-	
+
+
 	<!-- INPUTMASK -->
 	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
-	
+
 	<!-- BLOCKUI -->
 	<script th:src="@{/static/vendor/blockUI.js}"></script>
-	
 
-	<!-- TEMPLATE CONTROLLER  -->	
+
+	<!-- TEMPLATE CONTROLLER  -->
 	<script th:src="@{/static/js/pages/webProjectCreate.js}"></script>
 
 	<!-- MAIN INIT -->
-	<script  th:inline="javascript">
-	
-			
-	var currentLanguage = [[${lang}]];	
-	
-	var webProjectCreateJson = { 	
-			"language" : currentLanguage,
-			"actionMode" : [[${webproject.id}]],
+	<script th:inline="javascript">
+
+
+		var currentLanguage = [[${lang}]];
+
+		var webProjectCreateJson = {
+			"language": currentLanguage,
+			"actionMode": [[${webproject.id}]],
 			"validform": {
 				"emptyfields": [[#{webproject.validation.emptyfields}]],
 				"zipnotuploaded": [[#{webproject.uploadzip.error}]],
@@ -283,13 +423,73 @@
 				"ziprequired": [[#{webproject.validation.filerequired}]],
 				"uploadTemplateRequired": [[#{webproject.validation.webtemplaterequired}]]
 			},
-			"messages" : {
-				"validationZIP":[[#{webproject.uploadZIP.validation}]]
+			"messages": {
+				"validationZIP": [[#{webproject.uploadZIP.validation}]]
 			}
-		};   
-		
-		
-		
-	</script>	
+		};
+
+		function showCommand() {
+			if ($("#npmCheck").is(':checked')) {
+				$("#runCommand").attr("th:required", "true");
+				$("#runCommandDiv").show();
+				$("#targetDirectory").attr("th:required", "true");
+				$("#targetDirectoryDiv").show();
+				$("#mainFile").attr("th:required", "false");
+				$("#mainFile").removeAttr("required");
+
+
+
+			} else {
+
+				$("#runCommand").attr("th:required", "false");
+				$("#runCommandDiv").hide();
+				$("#targetDirectory").attr("th:required", "false");
+				$("#targetDirectoryDiv").hide();
+				$("#mainFile").attr("th:required", "true");
+				$("#mainFile").attr("required", "required");
+
+			}
+
+
+		}
+
+
+		function changeTab(evt, cityName) {
+			// Declare all variables
+			var i, tabcontent, tablinks;
+
+			if (cityName == "Git") {
+				$("#createMode").attr("value", "Git");
+
+
+			} else {
+				$("#createMode").attr("value", "Zip");
+				$("#mainFile").attr("th:required", "true");
+				$("#mainFile").attr("required", "required");
+			}
+			// Get all elements with class="tabcontent" and hide them
+			tabcontent = document.getElementsByClassName("tabcontent");
+			for (i = 0; i < tabcontent.length; i++) {
+				tabcontent[i].style.display = "none";
+			}
+
+			// Get all elements with class="tablinks" and remove the class "active"
+			tablinks = document.getElementsByClassName("tablinks");
+			for (i = 0; i < tablinks.length; i++) {
+				tablinks[i].className = tablinks[i].className.replace(" active", "");
+			}
+
+			// Show the current tab, and add an "active" class to the button that opened the tab
+			document.getElementById(cityName).style.display = "block";
+			evt.currentTarget.className += " active";
+		}
+
+		$(document).ready(function () {
+			showCommand();
+		});
+
+
+	</script>
 </body>
+
 </html>

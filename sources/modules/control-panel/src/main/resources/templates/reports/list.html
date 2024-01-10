@@ -340,13 +340,16 @@
 																	<i class="icon-play"></i>
 																	<!-- Agrega el spinner aquí -->
 																</span>
-
-																<span th:attr="data-id=${report.id}"
+																
+																<span th:disabled="(${#authentication.name} != ${report.owner} AND ${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR')" th:attr="data-id=${report.id}"
 																	th:data-id="${report.id}"
-																	class="report-edit btn btn-xs btn-no-border icon-on-table color-blue tooltips"
-																	data-container="body" data-placement="bottom"
-																	data-original-title="Edit"><i
-																		class="icon-edit"></i></span>
+																	th:class="'btn btn-xs btn-no-border icon-on-table color-blue tooltips ' + 
+														              (${#authentication.name != report.owner 
+														                AND #strings.arrayJoin(#authentication.authorities,'') != 'ROLE_ADMINISTRATOR'} 
+														              ? '' : 'report-edit')"
+																	data-container="body" data-placement="bottom" 
+																	data-original-title="Edit"> 
+																	<i class="icon-edit"></i></span>
 
 																<span class="dropdown">
 																	<span
@@ -368,12 +371,15 @@
 																					th:text="#{gen.download}">Download</span></span>
 																		</li>
 																		<li>
-																			<span th:attr="data-id=${report.id}"
+																			<span th:disabled="(${#authentication.name} != ${report.owner} AND ${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR')" th:attr="data-id=${report.id}"
 																				th:data-id="${report.id}"
-																				class="report-trash btn btn-xs btn-no-border btn-circle btn-outline color-red"
+																				th:class="'btn btn-xs btn-no-border btn-circle btn-outline color-red ' + 
+																	              (${#authentication.name != report.owner 
+																	                AND #strings.arrayJoin(#authentication.authorities,'') != 'ROLE_ADMINISTRATOR'} 
+																	              ? '' : 'report-trash')"
 																				data-container="body"
 																				data-placement="bottom"><i
-																					class="icon-delete"></i><span
+																					class="icon-delete"></i><span  
 																					class="span-title-three-dots-icons"
 																					th:text="#{gen.deleteBtn}">Delete</span></span>
 																		</li>

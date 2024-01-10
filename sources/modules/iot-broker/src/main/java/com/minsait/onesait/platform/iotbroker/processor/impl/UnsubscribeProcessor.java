@@ -54,7 +54,8 @@ public class UnsubscribeProcessor implements MessageTypeProcessor {
 	ObjectMapper objectMapper;
 
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info, Optional<IoTSession> session) {
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info,
+			Optional<IoTSession> session) {
 		final SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribeMessage = (SSAPMessage<SSAPBodyUnsubscribeMessage>) message;
 		SSAPMessage<SSAPBodyReturnMessage> response = new SSAPMessage<>();
 		response.setBody(new SSAPBodyReturnMessage());
@@ -69,7 +70,7 @@ public class UnsubscribeProcessor implements MessageTypeProcessor {
 		try {
 			routerResponse = routerService.unsubscribe(model);
 		} catch (final Exception e1) {
-			log.error("Error in process:" + e1.getMessage());
+			log.error("Error in process:{}", e1.getMessage());
 			response = SSAPUtils.generateErrorMessage(unsubscribeMessage, SSAPErrorCode.PROCESSOR, e1.getMessage());
 			return response;
 		}
@@ -77,7 +78,7 @@ public class UnsubscribeProcessor implements MessageTypeProcessor {
 		final String messageResponse = routerResponse.getMessage();
 		final String operation = routerResponse.getOperation();
 		final String result = routerResponse.getResult();
-		log.error(errorCode + " " + messageResponse + " " + operation + " " + result);
+		log.error("{} {} {} {}", errorCode, messageResponse, operation, result);
 
 		if (StringUtils.hasText(routerResponse.getErrorCode())) {
 			response = SSAPUtils.generateErrorMessage(unsubscribeMessage, SSAPErrorCode.PROCESSOR,
@@ -96,7 +97,7 @@ public class UnsubscribeProcessor implements MessageTypeProcessor {
 			data = objectMapper.readTree(dataStr);
 			response.getBody().setData(data);
 		} catch (final IOException e) {
-			log.error("Error in process:" + e.getMessage());
+			log.error("Error in process:{}", e.getMessage());
 			response = SSAPUtils.generateErrorMessage(unsubscribeMessage, SSAPErrorCode.PROCESSOR, e.getMessage());
 			return response;
 		}

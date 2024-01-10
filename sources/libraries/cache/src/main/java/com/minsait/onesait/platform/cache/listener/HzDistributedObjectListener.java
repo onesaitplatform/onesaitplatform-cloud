@@ -23,14 +23,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class HzDistributedObjectListener implements DistributedObjectListener {
 
-    @Override
-    public void distributedObjectCreated(DistributedObjectEvent event) {
-        DistributedObject instance = event.getDistributedObject();
-        log.info("Created " + instance.getName() + ", service=" + instance.getServiceName());
-    }
+	@Override
+	public void distributedObjectCreated(DistributedObjectEvent event) {
+		DistributedObject instance = event.getDistributedObject();
+		log.info("Created {}, service={}", instance.getName(), instance.getServiceName());
+	}
 
-    @Override
-    public void distributedObjectDestroyed(DistributedObjectEvent event) {
-        log.info("Destroyed " + event.getObjectName() + ", service=" + event.getServiceName());
-    }
+	@Override
+	public void distributedObjectDestroyed(DistributedObjectEvent event) {
+		log.info("Destroyed {}, service={}", event.getObjectName(), event.getServiceName());
+	}
 }

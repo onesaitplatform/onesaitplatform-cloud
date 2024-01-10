@@ -82,7 +82,7 @@ public class QueryAsTextDBRepositoryFactory {
 	public QueryAsTextDBRepository getInstance(String ontologyId, String sessionUserId) {
 		final Ontology ds = ontologyService.getOntologyByIdentification(ontologyId, sessionUserId);
 		final RtdbDatasource dataSource = ds.getRtdbDatasource();
-		return getInstance(dataSource);
+		return getInstance(dataSource, ds);
 	}
 
 	public QueryAsTextDBRepository getInstanceClientPlatform(String ontologyId, String clientP) {
@@ -95,21 +95,23 @@ public class QueryAsTextDBRepositoryFactory {
 
 		if (result1 != null) {
 			final RtdbDatasource dataSource = result1.getRtdbDatasource();
-			return getInstance(dataSource);
+			return getInstance(dataSource, result1);
 		} else {
 			return queryMongo;
 		}
 	}
 
-	public QueryAsTextDBRepository getInstance(RtdbDatasource dataSource) {
+	public QueryAsTextDBRepository getInstance(RtdbDatasource dataSource, Ontology o) {
 		if (dataSource.equals(RtdbDatasource.MONGO)) {
 			return queryMongo;
 		} else if (dataSource.equals(RtdbDatasource.ELASTIC_SEARCH)) {
 			return queryElasticSearch;
 		} else if (dataSource.equals(RtdbDatasource.OPEN_SEARCH)) {
 			return queryOpenSearch;
-		} else if (dataSource.equals(RtdbDatasource.VIRTUAL)) {
+		} else if (dataSource.equals(RtdbDatasource.VIRTUAL) && !ontologyService.isTimescaleVirtualOntology(o)) {
 			return queryVirtual;
+		} else if (dataSource.equals(RtdbDatasource.VIRTUAL) && ontologyService.isTimescaleVirtualOntology(o)) {
+			return timescaleDBQueryRepository;
 		} else if (dataSource.equals(RtdbDatasource.API_REST)) {
 			return queryApiRest;
 		} else if (dataSource.equals(RtdbDatasource.COSMOS_DB)) {

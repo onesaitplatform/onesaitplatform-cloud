@@ -87,7 +87,9 @@ public class MetricsAspect extends BaseAspect {
 		log.info("Controller @AfterReturning for {} Completed: {} ", getMethod(joinPoint), joinPoint);
 
 		if (retVal != null) {
-			log.debug("Controller @AfterReturning for {} Returned: {}", getMethod(joinPoint), retVal.toString());
+			if (log.isDebugEnabled()) {
+				log.debug("Controller @AfterReturning for {} Returned: {}", getMethod(joinPoint), retVal.toString());
+			}
 		}
 
 	}

@@ -46,21 +46,16 @@ import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-
-
 import lombok.extern.slf4j.Slf4j;
 
 @Tag(name = "Internationalization Management")
 @RestController
 @ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
-		@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden") })
+		@ApiResponse(responseCode = "500", description = "Internal server error"),
+		@ApiResponse(responseCode = "403", description = "Forbidden") })
 @RequestMapping("api/internationalizations")
 @Slf4j
 public class InternationalizationRestController {
@@ -81,9 +76,10 @@ public class InternationalizationRestController {
 	@PostMapping("/")
 	public ResponseEntity<String> create(@RequestBody(required = true) InternationalizationDTO internationalizationDTO)
 			throws JsonProcessingException {
-
-		log.debug("Recieved request to create a new internationalization {}",
+		if (log.isDebugEnabled()) {
+			log.debug("Recieved request to create a new internationalization {}",
 				internationalizationDTO.getIdentification());
+		}
 
 		User user = userService.getUserByIdentification(utils.getUserId());
 
@@ -113,7 +109,7 @@ public class InternationalizationRestController {
 	@Operation(summary = "Delete internationalization by identification")
 	@DeleteMapping("/{identification}/")
 	public ResponseEntity<?> deleteInternationalization(
-			@Parameter(description= "Internationalization identification", required = true) @PathVariable("identification") String internationalizationIdentification) {
+			@Parameter(description = "Internationalization identification", required = true) @PathVariable("identification") String internationalizationIdentification) {
 		try {
 			final User user = userService.getUser(utils.getUserId());
 			if (!internationalizationS.hasUserPermission(internationalizationIdentification, user.getUserId())) {
@@ -142,9 +138,11 @@ public class InternationalizationRestController {
 	@Operation(summary = "Get jsoni18n from a internationalization")
 	@GetMapping("{identification}/")
 	public ResponseEntity<String> getJsoni18n(
-			@Parameter(description= "Identification of the internationalization", required = true) @PathVariable("identification") String identification,
+			@Parameter(description = "Identification of the internationalization", required = true) @PathVariable("identification") String identification,
 			HttpServletResponse response) {
-		log.debug("Get jsoni18n from the internationalization {}", identification);
+		if (log.isDebugEnabled()) {
+			log.debug("Get jsoni18n from the internationalization {}", identification);
+		}
 		
 		utils.cleanInvalidSpringCookie(response);
 		User user = userService.getUser(utils.getUserId());
@@ -158,13 +156,42 @@ public class InternationalizationRestController {
 		}
 	}
 
+	@Operation(summary = "Get jsoni18n from a internationalization")
+	@GetMapping("forms/{identification}/")
+	public ResponseEntity<String> getJsoni18nForForms(
+			@Parameter(description = "Identification of the internationalization", required = true) @PathVariable("identification") String identification,
+			HttpServletResponse response) {
+		if (log.isDebugEnabled()) {
+			log.debug("Get jsoni18n from the internationalization {} for forms format", identification);
+		}
+
+		utils.cleanInvalidSpringCookie(response);
+		User user = userService.getUser(utils.getUserId());
+
+		try {
+			Internationalization internationalization = internationalizationS
+					.getInternationalizationByIdentification(identification, user.getUserId());
+
+			JSONObject obj = new JSONObject(internationalization.getJsoni18n());
+			JSONObject result = new JSONObject();
+			result.append("language", result.getString("default"));
+			result.append("i18n", result.getJSONObject("languages"));
+			return ResponseEntity.ok().body(result.toString());
+
+		} catch (InternationalizationServiceException e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+	}
+
 	@Operation(summary = "Put new value to jsoni18n")
-	@PutMapping("/{identification}/")
+	@PutMapping("{identification}/")
 	public ResponseEntity<String> editJsoni18n(
-			@Parameter(description= "Identification of the internationalization", required = true) @PathVariable("identification") String identification,
+			@Parameter(description = "Identification of the internationalization", required = true) @PathVariable("identification") String identification,
 			@RequestBody(required = true) String jsoni18n) {
 
-		log.debug("Recieved request to change jsoni18n value of {} internationalization", identification);
+		if (log.isDebugEnabled()) {
+			log.debug("Recieved request to change jsoni18n value of {} internationalization", identification);
+		}		
 
 		final User user = userService.getUser(utils.getUserId());
 		if (!internationalizationS.hasUserPermission(identification, user.getUserId())) {
@@ -193,9 +220,11 @@ public class InternationalizationRestController {
 	@Operation(summary = "Get translate of diferents keys values")
 	@GetMapping("{identification}/{keys}")
 	public ResponseEntity<String> getTranslationsByKeys(
-			@Parameter(description= "Identification of the internationalization", required = true) @PathVariable("identification") String identification,
+			@Parameter(description = "Identification of the internationalization", required = true) @PathVariable("identification") String identification,
 			@RequestParam(required = true) List<String> keys) {
-		log.debug("Get translations of the internationalization {}", identification);
+		if (log.isDebugEnabled()) {
+			log.debug("Get translations of the internationalization {}", identification);
+		}
 
 		User user = userService.getUser(utils.getUserId());
 

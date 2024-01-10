@@ -1,0 +1,677 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2022 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!-- Copyright Indra Sistemas, S.A. 2013-2018 SPAIN -->
+<html xmlns:th="http://www.thymeleaf.org" th:with="lang=${#locale.language}" th:lang="${lang}">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+	<meta http-equiv="Content-Language" th:content="${lang}" />
+	<title th:text="#{name.app}" />
+
+	<!-- STYLE SHEETS -->
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}" />
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}" />
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}" />
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}" />
+	<!-- THEME -->
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
+
+	<!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND BOOSTRAP-TIMEPICKER  -->
+	<link rel="stylesheet" type="text/css" media="all"
+		th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}" />
+	<link rel="stylesheet" type="text/css" media="all"
+		th:href="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css}" />
+</head>
+
+<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
+
+<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+
+		<!-- HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"></div>
+
+		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+				<div class="alert alert-success display-hide">
+					<span th:text="${globalMessage}"></span>
+				</div>
+
+				<!-- BEGIN PAGE BAR AND BREADCRUM-->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/forms/list}"> <span th:text="#{forms.list}">Forms</span></a><i
+								class="fa fa-angle-right"></i></li>
+						<li><span th:text="#{forms.builder}"></span></li>
+					</ul>
+				</div>
+				<!-- END PAGE BAR -->
+
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{name.app}"> onesait Platform Control Panel</span></h1>
+				<div id="header">
+					<div class="row pageCreateHeader">
+						<div class="col-md-12 col-sm-12 col-xs-12">
+							<div class="pull-right">
+								<!-- DELETE -->
+								<button th:if="${form?.id} != null" id="deleteBtn" type="button"
+									class="btn btn-primary btn-primary-delete" name="delete" value="Remove"
+									th:attr="onclick='deleteFormConfirmation(\'' + ${form.code} + '\');'"><span
+										th:text="#{gen.deleteBtn}" class="delete-btn-text">Delete</span></button>
+
+								<span th:if="${form?.id} != null" class="sep"></span>
+								<!-- CANCEL  -->
+								<button th:attr="onclick='javascript:navigateUrlBack();'" id="btn-cancel"
+									name="btn-cancel" type="button" class="btn btn-circle btn-outline blue no-border"
+									th:value="#{gen.cancelBtn}" value="cancel"><span th:text="#{gen.cancelBtn}"> Cancel
+									</span>
+								</button>
+
+								<!-- CREATE / UPDATE-->
+								<button id="btn-save" type="submit" class="btn btn-circle btn-outline btn-primary"
+									onclick="submitForm()">
+									<span th:if="${form == null}" th:text="#{gen.createBtn}"> New </span>
+									<span th:if="${form != null}" th:text="#{gen.editBtn}"> New </span>
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="mainPanel">
+					<div class="row main">
+						<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+
+						</div>
+						<div class="col-md-3 col-sm-3 col-xs-3">
+							<span class="denotesRequired">* Denotes Required Field</span>
+						</div>
+					</div>
+					<div class="row main">
+						<div class="col-md-2 col-sm-2 col-xs-12 form-group">
+							<label th:text="#{forms.identification}">Id</label><span class="required"> *</span>
+							<input id="identification" th:disabled="${form?.id} != null" type="text" class="form-control "
+								th:placeholder="#{forms.identification}" required />
+						</div>
+						<div th:if="${form?.id} != null" class="col-md-2 col-sm-2 col-xs-12 form-group">
+							<label th:text="#{forms.code}">Code</label><span class="required"> *</span>
+							<input id="code" type="text" disabled="true" class="form-control " 
+								th:placeholder="#{forms.code}" required />
+						</div>
+						<div class="col-md-2 col-sm-2 col-xs-12 form-group">
+							<label th:text="#{gen.description}">Description</label> 
+							<input id="description" type="text" class="form-control "
+								th:placeholder="#{gen.description}" required />
+						</div>
+						<div class="col-md-2 col-sm-2 col-xs-12 form-group">
+							<label th:text="#{forms.main.entity}">Main entity</label>
+							<select id="entity" class="selectpicker form-control" data-live-search="true" data-size="10"
+								data-width="100%">
+								<option value="" th:text="#{forms.select.entity}">Select entity...</option>
+								<option th:each="entity:${entities}" th:value="${entity.identification}"
+									th:text="${entity.identification}"></option>
+							</select>
+						</div>
+						<div class="col-md-2 col-sm-2 col-xs-12 form-group">
+								<button id="btn-generate-form" onclick="generateFormFromEntity()" class="btn btn-circle btn-outline btn-primary" style="margin-top: 24px;" >
+									<span  th:text="#{forms.builder.entity}"> Build form from entity </span>
+									 
+								</button>
+						</div>
+						 <div class="col-md-2 col-sm-2 col-xs-12">
+                            <div class="form-group">
+                                <label  th:text="#{dashboards.internationalization}">Internationalization</label>
+                                <select id="i18n" class="selectpicker"    th:title="#{dashboards.selecti18n}" data-size="10" data-live-search="true" data-width="100%" >
+                                    <option th:each="i18n :${i18ns}" th:value="${i18n.id}" th:text="${i18n.identification}">internationalizations</option>
+                                </select>
+                            </div>
+                        </div>
+					</div>
+
+					<!-- END PAGE TITLE-->
+					<!-- MAIN ROW -->
+					<div class="row main">
+						<div id="colleft" class="col-md-9">
+							<div>
+								<div class="portlet-title">
+									<div class="tools">
+										<a href="" class="collapse hide" data-original-title="" title=""> </a>
+										<a href="" class="fullscreen" data-original-title="" title=""> </a>
+									</div>
+								</div>
+								<iframe id="builder-iframe" style="width:100%;height: 100%;"
+									th:src="@{'/forms/form'+${iframe}}" frameBorder="0">
+								</iframe>
+							</div> <!-- END PORTLET -->
+						</div><!-- END COL-8 -->
+						<button id="buttonTips" onclick="showHideTips()" style="right: 0px;position:absolute; -moz-transform:rotate(-90deg);    -ms-transform:rotate(-90deg);    -o-transform:rotate(-90deg);    -webkit-transform:rotate(-90deg);    transform-origin: bottom right;" class="hide">TIPS</button>
+						<div id="colright" class="col-md-3">
+							<div
+								style="border-left-color: #1b809e;padding: 20px;    margin: 20px 0;    border: 1px solid #1b809e;    border-left-width: 5px;    border-radius: 3px;">
+
+								<button type="button" onclick="showHideTips()" class="close" >×</button>
+								<h4 style="color: #1b809e;">TIPS</h5>
+
+									<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+										<div class="panel panel-default">
+											<div class="panel-heading" role="tab" id="headingOne">
+												<h4 class="panel-title">
+													<a role="button" data-toggle="collapse" data-parent="#accordion"
+														href="#collapseOne" aria-expanded="true"
+														aria-controls="collapseOne">
+														<span th:text="#{forms.tips.create1}"></span>
+													</a>
+												</h4>
+											</div>
+											<div id="collapseOne" class="panel-collapse collapse in" role="tabpanel"
+												aria-labelledby="headingOne">
+												<div class="panel-body">
+													<ul>
+
+														<li>
+															<label th:text="#{forms.tips.create2}"></label>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create3}"></label>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create4}"></label>
+														</li>
+
+													</ul>
+												</div>
+											</div>
+										</div>
+
+										<div class="panel panel-default">
+											<div class="panel-heading" role="tab" id="headingTwo">
+												<h4 class="panel-title">
+													<a class="collapsed" role="button" data-toggle="collapse"
+														data-parent="#accordion" href="#collapseTwo"
+														aria-expanded="false" aria-controls="collapseTwo">
+														<span th:text="#{forms.tips.create5}"></span>
+													</a>
+												</h4>
+											</div>
+											<div id="collapseTwo" class="panel-collapse collapse" role="tabpanel"
+												aria-labelledby="headingTwo">
+												<div class="panel-body">
+													<ul>
+
+														<li>
+															<label th:text="#{forms.tips.create6}"></label>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create7}"></label>
+														</li>
+
+													</ul>
+												</div>
+											</div>
+										</div>
+
+										<div class="panel panel-default">
+											<div class="panel-heading" role="tab" id="headingThree">
+												<h4 class="panel-title">
+													<a class="collapsed" role="button" data-toggle="collapse"
+														data-parent="#accordion" href="#collapseThree"
+														aria-expanded="false" aria-controls="collapseThree">
+														<span th:text="#{forms.tips.create8}"></span>
+													</a>
+												</h4>
+											</div>
+											<div id="collapseThree" class="panel-collapse collapse" role="tabpanel"
+												aria-labelledby="headingThree">
+												<div class="panel-body">
+													<ul>
+
+														<li>
+															<label th:text="#{forms.tips.create9}"></label>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create10}"></label>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create11}"></label>
+														</li>
+
+													</ul>
+												</div>
+											</div>
+										</div>
+
+										<div class="panel panel-default">
+											<div class="panel-heading" role="tab" id="headingFour">
+												<h4 class="panel-title">
+													<a class="collapsed" role="button" data-toggle="collapse"
+														data-parent="#accordion" href="#collapseFour"
+														aria-expanded="false" aria-controls="collapseFour">
+														<span th:text="#{forms.tips.create12}"></span>
+													</a>
+												</h4>
+											</div>
+											<div id="collapseFour" class="panel-collapse collapse" role="tabpanel"
+												aria-labelledby="headingFour">
+												<div class="panel-body">
+													<ul>
+														<li style="display: grid;">
+															<button type="button"
+																th:attr="title=#{forms.image.maximize}"
+																class="btn "
+																onclick="showModalImage('/controlpanel/static/images/forms/submitform.png')">
+																<img alt="button"
+																	style="width: 133px;    padding-top: 14px;  margin-left: 12px; "
+																	class="logo-default"
+																	src="/controlpanel/static/images/forms/submitform.png">
+															</button>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create13}"></label>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create14}"></label>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create15}"></label>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create15.2}"></label>
+														</li>
+
+
+													</ul>
+												</div>
+											</div>
+										</div>
+
+										<div class="panel panel-default">
+											<div class="panel-heading" role="tab" id="headingFive">
+												<h4 class="panel-title">
+													<a class="collapsed" role="button" data-toggle="collapse"
+														data-parent="#accordion" href="#collapseFive"
+														aria-expanded="false" aria-controls="collapseFive">
+														<span th:text="#{forms.tips.create16}"></span>
+													</a>
+												</h4>
+											</div>
+											<div id="collapseFive" class="panel-collapse collapse" role="tabpanel"
+												aria-labelledby="headingFive">
+												<div class="panel-body">
+													<ul>
+														<li style="display: grid;">
+															<button type="button"
+																th:attr="title=#{forms.image.maximize}"
+																class="btn "
+																onclick="showModalImage('/controlpanel/static/images/forms/selectionbasic.png')">
+																<img alt="button"
+																	style="width: 133px;    padding-top: 14px;  margin-left: 12px; "
+																	class="logo-default"
+																	src="/controlpanel/static/images/forms/selectionbasic.png">
+															</button>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create17}"></label>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create18}"></label>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create19}"></label>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create20}"></label>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create21}"></label>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create22}"></label>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create23}"></label>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create24}"></label>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create25}"></label>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create26}"></label>
+														</li>
+
+													</ul>
+												</div>
+											</div>
+										</div>
+
+										<div class="panel panel-default">
+											<div class="panel-heading" role="tab" id="headingSix">
+												<h4 class="panel-title">
+													<a class="collapsed" role="button" data-toggle="collapse"
+														data-parent="#accordion" href="#collapseSix"
+														aria-expanded="false" aria-controls="collapseSix">
+														<span th:text="#{forms.tips.create27}"></span>
+													</a>
+												</h4>
+											</div>
+											<div id="collapseSix" class="panel-collapse collapse" role="tabpanel"
+												aria-labelledby="headingSix">
+												<div class="panel-body">
+													<ul>
+														<li style="display: grid;">
+															<button type="button"
+																th:attr="title=#{forms.image.maximize}"
+																class="btn btn-light "
+																onclick="showModalImage('/controlpanel/static/images/forms/customselect.png')">
+																<img alt="button"
+																	style="width: 133px;    padding-top: 14px;  margin-left: 12px; "
+																	class="logo-default"
+																	src="/controlpanel/static/images/forms/customselect.png">
+															</button>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create28}"></label>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create29}"></label>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create30}"></label>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create31}"></label>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create32}"></label>
+															<a th:href="#{forms.tips.create33}" target="_blank"><span
+																	th:text="#{forms.tips.tip9}"></span></a>
+														</li>
+
+
+
+													</ul>
+												</div>
+											</div>
+										</div>
+										<div class="panel panel-default">
+											<div class="panel-heading" role="tab" id="headingSeven">
+												<h4 class="panel-title">
+													<a class="collapsed" role="button" data-toggle="collapse"
+														data-parent="#accordion" href="#collapseSeven"
+														aria-expanded="false" aria-controls="collapseSeven">
+														<span th:text="#{forms.tips.create34}"></span>
+													</a>
+												</h4>
+											</div>
+											<div id="collapseSeven" class="panel-collapse collapse" role="tabpanel"
+												aria-labelledby="headingSeven">
+												<div class="panel-body">
+													<ul>
+														
+														<li>
+															<label th:text="#{forms.tips.create35}"></label>
+														</li>
+														<li>
+															<label th:text="#{forms.tips.create36}"></label>
+														</li>
+													</ul>
+												</div>
+											</div>
+										</div>
+									</div>
+
+							</div>
+
+
+						</div><!-- END COL-4 -->
+					</div><!-- END MAIN ROW -->
+				</div>
+			</div>
+		</div>
+
+
+
+
+		<div id="imageModal" data-backdrop="static" class="modal fade" role="dialog">
+			<div class="modal-dialog modal-sm">
+				<!-- Modal content-->
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal"></button>
+
+					</div>
+					<div class="modal-body">
+						<img id="iModal" style="width: 100%; " src="/controlpanel/static/images/forms/submitform.png">
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal"><span
+								th:text="#{gen.closeBtn}"></span></button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+
+
+
+
+		<!-- FOOTER INCLUDE -->
+		<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+
+
+		<!-- PLUGINS -->
+		<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
+		<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
+
+		<!-- LOADING DEFAULT DATES IF NEEDED -->
+		<script th:if="${lang} == 'es'"
+			th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}"
+			type="text/javascript"></script>
+		<script th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}" type="text/javascript"></script>
+		<script th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
+
+		<!-- LOADING DEFAULT LANG MESSAGES IF NEEDED -->
+		<script th:if="${lang} == 'es'" th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}"
+			type="text/javascript"></script>
+		<script th:src="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js}"
+			type="text/javascript"></script>
+		<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
+
+
+
+		<!-- INPUTMASK -->
+		<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
+
+
+		<!-- CORE JS CONTROLLERS -->
+		<script th:src="@{/static/js/app.js}"></script>
+		<script th:src="@{/static/js/layout.js}"></script>
+
+		<!-- AXIOS -->
+		<script th:src="@{/static/vendor/axios/axios.1.4.0.min.js}"></script>
+
+		<script th:inline="javascript">
+			var backUrl = [[@{/forms/list}]];
+			function navigateUrlBack() {window.location.href = backUrl;}
+			const formsBaseURLCreate = [[@{/api/forms}]]
+			const formsShow = [[@{/forms/form-show}]]
+			const form = [[${form}]]
+			const errorFormCreate = [[#{forms.error.create}]]
+			const errorFormFields = [[#{forms.error.create.fields}]]
+			const errorForm = [[#{forms.error.download}]]
+			var schema = {}
+			if(!window.showformbase){
+						window.showformbase = formsShow;
+			}
+			if(!window.formsBaseURLCreate){			
+				window.formsBaseURLCreate = formsBaseURLCreate;
+		    }					
+			window.onload = function () {
+				if (form != null) {
+					$("#entity").val(form.entity).change();
+					$("#identification").val(form.name);
+					$("#description").val(form.description);
+					$("#code").val(form.code);
+					$("#i18n").val(form.i18n).change();
+				}
+			}
+
+			window.addEventListener("message", (event) => {
+				if (typeof event.data.schema !== 'undefined') {
+					console.log(event)
+					schema = event.data.schema
+				}
+			})
+
+			function submitForm() {
+				let name = $('#identification').val();
+				let description = $('#description').val();
+				let i18n = $('#i18n').val();
+				
+				if (name !== '' && Object.keys(schema).length > 0) {
+					let payload = {
+						jsonSchema: JSON.stringify(schema),
+						name: name,
+						description: description,
+						i18n:i18n,
+						entity: $('#entity').val()
+					}
+					let urlAjax = formsBaseURLCreate+'/';
+					if (form != null) {
+						urlAjax = `${formsBaseURLCreate}/${form.code}`
+					}
+					axios.post(`${urlAjax}`, payload, {
+						'accept': 'application/json',
+						'content-type': 'application/json'
+					})
+						.then(function (response) {
+							console.log('Service response:', response.data);
+							navigateUrlBack();
+						})
+						.catch(function (error) {
+							toastr.info(messagesForms.operations.genOpError, `${errorFormCreate}`);
+						});
+				} else {
+					toastr.info(messagesForms.operations.genOpError, `${errorFormFields}`);
+				}
+
+			}
+
+			var deleteFormConfirmation = function (formId) {
+
+				// i18 labels
+				var Close = headerReg.btnCancelar;
+				var Remove = headerReg.btnEliminar;
+				var Content = [[#{forms.delete.confirm}]];
+				var Title = headerReg.appDelete;
+
+				var csrf_value = $("meta[name='_csrf']").attr("content");
+				var csrf_header = $("meta[name='_csrf_header']").attr("content");
+
+				// jquery-confirm DIALOG SYSTEM.
+				$.confirm({
+					title: Title,
+					theme: 'light',
+					columnClass: 'medium',
+					content: Content,
+					draggable: true,
+					dragWindowGap: 100,
+					backgroundDismiss: true,
+					buttons: {
+						close: {
+							text: Close,
+							btnClass: 'btn btn-outline blue dialog',
+							action: function () {
+							} // GENERIC CLOSE.
+						},
+						remove: {
+							text: Remove,
+							btnClass: 'btn btn-primary',
+							action: function () {
+								console.log(formId);
+								$.ajax({
+									url: formsBaseURLCreate+'/'+formId,
+									type: 'DELETE',
+									success: function (result) {
+										navigateUrlBack();
+									}
+								});
+							}
+						}
+
+					}
+				});
+			}
+			
+			
+			var generateFormFromEntity = function(){
+					var entitySelected = $('#entity').selectpicker('val')
+					if(entitySelected){
+				     axios.get(`${formsBaseURLCreate}/${entitySelected}/generateFormFromEntity`, {
+		            headers: {
+		                'accept': 'application/json'
+		            }
+		        })
+	            .then(function (response) {
+					
+	                document.getElementById('builder-iframe').contentWindow.postMessage( response.data , '*')
+
+	            }).catch(function (error) {
+	             		toastr.info(messagesForms.operations.genOpError,`${errorForm}`);
+	            })
+			}
+}
+
+			var showModalImage = function (url) {
+				 
+				$("#iModal").attr("src", url);
+				$("#imageModal").modal('toggle')
+			}
+			var hideTips = false; 
+			var showHideTips = function(){
+				hideTips =! hideTips;
+				if(hideTips){
+					$('#colright').removeClass('col-md-3').addClass('hide');
+					$('#colleft').removeClass('col-md-9').addClass('col-md-12');
+					$('#buttonTips').removeClass('hide')
+				}else{
+					$('#colright').removeClass('hide').addClass('col-md-3');
+					$('#colleft').removeClass('col-md-12').addClass('col-md-9');
+					$('#buttonTips').addClass('hide')
+				}
+				
+			}
+
+		</script>
+
+</body>
+
+</html>

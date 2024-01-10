@@ -149,17 +149,24 @@
 						<div class="row pageCreateHeader">
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="margin-top-4">
-									<span th:if="${element.id} == null"
-										th:text="#{mapsmap.create.my}"> Create map layer </span> <span
-										th:if="${element.id} != null"
-										id="mapname"> Update map layer </span>
-
+									<span th:if="${element.id} == null"	th:text="#{mapsproject.create.my}"> Create map project </span>
+									<span th:if="${element.id} != null"	th:text="${element.identification}"> Update map project </span>
 								</div>
-							</div>
-
+							</div>	
 							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="pull-right">
-								 
+								<div class="pull-right">							
+
+									<!-- DELETE -->
+									<button th:if="${element.id} != null" id="deleteBtn"
+										type="button" class="btn btn-primary btn-primary-delete "
+										name="delete" th:value="#{gen.deleteBtn}"
+										th:attr="onclick='deleteConfirmation(\''+${element.id}+'\');'">
+										<i class="icon-delete"></i><span th:text="#{gen.deleteBtn}"
+											class="delete-btn-text"> Delete </span>
+									</button>
+										
+									<span th:if="${element.id} != null" class="sep" ></span>
+							 
 									<!-- CANCEL -->
 									<button id="cancelBtn" type="button"
 										class="btn btn-primary-cancel" name="cancel"
@@ -168,10 +175,14 @@
 										<span th:text="#{gen.cancelBtn}"> Cancel </span>
 									</button>
 
-
-
-									<!-- <span class="sep no-border" th:if="(${element.id} != null)"></span> -->
-
+									<!-- UPDATE -->
+									<button th:if="(${#authentication.name} == ${element.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" 
+										sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')"
+										id="updateBtn" type="button" 
+										class="btn btn-primary btn-primary-save" name="update" 
+										th:attr="onclick='javascript:MapsMapController.navigateUrl(\'' + '/controlpanel/mapsmap/update/' + @{${element.id}(form)}+ '=' + '\');'">
+										<span th:text="#{gen.editBtn}"> Edit</span>
+									</button>
 
 								</div>
 							</div>
@@ -245,13 +256,13 @@
 									</div>
 									<div class="col-md-3 col-sm-12">
 										<div class="form-group">
-											<label class="control-label">id Div</label><label
+											<label class="control-label">Map Div Name</label><label
 												class="form-control-static-block " id="idDiv"> </label> 
 										</div>
 									</div>
 									<div class="col-md-2 col-sm-2">
 										<div class="form-group">
-											<label class="control-label">provider Map</label><label
+											<label class="control-label">Map Provider</label><label
 												class="form-control-static-block" id="providerMap"> </label> 
 										</div>
 									</div>
@@ -318,7 +329,7 @@
 									</div>
 									<div class="col-md-2 col-sm-2">
 										<div class="form-group">
-											<label class="control-label">zoom</label> <label
+											<label class="control-label">Zoom</label> <label
 												class="form-control-static-block " id="optionViewZoom"> </label>  
 										</div>
 									</div>
@@ -413,26 +424,19 @@
 	<script th:src="@{/static/js/app.js}"></script>
 	<script th:src="@{/static/js/layout.js}"></script>
 
+<!-- TEMPLATE CONTROLLER  -->
+<script th:src="@{/static/js/utils/languages.js}"></script>
+<script th:src="@{/static/js/pages/mapsMapCreate.js}"></script>
 
-
-<script
-	th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}"
-	type="text/javascript"></script>
-<script
-	th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}"
-	type="text/javascript"></script>
-<script th:if="${lang} == 'es'"
-	th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}"
-	type="text/javascript"></script>
->
+<script	th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}"	type="text/javascript"></script>
+<script	th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
+<script th:if="${lang} == 'es'"	th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}" type="text/javascript"></script>
 <!-- INPUTMASK -->
-<script
-	th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
+<script	th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
 <script th:src="@{/static/vendor/jquery-ui/1.13.2/jquery-ui.min.js}"></script>
 <script th:inline="javascript">
 
-	
-		// <![CDATA[
+	// <![CDATA[
 		
 	var csrfParameter = [[${_csrf.parameterName}]];
 	var csrfValue = [[${_csrf.token}]];	
@@ -445,20 +449,15 @@
 	var elementID = /*[[${element?.id}]]*/ "";  
 	var conf = /*[[${element.config}]]*/ "{}"  ;
 	var config = JSON.parse(conf);	
-	var elementJson = {
-			"language" : currentLanguage};
-		
-			
+	var elementJson = {	"language" : currentLanguage};
 		 
-		$( document ).ready(function() {
-		handleTabsChange();
-		 
-		initfields();
-		
-		});
+	$( document ).ready(function() {
+		handleTabsChange();		 
+		initfields();		
+	});
 		
 		
-			//set form fields from param config 
+	//set form fields from param config 
 	var initfields = function() {
 		
 	    $("#name").text(config.name).change();
@@ -497,42 +496,51 @@
 		  $("#minZoom").text(minZoom).change();
 		  $("#maxZoom").text(maxZoom).change();
 		}
-	   
 		
-	if (config.services!=null && typeof config.services=='object' && Array.isArray(config.services)) {
-		for(var i = 0 ;i< config.services.length;i++){
-			loadLayerRow(config.services[i]);
+		if (config.services!=null && typeof config.services=='object' && Array.isArray(config.services)) {
+			for(var i = 0 ;i< config.services.length;i++){
+				loadLayerRow(config.services[i]);
+			}
+			layersList=config.services;
 		}
-		layersList=config.services;
-	}
 	}
 	
-	 function navigateWindow(url){ window.open(url,'_blank');	}	
-	 
-	 
-	 	 var loadLayerRow = function(elem) {
-	 var name = elem.id;
-	 if(mapslayers!=null && mapslayers.length>0){	 
-		 var nameObj = mapslayers.find(function(a){return a.identification === elem.id});
-		 if(nameObj){
-		 	name = nameObj.name +' ( '+nameObj.identification+' )';;
-		 }		 			
-	 }
-	 		layersList.push(elem);
-			$('#table_layers > tbody')
-					.append(
-							'<tr class="tagRow"><td>'
-									+ name									
-									+ '</td><td>'
-									+ '<input type="number" onchange="updateZIndex(this)" value="'+elem.zIndex+'" >'
-									+ '</td><td><button type="button"	class="btn btn-light button-plus-create" style="background: white;" onclick="showLayer(\''+elem.id+'\')">	<a><i class="la la-eye font-hg"  ></i></a>	</button></td></tr>');
+	function navigateWindow(url){ window.open(url,'_blank');	}	
+	 	var loadLayerRow = function(elem) {
+	 	var name = elem.id;
+		if(mapslayers!=null && mapslayers.length>0){	 
+			var nameObj = mapslayers.find(function(a){return a.identification === elem.id});
+			if(nameObj){
+				name = nameObj.name +' ( '+nameObj.identification+' )';;
+			}		 			
 		}
+	 	layersList.push(elem);
+		$('#table_layers > tbody').append(
+			'<tr class="tagRow"><td>'
+			+ name									
+			+ '</td><td>'
+			+ '<input type="number" onchange="updateZIndex(this)" value="'+elem.zIndex+'" >'
+			+ '</td><td><button type="button"	class="btn btn-light button-plus-create" style="background: white;" onclick="showLayer(\''+elem.id+'\')">	<a><i class="la la-eye font-hg"  ></i></a>	</button></td></tr>');
+	}
 	
-	 var showLayer = function(id){	 
+	var showLayer = function(id){	 
 	 	navigateWindow('/controlpanel/mapslayer/show/'+id);						 
 	 }
 		
 	function navigateUrl(url) { window.location.href = url; }	
+	
+	var  deleteConfirmation = function (id){
+	
+		showConfirmDeleteDialog(id);	
+	} 
+	
+	var deleteUrl =  [[@{/mapsmap}]];
+	
+	var showConfirmDeleteDialog = function(id){
+		$('#delete_mapsmap_form').attr('action', deleteUrl + '/' + id);
+		$('#delete-id').val(id);
+		HeaderController.showConfirmDialogMapsGeneric('delete_mapsmap_form');	
+	}
 		
 	// ]]>
 	

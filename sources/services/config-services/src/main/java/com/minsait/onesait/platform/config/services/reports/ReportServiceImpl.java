@@ -63,25 +63,33 @@ public class ReportServiceImpl implements ReportService {
 
 	@Override
 	public Report findById(String id) {
-		log.debug("INI. Find report by Id: {}", id);
+		if (log.isDebugEnabled()) {
+			log.debug("INI. Find report by Id: {}", id);
+		}
 		return reportRepository.findById(id).orElse(null);
 	}
 
 	@Transactional
 	@Override
 	public void saveOrUpdate(Report report) {
-		log.debug("INI. Save report: {}", report);
+		if (log.isDebugEnabled()) {
+			log.debug("INI. Save report: {}", report);
+		}
 		reportRepository.save(report);
 	}
 
 	@Transactional
 	@Override
 	public void disable(String id) {
-		log.debug("INI. Disable report id: {}", id);
+		if (log.isDebugEnabled()) {
+			log.debug("INI. Disable report id: {}", id);
+		}
 		final Report entity = reportRepository.findById(id).orElse(null);
 
 		if (entity != null) {
-			log.debug("Disable > Find report {}", entity);
+			if (log.isDebugEnabled()) {
+				log.debug("Disable > Find report {}", entity);
+			}
 			entity.setActive(Boolean.FALSE);
 			reportRepository.save(entity);
 		}

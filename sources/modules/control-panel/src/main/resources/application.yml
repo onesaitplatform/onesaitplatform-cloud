@@ -226,7 +226,7 @@ onesaitplatform: #Config onesait Platform specific
       readFromSecondaries: false
       queries.executionTimeout: 5000
       queries.defaultLimit: 2000
-      queries.maxConcurrentQueries: 3
+      queries.maxConcurrentQueries: 10
       writeConcern: UNACKNOWLEDGED
       tools.mongoexport.path: mongoexport
       tools.mongoimport.path: mongoimport
@@ -239,6 +239,7 @@ onesaitplatform: #Config onesait Platform specific
       url: jdbc:postgresql://localhost:5432/?currentSchema=public
       user: ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot)
       password: ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c)
+      connectionName: op_timeseriesdb
    database.minio:
       access-key: ENC(d6bDYa5aGMyXndGA0edIGWFtcw3UygXi)
       secret-key: ENC(kV79KowPOv0J8QGeQ6iSQcFUqoZalNVj)
@@ -347,7 +348,7 @@ onesaitplatform: #Config onesait Platform specific
    mailService:
       mailSupport: support@onesaitplatform.com
    queryTool:
-      allowedOperations: false
+      allowedOperations: true
    metrics:
       collector.endpoint: http://localhost:20002/router/metrics-collector/refresh
       enabled: false
@@ -400,7 +401,7 @@ spring: ## General Config
       properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
 #      properties.hibernate.dialect: org.hibernate.dialect.PostgreSQL95Dialect
       # Hibernate ddl auto (create, create-drop, validate, update
-      hibernate.ddl-auto: none
+      hibernate.ddl-auto: update
       properties:
         hibernate:
           format_sql: false

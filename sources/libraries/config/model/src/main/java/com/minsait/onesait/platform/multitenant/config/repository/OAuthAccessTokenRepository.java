@@ -31,48 +31,44 @@ import com.minsait.onesait.platform.multitenant.config.model.OAuthAccessToken;
 @Transactional
 public interface OAuthAccessTokenRepository extends JpaRepository<OAuthAccessToken, String> {
 
-	public static final String OAUTH_ACCESS_TOKEN_REPOSITORY= "OauthAccessTokenRepository";
+	public static final String OAUTH_ACCESS_TOKEN_REPOSITORY = "OauthAccessTokenRepository";
 
 	Collection<OAuthAccessToken> findByClientId(String clientId);
 
 	Collection<OAuthAccessToken> findByUserName(String userName);
 
-	@Cacheable(cacheNames=OAUTH_ACCESS_TOKEN_REPOSITORY, unless = "#result == null", key = "#p0")
+	@Cacheable(cacheNames = OAUTH_ACCESS_TOKEN_REPOSITORY, unless = "#result == null", key = "#p0")
 	OAuthAccessToken findByAuthenticationId(String authenticationId);
 
-	@Cacheable(cacheNames=OAUTH_ACCESS_TOKEN_REPOSITORY, unless = "#result == null", key = "#p0")
+	@Cacheable(cacheNames = OAUTH_ACCESS_TOKEN_REPOSITORY, unless = "#result == null", key = "#p0")
 	OAuthAccessToken findByTokenId(String tokenId);
 
 	@Modifying
 	@Transactional
-	@Caching(evict= {
-			@CacheEvict(cacheNames=OAUTH_ACCESS_TOKEN_REPOSITORY, key = "#p0"),
-			@CacheEvict(cacheNames=OAUTH_ACCESS_TOKEN_REPOSITORY, key = "#p1")
-	})
+	@Caching(evict = { @CacheEvict(cacheNames = OAUTH_ACCESS_TOKEN_REPOSITORY, key = "#p0"),
+			@CacheEvict(cacheNames = OAUTH_ACCESS_TOKEN_REPOSITORY, key = "#p1") })
 	@Query("delete from OAuthAccessToken o where o.tokenId= :tokenId or o.authenticationId= :authenticationId")
 	void deleteByTokenId(@Param("tokenId") String tokenId, @Param("authenticationId") String authenticationId);
 
 	@Modifying
 	@Transactional
-	@CacheEvict(cacheNames=OAUTH_ACCESS_TOKEN_REPOSITORY, key = "#p0", allEntries=true)
+	@CacheEvict(cacheNames = OAUTH_ACCESS_TOKEN_REPOSITORY, key = "#p0", allEntries = true)
 	void deleteByRefreshToken(String refreshToken);
 
 	@Override
-	@Caching(put= {
-			@CachePut(cacheNames=OAUTH_ACCESS_TOKEN_REPOSITORY, unless = "#result == null", key = "#p0.tokenId"),
-			@CachePut(cacheNames=OAUTH_ACCESS_TOKEN_REPOSITORY, unless = "#result == null", key = "#p0.authenticationId")
-	})
+	@Caching(put = {
+			@CachePut(cacheNames = OAUTH_ACCESS_TOKEN_REPOSITORY, unless = "#result == null", key = "#p0.tokenId"),
+			@CachePut(cacheNames = OAUTH_ACCESS_TOKEN_REPOSITORY, unless = "#result == null", key = "#p0.authenticationId") })
 	<S extends OAuthAccessToken> S save(S entity);
-
 
 	@Transactional
 	@Modifying
-	//	@Query("DELETE FROM OauthAccessToken o WHERE o.clientId= :clientId")
+	@CacheEvict(cacheNames = OAUTH_ACCESS_TOKEN_REPOSITORY, allEntries = true)
 	Long deleteByClientId(String clientId);
 
 	@Transactional
 	@Modifying
-	//	@Query("DELETE FROM OauthAccessToken o WHERE o.clientId= :clientId AND o.userName= :username")
+	@CacheEvict(cacheNames = OAUTH_ACCESS_TOKEN_REPOSITORY, allEntries = true)
 	Long deleteByClientIdAndUserName(String clientId, String username);
 
 }

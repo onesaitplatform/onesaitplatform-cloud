@@ -174,18 +174,28 @@ public class BinaryFileController {
 
 		if (fileName != null && fileName.trim().equals("")) {
 			fileName = null;
+		} else if(fileName != null) {
+			fileName = "%" + fileName + "%";
 		}
 		if (fileId != null && fileId.trim().equals("")) {
 			fileId = null;
+		} else if(fileId != null) {
+			fileId = "%" + fileId + "%";
 		}
 		if (fileExt != null && fileExt.trim().equals("")) {
 			fileExt = null;
+		} else if(fileExt != null) {
+			fileExt = "%" + fileExt + "%";
 		}
 		if (metaData != null && metaData.trim().equals("")) {
 			metaData = null;
+		} else if(metaData != null) {
+			metaData = "%" + metaData + "%";
 		}
 		if (owner != null && owner.trim().equals("")) {
 			owner = null;
+		} else if(owner != null) {
+			owner = "%" + owner + "%";
 		}
 
 		User userlogged = userService.getUser(webUtils.getUserId());

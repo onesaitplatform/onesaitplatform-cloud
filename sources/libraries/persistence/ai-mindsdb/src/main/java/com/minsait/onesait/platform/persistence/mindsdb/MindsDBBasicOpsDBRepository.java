@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.persistence.mindsdb;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Component;
 

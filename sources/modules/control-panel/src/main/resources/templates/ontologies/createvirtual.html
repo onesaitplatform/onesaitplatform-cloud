@@ -327,7 +327,7 @@
 									</div>
 									<div th:if="${historical == false}" class="col-md-3 col-sm-3 col-xs-6" id ="selectTable">							
 										<div class="form-group">		
-											<label class="control-label" th:text="#{ontology.virtual.select.collection}">Select one collection</label>							
+											<label class="control-label" th:text="#{ontology.virtual.select.collection}">Select one collection</label><span class="required"> *</span>							
 											<select th:disabled="disabled"  th:if="${ontology?.id} == null" class="selectpicker select show-tick form-control no-remove" onchange="OntologyCreateController.changeCollection(1)" id="collections" data-live-search="true" data-width="100%" th:title="#{ontology.virtual.collection}">
 												<option th:each="collection : ${collectionNames}" th:id="${collection}" data-type="general" th:value="${collection}" th:text="${collection}"  ></option>
 											</select>
@@ -953,6 +953,7 @@
 		"collection"  : [[${tableName}]],
 		"authorities" : [[${#strings.arrayJoin(#authentication.authorities,'')}]],
 		"historical": [[${historical}]],
+		"timeseriesdb": [[${timeseriesdb}]],
 		"validations" : {
 			"duplicates": [[#{ontology.valid.duplicates}]],
 			"tplschema": [[#{ontology.valid.tplschema}]],

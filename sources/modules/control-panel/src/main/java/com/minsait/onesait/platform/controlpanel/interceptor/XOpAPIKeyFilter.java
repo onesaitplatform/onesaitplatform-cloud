@@ -83,7 +83,9 @@ public class XOpAPIKeyFilter implements Filter {
 					final Authentication auth = new UsernamePasswordAuthenticationToken(details, details.getPassword(),
 							details.getAuthorities());
 					InterceptorCommon.setContexts(auth);
-					log.debug("Loaded authentication for user {}", auth.getName());
+					if (log.isDebugEnabled()) {
+						log.debug("Loaded authentication for user {}", auth.getName());
+					}					
 					publish(new AuthenticationSuccessEvent(auth));
 				}
 

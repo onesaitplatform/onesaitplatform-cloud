@@ -108,7 +108,9 @@ public class RtdbMaintainerAuditableAspect extends BaseAspect {
 
 	@Before("@annotation(auditable) && args(opId,..)")
 	public void beforeKillOp(JoinPoint joinPoint, RtdbMaintainerAuditable auditable, long opId) {
-		log.debug("Killing mongo op with id: {}", opId);
+		if (log.isDebugEnabled()) {
+			log.debug("Killing mongo op with id: {}", opId);
+		}		
 		final RtdbMaintainerAuditEvent event = auditProcessor.getEventKillOp(opId);
 		eventProducer.publish(event);
 

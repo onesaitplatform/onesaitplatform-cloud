@@ -55,7 +55,9 @@ public class IotBrokerAuditProcessor {
 
 	public IotBrokerAuditEvent getEvent(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info) {
 
-		log.debug("getEvent from message " + message);
+		if (log.isDebugEnabled()) {
+			log.debug("getEvent from message {}", message);
+		}		
 
 		IotBrokerAuditEvent event = null;
 
@@ -70,7 +72,9 @@ public class IotBrokerAuditProcessor {
 
 	public OPAuditError getErrorEvent(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info, Exception ex) {
 
-		log.debug("getErrorEvent from message " + message);
+		if (log.isDebugEnabled()) {
+			log.debug("getErrorEvent from message {}", message);
+		}		
 
 		OPAuditError event = null;
 

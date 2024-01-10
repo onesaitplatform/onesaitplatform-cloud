@@ -57,6 +57,7 @@ camunda:
 security:
   oauth2:
     client:
+      logoutUrl: https://${SERVER_NAME}/oauth-server/logout?redirect_uri=http://${SERVER_NAME}/bpm-engine
       useCurrentUri: ${OAUTH_USE_DEFAULT_URI}
       preEstablishedRedirectUri: https://${SERVER_NAME}${server.servlet.contextPath}/login/oauth
       clientId: ${OAUTH_CLIENT_ID}

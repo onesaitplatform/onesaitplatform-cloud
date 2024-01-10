@@ -14,6 +14,8 @@
  */
 package com.minsait.onesait.platform.bpm.services;
 
+import java.util.List;
+
 import org.springframework.security.core.Authentication;
 
 public interface BPMUserManagementService {
@@ -25,5 +27,7 @@ public interface BPMUserManagementService {
 	void createTenants(Authentication auth);
 
 	void syncUsers();
+
+	void updateGroups(String userId, List<String> groupNames);
 
 }

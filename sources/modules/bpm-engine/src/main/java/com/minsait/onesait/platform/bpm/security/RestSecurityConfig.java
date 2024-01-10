@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.bpm.security;
 
+import org.camunda.bpm.engine.ProcessEngine;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -23,8 +24,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
-import com.minsait.onesait.platform.config.services.bpm.BPMTenantService;
-
 @Configuration
 @Order(SecurityProperties.BASIC_AUTH_ORDER - 20)
 public class RestSecurityConfig extends WebSecurityConfigurerAdapter {
@@ -32,14 +31,14 @@ public class RestSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.csrf().disable().antMatcher("/engine-rest/**").authorizeRequests().anyRequest().authenticated().and()
-		.addFilterBefore(new BearerAuthenticationFilter(), BasicAuthenticationFilter.class);
+				.addFilterBefore(new BearerAuthenticationFilter(), BasicAuthenticationFilter.class);
 
 	}
 
 	@Bean
-	public FilterRegistrationBean statelessUserAuthenticationFilter(BPMTenantService bpmnTenantService) {
+	public FilterRegistrationBean statelessUserAuthenticationFilter(ProcessEngine processEngine) {
 		final FilterRegistrationBean filterRegistration = new FilterRegistrationBean();
-		filterRegistration.setFilter(new StatelessUserAuthenticationFilter(bpmnTenantService));
+		filterRegistration.setFilter(new StatelessUserAuthenticationFilter(processEngine.getIdentityService()));
 		filterRegistration.setOrder(102);
 		filterRegistration.addUrlPatterns("/engine-rest/**");
 		return filterRegistration;

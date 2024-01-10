@@ -104,7 +104,9 @@ public class BearerTokenFilter implements Filter {
 					resp.getWriter().close();
 				} else {
 					InterceptorCommon.setContexts(oauth);
-					log.debug("Loaded authentication for user {}", oauth.getName());
+					if (log.isDebugEnabled()) {
+						log.debug("Loaded authentication for user {}", oauth.getName());
+					}
 					publish(new AuthenticationSuccessEvent(oauth));
 					chain.doFilter(request, response);
 				}

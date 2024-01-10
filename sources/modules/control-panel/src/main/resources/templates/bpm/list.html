@@ -120,8 +120,10 @@
 								<div class="pull-right btn-group btn-title-group" id="divcreate" >
 									<form method="post"  th:action="@{/bpm/sync-users}" style="display:inline-block;margin:0">
 										<button type="submit"  name="btn-tenants-reload" value="Sync users" 
-											class="btn btn-primary button-dropdown-table-columns" title="Sync users" style="border: none;"><i class="icon-sync"></i></button>	
+											class="btn btn-primary button-dropdown-table-columns" style="border: none;"><span class="tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{bpm.sync.users}"><i class="icon-sync"></i></span></button>	
 									</form>
+									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" type="button"  onclick="$('#role-mapping-modal').modal('show')"
+											class="btn btn-primary button-dropdown-table-columns" style="border: none;"><span class="tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{bpm.map.realm.roles}"><i class="la la-user-cog" style="font-size:16px"></i></span></button>
 								</div>															
 							</div><!-- // TITTLE CONTENT -->
 							
@@ -170,7 +172,7 @@
 															<td class="text-center " >		
 																<div class="grupo-iconos text-center">
 																	<a target="_blank" th:href="${camundaEndpoint}"><span th:attr="data-id=${tenant.id}" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}"><i class="la la-eye font-hg"></i></span></a>
-																	<span th:attr="data-id=${tenant.name}" class="btn-auths btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{bpm.auth.title}"><i class="icon-lock"></i></span>
+																	<!-- <span th:attr="data-id=${tenant.name}" class="btn-auths btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{bpm.auth.title}"><i class="icon-lock"></i></span> -->
 																	<span class="dropdown">
 																		<span   class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
 																		<ul class="dropdown-menu dropdown-menu-table download-menu">
@@ -211,72 +213,37 @@
 										</div>											
 									</div>
 								</div><!-- // TENANTS LIST -->
+								<div id="wrapper-role-map-fragment" th:include="bpm/fragments/role-map"></div>
 							</div><!-- // BODY CONTENT -->
 						</div><!-- // PORTLET BASIC LIGHT -->							
-				<!-- Modal Authorizations-->
-					<div id="authorizationsModal" class="modal fade" role="dialog">
+					<!-- Modal ROLE-MAPPING -->
+					<div id="role-mapping-modal" class="modal fade" role="dialog" style="z-index:9998">
 					  <div class="modal-dialog modal-sm">
-					
 					    <!-- Modal content-->
 					    <div class="modal-content">
 					      <div class="modal-header">
 					        <button type="button" class="close" data-dismiss="modal"></button>
-					        <h4 class="modal-title" th:text="#{binaryfiles.authorizations}">Authorizations</h4>
+					        <h4 class="modal-title" th:text="#{bpm.map.realm.roles}">Mappings</h4>
 					      </div>		
 					      <div class="modal-body">
-						    <!-- FILE AUTHORIZATION -->
-							<div class="row">
-							<input type="hidden" id="currentTenat"/>
-								<div class="col-md-4 col-sm-6 col-xs-12">
-								<!-- USER SELECTION -->
-									<div class="form-group">
-										<label class="control-label" th:text="#{binaryfiles.user}">User</label>
-										<select id="users" class="selectpicker form-control" data-live-search="true" data-width="100%" >
-											<option value="" th:text="#{binaryfiles.userselect}"> Select User...</option>
-											<option th:each="user :${users}"  th:if="${user.active}" th:value="${user.userId}" th:text="${user.fullName}  +' ('+ ${user.userId} +')'" ></option>														
-										</select>
-									</div>
-									<div class="form-group">
-										<button type="button" class="btn btn-circle btn-primary" onclick="Bpm.List.insertAuthorization(this)" th:text="#{binaryfiles.insertauthorization}" >Insert File Authorization</button>																		
-									</div>												
-								</div>
-								<div class="col-md-8 col-sm-6 col-xs-12">
-								<!-- AUTHORIZATION ONTOLOGY-USER-TYPE -->
-									<div class="form-group">
-										<label class="control-label" th:text="#{bpm.auth.title} + ':'">File Authorizations</label>
-										<div id="alert-authorizations" class="alert alert-info">
-											<i class="fa fa-info-circle"></i> <span th:text="#{binaryfiles.auth.info}"> </span>
-										</div>
-										<div id="authorizations" class="margin-bottom-20 hide">
-											<table class="table" id="tenant_authorizations" data-loaded="false">
-												<thead>
-													<tr class="cabecera-tabla" role="row" >
-														<th class="titulo-columnas" th:text="#{binaryfiles.user}">User</th>
-														<th class="titulo-columnas text-center" th:text="#{gen.options}">Options</th>
-													</tr>
-												</thead>
-												<tbody>
-													<tr class="authorization-model">
-														<td><input type="text" name="users[]" readonly="readonly"   class="form-control"/></td>
-														<td><input type="hidden" name="tenantId[]" readonly="readonly"   class="form-control"/></td>
-														<td width="150px" class="no-wrap text-center">							
-															<button type="button" class="btn btn-xs btn-no-border icon-on-table color-red tooltips btn-mountable-remove btn-mountable-authorization-remove" style="background-color:transparent;" onclick="Bpm.List.removeAuthorization(this)"><i class="icon-delete"></i> <!--<span th:text="#{binaryfiles.removeauth}">Remove</span>--></button>
-														</td>			
-													</tr>
-												</tbody>														
-											</table>
-										</div>
-									</div>
-								</div>
-							</div>
+					      <div class="form-group">
+					      <div class="form-group">    
+					      <label class="control-label" th:text="#{ontology.realm}">Process name</label>
+							<select id="realms" class="selectpicker form-control no-remove" data-live-search="true" data-width="100%" th:title="#{ontology.realmselect}" th:required="true">
+								<option th:each="realm :${realms}" th:value="${realm}" th:text="${realm}" ></option>
+							</select>
+					      </div>
+					      <br/>
+						  </div>
 					      </div>									      
 					      <div class="modal-footer">
-					        <button type="button" class="btn btn-circle btn-outline btn-primary" data-dismiss="modal" th:text="#{binaryfiles.close}">Close</button>
+					        <button type="button" class="btn btn-outline btn-circle btn-primary "  onclick="getRoleMappings()"  th:text="#{gen.submit}" >Submit</button>
 					      </div>
 					    </div>
-					
+
 					  </div>
 					</div>
+					
 					<!-- Modal UPLOAD-->
 					<div id="uploadModal" class="modal fade" role="dialog">
 					  <div class="modal-dialog modal-sm">
@@ -391,6 +358,21 @@
 		
 	
 	var camundaWebApp;
+	var csrf_value = $("meta[name='_csrf']").attr("content");
+	var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+	
+	function getRoleMappings (){
+		let r = $('#realms').val();
+		$('#wrapper-role-map-fragment').load(`realms/${r}/map-roles`, function( response, status, xhr ) {
+			  if ( status == "error" ) {
+				    var msg = "Sorry but there was an error: ";
+				    $( "#error" ).html( msg + xhr.status + " " + xhr.statusText );
+			  }else
+				$('#roleMapModal').modal('hide');
+			  	$('#roleMapModal').modal('show');
+			
+		});
+	}
 		
 	var constants ={
 			

@@ -71,7 +71,9 @@ public class XOpAPIKeyFilter implements Filter {
 		final HttpServletRequest req = (HttpServletRequest) request;
 		boolean hasSession = false;
 		if (req.getHeader(X_OP_APIKEY) != null) {
-			log.debug("Detected header {} in request, loading autenthication", X_OP_APIKEY);
+			if (log.isDebugEnabled()) {
+				log.debug("Detected header {} in request, loading autenthication", X_OP_APIKEY);
+			}
 			hasSession = req.getSession(false) != null;
 			if (hasSession) {
 				InterceptorCommon.setPreviousAuthenticationOnSession(req.getSession(false));
@@ -84,7 +86,9 @@ public class XOpAPIKeyFilter implements Filter {
 					final Authentication auth = new UsernamePasswordAuthenticationToken(details, details.getPassword(),
 							details.getAuthorities());
 					InterceptorCommon.setContexts(auth);
-					log.debug("Loaded authentication for user {}", auth.getName());
+					if (log.isDebugEnabled()) {
+						log.debug("Loaded authentication for user {}", auth.getName());
+					}
 					publish(new AuthenticationSuccessEvent(auth));
 				}
 

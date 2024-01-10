@@ -160,7 +160,9 @@ public class ReportInfoServiceImpl implements ReportInfoService {
 	}
 
 	private ReportInfoDto extractFromReport(JasperReport report) {
-		log.debug("INI. Extract data from report: {}", report.getName());
+		if (log.isDebugEnabled()) {
+			log.debug("INI. Extract data from report: {}", report.getName());
+		}
 		List<ReportParameter> parameters = new ArrayList<>();
 		List<ReportField<?>> fields = new ArrayList<>();
 		String dataSource = "";

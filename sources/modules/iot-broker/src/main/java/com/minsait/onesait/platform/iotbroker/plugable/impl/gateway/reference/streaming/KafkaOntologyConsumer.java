@@ -214,9 +214,11 @@ public class KafkaOntologyConsumer {
 						log.error("listenToPartitionBatch:Message ignored by error:", e);
 					}
 				} else {
-					log.debug(
+					if (log.isDebugEnabled()) {
+						log.debug(
 							" Vertical  or Tenant not found. Insertion to ontology will be skipped. Ontology={}, Vertical={}, Tenant={}, Topic={}",
 							verticalName, ontology, verticalName, tenant, ontologyVerticalTenant);
+					}					
 				}
 			}
 		} catch (final Exception e) {

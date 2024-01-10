@@ -59,7 +59,6 @@ import fr.opensagres.xdocreport.core.document.DocumentKind;
 public class PoiTemplatesUtil {
 
 	private final String PATH_TEMPLATE = "/tmp/";
-	
 
 	public List<String> extractFromDocx(InputStream is) throws OpenXML4JException, IOException {
 
@@ -101,15 +100,16 @@ public class PoiTemplatesUtil {
 	public List<Map<String, Object>> generateJSONObject(List<String> elements, ReportFormType formType) {
 
 		String arrayName = "";
-
 		List<Map<String, Object>> parametersJson = new ArrayList<Map<String, Object>>();
 		for (int i = 0; i < elements.size(); i++) {
 
 			String element = elements.get(i);
+
 			if (element.startsWith("{{?")) {
 				arrayName = element.replace("{{?", "");
 				arrayName = arrayName.replace("}}", "");
 				Map<String, Object> elementObject = new HashMap<String, Object>();
+
 				elementObject.put("name", arrayName);
 				elementObject.put("value", "");
 
@@ -142,7 +142,6 @@ public class PoiTemplatesUtil {
 				Map<String, Object> elementObject = new HashMap<String, Object>();
 				elementObject.put("name", nameString);
 				elementObject.put("value", "");
-
 				parametersJson.add(elementObject);
 			}
 		}

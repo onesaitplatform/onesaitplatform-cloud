@@ -174,7 +174,9 @@ public class GitlabRestService extends GitRestService {
 				+ "\", \"visibility\":\"private\"}";
 		int namespaceId = 0;
 		if (name.contains("/")) {
-			log.debug("parsing subgroups for {}", name);
+			if (log.isDebugEnabled()) {
+				log.debug("parsing subgroups for {}", name);
+			}
 			final String[] subgroups = name.split("/");
 			final String directParentGroup = name.substring(0,
 					name.length() - subgroups[subgroups.length - 1].length() - 1);

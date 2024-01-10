@@ -404,7 +404,7 @@
 																</th:block>
 																<th:block  th:unless="${((file.user.userId eq #authentication.getName()) OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR') OR (accessMap.get(file.id) eq 'WRITE'))}">
 																	<!-- Copy link, accesible always -->
-																	<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:attr="onclick='BinaryFilesController.copyToClipboard(\''+|@{/files/gridfs/}|+${file.id}+ '\')'"><i class="icon-url"></i></span>
+																	<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom"  th:data-original-title="#{binaryfiles.copy}" th:attr="onclick='BinaryFilesController.copyToClipboard(\''+|@{/files/gridfs/}|+${file.id}+ '?vertical=' + ${#strings.toLowerCase(#authentication.getPrincipal().getVertical())}+ '\')'"><i class="icon-url"></i></span>
 																</th:block>					
 															</td>
 														</tr>
@@ -542,8 +542,7 @@
 		
 
 		// SEARCH FORM RESET
-		$('#reset_file').on('click',function(){
-				    
+		$('#reset_file').on('click',function(){	    
 			$('#form_file')[0].reset();
 			$('#form_file')[0].submit();
 		});

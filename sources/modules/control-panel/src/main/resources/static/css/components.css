@@ -2914,6 +2914,11 @@ Custom Bootstrap Badges
 .text-dark{
   color:#212529 !important;
 }
+.table-border-1px-black {
+  border-bottom: 1px solid grey;
+  padding-bottom: 5px;
+  padding-top: 5px;
+}
 .text-dark:hover{
   cursor: pointer;
 }
@@ -7115,6 +7120,24 @@ Form Layouts
 
 .form-horizontal .form-group .form-control-static {
   margin-top: 1px; }
+
+.input-groove-border {
+	margin-top: 1px;
+	margin-bottom: 1px;
+	border: white 3px groove;
+	border-radius: 5px;
+	width: 75%;
+}
+
+.combobox-groove-border {
+	margin-top: 1px;
+	margin-bottom: 1px;
+	border: white 3px groove;
+	border-radius: 5px;
+    width: 75%;
+}
+
+
 
 /***
 Form Repeater

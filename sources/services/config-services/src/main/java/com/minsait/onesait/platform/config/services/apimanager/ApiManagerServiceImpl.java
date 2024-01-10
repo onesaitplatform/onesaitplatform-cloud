@@ -167,11 +167,10 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 		return apis;
 	}
 
-	@Override
-	public Integer calculateNumVersion(String identification, ApiType apiType) {
+	private Integer calculateNumVersionbyIdentification(String identification) {
 		List<Api> apis = null;
 		Integer version = 0;
-		apis = apiRepository.findByIdentificationAndApiType(identification, apiType);
+		apis = apiRepository.findByIdentificationIgnoreCase(identification);
 		for (final Api api : apis) {
 			if (api.getNumversion() > version) {
 				version = api.getNumversion();
@@ -190,13 +189,8 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 			obj = new ObjectMapper().readValue(numversionData, new TypeReference<Map<String, String>>() {
 			});
 			identification = obj.get("identification");
-			apiType = ApiType.valueOf(obj.get("apiType"));
 
-			if (StringUtils.isEmpty(apiType)) {
-				apiType = null;
-			}
-
-			version = calculateNumVersion(identification, apiType);
+			version = calculateNumVersionbyIdentification(identification);
 
 		} catch (final IOException e) {
 			log.warn(e.getClass().getName() + ":" + e.getMessage());
@@ -967,7 +961,7 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 			}
 
 			if (forcedNumVersion <= 0) {
-				api.setNumversion(calculateNumVersion(api.getIdentification(), api.getApiType()));
+				api.setNumversion(calculateNumVersion(api.getIdentification()));
 			} else {
 				api.setNumversion(forcedNumVersion);
 			}

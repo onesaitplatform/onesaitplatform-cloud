@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -1515,10 +1516,11 @@ public class DashboardServiceImpl implements DashboardService {
 		includeGadgets(dashboardimportDTO, userId);
 
 		// include GADGET_DATASOURCES
-		includeGadgetDatasoures(dashboardimportDTO, userId);
+		List<HashMap<String, String>> ontologiesError = includeGadgetDatasoures(dashboardimportDTO, userId);
+		
 		// include GADGET_MEASURES
 		includeGadgetMeasures(dashboardimportDTO);
-
+		dashboardImportResultDTO.setErrorOntologies(ontologiesError);
 		final Dashboard dashboardResponse = dashboardRepository.findByIdentification(dashboard.getIdentification())
 				.get(0);
 
@@ -1585,7 +1587,8 @@ public class DashboardServiceImpl implements DashboardService {
 		}
 	}
 
-	private void includeGadgetDatasoures(DashboardExportDTO dashboard, String userId) {
+	private List<HashMap<String, String>> includeGadgetDatasoures(DashboardExportDTO dashboard, String userId) {
+		List<HashMap<String, String>> errorDatasources = new ArrayList<>();
 		for (final GadgetDatasourceDTO gadgetDSDTO : dashboard.getGadgetDatasources()) {
 			final GadgetDatasource gadgetDS = new GadgetDatasource();
 			if (!gadgetDatasourceRepository.findById(gadgetDSDTO.getId()).isPresent()) {
@@ -1602,29 +1605,38 @@ public class DashboardServiceImpl implements DashboardService {
 				if (oDTO.getIdentification() != null
 						&& ontologyRepository.findByIdentification(oDTO.getIdentification()) != null) {
 					gadgetDS.setOntology(ontologyRepository.findByIdentification(oDTO.getIdentification()));
+					gadgetDS.setUser(userRepository.findByUserId(userId));
+					gadgetDatasourceRepository.save(gadgetDS);
 				} else {
 					gadgetDS.setOntology(null);
+					HashMap<String, String> errorDatasource = new HashMap<>();
+					errorDatasource.put(gadgetDS.getIdentification(), oDTO.getIdentification());
+					errorDatasources.add(errorDatasource);
 				}
-				gadgetDS.setUser(userRepository.findByUserId(userId));
-				gadgetDatasourceRepository.save(gadgetDS);
+			
 			}
 		}
+		return errorDatasources;
 	}
-
+	
 	private void includeGadgetMeasures(DashboardExportDTO dashboard) {
-		for (final GadgetMeasureDTO gadgetMeasureDTO : dashboard.getGadgetMeasures()) {
-			final GadgetMeasure gadgetMeasure = new GadgetMeasure();
-			if (!gadgetMeasureRepository.findById(gadgetMeasureDTO.getId()).isPresent()) {
-				gadgetMeasure.setId(gadgetMeasureDTO.getId());
-				gadgetMeasure.setConfig(gadgetMeasureDTO.getConfig());
-				gadgetMeasure.setGadget(gadgetRepository.findById(gadgetMeasureDTO.getGadget().getId()).orElse(null));
-				gadgetMeasure.setDatasource(
-						gadgetDatasourceRepository.findById(gadgetMeasureDTO.getDatasource().getId()).orElse(null));
-
-				gadgetMeasureRepository.save(gadgetMeasure);
+		if(dashboard.getGadgetMeasures() != null) {
+			for (final GadgetMeasureDTO gadgetMeasureDTO : dashboard.getGadgetMeasures()) {
+				final GadgetMeasure gadgetMeasure = new GadgetMeasure();
+				if (!gadgetMeasureRepository.findById(gadgetMeasureDTO.getId()).isPresent()) {
+					gadgetMeasure.setId(gadgetMeasureDTO.getId());
+					gadgetMeasure.setConfig(gadgetMeasureDTO.getConfig());
+					gadgetMeasure.setGadget(gadgetRepository.findById(gadgetMeasureDTO.getGadget().getId()).orElse(null));
+					if(gadgetMeasureDTO.getDatasource() != null) {
+						gadgetMeasure.setDatasource(
+							gadgetDatasourceRepository.findById(gadgetMeasureDTO.getDatasource().getId()).orElse(null));
+					} else {
+						gadgetMeasure.setDatasource(null);
+					}
+					gadgetMeasureRepository.save(gadgetMeasure);
+				}
 			}
 		}
-
 	}
 
 	@SuppressWarnings("unchecked")

@@ -74,4 +74,6 @@ public interface MicroserviceBusinessService {
 
 	ZipMicroservice generateArchitectureMS(MicroserviceDTO microservice, MSConfig config)
 			throws URISyntaxException, IOException;
+
+	String getCurrentImage(Microservice microservice);
 }

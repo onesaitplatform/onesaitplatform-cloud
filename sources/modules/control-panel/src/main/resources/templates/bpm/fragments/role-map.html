@@ -1,0 +1,104 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2022 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!-- Modal Parameters Deploy-->
+<div id="roleMapModal" class="modal fade" role="dialog" style="z-index:9999">
+  <div class="modal-dialog modal-xl">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"></button>
+        <h4 class="modal-title" th:text="#{bpm.map.realm.roles}">Map</h4>
+        <br/>
+        <h5 class="modal-title" th:text="${'Realm: ' + realm}">Realm</h5>
+      </div>		
+      <div class="modal-body">
+	    <!-- PARAMETERS -->
+		<div class="row">
+			<div class="col-md-12 col-sm-6 col-xs-12">
+			<!-- Fill parameters -->
+				<div class="form-group">
+					<div id="deployment-parameters" class="margin-bottom-20">
+						<input type="hidden" id="current-realm" th:value="${realm}"/>
+						<table class="table" id="table_role_mappings" data-loaded="false">
+							<thead>
+								<tr class="cabecera-tabla" role="row" >
+									<th class="titulo-columnas" th:text="#{user.rolTypeName}">Role Name</th>
+									<th class="titulo-columnas" th:text="#{bpm.permission.level}">Value</th>
+								</tr>
+							</thead>
+							<tbody id="table-body">
+								<tr th:each="role :${roles}">
+									<td>
+										<input type="text" name="name[]" readonly="readonly"  class="form-control" th:value="${role}"/>
+									</td>																
+									<td>
+										<select th:attr="data-id=${role}" th:id="${role + '_level'}" name="groupLevels[]" class="form-control select-modal accesstypes" data-live-search="true" data-width="100%">			
+											<option value="" th:text="#{bpm.map.realm.roles.select}"> Select </option>									
+											<option th:each="level :${groupLevels}" th:value="${level}" th:text="${level}" ></option>
+										</select>
+									</td>			
+								</tr>
+							</tbody>														
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+      </div>
+      <div id="pulse" class="col-md-12 hide">	
+  		<div class="pulsating-circle"></div>										
+  	  </div>									      
+      <div class="modal-footer">
+        <button type="button" th:attr="data-id=${realm}" class="btn btn-circle btn-primary" th:text="#{gen.changes}" onclick="saveRoleMappings()">OK</button>
+        <button type="button" class="btn btn-circle btn-primary" data-dismiss="modal" th:text="#{binaryfiles.close}">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+<script type="text/javascript" th:inline="javascript">
+	var roleMappings = [[${rolesMap}]];
+	var roles = [[${roles}]]
+	if(roleMappings !== null){
+		Object.keys(roleMappings).forEach(function(r){
+			$(`#${r}_level`).val(`${roleMappings[r]}`);
+		})
+	}
+	function saveRoleMappings(){
+		let currentRealm = $('#current-realm').val()
+		let newMapping = {};
+		roles.forEach(function(r){
+			if($(`#${r}_level`).val() !== '' ){
+				newMapping[r] = $(`#${r}_level`).val();
+			}
+		})
+		let headers=  {
+			[csrf_header]: csrf_value,
+			'Content-Type' : 'application/json'
+	    }
+		fetch(`realms/${currentRealm}/map-roles`,{
+			'method' : 'POST',
+			'headers': headers,
+			'body': JSON.stringify(newMapping)
+			
+		})
+		.then( r => {
+				$('#roleMapModal').modal('hide'); 
+			}
+		)
+	}
+</script>

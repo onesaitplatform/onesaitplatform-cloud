@@ -686,9 +686,13 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 
 	@Override
 	public void invalidateUserTokens(String userId) {
-		log.debug("Deleteing user token x-op-apikey for user {}", userId);
+		if (log.isDebugEnabled()) {
+			log.debug("Deleteing user token x-op-apikey for user {}", userId);
+		}
 		userTokenRepository.deleteByUser(userId);
-		log.debug("Revoking Oauth2 access tokens for user{}", userId);
+		if (log.isDebugEnabled()) {
+			log.debug("Revoking Oauth2 access tokens for user{}", userId);
+		}
 		final Collection<OAuthAccessToken> tokens = oauthAccessTokenRepository.findByUserName(userId);
 		tokens.forEach(t -> {
 			oauthRefreshTokenRepository.deleteById(t.getRefreshToken());

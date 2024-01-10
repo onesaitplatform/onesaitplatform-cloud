@@ -23,7 +23,7 @@ var OntologyCreateController = function() {
 	var LANGUAGE = ['es'];
 	var currentLanguage = ''; // loaded from template.
 	var internalLanguage = 'en';
-	var validTypes = ["object","string","number","integer","date","timestamp-mongo","timestamp","array","geometry-point","geometry-linestring","geometry-polygon","geometry-multipoint","geometry-multilinestring","geometry-multipolygon","file","boolean"]; // Valid
+	var validTypes = ["object","string","number","integer","date","timestamp-mongo","timestamp","array","geometry-point","geometry-linestring","geometry-polygon","geometry-multipoint","geometry-multilinestring","geometry-multipolygon","file","boolean","email"]; // Valid
 																																		// property
 																																		// types
 	var mountableModel = $('#datamodel_properties').find('tr.mountable-model')[0].outerHTML; 
@@ -65,6 +65,7 @@ var OntologyCreateController = function() {
 		var isGeometryMultiLineString	= false;
 		var isGeometryMultiPolygon	= false;
 		var isDate	= false;
+		var isEmail	= false;
 		var isTimestampMongo     = false;
 		var objectType		= '';
 		var isTimestamp = false;
@@ -90,6 +91,7 @@ var OntologyCreateController = function() {
 				isGeometryMultiLineString	= false;
 				isGeometryMultiPolygon	= false;
 				isDate	= false;
+				isEmail	= false;
 				isTimestampMongo     = false;
 				isTimestamp = false;
 				propEncrypted = false;
@@ -113,7 +115,11 @@ var OntologyCreateController = function() {
 						if(object.hasOwnProperty('format')){
 							if (object['format'] == 'date'){
 								isDate	= true;
-							} else {
+							}
+							else if (object['format'] == 'email'){
+								isEmail	= true;
+							}				
+							else {
 								isTimestamp=true;									
 							}						
 						}
@@ -145,7 +151,7 @@ var OntologyCreateController = function() {
 						if ( object.hasOwnProperty('properties')) { if (object.properties.hasOwnProperty('$date')){ isTimestampMongo = true;  }}
 						if (isFile) { objectType = 'file';  } else if (isGeometryPoint) { objectType = 'geometry-point'; } else if (isGeometryLineString) { objectType = 'geometry-linestring'; } else if (isGeometryPolygon) { objectType = 'geometry-polygon'; }
 						else if (isGeometryMultiPoint) { objectType = 'geometry-multipoint'; } else if (isGeometryMultiLineString) { objectType = 'geometry-multilinestring'; } else if (isGeometryMultiPolygon) { objectType = 'geometry-multipolygon'; }
-						else if (isTimestampMongo) { objectType = 'timestamp-mongo'; } else if (isTimestamp) { objectType = 'timestamp'; } else if (isDate) { objectType = 'date'; }
+						else if (isTimestampMongo) { objectType = 'timestamp-mongo'; } else if (isTimestamp) { objectType = 'timestamp'; } else if (isDate) { objectType = 'date'; } else if (isEmail) { objectType = 'email'; }
 						else {
 							 
 								if(Array.isArray(propValue) ){
@@ -623,7 +629,14 @@ var OntologyCreateController = function() {
 			}else {
 				properties[prop] = JSON.parse('{"type": ["string","null"],"format": "date"'+defaultD+'}');
 			}
-		}else {
+		}else if(type == 'email'){			
+			if(req == 'required'){
+				properties[prop] = JSON.parse('{"type": "string","format": "email"'+defaultD+'}');
+			}else {
+				properties[prop] = JSON.parse('{"type": ["string","null"],"format": "email"'+defaultD+'}');
+			}
+		}
+		else {
 			let enumD = '';	
 			if(type=='string'||type=='number'||type=='integer'){
 				if(enumData!=null && enumData!=''){
@@ -1244,6 +1257,8 @@ var OntologyCreateController = function() {
 			return "\"type\":\"boolean\"";
 		} else if(orgType == "Date"){
 			return "\"type\":\"string\", \"format\":\"date\"";
+		} else if(orgType == "Email"){
+			return "\"type\":\"string\", \"format\":\"email\"";
 		} else if(orgType == "DateTime") {
 			return "\"type\":\"string\", \"format\":\"date-time\"";
 		} else{
@@ -1438,6 +1453,10 @@ var OntologyCreateController = function() {
 		$(".option a[href='#tab_data']").on("click", function(e) {
 			$('.tabContainer').find('.option').removeClass('active');
 			$('#tab-data').addClass('active');
+		});
+		$(".option a[href='#tab_index_configuration']").on("click", function(e) {
+			$('.tabContainer').find('.option').removeClass('active');
+			$('#tab-index').addClass('active');
 		});
 		
 		// Wizard container

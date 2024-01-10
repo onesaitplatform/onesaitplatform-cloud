@@ -265,11 +265,13 @@ public class VersioningController {
 			final Map<String, Set<String>> exclusions = new ObjectMapper().readValue(exclusionsString,
 					new TypeReference<HashMap<String, Set<String>>>() {
 					});
-			if (!StringUtils.hasText(tagName)) {
-				ra.addFlashAttribute(RESTORE_RESULT_ERROR, "Please send tag-name parameter");
-				return "redirect:/versioning/snapshot/platform";
+			if (!exclusions.isEmpty()) {
+				if (!StringUtils.hasText(tagName)) {
+					ra.addFlashAttribute(RESTORE_RESULT_ERROR, "Please send tag-name parameter");
+					return "redirect:/versioning/snapshot/platform";
+				}
+				report.setExcludeResources(exclusions);
 			}
-			report.setExcludeResources(exclusions);
 		}
 		report.setExecutionId(UUID.randomUUID().toString());
 		versioningBusinessService.generateSnapShot(tagName, report);

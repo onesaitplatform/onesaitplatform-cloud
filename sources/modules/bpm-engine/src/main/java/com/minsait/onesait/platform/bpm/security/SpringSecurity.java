@@ -26,6 +26,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.sql.DataSource;
 
+import org.camunda.bpm.engine.ProcessEngine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -57,12 +58,12 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.context.request.RequestContextListener;
 
 import com.minsait.onesait.platform.bpm.security.camunda.ContainerBasedAuthenticationFilter;
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
-import com.minsait.onesait.platform.config.services.bpm.BPMTenantService;
 import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepository;
 import com.minsait.onesait.platform.multitenant.util.VerticalResolver;
 
@@ -77,7 +78,11 @@ public class SpringSecurity extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private SuccessHandler successHandler;
 	@Autowired
+	private LogoutSuccessHandler logoutSuccessHandler;
+	@Autowired
 	private UserDetailsService userDetailsService;
+	@Autowired
+	private ProcessEngine processEngine;
 
 	@Autowired
 	private VerticalResolver tenantDBResolver;
@@ -86,25 +91,28 @@ public class SpringSecurity extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.csrf().disable().authorizeRequests().antMatchers("/actuator/**", "/login/**").permitAll().and()
-		.antMatcher("/**").authorizeRequests().anyRequest().authenticated().and().exceptionHandling()
-		.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login/oauth")).and()
-		.addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class)
-		.addFilterBefore(new BearerAuthenticationFilter(), BasicAuthenticationFilter.class);
+		http.csrf().disable().authorizeRequests().antMatchers("/actuator/**", "/login/**", "/logout").permitAll().and()
+				.antMatcher("/**").authorizeRequests().anyRequest().authenticated().and().exceptionHandling()
+				.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login/oauth")).and()
+				.addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class)
+				.addFilterBefore(new BearerAuthenticationFilter(), BasicAuthenticationFilter.class).logout()
+				.logoutUrl("/logout").logoutSuccessHandler(logoutSuccessHandler).permitAll();
+
 	}
 
 	@Bean
-	public FilterRegistrationBean containerBasedAuthenticationFilter(BPMTenantService bpmnTenantService) {
+	public FilterRegistrationBean containerBasedAuthenticationFilter() {
 
 		final FilterRegistrationBean filterRegistration = new FilterRegistrationBean();
-		filterRegistration.setFilter(new ContainerBasedAuthenticationFilter(bpmnTenantService, userDetailsService,
-				tenantDBResolver, masterUserRepository));
+		filterRegistration.setFilter(new ContainerBasedAuthenticationFilter(userDetailsService, tenantDBResolver,
+				masterUserRepository, processEngine));
 		filterRegistration
-		.setInitParameters(Collections.singletonMap("authentication-provider", AUTHENTICATION_PROVIDER_CLASS));
+				.setInitParameters(Collections.singletonMap("authentication-provider", AUTHENTICATION_PROVIDER_CLASS));
 		filterRegistration.setOrder(101); // make sure the filter is registered after the Spring Security Filter Chain
 		filterRegistration.addUrlPatterns("/camunda/*");
 		return filterRegistration;
 	}
+
 	@Bean
 	public RequestContextListener requestContextListener() {
 		return new RequestContextListener();

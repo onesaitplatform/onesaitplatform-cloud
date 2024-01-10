@@ -64,7 +64,9 @@ public class RulesEngineServiceImpl implements RulesEngineService {
 		session.getGlobals();
 		try {
 			final int n = session.fireAllRules();
-			log.debug("Fired {} rules for ontology {} and user {}", n, ontology, user);
+			if (log.isDebugEnabled()) {
+				log.debug("Fired {} rules for ontology {} and user {}", n, ontology, user);
+			}			
 			session.dispose();
 		} catch (final Exception e) {
 			log.error("Exception while firing rules for user {} :  {}", user, e);
@@ -121,7 +123,9 @@ public class RulesEngineServiceImpl implements RulesEngineService {
 		session.setGlobal(GLOBAL_IDENTIFIER_OUTPUT, output);
 		try {
 			final int n = session.fireAllRules();
-			log.debug("Fired {} rules for rule {}", n, ruleIdentification);
+			if (log.isDebugEnabled()) {
+				log.debug("Fired {} rules for rule {}", n, ruleIdentification);
+			}			
 			session.dispose();
 			return output.toJson();
 		} catch (final Exception e) {

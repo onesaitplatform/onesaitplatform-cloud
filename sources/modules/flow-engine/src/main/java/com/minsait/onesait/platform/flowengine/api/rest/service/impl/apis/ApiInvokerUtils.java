@@ -54,7 +54,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 public class ApiInvokerUtils {
-	private static final String API_KEY= "X-OP-APIKey";
+	private static final String API_KEY = "X-OP-APIKey";
 	@Value("${onesaitplatform.flowengine.apiinvoker.response.utf8.force:false}")
 	private boolean forceUtf8Response;
 
@@ -65,7 +65,6 @@ public class ApiInvokerUtils {
 		restTemplate.getMessageConverters().removeIf(c -> c instanceof StringHttpMessageConverter);
 		restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
 	}
-
 
 	@SuppressWarnings("unchecked")
 	public ResponseEntity<String> callApiOperation(RestApiInvocationParams invocationParams) {
@@ -80,7 +79,7 @@ public class ApiInvokerUtils {
 		for (final Entry<String, String> entry : invocationParams.getPathParams().entrySet()) {
 			url = url.replaceAll("\\{" + entry.getKey() + "\\}", entry.getValue());
 		}
-
+		logRequest(url, invocationParams);
 		try {
 			switch (invocationParams.getMethod()) {
 			case GET:
@@ -115,7 +114,21 @@ public class ApiInvokerUtils {
 				});
 			}
 		}
+		log.info("Result of response is: {}", result);
 		return result;
+	}
+
+	private void logRequest(String url, RestApiInvocationParams invocationParams) {
+		log.info("Request URL: {}  , with method: {}", url, invocationParams.getMethod());
+		try {
+			log.info("Request headers: {}", String.join(" / ", invocationParams.getHeaders().entrySet().stream()
+					.map(e -> e.getKey() + ":" + String.join(";", e.getValue())).toList()));
+		} catch (final Exception e) {
+			// NO-OP logs
+		}
+		if (!invocationParams.isMultipart()) {
+			log.info("Request body: {}", invocationParams.getBody());
+		}
 	}
 
 	public Map<String, String> getDefaultStatusCodes() {
@@ -152,13 +165,13 @@ public class ApiInvokerUtils {
 		if (consumes != null && !consumes.isEmpty()) {
 			resultInvocationParams.getHeaders().add(HttpHeaders.CONTENT_TYPE, consumes.get(0));
 		}
-		//Check if we have the api token key on the invication params
+		// Check if we have the api token key on the invication params
 		try {
-			String apiTokenKey = getValueForParam(API_KEY, invokeRequest.getOperationInputParams());
+			final String apiTokenKey = getValueForParam(API_KEY, invokeRequest.getOperationInputParams());
 			if (!apiTokenKey.isEmpty()) {
 				resultInvocationParams.getHeaders().add(API_KEY, apiTokenKey);
 			}
-		}catch(final FlowDomainServiceException e) {
+		} catch (final FlowDomainServiceException e) {
 			log.debug("No api key used");
 		}
 
@@ -168,8 +181,8 @@ public class ApiInvokerUtils {
 			boolean skipParam = false;
 			try {
 				value = getValueForParam(param.getName(), invokeRequest.getOperationInputParams());
-				if(value.isEmpty() && param.getName().equalsIgnoreCase("Authorization")) {
-					//if empty we do not use it
+				if (value.isEmpty() && param.getName().equalsIgnoreCase("Authorization")) {
+					// if empty we do not use it
 					skipParam = true;
 				}
 			} catch (final FlowDomainServiceException e) {
@@ -180,7 +193,9 @@ public class ApiInvokerUtils {
 					log.error(msg);
 					throw new NoValueForParamIvocationException(msg);
 				} else {
-					log.debug("Skipping parameter. Optional parameter not received. " + msg);
+					if (log.isDebugEnabled()) {
+						log.debug("Skipping parameter. Optional parameter not received. {}", msg);
+					}
 					skipParam = true;
 				}
 

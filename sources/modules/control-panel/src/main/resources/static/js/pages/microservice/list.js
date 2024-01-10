@@ -142,7 +142,12 @@ Microservice.List = (function() {
 		var parametersArray = [];
 		elements.each(function(){
 			var name = $(this).find("input[name='name\\[\\]']").val();
-			var value = $(this).find("input[name='value\\[\\]']").val();
+			var value = '';
+			if(typeof $(this).find("input[name='value\\[\\]']").val() !== 'undefined'){
+				value = $(this).find("input[name='value\\[\\]']").val();
+			}else{
+				value = $(this).find("select[name='value\\[\\]']").val()
+			}
 			var parameter = {"name":name, "value":value};
 			parametersArray.push(parameter);
 		});
@@ -383,14 +388,35 @@ Microservice.List = (function() {
 			    				$('#table_parameters > tbody').html("");
 			    				$('#table_parameters > tbody').append(mountableModel);
 			    			}
-			        		
-			        		$('#table_parameters').mounTable(parameters,{
-			    				model: '.parameters-model',
-			    				noDebug: false							
-			    			});
+
+			        		//$('#table_parameters').mounTable(parameters,{
+			    			//	model: '.parameters-model',
+			    			//	noDebug: false							
+			    			//});
+			    			
+			    			//<--- START Change to combo
+			    			let tdsHTML = '';
+			    			parameters.forEach(function(param){
+								tdsHTML += `<tr><td><input type="text" name="name[]" readonly="readonly"   value="${param.name}" class="form-control"/></td>`
+								if(typeof param.value === 'string'){
+									tdsHTML += `<td><input type="text" name="value[]" value="${param.value}" class="form-control"/></td>`;
+								}else if(param.value === null){
+									tdsHTML += `<td><input type="text" name="value[]" value="" class="form-control"/></td>`;
+								}else{
+									tdsHTML += `<td><select name="value[]" class="form-control"/>`;
+									param.value.forEach(function(s){
+										tdsHTML += `<option value="${s}">${s}</option>`;
+									})
+								}
+								tdsHTML += '</tr>';
+							})
+			    			$('#table-body').html(tdsHTML);
+
+			    			//-->END 
 			        		$('#parameters').removeClass('hide');
 			    			$('#parameters').attr('data-loaded',true);
 			    			$('#parametersModal').modal('show');
+			    			$('#parametersModal').removeClass('hidden');
 			    			$('#current-microservice').val(id);
 			        		
 			        	}
@@ -626,7 +652,7 @@ Microservice.List = (function() {
 				<button class="close" data-close="alert"></button> <span >${messageCopied}</span>
 			</div>
 			<div><label>${messageBase}</label>
-				<input class="col-md-12 form-control" readonly="readonly" value="${openshiftUrl}" onclick=" this.select();document.execCommand('copy'); $('#infoCopied').show();" type="text"/>	
+				<input class="col-md-12 form-control" readonly="readonly" value="${window.location.origin}${contextpath}" onclick=" this.select();document.execCommand('copy'); $('#infoCopied').show();" type="text"/>	
 			</div>
 			`
 		}

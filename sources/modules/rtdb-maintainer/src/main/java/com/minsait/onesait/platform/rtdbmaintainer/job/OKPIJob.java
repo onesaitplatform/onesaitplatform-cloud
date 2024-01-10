@@ -58,7 +58,9 @@ public class OKPIJob {
 		try {
 			ontologyConfigService.executeKPI(user, query, ontology,
 					context.getJobDetail().getJobDataMap().getString("postProcess"));
-			log.debug("Job KPI ontology for ontology", ontology);
+			if (log.isDebugEnabled()) {
+				log.debug("Job KPI ontology for ontology", ontology);
+			}			
 		} catch (HttpClientErrorException | HttpServerErrorException e) {
 			log.error("Rest error: code {}, {}", e.getStatusCode(), e.getResponseBodyAsString());
 		} catch (final Exception e) {

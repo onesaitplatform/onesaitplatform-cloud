@@ -115,7 +115,9 @@ public class MongoDbToolsAdapterImpl extends MongoDbToolsAdapter {
 	}
 
 	private String runCommand(String commandToExecute) throws CommandExecutionException {
-		log.debug("Executing command. Command = {}.", commandToExecute);
+		if (log.isDebugEnabled()) {
+			log.debug("Executing command. Command = {}.", commandToExecute);
+		}		
 		String result = null;
 		if (useSequentialOps) {
 			synchronized (this) {

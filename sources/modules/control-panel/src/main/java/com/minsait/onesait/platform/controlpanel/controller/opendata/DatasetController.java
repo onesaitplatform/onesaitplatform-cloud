@@ -336,7 +336,9 @@ public class DatasetController {
 						redirect);
 				return "redirect:/opendata/datasets/list";
 			} catch (final Exception e) {
-				log.debug("Cannot update dataset " + e.getMessage());
+				if (log.isDebugEnabled()) {
+					log.debug("Cannot update dataset {}", e.getMessage());
+				}				
 				utils.addRedirectMessage("datasets.error.updated", redirect);
 				return "redirect:/opendata/datasets/list";
 			}
@@ -364,7 +366,9 @@ public class DatasetController {
 				}
 				datasetService.deleteDataset(userToken, id);
 			} catch (final EmptyResultDataAccessException e) {
-				log.debug("The resource does not exist in ConfigDB: " + e.getMessage());
+				if (log.isDebugEnabled()) {
+					log.debug("The resource does not exist in ConfigDB: {}", e.getMessage());
+				}
 				datasetService.deleteDataset(userToken, id);
 			} catch (final Exception e) {
 				log.error("Could not delete the Dataset");

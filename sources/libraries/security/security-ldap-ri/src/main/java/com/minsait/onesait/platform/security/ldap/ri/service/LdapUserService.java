@@ -144,8 +144,9 @@ public class LdapUserService {
 		} else {
 			user.setRole(roleRepository.findById(defaultRole).orElse(null));
 		}
-
-		log.debug("Importing user {} from LDAP server", user.getUserId());
+		if (log.isDebugEnabled()) {
+			log.debug("Importing user {} from LDAP server", user.getUserId());
+		}		
 		final User createdUser = userRepository.save(user);
 		try {
 			generateToken(user);
@@ -169,7 +170,9 @@ public class LdapUserService {
 		}
 
 		if (!currentRole.getId().equals(ldapRole.getId())) {
-			log.debug("Updating user {} from LDAP server", user.getUserId());
+			if (log.isDebugEnabled()) {
+				log.debug("Updating user {} from LDAP server", user.getUserId());
+			}			
 			user.setRole(ldapRole);
 			userRepository.save(user);
 		}

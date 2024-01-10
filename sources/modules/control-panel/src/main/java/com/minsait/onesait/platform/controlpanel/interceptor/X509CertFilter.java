@@ -69,7 +69,9 @@ public class X509CertFilter implements Filter {
 		final HttpServletRequest req = (HttpServletRequest) request;
 		boolean hasSession = false;
 		if (requiresAuthentication(req, true)) {
-			log.debug("Detected header {} in API request, loading temp autenthication", CERT_HEADER);
+			if (log.isDebugEnabled()) {
+				log.debug("Detected header {} in API request, loading temp autenthication", CERT_HEADER);
+			}
 			hasSession = req.getSession(false) != null;
 			if (hasSession) {
 				InterceptorCommon.setPreviousAuthenticationOnSession(req.getSession(false));
@@ -124,7 +126,9 @@ public class X509CertFilter implements Filter {
 				final Authentication auth = new UsernamePasswordAuthenticationToken(details, details.getPassword(),
 						details.getAuthorities());
 				InterceptorCommon.setContexts(auth);
-				log.debug("Loaded authentication for user {}", auth.getName());
+				if (log.isDebugEnabled()) {
+					log.debug("Loaded authentication for user {}", auth.getName());
+				}
 			}
 		});
 		return SecurityContextHolder.getContext().getAuthentication();

@@ -66,7 +66,9 @@ public class ModelsManagerServiceImpl implements ModelsManagerService {
 		// headers.add("Authorization", encryptRestUserpass());
 		final org.springframework.http.HttpEntity<String> request = new org.springframework.http.HttpEntity<>(body,
 				headers);
-		log.debug("Sending method " + httpMethod.toString() + " Models Manager");
+		if (log.isDebugEnabled()) {
+			log.debug("Sending method {} Models Manager", httpMethod.toString());
+		}
 		ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.ACCEPTED);
 		try {
 			response = restTemplate.exchange(
@@ -76,7 +78,9 @@ public class ModelsManagerServiceImpl implements ModelsManagerService {
 			log.error(e.getMessage());
 			return new ResponseEntity<>(e.getMessage(), null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		log.debug("Execute method " + httpMethod.toString() + " '" + url + "' Models Manager");
+		if (log.isDebugEnabled()) {
+			log.debug("Execute method {} '{}' Models Manager", httpMethod.toString(), url);
+		}
 		final HttpHeaders responseHeaders = new HttpHeaders();
 		if (response.getHeaders().getContentType() != null) {
 			responseHeaders.set("Content-Type", response.getHeaders().getContentType().toString());

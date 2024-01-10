@@ -58,6 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -130,6 +131,8 @@ import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow.Frecue
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow.WindowType;
 import com.minsait.onesait.platform.config.model.OntologyUserAccess;
 import com.minsait.onesait.platform.config.model.OntologyUserAccessType;
+import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
+import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.model.Pipeline;
 import com.minsait.onesait.platform.config.model.Pipeline.PipelineStatus;
 import com.minsait.onesait.platform.config.model.PipelineUserAccessType;
@@ -200,6 +203,7 @@ import com.minsait.onesait.platform.config.repository.WebProjectRepository;
 import com.minsait.onesait.platform.config.services.dataflow.beans.DataflowCredential;
 import com.minsait.onesait.platform.config.services.exceptions.WebProjectServiceException;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
+import com.minsait.onesait.platform.encryptor.config.JasyptConfig;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 import com.minsait.onesait.platform.multitenant.config.model.MasterConfiguration;
@@ -216,8 +220,11 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
 
+import static com.minsait.onesait.platform.encryptor.config.JasyptConfig.JASYPT_BEAN;
+
 @Slf4j
 @Component
+@DependsOn(JASYPT_BEAN)
 @ConditionalOnProperty(name = "onesaitplatform.init.configdb")
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -690,7 +697,9 @@ public class InitConfigDB {
 			log.info("OK init_GadgetTemplate_Instances");
 			initGadgetsCrudAndImportTool();
 			log.info("OK init_GadgetTemplate_CrudAndImportTool");
-
+			initGadgetsTemplatesDefCharts();
+			log.info("OK init_GadgetTemplate_LineBarPie");
+			
 			if (initSamples) {
 
 				initGadgetTemplate();
@@ -835,12 +844,18 @@ public class InitConfigDB {
 			}
 
 			initPrestoConnections();
+			log.info("Init Presto Connections");
 
 			initDataTags();
 			log.info("OK init_DataTags");
 			
 			initMsTemplates();
 			log.info("OK init_MsTemplates");
+			
+			if (timeseriesdbEnabled) {
+				initTimeseriesdbConnection();
+				log.info("Init Timeseriesdb Connection");
+			}
 		}
 
 	}
@@ -1869,6 +1884,7 @@ public class InitConfigDB {
 			config.setYmlConfig(loadFromResources("configurations/MapsProjectConfiguration.yml"));
 			configurationRepository.save(config);
 		}
+		
 		config = configurationRepository.findByTypeAndEnvironment(Type.BUNDLE_GIT, DEFAULT);
 		if (config == null) {
 			config = new Configuration();
@@ -1882,6 +1898,18 @@ public class InitConfigDB {
 			configurationRepository.save(config);
 		}
 
+		config = configurationRepository.findById("MASTER-Configuration-34").orElse(null);
+		if (config == null) {
+			config = new Configuration();
+			config.setId("MASTER-Configuration-34");
+			config.setIdentification("AIConfiguration");
+			config.setType(Configuration.Type.AI);
+			config.setUser(getUserAdministrator());
+			config.setEnvironment(DEFAULT);
+			config.setDescription("AI Properties for OpenAI and other providers");
+			config.setYmlConfig(loadFromResources("configurations/AIConfiguration.yml"));
+			configurationRepository.save(config);
+		}
 	}
 
 	public void initClientPlatformOntology() {
@@ -6786,44 +6814,13 @@ public class InitConfigDB {
 		gadgetTemplate.setIdentification("Vue ODS Select");
 		gadgetTemplate.setPublic(true);
 		gadgetTemplate.setType("vueJSODS");
-		gadgetTemplate.setHeaderlibs(
-				"<!--Write here your html code to load required libs and init scripts for your component\n"
-						+ "    When you use it into some Dashboard you'll need to include it in header libs section -->\n"
-						+ "    <script src=\"/controlpanel/static/vendor/echarts-410/echarts.min.js\"></script>\n"
-						+ "<script src=\"/controlpanel/static/vendor/vue-echarts-402/index.js\"></script>");
+		gadgetTemplate.setHeaderlibs("");
 		gadgetTemplate.setDescription("vue ods select component from datasource");
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/vueselect.webp"));
-		gadgetTemplate.setTemplate("<!-- Write your HTML <div></div> and CSS <style></style> here -->\n"
-				+ "<!--Focus here and F11 or F10 to full screen editor-->\n" + "<ods-select\n"
-				+ "  v-model=\"value\"\n" + "  :placeholder=\"select\"\n" + "  @change=\"sendFilter(key,value)\"\n"
-				+ "  >\n" + "  <ods-option\n" + "    v-for=\"item in ds\"\n" + "    :key=\"item[key]\"\n"
-				+ "    :label=\"item[label]\"\n" + "    :value=\"item[key]\">\n" + "  </ods-option>\n"
-				+ "</ods-select>");
-
-		gadgetTemplate.setTemplateJS("//Write your Vue ODS JSON controller code here\n" + "\n"
-				+ "//Focus here and F11 or F10 to full screen editor\n" + "\n"
-				+ "//This function will be call once to init components\n" + "\n"
-				+ "var key = /*label-osp  name=\"KeySelect\" type=\"ds_parameter\"*/ \"value\"\n"
-				+ "var label =  /*label-osp  name=\"ValueSelect\" type=\"ds_parameter\"*/ \"label\"\n"
-				+ "var select = /*label-osp  name=\"PlaceHolder\" type=\"text\"*/ \"Select\"\n" + "\n"
-				+ "vm.vueconfig = {\n" + "    el: document.getElementById(vm.id).querySelector(\"vuetemplate\"),\n"
-				+ "    data: {\n" + "        ds: [{\n" + "            value: \"Option1\",\n"
-				+ "            label: \"Option1\"\n" + "        }, {\n" + "            value: \"Option2\",\n"
-				+ "            label: \"Option2\"\n" + "        }, {\n" + "            value: \"Option3\",\n"
-				+ "            label: \"Option3\"\n" + "        }, {\n" + "            value: \"Option4\",\n"
-				+ "            label: \"Option4\"\n" + "        }, {\n" + "            value: \"Option5\",\n"
-				+ "            label: \"Option5\"\n" + "        }],\n" + "        value: \"\",\n"
-				+ "        key: key,\n" + "        label: label,\n" + "        select: select\n" + "    },\n"
-				+ "    methods: {\n" + "        drawVueComponent: function (newData, oldData) {\n"
-				+ "            //This will be call on new data\n" + "        },\n"
-				+ "        resizeEvent: function () {\n" + "            //Resize event\n" + "        },\n"
-				+ "        destroyVueComponent: function () {\n" + "\n" + "        },\n"
-				+ "        receiveValue: function (data) {\n" + "            //data received from datalink\n"
-				+ "        },\n" + "        sendValue: vm.sendValue,\n" + "        sendFilter: vm.sendFilter\n"
-				+ "    }\n" + "}\n" + "\n" + "//Init Vue app\n" + "vm.vueapp = new Vue(vm.vueconfig);\n");
+		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/img/VueODSSelect.webp"));
+		gadgetTemplate.setTemplate(loadFromResources("gadgettemplates/html/VueODSSelect.html"));
+		gadgetTemplate.setTemplateJS(loadFromResources("gadgettemplates/js/VueODSSelect.js"));
 		gadgetTemplate.setUser(getUserAdministrator());
-		gadgetTemplate.setConfig(
-				"{\"metainf\":{\"category\":\"Predefined\",\"order\":14}}");
+		gadgetTemplate.setConfig(loadFromResources("gadgettemplates/config/VueODSSelect.json"));
 		gadgetTemplateRepository.save(gadgetTemplate);
 
 		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-9").orElse(null) == null) {
@@ -6837,81 +6834,12 @@ public class InitConfigDB {
 		gadgetTemplate.setIdentification("VueEchartMixed");
 		gadgetTemplate.setPublic(true);
 		gadgetTemplate.setType("vueJS");
-		gadgetTemplate.setHeaderlibs(
-				"<!--Write here your html code to load required libs and init scripts for your component\n"
-						+ "    When you use it into some Dashboard you'll need to include it in header libs section -->\n"
-						+ "    <script src=\"/controlpanel/static/vendor/echarts-410/echarts.min.js\"></script>\n"
-						+ "<script src=\"/controlpanel/static/vendor/vue-echarts-402/index.js\"></script>");
+		gadgetTemplate.setHeaderlibs("");
 		gadgetTemplate.setDescription("vue echart mixed chart with parameters");
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/mixedechart.webp"));
-		gadgetTemplate.setTemplate("<!--Focus here and F11 or F10 to full screen editor-->\n"
-				+ "<!-- Write your CSS <style></style> here -->\n" + "<style>\n" + "    .fullsize {\n"
-				+ "        height: 100%;\n" + "        width: 100%;\n" + "    }\n" + "</style>\n"
-				+ "<div class=\"gadget-app\">\n" + "    <!-- Write your HTML <div></div> here -->\n"
-				+ "    <v-chart class=\"fullsize\" :options=\"chartConfig\" autoresize loading></v-chart>\n"
-				+ "</div>");
-
-		gadgetTemplate.setTemplateJS("//Write your Vue with JSON controller code here\n" + "\n"
-				+ "//Focus here and F11 or F10 to full screen editor\n" + "\n"
-				+ "function findValues(jsonData, path) {\n"
-				+ "    if (!(jsonData instanceof Object) || typeof (path) === \"undefined\") {\n"
-				+ "        throw \"Not valid argument:jsonData:\" + jsonData + \", path:\" + path;\n" + "    }\n"
-				+ "    path = path.replace(/\\[(\\w+)\\]/g, '.$1'); // convert indexes to properties\n"
-				+ "    path = path.replace(/^\\./, ''); // strip a leading dot\n"
-				+ "    var pathArray = path.split('.');\n"
-				+ "    for (var i = 0, n = pathArray.length; i < n; ++i) {\n" + "        var key = pathArray[i];\n"
-				+ "        if (key in jsonData) {\n" + "            if (jsonData[key] !== null) {\n"
-				+ "                jsonData = jsonData[key];\n" + "            } else {\n"
-				+ "                return null;\n" + "            }\n" + "        } else {\n"
-				+ "            return key;\n" + "        }\n" + "    }\n" + "    return jsonData;\n" + "}\n" + "\n"
-				+ "function calculateSeries(data) {\n"
-				+ "    return vm.tparams.parameters.series.map(function (s) {\n" + "        var that = this\n"
-				+ "        var ds = ds;\n" + "        var s = {\n" + "            type: s.type,\n"
-				+ "            name: s.label,\n" + "            yAxisIndex: s.yAxis,\n"
-				+ "            data: data.map(inst => findValues(inst, s.field)),\n"
-				+ "            color: s.color\n" + "        }\n" + "        if (s.type == 'point') {\n"
-				+ "            s.type = 'line'\n" + "            s.lineStyle = {\n" + "                width: 0\n"
-				+ "            }\n" + "        }\n" + "        return s;\n" + "    })\n" + "}\n" + "\n"
-				+ "//This function will be call once to init components\n" + "vm.vueconfig = {\n"
-				+ "    el: document.querySelector('#' + vm.id + ' .gadget-app'),\n" + "    data: {\n"
-				+ "        ds: []\n" + "    },\n" + "    computed: {\n" + "        chartConfig() {\n"
-				+ "            return {\n" + "                legend: {\n"
-				+ "                    show: vm.tparams.parameters.general.showLegend\n" + "                },\n"
-				+ "                grid: {\n"
-				+ "                    left: Math.max(0, ...vm.tparams.parameters.axes.yAxis.filter(axis => axis.position === 'left').map(axis => parseInt(axis.offset?axis.offset:0))) + 60,\n"
-				+ "                    right: Math.max(0, ...vm.tparams.parameters.axes.yAxis.filter(axis => axis.position === 'right').map(axis => parseInt(axis.offset?axis.offset:0))) + 60\n"
-				+ "                },\n" + "                xAxis: {\n" + "                    type: 'category',\n"
-				+ "                    data: this.ds.map(inst => findValues(inst, vm.tparams.parameters.axes.xAxis.field)),\n"
-				+ "                    name: vm.tparams.parameters.axes.xAxis.label\n" + "                },\n"
-				+ "                yAxis: vm.tparams.parameters.axes.yAxis.map(function (yAxis) {\n"
-				+ "                    var yAxis = {\n" + "                        id: yAxis.id,\n"
-				+ "                        position: yAxis.position,\n"
-				+ "                        type: yAxis.type,\n" + "                        name: yAxis.label,\n"
-				+ "                        offset: parseInt(yAxis.offset?yAxis.offset:0)\n"
-				+ "                    }\n" + "                    if (yAxis.min) {\n"
-				+ "                        yAxis['min'] = yAxis.min\n" + "                    }\n"
-				+ "                    if (yAxis.max) {\n" + "                        yAxis['max'] = yAxis.max\n"
-				+ "                    }\n" + "                    return yAxis;\n" + "                }),\n"
-				+ "                series: calculateSeries(this.ds),\n" + "                tooltip: {\n"
-				+ "                    show: vm.tparams.parameters.general.showTooltip,\n"
-				+ "                    axisPointer: {\n" + "                        type: 'cross'\n"
-				+ "                    },\n" + "                    trigger: 'axis'\n" + "                },\n"
-				+ "                dataZoom: [\n" + "                    {\n"
-				+ "                        show: vm.tparams.parameters.axes.xAxis.showZoom,\n"
-				+ "                        realtime: true\n" + "                    }\n" + "                ]\n"
-				+ "            }\n" + "        }\n" + "    },\n" + "    methods: {\n"
-				+ "        drawVueComponent: function (newData, oldData) {\n"
-				+ "            //This will be call on new data\n" + "        },\n"
-				+ "        resizeEvent: function () {\n" + "            //Resize event\n" + "        },\n"
-				+ "        destroyVueComponent: function () {\n" + "            vm.vueapp.$destroy();\n"
-				+ "        },\n" + "        receiveValue: function (data) {\n"
-				+ "            //data received from datalink\n" + "        },\n"
-				+ "        sendValue: vm.sendValue,\n" + "        sendFilter: vm.sendFilter\n" + "    },\n"
-				+ "    components: {\n" + "        'v-chart': VueECharts\n" + "    }\n" + "}\n" + "\n"
-				+ "vm.drawLiveComponent = function () { }\n" + "\n" + "//Init Vue app\n"
-				+ "vm.vueapp = new Vue(vm.vueconfig);\n" + "");
-		gadgetTemplate.setConfig(
-				"{\"metainf\":{\"category\":\"Predefined\",\"order\":14},\"gform\":[{\"id\":8,\"type\":\"section\",\"elements\":[{\"id\":4,\"type\":\"checkbox\",\"name\":\"showLegend\",\"default\":true,\"title\":\"Show Legend\"},{\"id\":4,\"type\":\"checkbox\",\"name\":\"showTooltip\",\"default\":true,\"title\":\"Show Tooltip\"}],\"name\":\"general\",\"title\":\"General\"},{\"id\":8,\"type\":\"section\",\"elements\":[{\"id\":8,\"type\":\"section\",\"elements\":[{\"id\":1,\"type\":\"input-text\",\"name\":\"label\",\"default\":\"\",\"title\":\"\"},{\"id\":6,\"type\":\"ds-field\",\"name\":\"field\"},{\"id\":4,\"type\":\"checkbox\",\"name\":\"showZoom\",\"default\":false,\"title\":\"Show Zoom\"}],\"name\":\"xAxis\",\"title\":\"X Axis \"},{\"id\":9,\"type\":\"section-array\",\"elements\":[{\"id\":10,\"type\":\"autogenerate-id\",\"name\":\"id\",\"prefix\":\"\"},{\"id\":1,\"type\":\"input-text\",\"name\":\"label\",\"default\":\"\"},{\"id\":3,\"type\":\"selector\",\"name\":\"position\",\"options\":[{\"value\":\"left\",\"text\":\"\"},{\"value\":\"right\",\"text\":\"\"}],\"default\":\"left\"},{\"id\":3,\"type\":\"selector\",\"name\":\"type\",\"options\":[{\"value\":\"value\",\"text\":\"Linear\"},{\"value\":\"log\",\"text\":\"Logarithmic\"}],\"default\":\"value\"},{\"id\":2,\"type\":\"input-number\",\"name\":\"min\",\"default\":\"0\"},{\"id\":2,\"type\":\"input-number\",\"name\":\"max\",\"default\":\"\"},{\"id\":2,\"type\":\"input-number\",\"name\":\"offset\",\"default\":\"0\"}],\"name\":\"yAxis\",\"title\":\"Y Axes\"}],\"name\":\"axes\",\"title\":\"Axes Config\"},{\"id\":9,\"type\":\"section-array\",\"elements\":[{\"id\":6,\"type\":\"ds-field\",\"name\":\"field\"},{\"id\":1,\"type\":\"input-text\",\"name\":\"label\",\"default\":\"\"},{\"id\":5,\"type\":\"color-picker\",\"name\":\"color\",\"default\":\"rgba(30, 144, 255, 1)\"},{\"id\":3,\"type\":\"selector\",\"name\":\"type\",\"options\":[{\"value\":\"bar\",\"text\":\"\"},{\"value\":\"line\",\"text\":\"\"},{\"value\":\"point\",\"text\":\"\"}],\"default\":\"line\"},{\"id\":11,\"type\":\"model-selector\",\"name\":\"yAxis\",\"path\":\"axes.yAxis.*.id\"}],\"name\":\"series\",\"title\":\"Data Series\"}]}");
+		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/img/VueEchartMixed.webp"));
+		gadgetTemplate.setTemplate(loadFromResources("gadgettemplates/html/VueEchartMixed.html"));
+		gadgetTemplate.setTemplateJS(loadFromResources("gadgettemplates/js/VueEchartMixed.js"));
+		gadgetTemplate.setConfig(loadFromResources("gadgettemplates/config/VueEchartMixed.json"));
 		gadgetTemplate.setUser(getUserAdministrator());
 		gadgetTemplateRepository.save(gadgetTemplate);
 
@@ -7035,7 +6963,7 @@ public class InitConfigDB {
 				+ "		sendFilter: vm.sendFilter\n" + "	}\n" + "}\n" + "\n" + "//Init Vue app\n"
 				+ "vm.vueapp = new Vue(vm.vueconfig);\n" + "");
 		gadgetTemplate.setConfig(
-				"{\"metainf\":{\"category\":\"Predefined\",\"order\":16},\"gform\":[{\"name\":\"title\",\"type\":\"input-text\",\"title\":\"Title of KPI\"},{\"name\":\"field\",\"type\":\"ds-field\",\"title\":\"Field to show\"},{\"id\":5,\"type\":\"color-picker\",\"name\":\"colorField\",\"default\":\"rgba(0, 0, 0, 1)\",\"title\":\"Field Color\"}]}");
+				"{\"metainf\":{\"category\":\"Predefined\",\"order\":-94},\"gform\":[{\"name\":\"title\",\"type\":\"input-text\",\"title\":\"Title of KPI\"},{\"name\":\"field\",\"type\":\"ds-field\",\"title\":\"Field to show\"},{\"id\":5,\"type\":\"color-picker\",\"name\":\"colorField\",\"default\":\"rgba(0, 0, 0, 1)\",\"title\":\"Field Color\"}]}");
 		gadgetTemplate.setUser(getUserAdministrator());
 		gadgetTemplateRepository.save(gadgetTemplate);
 
@@ -7062,7 +6990,7 @@ public class InitConfigDB {
 		gadgetTemplate.setTemplate("");
 		gadgetTemplate.setTemplateJS("");
 		gadgetTemplate.setUser(getUserAdministrator());
-		gadgetTemplate.setConfig("{\"metainf\":{\"category\":\"Predefined\",\"order\":1}}");
+		gadgetTemplate.setConfig("{\"metainf\":{\"category\":\"Predefined\",\"order\":2}}");
 		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/line.svg"));
 		gadgetTemplateRepository.save(gadgetTemplate);
 		
@@ -9740,6 +9668,144 @@ public class InitConfigDB {
 		gadgetTemplateRepository.save(gadgetTemplate);
 	}
 
+	private void initGadgetsTemplatesDefCharts() {
+		log.info("init GadgetTemplate_LineBarPie");
+		GadgetTemplate gadgetTemplate;
+		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-14").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+		} else {
+			gadgetTemplate = gadgetTemplateRepository.findById("MASTER-GadgetTemplate-14").get();
+		}
+		gadgetTemplate.setId("MASTER-GadgetTemplate-14");
+		gadgetTemplate.setIdentification("LineChart");
+		gadgetTemplate.setPublic(true);
+		gadgetTemplate.setType("vueJS");
+		gadgetTemplate.setHeaderlibs("");
+
+		gadgetTemplate.setDescription("Line chart with parameters");
+		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/img/LineChart.webp"));
+		gadgetTemplate.setTemplate(loadFromResources("gadgettemplates/html/LineChart.html"));
+		gadgetTemplate.setTemplateJS(loadFromResources("gadgettemplates/js/LineChart.js"));
+		gadgetTemplate.setConfig(loadFromResources("gadgettemplates/config/LineChart.json"));
+		gadgetTemplate.setUser(getUserAdministrator());
+		gadgetTemplateRepository.save(gadgetTemplate);
+		
+		
+		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-15").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+		} else {
+			gadgetTemplate = gadgetTemplateRepository.findById("MASTER-GadgetTemplate-15").get();
+		}
+		gadgetTemplate.setId("MASTER-GadgetTemplate-15");
+		gadgetTemplate.setIdentification("BarChart");
+		gadgetTemplate.setPublic(true);
+		gadgetTemplate.setType("vueJS");
+		gadgetTemplate.setHeaderlibs("");
+
+		gadgetTemplate.setDescription("Bar chart with parameters");
+		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/img/BarChart.webp"));
+		gadgetTemplate.setTemplate(loadFromResources("gadgettemplates/html/BarChart.html"));
+		gadgetTemplate.setTemplateJS(loadFromResources("gadgettemplates/js/BarChart.js"));
+		gadgetTemplate.setConfig(loadFromResources("gadgettemplates/config/BarChart.json"));
+		gadgetTemplate.setUser(getUserAdministrator());
+		gadgetTemplateRepository.save(gadgetTemplate);
+		
+		
+		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-16").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+		} else {
+			gadgetTemplate = gadgetTemplateRepository.findById("MASTER-GadgetTemplate-16").get();
+		}
+		gadgetTemplate.setId("MASTER-GadgetTemplate-16");
+		gadgetTemplate.setIdentification("PieChart");
+		gadgetTemplate.setPublic(true);
+		gadgetTemplate.setType("vueJS");
+		gadgetTemplate.setHeaderlibs("");
+
+		gadgetTemplate.setDescription("Pie chart with parameters");
+		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/img/PieChart.webp"));
+		gadgetTemplate.setTemplate(loadFromResources("gadgettemplates/html/PieChart.html"));
+		gadgetTemplate.setTemplateJS(loadFromResources("gadgettemplates/js/PieChart.js"));
+		gadgetTemplate.setConfig(loadFromResources("gadgettemplates/config/PieChart.json"));
+		gadgetTemplate.setUser(getUserAdministrator());
+		gadgetTemplateRepository.save(gadgetTemplate);
+		
+		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-17").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+		} else {
+			gadgetTemplate = gadgetTemplateRepository.findById("MASTER-GadgetTemplate-17").get();
+		}
+		gadgetTemplate.setId("MASTER-GadgetTemplate-17");
+		gadgetTemplate.setIdentification("TableChart");
+		gadgetTemplate.setPublic(true);
+		gadgetTemplate.setType("vueJS");
+		gadgetTemplate.setHeaderlibs("");
+
+		gadgetTemplate.setDescription("Table chart with parameters");
+		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/img/TableChart.webp"));
+		gadgetTemplate.setTemplate(loadFromResources("gadgettemplates/html/TableChart.html"));
+		gadgetTemplate.setTemplateJS(loadFromResources("gadgettemplates/js/TableChart.js"));
+		gadgetTemplate.setConfig(loadFromResources("gadgettemplates/config/TableChart.json"));
+		gadgetTemplate.setUser(getUserAdministrator());
+		gadgetTemplateRepository.save(gadgetTemplate);
+		
+		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-18").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+		} else {
+			gadgetTemplate = gadgetTemplateRepository.findById("MASTER-GadgetTemplate-18").get();
+		}
+		gadgetTemplate.setId("MASTER-GadgetTemplate-18");
+		gadgetTemplate.setIdentification("DatePicker");
+		gadgetTemplate.setPublic(true);
+		gadgetTemplate.setType("vueJS");
+		gadgetTemplate.setHeaderlibs("");
+
+		gadgetTemplate.setDescription("DatePicker for select year, months and dates");
+		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/img/DatePicker.webp"));
+		gadgetTemplate.setTemplate(loadFromResources("gadgettemplates/html/DatePicker.html"));
+		gadgetTemplate.setTemplateJS(loadFromResources("gadgettemplates/js/DatePicker.js"));
+		gadgetTemplate.setConfig(loadFromResources("gadgettemplates/config/DatePicker.json"));
+		gadgetTemplate.setUser(getUserAdministrator());
+		gadgetTemplateRepository.save(gadgetTemplate);
+		
+		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-19").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+		} else {
+			gadgetTemplate = gadgetTemplateRepository.findById("MASTER-GadgetTemplate-19").get();
+		}
+		gadgetTemplate.setId("MASTER-GadgetTemplate-19");
+		gadgetTemplate.setIdentification("KPI_Obj");
+		gadgetTemplate.setPublic(true);
+		gadgetTemplate.setType("vueJS");
+		gadgetTemplate.setHeaderlibs("");
+
+		gadgetTemplate.setDescription("Simple value gadget for objetives with color config");
+		gadgetTemplate.setTemplate(loadFromResources("gadgettemplates/html/KPI_Obj.html"));
+		gadgetTemplate.setTemplateJS(loadFromResources("gadgettemplates/js/KPI_Obj.js"));
+		gadgetTemplate.setConfig(loadFromResources("gadgettemplates/config/KPI_Obj.json"));
+		gadgetTemplate.setUser(getUserAdministrator());
+		gadgetTemplateRepository.save(gadgetTemplate);
+		
+		
+		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-20").orElse(null) == null) {
+			gadgetTemplate = new GadgetTemplate();
+		} else {
+			gadgetTemplate = gadgetTemplateRepository.findById("MASTER-GadgetTemplate-20").get();
+		}
+		gadgetTemplate.setId("MASTER-GadgetTemplate-20");
+		gadgetTemplate.setIdentification("MapChart");
+		gadgetTemplate.setPublic(true);
+		gadgetTemplate.setType("angularJS");
+		gadgetTemplate.setHeaderlibs("");
+		gadgetTemplate.setDescription("Map Chart with OpenLayers");
+		gadgetTemplate.setTemplate(loadFromResources("gadgettemplates/html/MapChart.html"));
+		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/img/MapChart.webp"));
+		gadgetTemplate.setTemplateJS(loadFromResources("gadgettemplates/js/MapChart.js"));
+		gadgetTemplate.setConfig(loadFromResources("gadgettemplates/config/MapChart.json"));
+		gadgetTemplate.setUser(getUserAdministrator());
+		gadgetTemplateRepository.save(gadgetTemplate);
+	}
+	
 	private void initOntologyRestaurants() {
 
 		log.info("init OntologyRestaurants");
@@ -9879,14 +9945,18 @@ public class InitConfigDB {
 		} catch (final IOException e) {
 			throw new WebProjectServiceException("Error uploading files " + e);
 		}
-
-		log.debug("File: " + path + fileName + " uploaded");
+		if (log.isDebugEnabled()) {
+			log.debug("File {} {} uploaded", path, fileName );
+		}
 	}
 
 	private void unzipFile(String path, String fileName) {
 
 		final File folder = new File(path + fileName);
-		log.debug("Unzipping zip file: " + folder);
+		if (log.isDebugEnabled()) {
+			log.debug("Unzipping zip file: {}", folder);
+		}
+		
 
 		DataInputStream is = null;
 		try (ZipInputStream zis = new ZipInputStream(new FileInputStream(folder))) {
@@ -9907,7 +9977,10 @@ public class InitConfigDB {
 					final File f = new File(path + ze.getName());
 					f.mkdirs();
 				} else {
-					log.debug("Unzipping file: " + ze.getName());
+					if (log.isDebugEnabled()) {
+						log.debug("Unzipping file: {}", ze.getName());
+					}
+					
 					final FileOutputStream fos = new FileOutputStream(path + ze.getName());
 					IOUtils.copy(zis, fos);
 					fos.close();
@@ -9922,7 +9995,9 @@ public class InitConfigDB {
 				try {
 					is.close();
 				} catch (final IOException e) {
-					log.debug("Error: " + e);
+					if (log.isDebugEnabled()) {
+						log.debug("Error: {}", e);
+					}
 				}
 			}
 		}
@@ -9937,7 +10012,9 @@ public class InitConfigDB {
 		try {
 			Files.delete(file.toPath());
 		} catch (final IOException e) {
-			log.debug("Error deleting folder: {}", file.getPath());
+			if (log.isDebugEnabled()) {
+				log.debug("Error deleting folder: {}", file.getPath());
+			}
 		}
 	}
 
@@ -10076,6 +10153,34 @@ public class InitConfigDB {
 			mstemplate.setUser(getUserAdministrator());
 			mstemplate.setGraalvm(false);
 			mstemplateRepository.save(mstemplate);
+		}
+	}
+
+	
+	@Value("${onesaitplatform.database.timescaledb.enabled:false}")
+	private Boolean timeseriesdbEnabled;
+	@Value("${onesaitplatform.database.timescaledb.url}")
+	private String timeseriesdbUrl;
+	@Value("${onesaitplatform.database.timescaledb.user:postgres}")
+	private String timeseriesdbUser;
+	@Value("${onesaitplatform.database.timescaledb.password:password_test}")
+	private String timeseriesdbPassword;
+	@Value("${onesaitplatform.database.timescaledb.connectionName:op_timeseriesdb}")
+	private String timeseriesdbConnection;
+
+	private void initTimeseriesdbConnection() {
+		if (ontologyVirtualDataSourceRepository.findByIdentification(timeseriesdbConnection) == null) {
+			final OntologyVirtualDatasource virtualDatasource = new OntologyVirtualDatasource();
+			virtualDatasource.setIdentification(timeseriesdbConnection);
+			virtualDatasource.setSgdb(VirtualDatasourceType.POSTGRESQL);
+			virtualDatasource.setConnectionString(timeseriesdbUrl);
+			virtualDatasource.setUserId(timeseriesdbUser);
+			virtualDatasource.setCredentials(JasyptConfig.getEncryptor().encrypt(timeseriesdbPassword));
+			virtualDatasource.setUser(getUserAdministrator());
+			virtualDatasource.setPublic(true);
+			virtualDatasource.setPoolSize("100");
+			virtualDatasource.setQueryLimit(100);
+			ontologyVirtualDataSourceRepository.save(virtualDatasource);
 		}
 	}
 

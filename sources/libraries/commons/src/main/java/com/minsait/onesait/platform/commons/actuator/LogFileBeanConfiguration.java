@@ -81,7 +81,9 @@ public class LogFileBeanConfiguration {
 	private void setNewPropertyValue(String absolutePath) {
 		final Map<String, Object> map = new HashMap<>();
 		map.put("logging.file", absolutePath);
-		log.debug("log file at {}", absolutePath);
+		if (log.isDebugEnabled()) {
+			log.debug("log file at {}", absolutePath);
+		}
 		configEnv.getPropertySources().addFirst(new MapPropertySource("REFRESHABLE_MAP", map));
 	}
 }

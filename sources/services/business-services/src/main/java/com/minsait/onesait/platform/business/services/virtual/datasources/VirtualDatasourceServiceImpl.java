@@ -14,6 +14,8 @@
  */
 package com.minsait.onesait.platform.business.services.virtual.datasources;
 
+import static com.minsait.onesait.platform.encryptor.config.JasyptConfig.JASYPT_BEAN;
+
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.stereotype.Service;
@@ -43,6 +46,7 @@ import com.minsait.onesait.platform.persistence.external.virtual.VirtualDatasour
 import lombok.extern.slf4j.Slf4j;
 
 @Service
+@DependsOn(JASYPT_BEAN)
 @Slf4j
 public class VirtualDatasourceServiceImpl implements VirtualDatasourceService {
 

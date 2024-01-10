@@ -178,7 +178,7 @@
 							<div id="div-credentials" class="col-md-4 col-sm-6 col-xs-12">
 								<div class="form-group">
 									<label class="control-label" th:text="#{datasource.credentials}">Credentials</label>
-									<input th:tabindex="6" id="credentials" type="password" maxlength="50" th:field="*{credentials}" class="form-control "  th:placeholder="#{datasource.credentials}" />
+									<input th:tabindex="6" id="credentials" type="password" maxlength="100" th:field="*{credentials}" class="form-control "  th:placeholder="#{datasource.credentials}" />
 								</div>
 							</div>
 							<div th:if="(${datasource.id} != null)" class="col-md-2 col-sm-6 col-xs-12">

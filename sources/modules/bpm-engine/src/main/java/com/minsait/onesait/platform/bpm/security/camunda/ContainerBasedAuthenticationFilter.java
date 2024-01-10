@@ -42,7 +42,6 @@ import org.camunda.bpm.webapp.impl.util.ServletContextUtil;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import com.minsait.onesait.platform.bpm.security.SpringSecurityAuthenticationProvider;
-import com.minsait.onesait.platform.config.services.bpm.BPMTenantService;
 import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepository;
 import com.minsait.onesait.platform.multitenant.util.VerticalResolver;
 
@@ -58,17 +57,17 @@ public class ContainerBasedAuthenticationFilter implements Filter {
 	protected AuthenticationProvider authenticationProvider;
 	protected AuthenticationService userAuthentications;
 
-	private final BPMTenantService bpmTenantService;
 	private final UserDetailsService userDetailsService;
 	private final MasterUserRepository masterUserRepository;
 	private final VerticalResolver tenantDBResolver;
+	private final ProcessEngine processEngine;
 
-	public ContainerBasedAuthenticationFilter(BPMTenantService bpmTenantService, UserDetailsService userDetailsService,
-			VerticalResolver tenantDBResolver, MasterUserRepository masterUserRepository) {
-		this.bpmTenantService = bpmTenantService;
+	public ContainerBasedAuthenticationFilter(UserDetailsService userDetailsService, VerticalResolver tenantDBResolver,
+			MasterUserRepository masterUserRepository, ProcessEngine processEngine) {
 		this.userDetailsService = userDetailsService;
 		this.tenantDBResolver = tenantDBResolver;
 		this.masterUserRepository = masterUserRepository;
+		this.processEngine = processEngine;
 	}
 
 	@Override
@@ -87,12 +86,13 @@ public class ContainerBasedAuthenticationFilter implements Filter {
 			final Class<?> authenticationProviderClass = Class.forName(authenticationProviderClassName);
 			authenticationProvider = (AuthenticationProvider) authenticationProviderClass.newInstance();
 			if (authenticationProvider instanceof SpringSecurityAuthenticationProvider) {
-				((SpringSecurityAuthenticationProvider) authenticationProvider).setBpmTenantService(bpmTenantService);
 				((SpringSecurityAuthenticationProvider) authenticationProvider)
-				.setUserDetailsService(userDetailsService);
+						.setIdentityService(processEngine.getIdentityService());
+				((SpringSecurityAuthenticationProvider) authenticationProvider)
+						.setUserDetailsService(userDetailsService);
 				((SpringSecurityAuthenticationProvider) authenticationProvider).setTenantDBResolver(tenantDBResolver);
 				((SpringSecurityAuthenticationProvider) authenticationProvider)
-				.setMasterUserRepository(masterUserRepository);
+						.setMasterUserRepository(masterUserRepository);
 			}
 		} catch (final ClassNotFoundException e) {
 			throw new ServletException("Cannot instantiate authentication filter: authentication provider not found",
@@ -106,7 +106,7 @@ public class ContainerBasedAuthenticationFilter implements Filter {
 			throw new ServletException(
 					"Cannot instantiate authentication filter: authentication provider does not implement interface "
 							+ AuthenticationProvider.class.getName(),
-							e);
+					e);
 		}
 	}
 
@@ -207,7 +207,8 @@ public class ContainerBasedAuthenticationFilter implements Filter {
 	}
 
 	protected boolean existisAuthentication(Authentications authentications, String engineName, String username) {
-		// For each process engine, there can be at most one authentication active in a given session.
+		// For each process engine, there can be at most one authentication active in a
+		// given session.
 		final Authentication authentication = authentications.getAuthenticationForProcessEngine(engineName);
 		return authentication != null && isAuthenticated(authentication, engineName, username);
 	}
@@ -218,9 +219,9 @@ public class ContainerBasedAuthenticationFilter implements Filter {
 		return processEngineName.equals(engineName) && identityId.equals(username);
 	}
 
-	protected Authentication createAuthentication(ProcessEngine processEngine, String username, List<String> groups, List<String> tenants) {
+	protected Authentication createAuthentication(ProcessEngine processEngine, String username, List<String> groups,
+			List<String> tenants) {
 		return userAuthentications.createAuthenticate(processEngine, username, groups, tenants);
 	}
-
 
 }

@@ -522,7 +522,9 @@ public class TestVersionControl {
 	@Test
 	public void testReadAll() {
 		final List<Versionable<?>> versionables = versioningIOService.readAllVersionables(VersioningIOService.DIR);
-		log.debug("Versionables count: {}", versionables.size());
+		if (log.isDebugEnabled()) {
+			log.debug("Versionables count: {}", versionables.size());
+		}
 	}
 
 	@Test

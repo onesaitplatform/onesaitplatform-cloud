@@ -71,14 +71,20 @@ public class DataModelController {
 		
 		if ("".equals(dataModelId)) {
 			dataModelId = null;
+		} else if(dataModelId != null) {
+			dataModelId = "%" + dataModelId + "%";
 		}
 
 		if ("".equals(name)) {
 			name = null;
+		} else if(name != null) {
+			name = "%" + name + "%";
 		}
 
 		if ("".equals(description)) {
 			description = null;
+		} else if(description != null) {
+			description = "%" + description + "%";
 		}
 
 		if ((dataModelId == null) && (name == null) && (description == null)) {

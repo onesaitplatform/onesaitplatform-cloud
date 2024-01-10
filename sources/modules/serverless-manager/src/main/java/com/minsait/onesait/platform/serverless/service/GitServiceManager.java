@@ -47,12 +47,18 @@ public class GitServiceManager {
 		gitOperations.createDirectory(TMP_DIR + projectName);
 		gitOperations.configureGitAndInit(gitConfiguration.getUser(), gitConfiguration.getEmail(),
 				TMP_DIR + projectName);
-		log.debug("Git project configured for user {} with email {}", gitConfiguration.getUser(),
+		if (log.isDebugEnabled()) {
+			log.debug("Git project configured for user {} with email {}", gitConfiguration.getUser(),
 				gitConfiguration.getEmail());
+		}		
 		gitOperations.addOrigin(projectURL, TMP_DIR + projectName, false);
-		log.debug("Origin added {}", projectURL);
+		if (log.isDebugEnabled()) {
+			log.debug("Origin added {}", projectURL);
+		}		
 		gitOperations.createReadme("OSP Serverless Application: " + projectName, TMP_DIR + projectName);
-		log.debug("Created README.MD");
+		if (log.isDebugEnabled()) {
+			log.debug("Created README.MD");
+		}		
 		gitOperations.addAll(TMP_DIR + projectName);
 		log.debug("Added all files");
 		gitOperations.commit("OSP Serverless Application", TMP_DIR + projectName);
@@ -62,9 +68,13 @@ public class GitServiceManager {
 		gitOperations.push(projectURL, gitConfiguration.getUser(), gitConfiguration.getPrivateToken(),
 				gitConfiguration.getBranch() == null ? DEFAULT_BRANCH : gitConfiguration.getBranch(),
 				TMP_DIR + projectName, false);
-		log.debug("Pushed to: " + projectURL);
+		if (log.isDebugEnabled()) {
+			log.debug("Pushed to: {}", projectURL);
+		}		
 		gitOperations.deleteDirectory(TMP_DIR + projectName);
-		log.debug("Deleting temp directory {}", TMP_DIR + projectName);
+		if (log.isDebugEnabled()) {
+			log.debug("Deleting temp directory {}", TMP_DIR + projectName);
+		}		
 		log.debug("END scafolding project generation");
 		return projectURL;
 	}

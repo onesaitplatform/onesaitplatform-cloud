@@ -487,8 +487,9 @@ var ViewerCreateController = function() {
 			
 			htmlEditor.setValue(formatted);
 			
-			loadHTMLBase();
-			
+			if ($("#technology").val()!="") {
+				loadHTMLBase();
+			}
 			src = base_tpl;
 			
 			// Javascript

@@ -142,11 +142,13 @@ public class NoderedAuthenticationServiceImpl implements NoderedAuthenticationSe
 					new HttpEntity<>(headers), String.class);
 			return responseEntity.getStatusCode() == HttpStatus.OK;
 		} catch (HttpClientErrorException e) {
-			log.debug("Token for domain " + domain + " is not valid.");
+			if (log.isDebugEnabled()) {
+				log.debug("Token for domain {} is not valid.", domain);
+			}
 			return false;
 		}
 	}
-	
+
 	private String getProxyUrl() {
 		return resourcesService.getUrl(Module.FLOWENGINE, ServiceUrl.ADVICE);
 	}

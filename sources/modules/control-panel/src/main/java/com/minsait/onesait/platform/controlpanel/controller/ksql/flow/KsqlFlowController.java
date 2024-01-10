@@ -208,7 +208,9 @@ public class KsqlFlowController {
 			cdbFlow.setDescription(ksqlFlow.getDescription());
 			ksqlFlowService.updateKsqlFlow(id, cdbFlow, utils.getUserId());
 		} else {
-			log.debug("Unable to update flow. Identification = {}", ksqlFlow.getIdentification());
+			if (log.isDebugEnabled()) {
+				log.debug("Unable to update flow. Identification = {}", ksqlFlow.getIdentification());
+			}
 			utils.addRedirectMessage(KSQL_FLOW_VALIDATION_ERROR, redirect);
 			return REDIRECT_KSQL_FLOW_LIST;
 		}

@@ -25,5 +25,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class JenkinsParameter {
 	private String name;
-	private String value;
+	private Object value;
 }

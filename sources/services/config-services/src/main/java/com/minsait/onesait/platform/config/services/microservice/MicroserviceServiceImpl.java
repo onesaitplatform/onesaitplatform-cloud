@@ -45,11 +45,12 @@ public class MicroserviceServiceImpl implements MicroserviceService {
 
 	@Override
 	public Microservice create(Microservice service) {
-		if (microserviceRepository.findByIdentificationAndActiveTrue(service.getIdentification()) != null)
+		if (microserviceRepository.findByIdentificationAndActiveTrue(service.getIdentification()) != null) {
 			throw new MicroserviceException(
 					"Microservice with identification " + service.getIdentification() + " already exists.");
-		else
+		} else {
 			return microserviceRepository.save(service);
+		}
 	}
 
 	@Override
@@ -96,16 +97,18 @@ public class MicroserviceServiceImpl implements MicroserviceService {
 		mDB.setJenkinsConfiguration(service.getJenkinsConfiguration());
 		mDB.setRancherConfiguration(service.getRancherConfiguration());
 		mDB.setOpenshiftConfiguration(service.getOpenshiftConfiguration());
-		if (StringUtils.hasText(service.getContextPath()))
+		if (StringUtils.hasText(service.getContextPath())) {
 			mDB.setContextPath(service.getContextPath());
+		}
 		mDB.setJobUrl(service.getJobUrl());
 		mDB.setGitlabRepository(service.getGitlab());
+		mDB.setStripRoutePrefix(service.isStripRoutePrefix());
 		return save(mDB);
 	}
 
 	@Override
 	public List<String> getAllIdentificationsByUser(String userId) {
-		User user = userService.getUser(userId);
+		final User user = userService.getUser(userId);
 		if (user.isAdmin()) {
 			return microserviceRepository.findAllIdentifications();
 		} else {

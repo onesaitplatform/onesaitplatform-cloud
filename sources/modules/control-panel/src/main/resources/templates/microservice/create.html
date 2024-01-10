@@ -92,6 +92,7 @@
                     <input id="defaultJenkins" th:field="*{config.defaultJenkins}" name="defaultJenkins" class="form-control no-remove" type="hidden" value="false"/>
                     <input id="defaultGitlab" th:field="*{config.defaultGitlab}" name="defaultGitlab" class="form-control no-remove" type="hidden" value="false"/>
                     <input id="modelRunId" th:field="*{config.modelRunId}" name="modelRunId" class="form-control no-remove" type="hidden" value=""/>
+                    <input id="stripRoutePrefix" th:field="*{stripRoutePrefix}" name="stripRoutePrefix" class="form-control no-remove" type="hidden" th:value="${microservice.stripRoutePrefix}"/>
                 
                     <div id="header">
                         <div class="row pageCreateHeader">
@@ -244,6 +245,10 @@
     					       <label th:text="#{microservice.contextpath}">Contextpath</label><span th:if="!*{id}" class="required"> *</span>
     							<label th:if="*{id}" class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.change.contextpath.help},data-title=#{microservice.change.contextpath}"><i class="la la-exclamation-circle font-md"></i> </label>
     							<input pattern="^/[a-z-]{1,30}$" id="context-path" type="text" name="context-path" th:required="true" maxlength="100" th:field="*{contextPath}" class="form-control " placeholder="/microservice"/>
+    							<label style="margin-top:10px" class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.strip.prefix.help},data-title=#{microservice.strip.prefix}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{microservice.strip.prefix}">Strip?</div>
+    							     <input id="checkbox-strip-prefix" class="form-control no-remove" type="checkbox" th:checked="${microservice.stripRoutePrefix ? true: false}"/>
+    							     <span></span>
+    							 </label>
     						</div>
     					</div>
     					<!-- PORT -->
@@ -252,6 +257,13 @@
     						  <label th:text="#{digitaltwindevice.port}">Port</label><span th:if="!*{id}" class="required"> *</span>
     						  <label th:if="*{id}" class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.change.port.help},data-title=#{microservice.change.port}"><i class="la la-exclamation-circle font-md"></i> </label>
     						  <input id="port" type="number" name="port" th:required="true"  th:field="*{port}" class="form-control " th:value="30010"/>
+    					   </div>
+    					</div>
+    					<div id = "port-div" class="col-md-4 col-sm-4 col-xs-12">
+    					   <div class="form-group">
+    						 <div class="mt-checkbox-list"> 
+    							 
+    						  </div>
     					   </div>
     					</div>
     					<div th:if="!*{id}" class="col-md-4 col-sm-4 col-xs-12 only-new-nb" id="select-module-architecture" >

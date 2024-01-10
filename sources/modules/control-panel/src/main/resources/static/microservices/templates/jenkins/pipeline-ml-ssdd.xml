@@ -6,7 +6,6 @@
       <triggers/>
       <parameters>
         <string>DOCKER_MODULETAGVALUE</string>
-        <string>DOCKER_USERNAMEVALUE</string>
         <string>DOCKER_PUSHREGISTRY_PRIVATE</string>
         <string>GIT_URL</string>
         <string>GIT_BRANCHNAME</string>
@@ -59,12 +58,6 @@
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
-          <name>DOCKER_USERNAMEVALUE</name>
-          <description>Image registry image namespace</description>
-          <defaultValue>onesaitplatform</defaultValue>
-          <trim>false</trim>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
           <name>DOCKER_PUSHREGISTRY_PRIVATE</name>
           <description>Push image to private registry</description>
           <defaultValue>true</defaultValue>
@@ -73,7 +66,7 @@
          <hudson.model.StringParameterDefinition>
           <name>PRIVATE_REGISTRY</name>
           <description>URL to the docker registry</description>
-          <defaultValue>dcme-npro-onst-prd-devops-00/production-registry</defaultValue>
+          <defaultValue>europe-docker.pkg.dev/dcme-npro-onst-prd-devops-00/production-registry</defaultValue>
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
@@ -154,14 +147,11 @@
        string(name: 'DOCKER_MODULETAGVALUE', 
               defaultValue: 'latest', 
               description: 'Image generation tag value')
-       string(name: 'DOCKER_USERNAMEVALUE', 
-              defaultValue: 'onesaitplatform', 
-              description: 'Image registry image namespace')
        string(name: 'DOCKER_PUSHREGISTRY_PRIVATE', 
               defaultValue: 'true', 
               description: 'Push image to private registry')
        string(name: 'PRIVATE_REGISTRY', 
-              defaultValue: 'dcme-npro-onst-prd-devops-00/production-registry', 
+              defaultValue: 'europe-docker.pkg.dev/dcme-npro-onst-prd-devops-00/production-registry', 
               description: 'URL to the docker registry')      
    }    
    

@@ -14,7 +14,11 @@
  */
 package com.minsait.onesait.platform.bpm.util;
 
+import java.util.List;
+
 import org.camunda.bpm.engine.authorization.Groups;
+
+import com.minsait.onesait.platform.config.model.Role;
 
 public class RoleConverterUtil {
 
@@ -27,12 +31,20 @@ public class RoleConverterUtil {
 	}
 
 	public static String opRoleToCamunda(String role) {
+		boolean platformRole = false;
+		if (List.of(Role.Type.values()).stream().map(t -> t.name()).toList().contains(role)) {
+			platformRole = true;
+		}
 
-		final String roleSuffix = role.toUpperCase().contains(ROLE_PREFIX) ? role.substring(5).toLowerCase() : role;
-		if (roleSuffix.equalsIgnoreCase(ADMIN_ROLE)) {
-			return Groups.CAMUNDA_ADMIN;
+		if (platformRole) {
+			final String roleSuffix = role.toUpperCase().contains(ROLE_PREFIX) ? role.substring(5).toLowerCase() : role;
+			if (roleSuffix.equalsIgnoreCase(ADMIN_ROLE)) {
+				return Groups.CAMUNDA_ADMIN;
+			} else {
+				return CAMUNDA_PREFIX + roleSuffix;
+			}
 		} else {
-			return CAMUNDA_PREFIX + roleSuffix;
+			return role;
 		}
 
 	}

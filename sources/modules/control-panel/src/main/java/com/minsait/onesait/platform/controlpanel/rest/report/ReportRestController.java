@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.controlpanel.rest.report;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -28,6 +29,7 @@ import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -54,6 +56,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.net.HttpHeaders;
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
+import com.minsait.onesait.platform.config.dto.report.ReportInfoMSTemplateDTO;
 import com.minsait.onesait.platform.config.dto.report.ReportParameter;
 import com.minsait.onesait.platform.config.dto.report.ReportType;
 import com.minsait.onesait.platform.config.dto.report.ReportTypeSwagger;
@@ -420,17 +423,42 @@ public class ReportRestController {
 				.header(HttpHeaders.SET_COOKIE, "fileDownload=true").body(byteArray);
 
 	}
+	
+	@Operation(summary = "Get json from MS Word Template")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "OK"),
+			@ApiResponse(responseCode = "404", description = "Not found") })
+	@PostMapping("/getJsonFromMsTemplate/{id}")
+	public ResponseEntity<?> getJsonFromTemplate(@PathVariable("id") String id)
+			throws IOException, OpenXML4JException {
+				
+		Report report = reportService.findById(id);
+		if (report == null) {
+			report = reportService.findByIdentificationOrId(id);
+		}
+		List<String> parameters = poiTemplatesUtil.extractFromDocx(new ByteArrayInputStream(report.getFile()));
+		
+		ReportInfoMSTemplateDTO reportInfoMSTemplateDTO = new ReportInfoMSTemplateDTO();
 
+		reportInfoMSTemplateDTO.setJsonParameters(
+				poiTemplatesUtil.generateJSONObject(parameters, reportInfoMSTemplateDTO.getFormType()));
+		
+		return new ResponseEntity(reportInfoMSTemplateDTO.getJsonParameters(), HttpStatus.OK);
+	}
+	
 	@Operation(summary = "Download report from MS Word Template")
 	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "OK"),
 			@ApiResponse(responseCode = "404", description = "Not found") })
 	@PostMapping("/downloadMSWordTemplate/{id}")
 	public ResponseEntity<?> generateAndDownloadReport(@PathVariable("id") String id,
-			@RequestParam("parameters") String params, @RequestParam("extension") ReportTypeSwagger extension)
+			@Parameter(description = "Parameters") @RequestBody(required = false) String params,
+			@RequestParam("extension") ReportTypeSwagger extension)
 			throws IOException {
 		Report report = reportService.findById(id);
+		if (report == null) {
+			report = reportService.findByIdentificationOrId(id);
+		}
 
-		String wordPath = poiTemplatesUtil.generateReport(params, report.getFile());
+		String wordPath = poiTemplatesUtil.generateReport(params.toString(), report.getFile());
 
 		if (extension.name().equals("DOCX")) {
 			InputStream docxstream = new FileInputStream(wordPath);

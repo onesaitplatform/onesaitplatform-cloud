@@ -140,4 +140,30 @@ public class MindsDBManageDBRepository implements ManageDBRepository {
 	public void createTTLIndex(String ontology, String attribute, Long seconds) {
 		log.debug(NO_OP_CONTROL_ONTOLOGY);
 	}
+
+	@Override
+	public Map<String, List<String>> getListIndexes(String datatableName, String ontology) {
+		log.debug(NO_OP_CONTROL_ONTOLOGY);
+		return new HashMap<>();
+	}
+
+	@Override
+	public void dropIndex(String ontology, String ontologyVirtual, String indexName) {
+		log.debug(NO_OP_CONTROL_ONTOLOGY);
+		
+	}
+
+	@Override
+	public String getIndexesOptions(String ontology) {
+		log.debug(NO_OP_CONTROL_ONTOLOGY);
+		return "[]";
+	}
+
+	@Override
+	public void createIndexWithParameter(String ontologyName, String typeIndex, String indexName, boolean unique,
+			boolean background, boolean sparse, boolean ttl, String timesecondsTTL, Object checkboxValuesArray) {
+		log.debug(NO_OP_CONTROL_ONTOLOGY);
+		
+	}
+
 }

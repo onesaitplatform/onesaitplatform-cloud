@@ -30,61 +30,61 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class SupportServiceImpl implements SupportService {
-	
+
 	@Autowired
 	private SupportRepository supportRepository;
 	@Autowired
 	private UserRepository userRepository;
-	
+
 	@Override
-	public void createSupportRequest (User user, String type, String text, String changeTo) {
-		
+	public void createSupportRequest(User user, String type, String text, String changeTo) {
+
 		final JSONObject json = new JSONObject();
 		final SupportRequest supportRequest = new SupportRequest();
-		
+
 		try {
 			json.put("User", user.getUserId());
 			json.put("Role", user.getRole().getId());
 			json.put("Type", type);
 			json.put("Request", text.replace("\"", "\\\""));
 			json.put("Change To", changeTo);
-			
 
 			supportRequest.setJson(json.toString());
 			supportRequest.setType(type);
 			supportRequest.setUser(user);
 			supportRequest.setStatus("SENT");
-			
-			supportRepository.save(supportRequest);	
+
+			supportRepository.save(supportRequest);
 
 		} catch (JSONException e) {
-			log.error("Error parsing message to Json: " + e.getMessage());			
+			log.error("Error parsing message to Json: {}", e.getMessage());
 		}
 	}
-	
+
 	@Override
-	public void updateStatus (SupportRequest supportRequest) {
+	public void updateStatus(SupportRequest supportRequest) {
 		try {
 			if (supportRequest.getStatus().equals("SENT")) {
 				supportRequest.setStatus("READ");
-				supportRepository.save(supportRequest);}
-			else if (supportRequest.getStatus().equals("READ")) {
-					supportRequest.setStatus("PROCESS");
-					supportRepository.save(supportRequest);}
+				supportRepository.save(supportRequest);
+			} else if (supportRequest.getStatus().equals("READ")) {
+				supportRequest.setStatus("PROCESS");
+				supportRepository.save(supportRequest);
+			}
 		} catch (final Exception e) {
-			log.error("Error updating the status: " + e.getMessage());			
+			log.error("Error updating the status: {}", e.getMessage());
 		}
 	}
-	
+
 	@Override
-	public void changeRole (User user, Role role) {
+	public void changeRole(User user, Role role) {
 		try {
-			
+
 			user.setRole(role);
 			userRepository.save(user);
-			
+
 		} catch (final Exception e) {
-			log.error("Error Changing User Role: " + e.getMessage());
+			log.error("Error Changing User Role: {}", e.getMessage());
 		}
 	}
 

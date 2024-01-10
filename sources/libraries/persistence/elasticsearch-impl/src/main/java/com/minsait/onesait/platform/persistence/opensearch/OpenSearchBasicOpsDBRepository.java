@@ -100,8 +100,10 @@ public class OpenSearchBasicOpsDBRepository implements BasicOpsDBRepository {
 
 			final Ontology dbOntology = ontologyRepository.findByIdentification(ontology);
 			final OntologyElastic elasticOntology = ontologyElasticRepository.findByOntologyId(dbOntology);
-			log.debug("ElasticSearchBasicOpsDBRepository : Loading content: {} into elasticsearch  {}", instance,
+			if (log.isDebugEnabled()) {
+				log.debug("ElasticSearchBasicOpsDBRepository : Loading content: {} into elasticsearch  {}", instance,
 					ontology);
+			}			
 			List<? extends DBResult> output = null;
 			final List<String> instances = Arrays.asList(instance);
 			output = eSInsertService.bulkInsert(elasticOntology, instances).getData();
@@ -564,5 +566,4 @@ public class OpenSearchBasicOpsDBRepository implements BasicOpsDBRepository {
 		// TODO Auto-generated method stub
 		throw new DBPersistenceException(NOT_IMPLEMENTED, new NotImplementedException(NOT_IMPLEMENTED));
 	}
-
 }

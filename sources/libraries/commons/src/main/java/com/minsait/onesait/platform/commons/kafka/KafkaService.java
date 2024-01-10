@@ -227,8 +227,8 @@ public class KafkaService {
 			return createTopic(getTopicName(ontologyName, vertical, tenant), partitions, replication);
 		} catch (Exception e) {
 			log.info(CANNOT_ENSURE_CREATING_TOPIC, getTopicName(ontologyName, vertical, tenant));
-			log.error("Error creating input topic for Ontology=" + ontologyName + ", vertical=" + vertical + ", tenant="
-					+ tenant, e);
+			log.error("Error creating input topic for Ontology={}, vertical={}, tenant={}", ontologyName, vertical,
+					tenant, e);
 			return false;
 		}
 	}
@@ -246,8 +246,8 @@ public class KafkaService {
 			return createTopic(getNotificationTopicName(ontologyName, vertical, tenant), partitions, replication);
 		} catch (Exception e) {
 			log.info(CANNOT_ENSURE_CREATING_TOPIC, getTopicName(ontologyName, vertical, tenant));
-			log.error("Error creating notification topic for Ontology=" + ontologyName + ", vertical=" + vertical
-					+ ", tenant=" + tenant, e);
+			log.error("Error creating notification topic for Ontology={}, vertical={}, tenant={}", ontologyName,
+					vertical, tenant, e);
 			return false;
 		}
 	}

@@ -161,18 +161,24 @@
 						<div class="row pageCreateHeader">
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="margin-top-4">
-									<span th:if="${element.id} == null"
-										th:text="#{mapsproject.create.my}"> Create map project
-									</span> <span th:if="${element.id} != null"
-										th:text="${element.identification}"> Update map project
-									</span>
-
+									<span th:if="${element.id} == null"	th:text="#{mapsproject.create.my}"> Create map project </span>
+									<span th:if="${element.id} != null"	th:text="${element.identification}"> Update map project	</span>
 								</div>
 							</div>
 
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 								
+									<!-- DELETE -->
+									<button th:if="${element.id} != null" id="deleteBtn"
+										type="button" class="btn btn-primary btn-primary-delete "
+										name="delete" th:value="#{gen.deleteBtn}"
+										onclick="showConfirmDeleteDialog()">
+										<i class="icon-delete"></i><span th:text="#{gen.deleteBtn}"
+											class="delete-btn-text"> Delete </span>
+									</button>
+								
+									<span th:if="${element.id} != null" class="sep" ></span>
 
 									<!-- CANCEL -->
 									<button id="cancelBtn" type="button"
@@ -182,8 +188,15 @@
 										<span th:text="#{gen.cancelBtn}"> Cancel </span>
 									</button>
 
-									 
-								 
+									<!-- UPDATE -->
+									<button th:if="(${#authentication.name} == ${element.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" 
+										sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')"
+										id="updateBtn" type="button" 
+										class="btn btn-primary btn-primary-save" name="update" 
+										th:attr="onclick='javascript:MapsProjectController.navigateUrl(\'' + '/controlpanel/mapsproject/update/' + @{${element.id}(form)}+ '=' + '\');'">
+										<span th:text="#{gen.editBtn}"> Edit</span>
+									</button>
+									
 								</div>
 							</div>
 						</div>
@@ -351,10 +364,10 @@
 									<div class="col-md-2 col-sm-2">
 										<div class="mt-checkbox-list margin-top-20">
 											<label class="mt-checkbox popovers font-sm control-label" data-trigger="hover" data-placement="top" data-container="body"
-																th:attr=" data-title=#{dashboards.public}"> <div class="inline font-xs" th:text="#{dashboards.public}">Public</div>
-																	<input  id="checkboxPublic" class="form-control" disabled name="checkboxPublic" type="checkbox" th:field="*{public}"  />
-																	<span></span>
-																</label>
+												th:attr=" data-title=#{dashboards.public}"> <div class="inline font-xs" th:text="#{dashboards.public}">Public</div>
+												<input  id="checkboxPublic" class="form-control" disabled name="checkboxPublic" type="checkbox" th:field="*{public}"  />
+													<span></span>
+											</label>
 										</div>
 									</div>
 								</div>
@@ -433,12 +446,7 @@
 											</div>
 										</div>
 									</div>
-								</div>
-
-								
-								
-								
-								
+								</div>	
 							</div>
 
 							<div class="tab-pane " id="tab_toolsoptions">
@@ -522,10 +530,6 @@
 														onclick="navigateWindow('/controlpanel/mapsstyle/show/'+$('#toolsOptionsmesaureToolOptionsstyle ').val())">
 														<a><i class="la la-eye font-hg" style="color: white;"></i></a>
 													</button>
-											 
-													 
-
-
 												</div>
 											</div>
 										</div>
@@ -648,7 +652,7 @@
 											<div class="col-md-6 col-sm-6  "
 												style="padding-left: 0px; padding-right: 0px;">
 												 <input disabled="disabled" class="form-control" type="text"
-											id="toolsOptionsshowCoordToolOptionsstyle">  
+													id="toolsOptionsshowCoordToolOptionsstyle">  
 											
 											</div>
 											<div class="col-md-6 col-sm-6  "
@@ -2293,26 +2297,16 @@
 <script th:src="@{/static/js/utils/languages.js}"></script>
 <script th:src="@{/static/js/pages/mapsProjectCreate.js}"></script>
 
-<script
-	th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}"
-	type="text/javascript"></script>
-<script
-	th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}"
-	type="text/javascript"></script>
-<script th:if="${lang} == 'es'"
-	th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}"
-	type="text/javascript"></script>
+<script	th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}"	type="text/javascript"></script>
+<script	th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
+<script th:if="${lang} == 'es'"	th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}" type="text/javascript"></script>
 
 <!-- PLUGINS -->
-<script
-	th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
-<script
-	th:src="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js}"
-	type="text/javascript"></script>
+<script	th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
+<script	th:src="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js}" type="text/javascript"></script>
 
 <!-- INPUTMASK -->
-<script
-	th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
+<script	th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
 <script th:inline="javascript">
 	
 			// <![CDATA[
@@ -2530,13 +2524,22 @@
 	}
 	
 	
-		function editMap (id){
+	function editMap (id){
 			if(id!=null && typeof id !== 'undefined'){
 				navigateWindow('/controlpanel/mapsmap/update/'+id);
 			}
 	}	
+	
+	var deleteUrl =  [[@{/mapsproject}]];
+	
+	
+	var showConfirmDeleteDialog = function(){	
+		$('#delete_mapsproject_form').attr('action', deleteUrl + '/' + elementID);
+		$('#delete-id').val(elementID);
+		HeaderController.showConfirmDialogMapsProject('delete_mapsproject_form',deleteUrl,elementID);	
+	} 
 		 
-		$( document ).ready(function() {
+	$( document ).ready(function() {
 		handleTabsChange();
 	 
 		$('input[type=text]').prop("disabled", true);

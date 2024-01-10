@@ -162,7 +162,9 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 		try {
 			schema = mapper.readTree(ontology.getJsonSchema());
 			if (!ontologyDataService.refJsonSchema(schema).equals("")) {
-				log.debug("Modifying query that contains * {}:", query);
+				if (log.isDebugEnabled()) {
+					log.debug("Modifying query that contains * {}:", query);
+				}				
 				final String parentNode = schema.at("/required/0").asText();
 				if (parentNode != null && parentNode.trim().length() > 0) {
 					query = query.replaceAll("count\\(.*?\\*.*?\\)", "count\\(" + parentNode + "\\)");
@@ -197,7 +199,9 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 
 					}
 				}
-				log.debug("Modified query that contains * {}:", query);
+				if (log.isDebugEnabled()) {
+					log.debug("Modified query that contains * {}:", query);
+				}				
 			} else {
 				log.error("Query for ontology {} contains * please indicate explicitly the fields you want to query",
 						collection);

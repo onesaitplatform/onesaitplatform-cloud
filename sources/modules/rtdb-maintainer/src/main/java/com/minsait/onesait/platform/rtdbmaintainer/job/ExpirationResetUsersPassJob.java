@@ -74,10 +74,11 @@ public class ExpirationResetUsersPassJob {
 			if (masterUser.isActive()) {
 				// check inactive days
 				log.debug("----------------------------------");
-				log.debug("restartLimitDate :" + restartLimitDate);
-
-				log.debug("USER :" + masterUser.getUserId());
-				log.debug("masterUser.getResetPass() :" + masterUser.getResetPass());
+				if (log.isDebugEnabled()) {
+					log.debug("restartLimitDate :{}", restartLimitDate);
+					log.debug("USER :{}", masterUser.getUserId());
+					log.debug("masterUser.getResetPass() :{}", masterUser.getResetPass());
+				}
 
 				if (masterUser.getResetPass() != null && masterUser.getResetPass().before(restartLimitDate)) {
 					log.debug("masterUser.getResetPass().before(restartLimitDate)): "
@@ -120,7 +121,9 @@ public class ExpirationResetUsersPassJob {
 		try {
 			return messageSource.getMessage(key, null, LocaleContextHolder.getLocale());
 		} catch (final Exception e) {
-			log.debug("Key:" + key + " not found. Returns:" + valueDefault);
+			if (log.isDebugEnabled()) {
+				log.debug("Key:{} not found. Returns:{}", key, valueDefault);
+			}			
 			return valueDefault;
 		}
 	}

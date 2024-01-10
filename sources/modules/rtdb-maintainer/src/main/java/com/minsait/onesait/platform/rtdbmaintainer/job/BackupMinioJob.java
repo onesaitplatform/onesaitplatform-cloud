@@ -90,7 +90,9 @@ public class BackupMinioJob {
 	public void execute(JobExecutionContext context) throws IOException {
 		String date = new SimpleDateFormat("YYMMDD HHMMSS").format(new Date()).replace(" ", "_");
 		File file = new File(exportPath);
-		log.debug("Export directory, absolute path: {}", file.getAbsolutePath());
+		if (log.isDebugEnabled()) {
+			log.debug("Export directory, absolute path: {}", file.getAbsolutePath());
+		}		
 		if (file.exists() && file.isDirectory()) {
 			File exportFile = new File(file.getAbsolutePath(), date + ".zip");
 			FileInputStream input = null;
@@ -198,7 +200,9 @@ public class BackupMinioJob {
 		for (File fileToZip : files) {
 			FileInputStream fis = new FileInputStream(fileToZip);
 			ZipEntry zipEntry = new ZipEntry(fileToZip.getName());
-			log.debug("Adding file {} to zip file.", fileToZip.getName());
+			if (log.isDebugEnabled()) {
+				log.debug("Adding file {} to zip file.", fileToZip.getName());
+			}			
 			zipOut.putNextEntry(zipEntry);
 
 			byte[] bytes = new byte[1024];

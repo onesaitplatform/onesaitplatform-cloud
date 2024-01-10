@@ -118,6 +118,10 @@ public interface MultitenancyService {
 
 	List<?> getAllLazy();
 
+	MasterUser getUserByMail(String email);
+
+	void updateMasterUserPassword(String userId, String password);
+
 	boolean checkCurrentPasword(String userId, String Pass);
 
 	public void replicateUser(String userId, String vertical, String tenant);

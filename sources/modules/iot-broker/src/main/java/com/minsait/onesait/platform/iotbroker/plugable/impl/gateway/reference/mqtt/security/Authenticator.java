@@ -90,8 +90,8 @@ public class Authenticator implements IAuthenticator {
 
 			String sessionKey = "";
 			if (con.getResponseCode() == HttpURLConnection.HTTP_OK) {
-				log.info("\nSending 'GET' request to URL : " + BASE_JOIN + JOIN_URL + "?" + query.toString());
-				log.info("\nResponse Code OK: " + HttpURLConnection.HTTP_OK);
+				log.info("\nSending 'GET' request to URL : {}{}?{}", BASE_JOIN, JOIN_URL, query.toString());
+				log.info("\nResponse Code OK: {}", HttpURLConnection.HTTP_OK);
 
 				BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
 

@@ -199,6 +199,7 @@
 															<td class="text-left text-truncate-sm" th:title="${webproject.description}" th:text="${webproject.description}"></td>
 															<!-- URL -->
 															<td class="text-left text-primary" th:text="${rootWWW} + ${webproject.identification} + '/' + ${webproject.mainFile}"></td>
+
 															<!-- DATE -->
 															<td class="text-left" th:if="${webproject.created!=null}"><span th:text="${#dates.format(webproject.created,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(webproject.created,'dd/MM/YYYY')}" ></span></td>
 															<td class="text-left" th:if="${webproject.created==null}" th:text="'---'"></td>
@@ -210,7 +211,7 @@
 																<div class="grupo-iconos">
 																	<!-- VIEW -->															
 																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:window.open(\'' + ${rootWWW} + ${webproject.identification} + '/' + ${webproject.mainFile} + '\');'"><i class="la la-eye font-hg"></i></span>
-																																																			
+																																
 																	<!-- EDIT -->
 																	<span  th:if="(${#authentication.name} == ${webproject.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/webprojects/update/${webproject.id}/|} + '\');'"><i class="icon-edit"></i></span>
 
@@ -224,6 +225,10 @@
 																		<li>
 																			<!-- COPY URL -->
 																			<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='copyURL(\'' + ${rootWWW} + ${webproject.identification} + '/' + ${webproject.mainFile} + '\');'"><i class="icon-url"></i><span class="span-title-three-dots-icons" th:text="#{binaryfiles.copy}" >URL</span></span>
+																		</li>
+																		<li>
+																			<!-- GIT EDITOR -->
+																			<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:navigateUrl(\'' + @{|/webprojects/git/${webproject.id}/|} + '\');'"><i class="icon-file"></i><span class="span-title-three-dots-icons" th:text="'Git'" >Git</span></span>
 																		</li>
 																		<li>
 																			<!-- DELETE -->

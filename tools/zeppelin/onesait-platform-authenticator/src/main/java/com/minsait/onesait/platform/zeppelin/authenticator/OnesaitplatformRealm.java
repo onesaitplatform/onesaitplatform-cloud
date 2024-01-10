@@ -3,10 +3,13 @@ package com.minsait.onesait.platform.zeppelin.authenticator;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import com.google.gson.reflect.TypeToken;
 import com.minsait.onesait.platform.zeppelin.authenticator.Beans.NotebookInfoBean;
@@ -14,6 +17,7 @@ import com.minsait.onesait.platform.zeppelin.authenticator.Beans.UserInfoBean;
 import com.minsait.onesait.platform.zeppelin.authenticator.Utils.Utils;
 
 import org.apache.http.ParseException;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -32,6 +36,7 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.zeppelin.notebook.AuthorizationService;
+import org.apache.zeppelin.notebook.NoteManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.glassfish.hk2.api.ServiceLocatorFactory;
@@ -52,7 +57,9 @@ public class OnesaitplatformRealm extends AuthorizingRealm {
 	
 	private String oauth2serverCheckTokenPath = "/user";
 	private String controlpanelUserNotebooksPath = "/api/notebooks/listAllAndByProject/";
-
+	
+	private int timeout = 2;
+	private int timeToLive = 30;
 	
 	private boolean avoidSSL = true;
 	private String administratorRole = "ROLE_ADMINISTRATOR";
@@ -63,22 +70,41 @@ public class OnesaitplatformRealm extends AuthorizingRealm {
 	private boolean keycloakEnabled;
 	private String KEYCLOAK_ENV_KEY = "USE_KEYCLOAK";
 	
-	private String READ_ACCESSTYPE = "VIEW";
-	private String EDIT_ACCESSTYPE = "EDIT";
-	private String RUN_ACCESSTYPE = "RUN";
+	private static final String READ_ACCESSTYPE = "VIEW";
+	private static final String EDIT_ACCESSTYPE = "EDIT";
+	private static final String RUN_ACCESSTYPE = "RUN";
 	
 	private static final Logger LOG = LoggerFactory.getLogger(OnesaitplatformRealm.class);
 	public static final String SERVICE_LOCATOR_NAME= "shared-locator";
 	
 	private AuthorizationService authorizationService;
+	
+	private NoteManager noteManager;
+	
+	private enum NotePermissions {
+		READ,
+		RUN,
+		EDIT,
+		OWNER
+	}
 
 	public OnesaitplatformRealm() {
 		super();
 		LOG.info("Init OnesaitplatformRealm v0.10.1");
-		httpClient = HttpClients.custom().setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+		RequestConfig config = RequestConfig.custom()
+				  .setConnectTimeout(timeout * 1000)
+				  .setConnectionRequestTimeout(timeout * 1000)
+				  .setSocketTimeout(timeout * 1000).build();
+		httpClient = HttpClients.custom()
+				.setDefaultRequestConfig(config)
+				.setConnectionTimeToLive(timeToLive, TimeUnit.SECONDS)
+				.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+				.setMaxConnPerRoute(5)
+				.setMaxConnTotal(20)
+				.build();
 		gsonParser = new Gson();
-		injectAuthorizationService();
-		LOG.info("AuthorizationService inyected in osp realm");
+		injectServices();
+		LOG.info("Zeppelin Services inyected in osp realm");
 		checkKeyCloakEnabled();
 		setOauth2URLs();
 		LOG.info("Default oauth2serverURL: " + oauth2serverURL);
@@ -87,8 +113,9 @@ public class OnesaitplatformRealm extends AuthorizingRealm {
 		LOG.info("Default controlpanelUserNotebooksPath: " + controlpanelUserNotebooksPath);
 	}
 	
-	private void injectAuthorizationService() {
+	private void injectServices() {
 		authorizationService = ServiceLocatorFactory.getInstance().find(SERVICE_LOCATOR_NAME).getService(AuthorizationService.class);
+		noteManager = ServiceLocatorFactory.getInstance().find(SERVICE_LOCATOR_NAME).getService(NoteManager.class);
 	}
 
 	public void setOauth2serverURL(String oauth2serverURL) {
@@ -125,6 +152,14 @@ public class OnesaitplatformRealm extends AuthorizingRealm {
 	
 	public void setKeycloakEnabled(boolean keycloakEnabled) {
 		this.keycloakEnabled = keycloakEnabled;
+	}
+	
+	public void setTimeout(int timeout) {
+		this.timeout = timeout;
+	}
+	
+	public void setTimeToLive(int timeToLive) {
+		this.timeToLive = timeToLive;
 	}
 
 	@Override
@@ -199,60 +234,96 @@ public class OnesaitplatformRealm extends AuthorizingRealm {
 			HttpGet httpGet = new HttpGet(builder.build());
 
 			httpGet.addHeader("Authorization", oauth2token);
-			CloseableHttpResponse response = httpClient.execute(httpGet);
-			LOG.info("Status code notebook user list: {} ", response.getStatusLine().getStatusCode());
-
-			if (response.getStatusLine().getStatusCode() / 100 != 2) {
-				throw new AuthenticationException("Wrong code answer: " + response.getStatusLine().getStatusCode());
-			}
-
-			String jsonAnswer = EntityUtils.toString(response.getEntity());
-
-			LOG.info("Response controlpanel: {} ", jsonAnswer);
-
-			Type listType = new TypeToken<List<NotebookInfoBean>>() {}.getType();
-			List<NotebookInfoBean> lnib = gsonParser.fromJson(jsonAnswer, listType);
+			httpGet.addHeader("Connection", "close");
+			LOG.info("Token: " + oauth2token);
 			
-			Set<String> defaultEntities = new HashSet<>();
-			defaultEntities.add("admin");
+			List<NotebookInfoBean> lnib = new ArrayList<>();
+			try {
+				CloseableHttpResponse response = httpClient.execute(httpGet);
+				
+				LOG.info("Status code notebook user list: {} ", response.getStatusLine().getStatusCode());
+
+				if (response.getStatusLine().getStatusCode() / 100 != 2) {
+					throw new AuthenticationException("Wrong code answer: " + response.getStatusLine().getStatusCode());
+				}
+				
+				String jsonAnswer = EntityUtils.toString(response.getEntity());
+
+				LOG.info("Response controlpanel: {} ", jsonAnswer);
+				
+				Type listType = new TypeToken<List<NotebookInfoBean>>() {}.getType();
+				lnib = gsonParser.fromJson(jsonAnswer, listType);
+				
+			} catch (IOException e) {
+				LOG.error("ConnectionFail: ", e);
+			} finally {
+				httpGet.releaseConnection();
+			}			
+
+			Map<String, NotePermissions> notePermissions = new HashMap<>();
 			
+			NotePermissions permission;
+			LOG.info("\n\nPermissions for user: " + infoUser.getPrincipal() + "\n");
 			for(NotebookInfoBean nib : lnib){
 				String idzep = nib.getIdzep();
-				
-				//Set default
-				authorizationService.setReaders(idzep, defaultEntities, true);
-				authorizationService.setWriters(idzep, defaultEntities, true);
-				authorizationService.setRunners(idzep, defaultEntities, true);
-				authorizationService.setOwners(idzep, defaultEntities, true);
-				
-				Set previousSet;
-				if (READ_ACCESSTYPE.equals(nib.getAccessType())) {
-					previousSet = authorizationService.getReaders(idzep);
-					LOG.info("ReadOnly: {} with {} ",idzep, previousSet);
-				} else if (RUN_ACCESSTYPE.equals(nib.getAccessType())) {
-					previousSet = authorizationService.getReaders(idzep);
-					LOG.info("ReadOnly: {} with {} ",idzep, previousSet);
-					previousSet = authorizationService.getRunners(idzep);
-					LOG.info("Runner: {} with {} ",idzep, previousSet);
-				} else {
-					previousSet = authorizationService.getWriters(idzep);
-					LOG.info("WriteAccess: {} with {} ", idzep,previousSet);
+				if (nib.getAccessType() == null) {
+					if (nib.isPublic()) {
+						permission = NotePermissions.READ;
+					}
 				}
-				if (previousSet == null) {
-					LOG.error("Notebook: " + nib.getIdentification() + " with NoteId: " + idzep + " doesn't exist in zeppelin, please remove it from onesait platform");
-				} else {
-					previousSet.add(infoUser.getPrincipal());
-					if (READ_ACCESSTYPE.equals(nib.getAccessType())) {
-						authorizationService.setReaders(idzep, previousSet, true);
-						LOG.info("Setting New ReadOnly: {} with {} ", idzep, previousSet);
-					} else if (RUN_ACCESSTYPE.equals(nib.getAccessType())) {
-						authorizationService.setReaders(idzep, previousSet, true);
-						LOG.info("Setting New ReadOnly: {} with {} ", idzep, previousSet);
-						authorizationService.setRunners(idzep, previousSet, true);
-						LOG.info("Setting New Runner: {} with {} ", idzep, previousSet);
-					} else if (EDIT_ACCESSTYPE.equals(nib.getAccessType())) {
-						authorizationService.setWriters(idzep, previousSet, true);
-						LOG.info("Setting New WriteAccess: {} with {} ", idzep, previousSet);
+				
+				switch (nib.getAccessType()) {
+					case RUN_ACCESSTYPE:
+						permission = NotePermissions.RUN;
+						break;
+					case READ_ACCESSTYPE:
+						permission = NotePermissions.READ;
+						break;
+					case EDIT_ACCESSTYPE:
+						permission = NotePermissions.OWNER;
+						break;
+					default:
+						permission = NotePermissions.READ;
+						break;
+				}
+				
+				notePermissions.put(idzep, permission);
+				LOG.info("Note: " + idzep + " - " + permission.toString());
+				removeUserFromPermissions(idzep, infoUser.getPrincipal());
+			}
+			
+			LOG.info("\n\n");
+			
+			LOG.info("Internal permissions arrays: \n");
+			
+			for (String noteId : noteManager.getNotesInfo().keySet()) {
+				LOG.info("NoteId: " + noteId);
+				if (notePermissions.keySet().contains(noteId)) {
+					switch (notePermissions.get(noteId)) {
+						case RUN:
+							Set<String> runners = authorizationService.getRunners(noteId);
+							runners.add(infoUser.getPrincipal());
+							authorizationService.setRunners(noteId, runners, true);
+							LOG.info("\nPost Runners: " + runners);
+							break;
+						case READ:
+							Set<String> readers = authorizationService.getReaders(noteId);
+							readers.add(infoUser.getPrincipal());
+							authorizationService.setReaders(noteId, readers, true);
+							LOG.info("\nPost Readers: " + readers);
+							break;
+						case OWNER:
+							Set<String> owners = authorizationService.getOwners(noteId);
+							owners.add(infoUser.getPrincipal());
+							authorizationService.setOwners(noteId, owners, true);
+							LOG.info("\nPost Owners: " + owners);
+							break;
+						case EDIT:
+							Set<String> writers = authorizationService.getWriters(noteId);
+							writers.add(infoUser.getPrincipal());
+							authorizationService.setWriters(noteId, writers, true);
+							LOG.info("\nPost Writers: " + writers);
+							break;
 					}
 				}
 			}
@@ -282,6 +353,33 @@ public class OnesaitplatformRealm extends AuthorizingRealm {
 			keycloakEnabled = false;
 		}
 		LOG.info("Keycloack enabled is " + keycloakEnabled);
+	}
+	
+	private void removeUserFromPermissions (String noteId, String user) throws IOException {
+		Set<String> readers = authorizationService.getReaders(noteId);
+		Set<String> writers = authorizationService.getWriters(noteId);
+		Set<String> runners = authorizationService.getRunners(noteId);
+		Set<String> owners = authorizationService.getOwners(noteId);
+		LOG.info("\nPre Readers: " + readers);
+		LOG.info("\nPre Writers: " + writers);
+		LOG.info("\nPre Runners: " + runners);
+		LOG.info("\nPre Owners: " + owners);
+		boolean readersCheck = readers.remove(user);
+		boolean writersCheck = writers.remove(user);
+		boolean runnersCheck = runners.remove(user);
+		boolean ownersCheck = owners.remove(user);
+		if (readersCheck) {
+			authorizationService.setReaders(noteId, readers, true);
+		}
+		if (writersCheck) {
+			authorizationService.setWriters(noteId, writers, true);
+		}
+		if (runnersCheck) {
+			authorizationService.setRunners(noteId, runners, true);
+		}
+		if (ownersCheck) {
+			authorizationService.setOwners(noteId, owners, true);
+		}
 	}
 
 }

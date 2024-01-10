@@ -1,0 +1,540 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2022 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:dt="http://www.thymeleaf.org/dandelion/datatables"
+	th:with="lang=${#locale.language}" th:lang="${lang}">
+
+<head>
+	<meta name="_csrf" th:content="${_csrf.token}" />
+	<meta name="_csrf_header" th:content="${_csrf.headerName}" />
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+	<meta http-equiv="Content-Language" th:content="${lang}" />
+	<title th:text="#{name.app}" />
+
+
+	<!-- STYLE SHEETS -->
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}" />
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}" />
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}" />
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}" />
+
+	<!-- THEME -->
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
+
+	<!-- PLUGINS STYLE SHEETS -->
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}" />
+	<link rel="stylesheet" type="text/css" media="all"
+		th:href="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.css}" />
+	<link rel="stylesheet" type="text/css" media="all"
+		th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}" />
+
+</head>
+
+<!-- page-sidebar-closed to start page with collapsed menu -->
+
+<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+
+		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"></div>
+
+		<!-- BEGIN SIDEBAR -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+
+
+				<!-- BEGIN PAGE HEADER-->
+
+				<!-- BEGIN PAGE BAR AND BREADCRUM -->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<!--<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li> -->
+						<li>
+							<a th:href="@{/forms/list}">
+								<span th:text="#{forms.list}"> My Forms </span>
+							</a>
+						</li>
+					</ul>
+				</div>
+				<!-- END PAGE BAR -->
+
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide ">
+					<span th:text="#{app.show}">Apps</span>
+				</h1>
+				<!-- END PAGE TITLE-->
+
+				<!-- MAIN ROW -->
+				<div class="row">
+
+					<div class="portlet light ">
+						<div class="portlet-title">
+							<div class="caption">
+								<span class="caption-subject" th:text="#{forms.list}"> Manage Forms</span>
+							</div>
+							<div class="caption" style="padding: 22px 8px 8px 10px">
+								<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon"
+									style="margin-left: 18px;"><i class="icon-search"></i></a>
+							</div>
+							<div id="search-on-title" class="hide input-icon search-icon">
+								<a class="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i
+										class="icon-search"></i></a>
+							</div>
+							<div class="tools hide">
+								<a href="" class="collapse" data-original-title="" title="">
+								</a> <a href="" class="fullscreen" data-original-title="" title="">
+								</a>
+							</div>
+							<div class="pull-right btn-group btn-title-group" id="divcreate">
+								<button type="button" class="btn btn-primary button-plus-create"
+									onclick="location.href='../forms/create'"><a><i class="icon-new"
+											style="color:white;"></i></a></button>
+							</div>
+							<!--<div class="actions margin-right-20">									
+										<button type="button" class="btn btn-circle btn-outline btn-primary" onclick="location.href='../apps/create'"><span th:text="#{gen.create}">New	</span></button>
+								</div>-->
+						</div>
+
+						<div class="portlet-body" style="display: block; height: auto;">
+
+							<div class="row main">
+								<!--<div class="col-md-12 alert-zone">
+										// ALERT ZONE
+									</div>-->
+
+								<!-- REALM LIST -->
+								<div class="col-md-12">
+									<div id="contenedor-tabla-outside" class="contiene hidden">
+										<div>
+
+											<table id="formsTable" class="table table-hover table-striped"
+												dt:table="true" dt:paginationtype="full">
+
+												<thead>
+													<tr class="cabecera-tabla">
+														<th class="titulo-columnas"> <span
+																th:text="#{gen.name}">Name</span></th>
+														<th class="titulo-columnas"> <span
+																th:text="#{forms.code}">Code</span></th>
+														<th class="titulo-columnas"> <span
+																th:text="#{gen.description}">Description</span></th>
+														<th class="titulo-columnas"> <span th:text="#{gen.id}">ID</span>
+														</th>
+														<th class="titulo-columnas"> <span
+																th:text="#{gen.ontology}">Entity</span></th>
+														<th class="titulo-columnas"> <span
+																th:text="#{app.dateCreated}">Created At</span></th>
+														<th class="titulo-columnas"> <span
+																th:text="#{app.dateUpdated}">Updated At</span></th>
+														<th class="titulo-columnas text-center" dt:sortable="false"
+															style="width:85px;"> <span th:text="#{gen.options}">
+																Options</span></th>
+													</tr>
+												</thead>
+												<tbody th:remove="all-but-first">
+													<tr th:each="form : ${forms}" pages:paginate="10">
+														<!-- IDENTIFICATION -->
+														<td class="text-left no-wrap  internalId"
+															th:text="${form.name}"></td>
+														<!-- CODE -->
+														<td class="text-left no-wrap  internalId"
+															th:text="${form.code}"></td>
+														<!-- DESCRIPTION -->
+														<td class="text-left no-wrap  internalId"
+															th:text="${form.description}"></td>
+														<!-- ID -->
+														<td class="text-left no-wrap  internalId" th:text="${form.id}">
+														</td>
+														<!-- FORM ENTITY -->
+														<td class="text-left no-wrap  internalId"
+															th:text="${form.entity != null ? form.entity : '-'}"></td>
+														<!-- DATE CREATED -->
+														<td class="text-left" th:if="${form.dateCreated!=null}">
+															<span
+																th:text="${#dates.format(form.dateCreated,'yyyy/MM/dd')}"
+																style="display:none"></span>
+															<span
+																th:text="${#dates.format(form.dateCreated,'dd/MM/yyyy')}"></span>
+														</td>
+														<td class="text-left" th:if="${form.dateCreated==null}"
+															th:text="'---'"></td>
+
+														<!-- DATE UPDATED -->
+														<td class="text-left" th:if="${form.dateUpdated!=null}">
+															<span
+																th:text="${#dates.format(form.dateUpdated,'yyyy/MM/dd')}"
+																style="display:none"></span>
+															<span
+																th:text="${#dates.format(form.dateUpdated,'dd/MM/yyyy')}"></span>
+														</td>
+														<td class="text-left" th:if="${form.dateUpdated==null}"
+															th:text="'---'"></td>
+
+														<!-- OPTIONS -->
+														<td class="icon text-center" style="white-space: nowrap">
+															<div class="grupo-iconos">
+																<!-- VIEW -->
+																<span th:title="#{gen.view}"
+																	class="btn btn-xs btn-no-border icon-on-table color-blue tooltips"
+																	data-container="body" data-placement="bottom"
+																	th:data-original-title="#{gen.view}"
+																	th:attr="onclick='javascript:navigateUrl(\'' + @{|/forms/show/${form.code}|} + '\');'"><i
+																		class="la la-eye font-hg"></i></span>
+
+																<!-- EDIT -->
+																<span
+																	class="btn btn-xs btn-no-border icon-on-table color-blue tooltips"
+																	data-container="body" data-placement="bottom"
+																	th:title="#{gen.edit}"
+																	th:data-original-title="#{gen.edit}"
+																	th:attr="onclick='javascript:navigateUrl(\'' + @{|/forms/update/${form.code}|} + '\');'"><i
+																		class="icon-edit"></i></span>
+
+																<!--<span
+																	class="btn btn-xs btn-no-border icon-on-table color-red tooltips"
+																	data-container="body" data-placement="bottom"
+																	th:title="#{gen.deleteBtn} "
+																	th:data-original-title="#{gen.deleteBtn} "
+																	th:attr="onclick='deleteFormConfirmation(\'' + ${form.code} + '\');'"><i
+																		class="icon-delete"></i></span>-->
+																
+																
+																   <span class="dropdown">
+																	<span   class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
+																		<ul class="dropdown-menu dropdown-menu-table download-menu">
+																			
+																																			
+																		  
+																			<!-- CLONE -->
+																			<li>
+																				<span  th:title="#{mapsproject.clone}" class="btn btn-xs btn-no-border btn-circle btn-outline" th:attr="onclick='javascript:cloneDialog(\''+${form.code}+ '\');'"><i class="la la-clone font-hg"></i><span class="span-title-three-dots-icons" th:text="#{mapsproject.clone}" >Clone</span></span>
+																			</li>																			
+																		  
+																		  
+																		    <!-- DELETE -->
+																		    <li>
+																		    	 
+																		    	<span   th:attr="onclick='deleteFormConfirmation(\'' + ${form.code} + '\');'"  class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" ><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>
+																	    	</li>
+																	    </ul>
+																    </span>
+																
+																
+															</div>
+														</td>
+
+													</tr>
+												</tbody>
+											</table>
+
+											<!-- TABLE TOOLBAR -->
+											<div id="dataTable-vis-toggle" class="btn-group margin-right-10 hide">
+												<a class="dropdown-togglebtn btn-primary button-dropdown-table-columns"
+													data-toggle="dropdown" aria-expanded="false"> <i
+														class="icon-show-columns"></i></a>
+												<div id="column_toggler" data-container="body"
+													class="dropdown-menu hold-on-click pull-right">
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="0"
+															checked />
+														<label th:text="#{app.appId}"> Identification </label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="1"
+															checked />
+														<label th:text="#{forms.code}"> Code </label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="2"
+															checked />
+														<label th:text="#{gen.description}"> Description </label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="3" />
+														<label th:text="#{gen.id}"> Id </label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="4"
+															checked />
+														<label th:text="#{forms.main.entity}"> Entity </label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="5"
+															checked />
+														<label th:text="#{app.dateCreated}"> Created At</label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="6"
+															checked />
+														<label th:text="#{app.dateUpdated}"> Updated At</label>
+													</span>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- END PORTLET BASIC LIGHT -->
+				</div>
+				<!-- END MAIN ROW -->
+			</div>
+			<!-- END CONTENT BODY -->
+		</div>
+		<!-- END CONTENT page-content-wrapper -->
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+
+
+
+
+	<!-- FOOTER-INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+
+	<!-- CORE CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
+
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
+	<script th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
+    <!-- INPUTMASK -->
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
+
+	<script th:inline="javascript">
+
+		// DATATABLES LANGUAJE FROM PROPERTIES.
+		datatable_lang = [[#{datatables_lang}]];
+		var languageJson = JSON.parse(datatable_lang);
+		if (languageJson) {
+			$.extend(true, $.fn.dataTable.defaults, {language: languageJson});
+		}
+
+	</script>
+
+	<script type="text/javascript" th:inline="javascript">
+		var backUrl = [[@{/forms/list}]];
+		function navigateUrlBack() {window.location.href = backUrl;}
+
+		const formsBaseURLCreate = [[@{/api/forms}]]
+		//<![CDATA[
+		function navigateUrl(url) {window.location.href = url;}
+
+		var deleteFormConfirmation = function (formId) {
+
+			// i18 labels
+			var Close = headerReg.btnCancelar;
+			var Remove = headerReg.btnEliminar;
+			var Content = [[#{forms.delete.confirm}]];
+			var Title = [[#{gen.delete}]];
+
+			var csrf_value = $("meta[name='_csrf']").attr("content");
+			var csrf_header = $("meta[name='_csrf_header']").attr("content");
+
+			// jquery-confirm DIALOG SYSTEM.
+			$.confirm({
+				title: Title,
+				theme: 'light',
+				columnClass: 'medium',
+				content: Content,
+				draggable: true,
+				dragWindowGap: 100,
+				backgroundDismiss: true,
+				buttons: {
+					close: {
+						text: Close,
+						btnClass: 'btn btn-outline blue dialog',
+						action: function () {
+						} // GENERIC CLOSE.
+					},
+					remove: {
+						text: Remove,
+						btnClass: 'btn btn-primary',
+						action: function () {
+							console.log(formId);
+							$.ajax({
+								url: formsBaseURLCreate+'/'+formId,
+								type: 'DELETE',
+								success: function (result) {
+									navigateUrlBack();
+								}
+							});
+						}
+					}
+
+				}
+			});
+		}
+
+
+		$(window).on('pageshow', function (event) {
+			$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+			 $.each([ 3 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		});
+		// MAIN WHEN READY
+		$(document).ready(function () {
+
+
+			//SHOW/HIDE DATATABLE COLUMNS HANDLER
+			$('input.toggle-vis').on('change', function (e) {
+				e.preventDefault();
+				// Get the column API object
+				var column = $('#formsTable').DataTable().column($(this).attr('data-column'));
+				// Toggle the visibility
+				column.visible(!column.visible());
+				// Toggle visibility on filtering row
+				if ($('#filtering')) {
+					$('#filtering th').eq($(this).attr('data-column')).toggle();
+				}
+				// toggle Text
+				//$(this).toggleClass('text-muted line-through');			
+			});
+
+
+			//	$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
+			//DATATABLE 
+			var oTable = $('#formsTable').DataTable({
+				"bAutoWidth": false
+			});
+
+			$('#divcreate').prepend($('#dataTable-vis-toggle'));
+			//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+			$('#dataTable-vis-toggle').removeClass('hide');
+
+			$('.dataTables_info').addClass('col-md-6 col-sm-6');
+			$('.dataTables_length').addClass('col-md-6 col-sm-6');
+			$('#formsTable_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
+			$('#formsTable_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
+
+			$('#search-on-title').append($('.dataTables_filter > label > input'));
+			$('#search-on-title > input').removeClass('input-xsmall')
+			$('#formsTable_wrapper > div:nth-child(1)').hide();
+
+			$('.dataTables_paginate').attr('style', 'float:right !important');
+            $('.download-menu').parent().on('shown.bs.dropdown', function () {
+			 var $menu = $("ul", this);
+	         offset = $menu.offset();
+	         position = $menu.position();
+	         $('body').append($menu);
+	         $menu.show();
+	         $menu.css('position', 'absolute');
+	         $menu.css('top', (offset.top) +'px');
+	         $menu.css('left',(offset.left) +'px');
+	         $menu.css('min-width', '100px');
+	        $(this).data("myDropdownMenu", $menu);
+	       });
+	     $('.download-menu').parent().on('hide.bs.dropdown', function () {
+	         $(this).append($(this).data("myDropdownMenu"));
+	         $(this).data("myDropdownMenu").removeAttr('style');
+	     });
+			$("#contenedor-tabla-outside").removeClass("hidden");
+		});
+
+		var cloneTitle = [[#{mapsproject.cloneText}]];
+		var name = [[#{gen.name}]];
+		var MinLen = [[#{mapsproject.minLen}]];
+		var Cancel = [[#{gen.cancelBtn}]];
+		var Close = [[#{gen.closeBtn}]];
+		var Confirm = [[#{gen.confirmBtn}]];
+		var cloneDialog = function(mapsprojectId){
+		
+		var CloneFail = [[#{dashboards.cloneFail}]];
+	    var MinLen = [[#{dashboards.minLen}]];
+	    var cloneFail = function (message){
+		$.alert({
+			title : "Error",
+			theme : 'light',
+			content : message,
+			buttons: {
+				Ok: {
+					text: Close,
+					btnClass: 'btn btn-primary',
+					action: function (){}		
+					}
+				},
+			})
+	}
+		
+		
+		$.confirm({
+			title: cloneTitle,
+			theme: 'light',
+			columnClass: 'medium',
+			content: "<label>"+name+"</label><span class='required' style='color: #A73535;'> *</span></br><input class='col-md-12 form-control' type=text id='cloneIdentification' placeholder='"+MinLen+"'"+"></input>",
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			onContentReady:function(){
+				$("#cloneIdentification").inputmask({ regex: "[a-zA-Z 0-9_-]*", greedy: false });
+			
+			},
+			buttons: {
+				close: {
+					text: Cancel,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function (){} //GENERIC CLOSE.		
+				},
+				Ok: {
+					text: Confirm,
+					btnClass: 'btn btn-primary',
+					action: function(){ 
+						
+						if($("#cloneIdentification").val()=="" || !$("#cloneIdentification").val() ||
+							$("#cloneIdentification").val().length < 5){
+			                cloneFail(MinLen);
+						}
+						else {$.post(
+								"/controlpanel/forms/clone", 
+								{'elementid' : mapsprojectId, 'identification' : $("#cloneIdentification").val()}
+							).done(function(){
+								navigateUrl("/controlpanel/forms/list")
+								}
+							).fail(
+								function(e){									
+									console.log("Error cloning mapsproject, message detail: " + e.responseText);
+									cloneFail(CloneFail);
+								}
+							)}
+					}											
+				}					
+			}
+		});
+	}	
+
+
+
+	//]]>
+	</script>
+
+</body>
+
+</html>

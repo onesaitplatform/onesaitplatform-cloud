@@ -197,11 +197,15 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 				if (auth != null && auth.getAuthorities().toArray()[0].toString()
 						.equals(Role.Type.ROLE_PREVERIFIED_ADMINISTRATOR.name())) {
 					// FIX-ME CHANGE LOG LEVEL
-					log.debug("preVerifiedUsersFilter: true, auth: {}, {}", auth);
+					if (log.isDebugEnabled()) {
+						log.debug("preVerifiedUsersFilter: true, auth: {}, {}", auth);
+					}
 					response.sendRedirect(request.getContextPath() + URI_VERIFY);
 				} else {
 					// FIX-ME CHANGE LOG LEVEL
-					log.debug("preVerifiedUsersFilter: false, auth: {}", auth);
+					if (log.isDebugEnabled()) {
+						log.debug("preVerifiedUsersFilter: false, auth: {}", auth);
+					}
 					filterChain.doFilter(request, response);
 				}
 			}
@@ -233,7 +237,9 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 				final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 				if (auth != null && auth.getAuthorities().toArray()[0].toString()
 						.equals(Role.Type.ROLE_PREVERIFIED_TENANT_USER.name())) {
-					log.debug("preverifiedTenantUsersFilter: true, auth: {}, {}", auth);
+					if (log.isDebugEnabled()) {
+						log.debug("preverifiedTenantUsersFilter: true, auth: {}, {}", auth);
+					}					
 					response.sendRedirect(request.getContextPath() + URI_TENANT_PROMOTE);
 				} else {
 					filterChain.doFilter(request, response);
@@ -266,7 +272,9 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 				final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 				if (auth != null && auth.getAuthorities().toArray()[0].toString()
 						.equals(Role.Type.ROLE_COMPLETE_IMPORT.name())) {
-					log.debug("completeLdapImportFilter: true, auth: {}, {}", auth);
+					if (log.isDebugEnabled()) {
+						log.debug("completeLdapImportFilter: true, auth: {}, {}", auth);
+					}					
 					response.sendRedirect(request.getContextPath() + URI_COMPLETE_IMPORT);
 				} else {
 					filterChain.doFilter(request, response);
@@ -302,7 +310,9 @@ public class Securityhandler implements AuthenticationSuccessHandler {
 			final String serializedParams = "?" + URLEncodedUtils.format(params.entrySet().stream()
 					.map(e -> new BasicNameValuePair(e.getKey(), e.getValue()[0])).collect(Collectors.toList()),
 					StandardCharsets.UTF_8);
-			log.debug("Retrieved parameters from request to session: {}", serializedParams);
+			if (log.isDebugEnabled()) {
+				log.debug("Retrieved parameters from request to session: {}", serializedParams);
+			}			
 			return serializedParams;
 		} catch (final Exception e) {
 			log.debug("Could not retrieve params from session");

@@ -127,7 +127,9 @@ public class RulesEngineNotificationServiceImpl implements RulesEngineNotificati
 
 	@Override
 	public void notify(String ontology, String json) {
-		log.debug("Sending notification to Rules Engine, ontology: {}", ontology);
+		if (log.isDebugEnabled()) {
+			log.debug("Sending notification to Rules Engine, ontology: {}", ontology);
+		}
 		final HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
 

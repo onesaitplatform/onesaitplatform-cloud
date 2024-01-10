@@ -171,7 +171,9 @@ public class VersioningIOServiceImpl implements VersioningIOService {
 		if (f.exists() && !f.isDirectory()) {
 			Files.delete(f.toPath());
 		} else {
-			log.debug("Serialized file {} does not exist", directory);
+			if (log.isDebugEnabled()) {
+				log.debug("Serialized file {} does not exist", directory);
+			}
 		}
 
 	}

@@ -56,7 +56,8 @@ public class SubscribeProcessor implements MessageTypeProcessor {
 	ObjectMapper objectMapper;
 
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info, Optional<IoTSession> session) {
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info,
+			Optional<IoTSession> session) {
 
 		@SuppressWarnings("unchecked")
 		final SSAPMessage<SSAPBodySubscribeMessage> subscribeMessage = (SSAPMessage<SSAPBodySubscribeMessage>) message;
@@ -79,7 +80,7 @@ public class SubscribeProcessor implements MessageTypeProcessor {
 		try {
 			routerResponse = routerService.subscribe(model);
 		} catch (final Exception e1) {
-			log.error("Error in process:" + e1.getMessage());
+			log.error("Error in process:{}", e1.getMessage());
 			response = SSAPUtils.generateErrorMessage(subscribeMessage, SSAPErrorCode.PROCESSOR, e1.getMessage());
 			return response;
 		}
@@ -88,7 +89,7 @@ public class SubscribeProcessor implements MessageTypeProcessor {
 		final String messageResponse = routerResponse.getMessage();
 		final String operation = routerResponse.getOperation();
 		final String result = routerResponse.getResult();
-		log.error(errorCode + " " + messageResponse + " " + operation + " " + result);
+		log.error("{} {} {} {}", errorCode, messageResponse, operation, result);
 
 		if (StringUtils.hasText(routerResponse.getErrorCode())) {
 			response = SSAPUtils.generateErrorMessage(subscribeMessage, SSAPErrorCode.PROCESSOR,
@@ -107,7 +108,7 @@ public class SubscribeProcessor implements MessageTypeProcessor {
 			data = objectMapper.readTree(dataStr);
 			response.getBody().setData(data);
 		} catch (final IOException e) {
-			log.error("Error in process:" + e.getMessage());
+			log.error("Error in process:{}", e.getMessage());
 			response = SSAPUtils.generateErrorMessage(subscribeMessage, SSAPErrorCode.PROCESSOR, e.getMessage());
 			return response;
 		}

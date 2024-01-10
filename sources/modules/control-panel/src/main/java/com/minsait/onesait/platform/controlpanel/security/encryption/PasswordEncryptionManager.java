@@ -71,7 +71,9 @@ public class PasswordEncryptionManager {
 		if (!StringUtils.hasText(algorithm)) {
 			algorithm = PasswordEncoderSHA2.SHA_2;
 		}
-		log.debug("Running password migrator for default passwords, current hashing algorithm is: {}", algorithm);
+		if (log.isDebugEnabled()) {
+			log.debug("Running password migrator for default passwords, current hashing algorithm is: {}", algorithm);
+		}		
 		int count = 0;
 		if (PasswordEncoderSHA2.SHA_2.equals(algorithm)) {
 			count += masterUserRepository.updateMasterUserPassword(SHA3.ADMIN.getPass(), SHA2.ADMIN.getPass());
@@ -82,6 +84,8 @@ public class PasswordEncryptionManager {
 			count += masterUserRepository.updateMasterUserPassword(SHA2.DEVELOPER.getPass(), SHA3.DEVELOPER.getPass());
 			count += masterUserRepository.updateMasterUserPassword(SHA2.USER.getPass(), SHA3.USER.getPass());
 		}
-		log.debug("Updated {} default passwords", count);
+		if (log.isDebugEnabled()) {
+			log.debug("Updated {} default passwords", count);
+		}		
 	}
 }

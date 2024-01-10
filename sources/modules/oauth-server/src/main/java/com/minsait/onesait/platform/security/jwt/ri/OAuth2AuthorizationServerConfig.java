@@ -212,7 +212,9 @@ public class OAuth2AuthorizationServerConfig extends AuthorizationServerConfigur
 										+ oAuthClientId);
 					}
 				}
-				log.debug("End preHandle process, time: {}", System.currentTimeMillis() - start);
+				if (log.isDebugEnabled()) {
+					log.debug("End preHandle process, time: {}", System.currentTimeMillis() - start);
+				}
 			}
 
 			@Override

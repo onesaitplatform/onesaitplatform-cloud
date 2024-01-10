@@ -244,7 +244,9 @@ public class DataflowServiceImpl implements DataflowService {
 		final HttpEntity<Object> request = new HttpEntity<>(body, headers);
 		try {
 			final URI uri = new URI(instance.getUrl() + url.substring(url.toLowerCase().indexOf("/rest")));
-			log.debug("[DATAFLOW] Execute method {} to path '{}'", httpMethod.toString(), uri.getPath());
+			if (log.isDebugEnabled()) {
+				log.debug("[DATAFLOW] Execute method {} to path '{}'", httpMethod.toString(), uri.getPath());
+			}
 			return restTemplate.exchange(uri, httpMethod, request, String.class);
 		} catch (final URISyntaxException e) {
 			log.error(e.getMessage());
@@ -359,7 +361,9 @@ public class DataflowServiceImpl implements DataflowService {
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
 
 		final HttpEntity<String> request = new HttpEntity<>(body, headers);
-		log.debug("Sending method {} Dataflow", httpMethod.toString());
+		if (log.isDebugEnabled()) {
+			log.debug("Sending method {} Dataflow", httpMethod.toString());
+		}
 
 		final ResponseEntity<byte[]> response;
 		try {
@@ -369,8 +373,9 @@ public class DataflowServiceImpl implements DataflowService {
 			log.error(e.getMessage());
 			throw new BadRequestException(e.getMessage());
 		}
-
-		log.debug("Execute method {} '{}' Dataflow", httpMethod.toString(), url);
+		if (log.isDebugEnabled()) {
+			log.debug("Execute method {} '{}' Dataflow", httpMethod.toString(), url);
+		}
 		final HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.set("Content-Type", response.getHeaders().getContentType().toString());
 
@@ -610,12 +615,12 @@ public class DataflowServiceImpl implements DataflowService {
 	}
 
 	@Override
-	public void removePipeline(final String pipelineId, final String userId) {
+	public void deleteHardPipeline(final String pipelineId, final String userId) {
 		deletePipeline(pipelineId, userId, true);
 	}
 
 	@Override
-	public void removeHardPipeline(final String pipelineId, final String userId) {
+	public void deletePipeline(final String pipelineId, final String userId) {
 		deletePipeline(pipelineId, userId, false);
 	}
 
@@ -1065,7 +1070,15 @@ public class DataflowServiceImpl implements DataflowService {
 				throw new NotFoundException("Pipeline not found");
 			} else {
 				checkUserIsOwner(userAccess.getPipeline(), user);
-				pipelineUserAccessRepository.deleteById(pipelineUserAccessId);
+				Pipeline pipeline = userAccess.getPipeline();
+				for (Iterator iterator = pipeline.getPipelineAccesses().iterator(); iterator.hasNext();) {
+					PipelineUserAccess userAccessAux = (PipelineUserAccess) iterator.next(); 
+					if(userAccessAux.getId().equals(pipelineUserAccessId)) {
+						pipeline.getPipelineAccesses().remove(userAccessAux);
+						break;
+					}	
+				}
+				pipelineRepository.save(pipeline);
 			}
 		} else {
 			throw new NotFoundException("User access not found");

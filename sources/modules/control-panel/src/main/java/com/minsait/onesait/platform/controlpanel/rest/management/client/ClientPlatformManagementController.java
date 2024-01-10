@@ -410,7 +410,9 @@ public class ClientPlatformManagementController {
 		try {
 			manageDBPersistenceServiceFacade.removeTable4Ontology(LOG_ONTOLOGY_PREFIX + identification);
 		} catch (final Exception e) {
-			log.debug("Sth went wrong while removing table 4 ontology", e);
+			if (log.isDebugEnabled()) {
+				log.debug("Sth went wrong while removing table 4 ontology: {}", e);
+			}			
 		}
 	}
 

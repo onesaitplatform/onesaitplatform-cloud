@@ -70,15 +70,15 @@ spring: ## General Config
           registration:
             onesaitplatform-code:
               provider: im-base
-              client-id: onesaitplatform
-              client-secret: onesaitplatform 
+              client-id: camunda
+              client-secret: camunda 
               authorization-grant-type: authorization_code
               redirect-uri: "{baseUrl}/login/oauth"
               scope: opeind
           provider:
             im-base:
-              authorization-uri: http://localhost:18000/controlpanel/oauth/authorize
-              token-uri: http://localhost:18000/controlpanel/oauth/token
+              authorization-uri: http://localhost:21000/oauth-server/oauth/authorize
+              token-uri: http://localhost:21000/oauth-server/oauth/token
               user-info-uri: http://localhost:21000/oauth-server/user
               
 camunda.datasource:
@@ -91,17 +91,20 @@ camunda.datasource:
       maximum-pool-size: 10
 camunda.bpm:
     authorization.enabled: true
-    
+    filter.create: All
+
+
 security:
   oauth2:
     client:
+      logoutUrl: http://localhost:21000/oauth-server/logout
       useCurrentUri: false
       preEstablishedRedirectUri: http://localhost:8085/${server.servlet.contextPath}/login/oauth
-      clientId: onesaitplatform
-      clientSecret: onesaitplatform
-      accessTokenUri: http://localhost:18000/controlpanel/oauth/token
-      userAuthorizationUri: http://localhost:18000/controlpanel/oauth/authorize
-      checkTokenEndpointUrl: http://localhost:18000/controlpanel/oauth/check_token
+      clientId: camunda
+      clientSecret: camunda
+      accessTokenUri: http://localhost:21000/oauth-server/oauth/token
+      userAuthorizationUri: http://localhost:21000/oauth-server/oauth/authorize
+      checkTokenEndpointUrl: http://localhost:21000/oauth-server/oauth/check_token
     resource:
       userInfoUri: http://localhost:21000/oauth-server/user 
 logging:

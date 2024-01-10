@@ -551,6 +551,21 @@ ed.showHideMoveToolBarButton = function () {
       }
       ed.dashboard.interactionHash = interactionService.getInteractionHashWithoutGadgetFilters();
       ed.dashboard.parameterHash = urlParamService.geturlParamHash();
+      ed.dashboard.pages.forEach(function (page) {
+        page.layers.forEach(function (layer) {
+          layer.gridboard.forEach(function (elem) {
+            if (elem.datasource && elem.datasource.transforms) {
+              delete elem.datasource.transforms
+            }
+            if (elem.tparams && elem.tparams.datasource && elem.tparams.datasource.transforms) {
+              delete elem.tparams.datasource.transforms
+            }
+            if (elem.params && elem.params.datasource && elem.params.datasource.transforms) {
+              delete elem.params.datasource.transforms
+            }
+          }) 
+        }) 
+      })
       httpService.saveDashboard(ed.id(), {"data":{"model":JSON.stringify(ed.dashboard),"id":"","identification":"a","customcss":"","customjs":"","jsoni18n":"","description":"a","public":ed.public}},message).then(
         function(d){
           if(d){
@@ -1277,7 +1292,7 @@ ed.showHideMoveToolBarButton = function () {
           if(typeof gadget.header =='undefined'){
             return gadget.id;
           }else{
-            return gadget.header.title.text + " (" + gadget.type + ")";
+            return gadget.header.title.text + " (" + (gadget.template ? gadget.template : gadget.type) + ")";
           }          
         }
       }

@@ -244,8 +244,10 @@ public class KafkaIntegrationService {
 			DeleteRecordsResult deletionResult = kafkaAdminClient.deleteRecords(recordsToDelete);
 			Map<TopicPartition, KafkaFuture<DeletedRecords>> lowWatermarks = deletionResult.lowWatermarks();
 			for (Map.Entry<TopicPartition, KafkaFuture<DeletedRecords>> entry : lowWatermarks.entrySet()) {
-				log.debug(entry.getKey().topic() + " " + entry.getKey().partition() + " "
-						+ entry.getValue().get().lowWatermark());
+				if (log.isDebugEnabled()) {
+					log.debug("Topic:{}, Partition:{}, lowerWatermark:{}", entry.getKey().topic(),
+						entry.getKey().partition(), entry.getValue().get().lowWatermark());
+				}
 			}
 		} catch (InterruptedException | ExecutionException e) {
 			log.error("Error while deleting data from Topic. Topic={}, Cause={}, Message={}", topic, e.getCause(),
@@ -411,7 +413,9 @@ public class KafkaIntegrationService {
 					.listOffsets(requestOffsets).all().get();
 			Map<TopicPartition, OffsetAndMetadata> resetOffsets = new HashMap<>();
 			for (Entry<TopicPartition, ListOffsetsResultInfo> entry : newOffsets.entrySet()) {
-				log.debug("Will reset topic-partition " + entry.getKey() + " to offset " + entry.getValue().offset());
+				if (log.isDebugEnabled()) {
+						log.debug("Will reset topic-partition {} to offset {}", entry.getKey(), entry.getValue().offset());
+				}
 				long offset = entry.getValue().offset() + 1;
 
 				resetOffsets.put(entry.getKey(), new OffsetAndMetadata(offset));
@@ -567,8 +571,8 @@ public class KafkaIntegrationService {
 			KafkaFuture<Void> resultFuture = kafkaAdminClient.deleteConsumerGroups(Collections.singleton(group)).all();
 			resultFuture.get();
 		} catch (Exception e) {
-			throw new KafkaIntegrationServiceException(e.getMessage(), e,
-					KafkaIntegrationServiceExceptionElement.GROUP, KafkaIntegrationServiceExceptionType.DELETE);
+			throw new KafkaIntegrationServiceException(e.getMessage(), e, KafkaIntegrationServiceExceptionElement.GROUP,
+					KafkaIntegrationServiceExceptionType.DELETE);
 		} finally {
 			kafkaAdminClient.close();
 		}

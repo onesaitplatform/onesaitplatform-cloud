@@ -90,7 +90,9 @@ public class IoTBrokerClientImpl implements IoTBrokerClient {
 
 			JsonNode response = this.restService.insertRest(iotbrokerUrl, instance, ontology,
 					this.sessionKeys.get(clientPlatform));
-			log.debug("Response from Rest Service: " + response.asText());
+			if (log.isDebugEnabled()) {
+				log.debug("Response from Rest Service: {}", response.asText());
+			}			
 
 			if (response.path("id").isMissingNode()
 					&& response.asText().equals(IoTBrokerClientImpl.UNAUTHORIZED_ONTOLOGY)) {
@@ -101,7 +103,9 @@ public class IoTBrokerClientImpl implements IoTBrokerClient {
 
 			if (this.deviceBlackList.contains(clientPlatform))
 				this.deviceBlackList.remove(clientPlatform);
-			log.debug("Device " + clientPlatformInstance);
+			if (log.isDebugEnabled()) {
+				log.debug("Device {}", clientPlatformInstance);
+			}			
 		} else {
 			this.connectDeviceRest(clientPlatform, clientPlatformInstance);
 			this.insertOntologyInstance(instance, ontology, user, clientPlatform, clientPlatformInstance);

@@ -88,7 +88,9 @@ public class AppWebUtils {
 		try {
 			return messageSource.getMessage(key, null, LocaleContextHolder.getLocale());
 		} catch (final Exception e) {
-			log.debug("Key:" + key + " not found. Returns:" + valueDefault);
+			if (log.isDebugEnabled()) {
+				log.debug("Key:{} not found. Returns:", key, valueDefault);
+			}			
 			return valueDefault;
 		}
 	}

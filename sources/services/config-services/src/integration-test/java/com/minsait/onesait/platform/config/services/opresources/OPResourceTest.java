@@ -84,7 +84,7 @@ public class OPResourceTest {
 		realm = appRepository.save(realm);
 		final OPResource resource = ((Set<OPResource>) resourceService.getResources("developer", "")).iterator().next();
 		final ProjectResourceAccess pra = new ProjectResourceAccess(null, ResourceAccessType.VIEW, resource, pdb,
-				realm.getAppRoles().iterator().next());
+				realm.getAppRoles().iterator().next(), false);
 		pdb.getProjectResourceAccesses().add(pra);
 		pdb = projectRepository.save(pdb);
 		Assert.assertTrue(!resourceService.hasAccess(user.getUserId(), resource.getId(), ResourceAccessType.MANAGE));

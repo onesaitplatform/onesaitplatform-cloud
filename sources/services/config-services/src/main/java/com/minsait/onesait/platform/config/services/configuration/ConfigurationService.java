@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import com.minsait.onesait.platform.config.components.AIConfiguration;
 import com.minsait.onesait.platform.config.components.BundleConfiguration;
 import com.minsait.onesait.platform.config.components.CaasConfiguration;
 import com.minsait.onesait.platform.config.components.GlobalConfiguration;
@@ -101,5 +102,7 @@ public interface ConfigurationService {
 	CaasConfiguration getCaasConfiguration(String id);
 
 	BundleConfiguration getBundleConfiguration();
+
+	AIConfiguration getAIConfiguration();
 
 }

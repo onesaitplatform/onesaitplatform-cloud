@@ -135,7 +135,9 @@ public class ConfigDBAuthenticationProvider implements AuthenticationProvider {
 				grantedAuthorities);
 		resetFailedAttemp(user);
 		publishSuccess(auth);
-		log.debug("End configDB authentication, time: {}", System.currentTimeMillis() - start);
+		if (log.isDebugEnabled()) {
+			log.debug("End configDB authentication, time: {}", System.currentTimeMillis() - start);
+		}		
 		return auth;
 	}
 

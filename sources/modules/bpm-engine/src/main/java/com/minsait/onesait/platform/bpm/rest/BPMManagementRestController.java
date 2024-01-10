@@ -39,6 +39,7 @@ public class BPMManagementRestController {
 	@Autowired
 	private BPMUserManagementService userManagementService;
 
+	@Deprecated
 	@PostMapping("/authorizations/authorize/{userId}")
 	public ResponseEntity<String> createAuth(@PathVariable("userId") String userId, Principal principal) {
 		try {

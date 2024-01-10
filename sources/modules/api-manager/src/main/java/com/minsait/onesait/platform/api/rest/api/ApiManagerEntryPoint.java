@@ -141,22 +141,22 @@ public class ApiManagerEntryPoint {
 				try {
 
 					// for all elements put @type and delete _id and context
-					JSONObject context = new JSONObject(onto.getJsonLdContext().toString());
-					JSONArray typeArray = context.getJSONArray("@type");
+					final JSONObject context = new JSONObject(onto.getJsonLdContext().toString());
+					final JSONArray typeArray = context.getJSONArray("@type");
 					// context.remove("@type");
 
-					JSONArray originalArray = new JSONArray(output.toString());
+					final JSONArray originalArray = new JSONArray(output.toString());
 					for (int i = 0; i < originalArray.length(); i++) {
-						JSONObject explrObject = originalArray.getJSONObject(i);
+						final JSONObject explrObject = originalArray.getJSONObject(i);
 						if (explrObject.has("_id")) {
 							explrObject.remove("_id");
 						}
 						if (explrObject.has("contextData")) {
 							explrObject.remove("contextData");
 						}
-						String key = (String) explrObject.keys().next();
+						final String key = (String) explrObject.keys().next();
 						if (explrObject.has(key)) {
-							JSONObject parameterObj = explrObject.getJSONObject(key);
+							final JSONObject parameterObj = explrObject.getJSONObject(key);
 							parameterObj.put("@type", typeArray.get(0).toString());
 						}
 
@@ -167,7 +167,7 @@ public class ApiManagerEntryPoint {
 						 * elemRoot);
 						 */
 
-						JSONObject contexObj = new JSONObject(onto.getJsonLdContext());
+						final JSONObject contexObj = new JSONObject(onto.getJsonLdContext());
 						// contexObj.put("@vocab", "http://schema.org/");
 						// JSONObject elemRoot = new JSONObject();
 						// elemRoot.put("@id", typeArray.get(0).toString());
@@ -176,23 +176,23 @@ public class ApiManagerEntryPoint {
 						explrObject.put("@context", contexObj.get("@context"));
 					}
 
-					Document documentJson = JsonDocument
+					final Document documentJson = JsonDocument
 							.of(new ByteArrayInputStream(originalArray.toString().getBytes()));
-					Document documentContext = JsonDocument
+					final Document documentContext = JsonDocument
 							.of(new ByteArrayInputStream(onto.getJsonLdContext().getBytes()));
 
-					JsonLdOptions opt = new JsonLdOptions();
+					final JsonLdOptions opt = new JsonLdOptions();
 					// opt.setUseNativeTypes(true);
 					// EXPANDED MODE
 					// JsonArray jsonArray =
 					// JsonLd.expand(documentJson).context(documentContext).options(opt).get();
 					// COMPACT MODE
-					JsonObject jsonArray = JsonLd.compact(documentJson, documentContext).get();
+					final JsonObject jsonArray = JsonLd.compact(documentJson, documentContext).get();
 
 					output = jsonArray;
-				} catch (JsonLdError ex) {
+				} catch (final JsonLdError ex) {
 					return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.INTERNAL_SERVER_ERROR);
-				} catch (JSONException ex) {
+				} catch (final JSONException ex) {
 					return new ResponseEntity<>(ex.getMessage(), headers, HttpStatus.INTERNAL_SERVER_ERROR);
 				}
 			} else if (!onto.isSupportsJsonLd() && contentType.equals("application/ld+json")) {
@@ -214,10 +214,10 @@ public class ApiManagerEntryPoint {
 				mData.get(Constants.HTTP_RESPONSE_HEADERS) != null
 						? (HttpHeaders) mData.get(Constants.HTTP_RESPONSE_HEADERS)
 						: null);
-
-		if (contentType == null && !ex.isEmpty()) {
-			return new ResponseEntity<>(ex, headers, HttpStatus.BAD_REQUEST);
-		}
+		// TO-DO revisar ELISA
+//		if (contentType == null && !ex.isEmpty()) {
+//			return new ResponseEntity<>(ex, headers, HttpStatus.BAD_REQUEST);
+//		}
 		if (mData.get(Constants.HTTP_RESPONSE_CODE) != null) {
 			return new ResponseEntity<>((String) mData.get(Constants.REASON), headers,
 					(HttpStatus) mData.get(Constants.HTTP_RESPONSE_CODE));

@@ -39,7 +39,7 @@
           vm.unsubscribeHandler = $scope.$on(vm.id, vm.eventLProcessor);          
           //find gadget with associated template and configure values
           if(vm.gadgetid){
-            console.log('es un gadget template', vm.gadgetid);            
+            console.log('Template Gadget: ', vm.gadgetid);            
             httpService.getGadgetConfigById(
               vm.gadgetid
             ).then( 
@@ -73,10 +73,13 @@
               }
             }
             else{
-              loadDatasource();
               vm.compileContent();
+              loadDatasource();
             }
           }
+          window.addEventListener('downloadData_'+vm.id, function (a) {
+            vm.downloadData()
+          }, false);
         }
 
         function loadTemplateData(templatedata) {
@@ -98,8 +101,8 @@
           vm.tparams = utilsService.fillWithDefaultFormData(vm.tparams, vm.gform?JSON.parse(JSON.stringify(vm.gform)).gform:null);
           vm.livecontent=utilsService.parseProperties(templatedata.template,vm.tparams);         
           vm.livecontentcode=utilsService.parseProperties(templatedata.templateJS,vm.tparams,true);
-          loadDatasource();
           vm.compileContent();
+          loadDatasource();          
 
           $scope.$on("$resize", vm.resizeEvent);
           vm.init = true;
@@ -113,7 +116,7 @@
 
 
         function loadDatasource() {
-          if(typeof vm.datasource !== 'undefined' && vm.datasource.length>0){
+          if(typeof vm.datasource !== 'undefined' && vm.datasource && vm.datasource.length>0){
             httpService.getDatasourceById(vm.datasource.id).then(
               function(datasource){            
                 vm.datasource.refresh = datasource.data.refresh;
@@ -206,7 +209,11 @@
         vm.$onChanges = function (changes, c, d, e) {
           
           if ("datasource" in changes && changes["datasource"].currentValue && vm.init) {
-            refreshSubscriptionDatasource(changes.datasource.currentValue, changes.datasource.previousValue);
+            if (changes.datasource.previousValue) {
+              refreshSubscriptionDatasource(changes.datasource.currentValue, changes.datasource.previousValue);
+            } else {
+              refreshSubscriptionDatasource(changes.datasource.currentValue);
+            }
           }
           if (
               (changes === "FORCE_COMPILE") ||
@@ -315,8 +322,14 @@
         vm.get = datasourceSolverService.get;
         vm.getOne = datasourceSolverService.getOne;
         vm.from = datasourceSolverService.from;
-
-
+        vm.buildDSTransform = function () {
+          var buildDSTransform = datasourceSolverService.from();
+          buildDSTransform.execute = null
+          buildDSTransform.apply = function() {
+            vm.datasource.transforms = this.buildparams();
+          }
+          return buildDSTransform;
+        }
 
         //CRUD services
         vm.getEntities = httpService.getEntities;
@@ -338,6 +351,8 @@
         vm.validationDownloadEntity=httpService.validationDownloadEntity ; 
         vm.validationDownloadEntitySelected=httpService.validationDownloadEntitySelected ; 
 
+        vm.utils = utilsService;
+
 
         vm.$onDestroy = function () {
           destroy();
@@ -357,7 +372,60 @@
         }
 
         vm.addSourceFile = function(contentcode){
-          return contentcode + "\n//# sourceURL=" + $window.location.protocol + "//" + $window.location.host + window.location.pathname + (window.location.pathname.endsWith("/")?"":"/") +  "templates/" + vm.id + ".js";
+          // we're in template edition so we add autocomplete context in monaco to user
+          if (vm.id == "gapp" && !vm.template && vm.tparams && window.parent && window.parent.monaco) {
+            var monacoJSDefaults = window.parent.monaco.languages.typescript.javascriptDefaults
+
+            var autocompleteObj = {
+              id: "",
+              template: "",
+              type: "",
+              datasource: {},
+              filters: {},
+              gadgetid: "",
+              from: vm.from,
+              get: vm.get,
+              getOne: vm.getOne,
+              getDataFromDataSource: vm.getDataFromDataSource,
+              sendFilter: vm.sendFilter,
+              sendFilters: vm.sendFilters,
+              sendValue: vm.sendValue,
+              receiveValue: vm.receiveValue,
+              tparams: vm.tparams,
+              insertHttp: vm.insertHttp,
+              buildDSTransform: vm.from,
+              status: vm.status,
+              utils: {
+                forceRender: vm.utils.forceRender,
+                findValues: vm.utils.findValues,
+                cloneJSON: vm.utils.cloneJSON,
+                deepMerge: vm.utils.deepMerge,
+                flattenObj: vm.utils.flattenObj,
+                isEmptyJson: vm.utils.isEmptyJson,
+                sort_unique: vm.utils.sort_unique,
+                sort_jsonarray: vm.utils.sort_jsonarray,
+                datastatusToFilter: vm.utils.datastatusToFilter,
+                urlParamLang: vm.utils.urlParamLang
+
+              },
+              datastatus: {}
+            }
+
+            var code = 'var vm = ' + utilsService.stringifyWithFn(autocompleteObj,"$startfnInternals$(",")$endfnInternals$").replaceAll("\"\$startfnInternals\$\(","").replaceAll("\)\$endfnInternals\$\"","").replaceAll("\\\"","\"").replaceAll("\\n","\n");
+            var libUri = 'js:filename/context.js';
+            if (libUri in monacoJSDefaults._extraLibs) {
+              delete monacoJSDefaults._extraLibs[libUri]
+            }
+            monacoJSDefaults.addExtraLib(code, libUri);
+          }
+          // we add sourceURL in order to debug code
+          var filename;
+          if (vm.template) {
+            filename = vm.template+"(" + vm.id + ")";
+          } else {
+            filename = vm.id;
+          }
+          return contentcode + "\n//# sourceURL=" + $window.location.protocol + "//" + $window.location.host + window.location.pathname + (window.location.pathname.endsWith("/")?"":"/") +  "templates/" + filename + ".js";
         }
     
         function refreshSubscriptionDatasource(newDatasource, oldDatasource) {     
@@ -386,25 +454,46 @@
               }
               //Add initial datalink
               filter = interactionService.generateFiltersForGadgetIdWithDatastatus(vm.id, vm.addDatastatus, filter);
-             datasourceSolverService.registerSingleDatasourceAndFirstShot( //Raw datasource no group, filter or projections
-              {
-                type: newDatasource.type,
-                name: newDatasource.name,
-                refresh: newDatasource.refresh,
-                triggers: [{
-                  params: {
-                    filter: filter,
-                    group: [],
-                    project: []
-                  },
-                  emitTo: vm.id
-                }]
-              }, firtshot , function(){ datasourceSolverService.refreshIntervalData(vm.id);})});
+              if (newDatasource.transforms && newDatasource.transforms !== {}) {
+                newDatasource.transforms.filter = datasourceSolverService.concatAndRemoveDuplicatedFieldFilter(filter, newDatasource.transforms.filter);
+              } else {
+                newDatasource.transforms = {
+                  filter: filter,
+                  group: [],
+                  project: []
+                }
+              }
+              datasourceSolverService.registerSingleDatasourceAndFirstShot( //Raw datasource no group, filter or projections
+                {
+                  type: newDatasource.type,
+                  name: newDatasource.name,
+                  refresh: newDatasource.refresh,
+                  triggers: [{
+                    params: newDatasource.transforms,
+                    emitTo: vm.id
+                  }]
+                }, firtshot , function(){ datasourceSolverService.refreshIntervalData(vm.id);})});
           }
         };
     
     
-    
+        
+
+        vm.downloadData = function () {
+          var dsfn = [];
+          if ($scope.ds && $scope.ds.length > 0) {
+            dsfn = $scope.ds.map(
+              function (d) {
+                return utilsService.flattenObj(d)
+              }
+            )
+          }
+          var data = XLSX.utils.json_to_sheet(dsfn)
+          var workbook = XLSX.utils.book_new()
+          XLSX.utils.book_append_sheet(workbook, data, "data")
+          XLSX.writeFile(workbook, 'data.xlsx')
+        }
+
         vm.eventLProcessor = function(event, dataEvent) {
           if (dataEvent.type === "data" && dataEvent.data.length === 0) {
             vm.type = "nodata";

@@ -32,9 +32,9 @@ public class HazelcastCacheManagerOP extends HazelcastCacheManager {
 	private static final String TENANT_LAZY_REPOSITORY = "TenantLazyRepository";
 	private static final String MASTER_USER_REPOSITORY = "MasterUserRepository";
 	private static final String MASTER_USER_REPOSITORY_LAZY = "MasterUserRepositoryLazy";
-	private static final String OAUTH_ACCESS_TOKEN_REPOSITORY= "OauthAccessTokenRepository";
-	private static final String OAUTH_REFRESH_TOKEN_REPOSITORY= "OauthRefreshTokenRepository";
-
+	private static final String OAUTH_ACCESS_TOKEN_REPOSITORY = "OauthAccessTokenRepository";
+	private static final String OAUTH_REFRESH_TOKEN_REPOSITORY = "OauthRefreshTokenRepository";
+	private static final String CACHE_RESET_PWD = "cacheResetPasswordUsers";
 
 	private static final Set<String> globalCaches = new HashSet<>();
 	static {
@@ -47,7 +47,7 @@ public class HazelcastCacheManagerOP extends HazelcastCacheManager {
 		globalCaches.add(MASTER_USER_REPOSITORY_LAZY);
 		globalCaches.add(OAUTH_ACCESS_TOKEN_REPOSITORY);
 		globalCaches.add(OAUTH_REFRESH_TOKEN_REPOSITORY);
-
+		globalCaches.add(CACHE_RESET_PWD);
 
 	}
 

@@ -181,6 +181,11 @@
 									<span th:if="${userOntologyAccess} == 'ALL'" th:text="#{ontology.dataaccess}" >Data Access Settings </span>
 								</a>
 							</div>
+								<div id="tab-index" class="option"  th:if="${ontology.id != null} AND ${ontology.rtdbDatasource.name() == 'MONGO'}">
+								<a href="#tab_index_configuration" data-toggle="tab" th:classappend="${ontology?.id} == null ? disabled : ''" aria-expanded="true">
+									<span th:text="#{ontology.index.config}"   >Index Congfiguration </span>
+								</a>
+							</div>
 						</div>
 						
 						<div class="tab-content flex-content-right">
@@ -332,7 +337,7 @@
 										<input id="allowsCreateNotificationTopic" class="margin-right-10" name="allowsCreateNotificationTopic" type="checkbox" checked="checked" th:field="*{allowsCreateNotificationTopic}" disabled="disabled" />
 										<label class="control-label margin-right-5" th:text="#{ontology.allowsCreateNotificationTopic}">Kafka Notification</label>
 									</div>
-									<div class="col-md-12 col-xs-12">
+									<div th:if="${ontology.rtdbDatasource.name() != 'PRESTO'} AND ${ontologyTSDTO.rtdbDatasource != 'TIMESCALE'}" class="col-md-12 col-xs-12">
 										<input id="allowsCreateMqttTopic" class="margin-right-10" name="allowsCreateMqttTopic" type="checkbox" checked="checked" th:field="*{allowsCreateMqttTopic}" disabled="disabled" />
 										<label class="control-label margin-right-5" th:text="#{ontology.allowsCreateMqttTopic}">MQTT topic</label>
 									</div>
@@ -753,7 +758,54 @@
 										</div>
 									</div>
 								</div>								
-							</div>	<!-- END TAB DATA  -->	
+							</div>
+							<!-- END TAB DATA  -->
+							<div class="tab-pane " id="tab_index_configuration">
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{ontology.indexes}" > Indexes </span>
+									</div>
+								</div>
+								<!-- ONTOLOGY DATA ACCESS -->
+								<div class="row main pageCreateHeader no-margin-left padding-left-10 padding-right-10">
+									
+									<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{ontology.listIndex}">Index List</label>
+									<i class="la popovers" style="color: #1168A6;" data-trigger="hover" data-placement="top" data-container="body"></i>
+								</div>
+								<div class="row main borderPanel no-margin-left" style="margin-top: -3px; min-height: calc(40vh); max-height: calc(42vh); overflow:auto">
+									<div>
+									
+									<table id="listIndex" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
+											<thead>
+												<tr class="cabecera-tabla">
+													<th id="name" class="titulo-columnas" th:text="#{gen.index.name}" >Name Index</th>
+													<th id="name" class="titulo-columnas" th:text="#{ontology.index.property}" >Property</th>
+													<th class="titulo-columnas "> TTL </th>
+													<th id="name" class="titulo-columnas" >Sparse</th>
+													<th id="name" class="titulo-columnas" >Unique</th>
+													<th id="name" class="titulo-columnas" >background</th>
+													<th id="name" class="titulo-columnas" th:text="#{ontology.index.ordination}" >Ordination</th>
+															
+												</tr>
+											</thead>
+											<tbody th:remove="all-but-first">
+												<tr th:each="index : ${listIndex}">
+													<td th:text="${index.property}"  style="padding: 4px;" ></td>
+													<td th:text="${index.key}"  style="padding: 4px;" ></td>
+													<td  th:text="${index.ttl}"  ></td>
+													<td><input  th:checked="${index.sparse}" type="checkbox" class="checkbox" data-row="1" name="row1" disabled></td>
+													<td><input  th:checked="${index.unique}" type="checkbox" class="checkbox" data-row="1" name="row1" disabled></td>
+													<td><input  th:checked="${index.background}" type="checkbox" class="checkbox" data-row="1" name="row1" disabled></td>
+													<td  th:text="${index.ordenation}"></td>
+												</tr>
+											</tbody>
+									</table>
+									</div>
+								</div>
+							</div>
+							
+							
+								<!-- END TAB INDEX  -->	
 							<div class="tab-pane" id="tab_table_schema">
 								<div class="row main">
 									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
@@ -971,7 +1023,7 @@
 		// main array iteration
 		for (var i=0; i <= minItems-1; i++) {
 			// object item
-			if (ontology.items[i].type.toLowerCase() == "object"){
+			if (ontology.items[i] && ontology.items[i].type.toLowerCase() == "object"){
 				instance = instance + generateObject(ontology.items[i], "", parent);
                 if (i < minItems -1){
                     instance = instance + ",";
@@ -980,13 +1032,15 @@
 			else{
 			// non object item
 				var valor = "";
-                if (ontology.items[i].enum != null){
+                if (ontology.items[i] && ontology.items[i].enum != null){
                     valor = ontology.items[i].enum;
                 }
-                if(ontology.items[i].type!="array")
+                if( ontology.items[i] &&  ontology.items[i].type!="array"){
                 	instance = instance + generateBasicType(ontology.items[i].type, "", "", valor);
-                else
-                	instance = instance + generateArray(ontology.items[i], "", "");
+                } else if(ontology.items[i]  ){
+					instance = instance + generateArray(ontology.items[i], "", "");
+				}
+                
                 if (i < minItems -1){
                     instance = instance + ",";
                 }

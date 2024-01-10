@@ -115,7 +115,9 @@ public class SparkAuth implements javax.servlet.Filter {
 		Enumeration<String> e = cfg.getInitParameterNames();
 		while (e.hasMoreElements()) {
 			String param = e.nextElement();
-			log.debug("lectura inicical param: " + param + " value " + cfg.getInitParameter(param));
+			if (log.isDebugEnabled()) {
+				log.debug("lectura inicical param: " + param + " value " + cfg.getInitParameter(param));
+			}			
 			if (param.equals("checkTokenUrl")) {
 				oauthValidatorUrl = cfg.getInitParameter(param);
 			}

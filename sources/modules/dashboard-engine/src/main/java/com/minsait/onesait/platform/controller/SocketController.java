@@ -36,10 +36,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.minsait.onesait.platform.business.services.datasources.dto.InputMessage;
+import com.minsait.onesait.platform.business.services.datasources.dto.OutputMessage;
+import com.minsait.onesait.platform.business.services.datasources.exception.DashboardEngineException;
 import com.minsait.onesait.platform.config.model.security.UserPrincipal;
-import com.minsait.onesait.platform.dto.socket.InputMessage;
-import com.minsait.onesait.platform.dto.socket.OutputMessage;
-import com.minsait.onesait.platform.exception.DashboardEngineException;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.service.SolverService;
 
@@ -62,15 +62,14 @@ public class SocketController {
 			InputMessage msg) {
 		simpMessagingTemplate.convertAndSend("/dsengine/broker/" + id, executeInputMsg(msg));
 	}
-	
-	@RequestMapping(path = "/dsengine/rest/solver/{datasource}",
-	        method = RequestMethod.POST,
-	        produces = "application/json")
-	    public @ResponseBody ResponseEntity<OutputMessage> restResponse(@PathParam("datasource") String datasource, @Valid @RequestBody final InputMessage msg) {
+
+	@RequestMapping(path = "/dsengine/rest/solver/{datasource}", method = RequestMethod.POST, produces = "application/json")
+	public @ResponseBody ResponseEntity<OutputMessage> restResponse(@PathParam("datasource") String datasource,
+			@Valid @RequestBody final InputMessage msg) {
 		OutputMessage out = executeInputMsg(msg);
 		return new ResponseEntity<>(out, HttpStatus.valueOf(out.getCode()));
 	}
-	
+
 	private OutputMessage executeInputMsg(InputMessage msg) {
 		final long startTime = System.currentTimeMillis();
 
@@ -108,8 +107,8 @@ public class SocketController {
 				+ msg.getOffset() + ", limit: " + msg.getLimit() + " executed in "
 				+ (System.currentTimeMillis() - startTime) / 1000f + "(s)");
 
-		return new OutputMessage(result,
-				new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()), startTime, error, code);
+		return new OutputMessage(result, new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date()),
+				startTime, error, code);
 	}
 
 	private void setMultitenantContext() {

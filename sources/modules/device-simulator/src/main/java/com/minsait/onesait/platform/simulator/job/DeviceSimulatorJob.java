@@ -73,7 +73,9 @@ public class DeviceSimulatorJob {
 		}
 		try {
 			proxyJson(user, json, context);
-			log.debug("Simulated instance for user: {}", user);
+			if (log.isDebugEnabled()) {
+				log.debug("Simulated instance for user: {}", user);
+			}			
 		} catch (HttpClientErrorException | HttpServerErrorException e) {
 			log.error("Rest error: code {}, {}", e.getStatusCode(), e.getResponseBodyAsString());
 		} catch (final Exception e) {
@@ -118,7 +120,9 @@ public class DeviceSimulatorJob {
 				int index = 0;
 				try {
 					index = context.getJobDetail().getJobDataMap().getInt(INDEX_STR);
-					log.debug("Inserting item {} of json array, ontology {}", index, ontology);
+					if (log.isDebugEnabled()) {
+						log.debug("Inserting item {} of json array, ontology {}", index, ontology);
+					}					
 				} catch (final Exception e) {
 					log.error("Not index yet, setting index to 0");
 				}
@@ -156,7 +160,9 @@ public class DeviceSimulatorJob {
 
 		persistenceService.insertOntologyInstance(fieldAndValues.toString(), ontology, user, clientPlatform,
 				clientPlatformInstance);
-		log.debug("Inserted in ontology " + ontology + " data:" + fieldAndValues.toString());
+		if (log.isDebugEnabled()) {
+			log.debug("Inserted in ontology {} data:", ontology, fieldAndValues.toString());
+		}		
 		return fieldAndValues;
 	}
 

@@ -48,7 +48,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("router")
 @Slf4j
 public class RouterControllerImpl
-implements RouterService, RouterSubscriptionService, AdviceService, RouterDigitalTwinService {
+		implements RouterService, RouterSubscriptionService, AdviceService, RouterDigitalTwinService {
 
 	@Autowired
 	@Qualifier("routerServiceImpl")
@@ -125,8 +125,10 @@ implements RouterService, RouterSubscriptionService, AdviceService, RouterDigita
 
 	public OperationResultModel query(@RequestBody NotificationModel model) {
 		final long dStart = System.currentTimeMillis();
-		log.debug("Query: {} Ontology: {} Type {}", model.getOperationModel().getBody(),
+		if (log.isDebugEnabled()) {
+			log.debug("Query: {} Ontology: {} Type {}", model.getOperationModel().getBody(),
 				model.getOperationModel().getOntologyName(), model.getOperationModel().getQueryType());
+		}		
 		try {
 			return routerService.query(model);
 		} catch (final Exception e) {
@@ -287,7 +289,7 @@ implements RouterService, RouterSubscriptionService, AdviceService, RouterDigita
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Start Transaction operation in: " + (dEnd - dStart));
+			log.info("Processed Start Transaction operation in: {}", (dEnd - dStart));
 		}
 	}
 
@@ -305,7 +307,7 @@ implements RouterService, RouterSubscriptionService, AdviceService, RouterDigita
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Commmit Transaction operation in: " + (dEnd - dStart));
+			log.info("Processed Commmit Transaction operation in: {}", (dEnd - dStart));
 		}
 	}
 
@@ -323,7 +325,7 @@ implements RouterService, RouterSubscriptionService, AdviceService, RouterDigita
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Rollback Transaction operation in: " + (dEnd - dStart));
+			log.info("Processed Rollback Transaction operation in: {}", (dEnd - dStart));
 		}
 	}
 

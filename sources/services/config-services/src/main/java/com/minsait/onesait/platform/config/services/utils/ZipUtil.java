@@ -30,37 +30,36 @@ import lombok.extern.slf4j.Slf4j;
 public class ZipUtil {
 
 	public void zipDirectory(File dir, File zipFile) throws IOException {
-    	
-    	log.info("zip folder " + dir.getAbsolutePath() + " into zipfile " + zipFile.getAbsolutePath());
-        FileOutputStream fout = new FileOutputStream(zipFile);
-        ZipOutputStream zout = new ZipOutputStream(fout);
-        zipSubDirectory("", dir, zout);
-        zout.close();
-        fout.close();
-    }
 
-    private void zipSubDirectory(String basePath, File dir, ZipOutputStream zout) throws IOException {
-        byte[] buffer = new byte[4096];
-        File[] files = dir.listFiles();
-        String sep = "/";
-        for (File file : files) {
-            if (file.isDirectory()) {
-                String path = basePath + file.getName() + sep;
-                zout.putNextEntry(new ZipEntry(path));
-                zipSubDirectory(path, file, zout);
-                zout.closeEntry();
-            } else {
-            	try (FileInputStream fin = new FileInputStream(file))
-            	{
-                    zout.putNextEntry(new ZipEntry(basePath + file.getName()));
-                    int length;
-                    while ((length = fin.read(buffer)) > 0) {
-                    	zout.write(buffer, 0, length);
-	                }
-                    zout.closeEntry(); 
-            	} 
-            }
-        }
-    }
+		log.info("zip folder {} into zipfile {}", dir.getAbsolutePath(), zipFile.getAbsolutePath());
+		FileOutputStream fout = new FileOutputStream(zipFile);
+		ZipOutputStream zout = new ZipOutputStream(fout);
+		zipSubDirectory("", dir, zout);
+		zout.close();
+		fout.close();
+	}
+
+	private void zipSubDirectory(String basePath, File dir, ZipOutputStream zout) throws IOException {
+		byte[] buffer = new byte[4096];
+		File[] files = dir.listFiles();
+		String sep = "/";
+		for (File file : files) {
+			if (file.isDirectory()) {
+				String path = basePath + file.getName() + sep;
+				zout.putNextEntry(new ZipEntry(path));
+				zipSubDirectory(path, file, zout);
+				zout.closeEntry();
+			} else {
+				try (FileInputStream fin = new FileInputStream(file)) {
+					zout.putNextEntry(new ZipEntry(basePath + file.getName()));
+					int length;
+					while ((length = fin.read(buffer)) > 0) {
+						zout.write(buffer, 0, length);
+					}
+					zout.closeEntry();
+				}
+			}
+		}
+	}
 
 }

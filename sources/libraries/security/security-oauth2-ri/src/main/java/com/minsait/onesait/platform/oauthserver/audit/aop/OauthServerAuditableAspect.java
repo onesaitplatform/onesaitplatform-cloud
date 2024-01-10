@@ -216,7 +216,9 @@ public class OauthServerAuditableAspect extends BaseAspect {
 	public void auditCheckTokenEndpointException(Throwable exception, String token) {
 		log.error("Exception throwed in CheckTokenEndpoint.checkToken: {}, class: {}", exception.getMessage(),
 				exception.getClass().getName());
-		log.debug("Token was {}", token);
+		if (log.isDebugEnabled()) {
+			log.debug("Token was {}", token);
+		}		
 		eventProducer
 		.publish(auditProcessor.genetateErrorEvent(SYS_ADMIN, OAUTHSERVER_ERROR + " " + CHECK_MESSAGE_ID,
 				exception.getMessage(), OperationType.OAUTH_TOKEN_CHECK, exception.getMessage()));

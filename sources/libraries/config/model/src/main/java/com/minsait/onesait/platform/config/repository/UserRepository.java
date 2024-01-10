@@ -109,11 +109,11 @@ public interface UserRepository extends JpaRepository<User, String> {
 	@Query("SELECT o FROM User AS o WHERE o.role !='ROLE_ADMINISTRATOR'")
 	List<User> findUsersNoAdmin();
 
-	@Query("SELECT o FROM User AS o WHERE (o.userId LIKE %:userId% OR o.fullName LIKE %:fullName% OR o.email LIKE %:email% OR o.role.name =:role)")
+	@Query("SELECT o FROM User AS o WHERE (o.userId LIKE :userId OR o.fullName LIKE :fullName OR o.email LIKE :email OR o.role.name LIKE :role)")
 	List<User> findByUserIdOrFullNameOrEmailOrRoleType(@Param("userId") String userId,
 			@Param("fullName") String fullName, @Param("email") String email, @Param("role") String role);
 
-	@Query("SELECT o FROM User AS o WHERE (o.userId LIKE %:userId% OR o.fullName LIKE %:fullName% OR o.email LIKE %:email% OR o.role.name =:role OR o.active=:active)")
+	@Query("SELECT o FROM User AS o WHERE (o.userId LIKE :userId OR o.fullName LIKE :fullName OR o.email LIKE :email OR o.role.name LIKE :role OR o.active=:active)")
 	List<User> findByUserIdOrFullNameOrEmailOrRoleTypeOrActive(@Param("userId") String userId,
 			@Param("fullName") String fullName, @Param("email") String email, @Param("role") String role,
 			@Param("active") boolean active);

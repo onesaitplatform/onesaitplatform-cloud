@@ -15,13 +15,23 @@
 package com.minsait.onesait.platform.business.services.ontology;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,6 +47,7 @@ import com.minsait.onesait.platform.commons.metrics.MetricsManager;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbCleanLapse;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
+import com.minsait.onesait.platform.config.model.Ontology.RtdbToHdbStorage;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
@@ -51,12 +62,14 @@ import com.minsait.onesait.platform.config.services.ontologymqtttopic.OntologyMq
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.persistence.cosmosdb.CosmosDBBasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.cosmosdb.CosmosDBManageDBRepository;
+import com.minsait.onesait.platform.persistence.external.generator.helper.SQLHelper;
 import com.minsait.onesait.platform.persistence.external.virtual.VirtualOntologyOpsDBRepository;
 import com.minsait.onesait.platform.persistence.historical.minio.HistoricalMinioException;
 import com.minsait.onesait.platform.persistence.historical.minio.HistoricalMinioService;
 import com.minsait.onesait.platform.persistence.nebula.model.NebulaSpace;
 import com.minsait.onesait.platform.persistence.presto.PrestoManageDBRepository;
 import com.minsait.onesait.platform.persistence.presto.PrestoOntologyBasicOpsDBRepository;
+import com.minsait.onesait.platform.persistence.services.BasicOpsPersistenceServiceFacade;
 import com.minsait.onesait.platform.persistence.services.util.OntologyLogicService;
 import com.minsait.onesait.platform.persistence.services.util.OntologyLogicServiceException;
 
@@ -66,6 +79,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 
+	@Autowired
+	private OntologyService ontologyConfigService;
+	
 	@Autowired
 	private OntologyService ontologyService;
 
@@ -107,6 +123,9 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 
 	@Autowired
 	private HistoricalMinioService historicalMinioService;
+	
+	@Autowired
+	private BasicOpsPersistenceServiceFacade basicOpsRepository;
 
 	@Autowired
 	private NebulaGraphBusinessService nebulaGraphBusinessService;
@@ -318,6 +337,16 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 	}
 
 	@Override
+	public List<Map<String, Object>> getTableInformationFromDatasource(String datasource, String database, String schema) {
+		return virtualRepo.getTableInformation(datasource, database, schema);
+	}
+
+	@Override
+	public List<Map<String, Object>> getTablePKInformation(String datasource, String database, String schema) {
+		return virtualRepo.getTablePKInformation(datasource, database, schema);
+	}
+	
+	@Override
 	public List<String> getTablesFromDatasource(String datasource, String database, String schema) {
 		if (datasource.equals(VirtualDatasourceType.PRESTO.toString())) {
 			return prestoDBBasicOpsDBRepository.getTables(database, schema);
@@ -520,5 +549,78 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 		}
 		entityDeleteionService.deleteOntology(id, userId, false);
 	}
+	
+	@Override
+	public JSONArray ontologyBulkGeneration (HttpServletRequest request, String userId) {
+		
+		JSONArray failedOntologiesArray = new JSONArray();
+		
+		String datasourceId = request.getParameter("datasourceId");
+		String ontologies = request.getParameter("ontolgiesObject");
+		String database = request.getParameter("databaseObject");
+		String schema = request.getParameter("schemaObject");
+		JSONArray ontologiesArray = new JSONArray(request.getParameter("ontolgiesObject"));
+		
+		String authorization = request.getParameter("authorizationsObject");
+		JSONArray authorizationsArray = new JSONArray(request.getParameter("authorizationsObject"));
+		
+		for (int i = 0; i < ontologiesArray.length(); i++) {
+			JSONObject failedOntologies = new JSONObject();
+			Ontology ontology = new Ontology();
+			JSONObject ontologyObject = ontologiesArray.getJSONObject(i);
+			JSONObject ontologySchema = ontologyObject.getJSONObject("schema");
+			
+			ontology.setIdentification(ontologyObject.getString("identification"));
+			ontology.setXmlDiagram(null);
+			ontology.setOntologyClass(null);
+			ontology.setUser(userService.getUser(userId));
+			ontology.setJsonSchema(ontologySchema.toString());
+			ontology.setActive(true);
+			ontology.setContextDataEnabled(false);
+			ontology.setRtdbClean(false);
+			ontology.setRtdbCleanLapse(null);
+			ontology.setRtdbToHdb(false);
+			ontology.setRtdbToHdbStorage(RtdbToHdbStorage.MONGO_GRIDFS);
+			ontology.setDescription(ontologySchema.getString("description"));
+			ontology.setMetainf("Meta-Inf");
+			ontology.setOntologyKPI(null);
+			ontology.setOntologyTimeSeries(null);
+			ontology.setRtdbDatasource(RtdbDatasource.VIRTUAL);
+			ontology.setAllowsCreateMqttTopic(false);
+			ontology.setPartitionKey(null);
+			
+			OntologyConfiguration ontologyConfiguration = new OntologyConfiguration();
+			ontologyConfiguration.setDatasource(datasourceId);		
+			ontologyConfiguration.setDatasourceTableName(ontologyObject.getString("tableName"));
+			ontologyConfiguration.setDatasourceDatabase(database);
+			ontologyConfiguration.setDatasourceSchema(schema);
+			ontologyConfiguration.setObjectId(ontologyObject.getString("associatedId"));
+			try {
+				ontologyConfigService.createOntology(ontology, ontologyConfiguration);
+			
+				for (int i2 = 0; i2 < authorizationsArray.length(); i2++) {
+					
+					JSONObject auth = authorizationsArray.getJSONObject(i2);
+					User userAuth = userService.getUser(auth.getString("users"));
+					ontologyConfigService.createUserAccess(ontology.getId(),userAuth.getId().toString(), auth.getString("accesstypes") , userId);
+				}
+			} catch (Exception e) {
+				
+				failedOntologies.put("TableName", ontologyObject.getString("tableName"));
+				failedOntologies.put("EntityName", ontologyObject.getString("identification"));
+				failedOntologiesArray.put(failedOntologies);
+			}
+			
+		}
+		return failedOntologiesArray;
+	}
 
+	public boolean hasDocuments(Ontology ontology) {
+		long count = 0;
+		if (ontology.getRtdbDatasource() != RtdbDatasource.API_REST) {
+			count = basicOpsRepository.findAll(ontology.getIdentification(), 1).size();
+		}
+		return count > 0;
+	}
+	
 }

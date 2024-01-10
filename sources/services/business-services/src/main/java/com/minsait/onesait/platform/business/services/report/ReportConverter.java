@@ -103,8 +103,10 @@ public class ReportConverter {
 	}
 
 	public ReportDto convert(Report report) {
-		log.debug("INI. Convert entity Report: {}", report);
-
+		if (log.isDebugEnabled()) {
+			log.debug("INI. Convert entity Report: {}", report);
+		}
+		
 		final ReportDto reportDto = ReportDto.builder().id(report.getId()).identification(report.getIdentification())
 				.description(report.getDescription()).owner(report.getUser().getUserId()).created(report.getCreatedAt())
 				.fileName(report.getIdentification() + "." + report.getExtension().toString().toLowerCase())
@@ -113,7 +115,9 @@ public class ReportConverter {
 						.collect(Collectors.toList()))
 				.isPublic(report.getIsPublic()).dataSourceUrl(report.getDataSourceUrl()).build();
 
-		log.debug("END. Converted ReportDto: {}", reportDto);
+		if (log.isDebugEnabled()) {
+			log.debug("END. Converted ReportDto: {}", reportDto);
+		}
 
 		return reportDto;
 	}

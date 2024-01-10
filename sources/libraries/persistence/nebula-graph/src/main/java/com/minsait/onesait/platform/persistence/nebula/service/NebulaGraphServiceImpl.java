@@ -75,7 +75,9 @@ public class NebulaGraphServiceImpl implements NebulaGraphService {
 			// WAIT TILL SPACE CREATION
 		}
 		final long end = System.currentTimeMillis();
-		log.debug("Took {} milliseconds to create nebula space", end - start);
+		if (log.isDebugEnabled()) {
+			log.debug("Took {} milliseconds to create nebula space", end - start);
+		}		
 		tags.forEach(t -> createTag(space.getName(), t, session));
 		edges.forEach(e -> createEdge(space.getName(), e, session));
 		releaseSession(session);
@@ -93,7 +95,9 @@ public class NebulaGraphServiceImpl implements NebulaGraphService {
 			// WAIT TILL SPACE CREATION
 		}
 		final long end = System.currentTimeMillis();
-		log.debug("Took {} milliseconds to create nebula space", end - start);
+		if (log.isDebugEnabled()) {
+			log.debug("Took {} milliseconds to create nebula space", end - start);
+		}		
 		releaseSession(session);
 	}
 

@@ -51,7 +51,9 @@ public class ProcessExecutionJob {
 		}
 		try {
 			processTraceService.checkProcessExecution(processId);
-			log.debug("Process execution checked: {}", processId);
+			if (log.isDebugEnabled()) {
+				log.debug("Process execution checked: {}", processId);
+			}			
 		} catch (final Exception e) {
 			log.error("Error checking process execution: {}", processId, e);
 		}

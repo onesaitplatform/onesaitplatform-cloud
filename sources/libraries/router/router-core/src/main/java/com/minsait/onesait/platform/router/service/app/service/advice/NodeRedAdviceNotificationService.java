@@ -71,7 +71,9 @@ public class NodeRedAdviceNotificationService implements AdviceNotificationServi
 					HTTP_METHOD_TO_NODE_METHOD.get(messageType) != null ? HTTP_METHOD_TO_NODE_METHOD.get(messageType)
 							: messageType);
 		} catch (final IllegalArgumentException e) {
-			log.debug("Deserializing enum error {}", e);
+			if (log.isDebugEnabled()) {
+				log.debug("Deserializing enum error {}", e);
+			}
 
 		} catch (final Exception e) {
 			log.error("" + e);

@@ -14,8 +14,11 @@
  */
 package com.minsait.onesait.platform.persistence.external.virtual;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import javax.validation.constraints.NotNull;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -35,7 +38,10 @@ import com.minsait.onesait.platform.persistence.external.generator.SQLGeneratorO
 import com.minsait.onesait.platform.persistence.external.generator.SQLGeneratorOpsImpl;
 import com.minsait.onesait.platform.persistence.external.generator.helper.SQLHelper;
 import com.minsait.onesait.platform.persistence.external.generator.model.common.ColumnRelational;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateIndexStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.DropIndexStatement;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.GetIndexStatement;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
 
 import lombok.extern.slf4j.Slf4j;
@@ -179,7 +185,7 @@ public class VirtualRelationalOntologyManageDBRepository implements ManageDBRepo
 			final String statement = sqlGenerator.buildDrop().setOntology(ontology).setCheckIfExists(false)
 					.generate(true).getStatement();
 			getJdbTemplate(ontology).execute(statement);
-
+			
 		} catch (final Exception e) {
 			log.error("Error deleting table from user in external database", e);
 			throw new DBPersistenceException("Error deleting table from user in external database", e);
@@ -191,11 +197,17 @@ public class VirtualRelationalOntologyManageDBRepository implements ManageDBRepo
 	public void createIndex(String ontology, String attribute) {
 		throw new DBPersistenceException(NOT_IMPLEMENTED_METHOD);
 	}
-
+	
 	@Override
-	public void createIndex(String ontology, String nameIndex, String attribute) {
-		throw new DBPersistenceException(NOT_IMPLEMENTED_METHOD);
+	public void createIndex(String ontologyVirtual, String ontology , String attribute) {
+		OntologyVirtualDatasource datasource;
+		datasource = ontologyVirtualRepository.findOntologyVirtualDatasourceByOntologyIdentification(ontology);
+		CreateIndexStatement createIndexStatement = new CreateIndexStatement(sqlGenerator);
+		createIndexStatement.setColumName(attribute).setOntologyVirtual(ontologyVirtual).setOntology(ontology).setVirtualDatasourceType(datasource.getSgdb());
+		final String statement = createIndexStatement.generate(true).getStatement();
+		getJdbTemplate(ontology).execute(statement);
 	}
+
 
 	@Override
 	public void createIndex(String sentence) {
@@ -204,12 +216,36 @@ public class VirtualRelationalOntologyManageDBRepository implements ManageDBRepo
 
 	@Override
 	public void dropIndex(String ontology, String indexName) {
-		throw new DBPersistenceException(NOT_IMPLEMENTED_METHOD);
+		
+	}
+	
+	@Override
+	public void dropIndex(String ontology, String ontologyVirtual, String indexName) {
+		OntologyVirtualDatasource datasource;
+		datasource = ontologyVirtualRepository.findOntologyVirtualDatasourceByOntologyIdentification(ontology);
+		DropIndexStatement dropIndexStatement = new DropIndexStatement(sqlGenerator);
+		dropIndexStatement.setColumName(indexName).setOntology(ontology).setOntologyVirtual(ontologyVirtual).setVirtualDatasourceType(datasource.getSgdb());
+		final String statement = dropIndexStatement.generate(true).getStatement();
+		getJdbTemplate(ontology).execute(statement);
+		
 	}
 
 	@Override
-	public List<String> getListIndexes(String ontology) {
-		throw new DBPersistenceException(NOT_IMPLEMENTED_METHOD);
+	public Map<String, List<String>> getListIndexes(String datatableName, String ontology) {
+		
+		OntologyVirtualDatasource datasource;
+		datasource = ontologyVirtualRepository.findOntologyVirtualDatasourceByOntologyIdentification(ontology);
+		
+		GetIndexStatement getIndexStatement = new GetIndexStatement(sqlGenerator);
+		getIndexStatement.setDatatable(datatableName).setOntology(ontology).setVirtualDatasourceType(datasource.getSgdb());
+		getIndexStatement.generate(true).getStatement();
+		
+		final String statement = getIndexStatement.generate(true).getStatement();
+		List<Map<String, Object>> listIndex = getJdbTemplate(ontology).queryForList(statement);
+		
+		
+		
+		return getIndexStatement.parseListIndex(listIndex);
 	}
 
 	@Override
@@ -252,5 +288,23 @@ public class VirtualRelationalOntologyManageDBRepository implements ManageDBRepo
 		throw new DBPersistenceException(NOT_IMPLEMENTED_METHOD);
 
 	}
+
+	@Override
+	public List<String> getListIndexes(String ontology) {
+		throw new DBPersistenceException(NOT_IMPLEMENTED_METHOD);
+	}
+
+	@Override
+	public String getIndexesOptions(String ontology) {
+		throw new DBPersistenceException(NOT_IMPLEMENTED_METHOD);
+	}
+
+	@Override
+	public void createIndexWithParameter(String ontologyName, String typeIndex, String indexName, boolean unique,
+			boolean background, boolean sparse, boolean ttl, String timesecondsTTL, Object checkboxValuesArray) {
+		throw new DBPersistenceException(NOT_IMPLEMENTED_METHOD);
+		
+	}
+	
 
 }

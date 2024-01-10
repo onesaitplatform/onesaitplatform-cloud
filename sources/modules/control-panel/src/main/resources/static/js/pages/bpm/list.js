@@ -7,7 +7,7 @@ Bpm.List = (function() {
 	
 	var authorizationsArr 		= []; // add authorizations
 	var authorizationObj 		= {}; // object to receive authorizations responses.
-	var mountableModel2 = $('#tenant_authorizations').find('tr.authorization-model')[0].outerHTML;
+	//var mountableModel2 = $('#tenant_authorizations').find('tr.authorization-model')[0].outerHTML;
 	var csrfHeader = headerJson.csrfHeaderName;
 	var csrfToken = headerJson.csrfToken;
 	var headersObj = {};

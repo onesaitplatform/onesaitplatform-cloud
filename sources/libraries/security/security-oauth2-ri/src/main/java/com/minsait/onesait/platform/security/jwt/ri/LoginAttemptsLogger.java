@@ -32,25 +32,30 @@ public class LoginAttemptsLogger {
 	@EventListener
 	public void auditEventHappened(AuditApplicationEvent auditApplicationEvent) {
 		final AuditEvent auditEvent = auditApplicationEvent.getAuditEvent();
-
-		log.debug("Begin -> Audit Login Happened -> Principal {} - {}" + auditEvent.getPrincipal(),
-
+		if (log.isDebugEnabled()) {
+			log.debug("Begin -> Audit Login Happened -> Principal {} - {}" + auditEvent.getPrincipal(),
 				auditEvent.getType());
+		}	
 
 		if (auditEvent.getData().get(DETAILS_STR) instanceof WebAuthenticationDetails) {
 			final WebAuthenticationDetails details = (WebAuthenticationDetails) auditEvent.getData().get(DETAILS_STR);
-			log.debug("  Class Id: WebAuthenticationDetails Remote IP address: {}, Session Id: {}",
+			if (log.isDebugEnabled()) {
+				log.debug("  Class Id: WebAuthenticationDetails Remote IP address: {}, Session Id: {}",
 					details.getRemoteAddress(), details.getSessionId());
+			}			
 		} else if (auditEvent.getData().get(DETAILS_STR) instanceof OAuth2AuthenticationDetails) {
 			final OAuth2AuthenticationDetails details = (OAuth2AuthenticationDetails) auditEvent.getData()
 					.get(DETAILS_STR);
-			log.debug(
+			if (log.isDebugEnabled()) {
+				log.debug(
 					"  Class Id: OAuth2AuthenticationDetails Remote IP address: {}, Session Id: {}, Token Type: {}, Token Value: {}",
 					details.getRemoteAddress(), details.getSessionId(), details.getTokenType(),
 					details.getTokenValue());
+			}			
 		}
-
-		log.debug("  Request URL: {} ", auditEvent.getData().get("requestUrl"));
-		log.debug("End -> Audit Login Happened -> Principal {} - {} ", auditEvent.getPrincipal(), auditEvent.getType());
+		if (log.isDebugEnabled()) {
+			log.debug("  Request URL: {} ", auditEvent.getData().get("requestUrl"));
+			log.debug("End -> Audit Login Happened -> Principal {} - {} ", auditEvent.getPrincipal(), auditEvent.getType());
+		}		
 	}
 }

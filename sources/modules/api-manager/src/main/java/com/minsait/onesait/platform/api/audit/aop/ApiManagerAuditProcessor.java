@@ -180,7 +180,9 @@ public class ApiManagerAuditProcessor {
 				operationType = OperationType.DELETE;
 			}
 		}
-		log.debug("The audit operation from method {} is {} ", method, operationType);
+		if (log.isDebugEnabled()) {
+			log.debug("The audit operation from method {} is {} ", method, operationType);
+		}
 		return operationType;
 
 	}

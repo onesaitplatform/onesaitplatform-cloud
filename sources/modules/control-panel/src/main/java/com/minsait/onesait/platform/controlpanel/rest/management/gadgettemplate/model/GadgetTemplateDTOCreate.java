@@ -54,5 +54,13 @@ public class GadgetTemplateDTOCreate {
 	@Getter
 	@Setter
 	private String subcategory;
+	
+	@Getter
+	@Setter
+	private String config;
+	
+	@Getter
+	@Setter
+	private String headerlibs;
 
 }

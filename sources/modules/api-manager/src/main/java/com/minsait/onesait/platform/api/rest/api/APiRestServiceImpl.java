@@ -161,7 +161,7 @@ public class APiRestServiceImpl implements ApiRestService {
 		return Response.serverError().build();
 
 	}
-	
+
 	@Override
 	public Response cleanCache(String tokenOauth) throws GenericOPException {
 		try {
@@ -171,7 +171,7 @@ public class APiRestServiceImpl implements ApiRestService {
 			}
 			if (user == null || !user.isAdmin()) {
 				log.info("Clean API Manager Global cache: User Unauthorized");
-				return Response.status(Status.UNAUTHORIZED).build();	
+				return Response.status(Status.UNAUTHORIZED).build();
 			}
 			apiCacheService.cleanCache();
 			log.info("Clean API Manager Global cache: OK");
@@ -180,9 +180,10 @@ public class APiRestServiceImpl implements ApiRestService {
 			return Response.serverError().build();
 		}
 	}
-	
+
 	@Override
-	public Response cleanApiCache(String identification, String numversion, String tokenOauth) throws GenericOPException {
+	public Response cleanApiCache(String identification, String numversion, String tokenOauth)
+			throws GenericOPException {
 		try {
 			User user = apiSecurityService.getUserOauth(tokenOauth);
 			if (user == null) {
@@ -190,11 +191,11 @@ public class APiRestServiceImpl implements ApiRestService {
 			}
 			Api api = apiService.getApiByIdentificationAndVersion(identification, numversion);
 			if (user == null || (!user.isAdmin() && (!user.getUserId().equals(api.getUser().getUserId())))) {
-				log.info("Clean API cache: " + identification + "V" + numversion + " : User Unauthorized");
+				log.info("Clean API cache: {}V{} : User Unauthorized", identification, numversion);
 				return Response.status(Status.UNAUTHORIZED).build();
-			}			
+			}
 			apiCacheService.cleanAPICache(api.getId());
-			log.info("Clean API cache: " + identification + "V" + numversion + " : OK");
+			log.info("Clean API cache: {}V{} : OK", identification, numversion);
 			return Response.ok(Status.OK).build();
 		} catch (Exception e) {
 			return Response.serverError().build();

@@ -49,7 +49,7 @@ public class ThemesServiceImpl implements ThemesService {
 
 			themesRepository.save(theme);
 		} catch (final GenericOPException e) {
-			log.error("Error creating a new theme: " + e.getMessage());
+			log.error("Error creating a new theme: {}", e.getMessage());
 		}
 	}
 
@@ -64,7 +64,7 @@ public class ThemesServiceImpl implements ThemesService {
 			});
 
 		} catch (final Exception e) {
-			log.error("Error updating a theme: " + e.getMessage());
+			log.error("Error updating a theme: {}", e.getMessage());
 		}
 	}
 
@@ -84,7 +84,7 @@ public class ThemesServiceImpl implements ThemesService {
 			});
 
 		} catch (final Exception e) {
-			log.error("Error setting to active: " + e.getMessage());
+			log.error("Error setting to active: {}", e.getMessage());
 		}
 	}
 
@@ -97,7 +97,7 @@ public class ThemesServiceImpl implements ThemesService {
 			});
 
 		} catch (final Exception e) {
-			log.error("Error setting to inactive: " + e.getMessage());
+			log.error("Error setting to inactive: {}", e.getMessage());
 		}
 	}
 
@@ -111,7 +111,7 @@ public class ThemesServiceImpl implements ThemesService {
 				themesRepository.save(theme);
 			}
 		} catch (final Exception e) {
-			log.error("Error setting default theme: " + e.getMessage());
+			log.error("Error setting default theme: {}", e.getMessage());
 		}
 	}
 

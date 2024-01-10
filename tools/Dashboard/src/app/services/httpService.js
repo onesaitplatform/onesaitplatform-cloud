@@ -7,6 +7,11 @@
   /** @ngInject */
   function HttpService($window,$http, $log, __env, $rootScope,localStorageService) {
       var vm = this;
+
+      if (sessionStorage.getItem("dashboardEngineOauthtoken") == null && sessionStorage.getItem("sessionToken") != null) {
+        sessionStorage.setItem("dashboardEngineOauthtoken", sessionStorage.getItem("sessionToken"))
+      }
+
       $http.defaults.headers.common['Authorization'] = 'Bearer '+sessionStorage.getItem("dashboardEngineOauthtoken");
 
       vm.modelurl = __env.dashboardEngineBungleMode?'/dashboards/bunglemodel/':'/dashboards/model/';

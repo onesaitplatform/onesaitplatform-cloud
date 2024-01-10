@@ -38,7 +38,9 @@ public class SparkLauncherController {
 	public ResponseEntity<?>  insert(@RequestBody SparkLaunchJobModel model) {
 		final long dStart = System.currentTimeMillis();
 		String state = "successfully";
-		log.debug("Launching Spark Job {}.", model.getJobName());
+		if (log.isDebugEnabled()) {
+			log.debug("Launching Spark Job {}.", model.getJobName());
+		}
 		try {
 			sparlLauncherExecutor.executeJob(model);
 		} catch (final Exception e) {

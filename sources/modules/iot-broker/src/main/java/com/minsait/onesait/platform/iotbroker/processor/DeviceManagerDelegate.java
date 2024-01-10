@@ -121,10 +121,10 @@ public class DeviceManagerDelegate implements DeviceManager {
 		
 		updateOrCreateDevice(device, true, info, status, location, cpIdentification);
 		
-		
-		log.debug("ClientPlatformInstance updated. ClientPlatform: {}, ClientPlatformInstance: {}", 
-				cpIdentification, device.getIdentification());
-		
+		if (log.isDebugEnabled()) {
+			log.debug("ClientPlatformInstance updated. ClientPlatform: {}, ClientPlatformInstance: {}", 
+			cpIdentification, device.getIdentification());
+		}		
 		return true; //TODO deal with possible return statuses
 	}
 	

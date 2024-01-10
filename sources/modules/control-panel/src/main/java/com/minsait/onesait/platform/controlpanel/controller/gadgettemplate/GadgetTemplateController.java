@@ -85,6 +85,7 @@ public class GadgetTemplateController {
 
 	private static final String REDIRECT_GADGET_TEMP_LIST = "redirect:/gadgets/list";
 	private static final String REDIRECT_SHOW = "redirect:/gadgettemplates/view/";
+	private static final String REDIRECT_EDIT = "redirect:/gadgettemplates/update/";
 	private static final String APP_ID = "appId";
 	private static final String REDIRECT_PROJECT_SHOW = "redirect:/projects/update/";
 
@@ -221,7 +222,7 @@ public class GadgetTemplateController {
 
 		this.gadgetTemplateService.updateGadgetTemplate(gadgetTemplate);
 		resourcesInUseService.removeByUser(id, utils.getUserId());
-		return REDIRECT_SHOW + id;
+		return REDIRECT_EDIT + id;
 	}
 
 	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")

@@ -27,6 +27,8 @@ public interface SQLHelper {
 
 	String getAllTablesStatement();
 	
+	String getTableInformationStatement(String database, String schema);
+	
 	boolean hasDatabase();
 	
 	boolean hasCrossDatabase();
@@ -64,4 +66,6 @@ public interface SQLHelper {
 	CreateStatement getCreateStatementWithConstraints(CreateStatement createStatement);
 
 	String parseGeometryFields(String query, String ontology) throws JSQLParserException;
+
+	String getTableIndexes(String database, String schema);
 }

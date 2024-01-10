@@ -11,11 +11,10 @@ RUN apk add --no-cache tzdata \
 
 # logs folder
 RUN mkdir -p /var/log/platform-logs && \
-    mkdir /application
+    mkdir /application && \
+	mkdir /application/plugins
 
-WORKDIR /application    
-RUN unzip /app.jar &&\
-	rm /app.jar
+WORKDIR /application   
 
 # create onesait platform user/group
 RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait

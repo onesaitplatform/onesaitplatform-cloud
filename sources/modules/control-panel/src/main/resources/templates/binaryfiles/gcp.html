@@ -512,9 +512,10 @@
 		
 
 		// SEARCH FORM RESET
-		$('#reset_file').on('click',function(){
-			$('#file-name').val('');
-			$('#files').DataTable().column(0).search('').draw();
+		// SEARCH FORM RESET
+		$('#reset_file').on('click',function(){	    
+			$('#form_file')[0].reset();
+			$('#form_file')[0].submit();
 		});
 
 		// SEARCH FORM

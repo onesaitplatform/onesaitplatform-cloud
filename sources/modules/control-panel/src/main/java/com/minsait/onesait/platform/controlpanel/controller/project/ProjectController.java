@@ -366,27 +366,29 @@ public class ProjectController {
 				&& !resourceService.isUserAuthorized(utils.getUserId(), authorization.getResource())) {
 			return ERROR_403;
 		}
-		log.debug("New request for access for user {} with permission {} to resource {} in project {}",
+		if (log.isDebugEnabled()) {
+			log.debug("New request for access for user {} with permission {} to resource {} in project {}",
 				authorization.getAuthorizing(), authorization.getAccess().name(), authorization.getResource(),
 				authorization.getProject());
+		}
 		final Project project = projectService.getById(authorization.getProject());
 		final Set<ProjectResourceAccess> accesses = new HashSet<>();
 		if (project.getApp() != null) {
 			if (authorization.getAuthorizing().equals(ALL_USERS)) {
-				projectService.getProjectRoles(authorization.getProject())
-						.forEach(ar -> accesses.add(new ProjectResourceAccess(null, authorization.getAccess(),
-								resourceService.getResourceById(authorization.getResource()), project,
-								appService.findRole(ar.getId()))));
+				accesses.add(new ProjectResourceAccess(null, authorization.getAccess(),
+						resourceService.getResourceById(authorization.getResource()), project,
+						null,true));
 				resourceService.insertAuthorizations(accesses);
 			} else {
 				resourceService.createUpdateAuthorization(new ProjectResourceAccess(null, authorization.getAccess(),
 						resourceService.getResourceById(authorization.getResource()), project,
-						appService.findRole(authorization.getAuthorizing())));
+						appService.findRole(authorization.getAuthorizing()), false));
 			}
 		} else {
 			if (authorization.getAuthorizing().equals(ALL_USERS)) {
-				project.getUsers().forEach(u -> accesses.add(new ProjectResourceAccess(u, authorization.getAccess(),
-						resourceService.getResourceById(authorization.getResource()), project, null)));
+				accesses.add(new ProjectResourceAccess(null, authorization.getAccess(),
+						resourceService.getResourceById(authorization.getResource()), project, null, true));
+				
 				if (authorization.getResourceType().equalsIgnoreCase(Resources.DATAFLOW.toString())
 						|| authorization.getResourceType().equalsIgnoreCase(Resources.NOTEBOOK.toString())) {
 					resourceService.insertAuthorizations(accesses.stream()
@@ -397,7 +399,7 @@ public class ProjectController {
 			} else {
 				resourceService.createUpdateAuthorization(new ProjectResourceAccess(
 						userService.getUser(authorization.getAuthorizing()), authorization.getAccess(),
-						resourceService.getResourceById(authorization.getResource()), project, null));
+						resourceService.getResourceById(authorization.getResource()), project, null, false));
 			}
 
 		}
@@ -418,26 +420,25 @@ public class ProjectController {
 			final Set<ProjectResourceAccess> accesses = new HashSet<>();
 			if (project.getApp() != null) {
 				if (authorization.getAuthorizing().equals(ALL_USERS)) {
-					projectService.getProjectRoles(authorization.getProject())
-							.forEach(ar -> accesses.add(new ProjectResourceAccess(null, authorization.getAccess(),
-									resourceService.getResourceById(authorization.getResource()), project,
-									appService.findRole(ar.getId()))));
+					accesses.add(new ProjectResourceAccess(null, authorization.getAccess(),
+							resourceService.getResourceById(authorization.getResource()), project, null, false));
+					
 					resourceService.insertAuthorizations(accesses);
 
 				} else {
 					resourceService.createUpdateAuthorization(new ProjectResourceAccess(null, authorization.getAccess(),
 							resourceService.getResourceById(authorization.getResource()), project,
-							appService.findRole(authorization.getAuthorizing())));
+							appService.findRole(authorization.getAuthorizing()), false));
 				}
 			} else {
 				if (authorization.getAuthorizing().equals(ALL_USERS)) {
-					project.getUsers().forEach(u -> accesses.add(new ProjectResourceAccess(u, authorization.getAccess(),
-							resourceService.getResourceById(authorization.getResource()), project, null)));
+					accesses.add(new ProjectResourceAccess(null, authorization.getAccess(),
+								resourceService.getResourceById(authorization.getResource()), project, null, true));
 					resourceService.insertAuthorizations(accesses);
 				} else {
 					resourceService.createUpdateAuthorization(new ProjectResourceAccess(
 							userService.getUser(authorization.getAuthorizing()), authorization.getAccess(),
-							resourceService.getResourceById(authorization.getResource()), project, null));
+							resourceService.getResourceById(authorization.getResource()), project, null , false));
 				}
 			}
 			model.addAttribute(PROJECT_OBJ_STR, projectService.getById(authorization.getProject()));

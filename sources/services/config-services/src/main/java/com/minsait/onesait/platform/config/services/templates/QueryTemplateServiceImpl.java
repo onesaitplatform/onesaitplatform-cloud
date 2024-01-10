@@ -106,10 +106,10 @@ public class QueryTemplateServiceImpl implements QueryTemplateService {
 			result = inv.invokeFunction("postprocess");
 			return result.toString();
 		} catch (final ScriptException e) {
-			log.trace("Error processing query in query template: " + templateName, e);
+			log.trace("Error processing query in query template: {}", templateName, e);
 			throw e;
 		} catch (final NoSuchMethodException e) {
-			log.trace("Error invoking processing function in query template: " + templateName, e);
+			log.trace("Error invoking processing function in query template: {}", templateName, e);
 			throw e;
 		}
 	}
@@ -138,9 +138,9 @@ public class QueryTemplateServiceImpl implements QueryTemplateService {
 	public QueryTemplate getQueryTemplateById(String id) {
 		return queryTemplateRepository.findById(id).orElse(null);
 	}
-	
+
 	@Override
-	public List<QueryTemplate> getQueryTemplateByCriteria(String name){
+	public List<QueryTemplate> getQueryTemplateByCriteria(String name) {
 		return queryTemplateRepository.findByNameContaining(name);
 	}
 
@@ -160,10 +160,11 @@ public class QueryTemplateServiceImpl implements QueryTemplateService {
 		} else
 			throw new QueryTemplateServiceException("Cannot update a query template that does not exist");
 	}
-	
+
 	@Override
 	public void checkQueryTemplateSelectorExists(String templateId, String ontology, String query) {
-		final List<QueryTemplate> templates = new ArrayList<>(queryTemplateRepository.findByOntologyIdentification(ontology));
+		final List<QueryTemplate> templates = new ArrayList<>(
+				queryTemplateRepository.findByOntologyIdentification(ontology));
 		templates.addAll(queryTemplateRepository.findByOntologyIdentificationIsNull());
 		MatchResult result = new MatchResult();
 		result.setResult(false);
@@ -176,7 +177,7 @@ public class QueryTemplateServiceImpl implements QueryTemplateService {
 					result = SqlComparator.match(query, template.getQuerySelector());
 				}
 			}
-		} catch (Exception e){
+		} catch (Exception e) {
 			log.trace("Error processing Selector", e);
 		}
 		if (result.isMatch()) {

@@ -1,0 +1,370 @@
+{
+	"metainf": {
+		"category": "Predefined",
+		"order": -99
+	},
+	"gform": [
+		{
+			"id": 8,
+			"type": "section",
+			"elements": [
+				{
+					"id": 1,
+					"type": "input-text",
+					"name": "title",
+					"default": "",
+					"title": "Title"
+				},
+				{
+					"id": 1,
+					"type": "input-text",
+					"name": "subtitle",
+					"default": "",
+					"title": "Subtitle"
+				},
+				{
+					"id": 3,
+					"type": "selector",
+					"name": "toolbox",
+					"options": [
+						{
+							"value": "ON",
+							"text": "ON"
+						},
+						{
+							"value": "OFF",
+							"text": "OFF"
+						}
+					],
+					"title": "Toolbox",
+					"default": "ON"
+				},
+				{
+					"id": 3,
+					"type": "selector",
+					"name": "excel",
+					"options": [
+						{
+							"value": "ON",
+							"text": "ON"
+						},
+						{
+							"value": "OFF",
+							"text": "OFF"
+						}
+					],
+					"title": "Export to Excel",
+					"default": "ON"
+				},
+				{
+					"id": 3,
+					"type": "selector",
+					"name": "orientation",
+					"options": [
+						{
+							"value": "VERTICAL",
+							"text": "Vertical"
+						},
+						{
+							"value": "HORIZONTAL",
+							"text": "Horizontal"
+						}
+					],
+					"title": "Chart Orientation",
+					"default": "VERTICAL"
+				},
+				{
+					"id": 3,
+					"type": "selector",
+					"name": "theme",
+					"options": [
+						{
+							"value": "LIGHT",
+							"text": "Light"
+						},
+						{
+							"value": "DARK",
+							"text": "Dark"
+						},
+						{
+							"value": "VINTAGE",
+							"text": "Vintage"
+						}
+					],
+					"title": "Chart Theme",
+					"default": "LIGHT"
+				},
+				{
+					"id": 3,
+					"type": "selector",
+					"name": "legend",
+					"options": [
+						{
+							"value": "ON",
+							"text": "ON"
+						},
+						{
+							"value": "OFF",
+							"text": "OFF"
+						}
+					],
+					"title": "Chart Legend",
+					"default": "ON"
+				}
+			],
+			"name": "main",
+			"title": "Main"
+		},
+		{
+			"id": 8,
+			"type": "section",
+			"elements": [
+				{
+					"id": 8,
+					"type": "section",
+					"elements": [
+						{
+							"id": 1,
+							"type": "input-text",
+							"name": "xaxisname",
+							"default": "",
+							"title": "Name"
+						},
+						{
+							"id": 6,
+							"type": "ds-field",
+							"name": "axisdatafield",
+							"title": "Field"
+						}
+					],
+					"name": "xaxis",
+					"title": "X Axis"
+				},
+				{
+					"id": 9,
+					"type": "section-array",
+					"elements": [
+						{
+							"id": 10,
+							"type": "autogenerate-id",
+							"name": "yaxisid",
+							"prefix": "",
+							"title": "ID"
+						},
+						{
+							"id": 1,
+							"type": "input-text",
+							"name": "yaxisname",
+							"default": "",
+							"title": "Name"
+						},
+						{
+							"id": 3,
+							"type": "selector",
+							"name": "position",
+							"options": [
+								{
+									"value": "left",
+									"text": "Left"
+								},
+								{
+									"value": "right",
+									"text": "Right"
+								}
+							],
+							"title": "Position",
+							"default": "left"
+						},
+						{
+							"id": 2,
+							"type": "input-number",
+							"name": "max",
+							"default": "",
+							"title": "Max Value"
+						},
+						{
+							"id": 2,
+							"type": "input-number",
+							"name": "min",
+							"default": "",
+							"title": "Min Value"
+						}
+					],
+					"name": "yaxis",
+					"title": "Y Axis"
+				}
+			],
+			"name": "axis",
+			"title": "Axis"
+		},
+		{
+			"id": 9,
+			"type": "section-array",
+			"elements": [
+				{
+					"id": 1,
+					"type": "input-text",
+					"name": "name",
+					"default": "",
+					"title": "Serie name"
+				},
+				{
+					"id": 6,
+					"type": "ds-field",
+					"name": "yaxis",
+					"title": "Serie field"
+				},
+				{
+					"id": 11,
+					"type": "model-selector",
+					"name": "idseries",
+					"title": "Y Axis ID",
+					"path": "axis.yaxis.*.yaxisid"
+				},
+				{
+					"id": 1,
+					"type": "input-text",
+					"name": "stack",
+					"default": "",
+					"title": "Stack Id"
+				},
+				{
+					"id": 5,
+					"type": "color-picker",
+					"name": "color",
+					"default": null,
+					"title": "Serie color"
+				},
+				{
+					"id": 3,
+					"type": "selector",
+					"name": "average",
+					"options": [
+						{
+							"value": "ON",
+							"text": "ON"
+						},
+						{
+							"value": "OFF",
+							"text": "OFF"
+						}
+					],
+					"title": "Average",
+					"default": "OFF"
+				},
+				{
+					"id": 3,
+					"type": "selector",
+					"name": "maxmin",
+					"options": [
+						{
+							"value": "ON",
+							"text": "ON"
+						},
+						{
+							"value": "OFF",
+							"text": "OFF"
+						}
+					],
+					"title": "Max and Min marks",
+					"default": "OFF"
+				}
+			],
+			"name": "series",
+			"title": "Data"
+		},
+		{
+			"id": 8,
+			"type": "section",
+			"elements": [
+				{
+					"id": 3,
+					"type": "selector",
+					"name": "showzoom",
+					"options": [
+						{
+							"value": "ON",
+							"text": "ON"
+						},
+						{
+							"value": "OFF",
+							"text": "OFF"
+						}
+					],
+					"title": "Show Zoom",
+					"default": "OFF"
+				},
+				{
+					"id": 3,
+					"type": "selector",
+					"name": "showxzoom",
+					"options": [
+						{
+							"value": "ON",
+							"text": "ON"
+						},
+						{
+							"value": "OFF",
+							"text": "OFF"
+						}
+					],
+					"title": "Show X Zoom",
+					"default": "ON"
+				},
+				{
+					"id": 3,
+					"type": "selector",
+					"name": "xzoomtype",
+					"options": [
+						{
+							"value": "inside",
+							"text": "Inside"
+						},
+						{
+							"value": "slider",
+							"text": "Slider"
+						}
+					],
+					"title": "X Zoom Type",
+					"default": "inside"
+				},
+				{
+					"id": 3,
+					"type": "selector",
+					"name": "showyzoom",
+					"options": [
+						{
+							"value": "ON",
+							"text": "ON"
+						},
+						{
+							"value": "OFF",
+							"text": "OFF"
+						}
+					],
+					"title": "Show Y Zoom",
+					"default": "OFF"
+				},
+				{
+					"id": 3,
+					"type": "selector",
+					"name": "yzoomtype",
+					"options": [
+						{
+							"value": "inside",
+							"text": "INSIDE"
+						},
+						{
+							"value": "slider",
+							"text": "SLIDER"
+						}
+					],
+					"title": "Y Zoom Type",
+					"default": "slider"
+				}
+			],
+			"name": "zoom",
+			"title": "Zoom"
+		}
+	]
+}

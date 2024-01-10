@@ -39,7 +39,9 @@ public class InterceptorCommon {
 	public static void setContexts(Authentication auth) {
 		SecurityContextHolder.getContext().setAuthentication(auth);
 		try {
-			log.debug("setContexts for authentication {}, of class: {} with principal class: {}", auth.getName(), auth.getClass().getCanonicalName(), auth.getPrincipal().getClass().getCanonicalName());
+			if (log.isDebugEnabled()) {
+				log.debug("setContexts for authentication {}, of class: {} with principal class: {}", auth.getName(), auth.getClass().getCanonicalName(), auth.getPrincipal().getClass().getCanonicalName());
+			}
 			MultitenancyContextHolder.setVerticalSchema(((UserPrincipal) auth.getPrincipal()).getVerticalSchema());
 			MultitenancyContextHolder.setTenantName(((UserPrincipal) auth.getPrincipal()).getTenant());
 		}catch (final Exception e) {

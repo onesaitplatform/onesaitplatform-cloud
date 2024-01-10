@@ -49,8 +49,10 @@ public class VersioningListener {
 		if (o instanceof Versionable && versioningManager != null && versioningManager.isActive()
 				&& VersioningCommitContextHolder.isProcessPostCreate()) {
 			final Versionable<T> versionable = (Versionable<T>) o;
-			log.debug("Fired serialization for new Versionable Entity of type {}",
+			if (log.isDebugEnabled()) {
+				log.debug("Fired serialization for new Versionable Entity of type {}",
 					versionable.getClass().getSimpleName());
+			}
 			versioningManager.serialize(versionable, getCurrentUser(), VersioningCommitContextHolder.getCommitMessage(),
 					EventType.CREATE);
 		}
@@ -62,8 +64,10 @@ public class VersioningListener {
 		if (o instanceof Versionable && versioningManager != null && versioningManager.isActive()
 				&& VersioningCommitContextHolder.isProcessPostUpdate()) {
 			final Versionable<T> versionable = (Versionable<T>) o;
-			log.debug("Fired serialization for updated Versionable Entity of type {} with id {}",
+			if (log.isDebugEnabled()) {
+				log.debug("Fired serialization for updated Versionable Entity of type {} with id {}",
 					versionable.getClass().getSimpleName(), versionable.getId());
+			}
 			versioningManager.serialize(versionable, getCurrentUser(), VersioningCommitContextHolder.getCommitMessage(),
 					EventType.UPDATE);
 		}
@@ -75,8 +79,10 @@ public class VersioningListener {
 		if (o instanceof Versionable && versioningManager != null && versioningManager.isActive()
 				&& VersioningCommitContextHolder.isProcessPostDelete()) {
 			final Versionable<T> versionable = (Versionable<T>) o;
-			log.debug("Fired removal of serialized Versionable Entity of type {} with id {}",
+			if (log.isDebugEnabled()) {
+				log.debug("Fired removal of serialized Versionable Entity of type {} with id {}",
 					versionable.getClass().getSimpleName(), versionable.getId());
+			}
 			versioningManager.removeSerialization(versionable, getCurrentUser(),
 					VersioningCommitContextHolder.getCommitMessage(), EventType.DELETE);
 		}

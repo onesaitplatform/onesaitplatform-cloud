@@ -7,8 +7,7 @@
    
           <!-- gadget icon and title -->
           <md-icon ng-if="vm.element.header.title.icon" ng-style="{'color':vm.element.header.title.iconColor,'font-size' : '24px'}">{{vm.element.header.title.icon}}</md-icon>
-          <h5 ng-if="vm.element.header.enable" class="gadget-title"  flex ng-style="{'color':vm.element.header.title.textColor}" md-truncate>{{vm.element.header.title.text | translate}}</h5> 
-                            
+          <h5 ng-if="vm.element.header.enable && !vm.element.toolsopts.hideHeaderTitle" class="gadget-title"  flex ng-style="{'color':vm.element.header.title.textColor}" md-truncate>{{vm.element.header.title.text | translate}}</h5>     
         
          <div ng-repeat="menuOption in vm.element.customMenuOptions">
           <md-button ng-if="menuOption.position == 'header'"  ng-click="vm.sendCustomMenuOption(menuOption.id)"   style="margin-right: 10px;" class="cursor-hand md-icon-button">
@@ -36,7 +35,7 @@
           </md-button> 
           <div id="{{vm.element.id + 'toolbarheader'}}"></div>
           <!-- gadget toolbar -->
-          <div flex="nogrow" layout-align="center right" ng-if="vm.editmode || !vm.element.notshowDotsMenu">            
+          <div flex="nogrow" layout-align="center right" ng-if="vm.editmode || (!vm.element.notshowDotsMenu && !vm.element.toolsopts.notshowDotsMenu )">            
           <md-menu-bar>             
               <md-menu md-position-mode="target-right bottom" md-offset="-4 0">
                   <button ng-click="$mdMenu.open()" style="padding: 0px">
@@ -65,6 +64,13 @@
                       <span>Save as Prebuild Gadget</span>
                       </md-button>             
                   </md-menu-item>
+                  <md-menu-item ng-if="!vm.element.toolsopts.hideDownloadExcel">
+                    <md-button ng-click="vm.downloadData()" aria-label="Download">
+                      <img ng-src="{{vm.baseimg}}/static/images/dashboards/icon_download_data.png"
+                        style="height:20px;color: #060E14;">
+                      <span>Download Data</span>
+                    </md-button>
+                  </md-menu-item>    
                 <md-menu-item ng-if="!vm.iframe && vm.editmode && vm.element.type === 'livehtml'">
                   <md-button  ng-click="vm.openEditCustomMenuOptionsDialog()"  aria-label="Custom Menu Options" >
                     <img ng-src="{{vm.baseimg}}/static/images/dashboards/icon_button_menu.svg" style="height:20px;">
@@ -155,7 +161,7 @@
  
  
           <!-- gadget toolbar -->
-          <div flex="nogrow" layout-align="center right" ng-if="vm.editmode || !vm.element.notshowDotsMenu">            
+          <div flex="nogrow" layout-align="center right" ng-if="vm.editmode || (!vm.element.notshowDotsMenu && !vm.element.toolsopts.notshowDotsMenu)">            
           <md-menu-bar  > 
                <md-menu md-position-mode="target-right bottom" md-offset="-4 0">
                   <button ng-click="$mdMenu.open()" style="padding: 0px">
@@ -177,6 +183,13 @@
                       <img ng-src="{{vm.baseimg}}/static/images/dashboards/icon_menu_filter.svg">
                       <span>Edit Filters</span>
                       </md-button>             
+                </md-menu-item>  
+                <md-menu-item ng-if="!vm.element.toolsopts.hideDownloadExcel">
+                  <md-button ng-click="vm.downloadData()" aria-label="Download">
+                    <img ng-src="{{vm.baseimg}}/static/images/dashboards/icon_download_data.png"
+                      style="height:20px;color: #060E14;">
+                    <span>Download Data</span>
+                  </md-button>
                 </md-menu-item>  
                 
                 <md-menu-item ng-if="!vm.iframe && vm.editmode && vm.element.type === 'livehtml'">
@@ -269,9 +282,9 @@
     </md-sidenav>
     
 
-    <livehtml  ng-style="{'background-color':vm.element.backgroundColor, 'padding': vm.element.padding + 'px'}" ng-if="(vm.element.type == 'livehtml' && (!vm.element.subtype || vm.element.subtype.startsWith('angularJS'))) || vm.element.type == 'gadgetfilter'" livecontent="vm.element.content" filters="vm.config" livecontentcode="vm.element.contentcode" gadgetid="vm.element.gadgetid" datasource="vm.element.datasource" custommenuoptions="vm.element.customMenuOptions" ng-class="vm.elemntbodyclass()"    id="vm.element.id" datastatus="vm.datastatus" showonlyfiltered="vm.element.showOnlyFiltered" template="vm.element.template" params="vm.element.params"></livehtml>
-    <vuetemplate  ng-style="{'background-color':vm.element.backgroundColor, 'padding': vm.element.padding + 'px'}" ng-if="vm.element.type == 'livehtml' && vm.element.subtype.startsWith('vueJS')" livecontent="vm.element.content" filters="vm.config" livecontentcode="vm.element.contentcode" datasource="vm.element.datasource" custommenuoptions="vm.element.customMenuOptions" ng-class="vm.elemntbodyclass()"    id="vm.element.id" datastatus="vm.datastatus" showonlyfiltered="vm.element.showOnlyFiltered" template="vm.element.template" params="vm.element.params" gadgetid="vm.element.gadgetid"></vuetemplate>
-    <reacttemplate  ng-style="{'background-color':vm.element.backgroundColor, 'padding': vm.element.padding + 'px'}" ng-if="vm.element.type == 'livehtml' && vm.element.subtype.startsWith('reactJS')" livecontent="vm.element.content" filters="vm.config" livecontentcode="vm.element.contentcode" datasource="vm.element.datasource" custommenuoptions="vm.element.customMenuOptions" ng-class="vm.elemntbodyclass()"    id="vm.element.id" datastatus="vm.datastatus" showonlyfiltered="vm.element.showOnlyFiltered" template="vm.element.template" params="vm.element.params" gadgetid="vm.element.gadgetid"></reacttemplate>
+    <livehtml  ng-style="{'background-color':vm.element.backgroundColor, 'padding': vm.element.padding + 'px'}" ng-if="(vm.element.type == 'livehtml' && (!vm.element.subtype || vm.element.subtype.startsWith('angularJS'))) || vm.element.type == 'gadgetfilter'" livecontent="vm.element.content" filters="vm.config" livecontentcode="vm.element.contentcode" gadgetid="vm.element.gadgetid" datasource="vm.element.datasource" custommenuoptions="vm.element.customMenuOptions" ng-class="vm.elemntbodyclass()"    id="vm.element.id" datastatus="vm.datastatus" showonlyfiltered="vm.element.showOnlyFiltered" template="vm.element.template" params="vm.element.params" toolsopts="vm.element.toolsopts"></livehtml>
+    <vuetemplate  ng-style="{'background-color':vm.element.backgroundColor, 'padding': vm.element.padding + 'px'}" ng-if="vm.element.type == 'livehtml' && vm.element.subtype.startsWith('vueJS')" livecontent="vm.element.content" filters="vm.config" livecontentcode="vm.element.contentcode" datasource="vm.element.datasource" custommenuoptions="vm.element.customMenuOptions" ng-class="vm.elemntbodyclass()"    id="vm.element.id" datastatus="vm.datastatus" showonlyfiltered="vm.element.showOnlyFiltered" template="vm.element.template" params="vm.element.params" gadgetid="vm.element.gadgetid" toolsopts="vm.element.toolsopts"></vuetemplate>
+    <reacttemplate  ng-style="{'background-color':vm.element.backgroundColor, 'padding': vm.element.padding + 'px'}" ng-if="vm.element.type == 'livehtml' && vm.element.subtype.startsWith('reactJS')" livecontent="vm.element.content" filters="vm.config" livecontentcode="vm.element.contentcode" datasource="vm.element.datasource" custommenuoptions="vm.element.customMenuOptions" ng-class="vm.elemntbodyclass()"    id="vm.element.id" datastatus="vm.datastatus" showonlyfiltered="vm.element.showOnlyFiltered" template="vm.element.template" params="vm.element.params" gadgetid="vm.element.gadgetid" toolsopts="vm.element.toolsopts"></reacttemplate>
     <gadget  ng-style="{'background-color':vm.element.backgroundColor, 'padding': vm.element.padding + 'px', 'display': 'inline-block', 'width': 'calc(100% - 40px)', 'position': 'absolute','top': '50%','left': '50%','transform': 'translate(-50%, -50%)'}" ng-if="vm.element.type != 'livehtml'&& vm.element.type != 'html5' && vm.element.type != 'gadgetfilter' && vm.element.type != 'datadiscovery'" ng-class="vm.elemntbodyclass()" id="vm.element.id"  datastatus="vm.datastatus" filters="vm.config"></gadget>
     <html5  ng-style="{'background-color':vm.element.backgroundColor, 'padding': vm.element.padding + 'px'}" ng-if="vm.element.type == 'html5'" livecontent="vm.element.content" datasource="vm.element.datasource"  ng-class="vm.elemntbodyclass()"    id="vm.element.id" ></html5>
     <datadiscovery  ng-style="{'background-color':vm.element.backgroundColor, 'padding': vm.element.padding + 'px', 'display': 'inline-block', 'width': 'calc(100% - 40px)', 'position': 'absolute','top': '50%','left': '50%','transform': 'translate(-50%, -50%)'}" ng-if="vm.element.type === 'datadiscovery'" ng-class="vm.elemntbodyclass()" id="vm.element.id"  datastatus="vm.datastatus" filters="vm.config"></datadiscovery>

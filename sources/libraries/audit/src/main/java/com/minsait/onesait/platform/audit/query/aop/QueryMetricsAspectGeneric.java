@@ -140,7 +140,9 @@ public class QueryMetricsAspectGeneric {
 		} else if (value.contains("dashboard")) {
 			return "DASHBOARD_ENGINE";
 		} else {
-			log.debug("Module not recognised {}", value);
+			if (log.isDebugEnabled()) {
+				log.debug("Module not recognised {}", value);
+			}
 			return "QUERY_TOOL";
 		}
 	}

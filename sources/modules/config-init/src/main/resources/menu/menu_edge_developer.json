@@ -286,10 +286,10 @@
 				},
                 {
                     "title": {
-                        "EN": "My Web Projects",
-                        "ES": "Mis Proyectos Web",
-						"FR": "Mes Projets Web"
-                    },
+						"EN": "My WebApps",
+						"ES": "Mis WebApps",
+						"FR": "Mes WebApps"
+					},
                     "icon": "",
                     "url": "/controlpanel/webprojects/list"
                 },

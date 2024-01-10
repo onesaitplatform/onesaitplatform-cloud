@@ -138,6 +138,7 @@ $(document).ready(function() {
             maxitems: '',
             schemaid: '',
             defaultValue: '',
+            format: '',
             required: false,
             // Complex
             items: undefined,

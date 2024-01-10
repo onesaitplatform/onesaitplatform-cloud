@@ -106,11 +106,15 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 			IMap<String, List<SubscriptorClient>> map = hazelcastInstance
 					.getMap(MAP_SUBSCRIPTION + client.getSubscription().getIdentification());
 			if (map == null) {
-				log.debug("Map for subscription {} doen't exist.", client.getSubscription().getIdentification());
+				if (log.isDebugEnabled()) {
+					log.debug("Map for subscription {} doen't exist.", client.getSubscription().getIdentification());
+				}
 				new MultiMapConfig().setName(MAP_SUBSCRIPTION + client.getSubscription().getIdentification())
 						.setValueCollectionType("LIST").setBinary(false);
 				map = hazelcastInstance.getMap(MAP_SUBSCRIPTION + client.getSubscription().getIdentification());
-				log.debug("Map for subscription {} created.", client.getSubscription().getIdentification());
+				if (log.isDebugEnabled()) {
+					log.debug("Map for subscription {} created.", client.getSubscription().getIdentification());
+				}
 			}
 			if (map.containsKey(client.getQueryValue())) {
 				map.lock(client.getQueryValue());
@@ -141,7 +145,9 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 		OperationResultModel result = new OperationResultModel();
 		result.setOperation(model.getOperationType().name());
 		try {
-			log.debug("Check if the subscription {} exist.", model.getSubscription());
+			if (log.isDebugEnabled()) {
+				log.debug("Check if the subscription {} exist.", model.getSubscription());
+			}
 			List<Subscription> subscriptions = subscriptionRepository.findByIdentification(model.getSubscription());
 			if (subscriptions.isEmpty()) {
 				log.error("The Subscription {} doesn't exist.", model.getSubscription());
@@ -151,15 +157,21 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 				result.setErrorCode("404");
 				return result;
 			} else {
-				log.debug("Check if  exist a MultiMap in hazelcast for subscription {}", model.getSubscription());
+				if (log.isDebugEnabled()) {
+					log.debug("Check if  exist a MultiMap in hazelcast for subscription {}", model.getSubscription());
+				}
 				IMap<String, List<SubscriptorClient>> map = hazelcastInstance
 						.getMap(MAP_SUBSCRIPTION + model.getSubscription());
 				if (map == null) {
-					log.debug("Map for subscription {} doen't exist.", model.getSubscription());
+					if (log.isDebugEnabled()) {
+						log.debug("Map for subscription {} doen't exist.", model.getSubscription());
+					}
 					new MultiMapConfig().setName(MAP_SUBSCRIPTION + model.getSubscription())
 							.setValueCollectionType("LIST").setBinary(false);
 					map = hazelcastInstance.getMap(MAP_SUBSCRIPTION + model.getSubscription());
-					log.debug("Map for subscription {} created.", model.getSubscription());
+					if (log.isDebugEnabled()) {
+						log.debug("Map for subscription {} created.", model.getSubscription());
+					}
 				}
 				if (map.containsKey(model.getQueryValue())) {
 					map.lock(model.getQueryValue());
@@ -212,8 +224,10 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 		OperationResultModel result = new OperationResultModel();
 		result.setOperation(model.getOperationType().name());
 		try {
-			log.debug("Check if the subscriptor with id  {} exist.", model.getSuscriptionId());
-
+			if (log.isDebugEnabled()) {
+				log.debug("Check if the subscriptor with id  {} exist.", model.getSuscriptionId());
+			}
+			
 			Subscriptor subscriptor = subscriptorRepository.findBySubscriptionId(model.getSuscriptionId());
 			if (subscriptor != null) {
 				IMap<String, List<SubscriptorClient>> map = hazelcastInstance
@@ -252,7 +266,9 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 		IMap<String, List<SubscriptorClient>> map = hazelcastInstance
 				.getMap(MAP_SUBSCRIPTION + subscription.getIdentification());
 		if (!map.isEmpty()) {
-			log.debug("There are subscritors in the map {}", MAP_SUBSCRIPTION + subscription.getIdentification());
+			if (log.isDebugEnabled()) {
+				log.debug("There are subscritors in the map {} {}", MAP_SUBSCRIPTION, subscription.getIdentification());
+			}
 
 			if (instance.isArray()) {
 				for (final JsonNode objNode : instance) {
@@ -262,7 +278,9 @@ public class SubscriptionManagerImpl implements SubscriptionManager {
 				this.checkNotify(instance, subscription, map);
 			}
 		} else {
-			log.debug("There are NOT subscritors in the map {}", MAP_SUBSCRIPTION + subscription.getIdentification());
+			if (log.isDebugEnabled()) {
+				log.debug("There are NOT subscritors in the map {} {}", MAP_SUBSCRIPTION, subscription.getIdentification());
+			}
 		}
 	}
 

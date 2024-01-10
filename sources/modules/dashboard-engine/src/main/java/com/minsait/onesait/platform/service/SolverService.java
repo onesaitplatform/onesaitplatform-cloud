@@ -14,15 +14,16 @@
  */
 package com.minsait.onesait.platform.service;
 
+import com.minsait.onesait.platform.business.services.datasources.dto.InputMessage;
+import com.minsait.onesait.platform.business.services.datasources.exception.DashboardEngineException;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
-import com.minsait.onesait.platform.dto.socket.InputMessage;
-import com.minsait.onesait.platform.exception.DashboardEngineException;
 
 public interface SolverService {
 
 	public String solveDatasource(InputMessage im)
 			throws DashboardEngineException, OntologyDataUnauthorizedException, GenericOPException;
 
-	public String explainDatasource(InputMessage im);
+	public String explainDatasource(InputMessage im)
+			throws DashboardEngineException, OntologyDataUnauthorizedException, GenericOPException;
 }

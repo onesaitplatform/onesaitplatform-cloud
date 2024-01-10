@@ -40,7 +40,7 @@ public class SSAP2PersintenceUtil {
 			optional = Optional.of(AccessMode.SELECT);
 			break;
 		default:
-			log.error("formSSAPMessageType2TableAccesMode " + rType.toString() + " not in case");
+			log.error("formSSAPMessageType2TableAccesMode {} not in case", rType.toString());
 			break;
 		}
 

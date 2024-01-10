@@ -17,7 +17,11 @@ package com.minsait.onesait.platform.business.services.ontology;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.json.JSONArray;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -40,6 +44,8 @@ public interface OntologyBusinessService {
 	public List<String> getTablesFromDatasource(String datasource, String database, String schema);
 
 	public List<String> getSchemasFromDatasourceDatabase(String datasource, String database);
+	
+	public List<Map<String, Object>> getTableInformationFromDatasource(String datasource, String database, String schema);
 
 	public String getInstance(String datasource, String collection);
 
@@ -74,5 +80,11 @@ public interface OntologyBusinessService {
 
 	void deleteOntologyAndData(String id, String userId, boolean deleteData)
 			throws OntologyBusinessServiceException, JsonProcessingException;
+
+	JSONArray ontologyBulkGeneration(HttpServletRequest request, String userId);
+
+	List<Map<String, Object>> getTablePKInformation(String datasource, String database, String schema);
+	
+	boolean hasDocuments(Ontology ontology);
 
 }

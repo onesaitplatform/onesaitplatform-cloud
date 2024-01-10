@@ -1,0 +1,150 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2022 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.thymeleaf.org" th:with="lang=${#locale.language}" th:lang="${lang}">
+
+<head>
+    <title>Form Builder</title>
+    <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/formsio/boostrap.css}">     
+    <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/formsio/formiojs/dist/formio.full.css}">
+    <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/formsio/assets/styles.css}">
+    <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/formsio/assets/boostrap-form.css}" >
+    <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/formsio/assets/form-editor.css}">
+	<style type="text/css">
+	body {
+	    background-color: #ffffff !important;
+	    overflow-x: hidden;
+	}
+	
+	</style>
+</head>
+
+<body>
+	<input id="oauthtoken" type="hidden" th:value="${session.oauthToken}"/>
+    <section style="margin-top:50px">
+        <div class="builder-box">
+            <div id="builder"></div>
+        </div>
+    </section>
+    <script th:inline="javascript">
+	    
+	    const usuarios = []
+	    const formsBaseURLCreate = [[${controlpanelApiUrl}]]	    
+	    const formsShow = [[@{/forms/form-show}]]
+        const urlLibraries = [[@{/static/formsio/libs}]]
+	    const schemaURL = '/schema';
+	    const formId = [[${formId}]]
+	    const errorForm = [[#{forms.error.download}]]
+	
+	    let formResult = {}
+	    let formChanged = false;
+	    let schema = {}
+	    let fBuilder = {}
+	    window.useCache = true;
+	    window.urlLibraries = urlLibraries;
+		if(!window.showformbase){
+			window.showformbase = formsShow;
+		}
+		if(!window.formsBaseURLCreate){			
+				window.formsBaseURLCreate = formsBaseURLCreate;
+	    }
+	   if(!window.authorization) {
+		   	window.authorization={}
+		//  window.authorization={access_token:document.getElementById("oauthtoken").value} ;
+		}			
+    </script>		
+    <script th:src="@{/static/js/pages/forms.js}" ></script> 
+    <script th:src="@{/static/vendor/axios/axios.1.4.0.min.js}"></script>   
+	<script th:src="@{/static/formsio/formiojs/dist/formio.full.min.js}"></script>
+	<script th:inline="javascript">
+	    
+	 
+	    window.onload = function () { 
+	
+	        
+	        const builder = document.getElementById('builder');
+	        let components = {}
+	        
+			if(formId !== null){
+	
+		        axios.get(`${formsBaseURLCreate}/${formId}${schemaURL}`, {
+		            headers: {
+		                'accept': 'application/json'
+		            }
+		        })
+	            .then(function (response) {		                
+	                components = response.data;
+	                setSchema(response.data);
+	                builder.style.display = 'block';
+			        Formio.builder(document.getElementById('builder'), components, {}).then(function (build) {
+						 
+		                build.on('change', function (event) {
+		                    formResult = build.schema;
+		                    fBuilder = build;
+		                    console.log('formResult:', formResult);
+		                    setSchema(formResult);
+		                });
+		            })
+
+	            }).catch(function (error) {
+	            	//toastr.info(messagesForms.operations.genOpError,`${errorForm}`);
+	            })
+			}else{
+		        builder.style.display = 'block';
+		        Formio.builder(document.getElementById('builder'), components, {}).then(function (build) {
+					 
+	                build.on('change', function (event) {
+	                    formResult = build.schema;
+	                    fBuilder = build;
+	                    console.log('formResult:', formResult);
+	                    setSchema(formResult);
+	                });
+	            })
+			}
+            
+	    };
+
+	    
+	    var setSchema = (s) =>{
+	    	schema = s;
+	    	window.parent.postMessage({"schema": schema}, '*');
+	    }
+	
+		window.addEventListener("message", (event) => {			
+				if (typeof event.data !== 'undefined') {
+				   Formio.builder(document.getElementById('builder'),  event.data, {}).then(function (build) {
+						 
+		                build.on('change', function (event) {
+		                    formResult = build.schema;
+		                    fBuilder = build;
+		                    console.log('formResult:', formResult);
+		                    setSchema(formResult);
+		                });
+		                 setSchema( event.data);
+		            })
+ 
+				 
+				}
+			})
+
+	
+	</script>
+		
+</body>
+
+</html>

@@ -42,7 +42,9 @@ public class OntologyJsonWrapper {
 
 	@SuppressWarnings("unchecked")
 	public OntologyJsonWrapper(String jsonString) {
-		log.debug("New OntologyJsonWrapper object created with json: {}", jsonString);
+		if (log.isDebugEnabled()) {
+			log.debug("New OntologyJsonWrapper object created with json: {}", jsonString);
+		}		
 		try {
 			json = mapper.readValue(jsonString, new TypeReference<Map<String, Object>>() {
 			});
@@ -56,12 +58,16 @@ public class OntologyJsonWrapper {
 	}
 
 	public Object getProperty(String key) {
-		log.debug("OntologyJsonWrapper -- getProperty: {} -- value: {}", key, json.get(key));
+		if (log.isDebugEnabled()) {
+			log.debug("OntologyJsonWrapper -- getProperty: {} -- value: {}", key, json.get(key));
+		}		
 		return json.get(key);
 	}
 
 	public void setProperty(String key, Object value) {
-		log.debug("OntologyJsonWrapper -- setProperty: {} -- value: {}", value, key);
+		if (log.isDebugEnabled()) {
+			log.debug("OntologyJsonWrapper -- setProperty: {} -- value: {}", value, key);
+		}		
 		json.put(key, value);
 	}
 

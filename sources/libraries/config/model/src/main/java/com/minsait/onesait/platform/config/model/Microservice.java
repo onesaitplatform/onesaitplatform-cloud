@@ -24,6 +24,7 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Type;
 
 import com.minsait.onesait.platform.config.components.CaasConfiguration;
@@ -125,6 +126,12 @@ public class Microservice extends OPResource {
 	@NotNull
 	private boolean active;
 
+	@Column(name = "STRIP_ROUTE_PREFIX", nullable = false)
+	@Type(type = "org.hibernate.type.BooleanType")
+	@ColumnDefault("false")
+	@NotNull
+	private boolean stripRoutePrefix;
+
 	public Object getCaaSConfiguration() {
 		switch (caas) {
 		case RANCHER:
@@ -137,7 +144,6 @@ public class Microservice extends OPResource {
 		}
 	}
 
-
 	public CaasConfiguration getOpenshiftConfiguration() {
 		return caasConfiguration;
 	}
@@ -145,6 +151,7 @@ public class Microservice extends OPResource {
 	public void setOpenshiftConfiguration(CaasConfiguration caasConfiguration) {
 		this.caasConfiguration = caasConfiguration;
 	}
+
 	public String getStackOrNamespace() {
 		switch (caas) {
 		case RANCHER:

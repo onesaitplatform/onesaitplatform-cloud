@@ -54,7 +54,9 @@ public class CustomInvalidSessionStrategy implements InvalidSessionStrategy {
 	@Override
 	public void onInvalidSessionDetected(HttpServletRequest request, HttpServletResponse response)
 			throws IOException, ServletException {
-		log.debug("Invalid session, creating new one and redirecting to {}", destination);
+		if (log.isDebugEnabled()) {
+			log.debug("Invalid session, creating new one and redirecting to {}", destination);
+		}
 		// always new session
 		request.getSession();
 		if (request.getAttribute(INVALIDATE_SESSION_FORCED) != null) {

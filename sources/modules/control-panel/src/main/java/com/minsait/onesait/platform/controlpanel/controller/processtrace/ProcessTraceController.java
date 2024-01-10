@@ -155,7 +155,9 @@ public class ProcessTraceController {
 					+ OperationType.PROCESS_EXECUTION.name() + "' and id='" + process.getId() + "' and version="
 					+ process.getVersion() + " order by timeStamp desc", process.getUser().getUserId());
 
-			log.debug("queryResult: {}", queryResult);
+			if (log.isDebugEnabled()) {
+				log.debug("queryResult: {}", queryResult);
+			}
 			model.addAttribute("historics", helper.populateExecutionHistorics(queryResult, process));
 			model.addAttribute("process", helper.convertToProcessTraceDTO(process));
 

@@ -36,8 +36,6 @@ public interface ApiManagerService {
 
 	public Integer calculateNumVersion(String numversionData);
 
-	public Integer calculateNumVersion(String identification, ApiType apiType);
-
 	public void updateApi(Api apiMultipartMap, String deprecateApis, String operationsObject,
 			String authenticationObject);
 
@@ -147,4 +145,5 @@ public interface ApiManagerService {
 	public List<ApiForList> loadAPISByFilterForList(String apiId, String state, String userId, String loggeduser);
 
 	void deleteUserApiForAUser(String userAccessId);
+	
 }

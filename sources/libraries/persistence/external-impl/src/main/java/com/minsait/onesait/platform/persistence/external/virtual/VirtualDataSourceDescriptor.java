@@ -23,7 +23,7 @@ import lombok.Setter;
 
 public class VirtualDataSourceDescriptor {
 
-	@Getter
+ 	@Getter
 	@Setter
 	private DataSource datasource;
 

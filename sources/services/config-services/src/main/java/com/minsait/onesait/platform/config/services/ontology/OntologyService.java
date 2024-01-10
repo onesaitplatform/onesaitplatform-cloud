@@ -41,6 +41,8 @@ import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.datamodel.dto.DataModelDTO;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyFieldDTO;
+import com.minsait.onesait.platform.config.services.ontology.dto.OntologyListIndexMongoConfDTO;
+import com.minsait.onesait.platform.config.services.ontology.dto.OntologyPropertiesIndexConfDTO;
 import com.minsait.onesait.platform.config.services.ontology.dto.VirtualDatasourceDTO;
 
 public interface OntologyService {
@@ -211,6 +213,12 @@ public interface OntologyService {
 	OntologyElastic getOntologyElasticByOntologyId(Ontology ontology);
 
 	String getElementsAssociated(String ontologyId);
+	
+	List<OntologyPropertiesIndexConfDTO> getPropertiesOntology(Ontology ontology , List<String> indexList);
+	
+	List<OntologyPropertiesIndexConfDTO> getPropertiesOntologyVirtual(Ontology ontology , Map<String,List<String>> indexList);
+	
+	List<OntologyListIndexMongoConfDTO> getIndexTrue(String getindexMongoDB);
 
 	OntologyPresto getOntologyPrestoByOntologyId(Ontology ontology);
 
@@ -225,4 +233,8 @@ public interface OntologyService {
 
 	Ontology getOntologyByIdentificationInsert(String ontologyId, String sessionUserId);
 
+	Map<String, OntologyFieldDTO> getOntologyFieldsAndDescForms(String identification, String sessionUserId)
+			throws IOException;
+
+	boolean isTimescaleVirtualOntology(Ontology o);
 }

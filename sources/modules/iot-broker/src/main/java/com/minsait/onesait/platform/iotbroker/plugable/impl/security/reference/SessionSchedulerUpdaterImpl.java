@@ -58,7 +58,9 @@ public class SessionSchedulerUpdaterImpl implements SessionSchedulerUpdater {
 			//Further puts of the same key in the map will not be processed by the loop but it will be processes on the next iteration of the scheduler.
 			IoTSession session = mLastUpdates.remove(key);
 			if (session != null) {
-				log.debug("Save Session: {} ", key);
+				if (log.isDebugEnabled()) {
+					log.debug("Save Session: {} ", key);
+				}				
 				proxy.updateSession(session);				
 			}
 		});

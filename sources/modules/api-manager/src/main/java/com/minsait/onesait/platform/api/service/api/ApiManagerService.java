@@ -120,6 +120,8 @@ public class ApiManagerService {
 
 		final String apiVersion = getApiVersion(pathInfo);
 
+		log.debug("apiVersion result: {}", apiVersion);
+
 		String apiIdentifier = pathInfo.substring(pathInfo.indexOf(apiVersion + "/") + (apiVersion + "/").length());
 
 		int slashIndex = apiIdentifier.indexOf('/');
@@ -169,7 +171,7 @@ public class ApiManagerService {
 		for (final ApiOperation operacion : operaciones) {
 			if (operacion.getIdentification().equals(opIdentifier)
 					|| !api.getApiType().equals(ApiType.INTERNAL_ONTOLOGY)
-					&& operacion.getPath().startsWith("/" + opIdentifier)) {
+							&& operacion.getPath().startsWith("/" + opIdentifier)) {
 				if (opType != null) {
 					if (opType.equals(operacion.getOperation())) {
 						return operacion;
@@ -201,15 +203,29 @@ public class ApiManagerService {
 	public String getOperationPath(String pathInfo) {
 		final String apiIdentifier = getApiIdentifier(pathInfo);
 
+		log.debug("apiIdentifier result: {}", apiIdentifier);
+
 		return pathInfo.substring(pathInfo.indexOf(apiIdentifier) + apiIdentifier.length());
 	}
 
 	public ApiOperation getFlowEngineApiOperation(String pathInfo, Api api, String method,
 			Map<String, String[]> queryParams) {
 
-		final String opIdentifier = getOperationPath(pathInfo);
+		log.debug("getFlowEngineApiOperation , path: {}, api: {}, method: {}", pathInfo,
+				api != null ? api.getIdentification() : null, method);
+
+		String opIdentifier = getOperationPath(pathInfo);
+
+		if (opIdentifier != null && !opIdentifier.endsWith("/")) {
+			opIdentifier = opIdentifier + "/";
+		}
+
+		log.debug("opIdentifier result: {}", opIdentifier);
 
 		final List<ApiOperation> operations = apiOperationRepository.findByApiAndOperation(api, Type.valueOf(method));
+
+		log.debug("ApiOperations found: {}", String.join(",", operations.stream().map(ApiOperation::getPath).toList()));
+
 		// Checks non path param operations
 		for (final ApiOperation operation : operations) {
 			if (!hasPathParams(operation) && operation.getPath().equals(opIdentifier)
@@ -234,7 +250,8 @@ public class ApiManagerService {
 				return op;
 			}
 		}
-		return null;
+		throw new BadRequestException(
+				"No operation found for API with pathInfo " + pathInfo + " and opIdentifier " + opIdentifier);
 
 	}
 

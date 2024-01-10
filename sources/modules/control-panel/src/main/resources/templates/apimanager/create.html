@@ -221,7 +221,8 @@
 													<label class="control-label" for="metainf" th:text="#{apimanager.metainf}">Meta-inf</label><span class="required"> *</span>
 													<input id="id_metainf" data-role="tagsinput" class="form-control tagsinput" type="text" th:field="*{metaInf}" th:required="true"></input>
 													<span id="metainferror" class="help-block font-red hide" th:text="#{gen.requiredField}"><i class="la la-warning"></i> Required field</span>
-												</div>
+													<span id="metainfInfo" class="help-block" th:text="#{ontology.description.min}"><i class="la la-warning"></i></span>
+										</div>
 											</div>
 										</div>
 										<div class="row main">
@@ -254,8 +255,9 @@
 											<div class="col-md-12 col-sm-12 col-xs-12">
 												<div class="form-group">
 													<label class="control-label" for="descripcionapi" th:text="#{apimanager.description}">Description </label><span class="required"> *</span>
-													<textarea class="element textarea small form-control" id="apiDescripcion" name="apiDescripcion" maxlength="512" th:field="*{description}" th:required="true"></textarea>
-												</div>
+													<textarea class="element textarea small form-control" id="apiDescripcion" name="apiDescripcion" maxlength="512" th:field="*{description}"></textarea>			
+													<span id="descriptionerror" class="help-block" th:text="#{ontology.description.min}"><i class="la la-warning"></i></span>
+										</div>
 											</div>
 										</div>
 										<!-- image and options -->

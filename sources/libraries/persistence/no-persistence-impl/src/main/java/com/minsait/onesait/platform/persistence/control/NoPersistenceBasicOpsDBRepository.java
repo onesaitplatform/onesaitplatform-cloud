@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.persistence.control;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
@@ -256,5 +257,4 @@ public class NoPersistenceBasicOpsDBRepository implements BasicOpsDBRepository {
 		final List<DBResult> results = new ArrayList<>();
 		return ComplexWriteResult.builder().type(ComplexWriteResultType.BULK).data(results).build();
 	}
-
 }

@@ -1,0 +1,320 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2022 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org" th:with="lang=${#locale.language}" th:lang="${lang}">
+
+<head>
+	<meta name="_csrf" th:content="${_csrf.token}" />
+	<meta name="_csrf_header" th:content="${_csrf.headerName}" />
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+	<meta http-equiv="Content-Language" th:content="${lang}" />
+	<title th:text="#{name.app}" />
+
+	<!-- STYLE SHEETS -->
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}" />
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}" />
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}" />
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}" />
+	<!-- THEME -->
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
+
+	<!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND BOOSTRAP-TIMEPICKER, TAGSINPUT, JSONEDITOR  -->
+	<link rel="stylesheet" type="text/css" media="all"
+		th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}" />
+	<link rel="stylesheet" type="text/css" media="all"
+		th:href="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css}" />
+	<link rel="stylesheet" type="text/css" media="all"
+		th:href="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.css}" />
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}" />
+
+</head>
+
+<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
+
+<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper" id="GitEditorDiv">
+
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+
+		<!-- HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"> </div>
+
+		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+
+			<!-- BEGIN CONTENT BODY -->
+			<div id="blockUI" class="page-content">
+
+				<div class="alert alert-success display-hide">
+					<span th:text="${globalMessage}"></span>
+				</div>
+				<div>
+					<form id="form-function" th:object="${webproject}" class="form">
+						<input id="yamlPath" type="hidden" value="" />
+						<div id="header">
+							<div class="row pageCreateHeader">
+								<div class="col-md-6 col-sm-6 col-xs-12">
+									<div class="margin-top-4">
+										<span>Select Web Project File</span>
+									</div>
+								</div>
+
+								<div class="col-md-6 col-sm-6 col-xs-12">
+									<div class="pull-right">
+
+
+										<!-- CANCEL -->
+										<button id="cancelBtn" type="button" class="btn btn-primary-cancel"
+											name="cancel" th:value="#{gen.cancelBtn}" value="cancel"
+											th:attr="onclick='javascript:WebProjectCreateController.cancel(\''+ ${webproject.id} + '\',\'' + @{/webprojects/list} + '\');'"><span
+												th:text="#{gen.cancelBtn}"> Cancel </span></button>
+
+
+										<!-- CREATE -->
+										<button id="btn-save" class="btn btn-primary btn-primary-save" type="button"
+											name="create"><span th:text="#{notebook.deploy}"> New</span></button>
+
+
+									</div>
+								</div>
+
+
+							</div>
+							<!-- MAIN ROW -->
+							<div class="mainPanel">
+								<div class="form-group">
+									<label th:text="#{webproject.mainFile}">
+										Main File </label><span class="required"> *</span>
+									<input th:tabindex="1" id="mainFile" style="margin-top:10px; max-width: 200px;"
+										type="text" maxlength="100" readonly="readonly" class="form-control "
+										th:placeholder="'No main file selected'" value="" />
+								</div>
+
+								<div style='min-width: 0px;'>
+									<div style="height: calc(100% - 400px); margin: 1rem">
+										<git-editor-app api-data th:lang="${#locale}" th:project-id="${webproject.id}"
+											id="git-editor"></git-editor-app>
+									</div>
+								</div>
+							</div>
+					</form>
+
+					<div
+						style="margin-top:50px; margin-bottom: 30px; height: 500px; text-align:center; overflow:scroll;">
+						<p id="npm-console" style="display:block; white-space: pre-line;  margin-bottom: 30px; "></p>
+						<div id="returnDiv" hidden="true">
+							<button id="returnBtn" disabled="disabled" type="button" class="btn btn-primary"
+								name="return" th:value="#{migration.return}" value="cancel"
+								th:attr="onclick='javascript:WebProjectCreateController.cancel(\''+ ${webproject.id} + '\',\'' + @{/webprojects/list} + '\');'"><span
+									th:text="#{migration.return}"> Return </span></button>
+						</div>
+					</div>
+
+					<!-- BEGIN PAGE BAR AND BREADCRUM-->
+
+					<!-- END PAGE BAR -->
+
+					<!-- BEGIN PAGE TITLE-
+				<!-- END PAGE TITLE-->
+				</div><!-- END CONTENT BODY -->
+			</div><!-- END CONTENT page-content-wrapper -->
+		</div>
+		<!-- END MAIN PAGE WRAPPER -->
+
+		<!-- FOOTER INCLUDE -->
+		<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+
+		<!-- CORE JS CONTROLLERS -->
+		<script th:src="@{/static/js/app.js}"></script>
+		<script th:src="@{/static/js/layout.js}"></script>
+
+		<!-- PLUGINS -->
+		<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
+		<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
+		<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+		<script th:src="@{/static/vendor/git-editor/git-editor.umd.js}"></script>
+		<!-- LOADING DEFAULT DATES IF NEEDED -->
+		<script th:if="${lang} == 'es'"
+			th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}"
+			type="text/javascript"></script>
+
+		<script th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}" type="text/javascript"></script>
+		<script th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
+		<!-- LOADING DEFAULT LANG MESSAGES IF NEEDED -->
+		<script th:if="${lang} == 'es'" th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}"
+			type="text/javascript"></script>
+
+		<script th:src="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js}"
+			type="text/javascript"></script>
+		<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
+
+		<!-- JSON EDITOR -->
+		<script th:src="@{/static/vendor/json/json2.min.js}"></script>
+		<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>
+
+		<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
+		<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
+		<script th:src="@{/static/vendor/ace/theme-monokai.js}"></script>
+
+
+		<!-- INPUTMASK -->
+		<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
+
+		<!-- BLOCKUI -->
+		<script th:src="@{/static/vendor/blockUI.js}"></script>
+
+
+		<!-- TEMPLATE CONTROLLER  -->
+		<script th:src="@{/static/js/pages/webProjectCreate.js}"></script>
+
+		<!-- MAIN INIT -->
+		<script th:inline="javascript">
+			//<![CDATA[
+
+			var currentLanguage = [[${lang}]];
+			const projectId = [[${webproject.id}]]
+			const npm = [[${webproject.npm}]]
+
+			var token = [[${token}]]
+			document.querySelector('git-editor-app').apiData = {
+				baseUrl: [[${baseUrl}]],
+				token: [[${token}]],
+				gitUrl: [[${webproject.gitUrl}]],
+				gitToken: [[${webproject.gitToken}]],
+				noTabs: "false",
+			}
+
+
+			var baseUrl = [[@{/ serverless / applications}]];
+			function navigateUrl(url) {window.location.href = url;}
+			function navigateUrlBack() {window.location.href = backUrl;}
+			var csrfHeader = headerJson.csrfHeaderName;
+			var csrfToken = headerJson.csrfToken;
+			var headersObj = {};
+			headersObj[csrfHeader] = csrfToken;
+
+			var constants = {
+				deleteApplication: [[#{serverless.application.delete}]],
+				deleteApplicationInfo: [[#{serverless.application.delete.info}]],
+				deleteFunction: [[#{serverless.function.delete}]],
+				deleteFunctionInfo: [[#{serverless.function.delete.info}]]
+
+			};
+
+			$("#btn-save").click(function (event) {
+				let yamlPath = $("#actual-git-path").text().replace(/Path: /g, '');
+				if (yamlPath === '/')
+					yamlPath = '.';
+				$('#yamlPath').val(yamlPath);
+				var formData = {
+					branch: $("#selected-branch").val(),
+					path: $("#yamlPath").val(),
+				};
+				App.blockUI({target: "div#blockUI", boxed: true, overlayColor: "#5789ad", type: "loader", state: "warning", message: "Deploying project"});
+				$.ajax({
+					type: "POST",
+					headers: {
+						[csrfHeader]: csrfToken,
+						Response: 'HTTP/1.1 200 OK'
+					},
+					url: "/controlpanel/webprojects/git/" + projectId + "/deploy",
+					data: formData
+				}).done(function () {
+					if (npm) {
+						App.unblockUI("div#blockUI");
+						$('#cancelBtn').attr("disabled", "disabled");
+						$('#returnDiv').show();
+
+						getNPMStatus();
+
+					} else {
+						App.unblockUI("div#blockUI");
+						window.location = "/controlpanel/webprojects/list";
+					}
+				}).fail(function (err) {
+					App.unblockUI("div#blockUI");
+					toastr.error("Error: " + err.responseText);
+				});
+
+
+			});
+
+			function getNPMStatus() {
+				$.ajax({
+					type: "GET",
+					headers: {
+						[csrfHeader]: csrfToken,
+					},
+					url: "/controlpanel/webprojects/git/getNPMStatus",
+				}).done(function (data) {
+					var jsonData = JSON.parse(data)
+					var paragraph = $('#npm-console');
+					if (jsonData.install) {
+						toastr.success("Deployment Successful");
+						paragraph.append(jsonData.console);
+						$('#cancelBtn').removeAttr("disabled");
+						$('#returnBtn').removeAttr("disabled");
+
+					} else {
+						paragraph.append(jsonData.console);
+						setTimeout(getNPMStatus, 500);
+					}
+				}).fail(function (data) {
+					var jsonData = JSON.parse(data.responseText)
+					var paragraph = $('#npm-console');
+					paragraph.append(jsonData.console);
+					$('#cancelBtn').removeAttr("disabled");
+					$('#returnBtn').removeAttr("disabled");
+					toastr.error("An error happened during deployment");
+
+				});
+
+
+
+			}
+
+
+			function updateMainFile() {
+				// do whatever you like here
+				let text = $("#actual-git-path").text();
+				const myArray = text.split("/");
+				let file = myArray[myArray.length - 1]
+				if (file.includes(".html")) {
+					$('#mainFile').val(file);
+				} else {
+					$('#mainFile').val("No main file selected")
+				}
+				setTimeout(updateMainFile, 2000);
+			}
+
+			$(document).ready(function () {
+				updateMainFile();
+			});
+
+		</script>
+</body>
+
+</html>

@@ -207,11 +207,15 @@ public class OpenAPI3Utils {
 			final String[] splitedRef = ref.split("#");
 			final String url = splitedRef[0];
 			if (cacheExternalReferences.get(url) != null) {
-				log.debug("getStatusDescriptionFromRef: Returning cached instance for url {}", url);
+				if (log.isDebugEnabled()) {
+					log.debug("getStatusDescriptionFromRef: Returning cached instance for url {}", url);
+				}				
 				return cacheExternalReferences.get(url).getResponses().get(getParameterComponent(splitedRef[1]))
 						.getDescription();
 			} else {
-				log.debug("getStatusDescriptionFromRef: Downloading decriptor from url {}", url);
+				if (log.isDebugEnabled()) {
+					log.debug("getStatusDescriptionFromRef: Downloading decriptor from url {}", url);
+				}				
 				final OpenAPI yaml = getOpenApiYaml(url);
 				final String description = yaml.getComponents().getResponses().get(getParameterComponent(splitedRef[1]))
 						.getDescription();
@@ -239,7 +243,9 @@ public class OpenAPI3Utils {
 			final String[] splitedRef = ref.split("#");
 			final String url = splitedRef[0];
 			if (cacheExternalReferences.get(url) != null) {
-				log.debug("getApiParamFromRef: Returning cached instance for url {}", url);
+				if (log.isDebugEnabled()) {
+					log.debug("getApiParamFromRef: Returning cached instance for url {}", url);
+				}				
 				final Parameter p = cacheExternalReferences.get(url).getParameters()
 						.get(getParameterComponent(splitedRef[1]));
 				paramDTO.setName(p.getName());
@@ -248,7 +254,9 @@ public class OpenAPI3Utils {
 
 				return paramDTO;
 			}
-			log.debug("getApiParamFromRef: Downloading decriptor from url {}", url);
+			if (log.isDebugEnabled()) {
+				log.debug("getApiParamFromRef: Downloading decriptor from url {}", url);
+			}			
 			final OpenAPI yaml = getOpenApiYaml(url);
 			final Parameter p = yaml.getComponents().getParameters().get(getParameterComponent(splitedRef[1]));
 			if (p != null) {
@@ -321,7 +329,9 @@ public class OpenAPI3Utils {
 					log.error(msg);
 					throw new NoValueForParamIvocationException(msg);
 				} else {
-					log.debug("Skipping parameter. Optional parameter not received. " + msg);
+					if (log.isDebugEnabled()) {
+						log.debug("Skipping parameter. Optional parameter not received. {}", msg);
+					}					
 					skipParam = true;
 				}
 			}
@@ -456,7 +466,9 @@ public class OpenAPI3Utils {
 						log.error(msg);
 						throw new NoValueForParamIvocationException(msg);
 					} else {
-						log.debug("Skipping parameter. Optional parameter not received. " + msg);
+						if (log.isDebugEnabled()) {
+							log.debug("Skipping parameter. Optional parameter not received. {}", msg);
+						}						
 						skipParam = true;
 					}
 

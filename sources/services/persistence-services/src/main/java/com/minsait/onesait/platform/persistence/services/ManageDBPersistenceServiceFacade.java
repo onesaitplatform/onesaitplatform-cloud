@@ -166,4 +166,27 @@ public class ManageDBPersistenceServiceFacade implements ManageDBRepository, Nat
 		manageDBRepositoryFactory.getInstance(ontology).createTTLIndex(ontology, attribute, seconds);
 	}
 
+	@Override
+	public Map<String, List<String>> getListIndexes(String datatableName, String ontology) {
+		return manageDBRepositoryFactory.getInstance(ontology).getListIndexes(datatableName, ontology);
+	}
+
+	@Override
+	public void dropIndex(String ontology, String ontologyVirtual, String indexName) {
+		throw new DBPersistenceException(METHOD_NOT_EXECUTABLE);
+		
+	}
+
+	@Override
+	public String getIndexesOptions(String ontology) {
+		throw new DBPersistenceException(METHOD_NOT_EXECUTABLE);
+	}
+
+	@Override
+	public void createIndexWithParameter(String ontologyName, String typeIndex, String indexName, boolean unique,
+			boolean background, boolean sparse, boolean ttl, String timesecondsTTL, Object checkboxValuesArray) {
+		throw new DBPersistenceException(METHOD_NOT_EXECUTABLE);
+		
+	}
+
 }

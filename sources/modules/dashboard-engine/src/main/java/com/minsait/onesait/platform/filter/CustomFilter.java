@@ -50,8 +50,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.GenericFilterBean;
 
 import com.microsoft.sqlserver.jdbc.StringUtils;
+import com.minsait.onesait.platform.business.services.datasources.exception.DashboardEngineException;
 import com.minsait.onesait.platform.config.model.security.UserPrincipal;
-import com.minsait.onesait.platform.exception.DashboardEngineException;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 import com.minsait.onesait.platform.multitenant.util.BeanUtil;

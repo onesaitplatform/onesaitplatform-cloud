@@ -312,6 +312,7 @@
 															<th class="titulo-columnas text-left" ><span th:text="#{binaryfiles.fileid}">file id</span></th>
 															<th class="titulo-columnas text-left" ><span th:text="#{binaryfiles.metadata }">Metadata</span></th>
 															<th class="titulo-columnas text-left "  ><span th:text="#{binaryfiles.owner}">Owner</span></th>
+															<th class="titulo-columnas text-left" > <span th:text="#{gen.created}">Created At</span></th>
 															<th class="titulo-columnas text-left" > <span th:text="#{gen.updated}">Updated At</span></th>
 															<th class="titulo-columnas text-left" ><span th:text="#{binaryfiles.accesstypes}" >Access types</span></th>
 															<th class="titulo-columnas text-left"><span th:text="#{gen.public}">Public</span></th>
@@ -328,6 +329,9 @@
 															<td class="text-left no-wrap text-truncate-md" th:text="${cFile.metadata}"></td>
 															<!-- OWNER -->
 															<td class="text-left no-wrap " th:text="${cFile.user.userId}"></td>
+															<!-- DATE -->
+															<td class="text-left" th:if="${cFile.createdAt!=null}"><span th:text="${#dates.format(cFile.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(cFile.createdAt,'dd/MM/yyyy')}" ></span></td>
+															<td class="text-left" th:if="${cFile.createdAt==null}" th:text="'---'"></td>
 															<!-- UPDATE -->
 															<td class="text-left" th:if="${cFile.updatedAt!=null}"><span th:text="${#dates.format(cFile.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(cFile.updatedAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${cFile.updatedAt==null}" th:text="'---'"></td>										
@@ -422,13 +426,17 @@
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-															<label th:text="#{gen.updated}"> Updated At</label>
+															<label th:text="#{gen.created}"> Created At</label>
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
-															<label th:text="#{binaryfiles.accesstypes}"> Access Types</label>
+															<label th:text="#{gen.updated}"> Updated At</label>
+														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
+															<label th:text="#{binaryfiles.accesstypes}"> Access Types</label>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="7" checked/>
 															<label th:text="#{gen.public}"> Public</label>
 														</span>
 													</div>
@@ -524,9 +532,10 @@
 		
 
 		// SEARCH FORM RESET
-		$('#reset_file').on('click',function(){
-			$('#file-name').val('');
-			$('#files').DataTable().column(0).search('').draw();
+		// SEARCH FORM RESET
+		$('#reset_file').on('click',function(){	    
+			$('#form_file')[0].reset();
+			$('#form_file')[0].submit();
 		});
 
 		// SEARCH FORM

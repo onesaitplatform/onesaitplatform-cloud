@@ -23,6 +23,15 @@
 				},
 				{
 					"title": {
+						"EN": "Plugins Management",
+						"ES": "Gestión de Plugins",
+						"FR": "Gestion des plugins"
+					},
+					"icon": "",
+					"url": "/controlpanel/plugins/list"
+				},
+				{
+					"title": {
 						"EN": "Users Management",
 						"ES": "Gestión de Usuarios",
 						"FR": "Gérer les utilisateurs"
@@ -187,6 +196,16 @@
 				},
 				{
 					"title": {
+						"EN": "My Git Projects",
+						"ES": "Mis Proyectos Git", 
+						"FR": "Mes Projets Git"
+
+					},
+					"icon": "",
+					"url": "/controlpanel/codeproject/list"
+				},
+				{
+					"title": {
 						"EN": "Serverless Applications Management",
 						"ES": "Gestión de aplicaciones serverless",
 						"FR": "Gestion des applications serverless"
@@ -223,6 +242,15 @@
 			"icon": "icon-visualization",
 			"url": "",
 			"submenu": [
+				 {
+                    "title": {
+                        "EN": "Forms Management",
+                        "ES": "Gestión de Formularios",
+                        "FR": "Gestion des Formes"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/forms/list"
+                } ,
 				{
 					"title": {
 						"EN": "Dashboards Management",
@@ -624,9 +652,9 @@
 				},
 				{
 					"title": {
-						"EN": "Web Projects Management",
-						"ES": "Gestión de Proyectos Web",
-						"FR": "Gestion de Projets Web"
+						"EN": "WebApps Management",
+						"ES": "Gestión de WebApps",
+						"FR": "Gestion de WebApps"
 					},
 					"icon": "",
 					"url": "/controlpanel/webprojects/list"

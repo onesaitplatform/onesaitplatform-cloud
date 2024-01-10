@@ -823,8 +823,8 @@
 
     //leafletjs click marker event, by Point Id
     vm.clickMarkerMapEventProcessorEmitter = function(event, args){
-      var originField = vm.measures[0].config.fields[2];
-      var originValue = args.model.id;
+      var originField = vm.measures[0].config.fields[2];     
+      var originValue = event.currentScope.vm.markers[args.modelName].id;
       sendEmitterEvent(originField,originValue);
     }
 

@@ -161,7 +161,9 @@ public class VersioningManagerImpl implements VersioningManager {
 			}
 			final String author = getGitAuthor(userRepository.findFullNameByUserId(userId),
 					userRepository.findEmailByUserId(userId));
-			log.debug("Commiting file {} for GIT user {} with message {}", versionable.fileName(), author, message);
+			if (log.isDebugEnabled()) {
+				log.debug("Commiting file {} for GIT user {} with message {}", versionable.fileName(), author, message);
+			}
 			try {
 				String pathToFile = versionable.pathToVersionable(false);
 				if (pathToFile.endsWith(versionable.getClass().getSimpleName())) {
@@ -181,7 +183,9 @@ public class VersioningManagerImpl implements VersioningManager {
 		if (!StringUtils.hasText(message)) {
 			message = String.format(DEFAULT_COMMIT_MESSAGE_NO_USER, versionable.fileName());
 		}
-		log.debug("Commiting file {} with message {}", versionable.fileName(), message);
+		if (log.isDebugEnabled()) {
+			log.debug("Commiting file {} with message {}", versionable.fileName(), message);
+		}
 		try {
 			gitOperations.addFile(VersioningIOService.DIR, versioningIOService.absolutePath(versionable));
 			gitOperations.commit(message, VersioningIOService.DIR);

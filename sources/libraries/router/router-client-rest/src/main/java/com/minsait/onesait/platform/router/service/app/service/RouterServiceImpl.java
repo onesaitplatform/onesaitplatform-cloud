@@ -67,7 +67,6 @@ public class RouterServiceImpl implements RouterService, RouterClient<Notificati
 	private boolean multitenancyEnabled;
 
 	private String routerStandaloneURL;
-	
 
 	@Autowired
 	@Qualifier("routerClientRest")
@@ -90,7 +89,7 @@ public class RouterServiceImpl implements RouterService, RouterClient<Notificati
 		}
 		restTemplate.setMessageConverters(Arrays.asList(new MappingJackson2HttpMessageConverter()));
 		restTemplate.getInterceptors().add(new ClientHttpRequestInterceptor() {
-			
+
 			@Override
 			public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
 					throws IOException {
@@ -101,7 +100,6 @@ public class RouterServiceImpl implements RouterService, RouterClient<Notificati
 		});
 	}
 
-
 	@Override
 	public OperationResultModel execute(NotificationModel input) {
 		try {
@@ -110,7 +108,7 @@ public class RouterServiceImpl implements RouterService, RouterClient<Notificati
 			final String operation = model.getOperationType().name();
 
 			OperationResultModel quote = new OperationResultModel();
-			
+
 			if (operation.equalsIgnoreCase("POST")
 					|| operation.equalsIgnoreCase(OperationModel.OperationType.INSERT.name())) {
 				quote = restTemplate.exchange(routerStandaloneURL + "/insert", HttpMethod.POST,
@@ -137,7 +135,9 @@ public class RouterServiceImpl implements RouterService, RouterClient<Notificati
 				quote = restTemplate.exchange(routerStandaloneURL + "/query", HttpMethod.POST,
 						new HttpEntity<>(input, addCorrelationHeader()), OperationResultModel.class).getBody();
 			}
-			log.debug("Router Rest Client result: " + quote.toString());
+			if (log.isDebugEnabled()) {
+				log.debug("Router Rest Client result: {}", quote.toString());
+			}
 			return quote;
 
 		} catch (final Exception e) {

@@ -114,9 +114,10 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 	@Override
 	public Response getApiWithoutToken(String numVersion, String identification, String vertical)
 			throws GenericOPException {
-		if (StringUtils.hasText(vertical))
+		if (StringUtils.hasText(vertical)) {
 			masterUserService.getVertical(vertical)
 					.ifPresent(v -> MultitenancyContextHolder.setVerticalSchema(v.getSchema()));
+		}
 
 		if (numVersion.indexOf('v') != -1) {
 			numVersion = numVersion.substring(1, numVersion.length());
@@ -169,12 +170,12 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 	}
 
 	private Response getExternalApiWithOpenAPI(Api api, OpenAPI openAPI) {
-		addCustomHeaderToPaths(openAPI);
 		final Server server = new Server();
 
 		if (StringUtils.hasText(api.getGraviteeId())) {
 			server.setUrl(resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.GATEWAY) + getGraviteeBasePath(api));
 		} else {
+			addCustomHeaderToPaths(openAPI);
 			server.setUrl(getApiBasePath(api, String.valueOf(api.getNumversion())));
 		}
 		openAPI.setServers(Arrays.asList(server));

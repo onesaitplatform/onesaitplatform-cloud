@@ -21,12 +21,15 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
+import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -35,10 +38,13 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.hazelcast.org.json.JSONObject;
 import com.minsait.onesait.platform.commons.model.DescribeColumnData;
 import com.minsait.onesait.platform.commons.rtdbmaintainer.dto.ExportData;
 import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
@@ -186,10 +192,10 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 			try {
 				pquery = pquery.substring(pquery.indexOf("createIndex(") + 12, pquery.indexOf("})") + 1);
 			} catch (final Exception e) {
-				log.error("Query bad formed:" + pquery
-						+ ".Expected db.<collection>.createIndex({<attribute>:1},{name:'name_index',....})");
-				throw new DBPersistenceException("Query bad formed:" + pquery
-						+ ".Expected db.<collection>.createIndex({<attribute>:1},{name:'name_index',....})");
+				String error = "Query bad formed:" + pquery
+						+ ".Expected db.<collection>.createIndex({<attribute>:1},{name:'name_index',....})";
+				log.error(error);
+				throw new DBPersistenceException(error);
 			}
 			final List<String> keyElements = getElements(pquery);
 			try {
@@ -201,6 +207,18 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 						final JsonNode iOptsJson = objectMapper.readValue(keyElements.get(1), JsonNode.class);
 						indexOptions = new IndexOptions();
 						indexOptions.expireAfter(iOptsJson.get(EXPIRE_AFTER_SECONDS).asLong(), TimeUnit.SECONDS);
+						if(iOptsJson.get("name") != null) {
+							indexOptions.name(iOptsJson.get("name").asText());
+						}
+						if(iOptsJson.get("sparse") != null) {
+							indexOptions.sparse(iOptsJson.get("sparse").asBoolean());
+						}
+						if(iOptsJson.get("background") != null) {
+							indexOptions.background(iOptsJson.get("background").asBoolean());
+						}
+						if(iOptsJson.get("unique") != null) {
+							indexOptions.unique(iOptsJson.get("unique").asBoolean());
+						}
 					} else {
 						indexOptions = objectMapper.readValue(keyElements.get(1), IndexOptions.class);
 					}
@@ -218,6 +236,7 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 			throw new DBPersistenceException(e);
 		}
 	}
+	
 
 	private List<String> getElements(String query) {
 		final List<String> elements = new ArrayList<>();
@@ -306,6 +325,36 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 			throw new DBPersistenceException(e);
 		}
 	}
+	
+	@Override
+	public String getIndexesOptions(String ontology) {
+		log.debug(GET_INDEX, ontology);
+		try {
+			final List<MongoDbIndex> list = mongoDbConnector.getIndexes(Tenant2SchemaMapper.getRtdbSchema(), ontology);
+			List<String> listIndexOptions = new ArrayList<>();
+			for(int i = 0; i < list.size(); i++) {
+				JSONObject listIndex = new JSONObject();
+				listIndex.put("name", list.get(i).getName());
+				listIndex.put("version", list.get(i).getVersion());
+				//listIndex.put("key", list.get(i).getKey());
+				listIndex.put("unique", list.get(i).getIndexOptions().isUnique());
+				listIndex.put("background",  list.get(i).getIndexOptions().isBackground());
+				listIndex.put("sparse", list.get(i).getIndexOptions().isSparse());
+				listIndex.put("expireAfterSeconds", list.get(i).getIndexOptions().getExpireAfter(TimeUnit.SECONDS));
+				
+				String listIndexes = listIndex.toString();
+				listIndexes = listIndexes.substring(0, listIndexes.length() - 1);
+				Gson gson = new Gson();
+				String jsonKeyOrdenation = gson.toJson(list.get(i).getKey());
+				//Añadiendo asi la key obtenemos la ordenación correcta, por lo contrario la introduce desordenada con .put 
+				listIndexOptions.add(listIndexes + ",\"key\":"+ jsonKeyOrdenation + "}" );
+			}
+			return listIndexOptions.toString();
+		} catch (final Exception e) {
+			log.error(GET_INDEX, e);
+			throw new DBPersistenceException(e);
+		}
+	}
 
 	private void computeGeometryIndex(String collection, String name, String schema) {
 		log.debug("computeGeometryIndex", collection, name);
@@ -319,7 +368,7 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 				}
 			}
 		} catch (final Exception e) {
-			log.error("Cannot create geo indexes: " + e.getMessage(), e);
+			log.error("Cannot create geo indexes: {}", e.getMessage(), e);
 		}
 
 		if (!name.isEmpty()) {
@@ -380,6 +429,63 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 			mongoDbConnector.createIndex(Tenant2SchemaMapper.getRtdbSchema(), ontology, new MongoDbIndex(indexKey));
 		} catch (final DBPersistenceException e) {
 			log.error(CREATE_INDEX, e, attribute);
+			throw new DBPersistenceException(e);
+		}
+	}
+
+	@Override
+	public void createIndexWithParameter(String ontologyName, String typeIndex,String indexName, boolean unique, boolean background, boolean sparse, boolean ttl, String timesecondsTTL, Object checkboxValuesArray) {
+		
+ 			ObjectMapper objectMapper = new ObjectMapper();
+			JsonNode jsonArray = null;
+			String query = "db." + ontologyName + ".createIndex(";
+			try {
+				
+					try {
+						jsonArray = objectMapper.readTree(checkboxValuesArray.toString());
+					} catch (JsonProcessingException e) {
+						e.printStackTrace();
+					}
+					query= query +"{";
+				    for (JsonNode jsonNode : jsonArray) {
+				            String ordenation = jsonNode.get("ordenation").asText();
+				            String property = jsonNode.get("property").asText();
+				            if(ordenation.equals("ASC")) {
+						    	query = query + "'" + property +"':1, ";
+						    }else{
+						    	query = query + "'" + property +"':-1, ";
+						    }
+				    }
+				    query = query.substring(0, query.length() - 2);
+				    query = query + "},";
+				    
+				   
+				    if(indexName != null) {
+				    	 query = query + 	"{\"name\":\"" + indexName + "\",";
+				    }
+					if(unique == true) {
+						query = query + "\"unique\":"+ unique +",";
+					}	
+					
+					if(sparse == true) {
+						query = query + "\"sparse\": "+ sparse +",";
+					}	
+					
+					if(background == true) {
+						query = query + "\"background\": "+ background +",";
+					}
+
+					if(ttl == true && timesecondsTTL != null) {
+					
+						query = query + "\"expireAfterSeconds\": "+ Integer.parseInt(timesecondsTTL) +",";
+					} 
+					query = query.substring(0, query.length() - 1);
+					query = query + "})";
+				 
+				
+				createIndex(query);
+		} catch (final DBPersistenceException e) {
+			log.error(CREATE_INDEX, e);
 			throw new DBPersistenceException(e);
 		}
 	}
@@ -475,5 +581,17 @@ public class MongoNativeManageDBRepository implements ManageDBRepository {
 	public String updateTable4Ontology(String identification, String jsonSchema, Map<String, String> config) {
 		throw new DBPersistenceException(NOT_IMPLEMENTED_ALREADY);
 	}
+
+	@Override
+	public Map<String, List<String>> getListIndexes(String datatableName, String ontology) {
+		return (Map<String, List<String>>) getListIndexes(ontology);
+	}
+
+	@Override
+	public void dropIndex(String ontology, String ontologyVirtual, String indexName) {
+		throw new DBPersistenceException(NOT_IMPLEMENTED_ALREADY);
+		
+	}
+
 
 }

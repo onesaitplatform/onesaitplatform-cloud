@@ -217,7 +217,9 @@ public class AppRestController {
 					final Matcher m = p.matcher(String.valueOf(v));
 					return m.matches();
 				} catch (final Exception e) {
-					log.debug("Error while reading extra_fields for user {}", u.getUser().getUserId(), e);
+					if (log.isDebugEnabled()) {
+						log.debug("Error while reading extra_fields for user {}", u.getUser().getUserId());
+					}
 					return false;
 				}
 
@@ -266,7 +268,9 @@ public class AppRestController {
 					final List<Map<String, Object>> results = JsonPath.parse(u.getUser().getExtraFields()).read(jsonPathExpression);
 					return !results.isEmpty();
 				} catch (final Exception e) {
-					log.debug("Error while reading extra_fields for user {}", u.getUser().getUserId(), e);
+					if (log.isDebugEnabled()) {
+						log.debug("Error while reading extra_fields for user {}", u.getUser().getUserId());
+					}
 					return false;
 				}
 
@@ -489,8 +493,10 @@ public class AppRestController {
 	public ResponseEntity<?> createAuthorization(
 			@Parameter(description= "Realm Authorization", required = true) @Valid @RequestBody RealmUserAuth authorization,
 			Errors errors) {
-		log.debug("New realm authorization with user: {} and realm: {}", authorization.getUserId(),
+		if (log.isDebugEnabled()) {
+			log.debug("New realm authorization with user: {} and realm: {}", authorization.getUserId(),
 				authorization.getRealmId());
+		}
 		if (errors.hasErrors()) {
 			return ErrorValidationResponse.generateValidationErrorResponse(errors);
 		}
@@ -713,7 +719,9 @@ public class AppRestController {
 	public ResponseEntity<?> deleteAuthorization(
 			@Parameter(description= "Realm identification", required = true) @PathVariable("identification") String identification,
 			@Parameter(description= "User id", required = true) @PathVariable("userId") String userId) {
-		log.debug("Removing realm authorization for user: {} and realm: {}", userId, identification);
+		if (log.isDebugEnabled()) {
+			log.debug("Removing realm authorization for user: {} and realm: {}", userId, identification);
+		}
 		final AppList appDb = appService.getAppListByIdentification(identification);
 
 		if (appDb == null) {
@@ -1224,7 +1232,9 @@ public class AppRestController {
 			@Parameter(description= "Realm Identification", required = true) @PathVariable("identification") String identification,
 			@Parameter(description= "User id", required = true) @PathVariable("userId") String userId,
 			@Parameter(description= "Rol id", required = true) @PathVariable("rolId") String rolId) {
-		log.debug("Removing realm authorization for user: {} and realm: {}", userId, identification);
+		if (log.isDebugEnabled()) {
+			log.debug("Removing realm authorization for user: {} and realm: {}", userId, identification);
+		}
 		final AppList appDb = appService.getAppListByIdentification(identification);
 
 		if (appDb == null) {

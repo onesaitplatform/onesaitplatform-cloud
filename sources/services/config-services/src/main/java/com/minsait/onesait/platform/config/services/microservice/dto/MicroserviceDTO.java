@@ -21,7 +21,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.minsait.onesait.platform.config.components.CaasConfiguration;
 import com.minsait.onesait.platform.config.components.JenkinsConfiguration;
 import com.minsait.onesait.platform.config.components.RancherConfiguration;
-import com.minsait.onesait.platform.config.model.Microservice.TemplateType;
 import com.minsait.onesait.platform.git.GitlabConfiguration;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -59,6 +58,7 @@ public class MicroserviceDTO {
 	@NotNull
 	@Schema(required = true)
 	private String contextPath;
+	private boolean stripRoutePrefix;
 	@NotNull
 	@Schema(required = true)
 	private int port;

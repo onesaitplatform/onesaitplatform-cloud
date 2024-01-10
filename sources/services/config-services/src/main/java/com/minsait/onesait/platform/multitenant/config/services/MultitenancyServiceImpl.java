@@ -571,4 +571,14 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 		}
 	}
 
+	@Override
+	public MasterUser getUserByMail(String email) {
+		return masterUserRepository.findByEmail(email);
+	}
+
+	@Override
+	public void updateMasterUserPassword(String userId, String password) {
+		masterUserRepository.updatePasswordFromReset(userId, password);
+	}
+
 }

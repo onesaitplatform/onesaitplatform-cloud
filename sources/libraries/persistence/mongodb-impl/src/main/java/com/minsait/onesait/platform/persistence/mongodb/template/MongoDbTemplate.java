@@ -26,15 +26,17 @@ import org.bson.types.ObjectId;
 
 import com.minsait.onesait.platform.commons.model.BulkWriteResult;
 import com.minsait.onesait.platform.commons.model.MultiDocumentOperationResult;
+import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.mongodb.MongoQueryAndParams;
 import com.minsait.onesait.platform.persistence.mongodb.config.MongoDbCredentials;
 import com.minsait.onesait.platform.persistence.mongodb.index.MongoDbIndex;
 import com.mongodb.BasicDBObject;
-import com.mongodb.client.MongoClient;
 import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoIterable;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.model.WriteModel;
+import com.mongodb.client.result.UpdateResult;
 
 /**
  * This component provides a lightweight integration with the MongoDB java
@@ -260,6 +262,20 @@ public interface MongoDbTemplate extends Serializable {
 	 */
 	MultiDocumentOperationResult update(String database, String collection, String query, String update, boolean multi,
 			boolean includeIds);
+	
+	/**
+	 * Runs a db.<collection>.update(<query>, <update>, {multi: true}) command on
+	 * the given database. Returns original Template response
+	 *
+	 * @param database
+	 * @param collection
+	 * @param query
+	 * @param update
+	 * @param multi
+	 */
+
+	UpdateResult updateWithOriginalTemplateResult(String database, String collection, String query, String update,
+			boolean multi, boolean includeIds) throws DBPersistenceException;
 
 	/**
 	 * Replaces a document of a collection

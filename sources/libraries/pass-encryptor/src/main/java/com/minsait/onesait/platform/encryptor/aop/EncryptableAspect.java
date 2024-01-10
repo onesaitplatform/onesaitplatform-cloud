@@ -52,7 +52,9 @@ public class EncryptableAspect {
 				// obj.getClass().getDeclaredMethod("set".concat(capAttribute), String.class);
 				// setter.invoke(obj,
 				// JasyptConfig.getEncryptor().decrypt(encryptedProperty(value)));
-				log.debug("decrypted value for attribute {}", attribute);
+				if (log.isDebugEnabled()) {
+					log.debug("decrypted value for attribute {}", attribute);
+				}
 				return JasyptConfig.getEncryptor().decrypt(encryptedProperty(value));
 			} else {
 				log.debug("Attribute declared as @Encryptable but value is not encrypted");

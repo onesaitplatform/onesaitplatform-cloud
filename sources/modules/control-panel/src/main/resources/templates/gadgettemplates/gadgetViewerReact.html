@@ -24,6 +24,8 @@
 
 	<link rel="stylesheet" href="/controlpanel/static/dashboards/styles/app.css"/>
 	
+	<link rel="stylesheet" th:href="@{/static/css/openLayer7.4.0.css}">
+	
 	<input id="oauthtoken" type="hidden" th:value="${session.oauthToken}"/>
 
 	<!--headerlibs-->
@@ -113,6 +115,7 @@
 	<link rel="stylesheet" href="/controlpanel/static/dashboards/resources/lf-ng-md-file-input.min.css"/>
 	<script src="/controlpanel/static/dashboards/resources/lf-ng-md-file-input.min.js"></script>
 	<script src="/controlpanel/static/dashboards/scripts/app.js"></script>
+	<script th:src="@{/static/vendor/openLayers-7.4.0/openLayer-7.4.0.min.js}"></script>
 
 	<script type="text/javascript">
 		window.addEventListener('load', function () {

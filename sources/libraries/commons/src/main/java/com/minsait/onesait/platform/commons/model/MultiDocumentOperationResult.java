@@ -69,17 +69,17 @@ public class MultiDocumentOperationResult {
 		}
 		
 		if (obj.has(DATA_PROPERTY) && obj.get(DATA_PROPERTY) instanceof JSONArray) {
-			//TIMESERIES
-			
+			// TIMESERIES
+
 			List<String> ids = new ArrayList<>();
 			JSONArray data = obj.getJSONArray(DATA_PROPERTY);
 			int len = data.length();
-			
+
 			result.setCount(len);
-			
+
 			result.setIds(ids);
 		} else {
-			//NON TIMESERIES
+			// NON TIMESERIES
 			if (obj.has(DATA_PROPERTY) && obj.getJSONObject(DATA_PROPERTY).has(IDS_PROPERTY)
 					&& null != obj.getJSONObject(DATA_PROPERTY).get(IDS_PROPERTY)) {
 				if (obj.getJSONObject(DATA_PROPERTY).get(COUNT_PROPERTY) instanceof Integer) {
@@ -94,27 +94,27 @@ public class MultiDocumentOperationResult {
 					result.setCount((Long) obj.get(COUNT_PROPERTY));
 				}
 			}
-	
+
 			if (obj.has(DATA_PROPERTY) && obj.getJSONObject(DATA_PROPERTY).has(IDS_PROPERTY)
 					&& null != obj.getJSONObject(DATA_PROPERTY).get(IDS_PROPERTY)) {
 				ArrayList<String> ids = new ArrayList<>();
-	
+
 				JSONArray lIds = (JSONArray) obj.getJSONObject(DATA_PROPERTY).get(IDS_PROPERTY);
 				for (int i = 0; i < lIds.length(); i++) {
 					ids.add(lIds.getString(i));
 				}
 				result.setIds(ids);
-	
+
 				result.setStrIds(obj.getJSONObject(DATA_PROPERTY).get(IDS_PROPERTY).toString());
 			} else if (!obj.has(DATA_PROPERTY) && obj.has(IDS_PROPERTY) && null != obj.get(IDS_PROPERTY)) {
 				ArrayList<String> ids = new ArrayList<>();
-	
+
 				JSONArray lIds = (JSONArray) obj.get(IDS_PROPERTY);
 				for (int i = 0; i < lIds.length(); i++) {
 					ids.add(lIds.getString(i));
 				}
 				result.setIds(ids);
-	
+
 				result.setStrIds(obj.get(IDS_PROPERTY).toString());
 			}
 	

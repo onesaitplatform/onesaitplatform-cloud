@@ -24,22 +24,22 @@ public class ClusterMembershipListener implements MembershipListener {
 
 	@Override
 	public void memberAdded(MembershipEvent membershipEvent) {
-		 log.info("Added: " + membershipEvent);
-		 log.info("Info Added: " + membershipEvent.getMember().getUuid());
-		 log.info("Info Added HOST: " + membershipEvent.getMember().getAddress().getHost()+":"+membershipEvent.getMember().getAddress().getPort());
+		log.info("Added: {}", membershipEvent);
+		log.info("Info Added: {}", membershipEvent.getMember().getUuid());
+		log.info("Info Added HOST: {}:{}", membershipEvent.getMember().getAddress().getHost(),
+				membershipEvent.getMember().getAddress().getPort());
 
 	}
 
 	@Override
 	public void memberRemoved(MembershipEvent membershipEvent) {
-		 log.info("Removed: " + membershipEvent);
-		 log.info("Info Removed: " + membershipEvent.getMember().getUuid());
-		 log.info("Info Removed HOST: " + membershipEvent.getMember().getAddress().getHost()+":"+membershipEvent.getMember().getAddress().getPort());
-
+		log.info("Removed: {}", membershipEvent);
+		log.info("Info Removed: {}", membershipEvent.getMember().getUuid());
+		log.info("Info Removed HOST: {}:{} ", membershipEvent.getMember().getAddress().getHost(),
+				+membershipEvent.getMember().getAddress().getPort());
 
 	}
 
-	
 //	@Override
 //	public void memberAttributeChanged(MemberAttributeEvent memberAttributeEvent) {
 //		 log.info("Member attribute changed: " + memberAttributeEvent);

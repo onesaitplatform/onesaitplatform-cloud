@@ -640,7 +640,9 @@ public class ResourceController {
 				}
 
 			} catch (final Exception e) {
-				log.debug("Cannot update resource " + e.getMessage());
+				if (log.isDebugEnabled()) {
+					log.debug("Cannot update resource {}", e.getMessage());
+				}
 				utils.addRedirectMessage("resources.error.updated", redirect);
 				return "redirect:/opendata/resources/list";
 			}
@@ -678,7 +680,9 @@ public class ResourceController {
 				}
 
 			} catch (final Exception e) {
-				log.debug("Cannot update resource " + e.getMessage());
+				if (log.isDebugEnabled()) {
+					log.debug("Cannot update resource {}", e.getMessage());
+				}
 				utils.addRedirectMessage("resources.error.updated", redirect);
 				return "redirect:/opendata/resources/list";
 			}
@@ -738,7 +742,9 @@ public class ResourceController {
 
 				resourceService.persistResource(id);
 			} catch (final EmptyResultDataAccessException e) {
-				log.debug("The resource does not exist in ConfigDB: " + e.getMessage());
+				if (log.isDebugEnabled()) {
+					log.debug("The resource does not exist in ConfigDB: {}", e.getMessage());
+				}
 			} catch (final Exception e) {
 				log.error("Could not delete the Resource");
 				utils.addRedirectMessage("resources.error.delete", redirect);

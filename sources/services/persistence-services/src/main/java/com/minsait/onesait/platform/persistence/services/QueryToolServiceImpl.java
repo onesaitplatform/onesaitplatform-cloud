@@ -109,7 +109,7 @@ public class QueryToolServiceImpl implements QueryToolService {
 	@Autowired
 	private Sql2NativeTool sql2NativeTool;
 
-	private static final String JOIN_REGEX = "(LEFT OUTER JOIN|RIGHT OUTER JOIN|INNER JOIN|FULL JOIN|CROSS|JOIN)\\W+(\\w+)";
+	private static final String JOIN_REGEX = "\\W+(LEFT OUTER JOIN|RIGHT OUTER JOIN|INNER JOIN|FULL JOIN|CROSS|JOIN)\\W+(\\w+)";	
 	private static final String USER = "User:";
 	private static final String HASNT_PERMISSION_QUERY = " has not permission to query ontology ";
 
@@ -141,8 +141,9 @@ public class QueryToolServiceImpl implements QueryToolService {
 							throw new DBPersistenceException(USER + user + HASNT_PERMISSION_QUERY + s);
 						final Ontology source = ontologyService.getOntologyByIdentification(ontology);
 						final Ontology destination = ontologyService.getOntologyByIdentification(s);
-						if (destination == null || source == null
+						if ((destination == null || source == null
 								|| !source.getRtdbDatasource().equals(destination.getRtdbDatasource()))
+								&& !isTimescalePersistence(source, destination))
 							throw new DBPersistenceException(
 									"Ontologies: " + ontology + " and " + s + " are not in the same repository");
 					}
@@ -161,8 +162,9 @@ public class QueryToolServiceImpl implements QueryToolService {
 							throw new DBPersistenceException(USER + user + HASNT_PERMISSION_QUERY + s);
 						final Ontology source = ontologyService.getOntologyByIdentification(ontology);
 						final Ontology destination = ontologyService.getOntologyByIdentification(s);
-						if (destination == null || source == null
+						if ((destination == null || source == null
 								|| !source.getRtdbDatasource().equals(destination.getRtdbDatasource()))
+								&& !isTimescalePersistence(source, destination))
 							throw new DBPersistenceException(
 									"Ontologies: " + ontology + " and " + s + " are not in the same repository");
 					}
@@ -609,4 +611,12 @@ public class QueryToolServiceImpl implements QueryToolService {
 
 	}
 
+	private boolean isTimescalePersistence(Ontology o1, Ontology o2) {
+		if ((o1.getRtdbDatasource().equals(RtdbDatasource.TIMESCALE) && ontologyService.isTimescaleVirtualOntology(o2))
+				|| o2.getRtdbDatasource().equals(RtdbDatasource.TIMESCALE)
+						&& ontologyService.isTimescaleVirtualOntology(o1))
+			return true;
+		return false;
+
+	}
 }

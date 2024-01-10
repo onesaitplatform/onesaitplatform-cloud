@@ -262,7 +262,9 @@ public class GitOperationsImpl implements GitOperations {
 		try {
 			if (!targetFile.exists()) {
 				final boolean newFile = targetFile.createNewFile();
-				log.debug("createNewFile:" + newFile);
+				if (log.isDebugEnabled()) {
+					log.debug("createNewFile: {}", newFile);
+				}
 			}
 			if (sourceFile.exists()) {
 				FileUtils.copyFile(sourceFile, targetFile);

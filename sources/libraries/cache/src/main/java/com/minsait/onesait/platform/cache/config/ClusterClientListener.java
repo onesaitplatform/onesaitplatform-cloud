@@ -34,13 +34,13 @@ public class ClusterClientListener implements ClientListener {
 
 	@Override
 	public void clientConnected(Client client) {
-		log.info("Cache. Client Connected: " + client.getName());
-		log.info("Cache. Info Added: " + client.getUuid());
+		log.info("Cache. Client Connected: {}", client.getName());
+		log.info("Cache. Info Added: {}", client.getUuid());
 	}
 
 	@Override
 	public void clientDisconnected(Client client) {
-		log.info("Cache. Client Disconnected: " + client.getName());
+		log.info("Cache. Client Disconnected: {}", client.getName());
 
 	}
 

@@ -73,7 +73,7 @@ public class ApiManagerServiceTest {
 		final List<Api> existentApis = new ArrayList<>();
 
 		when(apiRepository.findByIdentificationAndApiType(identification, apiType)).thenReturn(existentApis);
-		assertTrue(service.calculateNumVersion(identification, apiType) == 1);
+		assertTrue(service.calculateNumVersion(identification) == 1);
 
 	}
 
@@ -103,7 +103,7 @@ public class ApiManagerServiceTest {
 		existentApis.add(api);
 
 		when(apiRepository.findByIdentificationAndApiType(identification, apiType)).thenReturn(existentApis);
-		assertTrue(service.calculateNumVersion(identification, apiType) == 2);
+		assertTrue(service.calculateNumVersion(identification) == 2);
 
 	}
 

@@ -47,6 +47,10 @@ var SchemaAttributes = {
     defaultValue: {
         ref: 'li.DefaultValue',
         name: 'default'
+    },
+    format: {
+        ref: 'li.Format',
+        name: 'format'
     }
 };
 

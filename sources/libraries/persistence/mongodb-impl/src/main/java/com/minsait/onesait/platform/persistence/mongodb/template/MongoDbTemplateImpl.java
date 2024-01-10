@@ -113,7 +113,9 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 
 	@Override
 	public List<String> getCollectionNames(String database) throws DBPersistenceException {
-		log.debug("Retrieving collection names. Database = {}.", database);
+		if (log.isDebugEnabled()) {
+			log.debug("Retrieving collection names. Database = {}.", database);
+		}		
 		try {
 			return util.toJavaList(mongoDBClientManager.electClient().getDatabase(database).listCollectionNames());
 		} catch (final Throwable e) {
@@ -152,7 +154,9 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 	@Override
 	public Document getDatabaseStats(String database) throws DBPersistenceException {
 		try {
-			log.debug("Retrieving database stats. Database = {}.", database);
+			if (log.isDebugEnabled()) {
+				log.debug("Retrieving database stats. Database = {}.", database);
+			}			
 			return mongoDBClientManager.electClient().getDatabase(database).runCommand(new Document("dbstats", 1));
 		} catch (final Throwable e) {
 			log.error("Unable to retrieve database stats. Database = {}, cause = {}, errorMessage = {}.", database,
@@ -164,7 +168,9 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 	@Override
 	public Document getCollectionStats(String database, String collection) throws DBPersistenceException {
 		try {
-			log.debug("Retrieving collection stats. Database = {}, collection = {}.", database, collection);
+			if (log.isDebugEnabled()) {
+				log.debug("Retrieving collection stats. Database = {}, collection = {}.", database, collection);
+			}			
 			return mongoDBClientManager.electClient().getDatabase(database)
 					.runCommand(new Document("collStats", collection));
 		} catch (final Throwable e) {
@@ -178,7 +184,9 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 	@Override
 	public List<String> getIndexesAsStrings(String database, String collection) throws DBPersistenceException {
 		try {
-			log.debug("Retrieving indexes. Database = {}, collection = {}.", database, collection);
+			if (log.isDebugEnabled()) {
+				log.debug("Retrieving indexes. Database = {}, collection = {}.", database, collection);
+			}			
 			final ListIndexesIterable<Document> indexes = getCollection(database, collection, BasicDBObject.class)
 					.listIndexes();
 			final List<String> result = new ArrayList<>();
@@ -198,7 +206,9 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 	@Override
 	public List<MongoDbIndex> getIndexes(String database, String collection) throws DBPersistenceException {
 		try {
-			log.debug("Retrieving indexes. Database = {}, collection = {}.", database, collection);
+			if (log.isDebugEnabled()) {
+				log.debug("Retrieving indexes. Database = {}, collection = {}.", database, collection);
+			}			
 			final ListIndexesIterable<Document> indexes = getCollection(database, collection, BasicDBObject.class)
 					.listIndexes();
 			final List<MongoDbIndex> result = new ArrayList<>();
@@ -217,7 +227,9 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 
 	@Override
 	public long count(String database, String collection, String query) throws DBPersistenceException {
-		log.debug("Running count command. Database = {}, collection = {}, query = {}.", database, collection, query);
+		if (log.isDebugEnabled()) {
+			log.debug("Running count command. Database = {}, collection = {}, query = {}.", database, collection, query);
+		}	
 		try {
 			if (!query.trim().equals("{}") && query.contains("count(")) {
 				query = query.substring(query.indexOf("count(") + 6, query.indexOf(")"));
@@ -239,13 +251,15 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 
 	@Override
 	public void createCollection(String database, String collection) {
-		log.debug("Creating the collection...Database = {}, Collection = {} .", database, collection);
+		if (log.isDebugEnabled()) {
+			log.debug("Creating the collection...Database = {}, Collection = {} .", database, collection);
+		}		
 		try {
 			final String normalizedCollectionName = getNormalizedCollectionName(database, collection);
 			final CreateCollectionOptions options = new CreateCollectionOptions();
 			options.capped(false);
 //			options.autoIndex(true); //Desaparece en el nuevo API
-			
+
 			mongoDBClientManager.electClient().getDatabase(database).createCollection(normalizedCollectionName,
 					options);
 		} catch (final Throwable e) {
@@ -259,7 +273,9 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 
 	@Override
 	public String createIndex(String database, String collection, MongoDbIndex index) {
-		log.debug("Creating indexes. Database = {}, Collection = {}, Index = {}.", database, collection, index);
+		if (log.isDebugEnabled()) {
+			log.debug("Creating indexes. Database = {}, Collection = {}, Index = {}.", database, collection, index);
+		}		
 		try {
 			final MongoCollection<?> dbCollection = getCollection(database, collection, BasicDBObject.class);
 			final BasicDBObject indexKey = new BasicDBObject(index.getKey());
@@ -283,7 +299,9 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 
 	@Override
 	public void createIndex(String database, String collection, Bson geo2dsphere) {
-		log.debug("Creating geo2dsphere indexes. Database = {}, Collection = {}", database, collection);
+		if (log.isDebugEnabled()) {
+			log.debug("Creating geo2dsphere indexes. Database = {}, Collection = {}", database, collection);
+		}		
 		try {
 			final MongoCollection<?> dbCollection = getCollection(database, collection, BasicDBObject.class);
 			dbCollection.createIndex(geo2dsphere);
@@ -299,8 +317,10 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 	@Override
 	public MongoIterable<BasicDBObject> aggregate(String database, String collection, List<BasicDBObject> pipeline,
 			boolean allowDiskUse) throws DBPersistenceException {
-		log.debug("Running aggregate command. Database = {} , Collection = {} , Pipeline = {} ", database, collection,
+		if (log.isDebugEnabled()) {
+			log.debug("Running aggregate command. Database = {} , Collection = {} , Pipeline = {} ", database, collection,
 				pipeline);
+		}		
 		log.debug("Execution of method aggregate without maxTimeMS");
 		try {
 			if (pipeline == null || pipeline.isEmpty()) {
@@ -321,9 +341,11 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 	@Override
 	public MongoIterable<BasicDBObject> aggregate(String database, String collection, List<Bson> pipeline,
 			boolean allowDiskUse, long queryExecutionTimeoutMillis) throws DBPersistenceException {
-		log.debug("Running aggregate command. Database = {} , Collection = {} , Pipeline = {} ", database, collection,
+		if (log.isDebugEnabled()) {
+			log.debug("Running aggregate command. Database = {} , Collection = {} , Pipeline = {} ", database, collection,
 				pipeline);
-		log.debug("Execution of method aggregate with execution timeout {}", queryExecutionTimeoutMillis);
+			log.debug("Execution of method aggregate with execution timeout {}", queryExecutionTimeoutMillis);
+		}		
 		try {
 			final MongoCollection<BasicDBObject> dbCollection = getCollection(database, collection,
 					BasicDBObject.class);
@@ -340,9 +362,11 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 	@Override
 	public <T> MongoIterable<T> distinct(String database, String collection, String key, String query,
 			Class<T> resultType) {
-		log.debug(
+		if (log.isDebugEnabled()) {
+			log.debug(
 				"Retrieving the distinct values from the given key/query. Database = {} , collection = {} , key = {} , query = {}.",
 				database, collection, key, query);
+		}		
 		try {
 			if (key == null || key.isEmpty()) {
 				throw new IllegalArgumentException("The distinct field is required");
@@ -366,8 +390,10 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 
 	@Override
 	public void dropIndex(String database, String collection, MongoDbIndex index) {
-		log.debug("Deleting the given index. Database = {} , collection = {} , index = {}.", database, collection,
+		if (log.isDebugEnabled()) {
+			log.debug("Deleting the given index. Database = {} , collection = {} , index = {}.", database, collection,
 				index);
+		}		
 		try {
 			final MongoCollection<?> col = getCollection(database, collection, BasicDBObject.class);
 			col.dropIndex(index.getName());
@@ -409,9 +435,11 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 	@Override
 	public MongoIterable<BasicDBObject> findAll(String database, String collection, int skip, int limit,
 			long queryExecutionTimeoutMillis) {
-		log.debug(
+		if (log.isDebugEnabled()) {
+			log.debug(
 				"Running query. Database = {} , collection = {} , query = {}, projection = {} , sort = {} , skip = {} , limit = {}, executionTimeOut = {}.",
 				database, collection, skip, limit, queryExecutionTimeoutMillis);
+		}		
 		try {
 			if (queryExecutionTimeoutMillis < 0) {
 				throw new IllegalArgumentException("The query execution timeout must be greater than or equal to zero");
@@ -436,7 +464,7 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 			final String errorMessage = String.format(
 					"Unable to retrieve the required information. Database = %s , collection = %s , query = %s , projection = %s, "
 							+ "sort = %s , skip = %s , limit = %s , queryExecutionTimeOut = %s, cause = %s, errorMessage = %s.",
-							database, collection, skip, limit, queryExecutionTimeoutMillis, e.getCause(), e.getMessage());
+					database, collection, skip, limit, queryExecutionTimeoutMillis, e.getCause(), e.getMessage());
 			log.error(errorMessage);
 			throw new DBPersistenceException(errorMessage, e);
 		}
@@ -459,9 +487,11 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 	@Override
 	public MongoIterable<BasicDBObject> find(String database, String collection, Bson query, Bson projection, Bson sort,
 			int skip, int limit, long queryExecutionTimeoutMillis) throws DBPersistenceException {
-		log.debug(
+		if (log.isDebugEnabled()) {
+			log.debug(
 				"Running query. Database = {} , collection = {} , query = {}, projection = {} , sort = {} , skip = {} , limit = {}, executionTimeOut = {}.",
 				database, collection, query, projection, sort, skip, limit, queryExecutionTimeoutMillis);
+		}		
 		try {
 			if (queryExecutionTimeoutMillis < 0) {
 				throw new IllegalArgumentException("The query execution timeout must be greater than or equal to zero");
@@ -488,7 +518,9 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 				result = result.limit(limit);
 			}
 			if (queryExecutionTimeoutMillis > 0) {
-				log.debug("Executing find with maxTimeMs {}", queryExecutionTimeoutMillis);
+				if (log.isDebugEnabled()) {
+					log.debug("Executing find with maxTimeMs {}", queryExecutionTimeoutMillis);
+				}				
 				result = result.maxTime(queryExecutionTimeoutMillis, TimeUnit.MILLISECONDS);
 			}
 			return result;
@@ -496,8 +528,8 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 			final String errorMessage = String.format(
 					"Unable to retrieve the required information. Database = %s , collection = %s , query = %s , projection = %s, "
 							+ "sort = %s , skip = %s , limit = %s , queryExecutionTimeOut = %s, cause = %s, errorMessage = %s.",
-							database, collection, query, projection, sort, skip, limit, queryExecutionTimeoutMillis,
-							e.getCause(), e.getMessage());
+					database, collection, query, projection, sort, skip, limit, queryExecutionTimeoutMillis,
+					e.getCause(), e.getMessage());
 			log.error(errorMessage);
 			throw new DBPersistenceException(errorMessage, e);
 		}
@@ -537,9 +569,11 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 
 	@Override
 	public ObjectId insert(String database, String collection, BasicDBObject doc) throws DBPersistenceException {
-		log.debug(
+		if (log.isDebugEnabled()) {
+			log.debug(
 				"Inserting the object into MongoDB. Database = {} , collection = {} , document = {}, writeConcern = {}.",
 				database, collection, doc, writeConcern);
+		}
 
 		fixPosibleNonCapitalizedGeometryPoint(doc);
 
@@ -551,7 +585,7 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 			final String errorMessage = String.format(
 					"Unable to insert the object in MongoDB. Database = %s, collection = %s , document = %s , writeConcern = %s , cause = %s,"
 							+ "errorMessage = %s.",
-							database, collection, doc, writeConcern, e.getCause(), e.getMessage());
+					database, collection, doc, writeConcern, e.getCause(), e.getMessage());
 			log.error(errorMessage, e);
 
 			if (e.getCode() == 11000) {
@@ -569,9 +603,11 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 			boolean includeObjectIds) throws DBPersistenceException {
 
 		final BulkWriteResult[] bwResults = new BulkWriteResult[data.size()];
-		log.debug(
+		if (log.isDebugEnabled()) {
+			log.debug(
 				"Performing bulk insert operation. Database= {}, collection = {} , data = {} , writeConcern = {} , orderedOperation = {}, includeObjectIds = {}.",
 				database, collection, data, writeConcern, orderedOp, includeObjectIds);
+		}		
 		// mapa con indice de lDatos y Object
 		final Map<Integer, BasicDBObject> mapDocs = new HashMap<>();
 
@@ -608,7 +644,7 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 				final List<ErrorResult> errs = e.getWriteErrors().stream()
 						.map(err -> new ErrorResult(
 								err.getCode() == 11000 ? ErrorResult.ErrorType.DUPLICATED : ErrorResult.ErrorType.ERROR,
-										ErrorResult.PersistenceType.MONGO, err.getMessage()))
+								ErrorResult.PersistenceType.MONGO, err.getMessage()))
 						.collect(Collectors.toList());
 				throw new DBPersistenceException(e, errs, "Bulk write operation error");
 
@@ -625,7 +661,7 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 			} catch (final MongoException e) {
 				final ErrorResult err = new ErrorResult(
 						e.getCode() == 11000 ? ErrorResult.ErrorType.DUPLICATED : ErrorResult.ErrorType.ERROR,
-								ErrorResult.PersistenceType.MONGO, e.getMessage());
+						ErrorResult.PersistenceType.MONGO, e.getMessage());
 				throw new DBPersistenceException(e, err, "Bulk write operation error");
 			} finally {
 				for (final int i : mapDocs.keySet()) {
@@ -649,14 +685,14 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 			final String errorMessage = String.format(
 					"Unable to perform the bulkInsert operation. Database = %s, collection = %s, data = %s , writeConcern = %s , orderedOperation = %s"
 							+ "cause = %s , erroMessage = %s.",
-							database, collection, data, writeConcern, orderedOp, e.getCause(), e.getMessage());
+					database, collection, data, writeConcern, orderedOp, e.getCause(), e.getMessage());
 			log.error(errorMessage);
 			throw e;
 		} catch (final Throwable e) {
 			final String errorMessage = String.format(
 					"Unable to perform the bulkInsert operation. Database = %s, collection = %s, data = %s , writeConcern = %s , orderedOperation = %s"
 							+ "cause = %s , erroMessage = %s.",
-							database, collection, data, writeConcern, orderedOp, e.getCause(), e.getMessage());
+					database, collection, data, writeConcern, orderedOp, e.getCause(), e.getMessage());
 			log.error(errorMessage);
 			throw new DBPersistenceException(errorMessage, e);
 		}
@@ -665,7 +701,7 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 	@Override
 	public MultiDocumentOperationResult remove(String database, String collection, String query, boolean includeIds)
 			throws DBPersistenceException {
-		
+
 		if (query.indexOf("db.") != -1) {
 			query = util.getQueryContent(query);
 		}
@@ -675,7 +711,9 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 	@Override
 	public MultiDocumentOperationResult remove(String database, String collection, BasicDBObject query,
 			boolean includeIds) throws DBPersistenceException {
-		log.debug("Removing from MongoDB...Database= {} , collection = {} , query = {}.", database, collection, query);
+		if (log.isDebugEnabled()) {
+			log.debug("Removing from MongoDB...Database= {} , collection = {} , query = {}.", database, collection, query);
+		}	
 
 		DeleteResult dbResult = null;
 		try {
@@ -725,7 +763,9 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 
 	@Override
 	public void dropCollection(String database, String collection) throws DBPersistenceException {
-		log.debug("Dropping collection. Database = {}, collection = {}.", database, collection);
+		if (log.isDebugEnabled()) {
+			log.debug("Dropping collection. Database = {}, collection = {}.", database, collection);
+		}		
 		try {
 			final MongoCollection<?> dbCollection = getCollection(database, collection, BasicDBObject.class);
 			dbCollection.drop();
@@ -738,12 +778,10 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 		}
 	}
 
-	@Override
-	public MultiDocumentOperationResult update(String database, String collection, String query, String update,
+	private MongoDBUpdateMultiResponse updateBasicOp(String database, String collection, String query, String update,
 			boolean multi, boolean includeIds) throws DBPersistenceException {
-		log.info("Updating document. Database= {} , collection = {}, document = {} , update = {}.", database,
-				collection, query, update);
 		UpdateResult dbResult = null;
+		MongoDBUpdateMultiResponse updateMultiResponse = new MongoDBUpdateMultiResponse();
 		try {
 
 			final int endOfQuery = endOfQuery(update);
@@ -807,8 +845,9 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 						dbResult.getMatchedCount(), dbResult.getModifiedCount(), upserted);
 			}
 			log.info("Executed update, with query {}, rows found and 0 rows updated and 0 rows upserted", query);
-
-			return updateResult;
+			updateMultiResponse.setMultiDocumentOperationResult(updateResult);
+			updateMultiResponse.setUpdateResult(dbResult);
+			return updateMultiResponse;
 
 		} catch (final MongoException e) {
 			final String errorMessage = String.format(
@@ -831,6 +870,18 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 		}
 	}
 
+	@Override
+	public MultiDocumentOperationResult update(String database, String collection, String query, String update,
+			boolean multi, boolean includeIds) throws DBPersistenceException {
+		return updateBasicOp(database, collection, query, update, multi, includeIds).getMultiDocumentOperationResult();
+	}
+	
+	@Override
+	public UpdateResult updateWithOriginalTemplateResult(String database, String collection, String query, String update,
+			boolean multi, boolean includeIds) throws DBPersistenceException {
+		return updateBasicOp(database, collection, query, update, multi, includeIds).getUpdateResult();
+	}
+
 	private int endOfQuery(String query) {
 		int i = -1;
 		int countDoubleQuotes = 0;
@@ -840,11 +891,11 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 		while (i < query.length() && !found) {
 			i++;
 			final char c = query.charAt(i);
-			if(c == '"' && i > 0 && query.charAt(i-1) != '\\' ) {
+			if (c == '"' && i > 0 && query.charAt(i - 1) != '\\') {
 				if (countDoubleQuotes == 0) {
-					countDoubleQuotes ++;
+					countDoubleQuotes++;
 				} else {
-					countDoubleQuotes --;
+					countDoubleQuotes--;
 				}
 			}
 
@@ -928,10 +979,10 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 
 	@Override
 	public ServerAddress getReplicaSetMaster() {
-		MongoClient client=mongoDBClientManager.electClient();
-		
-		for(ServerDescription server:client.getClusterDescription().getServerDescriptions()){
-			if(server.isPrimary()) {
+		MongoClient client = mongoDBClientManager.electClient();
+
+		for (ServerDescription server : client.getClusterDescription().getServerDescriptions()) {
+			if (server.isPrimary()) {
 				return server.getAddress();
 			}
 		}
@@ -945,7 +996,9 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 
 	@Override
 	public String getNormalizedCollectionName(String database, String collectionName) {
-		log.debug("Normalizing collection name. Database = {}, collection = {}.", database, collectionName);
+		if (log.isDebugEnabled()) {
+			log.debug("Normalizing collection name. Database = {}, collection = {}.", database, collectionName);
+		}		
 		final String key = database + "::" + collectionName;
 		String result = normalizedCollectionNames.get(key);
 		if (result == null) {
@@ -967,8 +1020,10 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 				}
 			}
 		}
-		log.debug("The collection name has been normalized. Database = {}, collection = {}, result = {}.", database,
+		if (log.isDebugEnabled()) {
+			log.debug("The collection name has been normalized. Database = {}, collection = {}, result = {}.", database,
 				collectionName, result);
+		}		
 		return result;
 	}
 
@@ -1013,9 +1068,11 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 	public List<BulkWriteResult> bulkUpsert(String database, String collection,
 			List<WriteModel<BasicDBObject>> bulkWrites, boolean includeIds, boolean orderedOp, List<String> instances) {
 		final BulkWriteResult[] bwResults = new BulkWriteResult[bulkWrites.size()];
-		log.debug(
+		if (log.isDebugEnabled()) {
+			log.debug(
 				"Performing bulk upsert operation. Database= {}, collection = {}  , writeConcern = {} , orderedOperation = {}, includeObjectIds = {}.",
 				database, collection, writeConcern, orderedOp, includeIds);
+		}		
 		// mapa con indice de lDatos y Object
 		final Map<Integer, BasicDBObject> mapDocs = new HashMap<>();
 
@@ -1051,14 +1108,14 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 				final List<ErrorResult> errs = e.getWriteErrors().stream()
 						.map(err -> new ErrorResult(
 								err.getCode() == 11000 ? ErrorResult.ErrorType.DUPLICATED : ErrorResult.ErrorType.ERROR,
-										ErrorResult.PersistenceType.MONGO, err.getMessage()))
+								ErrorResult.PersistenceType.MONGO, err.getMessage()))
 						.collect(Collectors.toList());
 				throw new DBPersistenceException(e, errs, "Bulk write operation error");
 
 			} catch (final MongoException e) {
 				final ErrorResult err = new ErrorResult(
 						e.getCode() == 11000 ? ErrorResult.ErrorType.DUPLICATED : ErrorResult.ErrorType.ERROR,
-								ErrorResult.PersistenceType.MONGO, e.getMessage());
+						ErrorResult.PersistenceType.MONGO, e.getMessage());
 				throw new DBPersistenceException(e, err, "Bulk write operation error");
 			} finally {
 				for (final int i : mapDocs.keySet()) {
@@ -1081,14 +1138,14 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 			final String errorMessage = String.format(
 					"Unable to perform the bulkUpsert operation. Database = %s, collection = %s , writeConcern = %s , orderedOperation = %s"
 							+ "cause = %s , erroMessage = %s.",
-							database, collection, writeConcern, orderedOp, e.getCause(), e.getMessage());
+					database, collection, writeConcern, orderedOp, e.getCause(), e.getMessage());
 			log.error(errorMessage);
 			throw e;
 		} catch (final Throwable e) {
 			final String errorMessage = String.format(
 					"Unable to perform the bulkUpsert operation. Database = %s, collection = %s , writeConcern = %s , orderedOperation = %s"
 							+ "cause = %s , erroMessage = %s.",
-							database, collection, writeConcern, orderedOp, e.getCause(), e.getMessage());
+					database, collection, writeConcern, orderedOp, e.getCause(), e.getMessage());
 			log.error(errorMessage);
 			throw new DBPersistenceException(errorMessage, e);
 		}

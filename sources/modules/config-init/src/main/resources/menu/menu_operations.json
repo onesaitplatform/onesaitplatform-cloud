@@ -80,9 +80,9 @@
 				},
 				{
 					"title": {
-						"EN": "Web Projects Management",
-						"ES": "Gestión de Proyectos Web",
-						"FR": "Gestion de Projets Web"
+						"EN": "WebApps Management",
+						"ES": "Gestión de WebApps",
+						"FR": "Gestion de WebApps"
 					},
 					"icon": "",
 					"url": "/controlpanel/webprojects/list"

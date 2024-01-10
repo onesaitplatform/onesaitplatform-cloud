@@ -61,7 +61,10 @@ class MatchingDemo {
 				new Scalar(0, 255, 0));
 
 		// Save the visualized detection.
-		log.debug("Writing " + outFile);
+		if (log.isDebugEnabled()) {
+			log.debug("Writing {}", outFile);
+		}
+		
 		Imgcodecs.imwrite(outFile, img);
 
 	}

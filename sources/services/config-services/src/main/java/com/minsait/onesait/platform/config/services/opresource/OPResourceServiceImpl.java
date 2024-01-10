@@ -179,7 +179,9 @@ public class OPResourceServiceImpl implements OPResourceService {
 	@Override
 	public void createUpdateAuthorization(ProjectResourceAccess pRA) {
 		ProjectResourceAccess pRADB;
-		log.debug("createUpdateAuthorization() arguments are: {}", pRA.toString());
+		if (log.isDebugEnabled()) {
+			log.debug("createUpdateAuthorization() arguments are: {}", pRA.toString());
+		}
 		if (pRA.getAppRole() != null) {
 			pRADB = pRA.getProject().getProjectResourceAccesses().stream()
 					.filter(a -> a.getResource().equals(pRA.getResource()) && a.getAppRole().equals(pRA.getAppRole())
@@ -193,14 +195,21 @@ public class OPResourceServiceImpl implements OPResourceService {
 		}
 
 		if (pRADB != null) {
-			log.debug("Project already had authorization, will remove it: {}", pRADB.toString());
+			if (log.isDebugEnabled()) {
+				log.debug("Project already had authorization, will remove it: {}", pRADB.toString());
+			}
 			pRA.getProject().getProjectResourceAccesses().remove(pRADB);
 		}
-
-		log.debug("createUpdateAuthorization() persisting new entity: {}", pRA.toString());
+		if (log.isDebugEnabled()) {
+			log.debug("createUpdateAuthorization() persisting new entity: {}", pRA.toString());
+		}
 		pRA.getProject().getProjectResourceAccesses().add(pRA);
-		log.debug("Project {} now has the following accesess:", pRA.getProject().getIdentification());
-		pRA.getProject().getProjectResourceAccesses().forEach(ra -> log.debug("{}", ra.toString()));
+		if (log.isDebugEnabled()) {
+			log.debug("Project {} now has the following accesess:", pRA.getProject().getIdentification());
+		}
+		if (log.isDebugEnabled()) {
+			pRA.getProject().getProjectResourceAccesses().forEach(ra -> log.debug("{}", ra.toString()));
+		}
 		projectService.updateProject(pRA.getProject());
 
 	}
@@ -300,13 +309,17 @@ public class OPResourceServiceImpl implements OPResourceService {
 	@Override
 	public void insertAuthorizations(Set<ProjectResourceAccess> accesses) {
 		log.debug("insertAuthorizations()");
-		accesses.forEach(ra -> log.debug("{}", ra.toString()));
+		if (log.isDebugEnabled()) {
+			accesses.forEach(ra -> log.debug("{}", ra.toString()));
+		}
 		final Project project = accesses.iterator().next().getProject();
 		final Set<ProjectResourceAccess> repeated = accesses.stream()
 				.filter(pra -> project.getProjectResourceAccesses().contains(pra)).collect(Collectors.toSet());
 		repeated.forEach(pra -> pra.getProject().getProjectResourceAccesses().remove(pra));
 		project.getProjectResourceAccesses().addAll(accesses);
-		log.debug("Persisting project {} ,now has the following accesess:", project.getIdentification());
+		if (log.isDebugEnabled()) {
+			log.debug("Persisting project {} ,now has the following accesess:", project.getIdentification());
+		}
 		project.getProjectResourceAccesses().forEach(ra -> log.debug("{}", ra.toString()));
 		projectService.updateProject(project);
 
@@ -486,10 +499,14 @@ public class OPResourceServiceImpl implements OPResourceService {
 		final long start = System.currentTimeMillis();
 		final List<OPResource> res = resourceRepository.findByUser(user).stream().filter(r -> r.getClass().equals(type))
 				.collect(Collectors.toList());
-		log.debug("First collect took time: {} ms", System.currentTimeMillis() - start);
+		if (log.isDebugEnabled()) {
+			log.debug("First collect took time: {} ms", System.currentTimeMillis() - start);
+		}
 		final Collection<OPResource> projectResources = getResourcesForUserAndType(user, type.getSimpleName(),
 				ResourceAccessType.MANAGE);
-		log.debug("After second collect took total time: {} ms", System.currentTimeMillis() - start);
+		if (log.isDebugEnabled()) {
+			log.debug("After second collect took total time: {} ms", System.currentTimeMillis() - start);
+		}
 		return Stream.of(res, projectResources).flatMap(Collection::stream).map(opr -> (Versionable<?>) opr)
 				.collect(Collectors.toList());
 

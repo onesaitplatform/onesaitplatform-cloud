@@ -1,0 +1,208 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2022 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:with="lang=${#locale.language}" th:lang="${lang}">
+
+<head>
+    <title>Form Builder</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel='stylesheet' th:href="@{/static/formsio/formiojs/dist/formio.full.css}">
+    <link rel='stylesheet' th:href="@{/static/formsio/assets/styles.css}">
+    <link rel='stylesheet' th:href="@{/static/formsio/assets/boostrap-form.css}" >
+    <link rel='stylesheet' th:href="@{/static/formsio/assets/form-editor.css}">
+</head>
+
+
+<body>
+    <div class="logo-box">
+        <div>
+            <img class="logo-icon" th:src="@{/static/formsio/assets/onesait.svg}" alt="Logo 2">
+            <img class="logo-brand" th:src="@{/static/formsio/assets/onesait-brand-logo.svg}" alt="Logo 1">
+        </div>
+        <div class="btn-group justify-content-end">
+            <a class="mr-3" th:href="@{/forms/index}">Inicio</a>
+            <a class="" th:href="@{/forms/usuarios}">Usuario</a>
+        </div>
+    </div>
+    <section class="main-box">
+        <div>
+            <h4>Formulario listado de usuarios</h4>
+            <div id="loading-user" class="loading justify-content-center align-items-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            <div id="tableContainer"></div>
+        </div>
+        <div class="form-box">
+            <h4>Formulario asociado al usuario</h4>
+            <div id="loading-form" class="loading justify-content-center align-items-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            <div id="text-info" class="text-info">
+                <p>
+                    Selecciona un elemento de la lista de usuarios...
+                </p>
+            </div>
+            <div id="builder"></div>
+        </div>
+    </section>
+</body>
+
+
+
+<script src='https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js'></script>
+<script th:src="@{/static/formsio/formiojs/dist/formio.full.min.js}"></script>
+
+</html>
+<script type='text/javascript'>
+
+
+    let formResult = {}
+    const baseURL = 'https://platform-console.onesaitplatform.com/usuarios-formularios/v1'
+    const baseUserURL = 'users'
+
+    const loadingUser = document.getElementById('loading-user');
+    const loadingForm = document.getElementById('loading-form');
+    const textInfo = document.getElementById('text-info');
+    loadingForm.style.display = 'none';
+    const tableContainer = document.getElementById('tableContainer');
+    window.onload = function () {
+
+        const builder = document.getElementById('builder');
+        //Llamo al GET para traerme todos los datos de los usuarios y pinto la tabla
+        loadTableData();
+
+    };
+    function fillTableData(data) {
+        const tableContainer = document.getElementById('tableContainer');
+        tableContainer.innerHTML = '';
+
+        const table = document.createElement('table');
+        table.classList.add('table', 'table-container');
+
+
+        // Headers
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        const headers = Object.keys(data.data.dataGrid[0]);
+        headers.forEach((header) => {
+            //No quiero recuperar ciertos datos
+            if (header !== 'id' && header !== 'miembro' && header !== 'formId' && header !== 'submit') {
+                const th = document.createElement('th');
+                th.textContent = header;
+                headerRow.appendChild(th);
+            }
+        });
+        const th = document.createElement('th');
+        th.textContent = 'Formularios disponibles';
+        headerRow.appendChild(th);
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        // Filas de datos
+        const tbody = document.createElement('tbody');
+        data.data.dataGrid.forEach((row) => {
+            const dataRow = document.createElement('tr');
+            headers.forEach((header) => {
+                if (header !== 'id' && header !== 'submit' && header !== 'formId' && header !== 'miembro') {
+                    const td = document.createElement('td');
+                    if (row[header] == undefined || row[header] == null || row[header] == '') {
+                        td.textContent = '-';
+                        dataRow.appendChild(td);
+                    }
+                    else {
+                        td.textContent = row[header];
+                        dataRow.appendChild(td);
+                    }
+                }
+            });
+
+            const selectCell = document.createElement('td');
+
+            const selectButton = document.createElement('button');
+            selectButton.textContent = 'Seleccionar formulario';
+            selectButton.classList.add('btn', 'btn-primary');
+
+            selectButton.addEventListener('click', () => {
+                loadingForm.style.display = 'flex'; // Mostrar el elemento
+                textInfo.style.display = 'none';
+                fetchForm(row.id);
+            });
+
+            selectCell.appendChild(selectButton);
+            dataRow.appendChild(selectCell);
+            tbody.appendChild(dataRow);
+        });
+        table.appendChild(tbody);
+        tableContainer.appendChild(table);
+    }
+
+    function fetchForm(userId) {
+        const formContainer = document.getElementById('builder');
+        formContainer.style.display = 'none';
+        builder.style.display = 'none';
+        axios.get(`${baseURL}/${baseUserURL}/${userId}`).then(function (response) {
+            console.log('se ha recuperado:', response);
+            const components = response.data.data.json;
+
+            loadingForm.style.display = 'none';
+            builder.style.display = 'block';
+
+            Formio.createForm(document.getElementById('builder'), components).then(function (form) {
+                components.components[0].components.forEach(function (x) {
+                    var key = x.key;
+                    var value = x.defaultValue;
+                    if (key == undefined || value == undefined) {
+                        return;
+                    }
+                    console.log('seteo: ', key, value)
+                    form.getComponent(key).setValue(value);
+                });
+
+                form.on('submit', function (submission) {
+                    console.log('click');
+                    const formDataGrid = { dataGrid: [submission] };
+                    const formData = { data: formDataGrid };
+
+                    axios.put(`${baseURL}/${baseUserURL}/${userId}`, formData)
+                        .then(function (response) {
+                            loadTableData();
+
+                        })
+                });
+            });
+        })
+    }
+
+    function loadTableData() {
+        axios.get(`${baseURL}/${baseUserURL}`)
+            .then(function (response) {
+                fillTableData(response.data);
+                loadingUser.classList.add('hide-element');
+                tableContainer.style.display = 'block';
+
+            });
+    }
+</script>
+<script type='text/javascript'>
+// Aquí se maneja la respuesta del servicio
+</script>

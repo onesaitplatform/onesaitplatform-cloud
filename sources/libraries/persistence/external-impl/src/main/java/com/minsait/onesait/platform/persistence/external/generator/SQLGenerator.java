@@ -30,9 +30,12 @@ import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.Virtu
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.repository.OntologyVirtualRepository;
 import com.minsait.onesait.platform.persistence.external.generator.model.common.ColumnRelational;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateIndexStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.DeleteStatement;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.DropIndexStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.DropStatement;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.GetIndexStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.InsertStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.PreparedStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.SelectStatement;
@@ -86,6 +89,11 @@ public class SQLGenerator implements SQLGeneratorInt {
 	@Override
 	public CreateStatement buildCreate() {
 		return new CreateStatement(this);
+	}
+	
+	@Override
+	public GetIndexStatement buildGetIndex() {
+		return new GetIndexStatement(this);
 	}
 
 	private RtdbDatasource getDataSourceForOntology(final String ontology) {
@@ -304,6 +312,48 @@ public class SQLGenerator implements SQLGeneratorInt {
 			}
 		} else {
 			throw new IllegalArgumentException("Create model can't be null");
+		}
+		return statement;
+	}
+	
+
+	@Override
+	public PreparedStatement generate(final GetIndexStatement getIndexStatement) {
+		PreparedStatement statement = null;
+		if (getIndexStatement != null) {
+				final VirtualDatasourceType virtualDataSource = this.getVirtualDataSourceTypeForOntology(getIndexStatement.getOntology());
+				
+				getIndexStatement.setVirtualDatasourceType(virtualDataSource);
+				
+				statement = sqlGeneratorOps.getIndexStatement(getIndexStatement);
+				
+		} else {
+			throw new IllegalArgumentException("Get index can't be null");
+		}
+		return statement;
+	}
+
+	public PreparedStatement generate(CreateIndexStatement createIndexStatement) {
+		PreparedStatement statement = null;
+		if (createIndexStatement != null) {
+				final VirtualDatasourceType virtualDataSource = this.getVirtualDataSourceTypeForOntology(createIndexStatement.getOntology());
+				statement = sqlGeneratorOps.createIndex(createIndexStatement);	
+
+		} else {
+			throw new IllegalArgumentException("Create Index can't be null");
+		}
+		return statement;
+	}
+
+	public PreparedStatement generate(DropIndexStatement dropIndexStatement) {
+		
+		PreparedStatement statement = null;
+		if (dropIndexStatement != null) {
+				final VirtualDatasourceType virtualDataSource = this.getVirtualDataSourceTypeForOntology(dropIndexStatement.getOntology());
+				statement = sqlGeneratorOps.dropIndex(dropIndexStatement);	
+
+		} else {
+			throw new IllegalArgumentException("Drop Index can't be null");
 		}
 		return statement;
 	}

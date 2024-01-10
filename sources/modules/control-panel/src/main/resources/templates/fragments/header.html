@@ -397,7 +397,9 @@ style>.dropdown-submenu {
 			"dashboardConfConfirm":[[#{dashboardConf.del.confirm}]],
 			"dashboardConfDelete":[[#{dashboardConf.delete.title}]],
 			"dashboardConfirm":[[#{dashboards.del.confirm}]],
+			"synopticsConfirm":[[#{synoptic.del.confirm}]],
 			"dashboardDelete":[[#{dashboards.delete.title}]],
+			"synopticsDelete":[[#{synoptics.delete.title}]],
 			"gadgetTemplateConfirm":[[#{gadgettemplates.del.confirm}]],
 			"gadgetTemplateDelete":[[#{gadgettemplates.delete.title}]],
 			"gadgetInstanceConfirm":[[#{gadgettemplates.instance.del.confirm}]],
@@ -471,7 +473,6 @@ style>.dropdown-submenu {
 			"dataLabelingDelete":[[#{datalabeling.question.delete}]],
 			"deleteTitle":[[#{gen.delete.title}]],
 			"delete":[[#{gen.del.confirm}]]
-			 
 		};
 		var messagesForms = {
 			"validation":{
@@ -540,6 +541,24 @@ style>.dropdown-submenu {
 			});
 			 $('#modalApis').modal('show');
 		}
+		
+		var showErrorNoToken = function(){
+				$.confirm({
+					title: [[#{ai.notoken.title}]],
+					theme: 'light',
+					columnClass: 'medium',
+					content: [[#{ai.notoken.msg}]],
+					backgroundDismiss: true,
+					buttons: {
+						"close": {
+							text: "Close",
+							btnClass: 'btn btn-outline blue dialog',
+							action: function (){} //GENERIC CLOSE.
+						}
+					}
+				});
+				
+			}
 		
 		
 	
@@ -613,6 +632,7 @@ style>.dropdown-submenu {
 				}
 			}
 		});
+		
 	// ]]>
  </script>
 </div>

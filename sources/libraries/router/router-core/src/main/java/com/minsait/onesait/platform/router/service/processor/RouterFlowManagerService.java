@@ -168,10 +168,12 @@ public class RouterFlowManagerService {
 			while (true) {
 				try {
 					final NotificationCompositeModel notificationModel = notificationAdviceNodeRED.take();
-					log.debug("Notification evaluatioin. Ontology: {}, type: {}, message: {}",
+					if (log.isDebugEnabled()) {
+						log.debug("Notification evaluatioin. Ontology: {}, type: {}, message: {}",
 							notificationModel.getNotificationModel().getOperationModel().getOntologyName(),
 							notificationModel.getNotificationModel().getOperationModel().getOperationType(),
 							notificationModel.getNotificationModel().getOperationModel().getBody());
+					}
 					// process notificationModel
 
 					notifyNoderedNotificationNodes(notificationModel);
@@ -382,12 +384,14 @@ public class RouterFlowManagerService {
 			Integer timeElapsed = Math.toIntExact((now.getTime() - notifCreationTS.getTime()) / 1000);
 			if (timeElapsed > compositeModel.getMaxRetryElapsedTime()) {
 				// discard message
-				log.debug(
+				if (log.isDebugEnabled()) {
+					log.debug(
 						"Notification message wil be discarted. Elapsed time:{}, Max time allowed: {}, Ontology: {}, Type: {}, Message: {}",
 						timeElapsed, compositeModel.getMaxRetryElapsedTime(),
 						compositeModel.getNotificationModel().getOperationModel().getOntologyName(),
 						compositeModel.getNotificationModel().getOperationModel().getOperationType(),
 						compositeModel.getNotificationModel().getOperationModel().getBody());
+				}
 				return;
 			}
 		}
@@ -493,7 +497,9 @@ public class RouterFlowManagerService {
 		final String payload = model.getBody();
 
 		if (messageType == OperationType.POST || messageType == OperationType.INSERT) {
-			log.debug("Sendign KSQL/kafka notification for ontology:{}, Payload:{}.", ontologyName, payload);			
+			if (log.isDebugEnabled()) {
+				log.debug("Sendign KSQL/kafka notification for ontology:{}, Payload:{}.", ontologyName, payload);	
+			}
 			// KSQL Notification to ORIGINS
 			notifyKafkaKsqlTopics(ontologyName, payload);
 
@@ -545,12 +551,16 @@ public class RouterFlowManagerService {
 				MultitenancyContextHolder.setVerticalSchema(vertical);
 				final KafkaTopicOntologyNotificationService service = item.getValue();
 				final String kafkaTopic = service.getKafkaTopicOntologyNotification(ontologyName);
-				log.debug("Sendign KSQL/kafka notification for Kafka topic{}", kafkaTopic);
+				if (log.isDebugEnabled()) {
+					log.debug("Sendign KSQL/kafka notification for Kafka topic{}", kafkaTopic);
+				}
 				//TODO REMOVE THIS TRACE!!
 					for(Entry<String, Object> op: kafkaTemplate.getProducerFactory().getConfigurationProperties().entrySet()) {
 						if(op.getValue().getClass()==String.class) {
 							String propertyVal = (String)op.getValue(); 
-							log.debug("KafkaTemplate Producer -- {}: {}",op.getKey(),propertyVal);
+							if (log.isDebugEnabled()) {
+								log.debug("KafkaTemplate Producer -- {}: {}",op.getKey(),propertyVal);
+							}
 						}
 					}
 				MultitenancyContextHolder.clear();

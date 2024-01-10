@@ -62,7 +62,9 @@ import net.sf.jsqlparser.util.SelectUtils;
 public class SQLHelperImpl implements SQLHelper {
 
 	private static final String LIST_VALIDATE_QUERY = "SELECT 1";
+	private static final String LIST_TABLE_INFORMATION_QUERY = "SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = '%s'";
 	private static final String LIST_TABLES_QUERY = "SHOW TABLES";
+	private static final String GET_TABLE_INFORMATION_QUERY = "SELECT COLUMN_NAME, TABLE_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = '%s' AND INDEX_NAME = 'PRIMARY'";
 	private static final String GET_CURRENT_DATABASE_QUERY = "SELECT DATABASE()";
 	private static final String LIST_DATABASES_QUERY = "SHOW DATABASES";
 	private static final String LIST_TABLES_IN_DATABASE_QUERY = "SHOW TABLES IN %s";
@@ -119,6 +121,16 @@ public class SQLHelperImpl implements SQLHelper {
 		return null;
 	}
 
+	@Override
+	public String getTableInformationStatement(String database, String schema) {
+		return String.format(LIST_TABLE_INFORMATION_QUERY, database);
+	}
+	
+	@Override
+	public String getTableIndexes(String database, String schema) {
+		return String.format(GET_TABLE_INFORMATION_QUERY, database);
+	}
+	
 	@Override
 	public String getAllTablesStatement(String database, String schema) {
 		return String.format(LIST_TABLES_IN_DATABASE_QUERY, database);
@@ -438,5 +450,4 @@ public class SQLHelperImpl implements SQLHelper {
 		}
 		return query;
 	}
-
 }

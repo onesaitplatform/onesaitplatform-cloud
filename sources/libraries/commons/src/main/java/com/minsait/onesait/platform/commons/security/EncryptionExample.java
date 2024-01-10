@@ -35,23 +35,26 @@ public class EncryptionExample {
 
 			// sensitive information
 			byte[] text = "changeIt!".getBytes();
-
-			log.debug("Text [Byte Format] : " + text);
-			log.debug("Text : " + new String(text));
-
+			if (log.isDebugEnabled()) {
+				log.debug("Text [Byte Format] {}: ", text);
+				log.debug("Text : {}", new String(text));
+			}
 			// Encrypt the text
 			byte[] textEncrypted = desCipher.doFinal(text);
-
-			log.debug("Text Encrypted [Byte Format]: " + textEncrypted);
-			log.debug("Text Encrypted : " + new String(textEncrypted));
-
+			
+			if (log.isDebugEnabled()) {
+				log.debug("Text Encrypted [Byte Format]: {}", textEncrypted);
+				log.debug("Text Encrypted : {}", new String(textEncrypted));
+			}
 			// Initialize the same cipher for decryption
 			desCipher.init(Cipher.DECRYPT_MODE, myDesKey);
 
 			// Decrypt the text
 			byte[] textDecrypted = desCipher.doFinal(textEncrypted);
 
-			log.debug("Text Decryted : " + new String(textDecrypted));
+			if (log.isDebugEnabled()) {
+				log.debug("Text Decryted : {}", new String(textDecrypted));
+			}
 
 		} catch (Exception e) {
 			log.error(e.getMessage());

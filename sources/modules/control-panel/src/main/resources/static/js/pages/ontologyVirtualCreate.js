@@ -288,6 +288,12 @@ var OntologyCreateController = function() {
 						$('#schemas').selectpicker('refresh');
 						$('#schemas').change();
 					}
+					if ($('#datasources').val() === ontologyCreateJson.timeseriesdb) {
+						$('#databases').prop('disabled', true);
+						$('#databases').selectpicker('refresh');
+						$('#schemas').prop('disabled', true);
+						$('#schemas').selectpicker('refresh');
+					}
 				} else {
 					$.alert({title: 'INFO!', type: 'blue' , theme: 'dark', content: 'Datasource has not schemas'});
 					$('#schemas').prop('disabled', true);
@@ -334,7 +340,8 @@ var OntologyCreateController = function() {
 				}
 
 				$("#datasource").val($("#datasources").val());
-				$('#allowsCreateTable').prop('disabled', false);
+				if ($("#datasources").val() !== ontologyCreateJson.timeseriesdb)
+					$('#allowsCreateTable').prop('disabled', false);
 			},
 			error : function(data, status, err) {
 				$.alert({title: 'ERROR '+ status + ': '+err+'!', theme: 'dark', type: 'red', content: data.responseText});
@@ -403,7 +410,9 @@ var OntologyCreateController = function() {
 			$('#fieldCreationForm').show();
 			$('#constraintsCreationForm').show();
 		}
-			
+		
+		checkConnection($('#datasources').val());
+		
 		$.ajax({
 			url : "/controlpanel/ontologies/getDatasourceInfo/"+ $("#datasources").val(),
 			headers: {
@@ -442,8 +451,18 @@ var OntologyCreateController = function() {
 				if (ontologyCreateJson.actionMode==null){
 					manageWizardStep();
 				}
-			}
+				if ($('#datasources').val() === ontologyCreateJson.timeseriesdb) {					
+					$('#allowsCreateTable').prop('checked', true );
+					$('#allowsCreateTable').click();
+				} else {
+					$('#allowsCreateTable').prop('checked', false );
+					$('#allowsCreateTable').prop('disabled', false );
+
+				}
+			},
 		});
+		
+
 
 	});
 	
@@ -579,12 +598,25 @@ var OntologyCreateController = function() {
 	var wizardStepValid = function(){
 		
 		if (wizardStep == 1){
+			if(!$("#allowsCreateTable").is(':checked')){
 			return ((!$("#datasources").is(":visible")||($('#datasources').val().length >= 2)) &&
 					(!databasesrequired || $('#databases').val().length >= 2) &&
 					(!schemasrequired || $('#schemas').val().length >= 2) &&
 					$('#identification').val().length >= 5 && 
 					$('#description').val().length >= 5 && 
-					$('#metainf').val().length >= 5);
+					$('#metainf').val().length >= 5 && 
+					$('#collections').val() != ""
+					);
+			}else {
+				return ((!$("#datasources").is(":visible")||($('#datasources').val().length >= 2)) &&
+					(!databasesrequired || $('#databases').val().length >= 2) &&
+					(!schemasrequired || $('#schemas').val().length >= 2) &&
+					$('#identification').val().length >= 5 && 
+					$('#description').val().length >= 5 && 
+					$('#metainf').val().length >= 5
+					);
+			}
+					
 		} else if (wizardStep == 2){
 			return ($('#jsonschema').val()!=null && $('#jsonschema').val()!="");
 		}
@@ -685,7 +717,6 @@ var OntologyCreateController = function() {
             },
 			// ALL OK, THEN SUBMIT.
             submitHandler: function(form) {
-            	
             	validateSpecialComponentsAndSubmit(true);
 			}
         });
@@ -733,10 +764,16 @@ var OntologyCreateController = function() {
 					toastr.error(messagesForms.operations.genOpError,data.responseJSON.cause);
 				}
 			})
+			
+			if ($('#datasources').val() === ontologyCreateJson.timeseriesdb) {					
+				$('#ontology_create_form').append('<input type="hidden" name="allowsCreateTable" value="on" />')
+			}
+			
 		} else {
 			toastr.error(messagesForms.validation.genFormError,'');										
 		}
 	}
+	
 	
 	
 	// INIT TEMPLATE ELEMENTS
@@ -1305,6 +1342,32 @@ var OntologyCreateController = function() {
 		 }
 		$("#jsonschema").val(JSON.stringify(schem));
 		editor.setText(JSON.stringify(schem));
+	}
+	
+	var checkConnection = function(id){
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+		$.ajax({
+			url:"/controlpanel/virtualdatasources/checkConnectionExtern",
+			headers: {
+				[csrf_header]: csrf_value
+		    },
+			type:"POST",
+			async: true,
+			data: {"datasource": id},
+			dataType:"json",
+			success: function(data, textStatus, jqXHR ){			
+				if(jqXHR.status != 200){
+					toastr.error(messagesForms.operations.genOpError,jqXHR.responseText);
+					return false;
+				} else {
+					return true; 
+				}
+			},
+			error: function(jqXHR , textStatus, errorThrown) {
+				toastr.error(messagesForms.operations.genOpError,jqXHR.responseText);
+			}
+		});
 	}
 	
 	
@@ -2114,7 +2177,7 @@ var OntologyCreateController = function() {
 		},
 
 		toggleFieldCreation: function() {
-			if(datasources.value==="" || (infojson.hasDatabase && ($("#databases").val() === "" || $("#databases").val() === null)) || (infojson.hasSchema && ($("#schemas").val() === "" || $("#schemas").val() === null))){
+			if(datasources.value==="" || (infojson.hasDatabase && ($("#databases").val() === "" || $("#databases").val() === null) && $('#datasources').val() !== ontologyCreateJson.timeseriesdb) || (infojson.hasSchema && ($("#schemas").val() === "" || $("#schemas").val() === null) && $('#datasources').val() !== ontologyCreateJson.timeseriesdb)){
 				allowsCreateTable.checked = false;
 				toastr.error(messagesForms.operations.genOpError,"Must select JDBC, database and schema (if applied) connection before");
 				return;

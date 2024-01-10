@@ -194,13 +194,17 @@
 															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 															<label>Caas URL</label>
 														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
+															<label>CI/CD</label>
+														</span>
 													</div>
 												</div>
 											</div>
 										</div>											
 									</div>
 									<!-- Modal Parameters Jenkins-->
-									<div id="parametersModal" class="modal fade" role="dialog" style="display: table;padding-right: 7px;width: 80%">
+									<div id="parametersModal" class="modal fade hidden" role="dialog" style="display: table;padding-right: 7px;width: 80%">
 									  <div class="modal-dialog modal-xl">
 									    <!-- Modal content-->
 									    <div class="modal-content">
@@ -231,7 +235,7 @@
 																		<td>
 																			<input type="text" name="name[]" readonly="readonly"   class="form-control"/>
 																		</td>																
-																		<td><input type="text" name="value[]" class="form-control"/></td>			
+																		<td><input type="text" name="value[]" class="form-control"/></td>
 																	</tr>
 																</tbody>														
 															</table>
@@ -370,13 +374,13 @@
 
 		// SEARCH FORM RESET
 		$('#reset_microservice').on('click',function(){
-			$('#microservice-name').val('');
-			$('#microservices').DataTable().column(0).search('').draw();
+			$('#form_microservice')[0].reset();
+			$('#form_microservice')[0].submit();
 		});
 
 		// SEARCH FORM
 		$('#search_microservice').on('click',function(){
-			$('#microservices').DataTable().column(0).search( $('#microservice-name').val()).draw();
+			$('#microservices').DataTable().column(1).search($('#microservice-name').val()).draw();
 		});
 		
 	

@@ -15,10 +15,10 @@
 package com.minsait.onesait.platform.persistence.mongodb.timeseries;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-
-import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow;
+import java.util.TimeZone;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -81,5 +81,19 @@ public class MongoDBTimeSeriesInstanceKey implements Serializable{
 		result = prime * result + ((window == null) ? 0 : window.hashCode());
 		result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
 		return result;*/
+	} 
+	public String printkeys() {
+		StringBuffer response = new StringBuffer(); 
+		response.append(ontology).append("--")
+			.append(signal).append("--");
+		for (String tag :tags) {
+			response.append(tag).append(",");
+		}
+		SimpleDateFormat sdf;
+		sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXXZ");
+		sdf.setTimeZone(TimeZone.getTimeZone("ZULU"));
+		response.append("--").append(window).append("--")
+			.append(sdf.format(timestamp));
+		return response.toString();
 	}
 }

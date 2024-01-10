@@ -354,7 +354,9 @@ public class ApplicationServiceImpl implements ApplicationService {
 		final Function function = optFunction.get();
 		final FnFunction fnFunction = fnService.getFunction(function.getFnId());
 		fnFunction.setImage(version);
-		log.debug("Updating function's version, fn: {}, version: {}", fnName, version);
+		if (log.isDebugEnabled()) {
+			log.debug("Updating function's version, fn: {}, version: {}", fnName, version);
+		}		
 		fnService.updateFunction(fnFunction);
 
 	}

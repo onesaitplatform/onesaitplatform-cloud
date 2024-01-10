@@ -147,7 +147,9 @@ public class FlowDomainServiceImpl implements FlowDomainService {
 
 		// validate against global domains
 		if (multitenancyService.getFlowDomainByIdentification(identification) != null) {
-			log.debug("Flow domain {} already exist.", identification);
+			if (log.isDebugEnabled()) {
+				log.debug("Flow domain {} already exist.", identification);
+			}			
 			throw new FlowDomainServiceException("The requested flow domain already exists in CDB");
 		}
 

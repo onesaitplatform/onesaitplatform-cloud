@@ -49,11 +49,25 @@ public class WebProject extends OPResource implements Versionable<WebProject> {
 	@Setter
 	private String description;
 
-	@Column(name = "MAIN_FILE", length = 100, nullable = false)
-	@NotNull
+	@Column(name = "MAIN_FILE", length = 100, nullable = true)
 	@Getter
 	@Setter
 	private String mainFile;
+	
+	@Column(name = "NPM", length = 100, nullable = true)
+	@Getter
+	@Setter
+	private Boolean npm;
+	
+	@Column(name = "runCommand", length = 100, nullable = true)
+	@Getter
+	@Setter
+	private String runCommand;
+	
+	@Column(name = "targetDirectory", length = 100, nullable = true)
+	@Getter
+	@Setter
+	private String targetDirectory;
 
 	@Override
 	public String fileName() {

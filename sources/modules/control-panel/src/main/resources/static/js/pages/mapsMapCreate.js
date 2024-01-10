@@ -162,7 +162,8 @@ var projections =['EPSG:4326','EPSG:3857','EPSG:25828','EPSG:25829','EPSG:25830'
 		} );
 
 		$("#idDiv").val(config.idDiv).change();
-		$("#providerMap").val(config.providerMap).change();
+		$("#providerMap").val("ol").change();
+		$('#providerMap').attr('disabled',true).selectpicker('refresh');
 		$("#zIndex").val(config.zIndex).change();
 		$("#opacity").val(typeof config.opacity ==='undefined'?1:config.opacity).change();
 		$("#active").val(config.active).change();

@@ -49,8 +49,9 @@ public class OntologyLogicService {
 
 		try {
 			if (!ontology.getRtdbDatasource().equals(Ontology.RtdbDatasource.API_REST)) {
-
-				log.debug("create ontology in db " + ontology.getRtdbDatasource());
+				if (log.isDebugEnabled()) {
+					log.debug("create ontology in db {}", ontology.getRtdbDatasource());
+				}
 
 				String jsonschema = ontology.getJsonSchema();
 				JSONObject json = new JSONObject(jsonschema);
@@ -84,7 +85,9 @@ public class OntologyLogicService {
 	}
 
 	public Map<String, String> getAdditionalDBConfig(Ontology ontology) {
-		log.debug("Get internal config in ontology " + ontology.getRtdbDatasource());
+		if (log.isDebugEnabled()) {
+			log.debug("Get internal config in ontology {}", ontology.getRtdbDatasource());
+		}
 		try {
 			return this.getInstance(ontology.getRtdbDatasource()).getAdditionalDBConfig(ontology.getIdentification());
 		} catch (final Exception e) {
@@ -95,8 +98,9 @@ public class OntologyLogicService {
 
 	public void updateOntology(Ontology ontology, HashMap<String, String> config) {
 		try {
-
-			log.debug("update ontology in db " + ontology.getRtdbDatasource());
+			if (log.isDebugEnabled()) {
+				log.debug("update ontology in db {}", ontology.getRtdbDatasource());
+			}
 			this.getInstance(ontology.getRtdbDatasource()).updateTable4Ontology(ontology.getIdentification(),
 					ontology.getJsonSchema(), config);
 
@@ -136,8 +140,9 @@ public class OntologyLogicService {
 	public void removeOntology(Ontology ontology) {
 
 		try {
-
-			log.debug("remove ontology in db " + ontology.getRtdbDatasource());
+			if (log.isDebugEnabled()) {
+				log.debug("remove ontology in db {}", ontology.getRtdbDatasource());
+			}
 			this.getInstance(ontology.getRtdbDatasource()).removeTable4Ontology(ontology.getIdentification());
 
 		} catch (final Exception e) {
@@ -150,8 +155,9 @@ public class OntologyLogicService {
 
 	public List<String> getListOfTables4Ontology(Ontology ontology) {
 		try {
-
-			log.debug("list tables for ontology in db " + ontology.getRtdbDatasource());
+			if (log.isDebugEnabled()) {
+				log.debug("list tables for ontology in db {}", ontology.getRtdbDatasource());
+			}
 			return this.getInstance(ontology.getRtdbDatasource())
 					.getListOfTables4Ontology(ontology.getIdentification());
 

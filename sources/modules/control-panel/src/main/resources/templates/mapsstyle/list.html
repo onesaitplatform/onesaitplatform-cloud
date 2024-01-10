@@ -169,7 +169,7 @@
 														<!-- OPTIONS -->
 														<td class="icon" style="white-space: nowrap">
 															<div class="grupo-iconos text-center">
-																<a  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:title="#{gen.view}" th:href="'/controlpanel/mapsstyle/show/'+@{${mapsstyle.id}}"><i class="la la-eye font-hg"></i></a>
+																<a  class="btn btn-xs btn-no-border color-blue btn-outline blue tooltips" th:title="#{gen.view}" th:href="'/controlpanel/mapsstyle/show/'+@{${mapsstyle.id}}"><i class="la la-eye font-hg"></i></a>
 															    <a  sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')"  class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-placement="bottom" th:title="#{gen.edit}" th:href="'/controlpanel/mapsstyle/update/'+@{${mapsstyle.id}(form)}+ '='"><i class="icon-edit"></i></a>
 															    <span class="dropdown">
 																	<span   class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
@@ -181,7 +181,7 @@
 																			</li>-->
 																		    <!-- DELETE -->
 																		    <li>
-																		    	<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')"  class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:attr="onclick='deleteConfirmation(\''+${mapsstyle.id}+'\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>
+																		    	<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')"  class="btn btn-xs btn-no-border btn-outline color-red margin-bottom-5" data-container="body" data-placement="bottom" th:attr="onclick='deleteConfirmation(\''+${mapsstyle.id}+'\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>
 																	    	</li>
 																	    </ul>
 																    </span>
@@ -363,9 +363,7 @@
 	
 	var deleteUrl =  [[@{/mapsstyle}]];
 	
-	var showConfirmDeleteDialog = function(id){	
-		console.log(deleteUrl)
-		debugger
+	var showConfirmDeleteDialog = function(id){
 		$('#delete_mapsstyle_form').attr('action', deleteUrl + '/' + id);
 		$('#delete-id').val(id);
 		HeaderController.showConfirmDialogMapsGeneric('delete_mapsstyle_form');	

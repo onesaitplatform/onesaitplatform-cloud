@@ -79,6 +79,7 @@ onesaitplatform: #Config Sofia2 specific
       url: jdbc:postgresql://localhost:5432/?currentSchema=public
       user: ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot)
       password: ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c)
+      connectionName: op_timeseriesdb
    iotbroker.plugable.gateway.kafka.enable: true
    kafka.ksql.enable: false
    webproject:

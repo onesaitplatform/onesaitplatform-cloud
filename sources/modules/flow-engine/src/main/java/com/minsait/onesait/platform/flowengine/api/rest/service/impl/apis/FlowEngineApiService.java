@@ -151,9 +151,11 @@ public class FlowEngineApiService {
 					HttpStatus.BAD_REQUEST);
 		}
 		final long executionTime = System.currentTimeMillis() - start;
-		log.debug("invokeRestApiOperation for API {}, executed in {} ms",
-				invokeRequest.getApiName() + '-' + invokeRequest.getApiVersion(), executionTime);
-		return result;
+		if (log.isDebugEnabled()) {
+			log.debug("invokeRestApiOperation for API {}, executed in {} ms",
+			invokeRequest.getApiName() + '-' + invokeRequest.getApiVersion(), executionTime);
+		}
+				return result;
 	}
 
 	private RestApiInvocationParams getInvocaionParametersForInternalOrFlowEngineApi(
@@ -193,10 +195,13 @@ public class FlowEngineApiService {
 
 	private void addDefaultHeaders(RestApiInvocationParams restInvocationParams, User platformUser) {
 		restInvocationParams.getHeaders().add("X-OP-APIKey", userTokenService.getToken(platformUser).getToken());
-		restInvocationParams.getHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_UTF8_VALUE);
-		if (!restInvocationParams.isMultipart()) {
+		if (!restInvocationParams.getHeaders().containsKey(HttpHeaders.ACCEPT)) {
+			restInvocationParams.getHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_UTF8_VALUE);
+		}
+		if (!restInvocationParams.isMultipart()
+				&& !restInvocationParams.getHeaders().containsKey(HttpHeaders.CONTENT_TYPE)) {
 			restInvocationParams.getHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE);
-		} else {
+		} else if (!restInvocationParams.getHeaders().containsKey(HttpHeaders.CONTENT_TYPE)) {
 			restInvocationParams.getHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.MULTIPART_FORM_DATA.toString());
 		}
 	}
@@ -262,7 +267,7 @@ public class FlowEngineApiService {
 			}
 
 		}
-		StringBuilder sb = new StringBuilder();
+		final StringBuilder sb = new StringBuilder();
 		sb.append(resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.API)).append("/v")
 				.append(String.valueOf(operation.getApi().getNumversion())).append("/")
 				.append(operation.getApi().getIdentification());

@@ -86,9 +86,9 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 	@Autowired
 	private MetricQueryResolver metricQueryResolver;
 
-	private static final String QUASAR_QUERY_ERROR = "Error executing query in Quasar: ";
+	private static final String QUASAR_QUERY_ERROR = "Error executing query in Quasar: {}";
 	private static final String UPDATE = "update";
-	private static final String DB_PERSISTENCE_EXCEPTION = "DBPersistenceException:";
+	private static final String DB_PERSISTENCE_EXCEPTION = "DBPersistenceException: {}";
 
 	private static final List<String> METRICS_ONTOLOGIES = Arrays.asList(new String[] { "MetricsOntology",
 			"MetricsOperation", "MetricsApi", "MetricsControlPanel", "MetricsQueriesControlPanel" });
@@ -519,10 +519,10 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 			}
 			return quasarMongoConnector.queryAsJson(ontology, query, 0, getMaxRegisters());
 		} catch (final DBPersistenceException e) {
-			log.error(DB_PERSISTENCE_EXCEPTION + e.getMessage(), e);
+			log.error(DB_PERSISTENCE_EXCEPTION, e.getMessage(), e);
 			throw e;
 		} catch (final Exception e) {
-			log.error(QUASAR_QUERY_ERROR + query, e);
+			log.error(QUASAR_QUERY_ERROR, query, e);
 			throw new DBPersistenceException(QUASAR_QUERY_ERROR + query, e);
 		}
 	}
@@ -532,7 +532,7 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 		try {
 			return quasarMongoConnector.queryAsTable(query, 0, getMaxRegisters());
 		} catch (final DBPersistenceException e) {
-			log.error(DB_PERSISTENCE_EXCEPTION + e.getMessage(), e);
+			log.error(DB_PERSISTENCE_EXCEPTION, e.getMessage(), e);
 			if (e.getCause().getClass().equals(ResourceAccessException.class)) {
 				mongoDbConnector.createCollection(Tenant2SchemaMapper.getRtdbSchema(), ontology);
 				return "{}";
@@ -553,10 +553,10 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 			}
 			return quasarMongoConnector.queryAsJson(ontology, query, offset, getMaxRegisters());
 		} catch (final QueryNativeFormatException e) {
-			log.error("QueryNativeFormatException:" + e.getMessage(), e);
+			log.error("QueryNativeFormatException: {}", e.getMessage(), e);
 			throw e;
 		} catch (final DBPersistenceException e) {
-			log.error(DB_PERSISTENCE_EXCEPTION + e.getMessage(), e);
+			log.error(DB_PERSISTENCE_EXCEPTION, e.getMessage(), e);
 			if (e.getCause().getClass().equals(ResourceAccessException.class)
 					& !mongoDbConnector.collectionExists(Tenant2SchemaMapper.getRtdbSchema(), ontology)) {
 				mongoDbConnector.createCollection(Tenant2SchemaMapper.getRtdbSchema(), ontology);
@@ -565,7 +565,7 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 				throw e;
 			}
 		} catch (final Exception e) {
-			log.error(QUASAR_QUERY_ERROR + query, e);
+			log.error(QUASAR_QUERY_ERROR, query, e);
 			throw new DBPersistenceException(QUASAR_QUERY_ERROR + query, e);
 		}
 	}
@@ -578,10 +578,10 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 			}
 			return quasarMongoConnector.queryAsJson(ontology, query, offset, limit > 0 ? limit : getMaxRegisters());
 		} catch (final QueryNativeFormatException e) {
-			log.error("QueryNativeFormatException:" + e.getMessage(), e);
+			log.error("QueryNativeFormatException: {}" + e.getMessage(), e);
 			throw e;
 		} catch (final DBPersistenceException e) {
-			log.error(DB_PERSISTENCE_EXCEPTION + e.getMessage(), e);
+			log.error(DB_PERSISTENCE_EXCEPTION, e.getMessage(), e);
 			if (e.getCause().getClass().equals(ResourceAccessException.class)
 					& !mongoDbConnector.collectionExists(Tenant2SchemaMapper.getRtdbSchema(), ontology)) {
 				mongoDbConnector.createCollection(Tenant2SchemaMapper.getRtdbSchema(), ontology);
@@ -590,7 +590,7 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 				throw e;
 			}
 		} catch (final Exception e) {
-			log.error(QUASAR_QUERY_ERROR + query, e);
+			log.error(QUASAR_QUERY_ERROR, query, e);
 			throw new DBPersistenceException(QUASAR_QUERY_ERROR + query, e);
 		}
 	}
@@ -600,10 +600,10 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 		try {
 			return quasarMongoConnector.queryAsTable(query, offset, getMaxRegisters());
 		} catch (final DBPersistenceException e) {
-			log.error(DB_PERSISTENCE_EXCEPTION + e.getMessage(), e);
+			log.error(DB_PERSISTENCE_EXCEPTION, e.getMessage(), e);
 			throw e;
 		} catch (final Exception e) {
-			log.error(QUASAR_QUERY_ERROR + query, e);
+			log.error(QUASAR_QUERY_ERROR, query, e);
 			throw new DBPersistenceException(QUASAR_QUERY_ERROR + query, e);
 		}
 	}
@@ -725,5 +725,4 @@ public class MongoBasicOpsDBRepository implements BasicOpsDBRepository {
 			throws DBPersistenceException {
 		return findById(collection, objectId);
 	}
-
 }

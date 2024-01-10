@@ -211,7 +211,8 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 					new RegexRequestMatcher("^/actuator.*", null), new RegexRequestMatcher("^/opendata.*", null),
 					new RegexRequestMatcher("^/modelsmanager.*", null), new RegexRequestMatcher("^/process.*", null),
 					new RegexRequestMatcher("^/microservices.*", null),
-					new RegexRequestMatcher("^/mapsproject.*", null));
+					new RegexRequestMatcher("^/codeproject.*", null), new RegexRequestMatcher("^/mapsproject.*", null),
+					new RegexRequestMatcher("^/forms.*", null));
 
 			// When using CsrfProtectionMatcher we need to explicitly declare allowed
 			// methods

@@ -101,11 +101,15 @@ public class FigmaFileUtils {
 			final String basePath = TMP_DIR + File.separator + userId + File.separator + JS_FOLDER;
 			log.debug("Creating DIRs");
 			fileUtils.createDirs(basePath);
-			log.debug("Unzipping {} to path {}", pathToZip, basePath);
+			if (log.isDebugEnabled()) {
+				log.debug("Unzipping {} to path {}", pathToZip, basePath);
+			}			
 			fileUtils.unzipToPath(pathToZip, basePath);
 			log.debug("Compiling templates");
 			compileTemplates(figmaSetUp, basePath);
-			log.debug("Zipping files to {}", basePath + File.separator + OUTPUT_ZIP);
+			if (log.isDebugEnabled()) {
+				log.debug("Zipping files to {}", basePath + File.separator + OUTPUT_ZIP);
+			}			
 			return fileUtils.zipFiles(basePath, TMP_DIR + File.separator + userId + File.separator + OUTPUT_ZIP);
 		} catch (final Exception e) {
 			log.error("Error while generating JS client", e);
@@ -245,7 +249,9 @@ public class FigmaFileUtils {
 	}
 
 	private void writeMustacheTemplate(String writePath, Map<String, Object> scopes) throws IOException {
-		log.debug("Compiling template {}", writePath);
+		if (log.isDebugEnabled()) {
+			log.debug("Compiling template {}", writePath);
+		}		
 		final String content = new String(Files.readAllBytes(Paths.get(writePath)));
 
 		try (Writer writer = new FileWriter(writePath)) {

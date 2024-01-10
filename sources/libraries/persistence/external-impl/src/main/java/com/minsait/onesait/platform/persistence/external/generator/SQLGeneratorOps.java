@@ -16,9 +16,12 @@ package com.minsait.onesait.platform.persistence.external.generator;
 
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.persistence.external.generator.model.common.ColumnRelational;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateIndexStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.DeleteStatement;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.DropIndexStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.DropStatement;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.GetIndexStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.InsertStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.PreparedStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.SelectStatement;
@@ -59,6 +62,10 @@ public interface SQLGeneratorOps {
 	
 	PreparedStatement getStandardDrop(DropStatement dropStatement,
 			 VirtualDatasourceType virtualDatasourceType);
+	
+	PreparedStatement getIndexStatement(GetIndexStatement getIndexStatement);
+	
+	PreparedStatement createIndex(CreateIndexStatement createIndexStatement);
 
 	PreparedStatement getOracleDrop(DropStatement dropStatement, VirtualDatasourceType virtualDatasourceType);
 
@@ -69,5 +76,7 @@ public interface SQLGeneratorOps {
 	List<ColumnRelational> generateSQLColumnsRelational(String ontologyJsonSchema, VirtualDatasourceType dsType);
 
 	List<ColumnRelational> generateColumnsRelational(String ontologyJsonSchema);
+
+	PreparedStatement dropIndex(DropIndexStatement dropIndexStatement);
 
 }

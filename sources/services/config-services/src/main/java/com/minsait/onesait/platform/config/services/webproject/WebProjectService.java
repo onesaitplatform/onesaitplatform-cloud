@@ -14,9 +14,14 @@
  */
 package com.minsait.onesait.platform.config.services.webproject;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
+
+import com.minsait.onesait.platform.config.model.WebProject;
+import com.minsait.onesait.platform.config.services.webproject.NPMCommandResult.NPMCommandResultStatus;
 
 public interface WebProjectService {
 
@@ -48,5 +53,26 @@ public interface WebProjectService {
 	boolean webProjectExists(String identification);
 
 	byte[] downloadZip(String file, String userId);
+
+	void loadGitDetails(WebProjectDTO web);
+
+	void uploadZip(File file, String userId);
+
+	void unzipFile(String path, String fileName);
+
+	void deleteFolder(String path);
+
+	void compileNPM(WebProjectDTO web, String userId) throws IOException;
+
+	void resetCurrentStatus();
+
+	String getCurrentStatus();
+
+	NPMCommandResultStatus getNpmStatus();
+
+	void setNpmInstall(boolean val);
+
+	boolean isNpmInstall();
+
 
 }

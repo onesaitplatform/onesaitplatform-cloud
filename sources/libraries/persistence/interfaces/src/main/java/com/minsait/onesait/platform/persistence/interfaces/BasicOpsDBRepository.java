@@ -15,6 +15,7 @@
 package com.minsait.onesait.platform.persistence.interfaces;
 
 import java.util.List;
+import java.util.Map;
 
 import com.minsait.onesait.platform.commons.model.ComplexWriteResult;
 import com.minsait.onesait.platform.commons.model.MultiDocumentOperationResult;

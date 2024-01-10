@@ -55,7 +55,7 @@ public class QueryAsTextMongoDBImpl implements QueryAsTextDBRepository {
 	@Autowired
 	private Sql2NativeTool sql2NativeTool;
 
-	private static final String ERROR_QUERYSQLASJSON = "Error querySQLAsJson:";
+	private static final String ERROR_QUERYSQLASJSON = "Error querySQLAsJson:{} .Query {}, ontology {}";
 
 	private boolean useQuasar;
 	private boolean useLegacySQL;
@@ -108,7 +108,7 @@ public class QueryAsTextMongoDBImpl implements QueryAsTextDBRepository {
 			checkQueryIs4Ontology(ontology, query, false);
 			return mongoRepo.queryNativeAsJson(ontology, query, offset, limit);
 		} catch (final Exception e) {
-			log.error("Error queryNativeAsJson:" + e.getMessage());
+			log.error("Error queryNativeAsJson: {}", e.getMessage());
 			throw new DBPersistenceException(e);
 		}
 	}
@@ -117,7 +117,9 @@ public class QueryAsTextMongoDBImpl implements QueryAsTextDBRepository {
 	public String queryNativeAsJson(String ontology, String query) {
 		String queryContent = null;
 		try {
-			log.debug("queryNativeAsJson ontology {} query {}", ontology, query);
+			if (log.isDebugEnabled()) {
+				log.debug("queryNativeAsJson ontology {} query {}", ontology, query);
+			}			
 			checkQueryIs4Ontology(ontology, query, false);
 			queryContent = utils.getQueryContent(query);
 			if (query.indexOf(".createIndex(") != -1) {
@@ -148,14 +150,14 @@ public class QueryAsTextMongoDBImpl implements QueryAsTextDBRepository {
 				return mongoRepo.queryNativeAsJson(ontology, query);
 			}
 		} catch (final QueryNativeFormatException e) {
-			log.error("Error queryNativeAsJson:" + e.getDetailedMessage() + " .Query {} ontology {}", query,ontology);
+			log.error("Error queryNativeAsJson: {}.Query {} ontology {}", e.getDetailedMessage(), query, ontology);
 			throw e;
 		} catch (final DBPersistenceException e) {
-			log.error("Error queryNativeAsJson:" + e.getDetailedMessage() + " .Query {} ontology {}", query,ontology);
+			log.error("Error queryNativeAsJson: {}.Query {} ontology {}", e.getDetailedMessage(), query, ontology);
 			throw e;
 
 		} catch (final Exception e) {
-			log.error("Error queryNativeAsJson:" + e.getMessage() +" .Query {} ontology {}", query,ontology, e);
+			log.error("Error queryNativeAsJson: {}.Query {} ontology {}", e.getMessage(), query, ontology, e);
 			throw new DBPersistenceException(e);
 		}
 	}
@@ -163,7 +165,9 @@ public class QueryAsTextMongoDBImpl implements QueryAsTextDBRepository {
 	@Override
 	public String querySQLAsJson(String ontology, String query, int offset) {
 		try {
-			log.debug("querySQLAsJson ontology {} query {}", ontology, query);
+			if (log.isDebugEnabled()) {
+				log.debug("querySQLAsJson ontology {} query {}", ontology, query);
+			}			
 			checkQueryIs4Ontology(ontology, query, true);
 			if (query.trim().toLowerCase().startsWith("update") || query.trim().toLowerCase().startsWith("delete")
 					|| query.trim().toLowerCase().startsWith("select") && !useQuasar) {
@@ -178,10 +182,10 @@ public class QueryAsTextMongoDBImpl implements QueryAsTextDBRepository {
 				return mongoRepo.querySQLAsJson(ontology, query, offset);
 			}
 		} catch (final DBPersistenceException e) {
-			log.error(ERROR_QUERYSQLASJSON + e.getMessage() + " .Query {}, ontology {}",query,ontology, e);
+			log.error(ERROR_QUERYSQLASJSON, e.getMessage(), query, ontology, e);
 			throw e;
 		} catch (final Exception e) {
-			log.error(ERROR_QUERYSQLASJSON + e.getMessage() + " .Query {}, ontology {}",query,ontology, e);
+			log.error(ERROR_QUERYSQLASJSON, e.getMessage(), query, ontology, e);
 			throw new DBPersistenceException(e);
 		}
 	}
@@ -189,7 +193,9 @@ public class QueryAsTextMongoDBImpl implements QueryAsTextDBRepository {
 	@Override
 	public String querySQLAsJson(String ontology, String query, int offset, int limit) {
 		try {
-			log.debug("querySQLAsJson ontology {} query {}", ontology, query);
+			if (log.isDebugEnabled()) {
+				log.debug("querySQLAsJson ontology {} query {}", ontology, query);
+			}			
 			checkQueryIs4Ontology(ontology, query, true);
 			if (query.trim().toLowerCase().startsWith("update") || query.trim().toLowerCase().startsWith("delete")
 					|| query.trim().toLowerCase().startsWith("select") && !useQuasar) {
@@ -204,10 +210,10 @@ public class QueryAsTextMongoDBImpl implements QueryAsTextDBRepository {
 				return mongoRepo.querySQLAsJson(ontology, query, offset, limit);
 			}
 		} catch (final DBPersistenceException e) {
-			log.error(ERROR_QUERYSQLASJSON + e.getMessage() + " .Query {}, ontology {}",query,ontology, e);
+			log.error(ERROR_QUERYSQLASJSON, e.getMessage(), query, ontology, e);
 			throw e;
 		} catch (final Exception e) {
-			log.error(ERROR_QUERYSQLASJSON + e.getMessage() + " .Query {}, ontology {}",query,ontology, e);
+			log.error(ERROR_QUERYSQLASJSON, e.getMessage(), query, ontology, e);
 			throw new DBPersistenceException(e);
 		}
 	}

@@ -37,7 +37,7 @@ public interface JenkinsService {
 	public int buildWithParameters(String jenkinsUrl, String username, String token, String jobName, String folderName,
 			Map<String, List<String>> parameters);
 
-	public Map<String, String> getParametersFromJob(String jenkinsUrl, String username, String token, String jobName);
+	public Map<String, Object> getParametersFromJob(String jenkinsUrl, String username, String token, String jobName);
 
 	public BuildInfo buildInfo(JenkinsConfiguration config, String jobName, String folderName, int queueId);
 

@@ -286,14 +286,14 @@ public class DataflowController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
 	@DeleteMapping(value = "/pipeline/{id}", produces = "text/html")
 	public ResponseEntity removePipeline(@PathVariable("id") String id) {
-		dataflowService.removePipeline(id, utils.getUserId());
+		dataflowService.deleteHardPipeline(id, utils.getUserId());
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
 	@DeleteMapping(value = "/pipeline/hardDelete/{id}", produces = "text/html")
 	public ResponseEntity removeHardPipeline(@PathVariable("id") String id) {
-		dataflowService.removeHardPipeline(id, utils.getUserId());
+		dataflowService.deletePipeline(id, utils.getUserId());
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 

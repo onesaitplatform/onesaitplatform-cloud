@@ -641,7 +641,9 @@ public class NotebookServiceImpl implements NotebookService {
 		headers.add("Authorization", encryptRestUserpass());
 		final org.springframework.http.HttpEntity<String> request = new org.springframework.http.HttpEntity<>(body,
 				headers);
-		log.debug("Sending method " + httpMethod.toString() + " Notebook");
+		if (log.isDebugEnabled()) {
+			log.debug("Sending method {} Notebook", httpMethod.toString());
+		}
 		ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.ACCEPTED);
 		try {
 			response = restTemplate.exchange(
@@ -658,7 +660,9 @@ public class NotebookServiceImpl implements NotebookService {
 		} catch (final Exception e) {
 			log.error(e.getMessage());
 		}
-		log.debug("Execute method " + httpMethod.toString() + " '" + url + "' Notebook");
+		if (log.isDebugEnabled()) {
+			log.debug("Execute method {} '{}' Notebook", httpMethod.toString(), url);
+		}
 		final HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.set("Content-Type", response.getHeaders().getContentType().toString());
 		return new ResponseEntity<>(response.getBody(), responseHeaders,

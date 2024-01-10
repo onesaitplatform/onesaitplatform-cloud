@@ -47,6 +47,10 @@ Microservice.Create = (function(){
 			
 		});
 		
+		$('#checkbox-strip-prefix').on('change', function(){
+			$('#stripRoutePrefix').val($(this).is(':checked'))
+		})
+		
 		if($("#templateText").val()==''){
 			$('#project-structure').show();
 			$('#gitToHide').hide();
