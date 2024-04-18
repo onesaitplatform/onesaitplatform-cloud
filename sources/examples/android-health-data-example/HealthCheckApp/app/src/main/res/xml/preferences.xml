@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="S4C Platform Settings">
+        <ListPreference
+            android:key="EnvSelect"
+            android:title="S4C's environment selection"
+            android:entries="@array/envs"
+            android:entryValues="@array/envs_values"/>
+        />
+        
+    </PreferenceCategory>
+</PreferenceScreen>

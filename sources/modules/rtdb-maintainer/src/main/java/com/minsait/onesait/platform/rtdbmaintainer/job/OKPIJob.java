@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package com.minsait.onesait.platform.rtdbmaintainer.job;
 
 import java.io.IOException;
 
-import org.apache.commons.lang3.StringUtils;
 import org.quartz.JobExecutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,9 +23,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
-import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
-import com.minsait.onesait.platform.rtdbmaintainer.audit.aop.RtdbMaintainerAuditable;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,7 +33,6 @@ public class OKPIJob {
 	@Autowired
 	private OntologyService ontologyConfigService;
 
-	@RtdbMaintainerAuditable
 	public void execute(JobExecutionContext context) throws IOException {
 
 		final String user = context.getJobDetail().getJobDataMap().getString("userId");
@@ -46,21 +41,10 @@ public class OKPIJob {
 
 		final String ontology = context.getJobDetail().getJobDataMap().getString("ontology");
 
-		final String verticalSchema = context.getJobDetail().getJobDataMap()
-				.getString(Tenant2SchemaMapper.VERTICAL_SCHEMA_KEY_STRING);
-
-		final String tenant = context.getJobDetail().getJobDataMap().getString(Tenant2SchemaMapper.TENANT_KEY_STRING);
-
-		if (!StringUtils.isEmpty(tenant) && !StringUtils.isEmpty(verticalSchema)) {
-			MultitenancyContextHolder.setTenantName(tenant);
-			MultitenancyContextHolder.setVerticalSchema(verticalSchema);
-		}
 		try {
 			ontologyConfigService.executeKPI(user, query, ontology,
 					context.getJobDetail().getJobDataMap().getString("postProcess"));
-			if (log.isDebugEnabled()) {
-				log.debug("Job KPI ontology for ontology", ontology);
-			}			
+			log.debug("Job KPI ontology for ontology", ontology);
 		} catch (HttpClientErrorException | HttpServerErrorException e) {
 			log.error("Rest error: code {}, {}", e.getStatusCode(), e.getResponseBodyAsString());
 		} catch (final Exception e) {

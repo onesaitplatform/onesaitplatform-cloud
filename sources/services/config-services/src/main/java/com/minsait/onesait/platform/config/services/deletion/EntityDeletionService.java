@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,21 @@ package com.minsait.onesait.platform.config.services.deletion;
 
 import java.util.List;
 
-import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulation;
+import com.minsait.onesait.platform.config.model.DeviceSimulation;
 import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.model.Token;
 import com.minsait.onesait.platform.config.model.TwitterListening;
 
 public interface EntityDeletionService {
 
-	void deleteOntology(String id, String userId, Boolean isHardDeleted);
+	void deleteOntology(String id, String userId);
 
 	void deleteTwitterListening(TwitterListening twitterListening);
 
 	void deleteClient(String id);
 
-	void deleteToken(Token token);
+	void deleteToken(String id);
 
-	void deleteDeviceSimulation(ClientPlatformInstanceSimulation simulation);
+	void deleteDeviceSimulation(DeviceSimulation simulation);
 
 	void revokeAuthorizations(Ontology ontology);
 
@@ -46,14 +45,4 @@ public interface EntityDeletionService {
 	void deactivateUser(List<String> userIds);
 
 	void invalidateUserTokens(String userId);
-
-	void hardDeleteUser(String userId);
-	
-	void deleteMapsStyle(String id, String userId);
-
-	void deleteMapsLayer(String id, String userId);
-
-	void deleteMapsMap(String id, String userId);
-
-	void deleteMapsProject(String id, boolean deleteDepencies,String userId);
 }

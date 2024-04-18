@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,9 +50,6 @@ public class UtilMongoDB {
 			final String collection = getCollectionName(query);
 			String auxName = query.replace("db." + collection + ".", "");
 			auxName = auxName.substring(auxName.indexOf('(') + 1, auxName.lastIndexOf(')'));
-			if (auxName.contains(").count(")) {
-				auxName=auxName.replace(").count(", "");
-			}
 			if (auxName.equals(""))
 				auxName = "{}";
 			return auxName;
@@ -239,7 +236,7 @@ public class UtilMongoDB {
 	}
 
 	public <T> Map<String, T> toJavaMap(Document document, Class<T> valueType) {
-		final Map<String, T> result = new LinkedHashMap<>();
+		final Map<String, T> result = new HashMap<>();
 		for (final String key : document.keySet()) {
 			if (document.get(key) instanceof String) {
 				result.put(key, document.get(key, (Class<T>) String.class));

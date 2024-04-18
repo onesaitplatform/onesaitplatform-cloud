@@ -1,12 +1,3 @@
-master:
-   datasource:
-     hikari:
-      jdbc-url: ${CONFIGDBMASTERURL}
-      username: ${CONFIGDBUSER}
-      password: ${CONFIGDBPASS}
-      maximum-pool-size: ${CONFIGDB_MAX_ACTIVE}
-      driver-class-name: ${CONFIGDB_DRIVER}
-     
 onesaitplatform:
    flowengine:
       node.path: node
@@ -17,54 +8,33 @@ onesaitplatform:
             log: ${NODERED_LOG_PATH}
             retain.days: ${NODERED_LOG_RETAIN_DAYS}
    database.mongodb:
-      quasar.connector.http.endpoint: http://${QUASARHOST}:${QUASARPORT}/query/fs/
+      quasar.connector.http.endpoint: http://${QUASARHOST}:${QUASARPORT}/query/fs/                 
    database.elasticsearch:
       sql.connector.http.endpoint: http://${ELASTICDBHOST}:${ELASTICDBPORT}
-      url: ${ELASTICDBHOST}
-      port: 9300
-   database.timescaledb:
-      enabled: ${TIMESCALE_ENABLED}
-      url: ${TIMESCALE_URL}
-      user: ${TIMESCALE_USER}
-      password: ${TIMESCALE_PASS}
+      url: ${ELASTICDBHOST} 
+      port: 9300        
    router.alternativeURL: http://routerservice:20000/router/router/
-   platform.base.url: http://controlpanelservice:18000/controlpanel
    audit.global.notify: ${AUDITGLOBALNOTIFY}
    hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
    hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
-   analytics.notebook:
-      zeppelinHostname: zeppelin
-   graylog:
-      enabled: ${GRAYLOG_ENABLED}
-      host: ${GRAYLOG_HOST}
-      port: ${GRAYLOG_PORT}
-
+   
 spring:
-   datasource:
-     hikari:
-      jdbc-url: ${CONFIGDBURL}${DBADDPROPS}
-      username: ${CONFIGDBUSER}
-      password: ${CONFIGDBPASS}
-      connection-timeout: ${DS_MAX_WAIT_MILLIS}
-      maximum-pool-size: ${DS_MAX_ACTIVE}
-      minimum-idle: ${DS_MIN_IDLE}
-      driver-class-name: ${CONFIGDB_DRIVER}
-   boot.admin: #Spring Boot Admin Config
-      client.url: http://monitoringuiservice:18100/monitoring
-      client.instance.service-url: http://flowengineservice:${server.port}${server.servlet.contextPath}/
-      client.username: ${SBA_USERNAME}
-      client.password: ${SBA_SECRET}
+   datasource:  
+      url: ${JDBCPROTOCOL}//${CONFIGDBSERVERS}/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
+      driver-class-name: com.mysql.jdbc.Driver
+      test-while-idle: true
+      test-on-borrow: true
+      validation-query: SELECT 1   
+   boot.admin: #Spring Boot Admin Config    
+      url: http://monitoringuiservice:18100/monitoring
+      client.service-url: http://flowengineservice:${server.port}${server.contextPath}/ 
    data.mongodb:
       host: ${REALTIMEDBSERVERS}
    elasticsearch.jest:
-      uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}
-   jpa:
-      properties.hibernate.dialect: ${CONFIGDB_DIALECT}
+      uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}                
 quartz:
     datasource:
-      url: ${SCHEDULERDBBURL}${DBADDPROPS}
+      url: ${JDBCPROTOCOL}//${SCHEDULERDBSERVERS}/onesaitplatform_scheduler?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
 ## LOGGING CONF
 logging:
-   file.path: /var/log/platform-logs
-   level:
-      org.zalando.logbook: ${HTTP_LOG_LEVEL}
+   path: /var/log/platform-logs 

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,7 @@
  */
 package com.minsait.onesait.platform.persistence.external.virtual;
 
-import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
-import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
-import com.minsait.onesait.platform.persistence.external.generator.helper.SQLHelper;
-
-
 public interface VirtualDatasourcesManager {
 
-	VirtualDataSourceDescriptor getDataSourceDescriptor(final String datasourceName);
-
-	OntologyVirtualDatasource getDatasourceForOntology(String ontology);
-
-	String getDriverClassName(final VirtualDatasourceType type);
-
-	SQLHelper getOntologyHelper(final VirtualDatasourceType type);
-	
-	void setDatasourceDescriptor (String datasourceName);
-
+	public VirtualDataSourceDescriptor getDataSourceDescriptor(String datasourceName);
 }

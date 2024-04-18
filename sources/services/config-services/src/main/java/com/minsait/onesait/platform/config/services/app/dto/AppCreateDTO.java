@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,28 +17,25 @@ package com.minsait.onesait.platform.config.services.app.dto;
 import lombok.Getter;
 import lombok.Setter;
 
-public class AppCreateDTO implements java.io.Serializable {
-
+public class AppCreateDTO  implements java.io.Serializable {
+	
 	/**
-	 *
+	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
 	@Getter
 	@Setter
-	private String id;
-	@Getter
-	@Setter
 	private String appId;
 	@Getter
 	@Setter
-	private String identification;
+	private String name;
 	@Getter
 	@Setter
 	private String description;
 	@Getter
 	@Setter
-	private String roles;
+	private String roles;	
 	@Getter
 	@Setter
 	private String users;
@@ -51,7 +48,4 @@ public class AppCreateDTO implements java.io.Serializable {
 	@Getter
 	@Setter
 	private String secret;
-	@Getter
-	@Setter
-	private boolean publicClient;
 }

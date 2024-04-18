@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,76 +14,137 @@
  */
 package com.minsait.onesait.platform.config.model;
 
+import java.util.Date;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
 import javax.persistence.FetchType;
+import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
+import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.util.CollectionUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.minsait.onesait.platform.config.model.interfaces.Versionable;
-import com.minsait.onesait.platform.config.model.listener.AuditEntityListener;
-import com.minsait.onesait.platform.config.model.listener.EntityListener;
+import com.minsait.onesait.platform.config.converters.JPAHAS256ConverterCustom;
+import com.minsait.onesait.platform.config.model.base.AuditableEntity;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 @Entity
 @Table(name = "USER")
 @Configurable
-@EntityListeners({ EntityListener.class, AuditEntityListener.class })
-@ToString(exclude = { "projects" }, callSuper = true)
-public class User extends UserParent implements Versionable<User> {
+public class User extends AuditableEntity {
 
 	private static final long serialVersionUID = 1L;
 
-	@ManyToMany(cascade = { CascadeType.ALL }, fetch = FetchType.LAZY)
+	@Id
+	@Column(name = "USER_ID", length = 50, unique = true, nullable = false)
+	@NotNull
+	@Getter
+	@Setter
+	@Size(min = 4, message = "user.userid.error")
+	private String userId;
+
+	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	@JoinTable(name = "USER_PROJECT", joinColumns = @JoinColumn(name = "USER_ID"), inverseJoinColumns = @JoinColumn(name = "PROJECT_ID"))
 	@Getter
 	@Setter
 	@JsonIgnore
 	private Set<Project> projects = new HashSet<>();
 
-	@Override
-	public String fileName() {
-		return getUserId() + ".yaml";
-	}
+	@Column(name = "EMAIL", length = 255, nullable = false)
+	@NotNull
+	@javax.validation.constraints.Pattern(regexp = "^[_a-z0-9-]+(.[_a-z0-9-]+)*@[a-z0-9-]+(.[a-z0-9-]+)*(.[a-z]{2,3})$", message = "user.create.empty.email")
+	@Getter
+	@Setter
+	private String email;
 
-	@Override
-	public Object getId() {
-		return getUserId();
-	}
+	@ManyToOne
+	@OnDelete(action = OnDeleteAction.NO_ACTION)
+	@JoinColumn(name = "ROLE_ID", referencedColumnName = "ID", nullable = false)
+	@Getter
+	@Setter
+	private Role role;
 
-	@Override
-	@JsonIgnore
-	public String getUserJson() {
-		return getUserId();
-	}
+	@Column(name = "PASSWORD", length = 128, nullable = false)
+	@NotNull
+	@Setter
+	@Convert(converter = JPAHAS256ConverterCustom.class)
+	private String password;
 
-	@Override
-	public Versionable<User> runExclusions(Map<String, Set<String>> excludedIds, Set<String> excludedUsers) {
-		Versionable<User> u = Versionable.super.runExclusions(excludedIds, excludedUsers);
-		if (u != null && !projects.isEmpty() && !CollectionUtils.isEmpty(excludedIds)
-				&& !CollectionUtils.isEmpty(excludedIds.get(Project.class.getSimpleName()))) {
-			projects.removeIf(p -> excludedIds.get(Project.class.getSimpleName()).contains(p.getId()));
-			u = this;
+	public String getPassword() {
+		if (this.password != null && this.password.startsWith(JPAHAS256ConverterCustom.STORED_FLAG)) {
+			return this.password.substring(JPAHAS256ConverterCustom.STORED_FLAG.length());
+		} else {
+			return this.password;
 		}
-		return u;
+
+	}
+
+	@Column(name = "ACTIVE", nullable = false, columnDefinition = "BIT")
+	@NotNull
+	@Getter
+	@Setter
+	private boolean active;
+
+	@Column(name = "FULL_NAME", length = 255)
+	@NotNull
+	@Size(min = 4, message = "user.fullname.error")
+	@Getter
+	@Setter
+	private String fullName;
+
+	@Column(name = "DATE_DELETED")
+	@Temporal(TemporalType.DATE)
+	@Getter
+	@Setter
+	private Date dateDeleted;
+
+	@Column(name = "AVATAR", nullable = true)
+	@Lob
+	@Getter
+	@Setter
+	private byte[] avatar;
+
+	@Column(name = "EXTRA_FIELDS", nullable = true)
+	@Lob
+	@Getter
+	@Setter
+	private String extraFields;
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o)
+			return true;
+		if (!(o instanceof User))
+			return false;
+		return getUserId() != null && getUserId().equals(((User) o).getUserId());
 	}
 
 	@Override
-	public void setOwnerUserId(String userId) {
-
+	public int hashCode() {
+		return java.util.Objects.hash(getUserId());
 	}
+
+	@Override
+	public String toString() {
+		return getUserId();
+	}
+
 }

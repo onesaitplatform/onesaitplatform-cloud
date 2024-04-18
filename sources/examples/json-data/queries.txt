@@ -1,0 +1,19 @@
+SELECT COUNT(*) FROM %s/account GROUP BY gender
+SELECT EXTENDED_STATS(age) FROM %s/account
+DELETE FROM %s/temp_account WHERE phrase = 'quick fox here' 
+SELECT AVG(age) FROM %s/account
+SELECT COUNT(*) FROM %s/account GROUP BY age ORDER BY COUNT(*) LIMIT 5
+SELECT min(nested(message.dayOfWeek)) as minDays FROM %s/nestedType
+SELECT " +
+                "floor(substring(address,0,3)*20) as key," +
+                "sum(age) cvalue FROM " + TEST_INDEX_ACCOUNT + "/account where address is not null " +
+                "group by key order by cvalue desc limit 10  ";
+				
+				"SELECT " +
+                "substring(address,0,3) as key,address from " +
+                TEST_INDEX_ACCOUNT + "/account where address is not null " +
+                "order by address desc limit 10  ";
+				SELECT " +
+                " concat_ws('-',age,address),address from " +
+                TEST_INDEX_ACCOUNT + "/account " +
+                " limit 10 

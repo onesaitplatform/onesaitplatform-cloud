@@ -1,0 +1,75 @@
+server: ## Config Web Server
+   port: 18088
+spring:
+   application.name: sofia2-streaming-twitter
+   boot.admin: #Spring Boot Admin Config   
+      url: http://localhost:18090
+      username: operations
+      password: changeIt!
+      client.metadata.user.name: ${spring.boot.admin.username}
+      client.metadata.user.password: $spring.boot.admin.password
+   data.mongodb:
+      database: onesaitplatform_rtdb # Database name.
+  
+   ## JPA Config
+   datasource:
+      url: jdbc:mysql://localhost:3306/onesaitplatform_config?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false
+      username: root
+      # password:
+      driver-class-name: com.mysql.jdbc.Driver
+   jpa:
+      # The SQL dialect makes Hibernate generate better SQL for the chosen database
+      properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+
+quartz:      
+   datasource:
+      url: "@sofia2.quartzURL@"
+      username: root
+      password: changeIt!
+      driver-class-name: com.mysql.jdbc.Driver
+   jpa:
+      ## Hibernate Properties
+      # The SQL dialect makes Hibernate generate better SQL for the chosen database
+      properties.hibernate.dialect: org.hibernate.dialect.MySQL5Dialect
+      # Hibernate ddl auto (create, create-drop, validate, update)
+      properties.hibernate.hbm2ddl.auto: update
+      properties.hibernate.hbm2ddl.import_files: /quartz-schema.sql
+   autoStartupSchedulers:
+      twitterScheduler
+    
+sofia2: #Config Sofia2 specific
+   database.mongodb:
+      database: onesaitplatform_rtdb
+      authenticationDatabase:  #admin
+      servers: localhost:27017
+      autoConnectRetry: true
+      socketTimeout: 5000
+      maxAutoConnectRetryTime: 5000
+      maxWaitTime: 5000
+      useAuth: false
+      username: #username
+      password: #password
+      readFromSecondaries: false
+      queries.executionTimeout: 5000
+      queries.defaultLimit: 150
+      queries.maxConcurrentQueries: 3
+      writeConcern: UNACKNOWLEDGED
+      tools.mongoexport.path: mongoexport
+      tools.mongoimport.path: mongoimport
+      tools.mongoshell.path: mongo
+      tools.useSequentialOps: true 
+   database.elasticsearch:
+      database: onesaitplatform_rtdb_es
+      sql.maxHttpConnections: 10
+      sql.maxHttpConnectionsPerRoute: 10
+      sql.connectionTimeout.millis: 10000
+      sql.connector.http.endpoint: http://localhost:9200
+      url: localhost
+      port: 9300         
+## LOGGING CONF
+logging:
+   level:
+      org.springframework: INFO
+      com.example.boot.thymeleaf: INFO
+      com.indra: INFO
+      org.hibernate: INFO

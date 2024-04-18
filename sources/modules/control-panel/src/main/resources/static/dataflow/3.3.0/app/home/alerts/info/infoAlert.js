@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('InfoAlertController', ["$scope", function ($scope) {
+  .controller('InfoAlertController', function ($scope) {
 
     angular.extend($scope, {
 
@@ -33,4 +33,4 @@ angular
         alertList.splice(index, 1);
       }
     });
-  }]);
+  });

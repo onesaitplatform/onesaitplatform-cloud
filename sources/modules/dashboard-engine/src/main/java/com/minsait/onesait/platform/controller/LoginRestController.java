@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,8 @@
  */
 package com.minsait.onesait.platform.controller;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -26,7 +23,7 @@ public class LoginRestController {
 
 	@CrossOrigin
     @RequestMapping("/loginRest")
-    public @ResponseBody ResponseEntity<String> login() {
-		return new ResponseEntity<String>("{\"ok\":true}", HttpStatus.OK);
+    public String login() {
+        return "{\"Ok\":true}";
     }
 }

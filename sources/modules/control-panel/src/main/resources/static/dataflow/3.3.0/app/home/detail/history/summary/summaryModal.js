@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('SummaryModalInstanceController', ["$scope", "$modalInstance", "pipelineConfig", "history", "prevHistory", "pipelineConstant", function ($scope, $modalInstance, pipelineConfig, history, prevHistory,
+  .controller('SummaryModalInstanceController', function ($scope, $modalInstance, pipelineConfig, history, prevHistory,
                                                           pipelineConstant) {
 
     var pipelineMetrics = JSON.parse(history.metrics),
@@ -159,4 +159,4 @@ angular
     if(pipelineMetrics && pipelineMetrics.meters) {
       updateSummary();
     }
-  }]);
+  });

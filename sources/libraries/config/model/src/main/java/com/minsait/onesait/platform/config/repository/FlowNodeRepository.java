@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
-import java.util.Collection;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -28,7 +27,6 @@ import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.model.FlowNode;
 import com.minsait.onesait.platform.config.model.FlowNode.MessageType;
-import com.minsait.onesait.platform.config.model.User;
 
 public interface FlowNodeRepository extends JpaRepository<FlowNode, String> {
 
@@ -38,7 +36,7 @@ public interface FlowNodeRepository extends JpaRepository<FlowNode, String> {
 
 	List<FlowNode> findByflowNodeType(String flowNodeType);
 
-	@Cacheable(cacheNames = "FlowNodeRepositoryByOntologyAndMessageType", key = "#p0.concat('-').concat(#p1.name())")
+	@Cacheable(cacheNames = "FlowNodeRepositoryByOntologyAndMessageType", unless = "#result==null or #result.size()==0")
 	@Query("SELECT N FROM FlowNode N "
 			+ "WHERE N.flowNodeType = 'HTTP_NOTIFIER' AND N.ontology.identification = :ontology AND N.messageType = :messageType")
 	List<FlowNode> findNotificationByOntologyAndMessageType(@Param("ontology") String ontology,
@@ -46,26 +44,21 @@ public interface FlowNodeRepository extends JpaRepository<FlowNode, String> {
 
 	@Override
 	@CacheEvict(cacheNames = "FlowNodeRepositoryByOntologyAndMessageType", allEntries = true)
+	@Modifying
 	@Transactional
-	void deleteById(String id);
+	void delete(String id);
 
 	@Override
 	@CacheEvict(cacheNames = "FlowNodeRepositoryByOntologyAndMessageType", allEntries = true)
+	@Modifying
 	@Transactional
 	void delete(FlowNode entity);
 
 	@Override
 	@CacheEvict(cacheNames = "FlowNodeRepositoryByOntologyAndMessageType", allEntries = true)
-	<S extends FlowNode> S save(S flow);
+	FlowNode save(FlowNode flow);
 
 	@Override
 	@CacheEvict(cacheNames = "FlowNodeRepositoryByOntologyAndMessageType", allEntries = true)
 	void flush();
-
-	@Query("SELECT n FROM FlowNode n JOIN n.flow f WHERE f.flowDomain.user= :user")
-	List<FlowNode> findByUser(@Param("user") User user);
-
-	@Modifying
-	@Transactional
-	void deleteByIdNotIn(Collection<String> ids);
 }

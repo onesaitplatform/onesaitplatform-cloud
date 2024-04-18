@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ public class InitConfigDBDigitalTwin {
 			device.setPort(10000);
 			device.setUrlSchema("http");
 			device.setUrl("https://s4citiespro.westeurope.cloudapp.azure.com/digitaltwinbroker");
-			device.setTypeId(digitalTwinTypeRepository.findByIdentification("Turbine"));
+			device.setTypeId(digitalTwinTypeRepository.findByName("Turbine"));
 			device.setUser(getUserDeveloper());
 			digitalTwinDeviceRepository.save(device);
 
@@ -85,7 +85,7 @@ public class InitConfigDBDigitalTwin {
 			device = new DigitalTwinDevice();
 			device.setId("MASTER-DigitalTwinDevice-2");
 			device.setContextPath("/sensehat");
-			device.setDigitalKey("f0e50f5f8c754204a4ac601f29765c15");
+			device.setDigitalKey("f0e50f5f8c754204a4ac601f29775c15");
 			device.setIdentification("SensehatHelsinki");
 			device.setIntrface("eth0");
 			device.setIpv6(false);
@@ -94,7 +94,7 @@ public class InitConfigDBDigitalTwin {
 			device.setPort(10000);
 			device.setUrlSchema("http");
 			device.setUrl("https://s4citiespro.westeurope.cloudapp.azure.com/digitaltwinbroker");
-			device.setTypeId(digitalTwinTypeRepository.findByIdentification("Sensehat"));
+			device.setTypeId(digitalTwinTypeRepository.findByName("Sensehat"));
 			device.setUser(getUserDeveloper());
 			digitalTwinDeviceRepository.save(device);
 		}
@@ -106,7 +106,7 @@ public class InitConfigDBDigitalTwin {
 			// Turbine example
 			DigitalTwinType type = new DigitalTwinType();
 			type.setId("MASTER-DigitalTwinType-1");
-			type.setIdentification("Turbine");
+			type.setName("Turbine");
 			type.setType("thing");
 			type.setDescription("Wind Turbine for electricity generation");
 			type.setJson(
@@ -168,7 +168,7 @@ public class InitConfigDBDigitalTwin {
 			// Sensehat example
 			type = new DigitalTwinType();
 			type.setId("MASTER-DigitalTwinType-2");
-			type.setIdentification("Sensehat");
+			type.setName("Sensehat");
 			type.setType("thing");
 			type.setDescription("Raspberry with Sensehat");
 			type.setJson(
@@ -287,7 +287,7 @@ public class InitConfigDBDigitalTwin {
 	private Set<EventsDigitalTwinType> createTurbineEventsDT(DigitalTwinType type) {
 		final Set<EventsDigitalTwinType> events = new HashSet<>();
 		EventsDigitalTwinType event = new EventsDigitalTwinType();
-		event.setId(MASTER_EVENTS_DT_TYPE + type.getIdentification() + "-1");
+		event.setId(MASTER_EVENTS_DT_TYPE + type.getName() + "-1");
 		event.setName("ping");
 		event.setStatus(true);
 		event.setType(EventsDigitalTwinType.Type.PING);
@@ -296,7 +296,7 @@ public class InitConfigDBDigitalTwin {
 		events.add(event);
 
 		event = new EventsDigitalTwinType();
-		event.setId(MASTER_EVENTS_DT_TYPE + type.getIdentification() + "-2");
+		event.setId(MASTER_EVENTS_DT_TYPE + type.getName() + "-2");
 		event.setName("updateshadow");
 		event.setStatus(true);
 		event.setType(EventsDigitalTwinType.Type.UPDATE_SHADOW);
@@ -305,7 +305,7 @@ public class InitConfigDBDigitalTwin {
 		events.add(event);
 
 		event = new EventsDigitalTwinType();
-		event.setId(MASTER_EVENTS_DT_TYPE + type.getIdentification() + "-3");
+		event.setId(MASTER_EVENTS_DT_TYPE + type.getName() + "-3");
 		event.setName("log");
 		event.setStatus(true);
 		event.setType(EventsDigitalTwinType.Type.LOG);
@@ -314,7 +314,7 @@ public class InitConfigDBDigitalTwin {
 		events.add(event);
 
 		event = new EventsDigitalTwinType();
-		event.setId(MASTER_EVENTS_DT_TYPE + type.getIdentification() + "-4");
+		event.setId(MASTER_EVENTS_DT_TYPE + type.getName() + "-4");
 		event.setName("register");
 		event.setStatus(true);
 		event.setType(EventsDigitalTwinType.Type.REGISTER);
@@ -323,7 +323,7 @@ public class InitConfigDBDigitalTwin {
 		events.add(event);
 
 		event = new EventsDigitalTwinType();
-		event.setId(MASTER_EVENTS_DT_TYPE + type.getIdentification() + "-5");
+		event.setId(MASTER_EVENTS_DT_TYPE + type.getName() + "-5");
 		event.setName("tempAlert");
 		event.setStatus(true);
 		event.setType(EventsDigitalTwinType.Type.OTHER);
@@ -337,21 +337,21 @@ public class InitConfigDBDigitalTwin {
 	private Set<ActionsDigitalTwinType> createTurbineActionsDT(DigitalTwinType type) {
 		final Set<ActionsDigitalTwinType> actions = new HashSet<>();
 		ActionsDigitalTwinType action = new ActionsDigitalTwinType();
-		action.setId(MASTER_ACTIONS_DT_TYPE + type.getIdentification() + "-1");
+		action.setId(MASTER_ACTIONS_DT_TYPE + type.getName() + "-1");
 		action.setName("disconnectElectricNetwork");
 		action.setDescription("Disconnect the turbine to the electric network to prevent problems");
 		action.setTypeId(type);
 		actions.add(action);
 
 		action = new ActionsDigitalTwinType();
-		action.setId(MASTER_ACTIONS_DT_TYPE + type.getIdentification() + "-2");
+		action.setId(MASTER_ACTIONS_DT_TYPE + type.getName() + "-2");
 		action.setName("connectElectricNetwork");
 		action.setDescription("Connect the turbine to the electric network to provide power");
 		action.setTypeId(type);
 		actions.add(action);
 
 		action = new ActionsDigitalTwinType();
-		action.setId(MASTER_ACTIONS_DT_TYPE + type.getIdentification() + "-3");
+		action.setId(MASTER_ACTIONS_DT_TYPE + type.getName() + "-3");
 		action.setName("limitRotorSpeed");
 		action.setDescription("Limits the rotor speed");
 		action.setTypeId(type);
@@ -363,7 +363,7 @@ public class InitConfigDBDigitalTwin {
 	private Set<PropertyDigitalTwinType> createTurbinePropertiesDT(DigitalTwinType type) {
 		final Set<PropertyDigitalTwinType> props = new HashSet<>();
 		PropertyDigitalTwinType prop = new PropertyDigitalTwinType();
-		prop.setId(MASTER_PROPERTY_DT_TYPE + type.getIdentification() + "-1");
+		prop.setId(MASTER_PROPERTY_DT_TYPE + type.getName() + "-1");
 		prop.setName("alternatorTemp");
 		prop.setType(DOUBLE_STR);
 		prop.setUnit("celsius");
@@ -373,7 +373,7 @@ public class InitConfigDBDigitalTwin {
 		props.add(prop);
 
 		prop = new PropertyDigitalTwinType();
-		prop.setId(MASTER_PROPERTY_DT_TYPE + type.getIdentification() + "-2");
+		prop.setId(MASTER_PROPERTY_DT_TYPE + type.getName() + "-2");
 		prop.setName("power");
 		prop.setType(DOUBLE_STR);
 		prop.setUnit("wat/h");
@@ -383,7 +383,7 @@ public class InitConfigDBDigitalTwin {
 		props.add(prop);
 
 		prop = new PropertyDigitalTwinType();
-		prop.setId(MASTER_PROPERTY_DT_TYPE + type.getIdentification() + "-3");
+		prop.setId(MASTER_PROPERTY_DT_TYPE + type.getName() + "-3");
 		prop.setName("nacelleTemp");
 		prop.setType(DOUBLE_STR);
 		prop.setUnit("celsius");
@@ -393,7 +393,7 @@ public class InitConfigDBDigitalTwin {
 		props.add(prop);
 
 		prop = new PropertyDigitalTwinType();
-		prop.setId(MASTER_PROPERTY_DT_TYPE + type.getIdentification() + "-4");
+		prop.setId(MASTER_PROPERTY_DT_TYPE + type.getName() + "-4");
 		prop.setName("rotorSpeed");
 		prop.setType("int");
 		prop.setUnit("rpm");
@@ -403,7 +403,7 @@ public class InitConfigDBDigitalTwin {
 		props.add(prop);
 
 		prop = new PropertyDigitalTwinType();
-		prop.setId(MASTER_PROPERTY_DT_TYPE + type.getIdentification() + "-5");
+		prop.setId(MASTER_PROPERTY_DT_TYPE + type.getName() + "-5");
 		prop.setName("maxRotorSpeed");
 		prop.setType("int");
 		prop.setUnit("rpm");
@@ -413,7 +413,7 @@ public class InitConfigDBDigitalTwin {
 		props.add(prop);
 
 		prop = new PropertyDigitalTwinType();
-		prop.setId(MASTER_PROPERTY_DT_TYPE + type.getIdentification() + "-6");
+		prop.setId(MASTER_PROPERTY_DT_TYPE + type.getName() + "-6");
 		prop.setName("windDirection");
 		prop.setType("int");
 		prop.setUnit("degrees");
@@ -428,7 +428,7 @@ public class InitConfigDBDigitalTwin {
 	private Set<EventsDigitalTwinType> createSensehatEventsDT(DigitalTwinType type) {
 		final Set<EventsDigitalTwinType> events = new HashSet<>();
 		EventsDigitalTwinType event = new EventsDigitalTwinType();
-		event.setId(MASTER_EVENTS_DT_TYPE + type.getIdentification() + "-1");
+		event.setId(MASTER_EVENTS_DT_TYPE + type.getName() + "-1");
 		event.setName("ping");
 		event.setStatus(true);
 		event.setType(EventsDigitalTwinType.Type.PING);
@@ -437,7 +437,7 @@ public class InitConfigDBDigitalTwin {
 		events.add(event);
 
 		event = new EventsDigitalTwinType();
-		event.setId(MASTER_EVENTS_DT_TYPE + type.getIdentification() + "-2");
+		event.setId(MASTER_EVENTS_DT_TYPE + type.getName() + "-2");
 		event.setName("updateshadow");
 		event.setStatus(true);
 		event.setType(EventsDigitalTwinType.Type.UPDATE_SHADOW);
@@ -446,7 +446,7 @@ public class InitConfigDBDigitalTwin {
 		events.add(event);
 
 		event = new EventsDigitalTwinType();
-		event.setId(MASTER_EVENTS_DT_TYPE + type.getIdentification() + "-3");
+		event.setId(MASTER_EVENTS_DT_TYPE + type.getName() + "-3");
 		event.setName("log");
 		event.setStatus(true);
 		event.setType(EventsDigitalTwinType.Type.LOG);
@@ -455,7 +455,7 @@ public class InitConfigDBDigitalTwin {
 		events.add(event);
 
 		event = new EventsDigitalTwinType();
-		event.setId(MASTER_EVENTS_DT_TYPE + type.getIdentification() + "-4");
+		event.setId(MASTER_EVENTS_DT_TYPE + type.getName() + "-4");
 		event.setName("register");
 		event.setStatus(true);
 		event.setType(EventsDigitalTwinType.Type.REGISTER);
@@ -464,7 +464,7 @@ public class InitConfigDBDigitalTwin {
 		events.add(event);
 
 		event = new EventsDigitalTwinType();
-		event.setId(MASTER_EVENTS_DT_TYPE + type.getIdentification() + "-5");
+		event.setId(MASTER_EVENTS_DT_TYPE + type.getName() + "-5");
 		event.setName("joystickEventMiddle");
 		event.setStatus(true);
 		event.setType(EventsDigitalTwinType.Type.OTHER);
@@ -473,7 +473,7 @@ public class InitConfigDBDigitalTwin {
 		events.add(event);
 
 		event = new EventsDigitalTwinType();
-		event.setId(MASTER_EVENTS_DT_TYPE + type.getIdentification() + "-6");
+		event.setId(MASTER_EVENTS_DT_TYPE + type.getName() + "-6");
 		event.setName("joystickEventRight");
 		event.setStatus(true);
 		event.setType(EventsDigitalTwinType.Type.OTHER);
@@ -482,7 +482,7 @@ public class InitConfigDBDigitalTwin {
 		events.add(event);
 
 		event = new EventsDigitalTwinType();
-		event.setId(MASTER_EVENTS_DT_TYPE + type.getIdentification() + "-7");
+		event.setId(MASTER_EVENTS_DT_TYPE + type.getName() + "-7");
 		event.setName("joystickEventLeft");
 		event.setStatus(true);
 		event.setType(EventsDigitalTwinType.Type.OTHER);
@@ -491,7 +491,7 @@ public class InitConfigDBDigitalTwin {
 		events.add(event);
 
 		event = new EventsDigitalTwinType();
-		event.setId(MASTER_EVENTS_DT_TYPE + type.getIdentification() + "-8");
+		event.setId(MASTER_EVENTS_DT_TYPE + type.getName() + "-8");
 		event.setName("joystickEventUp");
 		event.setStatus(true);
 		event.setType(EventsDigitalTwinType.Type.OTHER);
@@ -500,7 +500,7 @@ public class InitConfigDBDigitalTwin {
 		events.add(event);
 
 		event = new EventsDigitalTwinType();
-		event.setId(MASTER_EVENTS_DT_TYPE + type.getIdentification() + "-9");
+		event.setId(MASTER_EVENTS_DT_TYPE + type.getName() + "-9");
 		event.setName("joystickEventDown");
 		event.setStatus(true);
 		event.setType(EventsDigitalTwinType.Type.OTHER);
@@ -514,35 +514,35 @@ public class InitConfigDBDigitalTwin {
 	private Set<ActionsDigitalTwinType> createSensehatActionsDT(DigitalTwinType type) {
 		final Set<ActionsDigitalTwinType> actions = new HashSet<>();
 		ActionsDigitalTwinType action = new ActionsDigitalTwinType();
-		action.setId(MASTER_ACTIONS_DT_TYPE + type.getIdentification() + "-1");
+		action.setId(MASTER_ACTIONS_DT_TYPE + type.getName() + "-1");
 		action.setName("joystickUp");
 		action.setDescription("Joystick action up");
 		action.setTypeId(type);
 		actions.add(action);
 
 		action = new ActionsDigitalTwinType();
-		action.setId(MASTER_ACTIONS_DT_TYPE + type.getIdentification() + "-2");
+		action.setId(MASTER_ACTIONS_DT_TYPE + type.getName() + "-2");
 		action.setName("joystickDown");
 		action.setDescription("Joystick action down");
 		action.setTypeId(type);
 		actions.add(action);
 
 		action = new ActionsDigitalTwinType();
-		action.setId(MASTER_ACTIONS_DT_TYPE + type.getIdentification() + "-3");
+		action.setId(MASTER_ACTIONS_DT_TYPE + type.getName() + "-3");
 		action.setName("joystickLeft");
 		action.setDescription("Joystick action to the left");
 		action.setTypeId(type);
 		actions.add(action);
 
 		action = new ActionsDigitalTwinType();
-		action.setId(MASTER_ACTIONS_DT_TYPE + type.getIdentification() + "-4");
+		action.setId(MASTER_ACTIONS_DT_TYPE + type.getName() + "-4");
 		action.setName("joystickRight");
 		action.setDescription("Joystick action to the right");
 		action.setTypeId(type);
 		actions.add(action);
 
 		action = new ActionsDigitalTwinType();
-		action.setId(MASTER_ACTIONS_DT_TYPE + type.getIdentification() + "-5");
+		action.setId(MASTER_ACTIONS_DT_TYPE + type.getName() + "-5");
 		action.setName("joystickMiddle");
 		action.setDescription("Joystick action to the middle");
 		action.setTypeId(type);
@@ -554,7 +554,7 @@ public class InitConfigDBDigitalTwin {
 	private Set<PropertyDigitalTwinType> createSensehatPropertiesDT(DigitalTwinType type) {
 		final Set<PropertyDigitalTwinType> props = new HashSet<>();
 		PropertyDigitalTwinType prop = new PropertyDigitalTwinType();
-		prop.setId(MASTER_PROPERTY_DT_TYPE + type.getIdentification() + "-1");
+		prop.setId(MASTER_PROPERTY_DT_TYPE + type.getName() + "-1");
 		prop.setName("temperature");
 		prop.setType(DOUBLE_STR);
 		prop.setUnit("degrees");
@@ -564,7 +564,7 @@ public class InitConfigDBDigitalTwin {
 		props.add(prop);
 
 		prop = new PropertyDigitalTwinType();
-		prop.setId(MASTER_PROPERTY_DT_TYPE + type.getIdentification() + "-2");
+		prop.setId(MASTER_PROPERTY_DT_TYPE + type.getName() + "-2");
 		prop.setName("humidity");
 		prop.setType(DOUBLE_STR);
 		prop.setUnit("%");
@@ -574,7 +574,7 @@ public class InitConfigDBDigitalTwin {
 		props.add(prop);
 
 		prop = new PropertyDigitalTwinType();
-		prop.setId(MASTER_PROPERTY_DT_TYPE + type.getIdentification() + "-3");
+		prop.setId(MASTER_PROPERTY_DT_TYPE + type.getName() + "-3");
 		prop.setName("pressure");
 		prop.setType(DOUBLE_STR);
 		prop.setUnit("milibars");

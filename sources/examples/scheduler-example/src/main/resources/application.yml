@@ -1,0 +1,38 @@
+spring:
+   ## JPA Config
+   datasource:
+      url: jdbc:mysql://localhost:3306/onesaitplatform_config?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false
+      username: root
+      password:
+      driver-class-name: com.mysql.jdbc.Driver
+   jpa:
+      # The SQL dialect makes Hibernate generate better SQL for the chosen database
+      properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+
+quartz:      
+   datasource:
+      url: jdbc:mysql://localhost:3306/onesaitplatform_scheduler?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false
+      username: root
+      password:
+      driver-class-name: com.mysql.jdbc.Driver
+   jpa:
+      ## Hibernate Properties
+      # The SQL dialect makes Hibernate generate better SQL for the chosen database
+      properties.hibernate.dialect: org.hibernate.dialect.MySQL5Dialect
+      # Hibernate ddl auto (create, create-drop, validate, update)
+      properties.hibernate.hbm2ddl.auto: create
+   autoStartupSchedulers:
+      - scriptScheduler
+      - twitterScheduler
+              
+            
+## LOGGING CONF
+logging:
+   level:
+      org.springframework: INFO
+      com.example.boot.thymeleaf: INFO
+      com.indra: INFO
+      org.hibernate: INFO
+
+
+ 

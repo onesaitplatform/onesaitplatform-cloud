@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package com.minsait.onesait.platform.config.services.app.dto;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.validation.constraints.NotNull;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.User;
@@ -29,18 +31,19 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RealmCreate {
-
+	
+	
 	@Getter
 	@Setter
-	protected String identification;
-	@Getter
-	@Setter
+	@NotNull
 	protected String realmId;
 	@Getter
 	@Setter
+	@NotNull
 	protected String name;
 	@Getter
 	@Setter
+	@NotNull
 	protected String description;
 	@Getter
 	@Setter
@@ -55,24 +58,18 @@ public class RealmCreate {
 	@Setter
 	@JsonIgnore
 	protected User user;
-	@Getter
-	@Setter
-	private boolean publicClient;
 
 	public RealmCreate(App app) {
 
-		identification = app.getIdentification();
-
-		realmId = app.getIdentification();
-
-		name = app.getIdentification();
-
-		if (null != app.getSecret()) {
+		realmId = app.getAppId();
+		
+		if (null!=app.getSecret()) {
 			secret = app.getSecret();
 		}
-		if (null != app.getTokenValiditySeconds()) {
+		if (null!=app.getTokenValiditySeconds()) {
 			tokenValiditySeconds = app.getTokenValiditySeconds();
 		}
+		name = app.getName();
 		description = app.getDescription();
 
 		roles = app.getAppRoles().stream().map(r -> new RealmRole(r.getName(), r.getDescription()))

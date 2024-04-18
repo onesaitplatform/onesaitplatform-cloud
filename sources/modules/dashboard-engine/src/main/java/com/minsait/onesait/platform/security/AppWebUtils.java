@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 package com.minsait.onesait.platform.security;
+
+import java.io.UnsupportedEncodingException;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -31,7 +33,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.minsait.onesait.platform.commons.security.PasswordPatternMatcher;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,7 +41,6 @@ import lombok.extern.slf4j.Slf4j;
 public class AppWebUtils {
 
 	public static final String ADMINISTRATOR = "ROLE_ADMINISTRATOR";
-	private static final String PASSWORD_PATTERN = "password-pattern";
 
 	@Autowired
 	private MessageSource messageSource;
@@ -48,22 +48,19 @@ public class AppWebUtils {
 	@Autowired
 	private PasswordPatternMatcher passwordPatternMatcher;
 
-	@Autowired
-	private IntegrationResourcesService resourcesService;
-
 	public Authentication getAuthentication() {
 		return SecurityContextHolder.getContext().getAuthentication();
 	}
 
 	public String getUserId() {
-		final Authentication auth = getAuthentication();
+		Authentication auth = getAuthentication();
 		if (auth == null)
 			return null;
 		return auth.getName();
 	}
 
 	public String getRole() {
-		final Authentication auth = getAuthentication();
+		Authentication auth = getAuthentication();
 		if (auth == null)
 			return null;
 		return auth.getAuthorities().toArray()[0].toString();
@@ -74,7 +71,7 @@ public class AppWebUtils {
 	}
 
 	public void addRedirectMessage(String messageKey, RedirectAttributes redirect) {
-		final String message = getMessage(messageKey, "Error processing request");
+		String message = getMessage(messageKey, "Error processing request");
 		redirect.addFlashAttribute("message", message);
 
 	}
@@ -87,10 +84,8 @@ public class AppWebUtils {
 	public String getMessage(String key, String valueDefault) {
 		try {
 			return messageSource.getMessage(key, null, LocaleContextHolder.getLocale());
-		} catch (final Exception e) {
-			if (log.isDebugEnabled()) {
-				log.debug("Key:{} not found. Returns:", key, valueDefault);
-			}			
+		} catch (Exception e) {
+			log.debug("Key:" + key + " not found. Returns:" + valueDefault);
 			return valueDefault;
 		}
 	}
@@ -100,31 +95,31 @@ public class AppWebUtils {
 	}
 
 	public String validateAndReturnJson(String json) {
-		final ObjectMapper objectMapper = new ObjectMapper();
+		ObjectMapper objectMapper = new ObjectMapper();
 		String formattedJson = null;
 		try {
-			final JsonNode tree = objectMapper.readValue(json, JsonNode.class);
+			JsonNode tree = objectMapper.readValue(json, JsonNode.class);
 			formattedJson = tree.toString();
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			log.error("Error reading JSON by:" + e.getMessage(), e);
 		}
 		return formattedJson;
 	}
 
 	public boolean paswordValidation(String data) {
-		return passwordPatternMatcher.isValidPassword(data, getPasswordPattern());
+		return passwordPatternMatcher.isValidPassword(data);
 	}
 
 	public String beautifyJson(String json) throws JsonProcessingException {
-		final ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+		ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 		return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
 	}
 
 	public Object getAsObject(String json) throws JsonProcessingException {
 		try {
-			final ObjectMapper mapper = new ObjectMapper();
+			ObjectMapper mapper = new ObjectMapper();
 			return mapper.readValue(json, Object.class);
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			log.error("Impossible to convert to Object, returning the same");
 			return json;
 		}
@@ -137,12 +132,12 @@ public class AppWebUtils {
 		if (enc == null) {
 			enc = WebUtils.DEFAULT_CHARACTER_ENCODING;
 		}
-		pathSegmentEncode = UriUtils.encodePathSegment(pathSegment, enc);
-
+		try {
+			pathSegmentEncode = UriUtils.encodePathSegment(pathSegment, enc);
+		} catch (UnsupportedEncodingException uee) {
+			log.warn("Error encoding path segment " + uee.getMessage());
+		}
 		return pathSegmentEncode;
 	}
 
-	private String getPasswordPattern() {
-		return ((String) resourcesService.getGlobalConfiguration().getEnv().getControlpanel().get(PASSWORD_PATTERN));
-	}
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,7 @@ import java.util.Map.Entry;
 import org.apache.cxf.Bus;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
-import org.apache.cxf.jaxrs.openapi.OpenApiCustomizer;
-import org.apache.cxf.jaxrs.openapi.OpenApiFeature;
+import org.apache.cxf.jaxrs.swagger.Swagger2Feature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -38,10 +37,13 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 public class JaxRSConfig {
 
 	@Autowired
+	private Bus bus;
+
+	@Autowired
 	ApplicationContext applicationContext;
 
 	@Bean
-	public Server rsServer(Bus bus) {
+	public Server rsServer() {
 
 		final List<Object> lista = new ArrayList<>();
 		final JAXRSServerFactoryBean endpoint = new JAXRSServerFactoryBean();
@@ -61,25 +63,24 @@ public class JaxRSConfig {
 		endpoint.setProviders(providers);
 		endpoint.setServiceBeans(lista);
 		endpoint.setAddress("/");
-		endpoint.setFeatures(Arrays.asList(createOpenApiFeature()));
+		endpoint.setFeatures(Arrays.asList(createSwaggerFeature()));
 		endpoint.setProperties(
 				Collections.singletonMap("org.apache.cxf.management.service.counter.name", "cxf-services."));
 		return endpoint.create();
 	}
 
-	public OpenApiFeature createOpenApiFeature() {
-		final OpenApiFeature openApiFeature = new OpenApiFeature();
-		openApiFeature.setPrettyPrint(true);
-		openApiFeature.setTitle("onesait Platform API Manager");
-		openApiFeature.setContactName("The onesait Platform team");
-		openApiFeature.setDescription("");
-		openApiFeature.setVersion("1.0.0");
-		openApiFeature.setSupportSwaggerUi(true);
-		final OpenApiCustomizer customizer = new JaxRSOpenAPICustomizer();
-		customizer.setDynamicBasePath(true);
-		openApiFeature.setCustomizer(customizer);
-		openApiFeature.setScan(false);
-		return openApiFeature;
+	public Swagger2Feature createSwaggerFeature() {
+		final Swagger2Feature swagger2Feature = new Swagger2Feature();
+		swagger2Feature.setPrettyPrint(true);
+		swagger2Feature.setTitle("onesait Platform API Manager");
+		swagger2Feature.setContact("The onesait Platform team");
+		swagger2Feature.setDescription("");
+		swagger2Feature.setVersion("1.0.0");
+		swagger2Feature.setPrettyPrint(true);
+		swagger2Feature.setScan(true);
+		swagger2Feature.setScanAllResources(true);
+		swagger2Feature.setSupportSwaggerUi(true);
+		return swagger2Feature;
 	}
 
 }

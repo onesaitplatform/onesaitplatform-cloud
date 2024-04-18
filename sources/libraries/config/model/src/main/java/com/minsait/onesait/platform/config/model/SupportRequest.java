@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,48 +36,47 @@ import lombok.Setter;
 @Entity
 @Table(name = "SUPPORT_REQUEST")
 public class SupportRequest extends AuditableEntityWithUUID {
-
+	
 	private static final long serialVersionUID = 1L;
-
+	
 	public enum Type {
 		NOTIFICATION, ROLE_CHANGE;
 	}
-
+	
 	public enum Status {
 		SENT, READ, PROCESS;
 	}
-
+	
 	@ManyToOne
 	@OnDelete(action = OnDeleteAction.NO_ACTION)
 	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = false)
 	@Getter
 	@Setter
 	private User user;
-
+	
 	@Column(name = "TYPE", length = 24)
 	@NotNull
 	@Getter
 	@Setter
 	private String type;
-
+	
 	public void setTypeEnum(SupportRequest.Type type) {
 		this.type = type.toString();
 	}
-
+	
 	@Column(name = "STATUS", length = 24)
 	@NotNull
 	@Getter
 	@Setter
 	private String status;
-
+	
 	public void setStatusEnum(SupportRequest.Status status) {
 		this.status = status.toString();
 	}
-
+	
 	@Column(name = "JSON", nullable = false)
 	@NotNull
 	@Lob
-	@org.hibernate.annotations.Type(type = "org.hibernate.type.TextType")
 	@JsonRawValue
 	@Getter
 	@Setter

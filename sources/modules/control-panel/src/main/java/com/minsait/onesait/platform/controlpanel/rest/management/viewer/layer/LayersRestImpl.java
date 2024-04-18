@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
 
-import org.bson.types.ObjectId;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,27 +38,21 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.Layer;
-import com.minsait.onesait.platform.config.model.OntologyVirtual;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.gis.layer.LayerService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
-import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import com.minsait.onesait.platform.config.services.user.UserService;
-import com.minsait.onesait.platform.controlpanel.rest.management.viewer.layer.geometry.Geometry;
 import com.minsait.onesait.platform.controlpanel.rest.management.viewer.layer.geometry.GeometryLinestring;
-import com.minsait.onesait.platform.controlpanel.rest.management.viewer.layer.geometry.GeometryMultiLineString;
 import com.minsait.onesait.platform.controlpanel.rest.management.viewer.layer.geometry.GeometryMultiPolygon;
 import com.minsait.onesait.platform.controlpanel.rest.management.viewer.layer.geometry.GeometryPoint;
 import com.minsait.onesait.platform.controlpanel.rest.management.viewer.layer.geometry.GeometryPolygon;
 import com.minsait.onesait.platform.controlpanel.rest.management.viewer.layer.geometry.GeometryType;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
-import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.factory.ManageDBRepositoryFactory;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
 import com.minsait.onesait.platform.persistence.services.QueryToolService;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.JSQLParserException;
@@ -78,7 +70,6 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 public class LayersRestImpl implements LayersRest {
 
 	private static final String FEATURE = "Feature";
-	private static final String FEATURES = "features";
 	private static final String FEATURE_COLLECTION = "FeatureCollection";
 	private static final String PARAM = "param";
 	private static final String TYPE = "type";
@@ -90,10 +81,6 @@ public class LayersRestImpl implements LayersRest {
 	private static final String RASTER = "raster";
 	private static final String ATTRIBUTE = "attribute";
 	private static final String STRINGLITERAL = "#%02x%02x%02x";
-	private static final String ADMINISTRATOR = "administrator";
-	private static final String LINE_STRING = "LineString";
-	private static final String POLYLINE = "Polyline";
-	private static final String COORDINATES = "coordinates";
 
 	private Map<String, String> mapFields;
 
@@ -115,34 +102,22 @@ public class LayersRestImpl implements LayersRest {
 	@Autowired
 	private AppWebUtils utils;
 
-	@Autowired
-	private IntegrationResourcesService resourcesService;
-
-	private String defaultQuery;
-
-	@PostConstruct
-	private void postConstruct() {
-
-		defaultQuery = "select * from ";
-		if (useQuasar())
-			defaultQuery = "select _id,c from ";
-	}
-
 	@Override
 	public ResponseEntity<?> getLayerData(HttpServletRequest request) {
 
 		mapFields = new HashMap<>();
-		HeatMap heatMap = new HeatMap();
-		List<Feature> featureList = new ArrayList<>();
-		User user = userService.getUser(ADMINISTRATOR);
-
-		FeatureCollection featureCollection = new FeatureCollection();
 		try {
+			User user = null;
+			String userId = "administrator";
+			user = userService.getUser(userId);
+
+			FeatureCollection featureCollection = new FeatureCollection();
 
 			String layerIdentification = request.getParameter("layer");
 			Layer layer = layerService.getLayerByIdentification(layerIdentification, user);
 
-			if (layer != null && (layer.getUser().equals(user) || userService.isUserAdministrator(user))) {
+			if (layer != null && (layer.getUser().equals(user)
+					|| user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString()))) {
 
 				String root = getRootField(layer);
 				String features = null;
@@ -156,7 +131,7 @@ public class LayersRestImpl implements LayersRest {
 									HttpStatus.BAD_REQUEST);
 						}
 						if (!query.contains("{$")) {
-							features = runQuery(ADMINISTRATOR, layer.getOntology().getIdentification(), query);
+							features = runQuery(userId, layer.getOntology().getIdentification(), query);
 						} else {
 							return new ResponseEntity<>(
 									"Missing query parameters to execute the query of the layer " + layerIdentification,
@@ -167,68 +142,168 @@ public class LayersRestImpl implements LayersRest {
 						return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 					}
 				} else {
-					features = runQuery(ADMINISTRATOR, layer.getOntology().getIdentification(), null);
+					features = runQuery(userId, layer.getOntology().getIdentification(), null);
 				}
 
+				Boolean isQuery = getPropertiesForFeatures(query, layer, userId);
+
+				HeatMap heatMap = new HeatMap();
+
 				JSONArray jsonArray = new JSONArray(features);
-				if (jsonArray != null && jsonArray.length() > 0) {
-					String geometryField = layer.getGeometryField().split("\\.")[0];
+				List<Feature> featureList = new ArrayList<>();
 
-					if (jsonArray.getJSONObject(0).has(TYPE)
-							&& jsonArray.getJSONObject(0).getString(TYPE).equals(FEATURE_COLLECTION)) {
-						return new ResponseEntity<>(this.buildFeatureCollection(layer, jsonArray), HttpStatus.OK);
-					}
-					Boolean includeAllProperties = getPropertiesForFeatures(query, layer, ADMINISTRATOR);
-
+				if (jsonArray != null) {
 					for (Integer i = 0; i < jsonArray.length(); i++) {
 						JSONObject obj = jsonArray.getJSONObject(i);
 
 						JSONObject rootObject = null;
-
+						JSONObject rootObjectCopy = null;
 						Feature feature = new Feature();
+						Map<String, String> mapProperties = new HashMap<>();
 
+						String geometryField = layer.getGeometryField().split("\\.")[0];
 						String fieldGeometry = null;
 						if (obj.has("_id")) {
-							String oid;
-							try {
-								oid = obj.getString("_id");
-							} catch (JSONException e) {
-								oid = obj.getJSONObject("_id").getString("$oid");
-							}
-							feature.setOid(oid);
-						} else {
-							ObjectId objOid = new ObjectId();
-							String oid = objOid.toString();
+							String oid = obj.getString("_id");
 							feature.setOid(oid);
 						}
-						OntologyVirtual virtual = ontologyService.getOntologyVirtualByOntologyId(layer.getOntology());
-						if (virtual != null && obj.has(virtual.getObjectGeometry())) {
-							rootObject = obj;
-							fieldGeometry = virtual.getObjectGeometry();
-						} else if (!includeAllProperties) {
+
+						if (isQuery) {
 							// Have Query with select params
 							rootObject = obj;
 							fieldGeometry = mapFields.get(geometryField);
 						} else {
-							rootObject = root != null ? obj.getJSONObject(root) : obj;
+							rootObject = obj.getJSONObject(root);
 							fieldGeometry = geometryField;
 						}
 
 						if (fieldGeometry == null) {
 							return new ResponseEntity<>("No property geometry found.", HttpStatus.BAD_REQUEST);
 						}
-						JSONArray geo = null;
-						if (virtual != null) {
-							JSONObject geoObject = new JSONObject(rootObject.getString(fieldGeometry));
-							geo = geoObject.getJSONArray(COORDINATES);
-						} else {
-							geo = rootObject.getJSONObject(fieldGeometry).getJSONArray(COORDINATES);
+
+						JSONArray geo = rootObject.getJSONObject(fieldGeometry).getJSONArray("coordinates");
+
+						if ((layer.getGeometryType().equalsIgnoreCase(GeometryType.POINT.getName()))
+								|| layer.getGeometryType().equalsIgnoreCase(RASTER)) {
+
+							GeometryPoint geometry = new GeometryPoint();
+							List<Double> list = new ArrayList<>();
+
+							for (int y = 0; y < geo.length(); y++) {
+								list.add(geo.getDouble(y));
+							}
+
+							geometry.setCoordinates(list.toArray(new Double[list.size()]));
+							feature.setGeometry(geometry);
+						} else if (layer.getGeometryType().equalsIgnoreCase(GeometryType.POLYGON.getName())) {
+
+							GeometryPolygon geometry = new GeometryPolygon();
+							List<List<Double[]>> geoFinal = new ArrayList<>();
+
+							for (int y = 0; y < geo.length(); y++) {
+								JSONArray geoAux = geo.getJSONArray(y);
+								List<Double[]> listAux = new ArrayList<>();
+								for (int z = 0; z < geoAux.length(); z++) {
+									JSONArray g = geoAux.getJSONArray(z);
+									List<Double> listDouble = new ArrayList<>();
+									for (int x = 0; x < g.length(); x++) {
+										listDouble.add(g.getDouble(x));
+									}
+									listAux.add(listDouble.toArray(new Double[listDouble.size()]));
+								}
+								geoFinal.add(listAux);
+							}
+
+							geometry.setCoordinates(geoFinal);
+							feature.setGeometry(geometry);
+						} else if (layer.getGeometryType().equalsIgnoreCase(GeometryType.MULTI_POLYGON.getName())) {
+
+							GeometryMultiPolygon geometry = new GeometryMultiPolygon();
+							List<List<List<Double[]>>> geoFinal = new ArrayList<>();
+
+							for (int y = 0; y < geo.length(); y++) {
+								JSONArray geoAux = geo.getJSONArray(y);
+								List<List<Double[]>> listAux = new ArrayList<>();
+								for (int z = 0; z < geoAux.length(); z++) {
+									JSONArray g = geoAux.getJSONArray(z);
+									List<Double[]> listAuxBis = new ArrayList<>();
+									for (int x = 0; x < g.length(); x++) {
+										JSONArray h = g.getJSONArray(x);
+										List<Double> listDouble = new ArrayList<>();
+										for (int t = 0; t < h.length(); t++) {
+											listDouble.add(h.getDouble(t));
+										}
+										listAuxBis.add(listDouble.toArray(new Double[listDouble.size()]));
+									}
+									listAux.add(listAuxBis);
+								}
+								geoFinal.add(listAux);
+							}
+
+							geometry.setCoordinates(geoFinal);
+							feature.setGeometry(geometry);
+						} else if (layer.getGeometryType().equalsIgnoreCase(GeometryType.LINE_STRING.getName())) {
+
+							GeometryLinestring geometry = new GeometryLinestring();
+							List<Double[]> geoFinal = new ArrayList<>();
+
+							for (int y = 0; y < geo.length(); y++) {
+								JSONArray geoAux = geo.getJSONArray(y);
+
+								List<Double> listDouble = new ArrayList<>();
+								for (int x = 0; x < geoAux.length(); x++) {
+									listDouble.add(geoAux.getDouble(x));
+								}
+								geoFinal.add(listDouble.toArray(new Double[listDouble.size()]));
+
+							}
+
+							geometry.setCoordinates(geoFinal);
+							feature.setGeometry(geometry);
 						}
 
-						Geometry geometry = this.buildGeometry(layer, geo);
-						feature.setGeometry(geometry);
+						if (!layer.isHeatMap() && layer.getInfoBox() != null && !layer.getInfoBox().equals("[]")) {
 
-						Map<String, String> mapProperties = this.buildProperties(layer, rootObject);
+							JSONArray properties = new JSONArray(layer.getInfoBox());
+
+							for (int x = 0; x < properties.length(); x++) {
+								rootObjectCopy = rootObject;
+								Object value = null;
+								JSONObject json = properties.getJSONObject(x);
+
+								String[] splitAux = json.getString("field").split("\\.");
+								for (int j = 0; j < splitAux.length - 1; j++) {
+									if (j + 1 == splitAux.length - 1) {
+										try {
+											JSONArray rootObjectArray = rootObjectCopy.getJSONArray(splitAux[j]);
+											value = rootObjectArray
+													.get(Integer.parseInt(splitAux[splitAux.length - 1]));
+											mapProperties.put(json.getString(ATTRIBUTE), value.toString());
+											break;
+										} catch (Exception e) {
+											log.error("Error mapping json, {}", e);
+										}
+									}
+									rootObjectCopy = rootObject.getJSONObject(splitAux[j]);
+								}
+								if (value == null) {
+									value = rootObjectCopy.get(splitAux[splitAux.length - 1]);
+									mapProperties.put(json.getString(ATTRIBUTE), value.toString());
+								}
+							}
+						} else if (layer.isHeatMap()) {
+							String value = rootObject.get(layer.getWeightField()).toString();
+							mapProperties.put("value", value);
+
+						} else {
+							for (Map.Entry<String, String> entry : mapFields.entrySet()) {
+								if (!entry.getValue().equals(fieldGeometry)) {
+
+									Object value = rootObject.get(entry.getValue());
+									mapProperties.put(entry.getValue(), value.toString());
+								}
+							}
+						}
 
 						feature.setProperties(mapProperties);
 						feature.setType(FEATURE);
@@ -236,12 +311,12 @@ public class LayersRestImpl implements LayersRest {
 						featureList.add(feature);
 
 					}
-				}
 
-				if (layer.isHeatMap()) {
-					heatMap.setRadius(layer.getHeatMapRadius());
-					heatMap.setMax(layer.getHeatMapMax());
-					heatMap.setMin(layer.getHeatMapMin());
+					if (layer.isHeatMap()) {
+						heatMap.setRadius(layer.getHeatMapRadius());
+						heatMap.setMax(layer.getHeatMapMax());
+						heatMap.setMin(layer.getHeatMapMin());
+					}
 				}
 
 				Symbology symbology = buildSymbology(layer);
@@ -270,109 +345,6 @@ public class LayersRestImpl implements LayersRest {
 
 	}
 
-	private Geometry buildGeometry(Layer layer, JSONArray geo) {
-		if ((layer.getGeometryType().equalsIgnoreCase(GeometryType.POINT.getName()))
-				|| layer.getGeometryType().equalsIgnoreCase(RASTER)) {
-
-			GeometryPoint geometry = new GeometryPoint();
-			List<Double> list = new ArrayList<>();
-
-			for (int y = 0; y < geo.length(); y++) {
-				list.add(geo.getDouble(y));
-			}
-
-			geometry.setCoordinates(list.toArray(new Double[list.size()]));
-			return geometry;
-		} else if (layer.getGeometryType().equalsIgnoreCase(GeometryType.POLYGON.getName())) {
-
-			GeometryPolygon geometry = new GeometryPolygon();
-			List<List<Double[]>> geoFinal = new ArrayList<>();
-
-			for (int y = 0; y < geo.length(); y++) {
-				JSONArray geoAux = geo.getJSONArray(y);
-				List<Double[]> listAux = new ArrayList<>();
-				for (int z = 0; z < geoAux.length(); z++) {
-					JSONArray g = geoAux.getJSONArray(z);
-					List<Double> listDouble = new ArrayList<>();
-					for (int x = 0; x < g.length(); x++) {
-						listDouble.add(g.getDouble(x));
-					}
-					listAux.add(listDouble.toArray(new Double[listDouble.size()]));
-				}
-				geoFinal.add(listAux);
-			}
-
-			geometry.setCoordinates(geoFinal);
-			return geometry;
-		} else if (layer.getGeometryType().equalsIgnoreCase(GeometryType.MULTI_POLYGON.getName())) {
-
-			GeometryMultiPolygon geometry = new GeometryMultiPolygon();
-			List<List<List<Double[]>>> geoFinal = new ArrayList<>();
-
-			for (int y = 0; y < geo.length(); y++) {
-				JSONArray geoAux = geo.getJSONArray(y);
-				List<List<Double[]>> listAux = new ArrayList<>();
-				for (int z = 0; z < geoAux.length(); z++) {
-					JSONArray g = geoAux.getJSONArray(z);
-					List<Double[]> listAuxBis = new ArrayList<>();
-					for (int x = 0; x < g.length(); x++) {
-						JSONArray h = g.getJSONArray(x);
-						List<Double> listDouble = new ArrayList<>();
-						for (int t = 0; t < h.length(); t++) {
-							listDouble.add(h.getDouble(t));
-						}
-						listAuxBis.add(listDouble.toArray(new Double[listDouble.size()]));
-					}
-					listAux.add(listAuxBis);
-				}
-				geoFinal.add(listAux);
-			}
-
-			geometry.setCoordinates(geoFinal);
-			return geometry;
-		} else if (layer.getGeometryType().equalsIgnoreCase(GeometryType.LINE_STRING.getName())) {
-
-			GeometryLinestring geometry = new GeometryLinestring();
-			List<Double[]> geoFinal = new ArrayList<>();
-
-			for (int y = 0; y < geo.length(); y++) {
-				JSONArray geoAux = geo.getJSONArray(y);
-
-				List<Double> listDouble = new ArrayList<>();
-				for (int x = 0; x < geoAux.length(); x++) {
-					listDouble.add(geoAux.getDouble(x));
-				}
-				geoFinal.add(listDouble.toArray(new Double[listDouble.size()]));
-
-			}
-
-			geometry.setCoordinates(geoFinal);
-			return geometry;
-		} else if (layer.getGeometryType().equalsIgnoreCase(GeometryType.MULTILINE_STRING.getName())) {
-
-			GeometryMultiLineString geometry = new GeometryMultiLineString();
-			List<List<Double[]>> geoFinal = new ArrayList<>();
-
-			for (int z = 0; z < geo.length(); z++) {
-				JSONArray g = geo.getJSONArray(z);
-				List<Double[]> listAuxBis = new ArrayList<>();
-				for (int x = 0; x < g.length(); x++) {
-					JSONArray h = g.getJSONArray(x);
-					List<Double> listDouble = new ArrayList<>();
-					for (int t = 0; t < h.length(); t++) {
-						listDouble.add(h.getDouble(t));
-					}
-					listAuxBis.add(listDouble.toArray(new Double[listDouble.size()]));
-				}
-				geoFinal.add(listAuxBis);
-			}
-
-			geometry.setCoordinates(geoFinal);
-			return geometry;
-		}
-		return null;
-	}
-
 	private String buildQuery(String query, Layer layer, HttpServletRequest request) {
 		JSONArray jsonParams;
 		try {
@@ -392,14 +364,14 @@ public class LayersRestImpl implements LayersRest {
 							try {
 								final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 								df.parse(value);
-								value = "'" + value + "'";
+								value = "\"" + value + "\"";
 							} catch (final Exception e) {
 								throw new BadRequestException(
 										"com.indra.sofia2.api.service.wrongparametertype " + param);
 							}
 						} else if (type.equals(STRING)) {
 							try {
-								value = "'" + value + "'";
+								value = "\"" + value + "\"";
 							} catch (final Exception e) {
 								throw new BadRequestException(WRONG_PARAMETER_TYPE + param);
 							}
@@ -409,8 +381,7 @@ public class LayersRestImpl implements LayersRest {
 							} catch (final Exception e) {
 								throw new BadRequestException(WRONG_PARAMETER_TYPE + param);
 							}
-						} else if (type.equals(BOOLEAN)
-								&& (!value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false"))) {
+						} else if (type.equals(BOOLEAN) && (!value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false"))) {
 							throw new BadRequestException(WRONG_PARAMETER_TYPE + param);
 						}
 
@@ -427,10 +398,11 @@ public class LayersRestImpl implements LayersRest {
 	}
 
 	private Boolean getPropertiesForFeatures(String query, Layer layer, String userId) {
-		Boolean includeAllProperties = true;
+		Boolean isQuery = true;
 		try {
 			if (query == null) {
 				query = "select c from " + layer.getOntology().getIdentification() + " as c";
+				isQuery = false;
 			}
 			CCJSqlParserManager parserManager = new CCJSqlParserManager();
 			Select select = (Select) parserManager.parse(new StringReader(query));
@@ -440,7 +412,6 @@ public class LayersRestImpl implements LayersRest {
 
 			for (SelectItem item : selectItems) {
 				if (!item.toString().equals("c") && !item.toString().equals("*")) {
-					includeAllProperties = false;
 					String[] split = item.toString().split("AS");
 
 					Expression expression = ((SelectExpressionItem) item).getExpression();
@@ -449,6 +420,7 @@ public class LayersRestImpl implements LayersRest {
 
 					mapFields.put(col.getColumnName(), split[1].trim());
 				} else {
+					isQuery = false;
 					Map<String, String> mapFields = ontologyService
 							.getOntologyFields(layer.getOntology().getIdentification(), userId);
 
@@ -468,12 +440,12 @@ public class LayersRestImpl implements LayersRest {
 		} catch (JSQLParserException e) {
 			log.error("Error parsing the query for layer: {}", layer.getIdentification(), e);
 
-		} catch (IOException e) {
+		} catch (IOException  e) {
 			log.error("Error getting ontology fields of the ontology: {}", layer.getOntology().getIdentification(),
 					e.getMessage());
 
 		}
-		return includeAllProperties;
+		return isQuery;
 	}
 
 	private Symbology buildSymbology(Layer layer) {
@@ -570,8 +542,8 @@ public class LayersRestImpl implements LayersRest {
 					} else if (c.startsWith("rgb")) {
 						c = c.substring(c.indexOf('(') + 1, c.indexOf(')'));
 						String[] split = c.split(",");
-						colorHex = String.format(STRINGLITERAL, Integer.parseInt(split[0]), Integer.parseInt(split[1]),
-								Integer.parseInt(split[2]));
+						colorHex = String.format(STRINGLITERAL, Integer.parseInt(split[0]),
+								Integer.parseInt(split[1]), Integer.parseInt(split[2]));
 
 						Color color = Color.decode(colorHex);
 
@@ -640,7 +612,7 @@ public class LayersRestImpl implements LayersRest {
 			if (field.equals(fieldAux)) {
 				operation = attribute + ">" + value;
 			}
-		}
+		} 
 		return operation;
 	}
 
@@ -662,6 +634,7 @@ public class LayersRestImpl implements LayersRest {
 						}
 					}
 				} catch (Exception e) {
+					log.info("error: ", e.getMessage());
 				}
 			}
 
@@ -671,8 +644,7 @@ public class LayersRestImpl implements LayersRest {
 		}
 	}
 
-	private String runQuery(String userId, String ontologyIdentification, String query)
-			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
+	private String runQuery(String userId, String ontologyIdentification, String query) {
 
 		if (ontologyService.hasUserPermissionForQuery(userId, ontologyIdentification)) {
 			final ManageDBRepository manageDB = manageFactory.getInstance(ontologyIdentification);
@@ -681,13 +653,8 @@ public class LayersRestImpl implements LayersRest {
 			}
 			String queryResult = null;
 			if (query == null) {
-				if (useQuasar()) {
-					queryResult = queryToolService.querySQLAsJson(userId, ontologyIdentification,
-							defaultQuery + ontologyIdentification + " as c", 0);
-				} else {
-					queryResult = queryToolService.querySQLAsJson(userId, ontologyIdentification,
-							defaultQuery + ontologyIdentification, 0);
-				}
+				queryResult = queryToolService.querySQLAsJson(userId, ontologyIdentification,
+						"select _id,c from " + ontologyIdentification + " as c", 0);
 			} else {
 				queryResult = queryToolService.querySQLAsJson(userId, ontologyIdentification, query, 0);
 			}
@@ -698,120 +665,6 @@ public class LayersRestImpl implements LayersRest {
 			return utils.getMessage("querytool.ontology.access.denied.json",
 					"You don't have permissions for this ontology");
 		}
-	}
-
-	private boolean useQuasar() {
-		try {
-			return ((Boolean) resourcesService.getGlobalConfiguration().getEnv().getDatabase()
-					.get("mongodb-use-quasar")).booleanValue();
-		} catch (final RuntimeException e) {
-			return true;
-		}
-	}
-
-	private FeatureCollection buildFeatureCollection(Layer layer, JSONArray jsonArray) {
-		HeatMap heatMap = new HeatMap();
-		List<Feature> featureList = new ArrayList<>();
-		FeatureCollection featureCollection = new FeatureCollection();
-		if (layer.isHeatMap()) {
-			heatMap.setRadius(layer.getHeatMapRadius());
-			heatMap.setMax(layer.getHeatMapMax());
-			heatMap.setMin(layer.getHeatMapMin());
-		}
-		Symbology symbology = buildSymbology(layer);
-
-		featureCollection.setHeatMap(heatMap);
-		featureCollection.setName(layer.getIdentification());
-		featureCollection.setSymbology(symbology);
-		featureCollection.setType(FEATURE_COLLECTION);
-		if (layer.getGeometryType().equals(LINE_STRING)) {
-			featureCollection.setTypeGeometry(POLYLINE);
-		} else {
-			featureCollection.setTypeGeometry(layer.getGeometryType());
-		}
-		ObjectId objOid = new ObjectId();
-		String oid = objOid.toString();
-		for (Integer i = 0; i < jsonArray.length(); i++) {
-			JSONObject obj = jsonArray.getJSONObject(i);
-			JSONArray featuresArray = obj.getJSONArray(FEATURES);
-			for (Integer x = 0; x < featuresArray.length(); x++) {
-				JSONObject objAux = featuresArray.getJSONObject(x);
-				JSONArray geo = objAux.getJSONObject(layer.getGeometryField()).getJSONArray(COORDINATES);
-
-				Geometry geometry = this.buildGeometry(layer, geo);
-
-				JSONObject prop = objAux.getJSONObject("properties");
-				Iterator<String> keys = prop.keys();
-				Map<String, String> mapProperties = new HashMap<>();
-
-				while (keys.hasNext()) {
-					String key = keys.next();
-					mapProperties.put(key, prop.get(key).toString());
-				}
-
-				Feature feature = new Feature(oid, geometry, mapProperties);
-				featureList.add(feature);
-			}
-		}
-
-		featureCollection.setFeatures(featureList);
-
-		return featureCollection;
-	}
-
-	private Map<String, String> buildProperties(Layer layer, JSONObject rootObject) {
-		Map<String, String> mapProperties = new HashMap<>();
-		JSONObject rootObjectCopy = null;
-		Boolean existInfoBox = false;
-
-		if (layer.getInfoBox() != null) {
-			JSONArray properties = new JSONArray(layer.getInfoBox());
-			if (properties.length() != 0) {
-				existInfoBox = true;
-			}
-		}
-		if (!layer.isHeatMap() && existInfoBox) {
-
-			JSONArray properties = new JSONArray(layer.getInfoBox());
-
-			for (int x = 0; x < properties.length(); x++) {
-				rootObjectCopy = rootObject;
-				Object value = null;
-				JSONObject json = properties.getJSONObject(x);
-
-				String[] splitAux = json.getString("field").split("\\.");
-				for (int j = 0; j < splitAux.length - 1; j++) {
-					if (j + 1 == splitAux.length - 1) {
-						try {
-							JSONArray rootObjectArray = rootObjectCopy.getJSONArray(splitAux[j]);
-							value = rootObjectArray.get(Integer.parseInt(splitAux[splitAux.length - 1]));
-							mapProperties.put(json.getString(ATTRIBUTE), value.toString());
-							break;
-						} catch (Exception e) {
-							log.error("Error mapping json, {}", e);
-						}
-					}
-					rootObjectCopy = rootObject.getJSONObject(splitAux[j]);
-				}
-				if (value == null) {
-					value = rootObjectCopy.get(splitAux[splitAux.length - 1]);
-					mapProperties.put(json.getString(ATTRIBUTE), value.toString());
-				}
-			}
-		} else if (layer.isHeatMap()) {
-			String value = rootObject.get(layer.getWeightField()).toString();
-			mapProperties.put("value", value);
-
-		} else if (layer.getQuery() != null) {
-			for (Map.Entry<String, String> entry : mapFields.entrySet()) {
-				if (!entry.getValue().equals(layer.getGeometryField())) {
-
-					Object value = rootObject.get(entry.getValue());
-					mapProperties.put(entry.getValue(), value.toString());
-				}
-			}
-		}
-		return mapProperties;
 	}
 
 }

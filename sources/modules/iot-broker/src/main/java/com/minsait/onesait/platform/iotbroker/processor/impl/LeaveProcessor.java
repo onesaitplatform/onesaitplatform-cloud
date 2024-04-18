@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.minsait.onesait.platform.iotbroker.processor.impl;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -31,9 +30,7 @@ import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageDirection;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
 import com.minsait.onesait.platform.iotbroker.common.exception.SSAPProcessorException;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
-import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.iotbroker.processor.MessageTypeProcessor;
-import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,20 +44,16 @@ public class LeaveProcessor implements MessageTypeProcessor {
 	ObjectMapper objectMapper;
 
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info, Optional<IoTSession> session) {
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message) {
 		final String sessionKey = message.getSessionKey();
+
+		securityManager.closeSession(sessionKey);
+
 		final SSAPMessage<SSAPBodyReturnMessage> response = new SSAPMessage<>();
+		String dataStr = "{\"message\":\"Disconnected\"}";
 		JsonNode data;
-		
 		try {
-			if(securityManager.checkSessionKeyActive(session)) {
-				securityManager.closeSession(sessionKey);
-				String dataStr = "{\"message\":\"Disconnected\"}";
-				data = objectMapper.readTree(dataStr);
-			} else {
-				String dataStr = "{\"message\":\"The session is not valid or does not exist\"}";
-				data = objectMapper.readTree(dataStr);
-			}
+			data = objectMapper.readTree(dataStr);
 			response.setBody(new SSAPBodyReturnMessage());
 			response.getBody().setData(data);
 		} catch (final IOException e) {

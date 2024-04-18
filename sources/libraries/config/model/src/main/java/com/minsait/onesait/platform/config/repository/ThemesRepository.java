@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,22 +23,22 @@ import org.springframework.data.repository.query.Param;
 import com.minsait.onesait.platform.config.model.Themes;
 
 public interface ThemesRepository extends JpaRepository<Themes, String> {
-
+	
 	@Override
 	List<Themes> findAll();
+	
+	Themes findById(String id);
 
 	@SuppressWarnings("unchecked")
 	@Override
 	Themes save(Themes entity);
-
+	
 	@Query("SELECT o.id FROM Themes AS o WHERE o.identification=:identification")
 	String findIdByIdentification(@Param("identification") String identification);
-
-	Themes findByIdentificationOrId(String identification, String id);
-
+	
 	@Query("SELECT o FROM Themes AS o WHERE o.active=1")
 	List<Themes> findActive();
-
+	
 	@Override
 	void delete(Themes id);
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,24 +21,23 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.model.Categorization;
-import com.minsait.onesait.platform.config.model.User;
 
 public interface CategorizationRepository extends JpaRepository<Categorization, String> {
-
-	List<Categorization> findByUser(User user);
-
+	
+	Categorization findById(String id);
+	
 	Categorization findByIdentification(String identification);
-
+	
 	@Query("SELECT o.id FROM Categorization AS o WHERE o.identification=:identification")
 	String findIdByIdentification(@Param("identification") String identification);
-
+	
 	@Query("SELECT o FROM CategorizationUser AS o WHERE o.active=1")
 	List<Categorization> findActive();
-
+	
 	@SuppressWarnings("unchecked")
 	@Override
-	Categorization save(Categorization entity);
-
+	Categorization save (Categorization entity);
+	
 	@Override
 	void delete(Categorization id);
 

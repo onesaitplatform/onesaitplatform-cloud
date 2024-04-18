@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package com.minsait.onesait.platform.iotbroker.mock.pojo;
 import java.util.UUID;
 
 import com.github.javafaker.Faker;
+import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
-import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 public class PojoGenerator {
 	public static Person generatePerson() {

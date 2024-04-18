@@ -2,102 +2,29 @@
 <!-- AUTO-GENERATED FROM imagelib/index-es.html; DO NOT EDIT; use build-html.js to build -->
 <html>
 <head>
-<meta charset="utf-8" />
-<title>-</title>
-<link rel="icon" type="image/png" href="../../images/logo.png" />
+    <meta charset="utf-8" />
+    <title>-</title>
+    <link rel="icon" type="image/png" href="../../images/logo.png" />
 
+    <!-- Lacking browser support -->
+    
+    <script type="module" src="redirect-on-lacking-support.js"></script>
 
+    <!-- As yet no ES6 -->
+    <script src="../../jquery.min.js"></script>
 
-<!-- As yet no ES6 -->
-<script src="../../jquery.min.js"></script>
+    <!-- ES6+ polyfills (Babel) -->
+    <script src="../../external/core-js-bundle/minified.js"></script>
+    <script src="../../external/regenerator-runtime/runtime.js"></script>
 
-
+    <script defer="defer" src="../../../dist/extensions/imagelib/index.js"></script>
 </head>
 <body>
 
-	<h3>Select an image:</h3>
-<div id="imagesTable">
-
-</div>
-  	
-<script>
-
-function getURLParameters()
-	{	    	 
-	    var sPageURL = window.location.search.substring(1);	
-	    var sURLVariables = sPageURL.split('&');	
-	    var urlParametersMap={};
-	    for (var i = 0; i < sURLVariables.length; i++){
-	    	if(sURLVariables[i].length>0){	 	    		
-	       		var sParameterName = sURLVariables[i].split('=');	    		 	    			
-	       		urlParametersMap[sParameterName[0]] = sParameterName[1];	    		
-	    	}
-	    } 	   
-	    
-    	var imagesTable = $('#imagesTable');
-    	//imagesTable.empty();    	
-    	var images = JSON.parse(atob(urlParametersMap['imagelib']));
-    	images.forEach(function (imag) {
-	    	var newImage = '<a href="'+imag.link+'" style="text-decoration:none;"   > <img src="'+imag.link+'"	style="width: 100px; height: 100px; "></a>';
-	    	imagesTable.append(newImage);	
-    	})
-    	
-    	/* globals jQuery */
-    	
-    	$('a').click(function () {
-    	  const {href} = this;
-    	  const target = window.parent;
-    	  const post = (message) => {
-    	    // Todo: Make origin customizable as set by opening window
-    	    // Todo: If dropping IE9, avoid stringifying
-    	    target.postMessage(JSON.stringify({
-    	      namespace: 'imagelib',
-    	      ...message
-    	    }), '*');
-    	  };
-    	  // Convert Non-SVG images to data URL first
-    	  // (this could also have been done server-side by the library)
-    	  // Send metadata (also indicates file is about to be sent)
-    	  post({
-    	    name: $(this).text(),
-    	    id: href
-    	  });
-    	  if (!href.includes('.svg')) {
-    	    const img = new Image();  
-    	    img.crossOrigin = '';
-    	    img.addEventListener('load', function () {
-    	      const canvas = document.createElement('canvas');
-    	      canvas.width = this.width;
-    	      canvas.height = this.height;
-    	      // load the raster image into the canvas
-    	      canvas.getContext('2d').drawImage(this, 0, 0);
-    	      // retrieve the data: URL
-    	      let data;
-    	      try {    	    	  
-    	        data = canvas.toDataURL();
-    	      } catch (err) {
-    	        // This fails in Firefox with `file:///` URLs :(
-    	        // Todo: This could use a generic alert library instead
-    	        alert('Data URL conversion failed: ' + err); // eslint-disable-line no-alert
-    	        data = '';
-    	      }
-    	      post({href, data});
-    	    });    	        
-    	    img.src = href;    	    
-    	  } else {
-    	    // Do ajax request for image's href value
-    	    $.get(href, function (data) {
-    	      post({href, data});
-    	    }, 'html'); // 'html' is necessary to keep returned data as a string
-    	  }
-    	  return false;
-    	});
- }
-
-getURLParameters();
-
-</script>
-
+<h1>Select an image:</h1>
+<a href="smiley.svg">smiley.svg</a>
+<br/>
+<a href="../../images/logo.png">logo.png</a>
 
 </body>
 </html>

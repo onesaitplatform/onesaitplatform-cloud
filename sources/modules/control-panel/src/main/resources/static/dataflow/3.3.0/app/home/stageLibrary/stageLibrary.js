@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('StageLibraryController', ["$scope", "pipelineService", "pipelineConstant", function ($scope, pipelineService, pipelineConstant) {
+  .controller('StageLibraryController', function ($scope, pipelineService, pipelineConstant) {
     angular.extend($scope, {
       filteredStageLibraries: [],
       searchInput: '',
@@ -150,4 +150,4 @@ angular
       }
     });
 
-  }]);
+  });

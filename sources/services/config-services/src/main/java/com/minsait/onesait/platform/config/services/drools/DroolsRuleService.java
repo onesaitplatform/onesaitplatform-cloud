@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.minsait.onesait.platform.config.services.drools;
 import java.util.List;
 
 import com.minsait.onesait.platform.config.model.DroolsRule;
-import com.minsait.onesait.platform.config.model.DroolsRule.TableExtension;
 import com.minsait.onesait.platform.config.model.DroolsRuleDomain;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.User;
@@ -38,8 +37,6 @@ public interface DroolsRuleService {
 
 	List<DroolsRuleDomain> getAllDomains(String user);
 
-	List<DroolsRuleDomain> getAllDomains();
-
 	DroolsRuleDomain getUserDomain(String user);
 
 	DroolsRuleDomain getUserDomain(User user);
@@ -58,15 +55,11 @@ public interface DroolsRuleService {
 
 	DroolsRuleDomain changeDomainState(String id);
 
-	void changeDomainState(String userId, boolean active);
-
 	void updateDRL(String identification, String drl);
 
 	void deleteRule(String identification);
 
 	void updateActive(String identification);
-
-	void updateActive(String identification, boolean active);
 
 	DroolsRule create(DroolsRule rule, String userId);
 
@@ -75,6 +68,4 @@ public interface DroolsRuleService {
 	boolean hasUserEditPermission(String identification, String userId);
 
 	boolean hasUserPermissionOnDomain(String id, String userId);
-
-	void updateDecisionTable(String identification, byte[] decisionTable, TableExtension extension);
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,8 +42,6 @@ import org.springframework.web.client.RestTemplate;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
 import com.minsait.onesait.platform.config.services.drools.DroolsRuleService;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
-import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
@@ -81,12 +79,7 @@ public class RulesEngineNotificationServiceImpl implements RulesEngineNotificati
 		httpRequestFactory.setHttpClient(httpClient());
 
 		restTemplate = new RestTemplate(httpRequestFactory);
-		restTemplate.getInterceptors().add((r, b, e) -> {
-			r.getHeaders().add(Tenant2SchemaMapper.VERTICAL_HTTP_HEADER, MultitenancyContextHolder.getVerticalSchema());
-			r.getHeaders().add(Tenant2SchemaMapper.TENANT_HTTP_HEADER, MultitenancyContextHolder.getTenantName());
-			return e.execute(r, b);
 
-		});
 		NOTIFICATION_URL = resourcesService.getUrl(Module.RULES_ENGINE, ServiceUrl.ADVICE);
 
 	}
@@ -127,12 +120,9 @@ public class RulesEngineNotificationServiceImpl implements RulesEngineNotificati
 
 	@Override
 	public void notify(String ontology, String json) {
-		if (log.isDebugEnabled()) {
-			log.debug("Sending notification to Rules Engine, ontology: {}", ontology);
-		}
+		log.debug("Sending notification to Rules Engine, ontology: {}", ontology);
 		final HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
-
 		final HttpEntity<RulesEngineModel> httpEntity = new HttpEntity<>(
 				RulesEngineModel.builder().json(json).ontology(ontology).build(), headers);
 		restTemplate.exchange(NOTIFICATION_URL, HttpMethod.POST, httpEntity, String.class);

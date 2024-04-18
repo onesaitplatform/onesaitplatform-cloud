@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,19 @@
  */
 package com.minsait.onesait.platform.security.jwt.ri;
 
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2RefreshToken;
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
@@ -43,7 +39,6 @@ import org.springframework.security.oauth2.provider.TokenRequest;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -52,17 +47,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
-import com.minsait.onesait.platform.multitenant.config.model.Vertical;
-import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
-import com.minsait.onesait.platform.oauthserver.audit.aop.OauthServerAuditable;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @Slf4j
-@ConditionalOnBean(AuthorizationServerEndpointsConfiguration.class)
 public class TokenController {
 
 	@Value("${security.jwt.client-id}")
@@ -82,13 +70,6 @@ public class TokenController {
 
 	@Resource(name = "tokenStore")
 	TokenStore tokenStore;
-
-	@Value("${onesaitplatform.multitenancy.enabled:false}")
-	private boolean multitenancyEnabled;
-
-	@Autowired
-	private MultitenancyService multitenancyService;
-
 
 	@Autowired
 	CustomTokenService customTokenService;
@@ -207,9 +188,9 @@ public class TokenController {
 		}
 	}
 
-	@OauthServerAuditable
 	@RequestMapping(method = RequestMethod.POST, value = "/openplatform-oauth/revoke_token")
 	@ResponseBody
+
 	public Map<String, ?> revokeAccesToken(@RequestHeader(value = "Authorization") String authorization,
 			@RequestParam("token") String value) {
 		final Map<String, Object> response = new HashMap<>();
@@ -226,24 +207,15 @@ public class TokenController {
 			appId = tokens[0];
 			appSecret = tokens[1];
 
-			try {
-				final ClientDetails clientId = clientDetailsService.loadClientByClientId(appId);
+			final ClientDetails clientId = clientDetailsService.loadClientByClientId(appId);
 
-				log.info("Entering Access Info Token with Tokenid = {} ", value);
+			log.info("Entering Access Info Token with Tokenid = {} ", value);
 
-				if (!clientId.getClientSecret().equals(appSecret)) {
-					response.put(OAuth2Exception.ERROR, OAuth2Exception.ACCESS_DENIED);
-					response.put(OAuth2Exception.DESCRIPTION, value);
-
-					log.info(REVOKE_ERROR_RESPONSE, OAuth2Exception.ACCESS_DENIED);
-
-					return response;
-				}
-			} catch (final Exception e) {
+			if (!clientId.getClientSecret().equals(appSecret)) {
 				response.put(OAuth2Exception.ERROR, OAuth2Exception.ACCESS_DENIED);
 				response.put(OAuth2Exception.DESCRIPTION, value);
 
-				log.info(REVOKE_ERROR_RESPONSE, OAuth2Exception.ACCESS_DENIED);
+				log.info(REVOKE_ERROR_RESPONSE,OAuth2Exception.ACCESS_DENIED);
 
 				return response;
 			}
@@ -255,7 +227,6 @@ public class TokenController {
 
 			if (appId.equals(appTokenId)) {
 				tokenStore.removeAccessToken(token);
-				tokenStore.removeRefreshToken(token.getRefreshToken());
 			} else {
 				throw new OAuth2Exception(OAuth2Exception.ACCESS_DENIED);
 			}
@@ -277,9 +248,9 @@ public class TokenController {
 		}
 	}
 
-	@OauthServerAuditable
 	@RequestMapping(method = RequestMethod.POST, value = "/openplatform-oauth/check_token")
 	@ResponseBody
+
 	public Map<String, Object> accessInfo(@RequestHeader(value = "Authorization") String authorization,
 			@RequestParam("token") String value) {
 		final Map<String, Object> response = new HashMap<>();
@@ -295,16 +266,11 @@ public class TokenController {
 			appId = tokens[0];
 			appSecret = tokens[1];
 
-			if(multitenancyEnabled) {
-				setVerticalFromToken(value);
-			}
-
-
 			if (!clientDetailsService.loadClientByClientId(appId).getClientSecret().equals(appSecret)) {
 				response.put(OAuth2Exception.ERROR, OAuth2Exception.ACCESS_DENIED);
 				response.put(OAuth2Exception.DESCRIPTION, value);
 
-				log.info(REVOKE_ERROR_RESPONSE, OAuth2Exception.ACCESS_DENIED);
+				log.info(REVOKE_ERROR_RESPONSE,OAuth2Exception.ACCESS_DENIED);
 
 				return response;
 			}
@@ -331,38 +297,5 @@ public class TokenController {
 			return response;
 		}
 	}
-	@SuppressWarnings("unchecked")
-	private void setVerticalFromToken(String value) {
-		try {
-			final String[] jwtSegments = value.split("\\.");
-			final String jwtBody = jwtSegments[1];
-			final String parsedBody = new String(Base64.getDecoder().decode(jwtBody));
-			final ObjectMapper mapper = new ObjectMapper();
-			Map<String, Object> jsonBody = new HashMap<>();
-			try {
-				jsonBody = mapper.readValue(parsedBody, Map.class);
-				final String verticalAtt =  (String) jsonBody.get("vertical");
-				if(StringUtils.hasText(verticalAtt)) {
-					final Optional<Vertical> vertical = multitenancyService.getVertical(verticalAtt);
-					vertical.ifPresent(v -> {
-						if (log.isDebugEnabled()) {
-							log.debug("Loading user from vertical {}", v);
-						}						
-						MultitenancyContextHolder.setVerticalSchema(v.getSchema());
-						MultitenancyContextHolder.setForced(true);
-					});
-				}
-
-			} catch (final IOException e) {
-				log.error("Unparseable JWT body");
-			}
-
-		} catch (final Exception e) {
-			log.error("Could not extract authentication from decoded JWT: {}", e.getMessage());
-		}
-	}
-
-
-
 
 }

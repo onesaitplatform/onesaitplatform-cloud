@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('PreviewMultiStageController', ["$scope", "previewService", "$timeout", "pipelineConstant", function ($scope, previewService, $timeout, pipelineConstant) {
+  .controller('PreviewMultiStageController', function ($scope, previewService, $timeout, pipelineConstant) {
     var stages = $scope.stageInstances;
 
     angular.extend($scope, {
@@ -128,4 +128,4 @@ angular
       }
     });
 
-  }]);
+  });

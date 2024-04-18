@@ -1,0 +1,9 @@
+{"messageTile": "a", "join_field": "parentType"}
+{"messageTile": "b", "join_field": "parentType"}
+{"messageTile": "c", "join_field": "parentType"}
+{"messageTile": "d", "join_field": "parentType"}
+{"info":"a","author":"e","dayOfWeek":1, "join_field": {"name": "childrenType", "parent": "1"}}
+{"info":"b","author":"f","dayOfWeek":2, "join_field": {"name": "childrenType", "parent": "2"}}
+{"info":"c","author":"g","dayOfWeek":1, "join_field": {"name": "childrenType", "parent": "3"}}
+{"info":"d","author":"h","dayOfWeek":3, "join_field": {"name": "childrenType", "parent": "4"}}
+{"info":"a","author":"h","dayOfWeek":3, "join_field": {"name": "childrenType", "parent": "1"}}

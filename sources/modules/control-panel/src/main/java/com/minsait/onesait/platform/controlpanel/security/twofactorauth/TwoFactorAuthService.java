@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,11 @@
  */
 package com.minsait.onesait.platform.controlpanel.security.twofactorauth;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
@@ -28,9 +30,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.config.model.User;
@@ -54,8 +56,6 @@ public class TwoFactorAuthService {
 	private MailService mailService;
 	@Autowired
 	private AppWebUtils utils;
-	@Autowired
-	private UserDetailsService userDetailsService;
 	@Value("${onesaitplatform.authentication.twofa.purgatory_time_minutes}")
 	private int purgatoryTime;
 
@@ -97,10 +97,12 @@ public class TwoFactorAuthService {
 	}
 
 	public void promoteToRealRole(Authentication authentication) {
-		final UserDetails details = userDetailsService.loadUserByUsername(authentication.getName());
+		final String role = userService.getUser(authentication.getPrincipal().toString()).getRole().getId();
+		final List<GrantedAuthority> authorities = new ArrayList<>();
+		authorities.add(new SimpleGrantedAuthority(role));
 
-		final Authentication newAuthentication = new UsernamePasswordAuthenticationToken(details, details.getPassword(),
-				details.getAuthorities());
+		final Authentication newAuthentication = new UsernamePasswordAuthenticationToken(
+				authentication.getPrincipal().toString(), authentication.getCredentials(), authorities);
 		SecurityContextHolder.getContext().setAuthentication(newAuthentication);
 
 	}

@@ -20,7 +20,7 @@
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-digital-twin-library</artifactId>
-			<version>0.0.6</version>
+			<version>0.0.5</version>
 		</dependency>
 		<dependency>
 		    <groupId>io.springfox</groupId>
@@ -43,11 +43,11 @@
 	<repositories>
 		<repository>
 			<id>public</id>
-			<url>https://nexus.onesaitplatform.com/nexus/repository/public/</url>
+			<url>http://nexus.onesaitplatform.com/nexus/content/groups/public/</url>
 		</repository>
 		<repository>
 			<id>onesait platform releases</id>
-			<url>https://nexus.onesaitplatform.com/nexus/repository/releases/</url>
+			<url>http://nexus.onesaitplatform.com/nexus/content/repositories/releases/</url>
 		</repository>
 	</repositories>
 	

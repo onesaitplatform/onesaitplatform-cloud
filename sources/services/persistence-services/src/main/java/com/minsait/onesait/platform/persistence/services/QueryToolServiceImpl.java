@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,20 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
-* Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-* 2013-2019 SPAIN
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*      http://www.apache.org/licenses/LICENSE-2.0
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
 package com.minsait.onesait.platform.persistence.services;
 
 import java.sql.DatabaseMetaData;
@@ -44,20 +30,15 @@ import javax.persistence.PersistenceContext;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
-import com.minsait.onesait.platform.config.ConfigDBTenantConfig;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
-import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataService;
-import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import com.minsait.onesait.platform.config.services.templates.PlatformQuery;
 import com.minsait.onesait.platform.config.services.templates.QueryTemplateService;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
@@ -65,34 +46,21 @@ import com.minsait.onesait.platform.persistence.exceptions.QueryNativeFormatExce
 import com.minsait.onesait.platform.persistence.factory.QueryAsTextDBRepositoryFactory;
 import com.minsait.onesait.platform.persistence.mongodb.quasar.connector.QuasarMongoDBbHttpConnector;
 import com.minsait.onesait.platform.persistence.mongodb.tools.sql.Sql2NativeTool;
-import com.minsait.onesait.platform.persistence.services.util.DataAccessQueryProcessor;
 import com.minsait.onesait.platform.persistence.services.util.QueryParsers;
 import com.minsait.onesait.platform.persistence.services.util.SQLParser;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import net.sf.jsqlparser.statement.select.SelectItem;
-import net.sf.jsqlparser.util.TablesNamesFinder;
 
 @Component
 @Slf4j
 public class QueryToolServiceImpl implements QueryToolService {
 
-	@PersistenceContext(unitName = ConfigDBTenantConfig.PERSISTENCE_UNIT_NAME_TENANT)
+	@PersistenceContext(unitName = "onesaitPlatform")
 	private EntityManager entityManager;
 
 	@Autowired
 	private OntologyService ontologyService;
-
-	@Autowired
-	private OntologyDataService ontologyDataService;
 
 	@Autowired
 	private QueryTemplateService queryTemplateService;
@@ -103,30 +71,12 @@ public class QueryToolServiceImpl implements QueryToolService {
 	@Autowired
 	private QuasarMongoDBbHttpConnector quasarConnector;
 
-	@Autowired
-	private IntegrationResourcesService resourcesService;
-
-	@Autowired
-	private Sql2NativeTool sql2NativeTool;
-
-	private static final String JOIN_REGEX = "\\W+(LEFT OUTER JOIN|RIGHT OUTER JOIN|INNER JOIN|FULL JOIN|CROSS|JOIN)\\W+(\\w+)";	
+	private static final String JOIN_REGEX = "(LEFT OUTER JOIN|RIGHT OUTER JOIN|INNER JOIN|FULL JOIN|CROSS)\\W+(\\w+)";
 	private static final String USER = "User:";
 	private static final String HASNT_PERMISSION_QUERY = " has not permission to query ontology ";
 
 	@Autowired(required = false)
 	private MetricsManager metricsManager;
-
-	@Value("#{'${onesaitplatform.database.excludeParse:dual}'.split(',')}")
-	private List<String> excludeParse;
-
-	private boolean useQuasar() {
-		try {
-			return ((Boolean) resourcesService.getGlobalConfiguration().getEnv().getDatabase()
-					.get("mongodb-use-quasar")).booleanValue();
-		} catch (final RuntimeException e) {
-			return true;
-		}
-	}
 
 	private void hasUserPermission(String user, String ontology, String query) {
 		if (!ontologyService.hasUserPermissionForQuery(user, ontology)) {
@@ -136,38 +86,14 @@ public class QueryToolServiceImpl implements QueryToolService {
 		if (isJoin(query)) {
 			try {
 				SQLParser.getTables(query).stream().forEach(s -> {
-					if (excludeParse.indexOf(s.toLowerCase()) == -1) {
-						if (!ontologyService.hasUserPermissionForQuery(user, s))
-							throw new DBPersistenceException(USER + user + HASNT_PERMISSION_QUERY + s);
-						final Ontology source = ontologyService.getOntologyByIdentification(ontology);
-						final Ontology destination = ontologyService.getOntologyByIdentification(s);
-						if ((destination == null || source == null
-								|| !source.getRtdbDatasource().equals(destination.getRtdbDatasource()))
-								&& !isTimescalePersistence(source, destination))
-							throw new DBPersistenceException(
-									"Ontologies: " + ontology + " and " + s + " are not in the same repository");
-					}
-				});
-			} catch (final JSQLParserException e) {
-				log.error("Malformed query", e);
-				throw new DBPersistenceException("Malformed query");
-			}
-
-		}
-		if (query.toLowerCase().indexOf("insert ") != -1  && query.toLowerCase().indexOf("select ") != -1) {
-			try {
-				SQLParser.getTables(query).stream().forEach(s -> {
-					if (excludeParse.indexOf(s.toLowerCase()) == -1) {
-						if (!ontologyService.hasUserPermissionForQuery(user, s))
-							throw new DBPersistenceException(USER + user + HASNT_PERMISSION_QUERY + s);
-						final Ontology source = ontologyService.getOntologyByIdentification(ontology);
-						final Ontology destination = ontologyService.getOntologyByIdentification(s);
-						if ((destination == null || source == null
-								|| !source.getRtdbDatasource().equals(destination.getRtdbDatasource()))
-								&& !isTimescalePersistence(source, destination))
-							throw new DBPersistenceException(
-									"Ontologies: " + ontology + " and " + s + " are not in the same repository");
-					}
+					if (!ontologyService.hasUserPermissionForQuery(user, s))
+						throw new DBPersistenceException(USER + user + HASNT_PERMISSION_QUERY + s);
+					final Ontology source = ontologyService.getOntologyByIdentification(ontology);
+					final Ontology destination = ontologyService.getOntologyByIdentification(s);
+					if (destination == null || source == null
+							|| !source.getRtdbDatasource().equals(destination.getRtdbDatasource()))
+						throw new DBPersistenceException(
+								"Ontologies: " + ontology + " and " + s + " are not in the same repository");
 				});
 			} catch (final JSQLParserException e) {
 				log.error("Malformed query", e);
@@ -176,8 +102,7 @@ public class QueryToolServiceImpl implements QueryToolService {
 
 		}
 		if ((query.toLowerCase().indexOf("update") != -1 || query.toLowerCase().indexOf("remove") != -1
-				|| query.toLowerCase().indexOf("delete") != -1 || query.toLowerCase().indexOf("createindex") != -1
-				|| query.toLowerCase().indexOf("insert") != -1)
+				|| query.toLowerCase().indexOf("delete") != -1 || query.toLowerCase().indexOf("createindex") != -1)
 				&& !ontologyService.hasUserPermissionForInsert(user, ontology)) {
 			throw new DBPersistenceException(
 					USER + user + " has not permission to update, insert or remove on ontology " + ontology);
@@ -194,16 +119,15 @@ public class QueryToolServiceImpl implements QueryToolService {
 	public String queryNativeAsJson(String user, String ontology, String query, int offset, int limit) {
 		try {
 			hasUserPermission(user, ontology, query);
-			if (ontologyService.hasEncryptionEnabled(ontology))
-				query = ontologyDataService.encryptQuery(query, true);
+
 			String result = queryAsTextDBRepositoryFactory.getInstance(ontology, user).queryNativeAsJson(ontology,
 					query, offset, limit);
-			result = ontologyDataService.decryptAllUsers(result, ontology);
-			metricsManagerLogControlPanelQueries(user, ontology, "OK");
+
+			this.metricsManagerLogControlPanelQueries(user, ontology, "OK");
 			return result;
 		} catch (final Exception e) {
-			metricsManagerLogControlPanelQueries(user, ontology, "KO");
-			log.error("Error queryNativeAsJson", e);
+			this.metricsManagerLogControlPanelQueries(user, ontology, "KO");
+			log.error("Error queryNativeAsJson:" + e.getMessage());
 			throw new DBPersistenceException(e);
 		}
 	}
@@ -212,21 +136,19 @@ public class QueryToolServiceImpl implements QueryToolService {
 	public String queryNativeAsJson(String user, String ontology, String query) {
 		try {
 			hasUserPermission(user, ontology, query);
-			if (ontologyService.hasEncryptionEnabled(ontology))
-				query = ontologyDataService.encryptQuery(query, true);
+
 			String result = queryAsTextDBRepositoryFactory.getInstance(ontology, user).queryNativeAsJson(ontology,
 					query);
-			result = ontologyDataService.decryptAllUsers(result, ontology);
-			metricsManagerLogControlPanelQueries(user, ontology, "OK");
+
+			this.metricsManagerLogControlPanelQueries(user, ontology, "OK");
 			return result;
 
 		} catch (final QueryNativeFormatException e) {
-			metricsManagerLogControlPanelQueries(user, ontology, "KO");
-			log.error("Error queryNativeAsJson", e);
+			this.metricsManagerLogControlPanelQueries(user, ontology, "KO");
 			throw e;
 		} catch (final Exception e) {
-			metricsManagerLogControlPanelQueries(user, ontology, "KO");
-			log.error("Error queryNativeAsJson", e);
+			this.metricsManagerLogControlPanelQueries(user, ontology, "KO");
+			log.error("Error queryNativeAsJson:" + e.getMessage());
 			throw new DBPersistenceException(e);
 		}
 	}
@@ -251,52 +173,9 @@ public class QueryToolServiceImpl implements QueryToolService {
 				}
 			}
 
-			query = applyDataAccess(query, user);
-
 			return queryAsTextDBRepositoryFactory.getInstance(ontology, user).querySQLAsJson(ontology, query, offset);
 
 		} catch (final QueryNativeFormatException e) {
-			log.error("Error querySQLAsJson:" + e.getMessage());
-			throw e;
-		} catch (final DBPersistenceException e) {
-			log.error("Error querySQLAsJson:" + e.getMessage());
-			throw e;
-		} catch (final Exception e) {
-			log.error("Error querySQLAsJson:" + e.getMessage());
-			throw new DBPersistenceException(e);
-		}
-	}
-
-	private String querySQLAsJson(String user, String ontology, String query, int offset, boolean checkTemplates,
-			int limit) {
-		try {
-			hasUserPermission(user, ontology, query);
-
-			query = QueryParsers.parseFunctionNow(query);
-			if (checkTemplates) {
-				final PlatformQuery newQuery = queryTemplateService.getTranslatedQuery(ontology, query);
-				if (newQuery != null) {
-
-					switch (newQuery.getType()) {
-					case SQL:
-						return querySQLAsJson(user, ontology, newQuery.getQuery(), offset, false, limit);
-					case NATIVE:
-						return queryNativeAsJson(user, ontology, newQuery.getQuery());
-					default:
-						throw new IllegalStateException("Only SQL or NATIVE queries are supported");
-					}
-				}
-			}
-
-			query = applyDataAccess(query, user);
-
-			return queryAsTextDBRepositoryFactory.getInstance(ontology, user).querySQLAsJson(ontology, query, offset,
-					limit);
-
-		} catch (final QueryNativeFormatException e) {
-			log.error("Error querySQLAsJson:" + e.getMessage());
-			throw e;
-		} catch (final DBPersistenceException e) {
 			log.error("Error querySQLAsJson:" + e.getMessage());
 			throw e;
 		} catch (final Exception e) {
@@ -306,22 +185,15 @@ public class QueryToolServiceImpl implements QueryToolService {
 	}
 
 	@Override
-	public String querySQLAsJson(String user, String ontology, String query, int offset)
-			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
+	public String querySQLAsJson(String user, String ontology, String query, int offset) throws DBPersistenceException {
 		try {
-			if (ontologyService.hasEncryptionEnabled(ontology))
-				query = ontologyDataService.encryptQuery(query, false);
+
 			String result = querySQLAsJson(user, ontology, query, offset, true);
-			result = ontologyDataService.decryptAllUsers(result, ontology);
-			metricsManagerLogControlPanelQueries(user, ontology, "OK");
+			this.metricsManagerLogControlPanelQueries(user, ontology, "OK");
 			return result;
-		} catch (final DBPersistenceException e) {
+		} catch (DBPersistenceException e) {
 			log.error("Error processing query", e);
-			metricsManagerLogControlPanelQueries(user, ontology, "KO");
-			throw e;
-		} catch (final OntologyDataUnauthorizedException e) {
-			log.error("Error processing query", e);
-			metricsManagerLogControlPanelQueries(user, ontology, "KO");
+			this.metricsManagerLogControlPanelQueries(user, ontology, "KO");
 			throw e;
 		}
 	}
@@ -332,16 +204,15 @@ public class QueryToolServiceImpl implements QueryToolService {
 
 		try {
 			hasClientPlatformPermisionForQuery(clientPlatform, ontology);
-			if (ontologyService.hasEncryptionEnabled(ontology))
-				query = ontologyDataService.encryptQuery(query, true);
+
 			String result = queryAsTextDBRepositoryFactory.getInstanceClientPlatform(ontology, clientPlatform)
 					.queryNativeAsJson(ontology, query, offset, limit);
-			result = ontologyDataService.decryptAllUsers(result, ontology);
-			metricsManagerLogControlPanelQueries(clientPlatform, ontology, "OK");
+
+			this.metricsManagerLogControlPanelQueries(clientPlatform, ontology, "OK");
 
 			return result;
 		} catch (final Exception e) {
-			metricsManagerLogControlPanelQueries(clientPlatform, ontology, "KO");
+			this.metricsManagerLogControlPanelQueries(clientPlatform, ontology, "KO");
 			log.error("Error queryNativeAsJsonForPlatformClient:" + e.getMessage());
 			throw new DBPersistenceException(e);
 		}
@@ -379,12 +250,11 @@ public class QueryToolServiceImpl implements QueryToolService {
 
 	@Override
 	public String querySQLAsJsonForPlatformClient(String clientPlatform, String ontology, String query, int offset)
-			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
-		if (ontologyService.hasEncryptionEnabled(ontology))
-			query = ontologyDataService.encryptQuery(query, false);
+			throws DBPersistenceException {
+
 		String result = querySQLAsJsonForPlatformClient(clientPlatform, ontology, query, offset, true);
-		result = ontologyDataService.decryptAllUsers(result, ontology);
-		metricsManagerLogControlPanelQueries(clientPlatform, ontology, "OK");
+
+		this.metricsManagerLogControlPanelQueries(clientPlatform, ontology, "OK");
 		return result;
 	}
 
@@ -392,18 +262,14 @@ public class QueryToolServiceImpl implements QueryToolService {
 	public String compileSQLQueryAsJson(String user, Ontology ontology, String query, int offset) {
 		hasUserPermission(user, ontology.getIdentification(), query);
 		if (ontology != null && ontology.getRtdbDatasource().equals(RtdbDatasource.MONGO)) {
-			if (query.trim().toLowerCase().startsWith("update") || query.trim().toLowerCase().startsWith("delete")
-					|| (query.trim().toLowerCase().startsWith("select") && !useQuasar())) {
+			if (query.trim().toLowerCase().startsWith("update") || query.trim().toLowerCase().startsWith("delete")) {
 				final ObjectMapper mapper = new ObjectMapper();
 				final ObjectNode result = mapper.createObjectNode();
 				result.put("sqlQuery", query);
 				try {
-					final String nativeQuery = sql2NativeTool.translateSql(query);
+					final String nativeQuery = Sql2NativeTool.translateSql(query);
 					result.put("nativeQuery", nativeQuery);
 					return mapper.writeValueAsString(result);
-				} catch (final DBPersistenceException e) {
-					log.error("Error executing query", e);
-					throw e;
 				} catch (final Exception e) {
 					throw new DBPersistenceException("SQL Syntax Error");
 				}
@@ -450,127 +316,29 @@ public class QueryToolServiceImpl implements QueryToolService {
 
 	@Override
 	@Transactional
-	public List<String> querySQLtoConfigDB(String query) throws JSQLParserException {
+	public List<String> querySQLtoConfigDB(String query) {
 		final List<String> queryResult = new LinkedList<>();
-		
-		if(isValidTable(query) && hasValidFields(query)) {
-			final org.hibernate.Session session = entityManager.unwrap(Session.class);
-			
-			session.doWork(connection -> {
-				final PreparedStatement statement = connection.prepareStatement(query);
-				final ResultSet rs = statement.executeQuery();
-				final int ncol = rs.getMetaData().getColumnCount();
-				int i = 0;
-				String row = "";
-				while (rs.next()) {
-					row = "{";
-					i = 0;
-					while (i < ncol) {
-						row = row + "\"" + rs.getMetaData().getColumnName(i + 1) + "\": \"" + rs.getString(i + 1) + "\",";
-						i++;
-						if (i == ncol) {
-							row = row.substring(0, row.length() - 1);
-						}
+		final org.hibernate.Session session = entityManager.unwrap(Session.class);
+		session.doWork(connection -> {
+			final PreparedStatement statement = connection.prepareStatement(query);
+			final ResultSet rs = statement.executeQuery();
+			final int ncol = rs.getMetaData().getColumnCount();
+			int i = 0;
+			String row = "";
+			while (rs.next()) {
+				row = "{";
+				i = 0;
+				while (i < ncol) {
+					row = row + "\"" + rs.getMetaData().getColumnName(i + 1) + "\": \"" + rs.getString(i + 1) + "\",";
+					i++;
+					if (i == ncol) {
+						row = row.substring(0, row.length() - 1);
 					}
-					queryResult.add(row + "}");
 				}
-			});
-		}else {
-			throw new DBPersistenceException("Unauthorized table or operation");
-		}
+				queryResult.add(row + "}");
+			}
+		});
 		return queryResult;
-	}
-	
-	@Override
-	@Transactional
-	public List<String> updateSQLtoConfigDB(String query) throws JSQLParserException {
-		final List<String> queryResult = new LinkedList<>();
-		
-		if(isValidTable(query)) {
-		
-			final org.hibernate.Session session = entityManager.unwrap(Session.class);
-			session.doWork(connection -> {
-				final PreparedStatement statement = connection.prepareStatement(query);
-				final int outputResult = statement.executeUpdate();
-				queryResult.add(outputResult + " rows affected");
-			});
-		}
-		
-		return queryResult;
-	}
-	
-	private boolean isValidTable(String query) throws JSQLParserException{
-		final List<String> allowedTables = getTables();
-		try {
-			Statement statement = CCJSqlParserUtil.parse(query);
-
-			TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
-			List<String> selectedTables = tablesNamesFinder.getTableList(statement);
-			if(selectedTables.size()==0) {
-				return false;
-			}
-			
-			for(String table:selectedTables) {
-				if(!allowedTables.contains(table)) {
-					return false;
-				}
-			}
-		} catch (JSQLParserException e) {
-			log.error("Error parsing query {}", query, e);
-			throw new JSQLParserException("Error parsing query \""+query+"\"");
-		}
-		
-		return true;
-	}
-	
- 	private boolean hasValidFields(String query) throws JSQLParserException {
- 		try {
- 			Select selectStatement = (Select)CCJSqlParserUtil.parse(query);
- 			PlainSelect plainSelect = (PlainSelect) selectStatement.getSelectBody();
- 			
- 			List<SelectItem> fields = plainSelect.getSelectItems();
- 			for(SelectItem selectedField:fields) {
- 				if(selectedField instanceof net.sf.jsqlparser.statement.select.AllColumns) {
- 					return true;
- 				}else {
-	 				Expression selectedFieldExpr=((SelectExpressionItem)selectedField).getExpression();
-	 				
-	 				if(selectedFieldExpr instanceof net.sf.jsqlparser.expression.Function //Possible SQL Injection
-	 					|| selectedFieldExpr instanceof net.sf.jsqlparser.expression.UserVariable) {
-	 					return false;
-	 				}
- 				}
- 			}
- 			
-		} catch (JSQLParserException e) {
-			log.error("Error parsing query {}", query, e);
-			throw new JSQLParserException("Error parsing query \""+query+"\"");
-		}
- 		
- 		return true;
- 	}
-
-
-	private String applyDataAccess(String query, String user) throws JSQLParserException {
-
-		boolean quasarActive = ((Boolean) resourcesService.getGlobalConfiguration().getEnv().getDatabase()
-				.get("mongodb-use-quasar")).booleanValue();
-
-		if (!quasarActive) {
-
-			Map<String, String> queryDataAccess = ontologyService.getUserDataAccess(user);
-
-			if (queryDataAccess.size() > 0) {
-				DataAccessQueryProcessor dataAccessQueryProcessor = new DataAccessQueryProcessor(query,
-						queryDataAccess);
-				query = dataAccessQueryProcessor.process();
-
-				log.info("Query replaced: " + query);
-			}
-		}
-
-		return query;
-
 	}
 
 	private boolean isJoin(String query) {
@@ -584,39 +352,9 @@ public class QueryToolServiceImpl implements QueryToolService {
 	}
 
 	private void metricsManagerLogControlPanelQueries(String userId, String ontology, String result) {
-		if (null != metricsManager) {
-			metricsManager.logControlPanelQueries(userId, ontology, result);
+		if (null != this.metricsManager) {
+			this.metricsManager.logControlPanelQueries(userId, ontology, result);
 		}
 	}
 
-	@Override
-	public String querySQLAsJson(String user, String ontology, String query, int offset, int limit)
-			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
-		try {
-			if (ontologyService.hasEncryptionEnabled(ontology))
-				query = ontologyDataService.encryptQuery(query, false);
-			String result = querySQLAsJson(user, ontology, query, offset, true, limit);
-			result = ontologyDataService.decryptAllUsers(result, ontology);
-			metricsManagerLogControlPanelQueries(user, ontology, "OK");
-			return result;
-		} catch (final DBPersistenceException e) {
-			log.error("Error processing query", e);
-			metricsManagerLogControlPanelQueries(user, ontology, "KO");
-			throw e;
-		} catch (final OntologyDataUnauthorizedException e) {
-			log.error("Error processing query", e);
-			metricsManagerLogControlPanelQueries(user, ontology, "KO");
-			throw e;
-		}
-
-	}
-
-	private boolean isTimescalePersistence(Ontology o1, Ontology o2) {
-		if ((o1.getRtdbDatasource().equals(RtdbDatasource.TIMESCALE) && ontologyService.isTimescaleVirtualOntology(o2))
-				|| o2.getRtdbDatasource().equals(RtdbDatasource.TIMESCALE)
-						&& ontologyService.isTimescaleVirtualOntology(o1))
-			return true;
-		return false;
-
-	}
 }

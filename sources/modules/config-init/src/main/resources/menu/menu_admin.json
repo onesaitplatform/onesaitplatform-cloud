@@ -5,182 +5,197 @@
 	"navigation": [
 		{
 			"title": {
-				"EN": "ADMINISTRATION",
-				"ES": "ADMINISTRACIÓN",
-				"FR": "ADMINISTRATION"
+				"EN": "SYSTEM MONITORING",
+				"ES": "MONITORIZACIÓN DEL SISTEMA"
 			},
-			"icon": "icon-configuration",
+			"icon": "flaticon-refresh",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
-						"EN": "Environment Management",
-						"ES": "Gestión Entorno",
-						"FR": "Gestion de l'environnement"
+						"EN": "Monitoring UI",
+						"ES": "Consola Monitorización"
 					},
 					"icon": "",
-					"url": "/controlpanel/environments/list"
+					"url": "/controlpanel/monitoringui"
 				},
 				{
 					"title": {
-						"EN": "Tenants Management",
-						"ES": "Gestión de Tenants",
-						"FR": "Utilisateurs locataires"
+						"EN": "Deployment UI",
+						"ES": "Consola Despliegue"
 					},
 					"icon": "",
-					"url": "/controlpanel/multitenancy/tenants"
+					"url": "https://caas.onesaitplatform.com/login"
 				},
 				{
 					"title": {
-						"EN": "Plugins Management",
-						"ES": "Gestión de Plugins",
-						"FR": "Gestion des plugins"
+						"EN": "ControlPanel Rest APIs",
+						"ES": "APIs Rest ControlPanel"
 					},
 					"icon": "",
-					"url": "/controlpanel/plugins/list"
+					"url": "/controlpanel/swagger-ui.html"
 				},
+				{
+					"title": {
+						"EN": "DigitalBroker Rest Gateway",
+						"ES": "DigitalBroker Rest Gateway"
+					},
+					"icon": "",
+					"url": "/iot-broker/swagger-ui.html"
+				},
+				{
+					"title": {
+						"EN": "Stress Tool",
+						"ES": "Herramienta de Carga"
+					},
+					"icon": "",
+					"url": "/controlpanel/scalability/index.html"
+				}
+			]
+		},
+		{
+			"title": {
+				"EN": "ADMINISTRATION",
+				"ES": "ADMINISTRACIÓN"
+			},
+			"icon": "flaticon-cogwheel-2",
+			"url": "",
+			"submenu": [
 				{
 					"title": {
 						"EN": "Users Management",
-						"ES": "Gestión de Usuarios",
-						"FR": "Gérer les utilisateurs"
+						"ES": "Gestión de Usuarios"
 					},
 					"icon": "",
 					"url": "/controlpanel/users/list"
 				},
 				{
 					"title": {
-						"EN": "Data Models Management",
-						"ES": "Gestión de Plantillas (Data Models)",
-						"FR": "Gestion des modèles de données"
-					},
-					"icon": "",
-					"url": "/controlpanel/datamodels/list"
-				},
-				{
-					"title": {
-						"EN": "Assets Market",
-						"ES": "Market de Assets",
-						"FR": "Marché des Actifs"
-					},
-					"icon": "",
-					"url": "/controlpanel/bundlerepository/list"
-				},
-				{
-					"title": {
-						"EN": "Control Panel Menu Management",
-						"ES": "Gestión de Menú del Panel de Control",
-						"FR": "Gestion des menus du panneau de commande"
+						"EN": "Menu Management",
+						"ES": "Gestión de Menú"
 					},
 					"icon": "",
 					"url": "/controlpanel/consolemenu/list"
 				},
 				{
 					"title": {
-						"EN": "Control Panel Themes Management",
-						"ES": "Gestión de Temas del Panel de Control",
-						"FR": "Gestion des thèmes du panneau de commande"
+						"EN": "Market Assets Management",
+						"ES": "Gestión de Activos del Market"
 					},
 					"icon": "",
-					"url": "/controlpanel/themes/list"
+					"url": "/controlpanel/marketasset/list"
 				},
 				{
 					"title": {
-						"EN": "Categorization Trees Management",
-						"ES": "Gestión de Árboles de Categorización",
-						"FR": "Gestion des arbres de catégorisation "
+						"EN": "Configuration Management",
+						"ES": "Gestión de Configuraciones"
 					},
 					"icon": "",
-					"url": "/controlpanel/categorization/list"
+					"url": "/controlpanel/configurations/list"
+				},
+				{
+					"title": {
+						"EN": "Data Models Management",
+						"ES": "Gestión DataModels"
+					},
+					"icon": "",
+					"url": "/controlpanel/datamodels/list"
+				},
+				{
+					"title": {
+						"EN": "Realms Management",
+						"ES": "Gestión de Dominios de Seguridad"
+					},
+					"icon": "",
+					"url": "/controlpanel/apps/list"
 				},
 				{
 					"title": {
 						"EN": "Categories Management",
-						"ES": "Gestión de Categorías",
-						"FR": "Gestion des catégories"
+						"ES": "Gestión de Categorías"
 					},
 					"icon": "",
 					"url": "/controlpanel/categories/list"
 				},
 				{
 					"title": {
-						"EN": "Keycloak Management",
-						"ES": "Gestión de Keycloak",
-						"FR": "Gestion de Keycloak"
+						"EN": "Import/Export Data",
+						"ES": "Importación/Exportación de Datos"
 					},
 					"icon": "",
-					"url": "/controlpanel/keycloak/show"
+					"url": "/controlpanel/migration/show"
 				},
 				{
 					"title": {
-						"EN": "Environment promotion tool",
-						"ES": "Herramienta Promoción entre Entornos",
-						"FR": "Outil de promotion de l'environnement"
+						"EN": "Query Templates Management",
+						"ES": "Gestión de Plantillas de Consulta"
 					},
 					"icon": "",
-					"url": "/controlpanel/promotiontool/execute"
+					"url": "/controlpanel/querytemplates/list"
+				},
+				{
+					"title": {
+						"EN": "Themes Management",
+						"ES": "Gestión de temas"
+					},
+					"icon": "",
+					"url": "/controlpanel/themes/list"
+				},
+				{
+					"title": {
+						"EN": "Categorizations Management",
+						"ES": "Gestión de categorizaciones"
+					},
+					"icon": "",
+					"url": "/controlpanel/categorization/list"
+				},
+				{
+					"title": {
+						"EN": "Cache Management",
+						"ES": "Gestión de caché"
+					},
+					"icon": "",
+					"url": "/controlpanel/caches/list"
 				}
 			]
 		},
 		{
 			"title": {
-				"EN": "DEVELOPMENT",
-				"ES": "DESARROLLO",
-				"FR": "DÉVELOPPEMENT"
+				"EN": "",
+				"ES": ""
 			},
-			"icon": "icon-development",
+			"icon": "flaticon-more-v3",
+			"url": "",
+			"submenu": []
+		},
+		{
+			"title": {
+				"EN": "DEVELOPMENT",
+				"ES": "DESARROLLO"
+			},
+			"icon": "flaticon-network",
 			"url": "",
 			"submenu": [
 				{
-                    "title": {
-                        "EN": "Tags Management",
-                        "ES": "Gestión de Etiquetas",
-                        "FR": "Gestion de Tags"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/tags"
-                },
-				{
 					"title": {
-						"EN": "Applications Management",
-						"ES": "Gestión de Aplicaciones",
-						"FR": "Gestion de Applications"
+						"EN": "Projects Management",
+						"ES": "Gestión de Proyectos"
 					},
 					"icon": "",
 					"url": "/controlpanel/projects/list"
 				},
 				{
 					"title": {
-						"EN": "Entities Management",
-						"ES": "Gestión de Entidades",
-						"FR": "Gestion des Entités"
+						"EN": "Ontologies Management",
+						"ES": "Gestión de Ontologías"
 					},
 					"icon": "",
 					"url": "/controlpanel/ontologies/list"
 				},
 				{
 					"title": {
-						"EN": "User Tokens Management",
-						"ES": "Gestión de Tokens de Usuario",
-						"FR": "Gestion des jetons utilisateur"
-					},
-					"icon": "",
-					"url": "/controlpanel/apimanager/token/list?access=MENU"
-				},
-				{
-					"title": {
-						"EN": "REST APIs Management",
-						"ES": "Gestión de APIs REST",
-						"FR": "Gestion des REST API"
-					},
-					"icon": "",
-					"url": "/controlpanel/apimanager/list"
-				},
-				{
-					"title": {
 						"EN": "FlowEngine Management",
-						"ES": "Gestión de Motor de Flujos",
-						"FR": "Gestion du Moteur de Flux"
+						"ES": "Gestión de Motor de Flujos"
 					},
 					"icon": "",
 					"url": "/controlpanel/flows/list"
@@ -188,231 +203,31 @@
 				{
 					"title": {
 						"EN": "Rules Engine Management",
-						"ES": "Gestión de Motor de Reglas",
-						"FR": "Gestion du Moteur de Règles"
+						"ES": "Gestión de Motor de Reglas"
 					},
 					"icon": "",
 					"url": "/controlpanel/rule-domains/list"
 				},
 				{
 					"title": {
-						"EN": "Microservices Management",
-						"ES": "Gestión de MicroServicios",
-						"FR": "Gestion des microservices"
+						"EN": "SQL Streams Management",
+						"ES": "Gestión de Streams SQL"
 					},
 					"icon": "",
-					"url": "/controlpanel/microservices/list"
-				},	
-				{
-					"title": {
-						"EN": "Microservices Templates",
-						"ES": "Plantillas de MicroServicios",
-						"FR": "Modèles de microservices"
-					},
-					"icon": "",
-					"url": "/controlpanel/mstemplates/list"
+					"url": "/controlpanel/ksql/flow/list"
 				},
 				{
 					"title": {
-						"EN": "My Git Projects",
-						"ES": "Mis Proyectos Git", 
-						"FR": "Mes Projets Git"
-
+						"EN": "APIs Management",
+						"ES": "Gestión de APIs"
 					},
 					"icon": "",
-					"url": "/controlpanel/codeproject/list"
-				},
-				{
-					"title": {
-						"EN": "Serverless Applications Management",
-						"ES": "Gestión de aplicaciones serverless",
-						"FR": "Gestion des applications serverless"
-					},
-					"icon": "",
-					"url": "/controlpanel/serverless/applications"
-				},
-				{
-					"title": {
-						"EN": "BPM Engine Management",
-						"ES": "Gestión de Motor BPM",
-						"FR": "Gestion du Moteur BPM"
-					},
-					"icon": "",
-					"url": "/controlpanel/bpm/list"
-				},
-				{
-					"title": {
-						"EN": "Realms Management",
-						"ES": "Gestión de Dominios de Seguridad",
-						"FR": "Gestion de Domaine de Sécurité"
-					},
-					"icon": "",
-					"url": "/controlpanel/apps/list"
-				}
-			]
-		},
-		{
-			"title": {
-				"EN": "VISUALIZATION & GIS",
-				"ES": "VISUALIZACIÓN & GIS",
-				"FR": "VISUALISATION & SIG"
-			},
-			"icon": "icon-visualization",
-			"url": "",
-			"submenu": [
-				 {
-                    "title": {
-                        "EN": "Forms Management",
-                        "ES": "Gestión de Formularios",
-                        "FR": "Gestion des Formes"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/forms/list"
-                } ,
-				{
-					"title": {
-						"EN": "Dashboards Management",
-						"ES": "Gestión de Dashboards",
-						"FR": "Gestion des Tableaux de Bord"
-					},
-					"icon": "",
-					"url": "/controlpanel/dashboards/list"
-				},
-				{
-					"title": {
-						"EN": "Dashboard Styles Management",
-						"ES": "Gestión de Estilos de Dashboards",
-						"FR": "Gestion des Styles de Tableau de Bord"
-					},
-					"icon": "",
-					"url": "/controlpanel/dashboardconf/list"
-				},
-				{
-					"title": {
-						"EN": "Gadgets Management",
-						"ES": "Gestión de Gadgets",
-						"FR": "Gestion des Gadgets"
-					},
-					"icon": "",
-					"url": "/controlpanel/gadgets/list"
-				},
-				{
-					"title": {
-						"EN": "DataSources Management",
-						"ES": "Gestión de DataSources",
-						"FR": "Gestion des Sources de Données"
-					},
-					"icon": "",
-					"url": "/controlpanel/datasources/list"
-				},
-				{
-					"title": {
-						"EN": "Report Management",
-						"ES": "Gestión de Informes",
-						"FR": "Gestion des Rapports"
-					},
-					"icon": "",
-					"url": "/controlpanel/reports/list"
-				},
-				{
-                    "title": {
-                        "EN": "Email Templates",
-                        "ES": "Platillas de Email",
-                        "FR": "Modèles d'e-mails"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/emails/list"
-                },
-				{
-					"title": {
-						"EN": "GIS Viewers Management",
-						"ES": "Gestión de Visores GIS",
-						"FR": "Gestion de la visionneuse SIG"
-					},
-					"icon": "",
-					"url": "/controlpanel/viewers/list"
-				},
-				{
-					"title": {
-						"EN": "GIS Layers Management",
-						"ES": "Gestión de Capas GIS",
-						"FR": "Gestion des Couches SIG"
-					},
-					"icon": "",
-					"url": "/controlpanel/layers/list"
-				}
-			]
-		},
-		{
-			"title": {
-				"EN": "MAPS",
-				"ES": "MAPAS",
-				"FR": "PLANS"
-			},
-			"icon": "icon-map",
-			"url": "",
-			"submenu": [
-				{
-					"title": {
-						"EN": "Maps Project Management",
-						"ES": "Gestión Proyectos Mapas",
-						"FR": "Cartes de gestion de projet"
-					},
-					"icon": "",
-					"url": "/controlpanel/mapsproject/list"
-				},
-				{
-					"title": {
-						"EN": "Maps Management",
-						"ES": "Gestión de Mapas",
-						"FR": "Cartes de gestion"
-					},
-					"icon": "",
-					"url": "/controlpanel/mapsmap/list"
-				},
-				{
-					"title": {
-						"EN": "Layers Management",
-						"ES": "Gestión Capas",
-						"FR": "Couches de gestion"
-					},
-					"icon": "",
-					"url": "/controlpanel/mapslayer/list"
-				},
-				{
-					"title": {
-						"EN": "Styles Management",
-						"ES": "Gestión Estilos",
-						"FR": "Styles de gestion"
-					},
-					"icon": "",
-					"url": "/controlpanel/mapsstyle/list"
-				}
-			]
-		},
-		{
-			"title": {
-				"EN": "ANALYTICS TOOLS",
-				"ES": "HERR. ANALÍTICA",
-				"FR": "OUTILS D'ANALYSE"
-			},
-			"icon": "icon-kpi",
-			"url": "",
-			"submenu": [
-				{
-					"title": {
-						"EN": "DataFlow Management",
-						"ES": "Gestión de DataFlows",
-						"FR": "Gestion des Flux de Données"
-					},
-					"icon": "",
-					"url": "/controlpanel/dataflow/list"
+					"url": "/controlpanel/apimanager/list"
 				},
 				{
 					"title": {
 						"EN": "Notebooks Management",
-						"ES": "Gestión de Notebooks",
-						"FR": "Gestion des Notebooks"
+						"ES": "Gestión de Notebooks"
 					},
 					"icon": "",
 					"url": "/controlpanel/notebooks/list"
@@ -420,55 +235,107 @@
 				{
 					"title": {
 						"EN": "Models Management",
-						"ES": "Gestión de Modelos",
-						"FR": "Gestion des Modèles"
+						"ES": "Gestión de Modelos"
 					},
 					"icon": "",
 					"url": "/controlpanel/models/list"
 				},
 				{
 					"title": {
-						"EN": "Models Manager Management",
-						"ES": "Gestión del Mánager de Modelos",
-						"FR": "Gestion du Gestionnaire de Modèles"
+						"EN": "DataFlow Management",
+						"ES": "Gestión de DataFlows"
 					},
 					"icon": "",
-					"url": "/controlpanel/modelsmanager/show"
+					"url": "/controlpanel/dataflow/list"
 				},
 				{
 					"title": {
-						"EN": "AutoML Predictors Management",
-						"ES": "Gestión de Predictores AutoML",
-						"FR": "Gestion des AutoML prédicteurs"
+						"EN": "Web Projects Management",
+						"ES": "Gestión Proyectos Web"
 					},
 					"icon": "",
-					"url": "/controlpanel/predictors/list"
+					"url": "/controlpanel/webprojects/list"
 				},
 				{
 					"title": {
-						"EN": "Data Labeling Management",
-						"ES": "Gestión De Etiquetado De Datos",
-						"FR": "Gestion des étiquetage De Données"
+						"EN": "Binary Files Management",
+						"ES": "Gestión de ficheros binarios"
 					},
 					"icon": "",
-					"url": "/controlpanel/datalabeling/list"
+					"url": "/controlpanel/files/list"
+				},
+				{
+					"title": {
+						"EN": "JDBC Connections Management",
+						"ES": "Gestión de conexiones JDBC"
+					},
+					"icon": "",
+					"url": "/controlpanel/virtualdatasources/list"
+				},
+				{
+					"title": {
+						"EN": "Video Captures Management",
+						"ES": "Gestión de capturas de vídeo"
+					},
+					"icon": "",
+					"url": "/controlpanel/video-captures/list"
 				}
 			]
 		},
 		{
 			"title": {
-				"EN": "CLIENTS & DIGITAL TWINS",
-				"ES": "CLIENTES & DIGITAL TWINS",
-				"FR": "CLIENTS & JUMEAUX NUMÉRIQUES"
+				"EN": "VISUALIZATION",
+				"ES": "VISUALIZACIÓN"
 			},
-			"icon": "icon-clients",
+			"icon": "flaticon-graph",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "Dashboards Management",
+						"ES": "Gestión de Dashboards"
+					},
+					"icon": "",
+					"url": "/controlpanel/dashboards/list"
+				},
+				{
+					"title": {
+						"EN": "Gadgets Management",
+						"ES": "Gestión de Gadgets"
+					},
+					"icon": "",
+					"url": "/controlpanel/gadgets/list"
+				},
+				{
+					"title": {
+						"EN": "DataSources Management",
+						"ES": "Gestión de DataSources"
+					},
+					"icon": "",
+					"url": "/controlpanel/datasources/list"
+				},
+				{
+					"title": {
+						"EN": "Report Management",
+						"ES": "Gestión de Informes"
+					},
+					"icon": "",
+					"url": "/controlpanel/reports/list"
+				}
+			]
+		},
+		{
+			"title": {
+				"EN": "DIGITAL CLIENTS",
+				"ES": "CLIENTES DIGITALES"
+			},
+			"icon": "flaticon-share",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
 						"EN": "Digital Clients Definition",
-						"ES": "Definición de Clientes",
-						"FR": "Définition des Clients"
+						"ES": "Definición de Clientes Digitales"
 					},
 					"icon": "",
 					"url": "/controlpanel/devices/list"
@@ -476,8 +343,7 @@
 				{
 					"title": {
 						"EN": "Digital Clients Management",
-						"ES": "Gestión de Clientes",
-						"FR": "Gestion des Clients Numériques"
+						"ES": "Gestión de Clientes Digitales"
 					},
 					"icon": "",
 					"url": "/controlpanel/devices/management/list"
@@ -485,8 +351,7 @@
 				{
 					"title": {
 						"EN": "Digital Clients Simulations",
-						"ES": "Simulaciones de Clientes",
-						"FR": "Simulations de Clients"
+						"ES": "Simulaciones de Clientes Digitales"
 					},
 					"icon": "",
 					"url": "/controlpanel/devicesimulation/list"
@@ -494,26 +359,25 @@
 				{
 					"title": {
 						"EN": "Digital Clients Status",
-						"ES": "Estado de Clientes",
-						"FR": "Statut des Clients"
+						"ES": "Estado de Clientes Digitales"
 					},
 					"icon": "",
 					"url": "/controlpanel/devices/management/show"
-				},
+				}
+			]
+		},
+		{
+			"title": {
+				"EN": "DIGITAL TWIN",
+				"ES": "DIGITAL TWIN"
+			},
+			"icon": "flaticon-medical",
+			"url": "",
+			"submenu": [
 				{
 					"title": {
-						"EN": "Subscriptions Management",
-						"ES": "Gestion de Suscripciones",
-						"FR": "Gestion des Abonnements"
-					},
-					"icon": "",
-					"url": "/controlpanel/subscriptions/list"
-				},
-				{
-					"title": {
-						"EN": "Digital Twins Definition",
-						"ES": "Definición de Digital Twins",
-						"FR": "Définition de Jumeaux Numériques"
+						"EN": "Digital Twin Definitions",
+						"ES": "Definiciones de Digital Twin"
 					},
 					"icon": "",
 					"url": "/controlpanel/digitaltwintypes/list"
@@ -521,8 +385,7 @@
 				{
 					"title": {
 						"EN": "Digital Twin Management",
-						"ES": "Gestión de Digital Twins",
-						"FR": "Gestion des Jumeaux Numériques"
+						"ES": "Gestión Digital Twins"
 					},
 					"icon": "",
 					"url": "/controlpanel/digitaltwindevices/list"
@@ -530,8 +393,7 @@
 				{
 					"title": {
 						"EN": "Digital Twin Status",
-						"ES": "Estado de Digital Twins",
-						"FR": "État du Jumeau Numérique"
+						"ES": "Estado Digital Twins"
 					},
 					"icon": "",
 					"url": "/controlpanel/digitaltwindisplay/show"
@@ -540,398 +402,70 @@
 		},
 		{
 			"title": {
-				"EN": "DATA GOVERNANCE",
-				"ES": "GOBIERNO DEL DATO",
-				"FR": "GOUVERNANCE DES DONNÉES"
+				"EN": "GIS TOOLS",
+				"ES": "HERRAMIENTAS GIS"
 			},
-			"icon": "icon-monitoring",
+			"icon": "flaticon-map-location",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
-						"EN": "View Elements Lineage",
-						"ES": "Visualizar Linaje de Elementos",
-						"FR": "Visualiser la lignée des éléments"
+						"EN": "GIS Viewers Management",
+						"ES": "Gestión de Visores GIS"
 					},
 					"icon": "",
-					"url": "/controlpanel/lineage/show"
+					"url": "/controlpanel/viewers/list"
 				},
 				{
 					"title": {
-						"EN": "DataRefiner Projects Management",
-						"ES": "Gestión de Proyectos Data Refiner",
-						"FR": "Gestion des Projets Data Refiner"
+						"EN": "GIS Layers Management",
+						"ES": "Gestión de Capas GIS"
 					},
 					"icon": "",
-					"url": "/controlpanel/datacleanerui"
-				},
-				{
-					"title": {
-						"EN": "Process Traceability Management",
-						"ES": "Gestión de Trazabilidad de Procesos",
-						"FR": "Gestion de la traçabilité des processus"
-					},
-					"icon": "",
-					"url": "/controlpanel/process/list"
-				}
-			]
-		},
-		{
-			"title": {
-				"EN": "OPEN DATA",
-				"ES": "INFORMACIÓN ABIERTA",
-				"FR": "DONNÉES OUVERTES"
-			},
-			"icon": "icon-open-data",
-			"url": "",
-			"submenu": [
-				{
-					"title": {
-						"EN": "Open Data Portal Management",
-						"ES": "Gestión de Portal de Datos Abiertos",
-						"FR": "Gestion des Portail de Données Ouvertes"
-					},
-					"icon": "",
-					"url": "/controlpanel/opendata/access"
-				},
-				{
-					"title": {
-						"EN": "My Organizations",
-						"ES": "Mis Organizaciones",
-						"FR": "Mes organisations"
-					},
-					"icon": "",
-					"url": "/controlpanel/opendata/organizations/list"
-				},
-				{
-					"title": {
-						"EN": "My Datasets",
-						"ES": "Mis Conjuntos de Datos",
-						"FR": "Mes Ensembles de Données"
-					},
-					"icon": "",
-					"url": "/controlpanel/opendata/datasets/list"
-				},
-				{
-					"title": {
-						"EN": "My Resources",
-						"ES": "Mis Recursos",
-						"FR": "Mes Ressources"
-					},
-					"icon": "",
-					"url": "/controlpanel/opendata/resources/list"
-				},
-				{
-					"title": {
-						"EN": "Typologies Management",
-						"ES": "Gestión de Tipologías",
-						"FR": "Gestion des Typologies"
-					},
-					"icon": "",
-					"url": "/controlpanel/opendata/typologies/list"
-				}
-			]
-		},
-		{
-			"title": {
-				"EN": "DEV TOOLS",
-				"ES": "HERR. DESARROLLO",
-				"FR": "OUTILS DE DÉVELOPPEMENT"
-			},
-			"icon": "icon-dev-tools",
-			"url": "",
-			"submenu": [
-				{
-					"title": {
-						"EN": "Export & Import Environment Tool",
-						"ES": "Herramienta de Exportación & Importación entre Entornos",
-						"FR": "Outil d'exportation et d'importation entre les environnements"
-					},
-					"icon": "",
-					"url": "/controlpanel/migration/show"
-				},
-				{
-					"title": {
-						"EN": "Billable modules",
-						"ES": "Modulos facturables",
-						"FR": "Modules facturables"
-					},
-					"icon": "",
-					"url": "/controlpanel/billingmodules/list"
-				},
-				{
-					"title": {
-						"EN": "Data to Ontology Import Tools",
-						"ES": "Herramientas de carga de datos a Entidades",
-						"FR": "Outils d'importation de Données vers une Entités"
-					},
-					"icon": "",
-					"url": "/controlpanel/jsontool/tools"
-				},
-				{
-					"title": {
-						"EN": "WebApps Management",
-						"ES": "Gestión de WebApps",
-						"FR": "Gestion de WebApps"
-					},
-					"icon": "",
-					"url": "/controlpanel/webprojects/list"
-				},
-				{
-					"title": {
-						"EN": "Files Management",
-						"ES": "Gestión de Fichero",
-						"FR": "Gestion des fichiers"
-					},
-					"icon": "",
-					"url": "/controlpanel/files/list"
-				},
-				{
-					"title": {
-						"EN": "Centralized Configuration",
-						"ES": "Configuración Centralizada",
-						"FR": "Configuration Centralisée"
-					},
-					"icon": "",
-					"url": "/controlpanel/configurations/list"
-				},
-				{
-					"title": {
-						"EN": "REST APIs Planning",
-						"ES": "Planificación de APIs REST",
-						"FR": "Planificateur de APIs REST"
-					},
-					"icon": "",
-					"url": "/controlpanel/restplanner/list"
-				},
-				{
-					"title": {
-						"EN": "Cache Management",
-						"ES": "Gestión de Caché",
-						"FR": "Gestion des Caches"
-					},
-					"icon": "",
-					"url": "/controlpanel/caches/list"
-				},
-				{
-					"title": {
-						"EN": "Internationalizations i18n Management",
-						"ES": "Gestión de internacionalizaciones i18n",
-						"FR": "Gestion des internationalisations i18n"
-					},
-					"icon": "",
-					"url": "/controlpanel/internationalizations/list"
-				},
-				{
-					"title": {
-						"EN": "SQL Query Templates Management",
-						"ES": "Gestión de Plantillas de Consulta SQL",
-						"FR": "Gestion des Modèles de Requête SQL"
-					},
-					"icon": "",
-					"url": "/controlpanel/querytemplates/list"
-				},
-				{
-					"title": {
-						"EN": "Database Connection Management",
-						"ES": "Gestión de Conexiones a Base de datos",
-						"FR": "Gestion des Connexions à la Base de Données"
-					},
-					"icon": "",
-					"url": "/controlpanel/virtualdatasources/list"
-				},
-				{
-					"title": {
-						"EN": "Presto Connection Management",
-						"ES": "Gestión de Conexiones Presto",
-						"FR": "Gestion des Connexions à Presto"
-					},
-					"icon": "",
-					"url": "/controlpanel/presto/datasources/list"
-				},
-				{
-					"title": {
-						"EN": "Kafka cluster Management",
-						"ES": "Gestión de cluster Kafka",
-						"FR": "Gestion du cluster Kafka"
-					},
-					"icon": "",
-					"url": "/controlpanel/kafka/cluster/list"
+					"url": "/controlpanel/layers/list"
 				}
 			]
 		},
 		{
 			"title": {
 				"EN": "TOOLS",
-				"ES": "HERRAMIENTAS",
-				"FR": "OUTILS"
+				"ES": "HERRAMIENTAS"
 			},
-			"icon": "icon-tools",
+			"icon": "flaticon-open-box",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
 						"EN": "Query Tool",
-						"ES": "Herramienta de Consultas",
-						"FR": "Éditeur de Requêtes"
+						"ES": "Herramienta Consultas"
 					},
 					"icon": "",
 					"url": "/controlpanel/querytool/show"
 				},
 				{
 					"title": {
-						"EN": "UI Generation Tools",
-						"ES": "Herramientas de generación de UI",
-						"FR": "Outils de Génération d'interface Utilisateur"
-					},
-					"icon": "",
-					"url": "/controlpanel/low-code/"
-				}, {
-                    "title": {
-                        "EN": "Tracing",
-                        "ES": "Tracing",
-                        "FR": "Tracing"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/tracing/"
-                },
-				{
-					"title": {
 						"EN": "System Audit",
-						"ES": "Auditoría del Sistema",
-						"FR": "Audit du système"
+						"ES": "Auditoría del Sistema"
 					},
 					"icon": "",
 					"url": "/controlpanel/audit/show"
 				},
 				{
 					"title": {
-						"EN": "Monitoring UI",
-						"ES": "Consola de Monitorización",
-						"FR": "Interface Utilisateur de Surveillance"
+						"EN": "Planned Tasks",
+						"ES": "Tareas Planificadas"
 					},
 					"icon": "",
-					"url": "/controlpanel/monitoringui"
+					"url": "/controlpanel/planner/list"
 				},
 				{
 					"title": {
-						"EN": "Stress Tool",
-						"ES": "Herramienta de Carga",
-						"FR": "Outil d'effort"
+						"EN": "Data Import Tools",
+						"ES": "Herramientas de importación"
 					},
 					"icon": "",
-					"url": "/controlpanel/scalability/index.html"
-				},
-				{
-					"title": {
-						"EN": "Kafka Monitoring",
-						"ES": "Monitorización de Kafka",
-						"FR": "Surveillance Kafka"
-					},
-					"icon": "",
-					"url": "/controlpanel/kafka/monitoring/list"
-				},
-				{
-					"title": {
-						"EN": "Centralized Logs",
-						"ES": "Logs centralizados",
-						"FR": "Journaux centralisés"
-					},
-					"icon": "",
-					"url": "/controlpanel/logcentralizer/show"
-				},
-				{
-					"title": {
-						"EN": "Spark UI",
-						"ES": "Spark UI",
-						"FR": "Spark UI"
-					},
-					"icon": "",
-					"url": "/controlpanel/sparkui/show"
-				},
-				{
-					"title": {
-						"EN": "Queries Profiler UI",
-						"ES": "Queries Profiler UI",
-						"FR": "Queries Profiler UI"
-					},
-					"icon": "",
-					"url": "/controlpanel/queriesprofilerui/"
-				},
-				{
-					"title": {
-						"EN": "Presto Monitoring",
-						"ES": "Monitorización de Presto",
-						"FR": "Surveillance Presto"
-					},
-					"icon": "",
-					"url": "/controlpanel/presto/ui"
+					"url": "/controlpanel/jsontool/tools"
 				}
-			]
-		},
-		{
-			"title": {
-				"EN": "VERSION CONTROL",
-				"ES": "CONTROL DE VERSIONES",
-				"FR": "CONTRÔLE DE VERSION"
-			},
-			"icon": "icon-github",
-			"url": "",
-			"submenu": [
-				{
-					"title": {
-						"EN": "Configuration",
-						"ES": "Configuración",
-						"FR": "Réglage"
-					},
-					"icon": "",
-					"url": "/controlpanel/versioning/git-config"
-				},
-				{
-					"title": {
-						"EN": "Create Snapshot & Git Tag",
-						"ES": "Crear Snapshot y Tag de Git",
-						"FR": "Créer un instantané et une étiquette Git"
-					},
-					"icon": "",
-					"url": "/controlpanel/versioning/snapshot/platform"
-				},
-				{
-					"title": {
-						"EN": "Restore the platform",
-						"ES": "Restaurar la plataforma",
-						"FR": "Restaurer la plateforme"
-					},
-					"icon": "",
-					"url": "/controlpanel/versioning/restore/platform"
-				},
-				{
-					"title": {
-						"EN": "Restore resource",
-						"ES": "Restaurar recurso",
-						"FR": "Restaurer la ressource"
-					},
-					"icon": "",
-					"url": "/controlpanel/versioning/restore/resource"
-				},
-				{
-                    "title": {
-                        "EN": "Bundle generation",
-                        "ES": "Generación de paquetes de recursos",
-                        "FR": "Generation de colis"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/bundles/generate"
-                },
-                {
-                    "title": {
-                        "EN": "Bundle load",
-                        "ES": "Carga de paquetes de recursos",
-                        "FR": "Charger des ressources"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/bundles/load"
-                }
 			]
 		}
 	]

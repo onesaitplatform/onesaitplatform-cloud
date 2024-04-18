@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-		<version>${revision}</version>
+		<version>1.0.0-ce</version>
 		<relativePath>../../..</relativePath>
 	</parent>
 	<groupId>com.minsait.onesait.platform</groupId>
@@ -83,7 +83,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
-                <version>17</version>
+                <version>1.8</version>
                 <executions>
                     <execution>
                         <id>attach-artifact</id>
@@ -123,7 +123,23 @@
 	  			<plugin>
 	  				<groupId>org.eclipse.m2e</groupId>
 	  				<artifactId>lifecycle-mapping</artifactId>
-	  				<version>1.0.0</version>
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+	  				<version>1.0.0-ce</version>
+=======
+	  				<version>1.4.2-rc2</version>
+>>>>>>> 1.4.2-rc2
+=======
+	  				<version>1.4.2-rc4</version>
+>>>>>>> 1.4.2-rc4
+=======
+	  				<version>1.4.3-rc1</version>
+>>>>>>> 1.4.3-rc1
+=======
+	  				<version>v1.2.6-rc1</version>
+>>>>>>> 1.2.6-rc2
 	  				<configuration>
 	  					<lifecycleMappingMetadata>
 	  						<pluginExecutions>

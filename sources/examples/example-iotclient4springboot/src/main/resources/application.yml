@@ -1,0 +1,34 @@
+spring: ## General Config  
+   application.name: onesaitplatform-example-iotclient4springboot
+   boot.admin: #Spring Boot Admin Config    
+      url: http://localhost:18100/
+      username: operations
+      password: changeIt!
+      client.metadata.user.name: ${spring.boot.admin.username}
+      client.metadata.user.password: ${spring.boot.admin.password}
+
+management.security.enabled: false
+
+onesaitplatform:
+  iotclient:
+    urlRestIoTBroker: http://localhost:19000/iot-broker
+    sslverify: false
+    #urlRestIoTBroker: https://s4citiespro.westeurope.cloudapp.azure.com/iot-broker
+    #sslverify: true
+    token: e7ef0742d09d4de5a3687f0cfdf7f626
+    deviceTemplate: TicketingApp
+    device: Rest Example App
+    connectTimeoutInSec: 10
+    writeTimeoutInSec: 30
+    readTimeoutInSec: 30
+    
+## LOGGING CONF
+logging:
+   path: ./target/ 
+   file: ${spring.application.name}
+   level:
+      org.springframework: INFO
+      com.minsait: INFO
+
+
+ 

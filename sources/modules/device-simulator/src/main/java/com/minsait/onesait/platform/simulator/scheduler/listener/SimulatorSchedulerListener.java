@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import org.quartz.listeners.SchedulerListenerSupport;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulation;
+import com.minsait.onesait.platform.config.model.DeviceSimulation;
 import com.minsait.onesait.platform.config.services.simulation.DeviceSimulationService;
 import com.minsait.onesait.platform.simulator.service.IoTBrokerClient;
 
@@ -43,7 +43,7 @@ public class SimulatorSchedulerListener extends SchedulerListenerSupport {
 	@Override
 	public void triggerFinalized(Trigger trigger) {
 
-		ClientPlatformInstanceSimulation simulation = this.deviceSimulationService
+		DeviceSimulation simulation = this.deviceSimulationService
 				.getSimulationByJobName(trigger.getJobKey().getName());
 
 		persistenceService.disconnectDeviceRest(simulation.getClientPlatform().getIdentification());

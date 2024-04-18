@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,96 +19,57 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import com.minsait.onesait.platform.config.model.Api;
-import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.ClientConnection;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
-import com.minsait.onesait.platform.config.model.ClientPlatformInstance;
-import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulation;
 import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
-import com.minsait.onesait.platform.config.model.DashboardUserAccess;
-import com.minsait.onesait.platform.config.model.DroolsRule;
+import com.minsait.onesait.platform.config.model.Device;
+import com.minsait.onesait.platform.config.model.DeviceSimulation;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.GadgetMeasure;
-import com.minsait.onesait.platform.config.model.MapsLayer;
-import com.minsait.onesait.platform.config.model.MapsMap;
-import com.minsait.onesait.platform.config.model.MapsProject;
-import com.minsait.onesait.platform.config.model.MapsStyle;
-import com.minsait.onesait.platform.config.model.NotebookUserAccess;
+import com.minsait.onesait.platform.config.model.OAuthAccessToken;
 import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.model.OntologyKPI;
-import com.minsait.onesait.platform.config.model.OntologyTimeSeries;
-import com.minsait.onesait.platform.config.model.PipelineUserAccess;
-import com.minsait.onesait.platform.config.model.Project;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
 import com.minsait.onesait.platform.config.model.Token;
 import com.minsait.onesait.platform.config.model.TwitterListening;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.model.UserApi;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.repository.ApiRepository;
-import com.minsait.onesait.platform.config.repository.AppRepository;
-import com.minsait.onesait.platform.config.repository.AppUserRepository;
 import com.minsait.onesait.platform.config.repository.ClientConnectionRepository;
-import com.minsait.onesait.platform.config.repository.ClientPlatformInstanceRepository;
-import com.minsait.onesait.platform.config.repository.ClientPlatformInstanceSimulationRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformOntologyRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
-import com.minsait.onesait.platform.config.repository.DashboardUserAccessRepository;
-import com.minsait.onesait.platform.config.repository.DatasetResourceRepository;
-import com.minsait.onesait.platform.config.repository.DroolsRuleRepository;
+import com.minsait.onesait.platform.config.repository.DeviceRepository;
+import com.minsait.onesait.platform.config.repository.DeviceSimulationRepository;
 import com.minsait.onesait.platform.config.repository.GadgetDatasourceRepository;
 import com.minsait.onesait.platform.config.repository.GadgetMeasureRepository;
 import com.minsait.onesait.platform.config.repository.GadgetRepository;
-import com.minsait.onesait.platform.config.repository.LineageRelationsRepository;
-import com.minsait.onesait.platform.config.repository.NotebookUserAccessRepository;
+import com.minsait.onesait.platform.config.repository.OAuthAccessTokenRepository;
+import com.minsait.onesait.platform.config.repository.OAuthRefreshTokenRepository;
 import com.minsait.onesait.platform.config.repository.OPResourceRepository;
-import com.minsait.onesait.platform.config.repository.OntologyKPIRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRestHeadersRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRestRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRestSecurityRepository;
 import com.minsait.onesait.platform.config.repository.OntologyTimeSeriesRepository;
 import com.minsait.onesait.platform.config.repository.OntologyUserAccessRepository;
-import com.minsait.onesait.platform.config.repository.PipelineUserAccessRepository;
-import com.minsait.onesait.platform.config.repository.ProjectRepository;
-import com.minsait.onesait.platform.config.repository.ProjectResourceAccessRepository;
 import com.minsait.onesait.platform.config.repository.QueryTemplateRepository;
 import com.minsait.onesait.platform.config.repository.TokenRepository;
 import com.minsait.onesait.platform.config.repository.TwitterListeningRepository;
-import com.minsait.onesait.platform.config.repository.UserApiRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.repository.UserTokenRepository;
-import com.minsait.onesait.platform.config.services.apimanager.ApiManagerService;
-import com.minsait.onesait.platform.config.services.app.AppService;
-import com.minsait.onesait.platform.config.services.dashboard.DashboardService;
-import com.minsait.onesait.platform.config.services.dataflow.DataflowService;
 import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
 import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;
 import com.minsait.onesait.platform.config.services.exceptions.QueryTemplateServiceException;
 import com.minsait.onesait.platform.config.services.exceptions.UserServiceException;
 import com.minsait.onesait.platform.config.services.gadget.GadgetDatasourceService;
-import com.minsait.onesait.platform.config.services.kafka.KafkaAuthorizationService;
-import com.minsait.onesait.platform.config.services.mapslayer.MapsLayerService;
-import com.minsait.onesait.platform.config.services.mapsmap.MapsMapService;
-import com.minsait.onesait.platform.config.services.mapsproject.MapsProjectService;
-import com.minsait.onesait.platform.config.services.mapsstyle.MapsStyleService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
-import com.minsait.onesait.platform.config.services.project.ProjectService;
 import com.minsait.onesait.platform.config.services.user.UserService;
-import com.minsait.onesait.platform.multitenant.config.model.OAuthAccessToken;
-import com.minsait.onesait.platform.multitenant.config.repository.OAuthAccessTokenRepository;
-import com.minsait.onesait.platform.multitenant.config.repository.OAuthRefreshTokenRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -117,20 +78,17 @@ import lombok.extern.slf4j.Slf4j;
 public class EntityDeletionServiceImpl implements EntityDeletionService {
 
 	@Autowired
-	private ProjectResourceAccessRepository resourceAccessRepository;
-	@Autowired
 	private ApiRepository apiRepository;
 	@Autowired
 	private OntologyRepository ontologyRepository;
 	@Autowired
 	private OntologyUserAccessRepository ontologyUserAccessRepository;
-
 	@Autowired
 	private ClientPlatformOntologyRepository clientPlatformOntologyRepository;
 	@Autowired
 	private TwitterListeningRepository twitterListeningRepository;
 	@Autowired
-	private ClientPlatformInstanceSimulationRepository deviceSimulationRepository;
+	private DeviceSimulationRepository deviceSimulationRepository;
 	@Autowired
 	private OntologyService ontologyService;
 	@Autowired
@@ -148,24 +106,22 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 	@Autowired
 	private ClientPlatformRepository clientPlatformRepository;
 	@Autowired
+	private TokenRepository tokenRepository;
+	@Autowired
 	private OntologyRestRepository ontologyRestRepository;
 	@Autowired
 	private OntologyRestSecurityRepository ontologyRestSecurityRepository;
 	@Autowired
 	private OntologyRestHeadersRepository ontologyRestHeaderRepository;
 	@Autowired
-	private ClientPlatformInstanceRepository deviceRepository;
+	private DeviceRepository deviceRepository;
 	@Autowired
 	private OPResourceRepository resourceRepository;
 	@Autowired
-	private DatasetResourceRepository datasetResourceRepository;
-	@Autowired
-	@Lazy
 	private OPResourceService resourceService;
 	@Autowired
 	private GadgetDatasourceRepository gadgetDatasourceRepository;
 	@Autowired
-	@Lazy
 	private GadgetDatasourceService gadgetDatasourceService;
 	@Autowired
 	private GadgetMeasureRepository gadgetMeasureRepository;
@@ -173,171 +129,83 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 	private GadgetRepository gadgetRepository;
 	@Autowired
 	private OntologyTimeSeriesRepository ontologyTimeSeriesRepository;
-	@Autowired
-	private TokenRepository tokenRepository;
-	@Autowired
-	private ProjectService projectService;
 
 	@Autowired
 	private QueryTemplateRepository queryTemplateRepository;
-	@Autowired
-	private KafkaAuthorizationService kafkaAuthorizationService;
-
-	@Autowired
-	private OntologyKPIRepository kpiRepository;
-	@Autowired
-	private AppUserRepository appUserRepository;
-	@Autowired
-	private DroolsRuleRepository droolsRuleRepository;
-	@Autowired
-	private LineageRelationsRepository lineageRelationsRepository;
-	@Autowired
-	private AppRepository appRepository;
-	@Autowired
-	private ProjectRepository projectRepository;
-	@Autowired
-	private AppService appService;
-
-	private static final String ADMINISTRATOR = "administrator";
-	@Autowired
-	private MapsStyleService mapsStyleService;
-	@Autowired
-	private MapsLayerService mapsLayerService;
-	@Autowired
-	private MapsMapService mapsMapService;
-	@Autowired
-	private MapsProjectService mapsProjectService;
-	@Autowired
-	private ProjectResourceAccessRepository praRepository;
-	@Autowired
-	private DashboardUserAccessRepository dashboardUserAccessRepository;
-	@Autowired
-	private NotebookUserAccessRepository notebookUserAccessRepository;
-	@Autowired
-	private UserApiRepository userApiRepository;
-	@Autowired
-	private PipelineUserAccessRepository pipelineUserAccessRepository;
-	@Autowired
-	private DashboardService dashboardService;
-	@Autowired
-	private ApiManagerService apiManagerService;
-	@Autowired
-	private DataflowService dataflowService;
 
 	@Override
-	public void deleteOntology(String id, String userId, Boolean isHardDeleted) {
-
+	@Transactional
+	public void deleteOntology(String id, String userId) {
 		final User user = userService.getUser(userId);
-		Boolean isShared = false;
-		Ontology ontology = ontologyService.getOntologyById(id, userId);
-		if (ontology.isPublic()) {
-			isShared = true;
-		}
-		if (resourceService.isResourceSharedInAnyProject(ontology)) {
+		final Ontology ontology = ontologyService.getOntologyById(id, userId);
+		if (resourceService.isResourceSharedInAnyProject(ontology))
 			throw new OPResourceServiceException(
 					"This Ontology is shared within a Project, revoke access from project prior to deleting");
-		}
-		if (ontologyService.hasUserPermisionForChangeOntology(user, ontology)) {
-			for (ClientPlatformOntology cpo : clientPlatformOntologyRepository.findByOntology(ontology)) {
-				final ClientPlatform client = cpo.getClientPlatform();
-				if (!isHardDeleted || (isHardDeleted && client.getUser().equals(ontology.getUser()))) {
-					client.getClientPlatformOntologies().removeIf(r -> r.getOntology().equals(ontology));
-					clientPlatformOntologyRepository.deleteById(cpo.getId());
-					kafkaAuthorizationService.removeAclToOntologyClient(cpo);
-				} else if (isHardDeleted && !client.getUser().equals(ontology.getUser())) {
-					isShared = true;
-				}
-			}
+		try {
 
-			for (Api a : apiRepository.findByOntology(ontology)) {
-				if (!isHardDeleted || (isHardDeleted && a.getUser().equals(ontology.getUser()))) {
-					projectService.deleteResourceFromProjects(a.getId());
-					apiRepository.delete(a);
-				} else if (isHardDeleted && !a.getUser().equals(ontology.getUser())) {
-					isShared = true;
-				}
-			}
+			if (ontologyService.hasUserPermisionForChangeOntology(user, ontology)) {
+				deleteClientPlatformOntologyRelations(ontology);
+				deleteOntologyApis(ontology);
 
-			if (!ontologyUserAccessRepository.findByOntology(ontology).isEmpty()) {
-				if (!isHardDeleted)
-					ontologyUserAccessRepository.deleteByOntology(ontology);
-				else
-					isShared = true;
-			}
+				ontologyUserAccessRepository.deleteByOntology(ontology);
 
-			if (!twitterListeningRepository.findByOntology(ontology).isEmpty()) {
 				twitterListeningRepository.deleteByOntology(ontology);
-			}
-			if (!deviceSimulationRepository.findByOntology(ontology).isEmpty()) {
-				if (!isHardDeleted)
-					deviceSimulationRepository.deleteByOntology(ontology);
-				else
-					isShared = true;
-			}
 
-			if (ontologyRestRepository.findByOntologyId(ontology) != null) {
-				ontologyRestHeaderRepository.delete(ontologyRestRepository.findByOntologyId(ontology).getHeaderId());
-			}
-			if (ontologyRestRepository.findByOntologyId(ontology) != null) {
-				ontologyRestSecurityRepository
-						.delete(ontologyRestRepository.findByOntologyId(ontology).getSecurityId());
-			}
-			if (!datasetResourceRepository.findByOntology(ontology).isEmpty()) {
-				datasetResourceRepository.findByOntology(ontology).forEach(a -> {
-					datasetResourceRepository.delete(a);
-				});
-			}
+				ontologyUserAccessRepository.deleteByOntology(ontology);
 
-			for (DroolsRule dr : droolsRuleRepository
-					.findBySourceOntologyOrTargetOntology(ontology.getIdentification())) {
-				if (!isHardDeleted || (isHardDeleted && dr.getUser().equals(ontology.getUser())))
-					droolsRuleRepository.delete(dr);
-				else
-					isShared = true;
-			}
+				twitterListeningRepository.deleteByOntology(ontology);
 
-			for (GadgetDatasource gd : gadgetDatasourceRepository.findByOntology(ontology)) {
-				if (!isHardDeleted || (isHardDeleted && gd.getUser().equals(ontology.getUser())))
-					deleteGadgetDataSource(gd.getId(), userId);
-				else
-					isShared = true;
-			}
+				deviceSimulationRepository.deleteByOntology(ontology);
+				deleteOntologyRestComponents(ontology);
 
-			final List<OntologyKPI> kpi = kpiRepository.findByOntology(ontology);
-			final List<OntologyTimeSeries> timeSeries = ontologyTimeSeriesRepository.findByOntology(ontology);
+				deleteOntologyTimeSeriesComponents(id);
 
-			if (isShared && isHardDeleted) {
-				// If ontology is shared on hard delete user option, change the ontology owner
-				// to administrator
-				ontology.setUser(userService.getUser(ADMINISTRATOR));
-				ontology.setPublic(true);
-				ontologyRepository.save(ontology);
+				ontologyRepository.deleteById(id);
+
 			} else {
-				if (!kpi.isEmpty()) {
-					for (Iterator iterator = kpi.iterator(); iterator.hasNext();) {
-						OntologyKPI ontokpi = (OntologyKPI) iterator.next();
-						kpiRepository.delete(ontokpi);
-					}
-					ontologyRepository.deleteById(id);
-
-				} else if (!timeSeries.isEmpty()) {
-					ontologyTimeSeriesRepository.deleteByOntology(ontology);
-					final Ontology stats = ontologyRepository
-							.findByIdentification(timeSeries.get(0).getOntology().getIdentification() + "_stats");
-					ontologyRepository.deleteById(id);
-					if (stats != null) {
-						ontologyRepository.deleteById(stats.getId());
-
-					}
-				} else {
-					ontologyRepository.deleteById(id);
-				}
+				throw new OntologyServiceException("You dont have rights to delete ontology");
 			}
-
-		} else {
-			throw new OntologyServiceException("You dont have rights to delete ontology");
+		} catch (final Exception e) {
+			log.error("Error", e);
+			throw e;
 		}
 
+	}
+
+	private void deleteOntologyTimeSeriesComponents(String id) {
+		if (ontologyTimeSeriesRepository.findById(id) != null) {
+			final Ontology stats = ontologyRepository.findByIdentification(
+					ontologyTimeSeriesRepository.findById(id).getOntology().getIdentification() + "_stats");
+			if (stats != null) {
+				ontologyRepository.deleteById(stats.getId());
+			}
+		}
+	}
+
+	private void deleteOntologyRestComponents(Ontology ontology) {
+		if (ontologyRestRepository.findByOntologyId(ontology) != null) {
+			ontologyRestHeaderRepository.delete(ontologyRestRepository.findByOntologyId(ontology).getHeaderId());
+		}
+		if (ontologyRestRepository.findByOntologyId(ontology) != null) {
+			ontologyRestSecurityRepository.delete(ontologyRestRepository.findByOntologyId(ontology).getSecurityId());
+		}
+	}
+
+	private void deleteOntologyApis(Ontology ontology) {
+		if (!apiRepository.findByOntology(ontology).isEmpty()) {
+			apiRepository.findByOntology(ontology).forEach(a -> apiRepository.delete(a));
+		}
+	}
+
+	private void deleteClientPlatformOntologyRelations(Ontology ontology) {
+		if (clientPlatformOntologyRepository.findByOntology(ontology) != null) {
+			clientPlatformOntologyRepository.findByOntology(ontology).forEach(cpo -> {
+				final ClientPlatform client = cpo.getClientPlatform();
+				client.getClientPlatformOntologies().removeIf(r -> r.getOntology().equals(ontology));
+				clientPlatformOntologyRepository.deleteById(cpo.getId());
+			});
+
+		}
 	}
 
 	@Override
@@ -350,39 +218,40 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 	@Transactional
 	public void deleteClient(String id) {
 		try {
-
-			final ClientPlatform client = clientPlatformRepository.findById(id).orElse(null);
+			final ClientPlatform client = clientPlatformRepository.findById(id);
 			final List<ClientPlatformOntology> cpf = clientPlatformOntologyRepository.findByClientPlatform(client);
 			if (!CollectionUtils.isEmpty(cpf)) {
-				for (final ClientPlatformOntology clientPlatformOntology : cpf) {
+				for (final Iterator<ClientPlatformOntology> iterator = cpf.iterator(); iterator.hasNext();) {
+					final ClientPlatformOntology clientPlatformOntology = iterator.next();
 					clientPlatformOntologyRepository.delete(clientPlatformOntology);
-					kafkaAuthorizationService.removeAclToOntologyClient(clientPlatformOntology);
 				}
-
 			}
 			final List<ClientConnection> cc = clientConnectionRepository.findByClientPlatform(client);
 			if (!CollectionUtils.isEmpty(cc)) {
-				for (final ClientConnection clientConnection : cc) {
+				for (final Iterator<ClientConnection> iterator = cc.iterator(); iterator.hasNext();) {
+					final ClientConnection clientConnection = iterator.next();
 					clientConnectionRepository.delete(clientConnection);
 				}
 			}
 
-			final List<ClientPlatformInstance> ld = deviceRepository.findByClientPlatform(client);
+			final List<Device> ld = deviceRepository.findByClientPlatform(client);
 			if (!CollectionUtils.isEmpty(ld)) {
-				for (final ClientPlatformInstance device : ld) {
+				for (final Iterator<Device> iterator = ld.iterator(); iterator.hasNext();) {
+					final Device device = iterator.next();
 					deviceRepository.delete(device);
 				}
 			}
-			final List<ClientPlatformInstanceSimulation> lds = deviceSimulationRepository.findByClientPlatform(client);
+			final List<DeviceSimulation> lds = deviceSimulationRepository.findByClientPlatform(client);
 			if (!CollectionUtils.isEmpty(lds)) {
-				for (final ClientPlatformInstanceSimulation deviceSim : lds) {
+				for (final Iterator<DeviceSimulation> iterator = lds.iterator(); iterator.hasNext();) {
+					final DeviceSimulation deviceSim = iterator.next();
 					deviceSimulationRepository.delete(deviceSim);
 				}
 			}
 			clientPlatformRepository.delete(client);
 			final Ontology ontoLog = ontologyRepository.findByIdentification("LOG_" + client.getIdentification());
 			if (ontoLog != null) {
-				deleteOntology(ontoLog.getId(), client.getUser().getUserId(), false);
+				deleteOntology(ontoLog.getId(), client.getUser().getUserId());
 			}
 
 		} catch (final Exception e) {
@@ -392,28 +261,10 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 	}
 
 	@Override
-	@Transactional
-	public void deleteToken(Token token) {
+	public void deleteToken(String id) {
 		try {
-			final ClientPlatform cp = token.getClientPlatform();
-
-			final Set<Token> tokens = new HashSet<>();
-
-			for (final Token tokencp : cp.getTokens()) {
-				if (!tokencp.getId().equals(token.getId())) {
-					tokens.add(tokencp);
-				}
-			}
-			final List<ClientPlatformInstanceSimulation> simulations = deviceSimulationRepository
-					.findByClientPlatform(cp);
-			simulations.forEach(this::deleteDeviceSimulation);
-
+			final Token token = tokenRepository.findById(id);
 			tokenRepository.delete(token);
-
-			cp.setTokens(tokens);
-			clientPlatformRepository.save(cp);
-			// Remove Kafka ACLs
-			kafkaAuthorizationService.removeAclToClientForToken(token);
 		} catch (final Exception e) {
 			log.error("Error deleting Token", e);
 			throw new OntologyServiceException("Couldn't delete Token");
@@ -423,11 +274,13 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 
 	@Override
 	@Transactional
-	public void deleteDeviceSimulation(ClientPlatformInstanceSimulation simulation) {
+	public void deleteDeviceSimulation(DeviceSimulation simulation) {
 
 		try {
-
-			deviceSimulationRepository.deleteById(simulation.getId());
+			if (!simulation.isActive())
+				deviceSimulationRepository.deleteById(simulation.getId());
+			else
+				throw new OntologyServiceException("Simulation is currently running");
 
 		} catch (final Exception e) {
 			log.error("Error deleting Simulation", e);
@@ -449,84 +302,54 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 	}
 
 	@Override
+	@Transactional
 	public void deleteGadgetDataSource(String id, String userId) {
 		if (gadgetDatasourceService.hasUserPermission(id, userId)) {
-			final GadgetDatasource gadgetDS = gadgetDatasourceRepository.findById(id).orElse(null);
+			final GadgetDatasource gadgetDS = gadgetDatasourceRepository.findById(id);
 			if (gadgetDS != null) {
-				if (resourceService.isResourceSharedInAnyProject(gadgetDS)) {
+				if (resourceService.isResourceSharedInAnyProject(gadgetDS))
 					throw new OPResourceServiceException(
 							"This Datasource is shared within a Project, revoke access from project prior to deleting");
-				}
 
-				// find measures with this datasource
-				final List<GadgetMeasure> list = gadgetMeasureRepository.findByDatasource(id);
-				if (list.size() > 0) {
-					final HashSet<String> map = new HashSet<>();
-					for (final GadgetMeasure gm : list) {
-						map.add(gm.getGadget().getId());
-					}
-					for (final String gadgetId : map) {
-						// Delete gadget for id
-						gadgetRepository.deleteById(gadgetId);
-					}
-
-				}
-				gadgetDatasourceRepository.deleteById(id);
+				deleteGadgetMeasures(id);
+				gadgetDatasourceRepository.delete(id);
 			} else {
 				throw new OntologyServiceException("Couldn't delete gadgetDataSource");
 			}
 		}
 	}
 
+	private void deleteGadgetMeasures(String id) {
+		// find measures with this datasource
+		final List<GadgetMeasure> list = gadgetMeasureRepository.findByDatasource(id);
+		if (!list.isEmpty()) {
+			final HashSet<String> map = new HashSet<>();
+			for (final GadgetMeasure gm : list) {
+				map.add(gm.getGadget().getId());
+			}
+			for (final String gadgetId : map) {
+				// Delete gadget for id
+				gadgetRepository.delete(gadgetId);
+			}
+
+		}
+	}
+
 	@Override
 	public void deleteUser(String userId) {
 		try {
-			lineageRelationsRepository.deleteByUser(userId);
-			appUserRepository.deleteByUserId(userId);
 			userRepository.deleteByUserId(userId);
 			invalidateUserTokens(userId);
 		} catch (final Exception e) {
 			try {
-				User user = userRepository.findByUserId(userId);
-
-				ontologyUserAccessRepository.findByUser(user).forEach(oua -> {
-					ontologyService.deleteOntologyUserAccess(oua.getId(), userId);
-				});
-
-				List<DashboardUserAccess> das = dashboardUserAccessRepository.findByUser(user);
-				if (das.size() > 0) {
-					dashboardService.deleteDashboardUserAccessForAUser(userId);
-				}
-				List<NotebookUserAccess> not = notebookUserAccessRepository.findByUser(user);
-				if (not.size() > 0) {
-					notebookUserAccessRepository.deleteAll(not);
-				}
-
-				List<UserApi> userap = userApiRepository.findByUser(user);
-				if (userap.size() > 0) {
-					apiManagerService.deleteUserApiForAUser(userId);
-				}
-				List<PipelineUserAccess> pipe = pipelineUserAccessRepository.findByUser(user);
-				if (pipe.size() > 0) {
-					dataflowService.deletePipeUserAccessForAUser(userId);
-				}
-
-				final List<OPResource> resources = resourceRepository.findByUser(user);
-
+				final List<OPResource> resources = resourceRepository.findByUser(userRepository.findByUserId(userId));
 				if (resources.size() == 1 && resources.get(0) instanceof Ontology
 						&& resources.get(0).getIdentification().toLowerCase().contains("audit")) {
-					//Use Ontology repository to force cache eviction!! 
-					ontologyRepository.delete((Ontology)resources.get(0));
-					//resourceRepository.deleteById(resources.get(0).getId());
-					userRepository.deleteByUserId(userId);
-					invalidateUserTokens(userId);
-					return;
-				} else if (resources.isEmpty()) {
+					resourceRepository.delete(resources.get(0).getId());
 					userRepository.deleteByUserId(userId);
 					invalidateUserTokens(userId);
 					return;
 				}
-
 				throw new UserServiceException("Could not delete user, there are resources owned by " + userId);
 
 			} catch (final Exception e2) {
@@ -540,106 +363,9 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 
 	@Override
 	@Transactional
-	public void hardDeleteUser(String userId) {
-
-		try {
-			User user = userService.getUserNoCache(userId);
-			lineageRelationsRepository.deleteByUser(userId);
-			User admin = userService.getUser(ADMINISTRATOR);
-
-			for (Project p : projectService.getProjectsForUser(userId)) {
-				Set<ProjectResourceAccess> pra = projectService.getAllResourcesAccesses(p.getId());
-				if (pra.isEmpty()) {
-					projectService.deleteProject(p.getId());
-					if (p.getApp() != null)
-						appRepository.delete(p.getApp());
-				} else {
-					if (p.getApp() != null) {
-						appUserRepository.deleteByUserId(userId);
-						App appDb = appRepository.findById(p.getApp().getId()).orElse(null);
-						if (appDb != null) {
-							if (appDb.getChildApps().isEmpty()) {
-								appDb.setUser(admin);
-								appRepository.save(appDb);
-							} else {
-								appDb.getChildApps().forEach(ac -> {
-									App appDbChild = appRepository.findById(ac.getId()).orElse(null);
-									appDbChild.setUser(admin);
-									appRepository.save(appDbChild);
-								});
-							}
-						}
-					} else {
-						p.getUsers().remove(user);
-						user.getProjects().removeIf(pr -> pr.getId().equals(p.getId()));
-						userService.saveExistingUser(user);
-						userService.evictFromCache(user);
-					}
-
-					if (p.getUser().equals(user))
-						p.setUser(admin);
-					projectRepository.save(p);
-
-					pra.forEach(ra -> {
-						if (ra.getUser().equals(user)) {
-							praRepository.delete(ra);
-						} else if (ra.getResource().getUser().equals(user)) {
-							ra.getResource().setUser(admin);
-							resourceRepository.save(ra.getResource());
-						}
-					});
-
-				}
-			}
-
-			appRepository.findByUser(user).forEach(a -> appRepository.delete(a));
-			ontologyUserAccessRepository.findByUser(user).forEach(oua -> {
-				ontologyService.deleteOntologyUserAccess(oua.getId(), ADMINISTRATOR);
-			});
-
-			ontologyRepository.findByUserNotChacheable(userService.getUser(userId)).forEach(o -> {
-				if (resourceAccessRepository.findProjectsWithResourceId(o.getId()).isEmpty())
-					this.deleteOntology(o.getId(), userId, true);
-			});
-
-			resourceRepository.findByUser(user).forEach(r -> {
-				if (resourceAccessRepository.findProjectsWithResourceId(r.getId()).isEmpty())
-					resourceRepository.deleteById(r.getId());
-			});
-
-			List<DashboardUserAccess> das = dashboardUserAccessRepository.findByUser(user);
-			if (das.size() > 0) {
-				dashboardService.deleteDashboardUserAccessForAUser(userId);
-			}
-
-			List<NotebookUserAccess> not = notebookUserAccessRepository.findByUser(user);
-			if (not.size() > 0) {
-				notebookUserAccessRepository.deleteAll(not);
-			}
-
-			List<UserApi> userap = userApiRepository.findByUser(user);
-			if (userap.size() > 0) {
-				apiManagerService.deleteUserApiForAUser(userId);
-			}
-			List<PipelineUserAccess> pipe = pipelineUserAccessRepository.findByUser(user);
-			if (pipe.size() > 0) {
-				dataflowService.deletePipeUserAccessForAUser(userId);
-			}
-
-			invalidateUserTokens(userId);
-			userService.hardDeleteUser(userId);
-
-		} catch (final Exception e2) {
-			log.error("Error deleting User", e2);
-			throw e2;
-		}
-	}
-
-	@Override
-	@Transactional
 	public void deleteQueryTemplate(String id) {
 		try {
-			queryTemplateRepository.deleteById(id);
+			queryTemplateRepository.delete(id);
 		} catch (final Exception e) {
 			log.error("Error deleting Query Template", e);
 			throw new QueryTemplateServiceException("Couldn't delete the query template");
@@ -667,7 +393,7 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 	public void deactivateUser(List<String> userIds) {
 
 		try {
-			final List<User> users = userRepository.findAllById(userIds);
+			final List<User> users = userRepository.findAll(userIds);
 
 			if (!CollectionUtils.isEmpty(users)) {
 				users.forEach(user -> {
@@ -676,7 +402,7 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 					invalidateUserTokens(user.getUserId());
 					log.info("User has been deleted from database");
 				});
-				userRepository.saveAll(users);
+				userRepository.save(users);
 			}
 
 		} catch (final Exception e) {
@@ -686,92 +412,14 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 
 	@Override
 	public void invalidateUserTokens(String userId) {
-		if (log.isDebugEnabled()) {
-			log.debug("Deleteing user token x-op-apikey for user {}", userId);
-		}
-		userTokenRepository.deleteByUser(userId);
-		if (log.isDebugEnabled()) {
-			log.debug("Revoking Oauth2 access tokens for user{}", userId);
-		}
+		log.debug("Deleteing user token x-op-apikey for user {}", userId);
+		userTokenRepository.deleteByUser(userRepository.findByUserId(userId));
+		log.debug("Revoking Oauth2 access tokens for user{}", userId);
 		final Collection<OAuthAccessToken> tokens = oauthAccessTokenRepository.findByUserName(userId);
 		tokens.forEach(t -> {
-			oauthRefreshTokenRepository.deleteById(t.getRefreshToken());
-			oauthAccessTokenRepository.deleteById(t.getTokenId());
+			oauthRefreshTokenRepository.delete(t.getRefreshToken());
+			oauthAccessTokenRepository.delete(t.getTokenId());
 		});
 
-	}
-
-	@Override
-	@Transactional
-	public void deleteMapsStyle(String id, String userId) {
-		if (mapsStyleService.hasUserPermission(id, userId)) {
-			final MapsStyle mapsStyle = mapsStyleService.getById(id);
-			if (mapsStyle != null) {
-				if (resourceService.isResourceSharedInAnyProject(mapsStyle)) {
-					throw new OPResourceServiceException(
-							"This Map Style is shared within a Project, revoke access from project prior to deleting");
-				}
-				mapsStyleService.delete(id, userId);
-			} else {
-				throw new OntologyServiceException("Couldn't delete Map Style");
-			}
-		}
-	}
-
-	@Override
-	@Transactional
-	public void deleteMapsLayer(String id, String userId) {
-		if (mapsLayerService.hasUserPermission(id, userId)) {
-			final MapsLayer mapsLayer = mapsLayerService.getById(id);
-			if (mapsLayer != null) {
-				if (resourceService.isResourceSharedInAnyProject(mapsLayer)) {
-					throw new OPResourceServiceException(
-							"This Map Layer is shared within a Project, revoke access from project prior to deleting");
-				}
-				// TODO validate if is used on maps
-
-				mapsLayerService.delete(id, userId);
-			} else {
-				throw new OntologyServiceException("Couldn't delete Map Layer");
-			}
-		}
-	}
-
-	@Override
-	@Transactional
-	public void deleteMapsMap(String id, String userId) {
-		if (mapsMapService.hasUserPermission(id, userId)) {
-			final MapsMap mapsMap = mapsMapService.getById(id);
-			if (mapsMap != null) {
-				if (resourceService.isResourceSharedInAnyProject(mapsMap)) {
-					throw new OPResourceServiceException(
-							"This Map is shared within a Project, revoke access from project prior to deleting");
-				}
-				// TODO validate if is used on maps
-
-				mapsMapService.delete(id, userId);
-			} else {
-				throw new OntologyServiceException("Couldn't delete Map");
-			}
-		}
-	}
-
-	@Override
-	@Transactional
-	public void deleteMapsProject(String id, boolean deleteDepencies, String userId) {
-		if (mapsProjectService.hasUserPermission(id, userId)) {
-			final MapsProject mapsProject = mapsProjectService.getById(id);
-			if (mapsProject != null) {
-				if (resourceService.isResourceSharedInAnyProject(mapsProject)) {
-					throw new OPResourceServiceException(
-							"This Map is shared within a Project, revoke access from project prior to deleting");
-				}
-				// TODO validate if is used on maps
-
-				mapsProjectService.delete(id, deleteDepencies, userId);
-			} else {
-				throw new OntologyServiceException("Couldn't delete Map");
-			}
-		}
 	}
 }

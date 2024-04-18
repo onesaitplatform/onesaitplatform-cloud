@@ -1,0 +1,29 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.minsait.onesait.platform</groupId>
+		<artifactId>onesaitplatform-parent</artifactId>
+		<version>1.0.0-ce</version>
+		<relativePath>../..</relativePath>
+	</parent>
+	
+	<properties>
+		<license.dir>${project.parent.basedir}</license.dir>
+	</properties>
+	<artifactId>binary-ontology-example</artifactId>
+	<name>onesaitplatform-binary-ontology-example</name>
+	<description>Example of  using binary data with ontologies.</description>
+	<dependencies>
+		<dependency>
+			<groupId>com.minsait.onesait.platform</groupId>
+			<artifactId>onesaitplatform-comms-protocol</artifactId>
+			<version>${onesaitplatform.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.minsait.onesait.platform</groupId>
+			<artifactId>onesaitplatform-java-client</artifactId>
+			<version>${onesaitplatform.version}</version>
+		</dependency>
+	</dependencies>
+</project>

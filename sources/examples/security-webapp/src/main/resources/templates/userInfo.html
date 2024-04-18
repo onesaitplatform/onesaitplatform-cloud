@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>User Page</title>
+</head>
+<body>
+
+	<a href="./employeeTask"> Employee
+		Task </a> ||
+	<a href="./managerTask"> Manager
+		Task </a> ||
+	<a href="./userInfo"> User Info </a>
+	||
+	<a href="./logout"> Logout </a> &nbsp;
+
+<p th:text="${#request.getParameter('q')}" th:unless="${#request.getParameter('q') == null}">Test</p>
+	<h3>User Page</h3>
+
+</body>
+</html>

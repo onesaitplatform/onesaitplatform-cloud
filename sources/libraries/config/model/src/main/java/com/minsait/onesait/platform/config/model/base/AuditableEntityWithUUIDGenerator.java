@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,23 @@ package com.minsait.onesait.platform.config.model.base;
 
 import java.io.Serializable;
 
-import org.hibernate.HibernateException;
-import org.hibernate.engine.spi.SharedSessionContractImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.id.UUIDGenerator;
 
-public class AuditableEntityWithUUIDGenerator extends UUIDGenerator {
-
+public class AuditableEntityWithUUIDGenerator extends UUIDGenerator {  
+    
 	private static final String ENTITY_NAME = "AuditableEntityWithUUID";
-
-	@Override
-	public Serializable generate(SharedSessionContractImplementor session, Object object) throws HibernateException {
-		final Serializable id = session.getEntityPersister(ENTITY_NAME, object).getIdentifier(object, session);
-
-		if (id == null || "".equals(id)) {
-			return super.generate(session, object);
-		} else {
-			return id;
-		}
-	}
-
-}
+	
+    @Override
+    public Serializable generate(SessionImplementor session, Object obj) {  
+    	Serializable id = session
+                .getEntityPersister(ENTITY_NAME, obj)
+                .getIdentifier(obj, session);
+    	
+    	if (id == null || "".equals(id)) {  
+    		return super.generate(session, obj);
+    	} else {
+    		return id;    		 
+    	}  
+    }
+}  

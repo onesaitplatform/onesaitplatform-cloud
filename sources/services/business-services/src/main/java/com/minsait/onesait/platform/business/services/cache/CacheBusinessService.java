@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ public interface CacheBusinessService {
 
     public <K,V> Map<K, V> getManyFromMap(String identification, User user, Set<K> keys) throws CacheBusinessServiceException;
 
-    public void updateCache(String identification, Cache editCache, User user) throws CacheBusinessServiceException;
+    public void updateCache(String identification, Cache editCache);
     
     public void initializeAll();
     
@@ -50,7 +50,5 @@ public interface CacheBusinessService {
     public Cache getCacheWithId(String id);
     
     public void deleteCacheById(String identification);
-
-	public List<Cache> getByIdentificationLikeOrderByIdentification(String identification);
 
 }

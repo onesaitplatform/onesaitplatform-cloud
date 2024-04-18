@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.minsait.onesait.platform.config.services.simulation;
 import java.io.IOException;
 import java.util.List;
 
-import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulation;
+import com.minsait.onesait.platform.config.model.DeviceSimulation;
 
 public interface DeviceSimulationService {
 
@@ -29,21 +29,21 @@ public interface DeviceSimulationService {
 
 	List<String> getSimulatorTypes();
 
-	List<ClientPlatformInstanceSimulation> getAllSimulations();
+	List<DeviceSimulation> getAllSimulations();
 
-	ClientPlatformInstanceSimulation getSimulatorByIdentification(String identification);
+	DeviceSimulation getSimulatorByIdentification(String identification);
 
-	ClientPlatformInstanceSimulation createSimulation(String identification, int interval, String userId, String json)
+	DeviceSimulation createSimulation(String identification, int interval, String userId, String json)
 			throws IOException;
 
-	void save(ClientPlatformInstanceSimulation simulation);
+	void save(DeviceSimulation simulation);
 
-	ClientPlatformInstanceSimulation getSimulationById(String id);
+	DeviceSimulation getSimulationById(String id);
 
-	List<ClientPlatformInstanceSimulation> getSimulationsForUser(String userId);
+	List<DeviceSimulation> getSimulationsForUser(String userId);
 
-	ClientPlatformInstanceSimulation updateSimulation(String identification, int interval, String json, ClientPlatformInstanceSimulation simulation)
+	DeviceSimulation updateSimulation(String identification, int interval, String json, DeviceSimulation simulation)
 			throws IOException;
 
-	ClientPlatformInstanceSimulation getSimulationByJobName(String jobName);
+	DeviceSimulation getSimulationByJobName(String jobName);
 }

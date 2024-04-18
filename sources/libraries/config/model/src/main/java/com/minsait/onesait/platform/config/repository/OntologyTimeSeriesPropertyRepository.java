@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ import com.minsait.onesait.platform.config.model.OntologyTimeSeries;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesProperty;
 
 public interface OntologyTimeSeriesPropertyRepository extends JpaRepository<OntologyTimeSeriesProperty, String> {
+
+	OntologyTimeSeriesProperty findById(String id);
 
 	Set<OntologyTimeSeriesProperty> findByOntologyTimeSeries(OntologyTimeSeries ontology);
 

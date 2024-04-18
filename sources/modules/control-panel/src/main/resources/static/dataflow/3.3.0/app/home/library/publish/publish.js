@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('PublishModalInstanceController', ["$scope", "$modalInstance", "pipelineInfo", "api", "$q", "authService", function ($scope, $modalInstance, pipelineInfo, api, $q, authService) {
+  .controller('PublishModalInstanceController', function ($scope, $modalInstance, pipelineInfo, api, $q, authService) {
     angular.extend($scope, {
       remoteBaseUrl: authService.getRemoteBaseUrl(),
       publishing: false,
@@ -87,4 +87,4 @@ angular
         $modalInstance.dismiss('cancel');
       }
     });
-  }]);
+  });

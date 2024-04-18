@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,9 @@ import org.springframework.data.repository.query.Param;
 import com.minsait.onesait.platform.config.model.Model;
 import com.minsait.onesait.platform.config.model.ParameterModel;
 
-public interface ParameterModelRepository extends JpaRepository<ParameterModel, String> {
+public interface ParameterModelRepository extends JpaRepository<ParameterModel, Long> {
+
+	ParameterModel findById(String id);
 
 	List<ParameterModel> findByIdentification(String identification);
 

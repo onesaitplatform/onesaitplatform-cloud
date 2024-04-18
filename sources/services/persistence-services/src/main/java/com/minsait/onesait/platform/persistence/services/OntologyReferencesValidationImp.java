@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,13 +26,9 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataJsonProblemException;
-import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
-import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel;
 
 import lombok.extern.slf4j.Slf4j;
@@ -52,22 +48,20 @@ public class OntologyReferencesValidationImp implements OntologyReferencesValida
 	private static final String ITEMS_STR = "items.";
 
 	@Override
-	public void validate(OperationModel operationModel, Ontology ontology) throws IOException, GenericOPException {
+	public void validate(OperationModel operationModel) throws IOException {
+		final String ontologyName = operationModel.getOntologyName();
+		final Ontology ontology = ontologyRepository.findByIdentification(ontologyName);
 		final JsonNode dataNode = mapper.readTree(operationModel.getBody());
 		if (dataNode.isArray()) {
 			((ArrayNode) dataNode).elements().forEachRemaining(i -> {
-				try {
-					validateReferences(ontology, i.toString(), true);
-				} catch (GenericOPException e) {
-					log.error("Cannot validate references ", e);
-				}
+				validateReferences(ontology, i.toString(), true);
 			});
 		} else
 			validateReferences(ontology, dataNode.toString(), true);
 
 	}
 
-	void validateReferences(Ontology ontology, String instance, boolean validateInstance) throws GenericOPException {
+	void validateReferences(Ontology ontology, String instance, boolean validateInstance) {
 		try {
 			final JsonNode inst = mapper.readTree(instance);
 			final JsonNode schema = mapper.readTree(ontology.getJsonSchema());
@@ -83,17 +77,12 @@ public class OntologyReferencesValidationImp implements OntologyReferencesValida
 			}
 		} catch (final IOException e) {
 			log.error("Not valid schema");
-		} catch (DBPersistenceException e) {
-			log.error("DBPersistence Exception");
-		} catch (OntologyDataUnauthorizedException e) {
-			log.error("OntologyData Unauthorized");
 		}
 
 	}
 
 	private void validateSingleReference(JsonNode reference, Ontology srcOntology, JsonNode srcSchema,
-			JsonNode instance, boolean validateInstance)
-			throws IOException, DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
+			JsonNode instance, boolean validateInstance) throws IOException {
 		final String srcPath = reference.path("self").asText().replaceAll("\\.", "/");
 		final String dstPath = reference.path("target").asText().split("#")[1].replaceAll("\\.", "/");
 		final String dstOnt = reference.path("target").asText().split("#")[0].replace("ontologies/schema/", "");
@@ -131,16 +120,15 @@ public class OntologyReferencesValidationImp implements OntologyReferencesValida
 				});
 				if (!queries.isEmpty()) {
 					queries.stream().forEach(q -> {
+						final String value = queryToolService.querySQLAsJson(srcOntology.getUser().getUserId(),
+								dstOntology.getIdentification(), q, 0);
 						try {
-							final String value = queryToolService.querySQLAsJson(srcOntology.getUser().getUserId(),
-									dstOntology.getIdentification(), q, 0);
 							if (mapper.readTree(value).path(0).path("value").asInt() == 0)
 								throw new OntologyDataJsonProblemException(
 										"There are no instances of referenced ontology "
 												+ dstOntology.getIdentification() + " with values specified in field "
 												+ srcField);
-						} catch (final IOException | DBPersistenceException | OntologyDataUnauthorizedException
-								| GenericOPException e) {
+						} catch (final IOException e) {
 							log.error("Could not get count result for query {}", q);
 						}
 					});
@@ -164,10 +152,10 @@ public class OntologyReferencesValidationImp implements OntologyReferencesValida
 	private String getQueryForValidation(String type, JsonNode instanceValue, String dstPath, String dstOntology,
 			JsonNode dstJsonSchema, Ontology.RtdbDatasource datasource) {
 		String query = "";
-		if (datasource.equals(Ontology.RtdbDatasource.ELASTIC_SEARCH) || datasource.equals(Ontology.RtdbDatasource.OPEN_SEARCH))
+		if (datasource.equals(Ontology.RtdbDatasource.ELASTIC_SEARCH))
 			query = "select count(*) from " + dstOntology.toLowerCase() + " where ";
 		else
-			query = "select count(*) from " + dstOntology + " dstOntology where dstOntology.";
+			query = "select count(*) from " + dstOntology + " where " + dstOntology + ".";
 		final String ref = refJsonSchema(dstJsonSchema);
 		String dstPathReplaced = "";
 		if (!ref.equals("")) {

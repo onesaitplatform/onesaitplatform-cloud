@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -38,7 +37,6 @@ import lombok.extern.slf4j.Slf4j;
 @Aspect
 @Order
 @Component
-@ConditionalOnProperty(value = "onesaitplatform.audit.global.notify", havingValue = "true", matchIfMissing = false)
 @Slf4j
 public class IotBrokerAuditableAspect extends BaseAspect {
 

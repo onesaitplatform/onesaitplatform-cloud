@@ -1,68 +1,56 @@
+security.ignored: /**
+
+management.security.enabled: false
 
 ## Config Web Server
 server:
    port: 19300
-   servlet.contextPath: /digitaltwinbroker
-   forward-headers-strategy: native
-   
-master: 
-   datasource:
-      hikari: 
-        jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
-        username: root
-        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-        driver-class-name: com.mysql.cj.jdbc.Driver
-        pool-name: master-hikari-pool
-        minimum-idle: 1
-        maximum-pool-size: 2
-        connection-timeout: 10000
-        
-management.endpoints.web.exposure.include: "*"
-management.endpoint.health.show-details: always
-
+   contextPath: /digitaltwinbroker
 spring:
-  main:
-     allow-circular-references: true
-     allow-bean-definition-overriding: true
-  jpa.open-in-view: false
   application.name: onesaitplatform-digitaltwin-broker
   datasource:
-     hikari:
-       jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
-       username: root
-       password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-       connection-timeout: 10000
-       driver-class-name: com.mysql.cj.jdbc.Driver
-       minimum-idle: 5
-       maximum-pool-size: 5
-  jpa:
+    url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+    username: root
+    password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+    driver-class-name: com.mysql.jdbc.Driver
+   
+    # Validate the connection before borrowing it from the pool.
+    test-on-borrow: true
+    validation-query: SELECT 1
+    test-while-idle: true       
+    # Number of ms to wait before throwing an exception if no connection is available.
+    max-wait: 10000
+    # Maximum number of active connections that can be allocated from this pool at the same time.
+    max-active: 30
+    initial-size: 10
+    max-idle: 30
+    min-idle: 10
+    removeAbandoned: true
+
+    jpa:
       # The SQL dialect makes Hibernate generate better SQL for the chosen database
-      open-in-view: false
       properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
       # Hibernate ddl auto (create, create-drop, validate, update)
       hibernate.ddl-auto: validate
-  boot.admin: #Spring Boot Admin Config   
-      client.url: http://localhost:18100/monitoring
-      client.username: operations
-      client.password: changeIt2019!
-      client.instance.metadata.user.name: ${spring.boot.admin.client.username}
-      client.instance.metadata.user.password: ${spring.boot.admin.client.password}
+  boot.admin: #Spring Boot Admin Config    
+    url: http://localhost:18100/monitoring
+    username: operations
+    password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
+    client.metadata.user.name: ${spring.boot.admin.username}
+    client.metadata.user.password: ${spring.boot.admin.password} 
     
 onesaitplatform: #Config onesaitplatform specific
   audit.global.notify: true
   digitaltwin.broker:
       rest:
-        enable: true  
+        enable: true
+        swaggerhost: localhost:19300   
   router.alternativeURL: http://localhost:20000/router/router/
-  graylog:
-    enabled: false
-    host: 127.0.0.1
-    port: 12201
         
 ## LOGGING CONF
 logging:
-   file.path: ./target/ 
-   file.name: ${spring.application.name}
+   path: ./target/ 
+   file: ${spring.application.name}
    level:
       com.minsait: INFO   
   

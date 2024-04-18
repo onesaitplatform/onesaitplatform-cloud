@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@ package com.minsait.onesait.platform.config.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
+import com.minsait.onesait.platform.config.model.base.AuditableEntity;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -29,15 +30,21 @@ import lombok.Setter;
 @Configurable
 @Entity
 @Table(name = "ONTOLOGY_CATEGORY")
-public class OntologyCategory extends AuditableEntityWithUUID {
+public class OntologyCategory extends AuditableEntity {
 
 	private static final long serialVersionUID = 1L;
 
-	@Column(name = "IDENTIFICATION", length = 512, nullable = false)
+	@Id
+	@Column(name = "ID")
+	@Getter
+	@Setter
+	private Integer id;
+
+	@Column(name = "IDENTIFICATOR", length = 512, nullable = false)
 	@NotNull
 	@Getter
 	@Setter
-	private String identification;
+	private String identificator;
 
 	@Column(name = "DESCRIPTION", length = 1024, nullable = false)
 	@NotNull

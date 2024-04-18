@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('UpdatePermissionsInstanceController', ["$rootScope", "$scope", "$modalInstance", "$translate", "$q", "$timeout", "api", "authService", "configuration", "pipelineService", function (
+  .controller('UpdatePermissionsInstanceController', function (
     $rootScope, $scope, $modalInstance, $translate, $q, $timeout, api, authService, configuration, pipelineService
   ) {
     var userList = [];
@@ -202,4 +202,4 @@ angular
       fetchLocalUsersAndGroups();
     }
 
-  }]);
+  });

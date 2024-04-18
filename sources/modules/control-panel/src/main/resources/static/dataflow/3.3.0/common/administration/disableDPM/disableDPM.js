@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp')
-  .controller('DisableDPMModalInstanceController', ["$scope", "$modalInstance", "api", "authService", function ($scope, $modalInstance, api, authService) {
+  .controller('DisableDPMModalInstanceController', function ($scope, $modalInstance, api, authService) {
     angular.extend($scope, {
       common: {
         errors: []
@@ -52,4 +52,4 @@ angular
         $modalInstance.dismiss('cancel');
       }
     });
-  }]);
+  });

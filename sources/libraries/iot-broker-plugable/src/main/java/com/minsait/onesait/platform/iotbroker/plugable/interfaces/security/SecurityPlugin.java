@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.minsait.onesait.platform.iotbroker.plugable.interfaces.security;
 import java.util.Optional;
 
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
-import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
+import com.minsait.onesait.platform.config.model.IoTSession;
 
 public interface SecurityPlugin {
 	public Optional<IoTSession> authenticate(String token, String clientPlatform, String clientPlatformInstance,
@@ -25,9 +25,9 @@ public interface SecurityPlugin {
 
 	public boolean closeSession(String sessionKey);
 
-	public boolean checkSessionKeyActive(Optional<IoTSession> session);
+	public boolean checkSessionKeyActive(String sessionKey);
 
-	public boolean checkAuthorization(SSAPMessageTypes messageType, String ontology, Optional<IoTSession> session);
+	public boolean checkAuthorization(SSAPMessageTypes messageType, String ontology, String sessionKey);
 
 	public Optional<IoTSession> getSession(String sessionKey);
 }

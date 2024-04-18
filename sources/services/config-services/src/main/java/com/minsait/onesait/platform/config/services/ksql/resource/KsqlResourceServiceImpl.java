@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,15 +33,13 @@ import com.minsait.onesait.platform.config.model.KsqlResource.KsqlResourceType;
 import com.minsait.onesait.platform.config.repository.KsqlResourceRepository;
 import com.minsait.onesait.platform.config.services.exceptions.KsqlResourceServiceException;
 import com.minsait.onesait.platform.config.services.ksql.resource.pojo.KsqlResourceForUpdate;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
-import com.minsait.onesait.platform.multitenant.config.repository.VerticalRepository;
-import com.minsait.onesait.platform.router.service.app.service.KafkaTopicKsqlNotificationService;
+import com.minsait.onesait.platform.router.service.app.service.KafkaTopicNotificationService;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-public class KsqlResourceServiceImpl implements KsqlResourceService, KafkaTopicKsqlNotificationService {
+public class KsqlResourceServiceImpl implements KsqlResourceService, KafkaTopicNotificationService {
 
 	@Autowired
 	private KsqlResourceRepository ksqlResourceRepository;
@@ -49,8 +47,6 @@ public class KsqlResourceServiceImpl implements KsqlResourceService, KafkaTopicK
 	private KafkaService kafkaService;
 	@Autowired(required = false)
 	private KsqlService ksqlService;
-	@Autowired
-	private VerticalRepository verticalRepository;
 
 	private final Pattern creation = Pattern.compile(
 			"(?i)\\s*CREATE\\s+(TABLE|STREAM)\\s+(\\w+)\\s+(\\(((?!\\)\\s+WITH\\s+\\().)+\\))\\s*(WITH\\s+\\((\\w+\\s*\\=\\s*'[\\w]+')?(\\s*,\\s*(\\w+\\s*\\=\\s*'[\\w]+'))*\\))?.*;");
@@ -93,10 +89,7 @@ public class KsqlResourceServiceImpl implements KsqlResourceService, KafkaTopicK
 		validateKsqlResource(ksqlResource);
 		// Check if topic exists. If not, then create it
 		if (ksqlResource.getResourceType() == FlowResourceType.ORIGIN) {
-
-			kafkaService.createTopicForKsqlInput(ksqlResource.getOntology().getIdentification(),
-					verticalRepository.findBySchema(MultitenancyContextHolder.getVerticalSchema()).getName(),
-					MultitenancyContextHolder.getTenantName());
+			kafkaService.createTopicForKsqlInput(ksqlResource.getOntology().getIdentification());
 		} else if (ksqlResource.getResourceType() == FlowResourceType.DESTINY) {
 			kafkaService.createTopic(ksqlResource.getKafkaTopic());
 		}
@@ -184,7 +177,7 @@ public class KsqlResourceServiceImpl implements KsqlResourceService, KafkaTopicK
 
 	@Override
 	public KsqlResource getKsqlResourceById(String id) {
-		return ksqlResourceRepository.findById(id).orElse(null);
+		return ksqlResourceRepository.findById(id);
 	}
 
 	@Override
@@ -255,7 +248,7 @@ public class KsqlResourceServiceImpl implements KsqlResourceService, KafkaTopicK
 	}
 
 	@Override
-	public List<String> getKafkaTopicKsqlNotification(String ontology) {
+	public List<String> getKafkaTopicNotification(String ontology) {
 		return ksqlResourceRepository.findByOntologyIdentificationAndResourceType(ontology, FlowResourceType.ORIGIN);
 	}
 

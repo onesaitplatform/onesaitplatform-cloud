@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp')
-  .controller('RegisterModalInstanceController', ["$scope", "$modalInstance", "api", "activationInfo", function ($scope, $modalInstance, api, activationInfo) {
+  .controller('RegisterModalInstanceController', function ($scope, $modalInstance, api, activationInfo) {
     angular.extend($scope, {
       common: {
         errors: []
@@ -76,4 +76,4 @@ angular
     });
 
 
-  }]);
+  });

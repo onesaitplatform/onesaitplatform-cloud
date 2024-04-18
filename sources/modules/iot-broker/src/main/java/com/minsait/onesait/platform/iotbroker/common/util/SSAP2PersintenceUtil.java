@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ public class SSAP2PersintenceUtil {
 			optional = Optional.of(AccessMode.SELECT);
 			break;
 		default:
-			log.error("formSSAPMessageType2TableAccesMode {} not in case", rType.toString());
+			log.error("formSSAPMessageType2TableAccesMode " + rType.toString() + " not in case");
 			break;
 		}
 

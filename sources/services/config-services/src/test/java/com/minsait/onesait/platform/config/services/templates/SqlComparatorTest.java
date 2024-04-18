@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,13 +59,13 @@ public class SqlComparatorTest {
               "SELECT * "
             + "FROM AssetTestArray2 "
             + "WHERE Test1.temperature.timestamp >= @from AND "
-            + "      Test1.temperature.timestamp <= @until";
+            + "      Test1.temperature.timestamp <= @to";
         
         MatchResult result = SqlComparator.match(query, template);
         assertTrue("The result of two identical queries should be true", result.isMatch());
         
         assertTrue("The @from parameter should have the value '2017-01-01T00:00:00.000Z'", result.getVariable("from").getStringValue().equals("2017-01-01T00:00:00.000Z"));
-        assertTrue("The @to parameter should have the value '2017-01-01T00:00:00.000Z'", result.getVariable("until").getStringValue().equals("2017-01-01T00:00:00.000Z"));
+        assertTrue("The @to parameter should have the value '2017-01-01T00:00:00.000Z'", result.getVariable("to").getStringValue().equals("2017-01-01T00:00:00.000Z"));
         
     }
     
@@ -83,14 +83,14 @@ public class SqlComparatorTest {
               "SELECT * "
             + "FROM AssetTestArray2 "
             + "WHERE Test1.temperature.timestamp >= @from AND "
-            + "      Test1.temperature.timestamp <= @until AND "
+            + "      Test1.temperature.timestamp <= @to AND "
             + "      Test1.temperature.id = @id AND "
             + "      Test1.temperature.numero = @numero";
         
         MatchResult result = SqlComparator.match(query, template);
         
         assertTrue("The @from parameter should have the value '2017-01-01T00:00:00.000Z'", result.getVariable("from").getStringValue().equals("2017-01-01T00:00:00.000Z"));
-        assertTrue("The @to parameter should have the value '2017-01-01T00:00:00.000Z'", result.getVariable("until").getStringValue().equals("2017-01-01T00:00:00.000Z"));
+        assertTrue("The @to parameter should have the value '2017-01-01T00:00:00.000Z'", result.getVariable("to").getStringValue().equals("2017-01-01T00:00:00.000Z"));
         assertTrue("The @id parameter should have the value 'algo'", result.getVariable("id").getStringValue().equals("algo"));
         assertTrue("The @numero parameter should have the value 10", result.getVariable("numero").getStringValue().equals("10"));
         
@@ -108,14 +108,14 @@ public class SqlComparatorTest {
               "SELECT * "
             + "FROM timeseries(AssetTestArray2, @scale) "
             + "WHERE Test1.temperature.timestamp >= @from AND "
-            + "      Test1.temperature.timestamp <= @until ";
+            + "      Test1.temperature.timestamp <= @to ";
 
         
         MatchResult result = SqlComparator.match(query, template);
         assertTrue("The result of two identical queries should be true", result.isMatch());
         
         assertTrue("The @from parameter should have the value '2017-01-01T00:00:00.000Z'", result.getVariable("from").getStringValue().equals("2017-01-01T00:00:00.000Z"));
-        assertTrue("The @to parameter should have the value '2017-01-01T00:00:00.000Z'", result.getVariable("until").getStringValue().equals("2017-01-01T00:00:00.000Z"));
+        assertTrue("The @to parameter should have the value '2017-01-01T00:00:00.000Z'", result.getVariable("to").getStringValue().equals("2017-01-01T00:00:00.000Z"));
         assertTrue("The @scale parameter should have the value 'd'", result.getVariable("scale").getStringValue().equals("d"));
         
     }

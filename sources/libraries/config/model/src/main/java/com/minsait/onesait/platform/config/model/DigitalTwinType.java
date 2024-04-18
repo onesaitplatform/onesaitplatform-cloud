@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,9 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.PostLoad;
 import javax.persistence.Table;
@@ -32,7 +34,7 @@ import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.minsait.onesait.platform.config.model.base.OPResource;
+import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -40,7 +42,7 @@ import lombok.Setter;
 @Configurable
 @Entity
 @Table(name = "DIGITAL_TWIN_TYPE")
-public class DigitalTwinType extends OPResource {
+public class DigitalTwinType extends AuditableEntityWithUUID {
 
 	private static final long serialVersionUID = 1L;
 
@@ -72,6 +74,12 @@ public class DigitalTwinType extends OPResource {
 	@Setter
 	private Set<DigitalTwinDevice> digitalTwinDevices = new HashSet<>();
 
+	@Column(name = "NAME", length = 50, unique = true, nullable = false)
+	@NotNull
+	@Getter
+	@Setter
+	private String name;
+
 	@Column(name = "TYPE", length = 50, nullable = false)
 	@NotNull
 	@Getter
@@ -99,14 +107,21 @@ public class DigitalTwinType extends OPResource {
 	@Setter
 	private String logic;
 
+	@ManyToOne
+	@OnDelete(action = OnDeleteAction.NO_ACTION)
+	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = false)
+	@Getter
+	@Setter
+	private User user;
+
 	public void setTypeEnum(DigitalTwinType.MainType type) {
 		this.type = type.toString();
 	}
 
 	@PostLoad
 	protected void trim() {
-		if (this.getIdentification() != null) {
-			this.setIdentification(this.getIdentification().replaceAll(" ", ""));
+		if (name != null) {
+			name = name.replaceAll(" ", "");
 		}
 	}
 
@@ -116,17 +131,17 @@ public class DigitalTwinType extends OPResource {
 			return true;
 		if (!(o instanceof DigitalTwinType))
 			return false;
-		return getIdentification() != null && getIdentification().equals(((DigitalTwinType) o).getId());
+		return getName() != null && getName().equals(((DigitalTwinType) o).getId());
 	}
 
 	@Override
 	public int hashCode() {
-		return java.util.Objects.hash(getIdentification());
+		return java.util.Objects.hash(getName());
 	}
 
 	@Override
 	public String toString() {
-		return getIdentification();
+		return getName();
 	}
 
 }

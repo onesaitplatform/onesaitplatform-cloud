@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,12 +52,11 @@ public class BinaryFileRepositoryIntegrationTest {
 	@Before
 	public void setUp() {
 		file = new BinaryFile();
-		file.setId("1");
-		file.setIdentification("example.pdf");
+		file.setFileId("1");
 		file.setMime("application/pdf");
 		file.setFileName("example.pdf");
 		file.setPublic(false);
-		file.setUser(userRepo.findByUserId("developer"));
+		file.setOwner(userRepo.findByUserId("developer"));
 
 		file.setFileExtension("pdf");
 

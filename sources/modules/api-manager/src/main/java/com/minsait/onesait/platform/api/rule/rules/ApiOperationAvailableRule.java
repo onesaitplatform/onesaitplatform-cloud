@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.api.rule.rules;
 
-import java.util.List;
 import java.util.Map;
 
 import org.jeasy.rules.annotation.Action;
@@ -23,10 +22,7 @@ import org.jeasy.rules.annotation.Priority;
 import org.jeasy.rules.annotation.Rule;
 import org.jeasy.rules.api.Facts;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import com.minsait.onesait.platform.api.rule.DefaultRuleBase;
 import com.minsait.onesait.platform.api.rule.RuleManager;
@@ -43,9 +39,6 @@ public class ApiOperationAvailableRule extends DefaultRuleBase {
 
 	@Autowired
 	private ApiManagerService apiManagerService;
-	@Autowired
-	@Qualifier("apiManagerService")
-	private com.minsait.onesait.platform.api.service.api.ApiManagerService apiService;
 
 	@Priority
 	public int getPriority() {
@@ -56,7 +49,7 @@ public class ApiOperationAvailableRule extends DefaultRuleBase {
 	public boolean existsRequest(Facts facts) {
 		final Map<String, Object> data = facts.get(RuleManager.FACTS);
 		final Api api = (Api) data.get(Constants.API);
-		return api != null && api.getApiType().equals(ApiType.INTERNAL_ONTOLOGY);
+		return(api != null && !api.getApiType().equals(ApiType.EXTERNAL_FROM_JSON));
 	}
 
 	@Action
@@ -64,30 +57,12 @@ public class ApiOperationAvailableRule extends DefaultRuleBase {
 		final Map<String, Object> data = facts.get(RuleManager.FACTS);
 		final Api api = (Api) data.get(Constants.API);
 		final String method = (String) data.get(Constants.METHOD);
-		final String pathInfo = (String) data.get(Constants.PATH_INFO);
-		final ApiOperation customSQL = apiService.getCustomSQL(pathInfo, api, method);
-		final String objectId = apiService.getObjectidFromPathQuery(pathInfo, customSQL);
-		final List<ApiOperation> operations = apiManagerService.getOperationsByMethod(api, Type.valueOf(method));
-		ApiOperation operation = null;
-		if (StringUtils.hasText(objectId)) {
-			// PREDICTIVE APIS MINDSDB && NEBULA
-			if (objectId.equals("predict") || objectId.equals("execute-ngql")) {
-				operation = operations.stream().filter(o -> o.getPath().equals("/predict") || o.getPath().equals("/execute-ngql")).findFirst().orElse(null);
-			} else {
-				operation = operations.stream().filter(a -> a.getPath().equals("/{id}")).findAny().orElse(null);
-			}
-		} else if (customSQL != null) {
-			operation = customSQL;
-		} else {
-			operation = operations.stream().filter(a -> !StringUtils.hasText(a.getPath()) || "/".equals(a.getPath()))
-					.findAny().orElse(null);
-		}
-
-		if (operation == null) {
+		final ApiOperation operation = apiManagerService.getOperationsByMethod(api, Type.valueOf(method)).stream()
+				.findAny().orElse(null);
+		if (operation == null)
 			stopAllNextRules(facts, "There are no operations allowed for this API with HTTP method " + method,
 
-					DefaultRuleBase.ReasonType.GENERAL, HttpStatus.NOT_FOUND);
-		}
+					DefaultRuleBase.ReasonType.GENERAL);
 	}
 
 }

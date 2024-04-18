@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,6 @@ public interface UserService {
 
 	boolean isUserDeveloper(User user);
 
-	boolean isUserAnalytics(User user);
-
-	boolean isUserUser(User user);
-
 	Token getToken(String token);
 
 	UserToken getUserToken(String token);
@@ -47,31 +43,17 @@ public interface UserService {
 
 	User getUser(String userId);
 
-	User getUserNoCache(String userId);
-
 	List<Role> getAllRoles();
 
 	List<UserToken> getUserToken(User userId);
 
-	List<UserAmplified> getAllUsersList();
-
 	List<User> getAllUsers();
-
-	List<UserAmplified> getAllUsersByCriteriaList(String userId, String fullName, String email, String roleType,
-			Boolean active);
-
-	List<UserAmplified> getAllUsersActiveByUsernameLike(String usernameLike);
-	
-	List<UserAmplified> getAllUsersActiveByFullNameLike(String fullNameLike);
-	
 
 	List<User> getAllUsersByCriteria(String userId, String fullName, String email, String roleType, Boolean active);
 
 	void createUser(User user);
 
 	boolean userExists(User user);
-
-	boolean canUserUpdateMail(String userId, String newMail);
 
 	void updateUser(User user);
 
@@ -99,26 +81,8 @@ public interface UserService {
 
 	User saveExistingUser(User user);
 
-	List<UserAmplified> getAllActiveUsersList();
-
 	List<User> getAllActiveUsers();
 
 	List<User> getDifferentUsersWithRole(User user, Type roleType);
-
-	boolean emailExists(String mail);
-
-	void activateUser(User user);
-
-	public void registerRoleAdministrator(User user);
-
-	public boolean deactivateUser(String userId);
-	
-	public void deactivateClientPlatformsTokens(User user);
-
-	void evictFromCache(User user);
-
-	List<UserAmplified> getAllActiveUsersListPageable(Integer page, Integer size, String filter);
-
-	long countUsers();
 
 }

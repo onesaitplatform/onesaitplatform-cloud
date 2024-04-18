@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp')
-  .controller('RestartModalInstanceController', ["$scope", "$modalInstance", "api", function ($scope, $modalInstance, api) {
+  .controller('RestartModalInstanceController', function ($scope, $modalInstance, api) {
     angular.extend($scope, {
       issues: [],
       isRestarting: false,
@@ -41,4 +41,4 @@ angular
         $modalInstance.dismiss('cancel');
       }
     });
-  }]);
+  });

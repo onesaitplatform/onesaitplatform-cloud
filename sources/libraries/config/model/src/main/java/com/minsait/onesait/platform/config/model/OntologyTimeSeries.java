@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package com.minsait.onesait.platform.config.model;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -29,14 +28,9 @@ import javax.persistence.Table;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
-import com.minsait.onesait.platform.config.model.interfaces.Versionable;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -44,16 +38,17 @@ import lombok.Setter;
 @Configurable
 @Entity
 @Table(name = "ONTOLOGY_TIMESERIES")
-public class OntologyTimeSeries extends AuditableEntityWithUUID implements Versionable<OntologyTimeSeries> {
+public class OntologyTimeSeries extends AuditableEntityWithUUID {
 
 	/**
-	 *
+	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
-	@OneToOne(fetch = FetchType.EAGER)
+	@OneToOne(cascade = CascadeType.MERGE, orphanRemoval = true, fetch = FetchType.EAGER)
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JoinColumn(name = "ONTOLOGY_ID", referencedColumnName = "ID", nullable = false)
+	@JsonBackReference
 	@Getter
 	@Setter
 	private Ontology ontology;
@@ -69,97 +64,5 @@ public class OntologyTimeSeries extends AuditableEntityWithUUID implements Versi
 	@Getter
 	@Setter
 	private Set<OntologyTimeSeriesProperty> timeSeriesProperties = new HashSet<>();
-
-	@OneToOne(mappedBy = "ontologyTimeSeries", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-	@OnDelete(action = OnDeleteAction.CASCADE)
-	@Getter
-	@Setter
-	private OntologyTimeseriesTimescaleProperties timeSeriesTimescaleProperties;
-
-	@OneToMany(mappedBy = "ontologyTimeSeries", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-	@OnDelete(action = OnDeleteAction.CASCADE)
-	@Getter
-	@Setter
-	private Set<OntologyTimeseriesTimescaleAggregates> timeSeriesTimescaleAgregates = new HashSet<>();
-
-	@JsonSetter("ontology")
-	public void setOntologyJson(String id) {
-		if (StringUtils.hasText(id)) {
-			final Ontology o = new Ontology();
-			o.setId(id);
-			o.setOntologyTimeSeries(this);
-			ontology = o;
-		}
-	}
-
-	@JsonSetter("timeSeriesWindows")
-	public void setTimeSeriesWindowsJson(Set<OntologyTimeSeriesWindow> timeSeriesWindows) {
-		timeSeriesWindows.forEach(t -> {
-			t.setOntologyTimeSeries(this);
-			this.timeSeriesWindows.add(t);
-		});
-	}
-
-	@JsonSetter("timeSeriesProperties")
-	public void setTimeSeriePropertiesJson(Set<OntologyTimeSeriesProperty> timeSeriesProperties) {
-		timeSeriesProperties.forEach(t -> {
-			t.setOntologyTimeSeries(this);
-			this.timeSeriesProperties.add(t);
-		});
-	}
-
-	@JsonSetter("timeSeriesTimescaleProperties")
-	public void setTimeSeriesTimescalePropertiesJson(
-			OntologyTimeseriesTimescaleProperties timeSeriesTimescaleProperties) {
-		timeSeriesTimescaleProperties.setOntologyTimeSeries(this);
-		this.timeSeriesTimescaleProperties = timeSeriesTimescaleProperties;
-	}
-
-	@JsonSetter("timeSeriesTimescaleAgregates")
-	public void setTimeSeriesTimescaleAgregatesJson(
-			Set<OntologyTimeseriesTimescaleAggregates> timeSeriesTimescaleAgregates) {
-		timeSeriesTimescaleAgregates.forEach(t -> {
-			t.setOntologyTimeSeries(this);
-			this.timeSeriesTimescaleAgregates.add(t);
-		});
-	}
-
-	@JsonGetter("ontology")
-	public String getOntologyJSON() {
-		return ontology == null ? null : ontology.getId();
-	}
-
-	@Override
-	public String fileName() {
-		return ontology.getIdentification() + ".yaml";
-	}
-
-	@Override
-	@JsonIgnore
-	public String getUserJson() {
-		if (ontology != null) {
-			return ontology.getUserJson();
-		} else {
-			return null;
-		}
-	}
-
-	@Override
-	public Versionable<OntologyTimeSeries> runExclusions(Map<String, Set<String>> excludedIds,
-			Set<String> excludedUsers) {
-		Versionable<OntologyTimeSeries> o = Versionable.super.runExclusions(excludedIds, excludedUsers);
-		if (o != null && ontology != null && !CollectionUtils.isEmpty(excludedIds)
-				&& !CollectionUtils.isEmpty(excludedIds.get(Ontology.class.getSimpleName()))
-				&& excludedIds.get(Ontology.class.getSimpleName()).contains(ontology.getId())) {
-			addIdToExclusions(this.getClass().getSimpleName(), getId(), excludedIds);
-			o = null;
-		}
-		return o;
-	}
-
-	@Override
-	public void setOwnerUserId(String userId) {
-
-	}
 
 }

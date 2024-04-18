@@ -53,19 +53,7 @@ angular.module('dataCollectorApp')
 
     // Reload the page when the server is down.
     $httpProvider.interceptors.push(["$q", "$rootScope", function($q, $rootScope) {
-      return { 
-        request: function(config) {
-          // OnesaitPlatform headers
-          var loc = window.location.pathname;
-          if(loc.indexOf("/pipeline/") != -1 || loc.indexOf("/logs/") != -1) {
-            var parts = loc.split("/");
-            var partsLength = parts.length;
-            var dataflowId = parts[partsLength-1] == '' ? parts[partsLength-2] : parts[partsLength-1];
-            config.headers['X-Streamsets-ID'] = dataflowId;
-          }
-
-          return config;
-        },
+      return {
         response: function(response) {
           return response;
         },

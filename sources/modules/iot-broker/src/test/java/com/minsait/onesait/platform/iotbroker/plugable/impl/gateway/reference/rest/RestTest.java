@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,11 +39,11 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.iotbroker.mock.pojo.Person;
 import com.minsait.onesait.platform.iotbroker.mock.pojo.PojoGenerator;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
 import com.minsait.onesait.platform.iotbroker.processor.DeviceManager;
-import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -74,7 +74,7 @@ public class RestTest {
 
 		when(securityPluginManager.authenticate(any(), any(), any(), any())).thenReturn(Optional.of(session));
 		when(securityPluginManager.getSession(anyString())).thenReturn(Optional.of(session));
-		when(securityPluginManager.checkSessionKeyActive(any())).thenReturn(true);
+		when(securityPluginManager.checkSessionKeyActive(anyString())).thenReturn(true);
 		when(securityPluginManager.checkAuthorization(any(), any(), any())).thenReturn(true);
 	}
 

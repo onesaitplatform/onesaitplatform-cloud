@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,6 @@
  */
 package com.minsait.onesait.platform.config.model;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -25,7 +22,6 @@ import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
@@ -113,11 +109,5 @@ public class OntologyRest extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private OntologyRestHeaders headerId;
-	
-	@OneToMany(mappedBy = "ontologyRestId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-	@OnDelete(action = OnDeleteAction.CASCADE)
-	@Getter
-	@Setter
-	private Set<OntologyRestOperation> operations = new HashSet<>();
 
 }

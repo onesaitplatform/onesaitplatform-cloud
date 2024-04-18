@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 package com.minsait.onesait.platform.config.services.app.dto;
-
-import java.util.Date;
 
 import javax.validation.constraints.NotNull;
 
@@ -37,9 +35,6 @@ public class RealmUser  implements java.io.Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public enum Status {
-        ACTIVE, INACTIVE;
-    }
 	@Getter
 	@Setter
 	@NotNull
@@ -60,14 +55,6 @@ public class RealmUser  implements java.io.Serializable {
 	@Setter
 	@JsonInclude(Include.NON_NULL)
 	private String password;
-	@Getter
-	@Setter
-	@JsonInclude(Include.NON_NULL)
-	private boolean active;
-	@Getter
-	@Setter
-	@JsonInclude(Include.NON_NULL)
-	private Date creationDate;
 	@Getter
 	@Setter
 	@JsonInclude(Include.NON_NULL)

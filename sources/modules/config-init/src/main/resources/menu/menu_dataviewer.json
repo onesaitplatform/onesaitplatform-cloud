@@ -1,90 +1,39 @@
 {
-	"menu": "onesait Platform",
+	"menu": "OnesaitPlatform",
 	"rol": "ROLE_DATAVIEWER",
 	"noSession": "/console/login",
 	"navigation": [
-
-		
-		
 		{
 			"title": {
-				"EN": "DEVELOPMENT",
-				"ES": "DESARROLLO",
-				"FR": "DÉVELOPPEMENT"
+				"EN": "SHARE & USE",
+				"ES": "SHARE & USE"
 			},
-			"icon": "icon-development",
+			"icon": "flaticon-cart",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
-						"EN": "My Applications",
-						"ES": "Mis Aplicaciones",
-						"FR": "Mes Applications"
+						"EN": "My Market",
+						"ES": "Mi Market"
 					},
 					"icon": "",
-					"url": "/controlpanel/projects/list"
-				}
-			]
-		},
-
-		{
-			"title": {
-				"EN": "VISUALIZATION & GIS",
-				"ES": "VISUALIZATION & GIS",
-				"FR": "VISUALISATION & SIG"
-			},
-			"icon": "icon-visualization",
-			"url": "",
-			"submenu": [
+					"url": "/controlpanel/marketasset/list"
+				},							
 				{
 					"title": {
 						"EN": "My Dashboards",
-						"ES": "Mis Dashboards",
-						"FR": "Mes Tableaux de Bord"
+						"ES": "Mis Dashboards"
 					},
 					"icon": "",
-					"url": "/controlpanel/dashboards/list"
-				}
-			]
-		},
-
-		{
-			"title": {
-				"EN": "TOOLS",
-				"ES": "HERRAMIENTAS",
-				"FR": "OUTILS"
-			},
-			"icon": "icon-tools",
-			"url": "",
-			"submenu": [
+					"url": "/controlpanel/dashboards/viewerlist"
+				},
 				{
 					"title": {
-						"EN": "Assets Market",
-						"ES": "Market de Assets",
-						"FR": "Marché des Actifs"
+						"EN": "My Projects",
+						"ES": "Mis Proyectos"
 					},
 					"icon": "",
-					"url": "/controlpanel/bundlerepository/list"
-				}
-			]
-		},
-		{
-			"title": {
-				"EN": "VERSION CONTROL",
-				"ES": "CONTROL DE VERSIONES",
-				"FR": "CONTRÔLE DE VERSION"
-			},
-			"icon": "icon-github",
-			"url": "",
-			"submenu": [
-				{
-					"title": {
-						"EN": "Restore resource",
-						"ES": "Restaurar recurso",
-						"FR": "Restaurer la ressource"
-					},
-					"icon": "",
-					"url": "/controlpanel/versioning/restore/resource"
+					"url": "/controlpanel/projects/list"
 				}
 			]
 		}

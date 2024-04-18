@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
@@ -26,7 +27,7 @@ import javax.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
+import com.minsait.onesait.platform.config.model.base.AuditableEntity;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -34,13 +35,19 @@ import lombok.Setter;
 @Configurable
 @Entity
 @Table(name = "ONTOLOGY_USER_ACCES_TYPE")
-public class OntologyUserAccessType extends AuditableEntityWithUUID {
+public class OntologyUserAccessType extends AuditableEntity {
 
 	private static final long serialVersionUID = 1L;
 
 	public enum Type {
 		ALL, QUERY, INSERT;
 	}
+
+	@Id
+	@Column(name = "ID")
+	@Getter
+	@Setter
+	private Integer id;
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "ontologyUserAccessType", fetch = FetchType.EAGER)

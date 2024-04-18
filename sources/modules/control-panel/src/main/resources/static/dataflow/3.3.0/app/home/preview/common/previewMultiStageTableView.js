@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('PreviewMultiStageTableViewController', ["$scope", "pipelineService", function ($scope, pipelineService) {
+  .controller('PreviewMultiStageTableViewController', function ($scope, pipelineService) {
     var columnLimit = 5;
 
     angular.extend($scope, {
@@ -169,4 +169,4 @@ angular
 
     updateFieldPaths();
 
-  }]);
+  });

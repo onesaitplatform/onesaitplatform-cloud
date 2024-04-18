@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package com.minsait.onesait.platform.flowengine.audit.aop;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
+import java.util.Base64;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,8 +28,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 import com.minsait.onesait.platform.audit.bean.OPAuditError;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.EventType;
@@ -37,12 +37,9 @@ import com.minsait.onesait.platform.audit.bean.OPAuditEvent.ResultOperationType;
 import com.minsait.onesait.platform.commons.flow.engine.dto.FlowEngineDomain;
 import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.services.flowdomain.FlowDomainService;
-import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineInvokeRestApiOperationRequest;
-import com.minsait.onesait.platform.flowengine.api.rest.pojo.MailRestDTO;
-import com.minsait.onesait.platform.flowengine.api.rest.pojo.NotebookInvokeDTO;
+import com.minsait.onesait.platform.config.repository.FlowDomainRepository;
+import com.minsait.onesait.platform.flowengine.api.rest.pojo.DecodedAuthentication;
 import com.minsait.onesait.platform.flowengine.api.rest.service.FlowEngineValidationNodeService;
-import com.minsait.onesait.platform.flowengine.api.rest.service.impl.FlowEngineNodeServiceImpl;
 import com.minsait.onesait.platform.flowengine.audit.bean.FlowEngineAuditEvent;
 import com.minsait.onesait.platform.flowengine.exception.NotAuthorizedException;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel.QueryType;
@@ -55,27 +52,19 @@ public class FlowEngineAuditProcessorTest {
 	private FlowEngineAuditProcessor flowEngineAuditProcessor;
 
 	@Mock
-	private FlowDomainService domainService;
+	private FlowDomainRepository domainRepository;
 
 	@Mock
 	private FlowEngineValidationNodeService flowEngineValidationNodeService;
-	
-	@Mock
-	private FlowEngineNodeServiceImpl flowengineNodeService;
 
 	private final String DOMAIN_ID = "dummyDomainId";
 	private final String USER_ID = "dummyUserId";
 	private final String RESULT_OK = "OK";
 	private final String RESULT_KO = "NOTOK";
 	private final String ONTOLOGY_ID = "dummyOntologyId";
+	private final String AUTHENTICATION = "user:pass";
 	private final String INSTANCE = "{\"dummy\":\"dummyvalue\"}";
-	private final String API_NAME = "dummyApiName";
-	private final int API_VERSION = 1;
-	private final String API_OPERATION_NAME = "dummyApiOperationName";
-	private final String API_OPERATINN_METHOD = "GET";
-	private final String NOTEBOOK_ID= "dummyNotebookId";
-	private final String PIPELINE_ID= "dummyPipelineId";
-	
+
 	@Before
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
@@ -94,41 +83,21 @@ public class FlowEngineAuditProcessorTest {
 		flowDomain.setUser(getTestUser());
 		return flowDomain;
 	}
-	
-	public FlowEngineInvokeRestApiOperationRequest getTestApiInvocation() {
-		FlowEngineInvokeRestApiOperationRequest request = new FlowEngineInvokeRestApiOperationRequest();
-		request.setDomainName(DOMAIN_ID);
-		request.setApiName(API_NAME);
-		request.setApiVersion(API_VERSION);
-		request.setOperationName(API_OPERATION_NAME);
-		request.setOperationMethod(API_OPERATINN_METHOD);
-		return request;
-	}
-	
-	public NotebookInvokeDTO getTestNotebookInvokeDTO(){
-		NotebookInvokeDTO dto = new NotebookInvokeDTO();
-		dto.setDomainName(DOMAIN_ID);
-		dto.setExecuteNotebook(true);
-		dto.setNotebookId(NOTEBOOK_ID);
-		return dto;
+
+	public DecodedAuthentication getDecodedAuthentication() {
+		DecodedAuthentication decodedAuth = new DecodedAuthentication(
+				Base64.getEncoder().encodeToString(AUTHENTICATION.getBytes()).toString());
+		return decodedAuth;
 	}
 
-	public MailRestDTO getTestMail(){
-		MailRestDTO mail = new MailRestDTO();
-		mail.setBody("dummyBody");
-		String[] to = {"test@test.com"};
-		mail.setTo(to);
-		mail.setSubject("DummySubject");
-		return mail;
-	}
-	
 	@Test
 	public void given_get_event_retVal_error() {
 
 		String methodName = "startFlowEngineDomain";
 
 		FlowEngineDomain domain = FlowEngineDomain.builder().domain(DOMAIN_ID).build();
-		when(domainService.getFlowDomainById(DOMAIN_ID)).thenReturn(getTestFlowDomain());
+
+		when(domainRepository.findByIdentification(DOMAIN_ID)).thenReturn(getTestFlowDomain());
 
 		FlowEngineAuditEvent event = flowEngineAuditProcessor.getEvent(methodName, RESULT_KO, domain,
 				OperationType.START);
@@ -149,7 +118,7 @@ public class FlowEngineAuditProcessorTest {
 
 		FlowEngineDomain domain = FlowEngineDomain.builder().domain(DOMAIN_ID).build();
 
-		when(domainService.getFlowDomainById(DOMAIN_ID)).thenReturn(getTestFlowDomain());
+		when(domainRepository.findByIdentification(DOMAIN_ID)).thenReturn(getTestFlowDomain());
 
 		FlowEngineAuditEvent event = flowEngineAuditProcessor.getEvent(methodName, RESULT_OK, domain,
 				OperationType.START);
@@ -165,10 +134,15 @@ public class FlowEngineAuditProcessorTest {
 	@Test
 	public void given_get_event_incorrect_credentials() {
 
-		when(domainService.getFlowDomainById(DOMAIN_ID)).thenThrow(new NotAuthorizedException(""));
+		DecodedAuthentication decodedAuth = getDecodedAuthentication();
+
+		when(flowEngineValidationNodeService.decodeAuth(AUTHENTICATION)).thenReturn(decodedAuth);
+
+		when(flowEngineValidationNodeService.validateUserCredentials(decodedAuth.getUserId(),
+				decodedAuth.getCredentials())).thenThrow(new NotAuthorizedException(""));
 
 		FlowEngineAuditEvent event = flowEngineAuditProcessor.getEvent(ONTOLOGY_ID, "", QueryType.NATIVE.name(), null,
-				"message", DOMAIN_ID, OperationType.QUERY);
+				"message", AUTHENTICATION, OperationType.QUERY);
 
 		Assert.assertNull(event);
 
@@ -192,9 +166,14 @@ public class FlowEngineAuditProcessorTest {
 	@Test
 	public void given_get_error_event_incorrect_credentials() {
 
-		when(domainService.getFlowDomainById(DOMAIN_ID)).thenThrow(new NotAuthorizedException(""));
+		DecodedAuthentication decodedAuth = getDecodedAuthentication();
 
-		OPAuditError error = flowEngineAuditProcessor.getErrorEvent("", DOMAIN_ID, new Exception());
+		when(flowEngineValidationNodeService.decodeAuth(AUTHENTICATION)).thenReturn(decodedAuth);
+
+		when(flowEngineValidationNodeService.validateUserCredentials(decodedAuth.getUserId(),
+				decodedAuth.getCredentials())).thenThrow(new NotAuthorizedException(""));
+
+		OPAuditError error = flowEngineAuditProcessor.getErrorEvent("", AUTHENTICATION, new Exception());
 
 		Assert.assertNull(error);
 	}
@@ -208,7 +187,7 @@ public class FlowEngineAuditProcessorTest {
 		FlowDomain flowDomain = new FlowDomain();
 		flowDomain.setUser(getTestUser());
 
-		when(domainService.getFlowDomainById(DOMAIN_ID)).thenReturn(getTestFlowDomain());
+		when(domainRepository.findByIdentification(DOMAIN_ID)).thenReturn(flowDomain);
 
 		OPAuditError event = flowEngineAuditProcessor.getErrorEvent(methodName, domain, ex);
 
@@ -222,14 +201,15 @@ public class FlowEngineAuditProcessorTest {
 	@Test
 	public void given_get_query_event() {
 
-		
+		DecodedAuthentication decodedAuth = getDecodedAuthentication();
 		String query = "";
 
-		when(domainService.getFlowDomainById(DOMAIN_ID)).thenReturn(getTestFlowDomain());
-		when(domainService.getFlowDomainByIdentification(DOMAIN_ID)).thenReturn(getTestFlowDomain());
+		when(flowEngineValidationNodeService.decodeAuth(AUTHENTICATION)).thenReturn(decodedAuth);
+
+		when(flowEngineValidationNodeService.validateUser(decodedAuth.getUserId())).thenReturn(getTestUser());
 
 		FlowEngineAuditEvent event = flowEngineAuditProcessor.getQueryEvent(ONTOLOGY_ID, query, QueryType.NATIVE.name(),
-				"", DOMAIN_ID);
+				"", AUTHENTICATION);
 
 		assertEquals(EventType.FLOWENGINE, event.getType());
 		Assert.assertNull(event.getData());
@@ -243,11 +223,13 @@ public class FlowEngineAuditProcessorTest {
 	@Test
 	public void given_get_insert_event() {
 
+		DecodedAuthentication decodedAuth = getDecodedAuthentication();
 
-		when(domainService.getFlowDomainById(DOMAIN_ID)).thenReturn(getTestFlowDomain());
-		when(domainService.getFlowDomainByIdentification(DOMAIN_ID)).thenReturn(getTestFlowDomain());
+		when(flowEngineValidationNodeService.decodeAuth(AUTHENTICATION)).thenReturn(decodedAuth);
 
-		FlowEngineAuditEvent event = flowEngineAuditProcessor.getInsertEvent(ONTOLOGY_ID, INSTANCE, "", DOMAIN_ID);
+		when(flowEngineValidationNodeService.validateUser(decodedAuth.getUserId())).thenReturn(getTestUser());
+
+		FlowEngineAuditEvent event = flowEngineAuditProcessor.getInsertEvent(ONTOLOGY_ID, INSTANCE, "", AUTHENTICATION);
 
 		assertEquals(EventType.FLOWENGINE, event.getType());
 		assertEquals(ONTOLOGY_ID, event.getOntology());
@@ -257,166 +239,4 @@ public class FlowEngineAuditProcessorTest {
 		assertEquals(OperationType.INSERT.name(), event.getOperationType());
 		assertEquals(USER_ID, event.getUser());
 	}
-	
-	@Test
-	public void given_get_invoke_API_event_ok() {
-
-
-		when(domainService.getFlowDomainById(DOMAIN_ID)).thenReturn(getTestFlowDomain());
-		when(domainService.getFlowDomainByIdentification(DOMAIN_ID)).thenReturn(getTestFlowDomain());
-		FlowEngineInvokeRestApiOperationRequest request = getTestApiInvocation();
-		FlowEngineAuditEvent event = flowEngineAuditProcessor.processInvokeAPI(request, new ResponseEntity<>(HttpStatus.OK));
-
-		assertEquals(EventType.FLOWENGINE, event.getType());
-		assertEquals(Module.FLOWENGINE, event.getModule());
-		assertEquals(ResultOperationType.SUCCESS, event.getResultOperation());
-		assertEquals(USER_ID, event.getUser());
-	}
-	
-	@Test
-	public void given_get_invoke_API_event_error() {
-
-
-		when(domainService.getFlowDomainById(DOMAIN_ID)).thenReturn(getTestFlowDomain());
-		when(domainService.getFlowDomainByIdentification(DOMAIN_ID)).thenReturn(getTestFlowDomain());
-		FlowEngineInvokeRestApiOperationRequest request = getTestApiInvocation();
-		FlowEngineAuditEvent event = flowEngineAuditProcessor.processInvokeAPI(request, new ResponseEntity<>(HttpStatus.NOT_FOUND));
-
-		assertEquals(EventType.FLOWENGINE, event.getType());
-		assertEquals(Module.FLOWENGINE, event.getModule());
-		assertEquals(ResultOperationType.ERROR, event.getResultOperation());
-		assertEquals(USER_ID, event.getUser());
-	}
-	
-
-	@Test
-	public void given_get_invoke_notebook_event_ok() {
-
-
-		when(domainService.getFlowDomainById(DOMAIN_ID)).thenReturn(getTestFlowDomain());
-		when(domainService.getFlowDomainByIdentification(DOMAIN_ID)).thenReturn(getTestFlowDomain());
-		FlowEngineAuditEvent event = flowEngineAuditProcessor.processInvokeNotebook(getTestNotebookInvokeDTO(), new ResponseEntity<>(HttpStatus.OK));
-
-		assertEquals(EventType.FLOWENGINE, event.getType());
-		assertEquals(Module.FLOWENGINE, event.getModule());
-		assertEquals(ResultOperationType.SUCCESS, event.getResultOperation());
-		assertEquals(USER_ID, event.getUser());
-	}
-	
-	@Test
-	public void given_get_invoke_notebook_event_error() {
-
-
-		when(domainService.getFlowDomainById(DOMAIN_ID)).thenReturn(getTestFlowDomain());
-		when(domainService.getFlowDomainByIdentification(DOMAIN_ID)).thenReturn(getTestFlowDomain());
-		FlowEngineAuditEvent event = flowEngineAuditProcessor.processInvokeNotebook(getTestNotebookInvokeDTO(), new ResponseEntity<>(HttpStatus.NOT_FOUND));
-
-		assertEquals(EventType.FLOWENGINE, event.getType());
-		assertEquals(Module.FLOWENGINE, event.getModule());
-		assertEquals(ResultOperationType.ERROR, event.getResultOperation());
-		assertEquals(USER_ID, event.getUser());
-	}
-	
-
-	@Test
-	public void given_get_check_dataflow_status_event_ok() {
-
-
-		when(domainService.getFlowDomainById(DOMAIN_ID)).thenReturn(getTestFlowDomain());
-		when(domainService.getFlowDomainByIdentification(DOMAIN_ID)).thenReturn(getTestFlowDomain());
-		FlowEngineAuditEvent event = flowEngineAuditProcessor.processCheckDataflowStatus(DOMAIN_ID, PIPELINE_ID, new ResponseEntity<>(HttpStatus.OK));
-
-		assertEquals(EventType.FLOWENGINE, event.getType());
-		assertEquals(Module.FLOWENGINE, event.getModule());
-		assertEquals(ResultOperationType.SUCCESS, event.getResultOperation());
-		assertEquals(USER_ID, event.getUser());
-	}
-	
-	@Test
-	public void given_get_check_dataflow_status_event_error() {
-
-
-		when(domainService.getFlowDomainById(DOMAIN_ID)).thenReturn(getTestFlowDomain());
-		when(domainService.getFlowDomainByIdentification(DOMAIN_ID)).thenReturn(getTestFlowDomain());
-		FlowEngineAuditEvent event = flowEngineAuditProcessor.processCheckDataflowStatus(DOMAIN_ID, PIPELINE_ID, new ResponseEntity<>(HttpStatus.NOT_FOUND));
-
-		assertEquals(EventType.FLOWENGINE, event.getType());
-		assertEquals(Module.FLOWENGINE, event.getModule());
-		assertEquals(ResultOperationType.ERROR, event.getResultOperation());
-		assertEquals(USER_ID, event.getUser());
-	}
-	
-	@Test
-	public void given_get_stop_dataflow_event_ok() {
-
-
-		when(domainService.getFlowDomainById(DOMAIN_ID)).thenReturn(getTestFlowDomain());
-		when(domainService.getFlowDomainByIdentification(DOMAIN_ID)).thenReturn(getTestFlowDomain());
-		FlowEngineAuditEvent event = flowEngineAuditProcessor.processStopDataflow(DOMAIN_ID, PIPELINE_ID, new ResponseEntity<>(HttpStatus.OK));
-
-		assertEquals(EventType.FLOWENGINE, event.getType());
-		assertEquals(Module.FLOWENGINE, event.getModule());
-		assertEquals(ResultOperationType.SUCCESS, event.getResultOperation());
-		assertEquals(USER_ID, event.getUser());
-	}
-	
-	@Test
-	public void given_get_stop_dataflow_event_error() {
-
-
-		when(domainService.getFlowDomainById(DOMAIN_ID)).thenReturn(getTestFlowDomain());
-		when(domainService.getFlowDomainByIdentification(DOMAIN_ID)).thenReturn(getTestFlowDomain());
-		FlowEngineAuditEvent event = flowEngineAuditProcessor.processStopDataflow(DOMAIN_ID, PIPELINE_ID, new ResponseEntity<>(HttpStatus.NOT_FOUND));
-
-		assertEquals(EventType.FLOWENGINE, event.getType());
-		assertEquals(Module.FLOWENGINE, event.getModule());
-		assertEquals(ResultOperationType.ERROR, event.getResultOperation());
-		assertEquals(USER_ID, event.getUser());
-	}
-	
-	@Test
-	public void given_get_start_dataflow_event_ok() {
-
-
-		when(domainService.getFlowDomainById(DOMAIN_ID)).thenReturn(getTestFlowDomain());
-		when(domainService.getFlowDomainByIdentification(DOMAIN_ID)).thenReturn(getTestFlowDomain());
-		FlowEngineAuditEvent event = flowEngineAuditProcessor.processStartDataflow(DOMAIN_ID, PIPELINE_ID, new ResponseEntity<>(HttpStatus.OK));
-
-		assertEquals(EventType.FLOWENGINE, event.getType());
-		assertEquals(Module.FLOWENGINE, event.getModule());
-		assertEquals(ResultOperationType.SUCCESS, event.getResultOperation());
-		assertEquals(USER_ID, event.getUser());
-	}
-	
-	@Test
-	public void given_get_start_dataflow_event_error() {
-
-
-		when(domainService.getFlowDomainById(DOMAIN_ID)).thenReturn(getTestFlowDomain());
-		when(domainService.getFlowDomainByIdentification(DOMAIN_ID)).thenReturn(getTestFlowDomain());
-		FlowEngineAuditEvent event = flowEngineAuditProcessor.processStartDataflow(DOMAIN_ID, PIPELINE_ID, new ResponseEntity<>(HttpStatus.NOT_FOUND));
-
-		assertEquals(EventType.FLOWENGINE, event.getType());
-		assertEquals(Module.FLOWENGINE, event.getModule());
-		assertEquals(ResultOperationType.ERROR, event.getResultOperation());
-		assertEquals(USER_ID, event.getUser());
-	}
-	
-	@Test
-	public void given_get_send_mail_event() {
-
-
-		when(domainService.getFlowDomainById(DOMAIN_ID)).thenReturn(getTestFlowDomain());
-		MailRestDTO mail = getTestMail();
-		when(domainService.getFlowDomainByIdentification(mail.getDomainName())).thenReturn(getTestFlowDomain());
-		FlowEngineAuditEvent event = flowEngineAuditProcessor.processSendMail(mail);
-
-		assertEquals(EventType.FLOWENGINE, event.getType());
-		assertEquals(Module.FLOWENGINE, event.getModule());
-		assertEquals(ResultOperationType.SUCCESS, event.getResultOperation());
-		assertEquals(USER_ID, event.getUser());
-	}
-	
-	
-
 }

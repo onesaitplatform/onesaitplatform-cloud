@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,27 @@
 package com.minsait.onesait.platform.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.support.NoOpCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.hazelcast.collection.IQueue;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.spring.cache.HazelcastCacheManager;
 
 @Configuration
+@EnableCaching
 public class HazelcastCacheConfig {
 
 	@Autowired
-	private HazelcastInstance hazelcastInstance;
+	HazelcastInstance hazelcastInstance;
 
-
-	@Bean(name = "metricsQueue")
-	public IQueue<String> hazelcastMetricsQueue() {
-		return hazelcastInstance.getQueue("metricsQueue");
+	@Bean
+	CacheManager cacheManager() {
+		if (hazelcastInstance != null)
+			return new HazelcastCacheManager(hazelcastInstance);
+		else
+			return new NoOpCacheManager();
 	}
-
 }

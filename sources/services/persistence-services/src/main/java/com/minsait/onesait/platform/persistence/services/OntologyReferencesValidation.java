@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,9 @@ package com.minsait.onesait.platform.persistence.services;
 
 import java.io.IOException;
 
-import com.minsait.onesait.platform.commons.exception.GenericOPException;
-import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel;
 
 public interface OntologyReferencesValidation {
 
-	public void validate(OperationModel operationModel, Ontology ontology) throws IOException, GenericOPException;
+	public void validate(OperationModel operationModel) throws IOException;
 }

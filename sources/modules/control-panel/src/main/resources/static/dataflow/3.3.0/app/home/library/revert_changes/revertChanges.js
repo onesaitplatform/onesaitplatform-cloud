@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('RevertChangesModalInstanceController', ["$scope", "$modalInstance", "pipelineInfo", "metadata", "api", "authService", function (
+  .controller('RevertChangesModalInstanceController', function (
     $scope, $modalInstance, pipelineInfo, metadata, api, authService
   ) {
     angular.extend($scope, {
@@ -105,4 +105,4 @@ angular
     });
 
 
-  }]);
+  });

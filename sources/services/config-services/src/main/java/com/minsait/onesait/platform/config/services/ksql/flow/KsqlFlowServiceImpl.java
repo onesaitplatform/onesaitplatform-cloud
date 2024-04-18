@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package com.minsait.onesait.platform.config.services.ksql.flow;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
@@ -30,6 +29,7 @@ import com.minsait.onesait.platform.config.model.KsqlRelation;
 import com.minsait.onesait.platform.config.model.KsqlResource;
 import com.minsait.onesait.platform.config.model.KsqlResource.FlowResourceType;
 import com.minsait.onesait.platform.config.model.KsqlResource.KsqlResourceType;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.KsqlFlowRepository;
 import com.minsait.onesait.platform.config.repository.KsqlRelationRepository;
@@ -37,7 +37,6 @@ import com.minsait.onesait.platform.config.repository.KsqlResourceRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.services.exceptions.KsqlFlowServiceException;
 import com.minsait.onesait.platform.config.services.ksql.resource.KsqlResourceService;
-import com.minsait.onesait.platform.config.services.user.UserService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -54,8 +53,6 @@ public class KsqlFlowServiceImpl implements KsqlFlowService {
 	@Autowired
 	private UserRepository userRepository;
 	@Autowired
-	private UserService userService;
-	@Autowired
 	private KsqlResourceService ksqlResourceService;
 
 	@PostConstruct
@@ -68,59 +65,57 @@ public class KsqlFlowServiceImpl implements KsqlFlowService {
 	@Transactional
 	@Override
 	public void deleteKsqlFlow(String id) throws KsqlExecutionException {
-		final Optional<KsqlFlow> opt = ksqlFlowRepository.findById(id);
-		if (opt.isPresent()) {
-			final KsqlFlow flow = opt.get();
-			// FIRST delete all INSERTS
-			final List<KsqlRelation> elements = ksqlRelationRepository.findByKsqlFlowAndKsqlResourceKsqlType(flow,
-					KsqlResourceType.INSERT);
+		KsqlFlow flow = ksqlFlowRepository.findById(id);
 
-			// SECOND delete all PROCESS in order of creation inverted
-			final List<KsqlRelation> process = ksqlRelationRepository
-					.findByKsqlFlowAndKsqlResourceResourceTypeAndKsqlResourceKsqlTypeNotOrderByCreatedAtDesc(flow,
-							FlowResourceType.PROCESS, KsqlResourceType.INSERT);
-			// THIRD delete all DESTINY
-			final List<KsqlRelation> destiny = ksqlRelationRepository
-					.findByKsqlFlowAndKsqlResourceResourceTypeOrderByCreatedAtDesc(flow, FlowResourceType.DESTINY);
-			// LAST delete all ORIGIN
-			final List<KsqlRelation> origin = ksqlRelationRepository
-					.findByKsqlFlowAndKsqlResourceResourceTypeOrderByCreatedAtDesc(flow, FlowResourceType.ORIGIN);
+		// FIRST delete all INSERTS
+		List<KsqlRelation> elements = ksqlRelationRepository.findByKsqlFlowAndKsqlResourceKsqlType(flow,
+				KsqlResourceType.INSERT);
 
-			elements.addAll(process);
-			elements.addAll(destiny);
-			elements.addAll(origin);
+		// SECOND delete all PROCESS in order of creation inverted
+		List<KsqlRelation> process = ksqlRelationRepository
+				.findByKsqlFlowAndKsqlResourceResourceTypeAndKsqlResourceKsqlTypeNotOrderByCreatedAtDesc(flow,
+						FlowResourceType.PROCESS, KsqlResourceType.INSERT);
+		// THIRD delete all DESTINY
+		List<KsqlRelation> destiny = ksqlRelationRepository
+				.findByKsqlFlowAndKsqlResourceResourceTypeOrderByCreatedAtDesc(flow, FlowResourceType.DESTINY);
+		// LAST delete all ORIGIN
+		List<KsqlRelation> origin = ksqlRelationRepository
+				.findByKsqlFlowAndKsqlResourceResourceTypeOrderByCreatedAtDesc(flow, FlowResourceType.ORIGIN);
 
-			for (final KsqlRelation element : elements) {
-				element.getPredecessors().forEach(predecessor -> {
-					predecessor.removeSucessor(element);
-					ksqlRelationRepository.save(predecessor);
-				});
-				element.getSuccessors().forEach(successor -> {
-					successor.removePredecessor(element);
-					ksqlRelationRepository.save(successor);
-				});
+		elements.addAll(process);
+		elements.addAll(destiny);
+		elements.addAll(origin);
 
-				final KsqlResource relationResource = element.getKsqlResource();
-				ksqlRelationRepository.deleteByKsqlFlowIdentificationAndKsqlResourceIdentification(
-						flow.getIdentification(), relationResource.getIdentification());
-				if (relationResource.getResourceType() != FlowResourceType.ORIGIN) {
-					// Delete because is not used in multiple flows
+		for (KsqlRelation element : elements) {
+			element.getPredecessors().forEach(predecessor -> {
+				predecessor.removeSucessor(element);
+				ksqlRelationRepository.save(predecessor);
+			});
+			element.getSuccessors().forEach(successor -> {
+				successor.removePredecessor(element);
+				ksqlRelationRepository.save(successor);
+			});
+
+			KsqlResource relationResource = element.getKsqlResource();
+			ksqlRelationRepository.deleteByKsqlFlowIdentificationAndKsqlResourceIdentification(flow.getIdentification(),
+					relationResource.getIdentification());
+			if (relationResource.getResourceType() != FlowResourceType.ORIGIN) {
+				// Delete because is not used in multiple flows
+				ksqlResourceService.deleteKsqlResource(relationResource);
+				ksqlResourceRepository.deleteByIdentification(relationResource.getIdentification());
+			} else {
+				// If no other relations are found(regardless from the Flow),
+				// then remove it
+				List<KsqlRelation> otherRelations = ksqlRelationRepository
+						.findByKsqlResourceIdentification(relationResource.getIdentification());
+				if (otherRelations == null || otherRelations.isEmpty()) {
 					ksqlResourceService.deleteKsqlResource(relationResource);
 					ksqlResourceRepository.deleteByIdentification(relationResource.getIdentification());
-				} else {
-					// If no other relations are found(regardless from the Flow),
-					// then remove it
-					final List<KsqlRelation> otherRelations = ksqlRelationRepository
-							.findByKsqlResourceIdentification(relationResource.getIdentification());
-					if (otherRelations == null || otherRelations.isEmpty()) {
-						ksqlResourceService.deleteKsqlResource(relationResource);
-						ksqlResourceRepository.deleteByIdentification(relationResource.getIdentification());
-					}
 				}
 			}
-
-			ksqlFlowRepository.deleteById(id);
 		}
+
+		ksqlFlowRepository.deleteById(id);
 	}
 
 	@Override
@@ -131,7 +126,7 @@ public class KsqlFlowServiceImpl implements KsqlFlowService {
 		description = description == null ? "" : description;
 		identification = identification == null ? "" : identification;
 
-		if (userService.isUserAdministrator(sessionUser)) {
+		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 			ksqlFlows = ksqlFlowRepository.findByIdentificationContainingAndDescriptionContaining(identification,
 					description);
 		} else {
@@ -145,9 +140,9 @@ public class KsqlFlowServiceImpl implements KsqlFlowService {
 
 	@Override
 	public List<String> getAllIdentifications() {
-		final List<KsqlFlow> ksqlFlows = ksqlFlowRepository.findAllByOrderByIdentificationAsc();
-		final List<String> identifications = new ArrayList<>();
-		for (final KsqlFlow ksqlFlow : ksqlFlows) {
+		List<KsqlFlow> ksqlFlows = this.ksqlFlowRepository.findAllByOrderByIdentificationAsc();
+		List<String> identifications = new ArrayList<>();
+		for (KsqlFlow ksqlFlow : ksqlFlows) {
 			identifications.add(ksqlFlow.getIdentification());
 
 		}
@@ -156,7 +151,7 @@ public class KsqlFlowServiceImpl implements KsqlFlowService {
 
 	@Override
 	public boolean identificationIsAvailable(User sessionUser, String identification) {
-		final KsqlFlow matchingKsqlFlow = ksqlFlowRepository.findByUserAndIdentification(sessionUser, identification);
+		KsqlFlow matchingKsqlFlow = this.ksqlFlowRepository.findByUserAndIdentification(sessionUser, identification);
 		return matchingKsqlFlow == null;
 	}
 
@@ -175,7 +170,7 @@ public class KsqlFlowServiceImpl implements KsqlFlowService {
 
 	@Override
 	public KsqlFlow getKsqlFlowWithId(String id) {
-		return ksqlFlowRepository.findById(id).orElse(null);
+		return ksqlFlowRepository.findById(id);
 	}
 
 	@Override
@@ -189,15 +184,11 @@ public class KsqlFlowServiceImpl implements KsqlFlowService {
 	}
 
 	private boolean hasUserPermission(String id, String userId) {
-		final User user = userRepository.findByUserId(userId);
-		if (userService.isUserAdministrator(user)) {
+		User user = userRepository.findByUserId(userId);
+		if (user.getRole().getName().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
 			return true;
 		} else {
-			final Optional<KsqlFlow> opt = ksqlFlowRepository.findById(id);
-			if (opt.isPresent())
-				return opt.get().getUser().getUserId().equals(userId);
-			else
-				return false;
+			return ksqlFlowRepository.findById(id).getUser().getUserId().equals(userId);
 		}
 	}
 

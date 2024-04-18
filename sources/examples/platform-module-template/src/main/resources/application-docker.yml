@@ -1,0 +1,27 @@
+onesaitplatform:
+   database.mongodb:
+      servers: ${REALTIMEDBSERVERS}
+      quasar.connector.http.endpoint: http://${QUASARHOST}:${QUASARPORT}/query/fs/ 
+      authenticationDatabase: ${REALTIMEDBAUTHDB}
+      useAuth: ${REALTIMEDBUSEAUTH}
+      username: ${REALTIMEDBUSER}
+      password: ${REALTIMEDBPASS}  
+      writeConcern: ${REALTIMEDBWRITECONCERN}          
+   database.elasticsearch:
+      sql.connector.http.endpoint: http://${ELASTICDBHOST}:${ELASTICDBPORT}
+      url: ${ELASTICDBHOST}
+      port: 9300            
+   router.alternativeURL: http://routerservice:20000/router/router/
+spring:
+   datasource:  
+      url: jdbc:mysql://${CONFIGDBHOST}:${CONFIGDBPORT}/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+   boot.admin: #Spring Boot Admin Config    
+      url: http://monitoringuiservice:18100/monitoring  
+      client.service-url: http://iotbrokerservice:${server.port}${server.contextPath}/   
+   data.mongodb:
+      host: ${REALTIMEDBSERVERS}
+   elasticsearch.jest:
+      uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}                
+## LOGGING CONF
+logging:
+   path: /var/log/platform-logs 

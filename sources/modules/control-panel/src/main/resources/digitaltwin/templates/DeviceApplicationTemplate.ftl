@@ -16,10 +16,8 @@ package digitaltwin.device;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @SpringBootApplication(scanBasePackages="com.minsait.onesait.platform, digitaltwin.device")
-@EnableSwagger2
 public class DeviceApplication {
 
 	public static void main(String[] args) {

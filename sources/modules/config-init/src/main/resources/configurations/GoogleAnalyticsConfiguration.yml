@@ -1,4 +1,0 @@
-#Google Analytics Configuration
-googleanalytics:
-    enable: false
-    trackingid: UA-127650363-4

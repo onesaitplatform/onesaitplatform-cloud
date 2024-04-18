@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@ package com.minsait.onesait.platform.config.services.dashboardapi.dto;
 
 import java.util.ArrayList;
 
-import com.minsait.onesait.platform.config.model.Dashboard.DashboardType;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,10 +24,6 @@ public class InformationDTO {
 	@Getter
 	@Setter
 	private String dashboard;
-
-	@Getter
-	@Setter
-	private DashboardType dashboardType;
 
 	@Getter
 	@Setter
@@ -72,10 +66,6 @@ public class InformationDTO {
 
 	@Getter
 	@Setter
-	private GadgetConfDTO gadgetConf;
-
-	@Getter
-	@Setter
 	private ArrayList<MeasureDTO> columns;
 
 	@Getter
@@ -102,24 +92,4 @@ public class InformationDTO {
 	@Setter
 	private String[] assetsID;
 
-	@Getter
-	@Setter
-	private SynopticElementDTO synopticElement;
-
-	@Getter
-	@Setter
-	private Boolean dashboardGenerateImage;
-
-	@Getter
-	@Setter
-	private ArrayList<String> i18n;
-	
-	@Getter
-	@Setter
-	private String category;
-	
-	@Getter
-	@Setter 
-	private String subcategory;
-	
 }

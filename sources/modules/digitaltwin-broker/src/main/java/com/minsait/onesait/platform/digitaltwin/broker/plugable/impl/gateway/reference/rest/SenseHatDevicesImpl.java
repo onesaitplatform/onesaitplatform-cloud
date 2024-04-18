@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ public class SenseHatDevicesImpl implements SenseHatDevices {
 	@Override
 	public ResponseEntity<?> getSensehatDevices() {
 		try {
-			DigitalTwinType type = typeRepo.findByIdentification("sensehat");
+			DigitalTwinType type = typeRepo.findByName("sensehat");
 			List<DigitalTwinDevice> devices = deviceRepo.findByTypeId(type);
 			JSONArray array = new JSONArray();
 			for (DigitalTwinDevice device : devices) {

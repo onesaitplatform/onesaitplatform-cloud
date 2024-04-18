@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('PreviewCommonController', ["$scope", "$rootScope", "_", "previewService", function ($scope, $rootScope, _, previewService) {
+  .controller('PreviewCommonController', function ($scope, $rootScope, _, previewService) {
     angular.extend($scope, {
       expandAllInputData: false,
       expandAllOutputData: false,
@@ -121,4 +121,4 @@ angular
       }
     });
 
-  }]);
+  });

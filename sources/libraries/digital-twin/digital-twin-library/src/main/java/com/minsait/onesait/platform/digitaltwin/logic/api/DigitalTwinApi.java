@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.Iterator;
 
 import javax.annotation.PostConstruct;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,13 +90,12 @@ public class DigitalTwinApi implements DigitalTwinLogicAPI {
 			HashMap<String, Object> properties = new HashMap<String, Object>();
 			while (keys.hasNext()) {
 				String property = keys.next();
-				Object value = jsonData.get(property);
-				properties.put(property, value.toString());
-				setStatusValue(property, value);
+				JSONArray jsonArrayProperties = jsonData.getJSONArray(property);
+				properties.put(property, jsonArrayProperties.toString());
 			}
 			eventManager.updateShadow(properties);
 		} catch (JSONException e) {
-			log.error("Error parsing data");
+			log.error("Error parding data");
 		}
 	}
 

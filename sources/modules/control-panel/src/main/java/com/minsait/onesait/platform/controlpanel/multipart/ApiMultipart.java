@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
+import java.util.Set;
 
 import org.springframework.web.multipart.MultipartFile;
 
 import com.minsait.onesait.platform.config.model.Api.ApiType;
+import com.minsait.onesait.platform.config.model.ApiComment;
+import com.minsait.onesait.platform.config.model.ApiUserAssessment;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.User;
 
@@ -49,6 +52,14 @@ public class ApiMultipart {
 	@Getter
 	@Setter
 	private boolean sslCertificate;
+
+	@Getter
+	@Setter
+	private Set<ApiComment> comments;
+
+	@Getter
+	@Setter
+	private Set<ApiUserAssessment> userAssessments;
 
 	@Getter
 	@Setter
@@ -92,7 +103,7 @@ public class ApiMultipart {
 
 	@Getter
 	@Setter
-	private Integer apicachetimeout;
+	private Integer cachetimeout;
 
 	@Getter
 	@Setter

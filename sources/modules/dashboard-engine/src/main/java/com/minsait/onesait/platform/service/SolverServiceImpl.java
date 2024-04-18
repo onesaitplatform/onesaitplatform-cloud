@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,49 +14,39 @@
  */
 package com.minsait.onesait.platform.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import com.minsait.onesait.platform.audit.aop.DashboardEngineAuditable;
 import com.minsait.onesait.platform.bean.AccessType;
 import com.minsait.onesait.platform.bean.DashboardCache;
-import com.minsait.onesait.platform.business.services.datasources.dto.FilterStt;
-import com.minsait.onesait.platform.business.services.datasources.dto.InputMessage;
-import com.minsait.onesait.platform.business.services.datasources.dto.OrderByStt;
-import com.minsait.onesait.platform.business.services.datasources.dto.ParamStt;
-import com.minsait.onesait.platform.business.services.datasources.dto.ProjectStt;
-import com.minsait.onesait.platform.business.services.datasources.exception.DashboardEngineException;
-import com.minsait.onesait.platform.business.services.datasources.service.DatasourceService;
-import com.minsait.onesait.platform.commons.exception.GenericOPException;
+import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
 import com.minsait.onesait.platform.config.model.Dashboard;
 import com.minsait.onesait.platform.config.model.DashboardUserAccess;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
-import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
 import com.minsait.onesait.platform.config.repository.DashboardRepository;
 import com.minsait.onesait.platform.config.repository.DashboardUserAccessRepository;
 import com.minsait.onesait.platform.config.repository.GadgetDatasourceRepository;
 import com.minsait.onesait.platform.config.repository.OntologyVirtualRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
-import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
+import com.minsait.onesait.platform.dto.socket.InputMessage;
+import com.minsait.onesait.platform.persistence.external.virtual.VirtualRelationalOntologyOpsDBRepository;
 import com.minsait.onesait.platform.security.AppWebUtils;
-import com.minsait.onesait.platform.security.dashboard.engine.ValidationService;
+import com.minsait.onesait.platform.solver.SolverInterface;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
 public class SolverServiceImpl implements SolverService {
+
+	private static final String ELASTIC_DATASOURCE_TYPE = "ELASTIC_SEARCH";
+	private static final String VIRTUAL_DATASOURCE_TYPE = "VIRTUAL";
 
 	@Autowired
 	GadgetDatasourceRepository gdr;
@@ -77,7 +67,16 @@ public class SolverServiceImpl implements SolverService {
 	private UserRepository userRepository;
 
 	@Autowired
-	private DatasourceService datasourceService;
+	@Qualifier("QuasarSolver")
+	SolverInterface quasarSolver;
+
+	@Autowired
+	@Qualifier("ElasticSolver")
+	SolverInterface elasticSolver;
+
+	@Autowired
+	@Qualifier("OracleSolver")
+	SolverInterface oracleSolver;
 
 	@Autowired
 	private DashboardCache dashboardCache;
@@ -88,188 +87,60 @@ public class SolverServiceImpl implements SolverService {
 	@Autowired
 	private OPResourceService resourceService;
 
-	@Autowired(required = false)
-	private ValidationService validationService;
-
 	@Override
-	@DashboardEngineAuditable
-	public String solveDatasource(InputMessage im)
-			throws DashboardEngineException, OntologyDataUnauthorizedException, GenericOPException {
-		String error;
-
+	public String solveDatasource(InputMessage im) {
+		log.debug("solveDatasource");
 		if (getDashboardUserSecurity(im.getDashboard())) {
+			final GadgetDatasource gd = gdr.findByIdentification(im.getDs());
 
-			final GadgetDatasource gd = datasourceService.getGadgetDatasourceFromIdentification(im.getDs(),
-					utils.getUserId());
+			if (gd == null) {
+				return "Not found: 403 for user " + utils.getUserId() + " datasource: " + im.getDs();
+			}
 
-			if (externalValidation(im, gd)) {
+			// if dashboard is null (edit mode), we use authenticated user instead of
+			// datasource user
+			final String executeAs = ("".equals(im.getDashboard()) || im.getDashboard() == null) ? utils.getUserId()
+					: gd.getUser().getUserId();
 
-				// if dashboard is null (edit mode), we use authenticated user instead of
-				// datasource user
-				final String executeAs = "".equals(im.getDashboard()) || im.getDashboard() == null ? utils.getUserId()
-						: gd.getUser().getUserId();
-
-				final Ontology ont = datasourceService.getOntologyFromDatasource(gd, executeAs);
-
-				return datasourceService.solveDatasource(im, ont, gd, executeAs);
-
+			String ontology = "";
+			if (gd.getOntology() == null || gd.getOntology().getIdentification() == null) {
+				ontology = getOntologyFromDatasource(gd.getQuery());
 			} else {
-				error = "User " + utils.getUserId()
-						+ " cannot access the information due to restrictions defined in the security plugin";
-				log.info(error);
-				return "[]";
+				ontology = gd.getOntology().getIdentification();
 			}
-		} else {
-			error = "User " + utils.getUserId() + " can't access to dashboard";
-			log.error(error);
-			throw new DashboardEngineException(DashboardEngineException.Error.PERMISSION_DENIED,
-					"User " + utils.getUserId() + " can't access to dashboard");
-		}
-	}
 
-	private boolean externalValidation(InputMessage im, GadgetDatasource gd) {
-		boolean externalValidation = true;
-		if (validationService != null) {
-			try {
-				log.info("dashboard engine plugin active ");
-				final com.minsait.onesait.platform.security.dashboard.engine.dto.InputMessage message = new com.minsait.onesait.platform.security.dashboard.engine.dto.InputMessage();
-				// map to message
-				message.setDashboard(im.getDashboard());
-				message.setDs(im.getDs());
-				if (im.getFilter() == null) {
-					message.setFilter(new ArrayList<>());
-				} else {
-					message.setFilter(im.getFilter().stream().map(
-							f -> new com.minsait.onesait.platform.security.dashboard.engine.dto.FilterStt(f.getField(),
-									f.getOp(), f.getExp()))
-							.collect(Collectors.toList()));
-				}
-				message.setGroup(im.getGroup());
-				message.setLimit(im.getLimit());
-				message.setOffset(im.getOffset());
-				if (im.getParam() != null && im.getParam().size() > 0) {
-					final List<com.minsait.onesait.platform.security.dashboard.engine.dto.ParamStt> param = new ArrayList<>();
-					for (final Object element : im.getParam()) {
-						final ParamStt pastt = (ParamStt) element;
-						param.add(new com.minsait.onesait.platform.security.dashboard.engine.dto.ParamStt(
-								pastt.getField(), pastt.getValue()));
-					}
-					message.setParam(param);
-				}
-				if (im.getProject() != null && im.getProject().size() > 0) {
-					final List<com.minsait.onesait.platform.security.dashboard.engine.dto.ProjectStt> project = new ArrayList<>();
-					for (final Object element : im.getProject()) {
-						final ProjectStt projectStt = (ProjectStt) element;
-						project.add(new com.minsait.onesait.platform.security.dashboard.engine.dto.ProjectStt(
-								projectStt.getField(), projectStt.getOp(), projectStt.getAlias()));
-					}
+			final Ontology ont = ontologyService.getOntologyByIdentification(ontology, executeAs);
 
-					message.setProject(project);
-				}
-				if (im.getSort() != null && im.getSort().size() > 0) {
-					final List<com.minsait.onesait.platform.security.dashboard.engine.dto.OrderByStt> sort = new ArrayList<>();
-					for (final Object element : im.getSort()) {
-						final OrderByStt orderByStt = (OrderByStt) element;
-						sort.add(new com.minsait.onesait.platform.security.dashboard.engine.dto.OrderByStt(
-								orderByStt.getField(), orderByStt.isAsc()));
-					}
+			if (ont == null) {
+				return "Not found: 403 for user " + utils.getUserId() + " ontology: " + ontology;
+			}
 
-					message.setSort(sort);
-				}
-				message.setQuery(gd.getQuery());
-				message.setOntology(gd.getOntology().getIdentification());
+			String dsName = ont.getRtdbDatasource().name();
+			if (dsName.equals(ELASTIC_DATASOURCE_TYPE)) {
+				return elasticSolver.buildQueryAndSolve(gd.getQuery(), gd.getMaxvalues(), im.getFilter(),
+						im.getProject(), im.getGroup(), executeAs, ontology);
+			} 
+			else if (dsName.equals(VIRTUAL_DATASOURCE_TYPE)) {
+				OntologyVirtualDatasource ontologyDatasource = ontologyVirtualRepository
+						.findOntologyVirtualDatasourceByOntologyIdentification(ontology);
 
-				final User user = userRepository.findByUserId(utils.getUserId());
-				final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-				message.setToken((String) auth.getCredentials());
-				message.setUser(user.getUserId());
-				message.setRol(user.getRole().getName());
+				switch (ontologyDatasource.getSgdb()) {
+				case ORACLE:
+					return oracleSolver.buildQueryAndSolve(gd.getQuery(), gd.getMaxvalues(), im.getFilter(),
+							im.getProject(), im.getGroup(), executeAs, ontology);
 
-				externalValidation = validationService.validate(message);
-
-				log.info("dashboard engine externalValidation ");
-				// output map
-
-				im.setDashboard(message.getDashboard());
-				im.setDs(message.getDs());
-				if (message.getFilter() == null) {
-					im.setFilter(new ArrayList<>());
-				} else {
-					im.setFilter(message.getFilter().stream()
-							.map(f -> new FilterStt(f.getField(), f.getOp(), f.getExp())).collect(Collectors.toList()));
+				default:
+					throw new GenericRuntimeOPException("Not supported SGBD");
 				}
 
-				im.setGroup(message.getGroup());
-				im.setLimit(message.getLimit());
-				im.setOffset(message.getOffset());
-
-				if (message.getParam() != null && message.getParam().size() > 0) {
-					final List<ParamStt> param = new ArrayList<>();
-					for (final Object element : message.getParam()) {
-						final com.minsait.onesait.platform.security.dashboard.engine.dto.ParamStt pastt = (com.minsait.onesait.platform.security.dashboard.engine.dto.ParamStt) element;
-						param.add(new ParamStt(pastt.getField(), pastt.getValue()));
-					}
-					im.setParam(param);
-				}
-
-				if (message.getProject() != null && message.getProject().size() > 0) {
-					final List<ProjectStt> project = new ArrayList<>();
-					for (final Object element : message.getProject()) {
-						final com.minsait.onesait.platform.security.dashboard.engine.dto.ProjectStt projectStt = (com.minsait.onesait.platform.security.dashboard.engine.dto.ProjectStt) element;
-						project.add(
-								new ProjectStt(projectStt.getField(), projectStt.getOp(), null, projectStt.getAlias()));
-					}
-					im.setProject(project);
-				}
-
-				if (message.getSort() != null && message.getSort().size() > 0) {
-					final List<OrderByStt> sort = new ArrayList<>();
-					for (final Object element : message.getSort()) {
-						final com.minsait.onesait.platform.security.dashboard.engine.dto.OrderByStt orderByStt = (com.minsait.onesait.platform.security.dashboard.engine.dto.OrderByStt) element;
-						sort.add(new OrderByStt(orderByStt.getField(), orderByStt.isAsc()));
-					}
-
-					im.setSort(sort);
-				}
-
-				gd.setQuery(message.getQuery());
-
-			} catch (final Exception e) {
-				externalValidation = false;
-				log.error("external security plugin error", e);
+			} 
+			else {
+				return quasarSolver.buildQueryAndSolve(gd.getQuery(), gd.getMaxvalues(), im.getFilter(),
+						im.getProject(), im.getGroup(), executeAs, ontology);
 			}
 		}
-		return externalValidation;
-	}
-
-	@Override
-	public String explainDatasource(InputMessage im)
-			throws DashboardEngineException, OntologyDataUnauthorizedException, GenericOPException {
-		String error;
-
-		if (getDashboardUserSecurity(im.getDashboard())) {
-			final GadgetDatasource gd = datasourceService.getGadgetDatasourceFromIdentification(im.getDs(),
-					utils.getUserId());
-
-			if (externalValidation(im, gd)) {
-				// explain only works with same user for ontology
-				final String executeAs = utils.getUserId();
-
-				final Ontology ont = datasourceService.getOntologyFromDatasource(gd, executeAs);
-				return datasourceService.solveDatasource(im, ont, gd, executeAs);
-
-			} else {
-				error = "User " + utils.getUserId()
-						+ " cannot access the information due to restrictions defined in the security plugin";
-				log.info(error);
-				return "[]";
-			}
-		} else {
-			error = "User " + utils.getUserId() + " can't access to dashboard";
-			log.error(error);
-			throw new DashboardEngineException(DashboardEngineException.Error.PERMISSION_DENIED,
-					"User " + utils.getUserId() + " can't access to dashboard");
-		}
+		
+		return "User " + utils.getUserId() + " can't access to dashboard";
 	}
 
 	// This method return null when used can't access the dashboard, in the way
@@ -277,18 +148,14 @@ public class SolverServiceImpl implements SolverService {
 	private boolean getDashboardUserSecurity(String dashboardId) {
 
 		if ("".equals(dashboardId) || dashboardId == null || utils.isAdministrator()) {// Gadget edit mode dashboard is
-			// null
+																						// null
 			return true;
 		}
 
 		final AccessType access = dashboardCache.getAccess();
 
 		if (access == AccessType.NOCHECKED) {
-			final Optional<Dashboard> opt = dashboardRepository.findById(dashboardId);
-			if (!opt.isPresent()) {
-				return false;
-			}
-			final Dashboard d = opt.get();
+			final Dashboard d = dashboardRepository.findById(dashboardId);
 			if (d.isPublic() || d.getUser().getUserId().equals(utils.getUserId())) {
 				dashboardCache.setAccess(AccessType.ALLOW);
 				return true;
@@ -313,6 +180,30 @@ public class SolverServiceImpl implements SolverService {
 		} else {
 			return dashboardCache.getAccess() == AccessType.ALLOW;
 		}
+	}
+
+	private static String getOntologyFromDatasource(String datasource) {
+		datasource = datasource.replaceAll("\\t|\\r|\\r\\n\\t|\\n|\\r\\t", " ");
+		datasource = datasource.trim().replaceAll(" +", " ");
+		String[] list = datasource.split("from ");
+		if (list.length == 1) {
+			list = datasource.split("FROM ");
+		}
+		if (list.length > 1) {
+			for (int i = 1; i < list.length; i++) {
+				if (!list[i].startsWith("(")) {
+					int indexOf = list[i].toLowerCase().indexOf(" ", 0);
+					final int indexOfCloseBracket = list[i].toLowerCase().indexOf(')', 0);
+					indexOf = (indexOfCloseBracket != -1 && indexOfCloseBracket < indexOf) ? indexOfCloseBracket
+							: indexOf;
+					if (indexOf == -1) {
+						indexOf = list[i].length();
+					}
+					return list[i].substring(0, indexOf).trim();
+				}
+			}
+		}
+		return "";
 	}
 
 }

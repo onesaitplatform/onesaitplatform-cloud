@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,26 +62,28 @@ public class MongoQueryByQuasarIntegrationTest {
 	private static final String DATABASE = "onesaitplatform_rtdb";
 
 	private static boolean initDB = false;
-
+	
 	@TestConfiguration
-	static class ContextConfiguration {
+    static class ContextConfiguration {
 		@Bean("dataHubRest")
 		public RestTemplate restTemplate() throws GenericOPException {
 			final RestTemplate rt = new RestTemplate();
-
 			return rt;
 		}
-	}
-
+    }
+	
 	@Autowired
 	private MongoDbTemplateImpl connect;
-
+	
 	@Autowired
 	@Qualifier("MongoBasicOpsDBRepository")
 	private BasicOpsDBRepository repository;
 
 	@Autowired
 	private QuasarMongoDBbHttpConnector connector;
+	
+
+
 
 	private String loadFromResources(String name) {
 		try {
@@ -118,32 +120,32 @@ public class MongoQueryByQuasarIntegrationTest {
 			// Load HesinkiPopulation
 			Scanner scanner = new Scanner(loadFromResources("HelsinkiPopulation-dataset.json"));
 			while (scanner.hasNextLine()) {
-				repository.insert("HelsinkiPopulation_Test", scanner.nextLine());
+				repository.insert("HelsinkiPopulation_Test", "", scanner.nextLine());
 			}
 			scanner.close();
 
 			// Load Restaurants_Test
 			scanner = new Scanner(loadFromResources("Restaurants-dataset.json"));
 			while (scanner.hasNextLine()) {
-				repository.insert("Restaurants_Test", scanner.nextLine());
+				repository.insert("Restaurants_Test", "", scanner.nextLine());
 			}
 			scanner.close();
 
 			// Load Ticket_Test
 			scanner = new Scanner(loadFromResources("Ticket-dataset.json"));
 			while (scanner.hasNextLine()) {
-				repository.insert("Ticket_Test", scanner.nextLine());
+				repository.insert("Ticket_Test", "", scanner.nextLine());
 			}
 			scanner.close();
 
 			// Load HesinkiPopulation
 			scanner = new Scanner(loadFromResources("ISO3166_1-dataset.json"));
 			while (scanner.hasNextLine()) {
-				repository.insert("ISO3166_1_Test", scanner.nextLine());
+				repository.insert("ISO3166_1_Test", "", scanner.nextLine());
 			}
 			scanner.close();
 
-			initDB = true;
+			initDB=true;
 		}
 	}
 

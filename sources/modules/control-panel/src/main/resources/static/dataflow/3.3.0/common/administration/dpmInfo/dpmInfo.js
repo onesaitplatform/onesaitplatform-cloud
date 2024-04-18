@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp')
-  .controller('DPMInfoModalInstanceController', ["$rootScope", "$scope", "$modalInstance", "$modalStack", "$modal", "configuration", "$translate", function ($rootScope, $scope, $modalInstance, $modalStack, $modal,
+  .controller('DPMInfoModalInstanceController', function ($rootScope, $scope, $modalInstance, $modalStack, $modal,
                                                           configuration, $translate) {
     angular.extend($scope, {
       openEnableDPMModal: function () {
@@ -44,4 +44,4 @@ angular
         $modalInstance.dismiss('cancel');
       }
     });
-  }]);
+  });

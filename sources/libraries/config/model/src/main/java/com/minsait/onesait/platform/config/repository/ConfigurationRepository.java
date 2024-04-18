@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,11 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
-import java.util.Collection;
 import java.util.List;
 
 import javax.transaction.Transactional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 
 import com.minsait.onesait.platform.config.model.Configuration;
 import com.minsait.onesait.platform.config.model.Configuration.Type;
@@ -29,7 +27,7 @@ import com.minsait.onesait.platform.config.model.User;
 public interface ConfigurationRepository extends JpaRepository<Configuration, String> {
 
 	@Override
-	<S extends Configuration> List<S> saveAll(Iterable<S> entities);
+	<S extends Configuration> List<S> save(Iterable<S> entities);
 
 	@Override
 	void flush();
@@ -49,7 +47,7 @@ public interface ConfigurationRepository extends JpaRepository<Configuration, St
 
 	List<Configuration> findByUser(User user);
 
-	Configuration findByIdentification(String identification);
+	Configuration findById(String id);
 
 	Configuration findByDescription(String description);
 
@@ -57,23 +55,18 @@ public interface ConfigurationRepository extends JpaRepository<Configuration, St
 
 	List<Configuration> findByTypeAndUser(Type type, User user);
 
-	Configuration findByTypeAndEnvironmentAndIdentification(Type type, String environment, String identification);
+	Configuration findByTypeAndEnvironmentAndSuffix(Type type, String environment, String suffix);
 
 	List<Configuration> findByUserAndType(User userId, Type type);
 
-	@Override
 	@Transactional
 	void deleteById(String id);
 
 	Configuration findByTypeAndEnvironment(Type type, String environment);
 
-	Configuration findByTypeAndIdentificationIgnoreCase(Type type, String identification);
+	Configuration findByTypeAndSuffixIgnoreCase(Type type, String suffix);
 
 	@Override
 	List<Configuration> findAll();
-
-	@Modifying
-	@Transactional
-	void deleteByIdNotIn(Collection<String> ids);
 
 }

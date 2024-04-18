@@ -19,7 +19,7 @@
 
 angular
     .module('dataCollectorApp')
-    .controller('SupportBundleModalInstanceController', ["$scope", "$rootScope", "$modalInstance", "$window", "api", "configuration", function ($scope, $rootScope, $modalInstance, $window, api, configuration) {
+    .controller('SupportBundleModalInstanceController', function ($scope, $rootScope, $modalInstance, $window, api, configuration) {
 
   // True if we're waiting on list of generators from SDC
   $scope.showLoading = true;
@@ -104,4 +104,4 @@ angular
       $modalInstance.dismiss('cancel');
     },
   });
-}]);
+});

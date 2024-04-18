@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,6 @@
 package com.minsait.onesait.platform.router.service.app.model;
 
 import java.io.Serializable;
-import java.util.Date;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -40,57 +37,5 @@ public class NotificationCompositeModel implements Serializable {
 	@Getter
 	@Setter
 	private String url;
-	
-	@Getter
-	@Setter
-	private boolean retriedNotification;
 
-	@Getter
-	@Setter
-	@JsonIgnore
-	private String headerAuthKey;
-	
-	@Getter
-	@Setter
-	@JsonIgnore
-	private String headerAuthValue;
-
-	@Getter
-	@Setter
-	private Date originalNotificationTimestamp;
-	
-	@Getter
-	@Setter
-	@JsonIgnore
-	private Boolean retryOnFaialureEnabled;
-	
-	@Getter
-	@Setter
-	@JsonIgnore
-	private Boolean discardAfterElapsedTimeEnabled;
-
-	@Getter
-	@Setter
-	@JsonIgnore
-	private Integer maxRetryElapsedTime;
-	
-	@Getter
-	@Setter
-	@JsonIgnore
-	private String domainIdentification;
-
-	@Getter
-	@Setter
-	@JsonIgnore
-	private String domainOwner;
-	
-	@Getter
-	@Setter
-	@JsonIgnore
-	private String vertical;
-	
-	@Getter
-	@Setter
-	@JsonIgnore
-	private String tenant;
 }

@@ -17,20 +17,6 @@ var DeviceCreateController = function() {
 		window.location.href = url;
 	}
 
-	var freeResource = function(id,url){
-		console.log('freeResource() -> id: '+ id);
-		$.get("/controlpanel/devices/freeResource/" + id).done(
-				function(data){
-					console.log('freeResource() -> ok');
-					navigateUrl(url); 
-				}
-			).fail(
-				function(e){
-					console.error("Error freeResource", e);
-					navigateUrl(url); 
-				}
-			)		
-	}
 	// CLEAN FIELDS FORM
 	var cleanFields = function(formId) {
 		logControl ? console.log('cleanFields() -> ') : '';
@@ -60,7 +46,6 @@ var DeviceCreateController = function() {
 		$('#parameter_metaInfo').val('');
 
 		// CLEAN ONTOLOGIES
-		
 		$("#datamodel_properties tbody tr").each(
 				function(tr) {
 					$("#onto").append(
@@ -69,34 +54,10 @@ var DeviceCreateController = function() {
 					this.remove();
 
 				});
-		sortOntologies();
+		$('.onto').selectpicker('refresh');
 
 		$("#parameter_clientPlatformOntologies").val('');
-		showHideImageTableOntology();
-	}
-	
-	var sortOntologies = function(){
-		var options = $("#onto option");
 
-		options.sort(function(a,b) {
-		    if (a.text > b.text) return 1;
-		    else if (a.text < b.text) return -1;
-		    else return 0;
-		});
-
-		$("#onto").empty().append(options).selectpicker("refresh");
-	}
-	
-	var sortOntologies = function(){
-		var options = $("#onto option");
-
-		options.sort(function(a,b) {
-		    if (a.text > b.text) return 1;
-		    else if (a.text < b.text) return -1;
-		    else return 0;
-		});
-
-		$("#onto").empty().append(options).selectpicker("refresh");
 	}
 
 	// FORM VALIDATION
@@ -107,6 +68,7 @@ var DeviceCreateController = function() {
 
 		var form1 = $('#device_create_form');
 		var error1 = $('.alert-danger');
+		var success1 = $('.alert-success');
 
 		// set current language
 		currentLanguage = deviceCreateReg.language || LANGUAGE;
@@ -123,7 +85,8 @@ var DeviceCreateController = function() {
 					ignore : ":hidden:not(.selectpicker)", // validate all
 															// fields including
 															// form hidden input
-															// but not selectpicker
+															// but not
+															// selectpicker
 					lang : currentLanguage,
 					// custom messages
 					messages : {
@@ -141,18 +104,24 @@ var DeviceCreateController = function() {
 						},
 
 					},
-					invalidHandler : function(event, validator) { // display error
-																	// alert on form submit
-						toastr.error(deviceCreateJson.messages.validationKO);
-						if (!valOntologies()) {
-							toastr.error(deviceCreateJson.ontologyNotSelected);
-						}
+					invalidHandler : function(event, validator) { // display
+																	// error
+																	// alert on
+																	// form
+																	// submit
+						success1.hide();
+						error1.show();
+						App.scrollTo(error1, -200);
 					},
 					errorPlacement : function(error, element) {
 						if (element.is(':checkbox')) {
-							error.insertAfter(element.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline"));
+							error
+									.insertAfter(element
+											.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline"));
 						} else if (element.is(':radio')) {
-							error.insertAfter(element.closest(".md-radio-list, .md-radio-inline, .radio-list,.radio-inline"));
+							error
+									.insertAfter(element
+											.closest(".md-radio-list, .md-radio-inline, .radio-list,.radio-inline"));
 						} else {
 							error.insertAfter(element);
 						}
@@ -162,18 +131,30 @@ var DeviceCreateController = function() {
 					},
 					unhighlight : function(element) { // revert the change
 														// done by hightlight
-						$(element).closest('.form-group').removeClass('has-error');
+						$(element).closest('.form-group').removeClass(
+								'has-error');
 					},
 					success : function(label) {
 						label.closest('.form-group').removeClass('has-error');
 					},
 					// ALL OK, THEN SUBMIT.
 					submitHandler : function(form) {
+
 						if (valOntologies()) {
-							toastr.success(deviceCreateJson.messages.validationOK);
+							success1.show();
+							error1.hide();
 							form.submit();
+							// insert();
 						} else {
-							toastr.error(deviceCreateJson.ontologyNotSelected);
+							success1.hide();
+							$.alert({
+								title : 'ERROR!',
+								type : 'red',
+								theme : 'light',
+								content : deviceCreateJson.ontologyNotSelected
+							});
+							return false;
+							error1.show();
 						}
 					}
 				});
@@ -195,9 +176,6 @@ var DeviceCreateController = function() {
 			$(this).valid();
 		});
 
-		// INPUT MASK FOR ontology identification allow only letters, numbers and -_
-		$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
-		
 		// set current language and formats
 		currentLanguage = deviceCreateReg.language || LANGUAGE[0];
 		currentFormat = (currentLanguage == 'es') ? 'dd/mm/yyyy' : 'mm/dd/yyyy';
@@ -209,10 +187,6 @@ var DeviceCreateController = function() {
 		$('#resetBtn').on('click', function() {
 			cleanFields('device_create_form');
 		});
-		
-		$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
-			$('.form').validate().element('#' + event.target.id);                // checks form for validity
-		});		
 
 		// INSERT MODE ACTIONS (deviceCreateReg.actionMode = NULL )
 		if (deviceCreateReg.actionMode === null) {
@@ -223,7 +197,7 @@ var DeviceCreateController = function() {
 		else {
 			updateMetainfo($('#parameter_metaInfo').val());
 			updateOntologies($("#parameter_clientPlatformOntologies").val());
-			refreshTokens($("#identification").val());
+			updateTokens($("#parameter_clientPlatformTokens").val());
 		}
 
 	}
@@ -233,7 +207,7 @@ var DeviceCreateController = function() {
 		var nombre = document.getElementById("name_metainfo").value;
 		var valor = document.getElementById("value_metainfo").value;
 		
-		if (nombre === ''){ toastr.error(messagesForms.operations.genOpError,deviceCreateJson.invalidMeta); return false; }
+		if (nombre === ''){ $.alert({title : 'Information:',theme : 'light',content : deviceCreateJson.invalidMeta}); return false; }
 		
 		var p = document.createElement('p');
 		text = document.createTextNode(nombre + '=' + valor);
@@ -245,8 +219,7 @@ var DeviceCreateController = function() {
 		var span = document.createElement('span');
 		span.className = "fa fa-times";
 		span.onclick = function() {
-			this.parentNode.parentElement.remove();
-			deleteMetainfo(document.getElementById("parameter_metaInfo").value, this.parentNode.parentElement.getElementsByTagName('p')[0].innerText);
+			this.parentNode.parentElement.remove()
 		};
 
 		div.appendChild(p);
@@ -268,29 +241,7 @@ var DeviceCreateController = function() {
 		$('#value_metainfo').val('');
 
 	}
-	
-	var deleteMetainfo = function(metaInfoValue, metaVal) {
-		if(metaInfoValue.includes('#' + metaVal)) {
-			metaInfoValue = metaInfoValue.replace('#' + metaVal, '');
-		} else if(metaInfoValue.includes(metaVal + '#')) {
-			metaInfoValue = metaInfoValue.replace(metaVal + '#', '');
-		} else if (metaInfoValue.includes(metaVal)) {
-			metaInfoValue = metaInfoValue.replace(metaVal, '');
-		}
-		document.getElementById("parameter_metaInfo").value = metaInfoValue;
-	}
 
-	var deleteMetainfo = function(metaInfoValue, metaVal) {
-		if(metaInfoValue.includes('#' + metaVal)) {
-			metaInfoValue = metaInfoValue.replace('#' + metaVal, '');
-		} else if(metaInfoValue.includes(metaVal + '#')) {
-			metaInfoValue = metaInfoValue.replace(metaVal + '#', '');
-		} else if (metaInfoValue.includes(metaVal)) {
-			metaInfoValue = metaInfoValue.replace(metaVal, '');
-		}
-		document.getElementById("parameter_metaInfo").value = metaInfoValue;
-	}
-	
 	var updateMetainfo = function(metaInfoValue) {
 		if (metaInfoValue !== null && metaInfoValue.length > 0) {
 			var metaInfoElements = metaInfoValue.split('#');
@@ -304,15 +255,16 @@ var DeviceCreateController = function() {
 				var span = document.createElement('span');
 				span.className = "fa fa-times";
 				span.onclick = function() {
-					this.parentNode.parentElement.remove();
-					deleteMetainfo(metaInfoValue, this.parentNode.parentElement.getElementsByTagName('p')[0].innerText);
+					this.parentNode.parentElement.remove()
 				};
 				div.appendChild(p);
 				p.appendChild(span);
 				$("#id_parameter_metaInfo").append(div);
 
 			}
+
 		}
+
 	}
 
 	var addOntologyRow = function() {
@@ -321,10 +273,14 @@ var DeviceCreateController = function() {
 		var levelSelected = $("#accessLevel option:selected").text();
 
 		if (ontoSelected === "") {
-			toastr.error(messagesForms.operations.genOpError,deviceCreateJson.ontologyNotSelected);
+			$.alert({
+				title : 'ERROR!',
+				type : 'red',
+				theme : 'light',
+				content : deviceCreateJson.ontologyNotSelected
+			});
 			return false;
 		}
-		
 		$('#datamodel_properties > tbody')
 				.append(
 						'<tr data-ontology="'
@@ -335,28 +291,17 @@ var DeviceCreateController = function() {
 								+ ontoSelected
 								+ '</td><td >'
 								+ levelSelected
-								+ '</td><td class="icon" style="white-space: nowrap"><span class="btn btn-xs btn-no-border icon-on-table  tooltips color-red" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn}" th:data-original-title="#{gen.deleteBtn}" onclick="DeviceCreateController.removeOntology(this)"><i class="icon-delete"></i></span></td></tr>');
+								+ '</td><td class="text-center"><button type="button" data-property="" class="btn btn-sm btn-circle btn-outline blue" onclick="DeviceCreateController.removeOntology(this)" th:text="#{device.ontology.remove}"><span th:text="#{gen.deleteBtn}"> Delete </span></button></td></tr>');
 		$(".onto select option:selected").remove();
 		$('.onto').selectpicker('refresh');
-		showHideImageTableOntology();
-		toastr.success(messagesForms.operations.genOpSuccess,deviceCreateJson.messages.ontologyAdded);
 	}
-	
-	function showHideImageTableOntology(){
-		if(typeof $('#datamodel_properties > tbody > tr').length =='undefined' || $('#datamodel_properties > tbody > tr').length == 0){
-			$('#imageNoElementsOnTable').show();
-		}else{
-			$('#imageNoElementsOnTable').hide();
-		}
-		
-	}
+
 	
 	var updateOntologies = function(ontologies) {
 		var selectedOntologies = JSON.parse(ontologies);
 		if (selectedOntologies !== null && selectedOntologies.length > 0) {
 			for (var i = 0; i < selectedOntologies.length; i++) {
 				var onto = selectedOntologies[i];
-				
 				$('#datamodel_properties > tbody')
 						.append(
 								'<tr data-ontology="'
@@ -367,11 +312,10 @@ var DeviceCreateController = function() {
 										+ onto.id
 										+ '</td><td >'
 										+ onto.access
-										+ '</td><td class="icon" style="white-space: nowrap"><span class="btn btn-xs btn-no-border icon-on-table  tooltips color-red" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn}" th:data-original-title="#{gen.deleteBtn}" onclick="DeviceCreateController.removeOntology(this)" th:text="#{device.ontology.remove}"><i class="icon-delete"></i></span></td></tr>');
+										+ '</td><td class="text-center"><button type="button" data-property="" class="btn btn-sm btn-circle btn-outline blue" onclick="DeviceCreateController.removeOntology(this)" th:text="#{device.ontology.remove}"><span th:text="#{gen.deleteBtn}"> Delete </span></button></td></tr>');
 			}
 			$(".onto select option:selected").remove();
 			$('.onto').selectpicker('refresh');
-			showHideImageTableOntology();
 		}
 
 	}
@@ -381,16 +325,12 @@ var DeviceCreateController = function() {
 		$("#onto").append(
 				'<option value="' + ontoSelected + '">' + ontoSelected
 						+ '</option>');
-		sortOntologies();
+		$('.onto').selectpicker('refresh');
 		row.parentElement.parentElement.remove();
-		showHideImageTableOntology();
-		toastr.success(messagesForms.operations.genOpSuccess,deviceCreateJson.messages.ontologyRemoved);
-		
 	}
 
 	var validateOntologies = function() {
 		var listOntology = [];
-		
 		$("#datamodel_properties tbody tr").each(function(tr) {
 			listOntology.push({
 				id : this.dataset.ontology,
@@ -404,7 +344,6 @@ var DeviceCreateController = function() {
 	}
 
 	var generateToken = function() {
-		
 		var selectedDevice = $("#identification").val();
 		var request = {
 			deviceIdentification : selectedDevice
@@ -412,13 +351,9 @@ var DeviceCreateController = function() {
 		requestData = JSON.stringify(request);
 		var csrf_value = $("meta[name='_csrf']").attr("content");
 		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-		var url = "/controlpanel/devices/generateToken";
-		if(multitenancyEnabled === 'true' && $('#tenants').val()!=null ){
-			url+='?tenant='+$('#tenants').val();
-		}
 		
 		$.ajax({
-			url : url,
+			url : "/controlpanel/devices/generateToken",
 			headers: {
 				[csrf_header]: csrf_value
 		    },
@@ -430,14 +365,23 @@ var DeviceCreateController = function() {
 			success : function(data) {
 				if (data.ok) {
 					refreshTokens(selectedDevice);
-					toastr.success(messagesForms.operations.genOpSuccess,'');
 				} else {
-					toastr.error(messagesForms.operations.genOpError,deviceCreateJson.deviceTokenCreateError);
+					$.alert({
+						title : 'ERROR!',
+						type : 'red',
+						theme : 'light',
+						content : deviceCreateJson.deviceTokenCreateError
+					});
 					return false;
 				}
 			},
 			error : function(data, status, er) {
-				toastr.error(messagesForms.operations.genOpError,deviceCreateJson.deviceTokenCreateError);
+				$.alert({
+					title : 'ERROR!',
+					type : 'red',
+					theme : 'light',
+					content : deviceCreateJson.deviceTokenCreateError
+				});
 				return false;
 			}
 		});
@@ -458,21 +402,17 @@ var DeviceCreateController = function() {
 				if (token.active) {
 					checked = 'checked';
 				}
-				var html = '<tr data-id="'
-					+ token.id
-					+ '"><td>'
-					+ token.token
-					+ '</td>';
-					if(multitenancyEnabled === 'true'){
-						if(token.tenant !=null)
-							html+='<td>'+token.tenant+'</td>';
-						else
-							html+='<td>'+currentTenant+'</td>';
-					}
-					html+='<td><div class="mt-checkbox-list"><div class="switch"><label><input '+disableButton+' id="active" class="form-control no-remove" type="checkbox" name="active" onclick="DeviceCreateController.changeEstatusToken(this);" '+ checked +'/><span class="checkbox-slider round"></span></label></div><div class="inline" style="padding:10px;"></div></div>'
-					+ '</td><td class="icon" style="white-space: nowrap"><div class="grupo-iconos"><button   id="deleteBtn" type="button" class="btn btn-xs btn-no-border icon-on-table  tooltips color-red" style="background:rgba(255,255,255, 0.0);" '+disableButton+' name="delete"  value="Remove" onclick="DeviceCreateController.showConfirmDialogDeleteToken(this);" ><i class="icon-delete"></i></button></button></div></td></tr>';
-				$('#datamodel_tokens > tbody').append(html);
-				$('#parameter_clientPlatformTokens').val(tokens)
+				$('#datamodel_tokens > tbody')
+						.append(
+								'<tr data-id="'
+										+ token.id
+										+ '"><td>'
+										+ token.token
+										+ '</td><td><input '+disableButton+' class="form-check-input" type="checkbox" onclick="DeviceCreateController.changeEstatusToken(this);" value="'
+										+ token.active
+										+ '" '
+										+ checked
+										+ '></td><td class="icon" style="white-space: nowrap"><div class="grupo-iconos"><button   id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" '+disableButton+' name="delete"  value="Remove" onclick="DeviceCreateController.showConfirmDialogDeleteToken(this);" ><span th:text="#{gen.deleteBtn}"> Delete </span></button></div></td></tr>');
 
 			}
 		}
@@ -485,6 +425,7 @@ var DeviceCreateController = function() {
 		var selectedToken = $row.dataset.id;
 		var selectedStatus = check.checked;
 		activateDeactivateToken(selectedToken, selectedStatus);
+
 	}
 
 	var activateDeactivateToken = function(selectedToken, selectedStatus) {
@@ -508,15 +449,22 @@ var DeviceCreateController = function() {
 			mimeType : 'application/json',
 			success : function(data) {
 				if (!data.ok) {
-					toastr.error(messagesForms.operations.genOpError,deviceCreateJson.deviceChangeActiveError);
+					$.alert({
+						title : 'ERROR!',
+						type : 'red',
+						theme : 'light',
+						content : deviceCreateJson.deviceChangeActiveError
+					});
 					return false;
-				}else{
-					refreshTokens($("#identification").val());
-					toastr.success(messagesForms.operations.genOpSuccess,'');
 				}
 			},
 			error : function(data, status, er) {
-				toastr.error(messagesForms.operations.genOpError,deviceCreateJson.deviceChangeActiveError);
+				$.alert({
+					title : 'ERROR!',
+					type : 'red',
+					theme : 'light',
+					content : deviceCreateJson.deviceChangeActiveError
+				});
 				return false;
 			}
 		});
@@ -546,14 +494,23 @@ var DeviceCreateController = function() {
 			success : function(data) {
 				if (data.ok) {
 					refreshTokens(selectedDevice);
-					toastr.success(messagesForms.operations.genOpSuccess,'');
 				} else {
-					toastr.error(messagesForms.operations.genOpError,deviceCreateJson.deviceTokenDeleteError);
+					$.alert({
+						title : 'ERROR!',
+						type : 'red',
+						theme : 'light',
+						content : deviceCreateJson.deviceTokenDeleteError
+					});
 					return false;
 				}
 			},
 			error : function(data, status, er) {
-				toastr.error(messagesForms.operations.genOpError,deviceCreateJson.deviceTokenDeleteError);
+				$.alert({
+					title : 'ERROR!',
+					type : 'red',
+					theme : 'light',
+					content : deviceCreateJson.deviceTokenDeleteError
+				});
 				return false;
 			}
 		});
@@ -581,7 +538,6 @@ var DeviceCreateController = function() {
 				updateTokens(JSON.stringify(data));
 			},
 			error : function(data, status, er) {
-				toastr.error(messagesForms.operations.genOpError,'');
 			}
 		});
 	}
@@ -592,7 +548,12 @@ var DeviceCreateController = function() {
 
 		// no Id no fun!
 		if (!id) {
-			toastr.error(messagesForms.operations.genOpError,'NO DEVICE-FORM SELECTED!');
+			$.alert({
+				title : 'ERROR!',
+				type : 'red',
+				theme : 'light',
+				content : 'NO DEVICE-FORM SELECTED!'
+			});
 			return false;
 		}
 
@@ -605,14 +566,15 @@ var DeviceCreateController = function() {
 		// i18 labels
 		var Close = headerReg.btnCancelar;
 		var Remove = headerReg.btnEliminar;
-		var Content = headerReg.deviceConfirm;
-		var Title = headerReg.deviceDelete;
+		var Content = deviceCreateJson.deleteDeviceConfirm;
+		var Title = headerReg.titleConfirm + ':';
 
 		var csrf_value = $("meta[name='_csrf']").attr("content");
 		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
 		
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
+			icon : 'fa fa-warning',
 			title : Title,
 			theme : 'light',
 			columnClass : 'medium',
@@ -620,16 +582,17 @@ var DeviceCreateController = function() {
 			draggable : true,
 			dragWindowGap : 100,
 			backgroundDismiss : true,
+			closeIcon : true,
 			buttons : {
 				close : {
 					text : Close,
-					btnClass : 'btn btn-outline blue dialog',
+					btnClass : 'btn btn-sm btn-circle blue btn-outline',
 					action : function() {
 					} // GENERIC CLOSE.
 				},
 				remove : {
 					text : Remove,
-					btnClass : 'btn btn-primary',
+					btnClass : 'btn btn-sm btn-circle btn-primary btn-outline',
 					action : function() {
 						console.log(id);
 						$.ajax({
@@ -644,7 +607,12 @@ var DeviceCreateController = function() {
 							},
 						    error: function(result){
 						    	console.log(result.responseText);
-						    	toastr.error(messagesForms.operations.genOpError,result.responseText);
+						    	$.alert({
+									title : 'ERROR!',
+									type : 'red',
+									theme : 'light',
+									content : result.responseText
+								});
 						    }
 						});
 					}
@@ -661,10 +629,11 @@ var DeviceCreateController = function() {
 		var Remove = headerReg.btnEliminar;
 		var Close = headerReg.btnCancelar;
 		var Content = deviceCreateJson.deleteTokenConfirm;
-		var Title = deviceCreateJson.deleteTokenDelete;
+		var Title = headerReg.titleConfirm + ':';
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
+			icon : 'fa fa-warning',
 			title : Title,
 			theme : 'light',
 			columnClass : 'medium',
@@ -672,16 +641,17 @@ var DeviceCreateController = function() {
 			draggable : true,
 			dragWindowGap : 100,
 			backgroundDismiss : true,
+			closeIcon : true,
 			buttons : {
 				close : {
 					text : Close,
-					btnClass : 'btn btn-outline blue dialog',
+					btnClass : 'btn btn-sm btn-circle blue btn-outline',
 					action : function() {
 					} // GENERIC CLOSE.
 				},
 				remove : {
 					text : Remove,
-					btnClass : 'btn btn-primary',
+					btnClass : 'btn btn-sm btn-circle btn-primary btn-outline',
 					action : function() {
 						deleteToken(data);
 					}
@@ -712,10 +682,6 @@ var DeviceCreateController = function() {
 		go : function(url) {
 			logControl ? console.log(LIB_TITLE + ': go()') : '';
 			navigateUrl(url);
-		},
-		cancel: function(id,url){
-			logControl ? console.log(LIB_TITLE + ': cancel()') : '';			
-			freeResource(id,url);
 		},
 		// DELETE DEVICE
 		deleteDevice : function(id) {

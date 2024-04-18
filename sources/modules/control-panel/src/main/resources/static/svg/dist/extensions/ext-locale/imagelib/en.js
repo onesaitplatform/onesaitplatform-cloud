@@ -11,13 +11,13 @@ var svgEditorExtensionLocale_imagelib_en = (function () {
       title: 'Image library'
     }],
     imgLibs: [{
-      name: 'library',
+      name: 'Demo library (local)',
       url: '{path}imagelib/index{modularVersion}.html',
-      description: 'Image library on this server'
-    } //, {
-     // name: 'IAN Symbol Libraries',
-      //url: 'https://ian.umces.edu/symbols/catalog/svgedit/album_chooser.php?svgedit=3',
-     // description: 'Free library of illustrations' // The site is no longer using our API, and they have added an
+      description: 'Demonstration library for SVG-edit on this server'
+    }, {
+      name: 'IAN Symbol Libraries',
+      url: 'https://ian.umces.edu/symbols/catalog/svgedit/album_chooser.php?svgedit=3',
+      description: 'Free library of illustrations' // The site is no longer using our API, and they have added an
       //   `X-Frame-Options` header which prevents our usage cross-origin:
       // Getting messages like this in console:
       //   Refused to display 'https://openclipart.org/detail/307176/sign-bike' in a frame
@@ -33,8 +33,7 @@ var svgEditorExtensionLocale_imagelib_en = (function () {
       }
       */
 
-   // }
-  ]
+    }]
   };
 
   return en;

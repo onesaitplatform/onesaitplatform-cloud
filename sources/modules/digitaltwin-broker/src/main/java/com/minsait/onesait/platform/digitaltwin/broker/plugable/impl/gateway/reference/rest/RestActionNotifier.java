@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import com.minsait.onesait.platform.config.model.DigitalTwinDevice;
-import com.minsait.onesait.platform.config.services.digitaltwin.device.DigitalTwinDeviceService;
+import com.minsait.onesait.platform.config.repository.DigitalTwinDeviceRepository;
 import com.minsait.onesait.platform.digitaltwin.broker.plugable.impl.gateway.reference.ActionNotifier;
 import com.minsait.onesait.platform.digitaltwin.broker.processor.model.ActionMessage;
 
@@ -48,36 +48,34 @@ public class RestActionNotifier implements ActionNotifier {
 	private RestTemplate restTemplate;
 
 	@Autowired
-	private DigitalTwinDeviceService digitalTwinDeviceService;
+	private DigitalTwinDeviceRepository deviceRepo;
 
 	@PostConstruct
 	public void init() {
-		restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
-
-		restTemplate.setRequestFactory(getRestTemplateRequestFactory());
+		this.restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+		this.restTemplate.setRequestFactory(getRestTemplateRequestFactory());
 	}
 
 	@Override
-	public void notifyActionMessage(String apiKey, JSONObject message) {
+	public void notifyActionMessage(JSONObject message) {
 		try {
 			if (message.has("id")) {
-				final String targetTwin = message.get("id").toString();
+				String targetTwin = message.get("id").toString();
 
-				final DigitalTwinDevice device = digitalTwinDeviceService.getDigitalTwinDevicebyName(apiKey,
-						targetTwin);
+				DigitalTwinDevice device = deviceRepo.findByIdentification(targetTwin);
 				if (null != device) {
-					final String deviceEndpoint = device.getUrlSchema() + "://" + device.getIp() + ":"
-							+ device.getPort() + device.getContextPath() + "/actions";
+					String deviceEndpoint = device.getUrlSchema() + "://" + device.getIp() + ":" + device.getPort()
+							+ device.getContextPath() + "/actions";
 
-					final ActionMessage actionMessage = new ActionMessage();
+					ActionMessage actionMessage = new ActionMessage();
 					actionMessage.setName(message.get("name").toString());
 					actionMessage.setData(message.get("data").toString());
 
-					final HttpEntity<ActionMessage> shadowEntity = new HttpEntity<>(actionMessage);
+					HttpEntity<ActionMessage> shadowEntity = new HttpEntity<>(actionMessage);
 
 					log.info("Attemp to notify custom message to device {}", deviceEndpoint);
-					final ResponseEntity<String> resp = restTemplate.exchange(deviceEndpoint, HttpMethod.POST,
-							shadowEntity, String.class);
+					ResponseEntity<String> resp = restTemplate.exchange(deviceEndpoint, HttpMethod.POST, shadowEntity,
+							String.class);
 
 					if (resp.getStatusCode() == HttpStatus.OK) {
 						log.info("Notified custom message to device {}", deviceEndpoint);
@@ -88,16 +86,16 @@ public class RestActionNotifier implements ActionNotifier {
 					}
 				}
 			}
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			log.error("Error notifing shadow message", e);
 		}
 	}
 
 	private ClientHttpRequestFactory getRestTemplateRequestFactory() {
-		final RequestConfig config = RequestConfig.custom().setSocketTimeout(TIMEOUT).setConnectTimeout(TIMEOUT)
+		RequestConfig config = RequestConfig.custom().setSocketTimeout(TIMEOUT).setConnectTimeout(TIMEOUT)
 				.setConnectionRequestTimeout(TIMEOUT).build();
 
-		final CloseableHttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(config).build();
+		CloseableHttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(config).build();
 
 		return new HttpComponentsClientHttpRequestFactory(client);
 	}

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
-import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,7 +32,6 @@ import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.repository.OntologyUserAccessRepository;
-import com.minsait.onesait.platform.config.services.user.UserService;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OntologyServiceTest {
@@ -46,65 +44,60 @@ public class OntologyServiceTest {
 	@InjectMocks
 	OntologyServiceImpl service;
 
-	@Mock
-	private UserService userService;
-
 	@Test
 	public void given_OneOntologyWithNullUserAccesses_When_IsRequestedIfItHasAnyUserAccess_Then_FalseIsReturned() {
-		final String id = "1";
-		final Ontology ontology = new Ontology();
+		String id = "1";
+		Ontology ontology = new Ontology();
 		ontology.setId(id);
-		when(ontologyRepository.findById(id)).thenReturn(Optional.ofNullable(ontology));
+		when(ontologyRepository.findById(id)).thenReturn(ontology);
 		when(ontologyUserAccessRepository.findByOntology(ontology)).thenReturn(null);
 		assertFalse(service.hasOntologyUsersAuthorized("1"));
 	}
 
 	@Test
 	public void given_OneOntologyWithEmptyListOfUserAccesses_When_IsRequestedIfItHasAnyUserAccess_Then_FalseIsReturned() {
-		final String id = "1";
-		final Ontology ontology = new Ontology();
+		String id = "1";
+		Ontology ontology = new Ontology();
 		ontology.setId(id);
-		when(ontologyRepository.findById(id)).thenReturn(Optional.ofNullable(ontology));
+		when(ontologyRepository.findById(id)).thenReturn(ontology);
 		when(ontologyUserAccessRepository.findByOntology(ontology)).thenReturn(new ArrayList<OntologyUserAccess>(1));
 		assertFalse(service.hasOntologyUsersAuthorized("1"));
 	}
 
 	@Test
 	public void given_OneOntologyWithOneUserAccesses_When_IsRequestedIfItHasAnyUserAccess_Then_TrueIsReturned() {
-		final String id = "1";
-		final Ontology ontology = new Ontology();
+		String id = "1";
+		Ontology ontology = new Ontology();
 		ontology.setId(id);
-		final OntologyUserAccess ontologyUserAccess = new OntologyUserAccess();
+		OntologyUserAccess ontologyUserAccess = new OntologyUserAccess();
 		ontologyUserAccess.setId("1");
-		final ArrayList<OntologyUserAccess> authorizies = new ArrayList<>(1);
+		ArrayList<OntologyUserAccess> authorizies = new ArrayList<OntologyUserAccess>(1);
 		authorizies.add(ontologyUserAccess);
-		when(ontologyRepository.findById(id)).thenReturn(Optional.ofNullable(ontology));
+		when(ontologyRepository.findById(id)).thenReturn(ontology);
 		when(ontologyUserAccessRepository.findByOntology(ontology)).thenReturn(authorizies);
 		assertTrue(service.hasOntologyUsersAuthorized("1"));
 	}
 
 	@Test
 	public void given_OneOntologyIsPublic_When_AnyUserAsksForQueryAccess_Then_TrueItIsReturned() {
-		final String id = "1";
-		final User ontologyUser = createUser("owner", "normal");
-		final Ontology ontology = new Ontology();
+		String id = "1";
+		User ontologyUser = createUser("owner", "normal");
+		Ontology ontology = new Ontology();
 		ontology.setId(id);
 		ontology.setPublic(true);
 		ontology.setUser(ontologyUser);
 
-		final User sessionUser = createUser("any", "any");
-
-		when(userService.isUserAdministrator(sessionUser)).thenReturn(false);
+		User sessionUser = createUser("any", "any");
 
 		assertTrue("Any user should have query access to a public ontology",
 				service.hasUserPermissionForQuery(sessionUser, ontology));
 	}
 
 	private User createUser(String userId, String roleId) {
-		final Role role = new Role();
+		Role role = new Role();
 		role.setId(roleId);
 
-		final User user = new User();
+		User user = new User();
 		user.setUserId(userId);
 		user.setRole(role);
 

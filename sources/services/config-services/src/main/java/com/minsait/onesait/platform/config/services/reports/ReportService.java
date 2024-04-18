@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,12 @@
  */
 package com.minsait.onesait.platform.config.services.reports;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 
-import com.minsait.onesait.platform.config.model.BinaryFile;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.Report;
 
 @Service
@@ -43,15 +41,4 @@ public interface ReportService {
 	Report findByIdentificationOrId(String id);
 
 	boolean hasUserPermission(String userId, Report report, ResourceAccessType accessType);
-
-	Collection<BinaryFile> findResourcesForUser(String userId);
-
-	List<BinaryFile> findResourcesAvailableExcludingSelf(String userId, String reportId);
-
-	void addBinaryFileToResource(Report report, String binaryFileId);
-
-	void deleteResource(Report report, String resourceId);
-
-	int countAssociatedReportsToResource(String resourceId);
-
 }

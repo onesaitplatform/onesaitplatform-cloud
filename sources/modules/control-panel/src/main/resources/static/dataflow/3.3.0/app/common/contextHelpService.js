@@ -18,7 +18,7 @@
  */
 
 angular.module('dataCollectorApp.common')
-  .service('contextHelpService', ["$rootScope", "$q", "configuration", "api", "pipelineConstant", "pipelineService", function($rootScope, $q, configuration, api, pipelineConstant, pipelineService) {
+  .service('contextHelpService', function($rootScope, $q, configuration, api, pipelineConstant, pipelineService) {
 
     // pre-populate with some static configurations
     var helpIds = {
@@ -95,4 +95,4 @@ angular.module('dataCollectorApp.common')
       return uiHelpBaseURL;
     };
 
-  }]);
+  });

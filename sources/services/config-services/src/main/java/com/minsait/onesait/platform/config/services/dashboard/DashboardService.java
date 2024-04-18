@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,22 @@
  */
 package com.minsait.onesait.platform.config.services.dashboard;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 
-import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.Dashboard;
 import com.minsait.onesait.platform.config.model.DashboardUserAccess;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardCreateDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardExportDTO;
-import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardImportResponsetDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardOrder;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardSimplifiedDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardUserAccessDTO;
@@ -37,16 +39,6 @@ public interface DashboardService {
 	List<DashboardDTO> findDashboardWithIdentificationAndDescription(String identification, String description,
 			String user);
 
-	List<DashboardDTO> findDashboardWithIdentificationAndType(String identification, String type, String user);
-	
-	List<DashboardDTO> findDashboardIdentification(String identification, String columName, String order,  String user, int page, int limit);
-	
-	Integer countDashboardIdentification(String identification,  String user);
-	
-	Integer countSynopticIdentification(String identification, String user);
-	
-	List<DashboardDTO> findSynopticsIdentification(String identification,String user, String columName, String order, int page, int limit);
-
 	List<String> getAllIdentifications();
 
 	void deleteDashboard(String id, String userId);
@@ -55,7 +47,9 @@ public interface DashboardService {
 
 	Dashboard getDashboardById(String id, String userId);
 
-	String cloneDashboard(Dashboard originalDashboard, String identification, String userId);
+	String getCredentialsString(String userId);
+
+	String cloneDashboard(Dashboard originalDashboard, String identification, User user);
 
 	String createNewDashboard(DashboardCreateDTO dashboardCreateDTO, String userId);
 
@@ -64,8 +58,6 @@ public interface DashboardService {
 	boolean dashboardExists(String identification);
 
 	void saveDashboardModel(String id, String model, String userId);
-
-	void saveDashboardHeaderLibs(String id, String HeaderLibs, String userId);
 
 	List<DashboardUserAccess> getDashboardUserAccesses(Dashboard dashboard);
 
@@ -97,8 +89,7 @@ public interface DashboardService {
 
 	DashboardExportDTO addGadgets(DashboardExportDTO dashboard);
 
-	DashboardImportResponsetDTO importDashboard(DashboardExportDTO dashboard, String userId, boolean overwrite,
-			boolean importAuthorizations);
+	String importDashboard(DashboardExportDTO dashboard, String userId);
 
 	boolean dashboardExistsById(String id);
 
@@ -110,6 +101,19 @@ public interface DashboardService {
 	ResponseEntity<byte[]> generatePDFFromDashboardId(String id, int waittime, int height, int width, String params,
 			String oauthtoken);
 
+	public String importDashboard(String name, String data, String userId, String token);
+
+	public ResponseEntity<byte[]> exportDashboard(String id, String ususerIder, String token);
+
+	public ResponseEntity<String> sendHttp(HttpServletRequest requestServlet, HttpMethod httpMethod, String body,
+			String token) throws URISyntaxException, IOException;
+
+	public ResponseEntity<String> sendHttp(String url, HttpMethod httpMethod, String body, String token)
+			throws URISyntaxException, IOException;
+
+	public ResponseEntity<String> sendHttp(String url, HttpMethod httpMethod, String body, HttpHeaders headers)
+			throws URISyntaxException, IOException;
+
 	DashboardUserAccess getDashboardUserAccessByIdentificationAndUser(String dashboardId, User user);
 
 	String insertDashboardUserAccess(Dashboard dashboard, List<DashboardUserAccessDTO> dtos, boolean updated);
@@ -117,30 +121,7 @@ public interface DashboardService {
 	String deleteDashboardUserAccess(List<DashboardUserAccessDTO> dtos, String dashboardIdentification,
 			boolean deleteAll);
 
-	JSONObject getAllInternationalizationJSON(Dashboard dashboard);
-
-	long getClientMaxHeartbeatTime();
-
-	DashboardExportDTO exportDashboardDTO(String dashboardId, String userId);
-
-	DashboardExportDTO getBungleDashboardDTO(String dashboardId, String userId);
-
-	JSONArray getGadgets(List<String> dashboardList, String userId);
-
-	List<String> getIdentificationsByUserId(String userId);
-
-	List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification, String description);
-
-	String getProtocol();
-
-	void setImage(Dashboard dashboard, byte[] image);
-
-	void generateDashboardImage(String dashboardId, String token);
-
-	void createModifyI18nResource(String id, DashboardCreateDTO dashboard, String userId);
-
-	void deleteDashboardUserAccessForAUser(String userAccessId);
-	
-	
+	// List<DashboardUserAccess> addDashboardUserAccess(List<DashboardUserAccess>
+	// usersAccessType, boolean updated);
 
 }

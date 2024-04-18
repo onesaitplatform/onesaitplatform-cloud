@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@
 		    window.__env.endpointDashboardEngine = '/dashboardengine';
 		    window.__env.dashboardEngineUsername = '';
 			window.__env.dashboardEnginePassword = '';
-			sessionStorage.setItem("dashboardEngineOauthtoken",document.getElementById("oauthtoken").value);
+			window.__env.dashboardEngineOauthtoken = document.getElementById("oauthtoken").value;
 		    window.__env.dashboardEngineLoginRest = '/loginRest';
 		    window.__env.enableDebug = false;
 		    window.__env.urlParameters = {};		   
@@ -51,7 +51,7 @@
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
-		<link href="/controlpanel/static/vendor/google/material-icons.css" rel="stylesheet"/>
+		<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
 		
 		
 		<!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND DATATABLES  -->
@@ -87,33 +87,12 @@
 		-webkit-box-sizing:content-box; 
 		box-sizing:content-box;
 		}
-
-		#configContainer .control-label{
-			white-space: nowrap;
-		}
-		
-		.hoverborder:hover {
-		    border-color: #5789AD !important;
-		    background-color: transparent !important;
-		    border-width: 2px !important;
-            border-style: solid;
-		}
-		.boolean{
-			color:black !important;
-		}
-		.number {
-   			 color:black !important;
-		}
-		.string {
-		    color:black !important;
-		}
-
 		
 		</style>
 	</head>	
 	
 	<!-- page-sidebar-closed to start page with collapsed menu -->
-	<body class="page-header-fixed  page-content-white page-sidebar-closed wait-interval" style="display:block;">
+	<body class="page-header-fixed  page-content-white page-sidebar-closed wait-interval">
 
 
 
@@ -144,10 +123,7 @@
 					<ul class="page-breadcrumb">
 						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/gadgets/list}"> <span th:text="#{gadgets.my}">My Gadgets</span></a><i class="fa fa-angle-right"></i> </li>
-						<li>
-							<span th:if="${gadget.identification} == null" th:text="#{gadgets.create}">Create Gadget</span>
-							<span th:if="${gadget.identification} != null" th:text="#{gadgets.update}">Create Gadget</span>
-						</li>
+						<li><span th:text="#{gadgets.create}">Create Gadget</span></li>
 					</ul>						
 				</div>
 				<!-- END PAGE BAR -->
@@ -158,7 +134,7 @@
 				
 				<!-- MAIN ROW -->
 				<div class="row">
-					
+					<div class="col-md-12">
 					
 						<div class="portlet light" >
 							<div class="portlet-title">
@@ -169,17 +145,16 @@
 									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
 									
 								</div>
-								<div class="form-actions">
-									  <div class="pull-right">
-										<!-- CANCEL -->
-										<button th:if="${iframe}" id="cancelBtn" type="button"  style="border-width: 0px !important;" class="btn btn-circle btn-outline blue " name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" onclick="closeWindow();"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>								
-								  
-										<!-- CREATE IFRAME-->
-										<button th:if="${gadget.identification} == null and ${iframe}" id="createIframeBtn" type="button" onclick="createGadgetIframe();" class="btn btn-circle btn-outline btn-primary" style="display:none;" name="create"><span th:text="#{gen.createBtn}"> New</span></button>
-										<!-- UPDATE IFRAME-->
-										<button th:if="${gadget.id} != null and ${iframe}" id="updateIframeBtn" type="button" onclick="updateGadgetIframe();" class="btn btn-circle btn-outline btn-primary" name="update"> <span th:text="#{gen.editBtn}"> Edit</span></button>
-									</div>
+								<div class="pull-right">
+									<!-- CANCEL -->
+									<button th:if="${iframe}" id="cancelBtn" type="button" class="btn btn-circle btn-outline blue" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" onclick="closeWindow();"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>								
+									<span th:if="${iframe}" class="sep no-border"></span>
+									<!-- CREATE IFRAME-->
+									<button th:if="${gadget.identification} == null and ${iframe}" id="createIframeBtn" type="button" onclick="createGadgetIframe();" class="btn btn-circle btn-outline blue" style="display:none;" name="create"><span th:text="#{gen.createBtn}"> New</span></button>
+									<!-- UPDATE IFRAME-->
+									<button th:if="${gadget.id} != null and ${iframe}" id="updateIframeBtn" type="button" onclick="updateGadgetIframe();" class="btn btn-circle btn-outline blue" name="update"> <span th:text="#{gen.editBtn}"> Edit</span></button>
 								</div>
+								
 								<div th:classappend="${iframe} ? hide : ''"  class="tools">
 									<!--  <a href="" class="collapse" data-original-title="" title=""> </a>-->
 									<a href="" id="toolFullScreen" class="fullscreen" data-original-title="" title=""> </a>
@@ -203,7 +178,6 @@
 									</div>	
 									<div class="col-md-12 margin-bottom-20">									
 										<form role="form" id="gadget_create_form" th:object="${gadget}" method="post" class="form">
-											<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 									  		<!-- FORM ACTIONS FOR INSERT-->
 											<input th:if="${gadget.id} == null" type="hidden" name="action" th:value="@{/gadgets/create}"/>
 											
@@ -213,11 +187,12 @@
 								 			<input type="hidden" id="config" th:field="*{config}"/>
 								 			<input type="hidden" id="type" th:field="*{type}"/>
 								 			<input type="hidden" id="description" th:field="*{description}"/>
+								 			<input type="hidden" id="public" th:field="*{public}"/>
 								 			<input type="hidden" id="id" th:field="*{id}"/>
 								 			<input type="hidden" id="jsonMeasures" name="jsonMeasures" />
 								 			<input type="hidden" id="datasourcesMeasures" name="datasourcesMeasures" />
-								 			<th:block th:include="versioning/fragments/form-commit"></th:block>
-								 		
+								 										  
+											<div class="form-body">
 									 			<div class="row">
 													<div class="col-md-12"> 
 														<div class=" hidden alert alert-info alert-dismissable">
@@ -228,32 +203,23 @@
 													</div>												
 													<div class="col-md-6 col-sm-12">
 														<div class="form-group">
-															<label class="control-label"  th:text="#{gadgets.create.name}">Gadget Name</label>
-															
+															<i class="fa fa-credit-card"></i>  <label class="control-label"  th:text="#{gadgets.create.name} + ':'">Gadget Name</label>
+															<div class="input-icon ">
+																<i class="fa fa-credit-card"></i>
 																<input id="identification" type="text" name="identification"  th:required="true"   maxlength="50" th:field="*{identification}" class="form-control " th:placeholder="#{gen.name}" />
-															    
+															</div>
 														</div>
-														
-														<div class="form-group hide">
-															<label class="control-label"  th:text="#{gadgets.privacy}">Privacy</label>
-															
-																<select  class="selectpicker  select show-tick form-control" th:value="*{public}" id="public" name="public">
-							                  					    <option th:text="#{gadgets.private}" th:selected="${gadget.public == false}" value="false">Private</option>
-																	<option th:text="#{gadgets.public}" th:selected="${gadget.public == true}" value="true">Public</option>
-							                  					</select>
-															
-															   
 													</div>	
 											
-														<div class="col-md-6 " id="div-datasource">								
+														<div class="col-md-6 margin-bottom-20" id="div-datasource">								
 															<div class="form-group">	
-															<span class="help-block hidden-xs" th:text="#{gadgets.select.ontology.datasource}" style="margin-top: 4px;    margin-bottom: 5px;    font-size: 12px;"> Select Ontology or dataSource </span>									
+															<span class="help-block hidden-xs" th:text="#{gadgets.select.ontology.datasource}"> Select Ontology or dataSource </span>									
 																<div class="input-group input-group-sm">																	
 																	<span class="input-group-addon" ><i class="flaticon-network"></i>  </span>
 																	<select class="selectpicker  select show-tick form-control" id="datasources" data-live-search="true" data-width="100%" onchange="selectOntologyOrDataSource(this)" th:title="#{database.ontologies} +'...'" disabled="disabled" >
 																	   <option value="none"></option> 
 																	  <optgroup  id="optgroupDatasource" th:label="#{datasources.name}">
-																		<option th:each="datasource:${datasources}" th:id="${datasource.id}" th:data-description="${datasource.identification}" th:text="${datasource.identification}"   data-type="datasource" th:value="${datasource.id}"  ></option>
+																		<option th:each="datasource:${datasources}" th:id="${datasource.id}" th:data-description="${datasource.identification}" th:text="${datasource.identification}" th:data-subtext="${datasource.query}" data-type="datasource" th:value="${datasource.id}"  ></option>
 																	  </optgroup>																
 																	  <optgroup  id="optgroupOntology" th:label="#{gen.ontology}">																	
 																		<option th:each="ontology : ${ontologies}" th:id="${ontology.user}" th:data-description="${ontology.description}" data-type="ontology" th:value="${ontology.identification}" th:text="${ontology.identification}"  ></option>
@@ -266,20 +232,21 @@
 												</div>
 												<div class="pull-right">
 													<button th:if="${gadget.id} != null and ${dataSourceAccessType} != 'VIEW'" id="e-data-source" type="button" onclick="editDataSource();" class="btn  btn-circle btn-outline blue" ><span th:text="#{datasources.edit}"> Edit DataSource</span></button>
-													<button th:if="${gadget.id} != null and ${dataSourceAccessType} == 'VIEW' and !${iframe}" id="e-data-source-view" type="button" th:attr="onclick='GadgetsCreateController.go(\'' + @{|/datasources/show/${measures[0].datasource.Id}/|} + '\');'" class="btn  btn-circle btn-outline blue" ><span th:text="#{datasources.show}"> View DataSource</span></button>
+													<button th:if="${gadget.id} != null and ${dataSourceAccessType} == 'VIEW' and !${iframe}" id="e-data-source-view" type="button" th:onclick="'GadgetsCreateController.go(\'' + @{|/datasources/show/${measures[0].datasource.Id}/|} + '\');'" class="btn  btn-circle btn-outline blue" ><span th:text="#{datasources.show}"> View DataSource</span></button>
 													<button th:if="${gadget.id} != null and ${dataSourceAccessType} == 'VIEW' and  ${iframe}" id="e-data-source-view"  onclick="showDataSource();" type="button" class="btn  btn-circle btn-outline blue" ><span th:text="#{datasources.show}"> View DataSource</span></button>
 												</div>
+												
+												
+							
+									
+									
+									
+									
 									
 									
 									<!-- NUEVA ZONA DE CONSULTA ##################################################################### -->
 									<!-- CREACIÓN DE CONSULTA -->
-									<div id="query-panel" class="col-md-12 hide ">
-									<div id="alert-authorizations" class="alert alert-info">
-										 <i class="fa fa-info-circle"></i> <span th:text="#{gadgets.query.tool.info1}"> Define the datasource, for which it is necessary that you enter a valid query, in the query field you can use the wizard, by clicking the buttons next to SELECT, WHERE and ORDER BY.</span><br/> 
-										<span th:text="#{gadgets.query.tool.info2}"> You must also select a maximum of results for this query and a refresh time that indicates how often the query is made. </span><br/>
-										<span th:text="#{gadgets.query.tool.info3}"> Press EXECUTE QUERY to verify that the query returns the expected data.</span><br/>
-										<span th:text="#{gadgets.query.tool.info4}"> Press CONTINUE to continue.</span>
-										</div>									
+									<div id="query-panel" class="col-md-12 hide ">									
 										<div class="panel panel-white no-shadow">
 											<div class="panel-heading panel-sofia2">
 												<h3 class="panel-title uppercase font-grey-mint"> <span th:text="#{database.queryonto}">Consultas sobre </span> <span id="query-ontologia" class="bold uppercase">ontología</span></h3>											
@@ -382,7 +349,7 @@
 														</div>
 													</div>
 														
-													<!-- TO-DO:  -->	
+													<!-- TO-DO: no se que es -->	
 													<div class="col-sm-12 col-md-12" style="display:none"> 
 													  <!-- TABLA dt:table="true" dt:paginate="false" dt:sort="false" -->
 													  <table id="camposConsultaSuscripcion" >
@@ -420,7 +387,7 @@
 															<label class="control-label"><i class="la la-list-ol"></i> <span th:text="#{datasources.maxvalue} + ':'">Max register</span></label>
 															<div class="input-icon ">
 																<i class="fa fa-list-ol"></i> 
-																<input  id="maxvaluesDataSource" type="number" min="1" max="3000" name="maxvalues" th:required="true" onchange="createQuerylimit()" value="100" th:value="100" class="form-control " th:placeholder="#{datasources.maxvalue}"  />
+																<input  id="maxvaluesDataSource" type="number" min="1" max="3000" name="maxvalues" th:required="true" onchange="createQuery()" value="100" th:value="100" class="form-control " th:placeholder="#{datasources.maxvalue}"  />
 																
 															</div>
 														</div>
@@ -546,6 +513,8 @@
 									
 									<!-- FIN DE NUEVA ZONA DE CONSULTA ############################################################## -->
 
+
+
 									<!-- GADGETS IMAGES -->
 									 <div class="row">
 										<div id="icons" class="col-md-12 margin-top-10"></div>
@@ -554,11 +523,9 @@
 												 
 												 <!-- CONFIG GADGET -->
 												 <div id="configContainer" class="hide col-md-12 margin-bottom-20 portlet light no-shadow no-pad">
-													 <div id="alert-authorizations" class="alert alert-info" style="margin-left: 27px;">
-													<i class="fa fa-info-circle"></i> <span th:text="#{gadgets.create.info.almost.one}">It is necessary that the entity has at least one data to be able to select the fields and create the gadget</span>
-												</div>
+													
 													<!-- DYNAMICAL CONFIG -->
-													<div id="configGadget" style="margin-left: 27px;"></div>
+													<div id="configGadget"></div>
 													<div class="pull-left margin-bottom-20">														
 														<button id="addMoreAxes" style="margin-left: 30px;margin-top: 5px;" class="btn blue btn-sm btn-outline btn-circle uppercase" onclick="addAxes(event)"> Add axis</button>
 													</div>
@@ -577,8 +544,7 @@
 												<!-- VIEWER -->
 												<div id="viewer" class="hide col-md-offset-1 col-md-10 col-xs-12 bg-grey-carrara" style="border: 2px dotted #f5f5f5; padding: 10px 15px 10px 15px">
 													<div id="gapp" ng-app="dashboardFramework">
-														<gadget style="height:300px;width:100%;display:none" class="flex layout-column"></gadget>
-														<datadiscovery style="height:600px;width:100%;display:none" class="flex layout-column"></datadiscovery>
+														<gadget style="height:300px;width:100%;display:inline-block" class="flex layout-column"></gadget>
 													</div>
 												</div>												
 												<div class="clearfix"></div>
@@ -587,53 +553,53 @@
 												<div style="margin-top:20px" class="form-actions">
 													<div class="pull-left">
 														<!-- CANCEL -->														
-														<button th:if="!${iframe}" id="cancelBtn" type="button"  style="border-width: 0px !important;" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" onclick="closeWindow();"><i class="la la-arrow-left"></i> <span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+														<button th:if="!${iframe}" id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" onclick="closeWindow();"><i class="la la-arrow-left"></i> <span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 													</div>
 													
 													<div class="pull-right">														
 														<!-- REMOVE -->
-														<button th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${owner}) AND ${gadget.id} != null and !${iframe}" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:attr="onclick='GadgetsCreateController.deleteGadget(\'' + ${gadget.id} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
+														<button th:if="${gadget.id} != null and !${iframe}" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'GadgetsCreateController.deleteGadget(\'' + ${gadget.id} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
 														
-														<span th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${owner}) AND ${gadget.id} != null and !${iframe}" class="sep"></span>
+														<span class="sep"></span>
 														
 														<!-- CREATE FULL SCREEN-->
-														<button th:if="${gadget.identification} == null and !${iframe}" id="createBtn" type="button" onclick="createGadgetFull();" class="btn btn-circle btn-outline btn-primary" style="display:none;" name="create"><span th:text="#{gen.createBtn}"> New</span></button>
+															<button th:if="${gadget.identification} == null and !${iframe}" id="createBtn" type="button" onclick="createGadgetFull();" class="btn btn-circle btn-outline btn-primary" style="display:none;" name="create"><span th:text="#{gen.createBtn}"> New</span></button>
 														
 														<!-- CREATE IFRAME-->
-														<button th:if="${gadget.identification} == null and ${iframe}" id="createIframeBtn" type="button" onclick="createGadgetIframe();" class="btn btn-circle btn-outline btn-primary" style="display:none;" name="create"><span th:text="#{gen.createBtn}"> New</span></button>
+															<button th:if="${gadget.identification} == null and ${iframe}" id="createIframeBtn" type="button" onclick="createGadgetIframe();" class="btn btn-circle btn-outline btn-primary" style="display:none;" name="create"><span th:text="#{gen.createBtn}"> New</span></button>
 														
 														<!-- UPDATE FULL SCREEN -->
-														<button th:if="${gadget.id} != null AND !${iframe} AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${owner} OR ${app_user_access.name()} =='MANAGE')" id="updateBtn" type="button" onclick="createGadgetFull();" class="btn btn-circle btn-outline btn-primary" name="update"><span th:text="#{gen.changes}"> Save Changes</span></button>
-														
+															<button th:if="${gadget.id} != null and !${iframe}" id="updateBtn" type="button" onclick="createGadgetFull();" class="btn btn-circle btn-outline btn-primary" name="update"><span th:text="#{gen.editBtn}"> Edit</span></button>
+																
 														
 														<!-- UPDATE IFRAME-->
-														<button th:if="${gadget.id} != null AND ${iframe} AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${owner} OR ${app_user_access.name()} =='MANAGE')" id="updateIframeBtn" type="button" onclick="updateGadgetIframe();" class="btn btn-circle btn-outline btn-primary" name="update"><span th:text="#{gen.editBtn}"> Edit</span></button>
+														<button th:if="${gadget.id} != null and ${iframe}" id="updateIframeBtn" type="button" onclick="updateGadgetIframe();" class="btn btn-circle btn-outline btn-primary" name="update"><span th:text="#{gen.editBtn}"> Edit</span></button>
 													</div>
 												</div>
-										
-										</form>					
+											</div>
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>					
 
-										<!-- AUXILIAR FORM TO DELETE TEMPLATE -->
+										<!-- AUXILIAR FORM TO DELETE DATASOURCE -->
 										<form id="delete_gadget_form" class="delete-gadget hide"  th:action="@{'/gadgets/'+${gadget.id}}"  method="post">
 											<input type="hidden" name="_method" value="DELETE"/>
 											<input type="hidden" name="id" th:value="${gadget.id}"/>
-											<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-										</form>																	
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>																	
 									</div>
 								</div>
 							</div>
 						</div>  <!-- END PORTLET BASIC LIGHT -->							
-											
+					</div><!-- END COL-12 -->						
 				</div><!-- END MAIN ROW -->				
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
-		<!-- FOOTER-INCLUDE -->
-	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	  </div>
+	 
+</body>
 
 	<!-- END MAIN PAGE WRAPPER -->
 	
-	
+	<!-- FOOTER-INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 		<!-- FRAGMENT AJAX FOR ONTOLOGY FIELDS -->
 	<div style="display: none">
 	<div th:fragment="fields" id="fields">
@@ -672,27 +638,27 @@
 	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"></script>
-	<script th:src="@{/static/js/layout.js}"></script>
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>
 	
 	<!-- PLUGINS -->	
 		<!-- PLUGINS -->
 	
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
-	<script th:src="@{/static/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js}"></script>
-	<script th:src="@{/static/vendor/json/jsonToTable.js}"></script>	
-	<script src="/controlpanel/static/vendor/muuri/0.5.4/muuri.min.js"></script>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js}"/>
+	<script th:src="@{/static/vendor/json/jsonToTable.js}"/>	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/muuri/0.5.4/muuri.min.js"></script>
 	
 	<!-- JSON EDITOR -->	
-	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>	
-	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
-	<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
-	<script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>
+	<script th:src="@{/static/vendor/json/jsoneditor.js}"/>	
+	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"/>
+	<script th:src="@{/static/vendor/ace/mode-json.js}"/>
+	<script th:src="@{/static/vendor/ace/theme-textmate.js}"/>
 	
 	<!-- TEMPLATE CONTROLLER  -->	
-	<script th:src="@{/static/js/pages/gadgetsCreate.js}"></script>
+	<script th:src="@{/static/js/pages/gadgetsCreate.js}"/>
 	
 		<script th:inline="javascript">
 		// <![CDATA[
@@ -718,15 +684,12 @@
 		</script>
 			
 	
-	<script type="text/javascript" src="/controlpanel/static/js/pages/gadgetsDynamicDataSource.js"></script>
+	<script type="text/javascript" src="/controlpanel/static/js/pages/gadgetsDynamicDataSource.js"/>
 	<!-- jsonGadgets.js contains the structure of the gadgets that can be selected -->
-	<script type="text/javascript" src="/controlpanel/static/js/pages/jsonGadgets.js"></script>
+	<script type="text/javascript" src="/controlpanel/static/js/pages/jsonGadgets.js"/>
 	
 	<script src="/controlpanel/static/dashboards/scripts/vendor.js"></script>										
 	<script src="/controlpanel/static/dashboards/gridster.js"></script>
-	
-	<!-- INPUTMASK -->
-	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
 	
 	<!-- Angular Material Fileinput -->
 	<link rel="stylesheet" href="/controlpanel/static/dashboards/resources/lf-ng-md-file-input.min.css"/>
@@ -745,7 +708,7 @@
 	<link rel="stylesheet" type="text/css" media="all" href="/controlpanel/static/vendor/bootstrap-colorpicker/css/bootstrap-colorpicker.css" />	
 	<!--<script src="/controlpanel/static/vendor/bootstrap-colorpicker/js/bootstrap-colorpicker.js"></script> 	-->
 	<script src="/controlpanel/static/vendor/bootstrap-colorpicker/js/bootstrap-colorpicker.js"></script>
-	<script type="text/javascript" src="/controlpanel/static/vendor/bootstrap-select/bootstrap-select.min.js"></script>
+	<script type="text/javascript" src="/controlpanel/static/vendor/bootstrap-select/bootstrap-select.min.js"/>
 	<script th:inline="javascript">
 	
 	// <![CDATA[
@@ -753,31 +716,14 @@
 		//we define the events of the # createBtn, # updateBtn buttons
 		//we save the values of the form  and do the submit
 	
-	var versioningEnabled = [[${session.versioningEnabled}]];
-	
 	function createGadgetFull() {	 
 		generateMeasuresArray()
-		if(gtype === "datadiscovery"){
-			measures = [{"config":"{}"}];
-		}
 		$("#jsonMeasures").val(JSON.stringify(measures));
 		$("#datasourcesMeasures").val(JSON.stringify([$("#datasources").val()]));
 		$("#type").val(gtype);
-		var scope;
-		if(gtype != 'datadiscovery'){
-			document.getElementsByTagName("gadget")[0].style.display = 'inline-block'
-			scope = angular.element(document.getElementsByTagName('gadget')[0]).scope().$$childHead;
-		}
-		else{
-			scope = angular.element(document.getElementsByTagName('datadiscovery')[0]).isolateScope();
-			document.getElementsByTagName("datadiscovery")[0].style.display = 'inline-block'
-			scope.vm.config.config.discovery.matrix = scope.vm.getDataAndStyleF();
-		}
-		$("#config").val(JSON.stringify(scope.vm.config.config));
-		//Only submit if not in versinoning mode
-		if(!versioningEnabled){
-			$("#gadget_create_form").get(0).submit();
-		}   	 
+		var scope = angular.element(document.getElementsByTagName('gadget')[0]).scope();     		
+		$("#config").val(JSON.stringify(scope.$$childHead.vm.config.config));
+		$("#gadget_create_form").get(0).submit();   	 
      };
 	
 	
@@ -791,38 +737,39 @@
 			if(gadgetCreateJson.iframe && gadgetCreateJson.type!=null){
 				showConfigAndMeasures(gadgetCreateJson.type);
 			}else{
-				var info = '<div id="alert-authorizations" class="alert alert-info ">'+
-				'<i class="fa fa-info-circle"></i> <span >'+ gadgetCreateJson.select_gadget_info +'</span>'+
-			    '</div>';
-				$("#icons").append(info);
 				$.each(gadget, function() {
-					var Type = this.type;
-					var Icon = this.icon;						
-					var html_markup = '';
-					html_markup ='<div class="col-lg-2 col-md-3 col-sm-4 col-xs-6 "  >' +
-					'<div class="card text-center hoverborder" id="' + Type + '" style="padding: 8px 16px 16px 16px;border: 2px solid #d1d9de; border-radius: 5px;" onclick="showConfigAndMeasures(\'' + Type + '\')" >'+
-					 ' <img class="card-img-top"  style="    height: 60px; " src="'+ Icon +'" >'+
-					  '<div class="card-body">'+
-					   ' <h4 class="card-title">'+Type+'</h4>'	+    
-					  '</div>'	+  
-					'</div>'
-					
-					'</div>';
-					
-					$("#icons").append(html_markup);
-				});
-
-				$.get("/controlpanel/datasources/isGroupDatasourceById/" + $("#datasources").val(), function (isGroup){
-					$.each(gadget, function() {
-						if(isGroup && this.disableOnGroup){
-							$("#" + this.type).hide();
-						}
+						var Type = this.type;
+						var Icon = this.icon;						
+						var html_markup = '';
+						html_markup = '<div class="col-lg-3 col-md-3 col-sm-4 col-xs-12">' +
+						'	<div class="portlet light bordered" id="' + Type + '" style="padding: 8px 16px 16px 16px;" >' +
+						'		<div class="portlet-title">' +
+						'			<div class="caption">' +						
+						'				<span class="caption-subject" onclick="showConfigAndMeasures(\'' + Type + '\')" >'+Type+'</span>' +						
+						'			</div>' +
+						'			<div class="mt-element-overlay">' +		
+						'						<div class="mt-overlay-1" style="height: 10% !important">' +
+						'							<img src="'+ Icon +'">' +
+						'							<div class="mt-overlay">' +
+						'								<ul class="mt-info">' +
+						'									<li>' +
+						'										<a class="btn default btn-outline" onclick="showConfigAndMeasures(\'' + Type + '\')" >' +
+						'											<i class="flaticon-add font-lg bold"></i> ADD GADGET' +
+						'										</a>' +
+						'									</li>' +
+						'								</ul>' +
+						'							</div>' +				
+						'				</div>' +
+						'			</div>' +
+						'		</div>' +				
+						'	</div>' +
+						'</div>';
+						$("#icons").append(html_markup);
 					})
-				})
-					
-			}
+				}
 		  }		
 	}
+	
 	
 	
 	var stt;
@@ -854,11 +801,11 @@
 		gchtml	+= '</div>'
 		gchtml += '<div class="form-group col-md-1">';
 		gchtml += '<label class="control-label">Stacked</label>';
-		gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10 content-box-input" data-live-search="true"  data-width="100%" id="stacked_' + i + '"/>';
+		gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true"  data-width="100%" id="stacked_' + i + '"/>';
 		gchtml	+= '</div>';		
 		gchtml += '<div class="form-group col-md-1">';
 		gchtml += '<label class="control-label">Sort</label>';
-		gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10 content-box-input" data-live-search="true" checked="" data-width="100%" id="sort_' + i + '"/>';
+		gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" checked="" data-width="100%" id="sort_' + i + '"/>';
 		gchtml	+= '</div>'
 		
 		gchtml += '<div class="form-group col-md-2">';
@@ -955,7 +902,7 @@
 				case "boolean":
 					mhtml += '<div class="form-group col-md-2">';
 					mhtml += '<label class="control-label"> ' + atr.name + ' </label>';
-					mhtml += '<input onchange="refreshGadget()" class="gsoption margin-left-10" type="checkbox"/>';
+					mhtml += '<input onchange="refreshGadget()" class="gsoption form-control" type="checkbox"/>';
 					countCols+=2;
 					break;
 				case "transform":
@@ -1081,29 +1028,20 @@
 	function refreshGadget(){
 		console.log('refreshGadget()...');
 		generateMeasuresArray();
-		if(measures.length > 0 || gtype == "datadiscovery"){
-			var scope;
-			if(gtype != 'datadiscovery'){
-				document.getElementsByTagName("gadget")[0].style.display = 'inline-block'
-				scope = angular.element(document.getElementsByTagName('gadget')[0]).scope().$$childHead;
-			}
-			else{
-				scope = angular.element(document.getElementsByTagName('datadiscovery')[0]).isolateScope();
-				document.getElementsByTagName("datadiscovery")[0].style.display = 'inline-block'
-			}
-			scope.vm.ds = $("#datasources option:selected").val();
+		if(measures.length > 0){			
+	        var scope = angular.element(document.getElementsByTagName('gadget')[0]).scope();
 	        if(gtype === "map"){	        
-	        	if(!scope.vm.config.config && !$("#config").val()){
-	        		scope.vm.config = {config:"{\"center\":{\"lat\":30,\"lng\":30,\"zoom\":2},\"markersFilter\":\"\",\"jsonMarkers\":\"\"}",type:{id:gtype}};
+	        	if(!scope.$$childHead.vm.config.config && !$("#config").val()){
+	        		scope.$$childHead.vm.config = {config:"{\"center\":{\"lat\":30,\"lng\":30,\"zoom\":2},\"markersFilter\":\"\",\"jsonMarkers\":\"\"}",type:gtype};
 	        	}
 	        	else{
 	        		var lat;
 	        		var lng;
 	        		var zoom;	        		
-	        		if(typeof scope.vm.config.config != "undefined") {
-	        			lat = scope.vm.config.config.center.lat;
-	        			lng = scope.vm.config.config.center.lng;
-	        			zoom = scope.vm.config.config.center.zoom;
+	        		if(typeof scope.$$childHead.vm.config.config != "undefined") {
+	        			lat = scope.$$childHead.vm.config.config.center.lat;
+	        			lng = scope.$$childHead.vm.config.config.center.lng;
+	        			zoom = scope.$$childHead.vm.config.config.center.zoom;
 	        		}else{
 	        			jsonConfig = JSON.parse($("#config").val());	        		
 	        			lat = jsonConfig.center.lat;
@@ -1118,7 +1056,7 @@
 				    			markersFilter:$("#markersFilter").val(),
 				    			jsonMarkers:$("#jsonMarkers").val()
 				    			};
-	        		scope.vm.config = {config:gconfig,type:{id:gtype}};	
+	        		scope.$$childHead.vm.config = {config:gconfig,type:gtype};	
 	        	}
 	        }
 			else if(gtype == "pie"){
@@ -1154,7 +1092,7 @@
 				};
 				
 				// updating values to refresh gadget
-				scope.vm.config = {config:gconfig,type:{id:gtype}};
+				scope.$$childHead.vm.config = {config:gconfig,type:gtype};
 			}
 	        else{
 				if(gtype == "bar" || gtype == "line" || gtype == "mixed"){
@@ -1262,7 +1200,7 @@
 									}}];
 						}
 					}
-					scope.vm.config = {config:gconfig,type:{id:gtype}};	
+					scope.$$childHead.vm.config = {config:gconfig,type:gtype};	
 				}else if(gtype == "table"){
 					var gconfig = {tablePagination :{      
 						      limit: $('#limit').val(),
@@ -1289,69 +1227,19 @@
 						        pageSelect: $('#pageSelect').is(':checked')
 						      }
 						    }};
-					scope.vm.config = {config:gconfig,type:{id:gtype}};	
-				}else if(gtype == "datadiscovery"){
-					var gconfig;
-					if(!$("#config").val()){//new
-						gconfig = {
-							editFields: $('#editFields').is(':checked'),
-							editGrid: $('#editGrid').is(':checked'),
-							showSearch: $('#showSearch').is(':checked'),
-							adjustColumnToView: $('#adjustColumnToView').is(':checked'),
-							enableTotal: $('#enableTotal').is(':checked'),
-							baseRows: $('#baseRows').val(),
-							baseCols: $('#baseCols').val(),
-							showRowNum: $('#showRowNum').is(':checked'),
-							enableMergeCols: $('#enableMergeCols').is(':checked'),
-							prefixTotal: $('#prefixTotal').val(),
-							prefixSubtotal: $('#prefixSubtotal').val()
-						}
-					}
-					else{//edit, erase config to detect load
-						gconfig = JSON.parse($("#config").val());
-						$("#config").val(null)
-					}
-					if(scope.vm.config.config){
-						scope.vm.config.config.editFields = gconfig.editFields;
-						scope.vm.config.config.editGrid = gconfig.editGrid;
-						scope.vm.config.config.showSearch = gconfig.showSearch;
-						scope.vm.config.config.adjustColumnToView = gconfig.adjustColumnToView;
-						scope.vm.config.config.enableTotal = gconfig.enableTotal;
-						scope.vm.config.config.baseRows = gconfig.baseRows;
-						scope.vm.config.config.baseCols = gconfig.baseCols;
-						scope.vm.config.config.showRowNum = gconfig.showRowNum;
-						scope.vm.config.config.enableMergeCols = gconfig.enableMergeCols;
-						scope.vm.config.config.prefixTotal = gconfig.prefixTotal;
-						scope.vm.config.config.prefixSubtotal = gconfig.prefixSubtotal;
-					}
-					else{
-						scope.vm.config.config = gconfig;
-					}
-					scope.vm.config.type = gtype;
-					if(!scope.vm.config.config.discovery){
-						scope.vm.config.config.discovery = {
-							columns:{
-								list:[],
-								subtotalFields:[]
-							},
-							metrics:{
-							},
-							fields: {
-							}
-						}
-					}
-					scope.vm.ds = {"identification":$("#datasources option:selected").text()};
+					scope.$$childHead.vm.config = {config:gconfig,type:gtype};	
 				}
 				else{					
-					scope.vm.config = {config:$("#config").val()?$("#config").val():"{}",type:{id:gtype}};	
+					scope.$$childHead.vm.config = {config:$("#config").val()?$("#config").val():"{}",type:gtype};	
 				}
 	        }
 	        if(gtype == "table"){			
-				scope.vm.measures = orderTable(measures);
+				scope.$$childHead.vm.measures = orderTable(measures);
 			}else{
-				scope.vm.measures = measures;
-			}	       
-			scope.reloadContent();
+				scope.$$childHead.vm.measures = measures;
+			}	        
+			scope.$$childHead.vm.ds = $("#datasources").val();
+			scope.$$childHead.reloadContent();
 		}
 	}
 	
@@ -1444,113 +1332,98 @@
         	$("#createIframeBtn").show();
         }else{       
         	$("#createBtn").show();
-		}
-		
-		if(type != "datadiscovery"){
+        }
         
-			$.get("/controlpanel/datasources/getSampleDatasource/" + $("#datasources").val(), function (jsonString){
-				$("#icons").hide();
-				
-				gfields = iterate(jsonString[0],"", []);
-				
-				gtype = type;
-				$("#configGadget").empty();
-				
-				if(gtype=="line" || gtype=="bar" ){
-					showConfigLineBar(gtype,gfields);				
-				}else if(gtype=="table" ){
-					showConfigTable(gtype,gfields);				
-				}else if(gtype=="map" ){
-					showConfigMap(gtype,gfields);
-				}else if(gtype=="mixed" ){
-					showConfigMixed(gtype,gfields);
-				}else if(gtype=="pie"){ 
-					showConfigPie(gtype,gfields); 
-				}
-				if ( $('#measuresContainer').hasClass('hide') === true ){
-					$('#measuresContainer').removeClass('hide'); $('#viewer').removeClass('hide'); 
-				}
-				stt = gadget.filter(function(g){return g.type == type})[0];
-				if(measures.length == 0){
-					$("#measures").empty().append(addFormSttByType());
+		$.get("/controlpanel/datasources/getSampleDatasource/" + $("#datasources").val(), function (jsonString){
+			$("#icons").hide();
+			
+			gfields = iterate(jsonString[0],"", []);
+			
+			gtype = type;
+			$("#configGadget").empty();
+			
+			if(gtype=="line" || gtype=="bar" ){
+				showConfigLineBar(gtype,gfields);				
+			}else if(gtype=="table" ){
+				showConfigTable(gtype,gfields);				
+			}else if(gtype=="map" ){
+				showConfigMap(gtype,gfields);
+			}else if(gtype=="mixed" ){
+				showConfigMixed(gtype,gfields);
+			}else if(gtype=="pie"   ){ showConfigPie(gtype,gfields); }
+			if ( $('#measuresContainer').hasClass('hide') === true ){
+				$('#measuresContainer').removeClass('hide'); $('#viewer').removeClass('hide'); 
+			}
+		    stt = gadget.filter(function(g){return g.type == type})[0];
+		    if(measures.length == 0){
+		    	$("#measures").empty().append(addFormSttByType());
+		    }
+		    else{
+		    	$("#measures").empty();
+		    	for(var i=0;i<measures.length;i++){
+					$("#measures").append(addFormSttByType());
+		    	}
+		    }
+		    
+			for (var i in gfields){
+		    	$('.' + gfields[i].type).append('<option value="' + gfields[i].field + '">' + gfields[i].field + '</option>');
+		    }
+			for(var i=0;i<measures.length;i++){
+				var config;
+				if(typeof measures[i].config !== "object"){
+					config = JSON.parse(measures[i].config);
 				}
 				else{
-					$("#measures").empty();
-					for(var i=0;i<measures.length;i++){
-						$("#measures").append(addFormSttByType());
-					}
+					config = measures[i].config;
 				}
-				
-				for (var i in gfields){
-					$('.' + gfields[i].type).append('<option value="' + gfields[i].field + '">' + gfields[i].field + '</option>');
-				}
-				for(var i=0;i<measures.length;i++){
-					var config;
-					if(typeof measures[i].config !== "object"){
-						config = JSON.parse(measures[i].config);
+				var fields = config.fields;
+				for(var f=0;f<fields.length;f++){
+					
+					var fieldAux = fields[f].replace("[",".").replace("]","");
+					if($("#s_" + i + "_" + f).attr("multiple")){
+						var values=fields.slice(f);
+						$("#s_" + i + "_" + f).val(values);
+						break;
 					}
 					else{
-						config = measures[i].config;
+						$("#s_" + i + "_" + f).val(fieldAux);
 					}
-					var fields = config.fields;
-					for(var f=0;f<fields.length;f++){
-						
-						var fieldAux = fields[f].replace("[",".").replace("]","");
-						if($("#s_" + i + "_" + f).attr("multiple")){
-							var values=fields.slice(f);
-							$("#s_" + i + "_" + f).val(values);
-							break;
-						}
-						else{
-							$("#s_" + i + "_" + f).val(fieldAux);
-						}
+				}
+				var gsoptions = $($(".gserie").get(i)).find(".gsoption");
+				for(var gc =0; gc < gsoptions.length; gc++){
+					//property not found
+					if(!config.config || !(stt.series.options[gc].jsonFields[0] in config.config)){
+						continue;
 					}
-					var gsoptions = $($(".gserie").get(i)).find(".gsoption");
-					for(var gc =0; gc < gsoptions.length; gc++){
-						//property not found
-						if(!config.config || !(stt.series.options[gc].jsonFields[0] in config.config)){
-							continue;
-						}
-						$(gsoptions[gc]).val(config.config[stt.series.options[gc].jsonFields[0]]);
-						if(gsoptions[gc].type === "checkbox"){
-							gsoptions[gc].checked = gsoptions[gc].value === "true";
-							gsoptions[gc].value = "on"
-						}
+					$(gsoptions[gc]).val(config.config[stt.series.options[gc].jsonFields[0]]);
+					if(gsoptions[gc].type === "checkbox"){
+						gsoptions[gc].checked = gsoptions[gc].value === "true";
+						gsoptions[gc].value = "on"
 					}
-					$("#n_" + i).val(config.name);
-				}		
-				refreshGadget();
-				$('.colorpicker-component').colorpicker({	
-					container: true,
-					colorSelectors: {				
-					'amarillo': '#FFEA7F',
-					'amarilloH': '#FFF8D2',
-					'naranja': '#F7AC6F',
-					'naranjah': '#FCE2CC',
-					'rojo': '#E88AA2',
-					'rojoh': '#F7D6DF',
-					'beige':'#FDE3D4',  
-					'beigeh':'#FEF6F0',
-					'verde': '#79C6B4',
-					'verdeh': '#CFEBE5',
-					'azul': '#639FCB',
-					'azulh': '#C8DEED',
-					'morado': '#7874B4',
-					'moradoh': '#CFCEE5'
-					}				
-				});
-			});
-		}
-		else{
-			$("#icons").hide();
-			gtype = type;
-			showConfigDatadiscovery(gtype,gfields);
-			if ( $('#viewer').hasClass('hide') === true ){
-				$('#viewer').removeClass('hide');
-				$('#measuresContainer').addClass('hide');
-			}
+				}
+				$("#n_" + i).val(config.name);
+			}		
 			refreshGadget();
-		}
+			$('.colorpicker-component').colorpicker({	
+				container: true,
+				  colorSelectors: {				
+                'amarillo': '#FFEA7F',
+                'amarilloH': '#FFF8D2',
+                'naranja': '#F7AC6F',
+                'naranjah': '#FCE2CC',
+                'rojo': '#E88AA2',
+                'rojoh': '#F7D6DF',
+				'beige':'#FDE3D4',  
+				'beigeh':'#FEF6F0',
+                'verde': '#79C6B4',
+                'verdeh': '#CFEBE5',
+                'azul': '#639FCB',
+				'azulh': '#C8DEED',
+				'morado': '#7874B4',
+				'moradoh': '#CFCEE5'
+				}				
+			});
+		});		
 	}
 	
 	
@@ -1591,14 +1464,14 @@
 		
 		
 		// SPECIFIC HTML GADGET CONFIGURATION FIELDS 
-		var gchtml = '<h4 >Chart Legend</h4>';
-		    gchtml += '<div class="row">';
+		var gchtml = '<h4 style="padding: 16px 0px 8px 16px;">Chart Legend</h4>';
+		gchtml += '<div class="row">';
 			
 			// legend display
 			gchtml += '<div class="form-group col-md-2">';
 			gchtml += '<label class="control-label">Legend Display</label>';
 			 if(legend) legend = "checked";
-			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10" data-live-search="true" data-width="100%" id="legend" ' + legend + '/>';
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="legend" ' + legend + '/>';
 			gchtml += '</div>';
 			
 			
@@ -1639,7 +1512,7 @@
 		try{
 			if( jsonConfig.scales.xAxes[0].sort){ sort = "checked";}
 		}catch(err){}
-		gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10 content-box-input" data-live-search="true" data-width="100%" '+sort+' id="sort"/>';
+		gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" '+sort+' id="sort"/>';
 		gchtml += '</div>';
 		
 				
@@ -1676,7 +1549,7 @@
 			gchtml += '<label class="control-label">Stacked</label>';
 			var checked = "";
 			if(axis.stacked){ checked = "checked";}
-			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10 content-box-input" data-live-search="true" data-width="100%" '+checked+' id="stacked_' + i + '"/>';
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" '+checked+' id="stacked_' + i + '"/>';
 			gchtml	+= '</div>'
 			
 			gchtml += '<div class="form-group col-md-2">';
@@ -1736,7 +1609,7 @@
 			gchtml += '<div class="form-group col-md-2">';
 			gchtml += '<label class="control-label">Legend Display</label>';
 			 if(legend) legend = "checked";
-			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10" data-live-search="true" data-width="100%" id="legend" ' + legend + '/>';
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="legend" ' + legend + '/>';
 			gchtml += '</div>';
 			
 			
@@ -1766,7 +1639,7 @@
 			gchtml	+= '</div>'			
 			gchtml += '<div class="form-group col-md-1">';
 			gchtml += '<label class="control-label">Sort</label>';
-			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10 content-box-input" data-live-search="true" checked="" data-width="100%" id="sort"/>';
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" checked="" data-width="100%" id="sort"/>';
 			gchtml	+= '</div>'
 			gchtml	+= '</div>'
 			gchtml += '<h4>Y Axis config:</h4>';
@@ -1790,7 +1663,7 @@
 			gchtml	+= '</div>'
 			gchtml += '<div class="form-group col-md-1">';
 			gchtml += '<label class="control-label">Stacked</label>';
-			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10 content-box-input" data-live-search="true" data-width="100%" id="stacked_' + i + '"/>';
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" id="stacked_' + i + '"/>';
 			gchtml	+= '</div>'			
 			gchtml += '<div class="form-group col-md-2">';
 			gchtml += '<label class="control-label">Min</label>';
@@ -1845,7 +1718,7 @@
 			try{
 				if( jsonConfig.scales.xAxes[0].sort){ sort = "checked";}
 			}catch(err){}
-			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10 content-box-input" data-live-search="true" data-width="100%" '+sort+' id="sort"/>';
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" '+sort+' id="sort"/>';
 			gchtml	+= '</div>'
 			gchtml	+= '</div>';
 			$("#configGadget").append(gchtml);
@@ -1877,7 +1750,7 @@
 				gchtml += '<label class="control-label">Stacked</label>';
 				var checked = "";
 				if(axis.stacked){ checked = "checked";}
-				gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10 content-box-input" data-live-search="true" data-width="100%" '+checked+' id="stacked_' + i + '"/>';
+				gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" '+checked+' id="stacked_' + i + '"/>';
 				gchtml	+= '</div>';			
 				gchtml += '<div class="form-group col-md-2">';
 				gchtml += '<label class="control-label">Min</label>';
@@ -1929,7 +1802,7 @@
 			gchtml	+= '</div>';			
 			gchtml += '<div class="form-group col-md-1">';
 			gchtml += '<label class="control-label">Sort</label>';
-			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10 content-box-input" data-live-search="true" checked="" data-width="100%" id="sort"/>';
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" checked="" data-width="100%" id="sort"/>';
 			gchtml	+= '</div>'
 			gchtml	+= '</div>';
 			gchtml += '<h4><i class="fa fa-wrench"></i> Y Axis config:</h4>';
@@ -1953,7 +1826,7 @@
 			gchtml	+= '</div>';
 			gchtml += '<div class="form-group col-md-1">';
 			gchtml += '<label class="control-label">Stacked</label>';
-			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10 content-box-input" data-live-search="true" data-width="100%" id="stacked_' + i + '"/>';
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control content-box-input" data-live-search="true" data-width="100%" id="stacked_' + i + '"/>';
 			gchtml	+= '</div>';		
 			gchtml += '<div class="form-group col-md-2">';
 			gchtml += '<label class="control-label">Min</label>';
@@ -2040,7 +1913,7 @@
 			gchtml += '<div class="form-group col-md-2">';
 			gchtml += '<label class="control-label">Legend Display</label>';
 			 if(legend) legend = "checked";
-			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10" data-live-search="true" data-width="100%" id="legend" ' + legend + '/>';
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="legend" ' + legend + '/>';
 			gchtml += '</div>';
 			
 			
@@ -2144,31 +2017,27 @@
 			gchtml += '<div class="form-group col-md-2">';
 			gchtml += '<label class="control-label">'+gadgetCreateJson.hide_header+'</label>';
 			 if(decapitate) decapitate = "checked";
-			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10" data-live-search="true" data-width="100%" id="decapitate" ' + decapitate + '/>';
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="decapitate" ' + decapitate + '/>';
 			gchtml += '</div>';
 			gchtml += '<div class="form-group col-md-2">';
 			gchtml += '<label class="control-label">'+gadgetCreateJson.selectable_rows+'</label>';
 			 if(rowSelection) rowSelection = "checked";
-			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10" data-live-search="true" data-width="100%" id="rowSelection" ' + rowSelection + '/>';
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="rowSelection" ' + rowSelection + '/>';
 			gchtml += '</div>';
 			gchtml += '<div class="form-group col-md-2">';
 			gchtml += '<label class="control-label">'+gadgetCreateJson.boundaryLinks+'</label>';
 			if(boundaryLinks) boundaryLinks = "checked";
-			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10" data-live-search="true" data-width="100%" id="boundaryLinks" ' + boundaryLinks + '/>';
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="boundaryLinks" ' + boundaryLinks + '/>';
 			gchtml += '</div>'
-			
-			
-			
-			
 			gchtml += '<div class="form-group col-md-2">';
 			gchtml += '<label class="control-label">'+gadgetCreateJson.limitSelect+'</label>';
 			if(limitSelect) limitSelect = "checked";
-			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10" data-live-search="true" data-width="100%" id="limitSelect" ' + limitSelect + '/>';
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="limitSelect" ' + limitSelect + '/>';
 			gchtml += '</div>'
 			gchtml += '<div class="form-group col-md-2">';
 			gchtml += '<label class="control-label">'+gadgetCreateJson.page_select+'</label>';
 			if(pageSelect) pageSelect = "checked";
-			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10" data-live-search="true" data-width="100%" id="pageSelect" ' + pageSelect + '/>';
+			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="pageSelect" ' + pageSelect + '/>';
 			gchtml += '</div>'
 			gchtml += '<div class="form-group col-md-2">';
 			gchtml += '<label class="control-label">'+gadgetCreateJson.pagination_limit+'</label>';
@@ -2236,118 +2105,6 @@
 			$("#addMoreAxes").hide();				
 			
 	}
-
-
-
-
-	function showConfigDatadiscovery(gtype,gfields){
-		
-		if ( $('#configContainer').hasClass('hide') === true ){ 
-			$('#configContainer').removeClass('hide');
-		}
-		var jsonConfig;
-		if(!$("#config").val() || $("#config").val() === "{}"){
-			
-			jsonConfig = {
-				editFields: true,
-				editGrid: true,
-				showRowNum: true,
-			 	baseRows: 10,
-				baseCols: 10,
-				showSearch: false,
-				adjustColumnToView:false,
-				enableTotal: true,
-				enableMergeCols: true,
-				prefixTotal: "Total",
-				prefixSubtotal: "Total {}"
-			};
-		}
-		else{
-			jsonConfig = JSON.parse($("#config").val());
-		}
-		
-			 var gchtml = '<h4 style="padding: 16px 0px 8px 16px;">Config</h4>';			
-			 var editFields = jsonConfig.editFields;
-			 var editGrid = jsonConfig.editGrid;
-			 var showRowNum = jsonConfig.showRowNum;
-			 var baseRows = jsonConfig.baseRows;
-			 var baseCols = jsonConfig.baseCols;
-			 var showSearch = jsonConfig.showSearch;
-			 var adjustColumnToView = jsonConfig.adjustColumnToView;
-			 var enableTotal = jsonConfig.enableTotal;
-			 var enableMergeCols = jsonConfig.enableMergeCols;
-		     var prefixTotal = jsonConfig.prefixTotal;
-		     var prefixSubtotal =jsonConfig.prefixSubtotal;
-		     
-			gchtml += '<div class="gcserie col-md-12">';
-			gchtml += '<div class="form-group col-md-2">';
-			gchtml += '<label class="control-label">'+gadgetCreateJson.editFields+'</label>';
-			 if(editFields) editFields = "checked";
-			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10" data-live-search="true" data-width="100%" id="editFields" ' + editFields + '/>';
-			gchtml += '</div>';
-			gchtml += '<div class="form-group col-md-2">';
-			gchtml += '<label class="control-label">'+gadgetCreateJson.editGrid+'</label>';
-			 if(editGrid) editGrid = "checked";
-			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10" data-live-search="true" data-width="100%" id="editGrid" ' + editGrid + '/>';
-			gchtml += '</div>';
-			gchtml += '<div class="form-group col-md-2">';
-			gchtml += '<label class="control-label">'+gadgetCreateJson.showSearch+'</label>';
-			 if(showSearch) showSearch = "checked";
-			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10" data-live-search="true" data-width="100%" id="showSearch" ' + showSearch + '/>';
-			gchtml += '</div>';
-			gchtml += '<div class="form-group col-md-2">';
-			gchtml += '<label class="control-label">'+gadgetCreateJson.adjustColumnToView+'</label>';
-			 if(adjustColumnToView) adjustColumnToView = "checked";
-			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10" data-live-search="true" data-width="100%" id="adjustColumnToView" ' + adjustColumnToView + '/>';
-			gchtml += '</div>';
-			gchtml += '<div class="form-group col-md-2">';
-			gchtml += '<label class="control-label">'+gadgetCreateJson.baseRows+'</label>';
-			gchtml += '<input onchange="refreshGadget()" type="number" min="1" class="form-control content-box-input" data-live-search="true" data-width="100%" value="' + baseRows + '" id="baseRows"/>';
-			gchtml	+= '</div>'
-			gchtml += '<div class="form-group col-md-2">';
-			gchtml += '<label class="control-label">'+gadgetCreateJson.baseCols+'</label>';
-			gchtml += '<input onchange="refreshGadget()" type="number" min="1" class="form-control content-box-input" data-live-search="true" data-width="100%" value="' + baseCols + '" id="baseCols"/>';
-			gchtml	+= '</div>'
-			gchtml += '<div class="form-group col-md-2">';
-			gchtml += '<label class="control-label">'+gadgetCreateJson.showRowNum+'</label>';
-			 if(showRowNum) showRowNum = "checked";
-			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10" data-live-search="true" data-width="100%" id="showRowNum" ' + showRowNum + '/>';
-			gchtml += '</div>';
-			gchtml += '<div class="form-group col-md-2">';
-			gchtml += '<label class="control-label">'+gadgetCreateJson.enableTotal+'</label>';
-			 if(enableTotal) enableTotal = "checked";
-			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10" data-live-search="true" data-width="100%" id="enableTotal" ' + enableTotal + '/>';
-			gchtml += '</div>';
-			gchtml += '<div class="form-group col-md-2">';
-			gchtml += '<label class="control-label">' + gadgetCreateJson.enableMergeCols + '</label>';
-			 if(enableMergeCols) enableMergeCols = "checked";
-			gchtml += '<input type="checkbox" onchange="refreshGadget()" class="margin-left-10" data-live-search="true" data-width="100%" id="enableMergeCols" ' + enableMergeCols + '/>';
-			gchtml += '</div>';
-			gchtml += '<div class="form-group col-md-2">';
-			gchtml += '<label class="control-label">'+gadgetCreateJson.prefixTotal+'</label>';
-			gchtml += '<input type="text" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="prefixTotal" value="' + prefixTotal + '"/>';
-			gchtml += '</div>'
-			gchtml += '<div class="form-group col-md-2">';
-			gchtml += '<label class="control-label">'+gadgetCreateJson.prefixSubtotal+'</label>';
-			gchtml += '<input type="text" onchange="refreshGadget()" class="form-control" data-live-search="true" data-width="100%" id="prefixSubtotal" value="' + prefixSubtotal + '"/>';
-			gchtml += '</div>'
-			gchtml += '</div>'
-			gchtml += '</div>'
-			
-			gchtml += '</div>'
-			gchtml	+= '</div>';
-			$("#configGadget").append(gchtml);				
-			$("#addMoreAxes").hide();
-			$("#measuresContainer").hide();
-	}
-
-
-
-
-
-
-
-
 	
 	//Show especific measures and config for gadget Map
 	function showConfigMap(gtype,gfields){
@@ -2399,19 +2156,12 @@
 	}
 	
 	
-	function selectOntologyOrDataSource(e){
-	
-	    if(gadgetCreateReg.ontologyId == null){
-		 $('#identification').attr('readonly', true);
-		}
+	function selectOntologyOrDataSource(e){		
 		if(e!=null && e.options.selectedIndex!=null && e[e.options.selectedIndex].dataset!=null){
 			if (e[e.options.selectedIndex].dataset.type==="ontology"){
 				initOntology();
 				$("#icons").empty();
-				$('#query-panel').show();
-				     $('#query-panel').removeClass('hide');
-    		 $('#query-panel').css('display','block');
-				//$('#createDataSourceButton').hide();
+				$('#query-panel').show(); 
 			}else if(e[e.options.selectedIndex].dataset.type==="datasource"){
 				showGadgetSelect();
 				$('#query-panel').hide();   
@@ -2636,7 +2386,7 @@
 	"hide_header" :[[#{gadgets.hide.header}]],
 	"selectable_rows" :[[#{gadgets.selectable.rows}]],
 	"boundaryLinks" :[[#{gadgets.boundaryLinks}]],
-	"limitSelect" :[[#{gadgets.limitSelect}]],		
+	"limitSelect" :[[#{gadgets.limitSelect}]],
 	"page_select" :[[#{gadgets.page.select}]],
 	"pagination_limit" :[[#{gadgets.pagination.limit}]],
 	"head_background_color" : [[#{gadgets.head.background.color}]],
@@ -2648,44 +2398,26 @@
 	"body_text_color" :[[#{gadgets.body.text.color}]],
 	"footer_text_color" :[[#{gadgets.footer.text.color}]],
 	"measures" :[[#{gadgets.measures}]],
-	"select_gadget_info":[[#{gadgets.select.gadget.info}]],
 	"map_config" :[[#{gadgets.map.config}]],
 	"marker_filter" :[[#{gadgets.marker.filter}]],
 	"json_marker" :[[#{gadgets.json.marker}]],
 	"json_marker_info" :[[#{gadgets.json.marker.info}]],
 	"iframe" : [[${iframe}]],
 	"type" : [[${type}]],
-	"editFields": [[#{gadgets.editFields}]],
-	"editGrid": [[#{gadgets.editGrid}]],
-	"showRowNum": [[#{gadgets.showRowNum}]],
-	"showSearch": [[#{gadgets.showSearch}]],
-	"adjustColumnToView": [[#{gadgets.adjustColumnToView}]],
-	"enableTotal": [[#{gadgets.enableTotal}]],
-	"enableMergeCols": [[#{gadgets.enableMergeCols}]],
-	"baseRows": [[#{gadgets.baseRows}]],
-	"baseCols": [[#{gadgets.baseCols}]],
-	"prefixTotal": [[#{gadgets.prefixTotal}]],
-	"prefixSubtotal": [[#{gadgets.prefixSubtotal}]],
 	"ontologyId" : /*[[${param.id}]]*/ null
+	
+	
 	};
+		
+
 	
 	function createDataSource(){
-	
-		if($("#identification").val().trim().length>4){
-			$("#datasources").selectpicker('refresh');
-		            	   $("#identification").closest('.form-group').removeClass('has-error');	            	  
-		                   $('.alert-danger').hide();	
-			var csrf_value = $("meta[name='_csrf']").attr("content");
-			var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-			identification = $("#identification").val();
-			$('#identification').attr('readonly', true);		 
-			var str = '_'+new Date().getTime();			
-			if((identification.length)>36){
-			 	identification = identification.substring(0, 36)+str;
-			}else{
-			 	identification = identification+str;
-			}
-          
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		
+          var d = new Date();
+          var n = d.getTime();          
+          identification = $("#identification").val()+"_"+n;       
 			 $.ajax({
 	             url: '/controlpanel/datasources/createFromGadget',
 				 headers: {
@@ -2729,11 +2461,6 @@
 	             error: function(data,status,er) { 
 	             }
           });
-          }else{
-               $("#identification").closest('.form-group').addClass('has-error');	
-			   $('#alert-danger-message').text([[#{gadgets.name.exist}]]);
-               $('.alert-danger').show();
-          }
 	}
 	
 	
@@ -2788,23 +2515,11 @@
 	//function for create from iframe
 	function createGadgetIframe(){
 		generateMeasuresArray();
-		if(gtype === "datadiscovery"){
-			measures = [{"config":"{}"}];
-		}
 		$("#jsonMeasures").val(JSON.stringify(measures));
 		$("#datasourcesMeasures").val(JSON.stringify([$("#datasources").val()]));
 		$("#type").val(gtype);
-		var scope;
-		if(gtype != 'datadiscovery'){
-			document.getElementsByTagName("gadget")[0].style.display = 'inline-block'
-			scope = angular.element(document.getElementsByTagName('gadget')[0]).scope().$$childHead;
-		}
-		else{
-			scope = angular.element(document.getElementsByTagName('datadiscovery')[0]).isolateScope();
-			document.getElementsByTagName("datadiscovery")[0].style.display = 'inline-block'
-			scope.vm.config.config.discovery.matrix = scope.vm.getDataAndStyleF();
-		}
-		$("#config").val(JSON.stringify(scope.vm.config.config));
+		var scope = angular.element(document.getElementsByTagName('gadget')[0]).scope();     		
+		$("#config").val(JSON.stringify(scope.$$childHead.vm.config.config));
 		createGadgetIframeAjaxCall();
 	}
 	
@@ -2832,24 +2547,12 @@
 	
 	//function to update from iframe
 	function updateGadgetIframe(){     	
-		generateMeasuresArray();
-		if(gtype === "datadiscovery"){
-			measures = [{"config":"{}"}];
-		}
+     	generateMeasuresArray();
 		$("#jsonMeasures").val(JSON.stringify(measures));
 		$("#datasourcesMeasures").val(JSON.stringify([$("#datasources").val()]));
 		$("#type").val(gtype);
-		var scope;
-		if(gtype != 'datadiscovery'){
-			document.getElementsByTagName("gadget")[0].style.display = 'inline-block'
-			scope = angular.element(document.getElementsByTagName('gadget')[0]).scope().$$childHead;
-		}
-		else{
-			scope = angular.element(document.getElementsByTagName('datadiscovery')[0]).isolateScope();
-			document.getElementsByTagName("datadiscovery")[0].style.display = 'inline-block'
-			scope.vm.config.config.discovery.matrix = scope.vm.getDataAndStyleF();
-		}
-		$("#config").val(JSON.stringify(scope.vm.config.config));
+		var scope = angular.element(document.getElementsByTagName('gadget')[0]).scope();     		
+		$("#config").val(JSON.stringify(scope.$$childHead.vm.config.config));
 		updateGadgetIframeAjaxCall();
 	}
 	//function to update from iframe  Ajax call
@@ -2932,49 +2635,17 @@
 			if(dataSourceCreated){
 				deleteDataSource();
 			}else{
-				$.get("/controlpanel/gadgets/freeResource/" + [[${gadget.id}]]).done(
-						function(data){
-							console.log('freeResource() -> ok');
-							parent.postMessage('{"closeGadgetFromIframe":"close"}', "*");
-						}
-					).fail(
-						function(e){
-							console.error("Error freeResource", e);
-							parent.postMessage('{"closeGadgetFromIframe":"close"}', "*");
-						}
-					)		
-				
+				parent.postMessage('{"closeGadgetFromIframe":"close"}', "*");
 			}
 		}else{			
 			if(dataSourceCreated){
 				deleteDataSource();
 			}else{
-				$.get("/controlpanel/gadgets/freeResource/" + [[${gadget.id}]]).done(
-						function(data){
-							console.log('freeResource() -> ok');
-							
-							if ([[${appId}]]==null){
-								GadgetsCreateController.go( [[@{/gadgets/list}]] );
-							} else {
-								GadgetsCreateController.go( [[@{'/projects/update/'} + ${appId}]] );
-							}
-						}
-					).fail(
-						function(e){
-							console.error("Error freeResource", e);
-							if ([[${appId}]]==null){
-								GadgetsCreateController.go( [[@{/gadgets/list}]] );
-							} else {
-								GadgetsCreateController.go( [[@{'/projects/update/'} + ${appId}]] );
-							}
-						}
-					)		
-				
+				GadgetsCreateController.go( [[@{/gadgets/list}]] );
 			}
 		}
 	}
 	
-	  
 	
 	
 	function validateGadgetIdentification(){
@@ -2990,33 +2661,20 @@
 	            type: 'POST',
 	            data: { identification:$("#identification").val()},	          
 	            success: function(data) {
-	               if(gadgetCreateReg.ontologyId !== null){
-	                $("#datasources").attr('disabled', 'disabled');
-		            $("#datasources").selectpicker('refresh');	               
-	                if(data.exist === "true"){		            	   
-		                   $("#identification").closest('.form-group').addClass('has-error');
-		                   $('#alert-danger-message').text([[#{gadgets.name.exist}]]);
-		                   $('.alert-danger').show();		                  
-		               }else{		            	   
-		            	   $("#identification").closest('.form-group').removeClass('has-error');	            	  
-		                   $('.alert-danger').hide();
-		                   selectOntologyOrDataSource(document.getElementById("datasources"));
-		               }
+	              
+	                console.log("success existGadget");
+	               if(data.exist === "true"){
+	            	   $("#datasources").attr('disabled', 'disabled');
+	                   $("#datasources").selectpicker('refresh');
+	                   $("#identification").closest('.form-group').addClass('has-error');
+	                   $('#alert-danger-message').text([[#{gadgets.name.exist}]]);
+	                   $('.alert-danger').show();
+	                  
 	               }else{
-		                console.log("success existGadget");
-		               if(data.exist === "true"){
-		            	   $("#datasources").attr('disabled', 'disabled');
-		                   $("#datasources").selectpicker('refresh');
-		                   $("#identification").closest('.form-group').addClass('has-error');
-		                   $('#alert-danger-message').text([[#{gadgets.name.exist}]]);
-		                   $('.alert-danger').show();
-		                  
-		               }else{
-		            	   $("#datasources").prop( "disabled", null );
-		            	   $("#datasources").selectpicker('refresh');
-		            	   $("#identification").closest('.form-group').removeClass('has-error');	            	  
-		                   $('.alert-danger').hide();
-		               }
+	            	   $("#datasources").prop( "disabled", null );
+	            	   $("#datasources").selectpicker('refresh');
+	            	   $("#identification").closest('.form-group').removeClass('has-error');	            	  
+	                   $('.alert-danger').hide();
 	               }
 	                
 	            },
@@ -3035,11 +2693,10 @@
 	}
 	
 	
-	// INPUT MASK FOR ontology identification allow only letters, numbers and -_
-	$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
+	
 	
 	// ]]>
 	</script>
-	</body>
+	
 </html> 
 

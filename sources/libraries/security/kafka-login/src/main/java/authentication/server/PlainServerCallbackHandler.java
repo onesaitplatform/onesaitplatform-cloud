@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import java.util.logging.Logger;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.NameCallback;
@@ -45,19 +45,17 @@ public class PlainServerCallbackHandler implements AuthenticateCallbackHandler {
 	private static final String USER_AGENT = "Mozilla/5.0";
 
 	private static final String BASE_JOIN = "http://iotbrokerservice:19000/iot-broker/rest/";
-	private static final String DEFAULT_VERTICAL = "onesaitplatform";
-	private static final String DEFAULT_TENANT = "development_onesaitplatform";
 	private static final String ZOOKEPER = "zookeeper";
-	private static final String SCHEMA_REGISTRY = "schema-registry";
-
+	private static final String SCHEMA_REGISTRY = "schema-registry";	
+	
 	private ObjectMapper objectMapper;
 
 	@Override
 	public void configure(Map<String, ?> configs, String mechanism, List<AppConfigurationEntry> jaasConfigEntries) {
 		log.info("PlainServerCallbackHandler Initialize");
-
+		
 		objectMapper = new ObjectMapper();
-		objectMapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
+		objectMapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);	
 	}
 
 	@Override
@@ -79,7 +77,7 @@ public class PlainServerCallbackHandler implements AuthenticateCallbackHandler {
 	protected String login() {
 		return "";
 	}
-
+	
 	boolean authenticate(String username, char[] pass) throws IOException {
 		if (username == null) {
 			return false;
@@ -87,7 +85,7 @@ public class PlainServerCallbackHandler implements AuthenticateCallbackHandler {
 			boolean ret = false;
 
 			log.info("GET OPERATION " + username + ":" + new String(pass));
-
+				
 			String sessionKey = "";
 			if (username.equals("admin")) {
 				String expectedPass = "admin-secret";
@@ -105,67 +103,55 @@ public class PlainServerCallbackHandler implements AuthenticateCallbackHandler {
 						ret = true;
 					}
 				} catch (Exception e) {
-					log.warn(e.getMessage());
+					log.warning(e.getMessage());
 				}
 			}
 			log.info("RETURN GET OPERATION " + username + ":" + new String(pass) + " RET " + ret);
-
+	
 			return ret;
 		}
 	}
 
 	private String join(String deviceId, String token) throws IOException {
-
-		String joinUrl = "client/kafka/join/";
-		String vertical = getDefaultVertical();
-		String tenant = getDefaultTenant();
+		
+		String joinUrl = "client/join/";
+		
 		String url = getBaseURL() + joinUrl;
 
 		log.info("Calling URL:" + url);
+		
+        String charset = "UTF-8";
 
-		String charset = "UTF-8";
-
-		// CHECK Multitenancy
-		String[] kafkaClientParams = deviceId.split("-");
-
-		if (kafkaClientParams.length == 3) {
-			deviceId = kafkaClientParams[0]; 
-			vertical = kafkaClientParams[1];
-			tenant = kafkaClientParams[2];
-		} else if (kafkaClientParams.length != 1) {
-			return null;
-		}
-
-		StringBuilder query = new StringBuilder();
-		query.append(String.format("token=%s", URLEncoder.encode(token, charset))).append("&")
-				.append(String.format("clientPlatform=%s", URLEncoder.encode(deviceId, charset))).append("&")
-				.append(String.format("clientPlatformId=%s", URLEncoder.encode(deviceId, charset))).append("&")
-				.append(String.format("vertical=%s", URLEncoder.encode(vertical, charset))).append("&")
-				.append(String.format("tenant=%s", URLEncoder.encode(tenant, charset)));
-
-		URL obj = new URL(url + "?" + query.toString());
+        StringBuilder query = new StringBuilder();
+        query.append(String.format("token=%s", URLEncoder.encode(token, charset)))		
+        		 .append("&")
+        		 .append(String.format("clientPlatform=%s", URLEncoder.encode(deviceId, charset)))
+        		 .append("&")
+        		 .append(String.format("clientPlatformId=%s", URLEncoder.encode(deviceId, charset)));	
+		
+        URL obj = new URL(url + "?" + query.toString()); 
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
+		
 		// optional default is GET
 		con.setRequestMethod("GET");
 
 		// add request header
 		con.setRequestProperty("User-Agent", USER_AGENT);
-		con.setRequestProperty("Accept", "application/json");
+		con.setRequestProperty("Accept","application/json");
 		con.setDoInput(true);
 		con.setDoOutput(true);
 		con.setConnectTimeout(10000);
 		con.setReadTimeout(10000);
-
+		
 		con.connect();
-
+		
 		String sessionKey = "";
-		if (con.getResponseCode() == HttpURLConnection.HTTP_OK) {
+		if (con.getResponseCode() == HttpURLConnection.HTTP_OK) {			
 			log.info("\nSending 'GET' request to URL : " + url);
 			log.info("\nResponse Code OK: " + HttpURLConnection.HTTP_OK);
 
 			BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-
+			
 			log.info("\nGetting response...");
 			String inputLine;
 			StringBuilder response = new StringBuilder();
@@ -179,10 +165,10 @@ public class PlainServerCallbackHandler implements AuthenticateCallbackHandler {
 
 			JSONObject jsonObject = new JSONObject(res);
 			sessionKey = jsonObject.getString("sessionKey");
-
+			
 			log.info("Session Key: " + sessionKey);
 		}
-
+				
 		return sessionKey;
 	}
 
@@ -195,22 +181,6 @@ public class PlainServerCallbackHandler implements AuthenticateCallbackHandler {
 		String myEnv = PlainLoginModule.getURL();
 		if (myEnv == null || "".equals(myEnv))
 			return BASE_JOIN;
-		else
-			return myEnv;
-	}
-
-	private String getDefaultVertical() {
-		String myEnv = PlainLoginModule.getDefaultVertical();
-		if (myEnv == null || "".equals(myEnv))
-			return DEFAULT_VERTICAL;
-		else
-			return myEnv;
-	}
-
-	private String getDefaultTenant() {
-		String myEnv = PlainLoginModule.getDefaultTenant();
-		if (myEnv == null || "".equals(myEnv))
-			return DEFAULT_TENANT;
 		else
 			return myEnv;
 	}

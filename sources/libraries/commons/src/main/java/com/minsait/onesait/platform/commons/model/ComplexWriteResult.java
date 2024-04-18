@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,50 +15,24 @@
 /*******************************************************************************
  * © Indra Sistemas, S.A.
  * 2013 - 2018  SPAIN
- *
+ * 
  * All rights reserved
  ******************************************************************************/
 package com.minsait.onesait.platform.commons.model;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@JsonInclude(Include.NON_NULL)
-@Getter
-@Setter
 public class ComplexWriteResult {
 
+	@Getter
+	@Setter
 	private ComplexWriteResultType type;
+
+	@Getter
+	@Setter
 	private List<? extends DBResult> data;
-	private int totalWritten;
-	private List<Object> failedData;
 
-	public ComplexWriteResultType getType() {
-		return type;
-	}
-
-	public ComplexWriteResult setType(final ComplexWriteResultType type) {
-		this.type = type;
-		return this;
-	}
-
-	public List<? extends DBResult> getData() {
-		return data;
-	}
-
-	public ComplexWriteResult setData(final List<? extends DBResult> data) {
-		this.data = data;
-		return this;
-	}
 }

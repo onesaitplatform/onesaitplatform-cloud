@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,22 +23,20 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.minsait.onesait.platform.api.rest.api.dto.ApiDTO;
+import com.minsait.onesait.platform.api.rest.api.dto.AutenticacionAtribDTO;
+import com.minsait.onesait.platform.api.rest.api.dto.OperacionDTO;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Api.ApiType;
 import com.minsait.onesait.platform.config.model.ApiOperation;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserApi;
+import com.minsait.onesait.platform.config.repository.ApiAuthenticationRepository;
 import com.minsait.onesait.platform.config.repository.ApiOperationRepository;
 import com.minsait.onesait.platform.config.repository.UserApiRepository;
-import com.minsait.onesait.platform.config.services.apimanager.dto.ApiDTO;
-import com.minsait.onesait.platform.config.services.apimanager.dto.AutenticacionAtribDTO;
-import com.minsait.onesait.platform.config.services.apimanager.dto.OperacionDTO;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.user.UserService;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
 @Service
 public class ApiFIQL {
@@ -54,7 +52,7 @@ public class ApiFIQL {
 	private ApiOperationRepository operationRepository;
 
 	@Autowired
-	private IntegrationResourcesService resourcesService;
+	private ApiAuthenticationRepository authenticationRepository;
 
 	public static final String API_PUBLICA = "PUBLIC";
 	public static final String API_PRIVADA = "PRIVATE";
@@ -86,15 +84,7 @@ public class ApiFIQL {
 		if (api.getOntology() != null) {
 			apiDTO.setOntologyId(api.getOntology().getId());
 		}
-
-		if (api.getGraviteeId() == null) {
-			apiDTO.setEndpoint(resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE).concat("server/api/v")
-					.concat(api.getNumversion() + "/").concat(api.getIdentification()));
-		} else {
-			apiDTO.setEndpoint(resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.GATEWAY).concat("/")
-					.concat(api.getIdentification()).concat("/v").concat(String.valueOf(api.getNumversion())));
-		}
-
+		apiDTO.setEndpoint(api.getEndpoint());
 		apiDTO.setEndpointExt(api.getEndpointExt());
 		apiDTO.setDescription(api.getDescription());
 		apiDTO.setMetainf(api.getMetaInf());
@@ -118,7 +108,7 @@ public class ApiFIQL {
 
 		// Se copia el Objeto Autenticacion
 		final List<UserApi> autenticaciones = userApiRepository.findByApiId(api.getId());
-		if (autenticaciones != null && autenticaciones.size() > 0) {
+		if (autenticaciones != null && !autenticaciones.isEmpty()) {
 
 			// Se copian los atributos
 			final ArrayList<AutenticacionAtribDTO> atributosDTO = new ArrayList<>();
@@ -132,7 +122,6 @@ public class ApiFIQL {
 			apiDTO.setAuthentication(atributosDTO);
 		}
 
-		apiDTO.setGraviteeId(api.getGraviteeId());
 		return apiDTO;
 	}
 
@@ -158,6 +147,7 @@ public class ApiFIQL {
 		}
 
 		api.setApiType(ApiType.valueOf(apiDTO.getType()));
+		api.setEndpoint(apiDTO.getEndpoint());
 		api.setEndpointExt(apiDTO.getEndpointExt());
 		api.setDescription(apiDTO.getDescription());
 		api.setMetaInf(apiDTO.getMetainf());
@@ -189,6 +179,7 @@ public class ApiFIQL {
 
 		apiUpdate.setOntology(api.getOntology());
 
+		apiUpdate.setEndpoint(api.getEndpoint());
 		apiUpdate.setEndpointExt(api.getEndpointExt());
 		apiUpdate.setDescription(api.getDescription());
 		apiUpdate.setMetaInf(api.getMetaInf());
@@ -220,6 +211,14 @@ public class ApiFIQL {
 
 	public void setOntologyService(OntologyService ontologyService) {
 		this.ontologyService = ontologyService;
+	}
+
+	public ApiAuthenticationRepository getAuthenticationRepository() {
+		return authenticationRepository;
+	}
+
+	public void setAuthenticationRepository(ApiAuthenticationRepository authenticationRepository) {
+		this.authenticationRepository = authenticationRepository;
 	}
 
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,20 +40,24 @@ import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyDeleteByIdMessag
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyDeleteMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyReturnMessage;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageDirection;
+import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.iotbroker.mock.pojo.Person;
 import com.minsait.onesait.platform.iotbroker.mock.pojo.PojoGenerator;
 import com.minsait.onesait.platform.iotbroker.mock.router.RouterServiceGenerator;
 import com.minsait.onesait.platform.iotbroker.mock.ssap.SSAPMessageGenerator;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
-import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 import com.minsait.onesait.platform.persistence.mongodb.MongoBasicOpsDBRepository;
 import com.minsait.onesait.platform.router.service.app.model.OperationResultModel;
 import com.minsait.onesait.platform.router.service.app.service.RouterService;
+import com.minsait.onesait.platform.router.service.app.service.RouterSuscriptionService;
+
+import lombok.extern.slf4j.Slf4j;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Category(IntegrationTest.class)
 @Ignore
+@Slf4j
 public class DeleteProcessorTest {
 	@Autowired
 	MessageProcessorDelegate deleteProcessor;
@@ -65,6 +69,8 @@ public class DeleteProcessorTest {
 	SecurityPluginManager securityPluginManager;
 	@MockBean
 	RouterService routerService;
+	@MockBean
+	RouterSuscriptionService routerSuscriptionService;
 
 	Person subject = PojoGenerator.generatePerson();
 	String subjectId;
@@ -86,7 +92,7 @@ public class DeleteProcessorTest {
 		when(deviceManager.registerActivity(any(), any(), any(), any())).thenReturn(true);
 
 		when(securityPluginManager.getSession(anyString())).thenReturn(Optional.of(session));
-		when(securityPluginManager.checkSessionKeyActive(any())).thenReturn(true);
+		when(securityPluginManager.checkSessionKeyActive(anyString())).thenReturn(true);
 		when(securityPluginManager.checkAuthorization(any(), any(), any())).thenReturn(true);
 	}
 
@@ -95,7 +101,7 @@ public class DeleteProcessorTest {
 		// mockOntologies.createOntology(Person.class);
 
 		subject = PojoGenerator.generatePerson();
-		final String subjectInsertResult = repository.insert(Person.class.getSimpleName(),
+		final String subjectInsertResult = repository.insert(Person.class.getSimpleName(), "",
 				objectMapper.writeValueAsString(subject));
 		// subjectId =
 		// objectMapper.readTree(subjectInsertResult).at("/_id/$oid").asText();

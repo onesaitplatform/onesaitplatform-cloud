@@ -82,49 +82,6 @@
       "postProcess": null
     },
     {
-      "identification": "update",
-      "description": "update all",
-      "operation": "GET",
-      "endpoint": null,
-      "path": "update/{oid}",
-      "headers": [],
-      "queryParams": [
-        {
-          "name": "queryType",
-          "dataType": "STRING",
-          "description": "",
-          "value": "sql",
-          "headerType": "QUERY",
-          "condition": null
-        },
-        {
-          "name": "query",
-          "dataType": "STRING",
-          "description": "",
-          "value": "UPDATE SensorTag SET SensorTag.newAtt=2 WHERE _id=OID({$oid})",
-          "headerType": "QUERY",
-          "condition": null
-        },
-        {
-          "name": "targetdb",
-          "dataType": "STRING",
-          "description": "",
-          "value": "rtdb",
-          "headerType": "QUERY",
-          "condition": null
-        },
-        {
-          "name": "oid",
-          "dataType": "STRING",
-          "description": "",
-          "value": null,
-          "headerType": "PATH",
-          "condition": null
-        }
-      ],
-      "postProcess": ""
-    },
-    {
       "identification": "delete",
       "description": "delete all",
       "operation": "GET",

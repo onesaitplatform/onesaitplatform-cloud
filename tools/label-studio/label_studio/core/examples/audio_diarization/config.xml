@@ -1,8 +1,0 @@
-<!-- {"title": "Speaker diarization", "category": "audio", "complexity": "basic"} -->
-<View>
-  <Labels name="label" toName="audio" choice="multiple">
-    <Label value="Speaker 1" />
-    <Label value="Speaker 2" />
-  </Labels>
-  <AudioPlus name="audio" value="$audio"/>
-</View>

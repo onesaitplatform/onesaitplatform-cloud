@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import com.minsait.onesait.platform.config.model.KsqlFlow;
 import com.minsait.onesait.platform.config.model.KsqlRelation;
 import com.minsait.onesait.platform.config.model.KsqlResource;
 import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.services.exceptions.KsqlRelationServiceException;
 import com.minsait.onesait.platform.config.services.ksql.flow.KsqlFlowService;
 import com.minsait.onesait.platform.config.services.ksql.relation.KsqlRelationService;
@@ -74,13 +75,13 @@ public class KsqlRelationController {
 	private static final String KSQL_SYNTAX_ERROR = "KSQL Syntax error. Please check KSQL Statemet.";
 	private static final String NEW_LINE = ". \\n";
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@PostMapping("/getNamesForAutocomplete")
 	public @ResponseBody List<String> getNamesForAutocomplete() {
 		return this.ksqlRelationService.getAllIdentifications();
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@PostMapping(value = {
 			"/create" }, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public @ResponseBody ResponseEntity<String> create(@RequestBody KsqlResourceDTO ksqlResourceDTO) {
@@ -91,7 +92,7 @@ public class KsqlRelationController {
 			String error = utils.getMessage("ksql.relation.creation.error.flow.not.found", KSQL_SYNTAX_ERROR);
 			return new ResponseEntity<>(MSG_STR + error + "\"}", HttpStatus.NOT_FOUND);
 		}
-		if (!userService.getUser(utils.getUserId()).isAdmin()
+		if (!userService.getUser(utils.getUserId()).getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
 				&& !ksqlFlow.getUser().getUserId().equals(utils.getUserId())) {
 			// No permissions for this operation
 			String error = utils.getMessage("ksql.relation.creation.error.no.permissions",
@@ -129,7 +130,7 @@ public class KsqlRelationController {
 		return new ResponseEntity<>(MSG_STR + success + "\"}", HttpStatus.OK);
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@DeleteMapping("/{id}")
 	public @ResponseBody ResponseEntity<String> delete(Model model, @PathVariable("id") String id,
 			RedirectAttributes redirect) {
@@ -139,7 +140,7 @@ public class KsqlRelationController {
 			return new ResponseEntity<>(MSG_STR + error + "\"}", HttpStatus.NOT_FOUND);
 		}
 
-		if (userService.getUser(utils.getUserId()).isAdmin()
+		if (userService.getUser(utils.getUserId()).getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
 				|| relation.getKsqlFlow().getUser().getUserId().equals(utils.getUserId())) {
 
 			try {
@@ -159,7 +160,7 @@ public class KsqlRelationController {
 		return new ResponseEntity<>(MSG_STR + success + "\"}", HttpStatus.OK);
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@GetMapping(value = "/list", produces = "text/html")
 	public String getRelations(Model model, HttpServletRequest request,
 			@RequestParam(required = false, name = "flowId") String flowId) {
@@ -176,7 +177,7 @@ public class KsqlRelationController {
 		return "redirect:/ksql/flow/update/" + flowId + "#ksqlRelations";
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@PutMapping(value = "/update/{id}")
 	public @ResponseBody ResponseEntity<String> updateFlow(Model model, @PathVariable("id") String id,
 			@RequestBody KsqlResourceDTO ksqlResourceDTO, BindingResult bindingResult, RedirectAttributes redirect) {
@@ -187,7 +188,7 @@ public class KsqlRelationController {
 			String error = utils.getMessage("ksql.relation.creation.error.flow.not.found", "KSQL Flow not found.");
 			return new ResponseEntity<>(MSG_STR + error + "\"}", HttpStatus.NOT_FOUND);
 		}
-		if (!userService.getUser(utils.getUserId()).isAdmin()
+		if (!userService.getUser(utils.getUserId()).getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
 				&& !ksqlFlow.getUser().getUserId().equals(utils.getUserId())) {
 			// No permissions for this operation
 			String error = utils.getMessage("ksql.relation.creation.error.no.permissions",

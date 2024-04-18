@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@ public interface DigitalTwinWebsocketAPI {
 
 	public void sendAction(String message, MessageHeaders messageHeaders);
 
-	public void notifyShadowMessage(String apiKey, JSONObject message);
+	public void notifyShadowMessage(JSONObject message);
 
-	public void notifyCustomMessage(String apiKey, JSONObject message);
+	public void notifyCustomMessage(JSONObject message);
 
-	public void notifyActionMessage(String apiKey, JSONObject message);
+	public void notifyActionMessage(JSONObject message);
 
 }

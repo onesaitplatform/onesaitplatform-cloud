@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,9 @@ package com.minsait.onesait.platform.controlpanel.rest.management.user.model;
 
 import javax.validation.constraints.NotNull;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,30 +26,21 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(Include.NON_NULL)
+
 public class UserSimplified implements Comparable<UserSimplified> {
 	@NotNull
-	@ApiModelProperty(required = true)
 	private String username;
+	@JsonInclude(Include.NON_NULL)
 	private String password;
 	@NotNull
-	@ApiModelProperty(required = true)
 	private String mail;
 	@NotNull
-	@ApiModelProperty(required = true)
 	private String fullName;
 	@NotNull
-	@ApiModelProperty(required = true)
 	private String role;
-
-	@ApiModelProperty(required = false)
-	private String tenant;
-
-	@ApiModelProperty(required = false)
-	private Boolean active;
-
+	@JsonInclude(Include.NON_NULL)
 	private String extraFields;
+	@JsonInclude(Include.NON_NULL)
 	private byte[] avatar;
 
 	public UserSimplified(com.minsait.onesait.platform.config.model.User user) {
@@ -59,13 +48,11 @@ public class UserSimplified implements Comparable<UserSimplified> {
 		mail = user.getEmail();
 		fullName = user.getFullName();
 		role = user.getRole().getId();
-		if (user.getAvatar() != null && user.getAvatar().length > 0) {
+		if (user.getAvatar() != null && user.getAvatar().length > 0)
 			avatar = user.getAvatar();
-		}
 
-		if (user.getExtraFields() != null) {
+		if (user.getExtraFields() != null)
 			extraFields = user.getExtraFields();
-		}
 
 	}
 

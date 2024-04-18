@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -57,6 +58,8 @@ public class QueryNativeMongoDBIntegrationTest {
 	@Qualifier("MongoBasicOpsDBRepository")
 	BasicOpsDBRepository repository;
 
+	@Autowired
+	MongoTemplate nativeTemplate;
 	
 	private static final String ONT_NAME = "contextData";
 	private static final String DATABASE = "onesaitplatform_rtdb";
@@ -64,19 +67,17 @@ public class QueryNativeMongoDBIntegrationTest {
 	String refOid = "";
 
 	@Before
-	public void setUp() throws Exception {
-		log.warn(
-				"This Integration Test needs MongoDB RTDB and ConfigDB started and correctly configured with ConfigInit Module");
+	public void setUp() throws Exception{
+		log.warn("This Integration Test needs MongoDB RTDB and ConfigDB started and correctly configured with ConfigInit Module");
 		if (!connect.collectionExists(DATABASE, ONT_NAME))
 			connect.createCollection(DATABASE, ONT_NAME);
 		// 1º
 		ContextData data = ContextData
-				.builder("user", UUID.randomUUID().toString(), UUID.randomUUID().toString(), System.currentTimeMillis(),
-						"Testing")
+				.builder("user", UUID.randomUUID().toString(), UUID.randomUUID().toString(), System.currentTimeMillis(), "Testing")
 				.clientConnection(UUID.randomUUID().toString()).deviceTemplate(UUID.randomUUID().toString())
 				.device(UUID.randomUUID().toString()).clientSession(UUID.randomUUID().toString()).build();
 		ObjectMapper mapper = new ObjectMapper();
-		refOid = repository.insert(ONT_NAME, mapper.writeValueAsString(data));
+		refOid = repository.insert(ONT_NAME, "", mapper.writeValueAsString(data));
 		// 2º
 		data = ContextData
 				.builder("admin", UUID.randomUUID().toString(), UUID.randomUUID().toString(),
@@ -84,7 +85,7 @@ public class QueryNativeMongoDBIntegrationTest {
 				.clientConnection(UUID.randomUUID().toString()).deviceTemplate(UUID.randomUUID().toString())
 				.device(UUID.randomUUID().toString()).clientSession(UUID.randomUUID().toString()).build();
 		mapper = new ObjectMapper();
-		refOid = repository.insert(ONT_NAME, mapper.writeValueAsString(data));
+		refOid = repository.insert(ONT_NAME, "", mapper.writeValueAsString(data));
 		// 3º
 		data = ContextData
 				.builder("other", UUID.randomUUID().toString(), UUID.randomUUID().toString(),
@@ -92,13 +93,14 @@ public class QueryNativeMongoDBIntegrationTest {
 				.clientConnection(UUID.randomUUID().toString()).deviceTemplate(UUID.randomUUID().toString())
 				.device(UUID.randomUUID().toString()).clientSession(UUID.randomUUID().toString()).build();
 		mapper = new ObjectMapper();
-		refOid = repository.insert(ONT_NAME, mapper.writeValueAsString(data));
+		refOid = repository.insert(ONT_NAME, "", mapper.writeValueAsString(data));
 	}
 
 	@After
 	public void tearDown() {
 		connect.dropCollection(DATABASE, ONT_NAME);
 	}
+
 
 	@Test
 	public void test1_QueryNativeLimit() {
@@ -181,6 +183,7 @@ public class QueryNativeMongoDBIntegrationTest {
 			Assert.fail("Error test8_QueryNativeFindUser" + e.getMessage());
 		}
 	}
+
 
 	@Test
 	public void test9_createAndDropIndex() {

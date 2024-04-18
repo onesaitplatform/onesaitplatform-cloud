@@ -1,50 +1,24 @@
 ##--spring.config.name=apimanager
 ##security.require_ssl: true
 server: ## Config Web Server
-   max-http-header-size: 20000
    port: 19100
-   servlet:
-      contextPath: /api-manager
-   jetty.max-http-form-post-size: 20000000     
-   forward-headers-strategy: native 
+   contextPath: /api-manager
+   tomcat:
+      access_log_enabled: true
+      basedir: target/tomcat
+   jetty.max-http-post-size: 20000000      
 
+# all access to actuator endpoints without security
+management.security.enabled: false
+#security.basic.enabled: false
 
-logbook:
-  exclude:
-     - ${server.servlet.contextPath}/actuator/**
-     - ${server.servlet.contextPath}/static/**
-     - ${server.servlet.contextPath}/themes/**
-     - ${server.servlet.contextPath}/swagger-ui/**
-  write:
-     max-body-size: 10000
-     
-master: 
-   datasource:
-      hikari: 
-        jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
-        username: root
-        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-        driver-class-name: com.mysql.cj.jdbc.Driver
-        pool-name: master-hikari-pool
-        minimum-idle: 1
-        maximum-pool-size: 2
-        connection-timeout: 10000
-     
+#hawtio.authenticationEnabled: false
+#hawtio.offline: true
+    
 onesaitplatform: #Config onesaitplatform specific
-   secure:
-      cookie: false
-      cors: "*"
-   multitenancy:
-      enabled: true
    audit.global.notify: true
    authentication:
       provider: configdb
-      oauth:
-        osp-keycloak: false
-      configdb:
-        acl:
-          enabled: false
-          list: administrator,analytics,dataviewer,demo_developer,demo_user,developer,operations,partner,sysadmin,user
    apimanager:
       cacheable: false
    binary-repository:
@@ -82,54 +56,45 @@ onesaitplatform: #Config onesaitplatform specific
    router.avoidsslverification: true
    router.alternativeURL: http://localhost:20000/router/router/ 
    apimanager.audit.enabled: true
-   metrics:
-      collector.endpoint: http://localhost:20002/router/metrics-collector/refresh
-      enabled: true
-   graylog:
-      enabled: false
-      host: 127.0.0.1
-      port: 12201
+   metrics.collector.endpoint: http://localhost:20000/router/metrics-collector/refresh
 
-      
-management.endpoints.web.exposure.include: "*"
-management.endpoint.health.show-details: always
+    
 spring: ## General Config  
-   main:
-      allow-circular-references: true
-      allow-bean-definition-overriding: true
    application.name: onesaitplatform-api-manager
-   boot.admin: #Spring Boot Admin Config   
-      client.url: http://localhost:18100/monitoring
-      client.username: operations
-      client.password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
-      client.instance.metadata.user.name: ${spring.boot.admin.client.username}
-      client.instance.metadata.user.password: ${spring.boot.admin.client.password}
-   datasource:
-     hikari:
-      jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
+   boot.admin: #Spring Boot Admin Config    
+      url: http://localhost:18100/monitoring
+      username: operations
+      password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
+      client.metadata.user.name: ${spring.boot.admin.username}
+      client.metadata.user.password: $spring.boot.admin.password} 
+   datasource: ## JPA Config
+      url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
       username: root
       password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-      connection-timeout: 10000
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      minimum-idle: 5
-      maximum-pool-size: 10
+      driver-class-name: com.mysql.jdbc.Driver
+      test-while-idle: true
+      test-on-borrow: true
+      validation-query: SELECT 1      
+      # Number of ms to wait before throwing an exception if no connection is available.
+      max-wait: 10000
+      # Maximum number of active connections that can be allocated from this pool at the same time.
+      max-active: 30
+      initial-size: 10
+      max-idle: 30
+      min-idle: 10
+      removeAbandoned: true
       
    jpa:
-      open-in-view: false
       # The SQL dialect makes Hibernate generate better SQL for the chosen database
       properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect   
       # Hibernate ddl auto (create, create-drop, validate, update)
-      hibernate.ddl-auto: none
+      hibernate.ddl-auto: validate
       properties.hibernate.enable_lazy_load_no_trans: true
       show-sql: false
       properties.hibernate.format_sql: true
       properties.hibernate.temp.use_jdbc_metadata_defaults: false
    jmx:
     enabled: true
-   servlet:
-      multipart:
-         max-file-size: 200MB
-         max-request-size: 200MB
 spring.elasticsearch.jest.uris: ${onesaitplatform.database.elasticsearch.sql.connector.http.endpoint}
 spring.elasticsearch.jest.read-timeout: ${onesaitplatform.database.elasticsearch.sql.connectionTimeout.millis}
 
@@ -154,18 +119,11 @@ gravitee:
   header-value: Gravitee-Server
     ## LOGGING CONF
 logging:
-   file.path: ./target/ 
-   file.name: ${spring.application.name}
+   path: ./target/ 
+   file: ${spring.application.name}
    level:
-      com.minsait: DEBUG 
-      org.springframework.boot: WARN
+      com.minsait: INFO 
+      org.springframework.boot: INFO
       org.jeasy.rules: ERROR      
-      org.eclipse.jetty: WARN
-      org.zalando.logbook: TRACE
 #      org.springframework.boot.autoconfigure: DEBUG
-#open-telemetry
-#config spring sleuth      
-spring.sleuth.otel.config.trace-id-ratio-based: 1.0
-#spring.sleuth.otel.exporter.otlp.endpoint: http://collector:4317      
-spring.sleuth.otel.exporter.otlp.endpoint: http://127.0.0.1:4317
-#open-telemetry
+

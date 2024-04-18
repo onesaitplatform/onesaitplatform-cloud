@@ -18,9 +18,9 @@
  */
 angular
   .module('dataCollectorApp.home')
-  .controller('StatsAggregatorConfigurationController', ["$scope", function ($scope) {
+  .controller('StatsAggregatorConfigurationController', function ($scope) {
     $scope.detailPaneConfig = $scope.statsAggregatorStageConfig;
     $scope.$watch('statsAggregatorStageConfig', function() {
       $scope.detailPaneConfig = $scope.statsAggregatorStageConfig;
     });
-  }]);
+  });

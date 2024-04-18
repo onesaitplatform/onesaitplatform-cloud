@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('ErrorModalInstanceController', ["$scope", "$modalInstance", "errorObj", function ($scope, $modalInstance, errorObj) {
+  .controller('ErrorModalInstanceController', function ($scope, $modalInstance, errorObj) {
 
     angular.extend($scope, {
       errorObject: errorObj,
@@ -29,4 +29,4 @@ angular
       }
     });
 
-  }]);
+  });

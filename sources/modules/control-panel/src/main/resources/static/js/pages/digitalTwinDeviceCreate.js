@@ -14,6 +14,41 @@ var DigitalTwinCreateController = function() {
 	// CONTROLLER PRIVATE FUNCTIONS	--------------------------------------------------------------------------------
 	
 	
+	$("#createBtn").on('click',function(e){
+		var editorLogic = $('.CodeMirror')[0].CodeMirror;
+		if($("#identification").val()!='' && $("#identification").val()!=undefined){
+			if(pattern.test($("#identification").val())){
+				$("#logic").val(JSON.stringify(editorLogic.getValue().trim()));
+				$("#typeSelected").val($("#typeDigitalTwin").val());
+				$("#createBtn").val('Please wait ...')
+			      .attr('disabled','disabled');
+				DigitalTwinCreateController.submitform();
+			}
+		}else{
+			$.alert({title: 'ERROR!', theme: 'light',  content: digitalTwinCreateJson.validations.schema});
+			return false;
+		}
+	});
+	
+	
+	
+	$("#updateBtn").on('click',function(){
+		var editorLogic = $('.CodeMirror')[0].CodeMirror;
+		if($("#identification").val()!='' && $("#identification").val()!=undefined){
+			if(pattern.test($("#identification").val())){
+				$("#logic").val(JSON.stringify(editorLogic.getValue().trim()));
+				$("#typeSelected").val($("#typeDigitalTwin").val());
+				$("#createBtn").val('Please wait ...')
+			      .attr('disabled','disabled');
+				DigitalTwinCreateController.submitform();
+			}
+		}else{
+			$.alert({title: 'ERROR!', theme: 'light',  content: digitalTwinCreateJson.validations.schema});
+			return false;
+		}
+		
+	});
+	
 	// CHECK IF JSON STRING WHEN JSON PARSE IS OK OR NOT, IF THE JSON IS MALFORMED THE JSON.parse() is broken.
 	var IsJsonString = function(str) {
 		try {
@@ -43,21 +78,6 @@ var DigitalTwinCreateController = function() {
 		window.location.href = url; 
 	}
 	
-	var freeResource = function(id,url){
-		console.log('freeResource() -> id: '+ id);
-		$.get("/controlpanel/digitaltwindevices/freeResource/" + id).done(
-				function(data){
-					console.log('freeResource() -> ok');
-					navigateUrl(url); 
-				}
-			).fail(
-				function(e){
-					console.error("Error freeResource", e);
-					navigateUrl(url); 
-				}
-			)		
-	}
-	
 	$("#button3").on('click', function(){
 		var csrf_value = $("meta[name='_csrf']").attr("content");
 		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
@@ -73,7 +93,6 @@ var DigitalTwinCreateController = function() {
 			success : function(data) {
 				if (data!="" && data != undefined) {
 					$("#apiKey").val(data);
-					$('.form').validate().element('#apiKey');   
 				} else {
 					$.alert({title: 'ERROR!', theme: 'light',  content: 'error'}); 
 				}
@@ -122,9 +141,6 @@ var DigitalTwinCreateController = function() {
 	var handleCodeMirror = function () {
 		logControl ? console.log('handleCodeMirror() on -> logicEditor') : '';	
 		
-		// INPUT MASK FOR ontology identification allow only letters, numbers and -_
-		$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
-		
         var myTextArea = document.getElementById('logicEditor');
         var myCodeMirror = CodeMirror.fromTextArea(myTextArea, {
         	mode: "text/javascript",
@@ -132,92 +148,12 @@ var DigitalTwinCreateController = function() {
             foldGutter: true,
             matchBrackets: true,
             styleActiveLine: true,
-            theme:"material",    
+            theme:"elegant",    
             readOnly: true
 
         });
-		myCodeMirror.setSize("100%", 270);
+		myCodeMirror.setSize("100%", 350);
     }
-
-
-// FORM VALIDATION
-		var form1 = $('#digitaltwindevice_create_form');
-	var handleValidation = function() {
-
-		form1
-				.validate({
-				errorElement: 'span', //default input error message container
-	            errorClass: 'help-block help-block-error', // default input error message class
-	            focusInvalid: false, // do not focus the last invalid input
-	            ignore: ":hidden:not('.selectpicker, .hidden-validation')", // validate all fields including form hidden input but not selectpicker
-				lang: currentLanguage,
-					// validation rules
-					rules : {
-						identification : {
-							minlength : 5,							
-							required : true
-						},
-						latitude : {		
-							required : true
-						},
-						longitude : {		
-							required : true
-						},
-						interface : {		
-							required : true
-						},
-						port : {		
-							required : true
-						},
-						contextPath : {		
-							required : true
-						},
-						endpoint : {		
-							required : true
-						},
-						digitalKey : {		
-							required : true
-						}
-					},
-					invalidHandler : function(event, validator) { // display
-						// error alert on form submit
-						toastr.error(messagesForms.validation.genFormError,'');
-					},
-					errorPlacement : function(error, element) {
-						if 		( element.is(':checkbox'))	{ error.insertAfter(element.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline")); }
-						else if ( element.is(':radio'))		{ error.insertAfter(element.closest(".md-radio-list, .md-radio-inline, .radio-list,.radio-inline")); }
-						else 								{ error.insertAfter(element); }
-					},
-					highlight : function(element) { // hightlight error inputs
-						$(element).closest('.form-group').addClass('has-error');
-					},
-					unhighlight : function(element) { // revert the change
-						// done by hightlight
-						$(element).closest('.form-group').removeClass(
-								'has-error');
-					},
-					success : function(label) {
-						label.closest('.form-group').removeClass('has-error');
-					},
-					// ALL OK, THEN SUBMIT.
-					submitHandler : function(form) {			 
-						var editorLogic = $('.CodeMirror')[0].CodeMirror;		
-						$("#logic").val(JSON.stringify(editorLogic.getValue().trim()));
-						$("#typeSelected").val($("#typeDigitalTwin").val());
-						toastr.success(messagesForms.validation.genFormSuccess,'');
-					 	form.submit();
-					}
-				});
-	}
-	 var initTemplateElements = function(){
-			
-		$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
-				$('.form').validate().element('#' + event.target.id);                // checks form for validity
-			});			
-		
-		
-		
-		}
 
 	// CONTROLLER PUBLIC FUNCTIONS 
 	return{
@@ -256,11 +192,10 @@ var DigitalTwinCreateController = function() {
 			//LOAD DIGITAL TWIN TYPES 
 			logControl ? console.log('|---> Load Digital Twin Types') : '';
 			if($("#typesDigitalTwin").val()!="" && $("#typesDigitalTwin").val()!=undefined){
-				var types = $("#typesDigitalTwin").val().replace("[","").replace("]","").split(", ");
+				var types = $("#typesDigitalTwin").val().replace("[","").replace("]","").split(",");
 				$.each(types, function(key, object){
 					$("#typeDigitalTwin").append("<option id='"+object+"' value='"+object+"'>"+object+"</option>");
 				});
-				$("#typeDigitalTwin").selectpicker('refresh');
 			}else{
 				$.alert({title: 'ERROR!', theme: 'light',  content: digitalTwinCreateJson.validations.types}); 
 				return false;
@@ -276,7 +211,7 @@ var DigitalTwinCreateController = function() {
 				logControl ? console.log('|---> Action-mode: UPDATE') : '';
 				var type = $("#typeDigital").val();
 				$("#typeDigitalTwin").val(type);
-				$("#typeDigitalTwin").selectpicker('render');
+				
 				var editorLogic = $('.CodeMirror')[0].CodeMirror;
 				var logica = digitalTwinCreateJson.logic;
 					
@@ -286,8 +221,7 @@ var DigitalTwinCreateController = function() {
 				editorLogic.setValue(logica)
 			}
 			
-			handleValidation();
-			initTemplateElements();
+			
 		},
 		
 		// REDIRECT
@@ -295,11 +229,13 @@ var DigitalTwinCreateController = function() {
 			logControl ? console.log(LIB_TITLE + ': go()') : '';	
 			navigateUrl(url); 
 		},
-		cancel: function(id,url){
-			logControl ? console.log(LIB_TITLE + ': cancel()') : '';			
-			freeResource(id,url);
-		},
 		
+		submitform: function(){
+			
+			//TODO
+			
+			$("#digitaltwindevice_create_form").submit();
+		},
 		
 		// DELETE DIGITAL TWIN DEVICE 
 		deleteDigitalTwinDevice: function(digitalTwinDeviceId){
@@ -310,7 +246,7 @@ var DigitalTwinCreateController = function() {
 }();
 
 // AUTO INIT CONTROLLER WHEN READY
-$(window).on("load",function(){
+jQuery(document).ready(function() {
 	
 	DigitalTwinCreateController.load(digitalTwinCreateJson);
 	

@@ -68,11 +68,7 @@ $(document).ready(function() {
 
             if (this.get('root')) {
             	var comboColecciones=document.getElementById("collections");
-            	if (comboColecciones != null) {
-                	id = comboColecciones.options[comboColecciones.selectedIndex].value;
-                } else {
-                	id = "";
-                }
+                id = comboColecciones.options[comboColecciones.selectedIndex].value;
             } else if (!this.get('key')) {
                 // Items and Extensions don't have keys.
                 if ('extensions' == aType) {
@@ -143,7 +139,6 @@ $(document).ready(function() {
             maxitems: '',
             schemaid: '',
             defaultValue: '',
-            format: '',
             required: false,
             // Complex
             items: undefined,

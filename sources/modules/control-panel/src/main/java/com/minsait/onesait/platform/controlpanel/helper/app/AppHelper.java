@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
@@ -32,10 +31,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.config.model.App;
-import com.minsait.onesait.platform.config.model.AppList;
 import com.minsait.onesait.platform.config.model.AppRole;
-import com.minsait.onesait.platform.config.model.AppRoleListOauth;
-import com.minsait.onesait.platform.config.model.AppUserListOauth;
+import com.minsait.onesait.platform.config.model.AppUser;
 import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.ApiRepository;
@@ -55,21 +52,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AppHelper {
 
-    @Value("${onesaitplatform.controlpanel.realms.max.users.app.assign.table:100}")
-	private int MAX_USERS_IN_APP_TABLE;
-
-    @Value("${onesaitplatform.controlpanel.realms.max.users.combo:50}")
-	private int MAX_USERS_COMBO_BOX;
-
 	@Autowired
 	ApiRepository apiRepository;
 
 	@Autowired
 	private AppService appService;
-
+	
 	@Autowired
 	UserService userService;
-
+	
 	@Autowired
 	private ProjectService projectService;
 
@@ -82,12 +73,11 @@ public class AppHelper {
 		if (apps != null && !apps.isEmpty()) {
 			for (final App app : apps) {
 				final AppDTO appDTO = new AppDTO();
-				appDTO.setId(app.getId());
+				appDTO.setAppId(app.getAppId());
 				appDTO.setDateCreated(app.getCreatedAt());
-				appDTO.setDateUpdated(app.getUpdatedAt());
 				appDTO.setDescription(app.getDescription());
-				appDTO.setIdentification(app.getIdentification());
-				appDTO.setUser(app.getUser().getUserId());
+				appDTO.setName(app.getName());
+
 				if (app.getAppRoles() != null && !app.getAppRoles().isEmpty()) {
 					final List<String> list = new ArrayList<>();
 					for (final AppRole appRole : app.getAppRoles()) {
@@ -114,12 +104,13 @@ public class AppHelper {
 
 	public App dto2app(AppCreateDTO app) throws IOException {
 		final App napp = new App();
-		napp.setIdentification(app.getIdentification());
+		napp.setAppId(app.getAppId());
+		napp.setName(app.getName());
 		napp.setUser(userService.getUser(utils.getUserId()));
 		napp.setSecret(app.getSecret());
 		napp.setDescription(app.getDescription());
 		napp.setTokenValiditySeconds(app.getTokenValiditySeconds());
-		napp.setPublicClient(app.isPublicClient());
+
 		final ObjectMapper mapper = new ObjectMapper();
 		final List<RoleAppCreateDTO> roles = new ArrayList<>(
 				mapper.readValue(app.getRoles(), new TypeReference<List<RoleAppCreateDTO>>() {
@@ -128,36 +119,32 @@ public class AppHelper {
 		return napp;
 	}
 
-	public void populateAppCreate(Model model) {
-		model.addAttribute("app", new AppCreateDTO());
-		model.addAttribute("users", new ArrayList<>());
-		model.addAttribute("authorizations", new ArrayList<>());
-	}
-
-	public void populateAppShow(Model model, AppList app) {
+	public void populateAppShow(Model model, App app) {
 
 		final AppCreateDTO appDTO = new AppCreateDTO();
-		appDTO.setId(app.getId());
-		appDTO.setIdentification(app.getIdentification());
+		appDTO.setAppId(app.getAppId());
+		appDTO.setName(app.getName());
 		appDTO.setSecret(app.getSecret());
 		appDTO.setDescription(app.getDescription());
 		appDTO.setTokenValiditySeconds(app.getTokenValiditySeconds());
 
+		
 		final List<AppAssociatedCreateDTO> associations = new ArrayList<>();
 		final List<UserAppCreateDTO> usersList = new ArrayList<>();
-		final List<AppRoleListOauth> roles = appService.getAppRolesListOauth(app.getIdentification());
-		copyRoleList(appDTO, app, roles, usersList);
-		// OK
+		
+		if (app.getAppRoles() != null && !app.getAppRoles().isEmpty()) {
+			copyRoleList(appDTO, app, usersList);
+		}
 
-		if (!CollectionUtils.isEmpty(app.getChildApps())) {
-			for (final AppRoleListOauth role : roles) {
-				if (!CollectionUtils.isEmpty(role.getChildRoles())) {
-					for (final AppRoleListOauth childRole : role.getChildRoles()) {
+		if (app.getChildApps() != null && !app.getChildApps().isEmpty()) {
+			for (final AppRole role : app.getAppRoles()) {
+				if (role.getChildRoles() != null && !role.getChildRoles().isEmpty()) {
+					for (final AppRole childRole : role.getChildRoles()) {
 						final AppAssociatedCreateDTO associatedAppDTO = new AppAssociatedCreateDTO();
 						associatedAppDTO.setId(role.getName() + ':' + childRole.getName());
-						associatedAppDTO.setFatherAppId(app.getIdentification());
+						associatedAppDTO.setFatherAppId(app.getAppId());
 						associatedAppDTO.setFatherRoleName(role.getName());
-						associatedAppDTO.setChildAppId(childRole.getApp().getIdentification());
+						associatedAppDTO.setChildAppId(childRole.getApp().getAppId());
 						associatedAppDTO.setChildRoleName(childRole.getName());
 						associations.add(associatedAppDTO);
 					}
@@ -165,79 +152,51 @@ public class AppHelper {
 			}
 		}
 
-		mapRolesAndUsersToJson(app, roles, appDTO);
+		mapRolesAndUsersToJson(app, appDTO);
 
 		model.addAttribute("app", appDTO);
 		model.addAttribute("roles", app.getAppRoles());
 		model.addAttribute("authorizations", usersList);
 		model.addAttribute("associations", associations);
-
+		
 	}
-
-	public List<UserAppCreateDTO> getAuthorizations(String appIdentification, String filter) {
-		final List<AppUserListOauth> users;
-		if (!StringUtils.hasText(filter)) {
-			users = appService.getAppUsersByApp(appIdentification);
-		} else {
-			users = appService.getAppUsersByAppAndUserIdLike(appIdentification, "%" + filter + "%");
-		}
-		return users.stream().map(u -> {
-			final UserAppCreateDTO userAppDTO = new UserAppCreateDTO();
-			userAppDTO.setId(String.valueOf(u.getId()));
-			userAppDTO.setRoleName(u.getRole().getName());
-			userAppDTO.setUser(u.getUser().getUserId());
-			userAppDTO.setUserName(u.getUser().getFullName());
-			return userAppDTO;
-		}).collect(Collectors.toList());
-	}
-
-	private void copyRoleList(AppCreateDTO appDTO, AppList app, List<AppRoleListOauth> roles,
-			List<UserAppCreateDTO> usersList) {
+	
+	private void copyRoleList(AppCreateDTO appDTO, App app, List<UserAppCreateDTO> usersList) {
 		final List<String> rolesList = new ArrayList<>();
-		if (!CollectionUtils.isEmpty(roles)) {
-			for (final AppRoleListOauth appRole : roles) {
-				rolesList.add(appRole.getName());
+		for (final AppRole appRole : app.getAppRoles()) {
+			rolesList.add(appRole.getName());
+			if (appRole.getAppUsers() != null && !appRole.getAppUsers().isEmpty()) {
+				for (final AppUser appUser : appRole.getAppUsers()) {
+					final UserAppCreateDTO userAppDTO = new UserAppCreateDTO();
+					userAppDTO.setId(String.valueOf(appUser.getId()));
+					userAppDTO.setRoleName(appUser.getRole().getName());
+					userAppDTO.setUser(appUser.getUser().getUserId());
+					userAppDTO.setUserName(appUser.getUser().getFullName());
+					usersList.add(userAppDTO);
+				}
+				appDTO.setUsers(StringUtils.arrayToDelimitedString(usersList.toArray(), ", "));
 			}
-			appDTO.setRoles(StringUtils.arrayToDelimitedString(rolesList.toArray(), ", "));
 		}
-		final long usersInApp = appService.countUsersInApp(app.getIdentification());
-		if ((usersInApp > 0 && usersInApp < MAX_USERS_IN_APP_TABLE) || MAX_USERS_IN_APP_TABLE == 0) {
-			final List<AppUserListOauth> users = appService.getAppUsersByApp(app.getIdentification());
-			for (final AppUserListOauth appUser : users) {
-				final UserAppCreateDTO userAppDTO = new UserAppCreateDTO();
-				userAppDTO.setId(String.valueOf(appUser.getId()));
-				userAppDTO.setRoleName(appUser.getRole().getName());
-				userAppDTO.setUser(appUser.getUser().getUserId());
-				userAppDTO.setUserName(appUser.getUser().getFullName());
-				usersList.add(userAppDTO);
-			}
-			appDTO.setUsers(StringUtils.arrayToDelimitedString(usersList.toArray(), ", "));
-
-		}
+		appDTO.setRoles(StringUtils.arrayToDelimitedString(rolesList.toArray(), ", "));
 	}
 
-	private void mapRolesAndUsersToJson(AppList app, List<AppRoleListOauth> roles, AppCreateDTO appDTO) {
+	private void mapRolesAndUsersToJson(App app, AppCreateDTO appDTO) {
 		final ObjectMapper mapper = new ObjectMapper();
 		final ArrayNode arrayNode = mapper.createArrayNode();
 		final ArrayNode arrayNodeUser = mapper.createArrayNode();
 
-		for (final AppRoleListOauth appRole : roles) {
+		for (final AppRole appRole : app.getAppRoles()) {
 			final ObjectNode on = mapper.createObjectNode();
 			on.put("name", appRole.getName());
 			on.put("description", appRole.getDescription());
 			arrayNode.add(on);
-		}
-		final long usersInApp = appService.countUsersInApp(app.getIdentification());
-		if (usersInApp > 0 && usersInApp < MAX_USERS_IN_APP_TABLE) {
-			final List<AppUserListOauth> users = appService.getAppUsersByApp(app.getIdentification());
-			if (!CollectionUtils.isEmpty(users)) {
-				for (final AppUserListOauth appUser : users) {
+			if (appRole.getAppUsers() != null && !appRole.getAppUsers().isEmpty())
+				for (final AppUser appUser : appRole.getAppUsers()) {
 					final ObjectNode onUser = mapper.createObjectNode();
 					onUser.put("user", appUser.getUser().getUserId());
 					onUser.put("roleName", appUser.getRole().getName());
 					arrayNodeUser.add(onUser);
 				}
-			}
 		}
 
 		try {
@@ -248,48 +207,45 @@ public class AppHelper {
 		}
 	}
 
-	public void populateAppUpdate(Model model, AppList app, User sessionUser, String ldapBaseDn, boolean ldapActive) {
+	public void populateAppUpdate(Model model, App app, User sessionUser, String ldapBaseDn, boolean ldapActive) {
 		final AppCreateDTO appDTO = new AppCreateDTO();
-		appDTO.setId(app.getId());
-		appDTO.setIdentification(app.getIdentification());
+		appDTO.setAppId(app.getAppId());
+		appDTO.setName(app.getName());
 		appDTO.setSecret(app.getSecret());
 		appDTO.setDescription(app.getDescription());
 		appDTO.setTokenValiditySeconds(app.getTokenValiditySeconds());
-		appDTO.setPublicClient(app.isPublicClient());
 
 		final List<AppAssociatedCreateDTO> appsAssociatedList = new ArrayList<>();
 		final List<UserAppCreateDTO> usersList = new ArrayList<>();
-		final List<AppRoleListOauth> roles = appService.getAppRolesListOauth(app.getIdentification());
-		copyRoleList(appDTO, app, roles, usersList);
+		
+		if (app.getAppRoles() != null && !app.getAppRoles().isEmpty()) {
+			copyRoleList(appDTO, app, usersList);
+		}
 
 		// Si la app es padre:
 		if (app.getChildApps() != null && !app.getChildApps().isEmpty()) {
-			asociateChildRoles(appsAssociatedList, app, roles);
+			asociateChildRoles(appsAssociatedList, app);
 		}
 
 		// Si la app es hija:
-		asociateFatherRoles(appsAssociatedList, app, roles);
+		asociateFatherRoles(appsAssociatedList, app);
 
-		mapRolesAndUsersToJson(app, roles, appDTO);
-		List<User> users;
-		if (userService.countUsers() < MAX_USERS_COMBO_BOX || MAX_USERS_COMBO_BOX == 0) {
-			users = userService.getAllActiveUsers();
-		} else {
-			users = new ArrayList<>();
-		}
-		List<AppList> appsToChoose = new ArrayList<>();
+		mapRolesAndUsersToJson(app, appDTO);
+		final List<User> users = userService.getAllUsers();
+		List<App> appsToChoose = new ArrayList<>();
 
 		// Si nuestra app es hija de otra no podremos asociarle una app
-		for (final AppList appToChoose : appService.getAllAppsList()) {
+		for (final App appToChoose : appService.getAllApps()) {
 			if (appToChoose.getChildApps() != null && appToChoose.getChildApps().contains(app)) {
 				appsToChoose.clear();
 				break;
 			} else {
 				// Quitamos del 'select' de apps hijas: la propia app y las apps que ya tienen
 				// apps hijas
-				appsToChoose = appService.getAppsByUserList(sessionUser.getUserId(), null).stream()
-						.filter(appToSelect -> (!appToSelect.getIdentification().equals(app.getIdentification())
-								&& (appToSelect.getChildApps() == null || appToSelect.getChildApps().isEmpty())))
+				appsToChoose = appService.getAppsByUser(sessionUser.getUserId(), null).stream()
+						.filter(appToSelect -> ((!appToSelect.getAppId().equals(app.getAppId()))
+								&& (appToSelect.getChildApps() == null
+										|| appToSelect.getChildApps().isEmpty())))
 						.collect(Collectors.toList());
 			}
 		}
@@ -297,48 +253,30 @@ public class AppHelper {
 			model.addAttribute("project", app.getProject());
 		} else {
 			model.addAttribute("project", new Project());
-		}
-
-		model.addAttribute("app", appDTO);
-		model.addAttribute("roles", roles);
-		model.addAttribute("users", this.obfuscateUsers(users));
-		model.addAttribute("appsChild", appsToChoose);
-		model.addAttribute("authorizations", usersList);
-		model.addAttribute("associations", appsAssociatedList);
-		model.addAttribute("ldapEnabled", ldapActive);
-		model.addAttribute("baseDn", ldapBaseDn);
-		model.addAttribute("projectTypes", Project.ProjectType.values());
-		model.addAttribute("authorizationsCount", appService.countUsersInApp(app.getIdentification()));
-		model.addAttribute("projects",
+			model.addAttribute("app", appDTO);
+			model.addAttribute("roles", app.getAppRoles());
+			model.addAttribute("users", users);
+			model.addAttribute("appsChild", appsToChoose);
+			model.addAttribute("authorizations", usersList);
+			model.addAttribute("associations", appsAssociatedList);
+			model.addAttribute("ldapEnabled", ldapActive);
+			model.addAttribute("baseDn", ldapBaseDn);
+			model.addAttribute("projectTypes", Project.ProjectType.values());
+			model.addAttribute("projects",
 				projectService.getAllProjects().stream()
-						.filter(p -> p.getApp() == null && (CollectionUtils.isEmpty(p.getUsers())
-								|| (p.getUsers().contains(p.getUser()) && p.getUsers().size() == 1)))
+						.filter(p -> p.getApp() == null && CollectionUtils.isEmpty(p.getUsers()))
 						.collect(Collectors.toList()));
-
+		}
 	}
 
-	private List<User> obfuscateUsers(List<User> users) {
-		final List<User> obfuscatedUsers = new ArrayList<User>();
-		users.forEach(user -> {
-			final User obfuscatedUser = new User();
-			obfuscatedUser.setUserId(user.getUserId());
-			obfuscatedUser.setFullName(user.getFullName());
-			obfuscatedUser.setProjects(user.getProjects());
-			obfuscatedUsers.add(obfuscatedUser);
-		});
-
-		return obfuscatedUsers;
-	}
-
-	private void asociateFatherRoles(List<AppAssociatedCreateDTO> appsAssociatedList, AppList app,
-			List<AppRoleListOauth> roles) {
-		for (final AppRoleListOauth appRole : roles) {
-			for (final AppRoleListOauth role : appService.getAllRolesList()) {
+	private void asociateFatherRoles(List<AppAssociatedCreateDTO> appsAssociatedList, App app) {
+		for (final AppRole appRole : app.getAppRoles()) {
+			for (final AppRole role : appService.getAllRoles()) {
 				if (role.getChildRoles() != null && role.getChildRoles().contains(appRole)) {
 					final AppAssociatedCreateDTO appAssociatedDTO = new AppAssociatedCreateDTO();
 					appAssociatedDTO.setId(role.getName() + ':' + appRole.getName());
-					appAssociatedDTO.setFatherAppId(role.getApp().getIdentification());
-					appAssociatedDTO.setChildAppId(app.getIdentification());
+					appAssociatedDTO.setFatherAppId(role.getApp().getAppId());
+					appAssociatedDTO.setChildAppId(app.getAppId());
 					appAssociatedDTO.setFatherRoleName(role.getName());
 					appAssociatedDTO.setChildRoleName(appRole.getName());
 					appsAssociatedList.add(appAssociatedDTO);
@@ -347,15 +285,14 @@ public class AppHelper {
 		}
 	}
 
-	private void asociateChildRoles(List<AppAssociatedCreateDTO> appsAssociatedList, AppList app,
-			List<AppRoleListOauth> roles) {
-		for (final AppRoleListOauth fatherAppRole : roles) {
+	private void asociateChildRoles(List<AppAssociatedCreateDTO> appsAssociatedList, App app) {
+		for (final AppRole fatherAppRole : app.getAppRoles()) {
 			if (fatherAppRole.getChildRoles() != null && !fatherAppRole.getChildRoles().isEmpty()) {
-				for (final AppRoleListOauth childAppRole : fatherAppRole.getChildRoles()) {
+				for (final AppRole childAppRole : fatherAppRole.getChildRoles()) {
 					final AppAssociatedCreateDTO appAssociatedDTO = new AppAssociatedCreateDTO();
 					appAssociatedDTO.setId(fatherAppRole.getName() + ':' + childAppRole.getName());
-					appAssociatedDTO.setFatherAppId(app.getIdentification());
-					appAssociatedDTO.setChildAppId(childAppRole.getApp().getIdentification());
+					appAssociatedDTO.setFatherAppId(app.getAppId());
+					appAssociatedDTO.setChildAppId(childAppRole.getApp().getAppId());
 					appAssociatedDTO.setFatherRoleName(fatherAppRole.getName());
 					appAssociatedDTO.setChildRoleName(childAppRole.getName());
 					appsAssociatedList.add(appAssociatedDTO);

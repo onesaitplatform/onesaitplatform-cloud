@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
-import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyRelation;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel;
@@ -30,14 +29,13 @@ public interface OntologyDataService {
 
 	public ProcessingReport reportJsonSchemaValid(String jsonSchema) throws IOException;
 
-	public List<String> preProcessInsertData(final OperationModel operationModel, final boolean addContextData,
-			final Ontology ontology) throws IOException;
+	public List<String> preProcessInsertData(final OperationModel operationModel) throws IOException;
 
-	public void checkOntologySchemaCompliance(final JsonNode data, final Ontology ontology);
+	public void checkOntologySchemaCompliance(final JsonNode data, final Ontology ontology)
+			;
 
-	String preProcessUpdateData(OperationModel operationModel) throws IOException;
-
-	public String decrypt(String data, String ontologyName, String user) throws OntologyDataUnauthorizedException;
+	public String decrypt(String data, String ontologyName, String user)
+			throws OntologyDataUnauthorizedException;
 
 	public void checkTitleCaseSchema(String jsonSchema);
 
@@ -50,11 +48,5 @@ public interface OntologyDataService {
 	public String refJsonSchema(JsonNode schema);
 
 	public void checkSameSchema(String dbJsonSchema, String newJsonSchema);
-
-	public String decryptAllUsers(String data, String ontologyName) throws OntologyDataUnauthorizedException;
-
-	public String encryptQuery(String query, boolean mongo) throws GenericOPException;
-
-	public String getTableForEntity(String entityIdentification);
 
 }

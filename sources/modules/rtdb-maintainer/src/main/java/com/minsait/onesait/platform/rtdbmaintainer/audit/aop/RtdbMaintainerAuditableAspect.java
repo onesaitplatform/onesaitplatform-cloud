@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,12 @@ import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
-import org.quartz.JobExecutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.audit.aop.BaseAspect;
 import com.minsait.onesait.platform.audit.bean.OPAuditError;
-import com.minsait.onesait.platform.audit.bean.OPAuditEvent.ResultOperationType;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.rtdbmaintainer.audit.bean.RtdbMaintainerAuditEvent;
 
@@ -83,34 +81,10 @@ public class RtdbMaintainerAuditableAspect extends BaseAspect {
 		eventProducer.publish(event);
 		return file;
 	}
-	
-	@Around("@annotation(auditable) && args(context,..)")
-	public void kpiGeneration(ProceedingJoinPoint joinPoint, JobExecutionContext context,
-			RtdbMaintainerAuditable auditable) throws Throwable {
-		log.info("execute rtdb maintainer KPI Generation");
-		
-		final String user = context.getJobDetail().getJobDataMap().getString("userId");
-		final String query = context.getJobDetail().getJobDataMap().getString("query");
-		final String ontology = context.getJobDetail().getJobDataMap().getString("ontology");
-		
-		RtdbMaintainerAuditEvent event = auditProcessor.getEventKPIExecution(user, query, ontology, ResultOperationType.SUCCESS);
-		try {
-			joinPoint.proceed();
-			eventProducer.publish(event);
-		} catch (final Throwable e) {
-			log.error("Exception while auditing method deleteTmpGenCollection");
-			RtdbMaintainerAuditEvent eventError = auditProcessor.getEventKPIExecution(user, query, ontology, ResultOperationType.ERROR);
-			eventProducer.publish(eventError);
-			throw e;
-		}
-	}
-	
 
 	@Before("@annotation(auditable) && args(opId,..)")
 	public void beforeKillOp(JoinPoint joinPoint, RtdbMaintainerAuditable auditable, long opId) {
-		if (log.isDebugEnabled()) {
-			log.debug("Killing mongo op with id: {}", opId);
-		}		
+		log.debug("Killing mongo op with id: {}", opId);
 		final RtdbMaintainerAuditEvent event = auditProcessor.getEventKillOp(opId);
 		eventProducer.publish(event);
 

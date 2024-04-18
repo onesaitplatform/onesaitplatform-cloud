@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import com.hazelcast.topic.ITopic;
+import com.hazelcast.core.ITopic;
 import com.minsait.onesait.platform.commons.model.HazelcastMessageNotification;
 import com.minsait.onesait.platform.commons.model.HazelcastRuleDomainObject;
 import com.minsait.onesait.platform.commons.model.HazelcastRuleObject;
@@ -47,15 +47,13 @@ public class RulesManagerServiceImpl implements RulesManagerService {
 
 	@Override
 	public void manageRule(HazelcastRuleObject rule) {
-		if (log.isDebugEnabled()) {
-			log.debug("Managing changes for rule {} of user {}", rule.getIdentification(), rule.getUserId());
-		}		
+		log.debug("Manging changes for rule {} of user {}", rule.getIdentification(), rule.getUserId());
 		final DroolsRule droolsRule = droolsRuleService.getRule(rule.getIdentification());
-		if (droolsRule == null && StringUtils.isEmpty(rule.getDRL()) && rule.getDecisionTable() == null)
-			kieServicesManager.removeRule(rule.getUserId(), rule.getIdentification(), rule.getExtension());
-		else {
+		if (droolsRule == null && StringUtils.isEmpty(rule.getDRL()))
+			kieServicesManager.removeRule(rule.getUserId(), rule.getIdentification());
+		else if (droolsRule == null || droolsRule.getSourceOntology() != null) {
 			final Results results = kieServicesManager.updateRule(rule.getUserId(), rule.getIdentification(),
-					rule.getDRL(), rule.getDecisionTable(), rule.getExtension());
+					rule.getDRL());
 			if (results.hasMessages(Level.ERROR)) {
 				HazelcastMessageNotification.builder().rule(rule.getIdentification()).message(results.toString())
 						.build().toJson().ifPresent(m -> topicAsyncComm.publish(m));
@@ -70,9 +68,7 @@ public class RulesManagerServiceImpl implements RulesManagerService {
 
 	@Override
 	public void manageDomain(HazelcastRuleDomainObject domain) {
-		if (log.isDebugEnabled()) {
-			log.debug("Manging changes for rule domain of user {}", domain.getUserId());
-		}		
+		log.debug("Manging changes for rule domain of user {}", domain.getUserId());
 		final DroolsRuleDomain droolsDomain = droolsRuleService.getDomain(domain.getId());
 		if (droolsDomain == null || !droolsDomain.isActive())
 			kieServicesManager.removeServices(domain.getUserId());

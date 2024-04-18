@@ -1,0 +1,4 @@
+{"name":{"firstname":"Daenerys","lastname":"Targaryen","ofHerName":1},"nickname":"Daenerys \"Stormborn\"","house":"Targaryen","gender":"F","parents":{"father":"Aerys" , "mother":"Rhaella"},"titles":["motherOfDragons","queenOfTheAndals","breakerOfChains","Khaleesi"]}
+{"name":{"firstname":"Eddard","lastname":"Stark","ofHisName":1},"house":"Stark", "parents":{"father":"Rickard" , "mother":"Lyarra"} ,"gender":"M","titles":["lordOfWinterfell","wardenOfTheNorth","handOfTheKing"]}
+{"name":{"firstname":"Brandon","lastname":"Stark","ofHisName":4},"house":"Stark","parents":{"father":"Eddard","mother":"Catelyn"},"gender":"M","titles":["princeOfWinterfell"],"@wolf":"Summer"}
+{"name":{"firstname":"Jaime","lastname":"Lannister","ofHisName":1},"gender":"M","house":"Lannister","parents":{"father":"Tywin","mother":"Joanna"},"titles":["kingSlayer","lordCommanderOfTheKingsguard","Ser"]}

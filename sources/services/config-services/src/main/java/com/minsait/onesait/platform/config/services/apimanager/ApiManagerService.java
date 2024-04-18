@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,10 @@ import java.io.IOException;
 import java.util.List;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
-import com.minsait.onesait.platform.config.dto.ApiForList;
-import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Api.ApiStates;
 import com.minsait.onesait.platform.config.model.ApiOperation;
 import com.minsait.onesait.platform.config.model.ApiOperation.Type;
-import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserApi;
 
 public interface ApiManagerService {
@@ -54,27 +51,9 @@ public interface ApiManagerService {
 
 	public void removeAPI(String id);
 
-	public boolean hasUserEditAccess(Api api, User user);
-
 	public boolean hasUserEditAccess(String apiId, String userId);
 
-	public boolean hasUserAccess(Api api, User user);
-
 	public boolean hasUserAccess(String apiId, String userId);
-
-	public boolean isApiStateValidForUserAccess(String apiId);
-
-	public boolean isApiStateValidForUserAccess(Api api);
-
-	public boolean isApiStateValidForEdit(String apiId);
-
-	public boolean isApiStateValidForEditAuth(String apiId);
-
-	public boolean isApiStateValidForEdit(Api api);
-
-	public boolean isApiStateValidForEditAuth(Api api);
-
-	public boolean isUserOwnerOrAdmin(User user, Api api);
 
 	public void updateApiPostProcess(String apiId, String postProcessFx);
 
@@ -88,65 +67,15 @@ public interface ApiManagerService {
 
 	public Api getById(String id);
 
-	public List<Api> getAllApis(User user);
-
-	public List<Api> getApisOfOwner(User user);
-
-	public List<Api> getApisOfOwnerAndIdentification(User user, String identification);
-
 	public void updateApi(Api api);
 
 	public UserApi getUserApiAccessById(String id);
 
-	public UserApi getUserApiByIdAndUser(String apiId, String userId);
+	public String createApiRest(Api api, List<ApiOperation> operations, List<UserApi> authentications);
 
-	public List<UserApi> getUserApiByApiId(String apiId);
-
-	public Api createApiRest(Api api, List<ApiOperation> operations, List<UserApi> authentications);
-
-	public Api createApiRest(Api api, List<ApiOperation> operations, List<UserApi> authentications,
-			int forcedNumVersion);
-
-	public Api importApiRest(Api api, List<ApiOperation> operations, List<UserApi> authentications, boolean overwrite,
-			String userId);
-
-	public Api versionateApiRest(Api api, List<ApiOperation> operations, List<UserApi> authentications, User user);
-
-	public String updateApiRest(Api apinew, Api apimemory, List<ApiOperation> operations, List<UserApi> authentications,
-			boolean isImportingApi);
+	public String updateApiRest(Api apinew, Api apimemory, List<ApiOperation> operations,
+			List<UserApi> authentications);
 
 	public boolean validateState(ApiStates oldState, String newState);
-
-	public Api getApiByIdentificationVersionOrId(String apiId, String version);
-	
-	public List<UserApi> getAuthorizations(String apiId, String apiVersion, User user);
-
-	public List<String> updateAuthorizations(String apiId, String version, List<String> usersId, User user);
-
-	public List<UserApi> updateAuthorizationAllVersions(String identification, String userId, User user);
-
-	public List<String> removeAuthorizations(String apiId, String version, List<String> usersId, User user);
-
-	public void removeAuthorizationAllVersions(String identification, String userId, User user);
-
-	List<String> getIdentificationsByUserOrPermission(String userId);
-
-	public List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification, String description);
-
-	public String cloneApi(String id, String identification, String userId);
-
-	public Boolean isGraviteeApi(String apiId);
-
-	public void obfuscateUsersData(Api api);
-
-	public boolean permision(String apiId, String userId);
-
-	public List<ApiForList> loadAPISByFilterForList(String apiId, String state, String userId, String loggeduser);
-
-	void deleteUserApiForAUser(String userAccessId);
-
-	public List<Api> getByIdentification(String identification);
-
-	Api getApiByIdentificationAndVersion(String apiId, String version);
 
 }

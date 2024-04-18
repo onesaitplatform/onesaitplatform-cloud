@@ -19,7 +19,7 @@
 
 angular
   .module('commonUI.jvmMetrics')
-  .controller('ThreadDumpModalInstanceController', ["$scope", "$modalInstance", "api", function ($scope, $modalInstance, api) {
+  .controller('ThreadDumpModalInstanceController', function ($scope, $modalInstance, api) {
     angular.extend($scope, {
       showLoading: true,
       common: {
@@ -61,4 +61,4 @@ angular
 
     loadThreadDump();
 
-  }]);
+  });

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.minsait.onesait.platform.config.model.base.OPResource;
+import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -35,7 +35,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "TWITTER_LISTENING")
 @Configurable
-public class TwitterListening extends OPResource {
+public class TwitterListening extends AuditableEntityWithUUID {
 
 	private static final long serialVersionUID = 1L;
 
@@ -45,6 +45,13 @@ public class TwitterListening extends OPResource {
 	@Getter
 	@Setter
 	private Ontology ontology;
+
+	@ManyToOne
+	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = false)
+	@OnDelete(action = OnDeleteAction.NO_ACTION)
+	@Getter
+	@Setter
+	private User user;
 
 	@ManyToOne
 	@JoinColumn(name = "CONFIGURATION_ID", referencedColumnName = "ID")
@@ -59,6 +66,12 @@ public class TwitterListening extends OPResource {
 	@Getter
 	@Setter
 	private Token token;
+
+	@Column(name = "IDENTIFICATOR", length = 50, nullable = false)
+	@NotNull
+	@Getter
+	@Setter
+	private String identificator;
 
 	@Column(name = "DATE_FROM", length = 100, nullable = false)
 	@NotNull

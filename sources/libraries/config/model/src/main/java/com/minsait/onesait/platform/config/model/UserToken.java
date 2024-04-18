@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package com.minsait.onesait.platform.config.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -28,7 +27,6 @@ import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
-import com.minsait.onesait.platform.config.model.listener.EntityListener;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -36,16 +34,11 @@ import lombok.Setter;
 @Configurable
 @Entity
 @Table(name = "USER_TOKEN")
-@EntityListeners(EntityListener.class)
 public class UserToken extends AuditableEntityWithUUID {
 
 	private static final long serialVersionUID = 1L;
 
-	public enum Access {
-		DEFAULT, MENU, HEADER
-	}
-	
-	@Column(name = "TOKEN", nullable = false, unique = true)
+	@Column(name = "TOKEN", nullable = false)
 	@NotNull
 	@Getter
 	@Setter

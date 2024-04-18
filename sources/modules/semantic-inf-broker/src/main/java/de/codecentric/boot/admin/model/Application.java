@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,8 @@ package de.codecentric.boot.admin.model;
 import java.io.Serializable;
 
 /**
- * The domain model for all registered application at the spring boot admin
- * application.
+ * The domain model for all registered application at the spring boot admin application.
  */
-@Deprecated
 public class Application implements Serializable {
 
 	private static final long serialVersionUID = 2;
@@ -28,7 +26,7 @@ public class Application implements Serializable {
 	private String id;
 
 	private String url;
-
+	
 	private String name;
 
 	public String getId() {
@@ -70,7 +68,7 @@ public class Application implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		final Application other = (Application) obj;
+		Application other = (Application) obj;
 		if (id == null) {
 			if (other.id != null)
 				return false;
@@ -96,5 +94,7 @@ public class Application implements Serializable {
 	public void setName(String name) {
 		this.name = name;
 	}
+
+
 
 }

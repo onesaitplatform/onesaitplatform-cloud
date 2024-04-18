@@ -19,7 +19,7 @@
 
 angular
     .module('dataCollectorApp.home')
-    .controller('CustomBarChartController', ["$scope", "$rootScope", "pipelineConstant", function($scope, $rootScope, pipelineConstant) {
+    .controller('CustomBarChartController', function($scope, $rootScope, pipelineConstant) {
 
         angular.extend($scope, {
             chartOptions: {
@@ -103,4 +103,4 @@ angular
         });
 
         updateChartData();
-    }]);
+    });

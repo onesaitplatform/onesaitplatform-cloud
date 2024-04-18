@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import com.minsait.onesait.platform.commons.testing.IntegrationTest;
 import com.minsait.onesait.platform.config.model.ClientConnection;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
+import com.minsait.onesait.platform.config.model.Device;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Token;
 import com.minsait.onesait.platform.config.model.User;
@@ -90,6 +91,7 @@ public class ClientPlatformOntologyRepositoryIntegrationTest {
 		cp.setUser(user);
 		cp.setClientConnections(new HashSet<ClientConnection>());
 		cp.setClientPlatformOntologies(new HashSet<ClientPlatformOntology>());
+		cp.setDevices(new HashSet<Device>());
 		cp.setEncryptionKey("key");
 		cp.setTokens(new HashSet<Token>());
 

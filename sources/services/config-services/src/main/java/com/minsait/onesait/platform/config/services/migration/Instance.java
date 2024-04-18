@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,18 +18,14 @@ import java.io.Serializable;
 
 public class Instance {
 
-	public static final Instance NO_INSTANCE = new Instance(Instance.class, "", null, null);
+	public static final Instance NO_INSTANCE = new Instance(Instance.class, "");
 
 	private final Class<?> clazz;
 	private final Serializable id;
-	private final Serializable identification;
-	private final Serializable version;
 
-	public Instance(Class<?> clazz, Serializable id, Serializable identification, Serializable version) {
+	public Instance(Class<?> clazz, Serializable id) {
 		this.clazz = clazz;
 		this.id = id;
-		this.identification = identification;
-		this.version = version;
 	}
 
 	public Class<?> getClazz() {
@@ -38,14 +34,6 @@ public class Instance {
 
 	public Serializable getId() {
 		return id;
-	}
-
-	public Serializable getIdentification() {
-		return identification;
-	}
-
-	public Serializable getVersion() {
-		return version;
 	}
 
 	@Override

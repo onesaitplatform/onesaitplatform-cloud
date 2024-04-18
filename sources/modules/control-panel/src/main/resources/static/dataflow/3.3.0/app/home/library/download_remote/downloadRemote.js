@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('DownloadRemoteModalInstanceController', ["$scope", "$modalInstance", "existingDPMPipelineIds", "api", "authService", function ($scope, $modalInstance, existingDPMPipelineIds, api,
+  .controller('DownloadRemoteModalInstanceController', function ($scope, $modalInstance, existingDPMPipelineIds, api,
                                                                  authService) {
     angular.extend($scope, {
       remoteBaseUrl: authService.getRemoteBaseUrl(),
@@ -108,4 +108,4 @@ angular
 
     fetchRemotePipelines();
 
-  }]);
+  });

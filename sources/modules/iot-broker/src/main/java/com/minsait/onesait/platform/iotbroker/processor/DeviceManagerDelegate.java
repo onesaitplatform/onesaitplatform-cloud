@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 
@@ -34,10 +35,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyJoinMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyLogMessage;
+import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyReturnMessage;
 import com.minsait.onesait.platform.comms.protocol.body.parent.SSAPBodyMessage;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
-import com.minsait.onesait.platform.config.model.ClientPlatformInstance;
-import com.minsait.onesait.platform.config.services.device.ClientPlatformInstanceService;
+import com.minsait.onesait.platform.config.model.Device;
+import com.minsait.onesait.platform.config.model.IoTSession;
+import com.minsait.onesait.platform.config.services.client.ClientPlatformService;
+import com.minsait.onesait.platform.config.services.device.DeviceService;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 
 import lombok.extern.slf4j.Slf4j;
@@ -48,7 +52,9 @@ import lombok.extern.slf4j.Slf4j;
 public class DeviceManagerDelegate implements DeviceManager {
 
 	@Autowired
-	ClientPlatformInstanceService deviceService;
+	ClientPlatformService clientPlatformService;
+	@Autowired
+	DeviceService deviceService;
 
 	@Value("${onesaitplatform.iotbroker.devices.perclient.max:0}")
 	private int maxDevicesPerClient;
@@ -56,33 +62,65 @@ public class DeviceManagerDelegate implements DeviceManager {
 	ObjectMapper mapper = new ObjectMapper();
 
 	@Override
-	public <T extends SSAPBodyMessage> boolean registerActivity(SSAPMessage<T> request, String clientPlatformIdentification, String clientPlatformInstanceIdentification, GatewayInfo info) {
+	public <T extends SSAPBodyMessage> boolean registerActivity(SSAPMessage<T> request,
+			SSAPMessage<SSAPBodyReturnMessage> response, IoTSession session, GatewayInfo info) {
 
-		ClientPlatformInstance device = new ClientPlatformInstance();
-		device.setIdentification(clientPlatformInstanceIdentification);
-		device.setProtocol(info.getProtocol());
+		ClientPlatform clientPlatform = clientPlatformService.getByIdentification(session.getClientPlatform());
+
+		Device device = deviceService.getByClientPlatformIdAndIdentification(clientPlatform, session.getDevice());
+
+		if (device == null) {
+			if (maxDevicesPerClient > 0) {// Before creating a new Device, check if the max Device limit for a clientId
+											// is reached
+				synchronized (this) {
+					List<Device> devices = deviceService.getByClientPlatformId(clientPlatform);
+					if (devices.size() > maxDevicesPerClient) {
+
+						devices.sort((Device o1, Device o2) -> {
+							long comparation = o1.getUpdatedAt().getTime() - o2.getUpdatedAt().getTime();
+							if (comparation == 0) {
+								return 0;
+							} else {
+								return comparation > 0 ? 1 : -1;
+							}
+
+						});
+
+						for (int i = 0; i < devices.size() - maxDevicesPerClient; i++) {
+							deviceService.deleteDevice(devices.get(i));
+						}
+
+					}
+				}
+			}
+			device = new Device();
+			device.setClientPlatform(clientPlatformService.getByIdentification(session.getClientPlatform()));
+			device.setIdentification(session.getDevice());
+			device.setProtocol(info.getProtocol());
+		}
 
 		switch (request.getMessageType()) {
 		case JOIN:
 			final SSAPBodyJoinMessage body = (SSAPBodyJoinMessage) request.getBody();
-			device.setJsonActions(
-					body.getDeviceConfiguration() != null ? body.getDeviceConfiguration().toString()
-							: device.getJsonActions());
+			device.setJsonActions(body.getDeviceConfiguration() != null ? body.getDeviceConfiguration().toString()
+					: device.getJsonActions());
 			device.setTags(body.getTags() != null ? body.getTags() : device.getTags());
-			return touchDevice(device, true, info, null, null, clientPlatformIdentification);			
-
+			touchDevice(device, session, true, info, null, null);
+			break;
 		case LEAVE:
-			return touchDevice(device, false, info, null, null, clientPlatformIdentification);
-			
+			touchDevice(device, session, false, info, null, null);
+			break;
 		case LOG:
 			final SSAPBodyLogMessage logMessage = (SSAPBodyLogMessage) request.getBody();
-			final double[] location = { logMessage.getCoordinates().getX(),
-					logMessage.getCoordinates().getY() };
-			return touchDevice(device, true, info, logMessage.getStatus().name(), location, clientPlatformIdentification);
+			final double[] location = { logMessage.getCoordinates().getX(), logMessage.getCoordinates().getY() };
+			touchDevice(device, session, true, info, logMessage.getStatus().name(), location);
+			break;
 		default:
-			return touchDevice(device, true, info, null, null, clientPlatformIdentification);
-		
+			touchDevice(device, session, true, info, null, null);
+			break;
 		}
+
+		return true;
 	}
 
 	@Scheduled(fixedDelay = 60000)
@@ -95,7 +133,6 @@ public class DeviceManagerDelegate implements DeviceManager {
 		updatingDevices();
 	}
 
-	//TODO this does not modify cached data. Two easy approaches, evict cache or the ReferenceSecurityImpl strategy for IoTSessions
 	private void updatingDevices() {
 		log.info("Start Updating all devices");
 		final Calendar c = Calendar.getInstance();
@@ -103,54 +140,42 @@ public class DeviceManagerDelegate implements DeviceManager {
 		c.setTimeInMillis(millis);
 
 		// Setting connected false when 5 minutes without activity
-		int n = deviceService.updateClientPlatformInstanceStatusAndDisableWhenUpdatedAtLessThanDate(false, false,
-				c.getTime());
-		log.info("End Updating all devices: {} disconected", n);
+		int n = deviceService.updateDeviceStatusAndDisableWhenUpdatedAtLessThanDate(false, false, c.getTime());
+		log.info("End Updating all devices: {} disconected",n);
 
 		// Setting disabled a true when 1 day witout activity
 		millis = c.getTimeInMillis() - 24 * 60 * 60 * 1000l;
 		c.setTimeInMillis(millis);
-		n = deviceService.updateClientPlatformInstanceStatusAndDisableWhenUpdatedAtLessThanDate(false, true,
-				c.getTime());
-		log.info("End Updating all devices: {} disabled", n);
+		n = deviceService.updateDeviceStatusAndDisableWhenUpdatedAtLessThanDate(false, true, c.getTime());
+		log.info("End Updating all devices: {} disabled",n);
 
 	}
-	
-	private boolean touchDevice(ClientPlatformInstance device, boolean connected, GatewayInfo info,
-			String status, double[] location, String cpIdentification) {
-		
-		updateOrCreateDevice(device, true, info, status, location, cpIdentification);
-		
-		if (log.isDebugEnabled()) {
-			log.debug("ClientPlatformInstance updated. ClientPlatform: {}, ClientPlatformInstance: {}", 
-			cpIdentification, device.getIdentification());
-		}		
-		return true; //TODO deal with possible return statuses
-	}
-	
-	private void  updateOrCreateDevice(ClientPlatformInstance device, boolean connected, GatewayInfo info,
-			String status, double[] location, String cpIdentification) {
-		completeDevice(device, connected, info, status, location);
-		deviceService.updateClientPlatformInstance(device, cpIdentification);
-	}
-	
-	private void completeDevice(ClientPlatformInstance device, boolean connected, GatewayInfo info,
-			String status, double[] location) {
-		
-		device.setStatus(status == null ? ClientPlatformInstance.StatusType.OK.name() : status);
+
+	private void touchDevice(Device device, IoTSession session, boolean connected, GatewayInfo info, String status,
+			double[] location) {
+		log.info("Start Updating device {}", device.getIdentification());
+		device.setStatus(status == null ? Device.StatusType.OK.name() : status);
+		device.setSessionKey(session.getSessionKey());
 		device.setConnected(connected);
 		device.setDisabled(false);
 		device.setProtocol(info.getProtocol());
 		device.setUpdatedAt(new Date());
-		if (location != null) {
+		device.setClientPlatform(clientPlatformService.getByIdentification(session.getClientPlatform()));// nuevo
+		device.setIdentification(session.getDevice());// nuevo
+		if (location != null)
 			device.setLocation(location);
-		}
+		if (device.getId() != null && location == null)
+			deviceService.updateDevice(device);
+		else
+			deviceService.createDevice(device);
+
+		log.info("End Updating device {}" , device.getIdentification());
 	}
 
 	@Override
 	public JsonNode createDeviceLog(ClientPlatform client, String deviceId, SSAPBodyLogMessage logMessage)
 			throws IOException {
-		final ClientPlatformInstance device = deviceService.getByClientPlatformIdAndIdentification(client, deviceId);
+		final Device device = deviceService.getByClientPlatformIdAndIdentification(client, deviceId);
 		final double longitude = logMessage.getCoordinates() == null ? 0 : logMessage.getCoordinates().getX();
 		final double latitude = logMessage.getCoordinates() == null ? 0 : logMessage.getCoordinates().getY();
 		return createLogInstance(device, logMessage.getStatus().name(), logMessage.getLevel().name(),
@@ -159,8 +184,9 @@ public class DeviceManagerDelegate implements DeviceManager {
 
 	}
 
-	public JsonNode createLogInstance(ClientPlatformInstance device, String status, String level, String message,
-			String extraOptions, double longitude, double latitude, String commandId) {
+	public JsonNode createLogInstance(Device device, String status, String level, String message, String extraOptions,
+			double longitude, double latitude, String commandId) {
+
 		final JsonNode root = mapper.createObjectNode();
 		final JsonNode properties = mapper.createObjectNode();
 		((ObjectNode) properties).put("device", device.getIdentification());

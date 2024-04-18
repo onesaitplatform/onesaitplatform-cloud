@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:dt="http://www.thymeleaf.org/dandelion/datatables" th:with="lang=${#locale.language}" th:lang="${lang}">
 
 	<head>
-		<meta name="_csrf" th:content="${_csrf.token}"/>
-		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
@@ -40,7 +38,6 @@
 		<!-- PLUGINS STYLE SHEETS: BOOSTRAP-TIMEPICKER AND CODEMIRROR -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css}"/>
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/lib/codemirror.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/neat.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/ambiance.css}"/>
@@ -91,7 +88,7 @@
 		} 
 	
 		function getOntologyFromQuery(query){			
-			query = query.replace(/(\r\n\t|\n|\r\t|\t|\r)/gm," ");
+			query = query.replace(/(\r\n\t|\n|\r\t)/gm," ");
 			query = query.replace(/  +/g, ' ');
 			var list = query.split("from ");
 			if(list.length>1){
@@ -146,7 +143,8 @@
 				
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
-					<ul class="page-breadcrumb">					
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>						
 						<li><a th:href="@{/querytemplates/list}"> <span th:text="#{templates.my}">My Templates</span></a><i class="fa fa-angle-right"></i> </li>
 						<li th:if="${template.id} == null"><span th:text="#{templates.create}">Create Template</span></li>
 						<li th:if="${template.id} != null"><span th:text="#{templates.template.update}">Update Template</span></li>
@@ -157,121 +155,139 @@
 				<!-- BEGIN PAGE TITLE-->
 				<h1 th:if="${template.id} == null" class="page-title hide "><span th:text="#{templates.new}">New Template</span></h1>
 				<h1 th:if="${template.id} != null" class="page-title hide "><span th:text="#{templates.template.update}">Update Template</span></h1>
-				<!-- END PAGE TITLE-->
+				<!-- END PAGE TITLE-->			
 				
-				<!-- AUXILIAR FORM TO DELETE QUERY TEMPLATE -->
-				<form id="delete_template_form" class="delete-template hide"  th:action="@{'/querytemplates/'+${template.id}}"  method="post">
-					<input type="hidden" name="_method" value="DELETE"/>
-					<input type="hidden" name="id" th:value="${template.id}"/>
-					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-				</form>
-				
-				<form role="form" id="template_create_form" th:object="${qtemplate}" method="post" class="form">
-					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-					<!-- FORM ACTIONS FOR INSERT-->
-					<input th:if="${template.id} == null" type="hidden" name="action" th:value="@{/querytemplates/create}"/>
-						
-					<!-- FORM ACTIONS FOR UPDATE -->
-					<input th:if="${template.id} != null" type="hidden" name="action" th:value="@{/querytemplates/update}"/>
-					<input th:if="${template.id} != null" type="hidden" name="_method" value="PUT"/>
-					
-					<div id="header">
-						<div class="row pageCreateHeader">
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="margin-top-4">
-									<span th:if="${template.id} == null" th:text="#{templates.template.create}"> New Template</span>
-									<span th:if="${template.id} != null" th:text="#{templates.template.update} + ' ' + ${template.name}"> Update Template</span>
+				<!-- MAIN ROW -->
+				<div class="row">
+					<div class="col-md-12">						
+						<div class="portlet light container">
+							<div class="portlet-title">
+								<div class="caption">
+									<span th:if="${template.id} == null" class="caption-subject" th:text="#{templates.template.create} + ':'"> New Template</span>
+									<span th:if="${template.id} != null" class="caption-subject" th:text="#{templates.template.update} + ' '"> Update Template</span><span class="caption-subject "  th:if="${template.id} != null" th:text="${template.name} + ':'"></span>
+								</div>									
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""> </a>																			
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>										
 								</div>
+								<div class="actions hide">
+									<!-- ACTION INDICATORs -->									
+									<span th:if="${template.id} == null" class="label label-success label-sm uppercase"><i class="fa fa-plus"></i> <span th:text="#{gen.mode.insert}">Insert</span></span>
+									<span th:if="${template.id} != null" class="label label-warning label-sm uppercase bold "><i class="fa fa-edit"></i> <span th:text="#{gen.mode.update}">Update</span></span>
+								</div>
+								
 							</div>
-							
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="pull-right">
-									<!-- DELETE -->
-									<button th:if="${template.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='QueryTemplatesCreateController.deleteQueryTemplate(\'' + ${template.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
-									<span class="sep" th:if="(${template.id} != null)"></span>
+							<div class="portlet-body" style="display: block; height: auto;">
+								
+								<div class="row">
+									<div class="col-md-12 alert-zone"><!-- ALERTS ZONE -->
+										<div class="alert alert-danger display-hide">
+											<button class="close" data-close="alert"></button> 
+											<span th:text="#{gen.form.error}">You have some form errors. Please check below.</span>
+										</div>										
+                                        <div class="alert alert-success display-hide">
+											<button class="close" data-close="alert"></button> <span th:text="#{gen.form.success}">Your form validation is successful!</span>
+										</div>								
+									</div>
+									<div class="col-md-12">										
+										<form role="form" id="template_create_form" th:object="${qtemplate}" method="post" class="form">
+											<!-- FORM ACTIONS FOR INSERT-->
+											<input th:if="${template.id} == null" type="hidden" name="action" th:value="@{/querytemplates/create}"/>
+											
+											<!-- FORM ACTIONS FOR UPDATE -->											
+											<input th:if="${template.id} != null" type="hidden" name="action" th:value="@{/querytemplates/update}"/>
+											<input th:if="${template.id} != null" type="hidden" name="_method" value="PUT"/>											
+											
+											<div class="form-body">
+												<div class="row">
+													<div class="col-md-3 col-sm-6 col-xs-12">
+														<div class="form-group">
+															<label class="control-label"><span th:text="#{templates.identification} + ':'">Identification</span> </label>
+															<input id="identification" type="text" name="identification" th:required="true"  minlength="5" maxlength="50" th:field="*{name}" class="form-control " th:placeholder="#{templates.identification}"  th:readonly="*{name}" th:classappend="${template.id} ? no-remove : ''"  />
+														</div>
+													</div>
+													<div class="col-md-6 col-sm-9 col-xs-12">
+														<div class="form-group">
+															<label th:text="#{templates.description}">Description </label>
+															<textarea th:tabindex="3" class="element textarea small form-control" th:required="true" minlength="5" id="description" name="description"  style="height: 33px; " maxlength="512" th:field="*{description}" cols="" rows=""></textarea>
+														</div>
+													</div>													
+													<div class="col-md-3 margin-bottom-20" id="div-template">			
+														<div class="form-group">	
+															<label class="control-label" th:text="#{templates.select.ontology}"> Select Ontology</label>									
+															<select class="selectpicker  select show-tick form-control" id="templates" th:field = "*{ontology}" data-live-search="true" data-width="100%" th:title="#{database.ontologies} +'...'"  >
+																<option id="ontology" data-description="ontology" data-type="ontology" value="" text="" selected="selected"   ></option>														
+																<option th:each="ontology : ${ontologies}" th:id="${ontology}" th:data-description="${ontology.description}" th:value="${ontology}" th:text="${ontology.identification}"   th:selected="${ontology.identification == templateOntologySelected}"></option>
+															</select>
+														</div>
+													</div>
+													<!-- <input type="hidden" th:field="*{type}" th:value="SQL">
+													</input>-->
+												</div>
+												<!--<div class="row"> 
+													<div class="pull-left col-md-10 col-sm-8 col-xs-12">
+														<label th:text="#{datasources.query}">Datasource Query </label>
+														<textarea th:if="${datasource.id} == null" id="query" name="query" class="element textarea extra-small form-control">select * from ontology limit 1</textarea>
+														<textarea th:if="${datasource.id} != null" id="query" th:field="*{query}" class="element textarea extra-small form-control"></textarea>
+													</div>											
+													<div class="pull-right col-md-2 col-sm-4 col-xs-12">
+														<div class="btn-group">
+															<button type="button" style="margin-top: 48px;" class="btn btn-sm btn-circle btn-outline btn-block blue" onclick="javascript:getQueryExecutedFragment()" id="executeQuery"><span th:text="#{database.execQuery}"> </span></button>
+														</div>											
+													</div>
+													<div class="clearfix"></div>
+												</div>-->
+												<!-- CONSULTA Y PLANTILLA -->
+												<div class="row">
+													<div class="col-md-12 margin-bottom-20">
+														<div class="form-group">
+															<label class="control-label" th:text="#{templates.queryselector}">Selector </label>		
+															<textarea id="querySelector" name="querySelector"  th:field="*{querySelector}" class="form-control"></textarea>
+													 	</div>
+													</div>
+												</div>
+												<div class="row">
+													<div class="col-md-12 margin-bottom-20">
+														<div class="form-group">
+															<label class="control-label" th:text="#{templates.querygenerator}">Template </label>
+															<textarea id="queryGenerator" name="queryGenerator"  th:field="*{queryGenerator}" class="form-control"></textarea>
+													 	</div>
+													</div>
+												</div>												
+											</div>
+											<!-- FORM BUTTONS -->
+											<div class="form-actions">
+												<div class="pull-left">
+												<!-- CANCEL -->														
+													<button	id="cancelBtn" type="button"	class="btn btn-circle btn-outline blue no-border" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:QueryTemplatesCreateController.go(\'' + @{/querytemplates/list} + '\');'">	<i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>	
+												</div>
+												<div class="pull-right">
+													
+													<!-- REMOVE -->
+													<button th:if="${template.id} != null" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'QueryTemplatesCreateController.deleteQueryTemplate(\'' + ${template.id} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
+													
+													<span class="sep" th:if="${template.id} != null"></span>
+													
+													<!-- CREATE -->
+													<button th:if="${template.id} == null" id="createBtn" type="submit" class="btn btn-circle btn-outline btn-primary" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>
+													
+													<!-- UPDATE -->
+													<button th:if="${template.id} != null" id="updateBtn" type="submit" class="btn btn-circle btn-outline btn-primary" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
+												</div>
+											</div>											
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
 										
-									<!-- CANCEL -->											
-									<button	id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:QueryTemplatesCreateController.go(\'' + @{/querytemplates/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-
-									<!-- RESET -->
-									<button th:if="${template.id} == null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
-									<button th:if="${template.id} != null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" disabled="true" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
-
-									<span class="sep no-border" th:if="(${template.id} != null)"></span>
-										
-									<!-- CREATE -->
-									<button th:if="${template.id} == null" id="createBtn" type="submit" class="btn btn-primary btn-primary-save" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>	
-									<!-- UPDATE -->
-									<button th:if="${template.id} != null" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>								
+										<!-- AUXILIAR FORM TO DELETE QUERY TEMPLATE -->
+										<form id="delete_template_form" class="delete-template hide"  th:action="@{'/querytemplates/'+${template.id}}"  method="post">
+											<input type="hidden" name="_method" value="DELETE"/>
+											<input type="hidden" name="id" th:value="${template.id}"/>
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>										
+									</div>									
 								</div>
 							</div>
-						</div>
-					</div>
-					<!-- MAIN ROW -->
-					<div class="mainPanel">
-						<div class="row display-hide">
-							<div class="col-md-12 alert-zone"><!-- ALERTS ZONE -->
-								<div class="alert alert-danger display-hide">
-									<button class="close" data-close="alert"></button> 
-									<span th:text="#{gen.form.error}">You have some form errors. Please check below.</span>
-								</div>										
-                                      <div class="alert alert-success display-hide">
-									<button class="close" data-close="alert"></button> <span th:text="#{gen.form.success}">Your form validation is successful!</span>
-								</div>	
-							</div>
-						</div>
-							
-						<div class="row main">
-							<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
-								<span th:text="#{gen.generalInformation}">General Information</span>
-							</div>
-							<div class="col-md-3 col-sm-3 col-xs-3">
-								<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
-							</div>
-						</div>
-							
-						<div class="row main">
-							<div class="col-md-3 col-sm-12 col-xs-12">
-								<div class="form-group">
-									<label class="control-label" th:text="#{templates.identification}">Identification </label><span class="required"> *</span>
-									<input id="identification" type="text" name="identification" th:required="true"  minlength="5" maxlength="50" th:field="*{name}" class="form-control " th:placeholder="#{templates.identification}"  th:readonly="*{name}" th:classappend="${template.id} ? no-remove : ''"  />
-									<span id="identificationerror" class="help-block font-red hide" th:text="#{gen.requiredField}"><i class="la la-warning"></i> Required field</span>
-								</div>
-							</div>
-							<div class="col-md-6 col-sm-12 col-xs-12">
-								<div class="form-group">
-									<label class="control-label" th:text="#{templates.description}">Description </label><span class="required"> *</span>
-									<textarea th:tabindex="3" class="element textarea small form-control" th:required="true" minlength="5" id="description" name="description"  style="height: 33px; " maxlength="512" th:field="*{description}" cols="" rows=""></textarea>
-									<span id="descriptionerror" class="help-block font-red hide" th:text="#{digitaltwintype.description.min}"><i class="la la-warning"></i> Required field</span>
-								</div>
-							</div>
-							<div class="col-md-3 col-sm-12 col-xs-12" id="div-template">			
-								<div class="form-group">
-									<label class="control-label" th:text="#{templates.select.ontology}"> Select Ontology</label><span class="required"> *</span>								
-									<select id="templates" class="selectpicker form-control" data-live-search="true" data-width="100%" th:title="#{database.ontologies} +'...'" th:field = "*{ontology}" th:required="true">
-										<option th:each="ontology : ${ontologies}" th:id="${ontology}" th:data-description="${ontology.description}" th:value="${ontology}" th:text="${ontology.identification}"   th:selected="${ontology.identification == templateOntologySelected}"></option>
-									</select>
-									<span id="templateserror" class="help-block font-red hide" th:text="#{gen.requiredField}"><i class="la la-warning"></i> Required field</span>
-								</div>
-							</div>
-						</div>
-						<!-- CONSULTA Y PLANTILLA -->
-						<div class="row main">
-							<div class="col-md-12 margin-bottom-20">
-								<label class="control-label" th:text="#{templates.queryselector}">Selector </label>
-								<textarea id="querySelector" name="querySelector"  th:field="*{querySelector}" class="form-control editor" th:required="true"></textarea>
-								<span id="querySelectorerror" class="help-block font-red hide" th:text="#{gen.requiredField}"><i class="la la-warning"></i> Required field</span>
-							</div>
-						</div>
-						<div class="row main">
-							<div class="col-md-12 margin-bottom-20">
-								<label class="control-label" th:text="#{templates.querygenerator}">Template </label>
-								<textarea id="queryGenerator" name="queryGenerator"  th:field="*{queryGenerator}" class="form-control editor" th:required="true"></textarea>
-								<span id="queryGeneratorerror" class="help-block font-red hide" th:text="#{gen.requiredField}"><i class="la la-warning"></i> Required field</span>
-						 	</div>
-						</div>												
-					</div>><!-- END MAIN ROW -->
-				</form>			
+						</div><!-- END PORTLET BASIC  -->						
+					</div><!-- END COL-12 -->												
+				</div><!-- END MAIN ROW -->				
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
 	</div>
@@ -281,31 +297,25 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"></script>
-	<script th:src="@{/static/js/layout.js}"></script>
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/static/vendor/jquery-validation/jquery.validate.js}"></script>
-	<script th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}"></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
-	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
-
-	<script th:src="@{/static/vendor/codemirror/lib/codemirror.js}"></script>
-	<script th:src="@{/static/vendor/codemirror/mode/javascript/javascript.js}" ></script>
-	<script th:src="@{/static/vendor/codemirror/mode/sql/sql.js}" ></script>
-	<script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" ></script>
-	<script th:src="@{/static/vendor/codemirror/addon/edit/closebrackets.js}" ></script>
-	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" ></script>
-	<script th:src="@{/static/vendor/codemirror/addon/comment/comment.js}" ></script>
-	<script th:src="@{/static/vendor/codemirror/addon/comment/continuecomment.js}" ></script>
-	
-	<!-- INPUTMASK -->
-	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"/>
+	<script th:src="@{/static/vendor/codemirror/lib/codemirror.js}"/>
+	<script th:src="@{/static/vendor/codemirror/mode/javascript/javascript.js}" />
+	<script th:src="@{/static/vendor/codemirror/mode/sql/sql.js}" />
+	<script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" />
+	<script th:src="@{/static/vendor/codemirror/addon/edit/closebrackets.js}" />
+	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" />
+	<script th:src="@{/static/vendor/codemirror/addon/comment/comment.js}" />
+	<script th:src="@{/static/vendor/codemirror/addon/comment/continuecomment.js}" />
 	
 	<!-- TEMPLATE CONTROLLER  -->	
-	<script th:src="@{/static/js/pages/queryTemplatesCreate.js}"></script>
+	<script th:src="@{/static/js/pages/queryTemplatesCreate.js}"/>
 	
 	<script th:inline="javascript">
 		/* <![CDATA[ */
@@ -315,21 +325,8 @@
 			}
 		}*/
 		
-		var exampleSelector = "-- Write SQL valid code to save the template \n-- You can include variables with @ \n-- Here is an example: \n\nselect * from TIMESERIES where scale = @var_scale and TIMESERIES.type in (@var_in) and TIMESERIES.timestamp gte @var_from and TIMESERIES.timestamp lte @var_to";
-		var exampleGenerator = "var pipeline = [];\nvar detailedFrom = \"@var_from\";\nvar from = detailedFrom.substring(0,detailedFrom.indexOf(\"T\")) + \"T00:00:00.000Z\";\nvar detailedTo = \"@var_to\";\nvar to = detailedTo.substring(0,detailedTo.indexOf(\"T\")) + \"T00:00:00.000Z\";\nvar signal = @var_in;\npipeline.push(\n{\n$match: {\n\"TIMESERIES.timestamp\": {\"$gte\" : {\"$date\" : from}, \"$lte\" : {\"$date\" : to} },\n\"TIMESERIES.type\": {\"$in\": signal}\n}\n}\n);\nreturn \"db.TIMESERIES.aggregate(\" + JSON.stringify(pipeline) + \")\";";
-
-		
 		var templateJson = {		
-			"actionMode" : [[${template?.id}]],
-			"validform": {
-				"emptyfields": [[#{gen.requiredField}]],
-				"minLength": [[#{gen.minLength}]]
-			},			
-			"messages" : {
-				"validationOK" : [[#{gen.form.success}]],
-				"validationKO" : [[#{gen.form.error}]],
-				"requestSent"  : [[#{gen.op.requestSent}]]
-			}
+		"actionMode" : [[${template?.id}]]
 		};
 		
 		/* ]]> */
@@ -365,6 +362,9 @@
 		        lineWrapping: true
 		    });
 		    codeMirrorGenerator.setSize("100%",600);
+
+			var exampleSelector = "-- Write SQL valid code to save the template \n-- You can include variables with @ \n-- Here is an example: \n\nselect * from TIMESERIES where scale = @var_scale and TIMESERIES.type in (@var_in) and TIMESERIES.timestamp gte @var_from and TIMESERIES.timestamp lte @var_to";
+			var exampleGenerator = "var pipeline = [];\nvar detailedFrom = \"@var_from\";\nvar from = detailedFrom.substring(0,detailedFrom.indexOf(\"T\")) + \"T00:00:00.000Z\";\nvar detailedTo = \"@var_to\";\nvar to = detailedTo.substring(0,detailedTo.indexOf(\"T\")) + \"T00:00:00.000Z\";\nvar signal = @var_in;\npipeline.push(\n{\n$match: {\n\"TIMESERIES.timestamp\": {\"$gte\" : {\"$date\" : from}, \"$lte\" : {\"$date\" : to} },\n\"TIMESERIES.type\": {\"$in\": signal}\n}\n}\n);\nreturn \"db.TIMESERIES.aggregate(\" + JSON.stringify(pipeline) + \")\";";
 
 			var QSId = [[${template?.id}]]
 			

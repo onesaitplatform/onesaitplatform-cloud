@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,6 @@ import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.persistence.interfaces.BasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
 import com.minsait.onesait.platform.persistence.mongodb.template.MongoDbTemplateImpl;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -74,10 +73,9 @@ public class InitMongoDB {
 	OntologyRepository ontologyRepository;
 	@Autowired
 	UserRepository userCDBRepository;
-	@Autowired
-	private IntegrationResourcesService integrationResourcesService;
 
 	private static final String USER_DIR = "user.dir";
+	private static final String MONGO_IMPORT_BINARY = "s:/tools/mongo/bin/mongoimport";
 	private static final String UNIX_FILEPATH = "/tmp/";
 
 	private static final String AUDIT_GENERAL = "AuditGeneral";
@@ -109,12 +107,8 @@ public class InitMongoDB {
 	private static final String ANDROID_IOT_FRAME = "androidIoTFrame";
 	private static final String METRICS_BASE = "MetricsBase";
 	private static final String SCHEMA_STR = "examples/Restaurants-schema.json";
-	private static final String AIRLINE_SAFETY_STR = "airline_safety";
-	private static final String INDONESIAN_CITIES_STR = "indonesian_cities";
-	private static final String METEORITE_LANDINGS_STR = "meteorite_landings";
 
 	private final static String METRICS_INITIAL_TIME = "2019-01-01T00:00:00.000Z";
-	private static final Long DEFAULT_TTL = 77760000L;
 
 	@Value("${onesaitplatform.database.mongodb.username:platformadmin}")
 	private String mongodb_username;
@@ -134,128 +128,76 @@ public class InitMongoDB {
 	@Value("${onesaitplatform.server.controlpanelservice:localhost:18000}")
 	private String controlpanelService;
 
-	@Value("${opendata.load-ontologies:false}")
-	private boolean openDataPortal;
-
-	@Value("${onesaitplatform.init.samples:false}")
-	private boolean initSamples;
-
 	@PostConstruct
 	@Test
 	public void init() {
 		if (!started) {
 			started = true;
 			init_cas();
-			if (initSamples) {
-				deleteCollections();
-				init_AuditGeneral();
-				init_RestaurantsDataSet();
-				init_HelsinkiPopulationDataSet();
-				init_DigitalTwinLogs();
-				init_DigitalTwinEvents();
-				init_DigitalTwinActionsTurbine();
-				init_DigitalTwinPropertiesTurbine();
-				init_TicketDataSet();
-				init_OpenflightsDataSet();
-				init_ISO3166();
-				init_QA_WindTurbinesDataSet();
-				init_SupermarketsDataSet();
-			}
-
-			if (openDataPortal) {
-				init_OpenDataPortalDataSet();
-			}
+			deleteCollections();
+			init_AuditGeneral();
+			init_RestaurantsDataSet();
+			init_HelsinkiPopulationDataSet();
+			init_DigitalTwinLogs();
+			init_DigitalTwinEvents();
+			init_DigitalTwinActionsTurbine();
+			init_DigitalTwinPropertiesTurbine();
+			init_TicketDataSet();
+			init_OpenflightsDataSet();
+			init_ISO3166();
+			init_QA_WindTurbinesDataSet();
+			init_SupermarketsDataSet();
 
 			log.info("initMongoDB correctly...");
 		}
 	}
 
-	private Long getTTLMongo() {
-		try {
-			return (Long) integrationResourcesService.getGlobalConfiguration().getEnv().getDatabase()
-					.get("mongodb-ttl");
-		} catch (final Exception e) {
-			return DEFAULT_TTL;
-		}
-	}
-
 	private void deleteCollections() {
 		try {
-			if (connect.collectionExists(mongodb_name, AUDIT_GENERAL)) {
+			if (connect.collectionExists(mongodb_name, AUDIT_GENERAL))
 				connect.dropCollection(mongodb_name, AUDIT_GENERAL);
-			}
-			if (connect.collectionExists(mongodb_name, RESTAURANTS_STR)) {
+			if (connect.collectionExists(mongodb_name, RESTAURANTS_STR))
 				connect.dropCollection(mongodb_name, RESTAURANTS_STR);
-			}
-			if (connect.collectionExists(mongodb_name, SUPERMARKETS_STR)) {
+			if (connect.collectionExists(mongodb_name, SUPERMARKETS_STR))
 				connect.dropCollection(mongodb_name, SUPERMARKETS_STR);
-			}
-			if (connect.collectionExists(mongodb_name, HELSINKI_POP)) {
+			if (connect.collectionExists(mongodb_name, HELSINKI_POP))
 				connect.dropCollection(mongodb_name, HELSINKI_POP);
-			}
-			if (connect.collectionExists(mongodb_name, TWIN_LOGS)) {
+			if (connect.collectionExists(mongodb_name, TWIN_LOGS))
 				connect.dropCollection(mongodb_name, TWIN_LOGS);
-			}
-			if (connect.collectionExists(mongodb_name, TWIN_EVENTS)) {
+			if (connect.collectionExists(mongodb_name, TWIN_EVENTS))
 				connect.dropCollection(mongodb_name, TWIN_EVENTS);
-			}
-			if (connect.collectionExists(mongodb_name, TWIN_ACTIONS_TURBINE)) {
+			if (connect.collectionExists(mongodb_name, TWIN_ACTIONS_TURBINE))
 				connect.dropCollection(mongodb_name, TWIN_ACTIONS_TURBINE);
-			}
-			if (connect.collectionExists(mongodb_name, TWIN_PROPERTIES_TURBINE)) {
+			if (connect.collectionExists(mongodb_name, TWIN_PROPERTIES_TURBINE))
 				connect.dropCollection(mongodb_name, TWIN_PROPERTIES_TURBINE);
-			}
-			if (connect.collectionExists(mongodb_name, TICKET_STR)) {
+			if (connect.collectionExists(mongodb_name, TICKET_STR))
 				connect.dropCollection(mongodb_name, TICKET_STR);
-			}
-			if (connect.collectionExists(mongodb_name, ROUTES_STR)) {
+			if (connect.collectionExists(mongodb_name, ROUTES_STR))
 				connect.dropCollection(mongodb_name, ROUTES_STR);
-			}
-			if (connect.collectionExists(mongodb_name, ROUTESEXTEN_STR)) {
+			if (connect.collectionExists(mongodb_name, ROUTESEXTEN_STR))
 				connect.dropCollection(mongodb_name, ROUTESEXTEN_STR);
-			}
-			if (connect.collectionExists(mongodb_name, AIRPORT_DATA)) {
+			if (connect.collectionExists(mongodb_name, AIRPORT_DATA))
 				connect.dropCollection(mongodb_name, AIRPORT_DATA);
-			}
-			if (connect.collectionExists(mongodb_name, ISO3166_1_STR)) {
+			if (connect.collectionExists(mongodb_name, ISO3166_1_STR))
 				connect.dropCollection(mongodb_name, ISO3166_1_STR);
-			}
-			if (connect.collectionExists(mongodb_name, ISO3166_2_STR)) {
+			if (connect.collectionExists(mongodb_name, ISO3166_2_STR))
 				connect.dropCollection(mongodb_name, ISO3166_2_STR);
-			}
-			if (connect.collectionExists(mongodb_name, QA_OVERVIEW_STR)) {
+			if (connect.collectionExists(mongodb_name, QA_OVERVIEW_STR))
 				connect.dropCollection(mongodb_name, QA_OVERVIEW_STR);
-			}
-			if (connect.collectionExists(mongodb_name, PRODUCER_ERRORCAT_STR)) {
+			if (connect.collectionExists(mongodb_name, PRODUCER_ERRORCAT_STR))
 				connect.dropCollection(mongodb_name, PRODUCER_ERRORCAT_STR);
-			}
-			if (connect.collectionExists(mongodb_name, ERRORS_ON_DATE)) {
+			if (connect.collectionExists(mongodb_name, ERRORS_ON_DATE))
 				connect.dropCollection(mongodb_name, ERRORS_ON_DATE);
-			}
-			if (connect.collectionExists(mongodb_name, QA_DETAIL_STR)) {
+			if (connect.collectionExists(mongodb_name, QA_DETAIL_STR))
 				connect.dropCollection(mongodb_name, QA_DETAIL_STR);
-			}
-			if (connect.collectionExists(mongodb_name, ERRORS_TYPE_DATE)) {
+			if (connect.collectionExists(mongodb_name, ERRORS_TYPE_DATE))
 				connect.dropCollection(mongodb_name, ERRORS_TYPE_DATE);
-			}
-			if (connect.collectionExists(mongodb_name, QA_DETAIL_EXTENDED_STR)) {
+			if (connect.collectionExists(mongodb_name, QA_DETAIL_EXTENDED_STR))
 				connect.dropCollection(mongodb_name, QA_DETAIL_EXTENDED_STR);
-			}
-			if (connect.collectionExists(mongodb_name, SITES_STR)) {
+			if (connect.collectionExists(mongodb_name, SITES_STR))
 				connect.dropCollection(mongodb_name, SITES_STR);
-			}
-			if (connect.collectionExists(mongodb_name, METRICS_BASE)) {
+			if (connect.collectionExists(mongodb_name, METRICS_BASE))
 				connect.dropCollection(mongodb_name, METRICS_BASE);
-			}
-			if (connect.collectionExists(mongodb_name, AIRLINE_SAFETY_STR)) {
-				connect.dropCollection(mongodb_name, AIRLINE_SAFETY_STR);
-			}
-			if (connect.collectionExists(mongodb_name, METEORITE_LANDINGS_STR)) {
-				connect.dropCollection(mongodb_name, METEORITE_LANDINGS_STR);
-			}
-			if (connect.collectionExists(mongodb_name, INDONESIAN_CITIES_STR)) {
-				connect.dropCollection(mongodb_name, INDONESIAN_CITIES_STR);
-			}
 			log.info("Deleted collections...");
 
 		} catch (final Exception e) {
@@ -274,7 +216,7 @@ public class InitMongoDB {
 	private void insertIntoOntology(String ontology, String dataset) {
 		final Scanner scanner = new Scanner(loadFromResources(dataset));
 		while (scanner.hasNextLine()) {
-			basicOps.insert(ontology, scanner.nextLine());
+			basicOps.insert(ontology, "", scanner.nextLine());
 		}
 		scanner.close();
 
@@ -315,7 +257,7 @@ public class InitMongoDB {
 				ontology.setUser(getUserAdministrator());
 				ontology.setAllowsCypherFields(false);
 
-				dataModels = dataModelRepository.findByIdentification(EMPTYBASE_STR);
+				dataModels = dataModelRepository.findByName(EMPTYBASE_STR);
 				if (!dataModels.isEmpty()) {
 					ontology.setDataModel(dataModels.get(0));
 				}
@@ -344,30 +286,30 @@ public class InitMongoDB {
 				ontology.setUser(getUserAdministrator());
 				ontology.setAllowsCypherFields(false);
 
-				dataModels = dataModelRepository.findByIdentification(EMPTYBASE_STR);
+				dataModels = dataModelRepository.findByName(EMPTYBASE_STR);
 				if (!dataModels.isEmpty()) {
 					ontology.setDataModel(dataModels.get(0));
 				}
 				ontologyRepository.save(ontology);
 			}
 			try {
-				basicOps.insert(CAS_SERVICE_REGISTRY,
+				basicOps.insert(CAS_SERVICE_REGISTRY, "",
 						replaceEnvironment(loadFromResources(dataSet), controlpanelService));
 			} catch (final Exception e) {
-				log.error("" + e);
+			    log.error("" + e);
 			}
 			try {
 				dataSet = "cas/oauthService.json";
-				basicOps.insert(CAS_SERVICE_REGISTRY, loadFromResources(dataSet));
+				basicOps.insert(CAS_SERVICE_REGISTRY, "", loadFromResources(dataSet));
 			} catch (final Exception e) {
-				log.error("" + e);
+			    log.error("" + e);
 			}
 			try {
 				dataSet = "cas/samlService.json";
-				basicOps.insert(CAS_SERVICE_REGISTRY,
+				basicOps.insert(CAS_SERVICE_REGISTRY, "",
 						replaceEnvironment(loadFromResources(dataSet), controlpanelService));
 			} catch (final Exception e) {
-				log.error("" + e);
+			    log.error("" + e);
 			}
 
 		} catch (final Exception e) {
@@ -401,7 +343,7 @@ public class InitMongoDB {
 				ontology.setMetainf(RESTAURANTS_STR);
 				ontology.setActive(true);
 				ontology.setRtdbClean(true);
-				ontology.setDataModel(dataModelRepository.findByIdentification(EMPTYBASE_STR).get(0));
+				ontology.setDataModel(dataModelRepository.findByName(EMPTYBASE_STR).get(0));
 				ontology.setRtdbToHdb(true);
 				ontology.setPublic(true);
 				ontology.setUser(getUserDeveloper());
@@ -439,7 +381,7 @@ public class InitMongoDB {
 
 				ontology.setId("MASTER-Ontology-27");
 				ontology.setDescription("Ontology to store georeferenced data about supermarkets in Las Palmas");
-				ontology.setDataModel(dataModelRepository.findByIdentification(EMPTYBASE_STR).get(0));
+				ontology.setDataModel(dataModelRepository.findByName(EMPTYBASE_STR).get(0));
 				ontology.setIdentification("supermarkets");
 				ontology.setMetainf("gis");
 				ontology.setActive(true);
@@ -487,7 +429,7 @@ public class InitMongoDB {
 				ontology.setActive(true);
 				ontology.setMetainf(HELSINKI_POP);
 				ontology.setRtdbClean(true);
-				ontology.setDataModel(dataModelRepository.findByIdentification(EMPTYBASE_STR).get(0));
+				ontology.setDataModel(dataModelRepository.findByName(EMPTYBASE_STR).get(0));
 				ontology.setRtdbToHdb(true);
 				ontology.setPublic(false);
 				ontology.setUser(getUserDeveloper());
@@ -614,8 +556,8 @@ public class InitMongoDB {
 				ontology.setMetainf(ANDROID_IOT_FRAME);
 				ontology.setActive(true);
 				ontology.setRtdbClean(true);
-				ontology.setDataModel(dataModelRepository.findByIdentification(EMPTYBASE_STR).get(0));
-				ontology.setJsonSchema(loadFromResources("examples/Restaurants-schema.json"));
+				ontology.setDataModel(dataModelRepository.findByName(EMPTYBASE_STR).get(0));
+				ontology.setJsonSchema(loadFromResources(SCHEMA_STR));
 				ontology.setRtdbToHdb(true);
 				ontology.setPublic(false);
 				ontology.setUser(getUserDeveloper());
@@ -650,7 +592,7 @@ public class InitMongoDB {
 			ticket.setRtdbClean(true);
 			ticket.setRtdbToHdb(true);
 			ticket.setPublic(true);
-			ticket.setDataModel(dataModelRepository.findByIdentification(EMPTYBASE_STR).get(0));
+			ticket.setDataModel(dataModelRepository.findByName(EMPTYBASE_STR).get(0));
 			ticket.setUser(getUserDeveloper());
 			ticket.setAllowsCypherFields(false);
 			ontologyRepository.save(ticket);
@@ -666,30 +608,6 @@ public class InitMongoDB {
 			log.error("Error creating Ticket DataSet...ignoring", e);
 		}
 
-	}
-
-	public void init_OpenDataPortalDataSet() {
-		try {
-			log.info("init init_OpenDataPortalDataSet");
-			String dataSet = "examples/airline_safety-dataset.json";
-
-			if (basicOps.count(AIRLINE_SAFETY_STR) == 0) {
-				insertIntoOntology(AIRLINE_SAFETY_STR, dataSet);
-				log.info(READING_JSON);
-			}
-			dataSet = "examples/indonesian_cities-dataset.json";
-			if (basicOps.count(INDONESIAN_CITIES_STR) == 0) {
-				insertIntoOntology(INDONESIAN_CITIES_STR, dataSet);
-				log.info(READING_JSON);
-			}
-			dataSet = "examples/meteorite_landings-dataset.json";
-			if (basicOps.count(METEORITE_LANDINGS_STR) == 0) {
-				insertIntoOntology(METEORITE_LANDINGS_STR, dataSet);
-				log.info(READING_JSON);
-			}
-		} catch (final Exception e) {
-			log.error(CREATING_ERROR, e);
-		}
 	}
 
 	public void init_AuditGeneral() {
@@ -708,20 +626,11 @@ public class InitMongoDB {
 				manageDb.createIndex(AUDIT_GENERAL, "user");
 				manageDb.createIndex(AUDIT_GENERAL, "ontology");
 				manageDb.createIndex(AUDIT_GENERAL, "kp");
-				manageDb.createTTLIndex(AUDIT_GENERAL, "mongoTimestamp", getTTLMongo());
 			} catch (final Exception e) {
 				log.error("Error init_AuditGeneral:" + e.getMessage());
 				manageDb.removeTable4Ontology(AUDIT_GENERAL);
 			}
 		}
-		// ADD TTL TO EVERY AUDIT
-		manageDb.getListOfTables().stream().filter(s -> s.contains("Audit_")).forEach(o -> {
-			try {
-				manageDb.createTTLIndex(o, "mongoTimestamp", getTTLMongo());
-			} catch (final Exception e) {
-				log.error("Could not create TTL index on ontology {}", o, e);
-			}
-		});
 	}
 
 	public void init_DigitalTwinActionsTurbine() {

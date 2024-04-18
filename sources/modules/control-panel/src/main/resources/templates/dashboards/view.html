@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -26,41 +26,24 @@
 		<meta name="keywords" content="sofia2,smart,cities,platform,Indra"/>
 		<meta name="author" content="Indra Sistemas, S.A."/>
 		<script th:src="@{/static/vendor/jquery/jquery.min.js}"/>
-
-	</head>	
-	
-	<script th:inline="javascript">
-     /*<![CDATA[*/
-    	 
-	  	 
-    if('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/controlpanel/static/opsw.js', { scope: '/controlpanel/static/' })
-          .then(function(registration) {
-                console.log('Service Worker Registered');
-          });
-
-        navigator.serviceWorker.ready.then(function(registration) {
-           console.log('Service Worker Ready');
-        });
-      }
-     
-   /*]]>*/
-
-  
 		
 	
-	</script>
-     
+    	 <th:block th:utext="${headerlibs}" >    	 	
+    	 </th:block>
+		
+	
+		
+	</head>	
+	
 	
 	<!-- <script src="../env/env.js"></script> -->
 	<script src="/controlpanel/static/js/pages/dashboardMessageHandler.js"></script>
-
 	<input id="oauthtoken" type="hidden" th:value="${session.oauthToken}"/>
 
   	<script th:inline="javascript">
-     /*<![CDATA[*/
-    	 
+     // <![CDATA[ 
   
+        
     
 	    window.__env = window.__env || {};
 	    window.__env.socketEndpointConnect = '/dashboardengine/dsengine/solver';
@@ -70,29 +53,14 @@
 	    window.__env.endpointDashboardEngine = '/dashboardengine';
 	    window.__env.dashboardEngineUsername = '';
 		window.__env.dashboardEnginePassword = '';
-		getOauthtoken();
-		window.__env.dashboardEngineOauthtokenFromQP = getOauthtokenFromQP();
+		window.__env.dashboardEngineOauthtoken = getOauthtoken();
 	    window.__env.dashboardEngineLoginRest = '/loginRest';
 	    window.__env.enableDebug = false;
-	    window.__env.restUrl = [[${iotbrokerurl}]];
-		window.__env.urlParameters = getURLParameters();
-		window.__env.i18njson = /*[[${i18njson}]]*/ "{}";
-		window.__env.i18njson = JSON.parse(window.__env.i18njson);
-		window.__env.globalSockMaxWaitTimeout = [[${heartbeatMaxTimeout}]];
-		window.__env.milliIntervalSaveLocalStorage = 10000;
-		window.__env.maxItemsLocalStorage = 5;
-		window.__env.codeLocalStorage = getCodeLocalStorageParameter();
-		window.__env.resourceinuse = [[${resourceinuse}]];
-		window.__env.dashboardEngineProtocol = [[${protocol}]];
-		window.__env.versioningEnabled = [[${session.versioningEnabled}]];
-		//identification and endpoint for to create dashboard from applications (old projects)
-		window.__env.appID = [[${session.appId}]];
-		window.__env.endpointProjectsUpdate = '/projects/update/';
-		window.__env.dashboardEngineBungleMode = false;
+	    window.__env.restUrl = '';
+	    window.__env.urlParameters = getURLParameters();
+		
 	 
-		window.__env.dashboardEngineBungleMode = false;
-		window.__env.dashboardCheckHeaderLibs=true;
-	    //window.__env.drawAddGadgets = true;  This parameter is for show or hide left add gadgets menu if undefined use window.__env.dashboardEngineBungleMode for this
+			 
      //Function that catch url parameters and return these like a map   
      function getURLParameters()
  		{	    	 
@@ -102,7 +70,7 @@
 	 	    for (var i = 0; i < sURLVariables.length; i++){
 	 	    	if(sURLVariables[i].length>0){	 	    		
 	 	       		var sParameterName = sURLVariables[i].split('=');
-	 	    		if(sParameterName[0]!=="oauthtoken" && sParameterName[0]!=="__hist_dash"){	 	    			
+	 	    		if(sParameterName[0]!=="oauthtoken"){	 	    			
 	 	       			urlParametersMap[sParameterName[0]] = sParameterName[1];
 	 	    		}
 	 	    	}
@@ -128,47 +96,18 @@
 	 	   return null;
 	    }
      
-     function getCodeLocalStorageParameter()
-		{	    	 
-	 	    var sPageURL = window.location.search.substring(1);	
-	 	    var sURLVariables = sPageURL.split('&');	
-	 	    var urlParametersMap={};
-	 	    for (var i = 0; i < sURLVariables.length; i++)	
-	 	    {
-	 	    	if(sURLVariables[i].length>0){
-	 	       		var sParameterName = sURLVariables[i].split('=');	 	       		
-	 	       		if(sParameterName[0]==="__hist_dash"){
-	 	       			return sParameterName[1]
-	 	       		}	 	       		
-	 	    	}
-	 	    }    
-	 	   return null;
-	    } 
-     
 	     function getOauthtoken(){
 	 		if(typeof document.getElementById("oauthtoken").value!== "undefined" && document.getElementById("oauthtoken").value.length>0 ){
-	 			sessionStorage.setItem("dashboardEngineOauthtoken",document.getElementById("oauthtoken").value);
-	 		}else{
-				if (getURLParameterOauthtoken() !== null) {
-	 				sessionStorage.setItem("dashboardEngineOauthtoken", getURLParameterOauthtoken());
-	 			}
-	 		}
-	 	}
-	      function getOauthtokenFromQP(){
-	 		if(typeof document.getElementById("oauthtoken").value!== "undefined" && document.getElementById("oauthtoken").value.length>0 ){
 	 		
-	 			return  false;
+	 			return  document.getElementById("oauthtoken").value;
 	 		}else{
 	 		
-	 			return true;
+	 			return getURLParameterOauthtoken();
 	 		}
 	 	}
 	     
-	
-	
 	   
-	     
-        /*]]>*/
+        // ]]>  
 
   
 		
@@ -176,38 +115,17 @@
 	</script>
 
 	
-	<link href="/controlpanel/static/vendor/google/material-icons.css" rel="stylesheet"/>	
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>	
 	<link rel="stylesheet" href="/controlpanel/static/dashboards/styles/vendor.css"/>	
 	<link rel="stylesheet" href="/controlpanel/static/dashboards/gridster.css"/>	
 	<link rel="stylesheet" href="/controlpanel/static/dashboards/styles/app.css"/>
 	
  	<!-- VUE and onesait components -->
-
+	
 	<link rel="stylesheet" th:href="${@environment.getProperty('onesaitplatform.dashboard.themeonesait.css')}"/>
 	<script type="text/javascript" th:src="${@environment.getProperty('onesaitplatform.dashboard.vue.js')}"></script>
 	<script type="text/javascript" th:src="${@environment.getProperty('onesaitplatform.dashboard.themeonesait.js')}"></script>
-	<!-- CDNJS :: Sortable (https://cdnjs.com/) -->
-	<script th:src="@{/static/vendor/sortable/Sortable.min.js}"></script>
-	<!-- CDNJS :: Vue.Draggable (https://cdnjs.com/) -->
-	<script th:src="@{/static/vendor/vuedraggable/vuedraggable.umd.min.js}"></script>
-	<!-- import CSS -->
-	<link rel="stylesheet" th:href="@{/static/vendor/element-ui/theme-chalk/index.css}">
-	<link rel="stylesheet" th:href="@{/static/css/openLayer7.4.0.css}">
-	<!-- import JavaScript -->
-	<script th:src="@{/static/vendor/echarts-542/echarts.min.js}"></script>
-	<script th:src="@{/static/vendor/vue-echarts-660/vue-echarts.min.js}"></script>
-	<script th:src="@{/static/vendor/openLayers-7.4.0/openLayer-7.4.0.min.js}"></script>
-	<script th:src="@{/static/vendor/xlsx/xlsx.full.min.js}"></script>
-	<script th:src="@{/static/vendor/vue-i18n/vue-i18n.js}"></script>
-	<script th:src="@{/static/vendor/element-ui/index.js}"></script>
-	<script th:src="@{/static/vendor/element-ui/locale/en.min.js}"></script>
-	<script th:src="@{/static/vendor/element-ui/locale/es.min.js}"></script>
-	<script th:src="@{/static/vendor/element-ui/locale/fr.min.js}"></script>
-	<script th:src="@{/static/dashboards/utils/gadget-form-creator.js}"></script>
-	<link rel="stylesheet" th:href="@{/static/dashboards/utils/gadget-form-creator.css}">
-
-	<th:block th:utext="${headerlibs}"></th:block>
-
+	
  	<!-- VUE and onesait components -->
  	
  	
@@ -262,20 +180,11 @@
 	        }
 	    });
 	});	
-	</script>
+</script>
 
-	<!-- Mocano only in edit -->
-	<script th:if="${edition == true}">	
-		var require = { paths: { 'vs': '/controlpanel/static/vendor/vs' } };
-	</script>
-	
-	<script th:if="${edition == true}" th:src="@{/static/vendor/vs/loader.js}"></script>
-	
-	<script th:if="${edition == true}" th:src="@{/static/vendor/vs/editor/editor.main.nls.js}"></script>
-	
-	<script th:if="${edition == true}" th:src="@{/static/vendor/vs/editor/editor.main.js}"></script>
-	<!-- End Monaco Require -->
+ 
 
+ 
 
 </body>
 </html> 

@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('StopConfirmationModalInstanceController', ["$scope", "$modalInstance", "pipelineInfo", "forceStop", "api", function ($scope, $modalInstance, pipelineInfo, forceStop, api) {
+  .controller('StopConfirmationModalInstanceController', function ($scope, $modalInstance, pipelineInfo, forceStop, api) {
     angular.extend($scope, {
       common: {
         errors: []
@@ -64,4 +64,4 @@ angular
         $modalInstance.dismiss('cancel');
       }
     });
-  }]);
+  });

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,27 +17,20 @@ package com.minsait.onesait.platform.api.service.api;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyUserAccess;
 import com.minsait.onesait.platform.config.model.OntologyUserAccessType;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserApi;
 import com.minsait.onesait.platform.config.model.UserToken;
-import com.minsait.onesait.platform.config.model.security.UserPrincipal;
 import com.minsait.onesait.platform.config.repository.OntologyUserAccessRepository;
-import com.minsait.onesait.platform.config.services.oauth.JWTService;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.user.UserService;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
-import com.minsait.onesait.platform.security.ri.ConfigDBDetailsService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -58,16 +51,10 @@ public class ApiSecurityService {
 	private UserService userService;
 
 	@Autowired
-	private ConfigDBDetailsService detailsService;
-
-	@Autowired(required = false)
-	private JWTService jwtService;
-
-	@Autowired
 	private OntologyUserAccessRepository ontologyUserAccessRepository;
 
 	public boolean isAdmin(final User user) {
-		return user.isAdmin();
+		return (Role.Type.ROLE_ADMINISTRATOR.name().equalsIgnoreCase(user.getRole().getId()));
 	}
 
 	public boolean isCol(final User user) {
@@ -83,7 +70,6 @@ public class ApiSecurityService {
 	}
 
 	public User getUserByApiToken(String token) {
-		detailsService.loadUserByUserToken(token);
 		return userService.getUserByToken(token);
 	}
 
@@ -108,7 +94,7 @@ public class ApiSecurityService {
 		boolean autorizado = false;
 
 		// is administrator, then true
-		if (user.isAdmin()) {// Rol administrador
+		if (Role.Type.ROLE_ADMINISTRATOR.name().equalsIgnoreCase(user.getRole().getId())) {// Rol administrador
 			autorizado = true;
 
 		} else if (api.getUser().getUserId() != null && api.getUser().getUserId().equals(user.getUserId())) {
@@ -139,7 +125,7 @@ public class ApiSecurityService {
 			return false;
 
 		boolean can = api.getState().name().equalsIgnoreCase(Api.ApiStates.CREATED.name())
-				&& ((api.getUser().getUserId().equals(user.getUserId()) || user.isAdmin()));
+				&& (api.getUser().getUserId().equals(user.getUserId()));
 		if (can)
 			return true;
 		else {
@@ -186,7 +172,7 @@ public class ApiSecurityService {
 
 		Boolean authorize = false;
 		// If the role is Manager always allows the operation
-		if (user.isAdmin()) {// Rol administrador
+		if (Role.Type.ROLE_ADMINISTRATOR.name().equalsIgnoreCase(user.getRole().getId())) {// Rol administrador
 			authorize = true;
 
 		} else {
@@ -212,31 +198,6 @@ public class ApiSecurityService {
 
 		}
 		return authorize;
-	}
-
-	public User getUserOauth(String tokenOauth) {
-		try {
-			final Authentication auth = jwtService.getAuthentication(tokenOauth);
-			if (auth != null) {
-				if (auth.getPrincipal() instanceof UserPrincipal) {
-					final UserPrincipal principal = (UserPrincipal) auth.getPrincipal();
-					MultitenancyContextHolder.setTenantName(principal.getTenant());
-					MultitenancyContextHolder.setVerticalSchema(principal.getVerticalSchema());
-				}
-				detailsService.loadUserByUsername(auth.getName());
-//				SecurityContextHolder.getContext().setAuthentication(auth);
-				
-				// To avoid concurrency problem where getUser returns null: https://docs.spring.io/spring-security/site/docs/5.2.11.RELEASE/reference/html/overall-architecture.html#:~:text=concurrent%20requests%20in%20a%20single%20session
-				SecurityContext context = SecurityContextHolder.createEmptyContext();
-				context.setAuthentication(auth);
-				SecurityContextHolder.setContext(context);
-				
-				return (userService.getUser(auth.getName()));
-			}
-			return null;
-		} catch (Exception e) {
-			return null;
-		}
 	}
 
 }

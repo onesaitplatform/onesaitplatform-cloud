@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,23 +35,24 @@ public class DigitalTwinWebsocketGatewayImpl implements DigitalTwinWebsocketGate
 	@Autowired
 	private EventProcessor eventProcessor;
 
+
 	@Override
 	@MessageMapping("/custom")
 	public void custom(String message, MessageHeaders messageHeaders) {
 		try {
 
-			final String apiKey = ((List) (((Map) messageHeaders.get("nativeHeaders")).get("Authorization"))).get(0)
+			String apiKey = ((List) (((Map) messageHeaders.get("nativeHeaders")).get("Authorization"))).get(0)
 					.toString();
-			final JSONObject objMessage = new JSONObject(message);
+			JSONObject objMessage = new JSONObject(message);
 			eventProcessor.custom(apiKey, objMessage);
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			log.error("Error", e);
 		}
 	}
 
 	@Override
-	public void notifyActionMessage(String apiKey, JSONObject message) {
-		// not neccesary
+	public void notifyActionMessage(JSONObject message) {
+		//not neccesary
 	}
 
 }

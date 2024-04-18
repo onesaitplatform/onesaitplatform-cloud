@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@ package com.minsait.onesait.platform.config.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
@@ -35,10 +33,6 @@ public class Category extends AuditableEntityWithUUID {
 
 	private static final long serialVersionUID = 1L;
 
-	public enum Type {
-		GENERAL, DASHBOARD, GADGET, MODEL 
-	}
-	
 	@Column(name = "IDENTIFICATION", length = 50, unique = true, nullable = false)
 	@NotNull
 	@Getter
@@ -50,12 +44,5 @@ public class Category extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private String description;
-
-	@Column(name = "TYPE", length = 50, unique = false, nullable = false)
-	@Enumerated(EnumType.STRING)
-	@NotNull
-	@Getter
-	@Setter
-	private Type type;
 
 }

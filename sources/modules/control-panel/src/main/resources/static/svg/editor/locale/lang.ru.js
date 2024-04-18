@@ -20,7 +20,7 @@ export default {
     toggle_stroke_tools: 'Показать/скрыть инструменты обводки',
     palette_info: 'Нажмите для изменения цвета заливки, Shift-Click изменить цвета обводки',
     zoom_level: 'Изменить масштаб',
-    panel_drag: 'Click to show hide',
+    panel_drag: 'Drag left/right to resize side panel',
     quality: 'Качество:',
     pathNodeTooltip: 'Drag node to move it. Double-click node to change segment type',
     pathCtrlPtTooltip: 'Drag control point to adjust curve properties',

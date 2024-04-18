@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('RecordPercentagePieChartController', ["$rootScope", "$scope", function($rootScope, $scope) {
+  .controller('RecordPercentagePieChartController', function($rootScope, $scope) {
     var colorArray = ['#5cb85c', '#FF3333', '#ff9f4a'];
 
     angular.extend($scope, {
@@ -114,4 +114,4 @@ angular
     });
 
     refreshChartData();
-  }]);
+  });

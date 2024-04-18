@@ -1,0 +1,42 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "GeoAirQualitySubscriptions",
+    "type": "object",
+    "required": [
+        "Subscription"
+    ],
+    "properties": {
+        "Subscription": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Info EmptyBase",
+        "type": "object",
+        "required": [
+            "stationName",
+            "email",
+            "quality"
+        ],
+        "properties": {
+            "stationName": {
+                "type": "string"
+            },
+            "email": {
+                "type": "string"
+            },
+            "quality": {
+                "type": "string",
+                "enum": [
+                    "satisfying",
+                    "passable",
+                    "bad",
+                    "very bad"
+                ]
+            }
+        }
+    },
+    "description": "Ontology to store subscritions to the GeoAirQuality ontology",
+    "additionalProperties": true
+}

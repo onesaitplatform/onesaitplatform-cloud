@@ -1,89 +1,22 @@
 onesaitplatform:
   env:
     database:
-      nebula-hosts: graphd.nebula:9669
-      nebula-pool-size: 10
-      execution-timeout: !!java.lang.Long ${RTDB_EXECUTION_TIMEOUT}
-      queries-limit: ${RTDB_QUERIES_LIMIT}
-      mongodb-servers: ${REALTIMEDBSERVERS}
-      mongodb-database: ${REALTIMEDBNAME}
-      mongodb-socket-timeout: ${MONGO_SOCKET_TIMEOUT}
-      mongodb-connect-timeout: ${MONGO_CONNECT_TIMEOUT}
-      mongodb-max-wait-time: ${MONGO_WAIT_TIME}
-      mongodb-pool-size: ${MONGO_POOL_SIZE}
+      queries-limit: 2000
+      mongodb-servers: realtimedb:27017
+      mongodb-database: onesaitplatform_rtdb
+      mongodb-socket-timeout: 5000
+      mongodb-connect-timeout: 30000
+      mongodb-max-wait-time: 5000
+      mongodb-pool-size: 10
       mongodb-read-from-secondaries: false
-      mongodb-read-preference: secondaryPreferred
-      mongodb-write-concern: ${REALTIMEDBWRITECONCERN}
-      mongodb-ssl-enabled: ${MONGO_SSL_ENABLED}
-      mongodb-use-quasar: ${MONGO_USE_QUASAR}
-      mongodb-use-legacysql: false
+      mongodb-write-concern: UNACKNOWLEDGED
       mongodb-quasar-timeout: 10000
       mongodb-quasar-compile: true
       mongodb-quasar-allow-mapreduce: true
-      monogdb-ttl: !!java.lang.Long 77760000
-      elasticsearch:
-        username: admin
-        password: admin        
-        sql:
-          endpoint: http://elasticdb:9200
-          queryPath: /_nlpcn/sql
-          baseQueryObject: sql 
-        dump:
-          path: /tmp/export/
-          elasticDumpCmd: S:/node_modules/.bin/elasticdump.cmd
-        enabled: true
-        servers:
-          -
-            host: elasticdb
-            port: 9200
-            protocol: http
-        defaults:
-          replicas: 0
-          shards: 5
-      opensearch:
-        username: admin
-        password: admin
-        sql:
-          endpoint: http://opensearch:9200
-          queryPath: /_plugins/_sql?format=json
-          baseQueryObject: query
-        dump:
-          path: /tmp/export/
-          elasticDumpCmd: S:/node_modules/.bin/elasticdump.cmd
-        enabled: true
-        servers:
-          -
-            host: opensearch
-            port: 9200
-            protocol: http
-        defaults:
-          replicas: 0
-          shards: 5
-          ttlPatternField: formatedTimeStamp
-          ttlPatternFunction: YEAR_MONTH
-          ttlRetentionPeriod: 30d
-          ttlPriority: 10
-      prestodb-historical-catalog: minio
-      prestodb-historical-schema: default
-      prestodb-realtimedb-catalog: realtimedb
-      prestodb-catalog-path: /usr/local/presto/catalog/
+      elastic-sql-timeout: 10000
     files:
-      allowed-extensions: jasper
       max-size: !!java.lang.Long 60000000
-      gcp-project-id: dcme-npro-onst-snbx-osp-dev-00
-      gcp-bucket-onesaitplatform-development_onesaitplatform: op-file-repository-bucket
     iotbroker:
       session-expiration: !!java.lang.Long 600000
     audit:
       ignore: false
-      hash: false
-      signed: false
-      keystorePath: /usr/local/add_keystore.p12
-      keystorePassword: ENC(MXchpQGKyY2TTHRyEZDhP0gUtzc4a+en8zVU0hd0Uf+tcnPOfioCCwuzKEwgOJx8)
-      #options: mongodb, elasticsearch, opensearch
-      defaultRtdbDatasource: elasticsearch
-    controlpanel:
-      maxSessionsPerUser: 10
-      password-pattern: (?=^.{10,255}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z])(?=.*[-@#!;_?¿$%^&+=.]).*$
-    report:
-      resource-storage: MONGO_GRIDFS #MONGO_GRIDFS, MINIO_S3, GCP

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.minsait.onesait.platform.config.model.DigitalTwinDevice;
-import com.minsait.onesait.platform.config.services.digitaltwin.device.DigitalTwinDeviceService;
+import com.minsait.onesait.platform.config.repository.DigitalTwinDeviceRepository;
 
 @RestController
 @ConditionalOnProperty(prefix = "onesaitplatform.digitaltwin.broker.rest", name = "enable", havingValue = "true")
@@ -33,7 +33,7 @@ import com.minsait.onesait.platform.config.services.digitaltwin.device.DigitalTw
 public class ConfigGatewayImpl implements ConfigGateway {
 
 	@Autowired
-	private DigitalTwinDeviceService digitalTwinDeviceService;
+	private DigitalTwinDeviceRepository deviceRepo;
 
 	@Override
 	public ResponseEntity<?> getWot(@RequestHeader(value = "Authorization") String apiKey, @RequestBody JsonNode data) {
@@ -41,8 +41,7 @@ public class ConfigGatewayImpl implements ConfigGateway {
 		if (data.get("id") == null) {
 			return new ResponseEntity<>("id are required", HttpStatus.BAD_REQUEST);
 		}
-		final DigitalTwinDevice device = digitalTwinDeviceService.getDigitalTwinDevicebyName(apiKey,
-				data.get("id").asText());
+		DigitalTwinDevice device = deviceRepo.findByIdentification(data.get("id").asText());
 
 		if (null == device) {
 			return new ResponseEntity<>("Digital Twin not found", HttpStatus.NOT_FOUND);

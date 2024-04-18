@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@ package com.minsait.onesait.platform.router.service.app.service;
 
 import com.minsait.onesait.platform.router.service.app.model.NotificationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationResultModel;
-import com.minsait.onesait.platform.router.service.app.model.SubscriptionModel;
-import com.minsait.onesait.platform.router.service.app.model.TransactionModel;
+import com.minsait.onesait.platform.router.service.app.model.SuscriptionModel;
 
 public interface RouterService {
 
@@ -29,16 +28,6 @@ public interface RouterService {
 
 	public OperationResultModel query(NotificationModel model);
 
-	public OperationResultModel subscribe(SubscriptionModel model);
-
-	public OperationResultModel unsubscribe(SubscriptionModel model);
-
-	public OperationResultModel startTransaction(TransactionModel model);
-
-	public OperationResultModel commitTransaction(TransactionModel model);
-
-	public OperationResultModel rollbackTransaction(TransactionModel model);
-
-	public OperationResultModel notifyModules(NotificationModel model);
+	public OperationResultModel suscribe(SuscriptionModel model);
 
 }

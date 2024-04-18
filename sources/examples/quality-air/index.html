@@ -1,0 +1,67 @@
+<!DOCTYPE html >
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+	<title>Example Quality Air Stations</title>
+		<script src='jquery-1.7.1.min.js'></script>
+		<script src='waqi-api-demo.js'></script>
+
+		<style>
+			body {
+			  font-family: Sans-Serif;
+			}
+			table.result {
+				width: 100%;
+				border: 1px solid black;
+				cursor: pointer;
+			}
+			table.result td:nth-child(n+2) {
+				text-align: center;
+			}
+			table.result tr:hover {
+				background-color: yellow;
+			}
+			h2 {
+				margin-bottom: 0;
+			}
+			input {
+				width: 100%;
+				font-size: 20px;
+				margin-bottom: 8px;
+			}
+
+			/* CSS Spinner-  https://github.com/webkul/csspin */
+			.cp-spinner{width:48px;height:48px;display:inline-block;box-sizing:border-box;position:relative}.cp-meter{border-radius:50%;border-top:solid 6px #0fd6ff;border-right:solid 6px #0fd6ff;border-bottom:solid 6px #0fd6ff;border-left:solid 6px #0fd6ff;width:48px;height:48px;display:inline-block;box-sizing:border-box}.cp-meter:before{border-radius:3px;content:" ";width:6px;height:12px;display:inline-block;box-sizing:border-box;background-color:#0fd6ff;position:absolute;top:5px;left:16px;transform-origin:center bottom;animation:cp-meter-animate-before 1s linear infinite}@keyframes cp-meter-animate-before{0%{transform:rotate(-45deg)}100%{transform:rotate(315deg)}}
+
+		</style>
+	</head>
+	<body>
+
+		<h1>Example Quality Air Stations</h1>
+
+		<div style='float:left;width:49%'>
+		<h2> Enter the name of city or station in City: </h2>
+		<input id='input-station' placeholder="for instance 'Helsinki'">
+		<br>
+		You can search by the station name, but also by any name refering to the station.<br>
+		For instance, for all stations located in Helsinki, enter <code>Helsinki</code>.<br>
+		</div>
+
+		<div style='float:right;width:49%'>
+		<h2> Enter your token: </h2>
+		<input id='input-token' value="66f5c0a379b45e0925e2e4104a1fa5cbcf197bad" disabled>
+		You can get your own free token from the page <a href='http://aqicn.org/data-platform/register/'>
+		aqicn.org/data-platform/register</a>. <br>It's free and only requires a valid email to register.
+		<br>
+		</div>
+		<div style='clear: both'></div>
+
+
+		<br>
+
+		<div id='result-search' style='min-height: 300px'></div>
+
+
+		<script>init("#input-token","#input-station","#result-search")</script>
+	
+	</body>
+</html>

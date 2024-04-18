@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('BatchTimerChartController', ["$scope", "$translate", function($scope, $translate) {
+  .controller('BatchTimerChartController', function($scope, $translate) {
     var label = {
         timer: 'Timer (Percentiles)'
       };
@@ -96,4 +96,4 @@ angular
     });
 
     refreshChartData();
-  }]);
+  });

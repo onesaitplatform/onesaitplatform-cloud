@@ -20,7 +20,7 @@
 angular
   .module('dataCollectorApp.home')
 
-  .controller('GraphController', ["$scope", function ($scope) {
+  .controller('GraphController', function ($scope) {
 
     angular.extend($scope, {
       iconOnly: true,
@@ -82,4 +82,4 @@ angular
       }
     });
 
-  }]);
+  });

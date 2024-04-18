@@ -15,19 +15,18 @@
 .idea
 .metadata
 .project
-.directory
 .rtecommenders
 .settings
 .springBeans
 .vscode
-bin
 /build
 /code
 MANIFEST.MF
 _site/
 activemq-data
+bin
 build
-!sources/modules/control-panel/src/main/resources/static/dataflow/3.3.0/bower_components/nvd3/build
+!sources/modules/control-panel/src/main/resources/static/dataflow/bower_components/nvd3/build
 build.log
 dependency-reduced-pom.xml
 dump.rdb
@@ -39,4 +38,3 @@ target
 transaction-logs
 .flattened-pom.xml
 secrets.yml
-.sts*

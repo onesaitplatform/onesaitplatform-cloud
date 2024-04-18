@@ -1,63 +1,19 @@
-server: 
-   max-http-header-size: ${MAX_HTTP_HEADER_SIZE}
-   forward-headers-strategy: native
-master:
-   datasource:
-     hikari:
-      jdbc-url: ${CONFIGDBMASTERURL}
-      username: ${CONFIGDBUSER}
-      password: ${CONFIGDBPASS}
-      driver-class-name: ${CONFIGDB_DRIVER}
-
-
-
 onesaitplatform: #Config onesait Platform specific
-   encryption:
-      key: ${ENCRYPTION_KEY}
-      iteration-count: ${ENCRYPTION_ITERATIONS}
    environment.name: ${ENVIRONMENTNAME}
-   secure.cookie: true
-   authentication:
-      oauth:
-        osp-keycloak: ${USE_KEYCLOAK}
-      configdb:
-        acl:
-          enabled: ${CONFIGDB_ACL_ENABLED}
-          list: ${CONFIGDB_ACL_LIST}
-   graylog:
-      enabled: ${GRAYLOG_ENABLED}
-      host: ${GRAYLOG_HOST}
-      port: ${GRAYLOG_PORT}
-   hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
-   hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
-
-spring: ## General Config
-  boot.admin.ui.public-url: https://${SERVER_NAME}
-  datasource:
-     hikari:
-      jdbc-url: ${CONFIGDBURL}${DBADDPROPS}
-      username: ${CONFIGDBUSER}
-      password: ${CONFIGDBPASS}
-      connection-timeout: ${DS_MAX_WAIT_MILLIS}
-      maximum-pool-size: ${DS_MAX_ACTIVE}
-      minimum-idle: ${DS_MIN_IDLE}
-      driver-class-name: ${CONFIGDB_DRIVER}
-  jpa:
-     properties.hibernate.dialect: ${CONFIGDB_DIALECT}
-
+   
+spring: ## General Config  
+  datasource: ## JPA Config
+    url: ${JDBCPROTOCOL}//${CONFIGDBSERVERS}/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
 security:
   oauth2:
     client:
-      useCurrentUri: ${OAUTH_USE_DEFAULT_URI}
-      preEstablishedRedirectUri: https://${SERVER_NAME}${server.servlet.contextPath}/login/oauth
       clientId: ${CLIENTID}
       clientSecret: ${CLIENTSECRET}
-      accessTokenUri: https://${SERVER_NAME}/controlpanel/oauth/token
-      userAuthorizationUri: https://${SERVER_NAME}/controlpanel/oauth/authorize
+      accessTokenUri: https://${SERVER_NAME}/oauth-server/oauth/token
+      userAuthorizationUri: https://${SERVER_NAME}/oauth-server/oauth/authorize
     resource:
       userInfoUri: https://${SERVER_NAME}/oauth-server/user
-      checkTokenEndpoint: http://oauthservice:21000/oauth-server/oauth/check_token
 
 ## LOGGING CONF
 logging:
-   file.path: /var/log/platform-logs
+   path: /var/log/platform-logs 

@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -84,13 +84,11 @@
 			function insertAuthorization (categorizationId){
 				if (($('#users').val() !== '') && ($('#accesstypes').val() !== '')){
 					authorization('insert',categorizationId,$('#users').val(),$('#accesstypes').val());
-					toastr.success(messagesForms.operations.genOpSuccess,'');
-				} else {  toastr.error(messagesForms.operations.genOpError,errorMsg);}				
+				} else {  $.alert({title: 'ERROR!', theme: 'light',  content: errorMsg});}				
 			}
 			// REMOVE authorization
 			function removeAuthorization (catId){
-				authorization('delete',catId,'','');	
-				toastr.success(messagesForms.operations.genOpSuccess,'');
+				authorization('delete',catId,'','');				
 			}
 		
 			//]]>
@@ -116,91 +114,92 @@
 		
 		<!-- BEGIN CONTENT -->
 		<div class="page-content-wrapper">
+			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
+				
 				<!-- BEGIN PAGE HEADER-->
 				
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><a th:href="@{/categorization/list}"> <span th:text="#{categorization.name}">Categorization List</span></a><i class="fa fa-angle-right"></i></li>
-						<li><span th:text="#{categorization.shareCategorization}">Share</span></li>						
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/categorization/list}"> <span th:text="#{categorization.list}">Categorization List</span></a><i class="fa fa-angle-right"></i></li>
+						<li><span th:text="#{categorization.share}">Share</span></li>						
 					</ul>						
 				</div>
-				<!-- END PAGE BAR -->
+				<!-- END PAGE BAR -->		
 				
-				<div id="header">
-					<div class="row pageCreateHeader">
-						<div class="col-md-6 col-sm-6 col-xs-12">
-							<div class="margin-top-4">
-								<span class="caption-subject" th:text="${categorizationIdentification}"> Share categorization </span>
-							</div>
-						</div>
-						
-						<div class="col-md-6 col-sm-6 col-xs-12">
-							<div class="pull-right">								
-								<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{|/categorization/list/|} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button></div>
-						</div>
-					</div>
-				</div>	
-				
-
 				<!-- MAIN ROW -->
-				<div class="mainPanel">
-					<div class="row main">
-						<div class="col-md-3 col-sm-6 col-xs-12">
-						<!-- USER SELECTION -->
-							<div class="form-group">
-								<label class="control-label" th:text="#{categorization.user}">User</label><span class="required"> (*)</span>
-								<select id="users" class="selectpicker form-control" data-live-search="true" data-width="100%" >
-									<option value="" text="" selected="selected"  style="display:none;"></option>
-									<option th:each="user :${users}" th:value="${user.userId}" th:if="${user.active}" th:text="${user.fullName} +'('+ ${user.userId} +')'" ></option>
-								</select>
-							</div>
-							<div class="form-group">
-								<label class="control-label" th:text="#{categorization.authorizationType}">Authorization types:</label><span class="required"> (*)</span>
-								<select id="accesstypes" class="selectpicker form-control" data-live-search="true" data-width="100%" >
-									<option value="" text="" selected="selected"  style="display:none;"></option>
-									<option value="GUEST">GUEST</option>
-								</select>
-							</div>
-							<div class="form-group margin-top-30">
-								<button type="button" class="btn btn-circle btn-outline blue btn-block " th:attr="onclick='javascript:insertAuthorization(\'' + ${categorizationId} + '\');'" th:text="#{categorization.addAuthorization}">Add Authorization</button>
-							</div>
-						</div>
-						<div class="col-md-9 col-sm-6 col-xs-12">
-						<!-- AUTHORIZATION ONTOLOGY-USER-TYPE -->
-							<div class="form-group">
-								<!-- TABLE -->	
-								<div>
-									<!-- DATATABLE DANDELION CONF. -->												
-									<table class="table" >
-										<thead>
-											<tr class="cabecera-tabla" role="row" >
-												<th class="titulo-columnas text-left" th:text="#{categorization.user}">User</th>
-												<th class="titulo-columnas text-center" th:text="#{categorization.authorizationType}">DescrTypeiption</th>
-												<th class="titulo-columnas text-center">Options</th>
-											</tr>
-										</thead>
-										<tbody>
-											<tr class="authorization-model" th:each="catUser : ${catUsers}" pages:paginate="10" >
-												<!-- USER -->
-												<td class="text-left no-wrap bold" th:text="${catUser.user.userId}"></td>
-												<!-- ACCESS TYPE  -->
-												<td class="text-center " th:text="${catUser.authorizationType}"></td>
-												<!-- OPTIONS  -->
-												<td class="icon text-center" style="white-space: nowrap">
-													<div class="grupo-iconos text-center">
-													<span data-container="body" data-placement="bottom" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" th:title="Delete" th:attr="onclick='javascript:removeAuthorization(\''+${catUser.Id}+'\');'"><i class="icon-delete"></i></span>
-													</div>
-												</td>														
-											</tr>
-										</tbody>
-									</table>											
+				<div class="row">
+					<div class="col-md-12">
+						<div class="portlet light ">
+							<div class="portlet-title">
+								<div class="caption">
+									<span class="caption-subject" th:text="#{categorization.shareCategorization}"> Share categorization </span>
 								</div>
 							</div>
-						</div>
-					</div>
+							<div class="row">
+								<div class="col-md-3 col-sm-6 col-xs-12">
+								<!-- USER SELECTION -->
+									<div class="form-group">
+										<label class="control-label" th:text="#{categorization.user}">User</label><span class="required"> (*)</span>
+										<select id="users" class="selectpicker form-control" data-live-search="true" data-width="100%" >
+											<option value="" text="" selected="selected"  style="display:none;"></option>
+											<option th:each="user :${users}" th:value="${user.userId}" th:if="${user.active}" th:text="${user.fullName} +'('+ ${user.userId} +')'" ></option>
+										</select>
+									</div>
+									<div class="form-group">
+										<label class="control-label" th:text="#{categorization.authorizationType}">Authorization types:</label><span class="required"> (*)</span>
+										<select id="accesstypes" class="selectpicker form-control" data-live-search="true" data-width="100%" >
+											<option value="" text="" selected="selected"  style="display:none;"></option>
+											<option value="GUEST">GUEST</option>
+										</select>
+									</div>
+									<div class="form-group margin-top-30">
+										<button type="button" class="btn btn-circle btn-outline blue btn-block " th:onclick="'javascript:insertAuthorization(\'' + ${categorizationId} + '\');'" th:text="#{categorization.addAuthorization}">Add Authorization</button>
+									</div>
+								</div>
+								<div class="col-md-9 col-sm-6 col-xs-12">
+								<!-- AUTHORIZATION ONTOLOGY-USER-TYPE -->
+									<div class="form-group">
+										<!-- TABLE -->	
+										<div>
+											<!-- DATATABLE DANDELION CONF. -->												
+											<table class="table" >
+												<thead>
+													<tr class="cabecera-tabla" role="row" >
+														<th class="titulo-columnas text-left" th:text="#{categorization.user}">User</th>
+														<th class="titulo-columnas text-center" th:text="#{categorization.authorizationType}">DescrTypeiption</th>
+														<th class="titulo-columnas text-center">Options</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr class="authorization-model" th:each="catUser : ${catUsers}" pages:paginate="10" >
+														<!-- USER -->
+														<td class="text-left no-wrap bold" th:text="${catUser.user}"></td>
+														<!-- ACCESS TYPE  -->
+														<td class="text-center " th:text="${catUser.authorizationType}"></td>
+														<!-- OPTIONS  -->
+														<td class="icon text-center" style="white-space: nowrap">
+															<div class="grupo-iconos text-center">
+															<span data-container="body" data-placement="bottom" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:title="Delete" th:onclick="'javascript:removeAuthorization(\''+${catUser.Id}+'\');'"><i class="la la-trash font-hg"></i></span>
+															</div>
+														</td>														
+													</tr>
+												</tbody>
+											</table>											
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="pull-left">
+									<button id="cancelBtn" type="button" class="btn btn-circle btn-outline no-border blue"  name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{|/categorization/list/|} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+								</div>
+							</div>
+						</div><!-- END PORTLET BASIC LIGHT -->							
+					</div><!-- END COL-12 -->						
 				</div><!-- END MAIN ROW -->				
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
@@ -211,13 +210,13 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"></script>
-	<script th:src="@{/static/js/layout.js}"></script>
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
 	
 	
 	<script th:inline="javascript">	
@@ -235,7 +234,7 @@
 	function navigateUrl(url){  window.location.href = url;	}
 	 
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
+	$(window).load(function(){  
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		

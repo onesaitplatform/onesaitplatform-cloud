@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.hazelcast.collection.IQueue;
+import com.hazelcast.core.IQueue;
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessService;
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessServiceException;
 import com.minsait.onesait.platform.config.model.Ontology;
@@ -76,7 +76,7 @@ public class VideoBrokerController {
 	}
 
 	@GetMapping("create")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	public String create(Model model) {
 		model.addAttribute("videoCapture", new VideoCapture());
 		populateForm(model);
@@ -84,7 +84,7 @@ public class VideoBrokerController {
 	}
 
 	@GetMapping("update/{id}")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	public String update(Model model, @PathVariable("id") String id) {
 		if (!videoBrokerService.hasUserAccess(id, utils.getUserId()))
 			return "error/403";
@@ -94,7 +94,7 @@ public class VideoBrokerController {
 	}
 
 	@PostMapping("create")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	public String createVideoCapture(Model model, @Valid VideoCapture videoCapture,
 			@RequestParam("new") boolean newOntology, BindingResult bindingResult, RedirectAttributes redirect) {
 
@@ -129,7 +129,7 @@ public class VideoBrokerController {
 	}
 
 	@PutMapping("update/{id}")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	public String update(Model model, @Valid VideoCapture videoCapture, @PathVariable("id") String id) {
 		if (!videoBrokerService.hasUserAccess(id, utils.getUserId()))
 			return "error/403";
@@ -142,7 +142,7 @@ public class VideoBrokerController {
 	}
 
 	@DeleteMapping("{id}")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	public ResponseEntity<?> delete(@PathVariable("id") String id) {
 		if (!videoBrokerService.hasUserAccess(id, utils.getUserId()))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -159,14 +159,12 @@ public class VideoBrokerController {
 		model.addAttribute("processors", Processor.values());
 		model.addAttribute("ontologies",
 				ontologyService.getOntologiesByUserId(utils.getUserId()).stream()
-						.filter(o -> o.getDataModel().getIdentification().equals(VideoBrokerServiceImpl.VIDEO_RESULT_DATA_MODEL))
+						.filter(o -> o.getDataModel().getName().equals(VideoBrokerServiceImpl.VIDEO_RESULT_DATA_MODEL))
 						.collect(Collectors.toList()));
 	}
 
 	public void createEvent(String id) {
 		boolean createdEvent =videoQueue.offer(id);
-		if (log.isDebugEnabled()) {
-			log.debug("createEvent:{}",createdEvent);
-		}
+		log.debug("createEvent:"+createdEvent);
 	}
 }

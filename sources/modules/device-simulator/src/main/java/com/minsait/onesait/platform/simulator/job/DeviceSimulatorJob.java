@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
-import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 import com.minsait.onesait.platform.simulator.job.utils.JsonUtils2;
 import com.minsait.onesait.platform.simulator.service.FieldRandomizerService;
 import com.minsait.onesait.platform.simulator.service.IoTBrokerClient;
@@ -62,20 +60,10 @@ public class DeviceSimulatorJob {
 		final String user = context.getJobDetail().getJobDataMap().getString("userId");
 
 		final String json = context.getJobDetail().getJobDataMap().getString("json");
-		final String verticalSchema = context.getJobDetail().getJobDataMap()
-				.getString(Tenant2SchemaMapper.VERTICAL_SCHEMA_KEY_STRING);
 
-		final String tenant = context.getJobDetail().getJobDataMap().getString(Tenant2SchemaMapper.TENANT_KEY_STRING);
-
-		if (StringUtils.hasText(tenant) && StringUtils.hasText(verticalSchema)) {
-			MultitenancyContextHolder.setTenantName(tenant);
-			MultitenancyContextHolder.setVerticalSchema(verticalSchema);
-		}
 		try {
 			proxyJson(user, json, context);
-			if (log.isDebugEnabled()) {
-				log.debug("Simulated instance for user: {}", user);
-			}			
+			log.debug("Simulated instance for user: {}", user);
 		} catch (HttpClientErrorException | HttpServerErrorException e) {
 			log.error("Rest error: code {}, {}", e.getStatusCode(), e.getResponseBodyAsString());
 		} catch (final Exception e) {
@@ -103,12 +91,12 @@ public class DeviceSimulatorJob {
 		final String ontology = contextJson.get("ontology").asText();
 
 		if (!instances.isArray())
-			persistenceService.insertOntologyInstance(instances.toString(), ontology, user, clientPlatform,
+			persistenceService.insertOntologyInstance(instances.asText(), ontology, user, clientPlatform,
 					clientPlatformInstance);
 		else {
 			String instancesMode = contextJson.path(PATH_INSTANCES_MODE).asText();
 			final int size = ((ArrayNode) instances).size();
-			if (!StringUtils.hasText(instancesMode))
+			if (StringUtils.isEmpty(instancesMode))
 				instancesMode = MODE_RANDOM;
 			switch (instancesMode) {
 			case MODE_RANDOM:
@@ -120,9 +108,7 @@ public class DeviceSimulatorJob {
 				int index = 0;
 				try {
 					index = context.getJobDetail().getJobDataMap().getInt(INDEX_STR);
-					if (log.isDebugEnabled()) {
-						log.debug("Inserting item {} of json array, ontology {}", index, ontology);
-					}					
+					log.debug("Inserting item {} of json array, ontology {}", index, ontology);
 				} catch (final Exception e) {
 					log.error("Not index yet, setting index to 0");
 				}
@@ -160,9 +146,7 @@ public class DeviceSimulatorJob {
 
 		persistenceService.insertOntologyInstance(fieldAndValues.toString(), ontology, user, clientPlatform,
 				clientPlatformInstance);
-		if (log.isDebugEnabled()) {
-			log.debug("Inserted in ontology {} data:", ontology, fieldAndValues.toString());
-		}		
+		log.debug("Inserted in ontology " + ontology + " data:" + fieldAndValues.toString());
 		return fieldAndValues;
 	}
 

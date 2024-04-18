@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,11 @@ package com.minsait.onesait.platform.iotbroker.plugable.impl.security.reference;
 
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -33,18 +32,17 @@ import org.springframework.util.StringUtils;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
-import com.minsait.onesait.platform.config.dto.ClientPlatformTokenDTO;
+import com.minsait.onesait.platform.config.model.ClientPlatform;
+import com.minsait.onesait.platform.config.model.IoTSession;
+import com.minsait.onesait.platform.config.model.Token;
+import com.minsait.onesait.platform.config.repository.IoTSessionRepository;
+import com.minsait.onesait.platform.config.services.client.ClientPlatformService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.token.TokenService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.iotbroker.common.MessageException;
 import com.minsait.onesait.platform.iotbroker.common.exception.AuthenticationException;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.security.SecurityPlugin;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
-import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
-import com.minsait.onesait.platform.multitenant.config.model.MasterDeviceToken;
-import com.minsait.onesait.platform.multitenant.config.repository.IoTSessionRepository;
-import com.minsait.onesait.platform.multitenant.config.repository.MasterDeviceTokenRepository;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -57,6 +55,8 @@ public class ReferenceSecurityImpl implements SecurityPlugin {
 	@Autowired
 	TokenService tokenService;
 	@Autowired
+	ClientPlatformService clientPlatformService;
+	@Autowired
 	UserService userService;
 	@Autowired
 	OntologyService ontologyService;
@@ -66,35 +66,24 @@ public class ReferenceSecurityImpl implements SecurityPlugin {
 	IntegrationResourcesService resourcesService;
 	@Autowired(required = false)
 	SessionSchedulerUpdater sessionSchedulerUpdater;
-	@Autowired
-	MasterDeviceTokenRepository masterDeviceTokenRepository;
 
 	@Autowired
 	HazelcastInstance hazelcastInstance;
+	private static final String SESSIONS_REPOSITORY = "IoTSessionRepository";
 
 	ConcurrentHashMap<String, IoTSession> sessionList = new ConcurrentHashMap<>(200);
 
 	@Override
 	public Optional<IoTSession> authenticate(String token, String clientPlatform, String clientPlatformInstance,
 			String sessionKey) {
-		final Optional<MasterDeviceToken> masterToken = Optional
-				.ofNullable(masterDeviceTokenRepository.findByTokenName(token));
-
-		masterToken.ifPresent(mt -> {
-			MultitenancyContextHolder.setVerticalSchema(mt.getVerticalSchema());
-			MultitenancyContextHolder.setTenantName(mt.getTenant());
-		});
-		final ClientPlatformTokenDTO cpToken = tokenService.getClientPlatformIdByTokenName(token);
-
-		if (!masterToken.isPresent() || cpToken == null) {
-			log.info("Impossible to retrieve Token with token: {}. The token does not exist or is not active.", token);
-			return Optional.empty();
-		} else if (!cpToken.isTokenActive()) {
-			log.info("Token inactive: {}", token);
+		final Token retrivedToken = tokenService.getTokenByToken(token);
+		if (retrivedToken == null) {
+			log.info("Impossible to retrieve Token with token: {}",token);
 			return Optional.empty();
 		}
 
-		if (clientPlatform.equals(cpToken.getClientPlatformIdentification())) {
+		final ClientPlatform clientPlatformDB = retrivedToken.getClientPlatform();
+		if (clientPlatform.equals(clientPlatformDB.getIdentification())) {
 			final IoTSession session = new IoTSession();
 			session.setClientPlatform(clientPlatform);
 			session.setDevice(clientPlatformInstance);
@@ -102,21 +91,19 @@ public class ReferenceSecurityImpl implements SecurityPlugin {
 			session.setExpiration(
 					(Long) resourcesService.getGlobalConfiguration().getEnv().getIotbroker().get("session-expiration"));
 			session.setLastAccess(ZonedDateTime.now());
-			// TO-DO check cases where there is no master token present, create one?
-			session.setToken(masterToken.orElse(null));
-			session.setClientPlatformID(cpToken.getClientPlatformId());
+			session.setToken(token);
+			session.setClientPlatformID(clientPlatformDB.getId());
 
-			session.setUserID(cpToken.getUserId());
-			session.setUserName(cpToken.getUserName());
+			session.setUserID(retrivedToken.getClientPlatform().getUser().getUserId());
+			session.setUserName(retrivedToken.getClientPlatform().getUser().getFullName());
 
 			if (!StringUtils.isEmpty(sessionKey)) {
 				getSession(sessionKey).ifPresent(s -> {
-					if (s.getClientPlatformID().equals(cpToken.getClientPlatformId())) {
+					if (s.getClientPlatformID().equals(clientPlatformDB.getId())) {
 						closeSession(sessionKey);
 						session.setSessionKey(sessionKey);
-					} else {
+					} else
 						throw new AuthenticationException(MessageException.ERR_SESSIONKEY_NOT_OWNER);
-					}
 				});
 				session.setSessionKey(sessionKey);
 
@@ -124,9 +111,9 @@ public class ReferenceSecurityImpl implements SecurityPlugin {
 				session.setSessionKey(UUID.randomUUID().toString());
 			}
 
-			final IoTSession newSession = ioTSessionRepository.save(session);
+			ioTSessionRepository.save(session);
 
-			return Optional.of(newSession);
+			return Optional.of(session);
 		}
 		log.info("Impossible to retrieve ClientPlatform from identification: {}", clientPlatform);
 		return Optional.empty();
@@ -136,35 +123,31 @@ public class ReferenceSecurityImpl implements SecurityPlugin {
 	@Override
 	public boolean closeSession(String sessionKey) {
 		ioTSessionRepository.deleteBySessionKey(sessionKey);
+		sessionSchedulerUpdater.notifyDeleteSession(sessionKey);
 		return true;
 	}
 
 	@Override
-	public boolean checkSessionKeyActive(Optional<IoTSession> s) {
-		if (!s.isPresent()) {
+	public boolean checkSessionKeyActive(String sessionKey) {
+		final IoTSession session = ioTSessionRepository.findBySessionKey(sessionKey);
+		if (session == null) {
 			return false;
 		}
-
-		final IoTSession session = s.get();
 
 		final ZonedDateTime now = ZonedDateTime.now();
 		final ZonedDateTime lastAccess = session.getLastAccess();
 
-		final long time = ChronoUnit.MILLIS.between(lastAccess, now);
+		final long time = ChronoUnit.MILLIS.between(now, lastAccess);
 
 		if (time > session.getExpiration()) {
-			try {
-				ioTSessionRepository.delete(session);
-			} catch (final Exception e) {
-				log.error("Error while trying to delete expired session", e);
-			}
-
+			ioTSessionRepository.delete(ioTSessionRepository.findBySessionKey(sessionKey));
 			return false;
 		} else {
 			// renew session on activity
 			session.setLastAccess(now);
-			session.setUpdatedAt(Date.from(now.toInstant()));
-			sessionSchedulerUpdater.saveSession(session);
+			// sessionList.put(sessionKey, session);
+			// ioTSessionRepository.save(session);
+			sessionSchedulerUpdater.saveSession(sessionKey, session);
 		}
 
 		return true;
@@ -172,18 +155,13 @@ public class ReferenceSecurityImpl implements SecurityPlugin {
 	}
 
 	@Override
-	public boolean checkAuthorization(SSAPMessageTypes messageType, String ontology, Optional<IoTSession> s) {
+	public boolean checkAuthorization(SSAPMessageTypes messageType, String ontology, String sessionKey) {
 
-		if (!s.isPresent()) {
+		if (!checkSessionKeyActive(sessionKey)) {
 			return false;
 		}
 
-		final IoTSession session = s.get();
-
-		if (session != null && session.getToken() != null) {
-			MultitenancyContextHolder.setVerticalSchema(session.getToken().getVerticalSchema());
-			MultitenancyContextHolder.setTenantName(session.getToken().getTenant());
-		}
+		final IoTSession session = ioTSessionRepository.findBySessionKey(sessionKey);
 
 		boolean clientHasAuthority = false;
 		try {
@@ -215,14 +193,6 @@ public class ReferenceSecurityImpl implements SecurityPlugin {
 		final IoTSession session = ioTSessionRepository.findBySessionKey(sessionKey);
 		if (session == null) {
 			return Optional.empty();
-		} else {
-			MultitenancyContextHolder.setVerticalSchema(session.getToken().getVerticalSchema());
-			MultitenancyContextHolder.setTenantName(session.getToken().getTenant());
-			final ClientPlatformTokenDTO cpToken = tokenService.getClientPlatformIdByTokenName(session.getToken().getTokenName());
-			if (cpToken == null || !cpToken.isTokenActive()) {
-				closeSession(sessionKey);
-				return Optional.empty();
-			}
 		}
 
 		return Optional.of(session);
@@ -238,36 +208,22 @@ public class ReferenceSecurityImpl implements SecurityPlugin {
 	@Scheduled(fixedDelay = 60000)
 	public void invalidateExpiredSessions() {
 		final long now = System.currentTimeMillis();
-		final Collection<Object> sessions = getIotSessionsFromCache();
-		sessions.forEach(s -> {
-			final IoTSession session = (IoTSession) s;
-			if (now - session.getUpdatedAt().getTime() >= session.getExpiration()) {
-				ioTSessionRepository.delete(session);
-			}
-		});
+		final List<IoTSession> sessions = getIotSessionsFromCache();
+		for (final IoTSession s : sessions) {
+			if (now - s.getLastAccess().toInstant().toEpochMilli() >= s.getExpiration())
+				ioTSessionRepository.delete(s);
+		}
 		log.info("Deleting expired session");
 	}
 
-	@Scheduled(fixedDelay = 86400000) //1 day
-	public void invalidateExpiredSessionsFromDB() {
-		final long now = System.currentTimeMillis();
-		final List<IoTSession> findAll = ioTSessionRepository.findAll();
-		findAll.forEach(s -> {
-			if (now - s.getUpdatedAt().getTime() >= s.getExpiration()) {
-				ioTSessionRepository.delete(s);
-			}
-		});
-	}
-
-	private Collection<Object> getIotSessionsFromCache() {
-		final Collection<Object> values = hazelcastInstance.getMap(IoTSessionRepository.SESSIONS_REPOSITORY).values();
-		return values;
-
+	private List<IoTSession> getIotSessionsFromCache() {
+		return hazelcastInstance.getMap(SESSIONS_REPOSITORY).entrySet().stream().map(e -> (IoTSession) e.getValue())
+				.collect(Collectors.toList());
 	}
 
 	private void synchronizeSessions() {
-		ioTSessionRepository.findAll().forEach(
-				s -> hazelcastInstance.getMap(IoTSessionRepository.SESSIONS_REPOSITORY).put(s.getSessionKey(), s));
+		ioTSessionRepository.findAll()
+				.forEach(s -> hazelcastInstance.getMap(SESSIONS_REPOSITORY).put(s.getSessionKey(), s));
 
 	}
 

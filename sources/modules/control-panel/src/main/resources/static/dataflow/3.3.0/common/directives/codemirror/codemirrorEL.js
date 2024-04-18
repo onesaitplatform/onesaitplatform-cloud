@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 angular.module('commonUI.codemirrorDirectives')
-  .directive('codemirrorEl', ["$parse", "$timeout", function($parse, $timeout) {
+  .directive('codemirrorEl', function($parse, $timeout) {
     'use strict';
     var fnDefMapping = {};
 
@@ -456,4 +456,4 @@ angular.module('commonUI.codemirrorDirectives')
         };
       }
     };
-  }]);
+  });

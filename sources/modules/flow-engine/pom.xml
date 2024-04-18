@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-		<version>${revision}</version>
-
+		<version>1.0.0-ce</version>
 		<relativePath>../..</relativePath>
 	</parent>
 	<artifactId>onesaitplatform-flow-engine</artifactId>
@@ -22,18 +20,13 @@
 	</properties>
 
 	<dependencies>
-		<!-- To overwrite MySQL version-->
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>${mysql.driver.version}</version>
-		</dependency>
-
 		<!--por defecto usará Tomcat-pool -->
+
+
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-business-services</artifactId>
-			<version>${project.version}</version>
+			<version>${onesaitplatform.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.mail</groupId>
@@ -41,88 +34,55 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-			<groupId>javax.ws.rs</groupId>
-			<artifactId>javax.ws.rs-api</artifactId>
-			<version>2.0</version>
-		</dependency>
-
+		
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-mail-services</artifactId>
-			<version>${project.version}</version>
+			<version>${onesaitplatform.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.minsait.onesait.platform</groupId>
-			<artifactId>onesaitplatform-security-ui-ri</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
+		
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-persistence-services</artifactId>
-			<version>${project.version}</version>
+			<version>${onesaitplatform.version}</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-commons</artifactId>
-			<version>${project.version}</version>
+			<version>${onesaitplatform.version}</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-router-client-rest</artifactId>
-			<version>${project.version}</version>
+			<version>${onesaitplatform.version}</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-audit</artifactId>
-			<version>${project.version}</version>
+			<version>${onesaitplatform.version}</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-pass-encryptor</artifactId>
-			<version>${project.version}</version>
+			<version>${onesaitplatform.version}</version>
 		</dependency>
-		<!-- OneLog -->
-		<dependency>
-			<groupId>com.minsait.onesait.platform</groupId>
-			<artifactId>onesaitplatform-onelog</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
+				
 		<!-- LOCAL ONLY -->
 		<dependency>
-			<groupId>io.swagger</groupId>
-			<artifactId>swagger-parser</artifactId>
-			<version>1.0.40</version>
+		    <groupId>io.swagger</groupId>
+		    <artifactId>swagger-parser</artifactId>
+		    <version>1.0.40</version>
 		</dependency>
-		<dependency>
-			<groupId>io.swagger.parser.v3</groupId>
-			<artifactId>swagger-parser</artifactId>
-			<version>2.0.14</version>
-		</dependency>
-
-		<dependency>
-			<groupId>io.swagger.core.v3</groupId>
-			<artifactId>swagger-annotations</artifactId>
-			<version>2.0.9</version>
-		</dependency>
-
+		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>			
 
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -132,11 +92,16 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
-			
+			<exclusions>
+      			<exclusion>
+         			<groupId>org.springframework.boot</groupId>
+         			<artifactId>spring-boot-starter-tomcat</artifactId>
+      			</exclusion>
+   			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-jetty</artifactId>
+   			<groupId>org.springframework.boot</groupId>
+   			<artifactId>spring-boot-starter-jetty</artifactId>
 		</dependency>
 
 		<dependency>
@@ -150,7 +115,7 @@
 			<artifactId>smtp</artifactId>
 			<version>1.6.1</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-util</artifactId>
@@ -160,9 +125,9 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.5.13</version>
+			<version>4.5.5</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
@@ -173,51 +138,49 @@
 			<artifactId>spring-boot-admin-starter-client</artifactId>
 			<version>${spring-boot-admin-starter-client.version}</version>
 		</dependency>
-
+		
 		<!-- CACHE -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>com.hazelcast</groupId> -->
+<!-- 			<artifactId>hazelcast</artifactId> -->
+<!-- 		</dependency> -->
+
 		<dependency>
-			<groupId>com.minsait.onesait.platform</groupId>
-			<artifactId>onesaitplatform-cache</artifactId>
-			<version>${project.version}</version>
+			<groupId>com.hazelcast</groupId>
+			<artifactId>hazelcast-spring</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>com.hazelcast</groupId>
+			<artifactId>hazelcast-client</artifactId>
+		</dependency>
+		
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<version>1.2.3</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-core</artifactId>
 			<version>1.2.3</version>
 		</dependency>
-
-
-		<!-- Force dependencies for hz zookeper SPI discovered mode -->
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>${guava.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.curator</groupId>
-			<artifactId>curator-framework</artifactId>
-			<version>${curator.version}</version>
-		</dependency>
-		<!-- Force dependencies for hz zookeper SPI discovered mode -->
-
-	    <dependency>
-	        <groupId>io.micrometer</groupId>
-			<artifactId>micrometer-registry-prometheus</artifactId>
-            <scope>runtime</scope>
-        </dependency>
 		
+		<!-- Zookeeper SPI -->
 		<dependency>
-			<groupId>org.jolokia</groupId>
-			<artifactId>jolokia-core</artifactId>
-		</dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-test</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-x-discovery</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast-zookeeper</artifactId>
+        </dependency>
+
 	</dependencies>
 
 	<build>
@@ -236,21 +199,21 @@
 					</execution>
 				</executions>
 			</plugin>
-
-			<!-- skip deployment -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-deploy-plugin</artifactId>
-				<version>2.7</version>
-				<configuration>
-					<skip>true</skip>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>javax.mail</groupId>
-				<artifactId>mail</artifactId>
-				<version>1.4.5</version>
-			</plugin>
+		    
+		    <!-- skip deployment -->	
+		    <plugin>
+		      <groupId>org.apache.maven.plugins</groupId>
+		      <artifactId>maven-deploy-plugin</artifactId>
+		      <version>2.7</version>
+		      <configuration>
+		          <skip>true</skip>
+		      </configuration>
+		    </plugin>
+		    <plugin>
+		    	<groupId>javax.mail</groupId>
+		    	<artifactId>mail</artifactId>
+		    	<version>1.4.5</version>
+		    </plugin>
 		</plugins>
 	</build>
 

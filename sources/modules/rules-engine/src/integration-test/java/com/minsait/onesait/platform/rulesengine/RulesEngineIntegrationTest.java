@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -188,7 +188,7 @@ public class RulesEngineIntegrationTest {
 
 	@Test
 	public void When_TemperatureIsHigherThan80_Then_AlarmIsTriggered_Async() throws GenericOPException {
-		rulesEngineService.executeRulesAsync(SENSOR_TAG, JSON_HIGH_TEMP, null, null);
+		rulesEngineService.executeRulesAsync(SENSOR_TAG, JSON_HIGH_TEMP);
 
 	}
 
@@ -201,7 +201,7 @@ public class RulesEngineIntegrationTest {
 
 	@Test
 	public void When_TemperatureIsLessThan80_Then_AlarmIsNotTriggered_Async() throws GenericOPException {
-		rulesEngineService.executeRulesAsync(SENSOR_TAG, JSON_LOW_TEMP, null, null);
+		rulesEngineService.executeRulesAsync(SENSOR_TAG, JSON_LOW_TEMP);
 	}
 
 	@Transactional
@@ -209,7 +209,7 @@ public class RulesEngineIntegrationTest {
 		final Ontology sensorTag = new Ontology();
 		sensorTag.setIdentification(SENSOR_TAG);
 		sensorTag.setUser(admin);
-		sensorTag.setDataModel(dataModelRepository.findByIdentification(EMPTY_BASE).get(0));
+		sensorTag.setDataModel(dataModelRepository.findByName(EMPTY_BASE).get(0));
 		sensorTag.setJsonSchema(loadFromResources(SENSOR_TAG_SCHEMA_FILE));
 		sensorTag.setActive(true);
 		sensorTag.setMetainf("");
@@ -219,14 +219,14 @@ public class RulesEngineIntegrationTest {
 		final Ontology sensorAlarm = new Ontology();
 		sensorAlarm.setIdentification(SENSOR_ALARM);
 		sensorAlarm.setUser(admin);
-		sensorAlarm.setDataModel(dataModelRepository.findByIdentification(EMPTY_BASE).get(0));
+		sensorAlarm.setDataModel(dataModelRepository.findByName(EMPTY_BASE).get(0));
 		sensorAlarm.setJsonSchema(loadFromResources(SENSOR_ALARM_SCHEMA_FILE));
 		sensorAlarm.setActive(true);
 		sensorAlarm.setMetainf("");
 		sensorAlarm.setPublic(false);
 		sensorAlarm.setDescription("Sensor alarm");
 
-		ontologyRepository.saveAll(Arrays.asList(sensorTag, sensorAlarm));
+		ontologyRepository.save(Arrays.asList(sensorTag, sensorAlarm));
 
 	}
 

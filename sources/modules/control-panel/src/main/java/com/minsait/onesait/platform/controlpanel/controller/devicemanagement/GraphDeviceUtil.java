@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.config.model.ClientPlatform;
-import com.minsait.onesait.platform.config.model.ClientPlatformInstance;
-import com.minsait.onesait.platform.config.repository.ClientPlatformInstanceRepository;
+import com.minsait.onesait.platform.config.model.Device;
 import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
+import com.minsait.onesait.platform.config.repository.DeviceRepository;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
@@ -46,7 +46,7 @@ public class GraphDeviceUtil {
 	private ClientPlatformRepository clientPlatformRepository;
 
 	@Autowired
-	private ClientPlatformInstanceRepository deviceRepository;
+	private DeviceRepository deviceRepository;
 	@Autowired
 	private AppWebUtils utils;
 	@Autowired
@@ -71,7 +71,7 @@ public class GraphDeviceUtil {
 	@PostConstruct
 	public void init() {
 		// initialize URLS
-		String url = this.intregationResourcesService.getUrl(Module.CONTROLPANEL, ServiceUrl.BASE);
+	    String url = this.intregationResourcesService.getUrl(Module.CONTROLPANEL, ServiceUrl.BASE);
 		this.urlImages = url + "/static/images/";
 	}
 
@@ -81,7 +81,7 @@ public class GraphDeviceUtil {
 		String name = utils.getMessage("name.clients", "PLATFORM CLIENTS");
 
 		arrayLinks.add(new GraphDeviceDTO(genericUserName, name, null, null, genericUserName, name, utils.getUserId(),
-				name, "suit", this.urlImages + IMAGE_CLIENT_PLATFORMS, null, null, null));
+				name, "suit", this.urlImages + IMAGE_CLIENT_PLATFORMS, null, null, null, null));
 
 		List<ClientPlatform> clientPlatforms = null;
 		if (utils.isAdministrator()) {
@@ -94,39 +94,39 @@ public class GraphDeviceUtil {
 
 		for (ClientPlatform clientPlatform : clientPlatforms) {
 
-			List<ClientPlatformInstance> listDevice = deviceRepository.findByClientPlatform(clientPlatform);
+			List<Device> listDevice = deviceRepository.findByClientPlatform(clientPlatform);
 
 			String clientImage = IMAGE_CLIENT;
 			if (listDevice != null && !listDevice.isEmpty()) {
-				for (Iterator<ClientPlatformInstance> iterator = listDevice.iterator(); iterator.hasNext();) {
-					ClientPlatformInstance device = iterator.next();
-					if (!device.getStatus().equals(ClientPlatformInstance.StatusType.OK.toString())) {
+				for (Iterator<Device> iterator = listDevice.iterator(); iterator.hasNext();) {
+					Device device = iterator.next();
+					if (!device.getStatus().equals(Device.StatusType.OK.toString())) {
 						clientImage = IMAGE_CLIENT_ERROR;
 					}
 				}
 			}
 
 			arrayLinks.add(new GraphDeviceDTO(name, clientPlatform.getId(), null, null, name, CLIENT_PLATFORM_STR, name,
-					clientPlatform.getIdentification(), "licensing", this.urlImages + clientImage, null, null,
+					clientPlatform.getIdentification(), "licensing", this.urlImages + clientImage, null, null, null,
 					null));
 
 			if (listDevice != null && !listDevice.isEmpty()) {
-				for (Iterator<ClientPlatformInstance> iterator = listDevice.iterator(); iterator.hasNext();) {
-					ClientPlatformInstance device = iterator.next();
+				for (Iterator<Device> iterator = listDevice.iterator(); iterator.hasNext();) {
+					Device device = iterator.next();
 					String state;
 					String image;
 					if (device.isConnected() && !maximunTimeUpdatingExceeded(device.getUpdatedAt())) {
 						state = ACTIVE;
 						image = IMAGE_DEVICE_ACTIVE;
 						if (device.getStatus() != null && device.getStatus().trim().length() > 0
-								&& !device.getStatus().equals(ClientPlatformInstance.StatusType.OK.toString())) {
+								&& !device.getStatus().equals(Device.StatusType.OK.toString())) {
 							image = IMAGE_DEVICE_ERROR;
 						}
 					} else {
 						state = INACTIVE;
 						image = IMAGE_DEVICE_INACTIVE;
 						if (device.getStatus() != null && device.getStatus().trim().length() > 0
-								&& !device.getStatus().equals(ClientPlatformInstance.StatusType.OK.toString())) {
+								&& !device.getStatus().equals(Device.StatusType.OK.toString())) {
 							image = IMAGE_DEVICE_ERROR;
 						}
 					}
@@ -134,7 +134,7 @@ public class GraphDeviceUtil {
 					arrayLinks.add(new GraphDeviceDTO(clientPlatform.getId(), device.getId(), device.getProtocol(),
 							device.getJsonActions(), CLIENT_PLATFORM_STR, CLIENT_PLATFORM_STR,
 							clientPlatform.getIdentification(), device.getIdentification(), state,
-							this.urlImages + image, device.getStatus(), state,
+							this.urlImages + image, device.getStatus(), state, device.getSessionKey(),
 							device.getUpdatedAt()));
 				}
 

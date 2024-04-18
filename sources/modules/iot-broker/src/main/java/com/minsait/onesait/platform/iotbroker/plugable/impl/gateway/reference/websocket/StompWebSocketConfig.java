@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,9 +38,7 @@ public class StompWebSocketConfig extends AbstractWebSocketMessageBrokerConfigur
 	@Override
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
 		registry.addEndpoint("/message");
-		registry.addEndpoint("/message").setAllowedOriginPatterns("*").withSockJS();
-		registry.addEndpoint("/ack");
-		registry.addEndpoint("/ack").setAllowedOriginPatterns("*").withSockJS();
+		registry.addEndpoint("/message").setAllowedOrigins("*").withSockJS();
 	}
 
 	@Override
@@ -48,5 +46,4 @@ public class StompWebSocketConfig extends AbstractWebSocketMessageBrokerConfigur
 		registration.setMessageSizeLimit(BUFFER_MAX_SIZE);
 		registration.setSendBufferSizeLimit(BUFFER_MAX_SIZE);
 	}
-
 }

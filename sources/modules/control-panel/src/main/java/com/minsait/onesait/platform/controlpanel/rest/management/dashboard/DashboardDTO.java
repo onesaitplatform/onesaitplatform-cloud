@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,6 @@ package com.minsait.onesait.platform.controlpanel.rest.management.dashboard;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.minsait.onesait.platform.config.model.Dashboard.DashboardType;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardUserAccessDTO;
 
 import lombok.Builder;
@@ -74,10 +71,6 @@ public class DashboardDTO {
 
 	@Getter
 	@Setter
-	private List<String> i18n;
-	
-	@Getter
-	@Setter
 	private String description;
 
 	@Getter
@@ -86,21 +79,7 @@ public class DashboardDTO {
 
 	@Getter
 	@Setter
-	private DashboardType type;
-
-	@Getter
-	@Setter
 	private List<DashboardUserAccessDTO> dashboardAuths;
-	
-	@Getter
-	@Setter
-	@JsonInclude(Include.NON_NULL)
-	private byte[] image;
-	
-	@Getter
-	@Setter
-	private boolean generateImage;
-	
 //	public DashboardDTO(String identification, String user, String url, String category, String subcategory,
 //			Date createdAt, Date modifiedAt) {
 //		super();

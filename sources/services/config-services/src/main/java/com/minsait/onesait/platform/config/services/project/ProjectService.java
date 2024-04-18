@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,23 +15,13 @@
 package com.minsait.onesait.platform.config.services.project;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
-import org.springframework.web.multipart.MultipartFile;
 
 import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.AppRole;
-import com.minsait.onesait.platform.config.model.AppUser;
 import com.minsait.onesait.platform.config.model.Project;
-import com.minsait.onesait.platform.config.model.ProjectList;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
-import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.base.OPResource;
-import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardDTO;
 
 public interface ProjectService {
 
@@ -42,8 +32,6 @@ public interface ProjectService {
 	public List<Project> getAllProjects();
 
 	public Project getById(String id);
-
-	public ProjectList getByIdForList(String id);
 
 	public void updateProject(Project project);
 
@@ -71,8 +59,6 @@ public interface ProjectService {
 
 	public Set<ProjectResourceAccess> getResourcesAccessesForUser(String projectId, String userId);
 
-	public Set<ProjectResourceAccess> getResourcesAccessesForAppRole(String projectId, String name);
-
 	public Set<OPResource> getResourcesForProjectAndUser(String projectId, String userId);
 
 	public Set<OPResource> getResourcesForUser(String userId);
@@ -82,35 +68,5 @@ public interface ProjectService {
 	public Set<AppRole> getProjectRoles(String projectId);
 
 	public boolean isUserAuthorized(String projectId, String userId);
-
-	public Project getByName(String identification);
-
-	public ProjectList getByNameForList(String identification);
-
-	public void deleteResourceFromProjects(String resourceId);
-
-	public List<Project> getProjectsWithResource(String resourceId);
-
-	public Set<ProjectResourceAccess> getAllResourcesAccesses(String projectId);
-
-	public Set<User> getUsersInProject(String projectId);
-
-	public Map<AppRole, Set<AppUser>> getAllRoleUsersInProject(Set<AppRole> projectRoles);
-
-	boolean isUserInProjectWithoutOwner(String userId, String projectId);
-
-	List<ProjectList> getProjectByUser(String userId);
-
-	List<ProjectTableDTO> findProjectIdentification(String identification, String columName, String order, String user,
-			int page, int limit);
-
-	public Integer countProjectIdentification(String filter, String userId);
-
-	byte[] getImgBytes(String id);
-
-	public void updateProjectWithImage(@Valid String id, @NotNull Project.ProjectType type, String description,
-			MultipartFile image);
-
-	public List<Project> findWebprojectProjects(String id);
 
 }

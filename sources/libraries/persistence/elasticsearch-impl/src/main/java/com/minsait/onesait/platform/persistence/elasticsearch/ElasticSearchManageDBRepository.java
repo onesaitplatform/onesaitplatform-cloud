@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,29 +19,24 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Conditional;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.commons.model.DescribeColumnData;
 import com.minsait.onesait.platform.commons.rtdbmaintainer.dto.ExportData;
-import com.minsait.onesait.platform.persistence.ElasticsearchEnabledCondition;
 import com.minsait.onesait.platform.persistence.elasticsearch.api.ESBaseApi;
 import com.minsait.onesait.platform.persistence.elasticsearch.api.ESCountService;
 import com.minsait.onesait.platform.persistence.elasticsearch.api.ESDeleteService;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
 import com.minsait.onesait.platform.persistence.util.JSONPersistenceUtilsElasticSearch;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -49,13 +44,11 @@ import lombok.extern.slf4j.Slf4j;
 
 @Component("ElasticSearchManageDBRepository")
 @Scope("prototype")
-@Conditional(ElasticsearchEnabledCondition.class)
 @Lazy
 @Slf4j
 public class ElasticSearchManageDBRepository implements ManageDBRepository {
 
 	private static final String NOT_IMPLEMENTED_ALREADY = "Not Implemented Already";
-	private static final String ALLOWS_TEMPLATE_CONFIG = "allowsTemplateConfig";
 
 	@Autowired
 	private ESBaseApi connector;
@@ -65,38 +58,25 @@ public class ElasticSearchManageDBRepository implements ManageDBRepository {
 	@Autowired
 	private ESDeleteService eSDeleteService;
 
-	@Autowired
-	private IntegrationResourcesService resourcesService;
-
+	@Value("${onesaitplatform.database.elasticsearch.dump.path:null}")
 	@Getter
 	@Setter
 	private String dumpPath;
 
+	@Value("${onesaitplatform.database.elasticsearch.elasticdump.path:null}")
 	@Getter
 	@Setter
 	private String elasticDumpPath;
 
+	@Value("${onesaitplatform.database.elasticsearch.sql.connector.http.endpoint:http://localhost:9300}")
 	@Getter
 	@Setter
 	private String elasticSearchEndpoint;
 
-	@PostConstruct
-	public void init() {
-		final Map<String, Object> database = resourcesService.getGlobalConfiguration().getEnv().getDatabase();
-
-		@SuppressWarnings("unchecked")
-		final Map<String, Object> elasticsearch = (Map<String, Object>) database.get("elasticsearch");
-
-		@SuppressWarnings("unchecked")
-		final Map<String, Object> sql = (Map<String, Object>) elasticsearch.get("sql");
-
-		@SuppressWarnings("unchecked")
-		final Map<String, Object> dump = (Map<String, Object>) elasticsearch.get("dump");
-
-		elasticSearchEndpoint = (String) sql.get("endpoint");
-
-		dumpPath = (String) dump.get("path");
-		elasticDumpPath = (String) dump.get("elasticDumpCmd");
+	private String createTestIndex(String index) {
+		final String res = connector.createIndex(index);
+		log.debug("ElasticSearchManageDBRepository createTestIndex {}, res: ",index, res);
+		return res;
 	}
 
 	@Override
@@ -110,18 +90,21 @@ public class ElasticSearchManageDBRepository implements ManageDBRepository {
 		try {
 			if (JSONPersistenceUtilsElasticSearch.isJSONSchema(schema)) {
 
-				final String mapping = JSONPersistenceUtilsElasticSearch.getElasticSearchSchemaFromJSONSchema(schema);
+				String elasticIndex = JSONPersistenceUtilsElasticSearch.getElasticSearchSchemaFromJSONSchema(schema);
 				try {
-					if (config != null && config.get(ALLOWS_TEMPLATE_CONFIG) != null
-							&& !config.get(ALLOWS_TEMPLATE_CONFIG).isEmpty()
-							&& Boolean.parseBoolean(config.get(ALLOWS_TEMPLATE_CONFIG))) {
-						log.info("Creating ElasticSearch template for ontology: {}", ontology);
-						final boolean res = connector.createTemplate(ontology.toLowerCase(), mapping, config);
-						log.info("Template result : {} ", res);
-					} else {
-						log.info("Creating ElasticSearch index for ontology: {}", ontology);
-						final boolean res = connector.createIndex(ontology.toLowerCase(), mapping, config);
-						log.info("Index result : {} ", res);
+					final String res = connector.createIndex(ontology.toLowerCase());
+					log.info("Index result : {} ", res);
+
+					try {
+						if (!elasticIndex.isEmpty() && (!connector.createType(ontology.toLowerCase(),
+								ontology.toLowerCase(), elasticIndex))) {
+							log.error("Error mapping");
+							throw new DBPersistenceException("Error mapping type.");
+						}
+					} catch (final Exception e) {
+						connector.deleteIndex(ontology.toLowerCase());
+						log.error("Error mapping type: " + e.getMessage(), e);
+						throw new DBPersistenceException("Error mapping type. Message: " + e.getMessage(), e);
 					}
 
 				} catch (final Exception e) {
@@ -145,10 +128,9 @@ public class ElasticSearchManageDBRepository implements ManageDBRepository {
 	@Override
 	public List<String> getListOfTables() {
 		final List<String> list = new ArrayList<>();
-		final String[] result = connector.getIndexes();
-		if (result != null) {
-			list.addAll(Arrays.asList(result));
-		}
+		final String result = connector.getIndexes();
+		if (result != null)
+			list.add(result);
 		return list;
 
 	}
@@ -157,9 +139,8 @@ public class ElasticSearchManageDBRepository implements ManageDBRepository {
 	public List<String> getListOfTables4Ontology(String ontology) {
 		ontology = ontology.toLowerCase();
 		final List<String> list = new ArrayList<>();
-		final String[] result = connector.getIndexes();
-		final List<String> ontologies = Arrays.asList(result);
-		if (result != null && ontologies.indexOf(ontology) != .1) {
+		final String result = connector.getIndexes();
+		if (result != null && result.indexOf(ontology) != .1) {
 			list.add(ontology);
 		}
 		return list;
@@ -168,8 +149,8 @@ public class ElasticSearchManageDBRepository implements ManageDBRepository {
 	@Override
 	public void removeTable4Ontology(String ontology) {
 		ontology = ontology.toLowerCase();
-		// eSDeleteService.deleteAll(ontology);
-		connector.deleteIndex(ontology);
+		eSDeleteService.deleteAll(ontology, ontology);
+
 	}
 
 	@Override
@@ -229,11 +210,10 @@ public class ElasticSearchManageDBRepository implements ManageDBRepository {
 				+ " \r\n} \r\n} \r\n" + "  }\r\n" + "}";
 		final String path;
 
-		if (pathToFile.equals("default")) {
+		if (pathToFile.equals("default"))
 			path = dumpPath + ontology.toLowerCase() + format.format(new Date()) + ".json";
-		} else {
+		else
 			path = pathToFile;
-		}
 		if (eSCountService.getQueryCount(queryElastic, ontology.toLowerCase()) > 0) {
 			final ProcessBuilder pb;
 
@@ -250,7 +230,7 @@ public class ElasticSearchManageDBRepository implements ManageDBRepository {
 					builder.append(System.getProperty("line.separator"));
 				}
 				builder.toString();
-				log.info("Cmd elasticdump output: {}", builder.toString());
+				log.info("Cmd elasticdump output: {}",builder.toString());
 				log.info("Created export file for ontology {} at {}", ontology, path);
 			} catch (IOException | InterruptedException e) {
 				log.error("Could not execute command {}", e.getMessage());
@@ -262,7 +242,7 @@ public class ElasticSearchManageDBRepository implements ManageDBRepository {
 
 	@Override
 	public long deleteAfterExport(String ontology, String query) {
-		return eSDeleteService.deleteByQuery(ontology.toLowerCase(), query).getCount();
+		return eSDeleteService.deleteByQuery(ontology.toLowerCase(), ontology.toLowerCase(), query, false).getCount();
 	}
 
 	@Override
@@ -279,34 +259,5 @@ public class ElasticSearchManageDBRepository implements ManageDBRepository {
 	public String updateTable4Ontology(String identification, String jsonSchema, Map<String, String> config) {
 		throw new DBPersistenceException(NOT_IMPLEMENTED_ALREADY);
 	}
-
-	@Override
-	public void createTTLIndex(String ontology, String attribute, Long seconds) {
-		throw new DBPersistenceException(NOT_IMPLEMENTED_ALREADY);
-
-	}
-
-	@Override
-	public Map<String, List<String>> getListIndexes(String datatableName, String ontology) {
-		throw new DBPersistenceException(NOT_IMPLEMENTED_ALREADY);
-	}
-
-	@Override
-	public void dropIndex(String ontology, String ontologyVirtual, String indexName) {
-		throw new DBPersistenceException(NOT_IMPLEMENTED_ALREADY);
-		
-	}
-
-	@Override
-	public String getIndexesOptions(String ontology) {
-		throw new DBPersistenceException(NOT_IMPLEMENTED_ALREADY);
-	}
-
-	@Override
-	public void createIndexWithParameter(String ontologyName, String typeIndex, String indexName, boolean unique,
-			boolean background, boolean sparse, boolean ttl, String timesecondsTTL, Object checkboxValuesArray) {
-		throw new DBPersistenceException(NOT_IMPLEMENTED_ALREADY);
-	}
-
 
 }

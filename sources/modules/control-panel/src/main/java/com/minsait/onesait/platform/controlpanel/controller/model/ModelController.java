@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,15 +22,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -61,8 +61,8 @@ import com.minsait.onesait.platform.config.services.categoryrelation.CategoryRel
 import com.minsait.onesait.platform.config.services.dashboard.DashboardService;
 import com.minsait.onesait.platform.config.services.exceptions.CategoryServiceException;
 import com.minsait.onesait.platform.config.services.exceptions.ModelServiceException;
-import com.minsait.onesait.platform.config.services.model.ModelExecutionService;
 import com.minsait.onesait.platform.config.services.model.ModelService;
+import com.minsait.onesait.platform.config.services.model.execution.ModelExecutionService;
 import com.minsait.onesait.platform.config.services.notebook.NotebookService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.parametermodel.ParameterModelService;
@@ -70,9 +70,6 @@ import com.minsait.onesait.platform.config.services.subcategory.SubcategoryServi
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.rest.management.notebook.NotebookManagementController;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -113,19 +110,15 @@ public class ModelController {
 
 	@Autowired
 	private UserService userService;
-	
-	@Autowired
-	private IntegrationResourcesService resourcesService;
 
+	@Value("${onesaitplatform.dashboardengine.url.only.view}")
 	private String dashboardUrl;
 
+	@Value("${onesaitplatform.notebook.url}")
 	private String notebookUrl;
 
 	@Autowired
 	private NotebookManagementController notebookManager;
-	
-	@Autowired 
-	private HttpSession httpSession;
 
 	private static final String PARAMETERS_STR = "parameters";
 	private static final String REDIRECT_MODELS_LIST = "redirect:/models/list";
@@ -136,20 +129,11 @@ public class ModelController {
 	private static final String CAUSE_STR = "cause";
 	private static final String VALIDATION_ERROR_STR = "validation error";
 	private static final String ONTOLOGY_VAL_ERRROR = "ontology.validation.error";
-	private static final String APP_ID = "appId";
 
-	@PostConstruct
-	public void init() {
-		notebookUrl = resourcesService.getUrl(Module.NOTEBOOK, ServiceUrl.URL);
-		dashboardUrl = resourcesService.getUrl(Module.DASHBOARDENGINE, ServiceUrl.ONLYVIEW);
-	}
-	
 	@GetMapping(value = "/list", produces = "text/html")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
 	public String list(org.springframework.ui.Model model) {
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
+
 		final List<com.minsait.onesait.platform.config.model.Model> models = modelService
 				.findAllModelsByUser(utils.getUserId());
 		model.addAttribute("models", models);
@@ -157,7 +141,7 @@ public class ModelController {
 	}
 
 	@GetMapping(value = "/run/{id}", produces = "text/html")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
 	public String run(org.springframework.ui.Model model, HttpServletRequest request, @PathVariable("id") String id) {
 
 		Model modl = modelService.getModelById(id);
@@ -173,7 +157,6 @@ public class ModelController {
 
 			model.addAttribute("modelName", modl.getIdentification());
 			model.addAttribute(PARAMETERS_STR, dtoParameters);
-			model.addAttribute("modelId", id);
 		} else {
 			log.error("Model not found: " + id);
 			return REDIRECT_MODELS_LIST;
@@ -188,26 +171,26 @@ public class ModelController {
 	}
 
 	@GetMapping(value = "/create")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
 	public String create(org.springframework.ui.Model model) {
 		model.addAttribute(MODEL_DTO_STR, new ModelDTO());
 		model.addAttribute("notebooks", notebookService.getNotebooks(utils.getUserId()));
-		model.addAttribute("categories", categoryService.getCategoriesByTypeAndGeneralType(Category.Type.MODEL));
+		model.addAttribute("categories", categoryService.getAllIdentifications());
 		model.addAttribute("ontologies", ontologyService.getOntologiesByUserId(utils.getUserId()));
 		model.addAttribute("dashboards", dashboardService.getByUserId(utils.getUserId()));
 		return "models/create";
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
 	@GetMapping(value = "/update/{id}", produces = "text/html")
 	public String update(org.springframework.ui.Model model, @PathVariable("id") String id) {
 		try {
 			Model modelp = modelService.getModelById(id);
 
-			CategoryRelation categoryRelation = categoryRelationService.getByTypeIdAndType(modelp.getId(),
-					Category.Type.MODEL);
-			Category category = categoryService.getCategoryById(categoryRelation.getCategory());
-			Subcategory subcategory = subcategoryService.getSubcategoryById(categoryRelation.getSubcategory());
+			List<CategoryRelation> categoryRelation = categoryRelationService.getByTypeIdAndType(modelp.getId(),
+					CategoryRelation.Type.MODEL);
+			Category category = categoryService.getCategoryById(categoryRelation.get(0).getCategory());
+			Subcategory subcategory = subcategoryService.getSubcategoryById(categoryRelation.get(0).getSubcategory());
 
 			ModelDTO modelDto = new ModelDTO();
 			modelDto.setDescription(modelp.getDescription());
@@ -252,7 +235,7 @@ public class ModelController {
 			model.addAttribute(PARAMETERS_STR, paramsDto);
 			model.addAttribute("ids", ids);
 			model.addAttribute("notebooks", notebookService.getNotebooks(utils.getUserId()));
-			model.addAttribute("categories", categoryService.getCategoriesByTypeAndGeneralType(Category.Type.MODEL));
+			model.addAttribute("categories", categoryService.getAllIdentifications());
 			model.addAttribute("subcategories", subcategoryService.findSubcategoriesByCategory(category));
 			model.addAttribute("ontologies", ontologyService.getOntologiesByUserId(utils.getUserId()));
 			model.addAttribute("dashboards", dashboardService.getByUserId(utils.getUserId()));
@@ -261,6 +244,13 @@ public class ModelController {
 			log.error("Error prasing parameters model: " + e.getMessage());
 			return REDIRECT_MODELS_LIST;
 		}
+	}
+
+	@GetMapping(value = "/getSubcategories/{category}")
+	public @ResponseBody List<String> getSubcategories(@PathVariable("category") String category,
+			HttpServletResponse response) {
+		return subcategoryService
+				.findSubcategoriesNamesByCategory(categoryService.getCategoryByIdentification(category));
 	}
 
 	@GetMapping(value = "/getConfigParagraph/{notebook}")
@@ -290,7 +280,7 @@ public class ModelController {
 	}
 
 	@GetMapping(value = "/getOutputParagraph/{notebook}")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
 	public @ResponseBody String getOutputParagraph(@PathVariable("notebook") String notebookName) {
 
 		Notebook notebook = notebookService.getNotebook(notebookName, utils.getUserId());
@@ -313,7 +303,7 @@ public class ModelController {
 	}
 
 	@PostMapping(value = "/run/{id}")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
 	public @ResponseBody String execute(@PathVariable("id") String id, @RequestParam String parameters) {
 
 		try {
@@ -381,7 +371,7 @@ public class ModelController {
 	}
 
 	@PostMapping(value = "/run/save/{id}")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
 	public @ResponseBody String save(@PathVariable("id") String id, @RequestParam String parameters,
 			@RequestParam String idEject, @RequestParam String executionName,
 			@RequestParam String executionDescription) {
@@ -416,10 +406,10 @@ public class ModelController {
 					modelExecution.setDescription(executionDescription);
 					modelExecution.setIdentification(executionName);
 
-					modelExecutionService.save(modelExecution);
+					modelExecutionService.create(modelExecution);
 					String url = null;
 					if (modelExecution.getModel().getDashboard() != null) {
-						url = dashboardUrl + modelExecution.getModel().getDashboard().getId() + "?id_ejec="
+						url = dashboardUrl + modelExecution.getModel().getDashboard().getId() + "?idExecution="
 								+ modelExecution.getIdEject();
 
 					} else if (modelExecution.getModel().getOutputParagraphId() != null) {
@@ -447,7 +437,7 @@ public class ModelController {
 	}
 
 	@PostMapping(value = "/create")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
 	@Transactional
 	public ResponseEntity<Map<String, String>> createModel(org.springframework.ui.Model model, @Valid ModelDTO modelDto,
 			BindingResult bindingResult, RedirectAttributes redirect, HttpServletRequest httpServletRequest) {
@@ -474,11 +464,11 @@ public class ModelController {
 			Subcategory subcategory = subcategoryService
 					.getSubcategoryByIdentificationAndCategory(modelDto.getSubcategorymodel(), category);
 
-			if (modelDto.getDashboard() != null && !modelDto.getDashboard().contentEquals("")) {
+			if (modelDto.getDashboard() != null && modelDto.getDashboard() != "") {
 				Dashboard dashboard = dashboardService.getDashboardByIdentification(modelDto.getDashboard(),
 						utils.getUserId());
 				modelp.setDashboard(dashboard);
-			} else if (modelDto.getOutputParagraphId() != null && !modelDto.getOutputParagraphId().equals("")) {
+			} else if (modelDto.getOutputParagraphId() != null && modelDto.getOutputParagraphId() != "") {
 				modelp.setOutputParagraphId(modelDto.getOutputParagraphId());
 			}
 
@@ -502,17 +492,17 @@ public class ModelController {
 	}
 
 	@GetMapping("/show/{id}")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
 	public String show(org.springframework.ui.Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 		try {
 			final Model modelp = modelService.getModelById(id);
 			if (modelp != null) {
 
-				CategoryRelation categoryRelation = categoryRelationService.getByTypeIdAndType(modelp.getId(),
-						Category.Type.MODEL);
-				Category category = categoryService.getCategoryById(categoryRelation.getCategory());
+				List<CategoryRelation> categoryRelation = categoryRelationService.getByTypeIdAndType(modelp.getId(),
+						CategoryRelation.Type.MODEL);
+				Category category = categoryService.getCategoryById(categoryRelation.get(0).getCategory());
 				Subcategory subcategory = subcategoryService
-						.getSubcategoryById(categoryRelation.getSubcategory());
+						.getSubcategoryById(categoryRelation.get(0).getSubcategory());
 
 				final List<ParameterModel> parameters = parameterModelService.findAllParameterModelsByModel(modelp);
 
@@ -552,7 +542,7 @@ public class ModelController {
 	}
 
 	@PutMapping(value = "/update/{id}")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
 	@Transactional
 	public ResponseEntity<Map<String, String>> updateModel(org.springframework.ui.Model model, @PathVariable("id") String id,
 			@Valid ModelDTO modelDto, BindingResult bindingResult, RedirectAttributes redirect,
@@ -575,12 +565,12 @@ public class ModelController {
 					.getSubcategoryByIdentificationAndCategory(modelDto.getSubcategorymodel(), category);
 			Notebook notebook = notebookService.getNotebook(modelDto.getNotebook(), utils.getUserId());
 
-			if (modelDto.getDashboard() != null && !modelDto.getDashboard().equals("")) {
+			if (modelDto.getDashboard() != null && modelDto.getDashboard() != "") {
 				Dashboard dashboard = dashboardService.getDashboardByIdentification(modelDto.getDashboard(),
 						utils.getUserId());
 				modelp.setDashboard(dashboard);
 				modelp.setOutputParagraphId(null);
-			} else if (modelDto.getOutputParagraphId() != null && !modelDto.getOutputParagraphId().equals("")) {
+			} else if (modelDto.getOutputParagraphId() != null && modelDto.getOutputParagraphId() != "") {
 				modelp.setOutputParagraphId(modelDto.getOutputParagraphId());
 				modelp.setDashboard(null);
 			}
@@ -605,7 +595,7 @@ public class ModelController {
 	}
 
 	@DeleteMapping("/{id}")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST')")
 	@Transactional
 	public String delete(org.springframework.ui.Model model, @PathVariable("id") String id,
 			RedirectAttributes redirect) {

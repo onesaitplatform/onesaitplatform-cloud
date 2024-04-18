@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,19 @@
  */
 package com.minsait.onesait.platform.api.rest.api.fiql;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import org.springframework.context.i18n.LocaleContextHolder;
 
+import com.minsait.onesait.platform.api.rest.api.dto.OperacionDTO;
 import com.minsait.onesait.platform.config.model.ApiOperation;
-import com.minsait.onesait.platform.config.services.apimanager.dto.OperacionDTO;
 
 public final class OperationFIQL {
-	
 
 	static Locale locale = LocaleContextHolder.getLocale();
-	
+
 	private OperationFIQL() {
 		throw new AssertionError("Instantiating utility class...");
 	}
@@ -40,10 +38,10 @@ public final class OperationFIQL {
 		}
 		return operacionesDTO;
 	}
-	
+
 	public static OperacionDTO toOperacionDTO(ApiOperation operacion) {
 		OperacionDTO operacionDTO = new OperacionDTO();
-		
+
 		operacionDTO.setDescription(operacion.getDescription());
 		operacionDTO.setEndpoint(operacion.getEndpoint());
 		operacionDTO.setIdentification(operacion.getIdentification());
@@ -51,9 +49,11 @@ public final class OperationFIQL {
 		operacionDTO.setPath(operacion.getPath());
 		operacionDTO.setPostProcess(operacion.getPostProcess());
 
+		// Se copian los headers
+		operacionDTO.setHeaders(HeaderFIQL.toHeaderDTO(operacion.getApiheaders()));
 		// Se copian los queryparams
 		operacionDTO.setQueryParams(QueryParameterFIQL.toQueryParamDTO(operacion.getApiqueryparameters()));
-		
+
 		return operacionDTO;
 	}
 
@@ -64,14 +64,14 @@ public final class OperationFIQL {
 
 			throw new IllegalArgumentException("com.indra.sofia2.web.api.services.HeaderWrongOperacion");
 		}
-		
+
 		operacion.setDescription(operacionDTO.getDescription());
 		operacion.setEndpoint(operacionDTO.getEndpoint());
 		operacion.setIdentification(operacionDTO.getIdentification());
 		operacion.setOperation(operacionDTO.getOperation());
 		operacion.setPath(operacionDTO.getPath());
 		operacion.setPostProcess(operacionDTO.getPostProcess());
-		
+
 		return operacion;
 	}
 

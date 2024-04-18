@@ -25,9 +25,9 @@ angular
         templateUrl: 'app/help/restapi/restapi.tpl.html',
         controller: 'RESTfulAPIController',
         resolve: {
-          myVar: ["authService", function(authService) {
+          myVar: function(authService) {
             return authService.init();
-          }]
+          }
         },
         data: {
           authorizedRoles: ['admin', 'creator', 'manager', 'guest']
@@ -36,7 +36,7 @@ angular
       }
     );
   }])
-  .controller('RESTfulAPIController', ["$scope", "$rootScope", "$q", "configuration", "Analytics", "$timeout", function ($scope, $rootScope, $q, configuration, Analytics, $timeout) {
+  .controller('RESTfulAPIController', function ($scope, $rootScope, $q, configuration, Analytics, $timeout) {
     $scope.swaggerURL = 'rest/swagger.json';
     $scope.fetching = true;
 
@@ -51,4 +51,4 @@ angular
     $timeout(function() {
       $scope.fetching = false;
     }, 500);
-  }]);
+  });

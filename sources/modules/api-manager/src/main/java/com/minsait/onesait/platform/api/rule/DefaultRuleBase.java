@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,30 +15,23 @@
 package com.minsait.onesait.platform.api.rule;
 
 import org.jeasy.rules.api.Facts;
-import org.springframework.http.HttpStatus;
-
-import com.minsait.onesait.platform.api.service.Constants;
 
 public class DefaultRuleBase {
-
+	
 	public enum ReasonType {
 		INTERNAL, API_LIMIT, SECURITY, GENERAL, DEVELOPMENT;
 	}
-
-	protected void stopAllNextRules(Facts facts, String reason, ReasonType type, HttpStatus statusCode) {
+		
+	protected void stopAllNextRules(Facts facts, String reason, ReasonType type) {
 		facts.put(RuleManager.STOP_STATE, true);
 		facts.put(RuleManager.REASON, reason);
 		facts.put(RuleManager.REASON_TYPE, type.name());
-		facts.put(Constants.HTTP_RESPONSE_CODE, statusCode);
 	}
-
+	
 	protected boolean canExecuteRule(Facts facts) {
-		final Boolean bool = facts.get(RuleManager.STOP_STATE);
-		if (bool == null) {
-			return true;
-		} else {
-			return !bool.booleanValue();
-		}
+		Boolean bool = facts.get(RuleManager.STOP_STATE);
+		if (bool == null) return true;
+		else return !bool.booleanValue();		
 	}
-
+	
 }

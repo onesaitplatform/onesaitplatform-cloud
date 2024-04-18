@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,8 @@ import com.minsait.onesait.platform.config.model.User;
 public interface KsqlRelationRepository extends JpaRepository<KsqlRelation, String> {
 
 	public List<KsqlRelation> findByKsqlFlow(KsqlFlow ksqlFlow);
+
+	public KsqlRelation findById(String id);
 
 	public List<KsqlRelation> findByKsqlResource(KsqlResource ksqlResource);
 

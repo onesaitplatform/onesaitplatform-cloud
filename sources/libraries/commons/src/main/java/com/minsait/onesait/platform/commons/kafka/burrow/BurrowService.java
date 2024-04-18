@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,6 @@ public class BurrowService {
 
 	public BurrowGroupStatusResponse getClientGroupStatus(String cluster, String clientGroup) {
 		RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
-
 		String requestResponse = null;
 		BurrowGroupStatusResponse state = null;
 		try {
@@ -105,7 +104,6 @@ public class BurrowService {
 
 	public BurrowConsumerGroupsResponse getAllClientGroups(String cluster) {
 		RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
-
 		String requestResponse = null;
 		BurrowConsumerGroupsResponse response = null;
 		try {
@@ -128,7 +126,6 @@ public class BurrowService {
 
 	public BurrowClustersResponse getAllClusters() {
 		RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
-
 		BurrowClustersResponse response = null;
 		String requestResponse = null;
 		try {
@@ -149,7 +146,6 @@ public class BurrowService {
 
 	private BurrowConsumerTopicInfoResponse getBurrowConsumerTopicInfo(String cluster, String consumer) {
 		RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
-
 		BurrowConsumerTopicInfoResponse response = null;
 		String requestResponse = null;
 
@@ -180,31 +176,27 @@ public class BurrowService {
 			BurrowOffsetWindow[] partitions = rawTopicInfo.getTopics().get(topic);
 			for (int partition = 0; partition < partitions.length; partition++) {
 				BurrowOffsetInstant[] windows = partitions[partition].getOffsets();
-				if (windows != null && windows.length != 0 && windows[windows.length - 1] != null) {
+				Long millis = windows[windows.length - 1].getTimestamp();
 
-					Long millis = windows[windows.length - 1].getTimestamp();
+				Date d = new Date(millis);
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
+				String timestamp = sdf.format(d);
 
-					Date d = new Date(millis);
-					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
-					String timestamp = sdf.format(d);
-
-					Long offset = windows[windows.length - 1].getOffset();
-					Long lag = windows[windows.length - 1].getLag();
-					String status = "OK";
-					BurrowGroupStatusResponse consumerStatus = getClientGroupStatus(cluster, consumer);
-					for (BurrowPartitionStatusDetail detail : consumerStatus.getStatus().getPartitions()) {
-						if (detail.getTopic().equals(topic) && detail.getPartition() == partition) {
-							// this topic/partition its not OK
-							status = detail.getStatus();
-							lag = detail.getCurrentLag();
-						}
+				Long offset = windows[windows.length - 1].getOffset();
+				Long lag = windows[windows.length - 1].getLag();
+				String status = "OK";
+				BurrowGroupStatusResponse consumerStatus = getClientGroupStatus(cluster, consumer);
+				for (BurrowPartitionStatusDetail detail : consumerStatus.getStatus().getPartitions()) {
+					if (detail.getTopic().equals(topic) && detail.getPartition() == partition) {
+						// this topic/partition its not OK
+						status = detail.getStatus();
+						lag = detail.getCurrentLag();
 					}
-
-					KafkaMonitoringTopicInfo partitionInfo = KafkaMonitoringTopicInfo.builder().topic(topic)
-							.partition(partition).status(status).timestamp(timestamp).offset(offset).lag(lag).build();
-					result.add(partitionInfo);
-
 				}
+
+				KafkaMonitoringTopicInfo partitionInfo = KafkaMonitoringTopicInfo.builder().topic(topic)
+						.partition(partition).status(status).timestamp(timestamp).offset(offset).lag(lag).build();
+				result.add(partitionInfo);
 			}
 		}
 		return result;

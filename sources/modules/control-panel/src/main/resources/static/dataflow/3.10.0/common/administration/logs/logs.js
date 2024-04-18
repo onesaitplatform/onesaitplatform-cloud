@@ -46,8 +46,8 @@ angular
         }
       });
   }])
-  .controller('LogsController', ["$rootScope", "$scope", "$routeParams", "$interval", "$location", "api", "configuration", "Analytics", "$timeout", "$modal", function (
-    $rootScope, $scope, $routeParams, $interval, $location, api, configuration, Analytics, $timeout, $modal
+  .controller('LogsController', ["$rootScope", "$scope", "$routeParams", "$interval", "api", "configuration", "Analytics", "$timeout", "$modal", function (
+    $rootScope, $scope, $routeParams, $interval, api, configuration, Analytics, $timeout, $modal
   ) {
     var pipelineNameParam = $routeParams.pipelineName;
     var pipelineTitleParam = $routeParams.pipelineTitle;
@@ -102,12 +102,6 @@ angular
         }, function() {
           $scope.fetchingLog = false;
         });
-      },
-
-      returnToPipeline: function () {
-        $location.path(
-          '/collector/pipeline/' + pipelineNameParam
-        );
       },
 
       severityFilterChanged: function(severity) {

@@ -3,12 +3,11 @@
       
 spring.application.name : router-core
      
-onesaitplatform: #Config onesaitplatform specific
+sofia2: #Config Sofia2 specific
    iotbroker.plugable:
       gateway:
          kafka:
             enable: true
-            brokers: none
             host: localhost
             port: 9092
             partitions: 1
@@ -46,9 +45,7 @@ onesaitplatform: #Config onesaitplatform specific
       quasar.connectionTimeout.millis: 10000
       quasar.connector.http.endpoint: http://localhost:18200/query/fs/
    router.avoidsslverification: true
-   transaction.check.orphan.timeout.seconds: 1000
-   urls:
-      iotbroker.advice: http://localhost:19000/iot-broker/advice
+
 #Security Config
 security:
     user:
@@ -71,7 +68,6 @@ spring: ## General Config
       # Validate the connection before borrowing it from the pool.
       test-on-borrow: true
       validation-query: SELECT 1
-      validationQueryTimeout: 5
       test-while-idle: true       
       # Number of ms to wait before throwing an exception if no connection is available.
       max-wait: 10000

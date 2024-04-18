@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ public class QueryParsers {
 		final StringBuffer stringBuffer = new StringBuffer();
 		try {
 			// Get all now()
-			Pattern pattern = Pattern.compile("(now|NOW)\\((\\w|\\s|.|'|\"|\\\\|/|:|-|\\+|,)*\\)");
+			Pattern pattern = Pattern.compile("(now|NOW)\\((\\w|\\s|'|\"|\\\\|/|:|-|\\+|,)*\\)");
 			Matcher matcher = pattern.matcher(query);
 
 			// treat each occurrence
@@ -55,20 +55,6 @@ public class QueryParsers {
 					"Problem with function NOW(), can be used without parameters or NOW(\"yyyy-MM-dd'T'HH:mm:ss'Z'\") or NOW(\"yyyy-MM-dd'T'HH:mm:ss'Z'\",'unitTime', amount) or NOW('unitTime', amount), where 'unitTime' can be 'year', 'month', 'date', 'hour', 'minute', 'second', 'millisecond' and amount a positive or negative whole value");
 		}
 		return stringBuffer.toString();
-	}
-
-	public static boolean hasNowFunction(String query) {
-		try {
-			// Get all now()
-			Pattern pattern = Pattern.compile("(now|NOW)\\((\\w|\\s|.|'|\"|\\\\|/|:|-|\\+|,)*\\)");
-			Matcher matcher = pattern.matcher(query);
-
-			// treat each occurrence
-			return matcher.find();
-		} catch (Exception e) {
-			throw new DBPersistenceException(
-					"Problem with function NOW(), can be used without parameters or NOW(\"yyyy-MM-dd'T'HH:mm:ss'Z'\") or NOW(\"yyyy-MM-dd'T'HH:mm:ss'Z'\",'unitTime', amount) or NOW('unitTime', amount), where 'unitTime' can be 'year', 'month', 'date', 'hour', 'minute', 'second', 'millisecond' and amount a positive or negative whole value");
-		}
 	}
 
 	private static String parseNow(String now) {

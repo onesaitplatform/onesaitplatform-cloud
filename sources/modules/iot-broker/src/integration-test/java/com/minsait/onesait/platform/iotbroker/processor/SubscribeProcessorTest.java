@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,9 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.UUID;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -31,18 +33,31 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.minsait.onesait.platform.commons.testing.IntegrationTest;
 import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
+import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyReturnMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodySubscribeMessage;
+import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageDirection;
+import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
+import com.minsait.onesait.platform.comms.protocol.enums.SSAPQueryType;
+import com.minsait.onesait.platform.config.model.IoTSession;
+import com.minsait.onesait.platform.iotbroker.mock.pojo.Person;
 import com.minsait.onesait.platform.iotbroker.mock.pojo.PojoGenerator;
+import com.minsait.onesait.platform.iotbroker.mock.router.RouterServiceGenerator;
+import com.minsait.onesait.platform.iotbroker.mock.ssap.SSAPMessageGenerator;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
-import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
+import com.minsait.onesait.platform.router.service.app.model.OperationResultModel;
 import com.minsait.onesait.platform.router.service.app.service.RouterService;
+import com.minsait.onesait.platform.router.service.app.service.RouterSuscriptionService;
+
+import lombok.extern.slf4j.Slf4j;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Category(IntegrationTest.class)
 @Ignore
+@Slf4j
 public class SubscribeProcessorTest {
 
 	@Autowired
@@ -56,6 +71,8 @@ public class SubscribeProcessorTest {
 
 	@MockBean
 	RouterService routerService;
+	@MockBean
+	RouterSuscriptionService routerSuscriptionService;
 
 	SSAPMessage<SSAPBodySubscribeMessage> ssapSbuscription;
 	IoTSession session;
@@ -74,7 +91,7 @@ public class SubscribeProcessorTest {
 		when(deviceManager.registerActivity(any(), any(), any(), any())).thenReturn(true);
 
 		when(securityPluginManager.getSession(anyString())).thenReturn(Optional.of(session));
-		when(securityPluginManager.checkSessionKeyActive(any())).thenReturn(true);
+		when(securityPluginManager.checkSessionKeyActive(anyString())).thenReturn(true);
 		when(securityPluginManager.checkAuthorization(any(), any(), any())).thenReturn(true);
 	}
 
@@ -83,6 +100,8 @@ public class SubscribeProcessorTest {
 		// repositoy.deleteByOntologyName(Person.class.getSimpleName());
 		securityMocks();
 		auditMocks();
+		ssapSbuscription = SSAPMessageGenerator.generateSubscriptionMessage(Person.class.getSimpleName(),
+				session.getSessionKey(), SSAPQueryType.SQL, "select * from Person");
 
 	}
 
@@ -90,18 +109,18 @@ public class SubscribeProcessorTest {
 	public void given_OneSubsctiptionProcessorWhenSubscriptionArrivesThenSubscriptionIsStoredAndReturned()
 			throws Exception {
 
-//		final OperationResultModel value = RouterServiceGenerator.generateSubscriptionOk(UUID.randomUUID().toString());
-//		when(routerSuscriptionService.suscribe(any())).thenReturn(value);
-//
-//		final SSAPMessage<SSAPBodyReturnMessage> response = subscribeProcessor.process(ssapSbuscription,
-//				PojoGenerator.generateGatewayInfo());
-//		Assert.assertNotNull(response);
-//		Assert.assertEquals(SSAPMessageDirection.RESPONSE, response.getDirection());
-//		Assert.assertEquals(SSAPMessageTypes.SUBSCRIBE, response.getMessageType());
-//		Assert.assertNotNull(response.getBody());
-//		Assert.assertNotNull(response.getBody().getData());
-//		final JsonNode data = response.getBody().getData();
-//		Assert.assertNotNull(data.at("/subscriptionId").asText());
+		final OperationResultModel value = RouterServiceGenerator.generateSubscriptionOk(UUID.randomUUID().toString());
+		when(routerSuscriptionService.suscribe(any())).thenReturn(value);
+
+		final SSAPMessage<SSAPBodyReturnMessage> response = subscribeProcessor.process(ssapSbuscription,
+				PojoGenerator.generateGatewayInfo());
+		Assert.assertNotNull(response);
+		Assert.assertEquals(SSAPMessageDirection.RESPONSE, response.getDirection());
+		Assert.assertEquals(SSAPMessageTypes.SUBSCRIBE, response.getMessageType());
+		Assert.assertNotNull(response.getBody());
+		Assert.assertNotNull(response.getBody().getData());
+		final JsonNode data = response.getBody().getData();
+		Assert.assertNotNull(data.at("/subscriptionId").asText());
 
 	}
 

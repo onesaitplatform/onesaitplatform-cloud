@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,10 +21,8 @@
 		<meta http-equiv="Content-Language" th:content="${lang}"/>
 		<title th:text="#{name.app}"/>
 		
-		<!-- WEB FONTs -->
-		<link href='/controlpanel/static/vendor/google/poppins.css' rel='stylesheet' type='text/css'/>
-		<link href='/controlpanel/static/vendor/google/open.sans.css' rel='stylesheet' type='text/css'/>
-		<!-- <script src="/controlpanel/static/vendor/google/1.6.16/webfont.js"></script>
+		<!-- BEGIN WEB FONT -->
+		<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
 		<script>
           WebFont.load({
             google: {"families":["Poppins:300,400,500,600,700","Open Sans:300,400,500,600,700"]},
@@ -32,7 +30,7 @@
                 sessionStorage.fonts = true;
             }
           });
-		</script> -->
+		</script>
 
 		<!-- STYLE SHEETS -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
@@ -195,7 +193,7 @@
 															<!-- USERID -->
 															<td class="text-left no-wrap bold" th:text="${twitterListening.user.userId}"></td>
 															<!-- IDENTIFICATOR -->
-															<td class="text-left no-wrap bold" th:text="${twitterListening.identification}"></td>
+															<td class="text-left no-wrap bold" th:text="${twitterListening.identificator}"></td>
 															<!-- TOPICS -->														
 															<td class="text-left no-wrap bold" th:text="${twitterListening.topics}"></td>
 																											
@@ -205,7 +203,7 @@
 																<div class="grupo-iconos">		
 																																																			
 																	<!-- EDIT -->
-																	<span  class="btn grey-mint btn-xs btn-outline sbold tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/twitter/scheduledsearch/update/${twitterListening.id}/|} + '\');'"><i class="fa fa-edit"></i></span>
+																	<span  class="btn grey-mint btn-xs btn-outline sbold tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/twitter/scheduledsearch/update/${twitterListening.id}/|} + '\');'"><i class="fa fa-edit"></i></span>
 																</div>
 															</td>
 														</tr>
@@ -241,14 +239,14 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"></script>
-	<script th:src="@{/static/js/layout.js}"></script>
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
-	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"/>
 	
 	
 	<script th:inline="javascript">	
@@ -299,7 +297,7 @@
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
+	$(window).load(function(){  
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.VideoCapture;
 import com.minsait.onesait.platform.config.model.VideoCapture.State;
@@ -43,7 +44,7 @@ public class VideoBrokerServiceImpl implements VideoBrokerService {
 	@Override
 	public List<VideoCapture> getVideoCaptures(String userId) {
 		final User user = userService.getUser(userId);
-		if (userService.isUserAdministrator(user))
+		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()))
 			return videoCaptureRepository.findAll();
 		else
 			return videoCaptureRepository.findByUser(user);
@@ -51,7 +52,7 @@ public class VideoBrokerServiceImpl implements VideoBrokerService {
 
 	@Override
 	public VideoCapture get(String id) {
-		return videoCaptureRepository.findById(id).orElse(null);
+		return videoCaptureRepository.findOne(id);
 	}
 
 	@Override
@@ -90,20 +91,18 @@ public class VideoBrokerServiceImpl implements VideoBrokerService {
 
 	@Override
 	public void update(VideoCapture videoCapture) {
-		videoCaptureRepository.findById(videoCapture.getId()).ifPresent(db -> {
-			db.setIdentification(videoCapture.getIdentification());
-			db.setOntology(videoCapture.getOntology());
-			db.setUrl(videoCapture.getUrl());
-			db.setProcessor(videoCapture.getProcessor());
-			db.setSamplingInterval(videoCapture.getSamplingInterval());
-			videoCaptureRepository.save(db);
-		});
-
+		final VideoCapture db = videoCaptureRepository.findOne(videoCapture.getId());
+		db.setIdentification(videoCapture.getIdentification());
+		db.setOntology(videoCapture.getOntology());
+		db.setUrl(videoCapture.getUrl());
+		db.setProcessor(videoCapture.getProcessor());
+		db.setSamplingInterval(videoCapture.getSamplingInterval());
+		videoCaptureRepository.save(db);
 	}
 
 	@Override
 	public void delete(String id) {
-		videoCaptureRepository.deleteById(id);
+		videoCaptureRepository.delete(id);
 
 	}
 
@@ -119,9 +118,10 @@ public class VideoBrokerServiceImpl implements VideoBrokerService {
 
 	@Override
 	public boolean hasUserAccess(String id, String userid) {
-		final VideoCapture vc = videoCaptureRepository.findById(id).orElse(null);
+		final VideoCapture vc = videoCaptureRepository.findOne(id);
 		final User user = userService.getUser(userid);
-		return (vc != null && vc.getUser().equals(user) || userService.isUserAdministrator(user));
+		return (vc != null && vc.getUser().equals(user)
+				|| user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()));
 	}
 
 }

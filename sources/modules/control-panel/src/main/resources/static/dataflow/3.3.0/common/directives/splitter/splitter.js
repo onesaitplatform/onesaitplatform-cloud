@@ -28,7 +28,7 @@ angular.module('splitterDirectives', [])
         orientation: '@'
       },      
       template: '<div class="split-panes {{orientation}}" ng-transclude></div>',
-      controller: ["$scope", function ($scope) {
+      controller: function ($scope) {
         $scope.panes = [];
         
         this.addPane = function(pane){
@@ -38,7 +38,7 @@ angular.module('splitterDirectives', [])
           $scope.panes.push(pane);
           return $scope.panes.length;
         };
-      }],
+      },
       link: function(scope, element, attrs) {
         var handler = angular.element('<div class="split-handler"></div>');
         var pane1 = scope.panes[0];

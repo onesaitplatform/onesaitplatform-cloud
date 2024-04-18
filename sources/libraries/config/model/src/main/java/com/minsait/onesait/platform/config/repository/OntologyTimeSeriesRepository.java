@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,35 +14,30 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
-import java.util.Collection;
 import java.util.List;
-
-import javax.transaction.Transactional;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeries;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.versioning.VersionableVO;
 
 public interface OntologyTimeSeriesRepository extends JpaRepository<OntologyTimeSeries, String> {
+
+	OntologyTimeSeries findById(String id);
 
 	@Query("SELECT o FROM OntologyTimeSeries AS o WHERE o.ontology.user=:user")
 	List<OntologyTimeSeries> findByUser(@Param("user") User user);
 
 	List<OntologyTimeSeries> findByOntology(Ontology ontology);
 
-	@CacheEvict(cacheNames = { "IsOntologyTimeSeriesByIdentification",
-	"OntologyRepositoryByIdentification" }, allEntries = true, beforeInvocation = true)
+	@CacheEvict(cacheNames = { "IsOntologyTimeSeriesByIdentification" }, allEntries = true)
 	void deleteByOntology(Ontology ontology);
 
-	@Override
 	@CacheEvict(cacheNames = { "IsOntologyTimeSeriesByIdentification" }, allEntries = true)
 	void deleteById(String id);
 
@@ -51,24 +46,14 @@ public interface OntologyTimeSeriesRepository extends JpaRepository<OntologyTime
 
 	@Cacheable(cacheNames = "IsOntologyTimeSeriesByIdentification", unless = "#result == null")
 	default Boolean isTimeSeries(String ontologyIdentification) {
-		final OntologyTimeSeries result = findByOntologyIdentificaton(ontologyIdentification);
+		OntologyTimeSeries result = this.findByOntologyIdentificaton(ontologyIdentification);
 		return result != null;
 
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	@CacheEvict(cacheNames = { "IsOntologyTimeSeriesByIdentification",
-			"OntologyTimeSeriesPropertyRepositoryByOntologyIdentification","OntologyTimeSeriesWindowRepositoryByOntologyIdentification" }, allEntries = true)
+	@CacheEvict(cacheNames = { "IsOntologyTimeSeriesByIdentification" }, allEntries = true)
 	OntologyTimeSeries save(OntologyTimeSeries entity);
-
-	@Modifying
-	@Transactional
-	@CacheEvict(cacheNames = { "IsOntologyTimeSeriesByIdentification",
-			"OntologyTimeSeriesPropertyRepositoryByOntologyIdentification","OntologyTimeSeriesWindowRepositoryByOntologyIdentification" }, allEntries = true)
-	void deleteByIdNotIn(Collection<String> ids);
-
-	@Query("SELECT new com.minsait.onesait.platform.config.versioning.VersionableVO(o.ontology.identification, o.id, 'OntologyTimeSeries') FROM OntologyTimeSeries AS o")
-	public List<VersionableVO> findVersionableViews();
 
 }

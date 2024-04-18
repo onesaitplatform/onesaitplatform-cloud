@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,18 @@
  */
 package com.minsait.onesait.platform.api.rest.api;
 
-import java.util.Arrays;
-
 import javax.ws.rs.core.Response;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.minsait.onesait.platform.api.rest.api.dto.ApiDTO;
 import com.minsait.onesait.platform.api.rest.api.fiql.ApiFIQL;
 import com.minsait.onesait.platform.api.rest.swagger.RestSwaggerReader;
 import com.minsait.onesait.platform.api.service.Constants;
@@ -31,9 +33,6 @@ import com.minsait.onesait.platform.api.service.api.ApiServiceRest;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Api.ApiType;
-import com.minsait.onesait.platform.config.services.apimanager.dto.ApiDTO;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
-import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
@@ -41,22 +40,13 @@ import com.minsait.onesait.platform.resources.service.IntegrationResourcesServic
 import io.swagger.jaxrs.config.BeanConfig;
 import io.swagger.models.Path;
 import io.swagger.models.Swagger;
-import io.swagger.models.auth.ApiKeyAuthDefinition;
 import io.swagger.models.parameters.HeaderParameter;
-import io.swagger.parser.OpenAPIParser;
+import io.swagger.models.parameters.Parameter;
 import io.swagger.parser.SwaggerParser;
-import io.swagger.util.Json;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.PathItem;
-import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.security.SecurityRequirement;
-import io.swagger.v3.oas.models.security.SecurityScheme;
-import io.swagger.v3.oas.models.security.SecurityScheme.In;
-import io.swagger.v3.oas.models.security.SecurityScheme.Type;
-import io.swagger.v3.oas.models.servers.Server;
-import io.swagger.v3.parser.core.models.SwaggerParseResult;
+import lombok.extern.slf4j.Slf4j;
 
 @Component("swaggerGeneratorServiceImpl")
+@Slf4j
 public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 
 	@Autowired
@@ -66,10 +56,9 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 	private ApiFIQL apiFIQL;
 
 	private static final String BASE_PATH = "/api-manager/server/api";
+
 	@Autowired
 	private IntegrationResourcesService resourcesService;
-	@Autowired
-	private MultitenancyService masterUserService;
 
 	@Value("${server.port:19090}")
 	private String port;
@@ -88,17 +77,20 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 		config.setBasePath("/api" + "/" + vVersion + "/" + identificacion);
 
 		final RestSwaggerReader reader = new RestSwaggerReader();
+
 		final Swagger swagger = reader.read(apiDto, config);
 
-		// Get JSON data from Swagger...
-		final String swaggerJson = Json.pretty(swagger);
+		final ObjectMapper mapper = new ObjectMapper();
+		mapper.enable(SerializationFeature.INDENT_OUTPUT);
+		mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+		String json = null;
+		try {
+			json = mapper.writeValueAsString(swagger);
+		} catch (JsonProcessingException e) {
+			log.error("getApi Error", e);
+		}
 
-		// ... and converts it with OpenAPI Parser
-		final OpenAPIParser openAPIParser = new OpenAPIParser();
-		final SwaggerParseResult swaggerParseResult = openAPIParser.readContents(swaggerJson, null, null);
-		final OpenAPI openAPI = swaggerParseResult.getOpenAPI();
-
-		return Response.ok(io.swagger.v3.core.util.Json.pretty(openAPI)).build();
+		return Response.ok(json).build();
 	}
 
 	public ApiServiceRest getApiService() {
@@ -118,189 +110,62 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 	}
 
 	@Override
-	public Response getApiWithoutToken(String numVersion, String identification, String vertical)
-			throws GenericOPException {
-		if (StringUtils.hasText(vertical)) {
-			masterUserService.getVertical(vertical)
-					.ifPresent(v -> MultitenancyContextHolder.setVerticalSchema(v.getSchema()));
-		}
-
+	public Response getApiWithoutToken(String numVersion, String identification) throws GenericOPException {
 		if (numVersion.indexOf('v') != -1) {
 			numVersion = numVersion.substring(1, numVersion.length());
 		}
 		final Api api = apiService.getApiByIdentificationAndVersion(identification, numVersion);
-		if (api == null) {
-			MultitenancyContextHolder.clear();
+		if (api == null)
 			return Response.noContent().status(404).build();
 
-		}
+		final ObjectMapper mapper = new ObjectMapper();
+		mapper.enable(SerializationFeature.INDENT_OUTPUT);
+		mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
-		// EXTERNAL API FROM JSON
 		if (api.getApiType().equals(ApiType.EXTERNAL_FROM_JSON)) {
 			final SwaggerParser swaggerParser = new SwaggerParser();
 			final Swagger swagger = swaggerParser.parse(api.getSwaggerJson());
-			if (swagger != null) {
-				// SWAGGER PARSER
-				return getExternalApiWithSwagger(api, swagger);
-			} else {
-				// OPENAPI PARSER
-				final OpenAPIParser openAPIParser = new OpenAPIParser();
-				final SwaggerParseResult swaggerParseResult = openAPIParser.readContents(api.getSwaggerJson(), null,
-						null);
-				final OpenAPI openAPI = swaggerParseResult.getOpenAPI();
-				return getExternalApiWithOpenAPI(api, openAPI);
+
+			addCustomHeaderToPaths(swagger);
+			swagger.setHost(null);
+			swagger.setBasePath(BASE_PATH + "/v" + api.getNumversion() + "/" + api.getIdentification());
+
+			try {
+				return Response.ok(mapper.writeValueAsString(swagger)).build();
+			} catch (JsonProcessingException e) {
+				log.error("getApiWithoutToken Error", e);
 			}
 		}
-
-		// INTERNAL API
-		if (api.getApiType().equals(ApiType.INTERNAL_ONTOLOGY)) {
-			return getInternalApiWithOpenAPI(api, numVersion);
-		}
-
-		// OHTER API
-		return getOtherApiWithSwagger(api, numVersion);
-	}
-
-	private Response getExternalApiWithSwagger(Api api, Swagger swagger) {
-
-		if (!StringUtils.hasText(api.getGraviteeId())) {
-			swagger.setHost(null);
-			swagger.setBasePath(getApiBasePath(api, String.valueOf(api.getNumversion())));
-		} else {
-			swagger.setHost(getGraviteeHost());
-			swagger.setBasePath(getGraviteeBasePath(api));
-		}
-		addCustomHeaderToPaths(swagger);
-		MultitenancyContextHolder.clear();
-		return Response.ok(Json.pretty(swagger)).build();
-	}
-
-	private Response getExternalApiWithOpenAPI(Api api, OpenAPI openAPI) {
-		final Server server = new Server();
-
-		if (StringUtils.hasText(api.getGraviteeId())) {
-			server.setUrl(resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.GATEWAY) + getGraviteeBasePath(api));
-		} else {
-			server.setUrl(getApiBasePath(api, String.valueOf(api.getNumversion())));
-		}
-		addCustomHeaderToPaths(openAPI);
-		openAPI.setServers(Arrays.asList(server));
-		MultitenancyContextHolder.clear();
-		return Response.ok(io.swagger.v3.core.util.Json.pretty(openAPI)).build();
-	}
-
-	private Response getInternalApiWithOpenAPI(Api api, String numVersion) {
 		final ApiDTO apiDto = apiFIQL.toApiDTO(api);
+
 		final BeanConfig config = new BeanConfig();
 
-		if (StringUtils.hasText(api.getGraviteeId())) {
-			config.setHost(getGraviteeHost());
-			config.setBasePath(getGraviteeBasePath(api));
-		} else {
-			config.setBasePath(getApiBasePath(api, numVersion));
-			config.setHost(null);
-		}
+		config.setBasePath(BASE_PATH + "/v" + numVersion + "/" + api.getIdentification());
 
 		final RestSwaggerReader reader = new RestSwaggerReader();
-		final Swagger swagger = reader.read(apiDto, config);
-		// Get JSON data from Swagger...
-		final String swaggerJson = Json.pretty(swagger);
 
-		// ... and converts it with OpenAPI Parser
-		final OpenAPIParser openAPIParser = new OpenAPIParser();
-		final SwaggerParseResult swaggerParseResult = openAPIParser.readContents(swaggerJson, null, null);
-		final OpenAPI openAPI = swaggerParseResult.getOpenAPI();
-		openAPI.getComponents().addSecuritySchemes(Constants.AUTHENTICATION_HEADER,
-				new SecurityScheme().in(In.HEADER).type(Type.APIKEY).name(Constants.AUTHENTICATION_HEADER));
-		openAPI.getComponents().addSecuritySchemes("JWT",
-				new SecurityScheme().type(Type.HTTP).bearerFormat(Constants.JWT).scheme("bearer"));
-		final String json = io.swagger.v3.core.util.Json.pretty(openAPI);
-		MultitenancyContextHolder.clear();
+		final Swagger swagger = reader.read(apiDto, config);
+
+		String json = null;
+		try {
+			json = mapper.writeValueAsString(swagger);
+		} catch (JsonProcessingException e) {
+			log.error("getApiWithoutToken Error", e);
+		}
+
 		return Response.ok(json).build();
 	}
 
-	private Response getOtherApiWithSwagger(Api api, String numVersion) {
-		final ApiDTO apiDto = apiFIQL.toApiDTO(api);
-		final BeanConfig config = new BeanConfig();
-		config.setBasePath(getApiBasePath(api, numVersion));
-		final RestSwaggerReader reader = new RestSwaggerReader();
-		final Swagger swagger = reader.read(apiDto, config);
-		if (StringUtils.hasText(api.getGraviteeId())) {
-			swagger.setHost(getGraviteeHost());
-		}
-		// TO OPENAPI 3
-		final OpenAPIParser openAPIParser = new OpenAPIParser();
-		final SwaggerParseResult swaggerParseResult = openAPIParser.readContents(Json.pretty(swagger), null, null);
-		final OpenAPI openAPI = swaggerParseResult.getOpenAPI();
-		openAPI.getComponents().addSecuritySchemes(Constants.AUTHENTICATION_HEADER,
-				new SecurityScheme().in(In.HEADER).type(Type.APIKEY).name(Constants.AUTHENTICATION_HEADER));
-		openAPI.getComponents().addSecuritySchemes("JWT",
-				new SecurityScheme().type(Type.HTTP).bearerFormat(Constants.JWT).scheme("bearer"));
-		MultitenancyContextHolder.clear();
-		return Response.ok(io.swagger.v3.core.util.Json.pretty(openAPI)).build();
-	}
-
-	private String getApiBasePath(Api api, String numVersion) {
-		return BASE_PATH + "/v" + numVersion + "/" + api.getIdentification();
-	}
-
-	private String getGraviteeBasePath(Api api) {
-		return "/".concat(api.getIdentification().concat("/v").concat(String.valueOf(api.getNumversion())));
-	}
-
-	private String getGraviteeHost() {
-		return resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.GATEWAY).replaceAll("^(http://|https://)", "");
-	}
-
-	/**
-	 * Add Authentication Header to Swagger instance.
-	 *
-	 * @param swagger
-	 */
 	private void addCustomHeaderToPaths(Swagger swagger) {
-		final HeaderParameter header = new HeaderParameter();
+		final Parameter header = new HeaderParameter();
 		header.setIn("header");
-		header.setDescription("Onesait Platform API Key");
+		header.setDescription("onesait Platform API Key");
 		header.setName(Constants.AUTHENTICATION_HEADER);
 		header.setRequired(true);
-		header.setType("string");
 		swagger.getPaths().entrySet().forEach(p -> {
 			final Path path = p.getValue();
-			path.getOperations().forEach(op -> {
-				op.addSecurity(Constants.AUTHENTICATION_HEADER, null);
-				op.addSecurity(Constants.JWT, null);
-			});
+			path.getOperations().forEach(o -> o.addParameter(header));
 		});
-		swagger.addSecurityDefinition(Constants.AUTHENTICATION_HEADER,
-				new ApiKeyAuthDefinition().in(io.swagger.models.auth.In.HEADER).name(Constants.AUTHENTICATION_HEADER));
-		swagger.addSecurityDefinition(Constants.JWT,
-				new ApiKeyAuthDefinition().in(io.swagger.models.auth.In.HEADER).name(HttpHeaders.AUTHORIZATION));
 	}
 
-	/**
-	 * Add Authentication Header to OpenAPI instance.
-	 *
-	 * @param openAPI
-	 */
-	private void addCustomHeaderToPaths(OpenAPI openAPI) {
-		final io.swagger.v3.oas.models.parameters.HeaderParameter header = new io.swagger.v3.oas.models.parameters.HeaderParameter();
-		header.setIn("header");
-		header.setDescription("Onesait Platform API Key");
-		header.setName(Constants.AUTHENTICATION_HEADER);
-		header.setRequired(true);
-		final Schema<String> schema = new Schema<>();
-		schema.setType("string");
-		header.setSchema(schema);
-		openAPI.getPaths().entrySet().forEach(p -> {
-			final PathItem path = p.getValue();
-			path.readOperations().forEach(o -> {
-				o.addSecurityItem(
-						new SecurityRequirement().addList(Constants.AUTHENTICATION_HEADER).addList(Constants.JWT));
-			});
-		});
-		openAPI.getComponents().addSecuritySchemes(Constants.AUTHENTICATION_HEADER,
-				new SecurityScheme().in(In.HEADER).type(Type.APIKEY).name(Constants.AUTHENTICATION_HEADER));
-		openAPI.getComponents().addSecuritySchemes("JWT",
-				new SecurityScheme().type(Type.HTTP).bearerFormat(Constants.JWT).scheme("bearer"));
-	}
 }

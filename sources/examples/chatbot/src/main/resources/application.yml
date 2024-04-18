@@ -1,0 +1,21 @@
+##security.require_ssl: true
+
+server: ## Config Web Server
+   port: 31000
+   servlet.context-path: /chatbot
+   max-http-header-size: 10000000
+   tomcat:
+      access_log_enabled: true
+      basedir: target/tomcat
+
+spring: ## General Config  
+   application.name: Api-rest-chatbot
+   http:
+      multipart:
+         max-file-size: 200Mb
+         max-request-size: 200Mb 
+           
+## LOGGING CONF
+logging:
+   level:
+      com.indra: WARN

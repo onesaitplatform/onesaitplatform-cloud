@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -74,161 +74,162 @@
 
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
-				<!-- SEARCH FORM -->
-				<div id="searchFilter"  class="row" >
-					<form id="form_themes" class="" role="form" method="get">
-						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-						<div class="col-md-3 col-sm-4 col-xs-12">														
-							<div class="input-icon">
-								 
-									<i class="icon-search font-grey-mint"></i>									 														
-								<input id="theme-name" th:placeholder="#{themes.theme}"  name="theme" class="form-control" type="text" maxlength="50" value=""/>
-							</div>
-						</div>
-						<div class="col-md-2 col-sm-4 col-xs-12 pull-right">
-							<div class="pull-right">
-								<button type="button" id="reset_theme" name="reset_theme" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}">Reset</button>
-								<button type="button" id="search_theme" name="search_theme" class="btn btn-primary btn-primary-search" th:text="#{gen.search}">Search</button>
-							</div>
-						</div>									
-					</form>
-				</div>
 
 				<!-- BEGIN PAGE HEADER-->
 
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<!--<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>-->
-						<li><a th:href="@{/themes/list}"><span th:text="#{themes.name}">Manage Themes</span></a></li>
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+						<li><span th:text="#{themes.themesList}">Theme List</span></li>
 					</ul>
 				</div>
 				<!-- END PAGE BAR -->
 
 				<!-- MAIN ROW -->
 				<div class="row">
+					<div class="col-md-12">
+
 						<div class="portlet light ">
 							<div class="portlet-title">
 								<div class="caption">
 									<span class="caption-subject" th:text="#{themes.name}">Theme Management</span>
 								</div>
-								<div class="caption" style="padding: 22px 8px 8px 10px">
-									<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
-								</div>
-								<div id="search-on-title" class="hide input-icon search-icon">
-									<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
-								</div>
-								<div class="pull-right btn-title-group">
-									<button type="button" class="btn btn-outline blue dialog btn-no-border" th:attr="onclick='javascript:defaultTheme();'"><span th:text="#{themes.byDefault}"> By Default </span></button>
-									<div class="pull-right btn-group" id="divcreate" style="margin-left:30px;">
-										<button type="button" class="btn btn-primary button-plus-create" th:attr="onclick='javascript:navigateUrl(\'' + @{|/themes/create/|} + '\');'" ><a><i class="icon-new" style="color:white;"></i></a></button>		
-									</div>
-								</div>								
-								<!--<div class="actions margin-right-20">
+								
+								<div class="actions margin-right-20">
 									<div class="btn-group">
-										<button type="button" class="btn btn-outline btn-circle blue" th:attr="onclick='javascript:defaultTheme();'"><span th:text="#{themes.byDefault}"> By Default </span></button>									
-										<button type="button" class="btn btn-outline btn-circle btn-primary" th:attr="onclick='javascript:navigateUrl(\'' + @{|/themes/create/|} + '\');'" ><span th:text="#{themes.newTheme}">New </span></button>
+										<button type="button" class="btn btn-outline btn-circle blue" th:onclick="'javascript:defaultTheme();'"><span th:text="#{themes.byDefault}"> By Default </span></button>									
+										<button type="button" class="btn btn-outline btn-circle btn-primary" th:onclick="'javascript:navigateUrl(\'' + @{|/themes/create/|} + '\');'" ><span th:text="#{themes.newTheme}">New </span></button>
 									</div>
-								</div>-->
-							</div>
-							<div class="portlet-body" style="display: block; height: auto;">
-								<div class="row main">
-								<!-- THEMES LIST -->							
+								</div>
+								
+								<!-- THEMES LIST -->
 									<div class="col-md-12">
 										<div id="contenedor-tabla-outside"
-											class="contiene hidden">
+											class="contiene margin-bottom-30">
 											<div>
-											<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
-												<div id="dataTable-vis-toggle" class="btn-group margin-right-10 hide">	
-													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
-													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
-															<label th:text="#{themes.theme}"> Theme </label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-															<label th:text="#{gen.active}"> Active</label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-															<label th:text="#{gen.created}"> Created At </label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
-															<label th:text="#{gen.updated}"> Updated At</label>
-														</span>
-													</div>
-												</div>
 												<!-- DATATABLE DANDELION CONF. -->
 												<table id="themes" class="table table-hover table-striped"
-													dt:table="true" dt:paginationtype="full">
+													dt:table="true" dt:paginationtype="full_numbers">
 													<thead>
 														<tr class="cabecera-tabla">
-															<th dt:sortInitDirection="asc" class="titulo-columnas" th:text="#{themes.theme}">Theme</th>
-															<th class="titulo-columnas text-left"  th:text="#{gen.active}">Active</th>
-															<th class="titulo-columnas text-left" th:text="#{gen.created}">Created at</th>
-															<th dt:sortInitDirection="dsc" class="titulo-columnas text-left" th:text="#{consolemenu.updated}">Updated at</th>
-															<th class="titulo-columnas text-center" style="width:85px;"><span th:text="#{gen.options}"> Options </span></th>
+															<th dt:sortInitDirection="asc"
+																class="titulo-columnas" th:text="#{themes.theme}">Theme</th>
+															<th class="titulo-columnas text-center"
+																th:text="#{gen.created}">Created at</th>
+															<th dt:sortInitDirection="dsc"
+																class="titulo-columnas text-center"
+																th:text="#{consolemenu.updated}">Updated at</th>
+															<th class="titulo-columnas text-center"
+																th:text="#{gen.active}">Active</th>
+															<th class="titulo-columnas text-center"><span
+																th:text="#{gen.options}"> Options </span></th>
 														</tr>
 													</thead>
 													<tbody th:remove="all-but-first">
 														<tr th:each="theme : ${themes}" pages:paginate="10">
 															<!--THEME-->
 															<td class="text-left " th:text="${theme.identification}"></td>
-															<!--ACTIVE-->
-															<td class="text-left" th:if="${theme.active}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span th:text="' '+#{gen.active}" style="color: #2E6B33;"></span></td>
-															<td class="text-left" th:if="${!theme.active}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.inactive}" style="color: #A73535;"></span></td>
 															<!--CREATED -->
-															<td class="text-left" th:if="${theme.createdAt!=null}">
-																<span th:text="${#dates.format(theme.createdAt,'yyyy/MM/dd')}" style="display:none" ></span>
-																<span th:text="${#dates.format(theme.createdAt,'dd/MM/yyyy')}" ></span></td>
-															<td class="text-left" th:if="${theme.createdAt==null}" th:text="'---'"></td>
+															<td class="text-center" th:if="${theme.createdAt!=null}">
+															<span th:text="${#dates.format(theme.createdAt,'YYYY/MM/dd')}" style="display:none" ></span>
+															<span th:text="${#dates.format(theme.createdAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${theme.createdAt==null}"
+																th:text="'---'"></td>
 															<!-- UPDATED -->
-															<td class="text-left" th:if="${theme.updatedAt!=null}">
-																<span th:text="${#dates.format(theme.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span>
-																<span th:text="${#dates.format(theme.updatedAt,'dd/MM/yyyy')}" ></span></td>
-															<td class="text-left" th:if="${theme.updatedAt==null}" th:text="'---'"></td>
+															<td class="text-center" th:if="${theme.updatedAt!=null}">
+															<span th:text="${#dates.format(theme.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span>
+															<span th:text="${#dates.format(theme.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${theme.updatedAt==null}"
+																th:text="'---'"></td>
+															<!--ACTIVE-->
+															<td class="text-center" th:if="${theme.active}"><span th:text="1" style="display:none" ></span><i class="la la-check-circle-o text-success font-hg"></i></td>
+															<td class="text-center" th:if="${!theme.active}"><span th:text="0" style="display:none" ></span><i class="la la-times-circle-o text-danger font-hg"></i></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos text-center">
+																	
 																	<!-- VIEW -->
-																	<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/themes/show/${theme.Id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
+																	<span th:title="#{gen.view}"
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:data-original-title="#{gen.view}"
+																		th:onclick="'javascript:navigateUrl(\'' + @{|/themes/show/${theme.Id}/|} + '\');'"><i
+																		class="la la-eye font-hg"></i></span>
 																	<!-- EDIT -->
-																	<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips"
-																		data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}"><i	class="icon-edit" th:attr="onclick='javascript:navigateUrl(\'' + @{|/themes/edit/${theme.Id}/|} + '\');'"></i></span>
-																	<span class="dropdown">
-																	<span   class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
-																	<ul class="dropdown-menu dropdown-menu-table download-menu">
-																		<li>
-																			<!-- ACTIVE -->
-																			<span th:if="${theme.active} == false" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:activeTheme(\''+${theme.Id}+'\');'"><i class="icon-tick"></i><span class="span-title-three-dots-icons" th:text="#{themes.activate}" >Activate</span></span>
-																			<!-- INACTIVE -->
-																			<span th:if="${theme.active} == true" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:deactivateTheme(\''+${theme.Id}+'\');'"><i class="icon-close"></i><span class="span-title-three-dots-icons" th:text="#{themes.deactivate}" >Deactivate</span></span>
-																		</li>
-																		<li>
-																			<!-- DELETE -->
-																			<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:attr="onclick='javascript:deleteTheme(\''+${theme.Id}+'\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>
-																		</li>
-																	</ul>
-																	</span>
+																	<span
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{gen.edit}"
+																		th:data-original-title="#{gen.edit}"><i
+																		class="la la-edit font-hg"
+																		th:onclick="'javascript:navigateUrl(\'' + @{|/themes/edit/${theme.Id}/|} + '\');'"></i></span>
+																	<!-- ACTIVE -->
+																	<span
+																		th:if="${theme.active} == false"
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{themes.activate}"
+																		th:data-original-title="#{themes.activate}"><i
+																		class="la la-check font-hg"
+																		th:onclick="'javascript:activeTheme(\''+${theme.Id}+'\');'"></i></span>
+																	<!-- INACTIVE -->
+																	<span
+																		th:if="${theme.active} == true"
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{themes.deactivate}"
+																		th:data-original-title="#{themes.deactivate}"><i
+																		class="la la-times font-hg"
+																		th:onclick="'javascript:deactivateTheme(\''+${theme.Id}+'\');'"></i></span>
+																	<!-- DELETE -->
+																	<span
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{gen.deleteBtn}"
+																		th:data-original-title="#{gen.deleteBtn}"><i
+																		class="la la-trash font-hg"
+																		th:onclick="'javascript:deleteTheme(\''+${theme.Id}+'\');'"></i></span>
 																</div>
 															</td>
 														</tr>
 													</tbody>
-												</table>	
+												</table>
+
+												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
+												
+													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default  ">
+														<span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
+													</a>
+													<div id="column_toggler"
+														class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+														<label class="toggle-vis"
+															th:text="#{consolemenu.role}"	data-column="0"> Role</label>
+														<label class="toggle-vis"
+															th:text="#{gen.created}" data-column="1"> Created At</label>
+														<label class="toggle-vis"
+														th:text="#{consolemenu.updated}" data-column="2"> Updated At</label>
+														<label class="toggle-vis"
+														th:text="#{gen.active}" data-column="3">Active</label>
+														<label class="toggle-vis"
+															th:text="#{gen.options}" data-column="4"> Options</label>
+													</div>
+												</div>
 											</div>
 										</div>
 									</div>
-								</div>
-								<!--<div class="row"></div>
+								
+								<div class="row"></div>
 								<div class="pull-left">
-									// CANCEL
-									<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-								</div>-->
-							</div>
+									<!-- CANCEL -->
+									<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+								</div>
+							</div>							
 						</div>
 						<!-- END PORTLET BASIC LIGHT -->
+					</div>
+					<!-- END COL-12 -->
 				</div>
 				<!-- END MAIN ROW -->
 			</div>
@@ -243,20 +244,20 @@
 		class="page-footer"> </footer>
 
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}" ></script>
-	<script th:src="@{/static/js/layout.js}" ></script>
+	<script th:src="@{/static/js/app.js}" />
+	<script th:src="@{/static/js/layout.js}" />
 
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}" ></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}" ></script>
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}" ></script>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}" />
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}" />
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}" />
 	
 	<!-- JSON EDITOR -->	
-	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>
+	<script th:src="@{/static/vendor/json/jsoneditor.js}"/>
 	
-	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
-	<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
-	<script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>
+	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"/>
+	<script th:src="@{/static/vendor/ace/mode-json.js}"/>
+	<script th:src="@{/static/vendor/ace/theme-textmate.js}"/>
 
 
 	<script th:inline="javascript">		
@@ -271,79 +272,30 @@
 	
 	<script type="text/javascript" th:inline="javascript">
 	
-	$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
-		 $.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
-	});
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 
 		
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-		$('input.toggle-vis').on( 'change', function (e) {
+		$('label.toggle-vis').on( 'click', function (e) {
 			e.preventDefault(); 
 			var column = $('#themes').DataTable().column( $(this).attr('data-column') ); 
 			column.visible( ! column.visible() );
-			//$(this).toggleClass('text-muted line-through');			
-		});
-
-		// SEARCH FORM RESET
-		$('#reset_theme').on('click',function(){
-			$('#theme-name').val('');
-			$('#themes').DataTable().column(0).search('').draw();
-		});
-
-		// SEARCH FORM
-		$('#search_theme').on('click',function(){
-			$('#themes').DataTable().column(0).search( $('#theme-name').val()).draw();
+			$(this).toggleClass('text-muted line-through');			
 		});	
-
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-
-		var oTable = $('#themes').dataTable({
-	      "bAutoWidth": false
-	      });
 		
-
-		// HIDE COLUMN UPDATEDAT		
-		//$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
-		//$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
-
-		// SHOW/HIDE DATATABLES COLUMN INIT
-		$('#divcreate').prepend($('#dataTable-vis-toggle'));		
-		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+	});
+	
+	// MAIN WHEN LOAD
+	$(window).load(function(){ 
+		
+		// SHOW/HIDE DATATABLES COLUMN INIT 		
+		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
 
-		$('.dataTables_info').addClass('col-md-6 col-sm-6');
-		$('.dataTables_length').addClass('col-md-6 col-sm-6');
-		$('#themes_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
-		$('#themes_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
-
-		$('#search-on-title').append($('.dataTables_filter > label > input'));
-		$('#search-on-title > input').removeClass('input-xsmall')
-		$('#themes_wrapper > div:nth-child(1)').hide();
-
-		$('.dataTables_paginate').attr('style', 'float:right !important');
-
-		$('.download-menu').parent().on('shown.bs.dropdown', function () {	        
-			 var $menu = $("ul", this);	        
-	         offset = $menu.offset();
-	         position = $menu.position();
-	         $('body').append($menu);
-	         $menu.show();
-	         $menu.css('position', 'absolute');
-	         $menu.css('top', (offset.top) +'px');
-	         $menu.css('left',(offset.left) +'px');
-	         $menu.css('min-width', '100px');
-	        $(this).data("myDropdownMenu", $menu);
-	     });
-		$('.download-menu').parent().on('hide.bs.dropdown', function () {
-	         $(this).append($(this).data("myDropdownMenu"));
-	         $(this).data("myDropdownMenu").removeAttr('style');
-	     });
-		$("#contenedor-tabla-outside").removeClass("hidden");
-		$('#themes').DataTable().columns.adjust();
+		// HIDE COLUMN UPDATEDAT		
+		$.each([2],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		
 	});
 	
 	//<![CDATA[
@@ -353,22 +305,23 @@
 	
 	function deleteTheme (id){
 		$.confirm({
-			title: [[#{themes.deleteDialog.title}]],
+			title: [[#{gen.deleteBtn}]],
 			theme: 'light',
 			columnClass: 'medium',
 			content: [[#{themes.deleteDialog}]],
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
+			closeIcon: true,
 			buttons: {
 				close: {
-					text: [[#{gen.cancelBtn}]],
-					btnClass: 'btn btn-outline blue dialog',
+					text: [[#{gen.closeBtn}]],
+					btnClass: 'btn btn-sm btn-outline btn-circle blue',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				Ok: {
-					text: [[#{gen.deleteBtn}]],
-					btnClass: 'btn btn-primary',
+					text: "Ok",
+					btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
 					action: function(){
 						var csrf_value = $("meta[name='_csrf']").attr("content");
 				    	var csrf_header = $("meta[name='_csrf_header']").attr("content");
@@ -378,10 +331,10 @@
 								headers: {
 									[csrf_header]: csrf_value
 							    }
-						}).done(function(response){
+						}).success(function(response){
 								navigateUrl("/controlpanel/themes/list");}
 						).fail(function(response, data){
-								$.alert({title: 'Error', theme: 'light', style: 'red', content: "TO-DO: Completar captura error"});
+								$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: "TO-DO: Completar captura error"});
 								}		
 						) 
 					}											
@@ -394,22 +347,23 @@
 	
 	function activeTheme (id){
 		$.confirm({
-			title: [[#{themes.activateDialog.title}]],
+			title: [[#{themes.activate}]],
 			theme: 'light',
 			columnClass: 'medium',
 			content: [[#{themes.activateDialog}]],
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
+			closeIcon: true,
 			buttons: {
 				close: {
-					text: [[#{gen.cancelBtn}]],
-					btnClass: 'btn btn-outline blue dialog',
+					text: [[#{gen.closeBtn}]],
+					btnClass: 'btn btn-sm btn-outline btn-circle blue',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				Ok: {
-					text: [[#{gen.confirmBtn}]],
-					btnClass: 'btn btn-primary',
+					text: "Ok",
+					btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
 					action: function(){
 						var csrf_value = $("meta[name='_csrf']").attr("content");
 				    	var csrf_header = $("meta[name='_csrf_header']").attr("content");
@@ -419,10 +373,10 @@
 								headers: {
 									[csrf_header]: csrf_value
 							    }
-						}).done(function(response){
+						}).success(function(response){
 								navigateUrl("/controlpanel/themes/list");}
 							).fail(function(response, data){
-								$.alert({title: 'Error', theme: 'light', style: 'red', content: "TO-DO: Completar captura error"});
+								$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: "TO-DO: Completar captura error"});
 								}		
 							) 
 						}											
@@ -435,22 +389,23 @@
 	
 	function deactivateTheme (id){
 		$.confirm({
-			title: [[#{themes.deactivateDialog.title}]],
+			title: [[#{themes.deactivate}]],
 			theme: 'light',
 			columnClass: 'medium',
 			content: [[#{themes.deactivateDialog}]],
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
+			closeIcon: true,
 			buttons: {
 				close: {
-					text: [[#{gen.cancelBtn}]],
-					btnClass: 'btn btn-outline blue dialog',
+					text: [[#{gen.closeBtn}]],
+					btnClass: 'btn btn-sm btn-outline btn-circle blue',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				Ok: {
-					text: [[#{gen.confirmBtn}]],
-					btnClass: 'btn btn-primary',
+					text: "Ok",
+					btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
 					action: function(){
 						var csrf_value = $("meta[name='_csrf']").attr("content");
 				    	var csrf_header = $("meta[name='_csrf_header']").attr("content");
@@ -460,10 +415,10 @@
 								headers: {
 									[csrf_header]: csrf_value
 							    }
-						}).done(function(response){
+						}).success(function(response){
 								navigateUrl("/controlpanel/themes/list");}
 							).fail(function(response, data){
-								$.alert({title: 'Error', theme: 'light', style: 'red', content: "TO-DO: Completar captura error"});
+								$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: "TO-DO: Completar captura error"});
 								}		
 							) 
 						}											
@@ -476,22 +431,23 @@
 	
 	function defaultTheme (){		
 		$.confirm({
-			title: [[#{themes.byDefautDialog.title}]],
+			title: [[#{themes.byDefault}]],
 			theme: 'light',
 			columnClass: 'medium',
 			content: [[#{themes.byDefautDialog}]],
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
+			closeIcon: true,
 			buttons: {
 				close: {
-					text: [[#{gen.cancelBtn}]],
-					btnClass: 'btn btn-outline blue dialog',
+					text: [[#{gen.closeBtn}]],
+					btnClass: 'btn btn-sm btn-outline btn-circle blue',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				Ok: {
-					text: [[#{gen.confirmBtn}]],
-					btnClass: 'btn btn-primary',
+					text: "Ok",
+					btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
 					action: function(){
 						var csrf_value = $("meta[name='_csrf']").attr("content");
 				    	var csrf_header = $("meta[name='_csrf_header']").attr("content");
@@ -500,10 +456,10 @@
 								headers: {
 									[csrf_header]: csrf_value
 							    }
-						}).done(function(response){
+						}).success(function(response){
 								navigateUrl("/controlpanel/themes/list");}
 							).fail(function(response, data){
-								$.alert({title: 'Error', theme: 'light', style: 'red', content: "TO-DO: Completar captura error"});
+								$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: "TO-DO: Completar captura error"});
 								}		
 							) 
 						}											

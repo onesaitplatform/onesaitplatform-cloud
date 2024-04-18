@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,84 +14,69 @@
  */
 package com.minsait.onesait.platform.business.services.virtual.datasources;
 
-import static com.minsait.onesait.platform.encryptor.config.JasyptConfig.JASYPT_BEAN;
-
+import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
-import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
-import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.OntologyVirtualDatasourceRepository;
-import com.minsait.onesait.platform.config.repository.OntologyVirtualRepository;
-import com.minsait.onesait.platform.config.services.exceptions.VirtualDatasourceServiceException;
-import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
-import com.minsait.onesait.platform.config.services.user.UserService;
-import com.minsait.onesait.platform.encryptor.config.JasyptConfig;
-import com.minsait.onesait.platform.persistence.external.generator.helper.SQLHelper;
-import com.minsait.onesait.platform.persistence.external.virtual.VirtualDatasourcesManager;
+import com.minsait.onesait.platform.persistence.external.exception.SGDBNotSupportedException;
+import com.minsait.onesait.platform.persistence.external.virtual.helper.VirtualOntologyHelper;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Service
-@DependsOn(JASYPT_BEAN)
 @Slf4j
 public class VirtualDatasourceServiceImpl implements VirtualDatasourceService {
 
 	@Autowired
-	@Qualifier("VirtualDatasourcesManagerImpl")
-	private VirtualDatasourcesManager virtualDatasourcesManager;
+	OntologyVirtualDatasourceRepository ontologyVirtualDatasourceRepository;
 
 	@Autowired
-	private OntologyVirtualDatasourceRepository ontologyVirtualDatasourceRepository;
+	@Qualifier("OracleVirtualOntologyHelper")
+	private VirtualOntologyHelper oracleVirtualOntologyHelper;
 
 	@Autowired
-	private OntologyVirtualRepository ontologyVirtualRepository;
+	@Qualifier("MysqlVirtualOntologyHelper")
+	private VirtualOntologyHelper mysqlVirtualOntologyHelper;
 
 	@Autowired
-	private UserService userService;
+	@Qualifier("MariaDBVirtualOntologyHelper")
+	private VirtualOntologyHelper mariaVirtualOntologyHelper;
 
 	@Autowired
-	private OPResourceService resourceService;
+	@Qualifier("PostgreSQLVirtualOntologyHelper")
+	private VirtualOntologyHelper postgreVirtualOntologyHelper;
 
-	@Override
-	public List<OntologyVirtualDatasource> getAllByDatasourceNameAndUser(String identification, String sessionUserId) {
-		final User sessionUser = userService.getUser(sessionUserId);
-		if (userService.isUserAdministrator(sessionUser)) {
-			if (identification == null || identification.trim().equals("")) {
-				return getAllDatasources();
-			} else {
-				return ontologyVirtualDatasourceRepository
-						.findAllByDatasourceNameLikeOrderByDatasourceNameAsc(identification);
-			}
-		} else {
-			if (identification == null || identification.trim().equals("")) {
-				return getAllDatasourcesByUser(sessionUser);
-			} else {
-				return ontologyVirtualDatasourceRepository
-						.findAllByDatasourceNameLikeAndUserIdOrIsPublicTrueOrderByDatasourceNameAsc(identification,
-								sessionUser);
-			}
-		}
-	}
+	@Autowired
+	@Qualifier("SQLServerVirtualOntologyHelper")
+	private VirtualOntologyHelper sqlserverVirtualOntologyHelper;
+
+	@Autowired
+	@Qualifier("ImpalaVirtualOntologyHelper")
+	private VirtualOntologyHelper impalaVirtualOntologyHelper;
+
+	@Autowired
+	@Qualifier("HiveVirtualOntologyHelper")
+	private VirtualOntologyHelper hiveVirtualOntologyHelper;
 
 	@Override
 	public List<String> getAllIdentifications() {
 		final List<OntologyVirtualDatasource> datasources = ontologyVirtualDatasourceRepository
-				.findAllByOrderByIdentificationAsc();
-		return datasources.stream().map(OntologyVirtualDatasource::getIdentification).collect(Collectors.toList());
+				.findAllByOrderByDatasourceNameAsc();
+		final List<String> identifications = new ArrayList<String>();
+		for (final OntologyVirtualDatasource datasource : datasources) {
+			identifications.add(datasource.getDatasourceName());
+
+		}
+		return identifications;
 	}
 
 	@Override
@@ -100,79 +85,79 @@ public class VirtualDatasourceServiceImpl implements VirtualDatasourceService {
 	}
 
 	@Override
-	public List<OntologyVirtualDatasource> getAllDatasourcesByUser(User user) {
-		return ontologyVirtualDatasourceRepository.findByUserOrIsPublicTrueOrAccess(user);
-	}
-
-	@Override
-	public void createDatasource(final OntologyVirtualDatasource datasource) throws GenericOPException {
-		datasource.setCredentials(JasyptConfig.getEncryptor().encrypt(datasource.getCredentials()));
-
-		if (datasource.getIdentification() != null && !datasource.getIdentification().trim().equals("")) {
-			OntologyVirtualDatasource datasourceBD = ontologyVirtualDatasourceRepository
-					.findByIdentification(datasource.getIdentification());
-			if (datasourceBD != null) {
-				throw new GenericOPException("Datasource Identification already exists");
-			}
-		}
-
-		if (datasource.getDatasourceDomain() != null && !datasource.getDatasourceDomain().trim().equals("")) {
-		    List<OntologyVirtualDatasource> datasourceList = ontologyVirtualDatasourceRepository
-                .findByDatasourceDomain(datasource.getDatasourceDomain());
-		    if (datasourceList != null && !datasourceList.isEmpty()) {
-                throw new GenericOPException("Datasource Domain already exists");
-            }
-		}
-
-		ontologyVirtualDatasourceRepository.saveAndFlush(datasource);
-	}
-
-	@Override
-	public OntologyVirtualDatasource getDatasourceById(final String id) {
-		return ontologyVirtualDatasourceRepository.findById(id).orElse(null);
-	}
-	
-	@Override
-	public List <OntologyVirtualDatasource> getDatasourceByDomain (final String domain) {
-		return (ontologyVirtualDatasourceRepository.findByDatasourceDomain(domain));
-	}
-	
-	@Override
-	public void updateOntology(final OntologyVirtualDatasource datasource, Boolean maintainCredentials,
-			String oldCredentials) {
-		setUserPasswordDB(datasource, maintainCredentials, oldCredentials);
+	public void createDatasource(OntologyVirtualDatasource datasource) {
 		ontologyVirtualDatasourceRepository.save(datasource);
-		virtualDatasourcesManager.setDatasourceDescriptor(datasource.getIdentification());
 	}
 
 	@Override
-	public void deleteDatasource(final OntologyVirtualDatasource datasource) {
+	public OntologyVirtualDatasource getDatasourceById(String id) {
+		final OntologyVirtualDatasource datasource = ontologyVirtualDatasourceRepository.findById(id);
+
+		if (datasource != null) {
+			return datasource;
+		} else {
+			return null;
+		}
+
+	}
+
+	@Override
+	public void updateOntology(OntologyVirtualDatasource datasource) {
+		ontologyVirtualDatasourceRepository.save(datasource);
+	}
+
+	@Override
+	public void deleteDatasource(OntologyVirtualDatasource datasource) {
 		ontologyVirtualDatasourceRepository.delete(datasource);
 	}
 
 	@Override
-	public Boolean checkConnection(final String dataSourceName, final String user, final String credentials,
-			final String sgdb, final String url, final String queryLimit) throws GenericOPException {
-		final VirtualDatasourceType type = VirtualDatasourceType.valueOf(sgdb);
-		final String driverClassName = virtualDatasourcesManager.getDriverClassName(type);
+	public Boolean checkConnection(String datasourceName, String user, String credentials, String sgdb, String url,
+			String queryLimit) throws GenericOPException {
+
+		String driverClassName;
+		VirtualDatasourceType type = VirtualDatasourceType.valueOf(sgdb);
+
+		switch (VirtualDatasourceType.valueOf(sgdb)) {// Esto tiene que recuperar el BasicDataSource
+		case ORACLE:
+			driverClassName = oracle.jdbc.driver.OracleDriver.class.getName();
+			break;
+		case MYSQL:
+			driverClassName = com.mysql.jdbc.Driver.class.getName();
+			break;
+		case MARIADB:
+			driverClassName = org.mariadb.jdbc.Driver.class.getName();
+			break;
+		case POSTGRESQL:
+			driverClassName = org.postgresql.Driver.class.getName();
+			break;
+		case SQLSERVER:
+			driverClassName = com.microsoft.sqlserver.jdbc.SQLServerDriver.class.getName();
+			break;
+		case IMPALA:
+			driverClassName = org.apache.hive.jdbc.HiveDriver.class.getName();
+			break;
+		case HIVE:
+			driverClassName = org.apache.hive.jdbc.HiveDriver.class.getName();
+			break;
+		default:
+			throw new SGDBNotSupportedException("Not supported SGDB: " + sgdb);
+
+		}
 
 		// Only to test connection from control panel. It has no sense to create a
 		// pooling connection here
-		final DriverManagerDataSource driverManagerDatasource = new DriverManagerDataSource();
+		DriverManagerDataSource driverManagerDatasource = new DriverManagerDataSource();
 		driverManagerDatasource.setDriverClassName(driverClassName);
 		driverManagerDatasource.setUrl(url);
-		if (user != null && !"".equals(user)) {
-			driverManagerDatasource.setUsername(user);
-		}
-		if (credentials != null && !"".equals(credentials)) {
-			driverManagerDatasource.setPassword(credentials);
-		}
+		driverManagerDatasource.setUsername(user);
+		driverManagerDatasource.setPassword(credentials);
 
-		final JdbcTemplate jdbcTemplate = new JdbcTemplate(driverManagerDatasource);
-		final SQLHelper helper = virtualDatasourcesManager.getOntologyHelper(type);
+		JdbcTemplate jdbcTemplate = new JdbcTemplate(driverManagerDatasource);
+		VirtualOntologyHelper helper = getOntologyHelper(type);
 
 		try {
-			jdbcTemplate.queryForList(helper.getValidateQuery(), String.class);
+			jdbcTemplate.queryForList(helper.getAllTablesStatement(), String.class);
 			return true;
 		} catch (Exception e) {
 			log.error("Error checking connection to datasource", e);
@@ -181,15 +166,15 @@ public class VirtualDatasourceServiceImpl implements VirtualDatasourceService {
 	}
 
 	@Override
-	public Boolean changePublic(final String dataSource) {
-		final OntologyVirtualDatasource virtualDataSource = ontologyVirtualDatasourceRepository
-				.findByIdentification(dataSource);
-		if (virtualDataSource != null) {
-			if (virtualDataSource.isPublic())
-				virtualDataSource.setPublic(false);
+	public Boolean changePublic(String datasource) {
+		OntologyVirtualDatasource virtualDatasource = ontologyVirtualDatasourceRepository
+				.findByDatasourceName(datasource);
+		if (virtualDatasource != null) {
+			if (virtualDatasource.isPublic())
+				virtualDatasource.setPublic(false);
 			else
-				virtualDataSource.setPublic(true);
-			ontologyVirtualDatasourceRepository.save(virtualDataSource);
+				virtualDatasource.setPublic(true);
+			ontologyVirtualDatasourceRepository.save(virtualDatasource);
 			return true;
 		}
 		return false;
@@ -197,90 +182,68 @@ public class VirtualDatasourceServiceImpl implements VirtualDatasourceService {
 	}
 
 	@Override
-	public Boolean checkConnectionExtern(final String dataSourceName) throws GenericOPException {
-		final OntologyVirtualDatasource dataSource = ontologyVirtualDatasourceRepository
-				.findByIdentification(dataSourceName);
-		String user = dataSource.getUserId();
-		String credentials = dataSource.getCredentials();
-		return this.checkConnection(dataSourceName, user,
-				(credentials != null ? JasyptConfig.getEncryptor().decrypt(credentials) : null),
-				dataSource.getSgdb().toString(), dataSource.getConnectionString(),
-				String.valueOf(dataSource.getQueryLimit()));
-	}
+	public Boolean checkConnectionExtern(String datasourceName) throws GenericOPException {
+		OntologyVirtualDatasource ovdatasource = ontologyVirtualDatasourceRepository
+				.findByDatasourceName(datasourceName);
+		// VirtualDataSourceDescriptor datasource = new VirtualDataSourceDescriptor();
 
-	private VirtualDatasourceType getTypeFromOntology(final String ontology) {
-		return ontologyVirtualRepository.findOntologyVirtualDatasourceByOntologyIdentification(ontology).getSgdb();
-	}
+		String driverClassName;
+		VirtualDatasourceType type = VirtualDatasourceType.valueOf(ovdatasource.getSgdb().toString());
+		switch (type) {
+		case ORACLE:
+			driverClassName = oracle.jdbc.driver.OracleDriver.class.getName();
+			// datasource.setVirtualDatasourceType(ovdatasource.getSgdb());
+			break;
+		case MYSQL:
+			driverClassName = com.mysql.jdbc.Driver.class.getName();
+			// datasource.setVirtualDatasourceType(VirtualDatasourceType.MYSQL);
+			break;
+		default:
+			throw new SGDBNotSupportedException("Not supported SGDB");
 
-	// Set user and password to null when they are empty string and no encryption
-	private void setUserPasswordDB(OntologyVirtualDatasource datasource, Boolean maintainCredentials,
-			String oldCredentials) {
-		if ("".equals(datasource.getUserId())) {
-			datasource.setUserId(null);
 		}
-		if (!maintainCredentials) {
-			if ("".equals(datasource.getCredentials())) {
-				datasource.setCredentials(null);
-			} else {
-				datasource.setCredentials(JasyptConfig.getEncryptor().encrypt(datasource.getCredentials()));
-			}
-		} else {
-			datasource.setCredentials(oldCredentials);
-		}
-	}
 
-	@Override
-	public String getUniqueColumn(final String ontology) {
-		return this.ontologyVirtualRepository.findOntologyVirtualObjectIdByOntologyIdentification(ontology);
-	}
+		// Only to test connection from control panel. It has no sense to create a
+		// pooling connection here
+		DriverManagerDataSource driverManagerDatasource = new DriverManagerDataSource();
+		driverManagerDatasource.setDriverClassName(driverClassName);
+		driverManagerDatasource.setUrl(ovdatasource.getConnectionString());
+		driverManagerDatasource.setUsername(ovdatasource.getUser());
+		driverManagerDatasource.setPassword(ovdatasource.getCredentials());
 
-	@Override
-	public OntologyVirtualDatasource getDatasourceByIdAndUserId(String id, String sessionUserId) {
-		final User sessionUser = userService.getUser(sessionUserId);
-		if (userService.isUserAdministrator(sessionUser)) {
-			return ontologyVirtualDatasourceRepository.findById(id).orElse(null);
-		} else {
-			return ontologyVirtualDatasourceRepository.findByIdAndUser(id, sessionUser);
-		}
-	}
+		JdbcTemplate jdbcTemplate = new JdbcTemplate(driverManagerDatasource);
 
-	@Override
-	public List <OntologyVirtual> getAssociationExternalDatabase(String datasourcesId) {
-		
-		return ontologyVirtualRepository.findByDatasourcesId(datasourcesId);
-	}
-	
-		
-	@Override
-	public OntologyVirtualDatasource getDatasourceByIdAndUserIdOrIsPublic(String id, String sessionUserId,
-			ResourceAccessType type) {
+		VirtualOntologyHelper helper = getOntologyHelper(type);
 
-		final OntologyVirtualDatasource datasource = ontologyVirtualDatasourceRepository.findById(id).orElse(null);
-		final User sessionUser = userService.getUser(sessionUserId);
-		if (datasource != null) {
-			if (hasUserPermission(sessionUser, datasource, type)) {
-				return datasource;
-			} else {
-				throw new VirtualDatasourceServiceException("The user is not authorized.");
-			}
-		} else {
-			return null;
-		}
-	}
-
-	private boolean hasUserPermission(User user, OntologyVirtualDatasource datasource, ResourceAccessType type) {
-		if (datasource == null || user == null) {
-			return false;
-		}
-		if (userService.isUserAdministrator(user)) {
+		try {
+			jdbcTemplate.queryForList(helper.getAllTablesStatement(), String.class);
 			return true;
-		} else if (datasource.getUser().getUserId().equals(user.getUserId())) {
-			return true;
-		} else if (datasource.isPublic() && type.equals(ResourceAccessType.VIEW)) {
-			return true;
-		} else {
-			return resourceService.hasAccess(user.getUserId(), datasource.getId(), type);
+		} catch (Exception e) {
+			log.error("Error checking connection to datasource", e);
+			throw new GenericOPException(e.getMessage());
 		}
+	}
+
+	private VirtualOntologyHelper getOntologyHelper(VirtualDatasourceType type) {
+		switch (type) {
+		case ORACLE:
+			return oracleVirtualOntologyHelper;
+		case MYSQL:
+			return mysqlVirtualOntologyHelper;
+		case MARIADB:
+			return mariaVirtualOntologyHelper;
+		case POSTGRESQL:
+			return postgreVirtualOntologyHelper;
+		case SQLSERVER:
+			return sqlserverVirtualOntologyHelper;
+		case IMPALA:
+			return impalaVirtualOntologyHelper;
+		case HIVE:
+			return hiveVirtualOntologyHelper;
+		default:
+			throw new SGDBNotSupportedException("Not supported SGDB: " + type);
+		}
+
 	}
 
 }

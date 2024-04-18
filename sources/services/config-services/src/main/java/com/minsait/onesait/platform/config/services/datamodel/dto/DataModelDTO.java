@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ public class DataModelDTO implements java.io.Serializable {
 		dto.id = datamodel.getId();
 		dto.user = datamodel.getUser().getUserId();
 		dto.jsonSchema = datamodel.getJsonSchema();
-		dto.name = datamodel.getIdentification();
+		dto.name = datamodel.getName();
 		dto.type = datamodel.getType();
 		dto.description = datamodel.getDescription();
 		dto.labels = datamodel.getLabels();
@@ -79,7 +79,7 @@ public class DataModelDTO implements java.io.Serializable {
 			dto.id = dm.getId();
 			dto.user = dm.getUser().getUserId();
 			dto.jsonSchema = dm.getJsonSchema();
-			dto.name = dm.getIdentification();
+			dto.name = dm.getName();
 			dto.type = dm.getType();
 			dto.description = dm.getDescription();
 			dto.labels = dm.getLabels();

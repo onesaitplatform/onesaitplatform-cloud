@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,25 @@
  */
 package com.minsait.onesait.platform.persistence.mongodb.sql;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import org.junit.jupiter.api.Test;
+import java.io.StringReader;
+import java.util.List;
+import java.util.stream.IntStream;
+
+import org.junit.Test;
 
 import com.minsait.onesait.platform.persistence.mongodb.tools.sql.Sql2NativeTool;
+import com.minsait.onesait.platform.persistence.mongodb.tools.sql.UpdateSetVisitorAdapter;
+import com.minsait.onesait.platform.persistence.mongodb.tools.sql.WhereExpressionVisitorAdapter;
 
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.update.Update;
 
 @Slf4j
 public class SqlParserTest {
@@ -33,10 +42,37 @@ public class SqlParserTest {
 	@Test
 	public void UpdateSqlGetsTranslated() throws JSQLParserException {
 		final String update = "UPDATE HelsinkiPopulation SET Helsinki.year=2018, Helsinki.population=10000 WHERE Helsinki.year > 1875 AND Helsinki.year != 2000 ";
+		final Update statement = (Update) parserManager.parse(new StringReader(update));
+		final List<Column> columns = statement.getColumns();
 
-		final String mongoDbQuery = Sql2NativeTool.translateSql(update);
+		assertEquals("Helsinki.year", columns.get(0).getFullyQualifiedName());
+		assertEquals("HelsinkiPopulation", statement.getTables().get(0).getFullyQualifiedName());
 
-		assertEquals(mongoDbQuery,
+		final List<Expression> expressions = statement.getExpressions();
+
+		final StringBuilder mongoDbQuery = new StringBuilder();
+		mongoDbQuery.append("db.".concat(statement.getTables().get(0).getFullyQualifiedName()).concat(".update({"));
+
+		final StringBuilder random = new StringBuilder();
+
+		final Expression where = statement.getWhere();
+		where.accept(new WhereExpressionVisitorAdapter(random, false, 0, false, 0));
+		if (random.toString().endsWith(","))
+			random.deleteCharAt(random.length() - 1);
+		random.append("}");
+
+		mongoDbQuery.append(random + ",{");
+
+		IntStream.range(0, columns.size()).forEach(i -> {
+			final StringBuilder filter = new StringBuilder();
+			if (i != 0)
+				filter.append(",");
+			filter.append("'" + columns.get(i).getFullyQualifiedName() + "':");
+			expressions.get(i).accept(new UpdateSetVisitorAdapter(filter, i));
+			mongoDbQuery.append(filter);
+		});
+		mongoDbQuery.append("})");
+		assertEquals(mongoDbQuery.toString(),
 				"db.HelsinkiPopulation.update({$and:[{'Helsinki.year':{$gt:1875}},{'Helsinki.year':{$ne:2000}}]},{'Helsinki.year':2018,'Helsinki.population':10000})");
 
 	}
@@ -62,7 +98,7 @@ public class SqlParserTest {
 
 	@Test
 	public void UpdateSelectWithOID() {
-		final String update = "UPDATE DemoDate SET DemoDate.id='#5' WHERE _id=OID('5c6694fe032037138a4b7615')";
+		final String update = "UPDATE DemoDate SET DemoDate.id='#5' WHERE _id='5c6694fe032037138a4b7615'";
 		final String translatedQuery = Sql2NativeTool.translateSql(update);
 		assertTrue(translatedQuery.contains("ObjectId"));
 		log.info("{}", update);
@@ -71,7 +107,7 @@ public class SqlParserTest {
 
 	@Test
 	public void UpdateSelectWithOID_andDoubleQuotes() {
-		final String update = "UPDATE DemoDate SET DemoDate.id='#5' WHERE _id=OID(\"5c6694fe032037138a4b7615\")";
+		final String update = "UPDATE DemoDate SET DemoDate.id='#5' WHERE _id=\"5c6694fe032037138a4b7615\"";
 		final String translatedQuery = Sql2NativeTool.translateSql(update);
 		assertTrue(translatedQuery.contains("ObjectId"));
 		log.info("{}", update);

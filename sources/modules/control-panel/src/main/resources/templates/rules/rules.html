@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -70,11 +70,8 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM-->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/rule-domains/list}"> <span th:text="#{rules.domains}">My Rules</span></a><i class="fa fa-angle-right"></i></li>
-						<li>
-							<span th:text="${domainIdentification}">Id</span>
-							<i class="fa fa-angle-right"></i>
-						</li>
 						<li>
 							<span th:text="#{rules.my}">My rules</span>
 						</li>
@@ -83,114 +80,96 @@
 				<!-- END PAGE BAR -->
 
 				<!-- BEGIN PAGE TITLE-->
-				<h1 class="page-title hide "><span th:text="#{name.app}"> onesait platform Control Panel</span></h1>
+				<h1 class="page-title hide ">
+					<span th:text="#{name.app}"> onesait platform Control Panel</span>
+				</h1>
 				<!-- END PAGE TITLE-->
 
-				<div id="header">
-					<div class="row pageCreateHeader">
-						<div class="col-md-6 col-sm-6 col-xs-12">
-							<div class="margin-top-4">
-								<span  class="caption-subject" th:text="#{rules.my} "> My rules</span>
-							</div>
-						</div>
-						
-						<div class="col-md-6 col-sm-6 col-xs-12">
-							<div class="pull-right">
-								<!-- CREATE  -->
-								<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-primary btn-primary-save" id="btn-rule-create"><span th:text="#{gen.create}">New </span></button>
-							</div>
-						</div>
-					</div>
-				</div>
-
 				<!-- MAIN ROW -->
-				<div class="mainPanel">
-					<div class="row display-hide">
-						<!-- BEGIN ALERTS ZONE -->
-						<div class="col-md-12 alert-zone">
-							<div class="alert alert-danger display-hide">
-								<button class="close" data-close="alert"></button><span th:text="#{gen.form.error}">You have some form errors. Please check below.</span>
-							</div>										
-							<div class="alert alert-success display-hide">
-								<button class="close" data-close="alert"></button> <span th:text="#{gen.form.success}">Your form validation is successful!</span>
-							</div>								
-						</div>
-					</div>
-					<div class="row main">
-						<div class="col-md-3 col-sm-3 col-xs-3">
-							<div id="rulesJsTree"></div>
-						</div>
-						<div class="col-md-9 col-sm-9 col-xs-9">
-							<div style="height:600px" id="drlCode"></div>
-							<div id="decisionTable-div" class="row hidden">
-								<div class="col-md-12 col-sm-12 col-xs-12 margin-top-20">
-									<div class="col-md-12 col-sm-12 col-xs-12 margin-top-20">
-										<div class="col-md-4" style="margin-top: 25px;">	
-											<div id="contentForm" class="margin-bottom-10">
-							                	 <button id="upload" type="button" class="btn btn-outline btn-circle blue" onclick="$('#buttonLoadFile').click();" value="Select"> <i class="fa fa-file-archive-o" style="padding-right:4px;"></i><span th:text="#{rules.load.table}"></span></button>
-											      <br/>
-											      <input class="form-group button_text hide" id="buttonLoadFile" type="file" name="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"/>
-											  	  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-							                </div>
-										</div>
-										<div class="col-md-4 col-sm-4 col-xs-12">
-											<div class="form-group">
-												<label th:text="#{rules.file.loaded}">Name</label><span class="required"> (*)</span>
-												<input readonly="readonly" id="file_name" type="text" name="file_name" th:required="true" maxlength="100" class="form-control " th:placeholder="#{rules.file.loaded}"/>
-											</div>
-										</div>
-									</div>
+				<div class="row">
+					<div class="col-md-12">
+						<div class="portlet light container">
+							<div class="portlet-title">
+								<div class="caption">
+									<!-- FORM TITLE -->
+									<span  class="caption-subject" th:text="#{rules.my} "> My rules</span>
 								</div>
-								<table id='table'></table>
-							</div>
-							<div class="form-actions pull-right">
-								<button disabled='disabled' id="testBtn" type="submit" class="btn btn-primary btn-primary-save" name="test" th:value="#{rules.test}" ><span th:text="#{rules.test}"> Test</span></button>
-								<button disabled='disabled' id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update" th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>
-								<button disabled='disabled' id="downloadBtn" type="submit" class="btn btn-primary btn-primary-save" name="update" th:value="#{binaryfiles.download}" ><span th:text="#{binaryfiles.download}"> Download</span></button>
-							</div>
-						</div>
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title="">
+									</a> <a href="" class="fullscreen" data-original-title="" title="">
+									</a>
+								</div>
+								<div class="actions margin-right-20">
+									<div class="btn-group">										
+										<!-- <button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR')" id="search-toggle" type="button" class="btn btn-circle btn-outline blue" onclick="$('#searchFilter').toggleClass('hide')"><span th:text="#{gen.search}"> Search </span></button> -->																												
+										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER')" type="button" class="btn btn-circle btn-outline btn-primary" id="btn-rule-create"><span th:text="#{gen.create}">New </span></button>
+									</div>										
+								</div>
 
-					</div>
-				</div>
-				<!-- Modal JSON -->
-				<div id="modal-json" class="modal fade" role="dialog">
-					<div class="modal-dialog modal-xl">
-						<!-- Modal content-->
-						<div class="modal-content">
-							<div class="modal-header">
-								<button type="button" class="close" data-dismiss="modal"></button>
-								 <h4 class="modal-title" th:text="#{rules.test.header}">Test rule</h4>
 							</div>
-							<div class="modal-body" style="padding: 32px;">
-								<button id="upload_test" type="button" class="btn btn-outline btn-circle blue pull-left" onclick="$('#file2').click();" value=""> <i class="fa fa-file-archive-o" style="padding-right:4px;"></i><span th:text="#{binaryfiles.select}"></span></button>
-								<input id="file2" type="file" class="form-control-file hide" onchange="Rules.List.loadJsonFromDoc(this.files)" accept=".json"/>
+							<div class="portlet-body" style="display: block; height: auto;">
+								<div class="col-md-12 alert-zone">
+									<div class="alert alert-danger display-hide">
+										<button class="close" data-close="alert"></button>
+										<span id="errors">You have some form errors. Please check below.</span>
+									</div>
+								</div><!-- //ALERTS ZONE -->
+
 								<div class="row">
-									<div class="col-md-12 col-sm-12 col-xs-12">
-										<div class="form-group">
-											<label th:text="#{rules.input}">JSON Input</label>														
-											
-											<div style="height:250px" id="jsonCodeInput"></div>
+									
+									<div class="col-md-9 col-sm-9 col-xs-9">
+										<div style="height:600px" id="drlCode"></div>
+										<div class="form-actions pull-right">
+										<!-- UPDATE -->
+											<button disabled='disabled' id="testBtn" type="submit" class="btn btn-circle btn-primary" name="test" th:value="#{rules.test}" ><span th:text="#{rules.test}"> Test</span></button>
+											<button disabled='disabled' id="updateBtn" type="submit" class="btn btn-circle btn-primary" name="update" th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
 										</div>
-										<div class="clearfix"></div>
+									</div>
+									<div class="col-md-3 col-sm-3 col-xs-3">
+										<div id="rulesJsTree"></div>
 									</div>
 								</div>
-								<div class="row">
-									<div class="col-md-12 col-sm-12 col-xs-12">
-										<div class="form-group">
-											<label th:text="#{rules.output}">JSON output</label>														
-											
-											<div style="height:250px" id="jsonCodeOutput"></div>
+							</div>
+							<!-- Modal JSON -->
+							<div id="modal-json" class="modal fade" role="dialog">
+								<div class="modal-dialog modal-xl">
+									<!-- Modal content-->
+									<div class="modal-content">
+										<div class="modal-header">
+											<button type="button" class="close" data-dismiss="modal"></button>
+											 <h4 class="modal-title" th:text="#{rules.test.header}">Test rule</h4>
 										</div>
-										<div class="clearfix"></div>
+										<div class="modal-body" style="padding: 32px;">
+											<div class="row">
+												<div class="col-md-12 col-sm-12 col-xs-12">
+													<div class="form-group">
+														<label th:text="#{rules.input}">JSON Input</label>														
+														
+														<div style="height:250px" id="jsonCodeInput"></div>
+													</div>
+													<div class="clearfix"></div>
+												</div>
+											</div>
+											<div class="row">
+												<div class="col-md-12 col-sm-12 col-xs-12">
+													<div class="form-group">
+														<label th:text="#{rules.output}">JSON output</label>														
+														
+														<div style="height:250px" id="jsonCodeOutput"></div>
+													</div>
+													<div class="clearfix"></div>
+												</div>
+											</div>
+										</div>									      
+										<div class="modal-footer">
+											<button type="button" class="btn btn-circle btn-outline btn-primary" data-dismiss="modal" th:text="#{binaryfiles.close}">Close</button>
+											<button id="testBtnSubmit" type="button" class="btn btn-circle btn-outline btn-primary"  th:text="#{rules.test}">Test</button>
+										</div>
 									</div>
 								</div>
-							</div>									      
-							<div class="modal-footer">
-								<button type="button" class="btn btn-circle btn-outline btn-primary" data-dismiss="modal" th:text="#{binaryfiles.close}">Close</button>
-								<button id="testBtnSubmit" type="button" class="btn btn-circle btn-outline btn-primary"  th:text="#{rules.test}">Test</button>
-							</div>
-						</div>
-					</div>
+							</div><!-- // Modal error -->
+						</div><!-- END PORTLET BASIC  -->
+					</div><!-- END COL-12 -->
 				</div><!-- END MAIN ROW -->
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->
@@ -198,10 +177,13 @@
 
 	<!-- FOOTER INCLUDE -->
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+			
+		
+	
 		
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" ></script>
-	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}" ></script>
+	<script	th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" />
+	<script	th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}" />
 	
 	<!-- LOADING DEFAULT DATES IF NEEDED -->
 	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}" type="text/javascript"></script>
@@ -217,11 +199,11 @@
 	<script th:src="@{/static/js/pages/rules/rules.js}" type="text/javascript"></script>
 	
 	<!-- JSTREE -->
-	<script th:src="@{/static/vendor/jstree/dist/jstree.min.js}"></script>
+	<script th:src="@{/static/vendor/jstree/dist/jstree.min.js}"/>
 	
 	<!-- CORE JS CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"></script>
-	<script th:src="@{/static/js/layout.js}"></script>	
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>	
 	
 	<!-- MONACO EDITOR-->
 	<script>var require = { paths: { 'vs': '/controlpanel/static/vendor/vs' } };</script>
@@ -231,7 +213,7 @@
 	 
 	 
 	 <!-- ACE -->
-	<script th:src="@{/static/vendor/ace/ace-noconflict.js}" charset="utf-8"></script>
+	<script th:src="@{/static/vendor/ace/ace-noconflict.js}" charset="utf-8"/>
 
 	
 	<script th:inline="javascript">

@@ -20,7 +20,7 @@
 angular
   .module('dataCollectorApp.home')
 
-  .controller('MetricAlertRulesController', ["$scope", "pipelineConstant", "pipelineService", "$modal", function ($scope, pipelineConstant, pipelineService, $modal) {
+  .controller('MetricAlertRulesController', function ($scope, pipelineConstant, pipelineService, $modal) {
     angular.extend($scope, {
       showLoading: false,
 
@@ -150,9 +150,9 @@ angular
 
     updateMetricIDList();
 
-  }])
+  })
 
-  .controller('CreateMetricAlertRuleModalInstanceController', ["$scope", "$modalInstance", "$translate", "edge", "$timeout", "metricElementList", "metricIDList", "pipelineService", "rulesElMetadata", function ($scope, $modalInstance, $translate, edge,
+  .controller('CreateMetricAlertRuleModalInstanceController', function ($scope, $modalInstance, $translate, edge,
                                                                         $timeout, metricElementList, metricIDList,
                                                                         pipelineService, rulesElMetadata) {
 
@@ -201,9 +201,9 @@ angular
     });
 
     $scope.$broadcast('show-errors-check-validity');
-  }])
+  })
 
-  .controller('EditMetricAlertRuleModalInstanceController', ["$scope", "$modalInstance", "$translate", "pipelineService", "$timeout", "metricAlertRuleDefn", "metricElementList", "metricIDList", "rulesElMetadata", function ($scope, $modalInstance, $translate,
+  .controller('EditMetricAlertRuleModalInstanceController', function ($scope, $modalInstance, $translate,
                                                                       pipelineService, $timeout, metricAlertRuleDefn,
                                                                       metricElementList, metricIDList, rulesElMetadata) {
 
@@ -242,4 +242,4 @@ angular
     });
 
     $scope.$broadcast('show-errors-check-validity');
-  }]);
+  });

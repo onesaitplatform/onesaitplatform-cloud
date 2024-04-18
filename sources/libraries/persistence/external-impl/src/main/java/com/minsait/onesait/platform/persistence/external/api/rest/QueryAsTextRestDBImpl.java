@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,14 +31,14 @@ public class QueryAsTextRestDBImpl implements QueryAsTextDBRepository {
 	@Autowired
 	private ExternalApiRestOpsDBRepository apiRestOntologyOps;
 
-	private static final String ERRORQUERYNATIVEASJSON = "Error queryNativeAsJson: {}";
-
+	private static final String ERRORQUERYNATIVEASJSON = "Error queryNativeAsJson:";
+	
 	@Override
 	public String queryNativeAsJson(String ontology, String query, int offset, int limit) {
 		try {
 			return apiRestOntologyOps.queryNativeAsJson(ontology, query, offset, limit);
 		} catch (Exception e) {
-			log.error(ERRORQUERYNATIVEASJSON, e.getMessage());
+			log.error(ERRORQUERYNATIVEASJSON + e.getMessage());
 			throw new DBPersistenceException(e);
 		}
 	}
@@ -48,7 +48,7 @@ public class QueryAsTextRestDBImpl implements QueryAsTextDBRepository {
 		try {
 			return apiRestOntologyOps.queryNativeAsJson(ontology, query);
 		} catch (Exception e) {
-			log.error(ERRORQUERYNATIVEASJSON, e.getMessage());
+			log.error(ERRORQUERYNATIVEASJSON + e.getMessage());
 			throw new DBPersistenceException(e);
 		}
 	}
@@ -58,17 +58,7 @@ public class QueryAsTextRestDBImpl implements QueryAsTextDBRepository {
 		try {
 			return apiRestOntologyOps.querySQLAsJson(ontology, query, offset);
 		} catch (Exception e) {
-			log.error(ERRORQUERYNATIVEASJSON, e.getMessage());
-			throw new DBPersistenceException(e);
-		}
-	}
-
-	@Override
-	public String querySQLAsJson(String ontology, String query, int offset, int limit) {
-		try {
-			return apiRestOntologyOps.querySQLAsJson(ontology, query, offset);
-		} catch (Exception e) {
-			log.error(ERRORQUERYNATIVEASJSON, e.getMessage());
+			log.error(ERRORQUERYNATIVEASJSON + e.getMessage());
 			throw new DBPersistenceException(e);
 		}
 	}

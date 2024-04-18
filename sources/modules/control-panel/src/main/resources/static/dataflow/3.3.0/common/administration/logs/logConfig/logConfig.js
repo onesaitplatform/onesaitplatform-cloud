@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp')
-  .controller('LogConfigModalInstanceController', ["$scope", "$modalInstance", "api", "pipelineService", "$timeout", function ($scope, $modalInstance, api, pipelineService, $timeout) {
+  .controller('LogConfigModalInstanceController', function ($scope, $modalInstance, api, pipelineService, $timeout) {
     angular.extend($scope, {
       common: {
         errors: []
@@ -78,4 +78,4 @@ angular
         $scope.showLoading = false;
       });
 
-  }]);
+  });

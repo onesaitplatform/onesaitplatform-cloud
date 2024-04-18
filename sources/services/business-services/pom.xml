@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-		<version>${revision}</version>
+		<version>1.0.0-ce</version>
 		<relativePath>../..</relativePath>
 	</parent>
 	<artifactId>onesaitplatform-business-services</artifactId>
@@ -20,24 +20,13 @@
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-config-services</artifactId>
-			<version>${project.version}</version>
+			<version>${onesaitplatform.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>io.swagger</groupId>
-			<artifactId>swagger-jaxrs</artifactId>
-			<version>1.5.21</version>
-		</dependency>
-		<dependency>
-			<groupId>io.swagger.parser.v3</groupId>
-			<artifactId>swagger-parser</artifactId>
-			<version>2.0.14</version>
-		</dependency>
-
-
+	
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-persistence-services</artifactId>
-			<version>${project.version}</version>
+			<version>${onesaitplatform.version}</version>
 			<!-- Hive includes incompatible mockito and jersey dependency -->
 			<exclusions>
 				<exclusion>
@@ -52,8 +41,8 @@
 			</exclusions>
 		</dependency>
 
-		<!-- <dependency> <groupId>com.minsait.onesait.platform</groupId> <artifactId>onesaitplatform-planner</artifactId>
-			<version>${project.version}</version> </dependency> -->
+		<!-- <dependency> <groupId>com.minsait.onesait.platform</groupId> <artifactId>onesaitplatform-planner</artifactId> 
+			<version>${onesaitplatform.version}</version> </dependency> -->
 
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -68,28 +57,17 @@
 		</dependency>
 
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>			
-
-		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
 			<version>${mockito.version}</version> <!-- To use MockitoJUnitRunner -->
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.minsait.onesait.platform</groupId>
-			<artifactId>onesaitplatform-binary-repository</artifactId>
-			<version>${project.version}</version>
-		</dependency>
 
 	</dependencies>
-
+	
 	<build>
 		<plugins>
-		  <!-- skip deployment -->
+		  <!-- skip deployment -->	
 		  <plugin>
 		    <groupId>org.apache.maven.plugins</groupId>
 		    <artifactId>maven-deploy-plugin</artifactId>
@@ -97,8 +75,8 @@
 		    <configuration>
 		        <skip>true</skip>
 		    </configuration>
-		  </plugin>
-		</plugins>
-	</build>
+		  </plugin>	
+		</plugins>	
+	</build>	
 
 </project>

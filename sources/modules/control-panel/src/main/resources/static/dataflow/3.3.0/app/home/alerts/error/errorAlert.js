@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('ErrorAlertController', ["$scope", "$modal", function ($scope, $modal) {
+  .controller('ErrorAlertController', function ($scope, $modal) {
 
     angular.extend($scope, {
 
@@ -52,4 +52,4 @@ angular
         });
       }
     });
-  }]);
+  });

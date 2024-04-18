@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -28,7 +29,7 @@ import com.minsait.onesait.platform.scheduler.scheduler.BatchScheduler;
 import com.minsait.onesait.platform.scheduler.scheduler.GenericBatchScheduler;
 import com.minsait.onesait.platform.scheduler.scheduler.GenericQuartzConfig;
 
-//@Configuration
+@Configuration
 @ConditionalOnResource(resources = SCHEDULER_PROPERTIES_LOCATION)
 public class TwitterQuartzConfig extends GenericQuartzConfig {
 
@@ -37,7 +38,7 @@ public class TwitterQuartzConfig extends GenericQuartzConfig {
 	@Bean(SCHEDULER_BEAN_FACTORY_NAME)
 	public SchedulerFactoryBean twitterSchedulerFactoryBean(JobFactory jobFactory,
 			PlatformTransactionManager transactionManager) {
-		return getSchedulerFactoryBean(jobFactory, transactionManager, false);
+		return getSchedulerFactoryBean(jobFactory, transactionManager);
 	}
 
 	@Bean(SchedulerNames.TWITTER_SCHEDULER_NAME)

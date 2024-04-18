@@ -1,75 +1,49 @@
-
 server:
   port: 20100
-  servlet.contextPath: /flowengine
+  contextPath: /flowengine
 
 # all access to actuator endpoints without security
-logbook:
-  exclude:
-     - ${server.servlet.contextPath}/actuator/**
-     - ${server.servlet.contextPath}/static/**
-     - ${server.servlet.contextPath}/themes/**
-     - ${server.servlet.contextPath}/swagger-ui/**
-  write:
-     max-body-size: 10000
-     
-master: 
-   datasource:
-      hikari: 
-        jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
-        username: root
-        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-        driver-class-name: com.mysql.cj.jdbc.Driver
-        pool-name: master-hikari-pool
-        minimum-idle: 1
-        maximum-pool-size: 2
-        connection-timeout: 10000
-        
-        
-
-management.endpoints.web.exposure.include: "*"
-management.health.elasticsearch.enabled: false
-management.endpoint.health.show-details: always
+management.security.enabled: false
 
 spring:
-  main:
-      allow-circular-references: true
-      allow-bean-definition-overriding: true
   application.name: onesaitplatform-flow-engine
   ## JPA Config
   datasource:
-     hikari:
-      jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
-      username: root
-      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-      connection-timeout: 10000
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      minimum-idle: 10
-      maximum-pool-size: 30
+    url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+    username: root
+    password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+    driver-class-name: com.mysql.jdbc.Driver
+    test-while-idle: true
+    test-on-borrow: true
+    validation-query: SELECT 1      
+    # Number of ms to wait before throwing an exception if no connection is available.
+    max-wait: 10000
+    # Maximum number of active connections that can be allocated from this pool at the same time.
+    max-active: 30
+    initial-size: 10
+    max-idle: 30
+    min-idle: 10
+    removeAbandoned: true
    
   jpa:
-    open-in-view: false
     ## Hibernate Properties
     # The SQL dialect makes Hibernate generate better SQL for the chosen database
     properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
     # Hibernate ddl auto (create, create-drop, validate, update)
     hibernate.ddl-auto: validate
-  boot.admin: #Spring Boot Admin Config   
-      client.url: http://localhost:18100/monitoring
-      client.username: operations
-      client.password: changeIt2019!
-      client.instance.metadata.user.name: ${spring.boot.admin.client.username}
-      client.instance.metadata.user.password: ${spring.boot.admin.client.password}
-  servlet:
-      multipart:
-         max-file-size: 200MB
-         max-request-size: 200MB
-   
+  boot.admin: #Spring Boot Admin Config 
+    url: http://localhost:18100/monitoring
+    username: operations
+    password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
+    client.metadata.user.name: ${spring.boot.admin.username}
+    client.metadata.user.password: ${spring.boot.admin.password}
+    service-base-url: http://localhost:20100
+    client.service-url: http://localhost:20100
+
 onesaitplatform:
    audit.global.notify: true
    router.avoidsslverification: true
    router.alternativeURL: http://localhost:20000/router/router/
-   platform.base.url: http://localhost:18000/controlpanel
    iotbroker.plugable:
      gateway:
       kafka:
@@ -93,7 +67,7 @@ onesaitplatform:
          initial.delay.sec: 20
       admin.url: http://localhost:10000
       node.path: node
-      audit.enabled: true
+      audit.enabled: false
       launcher:
          #path: S:\\sources\\open-pt\\tools\\Flow-Engine-Manager
          path: /opt/nodeRed/Flow-Engine-Manager
@@ -134,35 +108,10 @@ onesaitplatform:
       sql.connectionTimeout.millis: 10000
       sql.connector.http.endpoint: http://localhost:9200
       url: localhost
-      port: 9300
-   database.timescaledb:
-      enabled: false
-      url: jdbc:postgresql://localhost:5432/?currentSchema=public
-      user: ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot)
-      password: ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c)
-   analytics.notebook:
-      zeppelinGlobalTimeout: 120000
-      zeppelinProtocol: http
-      zeppelinHostname: localhost
-      zeppelinPort: 8080
-      zeppelinPathname: 
-      shiroAdminUsername: admin
-      shiroAdminPass: password1
-      shiroUsername: user1
-      shiroPass: password2
-      restUsername: userrest
-      restPass: passrest
-      notebookInfoPath: /api/notebook/
-      restTimeout.millis: 10000 
-   graylog:
-      enabled: false
-      host: 127.0.0.1
-      port: 12201
-      
+      port: 9300     
 ## LOGGING CONF
 logging:
-   file.path: ./target/ 
-   file.name: ${spring.application.name}
+   path: ./target/ 
+   file: ${spring.application.name}
    level:
       com.minsait: INFO
-      org.zalando.logbook: TRACE

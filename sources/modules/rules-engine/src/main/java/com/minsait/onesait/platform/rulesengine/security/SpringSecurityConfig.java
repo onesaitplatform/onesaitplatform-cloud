@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +14,25 @@
  */
 package com.minsait.onesait.platform.rulesengine.security;
 
-import javax.sql.DataSource;
-
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
-import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
+import org.springframework.security.oauth2.provider.token.RemoteTokenServices;
 
 @Configuration
 public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.authorizeRequests().antMatchers("/advice**", "/health", "/info", "/actuator/**").permitAll().and()
-				.authorizeRequests().anyRequest().authenticated().and().csrf().disable()
-				.addFilterBefore(new BearerExtractorFilter(), AnonymousAuthenticationFilter.class);
+		http.authorizeRequests().antMatchers("/advice**").permitAll().and().authorizeRequests().anyRequest()
+				.authenticated().and().csrf().disable();
 	}
 
 	@Bean
-	public TokenStore tokenStore(DataSource ds) {
-		return new JdbcTokenStore(ds);
+	@ConfigurationProperties("security.oauth2.client")
+	public RemoteTokenServices remoteTokenService() {
+		return new RemoteTokenServices();
 	}
 }

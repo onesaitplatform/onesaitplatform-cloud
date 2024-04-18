@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ public class QuasarAuditProcessor {
 		final Ontology ontology = ontologyRepository.findByIdentification(collection);
 		return QuasarAuditEvent.builder().id(UUID.randomUUID().toString()).timeStamp(today.getTime())
 				.formatedTimeStamp(CalendarUtil.builder().build().convert(today)).message(MAP_REDUCE_DETECTED)
-				.ontology(ontology.getIdentification()).user(AuditConst.ANONYMOUS_USER).module(Module.SQLENGINE)
+				.ontology(ontology.getIdentification()).user(AuditConst.ANONYMOUS_USER).module(Module.QUASAR)
 				.type(EventType.QUERY).operationType(OperationType.QUERY.name())
 				.resultOperation(ResultOperationType.WARNING).query(query).result(result).build();
 	}
@@ -55,7 +55,7 @@ public class QuasarAuditProcessor {
 		final String message = "Exception detected while executing query: " + query + " ; Ontology:"
 				+ ontology.getIdentification();
 
-		return OPEventFactory.builder().build().createAuditEventError(message, Module.SQLENGINE, ex);
+		return OPEventFactory.builder().build().createAuditEventError(message, Module.QUASAR, ex);
 
 	}
 

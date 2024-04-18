@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,40 +22,12 @@ public class AdviceNotificationModel {
 	@Getter
 	@Setter
 	private String entityId;
-
+	
 	@Getter
 	@Setter
 	private String url;
 	
 	@Getter
 	@Setter
-	private String urlAuthkey;
-
-	@Getter
-	@Setter
-	private String urlAuthValue;
-
-	@Getter
-	@Setter
 	private SuscriptionModel suscriptionModel;
-	
-	@Getter
-	@Setter
-	private Boolean retryOnFaialureEnabled;
-	
-	@Getter
-	@Setter
-	private Boolean discardAfterElapsedTimeEnabled;
-
-	@Getter
-	@Setter
-	private Integer maxRetryElapsedTime;
-	
-	@Getter
-	@Setter
-	private String domainIdentification;
-	
-	@Getter
-	@Setter
-	private String domainOwner;
 }

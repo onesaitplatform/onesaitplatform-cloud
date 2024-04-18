@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('RawPreviewDataModalInstanceController', ["$scope", "$rootScope", "$modalInstance", "previewData", "$timeout", "pipelineService", function ($scope, $rootScope, $modalInstance, previewData,
+  .controller('RawPreviewDataModalInstanceController', function ($scope, $rootScope, $modalInstance, previewData,
                                                                  $timeout, pipelineService) {
     angular.extend($scope, {
       previewData: JSON.stringify(previewData, null, '  '),
@@ -48,4 +48,4 @@ angular
       $scope.refreshCodemirror = true;
     });
 
-  }]);
+  });

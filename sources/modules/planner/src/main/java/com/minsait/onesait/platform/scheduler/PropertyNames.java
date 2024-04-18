@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,12 @@
 package com.minsait.onesait.platform.scheduler;
 
 public final class PropertyNames {
-
+	
 	public static final String SCHEDULER_PROPERTIES = "quartz.properties";
-	public static final String SCHEDULER_PROPERTIES_SINGLE_THREAD = "quartz-single-thread.properties";
 	public static final String SCHEDULER_PROPERTIES_LOCATION = "classpath:" + SCHEDULER_PROPERTIES;
-	public static final String SCHEDULER_SINGLE_THREAD_PROPERTIES_LOCATION = "classpath:" + SCHEDULER_PROPERTIES_SINGLE_THREAD;
 	public static final String SCHEDULER_PREFIX = "quartz";
-
-
+	
+	
 	private PropertyNames () {}
 
 }

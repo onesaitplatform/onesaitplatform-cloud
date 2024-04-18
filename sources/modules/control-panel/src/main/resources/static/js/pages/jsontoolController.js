@@ -1,6 +1,5 @@
 var JsonToolController = function(){
 	var fileLoaded;
-	var myCodeMirrorSlice20;
 	var parentNode;
 	var myCodeMirror;
 	var myCodeMirrorSchema;
@@ -11,7 +10,6 @@ var JsonToolController = function(){
 	var counter= 0;
 	var arrayJson;
 	var ontologyId;
-	var RegExPattern = /^[A-Z-a-z_][\w\d\s]{4,}$/;
 	var handleCodeMirror = function () {
 		
         var myTextArea = document.getElementById('jsonTextArea');
@@ -39,7 +37,6 @@ var JsonToolController = function(){
     var generateSchema = function (){
     	if(JSON.parse(myCodeMirror.getValue()).length == null){
     		myCodeMirrorSchema.setValue(processJSON(myCodeMirror.getValue()));
-    		
     	}else{
     		var json = JSON.parse(myCodeMirror.getValue())[0];
     		myCodeMirrorSchema.setValue(processJSON(JSON.stringify(json)));
@@ -50,120 +47,80 @@ var JsonToolController = function(){
     var beautifyJson = function() {
 		myCodeMirror.getAction('editor.action.formatDocument').run()
 		//myCodeMirrorJsonImport.setValue(js_beautify(myCodeMirrorJsonImport.getValue()));
-		$('#createOnt').removeClass('disabled').removeAttr('disabled');
 	};
 	var modalOntology = function() {
-		if (myCodeMirrorSchema.getValue()==null || myCodeMirrorSchema.getValue()=="" || myCodeMirrorSchema.getValue()=="{\n}"){
+		if (myCodeMirrorSchema.getValue()==null || myCodeMirrorSchema.getValue()=="" || myCodeMirrorSchema.getValue()=="{\n}")
 			generateSchema();
-		}
-		
-		$('#ontologyIdentification').val("");
-		$('#ontologyIdentificationerror').addClass('hide');
-		$('#ontologyIdentification').closest('.form-group').removeClass('has-error');
-		
-		$('#ontologyDescription').val("");
-		$('#ontologyDescriptionerror').addClass('hide');
-		$('#ontologyDescription').closest('.form-group').removeClass('has-error');		
-		
 		$('#ontologyData').modal("show");
 	};
 	var createOntology = function() {
-		
-		if (validOntology()){
-			
-			$('#ontologyData').modal('hide');
-			
-			myCodeMirrorSchema.setValue(myCodeMirrorSchema.getValue());
-			
-			try{
-				JSON.parse(myCodeMirrorSchema.getValue());
-			}catch(err){
-				//	$('#response').text(err);
-				//	$('#returnAction').modal("show");
-				toastr.error(messagesForms.operations.genOpError, err);
-			}
-			var payload = {'ontologyDescription':$('#ontologyDescription').val(),'ontologyIdentification':$('#ontologyIdentification').val(),'schema': myCodeMirrorSchema.getValue(), 'datasource' : $('#datasource').val(), 'contextdata': $('#check-contextdata').is(':checked'), 'appId': $("#appId").val()};
-			payload[csrfParam] = csrfToken;
-			jQuery.post(createUrl,payload, function(data){
-				try{
-					data = JSON.parse(data);
-				}catch(err){
-					//	$('#response').html(data);
-					//	$('#returnAction').modal("show");
-					toastr.error(messagesForms.operations.genOpError, err);
-				}
-				if(data.result=='ok'){
-					ontologyId = data.id;
-					var importAfterCreation = $('#check-import').is(':checked');
-					if(importAfterCreation){
-						//	$('#response').text(ontologyCreated);
-						//	$('#returnAction').modal("show");
-						toastr.success(messagesForms.validation.genFormSuccess,ontologyCreated);
-						importBulkJson($('#ontologyIdentification').val());
-						$('#modal-created').modal('show');
-						
-						if ($("#appId").val()!=null){
-							navigateUrl('/controlpanel/projects/update/' + $("#appId").val());
-						} else {
-							$('#modal-created').modal('show');
-						}
-					}else{
-						//	$('#response').text(ontologyCreated);
-						//	$('#returnAction').modal("show");
-						toastr.success(messagesForms.validation.genFormSuccess,ontologyCreated);
-						$('#modal-created').modal('show');
-					
-					}
-				}else{
-					//	$('#response').html(nl2br(data.cause));
-					//	$('#returnAction').modal("show");
-					toastr.error(messagesForms.operations.genOpError,nl2br(data.cause));
-				}
-			});
-		} else {
+		myCodeMirrorSchema.setValue(myCodeMirrorSchema.getValue());
+		var RegExPattern = /^[a-zA-Z0-9_]*$/;
+		if($('#ontologyDescription').val() == "" || $('#ontologyIdentification').val() == "" || $('#datasource').val() == "" )
+		{
+			$('#form-new-ontology').addClass("has-error");
+			$('#returnAction').modal("show");
+			$('#response').text(emptyParam);
 			return false;
 		}
+		else if ($('#ontologyIdentification').val().match(RegExPattern))
+		{
+			$('#form-new-ontology').removeClass("has-error");
+		}
+		else{
+			$('#form-new-ontology').addClass("has-error");
+			$('#returnAction').modal("show");
+			$('#response').text(invalidOnto);
+			return false;
+		}
+		
+		try{
+			JSON.parse(myCodeMirrorSchema.getValue());
+		}catch(err){
+			$('#response').text(err);
+			$('#returnAction').modal("show");
+		}
+		var payload = {'ontologyDescription':$('#ontologyDescription').val(),'ontologyIdentification':$('#ontologyIdentification').val(),'schema': myCodeMirrorSchema.getValue(), 'datasource' : $('#datasource').val()};
+		payload[csrfParam] = csrfToken;
+		jQuery.post(createUrl,payload, function(data){
+			try{
+				data = JSON.parse(data);
+			}catch(err){
+				$('#response').text(err);
+				$('#returnAction').modal("show");
+			}
+			if(data.result=='ok'){
+				ontologyId = data.id;
+				var importAfterCreation = $('#check-import').is(':checked');
+				if(importAfterCreation){
+					$('#response').text(ontologyCreated);
+					$('#returnAction').modal("show");
+					importBulkJson($('#ontologyIdentification').val());
+				}else{
+					$('#response').text(ontologyCreated);
+					$('#returnAction').modal("show");
+					navigateUrl('/controlpanel/ontologies/show/' + ontologyId);
+				}
+
+
+			}else{
+				//$('#response').text(ontologyExists);
+				$('#response').text(data.cause);
+				$('#returnAction').modal("show");
+			}
+			
+			
+		});
+		
 	};
-	
-	var validOntology = function() {
-		var success = true;
-		
-		
-		if($('#ontologyIdentification').val() == "" || !$('#ontologyIdentification').val().match(RegExPattern)){
-			$('#ontologyIdentificationerror').removeClass('hide');
-			$('#ontologyIdentification').closest('.form-group').addClass('has-error');
-			toastr.error(messagesForms.operations.genOpError,invalidOnto);
-			success = false;
-		} else {
-			$('#ontologyIdentificationerror').addClass('hide');
-			$('#ontologyIdentification').closest('.form-group').removeClass('has-error');
-		}
-		
-		if($('#ontologyDescription').val() == ""|| !$('#ontologyDescription').val().match(RegExPattern)) {
-			$('#ontologyDescriptionerror').removeClass('hide');
-			$('#ontologyDescription').closest('.form-group').addClass('has-error');
-			toastr.error(messagesForms.operations.genOpError,invaliddescr);
-			success = false;
-		} else {
-			$('#ontologyDescriptionerror').addClass('hide');
-			$('#ontologyDescription').closest('.form-group').removeClass('has-error');
-		}
-		return success;
-	}
-	
-	function nl2br(str){
-		 return str.replace(/(?:\r\n|\r|\n)/g, '<br>');
-		}
-	
 	var getParentNode = function () {
 		var payload = {'id' : $('#ontology').val()};
 		payload[csrfParam] = csrfToken;
 		jQuery.post('/controlpanel/jsontool/getParentNodeOfSchema',payload, function(data){
 			if(data != ""){
 				parentNode = data;
-//				$('#response').text(ontologyHasParentNode);
-//				$('#returnAction').modal("show");
-				toastr.info(ontologyHasParentNode, '');
+				$('#response').text(ontologyHasParentNode);
+				$('#returnAction').modal("show");
 			}
 		});
 	};
@@ -186,26 +143,14 @@ var JsonToolController = function(){
 	var importBulkJson = function(ontology) {
 		$('#progressResult').text("");
 		if($('#ontology').val() == "" && ontology == null){
-//			$('#errorSelect').text("Select ontology first");
-//			$('#ErrorOntSelect').modal("show");
-			toastr.error(messagesForms.operations.genOpError,'Select ontology first');
+			$('#errorSelect').text("Select ontology first");
+			$('#ErrorOntSelect').modal("show");
 		}else{
-			if(ontology == null ){
+			if(ontology == null )
 				ontology = $('#ontology').val();
-			}
 			arrayJson = fileLoaded;
-			if(fileLoaded && fileLoaded.length > 20 ){
-				myCodeMirrorSlice20 = (JSON.stringify(fileLoaded.slice(0,20))); 
-				
-				if(myCodeMirrorSlice20 != JSON.stringify(JSON.parse(myCodeMirror.getValue()))) {
-					arrayJson = JSON.parse(myCodeMirror.getValue());
-				} else {
-					arrayJson = fileLoaded;
-				} 
-			} else {
+			if(fileLoaded == null) 
 				arrayJson = JSON.parse(myCodeMirror.getValue());
-			}
-		
 			if(parentNode != null){
 				//var arrayJson = fileLoaded;
 				var newArray = [];
@@ -228,13 +173,15 @@ var JsonToolController = function(){
 					newArray=newObject;
 				}
 				arrayJson = newArray;
+					
+				
 			}
-			if(arrayJson.length != null && arrayJson.length > 50){
+			if(arrayJson.length != null && arrayJson.length > 200){
 			
 				counter=0;
 				var infLimit=0;
-				var supLimit=50;
-				var increment =50;
+				var supLimit=200;
+				var increment =200;
 				$('#importProgress').attr('aria-valuenow', '0%').css('width','0%');
 				
 				$('#importProgress').removeClass('progress-bar-success');
@@ -257,11 +204,15 @@ var JsonToolController = function(){
 					infLimit += increment;
 					supLimit += increment;
 				}
+				
 			}else{
+				
 //				jQuery.post('/controlpanel/jsontool/importbulkdata', {'data':JSON.stringify(arrayJson), 'ontologyIdentification': ontology}, callbackSimpleImport(data));
 				ajaxImport({'data':JSON.stringify(arrayJson), 'ontologyIdentification': ontology}).done(callbackSimpleImport).fail(handleError);
 			}
+
 		}
+		
 	}
 	
 	var ajaxImport = function(payload){
@@ -285,13 +236,12 @@ var JsonToolController = function(){
 		    data = JSON.parse(data);
 		}
 		catch(err) {
-//			$('#response').html(data);
-//			$('#returnAction').modal("show");
-			toastr.error(messagesForms.operations.genOpError,data);
+			$('#response').text(err);
+			$('#returnAction').modal("show");
 			return;
 		}
 		if(data.result != "ERROR"){
-			if(data.inserted=="") { data.inserted = 50}
+			if(data.inserted=="") { data.inserted = 200}
 			counter+=Number(data.inserted);
 			var percent = (counter/arrayJson.length)*100;
 			if(percent > 100) percent = 100;
@@ -315,68 +265,54 @@ var JsonToolController = function(){
 			$('#importProgress').attr('aria-valuenow', '100%').css('width','100%');
 			$('#importProgress').text(data.cause);
 		}
+		
 	}
+	
+	
 	
 	var callbackSimpleImport = function(data){
 		try {
 		    data = JSON.parse(data);
 		}
 		catch(err) {
-//			$('#response').html(data);
-//			$('#returnAction').modal("show");
-			toastr.error(messagesForms.operations.genOpError,data);
+			$('#response').text(err);
+			$('#returnAction').modal("show");
 			return;
 		}
 		if(data.result == "ok"){
 			try {
 				if(JSON.parse(myCodeMirror.getValue()).length != null || JSON.parse(myCodeMirror.getValue()).length > 1){
-//					$('#response').text(arrayJson.length + " ontologies inserted of type " + $('#ontology').val());
-					toastr.success(messagesForms.validation.genFormSuccess,arrayJson.length + " ontologies inserted of type " + $('#ontology').val());
+					$('#response').text(arrayJson.length + " ontologies inserted of type " + $('#ontology').val());
 				}else{
-//					$('#response').text("Ontology inserted of type " + $('#ontology').val());
-					toastr.success(messagesForms.validation.genFormSuccess,"Ontology inserted of type " + $('#ontology').val());
+					$('#response').text("Ontology inserted of type " + $('#ontology').val());
 				}
-//				$('#returnAction').modal("show");
-			//	if(ontologyId !=null) {
-			//		navigateUrl('/controlpanel/ontologies/show/' + ontologyId)
-			//	}else{
-			//		navigateUrl('/controlpanel/ontologies/list')
-			//		}
+				$('#returnAction').modal("show");
+				if(ontologyId !=null) 
+					navigateUrl('/controlpanel/ontologies/show/' + ontologyId)
+				else
+					navigateUrl('/controlpanel/ontologies/list')
 			}
 			catch(err) {
-//				$('#response').text(err);
-//				$('#returnAction').modal("show");
-				toastr.error(messagesForms.operations.genOpError,err);
+				$('#response').text(err);
+				$('#returnAction').modal("show");
 				return;
 			}
 		}else{
-			//$('#response').text(data.cause);
-//			$('#response').html(formatBulkError(data.cause));
-//			$('#returnAction').modal("show");
-			toastr.error(messagesForms.operations.genOpError,data.cause);
+			$('#response').text(data.cause);
+			$('#returnAction').modal("show");
 		}
-	}
-	
-	function formatBulkError(str){
-		str = str.replace(/(data:)/g, '<br><b>data:</b>');
-		str = str.replace(/(by:)/g, '<br><b>by:</b>');		
-		str = str.replace(/(\'schema\':)/g, '<br><br><b> schema :</b>');
-		str = str.replace(/(\'instance\':)/g, '<br><b> instance :</b>');
-		str = str.replace(/(\'message\':)/g, '<br><b> message :</b>');
-		return str;
-	}
 		
+	}
 	
 	var handleError = function (jqXHR, textStatus, error) {
 		console.log(error);
-		//$.alert({title: 'ERROR!',type: 'red' , theme: 'light', content: error});
-		toastr.error(messagesForms.validation.genFormError,error);
+		$.alert({title: 'ERROR!',type: 'red' , theme: 'light', content: error});
     }
 	
 	var printJson = function(){
-		
+	
 		if(fileLoaded.length > 100){
-			myCodeMirror.setValue(JSON.stringify(fileLoaded.slice(0,20)));	
+			myCodeMirror.setValue(JSON.stringify(fileLoaded.slice(0,20)));
 		}else{
 			myCodeMirror.setValue(JSON.stringify(fileLoaded));
 		}
@@ -419,34 +355,41 @@ var JsonToolController = function(){
 							bytes += chunk.length;
 							
 							chunks.push(chunk);
-							if(offset < size) {
+							if(offset < size){
 								offset += chunk_size;
 								var blob = files[0].slice(offset , offset + chunk_size);
 								reader.readAsText(blob);	
-
-								if (offset > size){
-									var content = chunks.join("");
-									fileLoaded=x2js.xml_str2json(content);
-									//xml2json parses into object,  need to get array instances of this object
-									/*if(fileLoaded.length == null){
-										var foundJson = false;
-										while(!foundJson){
-											var key = Object.keys(fileLoaded);
-											fileLoaded = fileLoaded[key];
-											if(fileLoaded.length != null)
-												foundJson = true;		
-										}
-									}*/
-									//end
-									var tmpContent = findArrayNodeInJson(fileLoaded);
-									fileLoaded = tmpContent;
-									printJson();
-								}
+							}else{
+								var content = chunks.join("");
+								fileLoaded=x2js.xml_str2json(content);
+								//xml2json parses into object,  need to get array instances of this object
+								/*if(fileLoaded.length == null){
+									var foundJson = false;
+									while(!foundJson){
+										var key = Object.keys(fileLoaded);
+										fileLoaded = fileLoaded[key];
+										if(fileLoaded.length != null)
+											foundJson = true;
+										
+									}
+								}*/
+								//end
+								var tmpContent = findArrayNodeInJson(fileLoaded);
+								fileLoaded = tmpContent;
+								$('#progressBarModal').modal('hide');
+								printJson();
+								
+							
 							}
+							
+							
 						}
 						progressBarFileUpload(offset,size);
 					}	
+					
+
 			}else if (files[0].name.indexOf(".csv")!=-1){
+		
 				reader.onloadend = function (e) {
 					if(e.target.readyState == FileReader.DONE){
 						var chunk = e.target.result;
@@ -457,25 +400,28 @@ var JsonToolController = function(){
 							offset += chunk_size;
 							var blob = files[0].slice(offset , offset + chunk_size);
 							reader.readAsText(blob);	
-							
-							if (offset > size){
-								var content = chunks.join("");//.replace(/\"/g, '');
-								try {
-									fileLoaded = csvTojs(content);
-								}
-								catch(err) {
-//									$('#response').text(err);
-//									$('#returnAction').modal("show");
-									toastr.error(messagesForms.operations.genOpError,err);
-									return;
-								}
-								printJson();
+						}else{
+							var content = chunks.join("");//.replace(/\"/g, '');
+							try {
+								fileLoaded = csvTojs(content);
 							}
+							catch(err) {
+								$('#response').text(err);
+								$('#returnAction').modal("show");
+								return;
+							}
+							printJson();
 						}
 						progressBarFileUpload(offset,size);
 					}
+				
+					
 				}
+
 			}else if (files[0].type == "application/json"){
+
+
+			    
 				reader.onloadend = function (e) {
 					
 					if(e.target.readyState == FileReader.DONE){
@@ -488,17 +434,16 @@ var JsonToolController = function(){
 							offset += chunk_size;
 							var blob = files[0].slice(offset , offset + chunk_size);
 							reader.readAsText(blob);	
+						}else{
 							
-							if (offset > size){
-								var content = chunks.join("");
-								
+							var content = chunks.join("");
+					
 								try {
 									var jsonData = JSON.parse(content);	
 									fileLoaded = jsonData;
 								}
 								catch(err) {
 									try{
-										var firstError = err.message;
 										var jsonData = content.replace(/[\r]/g, '');
 										var arrayJson = [];
 										var dataSplitted = jsonData.split("\n");
@@ -510,18 +455,21 @@ var JsonToolController = function(){
 										}
 										fileLoaded=arrayJson;
 									}catch(err){
-//										$('#response').html(firstError+'<br>'+ err.message);
-//										$('#returnAction').modal("show");
-										toastr.error(messagesForms.operations.genOpError,firstError + ': ' + err.message);
+										
+										$('#response').text(err);
+										$('#returnAction').modal("show");
 										return;
 									}
-								}			
-							printJson();								
-							}						
+								}							
+							
+							printJson();
+							
 						}
 						progressBarFileUpload(offset,size);
 					}
+					
 				}
+
 			}
 			var blob = files[0].slice(offset, offset + chunk_size);
 			reader.readAsText(blob);
@@ -534,48 +482,22 @@ var JsonToolController = function(){
 		if(isNewOntology){
 			modalOntology();
 		}else{
-			if(importData) {
+			if(importData) 
 				importBulkJson();
-			} else {
-				toastr.error(messagesForms.operations.genOpError,selectoperation);
-			}
 		}
+
 	}
 
 	return{
+
 		init : function(){
 			handleCodeMirror();
-			
-			// INPUT MASK FOR ontology identification allow only letters, numbers and -_
-			$("#ontologyIdentification").inputmask({ regex: "[a-zA-Z0-9_]*", greedy: false });
-			
 			$(function() {
 			    $('#ontologyIdentification').on('keypress', function(e) {
 			        if (e.which == 32)
 			            return false;
 			    });
 			});
-
-			$('#ontologyIdentification').bind('blur', function(event) {
-				if($('#ontologyIdentification').val() == "" || !$('#ontologyIdentification').val().match(RegExPattern)){
-					$('#ontologyIdentificationerror').removeClass('hide');
-					$('#ontologyIdentification').closest('.form-group').addClass('has-error');
-				} else {
-					$('#ontologyIdentificationerror').addClass('hide');
-					$('#ontologyIdentification').closest('.form-group').removeClass('has-error');
-				} 
-			});
-			
-			$('#ontologyDescription').bind('blur', function(event) {
-				if($('#ontologyDescription').val() == "" || !$('#ontologyDescription').val().match(RegExPattern)) {
-					$('#ontologyDescriptionerror').removeClass('hide');
-					$('#ontologyDescription').closest('.form-group').addClass('has-error');
-				} else {
-					$('#ontologyDescriptionerror').addClass('hide');
-					$('#ontologyDescription').closest('.form-group').removeClass('has-error');
-				}
-			})
-			
 		},
 		generateSchema : function(){
 			generateSchema();
@@ -601,12 +523,18 @@ var JsonToolController = function(){
 		loadJsonFromDoc :function(files){
 			loadJsonFromDoc(files);
 		}
+
+
 	}
+
 }();
 
 //AUTO INIT CONTROLLER WHEN READY
 jQuery(window).on( "load",function() {
 	
+		
 	// AUTO INIT CONTROLLER.
 	JsonToolController.init();
+	
+	
 });

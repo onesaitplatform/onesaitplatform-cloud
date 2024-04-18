@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/cesium/Widgets/widgets.css}"/>
 		
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/fontawesome/v5.6.1/all.css}"/>
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous"/>
 		<style>
 		
 	  #cesiumContainer {
@@ -116,38 +116,8 @@
 							<div class="portlet-body" style="display: block; height: auto;">
 								<div class="tab-content">
 									<div class="tab-pane active" id="tab_1">
-										<div class="row">
-											<div class="alert alert-info alert-dismissable">
-												<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
-												<i class="fa fa-info-circle"></i>
-												<span th:text="#{viewer.info}"> info.</span>
-											</div>
-											<div class="col-md-4 col-sm-6 col-xs-12">
-												<div class="form-group">
-													<label class="" th:text="#{viewer.latitude}">Latitude</label><span class="required"> *</span>
-													<input th:tabindex="1" id="latitude_gen" type="text" name="latitude" maxlength="50" class="form-control"/>
-												</div>
-											</div>
-											<div class="col-md-4 col-sm-6 col-xs-12">
-												<div class="form-group">
-													<label class="" th:text="#{viewer.longitude}">Longitude</label><span class="required"> *</span>
-													<input th:tabindex="2" name="longitude" id="longitude_gen" type="text" maxlength="50" class="form-control"/>
-												</div>
-											</div>
-											<div class="col-md-4 col-sm-6 col-xs-12">
-												<div class="form-group">
-													<label class="" th:text="#{viewer.height}">Height</label><span class="required"> *</span>
-													<input th:tabindex="3" name="height" id="height" type="text" maxlength="50" class="form-control"/>
-												</div>
-											</div>
-											<div class="col-md-12">
-												<div class="pull-right">
-													<button class="btn btn-circle btn-primary" name="create" onclick="run()"><span> Run</span></button>
-												</div>
-											</div>
-										</div>
 										<div class="col-md-12">
-											<table id="table_attributes" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
+											<table id="table_attributes" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
 												<thead>
 													<tr class="cabecera-tabla">
 													</tr>
@@ -189,13 +159,12 @@
 	
 	<!-- CORE CONTROLLERS -->
 	
-	<script th:src="${onesaitCesiumPath + 'cesium/Cesium1.92/Cesium.js'}"></script>
-	<script th:src="@{/static/js/pages/viewerCrud.js}"></script>
+	<script th:src="@{/static/vendor/cesium/Cesium.js}"/>
+	<script th:src="@{/static/js/pages/viewerCrud.js}"/>
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jsoneditor/jsoneditor.js}"></script>
+	<script th:src="@{/static/vendor/jsoneditor/jsoneditor.js}"/>
 	
-	<!-- INPUTMASK -->
-	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
+	
 	<script th:inline="javascript">	
 	
 	// TEMPLATE SEARCH FORM.
@@ -219,13 +188,6 @@
 	var query = [[${layer?.query}]];
 
 	$( document ).ready(function() {
-		
-		defineViewerInitialExtent(null,null,null);
-		
-		// INPUT MASK FOR lon&lat´
-		$("#latitude_gen").inputmask({regex: "[0-9-+.]*", greedy: false });
-		$("#longitude_gen").inputmask({regex: "[0-9-+.]*", greedy: false });
-		$("#height").inputmask({regex: "[0-9]*", greedy: false });
 		
 		$(".cesium-widget-credits").css("display", "none");
 		
@@ -338,7 +300,7 @@
 									});
 				    			})
 				            	
-				            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border icon-on-table color-blue tooltips' onclick='editAttribute(this)' data-container='body' data-placement='bottom' th:text='#{gen.edit}'><i class='icon-edit'></i></span><span class='btn btn-xs btn-no-border icon-on-table color-red tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='icon-delete'></i></span></div></div></div></td>";
+				            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='editAttribute(this)' data-container='body' data-placement='bottom' th:text='#{gen.edit}'><i class='la la-edit font-hg'></i></span><span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='la la-trash font-hg'></i></span></div></div></div></td>";
 				            	add += "</tr>";
 				            	
 				            	$("#table_attributes tbody").append(add);
@@ -370,7 +332,7 @@
 									});
 				    			})
 				            	
-				            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border icon-on-table color-red tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='icon-delete'></i></span></div></div></div></td>";
+				            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='la la-trash font-hg'></i></span></div></div></div></td>";
 				            	add += "</tr>";
 				            	
 				            	$("#table_attributes tbody").append(add);
@@ -394,12 +356,6 @@
 		showMouseCartographicPosition();
 		
 	});
-	
-	
-	
-	function run (){
-		defineViewerInitialExtent($("#longitude_gen").val(),$("#latitude_gen").val(),$("#height").val())
-	}
 
 	
 	function addPointInfoBox(longitude, latitude, id){
@@ -420,88 +376,65 @@
 		            	
 		            	instance[ontologyName][geometryField]['coordinates'][0] = parseFloat(longitude);
 		            	instance[ontologyName][geometryField]['coordinates'][1] = parseFloat(latitude);
-		            	var isOk = true;
+		            	
 		            	$.each(json, function(k,v){
-		            		var type = JSON.parse(schema)["datos"]["properties"][v.field]["type"];
-		            		
-		            		if(typeof $("#"+v.attribute + "_value").val() != type){
-		            			
-		            			if(type == "number" && !isNaN(Number($("#"+v.attribute + "_value").val()))){
-		            				instance[ontologyName][v.field] = Number($("#"+v.attribute + "_value").val());
-		            			}else if(type == "integer" && !isNaN(parseInt($("#"+v.attribute + "_value").val()))){
-		            				instance[ontologyName][v.field] = parseInt($("#"+v.attribute + "_value").val());
-		            			}else{
-		            				 $.each(viewer.entities.values, function (k,v){
-			        			    		if(v.id == id){
-			        			    			viewer.entities.remove(v);
-			        			    		}
-			        			    	});
-			            				 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: 'The type of the fields is not allowed'});
-			            				 isOk = false;
-		            			}
-		            		}else{
-		            			instance[ontologyName][v.field] = $("#"+v.attribute + "_value").val();
-		            		}
+		            		instance[ontologyName][v.field] = $("#"+v.attribute + "_value").val();
 		            	});
 		            	
-		            	if(isOk){
+		            	var csrf_value = $("meta[name='_csrf']").attr("content");
+		    			var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
 		            	
-			            	var csrf_value = $("meta[name='_csrf']").attr("content");
-			    			var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-			            	
-			            	 $.ajax({
-			        			 url: '/controlpanel/layers/crud/insert',
-			        			 headers: {
-			     					[csrf_header]: csrf_value
-			     			    },
-			        			 type: 'POST',
-			        			 async:false,
-			        			 data: { 
-			        			   ontologyID : ontologyName,
-			        			   body: JSON.stringify(instance)
-			        					},	           
-			        			 success: function(dataSet) { 
-			        				 
-			        				 	if(JSON.parse(dataSet).exception==undefined){
-			        				 		console.log("success insert ");
-			        				 		
-			        				 		mapIds.push({'id':id, 'oid': JSON.parse(dataSet).ids[0]});
-				        					
-				        					var add= "<tr id='"+id+"'>";
-				    		            	add += "<td class='text-left no-wrap latitude'>"+latitude+"</td>"
-				    		            	add += "<td class='text-left no-wrap longitude'>"+longitude+"</td>"
-				    		            	
-				    		            	$.each(json, function(k,v){
-				    			    			var value = $("#"+v.attribute+"_value").val();
-				    			    			add += "<td class='text-left no-wrap "+v.attribute+"'>"+value+"</td>";
-				    			    		});
-				    		            	
-				    		            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border icon-on-table color-blue tooltips' onclick='editAttribute(this)' data-container='body' data-placement='bottom' th:text='#{gen.edit}'><i class='icon-edit'></i></span><span class='btn btn-xs btn-no-border icon-on-table color-red tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='icon-delete'></i></span></div></div></div></td>";
-				    		            	add += "</tr>";
-				    		            	
-				    		            	$("#table_attributes tbody").append(add);
-			        				 	}else{
-			        				 		 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: 'Error inserting data'});
-			        				 	}
-			        				 
+		            	 $.ajax({
+		        			 url: '/controlpanel/layers/crud/insert',
+		        			 headers: {
+		     					[csrf_header]: csrf_value
+		     			    },
+		        			 type: 'POST',
+		        			 async:false,
+		        			 data: { 
+		        			   ontologyID : ontologyName,
+		        			   body: JSON.stringify(instance)
+		        					},	           
+		        			 success: function(dataSet) { 
+		        				 
+		        				 	if(JSON.parse(dataSet).exception==undefined){
+		        				 		console.log("success insert ");
+		        				 		
+		        				 		mapIds.push({'id':id, 'oid': JSON.parse(dataSet).ids[0]});
 			        					
-			        			 },
-			        			 error: function(data,status,er) { 
-			        				 $.each(viewer.entities.values, function (k,v){
-		        			    		if(v.id == id){
-		        			    			viewer.entities.remove(v);
-		        			    		}
-		        			    	});
-			        				 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er});
-			        			 }
-			        		});
-		            	}
+			        					var add= "<tr id='"+id+"'>";
+			    		            	add += "<td class='text-left no-wrap latitude'>"+latitude+"</td>"
+			    		            	add += "<td class='text-left no-wrap longitude'>"+longitude+"</td>"
+			    		            	
+			    		            	$.each(json, function(k,v){
+			    			    			var value = $("#"+v.attribute+"_value").val();
+			    			    			add += "<td class='text-left no-wrap "+v.attribute+"'>"+value+"</td>";
+			    			    		});
+			    		            	
+			    		            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='editAttribute(this)' data-container='body' data-placement='bottom' th:text='#{gen.edit}'><i class='la la-edit font-hg'></i></span><span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='la la-trash font-hg'></i></span></div></div></div></td>";
+			    		            	add += "</tr>";
+			    		            	
+			    		            	$("#table_attributes tbody").append(add);
+		        				 	}else{
+		        				 		 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: 'Error inserting data'});
+		        				 	}
+		        				 
+		        					
+		        			 },
+		        			 error: function(data,status,er) { 
+		        				 $.each(viewer.entities.values, function (k,v){
+	        			    		if(v.id == id){
+	        			    			viewer.entities.remove(v);
+	        			    		}
+	        			    	});
+		        				 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er});
+		        			 }
+		        		});
 		            	
 		            }
 		            	
 		        },
 		        cancel: function () {
-		        	removeEntityById(id);
 		        },
 		    },
 		    onContentReady: function () {
@@ -536,82 +469,60 @@
 		            action: function () {
 		            	var json = JSON.parse(infoBox);
 		            	var instance = jsoneditor.getValue();
-		            	console.log("insance: " + JSON.stringify(instance));
+		            	
 		            	instance[ontologyName][geometryField]['coordinates'] = arrayCoordinates;
-		            	var isOk = true;
 		            	
 		            	$.each(json, function(k,v){
-							var type = JSON.parse(schema)["datos"]["properties"][v.field]["type"];
-		            		
-		            		if(typeof $("#"+v.attribute + "_value").val() != type){
-		            			
-		            			if(type == "number" && !isNaN(Number($("#"+v.attribute + "_value").val()))){
-		            				instance[ontologyName][v.field] = Number($("#"+v.attribute + "_value").val());
-		            			}else if(type == "integer" && !isNaN(parseInt($("#"+v.attribute + "_value").val()))){
-		            				instance[ontologyName][v.field] = parseInt($("#"+v.attribute + "_value").val());
-		            			}else{
-		            				 $.each(viewer.entities.values, function (k,v){
-			        			    		if(v.id == id){
-			        			    			viewer.entities.remove(v);
-			        			    		}
-			        			    	});
-			            				 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: 'The type of the fields is not allowed'});
-			            				 isOk = false;
-		            			}
-		            		}else{
-		            			instance[ontologyName][v.field] = $("#"+v.attribute + "_value").val();
-		            		}
+		            		instance[ontologyName][v.field] = $("#"+v.attribute + "_value").val();
 		            	});
 		            	
-		            	if(isOk){
-			            	var csrf_value = $("meta[name='_csrf']").attr("content");
-			    			var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-			            	 $.ajax({
-			        			 url: '/controlpanel/layers/crud/insert',
-			        			 headers: {
-				     			     [csrf_header]: csrf_value
-				     			 },
-			        			 type: 'POST',
-			        			 async:false,
-			        			 data: { 
-			        			   ontologyID : ontologyName,
-			        			   body: JSON.stringify(instance)
-			        					},	           
-			        			 success: function(dataSet) { 
-			        				 
-			        				 	if(JSON.parse(dataSet).exception==undefined){
-			        				 		console.log("success insert ");
-			        				 		
-			        				 		mapIds.push({'id':id, 'oid': JSON.parse(dataSet).ids[0]});
-				        					
-				        					var add= "<tr id='"+id+"'>";
-				    		            	add += "<td class='text-left no-wrap coordinates'>"+arrayCoordinates+"</td>"
-				    		            	
-				    		            	$.each(json, function(k,v){
-				    			    			var value = $("#"+v.attribute+"_value").val();
-				    			    			add += "<td class='text-left no-wrap "+v.attribute+"'>"+value+"</td>";
-				    			    		});
-				    		            	
-				    		            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border icon-on-table color-red tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='icon-delete'></i></span></div></div></div></td>";
-				    		            	add += "</tr>";
-				    		            	
-				    		            	$("#table_attributes tbody").append(add);
-			        				 	}else{
-			        				 		 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: 'Error inserting data'});
-			        				 	}
-			        				 
+		            	var csrf_value = $("meta[name='_csrf']").attr("content");
+		    			var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		            	 $.ajax({
+		        			 url: '/controlpanel/layers/crud/insert',
+		        			 headers: {
+			     			     [csrf_header]: csrf_value
+			     			 },
+		        			 type: 'POST',
+		        			 async:false,
+		        			 data: { 
+		        			   ontologyID : ontologyName,
+		        			   body: JSON.stringify(instance)
+		        					},	           
+		        			 success: function(dataSet) { 
+		        				 
+		        				 	if(JSON.parse(dataSet).exception==undefined){
+		        				 		console.log("success insert ");
+		        				 		
+		        				 		mapIds.push({'id':id, 'oid': JSON.parse(dataSet).ids[0]});
 			        					
-			        			 },
-			        			 error: function(data,status,er) { 
-			        				 $.each(viewer.entities.values, function (k,v){
-		        			    		if(v.id == id){
-		        			    			viewer.entities.remove(v);
-		        			    		}
-		        			    	});
-			        				 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er});
-			        			 }
-			        		});
-		            	}
+			        					var add= "<tr id='"+id+"'>";
+			    		            	add += "<td class='text-left no-wrap coordinates'>"+arrayCoordinates+"</td>"
+			    		            	
+			    		            	$.each(json, function(k,v){
+			    			    			var value = $("#"+v.attribute+"_value").val();
+			    			    			add += "<td class='text-left no-wrap "+v.attribute+"'>"+value+"</td>";
+			    			    		});
+			    		            	
+			    		            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='la la-trash font-hg'></i></span></div></div></div></td>";
+			    		            	add += "</tr>";
+			    		            	
+			    		            	$("#table_attributes tbody").append(add);
+		        				 	}else{
+		        				 		 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: 'Error inserting data'});
+		        				 	}
+		        				 
+		        					
+		        			 },
+		        			 error: function(data,status,er) { 
+		        				 $.each(viewer.entities.values, function (k,v){
+	        			    		if(v.id == id){
+	        			    			viewer.entities.remove(v);
+	        			    		}
+	        			    	});
+		        				 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er});
+		        			 }
+		        		});
 		            	
 		            }
 		            	
@@ -706,120 +617,99 @@
 		    content: '' +
 		    '<form action="" class="formName">' +
 		    '<div class="form-group col-md-12" id="attributes">' +
+		    '<label>'+ [[#{digitaltwindevice.latitude}]] +'</label> <input type="text" id="latitude" value="'+latitude+'" class="form-control"/>' +
+		    '<label>'+ [[#{digitaltwindevice.longitude}]] +'</label> <input type="text" id="longitude" value="'+longitude+'" class="form-control"/>' +
 		    '<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>',
 		    buttons: {
 		        formSubmit: {
 		            text: 'OK',
 		            btnClass: 'btn-blue',
 		            action: function () {
-		            	var longitude = $("#longitude").val();
-		        		var latitude = $("#latitude").val();
+		            	longitude = $("#longitude").val();
+		        		latitude = $("#latitude").val();
 		            	var json = JSON.parse(infoBox);
 		            	var instance = jsoneditor.getValue();
 		            	
 		            	instance[ontologyName][geometryField]['coordinates'][0] = parseFloat(longitude);
 		            	instance[ontologyName][geometryField]['coordinates'][1] = parseFloat(latitude);
 		            	
-		            	var isOk = true;
 		            	$.each(json, function(k,v){
-							var type = JSON.parse(schema)["datos"]["properties"][v.field]["type"];
-		            		
-		            		if(typeof $("#"+v.attribute + "_value").val() != type){
-		            			
-		            			if(type == "number" && !isNaN(Number($("#"+v.attribute + "_value").val()))){
-		            				instance[ontologyName][v.field] = Number($("#"+v.attribute + "_value").val());
-		            			}else if(type == "integer" && !isNaN(parseInt($("#"+v.attribute + "_value").val()))){
-		            				instance[ontologyName][v.field] = parseInt($("#"+v.attribute + "_value").val());
-		            			}else{
-		            				 $.each(viewer.entities.values, function (k,v){
-			        			    		if(v.id == id){
-			        			    			viewer.entities.remove(v);
-			        			    		}
-			        			    	});
-			            				 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: 'The type of the fields is not allowed'});
-			            				 isOk = false;
-		            			}
-		            		}else{
-		            			instance[ontologyName][v.field] = $("#"+v.attribute + "_value").val();
-		            		}
+		            		instance[ontologyName][v.field] = $("#"+v.attribute + "_value").val();
 		            	});
 		            	
-		            	if(isOk){
-		            	
-			            	var csrf_value = $("meta[name='_csrf']").attr("content");
-			    			var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-			            	 $.ajax({
-			        			 url: '/controlpanel/layers/crud/update',
-			        			 headers: {
-				     			     [csrf_header]: csrf_value
-				     			 },
-			        			 type: 'POST',
-			        			 async: false,
-			        			 data: { 
-			        			   ontologyID : ontologyName,
-			        			   body: JSON.stringify(instance),
-			        			   oid : oid,
-			        					},	           
-			        			 success: function(dataSet) { 
-			        				 
-			        				 	if(JSON.parse(dataSet).exception==undefined){
-			        				 		console.log("success updated ");
-			        				 		
-			        				 		$.each(viewer.entities.values, function (k,v){
-			        				    		if(v!=undefined && v.id == id){
-			        				    			viewer.entities.remove(v);
-			        				    		}
-			        				    	});
-			        				 		
-			        				 		if(idAux!=null && longitudeAux!=null && latitudeAux!=null){
-			        				 			$("#" + idAux).remove();
-			        				 		}else{
-			        				 			$(obj).closest('tr').remove();
-			        				 		}
-			        				 		
-			        				 		var newId = viewer.entities.add({
-								    			   position : Cesium.Cartesian3.fromDegrees(longitude, latitude),
-								            	    billboard: {
-								            	      image: imagePoint,
-								            	      scale: 1.0,
-								            	    }
-								            	}).id;
-			        				 		
-			        				 		$.each(mapIds, function(k,v){
-			        				 			if(v.id == id){
-			        				 				v.id = newId;
-			        				 			}
-			        				 		});
-			        				 		
-			        				 		var add= "<tr id='"+newId+"'>";
-			        		            	add += "<td class='text-left no-wrap latitude'>"+latitude+"</td>"
-			        		            	add += "<td class='text-left no-wrap longitude'>"+longitude+"</td>"
-			        		            	
-			        		            	$.each(json, function(k,v){
-			        			    			var value = $("#"+v.attribute+"_value").val();
-			        			    			add += "<td class='text-left no-wrap "+v.attribute+"'>"+value+"</td>";
-			        			    		});
-			        		            	
-			        		            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border icon-on-table color-blue tooltips' onclick='editAttribute(this)' data-container='body' data-placement='bottom' th:text='#{gen.edit}'><i class='icon-edit'></i></span><span class='btn btn-xs btn-no-border icon-on-table color-red tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='icon-delete'></i></span></div></div></div></td>";
-			        		            	add += "</tr>";
-			        		            	
-			        		            	$("#table_attributes tbody").append(add);
-			        				 	}else{
-			        				 		 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: 'Error updating data'});
-			        				 	}
-			        				 
-			        					
-			        			 },
-			        			 error: function(data,status,er) { 
-			        				 $.each(viewer.entities.values, function (k,v){
-		        			    		if(v.id == id){
-		        			    			viewer.entities.remove(v);
-		        			    		}
-		        			    	});
-			        				 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er});
-			        			 }
-			        		});
-		            	}
+		            	var csrf_value = $("meta[name='_csrf']").attr("content");
+		    			var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		            	 $.ajax({
+		        			 url: '/controlpanel/layers/crud/update',
+		        			 headers: {
+			     			     [csrf_header]: csrf_value
+			     			 },
+		        			 type: 'POST',
+		        			 async: false,
+		        			 data: { 
+		        			   ontologyID : ontologyName,
+		        			   body: JSON.stringify(instance),
+		        			   oid : oid,
+		        					},	           
+		        			 success: function(dataSet) { 
+		        				 
+		        				 	if(JSON.parse(dataSet).exception==undefined){
+		        				 		console.log("success updated ");
+		        				 		
+		        				 		$.each(viewer.entities.values, function (k,v){
+		        				    		if(v!=undefined && v.id == id){
+		        				    			viewer.entities.remove(v);
+		        				    		}
+		        				    	});
+		        				 		
+		        				 		if(idAux!=null && longitudeAux!=null && latitudeAux!=null){
+		        				 			$("#" + idAux).remove();
+		        				 		}else{
+		        				 			$(obj).closest('tr').remove();
+		        				 		}
+		        				 		
+		        				 		var newId = viewer.entities.add({
+							    			   position : Cesium.Cartesian3.fromDegrees(longitude, latitude),
+							            	    billboard: {
+							            	      image: imagePoint,
+							            	      scale: 1.0,
+							            	    }
+							            	}).id;
+		        				 		
+		        				 		$.each(mapIds, function(k,v){
+		        				 			if(v.id == id){
+		        				 				v.id = newId;
+		        				 			}
+		        				 		});
+		        				 		
+		        				 		var add= "<tr id='"+newId+"'>";
+		        		            	add += "<td class='text-left no-wrap latitude'>"+latitude+"</td>"
+		        		            	add += "<td class='text-left no-wrap longitude'>"+longitude+"</td>"
+		        		            	
+		        		            	$.each(json, function(k,v){
+		        			    			var value = $("#"+v.attribute+"_value").val();
+		        			    			add += "<td class='text-left no-wrap "+v.attribute+"'>"+value+"</td>";
+		        			    		});
+		        		            	
+		        		            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='editAttribute(this)' data-container='body' data-placement='bottom' th:text='#{gen.edit}'><i class='la la-edit font-hg'></i></span><span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='la la-trash font-hg'></i></span></div></div></div></td>";
+		        		            	add += "</tr>";
+		        		            	
+		        		            	$("#table_attributes tbody").append(add);
+		        				 	}else{
+		        				 		 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: 'Error updating data'});
+		        				 	}
+		        				 
+		        					
+		        			 },
+		        			 error: function(data,status,er) { 
+		        				 $.each(viewer.entities.values, function (k,v){
+	        			    		if(v.id == id){
+	        			    			viewer.entities.remove(v);
+	        			    		}
+	        			    	});
+		        				 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er});
+		        			 }
+		        		});
 		            }
 		            
 		        },
@@ -827,9 +717,6 @@
 		        },
 		    },
 		    onContentReady: function () {
-		    	
-		    	$("#attributes").append('<label>'+ [[#{digitaltwindevice.latitude}]] +'</label> <input type="text" id="latitude" value="'+latitude+'" class="form-control"/>');
-		    	$("#attributes").append('<label>'+ [[#{digitaltwindevice.longitude}]] +'</label> <input type="text" id="longitude" value="'+longitude+'" class="form-control"/>');
 		    	if(infoBox!=null){
 		    		json = JSON.parse(infoBox);
 		    		if(idAux!=null && longitudeAux!=null && latitudeAux!=null){

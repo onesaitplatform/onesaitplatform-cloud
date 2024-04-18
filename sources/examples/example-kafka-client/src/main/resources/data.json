@@ -1,0 +1,3151 @@
+[{
+  "value" : "229.2",
+  "timeStamp" : 1529595852973000000,
+  "description" : "Voltaje Fase 1",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID001"
+}, {
+  "value" : "229.17",
+  "timeStamp" : 1529595852973000001,
+  "description" : "Voltaje Fase 2",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID002"
+}, {
+  "value" : "229.17",
+  "timeStamp" : 1529595852973000002,
+  "description" : "Voltaje Fase 3",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID003"
+}, {
+  "value" : "396.96",
+  "timeStamp" : 1529595852973000003,
+  "description" : "Voltaje entre Fases 1-2",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID004"
+}, {
+  "value" : "396.93",
+  "timeStamp" : 1529595852973000004,
+  "description" : "Voltaje entre Fases 2-3",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID005"
+}, {
+  "value" : "396.96",
+  "timeStamp" : 1529595852973000005,
+  "description" : "Voltaje entre Fases 3-1",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID006"
+}, {
+  "value" : "0.2077",
+  "timeStamp" : 1529595852973000006,
+  "description" : "Corriente Fase 1",
+  "signal" : "PHASECURRENT",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID007"
+}, {
+  "value" : "0.2077",
+  "timeStamp" : 1529595852973000007,
+  "description" : "Corriente Fase 2",
+  "signal" : "PHASECURRENT",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID008"
+}, {
+  "value" : "0.2078",
+  "timeStamp" : 1529595852973000008,
+  "description" : "Corriente Fase 3",
+  "signal" : "PHASECURRENT",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID009"
+}, {
+  "value" : "0.2074",
+  "timeStamp" : 1529595852973000009,
+  "description" : "Corriente Neutro",
+  "signal" : "PHASECURRENT",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID010"
+}, {
+  "value" : "26.5",
+  "timeStamp" : 1529595852973000010,
+  "description" : "Potencia Activa Fase 1",
+  "signal" : "PHASEACTIVEPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID011"
+}, {
+  "value" : "26.5",
+  "timeStamp" : 1529595852973000011,
+  "description" : "Potencia Activa Fase 2",
+  "signal" : "PHASEACTIVEPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID012"
+}, {
+  "value" : "26.4",
+  "timeStamp" : 1529595852973000012,
+  "description" : "Potencia Activa Fase 3",
+  "signal" : "PHASEACTIVEPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID013"
+}, {
+  "value" : "79.4",
+  "timeStamp" : 1529595852973000013,
+  "description" : "Potencia Activa de lï¿½nea",
+  "signal" : "TOTALACTIVEPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID014"
+}, {
+  "value" : "-19.7",
+  "timeStamp" : 1529595852973000014,
+  "description" : "Potencia Reactiva Fase 1",
+  "signal" : "PHASEREACTIVEPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID015"
+}, {
+  "value" : "-19.8",
+  "timeStamp" : 1529595852973000015,
+  "description" : "Potencia Reactiva Fase 2",
+  "signal" : "PHASEREACTIVEPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID016"
+}, {
+  "value" : "-19.8",
+  "timeStamp" : 1529595852973000016,
+  "description" : "Potencia Reactiva Fase 3",
+  "signal" : "PHASEREACTIVEPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID017"
+}, {
+  "value" : "-59.300003",
+  "timeStamp" : 1529595853023000000,
+  "description" : "Potencia Reactiva de lï¿½nea",
+  "signal" : "TOTALREACTIVEPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID018"
+}, {
+  "value" : "47.600002",
+  "timeStamp" : 1529595853023000001,
+  "description" : "Potencia Aparente Fase 1",
+  "signal" : "PHASEAPPARENTPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID019"
+}, {
+  "value" : "47.600002",
+  "timeStamp" : 1529595853023000002,
+  "description" : "Potencia Aparente Fase 2",
+  "signal" : "PHASEAPPARENTPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID020"
+}, {
+  "value" : "47.600002",
+  "timeStamp" : 1529595853023000003,
+  "description" : "Potencia Aparente Fase 3",
+  "signal" : "PHASEAPPARENTPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID021"
+}, {
+  "value" : "142.8",
+  "timeStamp" : 1529595853023000004,
+  "description" : "Potencia Aparente de lï¿½nea",
+  "signal" : "TOTALAPPARENTPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID022"
+}, {
+  "value" : "-0.5567",
+  "timeStamp" : 1529595853023000005,
+  "description" : "Factor de Potencia Fase 1",
+  "signal" : "POWERFACTOR",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID023"
+}, {
+  "value" : "-0.5567",
+  "timeStamp" : 1529595853023000006,
+  "description" : "Factor de Potencia Fase 2",
+  "signal" : "POWERFACTOR",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID024"
+}, {
+  "value" : "-0.5546",
+  "timeStamp" : 1529595853023000007,
+  "description" : "Factor de Potencia Fase 3",
+  "signal" : "POWERFACTOR",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID025"
+}, {
+  "value" : "-0.556",
+  "timeStamp" : 1529595853023000008,
+  "description" : "Factor de Potencia Total",
+  "signal" : "POWERFACTOR",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID026"
+}, {
+  "value" : "49.995",
+  "timeStamp" : 1529595853023000009,
+  "description" : "Frecuencia",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID027"
+}, {
+  "value" : "229.18",
+  "timeStamp" : 1529595853023000010,
+  "description" : "Tensiï¿½n media",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID028"
+}, {
+  "value" : "396.95",
+  "timeStamp" : 1529595853023000011,
+  "description" : "Tensiï¿½n entre fase media",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID029"
+}, {
+  "value" : "0.2077",
+  "timeStamp" : 1529595853023000012,
+  "description" : "Corriente media",
+  "signal" : "PHASECURRENT",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID030"
+}, {
+  "value" : "74.684",
+  "timeStamp" : 1529595853023000013,
+  "description" : "Energï¿½a Activa Consumida",
+  "signal" : "ACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID031"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853023000014,
+  "description" : "Energï¿½a Activa Generada",
+  "signal" : "ACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID032"
+}, {
+  "value" : "1.041",
+  "timeStamp" : 1529595853023000015,
+  "description" : "Energï¿½a Reactiva Consumida",
+  "signal" : "REACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID033"
+}, {
+  "value" : "51.061",
+  "timeStamp" : 1529595853023000016,
+  "description" : "Energï¿½a Reactiva Generada",
+  "signal" : "REACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID034"
+}, {
+  "value" : "155.464",
+  "timeStamp" : 1529595853023000017,
+  "description" : "Energï¿½a Aparente",
+  "signal" : "APPARENT ENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID035"
+}, {
+  "value" : "1.041",
+  "timeStamp" : 1529595853023000018,
+  "description" : "Energï¿½a Reactiva 1ï¿½ cuadrante",
+  "signal" : "REACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID036"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853023000019,
+  "description" : "Energï¿½a Reactiva 2ï¿½ cuadrante",
+  "signal" : "REACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID037"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853073000000,
+  "description" : "Energï¿½a Reactiva 3ï¿½ cuadrante",
+  "signal" : "REACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID038"
+}, {
+  "value" : "51.061",
+  "timeStamp" : 1529595853073000001,
+  "description" : "Energï¿½a Reactiva 4ï¿½ cuadrante",
+  "signal" : "REACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID039"
+}, {
+  "value" : "1.6498252E-38",
+  "timeStamp" : 1529595853073000002,
+  "description" : "HOUR METER EP+??",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID040"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853073000003,
+  "description" : "HOUR METER EP-??",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID041"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853073000004,
+  "description" : "Energï¿½a Alternativa Activa Consumida",
+  "signal" : "ACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID042"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853073000005,
+  "description" : "Energï¿½a Alternativa Activa Generada",
+  "signal" : "ACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID043"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853073000006,
+  "description" : "Energï¿½a Alternativa Reactiva Consumida",
+  "signal" : "REACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID044"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853073000007,
+  "description" : "Energï¿½a Alternativa Reactiva Generada",
+  "signal" : "REACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID045"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853073000008,
+  "description" : "Energï¿½a Alternativa Aparente",
+  "signal" : "APPARENT ENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID046"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853073000009,
+  "description" : "Energï¿½a Alternativa Reactiva 1ï¿½ cuadrante",
+  "signal" : "REACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID047"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853073000010,
+  "description" : "Energï¿½a Alternativa Reactiva 2ï¿½ cuadrante",
+  "signal" : "REACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID048"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853073000011,
+  "description" : "Energï¿½a Alternativa Reactiva 3ï¿½ cuadrante",
+  "signal" : "REACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID049"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853073000012,
+  "description" : "Energï¿½a Alternativa Reactiva 4ï¿½ cuadrante",
+  "signal" : "REACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID050"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853073000013,
+  "description" : "HOUR METER ALTERNATIVE EP+??",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID051"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853073000014,
+  "description" : "HOUR METER ALTERNATIVE EP-??",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID052"
+}, {
+  "value" : "74.684",
+  "timeStamp" : 1529595853073000015,
+  "description" : "TOTAL TARIFF IMPORT ENERGY",
+  "signal" : "ACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID053"
+}, {
+  "value" : "74.684",
+  "timeStamp" : 1529595853073000016,
+  "description" : "TARIFF 1 IMPORT ENERGY",
+  "signal" : "ACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID054"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853073000017,
+  "description" : "TARIFF 2 IMPORT ENERGY",
+  "signal" : "ACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID055"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853073000018,
+  "description" : "TARIFF 3 IMPORT ENERGY",
+  "signal" : "ACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID056"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853073000019,
+  "description" : "TARIFF 4 IMPORT ENERGY",
+  "signal" : "ACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID057"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853123000000,
+  "description" : "TOTAL TARIFF EXPORT ENERGY",
+  "signal" : "REACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID058"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853123000001,
+  "description" : "TARIFF 1 EXPORT ENERGY",
+  "signal" : "REACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID059"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853123000002,
+  "description" : "TARIFF 2 EXPORT ENERGY",
+  "signal" : "REACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID060"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853123000003,
+  "description" : "TARIFF 3 EXPORT ENERGY",
+  "signal" : "REACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID061"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853123000004,
+  "description" : "TARIFF 4 EXPORT ENERGY",
+  "signal" : "REACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID062"
+}, {
+  "value" : "239.4",
+  "timeStamp" : 1529595853123000005,
+  "description" : "Voltaje Fase 1 mï¿½ximo",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID063"
+}, {
+  "value" : "239.4",
+  "timeStamp" : 1529595853123000006,
+  "description" : "Voltaje Fase 2 mï¿½ximo",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID064"
+}, {
+  "value" : "239.4",
+  "timeStamp" : 1529595853123000007,
+  "description" : "Voltaje Fase 3 mï¿½ximo",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID065"
+}, {
+  "value" : "414.7",
+  "timeStamp" : 1529595853123000008,
+  "description" : "Voltaje entre Fases 1-2 mï¿½ximo",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID066"
+}, {
+  "value" : "414.6",
+  "timeStamp" : 1529595853123000009,
+  "description" : "Voltaje entre Fases 2-3 mï¿½ximo",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID067"
+}, {
+  "value" : "414.7",
+  "timeStamp" : 1529595853123000010,
+  "description" : "Voltaje entre Fases 3-1 mï¿½ximo",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID068"
+}, {
+  "value" : "8.128",
+  "timeStamp" : 1529595853123000011,
+  "description" : "Corriente Fase 1 mï¿½xima",
+  "signal" : "PHASECURRENT",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID069"
+}, {
+  "value" : "8.126",
+  "timeStamp" : 1529595853123000012,
+  "description" : "Corriente Fase 2 mï¿½xima",
+  "signal" : "PHASECURRENT",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID070"
+}, {
+  "value" : "8.128",
+  "timeStamp" : 1529595853123000013,
+  "description" : "Corriente Fase 3 mï¿½xima",
+  "signal" : "PHASECURRENT",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID071"
+}, {
+  "value" : "8.13",
+  "timeStamp" : 1529595853123000014,
+  "description" : "Corriente Neutro mï¿½xima",
+  "signal" : "PHASECURRENT",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID072"
+}, {
+  "value" : "1791.0",
+  "timeStamp" : 1529595853123000015,
+  "description" : "Potencia Activa Fase 1 mï¿½xima",
+  "signal" : "PHASEACTIVEPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID073"
+}, {
+  "value" : "1790.0",
+  "timeStamp" : 1529595853123000016,
+  "description" : "Potencia Activa Fase 2 mï¿½xima",
+  "signal" : "PHASEACTIVEPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID074"
+}, {
+  "value" : "1790.0",
+  "timeStamp" : 1529595853123000017,
+  "description" : "Potencia Activa Fase 3 mï¿½xima",
+  "signal" : "PHASEACTIVEPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID075"
+}, {
+  "value" : "5372.0",
+  "timeStamp" : 1529595853123000018,
+  "description" : "Potencia Activa de lï¿½nea mï¿½xima",
+  "signal" : "TOTALACTIVEPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID076"
+}, {
+  "value" : "-37.0",
+  "timeStamp" : 1529595853123000019,
+  "description" : "Potencia Reactiva Fase 1 mï¿½xima",
+  "signal" : "PHASEREACTIVEPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID077"
+}, {
+  "value" : "-37.0",
+  "timeStamp" : 1529595853173000000,
+  "description" : "Potencia Reactiva Fase 2 mï¿½xima",
+  "signal" : "PHASEREACTIVEPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID078"
+}, {
+  "value" : "-37.0",
+  "timeStamp" : 1529595853173000001,
+  "description" : "Potencia Reactiva Fase 3 mï¿½xima",
+  "signal" : "PHASEREACTIVEPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID079"
+}, {
+  "value" : "-111.0",
+  "timeStamp" : 1529595853173000002,
+  "description" : "Potencia Reactiva de lï¿½nea mï¿½xima",
+  "signal" : "TOTALREACTIVEPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID080"
+}, {
+  "value" : "1791.0",
+  "timeStamp" : 1529595853173000003,
+  "description" : "Potencia Aparente Fase 1 mï¿½xima",
+  "signal" : "PHASEAPPARENTPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID081"
+}, {
+  "value" : "1791.0",
+  "timeStamp" : 1529595853173000004,
+  "description" : "Potencia Aparente Fase 2 mï¿½xima",
+  "signal" : "PHASEAPPARENTPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID082"
+}, {
+  "value" : "1791.0",
+  "timeStamp" : 1529595853173000005,
+  "description" : "Potencia Aparente Fase 3 mï¿½xima",
+  "signal" : "PHASEAPPARENTPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID083"
+}, {
+  "value" : "5373.0",
+  "timeStamp" : 1529595853173000006,
+  "description" : "Potencia Aparente de lï¿½nea mï¿½xima",
+  "signal" : "TOTALAPPARENTPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID084"
+}, {
+  "value" : "1.0",
+  "timeStamp" : 1529595853173000007,
+  "description" : "Factor de Potencia mï¿½ximo",
+  "signal" : "POWERFACTOR",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID085"
+}, {
+  "value" : "60.27",
+  "timeStamp" : 1529595853173000008,
+  "description" : "Frecuencia mï¿½xima",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID086"
+}, {
+  "value" : "239.4",
+  "timeStamp" : 1529595853173000009,
+  "description" : "Tensiï¿½n media mï¿½xima",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID087"
+}, {
+  "value" : "414.6",
+  "timeStamp" : 1529595853173000010,
+  "description" : "Tensiï¿½n entre fase media mï¿½xima",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID088"
+}, {
+  "value" : "8.128",
+  "timeStamp" : 1529595853173000011,
+  "description" : "Corriente media mï¿½xima",
+  "signal" : "PHASECURRENT",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID089"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853173000012,
+  "description" : "Voltaje Fase 1 mï¿½nimo",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID090"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853173000013,
+  "description" : "Voltaje Fase 2 mï¿½nimo",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID091"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853173000014,
+  "description" : "Voltaje Fase 3 mï¿½nimo",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID092"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853173000015,
+  "description" : "Voltaje entre Fases 1-2 mï¿½nimo",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID093"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853173000016,
+  "description" : "Voltaje entre Fases 2-3 mï¿½nimo",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID094"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853173000017,
+  "description" : "Voltaje entre Fases 3-1 mï¿½nimo",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID095"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853173000018,
+  "description" : "Corriente Fase 1 mï¿½nima",
+  "signal" : "PHASECURRENT",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID096"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853173000019,
+  "description" : "Corriente Fase 2 mï¿½nima",
+  "signal" : "PHASECURRENT",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID097"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853223000000,
+  "description" : "Corriente Fase 3 mï¿½nima",
+  "signal" : "PHASECURRENT",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID098"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853223000001,
+  "description" : "Corriente Neutro mï¿½nima",
+  "signal" : "PHASECURRENT",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID099"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853223000002,
+  "description" : "Potencia Activa Fase 1 mï¿½nima",
+  "signal" : "PHASEACTIVEPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID100"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853223000003,
+  "description" : "Potencia Activa Fase 2 mï¿½nima",
+  "signal" : "PHASEACTIVEPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID101"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853223000004,
+  "description" : "Potencia Activa Fase 3 mï¿½nima",
+  "signal" : "PHASEACTIVEPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID102"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853223000005,
+  "description" : "Potencia Activa de lï¿½nea mï¿½nima",
+  "signal" : "TOTALACTIVEPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID103"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853223000006,
+  "description" : "Potencia Reactiva Fase 1 mï¿½nima",
+  "signal" : "PHASEREACTIVEPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID104"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853223000007,
+  "description" : "Potencia Reactiva Fase 2 mï¿½nima",
+  "signal" : "PHASEREACTIVEPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID105"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853223000008,
+  "description" : "Potencia Reactiva Fase 3 mï¿½nima",
+  "signal" : "PHASEREACTIVEPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID106"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853223000009,
+  "description" : "Potencia Reactiva de lï¿½nea mï¿½nima",
+  "signal" : "TOTALREACTIVEPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID107"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853223000010,
+  "description" : "Potencia Aparente Fase 1 mï¿½nima",
+  "signal" : "PHASEAPPARENTPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID108"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853223000011,
+  "description" : "Potencia Aparente Fase 2 mï¿½nima",
+  "signal" : "PHASEAPPARENTPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID109"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853223000012,
+  "description" : "Potencia Aparente Fase 3 mï¿½nima",
+  "signal" : "PHASEAPPARENTPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID110"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853223000013,
+  "description" : "Potencia Aparente de lï¿½nea mï¿½nima",
+  "signal" : "TOTALAPPARENTPOWER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID111"
+}, {
+  "value" : "-1.0",
+  "timeStamp" : 1529595853223000014,
+  "description" : "Factor de Potencia mï¿½nimo",
+  "signal" : "POWERFACTOR",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID112"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853223000015,
+  "description" : "Frecuencia mï¿½nima",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID113"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853223000016,
+  "description" : "Tensiï¿½n media mï¿½nima",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID114"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853223000017,
+  "description" : "Tensiï¿½n entre fase media mï¿½nima",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID115"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853223000018,
+  "description" : "Corriente media mï¿½nima",
+  "signal" : "PHASECURRENT",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID116"
+}, {
+  "value" : "4.325",
+  "timeStamp" : 1529595853223000019,
+  "description" : "Corriente Fase 1 mï¿½xima demanda",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID117"
+}, {
+  "value" : "4.324",
+  "timeStamp" : 1529595853273000000,
+  "description" : "Corriente Fase 2 mï¿½xima demanda",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID118"
+}, {
+  "value" : "4.325",
+  "timeStamp" : 1529595853273000001,
+  "description" : "Corriente Fase 3 mï¿½xima demanda",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID119"
+}, {
+  "value" : "2904.0",
+  "timeStamp" : 1529595853273000002,
+  "description" : "Potencia Activa mï¿½xima demanda",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID120"
+}, {
+  "value" : "-97.0",
+  "timeStamp" : 1529595853273000003,
+  "description" : "Potencia reactiva mï¿½xima demanda",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID121"
+}, {
+  "value" : "2907.0",
+  "timeStamp" : 1529595853273000004,
+  "description" : "Potencia Aparente mï¿½xima demanda",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID122"
+}, {
+  "value" : "0.204",
+  "timeStamp" : 1529595853273000005,
+  "description" : "Corriente Fase 1 demanda presente",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID123"
+}, {
+  "value" : "0.204",
+  "timeStamp" : 1529595853273000006,
+  "description" : "Corriente Fase 2 demanda presente",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID124"
+}, {
+  "value" : "0.204",
+  "timeStamp" : 1529595853273000007,
+  "description" : "Corriente Fase 3 demanda presente",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID125"
+}, {
+  "value" : "77.0",
+  "timeStamp" : 1529595853273000008,
+  "description" : "Potencia Activa demanda presente",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID126"
+}, {
+  "value" : "-58.0",
+  "timeStamp" : 1529595853273000009,
+  "description" : "Potencia reactiva demanda presente",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID127"
+}, {
+  "value" : "140.0",
+  "timeStamp" : 1529595853273000010,
+  "description" : "Potencia Aparente demanda presente",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID128"
+}, {
+  "value" : "0.204",
+  "timeStamp" : 1529595853273000011,
+  "description" : "Corriente Fase 1 demanda previa",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID129"
+}, {
+  "value" : "0.204",
+  "timeStamp" : 1529595853273000012,
+  "description" : "Corriente Fase 2 demanda previa",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID130"
+}, {
+  "value" : "0.205",
+  "timeStamp" : 1529595853273000013,
+  "description" : "Corriente Fase 3 demanda previa",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID131"
+}, {
+  "value" : "77.0",
+  "timeStamp" : 1529595853273000014,
+  "description" : "Potencia Activa demanda previa",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID132"
+}, {
+  "value" : "-58.0",
+  "timeStamp" : 1529595853273000015,
+  "description" : "Potencia reactiva demanda previa",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID133"
+}, {
+  "value" : "140.0",
+  "timeStamp" : 1529595853323000000,
+  "description" : "Potencia Aparente demanda previa",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID134"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853323000001,
+  "description" : "Estado 2 digital input Bit 0 DI1 Bit 1 DI2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID135"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853323000002,
+  "description" : "Estado 2 relay output Bit 0 DO1 Bit 1 DO2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID136"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853323000003,
+  "description" : "Contador de pulsos 1",
+  "signal" : "ACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID137"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853323000004,
+  "description" : "Contador de pulsos 2",
+  "signal" : "ACTIVEENERGY",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID138"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853373000000,
+  "description" : "ï¿½ngulo fase V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID139"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853373000001,
+  "description" : "ï¿½ngulo fase V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID140"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853373000002,
+  "description" : "ï¿½ngulo fase V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID141"
+}, {
+  "value" : "-2635.6",
+  "timeStamp" : 1529595853373000003,
+  "description" : "ï¿½ngulo fase I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID142"
+}, {
+  "value" : "-2635.6",
+  "timeStamp" : 1529595853373000004,
+  "description" : "ï¿½ngulo fase I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID143"
+}, {
+  "value" : "-2635.6",
+  "timeStamp" : 1529595853373000005,
+  "description" : "ï¿½ngulo fase I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID144"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853373000006,
+  "description" : "Componente positiva secuencia voltaje",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID145"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853373000007,
+  "description" : "Componente negativa secuencia voltaje",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID146"
+}, {
+  "value" : "-306.4",
+  "timeStamp" : 1529595853423000000,
+  "description" : "Componente zero-sequence voltaje",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID147"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853423000001,
+  "description" : "Voltage unbalance factor",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID148"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853423000002,
+  "description" : "Componente positiva secuencia corriente",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID149"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853423000003,
+  "description" : "Componente negativa secuencia corriente",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID150"
+}, {
+  "value" : "-28.160002",
+  "timeStamp" : 1529595853423000004,
+  "description" : "Componente zero-sequence corriente",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID151"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853423000005,
+  "description" : "current unbalance factor",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID152"
+}, {
+  "value" : "168.95999",
+  "timeStamp" : 1529595853423000006,
+  "description" : "THD V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID153"
+}, {
+  "value" : "171.51999",
+  "timeStamp" : 1529595853423000007,
+  "description" : "THD V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID154"
+}, {
+  "value" : "171.51999",
+  "timeStamp" : 1529595853423000008,
+  "description" : "THD V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID155"
+}, {
+  "value" : "-125.02",
+  "timeStamp" : 1529595853423000009,
+  "description" : "THD I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID156"
+}, {
+  "value" : "-163.42",
+  "timeStamp" : 1529595853423000010,
+  "description" : "THD I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID157"
+}, {
+  "value" : "-171.09999",
+  "timeStamp" : 1529595853423000011,
+  "description" : "THD I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID158"
+}, {
+  "value" : "-280.80002",
+  "timeStamp" : 1529595853423000012,
+  "description" : "Valor fundamental V1",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID159"
+}, {
+  "value" : "-306.4",
+  "timeStamp" : 1529595853423000013,
+  "description" : "Valor fundamental V2",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID160"
+}, {
+  "value" : "-306.4",
+  "timeStamp" : 1529595853423000014,
+  "description" : "Valor fundamental V3",
+  "signal" : "PHASEVOLTAGE",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID161"
+}, {
+  "value" : "-28.160002",
+  "timeStamp" : 1529595853423000015,
+  "description" : "Valor fundamental I1",
+  "signal" : "PHASECURRENT",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID162"
+}, {
+  "value" : "-28.160002",
+  "timeStamp" : 1529595853423000016,
+  "description" : "Valor fundamental I2",
+  "signal" : "PHASECURRENT",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID163"
+}, {
+  "value" : "-28.160002",
+  "timeStamp" : 1529595853423000017,
+  "description" : "Valor fundamental I3",
+  "signal" : "PHASECURRENT",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID164"
+}, {
+  "value" : "256.0",
+  "timeStamp" : 1529595853423000018,
+  "description" : "Contenido Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID165"
+}, {
+  "value" : "256.0",
+  "timeStamp" : 1529595853423000019,
+  "description" : "Contenido Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID166"
+}, {
+  "value" : "256.0",
+  "timeStamp" : 1529595853423000020,
+  "description" : "Contenido Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID167"
+}, {
+  "value" : "-27.392002",
+  "timeStamp" : 1529595853423000021,
+  "description" : "Contenido Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID168"
+}, {
+  "value" : "-27.392002",
+  "timeStamp" : 1529595853423000022,
+  "description" : "Contenido Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID169"
+}, {
+  "value" : "-27.392002",
+  "timeStamp" : 1529595853423000023,
+  "description" : "Contenido Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID170"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853423000024,
+  "description" : "Ratio 2ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID171"
+}, {
+  "value" : "130.56",
+  "timeStamp" : 1529595853423000025,
+  "description" : "Ratio 3ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID172"
+}, {
+  "value" : "110.079994",
+  "timeStamp" : 1529595853423000026,
+  "description" : "Ratio 4ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID173"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853423000027,
+  "description" : "Ratio 5ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID174"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853423000028,
+  "description" : "Ratio 6ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID175"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853423000029,
+  "description" : "Ratio 7ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID176"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853423000030,
+  "description" : "Ratio 8ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID177"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853423000031,
+  "description" : "Ratio 9ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID178"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853423000032,
+  "description" : "Ratio 10ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID179"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853423000033,
+  "description" : "Ratio 11ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID180"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853423000034,
+  "description" : "Ratio 12ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID181"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853423000035,
+  "description" : "Ratio 13ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID182"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853423000036,
+  "description" : "Ratio 14ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID183"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853423000037,
+  "description" : "Ratio 15ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID184"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000000,
+  "description" : "Ratio 16ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID185"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000001,
+  "description" : "Ratio 17ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID186"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000002,
+  "description" : "Ratio 18ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID187"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000003,
+  "description" : "Ratio 19ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID188"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000004,
+  "description" : "Ratio 20ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID189"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000005,
+  "description" : "Ratio 21ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID190"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000006,
+  "description" : "Ratio 22ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID191"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000007,
+  "description" : "Ratio 23ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID192"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000008,
+  "description" : "Ratio 24ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID193"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000009,
+  "description" : "Ratio 25ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID194"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000010,
+  "description" : "Ratio 26ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID195"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000011,
+  "description" : "Ratio 27ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID196"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000012,
+  "description" : "Ratio 28ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID197"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000013,
+  "description" : "Ratio 29ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID198"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000014,
+  "description" : "Ratio 30ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID199"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000015,
+  "description" : "Ratio 31ï¿½ Armï¿½nico V1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID200"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000016,
+  "description" : "Ratio 2ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID201"
+}, {
+  "value" : "130.56",
+  "timeStamp" : 1529595853473000017,
+  "description" : "Ratio 3ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID202"
+}, {
+  "value" : "112.64",
+  "timeStamp" : 1529595853473000018,
+  "description" : "Ratio 4ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID203"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000019,
+  "description" : "Ratio 5ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID204"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000020,
+  "description" : "Ratio 6ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID205"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000021,
+  "description" : "Ratio 7ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID206"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000022,
+  "description" : "Ratio 8ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID207"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000023,
+  "description" : "Ratio 9ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID208"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000024,
+  "description" : "Ratio 10ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID209"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000025,
+  "description" : "Ratio 11ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID210"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000026,
+  "description" : "Ratio 12ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID211"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000027,
+  "description" : "Ratio 13ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID212"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000028,
+  "description" : "Ratio 14ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID213"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000029,
+  "description" : "Ratio 15ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID214"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000030,
+  "description" : "Ratio 16ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID215"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000031,
+  "description" : "Ratio 17ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID216"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000032,
+  "description" : "Ratio 18ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID217"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000033,
+  "description" : "Ratio 19ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID218"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000034,
+  "description" : "Ratio 20ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID219"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000035,
+  "description" : "Ratio 21ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID220"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000036,
+  "description" : "Ratio 22ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID221"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000037,
+  "description" : "Ratio 23ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID222"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000038,
+  "description" : "Ratio 24ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID223"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853473000039,
+  "description" : "Ratio 25ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID224"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000000,
+  "description" : "Ratio 26ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID225"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000001,
+  "description" : "Ratio 27ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID226"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000002,
+  "description" : "Ratio 28ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID227"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000003,
+  "description" : "Ratio 29ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID228"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000004,
+  "description" : "Ratio 30ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID229"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000005,
+  "description" : "Ratio 31ï¿½ Armï¿½nico V2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID230"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000006,
+  "description" : "Ratio 2ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID231"
+}, {
+  "value" : "130.56",
+  "timeStamp" : 1529595853523000007,
+  "description" : "Ratio 3ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID232"
+}, {
+  "value" : "112.64",
+  "timeStamp" : 1529595853523000008,
+  "description" : "Ratio 4ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID233"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000009,
+  "description" : "Ratio 5ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID234"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000010,
+  "description" : "Ratio 6ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID235"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000011,
+  "description" : "Ratio 7ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID236"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000012,
+  "description" : "Ratio 8ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID237"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000013,
+  "description" : "Ratio 9ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID238"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000014,
+  "description" : "Ratio 10ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID239"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000015,
+  "description" : "Ratio 11ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID240"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000016,
+  "description" : "Ratio 12ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID241"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000017,
+  "description" : "Ratio 13ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID242"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000018,
+  "description" : "Ratio 14ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID243"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000019,
+  "description" : "Ratio 15ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID244"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000020,
+  "description" : "Ratio 16ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID245"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000021,
+  "description" : "Ratio 17ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID246"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000022,
+  "description" : "Ratio 18ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID247"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000023,
+  "description" : "Ratio 19ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID248"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000024,
+  "description" : "Ratio 20ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID249"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000025,
+  "description" : "Ratio 21ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID250"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000026,
+  "description" : "Ratio 22ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID251"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000027,
+  "description" : "Ratio 23ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID252"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000028,
+  "description" : "Ratio 24ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID253"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000029,
+  "description" : "Ratio 25ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID254"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000030,
+  "description" : "Ratio 26ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID255"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000031,
+  "description" : "Ratio 27ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID256"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000032,
+  "description" : "Ratio 28ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID257"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000033,
+  "description" : "Ratio 29ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID258"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000034,
+  "description" : "Ratio 30ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID259"
+}, {
+  "value" : "0.0",
+  "timeStamp" : 1529595853523000035,
+  "description" : "Ratio 31ï¿½ Armï¿½nico V3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID260"
+}, {
+  "value" : "-161.25",
+  "timeStamp" : 1529595853523000036,
+  "description" : "Ratio 2ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID261"
+}, {
+  "value" : "13.0",
+  "timeStamp" : 1529595853523000037,
+  "description" : "Ratio 3ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID262"
+}, {
+  "value" : "-240.61",
+  "timeStamp" : 1529595853523000038,
+  "description" : "Ratio 4ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID263"
+}, {
+  "value" : "-209.73",
+  "timeStamp" : 1529595853523000039,
+  "description" : "Ratio 5ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID264"
+}, {
+  "value" : "104.99",
+  "timeStamp" : 1529595853573000000,
+  "description" : "Ratio 6ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID265"
+}, {
+  "value" : "-314.71",
+  "timeStamp" : 1529595853573000001,
+  "description" : "Ratio 7ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID266"
+}, {
+  "value" : "51.23",
+  "timeStamp" : 1529595853573000002,
+  "description" : "Ratio 8ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID267"
+}, {
+  "value" : "294.55",
+  "timeStamp" : 1529595853573000003,
+  "description" : "Ratio 9ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID268"
+}, {
+  "value" : "-299.5",
+  "timeStamp" : 1529595853573000004,
+  "description" : "Ratio 10ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID269"
+}, {
+  "value" : "-268.66998",
+  "timeStamp" : 1529595853573000005,
+  "description" : "Ratio 11ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID270"
+}, {
+  "value" : "-66.549995",
+  "timeStamp" : 1529595853573000006,
+  "description" : "Ratio 12ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID271"
+}, {
+  "value" : "71.78",
+  "timeStamp" : 1529595853573000007,
+  "description" : "Ratio 13ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID272"
+}, {
+  "value" : "56.34",
+  "timeStamp" : 1529595853573000008,
+  "description" : "Ratio 14ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID273"
+}, {
+  "value" : "51.28",
+  "timeStamp" : 1529595853573000009,
+  "description" : "Ratio 15ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID274"
+}, {
+  "value" : "325.12",
+  "timeStamp" : 1529595853573000010,
+  "description" : "Ratio 16ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID275"
+}, {
+  "value" : "87.09",
+  "timeStamp" : 1529595853573000011,
+  "description" : "Ratio 17ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID276"
+}, {
+  "value" : "-153.59999",
+  "timeStamp" : 1529595853573000012,
+  "description" : "Ratio 18ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID277"
+}, {
+  "value" : "-125.409996",
+  "timeStamp" : 1529595853573000013,
+  "description" : "Ratio 19ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID278"
+}, {
+  "value" : "207.37",
+  "timeStamp" : 1529595853573000014,
+  "description" : "Ratio 20ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID279"
+}, {
+  "value" : "-15.349999",
+  "timeStamp" : 1529595853573000015,
+  "description" : "Ratio 21ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID280"
+}, {
+  "value" : "156.17",
+  "timeStamp" : 1529595853573000016,
+  "description" : "Ratio 22ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID281"
+}, {
+  "value" : "245.78",
+  "timeStamp" : 1529595853573000017,
+  "description" : "Ratio 23ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID282"
+}, {
+  "value" : "-174.06999",
+  "timeStamp" : 1529595853573000018,
+  "description" : "Ratio 24ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID283"
+}, {
+  "value" : "232.97",
+  "timeStamp" : 1529595853573000019,
+  "description" : "Ratio 25ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID284"
+}, {
+  "value" : "302.09",
+  "timeStamp" : 1529595853573000020,
+  "description" : "Ratio 26ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID285"
+}, {
+  "value" : "261.13",
+  "timeStamp" : 1529595853573000021,
+  "description" : "Ratio 27ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID286"
+}, {
+  "value" : "81.93",
+  "timeStamp" : 1529595853573000022,
+  "description" : "Ratio 28ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID287"
+}, {
+  "value" : "-179.2",
+  "timeStamp" : 1529595853573000023,
+  "description" : "Ratio 29ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID288"
+}, {
+  "value" : "-51.19",
+  "timeStamp" : 1529595853573000024,
+  "description" : "Ratio 30ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID289"
+}, {
+  "value" : "273.91998",
+  "timeStamp" : 1529595853573000025,
+  "description" : "Ratio 31ï¿½ Armï¿½nico I1",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID290"
+}, {
+  "value" : "-117.729996",
+  "timeStamp" : 1529595853573000026,
+  "description" : "Ratio 2ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID291"
+}, {
+  "value" : "23.24",
+  "timeStamp" : 1529595853573000027,
+  "description" : "Ratio 3ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID292"
+}, {
+  "value" : "-255.97",
+  "timeStamp" : 1529595853573000028,
+  "description" : "Ratio 4ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID293"
+}, {
+  "value" : "-222.53",
+  "timeStamp" : 1529595853573000029,
+  "description" : "Ratio 5ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID294"
+}, {
+  "value" : "112.67",
+  "timeStamp" : 1529595853573000030,
+  "description" : "Ratio 6ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID295"
+}, {
+  "value" : "294.57",
+  "timeStamp" : 1529595853573000031,
+  "description" : "Ratio 7ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID296"
+}, {
+  "value" : "23.07",
+  "timeStamp" : 1529595853573000032,
+  "description" : "Ratio 8ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID297"
+}, {
+  "value" : "276.63",
+  "timeStamp" : 1529595853573000033,
+  "description" : "Ratio 9ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID298"
+}, {
+  "value" : "-312.3",
+  "timeStamp" : 1529595853573000034,
+  "description" : "Ratio 10ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID299"
+}, {
+  "value" : "-276.35",
+  "timeStamp" : 1529595853573000035,
+  "description" : "Ratio 11ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID300"
+}, {
+  "value" : "-69.11",
+  "timeStamp" : 1529595853573000036,
+  "description" : "Ratio 12ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID301"
+}, {
+  "value" : "64.1",
+  "timeStamp" : 1529595853573000037,
+  "description" : "Ratio 13ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID302"
+}, {
+  "value" : "53.78",
+  "timeStamp" : 1529595853573000038,
+  "description" : "Ratio 14ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID303"
+}, {
+  "value" : "35.92",
+  "timeStamp" : 1529595853573000039,
+  "description" : "Ratio 15ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID304"
+}, {
+  "value" : "-279.04",
+  "timeStamp" : 1529595853623000000,
+  "description" : "Ratio 16ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID305"
+}, {
+  "value" : "48.69",
+  "timeStamp" : 1529595853623000001,
+  "description" : "Ratio 17ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID306"
+}, {
+  "value" : "-153.59999",
+  "timeStamp" : 1529595853623000002,
+  "description" : "Ratio 18ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID307"
+}, {
+  "value" : "-127.96999",
+  "timeStamp" : 1529595853623000003,
+  "description" : "Ratio 19ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID308"
+}, {
+  "value" : "204.81",
+  "timeStamp" : 1529595853623000004,
+  "description" : "Ratio 20ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID309"
+}, {
+  "value" : "-53.75",
+  "timeStamp" : 1529595853623000005,
+  "description" : "Ratio 21ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID310"
+}, {
+  "value" : "153.61",
+  "timeStamp" : 1529595853623000006,
+  "description" : "Ratio 22ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID311"
+}, {
+  "value" : "266.25998",
+  "timeStamp" : 1529595853623000007,
+  "description" : "Ratio 23ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID312"
+}, {
+  "value" : "-197.11",
+  "timeStamp" : 1529595853623000008,
+  "description" : "Ratio 24ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID313"
+}, {
+  "value" : "266.25",
+  "timeStamp" : 1529595853623000009,
+  "description" : "Ratio 25ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID314"
+}, {
+  "value" : "-325.11",
+  "timeStamp" : 1529595853623000010,
+  "description" : "Ratio 26ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID315"
+}, {
+  "value" : "240.65",
+  "timeStamp" : 1529595853623000011,
+  "description" : "Ratio 27ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID316"
+}, {
+  "value" : "87.049995",
+  "timeStamp" : 1529595853623000012,
+  "description" : "Ratio 28ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID317"
+}, {
+  "value" : "-189.44",
+  "timeStamp" : 1529595853623000013,
+  "description" : "Ratio 29ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID318"
+}, {
+  "value" : "-74.229996",
+  "timeStamp" : 1529595853623000014,
+  "description" : "Ratio 30ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID319"
+}, {
+  "value" : "245.76",
+  "timeStamp" : 1529595853623000015,
+  "description" : "Ratio 31ï¿½ Armï¿½nico I2",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID320"
+}, {
+  "value" : "-127.96999",
+  "timeStamp" : 1529595853623000016,
+  "description" : "Ratio 2ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID321"
+}, {
+  "value" : "20.68",
+  "timeStamp" : 1529595853623000017,
+  "description" : "Ratio 3ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID322"
+}, {
+  "value" : "-271.33",
+  "timeStamp" : 1529595853623000018,
+  "description" : "Ratio 4ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID323"
+}, {
+  "value" : "-255.81",
+  "timeStamp" : 1529595853623000019,
+  "description" : "Ratio 5ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID324"
+}, {
+  "value" : "94.75",
+  "timeStamp" : 1529595853623000020,
+  "description" : "Ratio 6ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID325"
+}, {
+  "value" : "312.49",
+  "timeStamp" : 1529595853623000021,
+  "description" : "Ratio 7ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID326"
+}, {
+  "value" : "66.59",
+  "timeStamp" : 1529595853623000022,
+  "description" : "Ratio 8ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID327"
+}, {
+  "value" : "289.43",
+  "timeStamp" : 1529595853623000023,
+  "description" : "Ratio 9ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID328"
+}, {
+  "value" : "-294.38",
+  "timeStamp" : 1529595853623000024,
+  "description" : "Ratio 10ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID329"
+}, {
+  "value" : "-294.27",
+  "timeStamp" : 1529595853623000025,
+  "description" : "Ratio 11ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID330"
+}, {
+  "value" : "-66.549995",
+  "timeStamp" : 1529595853623000026,
+  "description" : "Ratio 12ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID331"
+}, {
+  "value" : "58.98",
+  "timeStamp" : 1529595853623000027,
+  "description" : "Ratio 13ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID332"
+}, {
+  "value" : "64.02",
+  "timeStamp" : 1529595853623000028,
+  "description" : "Ratio 14ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID333"
+}, {
+  "value" : "25.68",
+  "timeStamp" : 1529595853623000029,
+  "description" : "Ratio 15ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID334"
+}, {
+  "value" : "-273.91998",
+  "timeStamp" : 1529595853623000030,
+  "description" : "Ratio 16ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID335"
+}, {
+  "value" : "74.29",
+  "timeStamp" : 1529595853623000031,
+  "description" : "Ratio 17ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID336"
+}, {
+  "value" : "-192.0",
+  "timeStamp" : 1529595853623000032,
+  "description" : "Ratio 18ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID337"
+}, {
+  "value" : "-117.729996",
+  "timeStamp" : 1529595853623000033,
+  "description" : "Ratio 19ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID338"
+}, {
+  "value" : "181.76999",
+  "timeStamp" : 1529595853623000034,
+  "description" : "Ratio 20ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID339"
+}, {
+  "value" : "-35.829998",
+  "timeStamp" : 1529595853623000035,
+  "description" : "Ratio 21ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID340"
+}, {
+  "value" : "143.37",
+  "timeStamp" : 1529595853623000036,
+  "description" : "Ratio 22ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID341"
+}, {
+  "value" : "256.02",
+  "timeStamp" : 1529595853623000037,
+  "description" : "Ratio 23ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID342"
+}, {
+  "value" : "-156.15",
+  "timeStamp" : 1529595853623000038,
+  "description" : "Ratio 24ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID343"
+}, {
+  "value" : "258.57",
+  "timeStamp" : 1529595853623000039,
+  "description" : "Ratio 25ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID344"
+}, {
+  "value" : "-307.19",
+  "timeStamp" : 1529595853673000000,
+  "description" : "Ratio 26ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID345"
+}, {
+  "value" : "235.53",
+  "timeStamp" : 1529595853673000001,
+  "description" : "Ratio 27ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID346"
+}, {
+  "value" : "53.77",
+  "timeStamp" : 1529595853673000002,
+  "description" : "Ratio 28ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID347"
+}, {
+  "value" : "-184.31999",
+  "timeStamp" : 1529595853673000003,
+  "description" : "Ratio 29ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID348"
+}, {
+  "value" : "-58.87",
+  "timeStamp" : 1529595853673000004,
+  "description" : "Ratio 30ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID349"
+}, {
+  "value" : "284.16",
+  "timeStamp" : 1529595853673000005,
+  "description" : "Ratio 31ï¿½ Armï¿½nico I3",
+  "signal" : "OTHER",
+  "deviceId" : "SACI-AHM1-01",
+  "profile" : "Modbus",
+  "deviceType" : "datalogger",
+  "signalId" : "ID350"
+}]

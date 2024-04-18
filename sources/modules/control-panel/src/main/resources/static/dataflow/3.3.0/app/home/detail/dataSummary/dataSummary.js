@@ -20,7 +20,7 @@
 angular
   .module('dataCollectorApp.home')
 
-  .controller('DataSummaryController', ["$scope", function ($scope) {
+  .controller('DataSummaryController', function ($scope) {
     angular.extend($scope, {
       allDataRuleDefinitions: $scope.pipelineRules.dataRuleDefinitions.concat($scope.pipelineRules.driftRuleDefinitions),
       getTooltipContent: function() {
@@ -29,9 +29,9 @@ angular
         };
       }
     });
-  }])
+  })
 
-  .controller('DataSummaryMeterController', ["$scope", "$rootScope", "$translate", "pipelineConstant", function ($scope, $rootScope, $translate, pipelineConstant) {
+  .controller('DataSummaryMeterController', function ($scope, $rootScope, $translate, pipelineConstant) {
     var yAxisLabel = '( records / sec )';
 
     $translate('home.detailPane.recordsPerSecond').then(function(translation) {
@@ -112,9 +112,9 @@ angular
     updateChartData();
 
 
-  }])
+  })
 
-  .controller('DataSummaryHistogramController', ["$scope", "$rootScope", "pipelineConstant", function ($scope, $rootScope, pipelineConstant) {
+  .controller('DataSummaryHistogramController', function ($scope, $rootScope, pipelineConstant) {
     angular.extend($scope, {
       chartData: [],
       count: 0
@@ -156,8 +156,8 @@ angular
     });
 
     updateChartData();
-  }])
-  .controller('DataSummarySamplingController', ["$scope", "api", function ($scope, api) {
+  })
+  .controller('DataSummarySamplingController', function ($scope, api) {
     angular.extend($scope, {
       sampledRecordsType: 'matched',
       showRecordsLoading: false,
@@ -215,4 +215,4 @@ angular
 
     updateSamplingRecords();
 
-  }]);
+  });

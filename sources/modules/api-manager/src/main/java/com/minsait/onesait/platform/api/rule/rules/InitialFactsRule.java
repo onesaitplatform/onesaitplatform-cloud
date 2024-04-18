@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,14 +72,10 @@ public class InitialFactsRule {
 		final String jwtToken = rUtil.extractJWTToken(request);
 
 		final String method = request.getMethod();
-		final String pathInfo = request.getServletPath()
-				.substring(ApiManagerEntryPoint.ENTRY_POINT_SERVLET_URI.length());
-		// if (!pathInfo.endsWith("/")) {
-		// TO-DO revisar que esto no rompe nada
-		// Esto no hace falta para nada, y fastidia operaciones que se tengan que
-		// distinguir por un / al final
-		// pathInfo = pathInfo.concat("/");
-		// }
+		String pathInfo = request.getServletPath().substring(ApiManagerEntryPoint.ENTRY_POINT_SERVLET_URI.length());
+		if (!pathInfo.endsWith("/")) {
+			pathInfo = pathInfo.concat("/");
+		}
 
 		final String queryDb = Optional.ofNullable(rUtil.getValueFromRequest(Constants.FILTER_PARAM, request))
 				.orElse("");

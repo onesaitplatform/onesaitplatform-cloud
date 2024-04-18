@@ -25,16 +25,16 @@ angular
         templateUrl: 'app/home/usersAndGroups/users_and_groups.tpl.html',
         controller: 'UsersAndGroupsController',
         resolve: {
-          myVar: ["authService", function(authService) {
+          myVar: function(authService) {
             return authService.init();
-          }]
+          }
         },
         data: {
           authorizedRoles: ['admin']
         }
       });
   }])
-  .controller('UsersAndGroupsController', ["$scope", "api", function ($scope, api) {
+  .controller('UsersAndGroupsController', function ($scope, api) {
     angular.extend($scope, {
       fetching: false,
       userList: []
@@ -57,4 +57,4 @@ angular
 
     getUsers();
 
-  }]);
+  });

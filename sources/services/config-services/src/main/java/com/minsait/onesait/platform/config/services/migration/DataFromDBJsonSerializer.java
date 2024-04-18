@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,17 +23,14 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
-public class DataFromDBJsonSerializer extends StdSerializer<DataFromDB> {
+public class DataFromDBJsonSerializer extends StdSerializer<DataFromDB>{
 
 	private static final long serialVersionUID = 1L;
 
 	public DataFromDBJsonSerializer() {
 		this(DataFromDB.class);
 	}
-
+	
 	protected DataFromDBJsonSerializer(Class<DataFromDB> t) {
 		super(t);
 	}
@@ -41,17 +38,14 @@ public class DataFromDBJsonSerializer extends StdSerializer<DataFromDB> {
 	@Override
 	public void serialize(DataFromDB value, JsonGenerator gen, SerializerProvider provider) throws IOException {
 		Set<Class<?>> classes = value.data.keySet();
-
+		
 		gen.writeStartObject();
 		gen.writeArrayFieldStart("allData");
 		for (Class<?> clazz : classes) {
 			gen.writeStartObject();
 			gen.writeStringField("class", clazz.getName());
 			gen.writeArrayFieldStart("instances");
-			if (log.isDebugEnabled()) {
-				log.debug("********* SERIALIZE			: {}", clazz.getName());
-			}
-			
+
 			Map<Serializable, Map<String, Object>> instance = value.data.get(clazz);
 			Set<Serializable> ids = instance.keySet();
 			for (Serializable id : ids) {
@@ -60,17 +54,8 @@ public class DataFromDBJsonSerializer extends StdSerializer<DataFromDB> {
 				gen.writeObjectFieldStart("data");
 				Map<String, Object> data = instance.get(id);
 				Set<String> fields = data.keySet();
-				if (log.isDebugEnabled()) {
-					log.debug("********* ID			: {}", id);
-				}				
-				for (String field : fields) {
-					if (log.isDebugEnabled()) {
-						log.debug("********* FIELD			: {}", field);
-					}					
+				for(String field : fields) {
 					Object object = data.get(field);
-					if (log.isDebugEnabled()) {
-						log.debug("                 value			: {}", (object != null ? object.getClass() : null));
-					}					
 					gen.writeObjectField(field, object);
 				}
 				gen.writeEndObject();
@@ -81,7 +66,7 @@ public class DataFromDBJsonSerializer extends StdSerializer<DataFromDB> {
 		}
 		gen.writeEndArray();
 		gen.writeEndObject();
-
+		
 	}
 
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.json.JSONException;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 
 public interface ApiServiceInterface {
-
+	
 	public static final String HTTPS = "HTTPS";
 	public static final String HTTP = "HTTP";
 	public static final String HTTP_RESPONSE_CODE = "http_response_code";
@@ -72,11 +72,11 @@ public interface ApiServiceInterface {
 	public static final String QUERY_PARAMS = "QUERY_PARAMS";
 	public static final String HEADERS = "HEADERS";
 	public static final String REQUEST = "REQUEST";
-
-	public static final String CONTEXT_USER = "$context.userId";
+	
+	public static final String CONTEXT_USER = "$context.userId";	
 
 	public Map<String, Object> processRequestData(HttpServletRequest request, HttpServletResponse response,
-			byte[] requestBody) throws GenericOPException;
+			String requestBody) throws GenericOPException;
 
 	public Map<String, Object> processLogic(Map<String, Object> data) throws GenericOPException;
 

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,10 +47,8 @@ public class LdapGroupMemberMapper implements AttributesMapper<List<User>> {
 			final HashMap<String, String> mapFromAttr = (HashMap<String, String>) Arrays.asList(next.split(","))
 					.stream().filter(s -> s.contains("uid")).map(s -> s.split("="))
 					.collect(Collectors.toMap(e -> e[0], e -> e[1]));
-			if (null != mapFromAttr.get("uid")) {
-				user.setUserId(mapFromAttr.get("uid"));
-				users.add(user);
-			}
+			user.setUserId(mapFromAttr.get("uid"));
+			users.add(user);
 		}
 		return users;
 	}

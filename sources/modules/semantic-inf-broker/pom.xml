@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-		<version>${revision}</version>
+		<version>1.0.0-ce</version>
 		<relativePath>../..</relativePath>
 	</parent>
 	<artifactId>onesaitplatform-semantic-inf-broker</artifactId>
@@ -20,78 +19,53 @@
 		<version.swaggerui>2.7.0</version.swaggerui>
 		<version.hawtio>1.5.10</version.hawtio>
 		<version.spring-cloud>1.4.3.RELEASE</version.spring-cloud>
+		<elasticsearch.version>6.2.3</elasticsearch.version>
 	</properties>
 	<dependencies>
-		<!-- To overwrite MySQL version -->
-
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>${mysql.driver.version}</version>
-		</dependency>
-
+	
 		<!-- onesaitplatform -->
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-router-core</artifactId>
-			<version>${project.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>jakarta.json</groupId>
-					<artifactId>jakarta.json-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>jakarta.json</groupId>
-					<artifactId>jakarta.json.bind-api</artifactId>
-				</exclusion>
-			</exclusions>
+			<version>${onesaitplatform.version}</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-audit</artifactId>
-			<version>${project.version}</version>
+			<version>${onesaitplatform.version}</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-pass-encryptor</artifactId>
-			<version>${project.version}</version>
+			<version>${onesaitplatform.version}</version>
 		</dependency>
-		<!-- OneLog -->
+		
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
-			<artifactId>onesaitplatform-onelog</artifactId>
-			<version>${project.version}</version>
+			<artifactId>onesaitplatform-metrics-aggregator</artifactId>
+			<version>${onesaitplatform.version}</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 			<exclusions>
-				<exclusion>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-starter-tomcat</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-databind</artifactId>
-				</exclusion>
-			</exclusions>
+      			<exclusion>
+         			<groupId>org.springframework.boot</groupId>
+         			<artifactId>spring-boot-starter-tomcat</artifactId>
+      			</exclusion>
+   			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-jetty</artifactId>
+   			<groupId>org.springframework.boot</groupId>
+   			<artifactId>spring-boot-starter-jetty</artifactId>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.micrometer</groupId>
-			<artifactId>micrometer-registry-prometheus</artifactId>
-			<scope>runtime</scope>
 		</dependency>
 		<!-- SPRING BOOT ADMIN-CLIENT -->
 		<dependency>
@@ -111,36 +85,76 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.jolokia</groupId>
-			<artifactId>jolokia-core</artifactId>
+			<groupId>de.codecentric</groupId>
+			<artifactId>spring-boot-admin-starter-client</artifactId>
+			<version> ${spring-boot-admin-starter-client.version}</version>
+		</dependency>
+
+		<!-- SWAGGER-UI -->
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger2</artifactId>
+			<version>${version.swaggerui}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger-ui</artifactId>
+			<version>${version.swaggerui}</version>
 		</dependency>
 
 		<dependency>
-			<groupId>jakarta.json.bind</groupId>
-			<artifactId>jakarta.json.bind-api</artifactId>
-			<version>3.0.0</version>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.2.3</version>
 		</dependency>
+		
 		<dependency>
-			<groupId>jakarta.json</groupId>
-			<artifactId>jakarta.json-api</artifactId>
-			<version>2.1.0</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.eclipse.parsson</groupId>
-					<artifactId>parsson</artifactId>
-				</exclusion>
-			</exclusions>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-core</artifactId>
+			<version>1.2.3</version>
 		</dependency>
-		<!-- NOT USED <dependency> <groupId>io.hawt</groupId>
-		<artifactId>hawtio-springboot</artifactId>
-			<version>${version.hawtio}</version> </dependency> metrics <dependency>
-		<groupId>io.dropwizard.metrics</groupId>
-			<artifactId>metrics-core</artifactId> </dependency> <dependency>
-		<groupId>io.dropwizard.metrics</groupId>
-			<artifactId>metrics-graphite</artifactId> </dependency> <dependency>
-		<groupId>io.dropwizard.metrics</groupId>
-			<artifactId>metrics-annotation</artifactId> </dependency> 
-		-->
+		
+		<!-- Zookeeper SPI -->
+		<dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-test</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-x-discovery</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast-zookeeper</artifactId>
+        </dependency>
+
+
+		<!-- 
+		NOT USED
+		
+		<dependency>
+			<groupId>io.hawt</groupId>
+			<artifactId>hawtio-springboot</artifactId>
+			<version>${version.hawtio}</version>
+		</dependency>
+		
+		metrics
+		<dependency>
+			<groupId>io.dropwizard.metrics</groupId>
+			<artifactId>metrics-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>io.dropwizard.metrics</groupId>
+			<artifactId>metrics-graphite</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>io.dropwizard.metrics</groupId>
+			<artifactId>metrics-annotation</artifactId>
+		</dependency>
+		 -->
+		
 	</dependencies>
 	
 	<build>
@@ -159,17 +173,17 @@
 					</execution>
 				</executions>
 			</plugin>
-
-			<!-- skip deployment -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-deploy-plugin</artifactId>
-				<version>2.7</version>
-				<configuration>
-					<skip>true</skip>
-				</configuration>
-			</plugin>
-
+			
+		    <!-- skip deployment -->	
+		    <plugin>
+		      <groupId>org.apache.maven.plugins</groupId>
+		      <artifactId>maven-deploy-plugin</artifactId>
+		      <version>2.7</version>
+		      <configuration>
+		          <skip>true</skip>
+		      </configuration>
+		    </plugin>				
+		    
 		</plugins>
 	</build>
 

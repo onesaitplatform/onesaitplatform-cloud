@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.minsait.onesait.platform.config.model.OntologyUserAccessType;
 
-public interface OntologyUserAccessTypeRepository extends JpaRepository<OntologyUserAccessType, Integer> {
+public interface OntologyUserAccessTypeRepository extends JpaRepository<OntologyUserAccessType, Integer>{
 
-	OntologyUserAccessType findById(String id);
-
+	OntologyUserAccessType findById(Integer id);
 	List<OntologyUserAccessType> findByName(String name);
-
-	@Override
 	List<OntologyUserAccessType> findAll();
 
 }

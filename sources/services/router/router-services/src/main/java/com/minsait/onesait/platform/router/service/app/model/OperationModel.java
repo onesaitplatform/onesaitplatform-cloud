@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ public class OperationModel implements Serializable {
 
 	public enum Source {
 		IOTBROKER, APIMANAGER, KAFKA, FLOWENGINE, INTERNAL_ROUTER, STREAMING_TWITTER, AUDIT, DIGITALTWINBROKER, KSQL,
-		RULES_ENGINE, DATAFLOW, NOTEBOOK, JAVACLIENT, DASHBOARD_ENGINE, CONTROLPANEL, QUERY_TOOL;
+		RULES_ENGINE;
 	}
 
 	// Mandatory attributes
@@ -78,9 +78,6 @@ public class OperationModel implements Serializable {
 	@Getter
 	@Setter
 	private boolean includeIds = false;
-	@Getter
-	@Setter
-	private String transactionId = null;
 
 	public OperationModel() {
 
@@ -111,7 +108,6 @@ public class OperationModel implements Serializable {
 		clientConnection = builder.clientConnection;
 		cacheable = builder.cacheable;
 		includeIds = builder.includeIds;
-		transactionId = builder.transactionId;
 	}
 
 	public static Builder builder(String ontologyName, OperationType operationType, String user, Source source) {
@@ -138,7 +134,6 @@ public class OperationModel implements Serializable {
 		private String clientConnection;
 		private boolean cacheable = false;
 		private boolean includeIds = false;
-		private String transactionId = null;
 
 		public Builder(String ontologyName, OperationType operationType, String user, Source source) {
 			this.ontologyName = ontologyName;
@@ -154,11 +149,6 @@ public class OperationModel implements Serializable {
 			this.user = user;
 			this.source = source;
 			this.includeIds = includeIds;
-		}
-
-		public Builder transactionId(String transactionId) {
-			this.transactionId = transactionId;
-			return this;
 		}
 
 		public OperationModel build() {

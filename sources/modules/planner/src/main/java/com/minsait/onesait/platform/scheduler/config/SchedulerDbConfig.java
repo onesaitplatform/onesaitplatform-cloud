@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
@@ -38,8 +39,6 @@ import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-
-import com.zaxxer.hikari.HikariDataSource;
 
 @Configuration
 @ConditionalOnResource(resources = SCHEDULER_PROPERTIES_LOCATION)
@@ -57,7 +56,7 @@ public class SchedulerDbConfig {
 	@Bean(SCHEDULER_DATASOURCE_NAME)
 	@ConfigurationProperties(SCHEDULER_DATASOURCE_PROPERTY)
 	public DataSource quartzDatasource() {
-		return new HikariDataSource();
+		return DataSourceBuilder.create().build();
 	}
 
 	@Bean(SCHEDULER_ENTITY_MANAGER_FACTORY_NAME)

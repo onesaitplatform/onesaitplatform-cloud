@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('ShareModalInstanceController', ["$rootScope", "$scope", "$modalInstance", "$translate", "$q", "api", "authService", "configuration", "pipelineInfo", function (
+  .controller('ShareModalInstanceController', function (
     $rootScope, $scope, $modalInstance, $translate, $q, api, authService, configuration, pipelineInfo
   ) {
     var userList = [];
@@ -201,4 +201,4 @@ angular
 
     fetchAcl();
 
-  }]);
+  });

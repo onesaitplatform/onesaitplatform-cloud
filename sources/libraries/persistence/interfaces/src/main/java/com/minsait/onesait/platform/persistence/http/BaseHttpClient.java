@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,21 +47,14 @@ public class BaseHttpClient {
 	@Qualifier("dataHubRest")
 	private RestTemplate restTemplate;
 
-	public String invokeSQLPlugin(String endpoint, String body, HttpMethod method, String accept, String contentType, String authHeader) {
+	public String invokeSQLPlugin(String endpoint, String accept, String contentType) {
 
 		String output = null;
 		final ObjectMapper mapper = new ObjectMapper();
 		try {
 
-		    HttpEntity<?> entity;
-		    if (body != null) {
-		        entity = new HttpEntity<>(body, getHeaders(accept, contentType, authHeader));
-		    } else {
-		        entity = new HttpEntity<>(getHeaders(accept, contentType, authHeader));
-		    }
-			
-		    log.info("Entity to send: {}", entity.getBody());
-			final ResponseEntity<JsonNode> response = restTemplate.exchange(new URI(endpoint), method, entity,
+			final HttpEntity<?> entity = new HttpEntity<>(getHeaders(accept, contentType));
+			final ResponseEntity<JsonNode> response = restTemplate.exchange(new URI(endpoint), HttpMethod.GET, entity,
 					JsonNode.class);
 			log.info("Send message: to {}.", endpoint);
 
@@ -84,18 +77,16 @@ public class BaseHttpClient {
 			throw new QueryNativeFormatException(NOTIFING_ERROR + endpoint, e);
 		} catch (final Exception e) {
 			log.error("Error Invocating: {}, {}", endpoint, e);
-			DBPersistenceException ex=new DBPersistenceException(e);
-			ex.setDetailedMessage("Error Procesing query, check SQL syntax");
-			throw ex;
+			throw new DBPersistenceException(e);
 		}
 
 	}
 
-	public String invokeSQLPlugin(String endpoint, String body, HttpMethod method) {
-		return invokeSQLPlugin(endpoint, body, method, ACCEPT_TEXT_CSV, null, null);
+	public String invokeSQLPlugin(String endpoint) {
+		return invokeSQLPlugin(endpoint, ACCEPT_TEXT_CSV, null);
 	}
 
-	private HttpHeaders getHeaders(String accept, String contentType, String authHeader) {
+	private HttpHeaders getHeaders(String accept, String contentType) {
 
 		final HttpHeaders headers = new HttpHeaders();
 		if (null != accept && accept.trim().length() > 0) {
@@ -105,10 +96,6 @@ public class BaseHttpClient {
 			headers.add(HttpHeaders.CONTENT_TYPE, contentType);
 		} else {
 			headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-		} 
-		if (null != authHeader && authHeader.trim().length() > 0) {
-			log.info("Setting AUTHORIZATION headers {}", authHeader);
-			headers.add(HttpHeaders.AUTHORIZATION, authHeader);
 		}
 		return headers;
 	}

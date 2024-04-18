@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,39 +14,30 @@
  */
 package com.minsait.onesait.platform.config.services.datamodel;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.hazelcast.internal.json.Json;
-import com.hazelcast.org.json.JSONArray;
-import com.hazelcast.org.json.JSONException;
-import com.hazelcast.org.json.JSONObject;
 import com.minsait.onesait.platform.config.model.DataModel;
 import com.minsait.onesait.platform.config.model.DataModel.MainType;
-import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.repository.DataModelRepository;
-import com.minsait.onesait.platform.config.repository.OntologyRepository;
 
 @Service
 public class DataModelServiceImpl implements DataModelService {
 
 	@Autowired
-	private OntologyRepository ontologyRepository;
-	@Autowired
 	private DataModelRepository dataModelRepository;
 
 	@Override
 	public void deleteDataModel(String id) {
-		dataModelRepository.deleteById(id);
+		dataModelRepository.delete(id);
 	}
 
 	@Override
-	public DataModel createDataModel(DataModel dataModel) {
-		return dataModelRepository.save(dataModel);
+	public void createDataModel(DataModel dataModel) {
+		dataModelRepository.save(dataModel);
 	}
 
 	@Override
@@ -61,61 +52,36 @@ public class DataModelServiceImpl implements DataModelService {
 
 	@Override
 	public List<DataModel> getDataModelsByCriteria(String id, String name, String description) {
-		return dataModelRepository.findByIdOrIdentificationOrDescription(id, name, description);
+		return dataModelRepository.findByIdOrNameOrDescription(id, name, description);
 	}
 
 	@Override
 	public DataModel getDataModelById(String dataModelId) {
-		return dataModelRepository.findById(dataModelId).orElse(null);
+		return dataModelRepository.findById(dataModelId);
 	}
-	
-	@Override
-	public String getOntologiesById(DataModel datamodel) {
-		List<Ontology> ontologies = ontologyRepository.findIdenficationByDataModel(datamodel);
-		if(ontologies.size() == 0) {	
-			return "";
-		}else {
-			List<String> identificationList = new ArrayList<>();
-			for (Ontology ontology : ontologies) {
-				identificationList.add(ontology.getIdentification());
-		    }
-			String OntologiesIdentifications = String.join(";", identificationList);
-			return OntologiesIdentifications;
-		}
-	}
-	
-	
+
 	@Override
 	public DataModel getDataModelByName(String dataModelName) {
-		return dataModelRepository.findByIdentification(dataModelName).get(0);
+		return dataModelRepository.findByName(dataModelName).get(0);
 	}
-	
+
 	@Override
 	public boolean dataModelExists(DataModel datamodel) {
-		return dataModelRepository.findDatamodelsByIdentification(datamodel.getIdentification()) != null;
+		List<DataModel> datamodelList = dataModelRepository.findByName(datamodel.getName());
+		return !(datamodelList == null || datamodelList.isEmpty());
 	}
 
 	@Override
 	public void updateDataModel(DataModel datamodel) {
-		final DataModel oldDataModel = dataModelRepository.findById(datamodel.getId()).orElse(null);
+		DataModel oldDataModel = this.dataModelRepository.findById(datamodel.getId());
 		if (oldDataModel != null) {
-			oldDataModel.setIdentification(datamodel.getIdentification());
+			oldDataModel.setName(datamodel.getName());
 			oldDataModel.setLabels(datamodel.getLabels());
 			oldDataModel.setType(datamodel.getType());
 			oldDataModel.setDescription(datamodel.getDescription());
 			oldDataModel.setJsonSchema(datamodel.getJsonSchema());
-			dataModelRepository.save(oldDataModel);
+			this.dataModelRepository.save(oldDataModel);
 		}
 	}
-	@Override
-	public boolean validateJSON(DataModel datamodel) {
-		 try{
-	            Json.parse(datamodel.getJsonSchema());
-	            return true;
-	        } catch(final Exception e){
-	            return false;
-	        }
-		}
-	
 
 }

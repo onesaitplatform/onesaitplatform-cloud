@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,17 @@ import org.mockito.InjectMocks;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import com.minsait.onesait.platform.audit.bean.OPAuditEvent.Module;
+import com.minsait.onesait.platform.audit.bean.OPAuditEvent.OperationType;
+import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
+import com.minsait.onesait.platform.comms.protocol.body.SSAPBodySubscribeMessage;
+import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageDirection;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
+import com.minsait.onesait.platform.config.model.IoTSession;
+import com.minsait.onesait.platform.iotbroker.audit.bean.IotBrokerAuditEvent;
 import com.minsait.onesait.platform.iotbroker.audit.processor.SubscribeAuditProcessor;
+import com.minsait.onesait.platform.iotbroker.mock.pojo.PojoGenerator;
+import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 
 @RunWith(MockitoJUnitRunner.class)
 @SpringBootTest
@@ -40,23 +49,23 @@ public class SubscribeAuditProcessorTest {
 	@Test
 	public void given_a_subscribe_message_get_audit_event() {
 
-//		IoTSession session = PojoGenerator.generateSession();
-//		GatewayInfo info = PojoGenerator.generateGatewayInfo();
-//
-//		SSAPMessage<SSAPBodySubscribeMessage> message = new SSAPMessage<SSAPBodySubscribeMessage>();
-//		message.setMessageType(SSAPMessageTypes.SUBSCRIBE);
-//		message.setBody(new SSAPBodySubscribeMessage());
-//		message.setDirection(SSAPMessageDirection.REQUEST);
-//		message.getBody().setOntology(ONTOLOGY_NAME);
-//		message.getBody().setQuery(QUERY);
-//
-//		IotBrokerAuditEvent event = subscribeAuditProcessor.process(message, session, info);
-//
-//		Assert.assertEquals(OperationType.SUBSCRIBE.name(), event.getOperationType());
-//		Assert.assertEquals(ONTOLOGY_NAME, event.getOntology());
-//		Assert.assertNotNull(event.getQuery());
-//		Assert.assertEquals(info, event.getGatewayInfo());
-//		Assert.assertEquals(Module.IOTBROKER, event.getModule());
+		IoTSession session = PojoGenerator.generateSession();
+		GatewayInfo info = PojoGenerator.generateGatewayInfo();
+
+		SSAPMessage<SSAPBodySubscribeMessage> message = new SSAPMessage<SSAPBodySubscribeMessage>();
+		message.setMessageType(SSAPMessageTypes.SUBSCRIBE);
+		message.setBody(new SSAPBodySubscribeMessage());
+		message.setDirection(SSAPMessageDirection.REQUEST);
+		message.getBody().setOntology(ONTOLOGY_NAME);
+		message.getBody().setQuery(QUERY);
+
+		IotBrokerAuditEvent event = subscribeAuditProcessor.process(message, session, info);
+
+		Assert.assertEquals(OperationType.SUBSCRIBE.name(), event.getOperationType());
+		Assert.assertEquals(ONTOLOGY_NAME, event.getOntology());
+		Assert.assertNotNull(event.getQuery());
+		Assert.assertEquals(info, event.getGatewayInfo());
+		Assert.assertEquals(Module.IOTBROKER, event.getModule());
 	}
 
 	@Test

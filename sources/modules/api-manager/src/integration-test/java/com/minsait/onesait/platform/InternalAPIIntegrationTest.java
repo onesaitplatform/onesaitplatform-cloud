@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,8 +48,6 @@ import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Api.ApiType;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.UserRepository;
-import com.minsait.onesait.platform.config.services.apimanager.ApiManagerService;
-import com.minsait.onesait.platform.config.services.apimanager.dto.ApiDTO;
 import com.minsait.onesait.platform.persistence.interfaces.BasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
 import com.minsait.onesait.platform.test.utils.APIUtils;
@@ -69,14 +67,12 @@ public class InternalAPIIntegrationTest {
 	private UserRepository userRepository;
 	@Autowired
 	private ObjectMapper mapper;
-	@Autowired
-	private ApiManagerService apimanagerService;
 
 	private Api petStore;
 	private Api sensorTag;
 	private User user;
 
-	private int nInstances = 0;
+	private int nInstances;
 
 	private static final String X_OP_APIKEY = "X-OP-APIKey";
 	private static final String JSON_PATH_TEMPERATURE = "temperature";
@@ -89,9 +85,7 @@ public class InternalAPIIntegrationTest {
 	private String apiManager;
 	private static final String BASE_URL = "/server/api/v1/";
 	private static final String PATH_GET_CRITICAL = "/critical/%d";
-	private static final String PATH_UPDATE_OID = "/update/%s";
 	private static final String PATH_DELETE_ALLL = "/delete";
-	private static final String PATH_CREATE_API_REST = "/services/management/apis";
 
 	private static final String ADMIN = "administrator";
 
@@ -106,30 +100,11 @@ public class InternalAPIIntegrationTest {
 
 	@Before
 	public void setUp() throws IOException {
-		if (restTemplate == null)
-			restTemplate = new TestRestTemplate();
-		if (user == null)
-			user = userRepository.findByUserId(ADMIN);
-		if (petStore == null)
-			petStore = apiUtils.createExternalAPI(user, ApiType.EXTERNAL_FROM_JSON);
-		if (sensorTag == null) {
-			final ApiDTO apiDTO = apiUtils.readInternalAPIDTO(user);
-			createApi(apiDTO);
-			sensorTag = apimanagerService.getApiByIdentificationVersionOrId(apiDTO.getIdentification(),
-					String.valueOf(apiDTO.getVersion()));
-		}
-		if (nInstances == 0)
-			loadSampleData();
-	}
-
-	public void createApi(ApiDTO api) {
-		final HttpHeaders headers = new HttpHeaders();
-		headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_UTF8_VALUE);
-		headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE);
-		headers.add(X_OP_APIKEY, apiUtils.getUserToken(user));
-		restTemplate.exchange(apiManager + PATH_CREATE_API_REST, HttpMethod.POST, new HttpEntity<>(api, headers),
-				String.class);
-
+		restTemplate = new TestRestTemplate();
+		user = userRepository.findByUserId(ADMIN);
+		petStore = apiUtils.createAPITest(user, ApiType.EXTERNAL_FROM_JSON);
+		sensorTag = apiUtils.createAPITest(user, ApiType.INTERNAL_ONTOLOGY);
+		loadSampleData();
 	}
 
 	@After
@@ -202,24 +177,6 @@ public class InternalAPIIntegrationTest {
 		assertTrue(responseSingleResult.getBody().path(sensorTag.getOntology().getIdentification())
 				.path(JSON_PATH_TEMPERATURE).asInt() == instance.path(sensorTag.getOntology().getIdentification())
 						.path(JSON_PATH_TEMPERATURE).asInt());
-
-	}
-
-	@Test
-	public void When_UpdateByIdSQLIsInvoked_Then_OneInstanceIsUpdated() {
-
-		final ResponseEntity<ArrayNode> response = restTemplate.exchange(getURL(sensorTag.getIdentification()),
-				HttpMethod.GET, new HttpEntity<>(null, headers()), ArrayNode.class);
-
-		final JsonNode instance = response.getBody().get(0);
-		final String id = instance.path(JSON_PATH_OID).asText();
-		final ResponseEntity<JsonNode> responseSingleResult = restTemplate.exchange(
-				getURL(sensorTag.getIdentification()) + String.format(PATH_UPDATE_OID, id), HttpMethod.GET,
-				new HttpEntity<>(null, headers()), JsonNode.class);
-
-		assertTrue(responseSingleResult.getStatusCode().equals(HttpStatus.OK));
-		assertTrue(responseSingleResult.getBody() != null);
-		assertTrue(!responseSingleResult.getBody().get("count").isMissingNode());
 
 	}
 
@@ -309,7 +266,8 @@ public class InternalAPIIntegrationTest {
 
 			assert instances != null;
 			nInstances = instances.size();
-			instances.forEach(i -> basicOps.insert(sensorTag.getOntology().getIdentification(), i.toString()));
+			instances.forEach(i -> basicOps.insert(sensorTag.getOntology().getIdentification(),
+					sensorTag.getOntology().getJsonSchema(), i.toString()));
 		} catch (final Exception e) {
 			log.error("Could not load sample data for test");
 		}

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>onesaitPlatform - DIGITAL TWIN DEMO</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/main.css" rel="stylesheet">
+    <script src="js/jquery.min.js"></script>
+    <script src="https://loadbalancerservice-onesait.ocp.52.233.186.149.nip.io/digitaltwinbroker/webjars/sockjs-client/sockjs.min.js"></script>
+    <script src="https://loadbalancerservice-onesait.ocp.52.233.186.149.nip.io/digitaltwinbroker/webjars/stomp-websocket/stomp.min.js"></script>
+    <script src="js/app.js"></script>
+	<script src="js/Chart.js"></script>
+</head>
+<body>
+
+<noscript><h2 style="color: #ff0000">Seems your browser doesn't support Javascript! Websocket relies on Javascript being
+    enabled. Please enable
+    Javascript and reload this page!</h2></noscript>
+<div id="main-content" class="container">
+	<div class="page-header-inner ">
+		<!-- BEGIN LOGO -->
+		<div class="page-logo">			
+			<div class="menu-toggler sidebar-toggler">
+				<span></span>
+			</div>
+			<img alt="logo" class="logo-default" src="images/platform_logo.png"/>	
+			<span class="text-logo-s4c" th:text="#{name.apptitle}">onesaitPlatform</span>
+			<span class="text-logo-panel" th:text="#{name.appsubtitle}">DIGITAL TWIN DEMO</span>			
+		</div>
+		<!-- END LOGO -->
+	</div>
+    <div class="row" style="padding-top: 20px;">
+        <div class="col-md-12">
+            <form class="form-inline">
+	            <div class="form-group col-md-7">
+					<label>Device: </label>
+					<select id="devices" class="form-control"></select>
+					<label style="padding-left: 20px;">Digital Key: </label>
+					<input class="form-control" id="digitaltwin_key" name="digitaltwin_key" maxlength="50" disabled="disabled" style="width: 45%;"/>
+				</div>
+				<div class="pull-right col-md-5">
+					<button id="connect" type="submit" class="btn btn-square btn-success" name="connect"><i class="la la-check"></i> <span> Connect</span></button>
+					<button id="disconnect" type="submit" class="btn btn-square btn-danger" name="disconnect"  value="disconnect" disabled="disabled"><i class="la la-times"></i><span> Disconnect </span></button>
+				</div>
+            </form>
+        </div>
+        <div class="col-md-12" style="margin-top: 30px;">
+	        <div class="col-md-6">
+		        <div class="row">
+					<div class="col-md-12">
+						<canvas id="tempChart" style="max-width: 500px;"></canvas>
+					</div>
+					<div class="col-md-12">
+						<canvas id="humChart" style="max-width: 500px;"></canvas>
+					</div>
+					<div class="col-md-12">
+						<canvas id="atmChart" style="max-width: 500px;"></canvas>
+			        </div>
+			    </div>
+	        </div>
+	        <div id="rasp" class="col-md-6">
+	        	<img src="images/sensehat.png">
+	        	<img id="up" src="images/up.png" class="arrow" style="display:none;">
+	        	<img id="down" src="images/down.png" class=" arrow" style="display:none;">
+	        	<img id="left" src="images/left.png" class=" arrow" style="display:none;">
+	        	<img id="right" src="images/right.png" class=" arrow" style="display:none;">
+	         
+	            <button id="sendLeft" class="btn btn-default" type="submit">L</button>
+	            <button id="sendRight" class="btn btn-default" type="submit">R</button>
+	            <button id="sendUp" class="btn btn-default" type="submit">U</button>
+	            <button id="sendDown" class="btn btn-default" type="submit">D</button>
+	            
+	            <div class="form-group col-md-12">
+					<label>Joystick: </label>
+					<div class="input-icon ">
+						<i class="fa fa-link"></i>
+						<input class="form-control" id="joystick" name="joystick" maxlength="50" disabled="disabled"/>
+					</div>
+				</div>
+	        </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.minsait.onesait.platform.controlpanel.controller.planner;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -47,26 +46,20 @@ public class PlannerController {
 
 	@Autowired
 	private AppWebUtils utils;
-	
-	@Autowired 
-	private HttpSession httpSession;
-	
-	private static final String APP_ID = "appId";
+
 	private static final String REDIRECT_PLANNER_LIST = "redirect:/planner/list";
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, HttpServletRequest request) {
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
+
 		List<ListTaskInfo> tasks = taskService.list(utils.getUserId());
 
 		model.addAttribute("tasks", tasks);
 		return "planner/list";
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@RequestMapping(method = RequestMethod.GET, value = "/unschedule/{jobName}")
 	public String unschedule(@PathVariable String jobName) {
 
@@ -74,7 +67,7 @@ public class PlannerController {
 		return REDIRECT_PLANNER_LIST;
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@RequestMapping(method = RequestMethod.GET, value = "/pause/{jobName}")
 	public String pause(@PathVariable String jobName) {
 
@@ -82,7 +75,7 @@ public class PlannerController {
 		return REDIRECT_PLANNER_LIST;
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@RequestMapping(method = RequestMethod.GET, value = "/resume/{jobName}")
 	public String resume(@PathVariable String jobName) {
 

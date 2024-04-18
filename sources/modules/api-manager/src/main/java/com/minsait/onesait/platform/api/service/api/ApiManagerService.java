@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,19 +45,9 @@ import com.minsait.onesait.platform.config.repository.ApiRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Service("apiManagerService")
+@Service
 @Slf4j
 public class ApiManagerService {
-
-	private final List<String> keyWords = new ArrayList<String>() {
-		{
-			add(" OR ");
-			add(" AND ");
-			add("DROP ");
-			add(";");
-			add("%3B");
-		}
-	};
 
 	private static final String WRONG_PARAMETER_TYPE = "com.indra.sofia2.api.service.wrongparametertype";
 
@@ -85,11 +74,11 @@ public class ApiManagerService {
 	}
 
 	public String getApiVersion(String pathInfo) {
-		final Pattern pattern = Pattern.compile("/v([\\d]+)/");
+		final Pattern pattern = Pattern.compile("(.*)/api/v(.*)/");
 		final Matcher matcher = pattern.matcher(pathInfo);
 		if (matcher.find()) {
-			final String param = matcher.group(1);
-			return param;
+			final String param = matcher.group(2);
+			return param.substring(0, param.indexOf('/'));
 		} else {
 			String version = pathInfo;
 
@@ -120,8 +109,6 @@ public class ApiManagerService {
 
 		final String apiVersion = getApiVersion(pathInfo);
 
-		log.debug("apiVersion result: {}", apiVersion);
-
 		String apiIdentifier = pathInfo.substring(pathInfo.indexOf(apiVersion + "/") + (apiVersion + "/").length());
 
 		int slashIndex = apiIdentifier.indexOf('/');
@@ -137,26 +124,30 @@ public class ApiManagerService {
 		return apiIdentifier;
 	}
 
-	public Api getApi(String apiIdentifier, int apiVersion, ApiType apiType) {
-		if (apiType != null) {
-			return apiRepository.findByIdentificationAndNumversionAndApiType(apiIdentifier, apiVersion, apiType);
+	public Api getApi(String apiIdentifier, int apiVersion, ApiType tipoapi) {
+
+		Api api = null;
+
+		if (tipoapi != null) {
+			api = apiRepository.findByIdentificationAndNumversionAndApiType(apiIdentifier, apiVersion, tipoapi);
 		} else {
-			return apiRepository.findByIdentificationAndNumversion(apiIdentifier, apiVersion);
+			api = apiRepository.findByIdentificationAndNumversion(apiIdentifier, apiVersion);
 		}
+		return api;
 	}
 
 	public boolean isPathQuery(String pathInfo) {
 		final String apiIdentifier = getApiIdentifier(pathInfo);
-		final String objectId = pathInfo.substring(pathInfo.indexOf(apiIdentifier) + apiIdentifier.length());
+		final String objectId = pathInfo.substring(pathInfo.indexOf(apiIdentifier) + (apiIdentifier).length());
 
-		return objectId.length() == 0 || !objectId.startsWith("/");
+		return (objectId.length() == 0 || !objectId.startsWith("/"));
 	}
 
-	public ApiOperation getCustomSQL(String pathInfo, Api api, String httpVerb) {
+	public ApiOperation getCustomSQL(String pathInfo, Api api) {
 
 		final String apiIdentifier = getApiIdentifier(pathInfo);
 
-		String opIdentifier = pathInfo.substring(pathInfo.indexOf(apiIdentifier) + apiIdentifier.length());
+		String opIdentifier = pathInfo.substring(pathInfo.indexOf(apiIdentifier) + (apiIdentifier).length());
 		if (opIdentifier.startsWith("\\") || opIdentifier.startsWith("/")) {
 			opIdentifier = opIdentifier.substring(1);
 		}
@@ -164,21 +155,10 @@ public class ApiManagerService {
 		opIdentifier = opIdentifier.split("/")[0];
 
 		final List<ApiOperation> operaciones = apiOperationRepository.findByApiOrderByOperationDesc(api);
-		Type opType = null;
-		if (httpVerb != null) {
-			opType = Type.valueOf(httpVerb);
-		}
+
 		for (final ApiOperation operacion : operaciones) {
-			if (operacion.getIdentification().equals(opIdentifier)
-					|| !api.getApiType().equals(ApiType.INTERNAL_ONTOLOGY)
-							&& operacion.getPath().startsWith("/" + opIdentifier)) {
-				if (opType != null) {
-					if (opType.equals(operacion.getOperation())) {
-						return operacion;
-					}
-				} else {
-					return operacion;
-				}
+			if (operacion.getIdentification().equals(opIdentifier)) {
+				return operacion;
 			}
 		}
 		return null;
@@ -203,29 +183,15 @@ public class ApiManagerService {
 	public String getOperationPath(String pathInfo) {
 		final String apiIdentifier = getApiIdentifier(pathInfo);
 
-		log.debug("apiIdentifier result: {}", apiIdentifier);
-
-		return pathInfo.substring(pathInfo.indexOf(apiIdentifier) + apiIdentifier.length());
+		return pathInfo.substring(pathInfo.indexOf(apiIdentifier) + (apiIdentifier).length());
 	}
 
 	public ApiOperation getFlowEngineApiOperation(String pathInfo, Api api, String method,
 			Map<String, String[]> queryParams) {
 
-		log.debug("getFlowEngineApiOperation , path: {}, api: {}, method: {}", pathInfo,
-				api != null ? api.getIdentification() : null, method);
-
-		String opIdentifier = getOperationPath(pathInfo);
-
-		if (opIdentifier != null && !opIdentifier.endsWith("/")) {
-			opIdentifier = opIdentifier + "/";
-		}
-
-		log.debug("opIdentifier result: {}", opIdentifier);
+		final String opIdentifier = getOperationPath(pathInfo);
 
 		final List<ApiOperation> operations = apiOperationRepository.findByApiAndOperation(api, Type.valueOf(method));
-
-		log.debug("ApiOperations found: {}", String.join(",", operations.stream().map(ApiOperation::getPath).toList()));
-
 		// Checks non path param operations
 		for (final ApiOperation operation : operations) {
 			if (!hasPathParams(operation) && operation.getPath().equals(opIdentifier)
@@ -243,15 +209,7 @@ public class ApiManagerService {
 				}
 			}
 		}
-
-		// We need to allow path params on queries that dont were defined without them
-		for (final ApiOperation op : operations) {
-			if (op.getPath().equals(opIdentifier)) {
-				return op;
-			}
-		}
-		throw new BadRequestException(
-				"No operation found for API with pathInfo " + pathInfo + " and opIdentifier " + opIdentifier);
+		return null;
 
 	}
 
@@ -279,63 +237,61 @@ public class ApiManagerService {
 
 	private String getCustomParamValue(ApiQueryParameter customqueryparameter, HttpServletRequest request,
 			ApiOperation customSQL, String body) {
-		switch (customqueryparameter.getHeaderType()) {
-		case PATH:
-			String paramvalue = null;
+		String paramvalue = null;
+		if (customqueryparameter.getHeaderType().name().equalsIgnoreCase(ApiQueryParameter.HeaderType.BODY.name())) {
+			paramvalue = body;
+		} else if (customqueryparameter.getHeaderType().name()
+				.equalsIgnoreCase(ApiQueryParameter.HeaderType.PATH.name())) {
 			final String apiIdentifier = getApiIdentifier(request.getRequestURI());
 			final String relativePath = request.getServletPath()
 					.substring(request.getServletPath().indexOf(apiIdentifier) + apiIdentifier.length());
-			final String[] splitParams = customSQL.getPath().split("/");
+			final String[] splittedParams = customSQL.getPath().split("/");
 
-			for (int i = 0; i < splitParams.length; i++) {
-				if (splitParams[i].equalsIgnoreCase("{" + customqueryparameter.getName() + "}") && paramvalue == null) {
+			for (int i = 0; i < splittedParams.length; i++) {
+				if (splittedParams[i].equalsIgnoreCase("{" + customqueryparameter.getName() + "}")
+						&& paramvalue == null) {
 					paramvalue = relativePath.split("/")[i + 1];
 				}
 
 			}
-			return paramvalue;
-		case HEADER:
-			return request.getHeader(customqueryparameter.getName());
-		case BODY:
-			return body;
-		default:
-			return null;
 		}
+
+		return paramvalue;
 	}
 
-	private String processCustomParamValue(ApiQueryParameter apiQueryParameter, String paramValue) {
-		switch (apiQueryParameter.getDataType()) {
-		case DATE:
+	private String processCustomParamValue(ApiQueryParameter customqueryparameter, String paramvalue) {
+		if (customqueryparameter.getDataType().name().equalsIgnoreCase(ApiQueryParameter.DataType.DATE.name())) {
 			try {
 				final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-				df.parse(paramValue);
-				return "\"" + paramValue + "\"";
+				df.parse(paramvalue);
+				paramvalue = "\"" + paramvalue + "\"";
 			} catch (final Exception e) {
-				final Object[] params = { "$" + apiQueryParameter.getName(), "Date" };
-				throw new BadRequestException(WRONG_PARAMETER_TYPE + params[0]);
+				final Object[] parametros = { "$" + customqueryparameter.getName(), "Date" };
+				throw new BadRequestException("com.indra.sofia2.api.service.wrongparametertype " + parametros[0]);
 			}
-		case STRING:
+		} else if (customqueryparameter.getDataType().name()
+				.equalsIgnoreCase(ApiQueryParameter.DataType.STRING.name())) {
 			try {
-				// Escape string value
-				return getEscapedString(paramValue);
+				paramvalue = "\"" + paramvalue + "\"";
 			} catch (final Exception e) {
-				final Object[] params = { "$" + apiQueryParameter.getName(), "String" };
-				throw new BadRequestException(WRONG_PARAMETER_TYPE + params[0]);
+				final Object[] parametros = { "$" + customqueryparameter.getName(), "String" };
+				throw new BadRequestException(WRONG_PARAMETER_TYPE + parametros[0]);
 			}
-		case NUMBER:
+		} else if (customqueryparameter.getDataType().name()
+				.equalsIgnoreCase(ApiQueryParameter.DataType.NUMBER.name())) {
 			try {
-				Double.parseDouble(paramValue);
-			} catch (final NumberFormatException e) {
-				final Object[] params = { "$" + apiQueryParameter.getName(), "Integer" };
-				throw new BadRequestException(WRONG_PARAMETER_TYPE + params[0]);
+				Double.parseDouble(paramvalue);
+			} catch (final Exception e) {
+				final Object[] parametros = { "$" + customqueryparameter.getName(), "Integer" };
+				throw new BadRequestException(WRONG_PARAMETER_TYPE + parametros[0]);
 			}
-		default:
-			return paramValue;
+		} else if (customqueryparameter.getDataType().name().equalsIgnoreCase("boolean")
+				&& !paramvalue.equalsIgnoreCase("true") && !paramvalue.equalsIgnoreCase("false")) {
+			final Object[] parametros = { "$" + customqueryparameter.getName(), "Boolean" };
+			throw new BadRequestException(WRONG_PARAMETER_TYPE + parametros[0]);
 		}
-	}
 
-	private String getEscapedString(String paramValue) {
-		return "'" + paramValue.replace("\\", "\\\\").replace("\"", "\\\"").replace("'", "\\'") + "'";
+		return paramvalue;
 	}
 
 	public Map<String, String> getCustomParametersValues(HttpServletRequest request, String body,
@@ -345,14 +301,12 @@ public class ApiManagerService {
 		for (final ApiQueryParameter customqueryparameter : queryParametersCustomQuery) {
 			String paramvalue = request.getParameter(customqueryparameter.getName());
 			if (paramvalue == null) {
-				paramvalue = getCustomParamValue(customqueryparameter, request, customSQL, body);
+				paramvalue = this.getCustomParamValue(customqueryparameter, request, customSQL, body);
 			}
 
 			if (paramvalue != null) {
-				if (hasPossibleSQLInjectionSyntax(paramvalue)) {
-					throw new IllegalArgumentException("Value contains forbidden SQL Syntax");
-				}
-				paramvalue = processCustomParamValue(customqueryparameter, paramvalue);
+				paramvalue = this.processCustomParamValue(customqueryparameter, paramvalue);
+
 				customqueryparametersvalues.put(customqueryparameter.getName(), paramvalue);
 			}
 		}
@@ -367,16 +321,10 @@ public class ApiManagerService {
 		return queryDb;
 	}
 
-	public String getObjectidFromPathQuery(String pathInfo, ApiOperation customSQL) {
-		String identifier = null;
+	public String getObjectidFromPathQuery(String pathInfo) {
+		final String apiIdentifier = getApiIdentifier(pathInfo);
 
-		if (customSQL == null) {
-			identifier = getApiIdentifier(pathInfo);
-		} else {
-			return "";
-		}
-
-		String objectId = pathInfo.substring(pathInfo.indexOf(identifier) + identifier.length());
+		String objectId = pathInfo.substring(pathInfo.indexOf(apiIdentifier) + (apiIdentifier).length());
 
 		if (!objectId.startsWith("/")) {
 			return null;
@@ -416,41 +364,6 @@ public class ApiManagerService {
 			log.error("Error reading payload", e);
 		}
 		return buffer.toString();
-	}
-
-	public boolean hasPossibleSQLInjectionSyntax(String objectId) {
-		if (objectId != null) {
-			for (final String keyWord : keyWords) {
-				final int length = keyWord.length();
-				for (int i = objectId.length() - length; i >= 0; i--) {
-					if (objectId.regionMatches(true, i, keyWord, 0, length)) {
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
-
-	public String getFieldValue(String objectId) {
-		if (isNumeric(objectId)) {
-			return objectId;
-		} else {
-			return getEscapedString(objectId);
-		}
-	}
-
-	private boolean isNumeric(String strNum) {
-		if (strNum == null) {
-			return false;
-		} else {
-			try {
-				Double.parseDouble(strNum);
-			} catch (final NumberFormatException nfe) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package com.minsait.onesait.platform.quartz.services.simulation;
 
 import java.io.IOException;
 
-import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulation;
+import com.minsait.onesait.platform.config.model.DeviceSimulation;
 
 public interface SimulationService {
 
@@ -25,10 +25,10 @@ public interface SimulationService {
 	String getDeviceSimulationJson(String identification, String clientPlatform, String token, String ontology,
 			String jsonMap, String jsonInstances, String instancesMode) throws IOException;
 
-	void scheduleSimulation(ClientPlatformInstanceSimulation deviceSimulation);
+	void scheduleSimulation(DeviceSimulation deviceSimulation);
 
-	void unscheduleSimulation(ClientPlatformInstanceSimulation deviceSimulation);
+	void unscheduleSimulation(DeviceSimulation deviceSimulation);
 
-	void updateSimulation(String identification, int interval, String json, ClientPlatformInstanceSimulation simulation)
+	void updateSimulation(String identification, int interval, String json, DeviceSimulation simulation)
 			throws IOException;
 }

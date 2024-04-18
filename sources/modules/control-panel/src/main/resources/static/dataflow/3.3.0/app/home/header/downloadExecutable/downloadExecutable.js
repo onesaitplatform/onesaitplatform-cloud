@@ -16,7 +16,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('DownloadEdgeExecutableController', ["$scope", "$modalInstance", "pipelineConfig", "api", "pipelineConstant", function ($scope, $modalInstance, pipelineConfig, api, pipelineConstant) {
+  .controller('DownloadEdgeExecutableController', function ($scope, $modalInstance, pipelineConfig, api, pipelineConstant) {
     angular.extend($scope, {
       common: {
         errors: []
@@ -47,4 +47,4 @@ angular
       }
     });
 
-  }]);
+  });

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,17 @@
  */
 package com.minsait.onesait.platform.config.services.themes;
 
-import java.util.List;
-
 import com.minsait.onesait.platform.config.services.themes.dto.ThemesDTO;
 
 public interface ThemesService {
 
 	public void createTheme(ThemesDTO theme);
-
-	public void updateTheme(ThemesDTO theme);
-
-	public void setActive(String id);
-
-	public void deactivate(String id);
-
-	public void setDefault();
-
-	public ThemesDTO getTheme(String id);
-
-	public ThemesDTO getThemeByIdentification(String id);
 	
-	public List<String> listThemes();
+	public void updateTheme(ThemesDTO theme);
+	
+	public void setActive(String id);
+	
+	public void deactivate(String id);
+	
+	public void setDefault();
 }

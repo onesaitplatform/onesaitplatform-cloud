@@ -19,7 +19,7 @@
 
 angular
     .module('dataCollectorApp')
-    .controller('SettingsModalInstanceController', ["$scope", "$rootScope", "$modalInstance", function ($scope, $rootScope, $modalInstance) {
+    .controller('SettingsModalInstanceController', function ($scope, $rootScope, $modalInstance) {
 
   // Default Timezone (local storage)
   var clientTimezone = moment().tz(moment.tz.guess()).format('z'),
@@ -36,4 +36,4 @@ angular
       $modalInstance.dismiss('cancel');
     }
   });
-}]);
+});

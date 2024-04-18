@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -165,6 +165,7 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/notebooks/list}"> <span th:text="#{notebook.breadcrumb.list}">Notebooks</span></a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/notebooks/share}"> <span th:text="#{notebook.breadcrumb.share}">Share</span></a></li>						
 					</ul>						
@@ -176,66 +177,82 @@
 				<!-- END PAGE TITLE-->			
 				
 				<!-- MAIN ROW -->
-				<div class="mainPanel">
-					<div class="row main">
-						<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
-							<span th:text="#{notebook.breadcrumb.share}">Authorizations</span>
-						</div>
-					</div>
-					<div class="row main">
-						<div class="col-md-2 col-sm-4 col-xs-12">
-						<!-- USER SELECTION -->
-							<div class="form-group">
-								<label class="control-label" th:text="#{notebook.user}">User</label>
-								<select id="users" class="selectpicker form-control" data-live-search="true" data-width="100%" >
-									<option value="" th:text="#{notebook.selectuser}"> Select User...</option>
-									<option th:each="user :${users}" th:value="${user.userId}" th:if="${user.active}" th:text="${user.fullName} +'('+ ${user.userId} +')'" ></option>
-								</select>
+				<div class="row">
+					<div class="col-md-12">
+					
+						<div class="portlet light ">
+							<div class="portlet-title">
+								<div class="caption">
+									
+									<span class="caption-subject" th:text="#{notebook.share}"> Share notebook </span>
+									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
+								</div>									
+								
 							</div>
-							<div class="form-group">
-								<label class="control-label" th:text="#{notebook.auth.accesstypes}">Access types:</label>
-								<select id="accesstypes" class="selectpicker form-control" data-live-search="true" data-width="100%" >
-									<option value="ACCESS-TYPE-1">EDIT</option>
-									<option value="ACCESS-TYPE-2">VIEW</option>
-									<option value="ACCESS-TYPE-3">RUN</option>
-								</select>
+							<div class="row">
+								<div class="col-md-3 col-sm-6 col-xs-12">
+								<!-- USER SELECTION -->
+									<div class="form-group">
+										<label class="control-label" th:text="#{notebook.user}">User</label>
+										<select id="users" class="selectpicker form-control" data-live-search="true" data-width="100%" >
+											<option value="" th:text="#{notebook.selectuser}"> Select User...</option>
+											<option th:each="user :${users}" th:value="${user.userId}" th:if="${user.active}" th:text="${user.fullName} +'('+ ${user.userId} +')'" ></option>
+										</select>
+									</div>
+									<div class="form-group">
+										<label class="control-label" th:text="#{notebook.auth.accesstypes}">Access types:</label>
+										<select id="accesstypes" class="selectpicker form-control" data-live-search="true" data-width="100%" >
+											<option value="ACCESS-TYPE-1">EDIT</option>
+											<!-- <option value="QUERY">QUERY</option>
+											<option value="INSERT">INSERT</option> -->
+										</select>
+									</div>
+									<div class="form-group margin-top-30">
+										<button type="button" class="btn btn-circle btn-outline blue btn-block " th:onclick="'javascript:insertAuthorization(\'' + ${notebookid} + '\');'" th:text="#{notebook.insertauthorization}">Add Share Authorization</button>
+									</div>
+								</div>
+								<div class="col-md-9 col-sm-6 col-xs-12">
+								<!-- AUTHORIZATION ONTOLOGY-USER-TYPE -->
+									<div class="form-group">
+										<label class="control-label" th:text="#{notebook.auth.title} + ':'">Notebooks Authorizations</label>
+										<!-- <div id="alert-authorizations" class="alert alert-info">
+											<i class="fa fa-info-circle"></i> <span th:text="#{notebook.auth.info}"> Select a user, choose the type of Access you want to give to the ontology and add it to the Authorizations. Repeat as many times as users want to authorize.</span>
+										</div> -->
+										
+			<!-- TABLE -->	
+										<div>
+											<!-- DATATABLE DANDELION CONF. -->												
+											<table id="notebook_autthorizations" class="table" >
+												<thead>
+													<tr class="cabecera-tabla" role="row" >
+														<th class="titulo-columnas text-left" th:text="#{notebook.auth.user}">Identification</th>
+														<!-- <th class="titulo-columnas text-left" ><i class="la la-user"></i> <span th:text="#{ontology.auth.userfullname}" >User</span></th> -->
+														<th class="titulo-columnas text-center" th:text="#{notebook.auth.accesstype}">Description</th>
+														<th class="titulo-columnas text-center">Options</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr class="authorization-model" th:each="int : ${int}" pages:paginate="10" >
+														<!-- IDENTIFICATION/NAME -->
+														<td class="text-left no-wrap bold" th:text="${int.user}"></td>
+														<!-- USER -->
+														<!-- <td class="text-left " th:text="${int.notebook}"></td> -->
+														<!-- ACCESS TYPE  -->
+														<td class="text-center " th:text="${int.notebookUserAccessType}"></td>
+														<!-- OPTIONS  -->
+														<td class="icon text-center" style="white-space: nowrap">
+															<div class="grupo-iconos text-center">
+															<span data-container="body" data-placement="bottom" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:title="Delete" th:onclick="'javascript:removeAuthorization(\'' + ${int.id} + '\');'"><i class="la la-trash font-hg"></i></span>
+															</div>
+														</td>														
+													</tr>
+												</tbody>
+											</table>											
+										</div>
+									</div>
+								</div>
 							</div>
-							<div class="form-group margin-top-20 pull-right">
-								<button type="button" class="btn btn-primary btn-primary-save" th:attr="onclick='javascript:insertAuthorization(\'' + ${notebookid} + '\');'" th:text="#{notebook.insertauthorization}">Add Share Authorization</button>
-							</div>
-						</div>
-						<div class="col-md-10 col-sm-8 col-xs-12">
-						<!-- AUTHORIZATION ONTOLOGY-USER-TYPE -->
-							<div class="form-group">
-								<!-- DATATABLE DANDELION CONF. -->												
-								<table id="notebook_autthorizations" class="table" >
-									<thead>
-										<tr class="cabecera-tabla" role="row" >
-											<th class="titulo-columnas text-left" th:text="#{notebook.auth.user}">Identification</th>
-											<!-- <th class="titulo-columnas text-left" ><i class="la la-user"></i> <span th:text="#{ontology.auth.userfullname}" >User</span></th> -->
-											<th class="titulo-columnas text-left" th:text="#{notebook.auth.accesstype}">Description</th>
-											<th class="titulo-columnas text-center">Options</th>
-										</tr>
-									</thead>
-									<tbody>
-										<tr class="authorization-model" th:each="int : ${int}" pages:paginate="10" >
-											<!-- IDENTIFICATION/NAME -->
-											<td class="text-left no-wrap bold" th:text="${int.user.userId}"></td>
-											<!-- USER -->
-											<!-- <td class="text-left " th:text="${int.notebook}"></td> -->
-											<!-- ACCESS TYPE  -->
-											<td class="text-left " th:text="${int.notebookUserAccessType}"></td>
-											<!-- OPTIONS  -->
-											<td class="icon text-center" style="white-space: nowrap">
-												<div class="grupo-iconos text-center">
-												<span data-container="body" data-placement="bottom" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" th:title="Delete" th:attr="onclick='javascript:removeAuthorization(\'' + ${int.id} + '\');'"><i class="icon-delete"></i></span>
-												</div>
-											</td>														
-										</tr>
-									</tbody>
-								</table>											
-							</div>
-						</div>					
+						</div><!-- END PORTLET BASIC LIGHT -->							
 					</div><!-- END COL-12 -->						
 				</div><!-- END MAIN ROW -->				
 			</div><!-- END CONTENT BODY -->
@@ -247,13 +264,13 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"></script>
-	<script th:src="@{/static/js/layout.js}"></script>
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
 	
 	
 	<script th:inline="javascript">	
@@ -278,7 +295,7 @@
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
+	$(window).load(function(){  
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		

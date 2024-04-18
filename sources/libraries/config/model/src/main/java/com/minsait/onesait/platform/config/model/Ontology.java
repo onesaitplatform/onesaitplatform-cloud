@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,12 @@
 package com.minsait.onesait.platform.config.model;
 
 import java.util.HashSet;
-import java.util.Map;
+import java.util.Iterator;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
@@ -35,34 +34,22 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.minsait.onesait.platform.config.model.base.OPResource;
-import com.minsait.onesait.platform.config.model.interfaces.Versionable;
-import com.minsait.onesait.platform.config.model.listener.AuditEntityListener;
 
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 @Configurable
 @Entity
-@Table(name = "ONTOLOGY", uniqueConstraints = @UniqueConstraint(columnNames = { "IDENTIFICATION" }))
-@EntityListeners(AuditEntityListener.class)
-@ToString(exclude = { "ontologyAI", "jsonSchema" })
-public class Ontology extends OPResource implements Versionable<Ontology> {
+@Table(name = "ONTOLOGY", uniqueConstraints = @UniqueConstraint(name = "UK_IDENTIFICATION", columnNames = {
+		"IDENTIFICATION" }))
+public class Ontology extends OPResource {
 
 	private static final long serialVersionUID = 1L;
 
@@ -71,8 +58,8 @@ public class Ontology extends OPResource implements Versionable<Ontology> {
 	}
 
 	public enum RtdbDatasource {
-		MONGO, ELASTIC_SEARCH, API_REST, DIGITAL_TWIN, VIRTUAL, COSMOS_DB, NO_PERSISTENCE, PRESTO, TIMESCALE,
-		AI_MINDS_DB, NEBULA_GRAPH, OPEN_SEARCH
+
+		MONGO, ELASTIC_SEARCH, KUDU, API_REST, DIGITAL_TWIN, VIRTUAL
 	}
 
 	public enum RtdbToHdbStorage {
@@ -125,24 +112,13 @@ public class Ontology extends OPResource implements Versionable<Ontology> {
 	@Setter
 	private DataModel dataModel;
 
-	@Column(name = "ACTIVE", nullable = false)
-	@Type(type = "org.hibernate.type.BooleanType")
+	@Column(name = "ACTIVE", nullable = false, columnDefinition = "BIT")
 	@NotNull
 	@Getter
 	@Setter
 	private boolean active;
 
-	@Column(name = "CONTEXT_DATA_ENABLED")
-	@Type(type = "org.hibernate.type.BooleanType")
-	@ColumnDefault("true")
-	@NotNull
-	@Getter
-	@Setter
-	private boolean contextDataEnabled;
-
-	@Column(name = "RTDBCLEAN", nullable = false)
-	@Type(type = "org.hibernate.type.BooleanType")
-	@ColumnDefault("false")
+	@Column(name = "RTDBCLEAN", nullable = false, columnDefinition = "BIT default 0")
 	@NotNull
 	@Getter
 	@Setter
@@ -154,9 +130,7 @@ public class Ontology extends OPResource implements Versionable<Ontology> {
 	@Setter
 	private RtdbCleanLapse rtdbCleanLapse;
 
-	@Column(name = "RTDBHDB", nullable = false)
-	@Type(type = "org.hibernate.type.BooleanType")
-	@ColumnDefault("false")
+	@Column(name = "RTDBHDB", nullable = false, columnDefinition = "BIT default 0")
 	@NotNull
 	@Getter
 	@Setter
@@ -168,9 +142,7 @@ public class Ontology extends OPResource implements Versionable<Ontology> {
 	@Setter
 	private RtdbToHdbStorage rtdbToHdbStorage = RtdbToHdbStorage.MONGO_GRIDFS;
 
-	@Column(name = "PUBLIC", nullable = false)
-	@Type(type = "org.hibernate.type.BooleanType")
-	@ColumnDefault("false")
+	@Column(name = "PUBLIC", nullable = false, columnDefinition = "BIT default 0")
 	@NotNull
 	@Getter
 	@Setter
@@ -197,20 +169,17 @@ public class Ontology extends OPResource implements Versionable<Ontology> {
 	@Setter
 	private Set<OntologyUserAccess> ontologyUserAccesses = new HashSet<>();
 
-	@OneToOne(mappedBy = "ontology", fetch = FetchType.EAGER)
+	@OneToOne(mappedBy = "ontology", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonManagedReference
 	@Getter
 	@Setter
 	private OntologyKPI ontologyKPI;
 
-	@OneToOne(mappedBy = "ontology", fetch = FetchType.EAGER)
+	@OneToOne(mappedBy = "ontology", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonManagedReference
 	@Getter
 	@Setter
 	private OntologyTimeSeries ontologyTimeSeries;
-
-	@OneToOne(mappedBy = "ontology", fetch = FetchType.EAGER)
-	@Getter
-	@Setter
-	private OntologyAI ontologyAI;
 
 	@Column(name = "RTDB_DATASOURCE", length = 255)
 	@Getter
@@ -219,71 +188,22 @@ public class Ontology extends OPResource implements Versionable<Ontology> {
 	@Enumerated(EnumType.STRING)
 	private RtdbDatasource rtdbDatasource = Ontology.RtdbDatasource.MONGO;
 
-	@Column(name = "ALLOW_CYPHER_FIELD", nullable = false)
-	@Type(type = "org.hibernate.type.BooleanType")
+	@Column(name = "ALLOW_CYPHER_FIELD", nullable = false, columnDefinition = "BIT")
 	@NotNull
 	@Getter
 	@Setter
 	private boolean allowsCypherFields;
 
-	@Column(name = "ALLOW_CREATE_TOPIC", nullable = false)
-	@Type(type = "org.hibernate.type.BooleanType")
+	@Column(name = "ALLOW_CREATE_TOPIC", nullable = false, columnDefinition = "BIT")
 	@NotNull
 	@Getter
 	@Setter
 	private boolean allowsCreateTopic;
 
-	// @Column(name = "TOPIC", length = 256)
-	// @Getter
-	// @Setter
-	// private String topic;
-
-	@Column(name = "ALLOW_CREATE_NOTIFICATION_TOPIC", nullable = false)
-	@Type(type = "org.hibernate.type.BooleanType")
-	@NotNull
+	@Column(name = "TOPIC", length = 256)
 	@Getter
 	@Setter
-	private boolean allowsCreateNotificationTopic;
-
-	// @Column(name = "NOTIFICATION_TOPIC", length = 256)
-	// @Getter
-	// @Setter
-	// private String notificationTopic;
-
-	@Column(name = "ALLOW_CREATE_MQTT_TOPIC", nullable = false)
-	@Type(type = "org.hibernate.type.BooleanType")
-	@NotNull
-	@Getter
-	@Setter
-	private boolean allowsCreateMqttTopic;
-
-	@Column(name = "PARTITION_KEY", length = 256, nullable = true)
-	@Getter
-	@Setter
-	private String partitionKey;
-
-	@Column(name = "SUPPORTS_JSONLD", nullable = false)
-	@Type(type = "org.hibernate.type.BooleanType")
-	@ColumnDefault("false")
-	@NotNull
-	@Getter
-	@Setter
-	private boolean supportsJsonLd;
-
-	@Column(name = "JSONLD_CONTEXT", nullable = true)
-	@Lob
-	@Type(type = "org.hibernate.type.TextType")
-	@Getter
-	@Setter
-	private String jsonLdContext;
-
-	@Column(name = "ENABLE_DATACLASS", nullable = false)
-	@Type(type = "org.hibernate.type.BooleanType")
-	@ColumnDefault("false")
-	@NotNull
-	@Getter
-	@Setter
-	private boolean enableDataClass;
+	private String topic;
 
 	public void addOntologyUserAccess(OntologyUserAccess ontologyUserAccess) {
 		ontologyUserAccess.setOntology(this);
@@ -296,7 +216,8 @@ public class Ontology extends OPResource implements Versionable<Ontology> {
 	}
 
 	public boolean existOntologyUserAccessesWithUserActive() {
-		for (final OntologyUserAccess ontologyUserAccess : ontologyUserAccesses) {
+		for (final Iterator<OntologyUserAccess> iterator = ontologyUserAccesses.iterator(); iterator.hasNext();) {
+			final OntologyUserAccess ontologyUserAccess = iterator.next();
 			if (ontologyUserAccess.getUser().isActive()) {
 				return Boolean.TRUE;
 			}
@@ -313,12 +234,10 @@ public class Ontology extends OPResource implements Versionable<Ontology> {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) {
+		if (this == o)
 			return true;
-		}
-		if (!(o instanceof Ontology)) {
+		if (!(o instanceof Ontology))
 			return false;
-		}
 		return getIdentification() != null && getIdentification().equals(((Ontology) o).getIdentification());
 	}
 
@@ -327,127 +246,9 @@ public class Ontology extends OPResource implements Versionable<Ontology> {
 		return java.util.Objects.hash(getIdentification());
 	}
 
-	@JsonGetter("jsonSchema")
-	public Object getJsonSchemalJson() {
-		try {
-			return new ObjectMapper().readTree(jsonSchema);
-		} catch (final Exception e) {
-			return jsonSchema;
-		}
-	}
-
-	@JsonSetter("jsonSchema")
-	public void setJsonSchemaJson(ObjectNode node) {
-		try {
-			jsonSchema = new ObjectMapper().writeValueAsString(node);
-		} catch (final JsonProcessingException e) {
-			jsonSchema = null;
-		}
-	}
-
-	@JsonSetter("ontologyUserAccesses")
-	public void setOntologyUserAccessesJson(Set<OntologyUserAccess> ontologyUserAccesses) {
-		ontologyUserAccesses.forEach(s -> {
-			final OntologyUserAccess oua = s;
-			oua.setOntology(this);
-			this.ontologyUserAccesses.add(oua);
-		});
-	}
-
-	@JsonSetter("dataModel")
-	public void setDataModelJson(String id) {
-		if (StringUtils.hasText(id)) {
-			final DataModel o = new DataModel();
-			o.setId(id);
-			dataModel = o;
-		}
-	}
-
-	@JsonSetter("ontologyKPI")
-	public void setOntologyKPIJson(String id) {
-		if (StringUtils.hasText(id)) {
-			final OntologyKPI o = new OntologyKPI();
-			o.setId(id);
-			o.setOntology(this);
-			ontologyKPI = o;
-		}
-	}
-
-	@JsonSetter("ontologyAI")
-	public void setOntologyAIJson(String id) {
-		if (StringUtils.hasText(id)) {
-			final OntologyAI o = new OntologyAI();
-			o.setId(id);
-			o.setOntology(this);
-			ontologyAI = o;
-		}
-	}
-
-	@JsonSetter("ontologyTimeSeries")
-	public void setOntologyTimeSeriesJson(String id) {
-		if (StringUtils.hasText(id)) {
-			final OntologyTimeSeries o = new OntologyTimeSeries();
-			o.setId(id);
-			o.setOntology(this);
-			ontologyTimeSeries = o;
-		}
-	}
-
 	@Override
-	public String serialize() {
-		final YAMLMapper mapper = new YAMLMapper();
-		final ObjectNode node = new YAMLMapper().valueToTree(this);
-		node.put("dataModel", dataModel == null ? null : dataModel.getId());
-		node.put("ontologyKPI", ontologyKPI == null ? null : ontologyKPI.getId());
-		node.put("ontologyAI", ontologyAI == null ? null : ontologyAI.getId());
-		node.put("ontologyTimeSeries", ontologyTimeSeries == null ? null : ontologyTimeSeries.getId());
-		node.put("ontologyAI", ontologyAI == null ? null : ontologyAI.getId());
-		try {
-			return mapper.writeValueAsString(node);
-		} catch (final JsonProcessingException e) {
-			return null;
-		}
-	}
-
-	@Override
-	public String fileName() {
-		return getIdentification() + ".yaml";
-	}
-
-	@Override
-	public Versionable<Ontology> runExclusions(Map<String, Set<String>> excludedIds, Set<String> excludedUsers) {
-		Versionable<Ontology> o = Versionable.super.runExclusions(excludedIds, excludedUsers);
-		if (o != null) {
-			if (!ontologyUserAccesses.isEmpty() && !CollectionUtils.isEmpty(excludedUsers)) {
-				ontologyUserAccesses.removeIf(oua -> excludedUsers.contains(oua.getUser().getUserId()));
-				o = this;
-			}
-			if (dataModel != null && !CollectionUtils.isEmpty(excludedIds.get(DataModel.class.getSimpleName()))
-					&& excludedIds.get(DataModel.class.getSimpleName()).contains(dataModel.getId())) {
-				addIdToExclusions(this.getClass().getSimpleName(), getId(), excludedIds);
-				o = null;
-			}
-			if (ontologyTimeSeries != null
-					&& !CollectionUtils.isEmpty(excludedIds.get(OntologyTimeSeries.class.getSimpleName()))
-					&& excludedIds.get(OntologyTimeSeries.class.getSimpleName()).contains(ontologyTimeSeries.getId())) {
-				addIdToExclusions(this.getClass().getSimpleName(), getId(), excludedIds);
-				o = null;
-			}
-			if (ontologyKPI != null && !CollectionUtils.isEmpty(excludedIds.get(OntologyKPI.class.getSimpleName()))
-					&& excludedIds.get(OntologyKPI.class.getSimpleName()).contains(ontologyKPI.getId())) {
-				addIdToExclusions(this.getClass().getSimpleName(), getId(), excludedIds);
-				o = null;
-			}
-		}
-
-		return o;
-	}
-
-	@Override
-	public void setOwnerUserId(String userId) {
-		final User u = new User();
-		u.setUserId(userId);
-		setUser(u);
+	public String toString() {
+		return getIdentification();
 	}
 
 }

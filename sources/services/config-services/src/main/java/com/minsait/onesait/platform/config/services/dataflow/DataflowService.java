@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,133 +14,80 @@
  */
 package com.minsait.onesait.platform.config.services.dataflow;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.multipart.MultipartFile;
 
-import com.minsait.onesait.platform.config.dto.OPResourceDTO;
-import com.minsait.onesait.platform.config.model.DataflowInstance;
 import com.minsait.onesait.platform.config.model.Pipeline;
-import com.minsait.onesait.platform.config.model.PipelineUserAccess;
-import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.services.dataflow.beans.InstanceBuilder;
+import com.minsait.onesait.platform.config.services.dataflow.DataflowServiceImpl.PipelineTypes;
 
 public interface DataflowService {
 
-	List<Pipeline> getPipelinesWithStatus(String userId);
+	public Pipeline createPipeline(String name, PipelineTypes type, String description, String userId) throws UnsupportedEncodingException;
 
-	Pipeline createPipeline(Pipeline pipeline, String userId);
+	public void removePipeline(String id, String userId);
 
-	void deleteHardPipeline(String id, String userId);
+	public ResponseEntity<String> sendHttp(HttpServletRequest requestServlet, HttpMethod httpMethod, Object body,
+			String user) throws URISyntaxException, IOException;
 
-	ResponseEntity<String> sendHttp(HttpServletRequest requestServlet, HttpMethod httpMethod, Object body, String user);
+	public ResponseEntity<byte[]> sendHttpBinary(HttpServletRequest requestServlet, HttpMethod httpMethod, String body,
+			String user) throws URISyntaxException, IOException;
 
-	ResponseEntity<String> sendHttpWithInstance(HttpServletRequest requestServlet, HttpMethod httpMethod, Object body,
-			String instanceId);
+	public ResponseEntity<String> sendHttp(String url, HttpMethod httpMethod, Object body, String user,
+			String dataflowId) throws URISyntaxException, IOException;
 
-	ResponseEntity<String> sendHttpFile(HttpServletRequest requestServlet, MultipartFile file, String userId);
+	public ResponseEntity<byte[]> sendHttpBinary(String url, HttpMethod httpMethod, String body, String user,
+			String dataflowId) throws URISyntaxException, IOException;
 
-	ResponseEntity<String> sendHttpFileWithInstance(HttpServletRequest requestServlet, MultipartFile file,
-			String instance);
+	public ResponseEntity<String> sendHttp(String url, HttpMethod httpMethod, Object body, HttpHeaders headers,
+			String user) throws URISyntaxException, IOException;
 
-	ResponseEntity<byte[]> getyHttpBinary(HttpServletRequest requestServlet, String body, String user);
+	public ResponseEntity<byte[]> sendHttpBinary(String url, HttpMethod httpMethod, String body, HttpHeaders headers,
+			String user) throws URISyntaxException, IOException;
 
-	byte[] getyHttpBinary(String lib, String id, HttpServletRequest requestServlet, String body, String user);
+	public Pipeline getPipeline(String identification, String userId);
 
-	Pipeline getPipelineById(String id);
+	public List<Pipeline> getPipelines(String userId);
 
-	Pipeline getPipelineByIdentification(String identification);
+	public boolean hasUserPermissionForPipeline(String pipelineId, String userId);
 
-	Pipeline getPipelineByIdStreamsets(String id);
+	public boolean hasUserViewPermission(String pipelineId, String userId);
 
-	boolean hasUserViewPermission(Pipeline pipeline, String userId);
+	public boolean hasUserEditPermission(String pipelineId, String userId);
 
-	boolean hasUserEditPermission(Pipeline pipeline, String userId);
+	public ResponseEntity<String> startPipeline(String userId, String pipelineIdentification, String parameters);
 
-	List<Pipeline> getPipelines(String userId);
+	public ResponseEntity<String> stopPipeline(String userId, String pipelineIdentification);
 
-	void deletePipeline(String pipelineId, String userId);
+	public ResponseEntity<String> statusPipeline(String userId, String pipelineIdentification);
 
-	Pipeline renamePipeline(String pipelineId, String userId, String newIdentification);
+	public ResponseEntity<String> statusPipelines(String userId);
 
-	ResponseEntity<String> startPipeline(String userId, String pipelineIdentification, String parameters);
+	public ResponseEntity<String> exportPipeline(String userId, String pipelineIdentification);
 
-	ResponseEntity<String> stopPipeline(String userId, String pipelineIdentification);
+	public ResponseEntity<String> importPipeline(String userId, String pipelineIdentification, String config);
 
-	ResponseEntity<String> statusPipeline(String userId, String pipelineIdentification);
+	public ResponseEntity<String> updatePipeline(String userId, String pipelineIdentification, String config);
 
-	ResponseEntity<String> getPipelinesStatus(String userId);
-
-	ResponseEntity<String> getPipelineConfiguration(String userId, String pipelineIdentification);
-
-	ResponseEntity<String> exportPipeline(String userId, String pipelineIdentification);
-
-	ResponseEntity<String> importPipeline(String userId, String pipelineIdentification, String config,
-			boolean overwrite);
-
-	ResponseEntity<String> updatePipeline(String userId, String pipelineIdentification, String config);
-
-	ResponseEntity<String> clonePipeline(String userId, String pipelineIdentificationOri,
+	public ResponseEntity<String> clonePipeline(String userId, String pipelineIdentificationOri,
 			String pipelineIdentificationDest);
+	
+	public ResponseEntity<String> metricsPipeline(String userId, String pipelineIdentification);
+	
+	public ResponseEntity<String> pipelines(String userId, String filterText, String label, int offset, int len, String orderBy, String order, boolean includeStatus);
 
-	ResponseEntity<String> metricsPipeline(String userId, String pipelineIdentification);
+	void createUserAccess(String dataflowId, String userId, String accessType);
 
-	ResponseEntity<String> pipelines(String userId, String filterText, String label, int offset, int len,
-			String orderBy, String order, boolean includeStatus);
+	void deleteUserAccess(String dataflowUserAccessId);
 
-	PipelineUserAccess createUserAccess(String dataflowId, String userId, String accessType, String userIdAccessTo);
+	void changePublic(Pipeline dataflowId);
 
-	Pipeline changePublic(String streamsetsId, String userId);
-
-	ResponseEntity<String> resetOffsetPipeline(String userId, String pipelineIdentification);
-
-	void deleteUserAccess(String dataflowUserAccessId, String userId);
-
-	String getVersion();
-
-	/* DATAFLOW INSTANCES */
-
-	List<DataflowInstance> getAllDataflowInstances();
-
-	DataflowInstance getDefaultDataflowInstance();
-
-	void setDefaultDataflowInstance(DataflowInstance newDataflowInstance);
-
-	DataflowInstance getDataflowInstanceByIdentification(String identification);
-
-	DataflowInstance getDataflowInstanceById(String id);
-
-	DataflowInstance getDataflowInstanceForUserId(String userId);
-
-	DataflowInstance createDataflowInstance(InstanceBuilder instance);
-
-	DataflowInstance updateDataflowInstance(String identification, InstanceBuilder newInstance);
-
-	void deleteDataflowInstance(DataflowInstance dataflowInstance, DataflowServiceImpl.RemoveInstanceAction action,
-			User user);
-
-	void deleteDataflowInstance(String id, String action, String userId);
-
-	ResponseEntity<String> restartDataflowInstance(String instanceId);
-
-	List<User> getFreeAnalyticsUsers();
-
-	ResponseEntity<String> importPipelineData(String userId, String pipelineIdentification, String config,
-			boolean overwrite);
-
-	List<Pipeline> getPipelinesForListWithProjectsAccess(String userId);
-
-	List<String> getIdentificationByUser(String userId);
-
-	List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification);
-
-	ResponseEntity<String> getPipelineCommittedOffsets(String userId, String pipelineIdentification);
-
-	void deletePipeUserAccessForAUser(String userAccessId);
-
-	ResponseEntity<Object> getPipelineByIdentificationOrId(String identification, String userId);
+	public String getVersion();
 }

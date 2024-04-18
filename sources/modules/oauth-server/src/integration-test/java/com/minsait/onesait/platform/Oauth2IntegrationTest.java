@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,6 @@ import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.AppRepository;
 import com.minsait.onesait.platform.config.repository.RoleRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
-import com.minsait.onesait.platform.config.services.entity.cast.EntitiesCast;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Oauth2AuthorizationServerApplication.class)
@@ -75,6 +74,7 @@ public class Oauth2IntegrationTest {
 
 	private static final String REALM_ID = "TestRealm";
 	private static final String REALM_ROLE = "ROLE_TEST";
+	private static final String REALM_NAME = "TestRealm";
 
 	private static final String GRANT_TYPE_IMPLICIT = "password";
 	private static final String SCOPE = "openid";
@@ -108,10 +108,11 @@ public class Oauth2IntegrationTest {
 
 	@After
 	public void tearDown() {
-		final App realm = EntitiesCast.castAppList(appRepository.findByIdentificationLike(REALM_ID).get(0), false);
+		final App realm = appRepository.findByIdentificationLike(REALM_NAME).get(0);
 		realm.getAppRoles().clear();
 		appRepository.delete(realm);
 		userRepository.deleteByUserId(USERNAME);
+
 	}
 
 	@Test
@@ -278,16 +279,17 @@ public class Oauth2IntegrationTest {
 		test.setFullName(FULL_NAME);
 		test.setActive(true);
 		test.setEmail(EMAIL);
-		test.setRole(roleRepository.findById(Role.Type.ROLE_ADMINISTRATOR.name()).orElse(null));
+		test.setRole(roleRepository.findById(Role.Type.ROLE_ADMINISTRATOR.name()));
 		userRepository.save(test);
 
 	}
 
 	private void createTestRealm() {
 		final App realm = new App();
-		realm.setIdentification(REALM_ID);
+		realm.setName(REALM_NAME);
 		realm.setSecret(SECRET);
 		final AppRole role = new AppRole();
+		realm.setAppId(REALM_ID);
 		role.setApp(realm);
 		role.setName(REALM_ROLE);
 		role.getAppUsers().add(AppUser.builder().user(userRepository.findByUserId(USERNAME)).role(role).build());

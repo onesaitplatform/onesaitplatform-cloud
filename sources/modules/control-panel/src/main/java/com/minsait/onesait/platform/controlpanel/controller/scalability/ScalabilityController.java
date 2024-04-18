@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/scalability")
-@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
 @Slf4j
 public class ScalabilityController {
 
@@ -58,7 +58,7 @@ public class ScalabilityController {
 	@Autowired
 	private BeanFactory beanFactory;
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
 	@PostMapping(value = "/connection", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public @ResponseBody ResponseEntity<Connection> setConnection(@RequestBody Connection connection) {
 		synchronized (lock) {
@@ -71,7 +71,7 @@ public class ScalabilityController {
 		}
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
 	@PostMapping(value = "/startInjector", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public @ResponseBody ResponseEntity<Injector> startInjector(@RequestParam int injector,
 			@RequestParam String protocol, @RequestParam int delay, @RequestBody String data) throws IOException {
@@ -122,14 +122,14 @@ public class ScalabilityController {
 		return new ResponseEntity<>(inject, HttpStatus.OK);
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/status", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public @ResponseBody ResponseEntity<Collection<InjectorStatus>> getStatus() {
 		Collection<InjectorStatus> values = statues.values();
 		return new ResponseEntity<>(values, HttpStatus.OK);
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/getDataConnection", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public @ResponseBody ResponseEntity<Connection> getDataConnection() {
 		synchronized (lock) {
@@ -137,7 +137,7 @@ public class ScalabilityController {
 		}
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/stopInjector", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public @ResponseBody ResponseEntity<BasicMsg> stopInjector(@RequestParam int injector) {
 		Injector inj = new Injector(injector, null);

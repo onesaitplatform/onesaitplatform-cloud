@@ -20,7 +20,7 @@
 angular
   .module('dataCollectorApp.home')
 
-  .controller('PreviewController', ["$scope", "$rootScope", "$q", "_", "api", "previewService", "pipelineConstant", "$timeout", "$modal", function ($scope, $rootScope, $q, _, api, previewService, pipelineConstant,
+  .controller('PreviewController', function ($scope, $rootScope, $q, _, api, previewService, pipelineConstant,
                                              $timeout, $modal) {
     var previewDataBackup, previewStatusTimer, currentPreviewerId, currentStage;
 
@@ -641,4 +641,4 @@ angular
     });
 
 
-  }]);
+  });

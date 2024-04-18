@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,13 +27,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.XML;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.api.rule.DefaultRuleBase;
 import com.minsait.onesait.platform.api.rule.RuleManager;
-import com.minsait.onesait.platform.api.service.ApiServiceInterface;
-import com.mongodb.BasicDBObject;
+import com.minsait.onesait.platform.api.service.Constants;
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 
 @Component
 @Rule
@@ -46,40 +46,35 @@ public class NormalizeBodyContentTypeRule extends DefaultRuleBase {
 
 	@Condition
 	public boolean existsRequest(Facts facts) {
-		final Map<String, Object> data = facts.get(RuleManager.FACTS);
-		final Object body = data.get(ApiServiceInterface.BODY);
+		Map<String, Object> data = facts.get(RuleManager.FACTS);
+		Object body = data.get(Constants.BODY);
 		return body != null;
 	}
 
 	@Action
 	public void setFirstDerivedData(Facts facts) {
 
-		final Map<String, Object> data = facts.get(RuleManager.FACTS);
-		final byte[] requestBody = (byte[]) data.get(ApiServiceInterface.BODY);
-		final String body = new String(requestBody);
-		final String contentTypeInput = (String) data.get(ApiServiceInterface.CONTENT_TYPE_INPUT);
+		Map<String, Object> data = facts.get(RuleManager.FACTS);
 
-		if (!"".equals(body)) {
+		String body = (String) data.get(Constants.BODY);
+		String contentTypeInput = (String) data.get(Constants.CONTENT_TYPE_INPUT);
 
-			if (contentTypeInput != null && contentTypeInput.equals(MediaType.APPLICATION_ATOM_XML)) {
-				try {
-					final JSONObject xmlJSONObj = XML.toJSONObject(body);
-					data.put(ApiServiceInterface.BODY, xmlJSONObj.toString());
-				} catch (final Exception e) {
+		if (!"".equals(body) && contentTypeInput != null && contentTypeInput.equals(MediaType.APPLICATION_ATOM_XML)) {
+			try {
+				JSONObject xmlJSONObj = XML.toJSONObject(body);
+				data.put(Constants.BODY, xmlJSONObj.toString());
+			} catch (Exception e) {
 
-					stopAllNextRules(facts, "BODY IS NOT JSON PARSEABLE : " + e.getMessage(),
-							DefaultRuleBase.ReasonType.GENERAL, HttpStatus.BAD_REQUEST);
-				}
-
+				stopAllNextRules(facts, "BODY IS NOT JSON PARSEABLE : " + e.getMessage(),
+						DefaultRuleBase.ReasonType.GENERAL);
 			}
-
 		}
 
 	}
 
 	public boolean isValidJSON(String toTestStr) {
-		final JSONObject jsonObj = toJSONObject(toTestStr);
-		final JSONArray jsonArray = toJSONArray(toTestStr);
+		JSONObject jsonObj = toJSONObject(toTestStr);
+		JSONArray jsonArray = toJSONArray(toTestStr);
 
 		return jsonObj != null || jsonArray != null;
 	}
@@ -88,7 +83,7 @@ public class NormalizeBodyContentTypeRule extends DefaultRuleBase {
 		JSONObject jsonObj = null;
 		try {
 			jsonObj = new JSONObject(input);
-		} catch (final JSONException e) {
+		} catch (JSONException e) {
 			return null;
 		}
 		return jsonObj;
@@ -98,7 +93,7 @@ public class NormalizeBodyContentTypeRule extends DefaultRuleBase {
 		JSONArray jsonObj = null;
 		try {
 			jsonObj = new JSONArray(input);
-		} catch (final JSONException e) {
+		} catch (JSONException e) {
 			return null;
 		}
 		return jsonObj;
@@ -106,23 +101,23 @@ public class NormalizeBodyContentTypeRule extends DefaultRuleBase {
 
 	public boolean isValidJSONtoMongo(String body) {
 		try {
-			final BasicDBObject dbObject = BasicDBObject.parse(body);
+			DBObject dbObject = (DBObject) JSON.parse(body);
 			return dbObject != null;
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			return false;
 		}
 	}
 
 	public String depureJSON(String body) {
-		BasicDBObject dbObject = null;
+		DBObject dbObject = null;
 		try {
-			dbObject = BasicDBObject.parse(body);
-			if (dbObject == null) {
+			dbObject = (DBObject) JSON.parse(body);
+			if (dbObject == null)
 				return null;
-			} else {
+			else {
 				return dbObject.toString();
 			}
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			return null;
 		}
 

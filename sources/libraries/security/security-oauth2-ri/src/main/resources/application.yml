@@ -7,7 +7,6 @@ spring: ## General Config
       # Validate the connection before borrowing it from the pool.
       test-on-borrow: true
       validation-query: SELECT 1
-      validationQueryTimeout: 5
       test-while-idle: true       
       # Number of ms to wait before throwing an exception if no connection is available.
       max-wait: 10000

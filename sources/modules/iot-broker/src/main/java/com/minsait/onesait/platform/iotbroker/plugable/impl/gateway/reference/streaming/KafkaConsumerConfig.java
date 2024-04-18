@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,9 @@ package com.minsait.onesait.platform.iotbroker.plugable.impl.gateway.reference.s
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -30,18 +28,10 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 
-import com.minsait.onesait.platform.commons.ActiveProfileDetector;
-import com.minsait.onesait.platform.config.model.Configuration.Type;
-import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
-import com.minsait.onesait.platform.encryptor.config.JasyptConfig;
-
 @ConditionalOnProperty(prefix = "onesaitplatform.iotbroker.plugable.gateway.kafka", name = "enable", havingValue = "true")
 @EnableKafka
 @Configuration
 public class KafkaConsumerConfig {
-
-	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.brokers:none}")
-	private String kafkaBrokers;
 
 	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.host:localhost}")
 	private String kafkaHost;
@@ -55,6 +45,12 @@ public class KafkaConsumerConfig {
 	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.password:admin-secret}")
 	private String kafkaPassword;
 
+	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.partitions:1}")
+	int partitions;
+
+	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.replication:1}")
+	short replication;
+
 	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.prefix:ontology_}")
 	private String ontologyPrefix;
 
@@ -67,52 +63,9 @@ public class KafkaConsumerConfig {
 	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.consumer.maxAge:5000}")
 	private String maxAge;
 
-	@Autowired
-	private ConfigurationService configurationService;
-	@Autowired
-	private ActiveProfileDetector profiledetector;
-
-	private static final String EMPTY_BROKERS = "none";
-	private static final String KAFKA_DEFAULTPORT = "9092";
-
-	@SuppressWarnings("unchecked")
-	private Map<String, Object> getKafkaClientPropertiesFromConfig() {
+	public ConsumerFactory<String, String> consumerFactory(String groupId) {
 		Map<String, Object> props = new HashMap<>();
-
-		com.minsait.onesait.platform.config.model.Configuration kafkaClientConfig = configurationService
-				.getConfiguration(Type.KAFKA_INTERNAL_CLIENT_PROPERTIES, profiledetector.getActiveProfile(), null);
-		if (kafkaClientConfig == null) {
-			return null;
-		}
-
-		props = configurationService.fromYaml(kafkaClientConfig.getYmlConfig());
-		if (props.containsKey("group.id")) {
-			ontologyGroup = props.get("group.id").toString();
-		}
-		// decrypting encrypted properties
-		for (Entry<String, Object> entry : props.entrySet()) {
-			if (entry.getValue().getClass() == String.class) {
-				String propertyVal = (String) entry.getValue();
-				if (propertyVal.startsWith("ENC(")) {
-					// property is encrypted
-					String encrypedValue = propertyVal.substring(4, propertyVal.length() - 1);
-					String decrytedValue = JasyptConfig.getEncryptor().decrypt(encrypedValue);
-					entry.setValue(decrytedValue);
-				}
-
-			}
-		}
-
-		return props;
-	}
-
-	private Map<String, Object> getKafkaClientPropertiesLegacy(String groupId) {
-		Map<String, Object> props = new HashMap<>();
-		if (!EMPTY_BROKERS.equals(kafkaBrokers)) {
-			props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBrokers);
-		} else {
-			props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaHost + ":" + kafkaPort);
-		}
+		props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaHost + ":" + kafkaPort);
 		props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
 		props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
 		props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
@@ -120,34 +73,41 @@ public class KafkaConsumerConfig {
 		props.put(ConsumerConfig.METADATA_MAX_AGE_CONFIG, maxAge);
 
 		applySecurity(props);
-		return props;
-	}
 
-	public ConsumerFactory<String, String> consumerFactory(String groupId) {
-		Map<String, Object> props = getKafkaClientPropertiesFromConfig();
-		if (props == null) {
-			props = getKafkaClientPropertiesLegacy(groupId);
-		}
 		return new DefaultKafkaConsumerFactory<>(props);
 	}
-	/*
-	 * public ConsumerFactory<String, String> consumerFactoryManualAck(String
-	 * groupId) { Map<String, Object> props = getKafkaClientPropertiesFromConfig();
-	 * if (props==null) { props=getKafkaClientPropertiesLegacy(groupId); }
-	 * 
-	 * return new DefaultKafkaConsumerFactory<>(props); }
-	 */
+
+	public ConsumerFactory<String, String> consumerFactoryManualAck(String groupId) {
+		Map<String, Object> props = new HashMap<>();
+		props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaHost + ":" + kafkaPort);
+		props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+		props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+		props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+		props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPollRecords);
+		props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+		props.put(ConsumerConfig.METADATA_MAX_AGE_CONFIG, maxAge);
+
+		applySecurity(props);
+
+		return new DefaultKafkaConsumerFactory<>(props);
+	}
 
 	public ConsumerFactory<String, String> consumerFactoryBatch(String groupId) {
-		Map<String, Object> props = getKafkaClientPropertiesFromConfig();
-		if (props == null) {
-			props = getKafkaClientPropertiesLegacy(groupId);
-		}
+		Map<String, Object> props = new HashMap<>();
+		props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaHost + ":" + kafkaPort);
+		props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+		props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+		props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+		props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPollRecords);
+		props.put(ConsumerConfig.METADATA_MAX_AGE_CONFIG, maxAge);
+
+		applySecurity(props);
+
 		return new DefaultKafkaConsumerFactory<>(props);
 	}
 
 	private void applySecurity(Map<String, Object> config) {
-		if (!kafkaPort.contains(KAFKA_DEFAULTPORT) || kafkaBrokers.contains(KAFKA_DEFAULTPORT)) {
+		if (!kafkaPort.contains("9092")) {
 			config.put("security.protocol", "SASL_PLAINTEXT");
 			config.put("sasl.mechanism", "PLAIN");
 

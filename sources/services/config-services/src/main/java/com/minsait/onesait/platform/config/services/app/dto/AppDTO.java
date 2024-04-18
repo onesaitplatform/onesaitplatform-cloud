@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,19 +19,19 @@ import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
 
-public class AppDTO implements java.io.Serializable {
-
+public class AppDTO  implements java.io.Serializable {
+	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-
+	
 	@Getter
 	@Setter
-	private String id;
+	private String appId;
 	@Getter
 	@Setter
-	private String identification;
+	private String name;
 	@Getter
 	@Setter
 	private String description;
@@ -41,10 +41,4 @@ public class AppDTO implements java.io.Serializable {
 	@Getter
 	@Setter
 	private Date dateCreated;
-	@Getter
-	@Setter
-	private Date dateUpdated;
-	@Getter
-	@Setter
-	private String user;
 }

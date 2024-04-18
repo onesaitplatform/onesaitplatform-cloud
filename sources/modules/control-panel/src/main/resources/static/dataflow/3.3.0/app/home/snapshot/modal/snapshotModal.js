@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('SnapshotModalInstanceController', ["$scope", "$rootScope", "$modalInstance", "pipelineConfig", "isPipelineRunning", "canExecute", "api", "$timeout", function (
+  .controller('SnapshotModalInstanceController', function (
     $scope, $rootScope, $modalInstance, pipelineConfig, isPipelineRunning, canExecute, api, $timeout
   ) {
     var defaultSnapshotName = 'Snapshot1',
@@ -224,4 +224,4 @@ angular
     $scope.$on('$destroy', function() {
       $timeout.cancel(captureSnapshotStatusTimer);
     });
-  }]);
+  });

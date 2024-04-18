@@ -18,7 +18,7 @@
  */
 
 angular.module('recordTreeDirectives', ['RecursionHelper'])
-  .directive('recordTree', ["RecursionHelper", "$modal", function(RecursionHelper, $modal) {
+  .directive('recordTree', function(RecursionHelper, $modal) {
     'use strict';
 
     var linkFunction = function (scope) {
@@ -220,4 +220,4 @@ angular.module('recordTreeDirectives', ['RecursionHelper'])
       }
     };
 
-  }]);
+  });

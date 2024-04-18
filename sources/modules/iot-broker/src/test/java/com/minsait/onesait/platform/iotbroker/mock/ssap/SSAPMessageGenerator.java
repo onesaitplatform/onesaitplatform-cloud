@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyInsertMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyJoinMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyQueryMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodySubscribeMessage;
-import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyUnsubscribeMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyUpdateByIdMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyUpdateMessage;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageDirection;
@@ -146,21 +145,21 @@ public final class SSAPMessageGenerator {
 		return message;
 	}
 
-//	public static SSAPMessage<SSAPBodySubscribeMessage> generateSubscriptionMessage(String ontology, String sessionKey,
-//			SSAPQueryType queryType, String query) {
-//		final SSAPMessage<SSAPBodySubscribeMessage> message = new SSAPMessage<>();
-//		message.setSessionKey(sessionKey);
-//
-//		final SSAPBodySubscribeMessage body = new SSAPBodySubscribeMessage();
-//		body.setOntology(ontology);
-//		body.setQueryType(queryType);
-//		body.setQuery(query);
-//		message.setBody(body);
-//		message.setDirection(SSAPMessageDirection.REQUEST);
-//		message.setMessageType(SSAPMessageTypes.SUBSCRIBE);
-//
-//		return message;
-//	}
+	public static SSAPMessage<SSAPBodySubscribeMessage> generateSubscriptionMessage(String ontology, String sessionKey,
+			SSAPQueryType queryType, String query) {
+		final SSAPMessage<SSAPBodySubscribeMessage> message = new SSAPMessage<>();
+		message.setSessionKey(sessionKey);
+
+		final SSAPBodySubscribeMessage body = new SSAPBodySubscribeMessage();
+		body.setOntology(ontology);
+		body.setQueryType(queryType);
+		body.setQuery(query);
+		message.setBody(body);
+		message.setDirection(SSAPMessageDirection.REQUEST);
+		message.setMessageType(SSAPMessageTypes.SUBSCRIBE);
+
+		return message;
+	}
 
 	public static SSAPMessage<SSAPBodyCommandMessage> generateCommandMessage(String sessionKey)
 			throws JsonProcessingException, IOException {
@@ -178,34 +177,8 @@ public final class SSAPMessageGenerator {
 		return message;
 	}
 
-	public static SSAPMessage<SSAPBodySubscribeMessage> generateRequestSubscriptionMessage(String subscription,
-			String queryValue, String callback, String sessionKey, String clientId) {
-
-		final SSAPMessage<SSAPBodySubscribeMessage> subscriptionMessage = new SSAPMessage<>();
-		subscriptionMessage.setSessionKey(sessionKey);
-		subscriptionMessage.setDirection(SSAPMessageDirection.REQUEST);
-		subscriptionMessage.setMessageType(SSAPMessageTypes.SUBSCRIBE);
-		final SSAPBodySubscribeMessage body = new SSAPBodySubscribeMessage();
-		body.setCallback(callback);
-		body.setQueryValue(queryValue);
-		body.setSubscription(subscription);
-		body.setClientId(clientId);
-		subscriptionMessage.setBody(body);
-
-		return subscriptionMessage;
-	}
-
-	public static SSAPMessage<SSAPBodyUnsubscribeMessage> generateRequestUnsubscribeMessage(String sessionKey,
-			String subscriptionId) {
-		final SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribe = new SSAPMessage<SSAPBodyUnsubscribeMessage>();
-		unsubscribe.setSessionKey(sessionKey);
-
-		final SSAPBodyUnsubscribeMessage body = new SSAPBodyUnsubscribeMessage();
-		body.setSubscriptionId(subscriptionId);
-
-		unsubscribe.setBody(body);
-		unsubscribe.setDirection(SSAPMessageDirection.REQUEST);
-		unsubscribe.setMessageType(SSAPMessageTypes.UNSUBSCRIBE);
-		return unsubscribe;
-	}
+	// public static SSAPMessage<SSAPBodyLeaveMessage> generateLeaveMessage() {
+	// final SSAPMessage<SSAPBodyLeaveMessage> message = new SSAPMessage<>();
+	//
+	// }
 }

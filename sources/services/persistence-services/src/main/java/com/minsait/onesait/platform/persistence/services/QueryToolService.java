@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,7 @@ package com.minsait.onesait.platform.persistence.services;
 import java.util.List;
 import java.util.Map;
 
-import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
-import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
-
-import net.sf.jsqlparser.JSQLParserException;
 
 public interface QueryToolService {
 
@@ -30,17 +25,12 @@ public interface QueryToolService {
 
 	String queryNativeAsJson(String user, String ontology, String query);
 
-	String querySQLAsJson(String user, String ontology, String query, int offset)
-			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException;
-
-	String querySQLAsJson(String user, String ontology, String query, int offset, int limit)
-			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException;
+	String querySQLAsJson(String user, String ontology, String query, int offset);
 
 	String queryNativeAsJsonForPlatformClient(String clientplatform, String ontology, String query, int offset,
 			int limit);
 
-	String querySQLAsJsonForPlatformClient(String clientplatform, String ontology, String query, int offset)
-			throws DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException;
+	String querySQLAsJsonForPlatformClient(String clientplatform, String ontology, String query, int offset);
 
 	String compileSQLQueryAsJson(String user, Ontology ontology, String query, int offset);
 
@@ -48,7 +38,6 @@ public interface QueryToolService {
 
 	Map<String, String> getTableColumns(String tableName);
 
-	List<String> querySQLtoConfigDB(String query) throws JSQLParserException ;
+	List<String> querySQLtoConfigDB(String query);
 
-	List<String> updateSQLtoConfigDB(String query) throws JSQLParserException ;
 }

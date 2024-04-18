@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@ package com.minsait.onesait.platform.api.rest.api.fiql;
 
 import org.springframework.stereotype.Component;
 
+import com.minsait.onesait.platform.api.rest.api.dto.TokenUserDTO;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.UserToken;
-import com.minsait.onesait.platform.config.services.apimanager.dto.TokenUserDTO;
 
 import lombok.extern.slf4j.Slf4j;
 

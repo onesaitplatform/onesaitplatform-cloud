@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,10 +38,11 @@ public interface BinaryFileAccessRepository extends JpaRepository<BinaryFileAcce
 	@Transactional
 	public void deleteByUserAndBinaryFile(User user, BinaryFile binaryFile);
 
-	@Override
 	@Modifying
 	@Transactional
 	public void deleteById(String id);
+
+	public BinaryFileAccess findById(String id);
 
 	@Query("select bfa from BinaryFileAccess as bfa WHERE bfa.user=:user AND bfa.binaryFile=:file AND bfa.accessType=1")
 	public BinaryFileAccess findByUserAndWriteAccess(@Param("file") BinaryFile file, @Param("user") User user);

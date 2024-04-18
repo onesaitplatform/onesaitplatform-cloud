@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,8 +49,8 @@ public class OntologyCategoryRepositoryIntegrationTest {
 		if (categories.isEmpty()) {
 			log.info("No ontology categories found..adding");
 			OntologyCategory category = new OntologyCategory();
-			category.setId("MASTER-Ontology-Category-1");
-			category.setIdentification("ontologias_categoria_cultura");
+			category.setId(1);
+			category.setIdentificator("ontologias_categoria_cultura");
 			category.setDescription("ontologias_categoria_cultura_desc");
 			this.repository.save(category);
 		}

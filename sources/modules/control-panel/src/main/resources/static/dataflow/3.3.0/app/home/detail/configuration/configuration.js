@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('ConfigurationController', ["$scope", "$rootScope", "$q", "$modal", "_", "$timeout", "api", "previewService", "pipelineConstant", "pipelineService", function (
+  .controller('ConfigurationController', function (
     $scope, $rootScope, $q, $modal, _, $timeout, api, previewService, pipelineConstant, pipelineService
   ) {
 
@@ -862,4 +862,4 @@ angular
     $scope.$watch('previewMode', function() {
       refreshCodemirrorWidget();
     });
-  }]);
+  });

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.0.3.RELEASE</version>
+    </parent>
+	<groupId>com.minsait.onesait.platform.examples</groupId>
+	<artifactId>onesaitplatform-example-iotclient4springboot</artifactId>
+    <version>1.3.2-rc4</version>
+	<packaging>jar</packaging>
+	<name>onesaitplatform-example-iotclient4springboot</name>
+	<description>Example of use of Client Iot Platform 4 spring boot</description>
+
+
+	<properties>
+		<license.dir>${project.parent.basedir}</license.dir>
+		<onesaitplatform.client.version>1.3.0</onesaitplatform.client.version>
+	</properties>
+	
+	<dependencies>	
+		<dependency>
+		  <groupId>com.minsait.onesait.platform</groupId>
+		  <artifactId>onesaitplatform-iotclient4springboot</artifactId>
+		  <version>${onesaitplatform.client.version}</version>
+		</dependency>
+						
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<optional>true</optional>
+		</dependency>
+	</dependencies>	
+	<!--
+       <repositories>
+             <repository>
+                    <id>onesait plataform releases</id>
+                    <url>http://nexus.onesaitplatform.com/nexus/content/repositories/releases/</url>
+             </repository>
+       </repositories>
+-->
+
+
+		<repositories>
+			 <repository>
+					<id>onesait platform releases</id>
+					<url>http://nexus.onesaitplatform.com/nexus/content/repositories/releases/</url>
+			 </repository>
+			 <repository>
+					<id>maven central</id>
+					<url>http://central.maven.org/maven2/</url>
+			 </repository>
+	   </repositories>
+
+
+	<build>
+		<resources>
+			<resource>
+				<filtering>true</filtering>
+				<directory>src/main/resources</directory>
+				<excludes>
+					<exclude>public/**</exclude>
+				</excludes>
+			</resource>
+			<resource>
+				<filtering>false</filtering>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>public/**</include>
+				</includes>
+			</resource>
+		</resources>
+			
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+						<configuration>
+							<classifier>exec</classifier>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+	</build>
+
+</project>	

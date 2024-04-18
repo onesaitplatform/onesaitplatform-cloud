@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp')
-  .controller('SDCDirectoriesModalInstanceController', ["$scope", "$modalInstance", "api", function ($scope, $modalInstance, api) {
+  .controller('SDCDirectoriesModalInstanceController', function ($scope, $modalInstance, api) {
     angular.extend($scope, {
       sdcDirectories: [],
       close: function() {
@@ -32,4 +32,4 @@ angular
     }, function() {
 
     });
-  }]);
+  });

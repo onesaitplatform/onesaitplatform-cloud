@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-		<version>${revision}</version>
+		<version>1.0.0-ce</version>
 		<relativePath>../..</relativePath>
 	</parent>
 	<artifactId>onesaitplatform-config-services</artifactId>
@@ -13,44 +13,44 @@
 	<description>Services of the config module</description>
 	<properties>
 		<license.dir>${project.parent.basedir}</license.dir>
-		<groovy.version>4.0.9</groovy.version>
 	</properties>
 	<repositories>
+
 		<repository>
 			<id>confluent</id>
-			<url>https://packages.confluent.io/maven/</url>
+			<url>http://packages.confluent.io/maven/</url>
 		</repository>
+
 		<repository>
 			<id>snapshots</id>
-			<url>https://nexus.onesaitplatform.com/nexus/repository/snapshots/</url>
+			<url>http://nexus.onesaitplatform.com/nexus/content/repositories/snapshots/</url>
 		</repository>
+
 		<repository>
 			<id>Spring Plugins</id>
-			<url>https://repo.spring.io/plugins-release/</url>
+			<url>http://repo.spring.io/plugins-release/</url>
 		</repository>
+
+
 		<!-- further repository entries here -->
+
 	</repositories>
 	<dependencies>
-		<!-- To overwrite MySQL version -->
 		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>${mysql.driver.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springdoc</groupId>
-			<artifactId>springdoc-openapi-ui</artifactId>
-			<version>1.6.6</version>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger2</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>io.swagger</groupId>
+					<artifactId>swagger-models</artifactId>
+				</exclusion>
+			</exclusions>
+			
 		</dependency>
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-config-model</artifactId>
-			<version>${project.version}</version>
+			<version>${onesaitplatform.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.github.odiszapc</groupId>
@@ -60,18 +60,19 @@
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-router-services</artifactId>
-			<version>${project.version}</version>
+			<version>${onesaitplatform.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.zwobble.mammoth</groupId>
-			<artifactId>mammoth</artifactId>
-			<version>1.5.0</version>
-		</dependency>
-		<!-- dependency> <groupId>com.minsait.onesait.platform</groupId> <artifactId>onesaitplatform-metrics-input</artifactId>
-			<version>${project.version}</version> </dependency -->
+		<!-- dependency> <groupId>com.minsait.onesait.platform</groupId> <artifactId>onesaitplatform-metrics-input</artifactId> 
+			<version>${onesaitplatform.version}</version> </dependency -->
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -98,37 +99,34 @@
 			<groupId>com.github.java-json-tools</groupId>
 			<artifactId>json-schema-validator</artifactId>
 			<version>2.2.8</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-databind</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>javax.mail</groupId>
-					<artifactId>mailapi</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-csv -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.dataformat</groupId>
-			<artifactId>jackson-dataformat-csv</artifactId>
-		</dependency>
+
 		<!-- JSON -->
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
 		</dependency>
+
 		<!-- KSQL Client -->
 		<dependency>
 			<groupId>org.apache.kafka</groupId>
 			<artifactId>kafka-clients</artifactId>
-			<version>3.4.0</version>
+			<version>1.0.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.avro</groupId>
+					<artifactId>avro</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-log4j12</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>io.confluent</groupId>
+			<artifactId>kafka-avro-serializer</artifactId>
+			<version>4.0.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
@@ -138,12 +136,9 @@
 		</dependency>
 		<dependency>
 			<groupId>io.confluent.ksql</groupId>
-			<artifactId>ksqldb-api-client</artifactId>
+			<artifactId>ksql-cli</artifactId>
+			<version>5.1.0-SNAPSHOT</version>
 			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-reload4j</artifactId>
-				</exclusion>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
 					<artifactId>slf4j-log4j12</artifactId>
@@ -172,41 +167,16 @@
 					<groupId>org.eclipse.jetty.websocket</groupId>
 					<artifactId>javax-websocket-server-impl</artifactId>
 				</exclusion>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-databind</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>io.confluent</groupId>
-					<artifactId>confluent-log4j</artifactId>
-				</exclusion>
 			</exclusions>
-			<version>7.4.0</version>
 		</dependency>
+
 		<dependency>
 			<groupId>de.galan</groupId>
 			<artifactId>verjson</artifactId>
 			<version>0.8.1</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-databind</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>javax.mail</groupId>
-					<artifactId>mailapi</artifactId>
-				</exclusion>
-				<!-- Is not log4j 1.2.X not vulnerability problems-->
-				<!--exclusion> 
-					<groupId>org.apache.logging.log4j</groupId>
-					<artifactId>log4j-api</artifactId>
-				</exclusion-->
-				<exclusion>
-					<groupId>com.github.fge</groupId>
-					<artifactId>json-schema-validator</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
+
+
 		<dependency>
 			<groupId>com.github.spullara.mustache.java</groupId>
 			<artifactId>compiler</artifactId>
@@ -218,10 +188,13 @@
 			<artifactId>jsqlparser</artifactId>
 			<version>${jsqlparser.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 		</dependency>
+
+
 		<!-- Zeppelin jupyter converter (https://mvnrepository.com/artifact/org.apache.zeppelin/zeppelin-jupyter) -->
 		<dependency>
 			<groupId>org.apache.zeppelin</groupId>
@@ -243,68 +216,9 @@
 			<artifactId>flexmark-all</artifactId>
 			<version>0.42.12</version>
 		</dependency>
-		<dependency>
-			<groupId>io.minio</groupId>
-			<artifactId>minio</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-databind</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.groovy</groupId>
-			<artifactId>groovy-all</artifactId>
-			<version>${groovy.version}</version>
-			<type>pom</type>
-		</dependency>
-		<dependency>
-			<groupId>com.google.cloud</groupId>
-			<artifactId>google-cloud-storage</artifactId>
-			<version>1.17.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.openjdk.nashorn</groupId>
-			<artifactId>nashorn-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.zeroturnaround</groupId>
-			<artifactId>zt-zip</artifactId>
-			<version>1.16</version>
-			<type>jar</type>
-		</dependency>
-		<!-- poi and pdf converter -->
-		<dependency>
-			<groupId>org.apache.poi</groupId>
-			<artifactId>poi</artifactId>
-			<version>5.2.2</version>
-		</dependency>
-		<dependency>
-			<groupId>com.deepoove</groupId>
-			<artifactId>poi-tl</artifactId>
-			<version>1.12.1</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.xml.bind</groupId>
-			<artifactId>jaxb-api</artifactId>
-			<version>2.4.0-b180830.0359</version>
-		</dependency>
-		<dependency>
-    		<groupId>org.openjdk.nashorn</groupId>
-    		<artifactId>nashorn-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.opensagres.xdocreport</groupId>
-			<artifactId>fr.opensagres.xdocreport.converter.docx.xwpf</artifactId>
-			<version>2.0.4</version>
-		</dependency>
-		<dependency>
-			<groupId>com.theokanning.openai-gpt3-java</groupId>
-    		<artifactId>service</artifactId>
-    		<version>0.16.0</version>
-		</dependency>
 	</dependencies>
+
+
 	<build>
 		<plugins>
 			<!-- skip deployment -->
@@ -318,4 +232,5 @@
 			</plugin>
 		</plugins>
 	</build>
+
 </project>

@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">onesait Platform - Firebase Demo</string>
+    <string name="quickstart_message">Click the SUBSCRIBE TO NEWS button below to subscribe to the
+        news topic. Messages sent to the news topic will be received.\n\n The REGISTER DEVICE TOKEN button logs the
+        InstanceID token to logcat and register it to the onesait Platform to enable this single device as a single notification target</string>
+    <string name="subscribe_to_news">Subscribe To News</string>
+    <string name="log_token">Register Device Token</string>
+
+    <string name="msg_subscribed">Subscribed to news topic</string>
+    <string name="msg_token_fmt" translatable="false">InstanceID Token: %s</string>
+
+    <string name="default_notification_channel_id" translatable="false">fcm_default_channel</string>
+    <!--
+        This is the name that users will see when interacting with this channel.
+        It should describe the category of notifications that will be sent through this channel
+     -->
+    <string name="default_notification_channel_name" translatable="true">News</string>
+    <string name="msg_subscribe_failed">Failed to subscribe to news topic</string>
+
+    <!-- Preferences keys -->
+    <string name="pref_imei">pref_imei</string>
+    <string name="pref_device_token">pref_device_token</string>
+    <string name="pref_onesait_token_id">pref_onesait_token_id</string>
+</resources>

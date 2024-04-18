@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,8 @@ public interface ClientConnectionRepository extends JpaRepository<ClientConnecti
 
 	@Query("SELECT o FROM ClientConnection o WHERE o.clientPlatform.user= :#{#user}")
 	List<ClientConnection> findByUser(@Param("user") User user);
+
+	ClientConnection findById(String id);
 
 	List<ClientConnection> findByIdentification(String identification);
 

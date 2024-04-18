@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('CommitHistoryModalInstanceController', ["$scope", "$modalInstance", "api", "authService", "pipelineInfo", "metadata", function (
+  .controller('CommitHistoryModalInstanceController', function (
     $scope, $modalInstance, api, authService, pipelineInfo, metadata
   ) {
     angular.extend($scope, {
@@ -96,4 +96,4 @@ angular
 
     getPipelineCommitHistory();
 
-  }]);
+  });

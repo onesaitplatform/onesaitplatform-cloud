@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('RunnersHistogramChartController', ["$scope", "$rootScope", function($scope, $rootScope) {
+  .controller('RunnersHistogramChartController', function($scope, $rootScope) {
     angular.extend($scope, {
       chartOptions: {
         chart: {
@@ -87,4 +87,4 @@ angular
       }
     });
 
-  }]);
+  });

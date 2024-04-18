@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,7 @@ package com.minsait.onesait.platform.business.services.virtual.datasources;
 import java.util.List;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
-import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
-import com.minsait.onesait.platform.config.model.User;
 
 public interface VirtualDatasourceService {
 
@@ -28,12 +25,11 @@ public interface VirtualDatasourceService {
 
 	List<OntologyVirtualDatasource> getAllDatasources();
 
-	void createDatasource(OntologyVirtualDatasource datasource) throws GenericOPException;
+	void createDatasource(OntologyVirtualDatasource datasource);
 
 	OntologyVirtualDatasource getDatasourceById(String id);
-	
 
-	void updateOntology(OntologyVirtualDatasource datasource, Boolean maintainCredentials, String oldCredentials);
+	void updateOntology(OntologyVirtualDatasource datasource);
 
 	void deleteDatasource(OntologyVirtualDatasource datasource);
 
@@ -43,20 +39,4 @@ public interface VirtualDatasourceService {
 	Boolean checkConnectionExtern(String datasource) throws GenericOPException;
 
 	Boolean changePublic(String datasource);
-
-	String getUniqueColumn(final String ontology);
-
-	List<OntologyVirtualDatasource> getAllByDatasourceNameAndUser(String identification, String sessionUserId);
-
-	List<OntologyVirtualDatasource> getAllDatasourcesByUser(User user);
-
-	OntologyVirtualDatasource getDatasourceByIdAndUserId(String id, String sessionUserId);
-	
-	List <OntologyVirtual> getAssociationExternalDatabase(String id);
-
-	OntologyVirtualDatasource getDatasourceByIdAndUserIdOrIsPublic(String id, String sessionUserId,
-			ResourceAccessType type);
-
-	List <OntologyVirtualDatasource> getDatasourceByDomain(String domain);
-
 }

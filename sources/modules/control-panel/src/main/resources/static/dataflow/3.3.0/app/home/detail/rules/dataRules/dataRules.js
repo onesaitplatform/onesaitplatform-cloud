@@ -20,7 +20,7 @@
 angular
   .module('dataCollectorApp.home')
 
-  .controller('DataRulesController', ["$scope", "$rootScope", "$modal", "pipelineConstant", "pipelineService", "previewService", function ($scope, $rootScope, $modal, pipelineConstant,
+  .controller('DataRulesController', function ($scope, $rootScope, $modal, pipelineConstant,
                                                pipelineService, previewService) {
     var stageInstances = $scope.stageInstances;
 
@@ -202,9 +202,9 @@ angular
       }
     };
 
-  }])
+  })
 
-  .controller('CreateDataRuleModalInstanceController', ["$scope", "$modalInstance", "$translate", "$timeout", "pipelineService", "laneName", "rulesElMetadata", "fieldPaths", "streamLabelMap", "alertTextElMetadata", function (
+  .controller('CreateDataRuleModalInstanceController', function (
     $scope, $modalInstance, $translate, $timeout, pipelineService, laneName, rulesElMetadata, fieldPaths,
     streamLabelMap, alertTextElMetadata
   ) {
@@ -261,9 +261,9 @@ angular
     });
 
     $scope.$broadcast('show-errors-check-validity');
-  }])
+  })
 
-  .controller('EditDataRuleModalInstanceController', ["$scope", "$modalInstance", "$translate", "pipelineService", "$timeout", "dataRuleDefn", "rulesElMetadata", "fieldPaths", "streamLabelMap", "alertTextElMetadata", function (
+  .controller('EditDataRuleModalInstanceController', function (
     $scope, $modalInstance, $translate, pipelineService, $timeout, dataRuleDefn, rulesElMetadata, fieldPaths,
     streamLabelMap, alertTextElMetadata
   ) {
@@ -305,4 +305,4 @@ angular
     });
 
     $scope.$broadcast('show-errors-check-validity');
-  }]);
+  });

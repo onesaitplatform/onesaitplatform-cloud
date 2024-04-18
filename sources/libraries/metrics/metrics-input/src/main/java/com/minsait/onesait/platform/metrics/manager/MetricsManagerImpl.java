@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -40,14 +39,9 @@ import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
-import lombok.Getter;
 
 @Component
 public class MetricsManagerImpl implements MetricsManager {
-
-	@Value("${onesaitplatform.metrics.enabled:true}")
-	@Getter
-	private boolean metricsEnabled;
 
 	private static final String METRICS_USAGE_ONTOLOGY_KEY = "onesaitplatform.ontology.usage";
 	private static final String METRICS_OPERATION_KEY = "onesaitplatform.operation";
@@ -67,7 +61,7 @@ public class MetricsManagerImpl implements MetricsManager {
 
 	private static final String KEY_SEPARATOR = ".^.";
 	private static final String KEY_SEPARATOR_REGEX = "\\.\\^\\.";
-
+	
 	private static final String ONTOLOGY_STR = "ontology";
 	private static final String RESULT_STR = "result";
 	private static final String OPERATION_TYPE_STR = "operationType";
@@ -119,14 +113,11 @@ public class MetricsManagerImpl implements MetricsManager {
 	public void logMetricDigitalBroker(String userIdentification, String ontologyIdentification,
 			SSAPMessageTypes operationType, Source source, String result) {
 
-		if (metricsEnabled) {
-			if (ontologyIdentification != null && ontologyIdentification.trim().length() > 0) {
-				this.logMetricOntology(userIdentification, ontologyIdentification, operationType.name(), source,
-						result);
-			}
-
-			this.logMetricOperation(userIdentification, operationType.name(), source, result);
+		if (ontologyIdentification != null && ontologyIdentification.trim().length() > 0) {
+			this.logMetricOntology(userIdentification, ontologyIdentification, operationType.name(), source, result);
 		}
+
+		this.logMetricOperation(userIdentification, operationType.name(), source, result);
 
 	}
 
@@ -135,111 +126,85 @@ public class MetricsManagerImpl implements MetricsManager {
 	public void logMetricApiManager(String userIdentification, String ontologyIdentification, String method,
 			Source source, String result, String api) {
 
-		if (metricsEnabled) {
-			if (ontologyIdentification != null && ontologyIdentification.trim().length() > 0) {
-				this.logMetricOntology(userIdentification, ontologyIdentification, method, source, result);
-			}
-
-			this.logMetricOperation(userIdentification, method, source, result);
-			this.logApiOperation(userIdentification, api, method, source, result);
+		if (ontologyIdentification != null && ontologyIdentification.trim().length() > 0) {
+			this.logMetricOntology(userIdentification, ontologyIdentification, method, source, result);
 		}
+
+		this.logMetricOperation(userIdentification, method, source, result);
+		this.logApiOperation(userIdentification, api, method, source, result);
 
 	}
 
 	@Override
 	@Async
 	public void logControlPanelLogin(String userIdentification, String result) {
-		if (metricsEnabled) {
-			this.logControlPanelLoginOperation(userIdentification, result);
-		}
+		this.logControlPanelLoginOperation(userIdentification, result);
 	}
 
 	@Override
 	@Async
 	public void logControlPanelOntologyCreation(String userIdentification, String result) {
-		if (metricsEnabled) {
-			this.logControlPanelOntologyCreationOperation(userIdentification, result);
-		}
+		this.logControlPanelOntologyCreationOperation(userIdentification, result);
 	}
 
 	@Override
 	@Async
 	public void logControlPanelUserCreation(String result) {
-		if (metricsEnabled) {
-			this.logControlPanelUserCreationOperation(result);
-		}
+		this.logControlPanelUserCreationOperation(result);
 	}
 
 	@Override
 	@Async
 	public void logControlPanelApiCreation(String userIdentification, String result) {
-		if (metricsEnabled) {
-			this.logControlPanelApiCreationOperation(userIdentification, result);
-		}
+		this.logControlPanelApiCreationOperation(userIdentification, result);
 	}
 
 	@Override
 	@Async
 	public void logControlPanelDashboardsCreation(String userIdentification, String result) {
-		if (metricsEnabled) {
-			this.logControlPanelDashboardsCreationOperation(userIdentification, result);
-		}
+		this.logControlPanelDashboardsCreationOperation(userIdentification, result);
 	}
 
 	@Override
 	@Async
 	public void logControlPanelClientsPlatformCreation(String userIdentification, String result) {
-		if (metricsEnabled) {
-			this.logControlPanelClientsPlatformCreationOperation(userIdentification, result);
-		}
+		this.logControlPanelClientsPlatformCreationOperation(userIdentification, result);
 	}
 
 	@Override
 	@Async
 	public void logControlPanelNotebooksCreation(String userIdentification, String result) {
-		if (metricsEnabled) {
-			this.logControlPanelNotebooksCreationOperation(userIdentification, result);
-		}
+		this.logControlPanelNotebooksCreationOperation(userIdentification, result);
 	}
 
 	@Override
 	@Async
 	public void logControlPanelDataflowsCreation(String userIdentification, String result) {
-		if (metricsEnabled) {
-			this.logControlPanelDataflowsCreationOperation(userIdentification, result);
-		}
+		this.logControlPanelDataflowsCreationOperation(userIdentification, result);
 	}
 
 	@Override
 	@Async
 	public void logControlPanelProjectsCreation(String userIdentification, String result) {
-		if (metricsEnabled) {
-			this.logControlPanelProjectsCreationOperation(userIdentification, result);
-		}
+		this.logControlPanelProjectsCreationOperation(userIdentification, result);
 	}
 
 	@Override
 	@Async
 	public void logControlPanelFlowsCreation(String userIdentification, String result) {
-		if (metricsEnabled) {
-			this.logControlPanelFlowsCreationOperation(userIdentification, result);
-		}
+		this.logControlPanelFlowsCreationOperation(userIdentification, result);
 	}
 
 	@Override
 	@Async
 	public void logControlPanelGisViewersCreation(String userIdentification, String result) {
-		if (metricsEnabled) {
-			this.logControlPanelGisViewersCreationOperation(userIdentification, result);
-		}
+		this.logControlPanelGisViewersCreationOperation(userIdentification, result);
 	}
 
 	@Override
 	@Async
 	public void logControlPanelQueries(String userIdentification, String ontology, String result) {
-		if (metricsEnabled) {
-			this.logControlPanelQueriesOperation(userIdentification, ontology, result);
-		}
+		this.logControlPanelQueriesOperation(userIdentification, ontology, result);
 	}
 
 	@Override

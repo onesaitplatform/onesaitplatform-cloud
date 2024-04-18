@@ -1,16 +1,16 @@
-FROM onesaitplatform/baseimage:latest-17
+FROM openjdk:8-jdk-alpine
 
 # Metadata
 LABEL module.maintainer="onesaitplatform@indra.es" \
-	  module.name="configinit"
+	  module.name="configinit"	
 
 VOLUME /tmp
 
 ADD *-exec.jar app.jar
 ADD examples /tmp/examples
 
-# Timezone
-#RUN apk add --no-cache tzdata
+# Timezone 
+RUN apk add --no-cache tzdata
 
 # web projects folder & logs folder
 RUN mkdir -p /usr/local/webprojects && \
@@ -18,15 +18,17 @@ RUN mkdir -p /usr/local/webprojects && \
 	mkdir ./target
 
 # create onesait user/group
-RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait
+RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait 
+
+RUN apk add --no-cache mongodb-tools
 
 RUN chown -R onesait:onesait /usr/local && \
     chown -R onesait:onesait /var/log/platform-logs && \
     chown -R onesait:onesait /tmp/examples && \
-    chown -R onesait:onesait ./target && \
+    chown -R onesait:onesait ./target && \    
     chown onesait:onesait app.jar && \
     chmod -R 777 ./target
-
+	    
 USER onesait
 
 EXPOSE 21000
@@ -36,66 +38,20 @@ EXPOSE 21000
 ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G" \
     SERVER_NAME=localhost \
     REALTIMEDBSERVERS=realtimedb:27017 \
-    REALTIMEDBAUTHDB=admin \ 
-    REALTIMEDBUSEAUTH=true \
-    REALTIMEDBUSER=platformadmin \ 
-    REALTIMEDBPASS=ENC(GGpZ1sLYnXwK+vz2QLkI/VK7geKcdM4pZaTL6hv6QTk=) \
-    REALTIMEDBWRITECONCERN=UNACKNOWLEDGED \
-    CONFIGDBMASTERURL="jdbc:mysql://configdb:3306/onesaitplatform_master_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \
-    CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \
-    CONFIGDBUSER=root \
-    CONFIGDBPASS=changeIt! \
-	CONFIGDB_DRIVER=com.mysql.cj.jdbc.Driver \
-	CONFIGDB_DIALECT=org.hibernate.dialect.MySQL5InnoDBDialect \
+    REALTIMEDBAUTHDB=admin \
+	REALTIMEDBUSEAUTH=true \
+	REALTIMEDBUSER=platformadmin \
+	REALTIMEDBPASS=ENC(GGpZ1sLYnXwK+vz2QLkI/VK7geKcdM4pZaTL6hv6QTk=) \  
+    REALTIMEDBWRITECONCERN=UNACKNOWLEDGED \		  
+    CONFIGDBSERVERS=configdb:3306 \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
     ELASTICDBHOST=elasticdb \
     ELASTICDBPORT=9200 \
-    OPENSEARCHDBHOST=opensearchdb \
-    OPENSEARCHDBPORT=9200 \
-    ELASTICSEARCH_ENABLED=false \
-    OPENSEARCH_ENABLED=false \
-    OPENSEARCH_TTL_REPLICAS=0 \
-    OPENSEARCH_TTL_SHARDS=1 \
-    OPENSEARCH_TTL_PATTERN_FIELD=formatedTimeStamp \
-    OPENSEARCH_TTL_PATTERN_FUNCTION=YEAR_MONTH \
-    OPENSEARCH_TTL_RETENTION_PERIOD=30d \
-    OPENSEARCH_TTL_PRIORITY=10 \
     LOADCONFIGDB=true \
-    LOADMONGODB=false \
-    LOADTESTDATA=false \
-    LOADELASTICDB=false \
-    LOADOPENSEARCHDB=false \
-    LOADMAILCONFIG=false \
-    LOADGRAYLOGDB=false \
-    LOADFLOWENGINEMONITOR=false \
-    LOADMETRICS=false \
+    LOADMONGODB=true \
+    LOADELASTICDB=true \ 
     REALTIMEDBNAME=onesaitplatform_rtdb \
-    RTDB_EXECUTION_TIMEOUT=10000 \
-    RTDB_QUERIES_LIMIT=2000 \
-    MONGO_SOCKET_TIMEOUT=5000 \
-    MONGO_CONNECT_TIMEOUT=30000 \
-    MONGO_WAIT_TIME=5000 \
-    MONGO_POOL_SIZE=100 \
-    MONGO_SSL_ENABLED=false \
-    MONGO_USE_QUASAR=false \
-    CONTROLPANEL_SERVICE=localhost \
-    UPDATE_MODE_MULTITENANT=true \
-    OPENDATA_ONTOLOGIES=false \
-    GRAYLOG_USER=admin \
-    GRAYLOG_PASS=ENC(WOukGj28rhRwzEa3HDCnH2p4vX3Iur8V) \
-    GRAYLOG_ENABLED=false \
-    GRAYLOG_HOST=log-centralizer \
-    GRAYLOG_PORT=12201 \
-    GRAYLOG_EXTERNAL_URI=http://log-centralizer:9000 \
-    GRAYLOG_PLUGIN_AUTH_PATH_TOKEN=http://oauthservice:21000/oauth-server/oauth/token \
-    GRAYLOG_PLUGIN_AUTH_PATH_USERINFO=http://oauthservice:21000/oauth-server/oidc/userinfo\
-	TIMESCALE_ENABLED=false \
-	TIMESCALE_URL=jdbc:postgresql://timeseriesdb:5432/?currentSchema=public \
-	TIMESCALE_USER=ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot) \
-	TIMESCALE_PASS=ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c) \
-	SERVER_BASE_DOMAIN_MINIO_AUTH=onesaitplatform.com \
-	ADMIN_VERTICAL_TOKEN= \
-	CREATE_DATAFLOW_INSTANCE_VERTICAL=false
+    CONTROLPANEL_SERVICE=localhost
 
 ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=docker -jar /app.jar

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package com.minsait.onesait.platform.persistence.services;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,7 +24,6 @@ import com.minsait.onesait.platform.commons.model.MultiDocumentOperationResult;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
-import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.factory.BasicOpsDBRepositoryFactory;
 import com.minsait.onesait.platform.persistence.interfaces.BasicOpsDBRepository;
 
@@ -42,7 +40,7 @@ public class BasicOpsPersistenceServiceFacade implements BasicOpsDBRepository, N
 	private OntologyRepository ontologyRepository;
 
 	public RtdbDatasource getOntologyDataSource(String ontologyId) {
-		final Ontology ds = ontologyRepository.findByIdentification(ontologyId);
+		Ontology ds = ontologyRepository.findByIdentification(ontologyId);
 		return ds.getRtdbDatasource();
 	}
 
@@ -50,31 +48,30 @@ public class BasicOpsPersistenceServiceFacade implements BasicOpsDBRepository, N
 		return ontologyRepository.findByIdentification(ontologyId);
 	}
 
-	@Override
 	public MultiDocumentOperationResult updateNative(RtdbDatasource dataSource, String collection, String query,
 			String data, boolean includeIds) {
 		return basicOpsDBRepositoryFactory.getInstance(dataSource).updateNative(collection, query, data, includeIds);
 	}
 
-	@Override
 	public MultiDocumentOperationResult deleteNative(RtdbDatasource dataSource, String collection, String query,
 			boolean includeIds) {
 		return basicOpsDBRepositoryFactory.getInstance(dataSource).deleteNative(collection, query, includeIds);
 	}
 
-	@Override
 	public long countNative(RtdbDatasource dataSource, String collectionName, String query) {
 		return basicOpsDBRepositoryFactory.getInstance(dataSource).countNative(collectionName, query);
 	}
 
 	@Override
-	public String insert(String ontology, String instance) {
-		return basicOpsDBRepositoryFactory.getInstance(ontology).insert(ontology, instance);
+	public String insert(String ontology, String schema, String instance) {
+		return basicOpsDBRepositoryFactory.getInstance(ontology).insert(ontology, schema, instance);
 	}
 
 	@Override
-	public ComplexWriteResult insertBulk(String ontology, List<String> instances, boolean order, boolean includeIds) {
-		return basicOpsDBRepositoryFactory.getInstance(ontology).insertBulk(ontology, instances, order, includeIds);
+	public ComplexWriteResult insertBulk(String ontology, String schema, List<String> instances, boolean order,
+			boolean includeIds) {
+		return basicOpsDBRepositoryFactory.getInstance(ontology).insertBulk(ontology, schema, instances, order,
+				includeIds);
 	}
 
 	@Override
@@ -184,53 +181,4 @@ public class BasicOpsPersistenceServiceFacade implements BasicOpsDBRepository, N
 		return basicOpsDBRepositoryFactory.getInstance(collectionName).countNative(collectionName, query);
 	}
 
-	@Override
-	public List<String> queryUpdateTransactionCompensationNative(String collectionName, String updateStmt)
-			throws DBPersistenceException {
-		return basicOpsDBRepositoryFactory.getInstance(collectionName)
-				.queryUpdateTransactionCompensationNative(collectionName, updateStmt);
-	}
-
-	@Override
-	public List<String> queryUpdateTransactionCompensationNative(String collectionName, String query, String data)
-			throws DBPersistenceException {
-		return basicOpsDBRepositoryFactory.getInstance(collectionName).queryUpdateTransactionCompensationNative(query,
-				data);
-	}
-
-	@Override
-	public String queryUpdateTransactionCompensationNativeByObjectIdAndBodyData(String ontologyName, String objectId)
-			throws DBPersistenceException {
-		return basicOpsDBRepositoryFactory.getInstance(ontologyName)
-				.queryUpdateTransactionCompensationNativeByObjectIdAndBodyData(ontologyName, objectId);
-	}
-
-	@Override
-	public List<String> queryDeleteTransactionCompensationNative(String collection, String query)
-			throws DBPersistenceException {
-		return basicOpsDBRepositoryFactory.getInstance(collection).queryDeleteTransactionCompensationNative(collection,
-				query);
-	}
-
-	@Override
-	public List<String> queryDeleteTransactionCompensationNative(String collection) {
-		return basicOpsDBRepositoryFactory.getInstance(collection).queryDeleteTransactionCompensationNative(collection);
-	}
-
-	@Override
-	public String queryDeleteTransactionCompensationNativeById(String collection, String objectId)
-			throws DBPersistenceException {
-		return basicOpsDBRepositoryFactory.getInstance(collection)
-				.queryDeleteTransactionCompensationNativeById(collection, objectId);
-	}
-
-	@Override
-	public String querySQLAsJson(String ontology, String query, int offset, int limit) {
-		return basicOpsDBRepositoryFactory.getInstance(ontology).querySQLAsJson(ontology, query, offset, limit);
-	}
-
-	@Override
-	public ComplexWriteResult updateBulk(String collection, String queries, boolean includeIds) {
-		return basicOpsDBRepositoryFactory.getInstance(collection).updateBulk(collection, queries, includeIds);
-	}
 }

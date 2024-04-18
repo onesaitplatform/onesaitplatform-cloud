@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,8 +46,5 @@ public interface NotebookUserAccessRepository extends JpaRepository<NotebookUser
 	@Query("SELECT o FROM NotebookUserAccess AS o WHERE o.user=:user AND o.notebookUserAccessType=:notebookUserAccessType")
 	NotebookUserAccess findByUserAndAccess(@Param("user") User user,
 			@Param("notebookUserAccessType") NotebookUserAccessType notebookUserAccessType);
-
-	@Query("SELECT o FROM NotebookUserAccess AS o WHERE o.user=:user")
-	List<NotebookUserAccess> findByUser(@Param("user") User user);
 
 }

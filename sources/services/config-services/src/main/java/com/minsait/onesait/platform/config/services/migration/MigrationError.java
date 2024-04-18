@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ public class MigrationError {
 	@Getter
 	private final Instance processedInstance;
 
-	public final Instance noInstance = new Instance(null, null, null, null);
+	public final Instance noInstance = new Instance(null, null);
 
 	public MigrationError(Instance instanceThatNeedsIt, Instance neededInstance, ErrorType type, String msg) {
 		this.type = type;

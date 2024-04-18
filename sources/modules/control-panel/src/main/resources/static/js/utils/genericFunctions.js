@@ -7,10 +7,12 @@ var GenericFunctions = function() {
 
 	//Read  query and get a ontology 
 	var getOntologyFromQuery = function (query){			
-			query = query.replace(/(\r\n\t|\n|\r\t|\r|\t)/gm," ");
+			query = query.replace(/(\r\n\t|\n|\r\t)/gm," ");
 			query = query.replace(/  +/g, ' ');
-			query = query.replace(/\,/g,' ');
-			var list = query.split(/from /i);
+			var list = query.split("from ");
+			if (list.length === 1){
+				list = query.split("FROM ");
+			}
 			if(list.length>1){
 				for (var i=1; i< list.length;i++){
 					if(!list[i].startsWith("(")){

@@ -20,7 +20,7 @@
 angular
   .module('dataCollectorApp.home')
 
-  .controller('SnapshotController', ["$scope", "$rootScope", "_", "api", "$timeout", "previewService", "pipelineConstant", function ($scope, $rootScope, _, api, $timeout, previewService, pipelineConstant) {
+  .controller('SnapshotController', function ($scope, $rootScope, _, api, $timeout, previewService, pipelineConstant) {
     var snapshotBatchSize = 10,
       captureSnapshotStatusTimer;
 
@@ -188,4 +188,4 @@ angular
       }
     });
 
-  }]);
+  });

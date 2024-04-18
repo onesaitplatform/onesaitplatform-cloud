@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ public class RateLimitRule extends DefaultRuleBase {
 		final HttpServletRequest request = facts.get(RuleManager.REQUEST);
 		final Map<String, Object> data = facts.get(RuleManager.FACTS);
 		final Api api = (Api) data.get(Constants.API);
-		return request != null && api != null && canExecuteRule(facts);
+		return (request != null && api != null) && canExecuteRule(facts);
 	}
 
 	@Action
@@ -66,7 +66,7 @@ public class RateLimitRule extends DefaultRuleBase {
 			if (!apiLimit) {
 				data.put(Constants.HTTP_RESPONSE_CODE, HttpStatus.TOO_MANY_REQUESTS);
 				stopAllNextRules(facts, "API LIMIT REACHED " + AUTHENTICATION_HEADER,
-						DefaultRuleBase.ReasonType.API_LIMIT, HttpStatus.TOO_MANY_REQUESTS);
+						DefaultRuleBase.ReasonType.API_LIMIT);
 			}
 		}
 
