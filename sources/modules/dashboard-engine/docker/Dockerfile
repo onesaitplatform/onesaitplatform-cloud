@@ -1,0 +1,119 @@
+FROM onesaitplatform/baseimage:latest-17
+
+# Metadata
+LABEL platform.image.name="dashboard"
+
+ADD *-exec.jar app.jar
+
+# Timezone
+RUN apk add --no-cache tzdata \
+    bash
+
+# logs folder
+RUN mkdir -p /var/log/platform-logs && \
+    mkdir /application && \
+	mkdir /application/plugins
+
+WORKDIR /application   
+
+# create onesait platform user/group
+RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait
+
+RUN chown -R onesait:onesait /usr/local && \
+    chown -R onesait:onesait /var/log/platform-logs && \   
+    chown -R onesait:onesait /application && \ 
+    chmod -R 777 /var/log && \
+    chmod -R 777 /usr/local &&\
+    chmod -R 777 /application
+    
+# distribute tracing with opentelemetry agent  
+RUN cd /usr/local \
+    && wget https://repo1.maven.org/maven2/io/opentelemetry/javaagent/opentelemetry-javaagent/1.27.0/opentelemetry-javaagent-1.27.0.jar
+    
+     
+VOLUME ["/tmp", "/var/log/platform-logs"]
+
+EXPOSE 18300
+
+#HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
+ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+ExitOnOutOfMemoryError -XX:+HeapDumpOnOutOfMemoryError -javaagent:/usr/local/opentelemetry-javaagent-1.27.0.jar --add-opens java.base/java.lang=ALL-UNNAMED"
+ENV SERVER_NAME=localhost \
+    REALTIMEDBSERVERS=realtimedb:27017 \
+    REALTIMEDBAUTHDB=admin \
+    REALTIMEDBUSEAUTH=true \
+	REALTIMEDBUSER=platformadmin \
+	REALTIMEDBPASS=ENC(GGpZ1sLYnXwK+vz2QLkI/VK7geKcdM4pZaTL6hv6QTk=) \
+    REALTIMEDBWRITECONCERN=UNACKNOWLEDGED \
+	CONFIGDBMASTERURL="jdbc:mysql://configdb:3306/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
+	CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \
+    CONFIGDBUSER=root \
+    CONFIGDBPASS=changeIt! \
+    CONFIGDB_MAX_ACTIVE=2 \
+    CONFIGDB_MAX_IDLE=2 \
+    SCHEDULERDBSERVERS=schedulerdb:3306 \
+	CONFIGDB_DRIVER=com.mysql.cj.jdbc.Driver \
+	CONFIGDB_DIALECT=org.hibernate.dialect.MySQL5InnoDBDialect \
+    JDBCPROTOCOL="jdbc:mysql:" \
+    DBADDPROPS="" \
+    ELASTICDBHOST=elasticdb \
+    ELASTICDBPORT=9200 \
+    AUDITGLOBALNOTIFY=true \
+    QUASARHOST=quasar \
+    QUASARPORT=10800 \
+    HZ_SERVICE_DISCOVERY_STRATEGY=service \
+    HZ_ZOOKEEPER_URL=zookeeper:2181 \
+    REALTIMEDBNAME=onesaitplatform_rtdb \
+    AUTH_PROVIDER=configdb \
+    CAS_ATT_MAIL=mail \
+    CAS_ATT_NAME=name \
+    JKS_URI=saml.jks \
+    JKS_PASS=pass \
+    KEY_ALIAS=pass \
+    KEY_PASS=keypass \
+    AD_ADMIN_USERID=administrator \
+    IDP_METADATA=url.xml \
+    ENTITY_ID=entityid \
+    ENTITY_URL=https://${SERVER_NAME} \
+    SAML_SCHEME=https \
+    SAML_SERVER_NAME=localhost \
+    SAML_INCLUDE_PORT=18300 \
+    CONFIGDB_ACL_ENABLED=false \
+    CONFIGDB_ACL_LIST=administrator,analytics,dataviewer,demo_developer,demo_user,developer,operations,partner,sysadmin,user \
+    ELASTICSEARCH_ENABLED=false \
+    WSINBOUNDCHANNELCOREPOOL=40 \
+    WSINBOUNDCHANNELMAXPOOL=40 \
+    WSINBOUNDCHANNELQUEUESIZE= \
+    WSOUTBOUNDCHANNELCOREPOOL=20 \
+    WSOUTBOUNDCHANNELMAXPOOL=20 \
+    WSOUTBOUNDCHANNELQUEUESIZE= \
+    WSBROKERCHANNELCOREPOOL=40 \
+    WSBROKERCHANNELMAXPOOL=40 \
+    WSBROKERCHANNELQUEUESIZE= \
+    WSCACHELIMIT=1024 \
+    WSLOGGINGPERIOD=30000 \
+    GRAYLOG_ENABLED=false \
+    GRAYLOG_HOST=log-centralizer \
+    GRAYLOG_PORT=12201 \
+    USE_KEYCLOAK=false \
+    SBA_USERNAME=operations \
+	SBA_SECRET=ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv) \
+	MAX_HTTP_HEADER_SIZE=20000 \
+	ENCRYPTION_KEY=ENC(VYVseIUh5xiRd8ws0prbEAg6bGq7vmbfi3gkM65HECy+YPbjz4f49w==) \
+    ENCRYPTION_ITERATIONS=5 \
+    QUERY_METRICS_ENABLED=false \
+    HTTP_LOG_LEVEL=INFO \
+    OTEL_JAVAAGENT_ENABLED=false \
+	OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-service:4317 \
+	OTEL_SERVICE_NAME=dashboard-engine \
+	OTEL_METRICS_EXPORTER=none \
+	TIMESCALE_ENABLED=false \
+	TIMESCALE_URL=jdbc:postgresql://timeseriesdb:5432/?currentSchema=public \
+	TIMESCALE_USER=ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot) \
+	TIMESCALE_PASS=ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c)
+
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod ugo+x /usr/local/bin/docker-entrypoint.sh
+
+USER onesait
+
+ENTRYPOINT ["docker-entrypoint.sh"]

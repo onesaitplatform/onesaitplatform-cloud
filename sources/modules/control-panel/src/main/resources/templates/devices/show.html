@@ -1,0 +1,380 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org" th:with="lang=${#locale.language}" th:lang="${lang}">
+<head>
+<meta name="_csrf" th:content="${_csrf.token}"/>
+<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+<meta http-equiv="Content-Language" th:content="${lang}" />
+<title th:text="#{name.app}" />
+
+
+<!-- STYLE SHEETS -->
+<link rel="stylesheet" type="text/css" media="all" 	th:href="@{/static/css/bootstrap.min.css}" />
+<link rel="stylesheet" type="text/css" media="all"	th:href="@{/static/css/components.css}" />
+<link rel="stylesheet" type="text/css" media="all"	th:href="@{/static/css/plugins.css}" />
+<link rel="stylesheet" type="text/css" media="all"	th:href="@{/static/css/layout.css}" />
+<!-- THEME -->
+<link rel="stylesheet" type="text/css" media="all"	th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
+
+<!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND BOOSTRAP-TIMEPICKER  -->
+<link rel="stylesheet" type="text/css" media="all"	th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}" />
+<link rel="stylesheet" type="text/css" media="all"	th:href="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css}" />
+
+</head>
+
+<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
+<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment"
+			class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+
+		<!-- HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"></div>
+
+		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
+		<div th:include="fragments/menu::#menuFragment"	class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+		
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+
+				<div class="alert alert-success display-hide">
+					<span th:text="${globalMessage}"></span>
+				</div>
+
+				<!-- BEGIN PAGE BAR AND BREADCRUM-->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/devices/list}"> <span th:text="#{device.breadcrumb.prev}">devices</span></a><i class="fa fa-angle-right"></i></li>
+						<li><span th:text="#{device.breadcrumb.show}">Show Device</span></li>
+					</ul>
+				</div>
+				<!-- END PAGE BAR -->
+
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide ">
+					<span th:text="#{name.app}"> onesait Platform Control Panel</span>
+				</h1>
+				<!-- END PAGE TITLE-->
+				<form role="form" id="device_create_form" th:object="${device}" method="get" class="form">
+					<!-- MAIN ROW -->
+					<div id="header">
+						<div class="row pageCreateHeader">
+							<div class="col-md-6 col-sm-6 col-xs-12">
+								<div class="margin-top-4">
+									<span th:if="${device.id} == null" th:text="#{device.template.create} + ':'">New Device</span>
+									<span th:if="${device.id} != null" th:text="${device.identification}">Update Device</span>
+								</div>
+							</div>
+							<div class="col-md-6 col-sm-6 col-xs-12">
+								<div class="pull-right">
+									<!-- DELETE -->
+									<button th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${device.userId}) AND ${device.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='deleteDeviceConfirmation();'"><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>
+										
+									<!-- CANCEL -->											
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/devices/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+
+									<span th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${device.userId} OR ${app_user_access.name()} =='MANAGE')" class="sep">&nbsp;</span>
+		
+									<!-- EDIT -->
+									<button  th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${device.userId} OR ${app_user_access.name()} =='MANAGE')" id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:attr="onclick='javascript:navigateUrl(\'' + @{|/devices/update/${device.id}/|} + '\');'"><span th:text="#{gen.edit}"> Edit</span></button>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="mainPanel">
+						<div class="row main">
+							<div class="col-md-12 panelHeader">
+								<span th:text="#{gen.generalInformation}">General Information</span>
+							</div>
+						</div>
+						<!-- IDENTIFICATION AND DESCRIPTION -->
+						<div class="row main">													
+							<div class="col-md-4 col-sm-6 col-xs-12">
+								<div class="form-group">
+									<label class="control-label" th:text="#{device.id}">Identification</label>
+									<p class="form-control-static-block " th:text="*{identification}"> ontology Name </p>
+								</div>
+							</div>
+						</div>
+						<div class="row main">
+							<div class="col-md-6 col-sm-12 col-xs-12" >
+								<div class="form-group">
+									<label class="control-label" th:text="#{device.description}">Description</label>
+									<p class="form-control-static-block " th:text="*{description}"> description </p>
+								</div>
+							</div>
+						</div>
+						<!-- MetaData -->
+						<div class="row main">
+							<div class="col-md-6 col-sm-6 col-xs-12">
+								<div class="form-group" id="id_parameter_metaInfo">
+									<label class="control-label"><span th:text="#{device.metainf}">Meta Information</span></label>
+									<input type="hidden" id="parameter_metaInfo" th:field="*{metadata}"/>
+									<input type="hidden" id="parameter_clientPlatformOntologies" th:field="*{clientPlatformOntologies}"/>
+									<input type="hidden" id="parameter_clientPlatformTokens" th:field="*{tokens}"/>
+								</div>
+							</div>													
+						</div>
+						
+						<div class="row main pageCreateHeader no-margin-left padding-left-10 margin-right-10">
+							<label class="no-padding-bottom" th:text=="'+'"></label>
+							<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{device.ontology.add} + ' ' + #{device.ontology}"></label>
+							<i class="la la-info-circle popovers" style="color: #1168A6;" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{device.ontologiesInfo},data-title=#{device.ontologies}"></i>
+						</div>
+						
+						<div class="row main borderPanel no-margin-left margin-right-10">
+							<div class="col-md-12 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(20vh); max-height: calc(20vh); overflow:auto">
+								<div id="template_schema" class="margin-bottom-20 ">
+									<table class="table table-hover" id="datamodel_properties" data-loaded="false">
+										<thead>
+											<tr class="cabecera-tabla" role="row">
+												<th class="titulo-columnas" th:text="#{device.ontologies}">Ontologies</th>
+												<th class="titulo-columnas" th:text="#{device.ontologies.accesslevel}">Access Level</th>
+											</tr>
+										</thead>
+										<tbody style="border-bottom: 1px solid #ddd;" th:remove="all-but-first">
+										</tbody>																
+									</table>
+								</div>	
+							</div>
+						</div>
+						
+						<div class="row main pageCreateHeader no-margin-left padding-left-10 margin-top-20 margin-right-10">
+							<label class="no-padding-bottom" th:text=="'+'"></label>
+							<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{device.tokens}"></label>
+						</div>
+
+						<div class="row main borderPanel no-margin-left margin-right-10">
+							<div class="col-md-12 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(12vh); max-height: calc(12vh); overflow:auto">
+								<div id="template_schema_tokens" class="margin-bottom-20 ">
+									<table class="table table-hover" id="datamodel_tokens" data-loaded="false">
+										<thead>
+											<tr class="cabecera-tabla" role="row">
+												<th class="titulo-columnas" th:text="#{device.token}">Token</th>												
+												<th th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')}" class="titulo-columnas" th:text="#{multitenancy.tenant}" ></th>
+												<th class="titulo-columnas" th:text="#{device.token.active}">Active</th>
+											</tr>
+										</thead>
+										<tbody style="border-bottom: 1px solid #ddd;" th:remove="all-but-first">
+										</tbody>																
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+				<!-- END MAIN ROW -->
+				</form>
+			</div>
+			<!-- END CONTENT BODY -->
+		</div>
+		<!-- END CONTENT page-content-wrapper -->
+		
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+
+	<!-- FOOTER INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+
+	<!-- CORE JS CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}" ></script>
+	<script th:src="@{/static/js/layout.js}" ></script>
+
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" ></script>
+	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}" ></script>
+	<!-- LOADING DEFAULT DATES IF NEEDED -->
+	<script th:if="${lang} == 'es'"	th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}" type="text/javascript"></script>
+	<script	th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}"	type="text/javascript"></script>
+	<script	th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
+
+	<!-- LOADING DEFAULT LANG MESSAGES IF NEEDED -->
+	<script th:if="${lang} == 'es'"	th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}" type="text/javascript"></script>
+
+	<!-- TEMPLATE CONTROLLER  
+	<script th:src="@{/static/js/pages/deviceCreate.js}"></script> --> 
+
+	<!-- MAIN INIT -->
+	<script th:inline="javascript">
+	//<![CDATA[ 
+	
+	var currentLanguage = [[${lang}]];	
+	
+	var deviceCreateJson = { 
+		"validation_dates" : [[#{device.valid.dateDeleted}]],
+		"close" : [[#{gen.closeBtn}]],		
+		"language" : currentLanguage,
+		"actionMode" : [[${device.identification}]],
+		"ontologyNotSelected":[[#{device.ontology.notselected}]],
+		"deviceChangeActiveError":[[#{device.change.active.error}]],
+		"deviceTokenDeleteError":[[#{device.token.delete.error}]],
+	    "deviceTokenCreateError":[[#{device.token.create.error}]],
+	    "deleteTokenConfirm":[[#{device.token.confirm}]]
+	};	
+
+	// REDIRECT
+	function navigateUrl(url){  window.location.href = url;	}
+	
+	// MAIN WHEN LOAD
+	$(window).on("load",function(){  
+		// init on load.		
+		
+		
+		// SHOW/HIDE DATATABLES COLUMN INIT 		
+		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		$('#dataTable-vis-toggle').removeClass('hide');
+		
+	
+	});
+	$( document ).ready(function() {
+		updateMetainfo($('#parameter_metaInfo').val());
+		updateOntologies($("#parameter_clientPlatformOntologies").val());
+		updateTokens($("#parameter_clientPlatformTokens").val());	
+	});
+	
+	function  updateMetainfo  (metaInfoValue){		 
+		if(metaInfoValue!==null && metaInfoValue.length>0){		    
+			var metaInfoElements = metaInfoValue.split('#');
+			text = document.createTextNode(metaInfoElements.toString().replace(",","\t"));
+			var p = document.createElement('p');
+			p.className = "form-control-static-block";
+			p.appendChild(text);
+			$("#id_parameter_metaInfo").append(p);
+		}
+	}
+	
+	function updateOntologies   (ontologies){	
+		 var selectedOntologies =  JSON.parse(ontologies);		 
+		if(selectedOntologies!==null && selectedOntologies.length >0){
+			 for (var i = 0; i < selectedOntologies.length; i++) {
+				var onto = selectedOntologies[i];
+				 $('#datamodel_properties > tbody').append('<tr data-ontology="'+onto.id+'" style="height:32px;" data-level="'+onto.access+'"><td>'+onto.id+'</td><td >'+onto.access+'</td></tr>');			
+			 }
+			 $(".onto select option:selected").remove();
+			 $('.onto').selectpicker('refresh');
+		}
+		
+		
+	 }
+	
+	function parser(metadata) {
+		console.log(metadata);
+	}
+	function updateTokens  (tokens){	
+	    	
+			var selectedtokens =  JSON.parse(tokens);
+			$('#datamodel_tokens > tbody').empty();
+			if(selectedtokens!==null && selectedtokens.length >0){
+				 for (var i = 0; i < selectedtokens.length; i++) {
+					var token = selectedtokens[i];	
+					var checked ='';					
+					if(token.active){
+						checked='checked';
+					}
+						
+					var html = '<tr data-id="'+token.id+' " style="height:32px;"><td>'+token.token+'</td>';
+					html+='<td>'+token.tenant+'</td>';
+					html+='<td><div class="mt-checkbox-list"><div class="switch"><label><input disabled id="active" class="form-control no-remove" type="checkbox" name="active" onclick="DeviceCreateController.changeEstatusToken(this);" '+ checked +'/><span class="checkbox-slider round"></span></label></div><div class="inline" style="padding:10px;"></div></div></td></tr>';
+					 $('#datamodel_tokens > tbody').append(html);			
+				 }
+			}
+		 }
+		 
+	 function deleteDeviceConfirmation (){
+		
+		var id = [[${device.id}]];
+		console.log('deleteUserConfirmation() -> formId: '+ id);
+		
+		// no Id no fun!
+		if ( !id ) {$.alert({title: 'Error', theme: 'light', content: 'NO USER-FORM SELECTED!'}); return false; }
+		
+		// call  Confirm 
+		showConfirmDeleteDialog(id);	
+	} 
+	
+	
+	function showConfirmDeleteDialog(id){	
+
+		//i18 labels
+		var Close = headerReg.btnCancelar;
+		var Remove = headerReg.btnEliminar;
+		var Content = [[#{device.delete.confirm}]];
+		var Title = headerReg.deviceDelete;
+
+		// jquery-confirm DIALOG SYSTEM.
+		$.confirm({
+			title: Title,
+			theme: 'light',
+			columnClass: 'medium',
+			content: Content,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			buttons: {
+				close: {
+					text: Close,
+					btnClass: 'btn btn-outline blue dialog',
+					action: function (){} //GENERIC CLOSE.		
+				},
+				remove: {
+					text: Remove,
+					btnClass: 'btn btn-primary',
+					action: function(){ 
+						console.log(id);
+						var csrf_value = $("meta[name='_csrf']").attr("content");
+						var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+						
+						$.ajax({
+						    url: '/controlpanel/devices/'+id,
+						    headers: {
+								[csrf_header]: csrf_value
+						    },
+						    type: 'DELETE',						  
+						    success: function(result) {
+						    	console.log(result.responseText);
+						    	navigateUrl('/controlpanel/devices/list');
+						    },
+						    error: function(result){
+						    	console.log(result.responseText);
+						    	$.alert({
+									title : 'Error',
+									theme : 'light',
+									content : result.responseText
+								});
+						    }
+						});
+					}											
+				}				
+			}
+		});
+	}	
+	
+	
+	//]]>
+	</script>
+</body>
+</html>

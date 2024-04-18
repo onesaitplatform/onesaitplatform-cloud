@@ -1,0 +1,449 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org"  th:with="lang=${#locale.language}" th:lang="${lang}">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="_csrf" th:content="${_csrf.token}"/>
+		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"/>
+
+		
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+
+		<!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND BOOSTRAP-TIMEPICKER, TAGSINPUT, JSONEDITOR  -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/lib/codemirror.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/elegant.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/material.css}"/>
+			
+	</head>	
+
+	<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+
+		<!-- HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"> </div>
+
+		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+			
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+			
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+			
+				<div class="alert alert-success display-hide">
+					<span th:text="${globalMessage}"></span>
+				</div>
+				
+				<!-- BEGIN PAGE BAR AND BREADCRUM-->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/digitaltwintypes/list}"> <span th:text="#{digitaltwintype.breadcrumb.list}">Digital Twin </span></a><i class="fa fa-angle-right"></i></li>
+						<li>
+							<span th:if="${digitaltwintype?.id} == null" th:text="#{digitaltwintype.breadcrumb.create}">Show Digital Twin</span>
+							<span th:if="${digitaltwintype?.id} != null" th:text="#{digitaltwintype.breadcrumb.update}">Update Digital Twin</span>
+						</li>
+					</ul>						
+				</div>
+				<!-- END PAGE BAR -->
+				
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{name.app}"> onesait Platform Control Panel</span></h1>
+				<!-- END PAGE TITLE-->			
+				
+				<!-- AUXILIAR FORM TO DELETE TWINTYPE -->
+				<form id="delete_digitaltwintype_form" class="delete-digital hide"  th:action="@{'/digitaltwintypes/'+${digitaltwintype.id}}"  method="post">
+					<input type="hidden" name="_method" value="DELETE"/>
+					<input id="delete-digitaltwintypeId" type="hidden" name="digitaltwintypeId" th:value="${digitaltwintype.id}"/>
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+				</form>
+				
+				<form role="form" id="digitaltwintype_create_form" th:object="${digitaltwintype}" method="post" class="form">
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />					
+					<!-- FORM ACTIONS FOR INSERT-->
+					<input th:if="${digitaltwintype.id} == null" type="hidden" name="action" th:value="@{/digitaltwintypes/create}"/>
+					
+					<!-- FORM ACTIONS FOR UPDATE -->
+					<input th:if="${digitaltwintype?.id} != null" type="hidden" name="action" th:value="@{'/digitaltwintypes/update/'+${digitaltwintype.id}}"/>
+					<input th:if="${digitaltwintype?.id} != null" type="hidden" name="_method" value="PUT"/>
+				
+					<div id="header">
+						<div class="row pageCreateHeader">
+							<div class="col-md-6 col-sm-6 col-xs-12">
+								<div class="margin-top-4">
+									<span th:if="${digitaltwintype?.id} == null" th:text="#{digitaltwintype.template.create}"> New Digital Twin Type</span>
+									<span th:if="${digitaltwintype?.id} != null" th:text="${digitaltwintype.identification}"> Update Digital Twin Type </span>
+								</div>
+							</div>
+							<div class="col-md-6 col-sm-6 col-xs-12">
+								<div class="pull-right">
+									<!-- DELETE -->
+									<button th:if="${digitaltwintype?.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='DigitalTwinCreateController.deleteDigitalTwinType(\'' + ${digitaltwintype.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>															
+									<span class="sep" th:if="(${digitaltwintype?.id} != null)"></span>
+										
+									<!-- CANCEL -->											
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:DigitalTwinCreateController.go(\'' + @{/digitaltwintypes/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+
+									<!-- RESET -->
+									<button th:if="${digitaltwintype?.id} == null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
+									<button th:if="${digitaltwintype?.id} != null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" disabled="true" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
+
+									<span class="sep no-border" th:if="(${digitaltwintype?.id} != null)"></span>
+										
+									<!-- CREATE -->
+									<button th:if="${digitaltwintype?.id} == null" id="createBtn" class="btn btn-primary btn-primary-save" name="create" th:value="#{gen.createBtn}"><span th:text="#{gen.createBtn}"> New</span></button>
+									
+									<!-- UPDATE -->
+									<button th:if="${digitaltwintype?.id} != null" id="updateBtn" class="btn btn-primary btn-primary-save" name="update" th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>
+								</div>
+							</div>
+						</div>
+					</div>
+				
+					<!-- MAIN ROW -->
+					<div class="mainPanel">
+						<div class="row main">
+							<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+								<span th:text="#{gen.generalInformation}">General Information</span>
+							</div>
+							<div class="col-md-3 col-sm-3 col-xs-3">
+								<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
+							</div>
+						</div>				
+
+						<div class="row main">
+							<div class="col-md-4 col-sm-6 col-xs-12">
+								<div class="form-group">
+									<label class="control-label" th:text="#{gen.name}">Name</label><span class="required"> *</span>
+									<input th:tabindex="1" id="identification" type="text"   th:required="true"  maxlength="50" th:field="*{identification}" class="form-control "  th:placeholder="#{gen.name}"/>
+									<span id="identificationerror" class="help-block font-red hide" th:text="#{gen.requiredField}"><i class="la la-warning"></i> Required field</span>
+								</div>
+							</div>
+						</div>
+						<div class="row main">
+							<div class="col-md-4 col-sm-6 col-xs-12">
+								<div class="form-group">
+									<label class="control-label" th:text="#{digitaltwintype.type}">Type</label><span class="required"> *</span>
+									<select id="type" class="selectpicker form-control" >
+										<option value="thing">thing</option>
+									</select>
+									<input type="hidden" id="digitalType" th:field="*{type}" th:required="true"/>
+								</div>
+							</div>
+						</div>
+						<div class="row main">	
+							<div class="col-md-8 col-sm-12 col-xs-12">
+								<div class="form-group">
+									<label class="control-label" th:text="#{gen.description}">Comments </label><span class="required"> *</span>
+									<textarea th:tabindex="3" class="element textarea small form-control" id="description" name="description" maxlength="512" th:field="*{description}" th:required="true"  cols="" rows=""></textarea>
+									<span id="descriptionerror" class="help-block font-red hide" th:text="#{digitaltwintype.description.min}"><i class="la la-warning"></i> Required field</span>
+								</div>
+							</div>
+						</div>	
+						<div class="row main" id="secciones" >
+							<div class="col-md-12">
+								<div class="portlet-title tabbable-line">
+									<!-- DIGITAL TWIN TABS -->
+									<ul class="nav nav-tabs pull-left">
+										<li id="tab-propiedades" class="active"><a href="#tab_3" data-toggle="tab" aria-expanded="false"><span class="" th:text="#{digitaltwintype.property}">Propiedades Tipo</span></a></li>																	
+										<li id="tab-acciones" class=""><a href="#tab_4" data-toggle="tab" aria-expanded="true"> <span class="" th:text="#{digitaltwintype.actions}">Acciones</span></a></li>
+										<li id="tab-eventos" class=""><a href="#tab_5" data-toggle="tab" aria-expanded="true"><span class="" th:text="#{digitaltwintype.events}">Eventos</span></a></li>
+										<li id="tab-logica" class=""><a href="#tab_6" data-toggle="tab" aria-expanded="true" onclick="DigitalTwinCreateController.refreshLogic()"><span class="" th:text="#{digitaltwintype.logic}">Lógica</span></a></li>
+										<li id="tab-logica" class=""><a href="#tab_7" data-toggle="tab" aria-expanded="true"><span class="">JSON</span></a></li>
+									</ul>
+								</div>
+								<div class="portlet-body">
+									<div class="col-md-12 margin-top-10 no-padding-left ">
+										<div class="tab-content">
+											<div class="tab-pane active" id="tab_3">
+											
+												<div class="row main pageCreateHeader no-margin-left padding-left-10 ">
+													<label class="no-padding-bottom" th:text=="'+'"></label>
+													<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{device.ontology.add} + ' ' + #{digitaltwintype.property}"></label>
+													<button type="button" class="btn btn-circle btn-outline blue pull-right" id="button2" th:text="#{digitaltwintype.addproperty}">Add a new Property</button>
+												</div>											
+
+												<div class="row main borderPanel no-margin-left">
+													<div class="col-md-12 col-sm-12 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(25vh); max-height: calc(25vh); overflow:auto">
+														<table class="table" id="properties" data-loaded="false">
+															<thead>
+																<tr class="cabecera-tabla" role="row" >
+																	<th class="titulo-columnas" th:text="#{gen.name}">Nombre</th>
+																	<th class="titulo-columnas" th:text="#{digitaltwintype.type}">Tipo</th>
+																	<th class="titulo-columnas" th:text="#{digitaltwintype.property.unit}">Unidades</th>
+																	<th class="titulo-columnas" th:text="#{digitaltwintype.property.direction}">Dirección</th>
+																	<th class="titulo-columnas" th:text="#{gen.description}">Descripción</th>																															
+																	<th class="titulo-columnas" th:text="#{gen.options}">Opciones</th>
+																</tr>
+															</thead>
+															<tbody>
+																<tr class="mountable-model">
+																	<td><input type="text" name="property[]"  onblur="DigitalTwinCreateController.checkProperty(this)" class="form-control"/></td>
+																	<td>
+																		<select name="typeProp[]" class="form-control" onchange="DigitalTwinCreateController.checkShowOntology(this);">
+																			<option value="string">string</option>																																																			
+																			<option value="int">int</option>
+																			<option value="object">object</option>
+																			<option value="date">date</option>
+																			<option value="double">double</option>
+																			<option value="boolean">boolean</option>
+																			<option value="ontology">ontology</option>
+																		</select>
+																	</td>
+																	<td><input type="text" name="units[]" class="form-control"/></td>
+																	<td width="125px">
+																		<select name="direction[]" class="form-control">
+																			<option value="in">IN</option>
+																			<option value="out">OUT</option>
+																			<option value="in_out">IN_OUT</option>
+																		</select>
+																	</td>
+																	<td><input type="text" name="descriptionsProps[]" class="form-control"/></td>																									
+																	<td class="center"><button type="button" data-property="" class="btn btn-circle btn-outline blue no-border btn-xs btn-mountable-remove" onclick="DigitalTwinCreateController.removeProperty(this)" th:title="#{gen.deleteBtn}" th:alt="#{gen.deleteBtn}"><i class="la la-trash font-hg"></i></button></td>			
+																</tr>
+															</tbody>
+														</table>
+													</div>
+												</div>
+											</div>
+											<div class="tab-pane" id="tab_4">
+												<div class="row main pageCreateHeader no-margin-left padding-left-10 ">
+													<label class="no-padding-bottom" th:text=="'+'"></label>
+													<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{device.ontology.add} + ' ' + #{digitaltwintype.actions}"></label>
+													<button type="button" class="btn btn-circle btn-outline blue pull-right" id="button3" th:text="#{digitaltwintype.addaction}">Add a new Action</button>
+												</div>											
+
+												<div class="row main borderPanel no-margin-left">
+													<div class="col-md-12 col-sm-12 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(25vh); max-height: calc(25vh); overflow:auto">
+														<table class="table" id="actions" data-loaded="false">
+															<thead>
+																<tr class="cabecera-tabla" role="row" >
+																	<th class="titulo-columnas" th:text="#{gen.name}">Nombre</th>
+																	<th class="titulo-columnas" th:text="#{gen.description}">Descripción</th>																															
+																	<th class="titulo-columnas" th:text="#{gen.options}">Opciones</th>
+																</tr>
+															</thead>
+															<tbody>
+																<tr class="mountable-model">
+																	<td><input type="text" name="action[]"  onblur="DigitalTwinCreateController.checkAction(this);DigitalTwinCreateController.addActionLogic(this)" class="form-control"/></td>
+																	<td><input type="text" name="descriptionsActions[]" class="form-control"/></td>																									
+																	<td class="text-center"><button type="button" data-property="" class="btn btn-circle btn-outline blue no-border btn-xs btn-mountable-remove" onclick="DigitalTwinCreateController.removeAction(this)" th:title="#{gen.deleteBtn}" th:alt="#{gen.deleteBtn}"><i class="la la-trash font-hg"></i></button></td>			
+																</tr>
+															</tbody>
+														</table>
+													</div>
+												</div>
+																												
+
+											</div>
+											<div class="tab-pane" id="tab_5">
+												<div class="row main pageCreateHeader no-margin-left padding-left-10 ">
+													<label class="no-padding-bottom" th:text=="'+'"></label>
+													<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{device.ontology.add} + ' ' + #{digitaltwintype.events}"></label>
+													<button type="button" class="btn btn-circle btn-outline blue pull-right" id="button4" th:text="#{digitaltwintype.addevent}">Add a new Event</button>
+												</div>											
+
+												<div class="row main borderPanel no-margin-left">
+													<div class="col-md-12 col-sm-12 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(25vh); max-height: calc(25vh); overflow:auto">
+														<table class="table" id="events" data-loaded="false">
+															<thead>
+																<tr class="cabecera-tabla" role="row" >
+																	<th class="titulo-columnas" th:text="#{gen.name}">Name</th>
+																	<th class="titulo-columnas" th:text="#{digitaltwintype.events.status}">Status</th>
+																	<th class="titulo-columnas" th:text="#{digitaltwintype.operation}">Operation</th>
+																	<th class="titulo-columnas" th:text="#{gen.description}">Description</th>																															
+																	<th class="titulo-columnas" th:text="#{gen.options}">Options</th>
+																</tr>
+															</thead>
+															<tbody>
+																<tr class="mountable-model">
+																	<td><input type="text" name="event[]"  onblur="DigitalTwinCreateController.checkEvent(this)" class="form-control"/></td>
+
+																	<td nowrap="nowrap"><input id="status" class="form-control no-remove"  name="status[]" value="status" type="checkbox"/></td>
+																	<td>
+																		<select name="typeEvent[]" class="form-control">
+																			<option value="update_shadow">UPDATE_SHADOW</option>
+																			<option value="notebook">NOTEBOOK</option>
+																			<option value="rule">RULE</option>
+																			<option value="flow">FLOW</option>
+																			<option value="pipeline">PIPELINE</option>																										
+																			<option value="log">LOG</option>
+																			<option value="other">OTHER</option>
+																		</select>
+																		<input th:tabindex="1" type="text" class="form-control hide" th:placeholder="#{gen.name}"/>
+																	</td>	
+																	<td><input type="text" name="descriptionsEvents[]" class="form-control"/></td>																					
+																	<td class="center"><button type="button" data-property="" class="btn btn-circle btn-outline blue no-border btn-xs btn-mountable-remove" onclick="DigitalTwinCreateController.removeEvent(this)" th:title="#{gen.deleteBtn}" th:alt="#{gen.deleteBtn}"><i class="la la-trash font-hg"></i></button></td>			
+																</tr>
+															</tbody>
+														</table>
+													</div>
+												</div>
+											</div>
+											<div class="tab-pane" id="tab_6">
+												<div class="row main">
+													<div class="col-md-12 col-sm-12 col-xs-12">
+														<div class="alert alert-info alert-dismissable">
+															<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+															<i class="fa fa-info-circle"></i> <strong th:text="#{digitaltwintype.logic}">LOGIC</strong> 
+															<span th:text="#{digitaltwintype.info.action}"> info.</span>
+														</div>																		
+														<textarea id="logicEditor" name="logicEditor"  th:required="true" th:field="*{logic}" class="form-control" rows="5" data-min-rows='5'></textarea>
+														<input id="logic" name="logic" type="hidden"/>
+													</div>
+												</div>
+											</div>
+											<div class="tab-pane" id="tab_7">
+												<div class="row main">
+														<div class="col-md-12 col-sm-12 col-xs-12">
+															<div class="btn-group margin-bottom-10 pull-right" style="margin-top:-55">
+																<button type="button" class="btn btn-circle btn-primary btn-outline " id="btn-updateSchema" th:text="#{ontology.updateschema}">Update Schema</button>
+															</div>
+															<input id="json" th:field="*{json}" type="hidden" th:required="true"/>
+															<div id="jsoneditor"  style="padding-top: 10px;"></div>
+													</div>
+												</div>												
+												
+											</div>
+											<div id="dialog-custom-operation" style="display: none;" class="tabla_description" title="Custom">
+				                                <fieldset>
+				                                    <label class="description" for="name_custom" >Name</label>
+				                                    <input class="element select small form-control" id="name_custom" name="name_custom" style="width: 250px;"/>
+				                                </fieldset>  
+					                        </div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</form>	
+				<div id="dialog-selectOntology" title="Select Ontology" th:title="#{digitaltwintype.selectontology}" tabindex="-1" role="dialog" class="modal fade" style="display: none;">
+					<div class="modal-dialog">
+						<!-- Modal content-->
+					    <div class="modal-content">					
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal">&times;</button>
+								<h4 class="modal-title"></h4>
+							</div>
+							<div class="modal-body">
+				                <label class="description" th:text="#{digitaltwintype.types.ontology}"></label>
+				                <select id="id_type_ontology_select" style="margin-right: 20px;margin-left: 10px;width:60%;display:inline;padding-right:5px;" class="element select small form-control">
+				                    <option th:each="ontology :${ontologies}" th:value="${ontology.identification}" th:text="${ontology.identification}" ></option>
+				                </select>				                
+							</div>					
+							<div class="modal-footer">
+						        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						        <button type="button" class="btn btn-primary" th:attr="onclick='javascript:DigitalTwinCreateController.selectOntologyType()'">Save changes</button>
+							</div>
+						</div>
+					</div>
+				</div><!-- END SELECT ONTOLOGY DIALOG -->
+			</div><!-- END CONTENT BODY -->
+		</div><!-- END CONTENT page-content-wrapper -->
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+
+	<!-- FOOTER INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+
+	<!-- CORE JS CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
+
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
+	<!-- LOADING DEFAULT DATES IF NEEDED -->
+	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}" type="text/javascript"></script>
+	
+	<script th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}" type="text/javascript"></script>
+    <script th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
+	<!-- LOADING DEFAULT LANG MESSAGES IF NEEDED -->
+	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}" type="text/javascript"></script>
+
+	<script th:src="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js}" type="text/javascript"></script>
+	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
+	
+	<!-- JSON EDITOR -->
+	<script th:src="@{/static/vendor/json/json2.min.js}"></script>
+	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>
+	
+	<script th:src="@{/static/vendor/codemirror/lib/codemirror.js}"></script>
+	<script th:src="@{/static/vendor/codemirror/mode/javascript/javascript.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" ></script>
+
+	<!-- INPUTMASK -->
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
+	
+
+	<!-- TEMPLATE CONTROLLER  -->	
+	<script th:src="@{/static/js/pages/digitalTwinTypeCreate.js}"></script>
+
+	<!-- MAIN INIT -->
+	<script  th:inline="javascript">
+	
+	var currentLanguage = [[${lang}]];	
+	var digitalTwinCreateJson = { 	
+		"actionMode" : [[${digitaltwintype?.id}]],
+		"close" : [[#{gen.closeBtn}]],		
+		"language" : currentLanguage,
+		"confirmBtn" : [[#{gen.confirmBtn}]],
+		"removeBtn" : [[#{gen.deleteBtn}]],
+		"properties" : [[${propiedades}]],
+		"actions" : [[${acciones}]],
+		"events" : [[${eventos}]],
+		"logic" : [[${logica}]],
+		"json"  :  [[${digitaltwintype?.json}]], 
+		"validations" : {
+			"duplicates": [[#{digitaltwintype.valid.duplicates}]],
+			"schema" : [[#{digitaltwintype.error.esquema}]],
+			"validform": [[#{digitaltwintype.validform}]],
+			"update" :[[#{digitaltwintype.validation.update}]],
+			"fields" : [[#{digitaltwintype.validation.fields}]],
+			"validationOK" : [[#{gen.form.success}]]
+		}
+	};
+
+	// LOAD DATA TO USE IN CREATE WIZARD CONTROLLER
+	// CREATE WIZARD CONTROLLER LOAD AND INIT ITSELF	
+
+	</script>
+</body>
+</html>

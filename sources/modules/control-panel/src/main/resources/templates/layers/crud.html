@@ -1,0 +1,953 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:dt="http://www.thymeleaf.org/dandelion/datatables" th:with="lang=${#locale.language}" th:lang="${lang}">
+
+	<head>
+		<meta name="_csrf" th:content="${_csrf.token}"/>
+		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"></title>
+	    <meta name="description" content="Gadget list template"/>
+		<meta name="keywords" content="sofia2,smart,cities,platform,Indra"/>
+		<meta name="author" content="Indra Sistemas, S.A."/>
+		
+		
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+		
+		<!-- PLUGINS STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/cesium/Widgets/widgets.css}"/>
+		
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/fontawesome/v5.6.1/all.css}"/>
+		<style>
+		
+	  #cesiumContainer {
+	    width: 100%; height: 100%; margin: 0; padding: 0; }
+	    
+	    table { width:250px;table-layout:fixed; }
+		table tr { height:1em;  }
+		td { overflow:hidden;white-space:nowrap;text-overflow:ellipsis;} 
+
+		</style>
+		
+	</head>	
+	
+	<!-- page-sidebar-closed to start page with collapsed menu -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+	
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+		
+		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"> </div>		
+			
+		<!-- BEGIN SIDEBAR -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+		
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+			
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+				
+				<!-- BEGIN PAGE HEADER-->
+				
+				<!-- BEGIN PAGE BAR AND BREADCRUM -->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/layers/list}" > <span th:text="#{layer.breadcrumb.list}">Layers</span></a><i class="fa fa-angle-right"></i></li>
+						<li><span th:text="#{crud.crud}">CRUD</span></li>						
+					</ul>						
+				</div>
+				<!-- END PAGE BAR -->
+				
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{crud.crud}">CRUD</span></h1>
+				<!-- END PAGE TITLE-->		
+				
+				<!-- MAIN ROW -->			
+				<div class="row">
+					<div class="col-md-12">
+						<div class="portlet light">
+							<div class="portlet-title tabbable-line">
+								<div class="tools hidden">
+									<a href="" class="collapse" data-original-title="" title=""> </a>
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>
+								</div>
+								<!-- CATEGORY TABS SECTIONS -->
+								<ul class="nav nav-tabs pull-left">
+									<li id="tab-datos" class="active">
+										<a href="#tab_1" data-toggle="tab" aria-expanded="false">											
+											<!-- FORM TITLE -->
+											<span class="caption-subject " th:text="CRUD + ': ' + ${layer.identification}"> CRUD Layer </span>
+										</a>
+									</li>
+								</ul>
+							</div>
+							<div class="portlet-body" style="display: block; height: auto;">
+								<div class="tab-content">
+									<div class="tab-pane active" id="tab_1">
+										<div class="row">
+											<div class="alert alert-info alert-dismissable">
+												<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+												<i class="fa fa-info-circle"></i>
+												<span th:text="#{viewer.info}"> info.</span>
+											</div>
+											<div class="col-md-4 col-sm-6 col-xs-12">
+												<div class="form-group">
+													<label class="" th:text="#{viewer.latitude}">Latitude</label><span class="required"> *</span>
+													<input th:tabindex="1" id="latitude_gen" type="text" name="latitude" maxlength="50" class="form-control"/>
+												</div>
+											</div>
+											<div class="col-md-4 col-sm-6 col-xs-12">
+												<div class="form-group">
+													<label class="" th:text="#{viewer.longitude}">Longitude</label><span class="required"> *</span>
+													<input th:tabindex="2" name="longitude" id="longitude_gen" type="text" maxlength="50" class="form-control"/>
+												</div>
+											</div>
+											<div class="col-md-4 col-sm-6 col-xs-12">
+												<div class="form-group">
+													<label class="" th:text="#{viewer.height}">Height</label><span class="required"> *</span>
+													<input th:tabindex="3" name="height" id="height" type="text" maxlength="50" class="form-control"/>
+												</div>
+											</div>
+											<div class="col-md-12">
+												<div class="pull-right">
+													<button class="btn btn-circle btn-primary" name="create" onclick="run()"><span> Run</span></button>
+												</div>
+											</div>
+										</div>
+										<div class="col-md-12">
+											<table id="table_attributes" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
+												<thead>
+													<tr class="cabecera-tabla">
+													</tr>
+												</thead>
+												<tbody th:remove="all-but-first">
+													
+												</tbody>
+											</table>
+										</div>
+										<div id="editor_holder" class=" col-md-8 col-sm-8 col-xs-12 hidden"></div>
+										<div class="col-md-12">
+												<div class="btn-group">
+													<button id="drawPoint" disabled="disabled" type="button" class="btn btn-sm btn-circle btn-outline blue" data-toggle="tooltip" data-container="body" data-placement="bottom" title="Draw Point" onclick="drawPointClick()"><i class="fas fa-map-marker-alt"></i></button>
+													<button id="drawLine" disabled="disabled" type="button" class="btn btn-sm btn-circle btn-outline blue" data-toggle="tooltip" data-container="body" data-placement="bottom" title="Draw Line" onclick="drawLineClick()"><i class="fas fa-grip-lines"></i></button>
+													<button id="drawPolygon" disabled="disabled" type="button" class="btn btn-sm btn-circle btn-outline blue" data-toggle="tooltip" data-container="body" data-placement="bottom" title="Draw Polygon" onclick="drawPolygonClick()"><i class="fas fa-draw-polygon"></i></button>
+													<button id="drawPolygonFree" disabled="disabled" type="button" class="btn btn-sm btn-circle btn-outline blue" data-toggle="tooltip" data-container="body" data-placement="bottom" title="Draw Polygon Free Hand" onclick="drawPolygonFreehand()"><i class="fas fa-draw-polygon"></i> <i class="fas fa-pencil-alt"></i></button>
+													
+												</div>
+										</div>
+										<div class="row">
+											<div class="col-md-12">
+												<div id="cesiumContainer"></div>
+												<div id="statusbar"></div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div> <!-- END CONTENT BODY -->
+		</div><!-- END CONTENT page-content-wrapper -->		
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+	
+	<!-- FOOTER-INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
+	
+	<!-- CORE CONTROLLERS -->
+	
+	<script th:src="${onesaitCesiumPath + 'cesium/Cesium1.92/Cesium.js'}"></script>
+	<script th:src="@{/static/js/pages/viewerCrud.js}"></script>
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/jsoneditor/jsoneditor.js}"></script>
+	
+	<!-- INPUTMASK -->
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
+	<script th:inline="javascript">	
+	
+	// TEMPLATE SEARCH FORM.
+	
+	
+	
+	//<![CDATA[
+	function navigateUrl(url){  window.location.href = url;	}
+	
+	var geometryType =[[${layer?.geometryType}]];
+	var infoBox = [[${layer?.infoBox}]];
+	var imagePoint = '/controlpanel/static/images/viewerIcons/point.png';
+	var geometryField = [[${layer?.geometryField}]];
+	var layerIdentifier = [[${layer?.identification}]];
+	var ontologyName = [[${ontologyName}]];
+	var schema = [[${schema}]];
+	var jsoneditor;
+	var mapIds = [];
+	var colorPolyline = Cesium.Color.BLUE.withAlpha(0.6);
+	var colorWidth = 5;
+	var query = [[${layer?.query}]];
+
+	$( document ).ready(function() {
+		
+		defineViewerInitialExtent(null,null,null);
+		
+		// INPUT MASK FOR lon&lat´
+		$("#latitude_gen").inputmask({regex: "[0-9-+.]*", greedy: false });
+		$("#longitude_gen").inputmask({regex: "[0-9-+.]*", greedy: false });
+		$("#height").inputmask({regex: "[0-9]*", greedy: false });
+		
+		$(".cesium-widget-credits").css("display", "none");
+		
+		viewer.entities.removeAll();
+		var startval = window.startval;
+		jsoneditor = new JSONEditor(document.getElementById('editor_holder'),{
+	        schema: JSON.parse(schema),
+	        startval: startval,
+	        theme : 'bootstrap3',
+		    iconlib:'fontawesome4',
+		    disable_properties:true,
+		    show_errors:'change'
+	    });
+		
+		if(geometryType=="Point"){
+			entityInteractuation();
+			$("#drawPoint").removeAttr("disabled");
+			$("#drawLine").attr("disabled", "disabled");
+			$("#drawPolygon").attr("disabled", "disabled");
+			$("#drawPolygonFree").attr("disabled", "disabled");
+			$(".cabecera-tabla").append('<th class="titulo-columnas">'+[[#{digitaltwindevice.latitude}]]+'</th>');
+			$(".cabecera-tabla").append('<th class="titulo-columnas">'+[[#{digitaltwindevice.longitude}]]+'</th>');
+			
+			$.each(JSON.parse(infoBox), function(k,v){
+				$(".cabecera-tabla").append('<th class="titulo-columnas">'+v.attribute+'</th>');
+			})
+			$(".cabecera-tabla").append('<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>');
+		}else if(geometryType=="LineString"){
+			$("#drawPoint").attr("disabled", "disabled");
+			$("#drawLine").removeAttr("disabled");
+			$("#drawPolygon").attr("disabled", "disabled");
+			$("#drawPolygonFree").attr("disabled", "disabled");
+			$(".cabecera-tabla").append('<th class="titulo-columnas">'+[[#{layer.crud.coordinates.list}]]+'</th>');
+			
+			$.each(JSON.parse(infoBox), function(k,v){
+				$(".cabecera-tabla").append('<th class="titulo-columnas">'+v.attribute+'</th>');
+			})
+			$(".cabecera-tabla").append('<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>');
+		}else if(geometryType=="Polygon"){
+			$("#drawPoint").attr("disabled", "disabled");
+			$("#drawLine").attr("disabled", "disabled");
+			$("#drawPolygon").removeAttr("disabled");
+			$("#drawPolygonFree").removeAttr("disabled");
+			$(".cabecera-tabla").append('<th class="titulo-columnas">'+[[#{layer.crud.coordinates.list}]]+'</th>');
+			
+			$.each(JSON.parse(infoBox), function(k,v){
+				$(".cabecera-tabla").append('<th class="titulo-columnas">'+v.attribute+'</th>');
+			})
+			$(".cabecera-tabla").append('<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>');
+		}
+		
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+		$.ajax({
+			url : "/controlpanel/viewers/getQueryParamsAndRefresh/" + layerIdentifier,
+			headers: {
+				[csrf_header]: csrf_value
+		    },
+			type : 'GET',
+			dataType: 'text', 
+			contentType: 'text/plain',
+			mimeType: 'text/plain',
+			async : false,
+			success : function(result) {
+				
+				var result = JSON.parse(result);
+				var queryParams = result["params"];
+				
+				var url = window.location.origin + "/controlpanel/layer/getLayerData?layer=" + layerIdentifier;
+				if(queryParams!='null' && queryParams!=undefined){
+					for(var i=0;i<queryParams.length;i++){
+						var field = queryParams[i]["param"];
+						var value = queryParams[i]["default"];
+						url += "&" + field + "=" + value
+					}
+				}
+				
+
+				$.ajax({
+					url : url,
+					type : 'GET',
+					async : false,
+					success : function(data) {
+						if(geometryType=="Point"){
+							$.each(data.features, function(i,feature){
+								var coordinates = feature[geometryField]['coordinates'];
+								var latitude = coordinates[1];
+								var longitude = coordinates[0];
+								
+								var id = viewer.entities.add({
+								    position : Cesium.Cartesian3.fromDegrees(longitude, latitude),
+								    billboard: {
+								      image: imagePoint,
+								      scale: 1.0,
+								    }
+								  }).id;
+								
+								mapIds.push({'id':id, 'oid': feature['oid']});
+								
+								var add= "<tr id='"+id+"'>";
+				            	add += "<td class='text-left no-wrap latitude'>"+latitude+"</td>"
+				            	add += "<td class='text-left no-wrap longitude'>"+longitude+"</td>"
+				            	
+				            	
+				            	$.each(JSON.parse(infoBox), function(k,v){
+				            		$.each(feature.properties, function(attribute, value){
+				            			if(v.attribute == attribute){
+				            				add += "<td class='text-left no-wrap "+attribute+"'>"+value+"</td>";
+				            			}
+									});
+				    			})
+				            	
+				            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border icon-on-table color-blue tooltips' onclick='editAttribute(this)' data-container='body' data-placement='bottom' th:text='#{gen.edit}'><i class='icon-edit'></i></span><span class='btn btn-xs btn-no-border icon-on-table color-red tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='icon-delete'></i></span></div></div></div></td>";
+				            	add += "</tr>";
+				            	
+				            	$("#table_attributes tbody").append(add);
+								
+								
+							});
+						}else if(geometryType=="LineString" || geometryType=="Polygon"){
+							$.each(data.features, function(i,feature){
+								var coordinates = feature[geometryField]['coordinates'];
+								
+								var id = viewer.entities.add({
+									polyline: {
+										positions: Cesium.Cartesian3.fromDegreesArray(coordinates.toString().split(',')),
+										width: colorWidth,
+										material: colorPolyline
+									}
+								}).id;
+									
+								mapIds.push({'id':id, 'oid': feature['oid']});
+								
+								var add= "<tr id='"+id+"'>";
+				            	add += "<td class='text-left no-wrap coordinates'>"+coordinates+"</td>";
+				            	
+				            	$.each(JSON.parse(infoBox), function(k,v){
+				            		$.each(feature.properties, function(attribute, value){
+				            			if(v.attribute == attribute){
+				            				add += "<td class='text-left no-wrap "+attribute+"'>"+value+"</td>";
+				            			}
+									});
+				    			})
+				            	
+				            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border icon-on-table color-red tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='icon-delete'></i></span></div></div></div></td>";
+				            	add += "</tr>";
+				            	
+				            	$("#table_attributes tbody").append(add);
+							});
+						}
+					},
+					error : function(data, status, er) {
+						$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er}); 
+					}
+				});
+				
+				
+			},
+			error : function(data, status, er) {
+				$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er}); 
+			}
+		});
+		
+		
+		
+		showMouseCartographicPosition();
+		
+	});
+	
+	
+	
+	function run (){
+		defineViewerInitialExtent($("#longitude_gen").val(),$("#latitude_gen").val(),$("#height").val())
+	}
+
+	
+	function addPointInfoBox(longitude, latitude, id){
+		$.confirm({
+			async: false,
+		    title: [[#{layer.attributes}]],
+		    content: '' +
+		    '<form action="" class="formName">' +
+		    '<div class="form-group col-md-12" id="attributes">' +
+		    '<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>',
+		    buttons: {
+		        formSubmit: {
+		            text: 'OK',
+		            btnClass: 'btn-blue',
+		            action: function () {
+		            	var json = JSON.parse(infoBox);
+		            	var instance = jsoneditor.getValue();
+		            	
+		            	instance[ontologyName][geometryField]['coordinates'][0] = parseFloat(longitude);
+		            	instance[ontologyName][geometryField]['coordinates'][1] = parseFloat(latitude);
+		            	var isOk = true;
+		            	$.each(json, function(k,v){
+		            		var type = JSON.parse(schema)["datos"]["properties"][v.field]["type"];
+		            		
+		            		if(typeof $("#"+v.attribute + "_value").val() != type){
+		            			
+		            			if(type == "number" && !isNaN(Number($("#"+v.attribute + "_value").val()))){
+		            				instance[ontologyName][v.field] = Number($("#"+v.attribute + "_value").val());
+		            			}else if(type == "integer" && !isNaN(parseInt($("#"+v.attribute + "_value").val()))){
+		            				instance[ontologyName][v.field] = parseInt($("#"+v.attribute + "_value").val());
+		            			}else{
+		            				 $.each(viewer.entities.values, function (k,v){
+			        			    		if(v.id == id){
+			        			    			viewer.entities.remove(v);
+			        			    		}
+			        			    	});
+			            				 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: 'The type of the fields is not allowed'});
+			            				 isOk = false;
+		            			}
+		            		}else{
+		            			instance[ontologyName][v.field] = $("#"+v.attribute + "_value").val();
+		            		}
+		            	});
+		            	
+		            	if(isOk){
+		            	
+			            	var csrf_value = $("meta[name='_csrf']").attr("content");
+			    			var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+			            	
+			            	 $.ajax({
+			        			 url: '/controlpanel/layers/crud/insert',
+			        			 headers: {
+			     					[csrf_header]: csrf_value
+			     			    },
+			        			 type: 'POST',
+			        			 async:false,
+			        			 data: { 
+			        			   ontologyID : ontologyName,
+			        			   body: JSON.stringify(instance)
+			        					},	           
+			        			 success: function(dataSet) { 
+			        				 
+			        				 	if(JSON.parse(dataSet).exception==undefined){
+			        				 		console.log("success insert ");
+			        				 		
+			        				 		mapIds.push({'id':id, 'oid': JSON.parse(dataSet).ids[0]});
+				        					
+				        					var add= "<tr id='"+id+"'>";
+				    		            	add += "<td class='text-left no-wrap latitude'>"+latitude+"</td>"
+				    		            	add += "<td class='text-left no-wrap longitude'>"+longitude+"</td>"
+				    		            	
+				    		            	$.each(json, function(k,v){
+				    			    			var value = $("#"+v.attribute+"_value").val();
+				    			    			add += "<td class='text-left no-wrap "+v.attribute+"'>"+value+"</td>";
+				    			    		});
+				    		            	
+				    		            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border icon-on-table color-blue tooltips' onclick='editAttribute(this)' data-container='body' data-placement='bottom' th:text='#{gen.edit}'><i class='icon-edit'></i></span><span class='btn btn-xs btn-no-border icon-on-table color-red tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='icon-delete'></i></span></div></div></div></td>";
+				    		            	add += "</tr>";
+				    		            	
+				    		            	$("#table_attributes tbody").append(add);
+			        				 	}else{
+			        				 		 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: 'Error inserting data'});
+			        				 	}
+			        				 
+			        					
+			        			 },
+			        			 error: function(data,status,er) { 
+			        				 $.each(viewer.entities.values, function (k,v){
+		        			    		if(v.id == id){
+		        			    			viewer.entities.remove(v);
+		        			    		}
+		        			    	});
+			        				 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er});
+			        			 }
+			        		});
+		            	}
+		            	
+		            }
+		            	
+		        },
+		        cancel: function () {
+		        	removeEntityById(id);
+		        },
+		    },
+		    onContentReady: function () {
+		    	if(infoBox!=null){
+		    		json = JSON.parse(infoBox);
+		    		
+		    		$("#attributes").append('<label>'+ [[#{digitaltwindevice.latitude}]] +'</label> <input disabled="disabled" type="text" id="latitude" value="'+latitude+'" class="form-control"/>');
+	    			$("#attributes").append('<label>'+ [[#{digitaltwindevice.longitude}]] +'</label> <input disabled="disabled" type="text" id="longitude" value="'+longitude+'" class="form-control"/>');
+		    		
+		    		$.each(json, function(k,v){
+		    			$("#attributes").append('<label>'+ v.attribute +'</label> <input type="text" id="'+v.attribute+'_value" value="" class="form-control"/>');
+		    		});
+		    	}
+		        
+		    }
+		});
+	}
+	
+	function addLineInfoBox(id, coordinates){
+		var arrayCoordinates=[];
+		$.confirm({
+			async: false,
+		    title: [[#{layer.attributes}]],
+		    content: '' +
+		    '<form action="" class="formName">' +
+		    '<div class="form-group col-md-12" id="attributes">' +
+		    '<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>',
+		    buttons: {
+		        formSubmit: {
+		            text: 'OK',
+		            btnClass: 'btn-blue',
+		            action: function () {
+		            	var json = JSON.parse(infoBox);
+		            	var instance = jsoneditor.getValue();
+		            	console.log("insance: " + JSON.stringify(instance));
+		            	instance[ontologyName][geometryField]['coordinates'] = arrayCoordinates;
+		            	var isOk = true;
+		            	
+		            	$.each(json, function(k,v){
+							var type = JSON.parse(schema)["datos"]["properties"][v.field]["type"];
+		            		
+		            		if(typeof $("#"+v.attribute + "_value").val() != type){
+		            			
+		            			if(type == "number" && !isNaN(Number($("#"+v.attribute + "_value").val()))){
+		            				instance[ontologyName][v.field] = Number($("#"+v.attribute + "_value").val());
+		            			}else if(type == "integer" && !isNaN(parseInt($("#"+v.attribute + "_value").val()))){
+		            				instance[ontologyName][v.field] = parseInt($("#"+v.attribute + "_value").val());
+		            			}else{
+		            				 $.each(viewer.entities.values, function (k,v){
+			        			    		if(v.id == id){
+			        			    			viewer.entities.remove(v);
+			        			    		}
+			        			    	});
+			            				 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: 'The type of the fields is not allowed'});
+			            				 isOk = false;
+		            			}
+		            		}else{
+		            			instance[ontologyName][v.field] = $("#"+v.attribute + "_value").val();
+		            		}
+		            	});
+		            	
+		            	if(isOk){
+			            	var csrf_value = $("meta[name='_csrf']").attr("content");
+			    			var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+			            	 $.ajax({
+			        			 url: '/controlpanel/layers/crud/insert',
+			        			 headers: {
+				     			     [csrf_header]: csrf_value
+				     			 },
+			        			 type: 'POST',
+			        			 async:false,
+			        			 data: { 
+			        			   ontologyID : ontologyName,
+			        			   body: JSON.stringify(instance)
+			        					},	           
+			        			 success: function(dataSet) { 
+			        				 
+			        				 	if(JSON.parse(dataSet).exception==undefined){
+			        				 		console.log("success insert ");
+			        				 		
+			        				 		mapIds.push({'id':id, 'oid': JSON.parse(dataSet).ids[0]});
+				        					
+				        					var add= "<tr id='"+id+"'>";
+				    		            	add += "<td class='text-left no-wrap coordinates'>"+arrayCoordinates+"</td>"
+				    		            	
+				    		            	$.each(json, function(k,v){
+				    			    			var value = $("#"+v.attribute+"_value").val();
+				    			    			add += "<td class='text-left no-wrap "+v.attribute+"'>"+value+"</td>";
+				    			    		});
+				    		            	
+				    		            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border icon-on-table color-red tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='icon-delete'></i></span></div></div></div></td>";
+				    		            	add += "</tr>";
+				    		            	
+				    		            	$("#table_attributes tbody").append(add);
+			        				 	}else{
+			        				 		 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: 'Error inserting data'});
+			        				 	}
+			        				 
+			        					
+			        			 },
+			        			 error: function(data,status,er) { 
+			        				 $.each(viewer.entities.values, function (k,v){
+		        			    		if(v.id == id){
+		        			    			viewer.entities.remove(v);
+		        			    		}
+		        			    	});
+			        				 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er});
+			        			 }
+			        		});
+		            	}
+		            	
+		            }
+		            	
+		        },
+		        cancel: function () {
+		        },
+		    },
+		    onContentReady: function () {
+		    	var coordinatesAux = [];
+		    	if(infoBox!=null){
+		    		json = JSON.parse(infoBox);
+		    		
+		    		if(geometryType!="Polygon"){
+		    			$("#attributes").append('<label>'+ [[#{layer.crud.coordinates.list}]] +'</label>');
+		    		}
+		    		var firstElement=null;
+	            	$.each(coordinates, function(k,v){
+	            		/** Se genera el objeto cartesiano a partir de las coordenadas */
+	            		
+	            		var cartesian = {x:v.x,y:v.y,z:v.z};
+	            		
+	            		/** Se transforman las coordenadas cartesianas a cartográficas */
+	            		var cartographic  = Cesium.Ellipsoid.WGS84.cartesianToCartographic(cartesian);
+	            		
+	            		/** Se define la longitud y la latitud */
+	            		var longitude = Cesium.Math.toDegrees(cartographic.longitude);
+	            		var latitude = Cesium.Math.toDegrees(cartographic.latitude);
+	            		
+	            		var coordAux = [];
+	            		coordAux.push(parseFloat(longitude.toFixed(4)));
+	            		coordAux.push(parseFloat(latitude.toFixed(4)));
+	            		
+	            		if(k==0 && geometryType=='Polygon'){
+	            			firstElement = coordAux;
+	            		}
+	            		
+	            		if(geometryType!="Polygon"){
+	            			$("#attributes").append('<input disabled="disabled" type="text" value="['+longitude.toFixed(4)+','+latitude.toFixed(4)+']" class="form-control"/>');
+		            		$("#attributes").append('</br>');
+	            		}
+	            		
+	            		coordinatesAux.push(coordAux);
+	            	});
+	            	
+	            	if(firstElement != null){
+	            		coordinatesAux.push(firstElement);
+	            	}
+	            	
+	            	if(geometryType=='Polygon'){
+	            		arrayCoordinates.push(coordinatesAux);
+	            	}else{
+	            		arrayCoordinates = coordinatesAux;
+	            	}
+		    		
+		    		$.each(json, function(k,v){
+		    			$("#attributes").append('<label>'+ v.attribute +'</label> <input type="text" id="'+v.attribute+'_value" value="" class="form-control"/>');
+		    		});
+		    	}
+		        
+		    }
+		});
+	}
+	
+	function editAttribute (obj, idAux, longitudeAux, latitudeAux){
+		var id;
+		var longitude;
+		var latitude;
+		var oid;
+		if(idAux!=null && longitudeAux!=null && latitudeAux!=null){
+			id = idAux;
+			longitude = longitudeAux;
+			latitude = latitudeAux;
+			$.each(mapIds, function(i, json){
+				if(json.id == id){
+					oid = json.oid;
+				}
+			})
+		}else{
+			id = $(obj).closest('tr')[0].id;
+			longitude = $(obj).closest('tr').find(".longitude").text();
+			latitude = $(obj).closest('tr').find(".latitude").text();
+			$.each(mapIds, function(i, json){
+				if(json.id == id){
+					oid = json.oid;
+				}
+			})
+		}
+		
+		$.confirm({
+			async: false,
+		    title: [[#{layer.attributes}]],
+		    content: '' +
+		    '<form action="" class="formName">' +
+		    '<div class="form-group col-md-12" id="attributes">' +
+		    '<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>',
+		    buttons: {
+		        formSubmit: {
+		            text: 'OK',
+		            btnClass: 'btn-blue',
+		            action: function () {
+		            	var longitude = $("#longitude").val();
+		        		var latitude = $("#latitude").val();
+		            	var json = JSON.parse(infoBox);
+		            	var instance = jsoneditor.getValue();
+		            	
+		            	instance[ontologyName][geometryField]['coordinates'][0] = parseFloat(longitude);
+		            	instance[ontologyName][geometryField]['coordinates'][1] = parseFloat(latitude);
+		            	
+		            	var isOk = true;
+		            	$.each(json, function(k,v){
+							var type = JSON.parse(schema)["datos"]["properties"][v.field]["type"];
+		            		
+		            		if(typeof $("#"+v.attribute + "_value").val() != type){
+		            			
+		            			if(type == "number" && !isNaN(Number($("#"+v.attribute + "_value").val()))){
+		            				instance[ontologyName][v.field] = Number($("#"+v.attribute + "_value").val());
+		            			}else if(type == "integer" && !isNaN(parseInt($("#"+v.attribute + "_value").val()))){
+		            				instance[ontologyName][v.field] = parseInt($("#"+v.attribute + "_value").val());
+		            			}else{
+		            				 $.each(viewer.entities.values, function (k,v){
+			        			    		if(v.id == id){
+			        			    			viewer.entities.remove(v);
+			        			    		}
+			        			    	});
+			            				 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: 'The type of the fields is not allowed'});
+			            				 isOk = false;
+		            			}
+		            		}else{
+		            			instance[ontologyName][v.field] = $("#"+v.attribute + "_value").val();
+		            		}
+		            	});
+		            	
+		            	if(isOk){
+		            	
+			            	var csrf_value = $("meta[name='_csrf']").attr("content");
+			    			var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+			            	 $.ajax({
+			        			 url: '/controlpanel/layers/crud/update',
+			        			 headers: {
+				     			     [csrf_header]: csrf_value
+				     			 },
+			        			 type: 'POST',
+			        			 async: false,
+			        			 data: { 
+			        			   ontologyID : ontologyName,
+			        			   body: JSON.stringify(instance),
+			        			   oid : oid,
+			        					},	           
+			        			 success: function(dataSet) { 
+			        				 
+			        				 	if(JSON.parse(dataSet).exception==undefined){
+			        				 		console.log("success updated ");
+			        				 		
+			        				 		$.each(viewer.entities.values, function (k,v){
+			        				    		if(v!=undefined && v.id == id){
+			        				    			viewer.entities.remove(v);
+			        				    		}
+			        				    	});
+			        				 		
+			        				 		if(idAux!=null && longitudeAux!=null && latitudeAux!=null){
+			        				 			$("#" + idAux).remove();
+			        				 		}else{
+			        				 			$(obj).closest('tr').remove();
+			        				 		}
+			        				 		
+			        				 		var newId = viewer.entities.add({
+								    			   position : Cesium.Cartesian3.fromDegrees(longitude, latitude),
+								            	    billboard: {
+								            	      image: imagePoint,
+								            	      scale: 1.0,
+								            	    }
+								            	}).id;
+			        				 		
+			        				 		$.each(mapIds, function(k,v){
+			        				 			if(v.id == id){
+			        				 				v.id = newId;
+			        				 			}
+			        				 		});
+			        				 		
+			        				 		var add= "<tr id='"+newId+"'>";
+			        		            	add += "<td class='text-left no-wrap latitude'>"+latitude+"</td>"
+			        		            	add += "<td class='text-left no-wrap longitude'>"+longitude+"</td>"
+			        		            	
+			        		            	$.each(json, function(k,v){
+			        			    			var value = $("#"+v.attribute+"_value").val();
+			        			    			add += "<td class='text-left no-wrap "+v.attribute+"'>"+value+"</td>";
+			        			    		});
+			        		            	
+			        		            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border icon-on-table color-blue tooltips' onclick='editAttribute(this)' data-container='body' data-placement='bottom' th:text='#{gen.edit}'><i class='icon-edit'></i></span><span class='btn btn-xs btn-no-border icon-on-table color-red tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='icon-delete'></i></span></div></div></div></td>";
+			        		            	add += "</tr>";
+			        		            	
+			        		            	$("#table_attributes tbody").append(add);
+			        				 	}else{
+			        				 		 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: 'Error updating data'});
+			        				 	}
+			        				 
+			        					
+			        			 },
+			        			 error: function(data,status,er) { 
+			        				 $.each(viewer.entities.values, function (k,v){
+		        			    		if(v.id == id){
+		        			    			viewer.entities.remove(v);
+		        			    		}
+		        			    	});
+			        				 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er});
+			        			 }
+			        		});
+		            	}
+		            }
+		            
+		        },
+		        cancel: function () {
+		        },
+		    },
+		    onContentReady: function () {
+		    	
+		    	$("#attributes").append('<label>'+ [[#{digitaltwindevice.latitude}]] +'</label> <input type="text" id="latitude" value="'+latitude+'" class="form-control"/>');
+		    	$("#attributes").append('<label>'+ [[#{digitaltwindevice.longitude}]] +'</label> <input type="text" id="longitude" value="'+longitude+'" class="form-control"/>');
+		    	if(infoBox!=null){
+		    		json = JSON.parse(infoBox);
+		    		if(idAux!=null && longitudeAux!=null && latitudeAux!=null){
+		    			$.each(json, function(i,val){
+		    				var value = $("#"+idAux).find('td.'+val.attribute)[0].innerHTML;
+		    				$("#attributes").append('<label>'+ val.attribute +'</label> <input type="text" id="'+val.attribute+'_value" value="'+value+'" class="form-control"/>');
+				    			
+			    		});
+		    		}else{
+		    			$.each(json, function(i,val){
+		    				var value = $(obj).closest('tr').find('td.'+val.attribute)[0].innerHTML;
+		    				$("#attributes").append('<label>'+ val.attribute +'</label> <input type="text" id="'+val.attribute+'_value" value="'+value+'" class="form-control"/>');
+				    			
+			    		});
+		    		}
+		    	}
+		        
+		    }
+		});
+	}
+	
+	function deleteAttribute(obj){
+		
+		var id = $(obj).closest('tr')[0].id;
+		var oid;
+		$.each(mapIds, function(i, json){
+			if(json.id == id){
+				oid = json.oid;
+			}
+		})
+		
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+ 		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		$.ajax({
+			 url: '/controlpanel/layers/crud/deleteById',
+			 headers: {
+ 			     [csrf_header]: csrf_value
+ 			 },
+			 type: 'POST',
+			 data: { 
+			   ontologyID : ontologyName,
+			   oid : oid,
+					},	           
+			 success: function(dataSet) { 
+				 
+				 	if(dataSet.exception==undefined){
+				 		console.log("success deleted ");
+				 		
+						$.each(viewer.entities.values, function (k,v){
+				    		if(v!=undefined && v.id == id){
+				    			viewer.entities.remove(v);
+				    		}
+				    	});
+						
+						$(obj).closest('tr').remove();
+				 		
+				 		
+				 		$.each(mapIds, function(k,v){
+				 			if(v!=undefined && v.id == id){
+				 				mapIds.splice(k, 1);
+				 			}
+				 		});
+				 		
+				 	}else{
+				 		 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: 'Error deleting data'});
+				 	}
+				 
+					
+			 },
+			 error: function(data,status,er) { 
+				 $.each(viewer.entities.values, function (k,v){
+		    		if(v.id == id){
+		    			viewer.entities.remove(v);
+		    		}
+		    	});
+				 $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er});
+			 }
+		});
+		
+	}
+	
+	function drawPoint(){
+		$.confirm({
+			async: false,
+		    title: [[#{layer.add.coordinates}]],
+		    content: '' +
+		    '<form action="" class="formName">' +
+		    '<div class="form-group col-md-12" id="attributes">' +
+		    '<label>'+ [[#{digitaltwindevice.latitude}]] +'</label> <input type="text" id="latitude" value="" class="form-control"/>' +
+		    '<label>'+ [[#{digitaltwindevice.longitude}]] +'</label> <input type="text" id="longitude" value="" class="form-control"/>' +
+		    '<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>',
+		    buttons: {
+		        formSubmit: {
+		            text: 'OK',
+		            btnClass: 'btn-blue',
+		            action: function () {
+		            	
+		            	drawPointInput($("#longitude").val(),$("#latitude").val());
+		            	
+		            }
+		            	
+		        },
+		        cancel: function () {
+		        },
+		    },
+		    onContentReady: function () {
+		    
+		    }
+		});
+	}
+	
+	//]]>
+	// DATATABLES LANGUAJE FROM PROPERTIES.
+	
+	
+	</script>
+	
+</body>
+</html> 
+
+  

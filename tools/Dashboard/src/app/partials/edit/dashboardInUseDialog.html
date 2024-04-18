@@ -1,0 +1,22 @@
+<md-dialog> 
+  <form ng-cloak>
+      <md-dialog-content >
+          <div class="md-dialog-content" layout="column" layout-align="center center" >
+              <div class="md-dialog-alert-title" ><span ng-if="!showSynoptic">Dashboard Editor</span><span ng-if="showSynoptic">Synoptic Editor</span></div>
+              <div class="md-dialog-alert-text" >               
+                <span ng-if="!showSynoptic"> This dashboard is being edited by another user. </span>
+                <span ng-if="showSynoptic">  This synoptic is being edited by another user. </span> 
+                Do you want to continue or back to the list?
+              </div>
+           </div>
+      </md-dialog-content>
+      <md-dialog-actions layout="row" layout-align="center center" >
+          <md-button class="md-raised md-secondary"  ng-click="hide()">
+              Continue
+          </md-button>
+          <md-button class="md-raised md-primary"  ng-click="ok()">
+              Back
+          </md-button>
+      </md-dialog-actions>
+  </form>
+</md-dialog>

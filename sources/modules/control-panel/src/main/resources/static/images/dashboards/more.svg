@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 52.2 (67145) - http://www.bohemiancoding.com/sketch -->
+    <title>ico / 20 / action / more</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M10,6 C8.8954305,6 8,5.1045695 8,4 C8,2.8954305 8.8954305,2 10,2 C11.1045695,2 12,2.8954305 12,4 C12,5.1045695 11.1045695,6 10,6 Z M10,12 C8.8954305,12 8,11.1045695 8,10 C8,8.8954305 8.8954305,8 10,8 C11.1045695,8 12,8.8954305 12,10 C12,11.1045695 11.1045695,12 10,12 Z M10,18 C8.8954305,18 8,17.1045695 8,16 C8,14.8954305 8.8954305,14 10,14 C11.1045695,14 12,14.8954305 12,16 C12,17.1045695 11.1045695,18 10,18 Z" id="path-1"></path>
+    </defs>
+    <g id="ico-/-20-/-action-/-more" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <mask id="mask-2" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+        <use id="Combined-Shape" fill="#6E767D" xlink:href="#path-1"></use>
+        <g id="Color-/-03_neutral-/-grey-01" mask="url(#mask-2)" fill="#6E767D">
+            <rect id="Rectangle-2" x="0" y="0" width="20" height="20"></rect>
+        </g>
+    </g>
+</svg>

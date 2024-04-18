@@ -1,0 +1,19 @@
+<aspectj>
+	<aspects>
+		<aspect
+			name="com.minsait.onesait.platform.encryptor.aop.EncryptableAspect" />
+		<weaver
+			options="-verbose -Xlint:ignore -XnoInline -Xlint:-cantFindType">
+			<!-- Avoid AspectJ core dump files 'ajcore.*.txt' for ´Spring Boot 2.5.6 -->
+			<exclude
+				within="org.springframework.boot.jdbc.DataSourceBuilder.OraclePoolDataSourceProperties" />
+
+			<!-- Avoid AspectJ core dump files 'ajcore.*.txt' for ´Spring Boot 2.3.3 -->
+			<exclude
+				within="org.springframework.boot.diagnostics.analyzer.ValidationExceptionFailureAnalyzer" />
+			<exclude
+				within="org.springframework.boot.liquibase.LiquibaseChangelogMissingFailureAnalyzer" />
+		</weaver>
+	</aspects>
+
+</aspectj>

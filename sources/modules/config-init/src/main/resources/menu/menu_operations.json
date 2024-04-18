@@ -1,0 +1,188 @@
+{
+	"menu": "OnesaitPlatform",
+	"rol": "ROLE_OPERATIONS",
+	"noSession": "/console/login",
+	"navigation": [
+	
+		{
+			"title": {
+				"EN": "ADMINISTRATION",
+				"ES": "ADMINISTRACIÓN",
+				"FR": "ADMINISTRATION"
+			},
+			"icon": "icon-configuration",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "Users Management",
+						"ES": "Gestión de Usuarios",
+						"FR": "Gérer les utilisateurs"
+					},
+					"icon": "",
+					"url": "/controlpanel/users/list"
+				},
+				{
+					"title": {
+						"EN": "Database Connections Management",
+						"ES": "Gestión de Conexiones a Base de datos",
+						"FR": "Gestion des Connexions à la Base de Donnée"
+					},
+					"icon": "",
+					"url": "/controlpanel/virtualdatasources/list"
+				},
+				{
+					"title": {
+						"EN": "Configurations Management",
+						"ES": "Gestión de Configuraciones",
+						"FR": "Gestion desConfigurations"
+					},
+					"icon": "",
+					"url": "/controlpanel/configurations/list"
+				},
+				{
+					"title": {
+						"EN": "Environment Promotion tool",
+						"ES": "Herramienta promoción entre Entornos",
+						"FR": "Outil de promotion de l'environnement"
+					},
+					"icon": "",
+					"url": "/controlpanel/promotiontool/execute"
+				}
+			]
+		},		
+		{
+			"title": {
+				"EN": "DEV TOOLS",
+				"ES": "HERR. DESARROLLO",
+				"FR": "OUTILS DE DÉVELOPPEMENT"
+			},
+			"icon": "icon-dev-tools",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "Export & Import Environment Tool",
+						"ES": "Exportación & Importación de Datos",
+						"FR": "Outil d'environnement d'exportation et d'importation"
+					},
+					"icon": "",
+					"url": "/controlpanel/migration/show"
+				},
+				{
+					"title": {
+						"EN": "Data to Entity Import Tool",
+						"ES": "Herramienta de importación de datos a Entidades",
+						"FR": "Outil d'importation de Données vers une Entité"
+					},
+					"icon": "",
+					"url": "/controlpanel/jsontool/tools"
+				},
+				{
+					"title": {
+						"EN": "WebApps Management",
+						"ES": "Gestión de WebApps",
+						"FR": "Gestion de WebApps"
+					},
+					"icon": "",
+					"url": "/controlpanel/webprojects/list"
+				},
+				{
+					"title": {
+						"EN": "Files Management",
+						"ES": "Gestión de Ficheros",
+						"FR": "Gestion des Fichiers"
+					},
+					"icon": "",
+					"url": "/controlpanel/files/list"
+				},
+				{
+					"title": {
+						"EN": "User Tokens Management",
+						"ES": "Gestión de Tokens de Usuario",
+						"FR": "Gestion des jetons utilisateur"
+					},
+					"icon": "",
+					"url": "/controlpanel/apimanager/token/list?access=MENU"
+				},
+				{
+					"title": {
+						"EN": "REST APIs Planning",
+						"ES": "Planificación de APIs REST",
+						"FR": "Planificateur de APIs REST"
+					},
+					"icon": "",
+					"url": "/controlpanel/restplanner/list"
+				},
+				{
+					"title": {
+						"EN": "Cache Management",
+						"ES": "Gestión de Cachés",
+						"FR": "Gestion des caches"
+					},
+					"icon": "",
+					"url": "/controlpanel/caches/list"
+				},
+				{
+					"title": {
+						"EN": "Internationalizations i18n Management",
+						"ES": "Gestión de internacionalizaciones i18n",
+						"FR": "Gestion des internationalisations i18n"
+					},
+					"icon": "",
+					"url": "/controlpanel/internationalizations/list"
+				},
+				{
+					"title": {
+						"EN": "SQL Query Templates Management",
+						"ES": "Gestión de Plantillas de Consultas SQL",
+						"FR": "Gestion des Modèles de Requête SQL"
+					},
+					"icon": "",
+					"url": "/controlpanel/querytemplates/list"
+				}
+			]
+		},
+
+		{
+			"title": {
+				"EN": "TOOLS",
+				"ES": "HERRAMIENTAS",
+				"FR": "OUTILS"
+			},
+			"icon": "icon-tools",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "Query Tool",
+						"ES": "Herramienta de Consultas",
+						"FR": "Éditeur de Requêtes"
+					},
+					"icon": "",
+					"url": "/controlpanel/querytool/show"
+				},
+				{
+					"title": {
+						"EN": "System Audit",
+						"ES": "Auditoría del Sistema",
+						"FR": "Audit du système"
+					},
+					"icon": "",
+					"url": "/controlpanel/audit/show"
+				},
+				{
+					"title": {
+						"EN": "Stress Tool",
+						"ES": "Herramienta de Carga",
+						"FR": "Outil d'effort"
+					},
+					"icon": "",
+					"url": "/controlpanel/scalability/index.html"
+				}
+				
+				
+			]
+		}
+	]
+}

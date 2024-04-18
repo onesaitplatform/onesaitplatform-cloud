@@ -1,0 +1,82 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "DataModel Audit Schema",
+	"type": "object",
+	"required": [
+		"Audit"
+	],
+	"properties": {
+		"Audit": {
+			"type": "string",
+			"$ref": "#/datos"
+		}
+	},
+	"datos": {
+        "description": "Properties for DataModel Audit",
+        "type": "object",
+        "required": [
+                "auditId",
+                "auditSource",
+                "timestamp",
+                "message"
+        ],
+        "properties": {        
+                "auditId": {
+                    "type": "string"
+                },
+                "auditSource": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "object",
+                    "required": [
+                        "$date"
+                    ],
+                    "properties": {
+                        "$date": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "assetId": {
+                    "type": "string"
+                },
+                "assetType": {
+                    "type": "string"
+                },
+                "assetSource": {
+                    "type": "string"
+                },
+                "assetName": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "object",
+                    "properties": {
+                        "source": {
+                            "type": "string"
+                        },
+                        "sender": {
+                            "type": "string"
+                        },
+                        "subject": {
+                            "type": "string"
+                        },
+                        "body": {
+                            "type": "string"
+                        },
+                        "level": {
+                            "type": "string",
+                            "enum": [
+                                "DEBUG",
+                                "INFO",
+                                "ERROR"
+                            ]
+                        }
+                    }
+               }               
+        } 
+    }
+}

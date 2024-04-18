@@ -1,0 +1,228 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org"
+	th:with="lang=${#locale.language}" th:lang="${lang}">
+<head>
+<meta name="_csrf" th:content="${_csrf.token}"/>
+<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+<meta http-equiv="Content-Language" th:content="${lang}" />
+<title th:text="#{name.app}" />
+
+
+<!-- STYLE SHEETS -->
+<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}" />
+<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}" />
+<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}" />
+<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}" />
+<!-- THEME -->
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
+
+<!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND BOOSTRAP-TIMEPICKER  -->
+<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}" />
+<link rel="stylesheet" type="text/css" media="all"th:href="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css}" />
+
+</head>
+
+<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
+<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment"
+			class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+
+		<!-- HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"></div>
+
+		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
+		<div th:include="fragments/menu::#menuFragment"
+			class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+
+				<div class="alert alert-success display-hide">
+					<span th:text="${globalMessage}"></span>
+				</div>
+
+				<!-- BEGIN PAGE BAR AND BREADCRUM-->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/projects/list}"> <span th:text="#{projects.my}">Projects</span></a><i class="fa fa-angle-right"></i></li>
+						<li>
+							<span th:text="#{project.resources}">Project Resources</span>
+						</li>
+					</ul>
+				</div>
+				<!-- END PAGE BAR -->
+
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide ">
+					<span th:text="#{name.app}"> Control Panel</span>
+				</h1>
+				<!-- END PAGE TITLE-->
+				
+				<div id="header">
+					<div class="row pageCreateHeader">
+						<div class="col-md-6 col-sm-6 col-xs-12">
+							<div class="margin-top-4">
+								<span class="caption-subject" th:text="${projectObj.identification}">App Identification</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<div class="mainPanel padding-right-20">
+					<div class="row main">
+						<div class="col-md-12 col-sm-12 col-xs-12 panelHeader">
+							<span th:text="#{project.resources}">Project Resources</span>
+						</div>
+					</div>					
+				
+				
+					<div class="row main pageCreateHeader no-margin-left padding-left-10 ">
+						<label class="no-padding-bottom" th:text=="'+'"></label>
+						<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{project.resources.add}"></label>
+					</div>
+				
+					<div class="row main borderPanel no-margin-left">
+						<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(70vh);">
+							<div class="row" style="padding-right: 10px; padding-left: 10px;">
+								<div>														
+									<input id="resource-identification-filter" th:placeholder="#{gadgets.name}" name="name" class="form-control" type="text" maxlength="50" value=""/>
+								</div>
+							</div>
+							<div class="row" style="padding-right: 10px; padding-left: 10px;">
+								<select id="resource-type-filter" class="form-control select-modal selectpicker" data-live-search="true" data-width="100%" >								
+									<th:block th:each="type :${resourceTypes}">						
+										<option th:if="${#strings.toUpperCase(type)} == 'ONTOLOGY'" th:value="${#strings.toUpperCase(type)}" th:text="${#strings.toUpperCase('__#{gen.ontology}__')}" class="" th:classappend="${'resource-combo ' + #strings.toUpperCase(type)}"></option>
+										<option th:if="${#strings.toUpperCase(type)} == 'ONTOLOGYVIRTUALDATASOURCE'" th:value="${#strings.toUpperCase(type)}" th:text="${#strings.toUpperCase('__#{datasource.breadcrumb.list}__')}" class="" th:classappend="${'resource-combo ' + #strings.toUpperCase(type)}"></option>
+										<option th:if="${#strings.toUpperCase(type)} != 'ONTOLOGY' AND ${#strings.toUpperCase(type)} != 'ONTOLOGYVIRTUALDATASOURCE' AND ${#strings.toUpperCase(type)} != 'FORM'" th:value="${#strings.toUpperCase(type)}" th:text="${#strings.toUpperCase(type)}" class="" th:classappend="${'resource-combo ' + #strings.toUpperCase(type)}"></option>
+										<option th:if="${#strings.toUpperCase(type)} == 'FORM'" th:value="${#strings.toUpperCase(type)}" th:text="${#strings.toUpperCase(type)}" class="" th:classappend="${'resource-combo _' + #strings.toUpperCase(type)}"></option>
+									</th:block>
+								</select>
+							</div>
+							<div class="row" style="padding-right: 10px; padding-left: 10px;">
+								<div class="btn-group pull-right">
+									<button type="button" id="search" th:text="#{gen.search}" th:value="#{gen.search}" class="btn btn-sm btn-circle btn-outline blue" onclick="ProjectCreateController.getResourcesFiltered()"> Search </button>
+								</div>								
+							</div>							
+						</div>
+						<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(70vh); max-height: calc(70vh); overflow:auto">
+							<div class="row main" style="margin-left: 10px;" th:include="project/fragments/resources-tab" id="resources-tab-fragment"></div>
+							
+						</div>
+					</div>
+				</div>
+				<div id="resources-modal-fragment" th:include="project/fragments/resources-modal"></div>
+				<div id="associated-modal-fragment" th:include="project/fragments/elements-associated-modal"></div>
+			</div>
+		</div>
+		<!-- END CONTENT page-content-wrapper -->
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+
+	<!-- FOOTER INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment"
+		class="page-footer"> </footer>
+		
+	<style>
+	.modal-xl {
+		width: 100% !important;
+		display: block;
+		margin-left: 12% !important;
+		
+	}
+	@media (max-width: 992px) {
+	  .modal-xl {
+	   margin-left: 0% !important;
+	  }
+	}
+	</style>
+
+	<!-- CORE JS CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}" ></script>
+	<script th:src="@{/static/js/layout.js}" ></script>
+
+    <!-- INPUTMASK -->
+    <script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
+
+   	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" ></script>
+	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}" ></script>
+	<script th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}" ></script>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
+	<script th:src="@{/static/vendor/blockUI.js}"></script>
+
+	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
+	<!-- LOADING DEFAULT DATES IF NEEDED -->
+	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}" type="text/javascript"></script>
+	<script th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}" type="text/javascript"></script>
+	<script th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
+
+	<!-- LOADING DEFAULT LANG MESSAGES IF NEEDED -->
+	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}" type="text/javascript"></script>
+	
+	<!-- TEMPLATE CONTROLLER  -->
+	<script th:src="@{/static/js/pages/projectCreate.js}" ></script>
+	
+
+	<!-- MAIN INIT -->
+	<script th:inline="javascript">
+	
+	function navigateUrl(url){  window.location.href = url;	}
+	function navigateUrlBlank(url){ window.open(url, '_blank');};
+	var currentLanguage = [[${lang}]];
+	var csrfParameter = [[${_csrf.parameterName}]];
+	var csrfValue = [[${_csrf.token}]];
+
+	var projectCreateJson = { 
+		"validation_dates" : [[#{app.valid.dateDeleted}]],
+		"close" : [[#{gen.closeBtn}]],		
+		"language" : currentLanguage,
+		"actionMode" : [[${projectObj.id}]],
+		"projectId":  [[${projectObj.id}]],
+		"authorizations" : [[${authorizations}]],
+		"associations" : [[${associations}]],
+		"fieldEmpty":[[#{app.roles.fieldEmpty}]],
+		"realmLinked": [[${projectObj.app?.identification}]],
+	    "deleteAppConfirm":[[#{app.delete.confirm}]],
+	    "validations" : {
+			"createfirst": [[#{project.validation.createfirst}]],
+			"selectRealm": [[#{project.realmselect}]],
+			"selectUser" : [[#{project.validation.userselect}]],
+			"selectWebProject" : [[#{project.validation.webprojectselect}]],
+			"selectAccessAndUser" : [[#{project.validation.acccessselect}]]
+		},
+		"confirm":{
+			"unlinkRealm" : [[#{project.confirm.unlinkrealm}]]
+		}
+	};
+	</script>
+</body>
+</html>

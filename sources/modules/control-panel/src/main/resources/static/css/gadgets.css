@@ -1,0 +1,36 @@
+@import url('/controlpanel/static/vendor/google/libre-baskerville.js)');
+
+.card{
+	box-shadow:2px 2px 20px rgba(0,0,0,0.3); 
+	border:none; 
+	margin-bottom:20px;
+	background: white;
+	height: 230px;
+	}
+	
+.card-01.card-body{
+	position:relative; 
+	padding-top:8px;
+	background: white;
+	border:none;
+	}
+	 
+.card-01.height-fix .card-img-top{
+	width:auto!imporat;
+	cursor: pointer;
+	}
+
+h4.font-title{
+	margin-bottom:8px;   
+	margin-top:10px; 
+	padding-top:8px;
+	text-align:center;
+	text-transform: uppercase;
+		}
+
+.card-img-top {
+    display: block;
+    width: 90%;
+    cursor:pointer;
+    height: auto; 
+}

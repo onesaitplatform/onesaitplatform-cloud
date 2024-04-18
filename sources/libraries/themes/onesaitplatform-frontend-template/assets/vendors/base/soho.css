@@ -1,0 +1,62 @@
+/***************** SOHO FONT *****************/
+ 
+@font-face {
+	font-family: 'Soho';
+	src: url('fonts/soho/SohoGothicPro-Regular.eot');
+	src: url('fonts/soho/SohoGothicPro-Regular.eot?#iefix') format('embedded-opentype'),
+			 url('fonts/soho/SohoGothicPro-Regular.woff') format('woff'),
+			 url('fonts/soho/SohoGothicPro-Regular.ttf') format('truetype');
+	font-style: normal;
+	font-weight: 400;
+}
+/* @font-face {
+	font-family: 'Soho';
+	src: url('fonts/soho/SohoGothicPro-Italic.eot');
+	src: url('fonts/soho/SohoGothicPro-Italic.eot?#iefix') format('embedded-opentype'),
+			url('fonts/soho/SohoGothicPro-Italic.woff') format('woff'),
+			url('fonts/soho/SohoGothicPro-Italic.ttf') format('truetype');
+	font-style: italic;
+	font-weight: 400;
+} */
+
+
+@font-face {
+	font-family: 'Soho';
+	src: url('fonts/soho/SohoGothicPro-Medium.eot');
+	src: url('fonts/soho/SohoGothicPro-Medium.eot?#iefix') format('embedded-opentype'),
+			url('fonts/soho/SohoGothicPro-Medium.woff') format('woff'),
+			url('fonts/soho/SohoGothicPro-Medium.ttf') format('truetype');
+	font-style: normal;
+	font-weight: 500;
+}
+/* @font-face {
+	font-family: 'Soho';
+	src: url('fonts/soho/SohoGothicPro-MediumItalic.eot');
+	src: url('fonts/soho/SohoGothicPro-MediumItalic.eot?#iefix') format('embedded-opentype'),
+			url('fonts/soho/SohoGothicPro-MediumItalic.woff') format('woff'),
+			url('fonts/soho/SohoGothicPro-MediumItalic.ttf') format('truetype');
+	font-style: italic;
+	font-weight: 500;
+} */
+
+
+@font-face {
+	font-family: 'Soho';
+	src: url('fonts/soho/SohoGothicPro-Bold.eot');
+	src: url('fonts/soho/SohoGothicPro-Bold.eot?#iefix') format('embedded-opentype'),
+			url('fonts/soho/SohoGothicPro-Bold.woff') format('woff'),
+			url('fonts/soho/SohoGothicPro-Bold.ttf') format('truetype');
+	font-style: normal;
+	font-weight: 600;
+}
+/* @font-face {
+	font-family: 'Soho';
+	src: url('fonts/soho/SohoGothicPro-BoldItalic.eot');
+	src: url('fonts/soho/SohoGothicPro-BoldItalic.eot?#iefix') format('embedded-opentype'),
+			url('fonts/soho/SohoGothicPro-BoldItalic.woff') format('woff'),
+			url('fonts/soho/SohoGothicPro-BoldItalic.ttf') format('truetype');
+	font-style: italic;
+	font-weight: 600;
+} */
+ 
+ 

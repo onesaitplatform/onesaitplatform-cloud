@@ -1,0 +1,22 @@
+<md-dialog>
+    <form ng-cloak>
+        <md-dialog-content >
+            <div class="md-dialog-content" layout="column" layout-align="center center" >
+                <div class="md-dialog-alert-title" ><span ng-if="!showSynoptic">Dashboard Editor</span><span ng-if="showSynoptic">Synoptic Editor</span></div>
+                <div class="md-dialog-alert-text" >
+                   <span ng-if="!showSynoptic"> Would you like to save Dashboard before Close?. </span>
+                   <span ng-if="showSynoptic"> Would you like to save Synoptic before Close?. </span>
+                    If you close without saving the changes will be lost
+                </div>
+             </div>
+        </md-dialog-content>
+        <md-dialog-actions layout="row" layout-align="center center" >
+            <md-button class="md-raised md-secondary"  ng-click="answer('CLOSE')">
+                Close
+            </md-button>
+            <md-button class="md-raised md-primary"  ng-click="answer('SAVE')">
+                Save
+            </md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

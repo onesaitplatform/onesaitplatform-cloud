@@ -1,0 +1,68 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "GeoAirQuality",
+    "type": "object",
+    "required": [
+        "GeoAirQuality"
+    ],
+    "properties": {
+        "GeoAirQuality": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Info EmptyBase",
+        "type": "object",
+        "required": [
+            "stationName",
+            "stationId",
+            "timestamp",
+            "city",
+            "pm25",
+            "pm10",
+            "o3",
+            "no2",
+            "so2",
+            "geometry",
+            "aqi"
+        ],
+        "properties": {
+            "stationName": {
+                "type": "string"
+            },
+            "stationId": {
+                "type": "string"
+            },
+            "timestamp": {
+                "type": "object"
+            },
+            "city": {
+                "type": "string"
+            },
+            "pm25": {
+                "type": "number"
+            },
+            "pm10": {
+                "type": "number"
+            },
+            "o3": {
+                "type": "number"
+            },
+            "no2": {
+                "type": "number"
+            },
+            "so2": {
+                "type": "number"
+            },
+            "geometry": {
+                "type": "object"
+            },
+            "aqi": {
+                "type": "number"
+            }
+        }
+    },
+    "description": "GeoAirQuality",
+    "additionalProperties": true
+}

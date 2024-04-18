@@ -1,0 +1,112 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "DataModel Key Performance Indicator Schema",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "type": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "description": {
+            "type": "string"
+        },
+        "category": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "organization": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name"
+            ]
+        },
+        "provider": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name"
+            ]
+        },
+        "kpiValue": {
+            "type": "integer"
+        },
+        "currentStanding": {
+            "type": "string"
+        },
+        "calculationPeriod": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string"
+                },
+                "to": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "from",
+                "to"
+            ]
+        },
+        "calculationMethod": {
+            "type": "string"
+        },
+        "calculationFrequency": {
+            "type": "string"
+        },
+        "dateModified": {
+            "type": "string"
+        },
+        "dateNextCalculation": {
+            "type": "string"
+        },
+        "address": {
+            "type": "object",
+            "properties": {
+                "addressLocality": {
+                    "type": "string"
+                },
+                "addressCountry": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "addressLocality",
+                "addressCountry"
+            ]
+        }
+    },
+    "required": [
+        "id",
+        "type",
+        "name",
+        "description",
+        "category",
+        "organization",
+        "provider",
+        "kpiValue",
+        "currentStanding",
+        "calculationPeriod",
+        "calculationMethod",
+        "calculationFrequency",
+        "dateModified",
+        "dateNextCalculation",
+        "address"
+    ]
+}

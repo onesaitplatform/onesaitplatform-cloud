@@ -1,0 +1,400 @@
+{
+	"navigation": {
+		"showBreadcrumbIcon": true,
+		"showBreadcrumb": true
+	},
+	"pages": [
+		{
+			"combinelayers": false,
+			"background": {
+				"file": []
+			},
+			"selectedlayer": 0,
+			"icon": "apps",
+			"layers": [
+				{
+					"gridboard": [
+						{
+							"$$hashKey": "object:76"
+						},
+						{
+							"border": {
+								"color": "hsl(0, 0%, 90%)",
+								"width": 0,
+								"radius": 5
+							},
+							"padding": 0,
+							"backgroundColor": "white",
+							"notshowDotsMenu": false,
+							"hideBadges": false,
+							"prettyTitle": "cpu_usage (line)",
+							"rows": 7,
+							"type": "line",
+							"$$hashKey": "object:81",
+							"content": "line",
+							"nomargin": false,
+							"x": 0,
+							"y": 4,
+							"header": {
+								"backgroundColor": "hsl(0, 0%, 100%)",
+								"enable": true,
+								"title": {
+									"iconColor": "hsl( 206, 54%, 5%)",
+									"text": "cpu_usage",
+									"textColor": "hsl(206,54%,5%)"
+								},
+								"height": 40
+							},
+							"id": "MASTER-Gadget-FE-1",
+							"customMenuOptions": [],
+							"cols": 50
+						},
+						{
+							"border": {
+								"color": "hsl(0, 0%, 90%)",
+								"width": 0,
+								"radius": 5
+							},
+							"padding": 0,
+							"backgroundColor": "white",
+							"notshowDotsMenu": false,
+							"hideBadges": true,
+							"prettyTitle": "memory_usage (line)",
+							"rows": 7,
+							"type": "line",
+							"$$hashKey": "object:444",
+							"content": "line",
+							"nomargin": false,
+							"x": 0,
+							"y": 11,
+							"header": {
+								"backgroundColor": "hsl(0, 0%, 100%)",
+								"enable": true,
+								"title": {
+									"iconColor": "hsl( 206, 54%, 5%)",
+									"text": "memory_usage",
+									"textColor": "hsl(206,54%,5%)"
+								},
+								"height": 40
+							},
+							"id": "MASTER-Gadget-FE-2",
+							"customMenuOptions": [],
+							"cols": 50
+						},
+						{
+							"border": {
+								"color": "hsl(0, 0%, 90%)",
+								"width": 0,
+								"radius": 5
+							},
+							"padding": 0,
+							"backgroundColor": "white",
+							"notshowDotsMenu": false,
+							"hideBadges": true,
+							"prettyTitle": "socket_count (line)",
+							"rows": 7,
+							"type": "line",
+							"$$hashKey": "object:533",
+							"content": "line",
+							"nomargin": false,
+							"x": 0,
+							"y": 18,
+							"header": {
+								"backgroundColor": "hsl(0, 0%, 100%)",
+								"enable": true,
+								"title": {
+									"iconColor": "hsl( 206, 54%, 5%)",
+									"text": "socket_count",
+									"textColor": "hsl(206,54%,5%)"
+								},
+								"height": 40
+							},
+							"id": "MASTER-Gadget-FE-3",
+							"customMenuOptions": [],
+							"cols": 50
+						},
+						{
+							"border": {
+								"color": "hsl(0, 0%, 90%)",
+								"width": 0,
+								"radius": 5
+							},
+							"padding": 0,
+							"backgroundColor": "white",
+							"notshowDotsMenu": false,
+							"hideBadges": true,
+							"prettyTitle": "Resources Filter (livehtml)",
+							"rows": 4,
+							"type": "livehtml",
+							"$$hashKey": "object:7345",
+							"content": "<!--Focus here and F11 or F10 to full screen editor-->\n<!-- Write your CSS <style></style> here -->\n<style>\n\t.page-title-box {\n\t\tpadding-bottom: 24px;\n\t\tmargin-top: 8px\n\t}\n\n\t.align-items-center {\n\t\talign-items: center !important;\n\t}\n\n\t.justify-content-between {\n\t\tjustify-content: space-between !important;\n\t}\n\n\t.d-flex {\n\t\tdisplay: flex !important;\n\t}\n\n\t.page-title-right ol.breadcrumb {\n\t\tmargin-bottom: 0;\n\t}\n\n\t.page-title-box .breadcrumb {\n\t\tbackground-color: transparent;\n\t\tpadding: 0;\n\t}\n\n\t.breadcrumb {\n\t\tdisplay: flex;\n\t\tflex-wrap: wrap;\n\t\tpadding: 0.75rem 1rem;\n\t\tmargin-bottom: 1rem;\n\t\tlist-style: none;\n\t}\n\n\t.breadcrumb-item>a {\n\t\tcolor: #495057;\n\t\tfont-size: 0.8125rem;\n\t}\n\n\t.breadcrumb-item.active {\n\t\tcolor: #74788d;\n\t\tfont-size: 0.8125rem;\n\t}\n\n\t.font-size-16 {\n\t\ttext-transform: uppercase;\n\t\tfont-weight: 600;\n\t\tfont-size: 16px !important;\n\t\tfont-family: 'Poppins';\n\t}\n\n\t.no-shadow {\n\t\tbox-shadow: none !important\n\t}\n\t.el-button--primary {\n\t\tcolor: #fff;\n\t\tbackground-color: #0e668c;\n\t\tborder-color: #0e668c;\n\t}\n</style>\n<div class=\"gadget-app\">\n\n\n\n<div class=\"page-title-box d-flex align-items-center  gadget-header\">\n\t\n\t<div style=\"display: inline-grid;\">\n\t\t<label for=\"name\" class=\"ods-form-item__label\">Domain</label>\n\t\t<el-select v-model=\"valueDomain\" filterable clearable collapse-tags size=\"mini\"\n\t\t\tstyle=\"margin-left: 20px;width: 240px;\" placeholder=\"Select\">\n\t\t\t<el-option v-for=\"item in optionsDomain\" :key=\"item.value\" :label=\"item.label\" :value=\"item.value\">\n\t\t\t</el-option>\n\t\t</el-select>\n\t</div>\n\t<div style=\"display: inline-grid;margin-left: 20px;\">\n\t\t<label for=\"name\" class=\"ods-form-item__label\">Date</label>\n\t\t<el-date-picker\n      v-model=\"datev\"\n\t  size=\"mini\"\n      type=\"datetimerange\"\n      start-placeholder=\"Start Date\"\n      end-placeholder=\"End Date\"\n      :default-time=\"['00:00:00','00:00:00']\"\n\t  value-format=\"timestamp\">\n    </el-date-picker>\n  </div>\n  \n\t\n\t\n\t<div style=\"display: flex; justify-content: flex-end;width: 20%;margin-top:19px;\">\n\t\t<el-button type=\"primary\" icon=\"el-icon-search\" v-on:click=\"search\" size=\"mini\">Search</el-button>\n\t\t<el-button type=\"text\" v-on:click=\"reset\" size=\"mini\">Reset</el-button>\n\t</div>\n\n</div>\n \n   \n</div>",
+							"nomargin": false,
+							"contentcode": "//Write your Vue JSON controller code here\n\n//Focus here and F11 to full screen editor\n\n//This function will be call once to init components\n\nvm.vueconfig = {\n  el: document.getElementById(vm.id).querySelector('vuetemplate  .gadget-app'),\n  data: {\n    ds: [],   \n    optionsDomain: [],\n    valueDomain: \"\",\n    datev:[]\n  },\n  methods: {\n    drawVueComponent: function (newData, oldData) {\n      //This will be call on new data\n    },\n    resizeEvent: function () {\n      //Resize event\n    },\n    destroyVueComponent: function () {\n      vm.vueapp.$destroy();\n    },\n    receiveValue: function (data) {\n      //data received from datalink\n    },\n    sendValue: vm.sendValue,\n    sendFilter: vm.sendFilter,\n    handleSizeChange(val) {\n      this.pageSize = val;\n      this.loadItems();\n    },\n\n   \n    handleCurrentChange(val) {\n      this.page = val\n      this.loadItems();\n    }// load items is what brings back the rows from server\n    , loadItems() {\n      var that = this;\n     \n\n      console.log(that.datev);\n      var filter = [];\n      if(this.datev!=null && this.datev.length>0){\n        if(this.datev[0]!=null){\n          \n          filter.push({ name: 'dateinf', op: \">=\", value: new Date(this.datev[0]).toISOString() });\n          //filter.push({ name: 'dateinf', op: \">=\", value: \"2023-03-14T15:08:41.654Z\" });\n        }else{\n           filter.push({ name: 'dateinf', op: \">=\", value: null });\n        }\n        if(this.datev[1]!=null){\n          filter.push({ name: 'datesup', op: \"<=\", value: new Date(this.datev[1]).toISOString() }) ;\n          //filter.push({ name: 'datesup', op: \"<=\", value: \"2023-03-14T15:09:11.639Z\" });\n        }else{\n           filter.push({ name: 'datesup', op: \"<=\", value: null });\n        }\n      }\n      if(this.valueDomain!=null && this.valueDomain!=\"\" ){\n         filter.push({ name: 'domain', op: \"=\", value: this.valueDomain });\n      }else{\n         filter.push({ name: 'domain', op: \"=\", value: null });\n      }\n      debugger;\n      vm.sendFilter(filter);\n  },\n  search: function (e) {     \n     console.log(this.datev);\n     this.loadItems();\n  },\n  reset: function (e) {\n    this.datev = [];\n    this.valueDomain = \"\";   \n    this.search();\n  },\n\n\n},\n  mounted() {\n  this.loadItems()\n  var that = this\n\n  //ENTITY\n  vm.from(\"FlowEngineDomains\").exec().then(\n    function (newData) {\n      that.optionsDomain = [];\n      if (typeof newData !== 'undefined' && newData != null && newData.length > 0) {\n        for (var i = 0; i < newData.length; i++) {\n          that.optionsDomain.push({ value: newData[i].domain, label: newData[i].domain });\n        }\n      }\n    }\n  ); \n\n}\n\n}\n\n//Init Vue app\nvm.vueapp = new Vue(vm.vueconfig);\n",
+							"subtype": "vueJS",
+							"x": 0,
+							"y": 0,
+							"header": {
+								"backgroundColor": "hsl(0, 0%, 100%)",
+								"enable": true,
+								"title": {
+									"iconColor": "hsl( 206, 54%, 5%)",
+									"icon": "",
+									"text": "Resources Filter",
+									"textColor": "hsl(206,54%,5%)"
+								},
+								"height": 40
+							},
+							"id": "livehtml_1678969310117",
+							"customMenuOptions": [],
+							"cols": 50
+						}
+					],
+					"title": "baseLayer",
+					"$$hashKey": "object:23"
+				}
+			],
+			"title": "Resource Consumption",
+			"$$hashKey": "object:4"
+		},
+		{
+			"background": {
+				"file": [],
+				"color": "hsl(0, 0%, 100%)"
+			},
+			"selectedlayer": 0,
+			"icon": null,
+			"layers": [
+				{
+					"gridboard": [
+						{
+							"border": {
+								"color": "hsl(0, 0%, 90%)",
+								"width": 0,
+								"radius": 5
+							},
+							"padding": 0,
+							"backgroundColor": "white",
+							"notshowDotsMenu": false,
+							"hideBadges": false,
+							"prettyTitle": "Domain_Logs (table)",
+							"rows": 44,
+							"type": "table",
+							"$$hashKey": "object:1226",
+							"content": "table",
+							"nomargin": false,
+							"x": 0,
+							"y": 8,
+							"header": {
+								"backgroundColor": "hsl(0, 0%, 100%)",
+								"enable": true,
+								"title": {
+									"iconColor": "hsl( 206, 54%, 5%)",
+									"text": "Domain_Logs",
+									"textColor": "hsl(206,54%,5%)"
+								},
+								"height": 40
+							},
+							"id": "MASTER-Gadget-FE-4",
+							"customMenuOptions": [],
+							"cols": 50
+						},
+						{
+							"border": {
+								"color": "hsl(0, 0%, 90%)",
+								"width": 0,
+								"radius": 5
+							},
+							"padding": 0,
+							"backgroundColor": "white",
+							"notshowDotsMenu": false,
+							"hideBadges": true,
+							"prettyTitle": "Filters (livehtml)",
+							"filters": [],
+							"rows": 8,
+							"type": "livehtml",
+							"$$hashKey": "object:610",
+							"content": "<!--Focus here and F11 or F10 to full screen editor-->\n<!-- Write your CSS <style></style> here -->\n<style>\n\t.page-title-box {\n\t\tpadding-bottom: 24px;\n\t\tmargin-top: 8px\n\t}\n\n\t.align-items-center {\n\t\talign-items: center !important;\n\t}\n\n\t.justify-content-between {\n\t\tjustify-content: space-between !important;\n\t}\n\n\t.d-flex {\n\t\tdisplay: flex !important;\n\t}\n\n\t.page-title-right ol.breadcrumb {\n\t\tmargin-bottom: 0;\n\t}\n\n\t.page-title-box .breadcrumb {\n\t\tbackground-color: transparent;\n\t\tpadding: 0;\n\t}\n\n\t.breadcrumb {\n\t\tdisplay: flex;\n\t\tflex-wrap: wrap;\n\t\tpadding: 0.75rem 1rem;\n\t\tmargin-bottom: 1rem;\n\t\tlist-style: none;\n\t}\n\n\t.breadcrumb-item>a {\n\t\tcolor: #495057;\n\t\tfont-size: 0.8125rem;\n\t}\n\n\t.breadcrumb-item.active {\n\t\tcolor: #74788d;\n\t\tfont-size: 0.8125rem;\n\t}\n\n\t.font-size-16 {\n\t\ttext-transform: uppercase;\n\t\tfont-weight: 600;\n\t\tfont-size: 16px !important;\n\t\tfont-family: 'Poppins';\n\t}\n\n\t.no-shadow {\n\t\tbox-shadow: none !important\n\t}\n\t.el-button--primary {\n\t\tcolor: #fff;\n\t\tbackground-color: #0e668c;\n\t\tborder-color: #0e668c;\n\t}\n</style>\n<div class=\"gadget-app\">\n\n\n\n<div class=\"page-title-box d-flex align-items-center  gadget-header\">\n\t\n\t<div style=\"display: inline-grid;\">\n\t\t<label for=\"name\" class=\"ods-form-item__label\">Domain</label>\n\t\t<el-select v-model=\"valueDomain\" filterable clearable collapse-tags size=\"mini\"\n\t\t\tstyle=\"margin-left: 20px;width: 240px;\" placeholder=\"Select\">\n\t\t\t<el-option v-for=\"item in optionsDomain\" :key=\"item.value\" :label=\"item.label\" :value=\"item.value\">\n\t\t\t</el-option>\n\t\t</el-select>\n\t</div>\n\t<div style=\"display: inline-grid; margin-left: 20px;\">\n\t\t<label for=\"name\" class=\"ods-form-item__label\">Date</label>\n\t\t<el-date-picker\n      v-model=\"datev\"\n\t  size=\"mini\"\n      type=\"datetimerange\"\n      start-placeholder=\"Start Date\"\n      end-placeholder=\"End Date\"\n      :default-time=\"['00:00:00','00:00:00']\"\n\t  value-format=\"timestamp\">\n    </el-date-picker>\n  </div>\n  \n\t\n\t\n\t<div style=\"display: flex; justify-content: flex-end;width: 20%;margin-top:19px;\">\n\t\t<el-button type=\"primary\" icon=\"el-icon-search\" v-on:click=\"search\" size=\"mini\">Search</el-button>\n\t\t<el-button type=\"text\" v-on:click=\"reset\" size=\"mini\">Reset</el-button>\n\t</div>\n\n</div>\n \n   \n</div>",
+							"nomargin": false,
+							"contentcode": "//Write your Vue JSON controller code here\n\n//Focus here and F11 to full screen editor\n\n//This function will be call once to init components\n\nvm.vueconfig = {\n  el: document.getElementById(vm.id).querySelector('vuetemplate  .gadget-app'),\n  data: {\n    ds: [],   \n    optionsDomain: [],\n    valueDomain: \"\",\n    datev:[]\n  },\n  methods: {\n    drawVueComponent: function (newData, oldData) {\n      //This will be call on new data\n    },\n    resizeEvent: function () {\n      //Resize event\n    },\n    destroyVueComponent: function () {\n      vm.vueapp.$destroy();\n    },\n    receiveValue: function (data) {\n      //data received from datalink\n    },\n    sendValue: vm.sendValue,\n    sendFilter: vm.sendFilter,\n    handleSizeChange(val) {\n      this.pageSize = val;\n      this.loadItems();\n    },\n\n   \n    handleCurrentChange(val) {\n      this.page = val\n      this.loadItems();\n    }// load items is what brings back the rows from server\n    , loadItems() {\n      var that = this;\n     \n\n      console.log(that.datev);\n      var filter = [];\n      if(this.datev!=null && this.datev.length>0){\n        if(this.datev[0]!=null){\n          filter.push({ name: 'dateinf', op: \">=\", value: this.datev[0] });\n        }else{\n           filter.push({ name: 'dateinf', op: \">=\", value: null });\n        }\n        if(this.datev[1]!=null){\n          filter.push({ name: 'datesup', op: \"<=\", value: this.datev[1] });\n        }else{\n           filter.push({ name: 'datesup', op: \"<=\", value: null });\n        }\n      }\n      if(this.valueDomain!=null && this.valueDomain!=\"\" ){\n         filter.push({ name: 'domain', op: \"=\", value: this.valueDomain });\n      }else{\n         filter.push({ name: 'domain', op: \"=\", value: null });\n      }\n      debugger;\n      vm.sendFilter(filter);\n  },\n  search: function (e) {     \n     console.log(this.datev);\n     this.loadItems();\n  },\n  reset: function (e) {\n    this.datev = [];\n    this.valueDomain = \"\";   \n    this.search();\n  },\n\n\n},\n  mounted() {\n  this.loadItems()\n  var that = this\n\n  //ENTITY\n  vm.from(\"FlowEngineDomains\").exec().then(\n    function (newData) {\n      that.optionsDomain = [];\n      if (typeof newData !== 'undefined' && newData != null && newData.length > 0) {\n        for (var i = 0; i < newData.length; i++) {\n          that.optionsDomain.push({ value: newData[i].domain, label: newData[i].domain });\n        }\n      }\n    }\n  ); \n\n}\n\n}\n\n//Init Vue app\nvm.vueapp = new Vue(vm.vueconfig);\n",
+							"subtype": "vueJS",
+							"x": 0,
+							"y": 0,
+							"header": {
+								"backgroundColor": "hsl(0, 0%, 100%)",
+								"enable": true,
+								"title": {
+									"iconColor": "hsl( 206, 54%, 5%)",
+									"icon": "",
+									"text": "Filters",
+									"textColor": "hsl(206,54%,5%)"
+								},
+								"height": 40
+							},
+							"id": "livehtml_1678959609266",
+							"customMenuOptions": [],
+							"cols": 50
+						}
+					],
+					"title": "baseLayer",
+					"$$hashKey": "object:286"
+				}
+			],
+			"title": "Domain Logs",
+			"$$hashKey": "object:246"
+		}
+	],
+	"interactionHash": {
+		"livehtml_1678959609266": [
+			{
+				"targetList": [
+					{
+						"gadgetId": "MASTER-Gadget-FE-4",
+						"overwriteField": "domain"
+					}
+				],
+				"emiterField": "domain"
+			},
+			{
+				"targetList": [
+					{
+						"gadgetId": "MASTER-Gadget-FE-4",
+						"overwriteField": "timestamp"
+					}
+				],
+				"emiterField": "dateinf"
+			},
+			{
+				"targetList": [
+					{
+						"gadgetId": "MASTER-Gadget-FE-4",
+						"overwriteField": "timestamp"
+					}
+				],
+				"emiterField": "datesup"
+			}
+		],
+		"livehtml_1678969310117": [
+			{
+				"targetList": [
+					{
+						"gadgetId": "MASTER-Gadget-FE-1",
+						"overwriteField": "domain"
+					},
+					{
+						"gadgetId": "MASTER-Gadget-FE-3",
+						"overwriteField": "domain"
+					},
+					{
+						"gadgetId": "MASTER-Gadget-FE-2",
+						"overwriteField": "domain"
+					}
+				],
+				"emiterField": "domain"
+			},
+			{
+				"targetList": [
+					{
+						"gadgetId": "MASTER-Gadget-FE-1",
+						"overwriteField": "timestampISO"
+					},
+					{
+						"gadgetId": "MASTER-Gadget-FE-2",
+						"overwriteField": "timestampISO"
+					},
+					{
+						"gadgetId": "MASTER-Gadget-FE-3",
+						"overwriteField": "timestampISO"
+					}
+				],
+				"emiterField": "dateinf"
+			},
+			{
+				"targetList": [
+					{
+						"gadgetId": "MASTER-Gadget-FE-1",
+						"overwriteField": "timestampISO"
+					},
+					{
+						"gadgetId": "MASTER-Gadget-FE-3",
+						"overwriteField": "timestampISO"
+					},
+					{
+						"gadgetId": "MASTER-Gadget-FE-2",
+						"overwriteField": "timestampISO"
+					}
+				],
+				"emiterField": "datesup"
+			}
+		],
+		"MASTER-Gadget-FE-1": [],
+		"MASTER-Gadget-FE-2": [],
+		"MASTER-Gadget-FE-3": [],
+		"MASTER-Gadget-FE-4": []
+	},
+	"gridOptions": {
+		"displayGrid": "none",
+		"maxItemRows": 5000,
+		"outerMargin": true,
+		"disableWindowResize": false,
+		"minCols": 20,
+		"defaultItemCols": 4,
+		"maxItemArea": 25000,
+		"minItemRows": 1,
+		"emptyCellDragMaxCols": 5000,
+		"enableEmptyCellDrag": false,
+		"maxRows": 100,
+		"draggable": {
+			"delayStart": 100,
+			"ignoreContent": true,
+			"dragHandleClass": "drag-handler",
+			"enabled": true
+		},
+		"gridType": "fit",
+		"minItemArea": 1,
+		"compactType": "none",
+		"pushDirections": {
+			"east": true,
+			"south": true,
+			"north": true,
+			"west": true
+		},
+		"disablePushOnResize": false,
+		"maxItemCols": 5000,
+		"margin": 3,
+		"minRows": 20,
+		"resizable": {
+			"delayStart": 0,
+			"enabled": true
+		},
+		"swap": false,
+		"defaultItemRows": 4,
+		"enableEmptyCellContextMenu": false,
+		"enableEmptyCellDrop": true,
+		"scrollToNewItems": true,
+		"fixedRowHeight": 250,
+		"minItemCols": 1,
+		"emptyCellDragMaxRows": 5000,
+		"disablePushOnDrag": false,
+		"pushResizeItems": false,
+		"mobileBreakpoint": 640,
+		"disableWarnings": false,
+		"fixedColWidth": 250,
+		"enableEmptyCellClick": false,
+		"maxCols": 100,
+		"pushItems": true
+	},
+	"header": {
+		"backgroundColor": "#FFFFFF",
+		"enable": false,
+		"pageColor": "#2e6c99",
+		"iconColor": "#060E14",
+		"logo": {
+			"height": 48
+		},
+		"title": "My Dashboard",
+		"textColor": "#060E14",
+		"height": 72
+	},
+	"parameterHash": {},
+	"updatedAt": 1678971889691
+}

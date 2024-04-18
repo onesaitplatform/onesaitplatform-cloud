@@ -1,0 +1,11 @@
+db.{{ontology}}.find(
+   {
+     {{field}}: {
+       $geoIntersects: {
+          $geometry: {
+            {{{partial}}}
+          }
+       }
+     }
+   }
+)

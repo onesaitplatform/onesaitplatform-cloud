@@ -1,0 +1,2345 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org"  xmlns:dt="http://www.thymeleaf.org/dandelion/datatables"  th:with="lang=${#locale.language}" th:lang="${lang}">
+	<head>
+		<meta name="_csrf" th:content="${_csrf.token}"/>
+		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"/>
+
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/pulse.css}"/>
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+
+		<!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND DATATABLES  -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}"/>		
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.css}"/>	
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}"/>
+		
+		<!-- Funciones AJAX -->
+		<script th:inline="javascript">
+		//<![CDATA[ 
+		var valueObjects = [];
+		var queryResponse = {};
+		var queryErrorResponse = {};
+		var dataJSON = {};
+		var timeStart;
+		function getQueryExecutedFragment(compile) {	
+			
+			
+			timeStart = Date.now();
+			$('#pulse').attr('class', 'col-md-12');
+			$('#result-panel').attr('class', 'row main hide panel-footer bg-white');
+			$('#executeQuery').attr('disabled', true);
+
+			var csrf_value = $("meta[name='_csrf']").attr("content");
+			var csrf_header = $("meta[name='_csrf_header']").attr("content");
+			
+			$.ajaxSetup({'headers': {
+				[csrf_header]: csrf_value
+		    }});
+			
+			if(compile == null)
+				if($('#selector_dbs').val()=="CONFIGDB")
+					{
+						$("#Canvasrespuesta").load('/controlpanel/querytool/queryconfigdb', { 'query': getMonacoValue(), 'tableName': $("#selector_tables").val()},function(response){
+						callbackQuery(response);
+						});	
+					}
+				else
+				{
+					$("#Canvasrespuesta").load('/controlpanel/querytool/query', { 'query': getMonacoValue(), 'queryType': $("#typeQuery").val(), 'ontologyIdentification': $("#selector_ontologias").val()},function(response){
+						callbackQuery(response);
+					});	
+				}
+			else
+			{
+				if($('#selector_dbs').val()=="CONFIGDB")
+				{
+					$("#Canvasrespuesta").load('/controlpanel/querytool/compileconfigdb', { 'query': getMonacoValue(), 'tableName': $("#selector_tables").val()},function(response){
+						callbackQuery(response);
+						});	
+				}
+				else
+				{
+					$("#Canvasrespuesta").load('/controlpanel/querytool/compile', { 'query': getMonacoValue(), 'queryType': $("#typeQuery").val(), 'ontologyIdentification': $("#selector_ontologias").val()},function(response){
+						callbackQuery(response);
+					});	
+				}
+			}
+		}
+		
+		function callbackQuery(response){
+			$('#executeQuery').attr('disabled', false);
+			$('#pulse').attr('class', 'col-md-12 hide');
+			var time = Date.now() - timeStart;
+			
+			if($('#selector_dbs').val()=="CONFIGDB")
+				{
+					$('#query-ontologia-result').text('' + $('#selector_tables').val());
+				}
+				else
+				{
+                	$('#query-ontologia-result').text('' + $('#selector_ontologias').val());
+				}
+			$('#timeResult').text('(Querytime: ' + time + ' ms)');
+			if ($('#result-panel').hasClass('hide')){ $('#result-panel').toggleClass('hide'); }
+			
+			historicalQuerys();
+			document.getElementById("historicalQuery").value = null; 
+			$('#historicalQuery').selectpicker('refresh');
+			queryResponse = $(response);	
+			
+			// check for valid json, or server string error like java.lang.Exception...
+			var IS_JSON = true;
+			try{ var json = $.parseJSON(queryResponse.text());	} catch(err){ IS_JSON = false; }
+			
+			if (!IS_JSON){	
+				if (response.indexOf("Control Panel Login") == -1) {
+					$('#toggleTableView').addClass("hide");
+					$('#toggleConsoleView').addClass("hide");
+					var text=""+queryResponse.text();
+					// Our own JSON string to mark non JSON ERRORs
+					queryErrorResponse = text;
+				} else {
+					queryErrorResponse = [[#{querytool.expired}]];
+					
+					$.confirm({
+			            title: [[#{querytool.expired}]],
+			            theme: 'light',
+			            columnClass: 'medium',
+			            content: [[#{querytool.expired.info}]],
+			            draggable: true,
+			            dragWindowGap: 100,
+			            backgroundDismiss: true,
+			            buttons: {               
+			                confirm: {
+			                    text: [[#{gen.confirmBtn}]],
+			                    btnClass: 'btn btn-primary',
+			                    action: function (){location.href="/controlpanel/login"} //GENERIC CLOSE.       
+			                }
+			            }
+			        }); 
+				}			    										
+			}
+			
+			if ($('#jsoneditor').attr('data-loaded') == 'false') { createEditor(); $('#jsoneditor').attr('data-loaded', true);	}				
+			if (IS_JSON) { 
+			    $('#toggleTableView').removeClass("hide");
+			    $('#toggleConsoleView').removeClass("hide");
+				dataJSON = queryResponse.text(); 
+				editor.setText(queryResponse.text()); 
+				editor.setMode('view');
+				if ($('.table-viewer').is(':visible')){ $('.btn-table-toggle').trigger('click'); } }else { editor.setMode('text');  editor.setText(queryErrorResponse); } 
+							
+		}
+	
+		
+		function historicalQuerys(){
+			
+			var newQuery = getMonacoValue();
+			var maxSize = 10;
+			
+			if(!isQueryExist(newQuery, maxSize)){
+				
+				var select = document.getElementById('historicalQuery');
+			
+				if (localStorage.clickcount) {
+			        localStorage.clickcount = Number(localStorage.clickcount)+1;
+			    } else {
+			        localStorage.clickcount = 1;
+			    }
+				
+				if(localStorage.clickcount<=maxSize){
+					localStorage.setItem("Option_"+localStorage.clickcount, newQuery);
+					$('#historicalQuery').append('<option id="Option_'+localStorage.clickcount +'">'+localStorage.getItem("Option_"+localStorage.clickcount)+'</option>');
+					$('#historicalQuery').selectpicker('refresh');
+				}else{
+					
+					$('#historicalQuery').empty();
+					for(var i=1;i<maxSize;i++){						
+						localStorage.setItem("Option_"+i, localStorage.getItem("Option_"+(i+1)));
+						$('#historicalQuery').append('<option id="Option_'+ i +'">'+localStorage.getItem("Option_"+ i)+'</option>');
+
+					}
+					
+					localStorage.setItem("Option_"+maxSize, newQuery);
+					$('#historicalQuery').append('<option id="Option_'+ maxSize +'">'+localStorage.getItem("Option_"+ maxSize)+'</option>');
+					$('#historicalQuery').selectpicker('refresh');					
+				}
+			}
+	  	}
+		
+		function isQueryExist(shearchQuery, size){
+			var string = null;
+			
+			for(var i=1;i<=size;i++){
+				if( (localStorage.getItem("Option_"+(i))) != null){
+					string = $('#Option_'+i).val();
+					if(shearchQuery == string){
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+		
+		function historicalSelected(){
+			var selected = document.getElementById("historicalQuery");
+			localStorage.setItem("selectedOptionHistorical", selected.value);
+			setMonacoValue(selected.value);
+			document.getElementById("historicalQuery").value = selected.value;
+			$('#historicalQuery').selectpicker('refresh');			
+		}
+		var rtdb;
+		function getRtdbFromOntology(){
+			var csrf_value = $("meta[name='_csrf']").attr("content");
+			var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+			
+			$.ajax({ url: "/controlpanel/querytool/rtdb/" +  $("#selector_ontologias").val(), 
+				headers: {
+					[csrf_header]: csrf_value
+			    },
+				type: 'GET', 
+				contentType: 'text/html',
+				async : false,
+				success: function (result) {	
+					rtdb=result;
+					//ERROR 
+						$("#typeQuery").removeAttr("disabled");
+						$("#typeQuery").selectpicker('refresh');
+					/*					
+					if(rtdb!="Mongo"){
+						$("#typeQuery").val("native");
+						$("#typeQuery").attr("disabled", "disabled");
+						$("#typeQuery").selectpicker('refresh');
+					}else{
+						$("#typeQuery").removeAttr("disabled");
+							$("#typeQuery").selectpicker('refresh');
+					}	
+					*/
+				},
+				error: function(error){
+					console.log(error);
+				}
+			});
+		}
+	
+		
+		function getOntologyFields(loadCombo) {
+			if($("#selector_ontologias").val()!=""){
+				var csrf_value = $("meta[name='_csrf']").attr("content");
+				var csrf_header = $("meta[name='_csrf_header']").attr("content");
+				
+				$.ajaxSetup({'headers': {
+					[csrf_header]: csrf_value
+			    }});
+				if(typeof loadCombo != 'undefined' && loadCombo == true){
+					$("#fields").load('/controlpanel/querytool/ontologyfields', { 'ontologyIdentification': $("#selector_ontologias").val()},function(response, status, xhr){ loadComboSelect();})
+				}else{
+				$("#fields").load('/controlpanel/querytool/ontologyfields', { 'ontologyIdentification': $("#selector_ontologias").val()})
+				}
+			}
+		}		
+		
+		function getOntologyReferences(){
+			var csrf_value = $("meta[name='_csrf']").attr("content");
+			var csrf_header = $("meta[name='_csrf_header']").attr("content");
+			
+			$.ajaxSetup({'headers': {
+				[csrf_header]: csrf_value
+		    }});
+			
+			$("#relations").load('/controlpanel/querytool/relations', { 'ontologyIdentification': $("#selector_ontologias").val()})	
+		}
+
+		function getTableColumns(loadCombo){
+			var csrf_value = $("meta[name='_csrf']").attr("content");
+			var csrf_header = $("meta[name='_csrf_header']").attr("content");
+			
+			$.ajaxSetup({'headers': {
+				[csrf_header]: csrf_value
+		    }});
+			if(typeof loadCombo != 'undefined' && loadCombo == true){
+				$("#fields").load('/controlpanel/querytool/tableColumns', { 'tableName': $("#selector_tables").val()},function(response, status, xhr){ loadComboSelect();});				
+			}else{
+				$("#fields").load('/controlpanel/querytool/tableColumns', { 'tableName': $("#selector_tables").val()});
+			}
+		}
+		
+		function showData(key,str){					
+			$('#jsonDatatTitle').text(str);
+			// WALK THE ARRAY AND RETURN .JSON PROPERTY OF THE OBJECT WICH KEY IS THE KEY I WANT TO FIND.
+			var str = valueObjects.find(x => x.key === key).json;
+			if (str === 'null') { return false; }
+			jsonToModal = syntaxHighlight(str);
+			document.getElementById("jsonDataView").innerHTML = jsonToModal;
+			$('#jsonModal').modal();
+	
+		};
+		
+		function syntaxHighlight(json) {
+			json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+			return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+				var cls = 'number';
+				if (/^"/.test(match)) {
+					if (/:$/.test(match)) {
+						cls = 'key';
+					} else {
+						cls = 'string';
+					}
+				} else if (/true|false/.test(match)) {
+					cls = 'boolean';
+				} else if (/null/.test(match)) {
+					cls = 'null';
+				}
+				return '<span class="' + cls + '">' + match + '</span>';
+			});
+		};
+		
+		var aiPrevText = "";
+		
+		function textToSQL(callback) {
+			aiPrevText = $("#textToSQL").val()
+			fetch("/controlpanel/api/ai/textToSQL",
+				{
+				    method: "POST",
+				    body: aiPrevText,
+				    headers: {
+				  	  'Accept': 'text/plain',
+				   	  'Content-Type': 'text/plain'
+				  	}
+				})
+				.then(function(res){
+					if (res.ok) {
+						return res.text();
+					} else {
+						showErrorNoToken();
+					}
+				})
+				.then(function(text){
+					if (text) {
+						$('#querySql').innerHTML = text;  
+					   	setMonacoValue(text);
+					   	if (callback) {
+							callback();
+						}
+					}
+				})
+		}
+		
+		var showDialogTextToSQL = function(){
+				$.confirm({
+					title: ai.sqltitle,
+					theme: 'light',
+					columnClass: 'medium',
+					content: "<textarea id='textToSQL' style='height:200px;width:100%' placeholder='" + ai.sqlinserttext + "'>" + aiPrevText + "</textarea >",
+					draggable: true,
+					dragWindowGap: 100,
+					backgroundDismiss: true,
+					onContentReady: function () {
+					},
+					buttons: {
+						"close": {
+							text: "Close",
+							btnClass: 'btn btn-outline blue dialog',
+							action: function (){} //GENERIC CLOSE.
+						},
+						"To_SQL": {
+							text: "To SQL",
+							btnClass: 'btn btn-primary',
+							action: function (){
+								textToSQL();
+							}
+						},
+						"To_SQL_Execute": {
+							text: "To SQL & Execute",
+							btnClass: 'btn btn-primary',
+							action: function() {
+								textToSQL(getQueryExecutedFragment);
+							}
+						}
+					}
+				});
+				window.setTimeout(function() {
+					document.getElementById("textToSQL").focus();
+				},0)
+				
+			}
+		
+		//]]>
+		</script>
+		
+		<style>
+pre {
+	padding: 10px;
+	margin: 10px;
+}
+
+.top-query{
+	position: fixed;
+    top: 71px;
+    left: 78px;
+    padding-right: 107px;
+    z-index: 1030;
+    width: -webkit-fill-available;
+    padding-left: 0;    
+}
+    
+</style>
+		
+
+	</head>	
+	
+	
+	<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
+	<body class="page-header-fixed  page-content-whi!important;e page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+	
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+		
+		<!-- HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"> </div>
+			
+		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+			
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+			
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+				
+				<!-- BEGIN PAGE BAR AND BREADCRUM-->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+						<li><span  th:text="#{database.breadcrumb.show}">Database Console DBTR and BDH </span></li>
+					</ul>						
+				</div>
+				<!-- END PAGE BAR -->
+				
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide"><span th:text="#{name.app}"> onesait Platform Control Panel</span></h1>
+				<!-- END PAGE TITLE-->			
+				
+				<!-- MAIN ROW -->
+				<div class="row main">
+									
+						<div id="querytool-portlet" class="portlet light " style="padding-right:30px ">
+							<div class="portlet-title hide" >
+															
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""> </a>																			
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>										
+								</div>							
+							</div>
+							
+							<div class="portlet-body" style="display: block; height: auto;">								
+								<div class="row main">
+									<div class="col-md-12 alert-zone"><!-- ALERTS ZONE -->
+										<div class="alert alert-danger display-hide">
+											<button class="close" data-close="alert"></button> <span th:text="#{gen.form.error}">You have some form errors. Please check below.</span>
+										</div>
+                                        <div class="alert alert-success display-hide">
+											<button class="close" data-close="alert"></button> <span th:text="#{gen.form.success}">Your form validation is successful!</span>
+										</div>									
+									</div>
+									
+									<!-- QUERY CONFIGURATION -->
+									<div class="row main query-configuration" style="box-shadow: inset 0px -1px 0px #d7dadc;" >
+									<div class="col-md-12 col-sm-12 col-xs-12 ">
+									<div class="panelHeader col-md-12 col-sm-12 col-xs-12">
+									<span  th:text="#{database.template.show}"> Database Console</span>
+									</div>
+									<!-- DB SELECTOR -->
+									<div class="col-md-2 col-sm-2 col-xs-12" th:if="${userRole == 'ROLE_ADMINISTRATOR'}">								
+										<div class="form-group">
+												<label class="description" th:text="#{database.types}" > DATABASES </label>
+												<select class="selectpicker  select show-tick form-control" id="selector_dbs" data-live-search="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%" onchange="selectDB()" th:title="#{database.types} +'...'">
+													<option th:id="RTDB" selected="selected" data-type="general" th:value="RTDB" >Realtime DB</option>														
+													<option th:id="CONFIGDB" data-type="general" th:value="CONFIGDB"  >Config DB</option>									
+												</select>																			
+										</div>
+									</div>	
+									<div class="col-md-2 col-sm-2 col-xs-12" th:if="${userRole != 'ROLE_ADMINISTRATOR'}">								
+										<div class="form-group">
+												<label class="description" th:text="#{database.types}" > DATABASES </label>
+												<select class="selectpicker  select show-tick form-control" id="selector_dbs" data-live-search="true" disabled="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%" onchange="selectDB()" title="Realtime DB">
+														<option th:id="RTDB" data-type="general" th:value="RTDB"  selected="selected"  >Realtime DB</option>														
+												</select>																			
+										</div>
+									</div>				
+									<!-- END DB SELECTOR -->
+								
+									<!-- BEGIN ONTOLOGY SELECTOR -->		
+										
+									<div class="col-md-3 col-sm-3 col-xs-12" id="ont_select" th:classappend="${userRole == 'ROLE_ADMINISTRATOR'} ? hide : none">							
+										<div class="form-group">								
+											<label class="description" th:text="#{database.ontology}" > ONTOLOGIES </label>												
+												<select class="selectpicker  select show-tick form-control" id="selector_ontologias" data-live-search="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%" onchange="cambioConsulta()" th:title="#{database.ontologies} +'...'">
+												  <optgroup th:label="#{database.generic}">
+													<option th:each="ontology : ${ontologies}" th:id="${ontology.user.userId}" th:data-description="${ontology.description}" data-type="general" th:value="${ontology.identification}" th:text="${ontology.identification}"  ></option>
+												  </optgroup>											
+												</select>
+											</div>
+																				
+										 
+									</div>									
+									<!-- END ONTOLOGY SELECTOR -->
+									
+									<!-- BEGIN TABLE SELECTOR -->
+									<div class="col-md-3 col-sm-3 col-xs-12 hide" id="db_select" th:if="${userRole == 'ROLE_ADMINISTRATOR'}">								
+										<div class="form-group">
+												<label class="idescription" th:text="#{database.tables}" > Tables </label>
+												<select class="selectpicker  select show-tick form-control" id="selector_tables" data-live-search="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%" onchange="cambioConsulta2()" th:title="#{database.tables} +'...'">
+													<option th:each="table : ${configDBTables}" th:id="${table}" data-type="general" th:value="${table}" th:text="${table}"  ></option>										
+												</select>
+											 
+										</div>
+									</div>
+									
+									<div class="col-md-3 col-sm-3 col-xs-12  hide queryconfopts" style="padding-top: 0px;">	
+									
+									<div class="col-md-1 col-sm-1 col-xs-1" style=" margin-top: 23px; ">	
+										<span class="sep" style="min-height: 100%; font-size: 23px;">&nbsp;</span>
+									</div>
+									<div class="col-md-9 col-sm-9 col-xs-11">
+										<label class="idescription" th:text="#{database.type}" > Type </label>
+											
+											<select  class="selectpicker  select show-tick form-control" data-live-search="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%"  data-original-title="Type" id="typeQuery" name="typeQuery" onChange="cambioConsulta()">
+												<option name="sql" value="sql"> SQL </option>
+												<option name="native" value="native"> NATIVE </option>
+											</select>
+											</div>
+										</div>
+										<div class="col-md-2 col-sm-2 col-xs-12 hide queryconfopts">							
+												<label class="idescription" th:text="#{database.format}" > Format </label>
+												<select  class="selectpicker  select show-tick form-control" data-live-search="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%"   data-original-title="Format" id="resultFormat" name="typeQuery" disabled="disabled">
+													<option name="json" value="json"> JSON </option>
+												</select>
+											</div>	
+									<div class="col-md-2 col-sm-2 col-xs-12 hide queryconfopts" >			
+									<div class="mt-checkbox-list" style="height: 0px; display:inline-block;  padding-top: 30px;">
+									<div class="switch"> 
+										<label>
+											<input   class="form-control no-remove" type="checkbox"  onclick="$('.query-wizard-div').toggle('hide');"></input>											
+											<span class="checkbox-slider round" th:field="${filterCheck}"></span>
+										</label>
+									</div>
+									<div class="inline font-xs" th:text="#{database.queryonto}" style="margin-left:7px;color:#505D66;">Query wizard</div>
+									</div>
+								</div>
+								</div>	
+									</div>
+								<div id="imageNoBBDDSelected" hide>
+								<img id="headerImg" alt="logo" style="width: 72px; height:113px; display: block;   margin-top:151px;  margin-left: auto;margin-right:auto;   "  src="/controlpanel/static/images/emptyStateQueryTool.svg">
+								<label style=" display: block;   margin: 0 auto; font-style: italic;font-weight: normal;font-size: 17px;line-height: 24px;text-align: center;color:#505D66;" th:text="#{querytool.no.queries}"></label>
+								<label style=" display: block;   margin: 0 auto; font-style: normal;font-weight: normal;font-size: 11px;line-height: 16px;text-align: center;color: #A7AEB2;" th:text="#{querytool.select.one}"></label>
+								</div>									
+									<!-- END TABLE SELECTOR -->
+									
+									<!-- BEGIN QUERY CREATE -->
+									<div id="query-panel" class=" hide ">
+										<div class="panel-query-with-header">
+											<div class="panel-body query-wizard-div no-space " style="display:none">	
+												<div class="panelHeader col-md-12 col-sm-12 col-xs-12">
+													<span  th:text="#{database.queryonto}"> Query wizard </span>
+												</div>
+												<div class="panel-tools">	
+													<!-- QUERY OPTIONS hide-->
+													<div class="col-md-12 ol-sm-12 hide margin-top-10 margin-bottom-10">
+														<div class="col-sm-3" style="padding-left: 0;padding-right: 0;">												
+															<select class="form-control input-sm tooltips" data-container="body" data-placement="top" data-original-title="Database" id="targetDatabase" name="targetDatabase" onChange="cambioConsulta();">
+																<option name="rtdb" value="rtdb"> RealTime DB</option>
+															</select>
+														</div>
+														
+														
+														<div id="div_offset" class="col-md-2" style="margin-top: -3px;">														
+															<input class="form-control tooltips" data-container="body" data-placement="top" data-original-title="Offset" placeholder="Offset" name="offset" id="offset" />															
+														</div>
+														<div id="div_limit" class="col-md-2" style="margin-top: -3px;">														
+															<input class="form-control tooltips" data-container="body" data-placement="top" data-original-title="Limit,0: to limit null" onChange="setTimeout(function(){  createQuery(); },1000);" placeholder="Limit" name="limit" id="limit"/>															
+														</div>
+													</div>
+													
+												<div class="clearfix"></div>
+												</div>
+												
+												<!-- BEGIN QUERY ASSEMBLER -->
+												<div id="crear-query">
+													<div class="col-md-12 no-space">
+													  <div id="create_query">
+															<ul id="tree_menu" style="padding: 16px 0px 12px 12px">
+															  
+																<!-- SELECT PANEL -->
+																
+																<div class="form-group col-xs-3" id="select" style=" padding-left: 5px;">
+																<label class="idescription" th:text="#{querytool.select}" > Select </label>
+																<select  class="selectpicker  select show-tick form-control" data-actions-box="true" th:attr="data-deselect-all-text=#{querytool.deselect.all},data-select-all-text=#{querytool.select.all}" multiple="multiple" onclick="addSelect()" data-live-search="true" data-icon-Base="fa" data-tick-Icon="fa-check"  data-width="100%"    name="select" >
+																	
+																</select>
+																</div>
+																<div class="form-group col-xs-3">
+																<label class="description notAnimate"   >From</label>
+																<input id="input_from"   class="form-control" type="text" maxlength="512" readonly="readonly">
+																</div>
+																<div class="form-group col-xs-3" style="padding-left:0px;padding-right:0px;">
+																	<div class="form-group col-xs-10" style="padding:0px">
+																		<label class="idescription" th:text="#{crud.where}" > Where </label>
+																		<select  class="selectpicker  select show-tick form-control" multiple="multiple" th:attr="data-deselect-all-text=#{querytool.deselect.all},data-select-all-text=#{querytool.select.all}"  data-actions-box="true" data-live-search="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%" onchange="createQuery();"   id="where" name="where" >
+																			
+																		</select>
+																	</div>
+																	<div class="form-group col-xs-2" style="padding:0px; padding-left:5px" >
+																		<button type="button" onclick="addCondition()" class="btn btn-primary button-plus-create" style=" margin-top: 24px;" ><a><i class="icon-new" style="color:white;"></i></a></button>
+																	</div>
+																</div>
+																<div class="form-group col-xs-3" style="padding-left:0px;padding-right:0px;">
+																	<div class="form-group col-xs-10" style="padding:0px">																	
+																		<label class="idescription" th:text="#{crud.orderby}" > Order by </label>
+																		<select  class="selectpicker  select show-tick form-control" multiple="multiple" data-actions-box="true" th:attr="data-deselect-all-text=#{querytool.deselect.all},data-select-all-text=#{querytool.select.all}"  data-live-search="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%" onchange="createQuery();"  id="orderby" name="orderby" >																		
+																		</select>																	
+																	</div>
+																	<div class="form-group col-xs-2" style="padding:0px; padding-left:5px">
+																		<button type="button" onclick="addOrderBy()"  class="btn btn-primary button-plus-create" style=" margin-top: 24px;" ><a><i class="icon-new" style="color:white;"></i></a></button>																
+																	</div>
+																</div>
+															</ul>
+														</div>
+													</div>
+														
+													<div class="col-sm-12 col-md-12" style="display:none"> 
+													  <!-- BEGIN TABLE -->
+													  <table id="camposConsultaSuscripcion" >
+														
+														  <tbody th:remove="all-but-first" >
+															<tr pages:paginate="10" class="odd">
+															  <td>
+																  <div id="checks" ></div>    
+															  </td>
+														   </tr>
+														 </tbody>
+													  </table>
+													  <!-- END TABLE -->
+													</div>
+												</div>								
+											<!-- END QUERY ASSEMBLER -->										
+											</div>
+											
+											<div class="row main panel-footer bg-white" id="div-query-form">
+												<div class="col-md-12 col-sm-12 col-xs-12" style="    padding-left: 0px;   padding-right: 0px;">													
+													<div class="panelHeader col-md-1 col-sm-1 col-xs-1">
+														<span  th:text="#{database.query}"> Query </span>
+														
+													</div>
+												
+													<div class=" col-sm-11 col-md-11 " >
+															
+															<div style=" margin: 5px; float:right;margin-top: 19px;" >
+															<button type="button" class="btn btn-primary btn-primary-save" style="margin: 5px 0px 5px 5px;float:right" onclick="getQueryExecutedFragment()" id="executeQuery" > <span th:text="#{database.execQuery}">Ejecutar Query</span> </button>
+															<button type="button" class="btn  btn-circle blue btn-outline  " style="display:none; margin: 5px; float:right" onclick="monacoFormat()" id="monacoFormat" > <span th:text="#{database.beautify}">Beautify</span> </button>
+															<button id="button-compile" sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST') or @securityService.hasAnyRole('ROLE_ANALYTICS')" type="button" class="btn  btn-circle blue btn-outline  " style="margin: 5px;float:right" onclick="getQueryExecutedFragment('compile')" > <span th:text="#{database.compileQuery}">Compilar Query</span> </button>
+															</div>
+															<div id="downloadButtons" style=" display: inline-block;float:right;margin-top: 25px;">
+																<button class="btn color-blue" id="csv" onclick="exportt('CSV')" style="background: white;"><i th:title="#{querytool.download.csv}" class="icon-file"></i> </button>
+																<button class="btn color-blue" id="json" onclick="exportt('JSON')" style="background: white;"><i th:title="#{querytool.download.json}" class="icon-swagger"></i> </button>														
+																<button type="button" id="downloadButtonsBis"  class="btn color-blue" style="background: white;" onclick="downloadData()"><i th:title="#{migration.download.export.button}" class="icon-download"></i></button> 
+															
+															</div>
+															<div id="divHistorical" style="width:300px;float:right;">
+																<label class="description" th:text="#{querytool.historical.query}" >Historical </label>
+																	<select class=" show-tick form-control selectpicker" id="historicalQuery" placeholder="" onfocus="this.selectedIndex = -1;"  onchange="historicalSelected()">
+																	</select>
+															</div>		
+															<div id="div-ontology-table" style="width:300px;float:right;margin-right: 16px"></div>
+															
+														
+														</div>
+														
+													</div>
+													<div class="panelHeader col-md-12 col-sm-12 col-xs-12">
+														<img class="ailogobutton" height="50" width="50" src="/controlpanel/static/img/ailogo.png" onclick="showDialogTextToSQL()"/>
+														<div style="height:200px; resize: vertical; overflow: auto;" id="querySql"></div>
+													</div> 	
+												</t>
+											</div>
+										</div>								
+									</div>
+									<!-- END QUERY CREATE -->
+									
+									<div id="pulse" class="col-md-12 hide">
+										<div class="pulsating-circle"></div>										
+									</div>
+									
+									<!-- BEGIN QUERY RESULT -->
+									<div id="result-panel" class="row main hide panel-footer bg-white" style="margin-top: 20px;  margin-right: -30px;padding-right: 30px  ">
+									
+										<!-- BEGIN RESULT PANEL -->
+										<div >
+											
+											<div class="panelHeader col-md-12 col-sm-12 col-xs-12" style="padding-left: 0px;    padding-right: 0px;">
+												<span  th:text="#{database.results}">Resultados sobre</span><span id="query-ontologia-result"  style="text-transform: capitalize; margin-left: 5px;">ontología</span>
+											<span id="timeResult" class="query-time">Time</span>	
+											<span class="pull-right" style=" margin-right: 5px">
+												<button class="btn  btn-circle blue btn-outline btn-table-toggle" id="toggleTableView"><span th:text="#{database.table}">Table</span></button>
+											</span>
+											<span class="pull-right" style=" margin-right: -2px">
+													<button class="btn btn-sm btn-outline btn-circle  btn-table-toggle btn-primary" id="toggleConsoleView"><span th:text="#{database.console}">Console</span></button>
+												</span>
+											</div>
+											
+											
+											<!-- <div class="panel-heading panel-sofia2" style="padding: 8px 0px 12px 0px !important;">
+												<h3 class="panel-title uppercase font-grey-mint"><span th:text="#{database.results}">Resultados sobre </span> <span id="query-ontologia-result" class="bold uppercase">ontología</span></h3>	
+												<div id="timeResult">Time</div>										
+												
+											</div> -->
+											<div class="panel-body no-space">
+												
+												<div class="clearfix"></div>
+												
+												<!-- RESPUESTA DE CONSULTA -->
+												<div class="col-md-12 margin-top-10 margin-bottom-20" style="padding-left: 0px; padding-right: 0px;">
+													<div class="hide" id="Canvasrespuesta">
+														<div id="theQueryResponse" th:fragment="query" th:text="${queryResult}"></div>														
+													</div>
+													<div id="jsoneditor" style="height: 1200px;" data-loaded="false"></div>
+													<div class="table-viewer" style="display: none;" data-loaded="false"></div>
+													<div class="clearfix"></div>
+												</div>
+												<div id="example" class="col-md-12">
+													
+												</div>
+											
+							                    
+							                    <div id="dialog-execution-condition" style="display: none;" class="tabla_description" title="Condicion - WHERE">
+							                            <div>
+							                                <fieldset>
+							                                    <label class="description" for="identificacionPipeline">Campos</label>
+							                                    <select class="element select small form-control" id="form_campos" name="typeCombo" style="width: 250px;"></select>
+							                                </fieldset>  
+							                            </div>
+							                            <div>
+							                                <fieldset>
+							                                    <label class="description" for="descripcionPipeline">Operador</label>
+							                                    <select class="element select small form-control" id="select_operador" name="typeCondicion" style="width: 250px;">
+							                                            <option name="mayor" value="mayor"> > </option>
+							                                            <option name="menor" value="menor"> &#60; </option>
+							                                            <option name="mayor-igual" value="mayor-igual"> >= </option>
+							                                            <option name="menor-igual" value="menor-igual"> &#60;= </option>
+							                                            <option name="igual" value="igual"> = </option>
+							                                            <option name="distinto" value="distinto"> != </option>
+							                                    </select>
+							                                </fieldset>
+							                            </div>
+							                             <div>
+							                                <fieldset>
+							                                    <label class="description" for="descripcionPipeline">Function</label>
+							                                    <select class="element select small form-control" id="select_function" name="typefunction" style="width: 250px;">
+							                                            <option name="NOW" value='NOW()'>NOW()</option>
+							                                            <option name="TIMESTAMP" value="TIMESTAMP">TIMESTAMP()</option>
+							                                            <option name="DATE" value="DATE">DATE()</option>
+							                                            <option name="TIME" value="TIME">TIME()</option>
+							                                            <option name="LIKE" value="LIKE ">LIKE</option>							                                           
+							                                    </select>
+							                                </fieldset>
+							                            </div>
+							                            <div id="cronExpresion">
+							                                <fieldset id="timer_capa"> 
+							                                    <label class="description" for="temporizador">Condicion*</label>
+							                                    <input id="form_condicion" name="condicion" class="element text form-control" type="text" value="" style="width: 250px;" /> 
+							                                                                                    
+							                                </fieldset>
+							                            </div>
+							                        </div>							                    
+							                        <div id="dialog-execution-orderby" style="display: none;" class="tabla_description" title="ORDER BY">
+							                            <div>
+							                                <fieldset>
+							                                    <label class="description" for="form_orderby_campos">Campos</label>
+							                                    <select class="element select small form-control" id="form_orderby_campos" name="typeCombo">
+							                                            
+							                                    </select>
+							                                </fieldset> 
+							                                <fieldset>
+							                                    <label class="description" for="form_orden">Órden</label>
+							                                    <select class="element select small form-control" id="form_orden" name="typeCondicion" style="width: 270px;">
+							                                            <option name="asc" value="ASC"> ASC </option>
+							                                            <option name="desc" value="DESC"> DESC </option>
+							                                    </select>
+							                                </fieldset> 
+							                            </div>
+							                        </div>
+							                    <div id="dialog-confirm-generic" title="Información" style="display: none;">
+							                            <div>Información</div>
+							                    </div>							             	
+											</div>
+										</div>	
+										<!-- END RESULT PANEL -->
+									</div>	
+									<!-- END QUERY RESULT -->
+									
+								</div>
+							</div>
+						</div><!-- END PORTLET BASIC  -->						
+										
+				</div><!-- END MAIN ROW -->
+			</div><!-- END CONTENT BODY -->
+		</div><!-- END CONTENT page-content-wrapper -->		
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+	
+	<!-- FOOTER INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+
+	<!-- FRAGMENT AJAX FOR ONTOLOGY FIELDS -->
+	<div style="display: none">
+	<div th:fragment="fields" id="fields">
+		<script th:inline="javascript">
+		//Map with field,type struct	
+		campos= [[${fields}]];
+		</script>
+			<!-- <option th:id="selectFields" th:text="#{querytool.select.fields}"></option>
+			<option th:id="all" th:text="#{querytool.all.fields}"></option> -->
+			<option th:each="field :${fields}" th:value="${field.key}" th:id="check + ${field.key}" th:text="${field.key}" th:type="${field.value}"/>
+		
+	</div>
+	</div>
+	<div style="display: none">
+		<div th:fragment="relations" id="relations">
+			<script th:inline="javascript">
+				relations= [[${relations}]];
+				datasource = [[${datasource}]];
+				if(relations == null)
+					relations = [];
+				if(relations.length > 0){
+					$('#btn-join').removeClass('hide');
+					$('#li-join').removeClass('hide');
+				}else{
+					$('#btn-join').addClass('hide');
+					$('#li-join').addClass('hide');
+				}
+
+			</script>
+			<div id="div-join" class="form-control">
+					
+						<optgroup th:if="${not #lists.isEmpty(relations)}" th:label="${relations[0].srcOntology}">
+							<option th:each="relation : ${relations}" th:value="${relation.srcAttribute}" th:text="${relation.srcAttribute}"></option>
+						</optgroup>
+				
+			
+			</div>
+			
+		</div>
+	</div>
+	
+	
+	<!-- JSON OBJECTS MODAL -->
+	<!-- Modal -->
+	<div id="jsonModal" class="modal fade" role="dialog">
+		<div class="modal-dialog">
+
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title"><span th:text="#{gen.json}">JSON value for </span> <span id="jsonDatatTitle" class="bold"></span> </h4>
+				</div>
+				<div class="modal-body">
+					<pre id="jsonDataView"></pre>
+				</div>
+				<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> <span th:text="#{gen.closeBtn}">Close</span></button>
+				</div>
+			</div>
+
+		</div>
+	</div>
+	
+	
+	
+	
+	<!-- CORE JS CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
+	
+	<!-- DATABASE PLUGINS TO-DO -->		
+
+	
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js}"></script>
+	<script th:src="@{/static/vendor/json/jsonToTable.js}"></script>
+	<script th:src="@{/static/vendor/sql-formatter/sql-formatter.min.js}"></script>
+	<!-- TEMPLATE CONTROLLER  -->	
+	<!-- <script th:src="@{/static/js/pages/databaseShow.js}"></script> -->
+	
+
+	<script th:inline="javascript"> 
+	//<![CDATA[	
+		
+	function exportt(type){
+    	var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+    	$.ajax({
+            type: "post",
+            url: "/controlpanel/querytool/download",
+            data:{
+            	"downloadType": type,
+            	"queryType": $("#typeQuery").val(),
+            	"query": getMonacoValue(),
+            	"ontologyIdentification": $("#selector_ontologias").val()
+            },
+            headers: {
+				[csrf_header]: csrf_value,
+				"Authorization": "Bearer " + [[${session.oauthToken}]]
+		    },
+            success: function () {
+				document.getElementById("downloadButtonsBis").disabled = false;
+            	showModal();
+            },
+            error: function(xhr){
+            	
+            	toastr.error(xhr.responseText, '');	
+    	
+    			return false;
+            }
+        });
+    }
+	
+    function showModal(){
+		toastr.success(messagesForms.operations.genOpSuccess, dialogContent);	
+    }
+    
+    function downloadData(){
+    	
+    	var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+		
+		$.ajax({
+            type: "get",
+            async: "false",
+            url: "/controlpanel/querytool/checkDownloadExport",
+            headers: {
+				[csrf_header]: csrf_value
+		    },
+            success: function (data) {
+            	
+            	if(data == "true"){
+            		$.ajax({
+                        type: "get",
+                        async: "false",
+                        url: "/controlpanel/querytool/getTypeDownload",
+                        headers: {
+            				[csrf_header]: csrf_value
+            		    },
+                        success: function (data) {
+                        	
+                        	if(data == "CSV"){
+                        		window.location.href = "/controlpanel/querytool/downloadCSV";
+                        		document.getElementById("downloadButtonsBis").disabled = true;
+                        	}else if(data == "JSON"){
+                        		window.location.href = "/controlpanel/querytool/downloadJSON";
+                        		document.getElementById("downloadButtonsBis").disabled = true;
+                        	}
+                        	
+                        },
+                        error: function(xhr){
+                        	
+                        	
+                        	toastr.error("Exporting Data...", xhr.responseText);
+                			return false;
+                        }
+                    });
+            	}else if(data == "false"){
+            		toastr.info("Exporting Data...",migrate);
+            		
+            	}else if(data == "null"){
+            		toastr.error("Exporting Data...",downloaderror);
+            		
+            	}else if(data == "error"){
+            		toastr.error("Exporting Data...",migrationerror);
+            		
+            	}
+            },
+            error: function(xhr){
+            	
+            	toastr.error(xhr.responseText, '');
+    			return false;
+            }
+        });
+		
+    }
+		
+		//Functions to manage Monaco Editor
+		var codeEditor;		
+		var setMonacoValue = function (value){
+			if (codeEditor){
+				codeEditor.setValue(value);
+			}
+		}
+		var getMonacoValue = function (){
+			if (codeEditor){
+				return codeEditor.getValue();
+			}
+		}
+		var changeMonacoLenguage = function (queryType){
+			if (codeEditor){
+				switch (queryType){
+				case 'sql':
+					monaco.editor.setModelLanguage(codeEditor.getModel(), 'sql');
+					break;
+				case 'native':
+					monaco.editor.setModelLanguage(codeEditor.getModel(), 'javascript');
+					break;
+				default:
+					break;
+				}
+			}
+		}
+		var monacoFormat = function (){
+			codeEditor.getAction('editor.action.formatDocument').run();
+		}
+		
+		var showLog = 1; // global var control console messages
+		var bdtrType, bdtrDWR, haspermission; 
+		bdtrType = 'rtdb';
+		
+		var queryKp = "[[${QUERY}]]";
+		console.log('cambioconsulta() -> queryKp -> '+ queryKp);
+				
+
+		// SHOW/HIDE CONTEXT DATA FROM TABLE ROWS.
+		function toggleContext(){
+			icon = $('#btnContextToggle').children('i');
+			if (icon.hasClass('fa fa-eye-slash')) { icon.removeClass('fa fa-eye-slash').addClass('fa fa-eye'); } else { icon.removeClass('fa fa-eye').addClass('fa fa-eye-slash'); }
+			$('.context').toggle('hide');
+	
+		}		
+		
+		// UN A-HREF
+		function navigateUrl(url){  window.location.href = url; }
+	   
+		function selectDB()
+		{		
+		
+			if($('#selector_dbs').val() == "CONFIGDB"){
+				$('#ont_select').addClass("hide");
+				$('#db_select').removeClass("hide");
+				$('#query-panel').addClass("hide");
+				$('#result-panel').addClass("hide");
+				$('#pulse').addClass("hide");
+				$('#button-compile').addClass("hide");
+				$('#downloadButtons').addClass("hide");
+				$('#downloadButtonsBis').addClass("hide");
+				$('.queryconfopts').removeClass('hide'); 
+				$('.queryconfopts').addClass('hide'); 
+				if ($('#typeQuery').val() == 'native'){
+					$('#typeQuery').val('sql'); 
+					$("#typeQuery").selectpicker('refresh');
+					cambioConsulta();
+				}
+			}
+			else
+			{
+				$('#ont_select').removeClass("hide");
+				$('#db_select').addClass("hide");
+				$('#query-panel').addClass("hide");
+				$('#result-panel').addClass("hide");
+				$('.queryconfopts').removeClass('hide'); 
+				$('.queryconfopts').addClass('hide');  
+				$('#pulse').addClass("hide");				
+				$('#button-compile').removeClass("hide");
+				$('#downloadButtons').removeClass("hide");
+				$('#downloadButtonsBis').removeClass("hide");
+				$('#downloadButtons').addClass("hide");
+				$('#downloadButtonsBis').addClass("hide");					
+				
+			
+			}
+			$('#imageNoBBDDSelected').show();
+		}
+		
+	   //	FUNCTION TO LAUNCH QUERY ASSEMBLY PANEL [ SELECT, WHERE, GROUP, ORDERBY ]
+		function cambioConsulta(){
+		   changeMonacoLenguage($('#typeQuery').val());
+			if($('#button-compile').length != 0){
+				if($('#typeQuery').val() == 'sql'){
+					$('#button-compile').show();
+					$('#monacoFormat').hide();
+				} else{
+					$('#button-compile').hide();
+					$('#monacoFormat').show();					
+				}
+			}
+		   
+			$('.panel-tools').removeClass('hide');
+			$('#imageNoBBDDSelected').hide();
+			
+			
+			//Load fields 
+			getOntologyFields(true);
+			
+			
+			//Load relations
+			getOntologyReferences();
+			
+			//Get RTDB
+			getRtdbFromOntology();
+			
+			var ontologia_base = 'SensorTemperatura';
+		
+			// Every panel is deleted when query changes.
+			
+			$('#where').empty();
+			$('#where').selectpicker('refresh');
+			$('#orderby').empty();
+			$('#orderby').selectpicker('refresh');
+			
+			
+			// If WHERE has been already selected, everything is deleted but the WHERE clause
+			var ontologia = $('#selector_ontologias').val();
+			showLog ? console.log('cambioConsulta() -> tiene ontologia seleccionada? ' + ontologia) : '';
+			if (ontologia !== '') {
+				$("#input_from").val(ontologia);
+				//var from =  '<li id="from" name="'+ ontologia +'" id="'+ ontologia +'" class="list-group-item bold uppercase"> '+ ontologia +' </li>';
+				//$("#from_ul").append(from);
+			}
+			
+						  
+			// QUERY TYPE
+			var combo = document.getElementById('typeQuery');       
+			var opcion = combo.options[combo.selectedIndex].value;
+			
+			// BBDD TYPE
+			var combodb = document.getElementById('targetDatabase');
+			var targetdb = combodb.options[combodb.selectedIndex].value;
+		   
+			// SQL or NATIVE
+			if( opcion == "sql" || opcion == "native"){    	   
+				if (opcion == "sql"){ $('#fieldset_offset').css('display','');  $("#resultFormat").prop("disabled", false);} else { $('#fieldset_offset').css('display','none');  $("#resultFormat").prop("disabled", true);}    	      	 
+			}
+			else{
+			   $('#fieldset_offset').css('display','none');  
+			   $("#offset").prop("disabled", true);
+			   $("#resultFormat").prop("disabled", true);  
+			}     
+
+		   if( targetdb == "rtdb"){
+			   $('#json_deprecated').css('display','none'); 
+			   var comboBDTR = document.getElementById('selector_ontologias');
+			   showLog ? console.log('cambioConsulta() -> comboBDTR -> ' +comboBDTR.value+ ' length: ' + comboBDTR.length) : '';
+			   
+			   if(comboBDTR.length > 0){  	   
+				   setMonacoValue(format('select * from '+ comboBDTR.value +' as c limit 3;'));           	  
+				   showLog ?  console.log('INICIAL  cambioConsulta() -> querySql -> ' + getMonacoValue()) : '';		   
+			   }
+
+			   $('#contenedor-tabla-outside1').addClass('in');
+			   $('#contenedor-tabla-outside1').css('height','auto');
+			   $('#contenedor-tabla-outside2').removeClass('in');
+			   combo.disabled = false;
+			   getRtdbFromOntology();			   
+			   switch (rtdb){
+			   		case "MYSQL":
+			   		case "MARIADB":
+			   		case "SQLSERVER":
+			   		case "POSTGRESQL":
+			   		case "ORACLE":
+			   		case "ORACLE11":
+			   		case "ELASTIC_SEARCH":
+			   		case "PRESTO":
+			   			opcion='sql';
+						$("#typeQuery").val("sql");
+						$("#typeQuery").selectpicker('refresh');						
+						setTimeout(function (){	$("#typeQuery").attr("disabled", "disabled");},100);
+						changeMonacoLenguage($('#typeQuery').val());
+						$('#button-compile').show();
+						$('#monacoFormat').hide();
+				   		break;
+			   		default:
+			   			setTimeout(function (){$("#typeQuery").removeAttr("disabled");$("#typeQuery").selectpicker('refresh');},100);
+			   			break;
+			   }
+				// if the type of database is ELASTIC_SEARCH it is hidden				
+				 
+				if(rtdb === "ELASTIC_SEARCH"){
+					$('#downloadButtons').addClass("hide");
+					$('#downloadButtonsBis').addClass("hide");
+				}else{
+					$('#downloadButtons').removeClass("hide");
+					$('#downloadButtonsBis').removeClass("hide");
+				}
+				
+			   // DEFAULT QUERIES
+			   // IF ONE IS SELECTED, THAT ONE IS CHOSEN AS DEFAULT
+			   if ( $('#selector_ontologias').val() != '' ){ ontologia_base = $('#selector_ontologias').val(); }
+			   showLog ? console.log('OPCION: ' + opcion + ' queryKP: ' + queryKp + ' BDTR: ' + bdtrType + ' RTDB: ' + rtdb) : '';
+			   if 	   ((opcion == "sql")     && ( queryKp != "null")) { 
+				   $('#querySql').innerHTML =  format(queryKp);  
+				   setMonacoValue(format(queryKp)); }
+			   else if (( opcion == "native") && ( queryKp  != "null")){ 
+				   $('#querySql').innerHTML =  "" ; 
+			   	   setMonacoValue(""); }
+			   else if (( opcion == "native") && ( bdtrType == "rtdb") && (queryKp == "null") && (rtdb!="MYSQL") && (rtdb!="MARIADB") && (rtdb!="ORACLE11") && (rtdb!="ORACLE") && (rtdb!="SQLSERVER") && (rtdb!="POSTGRESQL")){
+				   $('#querySql').innerHTML =  "db." + ontologia_base +".find().limit(3)";  
+				   console.log(rtdb)
+				   setMonacoValue("db." + ontologia_base +".find().limit(3)"); }
+			   else if (( opcion == "sql") && (queryKp == "null") && (rtdb=="ORACLE" || rtdb=="ORACLE11" )){
+				   $('#querySql').innerHTML =  format("SELECT * FROM " + ontologia_base +" where ROWNUM <= 3"); 
+				   setMonacoValue(format("SELECT * FROM " + ontologia_base +" where ROWNUM <= 3")); }
+			   else if (( opcion == "sql") && (queryKp == "null") && (rtdb=="SQLSERVER") ){ 
+				   $('#querySql').innerHTML =  format("SELECT TOP (3) * FROM " + ontologia_base);
+				   setMonacoValue(format("SELECT TOP (3) * FROM " + ontologia_base)); }
+			   else if (( opcion == "sql") && (queryKp == "null") && (bdtrType == "rtdb") || (rtdb=="MYSQL") || (rtdb=="MARIADB") || (rtdb=="POSTGRESQL") || (rtdb=="ELASTIC_SEARCH")){ 
+				   $('#querySql').innerHTML =  format("SELECT * FROM " + ontologia_base +" AS c LIMIT 3"); 
+				   setMonacoValue(format("SELECT * FROM " + ontologia_base +" LIMIT 3")); }
+			  
+			   if( document.getElementById("enviar_consulta_descarga") ){ document.getElementById("enviar_consulta_descarga").style.display = ''; }
+		   }
+
+		}  
+	   
+		function cambioConsulta2(){
+			
+			   if($('#button-compile').length != 0){
+				  	 if($('#typeQuery').val() == 'sql'){
+				  		$('#button-compile').show();
+				  		$('#monacoFormat').hide();
+				  	 }					  	 
+				  	 else{
+				  		$('#button-compile').hide();
+				  		$('#monacoFormat').show();
+				  	 }				  		
+				   }
+							
+				//Load fields 
+				getTableColumns(true);				
+				$('.queryconfopts').removeClass('hide');
+				if ($('#db_select').hasClass('hide')){ 
+					$('.queryconfopts button').removeClass('disabled');					
+				} else{
+					$(".queryconfopts button").addClass('disabled')
+				}
+				
+			    $('#query-panel').removeClass('hide');
+				$('#imageNoBBDDSelected').hide();	
+				$('#where').empty();
+				$('#where').selectpicker('refresh');
+				$('#orderby').empty();
+				$('#orderby').selectpicker('refresh');
+				var table = $('#selector_tables').val();
+				$('#query-ontologia').text('' + table);
+				
+				console.log('cambioConsulta2() -> tiene tabla seleccionada? ' + table);
+				if (table !== '') {
+					$("#input_from").val(table);
+					//var from =  '<li id="from" name="'+ table +'" id="'+ table +'" class="list-group-item bold uppercase"> '+ table +' </li>';
+					//$("#from_ul").append(from);
+				}
+				
+							 
+				var combo = document.getElementById('typeQuery');       
+				var opcion = combo.options[combo.selectedIndex].value;
+				
+			   $('#json_deprecated').css('display','none'); 
+			   var comboBDTR = document.getElementById('selector_tables');
+			   showLog ? console.log('cambioConsulta2() -> comboBDTR -> ' +comboBDTR.value+ ' length: ' + comboBDTR.length) : '';
+			   
+			   if(comboBDTR.length > 0){  	   
+				   setMonacoValue(format('select * from '+ comboBDTR.value +' as c limit 3;'));           	  
+				   showLog ?  console.log('INICIAL  cambioConsulta2() -> querySql -> ' + getMonacoValue()) : '';		   
+			   }
+
+			   $('#contenedor-tabla-outside1').addClass('in');
+			   $('#contenedor-tabla-outside1').css('height','auto');
+			   $('#contenedor-tabla-outside2').removeClass('in');
+			   combo.disabled = false;
+
+			   $('.panel-tools').addClass('hide');
+			   if( document.getElementById("enviar_consulta_descarga") ){ document.getElementById("enviar_consulta_descarga").style.display = ''; }
+		}
+		//]]>             
+	</script> 
+
+	<script type="text/javascript" th:inline="javascript">
+
+	//<![CDATA[           
+	// we need tabs as spaces and not CSS magin-left 
+	// in order to ratain format when coping and pasing the code
+
+		window.SINGLE_TAB		= "  ";
+		window.ImgCollapsed 	= [[@{/resources/images/Collapsed.gif}]];   
+		window.ImgExpanded		= [[@{/resources/images/Expanded.gif}]];   
+		window.QuoteKeys		= true;
+		window._dateObj			= new Date();
+		window._regexpObj		= new RegExp();
+		var fieldsTitle			= [[#{querytool.select.where}]] || 'SELECT FIELDS';
+		var fieldsOrderBy		= [[#{querytool.select.orderby}]] || 'SELECT ORDERBY FIELDS';
+		var fieldsSelectTitle	= [[#{querytool.select.fields}]] || 'SELECT FIELDS';
+		var labelOperator		= [[#{crud.operador}]];
+		var labelCondition		= [[#{querytool.condition}]];
+		var labelAddFunctions	= [[#{querytool.add.functions}]];
+		var labelAddOption		= [[#{querytool.add.option}]];
+		var labelOrder			= [[#{querytool.order}]];
+		var labelSelectAll		= [[#{querytool.select.all}]];
+		var labelDeselectAll	= [[#{querytool.deselect.all}]];
+		
+		// RETURN ID
+		function $id(id){ return document.getElementById(id); }
+		
+		// RETURN IS AN ARRAY
+		function IsArray(obj) {  return obj && typeof obj === 'object' && typeof obj.length === 'number' && !(obj.propertyIsEnumerable('length')); }
+		
+		
+		
+		
+		// FORMAT LITERAL PROCESSING
+		function FormatLiteral(literal, quote, comma, indent, isArray, style){
+		  if(typeof literal == 'string')
+			literal = literal.split("<").join("&lt;").split(">").join("&gt;");
+		  var str = "<span class='"+style+"'>"+quote+literal+quote+comma+"</span>";
+		  if(isArray) str = GetRow(indent, str);
+		  return str;
+		}
+		
+		
+		// AUX FUNCTION TO FORMAT
+		function FormatFunction(indent, obj){
+		  var tabs = "";
+		  for(var i = 0; i < indent; i++) tabs += window.TAB;
+		  var funcStrArray = obj.toString().split("\n");
+		  var str = "";
+		  for(var i = 0; i < funcStrArray.length; i++){
+			str += ((i==0)?"":tabs) + funcStrArray[i] + "\n";
+		  }
+		  return str;
+		}
+		
+		//FUNCTION TO RETURN ROW DATA
+		function GetRow(indent, data, isPropertyContent){
+		  var tabs = "";
+		  for(var i = 0; i < indent && !isPropertyContent; i++) tabs += window.TAB;
+		  if(data != null && data.length > 0 && data.charAt(data.length-1) != "\n")
+			data = data+"\n";
+		  return tabs+data;                       
+		}
+
+		// AUX FUNCTION TO MAKE TRAVERSE
+		function TraverseChildren(element, func, depth){
+		  for(var i = 0; i < element.childNodes.length; i++){
+			TraverseChildren(element.childNodes[i], func, depth + 1);
+		  }
+		  func(element, depth);
+		}
+		
+		// TREE COLLAPSE FOR IMAGE
+		function ExpImgClicked(img){
+		  var container = img.parentNode.nextSibling;
+		  if(!container) return;
+		  var disp = "none";
+		  var src = window.ImgCollapsed;
+		  if(container.style.display == "none"){
+			  disp = "inline";
+			  src = window.ImgExpanded;
+		  }
+		  container.style.display = disp;
+		  img.src = src;
+		}
+		
+		function SetTab(){
+		  window.TAB = MultiplyString(1, window.SINGLE_TAB);
+		}
+		
+		function EnsureIsPopulated(){
+		  if(!$id("Canvas").innerHTML && !!$id("respuesta").value) Process();
+		}
+
+		
+		function MultiplyString(num, str){
+		  var sb =[];
+		  for(var i = 0; i < num; i++){
+			sb.push(str);
+		  }
+		  return sb.join("");
+		}
+
+		function LinkToJson(){
+		  var val = $id("respuesta").value;
+		  val = escape(val.split('/n').join(' ').split('/r').join(' '));
+		  $id("InvisibleLinkUrl").value = val;
+		  $id("InvisibleLink").submit();
+		}
+	//]]>
+
+
+	</script>
+	<script th:inline="javascript">
+
+	//<![CDATA[
+	  	
+		function addQueryToHistory(){
+			var queryHistory=document.getElementById("queryHistory");
+			if (queryHistory.options[0].value == 'queries' ){
+				queryHistory.remove(0);
+			}
+			var option=document.createElement("option");
+			option.text = getMonacoValue();
+			option.className = "QueryOption";
+			try {
+				  queryHistory.add(option,queryHistory.options[null]);
+			} catch (e) {
+				  x.add(option,null);
+			}
+		}
+		
+		function cargaConsulta(){
+			var combo = document.getElementById('queryHistory');
+			var queryCombo = combo.options[combo.selectedIndex].value;
+			setMonacoValue("");
+			setMonacoValue(queryCombo);
+	   }  
+		
+
+		
+		// ONTOLOGY SELECTION
+		function seleccionarOntologia(idOntologia){
+			
+			// ACCESS AND LOAD CONTROL
+			 showLog ? console.log('seleccionarOntologia(): ' + idOntologia) : '';
+			if ( idOntologia === '' ) { return; }       
+		
+			else{
+			
+				ontologia = idOntologia;              
+				var comboTypeQuery = document.getElementById('typeQuery');
+				if(comboTypeQuery.selectedIndex == -1){
+					//alert([[#{herramientas_seleccione_tipoquery}]]);
+				}
+				else{
+					var opcion = comboTypeQuery.options[comboTypeQuery.selectedIndex].value;
+					/* if(opcion == "sql"){ setMonacoValue("select * from "+ ontologia +" limit 3"); }
+					else if( opcion == "native" ){ setMonacoValue("db."+ ontologia +".find().limit(3);"); } */
+					
+					 if ( $('#selector_ontologias').val() != '' ){ ontologia_base = $('#selector_ontologias').val(); }
+					   showLog ? console.log('OPCION: ' + opcion + ' queryKP: ' + queryKp + ' BDTR: ' + bdtrType + ' RTDB: ' + rtdb) : '';
+					   
+					   if 	   ((opcion == "sql")     && ( queryKp != "null")) { 
+						   $('#querySql').innerHTML =  format(queryKp);  
+						   setMonacoValue(format(queryKp)); 
+						   }
+					   else if (( opcion == "native") && ( queryKp  != "null")){ 
+						   $('#querySql').innerHTML =  "" ; 
+						   setMonacoValue(""); 
+						}
+						   else if (( opcion == "native") && ( bdtrType == "rtdb") && (queryKp == "null") && (rtdb!="MYSQL") && (rtdb!="MARIADB") && (rtdb!="ORACLE11") && (rtdb!="ORACLE") && (rtdb!="SQLSERVER") && (rtdb!="POSTGRESQL")){
+							   $('#querySql').innerHTML =  "db." + ontologia_base +".find().limit(3)";
+							   setMonacoValue("db." + ontologia_base +".find().limit(3)");
+						}
+					   else if (( opcion == "sql") && (queryKp == "null") && (rtdb=="ORACLE" || rtdb=="ORACLE11")){
+						   $('#querySql').innerHTML =  format("SELECT * from " + ontologia_base +" WHERE ROWNUM <= 3"); 
+						   setMonacoValue(format("SELECT * FROM " + ontologia_base +" WHERE ROWNUM <= 3")); 
+						}
+					   else if (( opcion == "sql") && (queryKp == "null") && (rtdb=="SQLSERVER")){ 
+						   $('#querySql').innerHTML =  format("SELECT TOP (3) * FROM " + ontologia_base);
+						   setMonacoValue(format("SELECT TOP (3) * FROM " + ontologia_base)); 
+						}
+					   else if (( opcion == "sql") && (queryKp == "null") && (bdtrType == "rtdb") || (rtdb=="MYSQL") || (rtdb=="MARIADB") || (rtdb=="POSTGRESQL")){ 
+						   $('#querySql').innerHTML =  format("SELECT * FROM " + ontologia_base +" AS c LIMIT 3"); 
+						   setMonacoValue(format("SELECT * FROM " + ontologia_base +" AS c LIMIT 3")); 
+						}					
+				}
+				$("#groupBy_time_ul").hide();
+				$( "#from_ul" ).children().not('.panel-sofia2').remove();
+				$( "#select_ul" ).children().not('.panel-sofia2').remove();
+				from =  '<li id="from" name="'+ ontologia +'" id="'+ ontologia +'" class="list-group-item bold uppercase"> '+ ontologia +' </li>';
+
+				$("#from_ul").append(from);
+			}
+					 
+			// mostramos el panel de consultas. 
+			if ($('#query-panel').hasClass('hide')){ 
+			
+			    $('#query-panel').toggleClass('hide'); 
+			    
+				$('.queryconfopts').toggleClass('hide'); 
+				
+				if ($('#db_select').hasClass('hide')){ 
+					$('.queryconfopts button').removeClass('disabled');	
+				} else{
+					$(".queryconfopts button").addClass('disabled')
+									
+				}
+			}
+			$('#query-ontologia').text('' + idOntologia);	 
+		}
+		
+		
+		var nextinput = 0;
+		// FIELD ARRAY FROM EACH ONTOLOGY
+		
+		var relations=[];
+		var datasource = '';
+		
+		
+		
+			
+		
+	    // FUNCTIONS TO LAUNCH QUERY DIALOG
+		
+		function addCondition()	{ mostrarDialogoCondicion();  }    
+		function addOrderBy()	{ mostrarDialogoOrderBy(); }
+	
+
+		function loadComboSelect(){
+			var comboFields=$('#fields').html();
+			$('#select').empty();
+			$('#select').append('<label class="idescription" th:text="#{querytool.select}" > Select </label><select id="checkselect" data-actions-box="true" data-deselect-all-text="'+labelDeselectAll+'"  data-select-all-text="'+labelSelectAll+'" onchange="createQuery();" multiple="multiple" data-icon-base="fa" data-tick-icon="fa-check"  data-live-search="true" class="select show-tick form-control" data-width="100%">' +	comboFields +'</select></div>');
+			$('#checkselect').selectpicker('refresh');
+		}
+		
+	
+		
+		
+		// WHERE CONDITIONS MODAL
+		var indexCondition = 0;
+		function mostrarDialogoCondicion(){
+			
+			if($('#selector_dbs').val() == "CONFIGDB")
+			{
+				getTableColumns();	
+			}
+			else
+			{
+				getOntologyFields();
+			}
+			var comboFields=$('#fields').html();
+			var comboCondition=$('#select_operador').html();
+			var comboFunction=$('#select_function').html();
+			
+ 			$.confirm({
+				title: fieldsTitle,
+				content: '' +
+				'<form action="" class="form_condicion" id="form_condicion">' +
+				'<div class="form-group">' +
+				'<label>'+fieldsSelectTitle+'</label> ' +
+				'<select id="conditionFields" class="form-control querySelect margin-bottom-10" data-width="100%">'+ 
+				comboFields +
+				'</select>' +
+				'<label>'+labelOperator+'</label> ' +
+				'<select class="element select small form-control margin-bottom-10" id="conditionOperator" name="typeCondicion" >'+
+				comboCondition +
+				'</select><label class="">'+labelCondition+'</label><input class="form-control" type="text" id="condition" placeholder="Condition"></input></div>' +
+				'<label>'+labelAddFunctions+'</label>'+
+				'</select>' +
+				'<select class="element select small form-control margin-bottom-10" onchange="pasteFunction();" onfocus="this.selectedIndex = -1;"  id="functionOperator" name="typeFunction" >' +
+				comboFunction +
+				'</select></div><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>',
+				// disable ALL 
+				onOpen: function  () { var self = this; this.$content.find("option[id='all']").prop('disabled','disabled'); },
+				// restore ALL 
+				onClose: function () { var self = this; this.$content.find("option[id='all']").prop('disabled',''); },
+				buttons: {
+					close: {
+						text: [[#{gen.cancelBtn}]],
+						btnClass: 'btn btn-outline blue dialog',
+						action: function (){} //GENERIC CLOSE.		
+					},
+					formSubmit: {
+						text: [[#{querytool.add.option}]],
+						btnClass: 'btn btn-primary',
+						action: function () {
+							var campo = $("#conditionFields").val();
+							var fieldType = $("#conditionFields option:selected").attr("type");
+							var operador = $("#conditionOperator option:selected").text();
+							var condicion = $("#condition").val();
+									
+							var c = Number(condicion);
+							if(fieldType == "string") {
+								condicion = "'" + condicion + "'";
+							}		
+							if( operador == " < "){ operador=" &#60; "; }else if( operador == "<="){operador=" &#60;= "; }						
+							queryCondition = campo + operador + condicion;
+							showLog ? console.log('queryCondition: ' + queryCondition) : '';
+							if (campo && operador && condicion){
+								var add = comprobarCondicion(queryCondition);
+								if( add ){	
+								var newOptionWhere ='<option id="condicion'+indexCondition+'"condition="'+queryCondition+'" selected >'+queryCondition+'</option>';
+								
+								$('#where').append(newOptionWhere);
+								$('#where').selectpicker('refresh')	;
+									createQuery();
+								}
+							} else { 
+							 
+								toastr.error(fillfield, '');
+							} 
+							
+						}
+					}
+				},
+				onContentReady: function () {
+					// bind to events
+					var jc = this;
+					getOntologyFields();
+					this.$content.find('form').on('submit', function (e) {
+						// if the user submits the form by pressing enter in the field.
+						e.preventDefault();
+						jc.$$formSubmit.trigger('click'); // reference the button and click it
+					});
+				}
+			});	 
+		};
+
+		function pasteFunction(){
+			var condition = $('#condition').val();
+			var func = $("#functionOperator option:selected").text();
+			$('#condition').val(condition+func);
+		}
+		
+		var indexOrderby = 0;
+		
+	
+		
+		
+		// DIALOGO DE CONFIGURACION DEL ORDERBY
+		function mostrarDialogoOrderBy(){
+			
+			var comboFields = $('#fields').html();
+			var comboOrders = $('#form_orden').html();
+	
+			// CONFIRM DIALOG FOR ORDERBY ATTR
+			$.confirm({
+				title: fieldsOrderBy,
+				content: '' +
+				'<form action="" class="form_order" id="form_order">' +
+				'<div class="form-group">' +
+				'<label>'+fieldsSelectTitle+'</label> <select id="orderFields" class="form-control querySelect margin-bottom-10" data-width="100%">'+
+				comboFields +
+				'</select>' +
+				'<label>'+labelOrder+'</label>' +
+				'<select class="element select small form-control margin-bottom-10" id="orderType" name="orderType">'+
+				comboOrders +
+				'</select></div><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>',
+				onOpen: function  () { var self = this; this.$content.find("option[id='all']").prop('disabled','disabled'); },
+				// restore ALL 
+				onClose: function () { var self = this; this.$content.find("option[id='all']").prop('disabled',''); },
+				buttons: {
+					close: {
+						text: [[#{gen.cancelBtn}]],
+						btnClass: 'btn btn-outline blue dialog',
+						action: function (){} //GENERIC CLOSE.		
+					},
+					formSubmit: {
+						text: [[#{querytool.add.option}]],
+						btnClass: 'btn btn-primary',
+						action: function () {
+							var campo = $("#orderFields").val();
+							var orden = $("#orderType").val();
+							var orderCondition = campo +' '+ orden;							
+							if ( campo !== $("#orderby").find("option[id='selectFields']").val() && orden){					
+								var add = comprobarOrderby(orderCondition);
+								if( add ){
+								    var newOrderby ='<option id="orderby'+indexCondition+'" name="'+campo+' '+orden+'"  selected >'+ campo +' '+ orden +'</option>';
+									$('#orderby').append(newOrderby);
+									$('#orderby').selectpicker('refresh');
+									createQuery();
+								}
+								indexOrderby++;
+							} else { 							
+								
+								toastr.error(messaOrder,'');
+							 }
+						}
+					}
+				},
+				onContentReady: function () {
+					// bind to events
+					var jc = this;
+					getOntologyFields();
+					this.$content.find('form').on('submit', function (e) {
+						// if the user submits the form by pressing enter in the field.
+						e.preventDefault();
+						jc.$$formSubmit.trigger('click'); // reference the button and click it
+					});
+				}
+			}); 
+		}
+		
+		
+		function changeDstAtts(){
+			
+			var optgroup = $('#select-src-att :selected').parent().attr('label');
+			if(optgroup != "default"){
+				var srcAtt = $('#select-src-att').val();
+				var html = '';
+				relations.forEach(function(relation){
+					if(relation.srcAttribute == srcAtt){
+						html = html + '<optgroup label="'+relation.dstOntology+'"><option value="'+relation.dstAttribute+'">'+relation.dstAttribute+'</option></optgroup>';
+					}
+				});
+				html = html;
+				$('#select-dst-att').html(html);
+				$('#label-target').removeClass('hide');
+				$('#select-dst-att').removeClass('hide');
+				
+			}
+		}
+		
+		
+		function generateJoinSQL(){
+			
+			var optgroup = $('#select-src-att :selected').parent().attr('label');
+			if(optgroup != "default"){
+				$('#typeQuery').val('sql');
+				var srcOntology = $('#select-src-att :selected').parent().attr('label');
+				var dstOntology = $('#select-dst-att :selected').parent().attr('label');
+				var srcAtt = $('#select-src-att').val();
+				var dstAtt = $('#select-dst-att').val();
+				if(datasource.toLowerCase().indexOf('elastic') > -1){
+					srcOntology = srcOntology.toLowerCase();
+					dstOntology = dstOntology.toLowerCase();
+				}
+				var innerJoin='SELECT * FROM '+ dstOntology + ' as o1 INNER JOIN ' + srcOntology + ' as o2  ON o1.' + dstAtt + '=o2.' + srcAtt;
+				setMonacoValue(innerJoin);
+			}
+			
+		}
+
+		// CHECK CONDITIONS BEFORE INSERT THEM
+		function comprobarCondicion(queryCondicion){
+			showLog ? console.log('comprobarCondicion(): ' +  queryCondicion) : '';
+			var condiciones =  $('#where option');
+			var add = true;
+			
+			if( condiciones.length > 0 ){
+				for( var i=0; i < condiciones.length; i++){
+					showLog ? console.log(' condition '+  condiciones[i].getAttribute("id") + ': ' + condiciones[i].getAttribute("condition") + ' vs. queryCondition: ' + queryCondicion): '';
+					if( condiciones[i].getAttribute("condition") == queryCondicion ){
+						add = false;
+					}
+				}
+			}
+			return add;
+		}
+		
+		// CHECK GROUPBY CONDITIONS BEFORE INSERT THEM, TO-DO
+		function comprobarGroupby(queryGroupby){
+		
+			var groups = document.getElementById('groupBy_ul').getElementsByTagName("li");
+			var add = true;
+			
+			if( groups.length > 0){
+				for(var i=0; i <groups.length; i++){
+					showLog ? console.log('checkgroupBy: ' + groups[i].getAttribute("name") + ' vs. ' + queryGroupby) : '';
+					if(groups[i].getAttribute("name") == queryGroupby){					
+						add=false;
+					}
+				}
+			}
+			return add;
+		}
+		
+		//  CHECK ORDERBY CONDITIONS BEFORE INSERT THEM
+		function comprobarOrderby(queryOrderby){
+		
+			var orders = $('#orderby option');			
+			var add = true;			
+			if( orders.length > 0){				
+				for(var i=0; i < orders.length; i++){					
+					if( orders[i].getAttribute("name") == queryOrderby){
+						add = false;
+					}
+				}
+			} 
+			return add;
+		}
+		
+
+		
+		//DELETE CONDITION, GENERATES QUERY.
+		function deleteCondition(id){
+			$('#'+ id +'').remove();
+			createQuery();
+		}
+		
+		// CREATES QUERY DEPENDING ON DATABASE, QUERYTYPE AND EXIT FORMAT
+		function createQuery(){
+			
+			// ONTOLOGY CHECK
+			if($('#selector_dbs').val() == "CONFIGDB")
+			{
+				ontologia = $('#selector_tables').selectpicker('val');	
+				showLog ? console.log('createQuery() -> tabla seleccionada: ' + ontologia) : '';
+			}
+			else
+			{
+				ontologia = $('#selector_ontologias').selectpicker('val');	
+				showLog ? console.log('createQuery() -> ontologia seleccionada: ' + ontologia) : '';
+			}
+			
+			if ( ontologia === ''){ 			
+				mostrarDialogo([[#{herramientas_seleccione_ontologia}]]); 			
+			}
+			else {
+			
+				var comboTypeQuery	= document.getElementById('typeQuery');		
+				var opcion 			= comboTypeQuery.options[comboTypeQuery.selectedIndex].value;					
+				
+				// SQL-RELATIONALORACLE
+				if( opcion == "sql" || rtdb == "ORACLE" || rtdb == "ORACLE11" || rtdb == "MYSQL" ){ showLog ? console.log('createQuery()->createQuerySql'): ''; setMonacoValue(format(createQuerySql())); }
+				// NATIVE 
+				else if(opcion == "native"){ showLog ? console.log('createQuery()->createQueryNativeNo'): ''; setMonacoValue(createQueryNative()); }			
+			}
+		};
+		
+		// QUERY CREATION STRING SQL NO-RELATIONALORACLE AND RELATIONALORACLE WITH SQL
+		function createQuerySql(){
+			
+			// Inicialización de elementos y strings de la query.        
+			var todosCampos = false;
+			var query 		= "select ";
+			var queryCampos = "";
+			var ontologia 	= $('#input_from').val();;
+			var condiciones =  $('#where option:selected');			
+			var orderby 	= $('#orderby option:selected');		
+			var campos 		=  $('#select option:selected');
+			var condicion, queryGroupBy, queryOrderBy = "";
+			var limit		= $( "#limit" ).val() || 0;
+			var limitStr	= '';
+			var aliasTable;
+				
+			hayCondicion 	= false;
+			hayGroupBy	 	= false;
+			hayOrderBy 		= false;
+			hayLimit 		= limit > 0 ? true : false;
+			if (hayLimit && rtdb !== "ORACLE" && rtdb !== "ORACLE11") { 
+				//limitStr = ' limit ' + limit;
+			     limitStr = '';
+			 }
+			
+			// WHERE CONDITIONS
+			if( condiciones.length == 1){
+				hayCondicion = true;
+				condicion = condiciones.attr('condition');
+				condicion = obtainCondition(condicion);
+				if(rtdb !== "ORACLE" && rtdb !== "ORACLE11" && rtdb !== "TIMESCALE" && rtdb !== "POSTGRESQL"){
+					condicion = condicion.replace(/'/g,"\"");
+				}
+				condicion= "c." + condicion;
+			}
+			else if( condiciones.length > 0){
+				hayCondicion = true;
+				condiciones.each(function(index){		
+					showLog ? console.log('condición auxiliar en EACH-'+ index +' es: ' + $(this).attr('condition')) : '';
+					var condicionAux = obtainCondition($(this).attr('condition'));
+					if(rtdb !== "ORACLE" && rtdb !== "ORACLE11"){
+						condicionAux = condicionAux.replace(/'/g,"\"");
+					}		
+					if( index == 0){ condicion = "c." + condicionAux; } else {  condicion = condicion + " AND " + condicionAux; }			
+				});           
+			}
+			
+			if ( rtdb == "ORACLE" || rtdb == "ORACLE11"){
+				if(!hayCondicion){
+					hayCondicion = true;
+					condicion = "ROWNUM <= " + limit;
+				}
+				else{
+					condicion += " AND ROWNUM <= " + limit;
+				}
+				aliasTable = "";
+			}
+			else{
+				aliasTable = " as"
+			}
+
+			// ORDERBY 
+			if( orderby.length == 1){ 
+				hayOrderBy = true;
+				queryOrderBy = orderby[0].getAttribute("name");				
+			} else if( orderby.length > 1) {
+				hayOrderBy = true;
+				for( i=0; i < orderby.length; i++){
+					(i < orderby.length - 1) ?  queryOrderBy += orderby[i].getAttribute("name") + ',' : queryOrderBy += orderby[i].getAttribute("name");
+				}
+			}
+			
+			// FIELDS (SELECT)		
+			if( campos.length == 1 ){ 
+				queryCampos = campos[0].value;	
+				
+			}
+			else if( campos.length == 0){ 
+				todosCampos = true; 
+			}
+			else{			
+				for( i=0; i < campos.length; i++){
+					queryCampos = queryCampos + campos[i].value;					
+					if( i <campos.length-1){ queryCampos = queryCampos + ", "; } // último campo.					
+				}
+			}
+
+			// SELECT ALL.
+			if( todosCampos ){ queryCampos = "*"; }
+			
+			
+			// CONSULT ASSEMBLER
+	        if( hayCondicion && hayGroupBy && hayOrderBy )		  { query = query + queryCampos + " from " + ontologia  + aliasTable + " c where " + condicion + " group by " + queryGroupBy + " order by "+ queryOrderBy + limitStr;}
+			else if( !hayCondicion && !hayGroupBy && !hayOrderBy) { query = query + queryCampos + " from " + ontologia  + aliasTable + " c" + limitStr; }
+			else if( hayCondicion  && !hayGroupBy && !hayOrderBy) { query = query + queryCampos + " from " + ontologia  + aliasTable + " c where " + condicion + limitStr; }
+			else if( !hayCondicion && hayGroupBy  && !hayOrderBy) { query = query + queryCampos + " from " + ontologia  + aliasTable + " c group by " + queryGroupBy + limitStr; }
+			else if( hayCondicion  && !hayGroupBy && hayOrderBy ) { query = query + queryCampos + " from " + ontologia  + aliasTable + " c where " + condicion + " order by "+ queryOrderBy + limitStr;}
+			else if( !hayCondicion && hayGroupBy  && hayOrderBy ) { query = query + queryCampos + " from " + ontologia  + aliasTable + " c group by " + queryGroupBy + " order by "+ queryOrderBy + limitStr; }
+			else if( hayCondicion  && hayGroupBy  && !hayOrderBy) { query = query + queryCampos + " from " + ontologia  + aliasTable + " c where " + condicion + " group by " + queryGroupBy + limitStr; }
+			else if( !hayCondicion && !hayGroupBy && hayOrderBy ) { query = query + queryCampos + " from " + ontologia  + aliasTable + " c order by " + queryOrderBy + limitStr;}
+	        
+		
+			return query;
+		}
+		
+		
+		// OBTAIN WHERE CONDITION 
+		function obtainCondition(condicion){
+			if( condicion.includes("&eq"))		{ condicion = condicion.replace("&eq;", "=");  }
+			else if( condicion.includes("&lt"))	{ condicion = condicion.replace("&lt;", "<");  }
+			else if( condicion.includes("&lte")){ condicion = condicion.replace("&lte;", "<=");}
+			else if( condicion.includes("&gt"))	{ condicion = condicion.replace("&gt;", ">");  }
+			else if( condicion.includes("&gte")){ condicion = condicion.replace("&gte;", ">=");}
+			else if( condicion.includes("&ne"))	{ condicion = condicion.replace("&ne;", "!="); }			
+			return condicion;
+		}
+		
+		
+		// CREATE NATIVE QUERY , TO-DO
+
+		function createQueryNative(){
+					       
+			var todosCampos = false;       
+			var queryCampos = "";
+			var queryGroup	= "$group:";
+			var ontologia 	= $('#input_from').val();
+			var condiciones = $('#where option:selected');
+			
+			var orderby 	= $('#orderby option:selected');
+			var campos 		= $('#select option:selected');
+			var condicion	= "";
+			var limit		= $( "#limit" ).val() || 0;
+			var limitStr	= '';
+
+			hayCondicion 	= false;
+			hayGroupBy	 	= false;
+			hayOrderBy 		= false;
+			hayLimit 		= limit > 0 ? true : false;
+			if (hayLimit) { limitStr = '.limit(' + limit + ')'; }
+			
+			
+			
+			showLog ? console.log('createQueryNative() -> inicialización de campos') : '';
+			
+			
+			// SELECT  
+			if(campos.length == 1){
+				queryCampos= "'" + campos[0].value + "'" + ": 1";				 
+			}
+			else if(campos.length == 0){
+				todosCampos = true; 
+			}
+			else{
+				for( i=0; i < campos.length; i++){
+					queryCampos = queryCampos + "'" + campos[i].value +"'" +": 1";
+					if( i < campos.length-1){ queryCampos = queryCampos + ", "; }							
+				}
+			}
+			
+			// WHERE
+			if(condiciones.length==1){
+            hayCondicion=true;
+            condicion=condiciones.attr('condition');
+            condicion=obtainCondition(condicion);
+            var splitCondicion=condicion.split(" ");
+            var operador = splitCondicion[1];
+            var comando="";
+            for(var a=2; a<=splitCondicion.length ; a++){
+                if(splitCondicion[a] != "undefined" && splitCondicion[a]!=null){
+                    comando +=splitCondicion[a];
+                    if(a<splitCondicion.length){
+                        comando += " ";
+                    }
+                }
+            }
+            var comando = comando.split("\n").join("");
+            if(operador=="="){
+              operador="$eq";
+            }else if(operador=="<"){
+              operador="$lt";
+            }else if(operador=="<="){
+              operador="$lte";
+            }else if(operador==">"){
+              operador="$gt";
+            }else if(operador==">="){
+              operador="$gte";
+            }else if(operador=="!="){
+              operador="$ne";
+            }
+
+            condicion="'" + splitCondicion[0] + "':{" + operador + ":" + comando + "}";
+
+          }else if(condiciones.length>0){
+            hayCondicion=true;
+            for(var i=0;i<condiciones.length;i++){
+              var condicionSQL=condiciones[i].innerText;
+              var splitCondicion = condicionSQL.split(" ");
+              var operador = splitCondicion[1];
+
+              var comando="";
+              for(var a=2; a<=splitCondicion.length ; a++){
+                if(splitCondicion[a] != "undefined" && splitCondicion[a]!=null && i<splitCondicion.length){
+                    comando +=splitCondicion[a];
+                    if(a<splitCondicion.length){
+                        comando += " ";
+                    }
+                }
+              }
+              if(operador=="="){
+                operador="$eq";
+              }else if(operador=="<"){
+                operador="$lt";
+              }else if(operador=="<="){
+                operador="$lte";
+              }else if(operador==">"){
+                operador="$gt";
+              }else if(operador==">="){
+                operador="$gte";
+              }else if(operador=="!="){
+                operador="$ne";
+              }
+              if(i==0){
+                condicion="'" + splitCondicion[0] + "':{" + operador + ":" + comando + "}";
+              }else if(i<condiciones.length){
+                condicion = condicion +",'" + splitCondicion[0] + "':{" + operador + ":" + comando + "}";
+              }
+            }
+          }
+
+			// ORDERBY
+			if( orderby.length > 0){
+				hayOrderBy = true;
+				var queryOrder = "";
+				for( var i = 0; i < orderby.length;i++){
+					order = orderby[i].getAttribute("name");
+					var orderSplit = order.split(" ");
+					var orden = -1;
+					if( orderSplit[1] == "ASC"){ orden = 1; }
+					queryOrder = queryOrder + "'" + orderSplit[0] + "'" + ":" + orden;
+				}
+			}
+			
+			
+			if( !hayGroupBy ){
+				if(		hayCondicion  && todosCampos  && !hayOrderBy){ query = "db."+ ontologia + ".find({" + condicion + "})"; }
+				else if(hayCondicion  && todosCampos  && hayOrderBy) { query = "db."+ ontologia + ".find({" + condicion + "}).sort({" + queryOrder + "})"; }
+				else if(!hayCondicion && todosCampos  && !hayOrderBy){ query = "db."+ ontologia + ".find()"; }
+				else if(!hayCondicion && !todosCampos && !hayOrderBy){ query = "db."+ ontologia + ".find({},{"+queryCampos+"})";}
+				else if(hayCondicion  && !todosCampos && !hayOrderBy){ query = "db."+ ontologia + ".find({" + condicion + "},{" + queryCampos + "})"; }
+				else if(!hayCondicion && todosCampos  && hayOrderBy) { query = "db."+ ontologia + ".find().sort({" + queryOrder + "})";}
+				else if(!hayCondicion && !todosCampos && hayOrderBy) { query = "db."+ ontologia + ".find({},{"+queryCampos+"}).sort({" + queryOrder + "})";}
+				else if(hayCondicion  && !todosCampos && hayOrderBy) { query = "db."+ ontologia + ".find({" + condicion + "},{" + queryCampos + "}).sort({" + queryOrder + "})"; } 
+			}
+			else{
+				if( 	hayCondicion  && !hayOrderBy){ query = "db."+ ontologia + ".aggregate([{$match:{" + condicion + "}},{" + queryGroup + "}])"; }
+				else if(!hayCondicion && !hayOrderBy){ query = "db."+ ontologia + ".aggregate([{" + queryGroup + "}])";}
+				else if(!hayCondicion && hayOrderBy) { query = "db."+ ontologia + ".aggregate([{" + queryGroup + "},{$sort:{" + queryOrder + "}}])"; }
+				else if(hayCondicion  && hayOrderBy) { query = "db."+ ontologia + ".aggregate([{$match:{" + condicion + "}},{" + queryGroup + "},{$sort:{" + queryOrder + "}}])"; } 
+			}
+			
+			query = query +limitStr; 
+			
+			return query;
+		}
+		
+		
+		
+		// CREATE EDITOR FOR JSON SCHEMA 
+		var createEditor = function(){
+			
+			showLog ? console.log('|--->   createEditor()') : '';
+			var container = document.getElementById('jsoneditor');	
+			var options = {
+				mode: 'text',
+				theme: 'bootstrap3',
+				required_by_default: true,
+				modes: ['text', 'tree', 'view'], // allowed modes
+				error: function (err) {
+					
+					toastr.error(err.toString(),'');
+					return false;
+				},
+				onChange: function(){
+					
+					showLog ? console.log('se modifica el editor en modo:' + editor.mode + ' contenido: ' + editor.getText()) : '';
+				}
+			};
+			
+			editor = new jsoneditor.JSONEditor(container, options, "");		
+			
+		}
+		
+		
+		
+		//]]>     
+			  
+	</script> 
+	
+	
+	<!-- JSON EDITOR -->	
+	<!-- <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/jsoneditordarktheme.css}"/> -->
+	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>	
+	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
+	<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
+	<script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>	
+
+	<!-- MONACO EDITOR -->
+	<script>	 
+	    var require = { paths: { 'vs': '/controlpanel/static/vendor/vs' } };	 
+	</script>
+	<script th:src="@{/static/vendor/vs/loader.js}"></script> 
+	<script th:src="@{/static/vendor/vs/editor/editor.main.nls.js}"></script> 
+	<script th:src="@{/static/vendor/vs/editor/editor.main.js}"></script>
+
+	<!-- MAIN INIT -->
+	<script  th:inline="javascript">
+	/*<![CDATA[*/		
+	var bdtrType = 'rtdb'; // by default 
+	var currentLanguage = [[${lang}]];	
+	var dialogContent = [[#{migration.export.progress}]];
+	var fillfield = [[#{querytool.fill.field.condition}]];
+	var messaOrder = [[#{querytool.select.orderby}]];
+	var migrate = [[#{migration.download.export.nofinished}]];
+	var downloaderror = [[#{migration.export.donwload.error}]];
+	var migrationerror = [[#{migration.export.error}]];
+	var userCreateJson = { 
+		"validation_dates" : [[#{user.valid.dateDeleted}]],
+		"close" : [[#{gen.closeBtn}]],		
+		"language" : currentLanguage		
+	};
+	var ai = {
+		sqltitle: [[#{ai.sql.title}]],
+		sqlinserttext: [[#{ai.sql.insertquery.text}]]
+	}
+						
+	// LOAD DATA TO USE IN BDTRCONTROLLER
+	// BDTR CONTROLLER LOAD AND INIT ITSELF
+	
+	
+	<!-- SCRIPT LOAD -->
+	$(document).ready(function(){
+		document.getElementById("downloadButtonsBis").disabled = true;
+		// HANDLE UTILITIES 		
+
+		//	SPINNER OFFSET INIT
+		//spinnerEach = $( "#offset" ).spinner({'min': 0,'max':999});
+		spinnerEach = $( "#offset" ).TouchSpin({
+			min: 0,
+			max: 999,
+			stepinterval: 1,
+			maxboostedstep: 999,
+			verticalbuttons: true
+		});	
+		
+		($( "#offset" ).val() == "") ? $( "#offset" ).val(0) : null;		
+		spinnerEach.bind("keydown", function (event) { event.preventDefault(); });
+		
+		// SPINNER LIMIT INIT		
+		spinnerLimit = $("#limit").TouchSpin({
+			min: 0,
+			max: 2000,
+			stepinterval: 1,
+			maxboostedstep: 999,
+			verticalbuttons: true
+		});	
+		
+		($( "#limit" ).val() == "") ? $( "#limit" ).val(1) : null;		
+		//spinnerLimit.bind("keydown", function (event) { event.preventDefault(); });
+
+		
+		// INIT QUERY STRING		
+		var combo = document.getElementById('selector_ontologias');
+		if(combo.length > 0){	       
+			setMonacoValue("select * from "+ combo.value +" as c limit 3");        	
+			showLog ? console.log('init combo ontologias: ' + combo.length) : '';
+			cambioConsulta();
+		}
+			
+		
+		showLog ? console.log(' INICIANDO BDTR...') : '';			
+		// INIT SELECT-PICKERS ONTOLOGIA
+		$('#selector_ontologias').on('changed.bs.select', function (e, clickedIndex, newValue, oldValue) {
+			var selected = $(e.currentTarget).val();
+			var grupo = $('option:selected',this).attr('data-type');
+			var ontologiaID = $('option:selected',this).attr('id');
+			showLog ? console.log('ontologia seleccionada: ' + selected) : '';
+			showLog ? console.log('Cargando ontologia: ' + selected + ' del grupo: ' + grupo + 'con ID: '+ ontologiaID) : '';
+			
+			if ( grupo === 'general') { 
+				seleccionarOntologia(selected);
+				//obtenerCampos(ontologiaID)
+			}
+		});	
+		
+		showLog ? console.log('BDTRTYPE: ' + bdtrType) : '';
+		if("[[${QUERY}]]" != "null"){                 
+            $('#querySql').innerHTML = "[[${QUERY}]]";
+        }
+		
+		$('.btn-table-toggle').on('click',function(){
+			
+			if (editor){ 
+				if ($('.table-viewer').is(':visible')){					
+					$('#jsoneditor').fadeIn();
+					$('.table-viewer').fadeOut();					
+					$('#toggleConsoleView').attr('class', '').addClass("  btn btn-sm btn-outline btn-circle  btn-table-toggle btn-primary ");
+					$('#toggleTableView').attr('class', '').addClass(" btn  btn-circle blue btn-outline");
+					
+				}
+				else{
+				$('#jsoneditor').fadeOut();
+				$('.table-viewer').createTable(JSON.parse(dataJSON), {});
+				$('.table-viewer').fadeIn();
+				$('#toggleTableView').attr('class', '').addClass("  btn btn-sm btn-outline btn-circle  btn-table-toggle btn-primary ");
+					$('#toggleConsoleView').attr('class', '').addClass(" btn  btn-circle blue btn-outline");
+				
+				
+				}		
+			}
+			else { return; }
+			
+		
+		});
+		//Refresh page and reset localStorage.clickount
+		$(window).on("unload",function(){
+			  var clicks = localStorage.getItem('clickcount');
+			  if(clicks != null){
+				  for(var j=1;j<=3;j++){
+					  localStorage.removeItem("Option_"+j);
+			  	  }
+				  localStorage.removeItem('clickcount');
+				  localStorage.removeItem('selectedOptionHistorical');
+			  } 
+			});	
+
+	});	
+	
+	 function queryOnTop(){
+	 	var limit = 348;
+	 	if($('.query-wizard-div').css('display')=='none'){
+	 		limit = 154;
+	 	}	 
+	    if ($(window).scrollTop() > limit && $(window).width()>992) {
+	    	 if (!$('#div-query-form').hasClass("top-query")) {
+	    		$('#div-query-form').addClass('top-query');
+		    	var topDivQueryForm = $('#div-query-form').height();
+		    	topDivQueryForm+=72;
+		    	$('#result-panel').css("margin-top", topDivQueryForm+'px');
+		    	$('.page-footer').css("margin-top", topDivQueryForm+'px');		    	
+		    	//$('#div-query-form .panelHeader')
+		    	
+		    	//copy ontology or table
+		    	if($('#ont_select').hasClass('hide')){
+		    		//$('#db_select .form-group').clone(true).appendTo($('#div-ontology-table'));		    		
+		    		$('#div-ontology-table').append($('#db_select .form-group'));
+		    	}else{
+		    	$('#div-ontology-table').append($('#ont_select .form-group'));
+		    		//$('#ont_select .form-group').clone(true).appendTo($('#div-ontology-table'));
+		    	}
+		    	
+		    	
+	    	}
+	    } else {
+	      $('#div-query-form').removeClass("top-query");
+	      $('#result-panel').css("margin-top", "20");
+	      $('.page-footer').css("margin-top", "-24");
+	     // $('#div-ontology-table .form-group').remove();
+	      
+	      if($('#ont_select').hasClass('hide')){
+	    		//$('#db_select .form-group').clone(true).appendTo($('#div-ontology-table'));		    		
+    		$('#db_select').append($('#div-ontology-table .form-group'));
+    	  }else{
+	   		$('#ont_select').append($('#div-ontology-table .form-group'));
+	   		//$('#ont_select .form-group').clone(true).appendTo($('#div-ontology-table'));
+	   	  }
+	      	
+	    }
+	  }
+	
+	
+	var format = window.sqlFormatter.format;
+	const sqlfmt = (sql) => {
+  		return format(sql);
+       };
+	
+	$(window).on("load",function(){
+		
+		var htmlelement = document.getElementById('querySql');
+		codeEditor = monaco.editor.create(htmlelement, {
+		       language: 'sql', 
+		       scrollBeyondLastLine: false,	 
+		       theme: "vs-dark",	 
+		       automaticLayout: true	 
+		});
+		monaco.languages.registerDocumentFormattingEditProvider("sql", {
+	      async provideDocumentFormattingEdits(model) {
+	        var formatted = await sqlfmt(model.getValue());
+	        return [
+	          {
+	            range: model.getFullModelRange(),
+	            text: formatted,
+	          },
+	        ];
+	      }
+	    });
+		selectDB();
+		
+		  $(window).scroll(function() {
+      queryOnTop();
+  });
+  
+ 
+		
+		
+	});
+	/*]]>*/
+	</script>		
+</body>
+</html>

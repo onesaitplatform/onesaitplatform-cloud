@@ -1,0 +1,98 @@
+#Integration Resources
+onesaitplatform:
+  urls:
+    domain:
+      base: http://localhost:18000/
+    digitalTwinBroker:
+      base: http://localhost:19300/digitaltwinbroker
+    iotbroker:
+      base: http://localhost:19000/iot-broker
+      advice: http://localhost:19000/iot-broker/advice
+    scriptingEngine:
+      base:
+      advice:
+    controlpanel:
+      base: http://localhost:18000/controlpanel
+      maxSessionsPerUser: 10
+    flowEngine:
+      base: http://localhost:20100/flowengine/admin
+      advice: http://localhost:5050/
+      proxyurl: http://localhost:5050/
+    routerStandAlone:
+      base: http://localhost:20000/router
+      advice: http://localhost:20000/router/router/advice/
+      management: http://localhost:20000/router/management/
+      router: http://localhost:20000/router/router/
+      hawtio: http://localhost:20000/hawtio/index.html
+      swaggerUI: http://localhost:20000/router/swagger-ui.html
+    apiManager:
+      base: http://localhost:19100/api-manager/
+      api: http://localhost:19100/api-manager/server/api/
+      swaggerUI: http://localhost:19100/api-manager/swagger-ui.html?url=
+      swaggerUIManagement: http://localhost:19100/api-manager/services/management/api-docs?url=/api-manager/services/management/swagger.json
+      swaggerJson: http://localhost:19100/api-manager/services/management/swagger/
+    notebook:
+      url: http://localhost:8080/
+    gravitee:
+      ui: http://localhost:8080/#!
+      management: http://localhost:8083/management
+      gateway: http://localhost:8082
+    monitoringUI:
+      base: http://localhost:18100/monitoring
+      embedded: http://localhost:18100/monitoring/indexNoHeader.html
+    rulesEngine:
+      advice: http://localhost:20200/rules-engine/advice
+      base: http://localhost:20200/rules-engine
+    bpmEngine:
+      base: http://localhost:8085/bpm-engine
+      deployment: http://localhost:8085/bpm-engine/engine-rest/deployment/create
+    dashboardEngine:
+      edit: http://localhost:8087/controlpanel/dashboards/editfulliframe/
+      view: http://localhost:8087/controlpanel/dashboards/viewiframe/
+      onlyview: http://localhost:8087/controlpanel/dashboards/view/
+    reportEngine:
+      base: http://localhost:18400/report-engine
+    gisViewer:
+      view: http://localhost:8087/controlpanel/viewers/view/
+    openData:
+      base: http://localhost:5000/opendata
+    dataCleanerUI:
+      base: http://localhost:3333/
+      embedded: http://localhost:3333/
+    logCentralizer:
+      base: http://localhost:8087/log-centralizer
+    keycloakManager:
+      base: http://localhost:15500/keycloak-manager
+      advice: http://localhost:15500/keycloak-manager/api/notification
+      admin: http://localhost:8080/auth/admin/
+    edge:
+      base: https://iothub02.onesaitplatform.com
+    minio:
+      base: http://localhost:9000
+      admin:
+         internal: https://minio-console.devonesaitplatform.com
+         external: https://minio-console.devonesaitplatform.com
+      browser:
+         internal: https://minio-browser.devonesaitplatform.com
+         external: https://minio-browser.devonesaitplatform.com
+      cookiedomain: devonesaitplatform.com
+    presto:
+      base: http://localhost:8080
+    prometheus:
+      base: https://localhost:8080/api/v1/query
+    serverless:
+      base: http://localhost:8086/serverless-manager
+    modeljsonld:
+      base: http://localhost:18000/controlpanel/datamodelsjsonld/
+    datalabeling:
+      base: http://localhost:8080/
+      embedded: http://localhost:8080/
+    nebula:
+      base: http://localhost:7001/explore?lang=EN_US
+    spark:
+      analyticsEngineLauncherManagerBase: http://localhost:23000/sparklauncher/
+      masterUIBase: https://midominio.com/spark/master
+      masterBase: spark://localhost:7077
+    tracingUI:
+      base: http://localhost:16686/
+     

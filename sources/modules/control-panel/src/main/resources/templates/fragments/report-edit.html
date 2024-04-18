@@ -1,0 +1,127 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<div th:fragment="reportEditFragment" id="reportEditFragment"> <!-- (report) -->
+	
+	<!-- th:style="${not #lists.isEmpty(report.parameters)} ? style='visibility: hidden; ' : style='visibility: visible; '}"  -->
+	<div id="report-settings" > <!-- style='visibility: hidden;' -->
+		<!-- Modal UPDATE-->
+				<div id="updateFile" class="modal fade" role="dialog">
+				  <div class="modal-dialog modal-sm">
+				
+				    <!-- Modal content-->
+				    <div class="modal-content">
+				      <div class="modal-header">
+				        <button type="button" class="close" data-dismiss="modal"></button>
+				        <h4 class="modal-title" th:text="#{binaryfiles.update}">Update File</h4>
+				      </div>		
+				      <div class="modal-body">
+				      <form></form>
+				      <div class="form-group">
+				      	<form id="form_update_resource" method="post" th:action="@{/reports/}+ '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data">
+				      	  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+				      	  <input type="hidden" name="_method" value="put" />
+				      	  <input type="hidden" name="fileId" id="updateFileId"/>
+					      <input class="form-control no-remove" type="text" name="metadata" id="metadataUpdate" th:placeholder="#{binaryfiles.metadata}"/>
+					      <br/>
+					      <button id="upload" type="button" class="btn btn-outline btn-circle blue pull-right" onclick="$('#buttonLoadUpdateFile').click();" value="Select"> <i class="fa fa-file-archive-o" style="padding-right:4px;"></i><span th:text="#{binaryfiles.select}"></span></button>
+					      <br/>
+					      <input class="form-group button_text hide" id="buttonLoadUpdateFile" type="file" accept="*" name="file" onchange="$('#submitUpdate').removeClass('disabled')"/>
+					  
+					  	</form>
+					  </div>
+				      </div>									      
+				      <div class="modal-footer">
+				        <button formnovalidate="formnovalidate" id="submitUpdate" type="button" class="btn btn-outline btn-circle btn-primary disabled" data-dismiss="modal">Submit</button>
+				      </div>
+				    </div>
+				
+				  </div>
+				</div>	
+		<div class="row main">
+			<div class="col-md-12">
+				<div class="tabbable-line">									
+					<ul class="nav nav-tabs pull-left">
+						
+						<li id="tab-resources" class="active">
+							<a href="#tab_1" data-toggle="tab" aria-expanded="true" > 
+								<span class="caption-subject">Resources</span>
+							</a>
+						</li>
+						<li  th:if="${dataSource != null OR report.dataSourceUrl != null}" id="tab-datasource">
+							<a href="#tab_2" data-toggle="tab" aria-expanded="true" > 
+								<span class="caption-subject">Datasource</span>
+							</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<div class="tab-content">
+				<div class="tab-pane active" id="tab_1">
+					<div class="col-md-12 col-sm-6 col-xs-12">
+						<div class="form-group">
+							<div id="resources-results" class="margin-bottom-20">
+								<table class="table" id="resources-results" data-loaded="false">
+									<thead>
+										<tr class="cabecera-tabla" role="row" >
+											<th class="titulo-columnas" th:text="#{project.resource.identification}">Identification</th>
+											<th class="titulo-columnas text-center" th:text="#{gen.options}">Options</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr th:each="resource : ${report.resources}" >
+											<td>
+												<input type="text" name="identifications[]" readonly="readonly"  class="form-control"  th:value="${resource.fileName}"/>
+											</td>
+																			
+											<td width="150px" class="no-wrap text-center">	
+												<!-- UPDATE -->
+												<span th:attr="data-id=${resource.id}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips btn-download-resource" data-container="body" data-placement="bottom" th:title="#{gen.download}" th:data-original-title="#{gen.download}" ><i class="icon-download"></i></span>
+												<!-- UPDATE -->
+												<span  th:attr="data-id=${resource.id}, data-report=*{id}"  class="btn btn-xs btn-no-border icon-on-table color-blue tooltips btn-update-resource" data-container="body" data-placement="bottom" th:title="#{binaryfiles.update}" th:data-original-title="#{binaryfiles.update}" ><i class="icon-edit"></i></span>
+												<!-- DELETE -->
+												<span th:attr="data-id=${resource.id}, data-report=*{id}" class="btn btn-xs btn-no-border icon-on-table color-red tooltips btn-delete-resource" data-container="body" data-placement="bottom" th:title="#{binaryfiles.delete}" th:data-original-title="#{binaryfiles.delete}" ><i class="icon-delete"></i><span> <small></small></span></span>
+											</td>			
+										</tr>
+									</tbody>														
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div th:if="${dataSource != null OR report.dataSourceUrl != null}" class="tab-pane" id="tab_2">
+					<div class="col-md-12 col-sm-6 col-xs-12">
+						<div class="panel">
+							<div class="form-group">
+								<div class="col-md-4 col-sm-6 col-xs-12">
+									<input id="checkboxDataSource" class="no-remove"  name="checkboxDataSource" type="checkbox" th:checked="*{dataSourceUrl}"   />
+									<label class="control-label margin-left-5" th:text="#{reports.datasource.overwrite}">Overwrite</label>	
+									<i class="la la-info-circle popovers"  data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{reports.datasource.overwrite.explain},data-title=#{reports.datasource.overwrite}"></i>
+									<span></span>
+								</div>	
+								<textarea th:if="*{dataSourceUrl}" id="report-datasource" type="text" name="report-datasource" class="textareaBlack" th:text="${report.dataSourceUrl}"></textarea>
+								<textarea th:if="!*{dataSourceUrl}" id="report-datasource" type="text" name="report-datasource" class="textareaBlack" th:text="${dataSource}"></textarea>
+								<input type="hidden" th:field="*{dataSourceUrl}" id="data-source-url"/>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		
+	</div>
+</div>

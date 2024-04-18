@@ -1,0 +1,453 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:dt="http://www.thymeleaf.org/dandelion/datatables" th:with="lang=${#locale.language}" th:lang="${lang}">
+
+	<head>
+		<meta name="_csrf" th:content="${_csrf.token}"/>
+		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"/>
+	    <meta name="description" content="Devices simulation list"/>
+		<meta name="keywords" content=" smart,cities,platform,Indra"/>
+		<meta name="author" content="Indra Sistemas, S.A."/>
+		
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+		
+		<!-- PLUGINS STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
+	</head>	
+	
+	<!-- page-sidebar-closed to start page with collapsed menu -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+	
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+		
+		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"> </div>		
+			
+		<!-- BEGIN SIDEBAR -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+		
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+			
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+				<!-- SEARCH FORM -->
+				<div id="searchFilter"  class="row" >
+					<form id="form_project" class="" role="form" method="get">
+						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+						<div class="col-md-3 col-sm-4 col-xs-12">														
+							<div class="input-icon">
+								<i class="icon-search font-grey-mint"></i>									 														
+								<input id="simulator-name" th:placeholder="#{gen.name}"  name="name" class="form-control" type="text" maxlength="50" value=""/>
+							</div>
+						</div>
+						<div class="col-md-2 col-sm-4 col-xs-12 pull-right">
+							<div class="pull-right">
+								<button type="button" id="reset_simulator" name="reset_simulator" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}">Reset</button>
+								<button type="button" id="search_simulator" name="search_simulator" class="btn btn-primary btn-primary-search" th:text="#{gen.search}">Search</button>
+							</div>	
+						</div>									
+					</form>
+				</div>
+				<!-- BEGIN PAGE HEADER-->
+				
+				<!-- BEGIN PAGE BAR AND BREADCRUM -->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/devicesimulation/list}"> <span th:text="#{simulation.breadcrumb.prev}">scheduledsearch</span></a></li>	
+					</ul>						
+				</div>
+				<!-- END PAGE BAR -->
+				
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{simulation.template.show}">scheduledsearch</span></h1>
+				<!-- END PAGE TITLE-->			
+				
+				<!-- MAIN ROW -->
+				<div class="row">
+						<div class="portlet light ">
+							<div class="portlet-title">
+								<div class="caption">
+									
+									<span class="caption-subject " th:text="#{simulation.template.list}"> scheduledsearch</span>
+									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
+								</div>									
+								<div class="caption" style="padding: 22px 8px 8px 10px">
+									<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
+								</div>
+								<div id="search-on-title" class="hide input-icon search-icon">
+									<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
+								</div>
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""> </a>
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>
+								</div>
+															
+								<div class="pull-right btn-group btn-title-group" id="divcreate" >
+									<button  type="button" class="btn btn-primary button-plus-create"   onclick="location.href='../devicesimulation/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>		
+								</div>
+							</div>
+							<div class="portlet-body" style="display: block; height: auto;">
+								
+								<div class="row main" style="margin-top: 0px;">
+									<div class="col-md-12 alert-zone" style="padding-top: 0px; padding-bottom: 0px">
+										<!-- ALERT ZONE -->																			
+									</div>
+									
+									<!--  LIST -->
+									<div class="col-md-12">											
+										<div id="contenedor-tabla-outside" class="contiene hidden">																						
+											<div>
+												<!-- DATATABLE DANDELION CONF. -->												
+												<table id="simulations" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers" dt:url="@{/devicesimulation/data}"
+													  > <!-- dt:dom="l0frtip" -->
+													<thead>
+														<tr class="cabecera-tabla">
+															<th dt:property="name" class="titulo-columnas text-left" th:text="#{gen.name}">Name</th>
+															<th dt:property="device" class="titulo-columnas text-left" th:text="#{simulation.client}">Device</th>
+															<th dt:property="ontology"  class="titulo-columnas text-left" th:text="#{simulation.ontology}">Ontology</th>
+															<th dt:property="active"   class="titulo-columnas text-left" th:text="#{simulation.active}">active</th>
+															<th dt:sortable="false"   class="titulo-columnas text-center" style="width:85px;"><span th:text="#{gen.options}">Options</span></th>
+														</tr>
+													</thead>
+													<tbody th:remove="all-but-first">
+													<tr th:each="simulator : ${simulators}" pages:paginate="10">
+														<td class="text-left " th:text="${simulator.name}"></td>
+														<td class="text-left " th:text="${simulator.device}"></td>
+														<td class="text-left " th:text="${simulator.ontology}"></td>
+														<td class="text-left" th:if="${simulator.active}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span th:text="' '+#{gen.active}" style="color: #2E6B33;"></span></td>
+														<td class="text-left" th:if="${!simulator.active}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.inactive}" style="color: #A73535;"></span></td>
+														<td class="text-left "  style="width:107px;">		
+														 <div class="grupo-iconos text-center">
+															<span th:if="${!simulator.active}"   class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom"  th:data-original-title="#{domain.start}" th:attr="onclick='javascript:startStopSimulation(\''+${simulator.id}+ '\',event,this);'"><i class="icon-play"></i></span>
+															<span th:if="${simulator.active}"   class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom"   th:data-original-title="#{gen.stop}" th:attr="onclick='javascript:startStopSimulation(\''+${simulator.id}+ '\',event,this);'"><i class="icon-stop"></i></span>
+															<a th:if="${!simulator.active}"  th:href="'/controlpanel/devicesimulation/update/'+${simulator.id}"><span   class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.edit}" ><i class="icon-edit"></i></span></a>
+															<span th:if="${!simulator.active}"  th:attr="onclick='javascript:deleteSimulation(\''+${simulator.id}+ '\');'" class="btn btn-xs btn-no-border color-red icon-on-table tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.deleteBtn}" ><i class="icon-delete"></i></span>																											
+														</div> 
+														</td>
+													</tr>
+													</tbody>
+												</table><!-- // DATATABLE DANDELION CONF. -->
+												
+												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-right-10 hide">
+													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
+													<div id="column_toggler" class="dropdown-menu hold-on-click pull-right">
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
+															<label th:text="#{gen.name}"> Name </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
+															<label th:text="#{simulation.client}"> Device </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
+															<label th:text="#{simulation.ontology}"> Ontology </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<label th:text="#{simulation.active}"> active </label>
+														</span>
+																
+													</div>
+												</div>											
+											</div>
+										</div>											
+									</div>
+								</div>
+							</div>
+						</div><!-- END PORTLET BASIC LIGHT -->							
+					 						
+				</div><!-- END MAIN ROW -->					 								
+			</div><!-- END CONTENT BODY -->
+		</div><!-- END CONTENT page-content-wrapper -->		
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+	
+	<!-- FOOTER-INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
+	
+	<!-- CORE CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
+	
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
+	
+	
+	<script th:inline="javascript">	
+	
+	// TEMPLATE SEARCH FORM.
+	var sname = [[${param.name}]] || '';
+	var stype = [[${param.type}]] || '';
+	
+	sname ? $('#name').val(sname) : sname = '';
+	stype ? $('#type').val(stype) : stype = '';
+	console.log('SEARCHING ... [ Name: ' + sname + ' Type: ' + stype + ']');
+	if (( sname != '') || (stype != '')) { $('#search-toggle').trigger('click'); }
+	
+	// DATATABLES LANGUAJE FROM PROPERTIES.
+	datatable_lang = [[#{datatables_lang}]];	
+	var languageJson = JSON.parse(datatable_lang);
+	if ( languageJson ){ $.extend( true, $.fn.dataTable.defaults, { language: languageJson }); }
+
+	</script>
+	
+	<script type="text/javascript"  th:inline="javascript">	
+	var optionName = 'simulations';
+	var constants ={
+			deleteContent: [[#{microservice.delete.confirm}]],
+			go: [[#{microservice.link.go}]],
+			stop: [[#{gen.stop}]],
+			start: [[#{domain.start}]],
+			genDelete: [[#{gen.deleteBtn}]],
+			genUpdate:  [[#{gen.edit}]],
+			genView:  [[#{gen.view}]],
+			active: [[#{gen.active}]],
+			inactive: [[#{gen.inactive}]]
+		};
+	//<![CDATA[
+	function navigateUrl(url){  window.location.href = url;	}
+	
+	function startStopSimulation(id,event,obj) {		
+		var data = {'id': id};
+		var cell = $(obj);
+		var csrfToken = $("meta[name='_csrf']").attr("content");
+		var csrfHeader = $("meta[name='_csrf_header']").attr("content"); 
+		var headersObj = {};
+		headersObj[csrfHeader] = csrfToken;
+		$.ajax({
+       	 	url : '/controlpanel/devicesimulation/startstop?id='+id,  
+       	 	headers: headersObj,
+       	 	contentType:"application/json; charset=utf-8",
+       	 	dataType:"json",
+            type : 'POST'
+        }).done(function(data) {
+        	reloadSimulationsTable(id,cell);
+        }).fail(function(error) {
+        	
+        }).always(function(){
+        	reloadSimulationsTable(id,cell);
+        });
+	}
+
+	function reloadSimulationsTable(id,cell) {		
+		var csrfToken = $("meta[name='_csrf']").attr("content");
+		var csrfHeader = $("meta[name='_csrf_header']").attr("content"); 
+		var headersObj = {};
+		headersObj[csrfHeader] = csrfToken;		
+		$.ajax({
+       	 	url : '/controlpanel/devicesimulation/data',  
+       	 	headers: headersObj,
+       	 	contentType:"application/json; charset=utf-8",
+       	 	dataType:"json",
+            type : 'GET'
+        }).done(function(data) {
+        	var tr = cell.parent().parent().parent();
+        	var trContent = createRow(data,id);
+        	if(trContent != null){
+        		tr.empty();			
+				tr.append(trContent);
+        	}
+        	$('.tooltip').tooltip('destroy');
+			$('.tooltips').tooltip();
+			var table = $("#simulations").DataTable();
+			
+			
+        });
+	}
+	
+	function createRow(data,id){
+		if(data!== null && typeof data!='undefined' && data.length>0){	
+			for(var i = 0; i<data.length;i++){
+				if(data[i].id===id){
+					return createTrContent(data[i]);
+				}
+			}
+		}
+		return null;
+	}
+	
+	
+	function createTrContent(data){		
+		var html = '<td class="text-left "   >'+data.name+'</td>';
+		html+='<td class="text-left "  >'+data.device+'</td>';
+		html+='<td class="text-left "  >'+data.ontology+'</td>';
+		if(data.active){
+			html+= '<td class="text-left"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span style="color: #2E6B33;"> '+constants.active+'</span></td>';
+		}else{
+			html+= '<td class="text-left"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span style="color: #A73535;"> '+constants.inactive+'</span></td>';
+		}		
+		html+='<td class="text-left " ><div class="grupo-iconos text-center">';
+		if(!data.active) {
+			html +='<span   class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom"  data-original-title="'+constants.start+'" onclick="startStopSimulation(\'' + data.id + '\',event,this)"><i class="icon-play"></i></span>';
+		}else
+			html +='<span   class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom"  data-original-title="'+constants.stop+'"  onclick="startStopSimulation(\'' + data.id + '\',event,this)"><i class="icon-stop"></i></span>';
+		if(!data.active)
+			html+= '<a  href="/controlpanel/devicesimulation/update/'+data.id+'"><span data-id="' + data.id + '" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom"  data-original-title="'+constants.genUpdate+'"><i class="icon-edit"></i></span></a>'
+		if(!data.active)
+			html+= '<span data-id="' + data.id + '" onclick="deleteSimulation(\''+data.id+'\');" class="btn btn-xs btn-no-border color-red icon-on-table tooltips" data-container="body" data-placement="bottom"  data-original-title="'+constants.genDelete+'"><i class="icon-delete"></i></span>'		
+		html+='</div></td> ';
+		return html;
+	}
+	
+	 
+	
+	
+	
+	
+	var  deleteSimulation= function (id){
+		console.log('deleteSimulationConfirmation() -> id: '+ id);
+		
+		// no Id no fun!
+		if ( !id ) {$.alert({title: 'Error', theme: 'light', content: 'NO SIMULATION SELECTED!'}); return false; }
+		
+		// call  Confirm 
+		showConfirmDeleteDialog(id);	
+	} 
+	
+	
+	var showConfirmDeleteDialog = function(id){	
+
+		//i18 labels
+		var Close = headerReg.btnCancelar;
+		var Remove = headerReg.btnEliminar;
+		var Content = headerReg.deviceSimulationConfirm;
+		var Title = headerReg.deviceSimulationDelete;
+
+		// jquery-confirm DIALOG SYSTEM.
+		$.confirm({
+			title: Title,
+			theme: 'light',
+			columnClass: 'medium',
+			content: Content,
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			buttons: {
+				close: {
+						text: Close,
+						btnClass: 'btn btn-outline blue dialog',
+						action: function (){} //GENERIC CLOSE.		
+				},
+				remove: {
+					text: Remove,
+					btnClass: 'btn btn-primary',
+					action: function(){ 
+						console.log(id);
+						var csrf_value = $("meta[name='_csrf']").attr("content");
+						var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+						
+						$.ajax({
+						    url: '/controlpanel/devicesimulation/'+id,
+						    headers: {
+								[csrf_header]: csrf_value
+						    },
+						    type: 'DELETE',						  
+						    success: function(result) {
+						    	if(result == 'ok') {navigateUrl('/controlpanel/devicesimulation/list');}
+						    }
+						});
+					}											
+				}
+			}
+		});
+	}	
+	
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
+		 $.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
+	});
+	// MAIN WHEN READY
+	$( document ).ready(function() {
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		
+		//SHOW/HIDE DATATABLE COLUMNS HANDLER
+		$('input.toggle-vis').on( 'change', function (e) {
+			e.preventDefault(); 
+			// Get the column API object
+			var column = $('#simulations').DataTable().column( $(this).attr('data-column') ); 
+			// Toggle the visibility
+			column.visible( ! column.visible() );			
+			// toggle Text
+			$(this).toggleClass('text-muted line-through');			
+		});	
+		
+		// SEARCH FORM RESET
+		$('#reset_simulator').on('click',function(){
+			$('#simulator-name').val('');
+			$('#simulations').DataTable().column(0).search('').draw();
+		});
+
+		// SEARCH FORM
+		$('#search_simulator').on('click',function(){
+			$('#simulations').DataTable().column(0).search( $('#simulator-name').val()).draw();
+		});
+		
+		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+		
+		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
+		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
+		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
+		// SHOW/HIDE DATATABLES COLUMN INIT 
+		$('#divcreate').prepend($('#dataTable-vis-toggle'));		
+		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		$('#dataTable-vis-toggle').removeClass('hide');
+		
+		$('.dataTables_info').addClass('col-md-6 col-sm-6');
+		$('.dataTables_length').addClass('col-md-6 col-sm-6');
+		$('#simulations_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
+		$('#simulations_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
+
+		$('#search-on-title').append($('.dataTables_filter > label > input'));
+		$('#search-on-title > input').removeClass('input-xsmall')
+		$('#simulations_wrapper > div:nth-child(1)').hide();
+
+		$('.dataTables_paginate').attr('style', 'float:right !important');
+		//$('#simulations').DataTable();
+		
+		$("#contenedor-tabla-outside").removeClass("hidden");
+	});
+	
+	//]]>
+	</script>
+	
+</body>
+</html> 
+  

@@ -1,0 +1,90 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Asset",
+    "type": "object",
+    "required": [
+        "Asset"
+    ],
+    "properties": {
+        "Asset": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Properties for an Asset Type",
+        "type": "object",
+        "required": [
+            "assetType",
+            "assetId",
+            "geometry",
+            "standardLocation"
+        ],
+        "properties": {
+            "assetType": {
+                "type": "string"
+            },
+            "assetId": {
+                "type": "string"
+            },
+            "geometry": {
+                "type": "object",
+                "required": [
+                    "coordinates",
+                    "type"
+                ],
+                "properties": {
+                    "coordinates": {
+                        "type": "array",
+                        "items": [
+                            {
+                                "type": "number",
+                                "maximum": 180,
+                                "minimum": -180
+                            },
+                            {
+                                "type": "number",
+                                "maximum": 90,
+                                "minimum": -90
+                            }
+                        ],
+                        "minItems": 2,
+                        "maxItems": 2
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "Point"
+                        ]
+                    }
+                },
+                "additionalProperties": false
+            },
+            "standardLocation": {
+                "type": "object",
+                "properties": {
+                    "iso3166_1": {
+                        "type": "string"
+                    },
+                    "iso3166_2": {
+                        "type": "string"
+                    },
+                    "un_LOCODE": {
+                        "type": "string"
+                    },
+                    "district": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "iso3166_1",
+                    "iso3166_2",
+                    "un_LOCODE",
+                    "district"
+                ]
+            }
+        }
+    },
+    "description": "asset",
+    "additionalProperties": true
+}

@@ -1,0 +1,94 @@
+.main-box {
+  padding: 2rem;
+  background-color: #fff;
+  margin: 1rem;
+}
+.form-box {
+  margin-top: 2rem;
+}
+.text-right {
+  text-align: right;
+}
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+
+  /* Ajusta el tamaño y los márgenes según tus necesidades */
+}
+.logo-box {
+  background-color: #fff;
+  padding: 1rem;
+  border-bottom: 1px solid #d7dadc;
+  justify-content: space-between;
+
+  display: flex;
+  align-items: center;
+}
+.form-title {
+  margin-bottom: 1rem;
+}
+body {
+  background-color: #f7f8f8 !important;
+}
+.hide-element {
+  display: none !important;
+}
+.loading {
+  display: flex;
+}
+.table {
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  flex: 1 1;
+  width: 100%;
+  max-width: 100%;
+  background-color: var(--color-bg-primary);
+  font-size: 0.75rem;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1rem;
+  color: var(--color-txt-primary);
+}
+thead {
+  table-layout: fixed;
+  border-collapse: separate;
+  color: #505d66;
+  font-size: 0.6875rem;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1rem;
+}
+tr {
+  background-color: #fff;
+}
+th {
+  background-color: #f7f8f8 !important;
+}
+.table th {
+  padding: 0.75rem;
+  vertical-align: top;
+  border-top: none !important;
+}
+.table thead th {
+  vertical-align: bottom;
+  border-bottom: 1px solid #dee2e6 !important;
+}
+td {
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 50px;
+}
+td:not(:has(button)) {
+  padding-top: 20px !important;
+}
+.text-info {
+  display: flex;
+  place-content: center;
+  text-align: center;
+}
+.text-info > p {
+  color: black !important;
+}

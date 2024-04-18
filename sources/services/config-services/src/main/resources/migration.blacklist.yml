@@ -1,0 +1,9 @@
+onesaitplatform.migrationconfig.classes:
+  - com.minsait.onesait.platform.config.model.Role
+  - com.minsait.onesait.platform.config.model.User
+  - com.minsait.onesait.platform.config.model.Project
+  - com.minsait.onesait.platform.config.model.ProjectResourceAccess
+  - com.minsait.onesait.platform.config.model.ProjectExport
+  - com.minsait.onesait.platform.config.model.ProjectResourceAccessExport
+  - com.minsait.onesait.platform.config.model.MigrationData
+  - com.minsait.onesait.platform.config.model.BPMTenantAuthorization

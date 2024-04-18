@@ -1,0 +1,19 @@
+hazelcast:
+   config:
+      elastic.memory:
+          enable: false
+          total.size: 2G
+      waitsecondsbeforejoin: 5
+      monitor.interval: 300
+   group.name: datagrid_01
+   network:
+      port: 16701
+      portautoincrement: true
+      members: localhost:16701
+
+onesaitplatform:
+   datagrid.identifier: datagrid_01
+   datagrid.spi: tcp
+   management.registry: http://localhost:8080/datagrid-manager/management/datagrid
+
+   

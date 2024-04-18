@@ -1,0 +1,318 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org" th:with="lang=${#locale.language}" th:lang="${lang}">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+		<meta http-equiv="Content-Language" th:content="${lang}" />
+		<title th:text="#{name.app}" />
+		
+		
+		
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}" />
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}" />
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}" />
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}" />
+		
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
+		
+		<!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND BOOSTRAP-TIMEPICKER  -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}" />
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css}" />
+		<!-- PLUGINS STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
+		<link rel="stylesheet" type="text/css" media="all"	th:href="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.css}" />
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}"/>
+	</head>
+
+	<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment"	class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+
+		<!-- HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"></div>
+
+		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
+		<div th:include="fragments/menu::#menuFragment"	class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+
+				<!-- BEGIN PAGE BAR AND BREADCRUM-->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/multitenancy/verticals}"> <span th:text="#{multitenancy.verticals}">Verticals</span></a><i class="fa fa-angle-right"></i></li>
+						<li>
+							<span th:if="${vertical.id} == null"  th:text="#{multitenancy.verticals.new}">Create Vertical</span>
+							<span th:if="${vertical.id} != null" th:text="#{multitenancy.verticals.update}">Update Vertical</span>
+						</li>
+					</ul>
+				</div>	
+				
+				<!-- END PAGE BAR -->
+				
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{name.app}"> onesait platform Control Panel</span></h1>
+				<!-- END PAGE TITLE-->	
+
+				<div id="header">
+					<div class="row pageCreateHeader">
+						<div class="col-md-6 col-sm-6 col-xs-12">
+							<div class="margin-top-4">
+								<span th:if="${vertical.id} == null" class="caption-subject" th:text="#{multitenancy.verticals.new}"> New Project</span> 
+								<span th:if="${vertical.id} != null" class=" " th:text="${vertical.name}"> Update</span>
+							</div>
+						</div>
+						
+						<div class="col-md-6 col-sm-6 col-xs-12">
+							<div class="pull-right">
+								<!-- CANCEL -->											
+								<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/multitenancy/verticals} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+
+								<!-- RESET -->			
+								<button th:if="${vertical.id} == null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset" th:value="#{gen.resetBtn}"><span th:text="#{gen.resetBtn}"> Reset</span></button>
+								<button th:if="${vertical.id} != null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset" th:value="#{gen.resetBtn}" disabled="true"><span th:text="#{gen.resetBtn}"> Reset</span></button>
+									
+								<span class="sep" th:if="${vertical.id} != null"></span>
+									
+								<!-- CREATE -->
+								<button th:if="${vertical.id} == null" id="createBtn" class="btn btn-primary btn-primary-save" name="create" th:value="#{gen.createBtn}" onclick="'javascript:validateAndSubmit();'"><span th:text="#{gen.createBtn}"> New</span></button>
+
+								<!-- UPDATE -->
+								<button th:if="${vertical.id} != null" id="updateBtn" class="btn btn-primary btn-primary-save" name="update" th:value="#{gen.editBtn}" onclick="'javascript:validateAndSubmit();'"><span th:text="#{gen.changes}"> Save Changes</span></button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- MAIN ROW -->
+				<div class="row equal flex-container">					
+					<div class="tabContainer flex-tabs-left">
+						<div id="tab-main" class="option active">
+							<a href="#tab_1" data-toggle="tab" aria-expanded="false">
+								<span th:if="${vertical.id} == null" class=" " th:text="#{multitenancy.verticals.new}"> New Project</span> 
+								<span th:if="${vertical.id} != null" class=" " th:text="#{gen.generalInformation}"> General Information</span>
+							</a>
+						</div>
+						<div id="tab-tenants" class="option">
+							<a href="#tab_2" data-toggle="tab" th:classappend="${vertical?.id} == null ? disabled : ''" aria-expanded="true">
+								<span class="" th:text="#{multitenancy.tenants}">Tenants </span>
+							</a>
+						</div>
+					</div>
+					<div class="tab-content flex-content-right">
+						<div class="tab-pane fade in active" id="tab_1">
+							<form role="form" id="form-vertical" th:object="${vertical}" method="post" class="form">
+								<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+								<input th:if="${vertical.id} == null" type="hidden"  name="action" th:value="@{/multitenancy/verticals/create}" />
+								<input th:if="${vertical.id} != null" type="hidden"  name="action" th:value="@{'/multitenancy/verticals/update/'+${vertical.id}}" /> 
+								<input th:if="${vertical?.id} != null" type="hidden" name="_method" value="PUT"/>
+								
+								<div class="row main">	
+									<div class="col-md-8 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{gen.generalInformation}">General Information</span>
+									</div>
+									<div class="col-md-4 col-sm-3 col-xs-3">
+										<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
+									</div>
+								</div>
+								
+								<div class="row main">
+									<div class="col-md-3 col-sm-6 col-xs-12">
+										<div class="form-group">
+											<label class="control-label" th:text="#{app.appId}">Identification</label><span class="required"> *</span>
+											<input th:attrappend="readonly=${vertical.id}?'true'" id="name" type="text" pattern="^[a-z-_]{1,50}$"  name="name" th:required="true" maxlength="100" th:field="*{name}" class="form-control " th:placeholder="#{gen.name}"/>
+											<span id="nameerror" class="help-block font-red hide" th:text="#{gen.requiredField}"><i class="la la-warning"></i> Required field</span>
+										</div>
+									</div>
+								</div>
+							</form>														
+						</div>
+						<div class="tab-pane " id="tab_2">
+							<div class="row main">	
+								<div class="col-md-12 col-sm-12 col-xs-12 panelHeader">
+									<span th:text="#{multitenancy.tenants}">Tenants</span>
+								</div>
+							</div>
+							<div class="row main" >
+							<!-- SEARCH -->																	
+								<div class="actions margin-right-20 pull-right">
+									<div class="btn-group">										
+										<button type="button" class="btn btn-primary btn-primary-save" id="btn-tenant-add"><span th:text="#{gen.add}">Add </span></button>
+										<button type="button" class="btn btn-primary btn-primary-save" id="btn-vertical-create-list"><span th:text="#{gen.create}">New </span></button>
+									</div>										
+								</div>
+								<div th:include="multitenancy/tenants/fragments/list"></div>		
+							
+							</div>
+							
+						</div>
+						<div th:include="multitenancy/verticals/fragments/modal-add-tenant"></div>
+					</div><!-- END COL-12 -->
+				</div><!-- END MAIN ROW -->
+			</div><!-- END CONTENT BODY -->
+		</div><!-- END CONTENT page-content-wrapper -->
+	</div><!-- END MAIN PAGE WRAPPER -->
+
+	<!-- FOOTER INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+			
+		
+	<!-- Modal error -->
+	<div id="modal-error" class="modal fade" role="dialog">
+		<div class="modal-dialog modal-sm">
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"></button>
+					<h4 class="modal-title" id="response" th:text="#{binaryfiles.maxsize.error}"></h4>
+				</div>											      
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal" th:text="#{binaryfiles.close}">Close</button>
+				</div>
+			</div>
+		</div>
+	</div><!-- // Modal error -->
+		
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" ></script>
+	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}" ></script>
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/blockUI.js}"></script>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/dataTables.buttons.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}" ></script>
+	
+	
+	<!-- LOADING DEFAULT DATES IF NEEDED -->
+	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}" type="text/javascript"></script>
+	<script	th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}" type="text/javascript"></script>
+	<script	th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
+
+	<!-- LOADING DEFAULT LANG MESSAGES IF NEEDED -->
+	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}" type="text/javascript"></script>
+	<script th:src="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js}" type="text/javascript"></script>
+	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
+	
+
+	
+	<!-- CORE JS CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>	
+	
+	<script th:inline="javascript">
+	//<![CDATA[
+		
+		var currentLanguage = [[${lang}]];
+		var createUrl = [[@{'/multitenancy/tenants/create?v=' +${vertical.name}}]];
+		var vertical = [[${vertical.name}]]
+		$(document).ready(function() {
+			// tab control 
+			$(".option a[href='#tab_1']").on("click", function(e) {
+				$('.tabContainer').find('.option').removeClass('active');
+		        $(this).closest("div").addClass('active');
+			});		
+			
+			// tab control 
+			$(".option a[href='#tab_2']").on("click", function(e) {
+			  if ($(this).hasClass("disabled")) {
+				e.preventDefault();
+				return false;
+			  } else {
+		        $('.tabContainer').find('.option').removeClass('active');
+		        $(this).closest("div").addClass('active');
+			  }
+			});
+			
+			// Reset form
+			$('#createBtn').on('click',function(){ 
+				validateAndSubmit();
+			});
+			
+			$('#updateBtn').on('click',function(){ 
+				validateAndSubmit();
+			});	
+			
+			// Reset form
+			$('#resetBtn').on('click',function(){ 
+				cleanFields('form-vertical');
+			});	
+			
+			// Fields OnBlur validation
+			
+			$('input:visible').filter('[required]').on('blur', function(){
+				validate($(this));
+			});
+			
+			
+			$('#btn-vertical-create-list').on('click', function(){
+				window.location = createUrl;
+			})
+			
+			$('#btn-tenant-add').on('click', function(){
+				loadModal();
+			})
+		});
+		
+		var validate = function (obj){
+			if (obj.val() === '') { 
+				obj.closest(".form-group").addClass('has-error');
+				$('#' + obj.prop('id') + 'error').removeClass('hide').addClass('help-block-error font-red');
+				return false;
+			} else { 
+				obj.closest(".form-group").removeClass('has-error');
+				$('#' + obj.prop('id') + 'error').addClass('hide');
+				return true;
+			}
+		}
+		
+		var validateAndSubmit = function (){
+			if (validate($('#name'))) {
+				toastr.success([[#{gen.form.success}]]);
+				$('form#form-vertical').submit();
+			} else {
+				toastr.error([[#{gen.form.error}]]);
+			}
+		}
+		
+		var cleanFields = function (formId) {
+			//CLEAR OUT THE VALIDATION ERRORS
+			$('input:visible').filter('[required]').each(function(){
+				$(this).val('');
+				$(this).closest(".form-group").removeClass('has-error');
+				$('#' + $(this).prop('id') + 'error').addClass('hide');
+			});
+		}
+		
+		function navigateUrl(url){  window.location.href = url;	}
+	//]]>
+	</script>
+	
+</body>
+</html>

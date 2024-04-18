@@ -1,0 +1,411 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:dt="http://www.thymeleaf.org/dandelion/datatables" th:with="lang=${#locale.language}" th:lang="${lang}">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"/>
+		
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+		
+		<!-- PLUGINS STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}"/>
+		
+	</head>	
+	
+	<!-- page-sidebar-closed to start page with collapsed menu -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+	
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+		
+		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"> </div>		
+			
+		<!-- BEGIN SIDEBAR -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+		
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+			
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+				<!-- SEARCH FORM -->
+				<div id="searchFilter"  class="row" >
+					<form id="form_planner" class="" role="form" method="get">
+						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+						<div class="col-md-3 col-sm-4 col-xs-12">														
+							<div class="input-icon">
+								 
+									<i class="icon-search font-grey-mint"></i>									 														
+								<input id="planner-name" th:placeholder="#{gen.name}"  name="name" class="form-control" type="text" maxlength="50" value=""/>
+							</div>
+						</div>
+						<div class="col-md-2 col-sm-4 col-xs-12 pull-right">
+							<div class="pull-right">
+								<button type="button" id="reset_planner" name="reset_planner" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}">Reset</button>
+								<button type="button" id="search_planner" name="search_planner" class="btn btn-primary btn-primary-search" th:text="#{gen.search}">Search</button>
+							</div>
+						</div>									
+					</form>
+				</div>
+				
+				<!-- BEGIN PAGE HEADER-->
+				
+				<!-- BEGIN PAGE BAR AND BREADCRUM -->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<!--<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>-->
+						<li><a th:href="@{/planner/list}"> <span th:text="#{planner.template.list}">Planned Task List</span></a></li>						
+					</ul>						
+				</div>
+				<!-- END PAGE BAR -->
+				
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{scheduledsearch.template.show}">scheduledsearch</span></h1>
+				<!-- END PAGE TITLE-->			
+				
+				<!-- MAIN ROW -->
+				<div class="row">					
+						<div class="portlet light ">
+							<div class="portlet-title">
+								<div class="caption">
+									
+									<span class="caption-subject " th:text="#{planner.template.list}"> Planned Task List</span>
+									
+								</div>
+								<div class="caption" style="padding: 22px 8px 8px 10px">
+									<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
+								</div>
+								<div id="search-on-title" class="hide input-icon search-icon">
+									<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
+								</div>									
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""> </a>
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>
+								</div>
+								<div class="pull-right btn-group btn-title-group" id="divcreate" >
+								</div>
+							</div>
+							<div class="portlet-body" style="display: block; height: auto;">
+								
+								<div class="row">
+									<!--<div class="col-md-12 alert-zone">
+										// ALERT ZONE																			
+									</div>-->
+									<!--<div class="col-md-12 margin-bottom-20">-->
+									
+									
+									<!-- TWITTER LISTENINGS LIST -->
+									<div class="col-md-12">											
+										<div id="contenedor-tabla-outside" class="contiene hidden">																						
+											<div>
+												<!-- DATATABLE DANDELION CONF. -->												
+												<table id="scheduledsearch" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
+													<thead>
+														<tr class="cabecera-tabla">
+															<th class="titulo-columnas" ><span th:text="#{planner.jobName}" >Job Name</span></th>
+															<th class="titulo-columnas" ><span th:text="#{planner.jobGroup}" >Job Group</span></th>
+															<th class="titulo-columnas" ><span th:text="#{planner.status}" >Status</span></th>
+															<th class="titulo-columnas" ><span th:text="#{planner.cronExpression}" >Cron Expression</span></th>
+															<th class="titulo-columnas" ><span th:text="#{planner.previousFireTime}" >Previous Execution</span></th>
+															<th class="titulo-columnas" ><span th:text="#{planner.nextFireTime}" >Next Execution</span></th>
+															<th class="titulo-columnas text-center" dt:sortable="false" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
+														</tr>
+													</thead>
+													<tbody th:remove="all-but-first">
+														<tr th:each="task : ${tasks}" pages:paginate="10">
+														
+									
+															<!-- USERID -->
+															<td class="text-left no-wrap " th:text="${task.jobName}"></td>
+															<!-- IDENTIFICATOR -->
+															<td class="text-left no-wrap " th:text="${task.jobGroup}"></td>
+															
+															<td class="text-left no-wrap " th:text="${task.jobStatus}"></td>
+															<!-- TOPICS -->														
+															<td class="text-left no-wrap " th:text="${task.cronExpression}"></td>
+															
+															<td class="text-left no-wrap " th:text="${task.previousFireTime}"></td>
+															
+															<td class="text-left no-wrap " th:text="${task.nextFireTime}"></td>
+															
+															<!-- OPTIONS -->
+															<td class="icon text-center" style="white-space: nowrap">
+																<div class="grupo-iconos">	
+																
+																	<!-- RESUME -->		
+																	<a data-toggle="modal" th:attr="data-id=${task.jobName}" href="#resume-modal">													
+																		<span  th:title="#{planner.resume}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:classappend="${task.jobStatus} != 'EXECUTING' ? '' : ' disabled'" data-container="body" data-placement="bottom" th:data-original-title="#{planner.resume}">
+																			<i class="icon-play"></i>
+																		</span>
+																	</a>
+																	<!-- PAUSE -->																
+																	<a data-toggle="modal" th:attr="data-id=${task.jobName}" href="#pause-modal">
+																		<span  th:title="#{planner.pause}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:classappend="${task.jobStatus} == 'EXECUTING' ? '' : 'disabled'" data-container="body" data-placement="bottom" th:data-original-title="#{planner.pause}">
+																			<i class="la la-pause font-hg"></i>
+																		</span>
+																	</a>
+																																																			
+																	<!-- UNSCHEDULE -->
+																	<a data-toggle="modal" th:attr="data-id=${task.jobName}" href="#unschedule-modal">	
+																		<span th:title="#{planner.unschedule}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{planner.unschedule}">
+																			<i class="icon-stop"></i>
+																		</span>
+																	</a>
+																</div>
+															</td>
+															
+														</tr>
+													</tbody>
+												</table>
+												
+												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
+													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
+													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
+															<label th:text="#{planner.jobName}"> Name </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
+															<label th:text="#{planner.jobGroup}"> Group </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
+															<label th:text="#{planner.status}"> Status</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<label th:text="#{planner.cronExpression}"> Cron Expression</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+															<label th:text="#{planner.previousFireTime}"> Previous Execution</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
+															<label th:text="#{planner.nextFireTime}"> Next Execution</label>
+														</span>
+													</div>
+												</div>											
+											</div>
+										</div>											
+									</div>
+								</div>
+							</div>
+						</div><!-- END PORTLET BASIC LIGHT -->							
+				</div><!-- END MAIN ROW -->	
+				<!-- Modals -->
+				<div id="pause-modal" tabindex="-1" role="dialog" class="modal fade" style="display: none;">
+					<div class="modal-dialog">
+					    <!-- Modal content-->
+					    <div class="modal-content">					
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal">&times;</button>
+							</div>
+							<div class="modal-body">
+								<label style="margin-left: 20px;" class="description" th:text="#{planner.pause.message}"></label>
+							</div>
+						    <div class="modal-footer">																								
+								<button type="button" class="btn btn-circle btn-outline blue" th:value="#{gen.closeBtn}" data-dismiss="modal">
+									<span th:text="#{gen.closeBtn}"> Cancel </span>	
+								</button>								
+								<button type="button" class="btn btn-circle btn-outline  btn-primary" th:value="#{gen.confirmBtn}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/planner/pause/|} + '\');'">
+									<span th:text="#{gen.confirmBtn}"> Confirm</span>
+								</button>
+						    </div>
+						</div>
+					</div>
+				</div>
+				<div id="resume-modal" tabindex="-1" role="dialog" class="modal fade" style="display: none;">
+					<div class="modal-dialog">
+					    <!-- Modal content-->
+					    <div class="modal-content">					
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal">&times;</button>
+							</div>
+							<div class="modal-body">
+								<label style="margin-left: 20px;" class="description" th:text="#{planner.resume.message}"></label>
+							</div>
+							<div class="modal-footer">								
+								<button type="button" class="btn btn-circle btn-outline blue" th:value="#{gen.closeBtn}" data-dismiss="modal">
+									<span th:text="#{gen.closeBtn}"> Cancel </span>	
+								</button>								
+								<button type="button" class="btn btn-circle btn-outline btn-primary" th:value="#{gen.confirmBtn}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/planner/resume/|} + '\');'">
+									<span th:text="#{gen.confirmBtn}"> Confirm</span>
+								</button>								
+																
+						    </div>
+						</div>
+					</div>
+				</div>
+				<div id="unschedule-modal" tabindex="-1" role="dialog" class="modal fade" style="display: none;">
+					<div class="modal-dialog">
+					    <!-- Modal content-->
+					    <div class="modal-content">					
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal">&times;</button>
+							</div>
+							<div class="modal-body">
+								<label style="margin-left: 20px;" class="description" th:text="#{planner.unschedule.message}"></label>
+							</div>
+						    <div class="modal-footer">								
+								<button type="button" class="btn btn-circle btn-outline blue" th:value="#{gen.closeBtn}" data-dismiss="modal">
+									<span th:text="#{gen.closeBtn}"> Cancel </span>	
+								</button>
+								<button type="button" class="btn btn-circle btn-outline btn-primary" th:value="#{gen.confirmBtn}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/planner/unschedule/|} + '\');'">
+									<span th:text="#{gen.confirmBtn}"> Confirm</span>
+								</button>															
+						    </div>
+						</div>
+					</div>
+				</div>
+				<input id="selectedTask" name="selectedTask" value="" type="hidden"/>
+				
+							
+			</div><!-- END CONTENT BODY -->
+		</div><!-- END CONTENT page-content-wrapper -->		
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+	
+	<!-- FOOTER-INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
+	
+	<!-- CORE CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
+	
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
+	
+	
+	<script th:inline="javascript">	
+	
+
+
+	
+	
+	// DATATABLES LANGUAJE FROM PROPERTIES.	
+	datatable_lang = [[#{datatables_lang}]];	
+	var languageJson = JSON.parse(datatable_lang);
+	if ( languageJson ){ $.extend( true, $.fn.dataTable.defaults, { language: languageJson }); }
+
+	</script>
+	
+	<script type="text/javascript">	
+	var optionName = 'scheduledsearch';
+	
+	//<![CDATA[
+	function navigateUrl(url){
+		window.location.href = url + $('#selectedTask').val();		
+	}
+	
+	// MAIN WHEN READY
+	$( document ).ready(function() {
+	
+		$(".btn").click(function (event) {         
+            if ($(this).hasClass("disabled")) {
+                event.stopPropagation()
+            }
+        });
+		
+		$('a[data-toggle=modal], button[data-toggle=modal]').click(function () {
+
+		    var data_id = '';
+
+		    if (typeof $(this).data('id') !== 'undefined') {
+		      data_id = $(this).data('id');
+		    }
+		    
+		    $('#selectedTask').val(data_id);
+		 });
+		
+		//SHOW/HIDE DATATABLE COLUMNS HANDLER
+		$('input.toggle-vis').on( 'change', function (e) {
+			e.preventDefault(); 
+			// Get the column API object
+			var column = $('#scheduledsearch').DataTable().column( $(this).attr('data-column') ); 
+			// Toggle the visibility
+			column.visible( ! column.visible() );			
+			// toggle Text
+			//$(this).toggleClass('text-muted line-through');			
+		});	
+		
+		// SEARCH FORM RESET
+		$('#reset_planner').on('click',function(){
+			$('#planner-name').val('');
+			$('#scheduledsearch').DataTable().column(0).search('').draw();
+		});
+
+		// SEARCH FORM
+		$('#search_planner').on('click',function(){
+			$('#scheduledsearch').DataTable().column(0).search( $('#planner-name').val()).draw();
+		});
+		
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).on("load",function(){ 
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+		var oTable = $('#scheduledsearch').dataTable({
+	      "bAutoWidth": false
+	      });  
+		
+		// SHOW/HIDE DATATABLES COLUMN INIT 
+		$('#divcreate').prepend($('#dataTable-vis-toggle'));		
+		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		$('#dataTable-vis-toggle').removeClass('hide');
+
+		$('.dataTables_info').addClass('col-md-6 col-sm-6');
+		$('.dataTables_length').addClass('col-md-6 col-sm-6');
+		$('#scheduledsearch_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
+		$('#scheduledsearch_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
+
+		$('#search-on-title').append($('.dataTables_filter > label > input'));
+		$('#search-on-title > input').removeClass('input-xsmall')
+		$('#scheduledsearch_wrapper > div:nth-child(1)').hide();
+
+		$('.dataTables_paginate').attr('style', 'float:right !important');
+		
+		$("#contenedor-tabla-outside").removeClass("hidden");
+		
+	});
+	
+	//]]>
+	</script>
+	
+</body>
+</html>
+  

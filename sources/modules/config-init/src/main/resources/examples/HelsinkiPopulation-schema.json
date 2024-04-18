@@ -1,0 +1,40 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "Helsinki",
+    "type": "object",
+    "required": [
+        "Helsinki"
+    ],
+    "properties": {
+        "Helsinki": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Info Helsinki",
+        "type": "object",
+        "required": [
+            "year",
+            "population",
+            "population_men",
+            "population_women"
+        ],
+        "properties": {
+            "year": {
+                "type": "number"
+            },
+            "population": {
+                "type": "number"
+            },
+            "population_men": {
+                "type": "number"
+            },
+            "population_women": {
+                "type": "number"
+            }
+        }
+    },
+    "description": "asdasdas",
+    "additionalProperties": true
+}

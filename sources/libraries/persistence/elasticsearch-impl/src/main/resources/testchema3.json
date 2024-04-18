@@ -1,0 +1,54 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "gestamp3",
+    "type": "object",
+
+        "required": [
+            "value",
+            "timeStamp",
+            "description",
+            "signal",
+            "deviceId",
+            "profile",
+            "deviceType",
+            "signalId"
+        ],
+        "properties": {
+            "value": {
+                "type": "string"
+            },
+            "timeStamp": {
+                "type": "object",
+                "required": [
+                    "$date"
+                ],
+                "properties": {
+                    "$date": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "description": {
+                "type": "string"
+            },
+            "signal": {
+                "type": "string"
+            },
+            "deviceId": {
+                "type": "string"
+            },
+            "profile": {
+                "type": "string"
+            },
+            "deviceType": {
+                "type": "string"
+            },
+            "signalId": {
+                "type": "string"
+            }
+        
+    },
+    "description": "gestamp2",
+    "additionalProperties": true
+}

@@ -1,0 +1,91 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!-- BEGIN GRAPH COMPONENT -->
+<div th:fragment="adminGraphFragment" id="adminGraphFragment">
+	
+	<!-- GRAPH CSS -->
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/vis/vis.min.css}"/>
+	<style>		
+		#networkVis .vis-network:focus{ outline: none;}
+		svg { font-family: Soho; }
+	</style>
+		
+	<!-- GRAPH SCRIPTS  -->	
+	<script type="text/javascript" th:src="@{/static/vendor/vis/vis.min.js}"></script>
+	<!-- <script type="text/javascript" th:src="@{/static/vendor/vis/grafo.js}"></script> -->
+	
+	<!-- GRAPH CONTROLLER JS -->
+	<script th:src="@{/static/js/pages/adminGraph.js}"></script>	
+	 
+	<!-- BEGIN GRAPH INNER -->
+	<div class="row" style="margin-top: -20px;">
+		<div class="col-md-12" style="padding: 0px;">
+			<div class="portlet light no-shadow no-pad">
+				<div class="portlet-title" style="margin-left: 20px;padding: 0 8px;">
+					<div class="caption col-md-3 col-md-6 col-xs-12">									
+						<span class="caption-subject" th:text="#{graph.admintitle}">Grapho</span>
+                        <i class="icon-info popovers" style="float: right;margin-right:10px;position: relative;top:2px;color:blue;" data-trigger="hover" data-container="body" th:attr="data-content=#{graph.description}" ></i> 
+                    </div>
+				</div>			
+				<div class="portlet-body" style="display: block; height: auto; padding-top: 0px; ">
+					<div class="row" style="margin:0 0 0 12px">
+						<div class="col-md-4 col-sm-12 " id="enviromentText">							
+						</div>				
+						<div class="col-md-12" style="padding:0">			
+							<div id="graphporlet" class="col-lg-12 col-md-12 col-sm-12 col-xs-12 margin-bottom-10">
+								<div id="networkVis" style="background: #F0F1F2; box-shadow: inset 0px -1px 0px #d7dadc;" ></div>
+								<div id="infoporlet" class="pull-right bg-white" style="background-color:white;">
+									<div id="table-info-container" style="display:none;">
+										<div style="text-align:right" class="">
+											<button id="btn-close" class="btn btn-default btn-sm button_text" onclick="$('#table-info-container').hide()"><i class="la la-times"></i></button>
+										</div>
+										<table id ="TableInfoNetwork" class="table table-condensed table-hover table-striped table-light"></table>
+										<div class="table-scrollable table-scrollable-borderless">
+										</div>
+									</div>
+                                </div>				
+							</div>																	
+						</div>						
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- END GRAPH INNER -->
+	
+			
+	<!-- GRAPH DATA TO SEND TO GRAPH CONTROLLER  --> 
+	<script type="text/javascript" th:inline="javascript"> 
+				
+		var graphJson = {
+			"propertyCol" 	: [[#{graph.table.properties}]],
+			"valueCol"		: [[#{graph.table.item}]],
+			"tableName"		: [[#{graph.table.value}]],
+			"tableSource"	: [[#{graph.table.total}]],
+			"tableLinkS"	: [[#{graph.table.show}]],
+			"tableLinkC"	: [[#{graph.table.create}]],
+			"tableLinkBtn"	: [[#{graph.table.go}]],
+			"data":[]
+		};
+		// LOAD DATA TO USE IN GRAPHCONTROLLER
+		// GRAPH CONTROLLER LOAD AND INIT ITSELF
+		$(window).on("load",function(){
+			
+		});
+	</script>
+</div>
+<!-- END GRAPH -->

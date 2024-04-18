@@ -1,0 +1,855 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org" th:with="lang=${#locale.language}" th:lang="${lang}">
+	<head>
+		<meta name="_csrf" th:content="${_csrf.token}" />
+		<meta name="_csrf_header" th:content="${_csrf.headerName}" />
+		<meta name="_csrf" th:content="${_csrf.token}" />
+		<meta name="_csrf_header" th:content="${_csrf.headerName}" />
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+		<meta name="viewport" 	content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+		<meta http-equiv="Content-Language" th:content="${lang}" />		
+		<title th:text="#{name.app}" />	
+		
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+
+		<!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND BOOSTRAP-TIMEPICKER, TAGSINPUT, JSONEDITOR  -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}" />	
+		<style type="text/css">
+			#ontologies tr:nth-child(3) {
+				width: 10%
+			}
+		</style>
+	</head>
+	<!-- page-sidebar-closed to start page with collapsed menu -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment"	class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+
+		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"></div>
+
+		<!-- BEGIN SIDEBAR -->
+		<div th:include="fragments/menu::#menuFragment"	class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+				
+				<!-- BEGIN PAGE BAR AND BREADCRUM-->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/ontologies/list}"> 
+							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'"  th:text="#{ontology.template.list}">Manage Ontologies</span>
+							</a><i class="fa fa-angle-right"></i>
+						</li>
+						<li><a>
+							<span th:text="#{ontology.virtual.bulk.generation }">Show Ontology</span></a>
+						</li>
+					</ul>
+				</div>
+				<!-- END PAGE BAR -->
+
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{name.app}"> Onesait Platform Control Panel</span></h1>
+				<!-- END PAGE TITLE-->
+				
+				<form role="form" id="ontology_bulk_create_form" method="post" class="form" th:action="@{/ontologies/bulkcreation/create}">
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+				
+					<!-- SEARCH FORM -->
+					<div id="searchFilter" class="row">
+						<div class="col-md-3 col-sm-4 col-xs-12"><span class="panelHeader" th:text="#{ontology.virtual.bulk.generation}"></span>
+						</div>
+						<div class="col-md-3 col-sm-4 col-xs-12" align="left">
+						</div>
+						<div class="col-md-6 col-sm-4  col-xs-12">
+							<div class="pull-right">
+								<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='navigateUrl(\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+								<button id="resetBtnCreate" type="button" class="btn btn-primary-cancel" onclick="location.href='../ontologies/bulkcreation'" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
+								<button id="createBtn" type="button"  class="btn btn-primary btn-primary-save" th:text="#{gen.create}" onClick="generateJson()">Create</button>
+							</div>
+						</div>
+					</div>
+					<!-- MAIN ROW -->
+					<div class="mainPanel">
+						<div class="row main">
+							<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+								<span th:text="#{ontology.virtual.select.collections}">Select Database Connection</span> 
+							</div>
+							<div class="col-md-3 col-sm-3 col-xs-3">
+								<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
+							</div>
+						</div>
+						<div class="row main pageCreateHeader no-margin-left padding-left-10">
+						    <div class="col-md-3">
+						        <div class="caption" style="display: flex; align-items: center; margin-top: 8px">
+						            <label class="no-padding-bottom" th:text="'+'"></label>
+						            <label class="no-padding-bottom" style="font-weight: bold;" th:text="#{datasource.add.tables}"></label>
+						        </div>
+						    </div>
+						    <div class="col-md-2">
+						        <div class="input-icon">
+						            <i style="margin-left: -9px;" class="icon-search font-grey-mint"></i>
+						            <input id="searchBulkTableName" th:placeholder="#{gen.search}" name="name" style="margin-left: -20px;" class="form-control" type="text" maxlength="50" value="" disabled />
+						        </div>
+						    </div>
+						</div>
+								
+						<div class="row main borderPanel no-margin-left">
+							<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(30vh);">
+							<div class="form-group">
+									<label class="control-label" th:text="#{json2ont.rtdbdatasource}">Datasource</label><span class="required" th:required="true">*</span><br>
+										<select th:if="${ontology?.id} == null" id="datasources" class="selectpicker form-control" th:title="#{ontology.virtual.datasource.combo}" data-live-search="true" data-width="100%" th:required="true" >
+											<option th:each="datasource :${datasources}" th:value="${datasource.identification}" th:id="${datasource.identification}" th:text="${datasource.identification}" ></option>														
+										</select>
+								</div>
+								<div class="form-group">
+									<label class="control-label" th:text="#{datasource.domain}">Domain</label>
+									<input th:tabindex="2" id="domain" type="text"	class="form-control" readonly/>
+								</div>							
+								<div id ="databaseDiv" class="form-group hidden">
+									<label class="control-label" th:text="#{ontology.template.selectdb}">Select Database</label><span class="required" th:required="true">*</span><br>
+									<select	id="databases" name="databases" class="selectpicker form-control" data-live-search="true" data-width="100%">
+										<option  th:value="${database}" th:text="${database}" />
+									</select>
+								</div>
+								<div id="schemasDiv" class="form-group col-xs-2 hidden">
+									<label class="control-label" th:text="#{ontology.virtual.datasource.selectsc}">Select a Schema</label><span class="required"> *</span>
+									<select id="schemas" class="selectpicker form-control no-remove" th:title="#{ontology.virtual.datasource.combosc}" data-live-search="true" data-width="100%" >
+									</select>
+								</div>						
+							</div>			
+							<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(30vh); max-height: calc(30vh); overflow:auto">
+								<div class="form-group" style="margin-bottom: 0px">
+									<div id="contenedor-tabla" class="margin-bottom-20">
+										<table id="entities" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
+											<thead>
+												<tr class="cabecera-tabla">
+													<th class="titulo-columnas text-left">
+														<input class="text-left" id="SelectAllCheckbox" type="checkbox" onClick="checkAll(this)" />
+													</th>
+													<th class="titulo-columnas text-left" th:text="#{gen.table.name}">Table Name</th>
+													<th class="titulo-columnas text-left" th:text="#{gen.entity.name}">Identification</span></th>
+													<th class="titulo-columnas text-left" th:text="#{ontology.id}">Associated Id</th>
+												</tr>
+											</thead>
+											<tbody id="tableTbody" th:remove="all-but-first">
+												<tr id="tableTr" pages:paginate="10">
+												</tr>
+											</tbody>
+										</table>								
+									</div>
+								</div>					
+							</div>
+						</div>
+						
+						<!-- ENTITIES AUTHORIZATION -->
+						<div class="row main">
+							<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+								<span th:text="#{gen.auth.all.tables}">Authorizations</span>
+							</div>
+						</div>
+						<div class="row main pageCreateHeader no-margin-left padding-left-10 ">
+							<label class="no-padding-bottom" th:text=="'+'"></label>
+							<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{categorization.addAuthorization}"></label>
+						</div>
+						<div class="row main borderPanel no-margin-left">
+							<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(30vh);">
+							<!-- USER SELECTION -->
+								<div class="form-group">
+									<label class="control-label" th:text="#{ontology.user}">User</label>
+									<select id="users" class="selectpicker form-control" data-live-search="true" data-width="100%" data-size="10">
+										<option value="" th:text="#{ontology.userselect}"> Select User...</option>
+										<option th:each="user :${users}" th:value="${user.userId}" th:if="${user.active}" th:text="${user.fullName} +'('+ ${user.userId} +')'" ></option>
+									</select>
+								</div>
+								<div class="form-group">
+									<label class="control-label" th:text="#{ontology.auth.accesstypes}">Access types:</label>
+									<select id="accesstypes" class="selectpicker form-control" data-live-search="true" data-width="100%" >
+										<option value="ALL">ALL</option>
+										<option value="QUERY">QUERY</option>
+										<option value="INSERT">INSERT</option>
+									</select>
+								</div>
+								<div class="form-group margin-top-20 pull-right">
+									<button type="button" class="btn btn-circle btn-outline blue" onclick="insertAuthorization()" th:text="#{ontology.insertauthorization}">Insert Ontology Authorization</button>	
+								</div>
+							</div>
+							<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(30vh); max-height: calc(30vh); overflow:auto">
+							<!-- AUTHORIZATION ONTOLOGY-USER-TYPE -->
+								<div class="form-group" style="margin-bottom: 0px">
+									<div id="authorizations" class="margin-bottom-20 hide">
+										<table class="table" id="ontology_autthorizations" data-loaded="false">
+											<thead class="table-header-background">
+												<tr class="cabecera-tabla" role="row" >
+													<th class="titulo-columnas" th:text="#{ontology.user}">User</th>
+													<th class="titulo-columnas" th:text="#{ontology.auth.accesstypes}">Access type</th>
+													<th class="titulo-columnas text-center" th:text="#{gen.options}">Options</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr id="authorization-model" class="authorization-model">
+													<td><input type="text" name="users[]" readonly="readonly" class="form-control"/></td>
+													<td><input name="accesstypes[]" type="text" class="form-control" readonly="readonly"/></td>
+													<td width="150px" class="no-wrap text-center">
+														<button type="button" class="btn btn-xs btn-no-border icon-on-table color-red tooltips btn-mountable-authorization-remove" style="background-color:transparent;" onclick="removeAuthorization(this)"> <i class="icon-delete"></i></button>
+													</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+									<div id="imageNoElementsOnTable" hide>
+										<img id="headerImg" alt="logo" style="width: 72px; height:113px; display: block;   margin-top:27px;  margin-left: auto;margin-right:auto;"  src="/controlpanel/static/images/authorizationTableEmpty.svg"/>
+										<label style=" display: block;   margin: 0 auto; font-style: italic;font-weight: normal;font-size: 17px;line-height: 24px;text-align: center;color:#505D66;" th:text="#{ontology.list.noauths}"></label>
+										<label style=" display: block;   margin: 0 auto; font-style: normal;font-weight: normal;font-size: 11px;line-height: 16px;text-align: center;color: #A7AEB2;" th:text="#{ontology.auth.info}"></label>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<input type="hidden" id="ontolgiesObject" name="ontolgiesObject"/>
+					<input type="hidden" id="authorizationsObject" name="authorizationsObject"/>
+					<input type="hidden" id="datasourceId" name="datasourceId"/>
+					<input type="hidden" id="databaseObject" name="databaseObject"/>
+					<input type="hidden" id="schemaObject" name="schemaObject"/>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- FOOTER INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
+	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}" type="text/javascript"></script>
+    <script th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
+    <script th:src="@{/static/vendor/jquery-form/jquery.form.min.js}" type="text/javascript"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
+	<!-- SCHEMA GENERATOR -->
+	<script th:src="@{/static/vendor/schemagenerator/underscore.js}"></script>
+	<script th:src="@{/static/vendor/schemagenerator/backbone.js}"></script>
+	<script th:src="@{/static/vendor/schemagenerator/Utility.js}"></script>
+	<script th:src="@{/static/vendor/schemagenerator/Schema.js}"></script>
+	<script th:src="@{/static/vendor/schemagenerator/Models.js}"></script>
+	<script th:src="@{/static/vendor/schemagenerator/StaticView.js}"></script>
+	<script th:src="@{/static/vendor/schemagenerator/StringView.js}"></script>
+	<!-- INPUTMASK -->
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
+	
+
+
+	<script th:inline="javascript">
+		function navigateUrl(url){  window.location = url;	}
+	
+		var infojson;
+		var mountableModel2 = $('#ontology_autthorizations').find('tr.authorization-model')[0].outerHTML;
+		var tableSchema;
+		var authorizationsArr = []; 	
+		var failedOntologies = [[${failedOntologies}]];
+		var tableName = [[#{gen.table.name}]];
+		var entityName = [[#{gen.entity.name}]];
+		var failedToCreate = [[#{gen.op.failed.create}]];
+		var noSelected = [[#{ontology.warning.select}]];
+		var noDatasource = [[#{ontology.warning.datasource}]];
+		var noSchema = [[#{ontology.warning.schema}]];
+		var dataTables;
+	
+		// REDIRECT URL
+		var navigateUrl = function(url){
+			window.location.href = url;
+		}
+   
+		var searchInputBulk = document.getElementById('searchBulkTableName');
+			searchInputBulk.addEventListener('input', function() {
+			var inputValue = this.value.toLowerCase();
+			
+		    for (var i = 0; i < dataTables.length; i++) {
+    			var tdToHide = document.getElementById(dataTables[i].TABLE_NAME+'_tableName');
+
+				if (tdToHide) {
+			        var trToHide = tdToHide.closest('tr'); 
+			        var tdText = tdToHide.textContent.toLowerCase();
+			        if (tdText.includes(inputValue)) {
+			            trToHide.style.display = '';
+			        } else {
+			            trToHide.style.display = 'none'; 
+			        }
+		    	}
+		    }
+		});
+
+		$("#databases").on("change", function (){
+			var csrf_header = $("meta[name='_csrf_header']").attr("content");
+			var csrf_value = $("meta[name='_csrf']").attr("content");
+			var inputSearchBulk = document.getElementById("searchBulkTableName");
+    		inputSearchBulk.value = "";
+		    if (!infojson.hasSchema) {
+	            getTables("/controlpanel/ontologies/getTableInformation/"+ $("#datasources").val() + "/db/" + $("#databases").val());
+			} else {
+				getSchemas($("#datasources").val(), infojson, $("#databases").val(), true);
+				$('#collections').empty();
+				$('#collections').prop('disabled', true);
+				$('#collections').selectpicker('refresh');
+				$('#allowsCreateTable').prop('disabled', true);
+			}
+		});
+		
+		$("#schemas").on("change", function (){
+			var csrf_header = $("meta[name='_csrf_header']").attr("content");
+			var csrf_value = $("meta[name='_csrf']").attr("content");
+			$.ajax({
+				url : "/controlpanel/ontologies/getInfoDto/"+ $("#datasources").val(),
+				headers: {
+					[csrf_header]: csrf_value
+				},
+				type : 'GET',
+				dataType: 'text', 
+				contentType: 'text/plain',
+				mimeType: 'text/plain',
+				success : function(data, _textStatus, xhr) {
+					if (xhr.status === 204) {
+						var infojson = "";
+					} else {
+						var infojson = data;
+					}
+				}
+			});
+			if (infojson.hasDatabase) {
+	            url = "/controlpanel/ontologies/getTableInformation/"+ $("#datasources").val() + "/db/" + $("#databases").val() + "/sc/" + $("#schemas").val()
+			} else {
+				url = "/controlpanel/ontologies/getTableInformation/"+ $("#datasources").val() + "/sc/" + $("#schemas").val();
+			}
+
+		    getTables(url);
+		});
+		
+		$("#datasources").on("change", function (datasource){
+			var csrf_header = $("meta[name='_csrf_header']").attr("content");
+			var csrf_value = $("meta[name='_csrf']").attr("content");
+			document.getElementById("searchBulkTableName").removeAttribute("disabled");
+			var inputSearchBulk = document.getElementById("searchBulkTableName");
+    		inputSearchBulk.value = "";
+			$("#databaseDiv").removeClass("hidden");
+			$("#tableTbody").empty();
+			$.ajax({
+				url : "/controlpanel/ontologies/getInfoDto/"+ $("#datasources").val(),
+				headers: {
+					[csrf_header]: csrf_value
+				},
+				type : 'GET',
+				dataType: 'text', 
+				contentType: 'text/plain',
+				mimeType: 'text/plain',
+				success : function(data, _textStatus, xhr) {
+					
+					infojson = JSON.parse(data);
+					if (infojson.hasDatabase) {
+						$("#databases").parent().removeClass('hide');
+						databasesrequired=true;
+					} else {
+						$("#databases").parent().addClass("hidden");
+						databasesrequired=false;
+					}
+					if (infojson.hasSchema) {
+						$("#schemasDiv").removeClass("col-xs-2 hidden");
+						schemasrequired=true;
+					} else {
+						$("#schemasDiv").addClass("hidden");
+						schemasrequired=false;
+					}
+					if (infojson.hasDatabase) {
+						getDatabases($("#datasources").val(), infojson);
+					} else if (infojson.hasSchema) {
+		                getSchemas($("#datasources").val(), infojson);
+					} else {
+						toastr.error(messagesForms.operations.genOpError, "Datasource without database and schemas");
+					}
+				}
+			});
+		})
+		
+	var getDatabases = function(datasource, infojson) {
+		if (!infojson.hasCrossDatabase) { //hasn't possibility to cross databases like postgresql we select current database
+            $('#databases').empty();
+            $('#databases').append("<option selected value='"+infojson.currentDatabase+"' text='"+infojson.currentDatabase+"' >"+infojson.currentDatabase+"</option>");
+			$('#databases').prop('disabled', false);
+			$('#databases').selectpicker('refresh');
+			if (infojson.hasSchema) {
+                getSchemas(datasource, infojson, infojson.currentDatabase);
+			} else {
+			    getTables("/controlpanel/ontologies/getTableInformation/"+ $("#datasources").val() + "/db/" + $("#databases").val());
+			}
+		}
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		$.ajax({
+			url : "/controlpanel/ontologies/getDomain/"+ $("#datasources").val(),
+			headers: {
+				[csrf_header]: csrf_value
+			},
+			type : 'GET',
+			dataType: 'text', 
+			contentType: 'text/plain',
+			mimeType: 'text/plain',
+			success : function(data, _textStatus, xhr) {
+					var domain = data;
+					$('#domain').val(domain);
+			}
+		});
+		$.ajax({
+			url : "/controlpanel/ontologies/getDatabases/"+ $("#datasources").val(),
+			headers: {
+				[csrf_header]: csrf_value
+			},
+			type : 'GET',
+			dataType: 'text', 
+			contentType: 'text/plain',
+			mimeType: 'text/plain',
+			success : function(data, _textStatus, xhr) {
+				$('#databases').empty();
+				if (xhr.status === 204) {
+					var databases = [];
+				} else {
+					var databases = JSON.parse(data);
+				}
+
+				var count = databases.length;
+				if(count > 0) {
+					$.each( databases, function (key, object){
+						$('#databases').append("<option value='"+object+"' text='"+object+"' >"+object+"</option>");
+						if (!--count) {
+							$('#databases').prop('disabled', false);
+							$('#databases').selectpicker('refresh');
+						}
+					});
+					if (infojson.currentDatabase) {
+						$('#databases').val(infojson.currentDatabase);
+						$('#databases').selectpicker('refresh');
+						$('#databases').change();
+					}
+				} else {
+					toastr.error(messagesForms.operations.genOpError, 'Datasource has not databases');
+					$('#databases').prop('disabled', true);
+					$('#databases').selectpicker('refresh');
+				}
+			}
+		});
+		
+	}
+
+		var getSchemas = function(datasource, database, norefresh) {
+			var csrf_header = $("meta[name='_csrf_header']").attr("content");
+			var csrf_value = $("meta[name='_csrf']").attr("content");
+			$.ajax({
+				url : "/controlpanel/ontologies/getInfoDto/"+ datasource,
+				headers: {
+					[csrf_header]: csrf_value
+				},
+				type : 'GET',
+				dataType: 'text', 
+				contentType: 'text/plain',
+				mimeType: 'text/plain',
+				success : function(data, _textStatus, xhr) {
+					if (xhr.status === 204) {
+						var infojson = [];
+					} else {
+						var infojson = JSON.parse(data);
+					}
+				}
+			});
+			var url;
+			if (database) {
+	            url = "/controlpanel/ontologies/getSchemas/"+ datasource +"/"+$("#databases").val();
+			} else {
+	            url = "/controlpanel/ontologies/getSchemas/"+ datasource;
+			}
+			$.ajax({
+				url : url,
+				headers: {
+					[csrf_header]: csrf_value
+				},
+				type : 'GET',
+				dataType: 'text', 
+				contentType: 'text/plain',
+				mimeType: 'text/plain',
+				success : function(data, _textStatus, xhr) {
+					$('#schemas').empty();
+					if (xhr.status === 204) {
+						var schemas = [];
+					} else {
+						var schemas = JSON.parse(data);
+					}
+	
+					var count = schemas.length;
+					if(count > 0) {
+						$.each( schemas, function (key, object){
+							$('#schemas').append("<option value='"+object+"' text='"+object+"' >"+object+"</option>");
+							if (!--count) {
+								$('#schemas').prop('disabled', false);
+								$('#schemas').selectpicker('refresh');
+							}
+						});
+						if (!norefresh) {
+							$('#schemas').val(infojson.currentSchema);
+							$('#schemas').selectpicker('refresh');
+							$('#schemas').change();
+						}
+					} else {
+						$.alert({title: 'INFO!', type: 'blue' , theme: 'dark', content: 'Datasource has not schemas'});
+						$('#schemas').prop('disabled', true);
+						$('#schemas').selectpicker('refresh');
+					}
+					$("#schemasDiv").removeClass("col-xs-2 hidden");
+				}
+			});
+		}
+		
+		var getTables = function(url) {
+			var csrf_header = $("meta[name='_csrf_header']").attr("content");
+			var csrf_value = $("meta[name='_csrf']").attr("content");
+			$('#SelectAllCheckbox').prop("checked", false);
+			$('#loading-collection').show();
+			
+			$.ajax({
+				url : "/controlpanel/ontologies/getInfoDto/"+ $("#datasources").val(),
+				headers: {
+					[csrf_header]: csrf_value
+				},
+				type : 'GET',
+				dataType: 'text', 
+				contentType: 'text/plain',
+				mimeType: 'text/plain',
+				success : function(data, _textStatus, xhr) {
+					if (xhr.status === 204) {
+						var infojson = [];
+					} else {
+						var infojson = JSON.parse(data);
+					}
+				}
+			});
+			
+			$.ajax({
+				url : url,
+				headers: {
+					[csrf_header]: csrf_value
+				},
+				type : 'GET',
+				dataType: 'text', 
+				contentType: 'text/plain',
+				mimeType: 'text/plain',
+				success : function(data, _textStatus, xhr) {
+					var tables;
+					if (xhr.status === 204) {
+						tables = [];
+					} else {
+						tables = JSON.parse(data);
+						dataTables = tables;
+						tables.sort((a, b) => a.TABLE_NAME.localeCompare(b.TABLE_NAME));
+					}
+	
+					var count = tables.length;
+					$("#tableTbody").empty();
+					if(count > 0) {			
+						$.each( tables, function (key, object){
+							var columnnamesId = '<option value =""> </option>';
+							var columnnamesGeometry = '<option value =""> </option>';
+							$.each( object.COLUMS_NAMES, function (key, objectColumn){
+								if (objectColumn.PK == true){
+									columnnamesId = columnnamesId + '<option selected>'+ objectColumn.COLUMN_NAME+'</option>';
+									columnnamesGeometry = columnnamesGeometry + '<option>'+ objectColumn.COLUMN_NAME+'</option>';
+								} else {
+									columnnamesId = columnnamesId + '<option>'+ objectColumn.COLUMN_NAME+'</option>';
+									columnnamesGeometry = columnnamesGeometry + '<option>'+ objectColumn.COLUMN_NAME+'</option>';
+								}
+							})
+							
+							if ($("#domain").val() == "" || $("#domain").val() == null) {
+								$('#entities > tbody:last-child').append(
+									'<tr id=' + object.TABLE_NAME + '_row' + '>' +
+									'<td class="text-left no-wrap"><input type="checkbox" id="'+ object.TABLE_NAME +'" value="'+ object.TABLE_NAME +'"/></td>' +
+									'<td class="text-left no-wrap" id="'+ object.TABLE_NAME +'_tableName">' + object.TABLE_NAME +'</td>' +
+									'<td class="text-left no-wrap"><input class="input-groove-border" id="'+ object.TABLE_NAME +'_identification" value="' + object.TABLE_NAME + '" </td>' +
+									'<td class="text-left no-wrap"><select class="combobox-groove-border" id="'+object.TABLE_NAME+'_associatedId")>' + columnnamesId + '</select></td>');
+								
+							} else {
+								$('#entities > tbody:last-child').append(
+									'<tr id=' + object.TABLE_NAME + '_row' + '>' +
+									'<td class="text-left no-wrap"><input type="checkbox" id="'+ object.TABLE_NAME +'" value="'+ object.TABLE_NAME +'"/></td>' +
+									'<td class="text-left no-wrap" id="'+ object.TABLE_NAME +'_tableName">' + object.TABLE_NAME +'</td>' +
+									'<td class="text-left no-wrap"><input class="input-groove-border" id="'+ object.TABLE_NAME +'_identification" value="' + $("#domain").val() + '_' + object.TABLE_NAME + '" </td>' +
+									'<td class="text-left no-wrap"><select class="combobox-groove-border" id="'+object.TABLE_NAME+'_associatedId")>' + columnnamesId + '</select></td>');
+							}
+							
+							$("#" + object.TABLE_NAME + "_identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
+						});
+						
+					} else {
+						$.alert({title: 'INFO!', type: 'blue' , theme: 'dark', content: 'Database has not tables'});
+						$('#schemaSelect').prop('disabled', true);
+					}
+	
+					$("#datasource").val($("#databases").val());
+					$('#allowsCreateTable').prop('disabled', false);
+				},
+				error : function(data, status, err) {
+					$.alert({title: 'ERROR '+ status + ': '+err+'!', theme: 'dark', type: 'red', content: data.responseText});
+					$('#schemaSelect').empty();
+					$('#schemaSelect').prop('disabled', true);
+					$('#allowsCreateTable').prop('disabled', true);
+				}, 
+				complete: function (data, status){
+					$('#loading-collection').hide();
+				}
+			});
+		}
+	
+		function checkAll(o) {
+			var boxes = document.getElementsByTagName("input");
+			for (var x = 0; x < boxes.length; x++) {
+				var obj = boxes[x];
+				if (obj.type == "checkbox") {
+					if (obj.name != "check")
+						obj.checked = o.checked;
+				}
+			}
+		}
+		
+		function generateJson(){
+		
+			var entitiesInfo = [];
+			$('#contenedor-tabla input:checked').each(function() {
+				var id = $(this).attr('id');
+				if (id != "SelectAllCheckbox"){
+					var jsonData = {};
+					jsonData.tableName = $('#'+id+'_tableName').text();
+					jsonData.identification = $('#'+id+'_identification').val();
+					jsonData.associatedId = $('#'+id+'_associatedId').find('option:selected').text();
+					generateSchema(jsonData.tableName);
+					jsonData.schema = tableSchema;
+					entitiesInfo.push(jsonData);
+				}
+		   });
+            $("#ontolgiesObject").val(JSON.stringify(entitiesInfo));
+            $("#datasourceId").val($("#datasources").val());
+            $("#authorizationsObject").val(JSON.stringify(authorizationsArr));
+            $("#databaseObject").val($("#databases").val());
+            $("#schemaObject").val($("#schemas").val());
+            
+            if ($("#datasources").val() == ""){
+            	toastr.warning(noDatasource);
+            } else if (!$("#schemasDiv").hasClass("hidden") && $("#schemas").val() == "") { 
+            	toastr.warning(noSchema);
+            } else if (entitiesInfo.length == 0) {
+            	toastr.warning(noSelected);
+            } else {
+            	//ajaxsubmit
+	        	$("#ontology_bulk_create_form").ajaxSubmit({type: 'post',
+					success : function(data){
+						navigateUrl(data.redirect);
+					}, error: function(responseText, data){
+						var error = "<b>" + failedToCreate + "</b>";
+						var array = JSON.parse(responseText.responseJSON.failedOntologies);
+					    for (let i = 0; i < array.length; i++) {
+					      const item = array[i];
+					      error = error.concat("<br/>" +tableName + " : " + item.TableName + "<br/>" + entityName + ": " + item.EntityName);
+					    }
+					    $.alert({
+							title : 'ERROR!',
+							type : 'red',
+							theme : 'light',
+							content :  error
+						});
+					}
+				})
+            }
+		}
+		
+		function generateSchema(collection){
+			var csrf_header = $("meta[name='_csrf_header']").attr("content");
+			var csrf_value = $("meta[name='_csrf']").attr("content");
+			$.ajax({
+				url : "/controlpanel/ontologies/getInfoDto/"+ $("#datasources").val(),
+				headers: {
+					[csrf_header]: csrf_value
+				},
+				type : 'GET',
+				dataType: 'text', 
+				contentType: 'text/plain',
+				mimeType: 'text/plain',
+				success : function(data, _textStatus, xhr) {
+					if (xhr.status === 204) {
+						var infojson = [];
+					} else {
+						var infojson = JSON.parse(data);
+					}
+				}
+			});
+			var url = "/controlpanel/ontologies/getRelationalSchema/"+ $("#datasources").val();
+			
+			if ((infojson && infojson.hasDatabase) || ($("#databases").val() && $("#databases").val() !== "")) {
+				$("#datasourceDatabase").val($("#databases").val());
+				url += "/db/" + $("#databases").val() 
+			}
+			if ((infojson && infojson.hasSchema) || ($("#schemas").val() && $("#schemas").val() !== "")) {
+				$("#datasourceSchema").val($("#schemas").val());
+				url += "/sc/" + $("#schemas").val()
+			}
+			url += "/"+ collection;
+			
+	        $.ajax({
+				url : url,
+				headers: {
+					[csrf_header]: csrf_value
+			    },
+				type : 'GET',
+				dataType: 'text', 
+				contentType: 'text/plain',
+				mimeType: 'text/plain',
+				async: false,
+				success : function(data) {
+					JsonSchema.INPUT_VALUE = data;
+					var schema = genSchema(collection);
+					genSchema(collection);
+				},
+				error : function(data, status, er) {
+					toastr.error(messagesForms.operations.genOpError,er);
+				}
+			});
+		}
+		
+		function genSchema(collection) {
+			JsonSchema.RESOLVE_REFS = false;
+			JsonSchema.MERGE_EXTS = false;
+			JsonSchema.INCLUDE_DEFS = false;
+			JsonSchema.INPUT_MODE = false;
+			JsonSchema.VERBOSE = false;
+
+	        var rootSchema = JsonSchema.GenerateSchema();
+		
+	        this.rootSchemaPair = new SchemaPair({
+	          schema: rootSchema,
+	          root: true
+	        });
+		
+	        this.rootSchemaPair.constructId();
+	
+	        var spStaticV = new SchemaPairStrV({
+	           model: this.rootSchemaPair
+	        })
+
+        	spStaticV.model.attributes.schema.attributes.schemaid = collection;
+        	var schemaRendered = JSON.parse(spStaticV.render());
+        	schemaRendered["description"] = "Bulk generated Entity";
+			
+			if(schemaRendered.properties){
+				Object.keys(schemaRendered.properties).forEach(key => {
+					if(!schemaRendered.properties[key].required){
+						if(!Array.isArray( schemaRendered.properties[key].type)){
+							schemaRendered.properties[key].type=[schemaRendered.properties[key].type,'null'];
+						}
+					}			  
+				});
+ 			}
+ 			tableSchema = schemaRendered;
+		}
+		
+		function insertAuthorization(){
+			
+			var user = $('#users').find('option:selected').val();
+			var accesstype = $('#accesstypes').find('option:selected').text();	
+		
+			var propAuth = {"users":user,"accesstypes":accesstype};
+			authorizationsArr.push(propAuth);
+			console.log('     |---> JSONtoTable: ' + authorizationsArr.length + ' data: ' + JSON.stringify(authorizationsArr));
+								
+			// TO-HTML
+			if ($('#authorizations').attr('data-loaded') === 'true'){
+				$('#ontology_autthorizations > tbody').html("");
+				$('#ontology_autthorizations > tbody').append(mountableModel2);
+			}
+			console.log('authorizationsArr: ' + authorizationsArr.length + ' Arr: ' + JSON.stringify(authorizationsArr));
+		    $('#ontology_autthorizations').mounTable(authorizationsArr,{
+				model: '.authorization-model',
+				noDebug: false							
+			}); 
+		    
+			// hide info , disable user and show table
+			$('#alert-authorizations').toggle($('#alert-authorizations').hasClass('hide'));
+			$("#users").selectpicker('deselectAll');
+			$("#users option[value='" + $('#users').val() + "']").prop('disabled', true);
+			$("#users").selectpicker('refresh');
+			$('#authorizations').removeClass('hide');
+			$('#authorizations').attr('data-loaded',true);
+		    
+			showHideImageTableOntology();
+		}
+		
+		function removeAuthorization(btn){
+			
+			var user = 	$(btn).closest('tr').find('td')[0].getElementsByTagName('input')[0].value;
+			var accesstype = 	$(btn).closest('tr').find('td')[1].getElementsByTagName('input')[0].value;
+			var propAuth = {"users":user,"accesstypes":accesstype};
+			authorizationsArr.splice(propAuth, 1);
+			$(btn).closest('tr').remove();
+			
+			$('#alert-authorizations').toggle($('#alert-authorizations').hasClass('hide'));
+			$("#users").selectpicker('deselectAll');
+			$("#users option[value='" + user + "']").prop('disabled', false);
+			$("#users").selectpicker('refresh');
+			
+			showHideImageTableOntology();
+		}
+		
+		function showHideImageTableOntology(){
+			if(typeof $('#ontology_autthorizations > tbody > tr').length =='undefined' || $('#ontology_autthorizations > tbody > tr').length == 0 || $('#ontology_autthorizations > tbody > tr > td > input')[0].value==''){
+				$('#imageNoElementsOnTable').show();
+				$('#authorizations').addClass("hide");
+				
+			}else{
+				$('#imageNoElementsOnTable').hide();
+				$('#authorizations').removeClass("hide");
+			}
+		}
+	</script>
+</body>
+</html>
+
+
+

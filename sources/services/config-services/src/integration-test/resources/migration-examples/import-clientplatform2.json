@@ -1,0 +1,397 @@
+{
+  "$v": 1,
+  "$d": {
+    "allData": [
+      {
+        "class": "com.minsait.onesait.platform.config.model.Device",
+        "instances": [
+          {
+            "id": "f435c9b2-cb90-4a62-9d5c-43ff79c5d0f4",
+            "data": {
+                "jsonActions": null,
+                "sessionKey": "60c60d66-4cc4-4cd2-bbfe-3806c20c05a7",
+                "tags": null,
+                "connected": false,
+                "createdAt": 1537369507000,
+                "serialVersionUID": 1,
+                "protocol": "REST",
+                "identification": "CLM_Graph_Generator:initialLoad",
+                "clientPlatform": "0c4c5f72-c76b-46a4-a579-7b4971f1316b",
+                "disabled": true,
+                "location": null,
+                "id": "f435c9b2-cb90-4a62-9d5c-43ff79c5d0f4",
+                "status": "OK",
+                "updatedAt": 1537858507000
+            }
+          }
+        ]
+      },
+      {
+        "class": "com.minsait.onesait.platform.config.model.ClientPlatform",
+        "instances": [
+           {
+                "id": "0c4c5f72-c76b-46a4-a579-7b4971f1316b",
+                "data": {
+                    "metadata": "",
+                    "devices": [
+                        "f435c9b2-cb90-4a62-9d5c-43ff79c5d0f4"
+                    ],
+                    "description": "Device for graph data generation",
+                    "encryptionKey": "c9c7c56e-d435-4a82-adfa-92cbff27ace5",
+                    "clientConnections": [],
+                    "createdAt": 1537369441000,
+                    "serialVersionUID": 1,
+                    "clientPlatformOntologies": [
+                        "d2d58336-0b71-4321-bbda-8666a3a60cf7",
+                        "c8b6bf34-5472-4b2b-aaeb-417c41191f75",
+                        "298a7ac6-0616-4764-b542-d0f08709258b",
+                        "44e05bbe-6e48-4539-ba3f-85cfc56f2640",
+                        "95cc46c3-e7ab-409b-8380-8ecfaa37da67",
+                        "db83c9c2-4572-4fb0-ab0c-b259a8d2fa23",
+                        "63e285a2-5ead-40f7-bcce-f2cd273f3ea8"
+                    ],
+                    "identification": "CLM_Graph_Generator",
+                    "tokens": [
+                        "a5e3e468-04ea-4602-bf68-5f704c2365bf"
+                    ],
+                    "id": "0c4c5f72-c76b-46a4-a579-7b4971f1316b",
+                    "user": "citylandscapemanager",
+                    "updatedAt": 1537372252000
+                }
+            }
+        ]
+      },
+      {
+        "class": "com.minsait.onesait.platform.config.model.ClientPlatformOntology",
+        "instances": [
+           {
+                "id": "d2d58336-0b71-4321-bbda-8666a3a60cf7",
+                "data": {
+                    "createdAt": 1537372252000,
+                    "serialVersionUID": 1,
+                    "access": "ALL",
+                    "clientPlatform": "0c4c5f72-c76b-46a4-a579-7b4971f1316b",
+                    "id": "d2d58336-0b71-4321-bbda-8666a3a60cf7",
+                    "ontology": "d21c69d4-2a48-4571-b119-7308f15294ed",
+                    "updatedAt": 1537372252000
+                }
+            },
+            {
+                "id": "c8b6bf34-5472-4b2b-aaeb-417c41191f75",
+                "data": {
+                    "createdAt": 1537369441000,
+                    "serialVersionUID": 1,
+                    "access": "ALL",
+                    "clientPlatform": "0c4c5f72-c76b-46a4-a579-7b4971f1316b",
+                    "id": "c8b6bf34-5472-4b2b-aaeb-417c41191f75",
+                    "ontology": "b8d48c27-4eab-49a0-aa4d-5d11bb334944",
+                    "updatedAt": 1537369441000
+                }
+            },
+            {
+                "id": "298a7ac6-0616-4764-b542-d0f08709258b",
+                "data": {
+                    "createdAt": 1537372252000,
+                    "serialVersionUID": 1,
+                    "access": "ALL",
+                    "clientPlatform": "0c4c5f72-c76b-46a4-a579-7b4971f1316b",
+                    "id": "298a7ac6-0616-4764-b542-d0f08709258b",
+                    "ontology": "9512ff15-4d11-479f-bd07-fb9e62d7ae4e",
+                    "updatedAt": 1537372252000
+                }
+            },
+            {
+                "id": "44e05bbe-6e48-4539-ba3f-85cfc56f2640",
+                "data": {
+                    "createdAt": 1537369441000,
+                    "serialVersionUID": 1,
+                    "access": "ALL",
+                    "clientPlatform": "0c4c5f72-c76b-46a4-a579-7b4971f1316b",
+                    "id": "44e05bbe-6e48-4539-ba3f-85cfc56f2640",
+                    "ontology": "bd9becde-664c-4724-9e75-37c2cced1619",
+                    "updatedAt": 1537369441000
+                }
+            },
+            {
+                "id": "95cc46c3-e7ab-409b-8380-8ecfaa37da67",
+                "data": {
+                    "createdAt": 1537372252000,
+                    "serialVersionUID": 1,
+                    "access": "ALL",
+                    "clientPlatform": "0c4c5f72-c76b-46a4-a579-7b4971f1316b",
+                    "id": "95cc46c3-e7ab-409b-8380-8ecfaa37da67",
+                    "ontology": "87caa13c-0afe-47d8-8040-9448faa7f0cb",
+                    "updatedAt": 1537372252000
+                }
+            },
+            {
+                "id": "db83c9c2-4572-4fb0-ab0c-b259a8d2fa23",
+                "data": {
+                    "createdAt": 1537372252000,
+                    "serialVersionUID": 1,
+                    "access": "ALL",
+                    "clientPlatform": "0c4c5f72-c76b-46a4-a579-7b4971f1316b",
+                    "id": "db83c9c2-4572-4fb0-ab0c-b259a8d2fa23",
+                    "ontology": "b8ae857e-46a9-438a-a8e2-6e1536982300",
+                    "updatedAt": 1537372252000
+                }
+            },
+            {
+                "id": "63e285a2-5ead-40f7-bcce-f2cd273f3ea8",
+                "data": {
+                    "createdAt": 1537369441000,
+                    "serialVersionUID": 1,
+                    "access": "ALL",
+                    "clientPlatform": "0c4c5f72-c76b-46a4-a579-7b4971f1316b",
+                    "id": "63e285a2-5ead-40f7-bcce-f2cd273f3ea8",
+                    "ontology": "5ffa772c-7500-4b26-bd82-9977edb488bd",
+                    "updatedAt": 1537369441000
+                }
+            }
+        ]
+      },
+      {
+        "class": "com.minsait.onesait.platform.config.model.Ontology",
+        "instances": [
+            {
+                "id": "b8d48c27-4eab-49a0-aa4d-5d11bb334944",
+                "data": {
+                    "allowsCypherFields": false,
+                    "rtdbClean": false,
+                    "dataModel": "MASTER-DataModel-5",
+                    "active": true,
+                    "description": "Weather montlhy data for Charts",
+                    "metainf": "clm,environment,weather",
+                    "dataModelVersion": null,
+                    "allowsCreateTopic": false,
+                    "createdAt": 1536663348000,
+                    "serialVersionUID": 1,
+                    "identification": "Weather_Chart_monthly",
+                    "rtdbCleanLapse": null,
+                    "rtdbToHdb": false,
+                    "jsonSchema": "{\r\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\r\n    \"title\": \"Weather_Chart_monthly\",\r\n    \"description\": \"Weather aggregated data for charts\",\r\n    \"definitions\": {\r\n        \"timestampDef\": {\r\n            \"type\": \"object\",\r\n            \"properties\": {\r\n                \"$date\": {\r\n                    \"type\": \"string\",\r\n                    \"format\": \"date-time\"\r\n                }\r\n            },\r\n            \"required\": [\r\n                \"$date\"\r\n            ]\r\n        },\r\n        \"stationDef\": {\r\n            \"description\": \"Average value for a period of time\",\r\n            \"type\": \"object\",\r\n            \"properties\": {\r\n                \"mean\": {\r\n                    \"min_15\": {\r\n                        \"type\": \"object\",\r\n                        \"$ref\": \"#/definitions/periodData\"\r\n                    },\r\n                    \"hr_2\": {\r\n                        \"type\": \"object\",\r\n                        \"$ref\": \"#/definitions/periodData\"\r\n                    },\r\n                    \"hr_4\": {\r\n                        \"type\": \"object\",\r\n                        \"$ref\": \"#/definitions/periodData\"\r\n                    }\r\n                }\r\n            }\r\n        },\r\n        \"periodData\": {\r\n            \"type\": \"object\",\r\n            \"properties\": {\r\n                \"temperature\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"number\",\r\n    \t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"humidity\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"number\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"pluviometry\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"number\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"windSpeed\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"number\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"atmPressure\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"number\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"solarRadiation\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"number\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"luminosity\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"number\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                }\r\n            }\r\n        }\r\n    },\r\n    \"type\": \"object\",\r\n    \"required\": [\r\n        \"WeatherChart\"\r\n    ],\r\n    \"properties\": {\r\n        \"WeatherChart\": {\r\n            \"type\": \"string\",\r\n            \"$ref\": \"#/datos\"\r\n        }\r\n    },\r\n    \"datos\": {\r\n        \"type\": \"object\",\r\n        \"required\": [\r\n            \"stations\",\r\n            \"timestamp\",\r\n            \"standardLocation\"\r\n        ],\r\n        \"properties\": {\r\n            \"stations\": {\r\n                \"type\": \"object\",\r\n                \"required\": [\r\n                    \"city\"\r\n                ],\r\n                \"properties\": {\r\n                    \"city\": {\r\n                        \"type\": \"object\",\r\n                        \"$ref\": \"#/definitions/stationDef\"\r\n                    }\r\n                },\r\n                \"additionalProperties\": true\r\n            },\r\n            \"timestamp\": {\r\n                \"type\": \"object\",\r\n                \"$ref\": \"#/definitions/timestampDef\"\r\n            },\r\n            \"standardLocation\": {\r\n                \"description\": \"ISO location\",\r\n                \"type\": \"object\",\r\n                \"required\": [\r\n                    \"iso3166_1\",\r\n                    \"iso3166_2\",\r\n                    \"un_LOCODE\"\r\n                ],\r\n                \"properties\": {\r\n                    \"iso3166_1\": {\r\n                        \"type\": \"string\"\r\n                    },\r\n                    \"iso3166_2\": {\r\n                        \"type\": \"string\"\r\n                    },\r\n                    \"un_LOCODE\": {\r\n                        \"type\": \"string\"\r\n                    },\r\n                    \"district\": {\r\n                        \"type\": \"string\"\r\n                    }\r\n                }\r\n            }\r\n        }\r\n    },\r\n    \"additionalProperties\": true\r\n}",
+                    "xmlDiagram": null,
+                    "ontologyClass": null,
+                    "isPublic": false,
+                    "topic": null,
+                    "id": "b8d48c27-4eab-49a0-aa4d-5d11bb334944",
+                    "ontologyUserAccesses": [],
+                    "rtdbDatasource": "MONGO",
+                    "user": "citylandscapemanager",
+                    "updatedAt": 1536916302000
+                }
+            },
+            {
+                "id": "9512ff15-4d11-479f-bd07-fb9e62d7ae4e",
+                "data": {
+                    "allowsCypherFields": false,
+                    "rtdbClean": false,
+                    "dataModel": "MASTER-DataModel-5",
+                    "active": true,
+                    "description": "AirQuality aggregated data for charts",
+                    "metainf": "airquality,chart,environment",
+                    "dataModelVersion": null,
+                    "allowsCreateTopic": false,
+                    "createdAt": 1536743959000,
+                    "serialVersionUID": 1,
+                    "identification": "AirQuality_Chart_daily",
+                    "rtdbCleanLapse": null,
+                    "rtdbToHdb": false,
+                    "jsonSchema": "{\r\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\r\n    \"title\": \"AirQuality_Chart_daily\",\r\n    \"description\": \"AirQuality aggregated data for charts\",\r\n    \"definitions\": {\r\n        \"timestampDef\": {\r\n            \"type\": \"object\",\r\n            \"properties\": {\r\n                \"$date\": {\r\n                    \"type\": \"string\",\r\n                    \"format\": \"date-time\"\r\n                }\r\n            },\r\n            \"required\": [\r\n                \"$date\"\r\n            ]\r\n        },\r\n        \"stationDef\": {\r\n            \"description\": \"Average value for a period of time\",\r\n            \"type\": \"object\",\r\n            \"properties\": {\r\n                \"mean\": {\r\n                    \"min_15\": {\r\n                        \"type\": \"object\",\r\n                        \"$ref\": \"#/definitions/periodData\"\r\n                    },\r\n                    \"hr_2\": {\r\n                        \"type\": \"object\",\r\n                        \"$ref\": \"#/definitions/periodData\"\r\n                    },\r\n                    \"hr_4\": {\r\n                        \"type\": \"object\",\r\n                        \"$ref\": \"#/definitions/periodData\"\r\n                    }\r\n                }\r\n            }\r\n        },\r\n        \"periodData\": {\r\n            \"type\": \"object\",\r\n            \"properties\": {\r\n                \"co\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"integer\",\r\n    \t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"no\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"integer\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"no2\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"integer\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"nox\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"integer\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"so2\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"integer\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"pm25\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"integer\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"pm10\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"integer\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"o3\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"integer\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                }\r\n            }\r\n        }\r\n    },\r\n    \"type\": \"object\",\r\n    \"required\": [\r\n        \"AirQualityChart\"\r\n    ],\r\n    \"properties\": {\r\n        \"AirQualityChart\": {\r\n            \"type\": \"string\",\r\n            \"$ref\": \"#/datos\"\r\n        }\r\n    },\r\n    \"datos\": {\r\n        \"type\": \"object\",\r\n        \"required\": [\r\n            \"stations\",\r\n            \"timestamp\",\r\n            \"standardLocation\"\r\n        ],\r\n        \"properties\": {\r\n            \"stations\": {\r\n                \"type\": \"object\",\r\n                \"required\": [\r\n                    \"city\"\r\n                ],\r\n                \"properties\": {\r\n                    \"city\": {\r\n                        \"type\": \"object\",\r\n                        \"$ref\": \"#/definitions/stationDef\"\r\n                    }\r\n                },\r\n                \"additionalProperties\": true\r\n            },\r\n            \"timestamp\": {\r\n                \"type\": \"object\",\r\n                \"$ref\": \"#/definitions/timestampDef\"\r\n            },\r\n            \"standardLocation\": {\r\n                \"description\": \"ISO location\",\r\n                \"type\": \"object\",\r\n                \"required\": [\r\n                    \"iso3166_1\",\r\n                    \"iso3166_2\",\r\n                    \"un_LOCODE\"\r\n                ],\r\n                \"properties\": {\r\n                    \"iso3166_1\": {\r\n                        \"type\": \"string\"\r\n                    },\r\n                    \"iso3166_2\": {\r\n                        \"type\": \"string\"\r\n                    },\r\n                    \"un_LOCODE\": {\r\n                        \"type\": \"string\"\r\n                    },\r\n                    \"district\": {\r\n                        \"type\": \"string\"\r\n                    }\r\n                }\r\n            }\r\n        }\r\n    },\r\n    \"additionalProperties\": true\r\n}",
+                    "xmlDiagram": null,
+                    "ontologyClass": null,
+                    "isPublic": false,
+                    "topic": null,
+                    "id": "9512ff15-4d11-479f-bd07-fb9e62d7ae4e",
+                    "ontologyUserAccesses": [],
+                    "rtdbDatasource": "MONGO",
+                    "user": "citylandscapemanager",
+                    "updatedAt": 1536915994000
+                }
+            },
+            {
+                "id": "d21c69d4-2a48-4571-b119-7308f15294ed",
+                "data": {
+                    "allowsCypherFields": false,
+                    "rtdbClean": false,
+                    "dataModel": "MASTER-DataModel-5",
+                    "active": true,
+                    "description": "asdfasdfasdf",
+                    "metainf": "aeroallergen,chart,environment",
+                    "dataModelVersion": null,
+                    "allowsCreateTopic": false,
+                    "createdAt": 1536744237000,
+                    "serialVersionUID": 1,
+                    "identification": "AeroAllergen_Chart_monthly",
+                    "rtdbCleanLapse": null,
+                    "rtdbToHdb": false,
+                    "jsonSchema": "{\r\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\r\n    \"title\": \"AeroAllergen_Chart_monthly\",\r\n    \"description\": \"AeroAllergen aggregated data for charts\",\r\n    \"definitions\": {\r\n        \"timestampDef\": {\r\n            \"type\": \"object\",\r\n            \"properties\": {\r\n                \"$date\": {\r\n                    \"type\": \"string\",\r\n                    \"format\": \"date-time\"\r\n                }\r\n            },\r\n            \"required\": [\r\n                \"$date\"\r\n            ]\r\n        },\r\n        \"stationDef\": {\r\n            \"description\": \"Average value for a period of time\",\r\n            \"type\": \"object\",\r\n            \"properties\": {\r\n                \"mean\": {\r\n                    \"d_2\": {\r\n                        \"type\": \"object\",\r\n                        \"$ref\": \"#/definitions/periodData\"\r\n                    },\r\n                    \"mo_1\": {\r\n                        \"type\": \"object\",\r\n                        \"$ref\": \"#/definitions/periodData\"\r\n                    }\r\n                }\r\n            }\r\n        },\r\n        \"periodData\": {\r\n            \"type\": \"object\",\r\n            \"properties\": {\r\n                \"chenopodiaceaeAmaranthaceae\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"integer\",\r\n    \t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"grass\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"integer\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"olive\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"integer\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"nettle\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"integer\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                }\r\n            }\r\n        }\r\n    },\r\n    \"type\": \"object\",\r\n    \"required\": [\r\n        \"AeroAllergenChart\"\r\n    ],\r\n    \"properties\": {\r\n        \"AeroAllergenChart\": {\r\n            \"type\": \"string\",\r\n            \"$ref\": \"#/datos\"\r\n        }\r\n    },\r\n    \"datos\": {\r\n        \"type\": \"object\",\r\n        \"required\": [\r\n            \"stations\",\r\n            \"timestamp\",\r\n            \"standardLocation\"\r\n        ],\r\n        \"properties\": {\r\n            \"stations\": {\r\n                \"type\": \"object\",\r\n                \"required\": [\r\n                    \"city\"\r\n                ],\r\n                \"properties\": {\r\n                    \"city\": {\r\n                        \"type\": \"object\",\r\n                        \"$ref\": \"#/definitions/stationDef\"\r\n                    }\r\n                },\r\n                \"additionalProperties\": true\r\n            },\r\n            \"timestamp\": {\r\n                \"type\": \"object\",\r\n                \"$ref\": \"#/definitions/timestampDef\"\r\n            },\r\n            \"standardLocation\": {\r\n                \"description\": \"ISO location\",\r\n                \"type\": \"object\",\r\n                \"required\": [\r\n                    \"iso3166_1\",\r\n                    \"iso3166_2\",\r\n                    \"un_LOCODE\"\r\n                ],\r\n                \"properties\": {\r\n                    \"iso3166_1\": {\r\n                        \"type\": \"string\"\r\n                    },\r\n                    \"iso3166_2\": {\r\n                        \"type\": \"string\"\r\n                    },\r\n                    \"un_LOCODE\": {\r\n                        \"type\": \"string\"\r\n                    },\r\n                    \"district\": {\r\n                        \"type\": \"string\"\r\n                    }\r\n                }\r\n            }\r\n        }\r\n    },\r\n    \"additionalProperties\": true\r\n}",
+                    "xmlDiagram": null,
+                    "ontologyClass": null,
+                    "isPublic": false,
+                    "topic": null,
+                    "id": "d21c69d4-2a48-4571-b119-7308f15294ed",
+                    "ontologyUserAccesses": [],
+                    "rtdbDatasource": "MONGO",
+                    "user": "citylandscapemanager",
+                    "updatedAt": 1536915932000
+                }
+            },
+            {
+                "id": "bd9becde-664c-4724-9e75-37c2cced1619",
+                "data": {
+                    "allowsCypherFields": false,
+                    "rtdbClean": true,
+                    "dataModel": "MASTER-DataModel-3",
+                    "active": true,
+                    "description": "System Ontology. Centralized Log for devices of type CLM_Graph_Generator",
+                    "metainf": null,
+                    "dataModelVersion": null,
+                    "allowsCreateTopic": false,
+                    "createdAt": 1537369441000,
+                    "serialVersionUID": 1,
+                    "identification": "LOG_CLM_Graph_Generator",
+                    "rtdbCleanLapse": "SIX_MONTHS",
+                    "rtdbToHdb": false,
+                    "jsonSchema": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"title\": \"DeviceLog\",\n    \"type\": \"object\",\n    \"required\": [\n        \"DeviceLog\"\n    ],\n    \"properties\": {\n        \"DeviceLog\": {\n            \"type\": \"string\",\n            \"$ref\": \"#/datos\"\n        }\n    },\n    \"datos\": {\n        \"description\": \"Info DeviceLog\",\n        \"type\": \"object\",\n        \"required\": [\n            \"status\",\n            \"level\",\n            \"message\",\n            \"device\",\n            \"timestamp\"\n        ],\n        \"properties\": {\n            \"location\": {\n                \"type\": \"object\",\n                \"required\": [\n                    \"coordinates\",\n                    \"type\"\n                ],\n                \"properties\": {\n                    \"coordinates\": {\n                        \"type\": \"object\",\n                        \"properties\": {\n                            \"latitude\": {\n                                \"type\": \"number\"\n                            },\n                            \"longitude\": {\n                                \"type\": \"number\"\n                            }\n                        }\n                    },\n                    \"type\": {\n                        \"type\": \"string\",\n                        \"enum\": [\n                            \"Point\"\n                        ]\n                    }\n                }\n            },\n            \"status\": {\n                \"type\": \"string\"\n            },\n            \"level\": {\n                \"type\": \"string\"\n            },\n            \"message\": {\n                \"type\": \"string\"\n            },\n            \"extraOptions\": {\n                \"type\": \"string\"\n            },\n            \"device\": {\n                \"type\": \"string\"\n            },\n            \"timestamp\": {\n                \"type\": \"string\",\n                \"format\": \"date-time\"\n            }\n        }\n    },\n    \"description\": \"Device logging\",\n    \"additionalProperties\": true\n}",
+                    "xmlDiagram": null,
+                    "ontologyClass": null,
+                    "isPublic": false,
+                    "topic": null,
+                    "id": "bd9becde-664c-4724-9e75-37c2cced1619",
+                    "ontologyUserAccesses": [],
+                    "rtdbDatasource": "MONGO",
+                    "user": "citylandscapemanager",
+                    "updatedAt": 1537369441000
+                }
+            },
+            {
+                "id": "87caa13c-0afe-47d8-8040-9448faa7f0cb",
+                "data": {
+                    "allowsCypherFields": false,
+                    "rtdbClean": false,
+                    "dataModel": "MASTER-DataModel-5",
+                    "active": true,
+                    "description": "AeroAllergen aggregated data for Charts",
+                    "metainf": "aeroallergen,chart,environment",
+                    "dataModelVersion": null,
+                    "allowsCreateTopic": false,
+                    "createdAt": 1536743380000,
+                    "serialVersionUID": 1,
+                    "identification": "AeroAllergen_Chart_daily",
+                    "rtdbCleanLapse": null,
+                    "rtdbToHdb": false,
+                    "jsonSchema": "{\r\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\r\n\t\"title\": \"AeroAllergen_Chart_daily\",\r\n\t\"description\": \"AeroAllergen aggregated data for charts\",\r\n\t\"definitions\": {\r\n\t\t\"timestampDef\": {\r\n\t\t\t\"type\": \"object\",\r\n\t\t\t\"properties\": {\r\n\t\t\t\t\"$date\": {\r\n\t\t\t\t\t\"type\": \"string\",\r\n\t\t\t\t\t\"format\": \"date-time\"\r\n\t\t\t\t}\r\n\t\t\t},\r\n\t\t\t\"required\": [\r\n\t\t\t\t\"$date\"\r\n\t\t\t]\r\n\t\t},\r\n\t\t\"stationDef\": {\r\n\t\t\t\"description\": \"Average value for a period of time\",\r\n\t\t\t\"type\": \"object\",\r\n\t\t\t\"properties\": {\r\n\t\t\t\t\"mean\": {\r\n\t\t\t\t\t\"min_15\": {\r\n\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\"$ref\": \"#/definitions/periodData\"\r\n\t\t\t\t\t},\r\n\t\t\t\t\t\"hr_2\": {\r\n\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\"$ref\": \"#/definitions/periodData\"\r\n\t\t\t\t\t},\r\n\t\t\t\t\t\"hr_4\": {\r\n\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\"$ref\": \"#/definitions/periodData\"\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t},\r\n\t\t\"periodData\": {\r\n\t\t\t\"type\": \"object\",\r\n\t\t\t\"properties\": {\r\n\t\t\t\t\"chenopodiaceaeAmaranthaceae\": {\r\n\t\t\t\t\t\"type\": \"array\",\r\n\t\t\t\t\t\"items\": {\r\n\t\t\t\t\t\t\"value\": \"integer\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t}\r\n\t\t\t\t},\r\n\t\t\t\t\"grass\": {\r\n\t\t\t\t\t\"type\": \"array\",\r\n\t\t\t\t\t\"items\": {\r\n\t\t\t\t\t\t\"value\": \"integer\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t}\r\n\t\t\t\t},\r\n\t\t\t\t\"olive\": {\r\n\t\t\t\t\t\"type\": \"array\",\r\n\t\t\t\t\t\"items\": {\r\n\t\t\t\t\t\t\"value\": \"integer\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t}\r\n\t\t\t\t},\r\n\t\t\t\t\"nettle\": {\r\n\t\t\t\t\t\"type\": \"array\",\r\n\t\t\t\t\t\"items\": {\r\n\t\t\t\t\t\t\"value\": \"integer\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t}\r\n\t},\r\n\t\"type\": \"object\",\r\n\t\"required\": [\r\n\t\t\"AeroAllergenChart\"\r\n\t],\r\n\t\"properties\": {\r\n\t\t\"AeroAllergenChart\": {\r\n\t\t\t\"type\": \"string\",\r\n\t\t\t\"$ref\": \"#/datos\"\r\n\t\t}\r\n\t},\r\n\t\"datos\": {\r\n\t\t\"type\": \"object\",\r\n\t\t\"required\": [\r\n\t\t\t\"stations\",\r\n\t\t\t\"timestamp\",\r\n\t\t\t\"standardLocation\"\r\n\t\t],\r\n\t\t\"properties\": {\r\n\t\t\t\"stations\": {\r\n\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\"required\": [\r\n\t\t\t\t\t\"city\"\r\n\t\t\t\t],\r\n\t\t\t\t\"properties\": {\r\n\t\t\t\t\t\"city\": {\r\n\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\"$ref\": \"#/definitions/stationDef\"\r\n\t\t\t\t\t}\r\n\t\t\t\t},\r\n\t\t\t\t\"additionalProperties\": true\r\n\t\t\t},\r\n\t\t\t\"timestamp\": {\r\n\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t},\r\n\t\t\t\"standardLocation\": {\r\n\t\t\t\t\"description\": \"ISO location\",\r\n\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\"required\": [\r\n\t\t\t\t\t\"iso3166_1\",\r\n\t\t\t\t\t\"iso3166_2\",\r\n\t\t\t\t\t\"un_LOCODE\"\r\n\t\t\t\t],\r\n\t\t\t\t\"properties\": {\r\n\t\t\t\t\t\"iso3166_1\": {\r\n\t\t\t\t\t\t\"type\": \"string\"\r\n\t\t\t\t\t},\r\n\t\t\t\t\t\"iso3166_2\": {\r\n\t\t\t\t\t\t\"type\": \"string\"\r\n\t\t\t\t\t},\r\n\t\t\t\t\t\"un_LOCODE\": {\r\n\t\t\t\t\t\t\"type\": \"string\"\r\n\t\t\t\t\t},\r\n\t\t\t\t\t\"district\": {\r\n\t\t\t\t\t\t\"type\": \"string\"\r\n\t\t\t\t\t}\r\n\t\t\t\t}\r\n\t\t\t}\r\n\t\t}\r\n\t},\r\n\t\"additionalProperties\": true\r\n}",
+                    "xmlDiagram": null,
+                    "ontologyClass": null,
+                    "isPublic": false,
+                    "topic": null,
+                    "id": "87caa13c-0afe-47d8-8040-9448faa7f0cb",
+                    "ontologyUserAccesses": [],
+                    "rtdbDatasource": "MONGO",
+                    "user": "citylandscapemanager",
+                    "updatedAt": 1536915674000
+                }
+            },
+            {
+                "id": "b8ae857e-46a9-438a-a8e2-6e1536982300",
+                "data": {
+                    "allowsCypherFields": false,
+                    "rtdbClean": false,
+                    "dataModel": "MASTER-DataModel-5",
+                    "active": true,
+                    "description": "asdfasdf",
+                    "metainf": "airquality,chart,environment",
+                    "dataModelVersion": null,
+                    "allowsCreateTopic": false,
+                    "createdAt": 1536744423000,
+                    "serialVersionUID": 1,
+                    "identification": "AirQuality_Chart_monthly",
+                    "rtdbCleanLapse": null,
+                    "rtdbToHdb": false,
+                    "jsonSchema": "{\r\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\r\n    \"title\": \"AirQuality_Chart_monthly\",\r\n    \"description\": \"AirQuality aggregated data for charts\",\r\n    \"definitions\": {\r\n        \"timestampDef\": {\r\n            \"type\": \"object\",\r\n            \"properties\": {\r\n                \"$date\": {\r\n                    \"type\": \"string\",\r\n                    \"format\": \"date-time\"\r\n                }\r\n            },\r\n            \"required\": [\r\n                \"$date\"\r\n            ]\r\n        },\r\n        \"stationDef\": {\r\n            \"description\": \"Average value for a period of time\",\r\n            \"type\": \"object\",\r\n            \"properties\": {\r\n                \"mean\": {\r\n                    \"d_2\": {\r\n                        \"type\": \"object\",\r\n                        \"$ref\": \"#/definitions/periodData\"\r\n                    },\r\n                    \"mo_1\": {\r\n                        \"type\": \"object\",\r\n                        \"$ref\": \"#/definitions/periodData\"\r\n                    }\r\n                }\r\n            }\r\n        },\r\n        \"periodData\": {\r\n            \"type\": \"object\",\r\n            \"properties\": {\r\n                \"co\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"integer\",\r\n    \t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"no\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"integer\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"no2\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"integer\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"nox\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"integer\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"so2\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"integer\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"pm25\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"integer\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"pm10\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"integer\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"o3\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"integer\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                }\r\n            }\r\n        }\r\n    },\r\n    \"type\": \"object\",\r\n    \"required\": [\r\n        \"AirQualityChart\"\r\n    ],\r\n    \"properties\": {\r\n        \"AirQualityChart\": {\r\n            \"type\": \"string\",\r\n            \"$ref\": \"#/datos\"\r\n        }\r\n    },\r\n    \"datos\": {\r\n        \"type\": \"object\",\r\n        \"required\": [\r\n            \"stations\",\r\n            \"timestamp\",\r\n            \"standardLocation\"\r\n        ],\r\n        \"properties\": {\r\n            \"stations\": {\r\n                \"type\": \"object\",\r\n                \"required\": [\r\n                    \"city\"\r\n                ],\r\n                \"properties\": {\r\n                    \"city\": {\r\n                        \"type\": \"object\",\r\n                        \"$ref\": \"#/definitions/stationDef\"\r\n                    }\r\n                },\r\n                \"additionalProperties\": true\r\n            },\r\n            \"timestamp\": {\r\n                \"type\": \"object\",\r\n                \"$ref\": \"#/definitions/timestampDef\"\r\n            },\r\n            \"standardLocation\": {\r\n                \"description\": \"ISO location\",\r\n                \"type\": \"object\",\r\n                \"required\": [\r\n                    \"iso3166_1\",\r\n                    \"iso3166_2\",\r\n                    \"un_LOCODE\"\r\n                ],\r\n                \"properties\": {\r\n                    \"iso3166_1\": {\r\n                        \"type\": \"string\"\r\n                    },\r\n                    \"iso3166_2\": {\r\n                        \"type\": \"string\"\r\n                    },\r\n                    \"un_LOCODE\": {\r\n                        \"type\": \"string\"\r\n                    },\r\n                    \"district\": {\r\n                        \"type\": \"string\"\r\n                    }\r\n                }\r\n            }\r\n        }\r\n    },\r\n    \"additionalProperties\": true\r\n}",
+                    "xmlDiagram": null,
+                    "ontologyClass": null,
+                    "isPublic": false,
+                    "topic": null,
+                    "id": "b8ae857e-46a9-438a-a8e2-6e1536982300",
+                    "ontologyUserAccesses": [],
+                    "rtdbDatasource": "MONGO",
+                    "user": "citylandscapemanager",
+                    "updatedAt": 1536916050000
+                }
+            },
+            {
+                "id": "5ffa772c-7500-4b26-bd82-9977edb488bd",
+                "data": {
+                    "allowsCypherFields": false,
+                    "rtdbClean": false,
+                    "dataModel": "MASTER-DataModel-5",
+                    "active": true,
+                    "description": "Weather daily data for Charts",
+                    "metainf": "chart,environment,clm",
+                    "dataModelVersion": null,
+                    "allowsCreateTopic": false,
+                    "createdAt": 1536663159000,
+                    "serialVersionUID": 1,
+                    "identification": "Weather_Chart_daily",
+                    "rtdbCleanLapse": null,
+                    "rtdbToHdb": false,
+                    "jsonSchema": "{\r\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\r\n    \"title\": \"Weather_Chart_daily\",\r\n    \"description\": \"Weather aggregated data for charts\",\r\n    \"definitions\": {\r\n        \"timestampDef\": {\r\n            \"type\": \"object\",\r\n            \"properties\": {\r\n                \"$date\": {\r\n                    \"type\": \"string\",\r\n                    \"format\": \"date-time\"\r\n                }\r\n            },\r\n            \"required\": [\r\n                \"$date\"\r\n            ]\r\n        },\r\n        \"stationDef\": {\r\n            \"description\": \"Average value for a period of time\",\r\n            \"type\": \"object\",\r\n            \"properties\": {\r\n                \"mean\": {\r\n                    \"min_15\": {\r\n                        \"type\": \"object\",\r\n                        \"$ref\": \"#/definitions/periodData\"\r\n                    },\r\n                    \"hr_2\": {\r\n                        \"type\": \"object\",\r\n                        \"$ref\": \"#/definitions/periodData\"\r\n                    },\r\n                    \"hr_4\": {\r\n                        \"type\": \"object\",\r\n                        \"$ref\": \"#/definitions/periodData\"\r\n                    }\r\n                }\r\n            }\r\n        },\r\n        \"periodData\": {\r\n            \"type\": \"object\",\r\n            \"properties\": {\r\n                \"temperature\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"number\",\r\n    \t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"humidity\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"number\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"pluviometry\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"number\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"windSpeed\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"number\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"atmPressure\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"number\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"solarRadiation\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"number\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                },\r\n                \"luminosity\": {\r\n                    \"type\": \"array\",\r\n                    \"items\": {\r\n                        \"value\": \"number\",\r\n\t\t\t\t\t\t\"timestamp\": {\r\n\t\t\t\t\t\t\t\"type\": \"object\",\r\n\t\t\t\t\t\t\t\"$ref\": \"#/definitions/timestampDef\"\r\n\t\t\t\t\t\t}\r\n                    }\r\n                }\r\n            }\r\n        }\r\n    },\r\n    \"type\": \"object\",\r\n    \"required\": [\r\n        \"WeatherChart\"\r\n    ],\r\n    \"properties\": {\r\n        \"WeatherChart\": {\r\n            \"type\": \"string\",\r\n            \"$ref\": \"#/datos\"\r\n        }\r\n    },\r\n    \"datos\": {\r\n        \"type\": \"object\",\r\n        \"required\": [\r\n            \"stations\",\r\n            \"timestamp\",\r\n            \"standardLocation\"\r\n        ],\r\n        \"properties\": {\r\n            \"stations\": {\r\n                \"type\": \"object\",\r\n                \"required\": [\r\n                    \"city\"\r\n                ],\r\n                \"properties\": {\r\n                    \"city\": {\r\n                        \"type\": \"object\",\r\n                        \"$ref\": \"#/definitions/stationDef\"\r\n                    }\r\n                },\r\n                \"additionalProperties\": true\r\n            },\r\n            \"timestamp\": {\r\n                \"type\": \"object\",\r\n                \"$ref\": \"#/definitions/timestampDef\"\r\n            },\r\n            \"standardLocation\": {\r\n                \"description\": \"ISO location\",\r\n                \"type\": \"object\",\r\n                \"required\": [\r\n                    \"iso3166_1\",\r\n                    \"iso3166_2\",\r\n                    \"un_LOCODE\"\r\n                ],\r\n                \"properties\": {\r\n                    \"iso3166_1\": {\r\n                        \"type\": \"string\"\r\n                    },\r\n                    \"iso3166_2\": {\r\n                        \"type\": \"string\"\r\n                    },\r\n                    \"un_LOCODE\": {\r\n                        \"type\": \"string\"\r\n                    },\r\n                    \"district\": {\r\n                        \"type\": \"string\"\r\n                    }\r\n                }\r\n            }\r\n        }\r\n    },\r\n    \"additionalProperties\": true\r\n}",
+                    "xmlDiagram": null,
+                    "ontologyClass": null,
+                    "isPublic": false,
+                    "topic": null,
+                    "id": "5ffa772c-7500-4b26-bd82-9977edb488bd",
+                    "ontologyUserAccesses": [],
+                    "rtdbDatasource": "MONGO",
+                    "user": "citylandscapemanager",
+                    "updatedAt": 1536916248000
+                }
+            }
+        ]
+      },
+      {
+        "class": "com.minsait.onesait.platform.config.model.User",
+        "instances": [
+           {
+                "id": "citylandscapemanager",
+                "data": {
+                    "projects": [],
+                    "role": "ROLE_DEVELOPER",
+                    "active": true,
+                    "fullName": "citylandscapemanager",
+                    "avatar": null,
+                    "userId": "citylandscapemanager",
+                    "dateDeleted": null,
+                    "createdAt": 1534175462000,
+                    "serialVersionUID": 1,
+                    "password": "4Y7tA5QNVQ8Bf7HyRetDT4hbN2Y3WMcCu2MYVkF1MS4=",
+                    "email": "citylandscapemanager@minsait.com",
+                    "extraFields": null,
+                    "updatedAt": 1534175462000
+                }
+           }
+        ]
+      },
+      {
+        "class": "com.minsait.onesait.platform.config.model.Token",
+        "instances": [
+           {
+            "id": "a5e3e468-04ea-4602-bf68-5f704c2365bf",
+            "data": {
+                "createdAt": 1537369441000,
+                "serialVersionUID": 1,
+                "clientPlatform": "0c4c5f72-c76b-46a4-a579-7b4971f1316b",
+                "active": true,
+                "id": "a5e3e468-04ea-4602-bf68-5f704c2365bf",
+                "token": "28780934735e4a0ca4ae04010bdfd66c",
+                "lastConnection": null,
+                "updatedAt": 1537369441000
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

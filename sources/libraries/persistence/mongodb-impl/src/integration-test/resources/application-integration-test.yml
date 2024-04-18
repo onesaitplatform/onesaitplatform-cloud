@@ -1,0 +1,65 @@
+onesaitplatform: 
+   database.mongodb:
+      database: onesaitplatform_rtdb
+      authenticationDatabase:  #admin
+      servers: localhost:27017
+      autoConnectRetry: true
+      socketTimeout: 5000
+      maxAutoConnectRetryTime: 5000
+      maxWaitTime: 5000
+      useAuth: false
+      username: #username
+      password: #password
+      readFromSecondaries: false
+      queries.executionTimeout: 5000
+      queries.defaultLimit: 1000
+      queries.maxConcurrentQueries: 3
+      writeConcern: UNACKNOWLEDGED
+      tools.mongoexport.path: mongoexport
+      tools.mongoimport.path: mongoimport
+      tools.mongoshell.path: mongo
+      tools.useSequentialOps: true
+      quasar.maxHttpConnections: 10
+      quasar.maxHttpConnectionsPerRoute: 10
+      quasar.connectionTimeout.millis: 10000
+      quasar.connector.http.endpoint: http://localhost:18200/query/fs/
+      digitaltwin.database: digital_twin
+
+spring:
+   ## GENERAL CONFIG
+   application.name: onesaitplatform-persistence-ri
+   ## Spring Data Config for MongoDB
+   data.mongodb:
+      #authentication-database: admin # Authentication database name.
+      #database: sofia # Database name.
+      #field-naming-strategy: # Fully qualified name of the FieldNamingStrategy to use.
+      #grid-fs-database: # GridFS database name.
+      #host: localhost # Mongo server host. Cannot be set with uri.
+      #username: # Login user of the mongo server. Cannot be set with uri. 
+      ##password: # Login password of the mongo server. Cannot be set with uri.
+      #port: 27017 # Mongo server port. Cannot be set with uri.
+      #repositories.enabled: false # Enable Mongo repositories.
+
+      
+      #uri: mongodb://localhost/sofia # Mongo database URI. Cannot be set with host, port and credentials.
+   
+   ## JPA Config
+   datasource:
+      url: jdbc:mysql://localhost:3306/onesaitplatform_config?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false
+      username: root
+      password: changeIt!
+   jpa:
+      # The SQL dialect makes Hibernate generate better SQL for the chosen database
+      properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+   
+            
+## LOGGING CONF
+logging:
+   level:
+      org.springframework: INFO
+      com.example.boot.thymeleaf: INFO
+      com.indra: DEBUG
+      org.hibernate: INFO
+
+
+ 

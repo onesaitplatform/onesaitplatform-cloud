@@ -1,0 +1,14 @@
+isolation-level: TENANT
+#isolation-level: VERTICAL
+databases:
+    mongodb:
+      map:
+        default: mongodb://localhost:27017/
+        sandbox: mongodb://localhost:27017/
+        production: mongodb://localhost:27018/
+        atlas: mongodb+srv://onesait:onesait@cluster0.wgdjl.gcp.mongodb.net/onesaitplatform_rtdb_atlas?retryWrites=true&w=majority
+    #mongodb:
+        #default: localhost:27017
+        #onesaitplatform: localhost:27017
+        #data_portal: localhost:27018
+    

@@ -1,0 +1,100 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "DataModel Weather Observed Schema",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "type": {
+            "type": "string"
+        },
+        "address": {
+            "type": "object",
+            "properties": {
+                "addressLocality": {
+                    "type": "string"
+                },
+                "addressCountry": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "addressLocality",
+                "addressCountry"
+            ]
+        },
+        "atmosfericPressure": {
+            "type": "number"
+        },
+        "dataProvider": {
+            "type": "string"
+        },
+        "dateObserved": {
+            "type": "string"
+        },
+        "location": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string"
+                },
+                "coordinates": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                }
+            },
+            "required": [
+                "type",
+                "coordinates"
+            ]
+        },
+        "precipitation": {
+            "type": "integer"
+        },
+        "pressureTendency": {
+            "type": "number"
+        },
+        "relativeHumidity": {
+            "type": "integer"
+        },
+        "source": {
+            "type": "string"
+        },
+        "stationCode": {
+            "type": "string"
+        },
+        "stationName": {
+            "type": "string"
+        },
+        "temperature": {
+            "type": "number"
+        },
+        "windDirection": {
+            "type": "integer"
+        },
+        "windSpeed": {
+            "type": "integer"
+        }
+    },
+    "required": [
+        "id",
+        "type",
+        "address",
+        "atmosfericPressure",
+        "dataProvider",
+        "dateObserved",
+        "location",
+        "precipitation",
+        "pressureTendency",
+        "relativeHumidity",
+        "source",
+        "stationCode",
+        "stationName",
+        "temperature",
+        "windDirection",
+        "windSpeed"
+    ]
+}

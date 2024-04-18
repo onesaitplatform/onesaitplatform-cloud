@@ -1,0 +1,257 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org"  th:with="lang=${#locale.language}" th:lang="${lang}">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"/>
+
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>		
+		
+		<!-- PLUGINS -->
+		<!-- JSON EDITOR -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}"/>
+		
+		<style>
+			
+			@keyframes fullscreen {
+			  	from {
+			  		padding: 32px 40px 32px 40px;
+			  	}
+			  	to {
+			  		padding: 0;
+				}
+			}
+		
+			.portlet.portlet-fullscreen{
+				padding: 0;
+				animation-name: fullscreen;
+  				animation-duration: 0.5s;
+			}
+						
+			@keyframes fs-title {
+			  	from {
+			  		min-height: 48px;
+			    	height: 48px;
+			  	}
+			  	to {
+			  		min-height: 35px;
+			    	height: 35px;
+				}
+			}
+			
+			.portlet.portlet-fullscreen > .portlet-title{
+			    min-height: 35px;
+			    height: 35px;
+			    animation-name: fs-title;
+  				animation-duration: 0.5s;
+			}
+			
+			@keyframes fs-dataflow {
+			  	from {
+			  		top: 32px;
+				    right: 40px;
+				    left: 40px;
+				    bottom: 32px;
+			  	}
+			  	to {
+			  		top: 35px;
+				    right: 0;
+				    left: 0;
+				    bottom: 0;
+				}
+			}
+			
+			.portlet.portlet-fullscreen > .dataflow-fullscreen{
+			    animation-name: fs-dataflow;
+  				animation-duration: 0.5s;
+			    top: 35px;
+			    right: 0;
+			    left: 0;
+			    bottom: 0;
+				position: absolute;
+			}
+			
+			.portlet.portlet-fullscreen > .portlet-title > .tools{
+				margin-right: 20px;
+			}
+			
+			.fs-logo{
+				height: 27px;
+				margin-top:4px;
+				left: 0; 
+				right: 0; 
+				position: absolute;
+				opacity: 0;
+			}
+			
+			@keyframes fs-logo {
+			  	from {
+			  		opacity: 0;
+			  	}
+			  	to {
+			  		opacity: 1;
+				}
+			}
+			
+			.portlet.portlet-fullscreen > .portlet-title > .fs-logo{
+ 				opacity: 1;
+				animation-name: fs-logo;
+  				animation-duration: 1s;
+			}
+			
+		</style>
+		
+	</head>	
+	
+	<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+	
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER --> 
+		
+		<!-- HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"> </div>
+			
+		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+			
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+			
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+			
+                <div class="alert alert-success display-hide">
+					<span th:text="${globalMessage}"></span>
+				</div>
+				
+				<!-- BEGIN PAGE BAR AND BREADCRUM-->
+				<div class="page-bar margin-bottom-20" style="display:none">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/dataflow/list}"> <span th:text="#{dataflow.breadcrumb.list}">My Dataflows </span></a><i class="fa fa-angle-right"></i></li>
+						<li><span>Dataflow</span></li>
+					</ul>						
+				</div>
+				<!-- END PAGE BAR -->
+				
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{name.app}"> Onesait Platform Control Panel</span></h1>
+				<!-- END PAGE TITLE-->			
+				
+				<!-- MAIN ROW -->
+				<div class="row main">
+					<div class="col-md-12">	
+						<div class="portlet light">
+							<div class="portlet-title">
+								<div class="caption hide">									
+									<span class="caption-subject" th:text="#{flow.template.list}"> My Flows </span>
+									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
+								</div>
+								<div class="fs-logo">
+									<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 416.8 55.2"><style>.a{stroke-width:2;}</style><g aria-label="Platform" style="font-family:Soho;font-size:30px;font-weight:300;stroke-width:2"><path d="m298.2 23.8v10.1h4.5q2.5 0 3.8-1.3 1.4-1.3 1.4-3.7 0-2.4-1.4-3.7-1.3-1.3-3.8-1.3zm-1.5-1.2h6q3.3 0 5 1.6 1.7 1.6 1.7 4.7 0 3.1-1.7 4.7-1.7 1.6-5 1.6h-4.5v9.4h-1.5z" class="a"/><path d="m314.7 21.6h1.4v22.9h-1.4z" class="a"/><path d="m329.6 35.2q-3.3 0-4.7 1.2-1.4 1.2-1.4 3.4 0 2.2 1.2 3.1 1.2 0.9 2.8 0.9 3.1 0 4.4-2.6 1.4-2.6 1.4-4.9v-1zm5-0.1v9.4h-1.3v-4.5q-1.1 3.3-3 4.2-1.5 0.7-3 0.7-2.5 0-3.9-1.3-1.4-1.3-1.4-3.9 0-2.6 1.8-4.1 1.8-1.5 6-1.5h3.3v-0.3q0-2.2-1.2-3.6-1.2-1.4-4.1-1.4-1.4 0-2.9 0.5-0.9 0.3-2.4 1.4v-1.5q1.3-0.8 2.4-1.1 1.6-0.5 3.2-0.5 2.9 0 4.8 1.8 1.6 1.5 1.6 5.7z" class="a"/><path d="m342.9 23.4v4.7h5.6v1.1h-5.6v9.9q0 1.9 0.5 2.6 1 1.6 2.9 1.6h2.2v1.1h-2.1q-2 0-3.4-1.2-1.4-1.2-1.4-4.2v-9.9h-2v-1.1h2v-4.7z" class="a"/><path d="m360.4 21.6v1.1h-1.9q-1.5 0-2.3 0.8-1 1-1 3v1.5h4.4v1.1h-4.4v15.3h-1.4V29.2h-2.6v-1.1h2.6v-1.1q0-2.7 1.2-4 1.2-1.3 3.4-1.3z" class="a"/><path d="m373.6 30.9q-1.5-2-4-2-2.5 0-4 2-1.5 2-1.5 5.4 0 3.5 1.5 5.5 1.5 2 4 2 2.5 0 4-2 1.5-2 1.5-5.5 0-3.4-1.5-5.4zm-4-3.2q3.1 0 5 2.4 1.8 2.4 1.8 6.3 0 4-1.8 6.4-1.8 2.4-5 2.4-3.2 0-5-2.3-1.8-2.3-1.8-6.4 0-4 1.8-6.3 1.8-2.3 5-2.3z" class="a"/><path d="m391.2 29.2q-0.3-0.2-0.9-0.3-0.5-0.1-1.3-0.1-2.5 0-4.1 1.9-1.3 1.5-1.3 5.1v8.7h-1.3V28h1.3v3.1q0.7-1.3 1.9-2.2 1.6-1.2 3.9-1.2 0.6 0 1 0 0.4 0 0.9 0.1z" class="a"/><path d="m405.9 31.6q0.8-2 2.4-3 1.6-1 3.7-1 2.1 0 3.4 1.5 1.3 1.5 1.3 5.4v9.9h-1.3v-9.8q0-3.4-0.9-4.6-0.9-1.2-2.5-1.2-2.3 0-4 1.4-1.9 1.5-1.9 5v9.3h-1.4v-9.8q0-3.3-0.9-4.6-0.9-1.3-2.5-1.3-2.3 0-4 1.4-1.9 1.5-1.9 5v9.3h-1.4V28h1.4v3.1q0.7-1.6 2.2-2.6 1.5-0.9 3.7-0.9 1.4 0 2.8 1 1 0.7 1.7 3z" class="a"/></g><path d="m129.4 20.3c-0.9-0.9-2-1.5-3.2-1.9-2.7-0.9-5.7-0.9-8.4 0-1.2 0.4-2.3 1.1-3.2 1.9-0.9 0.9-1.6 1.9-2.1 3.1-0.5 1.3-0.7 2.6-0.7 4v9.5c0 3.1 0.9 5.5 2.8 7.2 1.8 1.7 4.3 2.5 7.5 2.5 3.2 0 5.7-0.9 7.5-2.5 0 0 0 0 0.1-0.1v0.1 0l0.9 2.2h1.8v-18.9c0-1.4-0.2-2.7-0.7-4-0.5-1.2-1.2-2.2-2.1-3.1zm-0.1 16.5c0 0.8-0.1 1.7-0.3 2.5-0.2 0.8-0.6 1.5-1.1 2.2-0.6 0.7-1.4 1.3-2.2 1.6-1.2 0.5-2.5 0.7-3.7 0.6-1.3 0.1-2.5-0.2-3.7-0.6-0.8-0.4-1.6-0.9-2.2-1.6-0.5-0.6-0.9-1.4-1.1-2.2-0.2-0.8-0.3-1.6-0.3-2.5v-9.5c0-2.2 0.6-3.9 1.9-5.1 1.3-1.2 3.1-1.8 5.4-1.8 2.3 0 4.2 0.6 5.4 1.8 1.3 1.2 1.9 2.9 1.9 5.1zm47.2 5.4c-1.3 1.1-3 1.7-4.7 1.6-1.4 0.1-2.8-0.4-3.7-1.4-0.8-1-1.2-2.5-1.2-4.9V20.6h8.9 0.1v-2.6h-0.1-8.9V9.4h-2.8V37.7c0 2.9 0.7 5.2 2 6.6 1.3 1.4 3.3 2.2 5.8 2.2 2.5 0 4.4-0.6 5.7-1.8zm-25 1.5V18h-10.5v2.5h7.6v23.1h-7.6v2.5h16.1c0.1 0 0.2 0 0.2 0v-2.5c-0.1 0-0.2 0-0.2 0zM98.9 31.4 90.1 28.9c-0.9-0.3-1.8-0.8-2.4-1.5-0.5-0.6-0.8-1.4-0.8-2.2 0-0.9 0.2-1.8 0.6-2.5 0.4-0.6 0.9-1.1 1.6-1.4 0.7-0.4 1.4-0.6 2.2-0.7 0.8-0.1 1.6-0.2 2.4-0.2 1.9-0.1 3.8 0.4 5.5 1.3 1.3 0.8 2 2.2 2.1 4 0 0 0 0 0 0.1h2.8c0 0 0-0.1 0-0.1-0.1-2.7-1.1-4.7-2.9-6.1-1.9-1.3-4.3-1.9-7.3-1.9-1.2 0-2.5 0.1-3.7 0.4-1.1 0.2-2.2 0.7-3.1 1.3-0.9 0.6-1.6 1.4-2.1 2.4-0.6 1.1-0.8 2.3-0.8 3.5 0 1.4 0.4 2.8 1.3 3.9 1 1.2 2.3 2 3.7 2.3l8.8 2.5c1 0.3 1.9 0.9 2.6 1.7 0.5 0.8 0.8 1.7 0.8 2.7 0 1-0.2 2-0.7 2.8-0.4 0.7-1 1.2-1.7 1.6-0.8 0.4-1.6 0.6-2.4 0.7-1.9 0.3-3.8 0.2-5.7-0.1-0.8-0.2-1.6-0.5-2.3-0.9-0.6-0.4-1.1-0.9-1.5-1.6-0.4-0.8-0.6-1.6-0.6-2.4 0 0 0-0.1 0-0.1h-2.8c0 0 0 0.1 0 0.1 0.1 2.7 1 4.8 2.9 6.1 1.9 1.3 4.3 2 7.3 2 1.3 0 2.7-0.1 4-0.4 1.2-0.2 2.3-0.7 3.3-1.3 1-0.7 1.7-1.5 2.3-2.6 0.6-1.2 0.9-2.5 0.8-3.9 0.1-3.3-2.1-6.2-5.4-7zM73.5 20.3c-0.9-0.9-2-1.5-3.2-1.9-2.7-0.9-5.7-0.9-8.4 0-1.2 0.4-2.3 1.1-3.2 1.9-0.9 0.9-1.6 1.9-2.1 3.1-0.5 1.3-0.7 2.6-0.7 4v9.5c0 3.1 0.9 5.5 2.8 7.2 1.8 1.7 4.3 2.5 7.5 2.5 0.8 0 1.7-0.1 2.5-0.2h0.1l0.2 0 0.2 0 0.2 0 0.4-0.1h0l0.4-0.1h0.1l0.4-0.1c0.8-0.3 1.6-0.7 2.3-1.3l0.3-0.2 0 0 0.3-0.2c0.8-0.8 1.5-1.7 1.9-2.7L72.9 39.8c-0.2 0.6-0.5 1.2-0.9 1.6 0 0 0 0.1-0.1 0.1-0.3 0.4-0.7 0.7-1.1 1-0.4 0.2-0.7 0.5-1.1 0.6l-0.2 0.1-0.1 0-0.3 0.1h-0.1c-0.2 0.1-0.4 0.1-0.7 0.2-0.8 0.2-1.6 0.2-2.5 0.2-1.3 0.1-2.5-0.2-3.7-0.6-0.8-0.4-1.6-0.9-2.2-1.6-0.5-0.6-0.9-1.4-1.1-2.2-0.2-0.8-0.3-1.6-0.3-2.5v-3.1h17.5v-6.5c0-1.4-0.2-2.7-0.7-4-0.5-1.2-1.2-2.2-2.1-3.1zm-0.1 10.5H58.8v-3.5c0-2.2 0.6-3.9 1.9-5.1 1.3-1.2 3.1-1.8 5.4-1.8 2.3 0 4.2 0.6 5.4 1.8 1.2 1.2 1.9 2.9 1.9 5.1zM38.3 17.7c-0.8 0-1.6 0.1-2.4 0.3-0.8 0.2-1.6 0.5-2.4 0.8-0.7 0.4-1.4 0.8-2.1 1.4-0.2 0.2-0.4 0.4-0.6 0.6L29.3 18H28V46.3H30.8V27.2c0-0.9 0.2-1.9 0.6-2.8 0.4-0.8 0.9-1.6 1.5-2.2 0.7-0.6 1.5-1.1 2.3-1.4 1-0.3 2-0.5 3-0.5 1.3 0 2.5 0.2 3.7 0.6 0.8 0.4 1.6 0.9 2.2 1.6 0.5 0.6 0.9 1.4 1.1 2.2 0.2 0.8 0.3 1.6 0.3 2.5V46.3H48.4V27.3c0-3.1-0.9-5.5-2.7-7.1-1.8-1.7-4.3-2.5-7.5-2.5zm-20.6 2.6c-0.9-0.9-2-1.5-3.2-1.9-2.7-0.9-5.7-0.9-8.4 0-1.2 0.4-2.3 1.1-3.2 1.9-0.9 0.9-1.6 1.9-2.1 3.1-0.5 1.3-0.7 2.6-0.7 4v9.5c0 3.1 0.9 5.5 2.8 7.2 1.8 1.7 4.3 2.5 7.5 2.5 3.2 0 5.7-0.9 7.5-2.5 1.8-1.7 2.7-4.1 2.7-7.2v-9.5c0-1.4-0.2-2.7-0.7-4-0.5-1.2-1.2-2.2-2.1-3.1zm-0.1 16.5c0 0.8-0.1 1.7-0.3 2.5-0.2 0.8-0.6 1.6-1.1 2.2-0.6 0.7-1.4 1.2-2.2 1.6-1.2 0.5-2.4 0.7-3.7 0.6-1.3 0-2.5-0.2-3.7-0.6-0.8-0.4-1.6-0.9-2.2-1.6-0.5-0.6-0.9-1.4-1.1-2.2-0.2-0.8-0.3-1.6-0.3-2.5v-9.5c0-2.2 0.6-3.9 1.9-5.1 1.3-1.2 3.1-1.8 5.4-1.8 2.3 0 4.2 0.6 5.4 1.8 1.2 1.2 1.9 2.9 1.9 5.1z" class="a"/><g transform="matrix(0.53573537 0 0 0.53573537 181.69663 -93.453887)"><path d="m38.4 178.7v94.4L89.7 257.5v-63.6z" style="fill:none;stroke-width:6;stroke:#fde3d3"/><path d="m74.7 178.7v94.4L126 257.5v-63.6z" style="fill:none;stroke-width:6;stroke:#639fcb"/><path d="m111.4 178.7v94.4l51.3-15.6v-63.6z" style="fill:none;stroke-width:6;stroke:#1a3b47"/></g></svg>
+								</div>									
+								<div class="tools">
+									<a href="" class="collapse hide" data-original-title="" title=""> </a>
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>
+								</div>
+							</div>
+							<div class="dataflow-fullscreen">
+								<iframe style="border:none;height:100%;width:100%;" id="angularAPP"></iframe>
+							</div>
+							<script th:inline="javascript" >
+		
+								var version = /*[[${dataflowVersion}]]*/ '';
+		
+								var urlChanged=false;
+								$(document).ready(function(){
+									$.get("/controlpanel/static/dataflow/"+version+"/index.html").done(function(data){
+										var ifrm = document.getElementById('angularAPP');
+										ifrm = ifrm.contentWindow || ifrm.contentDocument.document || ifrm.contentDocument;
+										ifrm.document.open();
+										ifrm.document.write(data);
+										ifrm.document.close();
+									});
+								})
+							</script>
+						</div>	<!-- END PORTLET -->											
+					</div><!-- END COL-12 -->	
+				</div><!-- END MAIN ROW -->
+			</div><!-- END CONTENT BODY -->
+		</div><!-- END CONTENT page-content-wrapper -->		
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+	
+	<!-- FOOTER INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+	
+	<!-- CORE JS CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
+
+	<!-- PLUGINS -->
+	
+	<!-- JSON EDITOR -->	
+	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>
+	
+	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
+	<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
+	<script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>
+	
+	<!-- TEMPLATE CONTROLLER  -->	
+		
+	<!-- MAIN INIT -->
+	<script  th:inline="javascript">
+	var showLog = 1; // console.log toggle
+    //<![CDATA[ 
+
+
+	// REDIRECT
+	function navigateUrl(url){  window.location.href = url;	}
+	
+	// MAIN WHEN READY
+	var editor;
+	$( document ).ready(function() {
+		// init when Document is ready
+		showLog ? console.log('Dataflow ready()...') : '';
+		
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).on("load",function(){  
+		// init on load.		
+		showLog ? console.log('Dataflow load()...') : '';
+			
+	
+	});
+	
+	//]]>
+	</script>	
+</body>
+</html>

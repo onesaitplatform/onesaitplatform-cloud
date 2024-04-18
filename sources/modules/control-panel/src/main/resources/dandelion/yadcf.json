@@ -1,0 +1,19 @@
+{
+    "dependencies": [ "datatables" ],
+    "assets": [
+        {
+            "version": "0.9.2",
+            "type" : "js",
+            "locations": {
+                "jar": "static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js"
+            }
+        },
+        {
+            "version": "0.9.2",
+            "type" : "css",
+            "locations": {
+                "jar": "static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.css"
+            }
+        }
+    ]
+}

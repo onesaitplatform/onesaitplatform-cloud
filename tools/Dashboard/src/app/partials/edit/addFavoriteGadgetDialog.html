@@ -1,0 +1,44 @@
+<md-dialog aria-label="Container">
+    <md-toolbar>
+        <div class="md-toolbar-tools">
+          <h2>Add to Favorites</h2>
+          <span flex></span>
+          <md-button class="md-icon-button" ng-click="cancel()">
+            <b>X</b>
+        </div>
+      </md-toolbar> 
+  
+  <form ng-cloak>
+    <md-dialog-content layout-padding>    
+      <div layout="row" ng-if="showAlert" ng-class="isOK" layout-margin layout-align="left center">
+        <label >{{message}}</label>
+      </div>  
+
+         <div layout="row" layout-margin layout-align="left center">
+      
+          <md-input-container class="md-block" flex="60" >
+            <label>Identifier</label>
+            <input class="flex" ng-model="identifier" required md-autofocus/>
+            
+          </md-input-container>
+
+      
+          <md-checkbox flex="50" ng-model="saveconnections" class="checkbox-adjust" placeholder="Save connections" md-autofocus>
+            <md-tooltip md-direction="top">Enable/Disable Save connections</md-tooltip>Save connections
+          </md-checkbox>
+
+      
+        </div>
+  
+    </md-dialog-content>
+    <md-dialog-actions layout="row">
+      <md-button ng-disabled="validateImputIdentifier()" ng-click="addFavoriteGadget()" class="md-raised md-primary">
+        CREATE
+      </md-button>
+      <md-button ng-click="hide()" class="md-raised md-primary">
+        CLOSE
+      </md-button>
+  
+    </md-dialog-actions>
+  </form>
+</md-dialog>

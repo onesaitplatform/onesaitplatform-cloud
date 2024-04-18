@@ -1,0 +1,1 @@
+{"properties":{"dataLost":{"type":"number"},"idAdaptador":{"type":"string"},"process_date":{"type":"string"},"totalExpected":{"type":"integer"},"totalLoaded":{"type":"integer"},"good":{"type":"integer"},"bad":{"type":"integer"}},"type":"object","description":"Info QA_OVERVIEW","$schema":"http://json-schema.org/draft-04/schema#","title":"QA_OVERVIEW","additionalProperties":true}

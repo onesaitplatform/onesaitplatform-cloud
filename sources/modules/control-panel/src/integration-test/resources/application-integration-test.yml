@@ -1,0 +1,16 @@
+apimanager: http://localhost:19100/api-manager
+controlpanel: http://localhost:18000/controlpanel
+test.jenkins.token: ENC(w/CwOPJdGeeOA1aADqouV2jTrkgYim/Qzy6NTPR2QEQ5ZrWPr7vnOFBC34xNX4BF)
+
+rancher:
+   url: https://ranchercaas.onesaitplatform.com
+   accessKey: ENC(LlCbZQBUoitQYR/YbvSEDDivAzZZ2u9CyyI2dSQ2dpY=)
+   secretKey: ENC(iVxauCBVLmsfT667kEvxCVhDU6h7wNSBSADaCxF56Y84qhZxxUAGgIaxVoUlZ6t+erBA4WyD1eU=)
+   
+jenkins:
+   jenkinsUrl: https://devops.onesaitplatform.com/jenkins/
+   token: ENC(rw83jfyeHHNrx3P65ZbBMlPg4u47po8SC321Y5/2vyAVaN5phG5OLaAhucGXxqbt)
+   username: fjgcornejo
+gitlab:
+    site: https://onesait-git.cwbyminsait.com/
+    privateToken: ENC(gxJc0mJFdvKfzu2vGbtrCVpgAHEBbf13741+P7JzLGs=)

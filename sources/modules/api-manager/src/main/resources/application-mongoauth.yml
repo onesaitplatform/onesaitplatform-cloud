@@ -1,0 +1,6 @@
+onesaitplatform:
+   database.mongodb: 
+      authenticationDatabase: admin     
+      useAuth: false
+      username: platformadmin
+      password: 0pen-platf0rm-2018!

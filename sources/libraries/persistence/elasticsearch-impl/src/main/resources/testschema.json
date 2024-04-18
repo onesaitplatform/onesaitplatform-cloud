@@ -1,0 +1,75 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "additionalProperties": true,
+    "datos": {
+        "description": "Info EmptyBase",
+        "properties": {
+            "eeee": {
+                "properties": {
+                    "$date": {
+                        "format": "date-time",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "$date"
+                ],
+                "type": "object"
+            },
+            "rrrrr": {
+                "type": "string"
+            },
+            "wwwww": {
+                "additionalProperties": false,
+                "properties": {
+                    "coordinates": {
+                        "items": [
+                            {
+                                "maximum": 180,
+                                "minimum": -180,
+                                "type": "number"
+                            },
+                            {
+                                "maximum": 90,
+                                "minimum": -90,
+                                "type": "number"
+                            }
+                        ],
+                        "maxItems": 2,
+                        "minItems": 2,
+                        "type": "array"
+                    },
+                    "type": {
+                        "enum": [
+                            "Point"
+                        ],
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "coordinates",
+                    "type"
+                ],
+                "type": "object"
+            }
+        },
+        "required": [
+            "rrrrr",
+            "eeee",
+            "wwwww"
+        ],
+        "type": "object"
+    },
+    "description": "CountThermometer2",
+    "properties": {
+        "EmptyBase": {
+            "$ref": "#/datos",
+            "type": "string"
+        }
+    },
+    "required": [
+        "EmptyBase"
+    ],
+    "title": "CountThermometer2",
+    "type": "object"
+}

@@ -1,0 +1,147 @@
+{
+	"properties": {
+		"id": {
+			"type": "number"
+		},
+		"_class": {
+			"type": "string"
+		},
+		"serviceId": {
+			"type": "string"
+		},
+		"name": {
+			"type": "string"
+		},
+		"description": {
+			"type": "string"
+		},
+		"proxyPolicy": {
+			"properties": {
+				"_class": {
+					"type": "string"
+				}
+			},
+			"type": "object"
+		},
+		"evaluationOrder": {
+			"type": "number"
+		},
+		"usernameAttributeProvider": {
+			"properties": {
+				"_class": {
+					"type": "string"
+				},
+				"canonicalizationMode": {
+					"type": "string"
+				},
+				"encryptUsername": {
+					"type": "boolean"
+				}
+			},
+			"type": "object"
+		},
+		"logoutType": {
+			"type": "string"
+		},
+		"requiredHandlers": {
+			"type": "array",
+			"items": {}
+		},
+		"attributeReleasePolicy": {
+			"properties": {
+				"_class": {
+					"type": "string"
+				},
+				"allowedAttributes": {
+					"type": "array",
+					"items": {}
+				},
+				"principalAttributesRepository": {
+					"properties": {
+						"_class": {
+							"type": "string"
+						},
+						"expiration": {
+							"type": "number"
+						},
+						"timeUnit": {
+							"type": "string"
+						}
+					},
+					"type": "object"
+				},
+				"authorizedToReleaseCredentialPassword": {
+					"type": "boolean"
+				},
+				"authorizedToReleaseProxyGrantingTicket": {
+					"type": "boolean"
+				},
+				"excludeDefaultAttributes": {
+					"type": "boolean"
+				}
+			},
+			"type": "object"
+		},
+		"multifactorPolicy": {
+			"properties": {
+				"_class": {
+					"type": "string"
+				},
+				"multifactorAuthenticationProviders": {
+					"type": "array",
+					"items": {}
+				},
+				"failureMode": {
+					"type": "string"
+				},
+				"bypassEnabled": {
+					"type": "boolean"
+				}
+			},
+			"type": "object"
+		},
+		"accessStrategy": {
+			"properties": {
+				"_class": {
+					"type": "string"
+				},
+				"enabled": {
+					"type": "boolean"
+				},
+				"ssoEnabled": {
+					"type": "boolean"
+				},
+				"requireAllAttributes": {
+					"type": "boolean"
+				},
+				"requiredAttributes": {
+					"properties": {
+						
+					},
+					"type": "object"
+				},
+				"rejectedAttributes": {
+					"properties": {
+						
+					},
+					"type": "object"
+				},
+				"caseInsensitive": {
+					"type": "boolean"
+				}
+			},
+			"type": "object"
+		},
+		"properties": {
+			"properties": {
+				
+			},
+			"type": "object"
+		}
+	},
+	"type": "object",
+	"description": "Info cas_services",
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"title": "cas_services",
+	"additionalProperties": true
+}

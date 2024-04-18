@@ -1,0 +1,37 @@
+<!--<div class="spinner-margin-top" ng-if="vm.type == 'loading'" layout="row" layout-sm="column" layout-align="space-around">
+  <md-progress-circular md-diameter="60"></md-progress-circular>
+</div>
+<div class="spinner-overlay" ng-if="vm.status == 'pending'" layout="row" layout-sm="column" layout-align="space-around">
+  <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+</div>-->
+<md-content>
+  <div ng-on-drop="vm.onDrop()" class="sortable-row columnSelector" as-sortable="vm.dragSelectControl" data-ng-model="vm.columns.list">
+      <div ng-repeat="field in vm.columns.list" as-sortable-item>
+          <div as-sortable-item-handle>
+            <span ng-if="field.asc === undefined" ng-init="vm.onDrop(field)"></span>
+            <md-tooltip ng-if="field.type=='metric'">{{field.formula}}</md-tooltip>
+            <label data-as-sortable-item-handle>
+              <md-icon ng-if="field.type=='string'">line_weight</md-icon>
+              <md-icon ng-if="field.type=='integer' || field.type=='number'">score</md-icon>
+              <md-icon ng-if="field.type=='boolean'">exposure</md-icon>
+              <md-icon ng-if="field.type=='metric'">functions</md-icon>
+              {{ field.field }}
+            </label>
+            <md-button ng-if="field.type !== 'metric' && vm.columns.subtotalEnable" aria-label="Enable subtotals" class="md-icon-button" ng-click='vm.toggleSubtotalField($index);vm.refreshModel()' class="pull-right">
+              <md-icon ng-class="{'md-primary': vm.columns.subtotalFields.indexOf($index) !== -1}">notes</md-icon>
+            </md-button>
+            <md-button aria-label="Edit Dynamic Style" class="md-icon-button" ng-click='vm.openColumnStyleDialog($index)' class="pull-right">
+              <md-icon>brush</md-icon>
+            </md-button>
+            <md-button aria-label="Change sort" class="md-icon-button" ng-click='(field.asc == true?field.asc = false:(field.asc == null?field.asc = true:field.asc = null));vm.columns.subtotalEnable=field.asc!=null;vm.refreshModel()' class="pull-right">
+              <md-icon ng-if="field.asc === null"  >block</md-icon>
+              <md-icon ng-if="field.asc == true " ng-click='field.asc = false'>arrow_downward</md-icon>
+              <md-icon ng-if="field.asc == false" ng-click='field.asc = null'>arrow_upward</md-icon>
+            </md-button>
+            <md-button aria-label="Clear" ng-click='vm.removeColumn($index)' class="md-icon-button md-accent">
+              <md-icon>clear</md-icon>
+            </md-button>
+          </div>
+      </div>
+  </div>
+</md-content> 

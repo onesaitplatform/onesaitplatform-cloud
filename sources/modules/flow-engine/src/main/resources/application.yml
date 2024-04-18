@@ -1,0 +1,168 @@
+
+server:
+  port: 20100
+  servlet.contextPath: /flowengine
+
+# all access to actuator endpoints without security
+logbook:
+  exclude:
+     - ${server.servlet.contextPath}/actuator/**
+     - ${server.servlet.contextPath}/static/**
+     - ${server.servlet.contextPath}/themes/**
+     - ${server.servlet.contextPath}/swagger-ui/**
+  write:
+     max-body-size: 10000
+     
+master: 
+   datasource:
+      hikari: 
+        jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+        username: root
+        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        pool-name: master-hikari-pool
+        minimum-idle: 1
+        maximum-pool-size: 2
+        connection-timeout: 10000
+        
+        
+
+management.endpoints.web.exposure.include: "*"
+management.health.elasticsearch.enabled: false
+management.endpoint.health.show-details: always
+
+spring:
+  main:
+      allow-circular-references: true
+      allow-bean-definition-overriding: true
+  application.name: onesaitplatform-flow-engine
+  ## JPA Config
+  datasource:
+     hikari:
+      jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
+      username: root
+      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+      connection-timeout: 10000
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      minimum-idle: 10
+      maximum-pool-size: 30
+   
+  jpa:
+    open-in-view: false
+    ## Hibernate Properties
+    # The SQL dialect makes Hibernate generate better SQL for the chosen database
+    properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+    # Hibernate ddl auto (create, create-drop, validate, update)
+    hibernate.ddl-auto: validate
+  boot.admin: #Spring Boot Admin Config   
+      client.url: http://localhost:18100/monitoring
+      client.username: operations
+      client.password: changeIt2019!
+      client.instance.metadata.user.name: ${spring.boot.admin.client.username}
+      client.instance.metadata.user.password: ${spring.boot.admin.client.password}
+  servlet:
+      multipart:
+         max-file-size: 200MB
+         max-request-size: 200MB
+   
+onesaitplatform:
+   audit.global.notify: true
+   router.avoidsslverification: true
+   router.alternativeURL: http://localhost:20000/router/router/
+   platform.base.url: http://localhost:18000/controlpanel
+   iotbroker.plugable:
+     gateway:
+      kafka:
+        enable: false
+        host: localhost
+        port: 9095  
+        user: admin
+        password: admin-secret 
+        partitions: 4
+        replication: 1      
+        prefix: ONTOLOGY_
+        group: ontologyGroup
+        topic.pattern: ontology.*
+        router.topic: router
+        consumer.consumersCount : 10
+        consumer.group : kafkaGroup
+        consumer.maxPollRecords : 5000 
+   flowengine:
+      sync.monitor:
+         interval.sec: 30
+         initial.delay.sec: 20
+      admin.url: http://localhost:10000
+      node.path: node
+      audit.enabled: true
+      launcher:
+         #path: S:\\sources\\open-pt\\tools\\Flow-Engine-Manager
+         path: /opt/nodeRed/Flow-Engine-Manager
+         job: app.js
+         logging:
+            active: false
+            #log: S:\\sources\\open-pt\\tools\\Flow-Engine-Manager
+            log: /tmp/logs/flowEngine
+            retain.days: 5
+            append: false
+         failsbeforestop:
+            max: 10
+            time.millis: 60000
+         reboot.delay.seconds: 10
+         port:
+            domain:
+               min: 28000
+               max: 28500
+            service:
+               min: 27000
+               max: 27500
+      services:
+         domain:
+            status: /getDomainStatusMF
+            getall: /getAllDomainMF
+            get: /getDomainMF
+            create: /createDomainMF
+            delete: /deleteDomainMF
+            start: /startDomainMF
+            stop: /stopDomainMF
+         stop.admin: /stopMF
+         sync: /synchronizeMF
+         request.timeout.ms: 5000
+   database.elasticsearch:
+      database: onesaitplatform_rtdb_es
+      sql.maxHttpConnections: 10
+      sql.maxHttpConnectionsPerRoute: 10
+      sql.connectionTimeout.millis: 10000
+      sql.connector.http.endpoint: http://localhost:9200
+      url: localhost
+      port: 9300
+   database.timescaledb:
+      enabled: false
+      url: jdbc:postgresql://localhost:5432/?currentSchema=public
+      user: ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot)
+      password: ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c)
+   analytics.notebook:
+      zeppelinGlobalTimeout: 120000
+      zeppelinProtocol: http
+      zeppelinHostname: localhost
+      zeppelinPort: 8080
+      zeppelinPathname: 
+      shiroAdminUsername: admin
+      shiroAdminPass: password1
+      shiroUsername: user1
+      shiroPass: password2
+      restUsername: userrest
+      restPass: passrest
+      notebookInfoPath: /api/notebook/
+      restTimeout.millis: 10000 
+   graylog:
+      enabled: false
+      host: 127.0.0.1
+      port: 12201
+      
+## LOGGING CONF
+logging:
+   file.path: ./target/ 
+   file.name: ${spring.application.name}
+   level:
+      com.minsait: INFO
+      org.zalando.logbook: TRACE

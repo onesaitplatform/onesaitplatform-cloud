@@ -1,0 +1,246 @@
+{
+   "identification":"HelsinkiPopulationAPI",
+   "version":1,
+   "type":"iot",
+   "category":"SOCIAL",
+   "isPublic":true,
+   "externalApi":false,
+   "ontologyId":"f8420a03-f733-4dfd-9699-b16ccf1835e0",
+   "endpoint":"http://localhost:19090/api-manager/v1/HelsinkiPopulationSQLAPI",
+   "endpointExt":"string",
+   "description":"HelsinkiPopulationAPI",
+   "metainf":"Helsinki,population,historical",
+   "imageType":"",
+   "userId":"administrator",
+   "operations":[
+      {
+         "identification":"getTotalPopulation",
+         "operation":"GET",
+         "path":"/getTotalPopulation",
+         "description":"Total Population of Helsinki by year",
+         "queryParams":[
+            {
+               "name":"queryType",
+               "headerType":"query",
+               "description":"The Query Type",
+               "dataType":"string",
+               "value":"SQLLIKE",
+               "condition":"CONSTANT"
+            }
+            ,
+            {
+               "name":"query",
+               "headerType":"query",
+               "description":"THE SQL Sentence",
+               "dataType":"string",
+               "value":"select year,population from HelsinkiPopulation",
+               "condition":"CONSTANT"
+            }
+            ,
+            {
+               "name":"targetdb",
+               "headerType":"query",
+               "description":"Target DB",
+               "dataType":"string",
+               "value":"BDTR",
+               "condition":"CONSTANT"
+            }
+         ]
+      }
+      ,
+      {
+         "identification":"getWomenPopulation",
+         "operation":"GET",
+         "path":"/getWomenPopulation",
+         "description":"Total Female Population of Helsinki by year",
+         "queryParams":[
+            {
+               "name":"queryType",
+               "headerType":"query",
+               "description":"The Query Type",
+               "dataType":"string",
+               "value":"SQLLIKE",
+               "condition":"CONSTANT"
+            }
+            ,
+            {
+               "name":"query",
+               "headerType":"query",
+               "description":"THE SQL Sentence",
+               "dataType":"string",
+               "value":"select year, population_women from HelsinkiPopulation",
+               "condition":"CONSTANT"
+            }
+            ,
+            {
+               "name":"targetdb",
+               "headerType":"query",
+               "description":"Target DB",
+               "dataType":"string",
+               "value":"BDTR",
+               "condition":"CONSTANT"
+            }
+            ]
+      }
+      ,
+      {
+         "identification":"getMenPopulation",
+         "operation":"GET",
+         "path":"/getMenPopulation",
+         "description":"Total Male Population of Helsinki by year",
+         "queryParams":[
+            {
+               "name":"queryType",
+               "headerType":"query",
+               "description":"The Query Type",
+               "dataType":"string",
+               "value":"SQLLIKE",
+               "condition":"CONSTANT"
+            }
+            ,
+            {
+               "name":"query",
+               "headerType":"query",
+               "description":"THE SQL Sentence",
+               "dataType":"string",
+               "value":"select year , population_men from HelsinkiPopulation",
+               "condition":"CONSTANT"
+            }
+            ,
+            {
+               "name":"targetdb",
+               "headerType":"query",
+               "description":"Target DB",
+               "dataType":"string",
+               "value":"BDTR",
+               "condition":"CONSTANT"
+            }
+         ]
+      }
+      ,
+      {
+         "identification":"getPopulation",
+         "operation":"GET",
+         "path":"/getPopulation",
+         "description":"Helsinki's Male, Female and Total Population",
+         "postProcess": "var dataArray = JSON.parse(data);var i;for (i = 0; i < dataArray.length; i++) {dataArray[i].order = i;}return (JSON.stringify(dataArray));",
+         "queryParams":[
+            {
+               "name":"queryType",
+               "headerType":"query",
+               "description":"The Query Type",
+               "dataType":"string",
+               "value":"SQLLIKE",
+               "condition":"CONSTANT"
+            }
+            ,
+            {
+               "name":"query",
+               "headerType":"query",
+               "description":"THE SQL Sentence",
+               "dataType":"string",
+               "value":"select year, population , population_women , population_men from HelsinkiPopulation",
+               "condition":"CONSTANT"
+            }
+            ,
+            {
+               "name":"targetdb",
+               "headerType":"query",
+               "description":"Target DB",
+               "dataType":"string",
+               "value":"BDTR",
+               "condition":"CONSTANT"
+            }
+         ]
+      }  
+       ,
+      {
+         "identification":"getPopulationByYear",
+         "operation":"GET",
+         "path":"/getPopulationByYear",
+         "description":"Total, Female and Male Population of Helsinki filter by year",
+         "queryParams":[
+            {
+               "name":"queryType",
+               "headerType":"query",
+               "description":"The Query Type",
+               "dataType":"string",
+               "value":"SQLLIKE",
+               "condition":"CONSTANT"
+            }
+            ,
+            {
+               "name":"query",
+               "headerType":"query",
+               "description":"THE SQL Sentence",
+               "dataType":"string",
+               "value":"select year, population , population_women , population_men from HelsinkiPopulation where year = {$year}",
+               "condition":"CONSTANT"
+            }
+            ,
+            {
+               "name":"year",
+               "headerType":"query",
+               "description":"The Year By",
+               "dataType":"number",
+               "condition":"REQUIRED"
+            }
+            ,
+            {
+               "name":"targetdb",
+               "headerType":"query",
+               "description":"Target DB",
+               "dataType":"string",
+               "value":"BDTR",
+               "condition":"CONSTANT"
+            }
+         ]
+      }
+	  ,
+      {
+         "identification":"HelsinkiPopulationAPI_POST",
+         "operation":"POST",
+         "path":"/",
+         "description":"Operation to insert Population data of Helsinki",
+         "queryParams":[
+            {
+               "name":"body",
+               "headerType":"body",
+               "description":"Population Body",
+               "dataType":"string",
+               "value":""
+            }
+         ]
+      }
+      ,
+      {
+         "identification":"HelsinkiPopulationAPI_GET",
+         "operation":"GET",
+         "path":"/{id}",
+         "description":"Operation to get Information of Population of Helsinki by ID",
+         "queryParams":[
+            {
+               "name":"id",
+               "headerType":"path",
+               "description":"the identification",
+               "dataType":"string"
+            }
+         ]
+      }
+      ,
+      { 
+      	 "identification":"HelsinkiPopulationAPI_DELETEID",
+         "operation":"DELETE",
+         "path":"/{id}",
+         "description":"Operation to delete Population data of Helsinki by ID",
+         "queryParams":[
+            {
+               "name":"id",
+               "headerType":"path",
+               "description":"the identification",
+               "dataType":"string"
+            }
+         ]
+      }  
+   ]
+}

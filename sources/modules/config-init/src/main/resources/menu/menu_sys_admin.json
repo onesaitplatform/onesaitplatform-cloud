@@ -1,0 +1,57 @@
+{
+	"menu": "OnesaitPlatform",
+	"rol": "ROLE_SYS_ADMIN",
+	"noSession": "/console/login",
+	"navigation": [
+
+		{
+			"title": {
+				"EN": "TOOLS",
+				"ES": "HERRAMIENTAS",
+				"FR": "OUTILS"
+			},
+			"icon": "icon-tools",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "System Audit",
+						"ES": "Auditoría del Sistema",
+						"FR": "Audit du système"
+					},
+					"icon": "",
+					"url": "/controlpanel/audit/show"
+				},
+				{
+					"title": {
+						"EN": "Monitoring UI",
+						"ES": "Consola Monitorización",
+						"FR": "Interface Utilisateur de Surveillance"
+					},
+					"icon": "",
+					"url": "/controlpanel/monitoringui"
+				},
+				{
+					"title": {
+						"EN": "Kafka Monitoring",
+						"ES": "Monitorización de Kafka",
+						"FR": "Surveillance Kafka"
+					},
+					"icon": "",
+					"url": "/controlpanel/kafka/monitoring/list"
+				},
+				{
+                    "title": {
+                        "EN": "Files Management",
+                        "ES": "Gestión de Fichero",
+                        "FR": "Gestion des fichiers"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/objectstore/list"
+                }
+				
+				
+			]
+		}
+	]
+}

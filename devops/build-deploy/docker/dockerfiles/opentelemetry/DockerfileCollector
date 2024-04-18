@@ -1,0 +1,7 @@
+FROM otel/opentelemetry-collector:0.72.0
+
+COPY otelcol-config.yml /etc/otelcol-config.yml
+
+EXPOSE 4317
+
+CMD ["--config=/etc/otelcol-config.yml"]

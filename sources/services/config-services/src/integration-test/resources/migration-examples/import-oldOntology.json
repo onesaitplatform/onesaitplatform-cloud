@@ -1,0 +1,39 @@
+{
+    "$v": 1,
+    "$d": {
+        "allData": [
+                    {
+                        "class": "com.minsait.onesait.platform.config.model.Ontology",
+                        "instances": [
+                            {
+                                "id": "TestingImportOntology",
+                                "data": {
+                                    "rtdbClean": false,
+                                    "dataModel": "b00c5ea9-1132-4705-a4eb-d781778ebf2d",
+                                    "active": true,
+                                    "description": "Air quality retrieved from https://api.waqi.info/search",
+                                    "metainf": null,
+                                    "dataModelVersion": null,
+                                    "allowsCreateTopic": false,
+                                    "createdAt": 1528376153000,
+                                    "serialVersionUID": 1,
+                                    "identification": "GeoAirQuality",
+                                    "rtdbCleanLapse": null,
+                                    "rtdbToHdb": false,
+                                    "jsonSchema": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"title\": \"GeoAirQuality\",\n    \"type\": \"object\",\n    \"required\": [\n        \"GeoAirQuality\"\n    ],\n    \"properties\": {\n        \"GeoAirQuality\": {\n            \"type\": \"string\",\n            \"$ref\": \"#/datos\"\n        }\n    },\n    \"datos\": {\n        \"description\": \"Info EmptyBase\",\n        \"type\": \"object\",\n        \"required\": [\n            \"stationName\",\n            \"stationId\",\n            \"timestamp\",\n            \"city\",\n            \"pm25\",\n            \"pm10\",\n            \"o3\",\n            \"no2\",\n            \"so2\",\n            \"geometry\",\n            \"aqi\"\n        ],\n        \"properties\": {\n            \"stationName\": {\n                \"type\": \"string\"\n            },\n            \"stationId\": {\n                \"type\": \"string\"\n            },\n            \"timestamp\": {\n                \"type\": \"object\"\n            },\n            \"city\": {\n                \"type\": \"string\"\n            },\n            \"pm25\": {\n                \"type\": \"number\"\n            },\n            \"pm10\": {\n                \"type\": \"number\"\n            },\n            \"o3\": {\n                \"type\": \"number\"\n            },\n            \"no2\": {\n                \"type\": \"number\"\n            },\n            \"so2\": {\n                \"type\": \"number\"\n            },\n            \"geometry\": {\n                \"type\": \"object\"\n            },\n            \"aqi\": {\n                \"type\": \"number\"\n            }\n        }\n    },\n    \"description\": \"GeoAirQuality\",\n    \"additionalProperties\": true\n}",
+                                    "xmlDiagram": null,
+                                    "ontologyClass": null,
+                                    "isPublic": true,
+                                    "topic": null,
+                                    "id": "TestingImportOntology",
+                                    "ontologyUserAccesses": [],
+                                    "rtdbDatasource": "MONGO",
+                                    "user": "developer",
+                                    "updatedAt": 1528376153000
+                                }
+                            }
+                        ]
+                    }
+                ]
+        }
+}

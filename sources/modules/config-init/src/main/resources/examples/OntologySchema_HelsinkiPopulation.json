@@ -1,0 +1,26 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+        "year": {
+            "type": "integer"
+        },
+        "population": {
+            "type": "integer"
+        },
+        "population_women": {
+            "type": "integer"
+        },
+        "population_men": {
+            "type": "integer"
+        }
+    },
+    "required": [
+        "year",
+        "population",
+        "population_women",
+        "population_men"
+    ],
+    "title": "HelsinkiPopulation",
+    "description": "Ontology HelsinkiPopulation for testing"
+}

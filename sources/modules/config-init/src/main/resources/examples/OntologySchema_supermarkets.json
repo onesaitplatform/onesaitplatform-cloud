@@ -1,0 +1,70 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Supermarkets",
+    "type": "object",
+    "required": [
+        "Supermarkets"
+    ],
+    "properties": {
+        "Supermarkets": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Properties for DataModel Supermarkets",
+        "type": "object",
+        "required": [
+            "geometry",
+            "identification",
+            "company",
+            "status"
+        ],
+        "properties": {
+            "geometry": {
+                "type": "object",
+                "required": [
+                    "coordinates",
+                    "type"
+                ],
+                "properties": {
+                    "coordinates": {
+                        "type": "array",
+                        "items": [
+                            {
+                                "type": "number",
+                                "maximum": 180,
+                                "minimum": -180
+                            },
+                            {
+                                "type": "number",
+                                "maximum": 90,
+                                "minimum": -90
+                            }
+                        ],
+                        "minItems": 2,
+                        "maxItems": 2
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "Point"
+                        ]
+                    }
+                },
+                "additionalProperties": false
+            },
+            "identification": {
+                "type": "string"
+            },
+            "company": {
+                "type": "string"
+            },
+            "status": {
+                "type": "string"
+            }
+        }
+    },
+    "description": "Las Palmas Supermarkets",
+    "additionalProperties": true
+}

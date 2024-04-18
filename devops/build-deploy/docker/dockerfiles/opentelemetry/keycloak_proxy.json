@@ -1,0 +1,27 @@
+{
+       "target-url": "http://localhost:16686",
+       "bind-address": "0.0.0.0",
+       "http-port": "8080",
+       "applications": [
+           {
+               "proxy-address-forwarding": true,
+               "base-path": "/",
+               "adapter-config": {
+                 "realm": "onesaitplatform",
+                 "auth-server-url": "https://development.onesaitplatform.com/auth",
+                 "ssl-required": "external",
+                 "resource": "onesaitplatform",
+                 "verify-token-audience": true,
+                 "credentials": {
+                   "secret": "onesaitplatform"
+                 }
+               }
+         ,
+         "constraints": [
+                   {
+                       "pattern": "/*"
+                   }
+               ]
+           }
+       ]
+   }

@@ -1,0 +1,3 @@
+spring: ## General Config  
+   datasource: ## JPA Config
+      password: ENC(2785gZATymBXriG4UeTaJ0FrvSRTGUvj)

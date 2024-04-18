@@ -1,0 +1,133 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<div class="col-md-12 col-xs-12 no-padding-both" >	
+	<div th:if="!${#lists.isEmpty(projectObj.projectResourceAccesses)}" class="form-group" style="overflow-y: scroll; height: 90%">
+		<table id="resource-access-list" class="table" data-loaded="false">
+			<thead class="table-header-background">
+				<tr class="cabecera-tabla" role="row" >
+					<th width="50px" class="titulo-columnas text-center">
+						<input th:id="checkbox_delete_all" class="no-remove checkbox-filter" type="checkbox" onclick="ProjectCreateController.toggleAllVisible()"/>
+					</th>
+					<th class="titulo-columnas" onclick="ProjectCreateController.sortHTML('#resource-access-list', '.table-model','td:nth-child(2)')" th:text="#{project.resource.type}" style="cursor:pointer; min-width: 200px;">Type</th>
+					<th class="titulo-columnas text-left sorting" th:text="#{project.resource.identification}" onclick="ProjectCreateController.sortHTML('#resource-access-list', '.table-model','td:nth-child(2)','title')" style="cursor:pointer; width: 30%;">Identification</th>
+					<th width="50px" class="titulo-columnas text-left" th:text="#{project.resource.accesstype}">Access Type</th>
+					<th width="40%" th:if="${projectObj.app == null}" class="titulo-columnas text-left" th:text="#{project.resource.users}">Users</th>
+					<th width="40%" th:if="${projectObj.app != null}" class="titulo-columnas text-left" th:text="#{project.resource.roles}">Roles</th>
+					<th width="50px" class="titulo-columnas text-center"></th>
+				</tr>
+			</thead>
+			<tbody style="border-bottom: 1px solid #ddd;">
+				<th:block th:each="access : ${projectObj.projectResourceAccesses}">
+					<tr th:if="(${access.access_all} != true) AND ((${#authentication.name == access.resource.user.userId}) OR (${#authentication.name} == ${projectObj.user.userId}) OR(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))" class="table-model resource-row" th:classappend="${#strings.toUpperCase(access.resource.class.simpleName)}">
+						<td class="no-wrap text-center" style="width: 3%;">											
+							<input th:id="'checkbox_delete_' + ${access.id}" class="no-remove checkbox-filter" type="checkbox"/>
+						</td>	
+						<td style="min-width: 15%;">
+							<div style="display: flex;">
+								<i th:if="${access.resource.class.simpleName == 'Form'}" class="fa la-wpforms font-lg"></i>
+								<i th:if="${access.resource.class.simpleName == 'Ontology'}" class="fa flaticon-network font-lg"></i>
+								<i th:if="${access.resource.class.simpleName == 'Api'}" class="fa flaticon-multimedia font-lg"></i>
+								<i th:if="${access.resource.class.simpleName == 'DigitalTwinDevice'}" class="fa flaticon-medical font-lg"></i>
+								<i th:if="${access.resource.class.simpleName == 'ClientPlatform'}" class="fa flaticon-truck font-lg"></i>
+								<i th:if="${access.resource.class.simpleName == 'Notebook'}" class="fa flaticon-interface-5 font-lg"></i>
+								<i th:if="${access.resource.class.simpleName == 'FlowDomain'}" class="fa flaticon-analytics font-lg"></i>
+								<i th:if="${access.resource.class.simpleName == 'Gadget'}" class="fa flaticon-app font-lg"></i>
+								<i th:if="${access.resource.class.simpleName == 'Dashboard'}" class="fa flaticon-graph font-lg"></i>
+								<i th:if="${access.resource.class.simpleName == 'Pipeline'}" class="fa flaticon-technology font-lg"></i>
+								<i th:if="${access.resource.class.simpleName == 'GadgetDatasource'}" class="la la-database font-lg"></i>
+								<i th:if="${access.resource.class.simpleName == 'OntologyVirtualDatasource'}" class="la la-database font-lg"></i>
+								<i th:if="${access.resource.class.simpleName == 'Configuration'}" class="fa flaticon-technology font-lg"></i>
+								<i th:if="${access.resource.class.simpleName == 'Report'}" class="la la-folder-open font-lg"></i>
+								<i th:if="${access.resource.class.simpleName == 'BinaryFile'}" class="la la-file font-lg"></i>
+								<i th:if="${access.resource.class.simpleName == 'GadgetTemplate'}" class="fa flaticon-app font-lg"></i>
+								<input th:if="${access.resource.class.simpleName != 'Pipeline'} AND ${access.resource.class.simpleName != 'Ontology'} AND ${access.resource.class.simpleName != 'OntologyVirtualDatasource'}" type="text" readonly="readonly" class="margin-left-5 no-border" th:value="${access.resource.class.simpleName}" style="width: 90%;"/>
+								<input th:if="${access.resource.class.simpleName == 'Ontology'}" type="text" readonly="readonly" class="no-border" th:value="#{gen.ontology}" style="margin-left-5 width: 90%;"/>
+								<input th:if="${access.resource.class.simpleName == 'OntologyVirtualDatasource'}" type="text" readonly="readonly" class="no-border" th:value="#{datasource.breadcrumb.list}" style="margin-left-5 width: 90%;"/>
+								<input th:if="${access.resource.class.simpleName == 'Pipeline'}" type="text" readonly="readonly" class="no-border" value="Dataflow" style="margin-left-5 width: 90%;"/>
+								</div>
+						</td>
+						<td style="width: 45%;">
+							<input th:if="${access.resource.class.simpleName == 'Api'}" type="text" name="identifications[]" readonly="readonly" class="margin-top-4 no-border"  th:value="${access.resource.identification} +' - V' + ${access.resource.numversion}" th:title="${access.resource.identification} +' - V' + ${access.resource.numversion}" style="width: 100%;"/>
+							<input th:if="${access.resource.class.simpleName != 'Api'}" type="text" name="identifications[]" readonly="readonly" class="margin-top-4 no-border"  th:value="${access.resource.identification}" th:title="${access.resource.identification}" style="width: 100%;"/>
+							<input type="hidden" name="ids[]" th:value="${access.id}"/>
+						</td>
+						<td style="width: 5%;" th:text="${access.access.name()}"></td>
+						<td style="width: 20%;" th:if="${projectObj.app == null}">
+							<input type="text" name="users[]" readonly="readonly"  class="margin-top-4 no-border" style="width: -webkit-fill-available;" th:value="${access.user.fullName}  +' ('+ ${access.user.userId} +')'"/>
+						</td>
+						<td style="width: 20%;" th:if="${projectObj.app != null}">
+							<input type="text" name="users[]" readonly="readonly"  class="margin-top-4 no-border" style="width: -webkit-fill-available;" th:value="${access.appRole.name}  +' ('+ ${access.appRole.app.identification} +')'"/>
+						</td>											
+						<td style="width: 7%;"class="no-wrap text-center">											
+							<button type="button" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" th:attr="onclick='javascript:ProjectCreateController.removeAuthorization(\''+|${access.id}|+'\')'" th:title="#{project.resources.tooltip}"><i class="icon-delete"></i></button>
+						</td>			
+					</tr>
+					<tr th:if="(${access.access_all})" class="table-model resource-row" th:classappend="${#strings.toUpperCase(access.resource.class.simpleName)}">
+						<td class="no-wrap text-center">											
+							<input th:id="'checkbox_delete_' + ${access.id}" class="no-remove checkbox-filter" type="checkbox"/>
+						</td>	
+						<td>
+							<i th:if="${access.resource.class.simpleName == 'Form'}" class="fa la-wpforms font-lg"></i>
+							<i th:if="${access.resource.class.simpleName == 'Ontology'}" class="fa flaticon-network font-lg"></i>
+							<i th:if="${access.resource.class.simpleName == 'Api'}" class="fa flaticon-multimedia font-lg"></i>
+							<i th:if="${access.resource.class.simpleName == 'DigitalTwinDevice'}" class="fa flaticon-medical font-lg"></i>
+							<i th:if="${access.resource.class.simpleName == 'ClientPlatform'}" class="fa flaticon-truck font-lg"></i>
+							<i th:if="${access.resource.class.simpleName == 'Notebook'}" class="fa flaticon-interface-5 font-lg"></i>
+							<i th:if="${access.resource.class.simpleName == 'FlowDomain'}" class="fa flaticon-analytics font-lg"></i>
+							<i th:if="${access.resource.class.simpleName == 'Gadget'}" class="fa flaticon-app font-lg"></i>
+							<i th:if="${access.resource.class.simpleName == 'Dashboard'}" class="fa flaticon-graph font-lg"></i>
+							<i th:if="${access.resource.class.simpleName == 'Pipeline'}" class="fa flaticon-technology font-lg"></i>
+							<i th:if="${access.resource.class.simpleName == 'GadgetDatasource'}" class="la la-database font-lg"></i>
+							<i th:if="${access.resource.class.simpleName == 'OntologyVirtualDatasource'}" class="la la-database font-lg"></i>
+							<i th:if="${access.resource.class.simpleName == 'Configuration'}" class="fa flaticon-technology font-lg"></i>
+							<i th:if="${access.resource.class.simpleName == 'Report'}" class="la la-folder-open font-lg"></i>
+							<i th:if="${access.resource.class.simpleName == 'BinaryFile'}" class="la la-file font-lg"></i>
+							<i th:if="${access.resource.class.simpleName == 'GadgetTemplate'}" class="fa flaticon-app font-lg"></i>
+							<input th:if="${access.resource.class.simpleName != 'Pipeline'} AND ${access.resource.class.simpleName != 'Ontology'} AND ${access.resource.class.simpleName != 'OntologyVirtualDatasource'}" type="text" readonly="readonly" class="margin-top-4 no-border" th:value="${access.resource.class.simpleName}"/>
+							<input th:if="${access.resource.class.simpleName == 'Ontology'}" type="text" readonly="readonly" class="margin-top-4 no-border" th:value="#{gen.ontology}"/>
+							<input th:if="${access.resource.class.simpleName == 'OntologyVirtualDatasource'}" type="text" readonly="readonly" class="margin-top-4 no-border" th:value="#{datasource.breadcrumb.list}"/>
+							<input th:if="${access.resource.class.simpleName == 'Pipeline'}" type="text" readonly="readonly" class="margin-top-4 no-border" value="Dataflow" style="width: 90%;"/>
+						</td>
+						<td>
+							<input th:if="${access.resource.class.simpleName == 'Api'}" type="text" name="identifications[]" readonly="readonly" class="margin-top-4 no-border"  th:value="${access.resource.identification} +' - V' + ${access.resource.numversion}" th:title="${access.resource.identification} +' - V' + ${access.resource.numversion}"/>
+							<input th:if="${access.resource.class.simpleName != 'Api'}" type="text" name="identifications[]" readonly="readonly" class="margin-top-4 no-border"  th:value="${access.resource.identification}" th:title="${access.resource.identification}"/>
+							<input type="hidden" name="ids[]" th:value="${access.id}"/>
+						</td>
+						<td width="50px" th:text="${access.access.name()}"></td>
+						<td>
+							<input type="text" name="users[]" readonly="readonly"  class="margin-top-4 no-border" style="width: -webkit-fill-available;" th:value="#{project.users.all}"/>    
+						</td>																	
+						<td class="no-wrap text-center">											
+							<button type="button" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" th:attr="onclick='javascript:ProjectCreateController.removeAuthorization(\''+|${access.id}|+'\')'"><i class="icon-delete"></i></button>
+						</td>			
+					</tr>
+				</th:block>
+			</tbody>														
+		</table>
+	</div>
+	<div th:if="${#lists.isEmpty(projectObj.projectResourceAccesses)}" id="imageNoRoleRulesOnTable">
+		<img id="headerImg" alt="logo" style="width: 72px; height:113px; display: block;   margin-top:27px;  margin-left: auto;margin-right:auto;"  src="/controlpanel/static/images/authorizationTableEmpty.svg">
+		<label style=" display: block;   margin: 0 auto; font-style: italic;font-weight: normal;font-size: 17px;line-height: 24px;text-align: center;color:#505D66;" th:text="#{project.no.resources}"></label>
+	</div>
+	<script>
+	$( document ).ready(function() {
+		ProjectCreateController.sortHTML('#resource-access-list', '.table-model','td:nth-child(2)');
+		
+	});
+			
+	</script>
+</div>

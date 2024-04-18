@@ -1,0 +1,30 @@
+{
+ "query": {
+    "bool": {
+      "filter": [
+        {
+          "bool": {
+            "must": [
+              {
+                "geo_distance": {
+                 	"distance" : "{{maxDistance}}m",
+                    "{{field}}" : {
+                        "lat" : {{latitude}},
+                        "lon" : {{longitude}}
+                    }
+                  ,
+                  "ignore_unmapped": true,
+                  "boost": 1
+                }
+              }
+            ],
+            "adjust_pure_negative": true,
+            "boost": 1
+          }
+        }
+      ],
+      "adjust_pure_negative": true,
+      "boost": 1
+    }
+  }
+}

@@ -1,0 +1,435 @@
+<!--
+
+    Copyright 2017 StreamSets Inc.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!doctype html>
+<html lang="en" ng-app="dataCollectorApp">
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="StreamSets Data Collector">
+  <title ng-bind="common.title">StreamSets | Data Collector</title>
+
+  <script type="text/javascript">
+    function escapeHtml(str) {
+      var div = document.createElement('div');
+      div.appendChild(document.createTextNode(str));
+      return div.innerHTML;
+    }
+
+    var baseHref = document.location.pathname,
+      collectorIndex = baseHref.indexOf('/collector/');
+
+    if(collectorIndex !== -1) {
+      baseHref = baseHref.substr(0, collectorIndex + 1);
+    }
+
+    document.write("<base href='" + escapeHtml(baseHref) + "' />");
+  </script>
+
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- compiled CSS -->
+  <link rel="stylesheet" type="text/css" href="assets/data-collector-ui-3.3.0-2020-02-11-14-01.css" />
+
+  <!-- compiled JavaScript -->
+  <script type="text/javascript" src="assets/data-collector-ui-3.3.0-2020-02-11-14-01.js"></script>
+
+</head>
+<body ng-keydown="common.bodyKeyEvent($event)">
+
+<!--
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+              data-target="#sdc-header-navbar-collapse" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+
+      <a class="logo" ng-href="{{common.baseHref}}">
+        <img src="assets/logo.png" />
+      </a>
+
+      <img class="pull-left remote-enabled-icon"
+           ng-if="common.remoteServerInfo.registrationStatus && !common.disconnectedMode"
+           src="assets/cloud_done.svg"
+           title="{{('global.menu.dpmEnabled' | translate) + common.dpmBaseURL}}"/>
+
+      <img class="pull-left remote-enabled-icon"
+           ng-if="common.remoteServerInfo.registrationStatus && common.disconnectedMode"
+           src="assets/cloud_disconnected.svg"
+           title="{{('global.menu.dpmDisconnectedMode' | translate) + common.dpmBaseURL}}"/>
+
+      <div class="pull-left" ng-if="common.headerTitle"
+           ng-bind-html="common.headerTitle"></div>
+
+    </div>
+    <div class="collapse navbar-collapse" id="sdc-header-navbar-collapse">
+
+      <ul class="nav navbar-nav navbar-right" ng-cloak>
+
+        <li ng-if="common.isDPMEnabled">
+          <a ng-href="{{common.dpmBaseURL}}"
+             target="_blank"
+             tooltip-placement="bottom"
+             tooltip="{{'global.menu.dpm' | translate}}"
+             tooltip-trigger="mouseenter"
+             tooltip-popup-delay="500"
+             class="dpm-icon"
+             ng-class="{'disconnected-mode': common.disconnectedMode}">
+            <i class="fa fa-cloud fa-lg"></i>
+            <span>SCH</span>
+          </a>
+        </li>
+
+        <li ng-if="!common.isDPMEnabled">
+          <a href="javascript:;" ng-click="common.onDPMButtonClick()"
+             tooltip-placement="bottom"
+             tooltip="{{'global.menu.dpm' | translate}}"
+             tooltip-trigger="mouseenter"
+             tooltip-popup-delay="500"
+             class="dpm-icon">
+            <i class="fa fa-cloud fa-lg"></i>
+            <span>SCH</span>
+          </a>
+        </li>
+
+        <li>
+          <a ng-href="{{common.baseHref}}"
+             tooltip-placement="bottom"
+             tooltip="{{'global.menu.home' | translate}}"
+             tooltip-trigger="mouseenter"
+             tooltip-popup-delay="500">
+            <i class="fa fa-home fa-lg"></i>
+            <span class="menu-label">{{'global.menu.home' | translate}}</span>
+          </a>
+        </li>
+
+        <li ng-if="!common.isSlaveNode && isAuthorized([userRoles.admin])">
+          <a href="/collector/packageManager"
+             tooltip-placement="bottom"
+             tooltip="{{'global.menu.packageManager' | translate}}"
+             tooltip-trigger="mouseenter"
+             tooltip-popup-delay="500">
+            <i class="fa fa-gift fa-lg"></i>
+          </a>
+        </li>
+
+        <li ng-if="common.isSlaveNode">
+          <a ng-href="{{common.sdcClusterManagerURL}}"
+             tooltip-placement="bottom"
+             tooltip="{{'global.menu.clusterManager' | translate}}"
+             tooltip-trigger="mouseenter"
+             tooltip-popup-delay="500">
+            <i class="fa fa-cloud fa-lg dpm-color"></i>
+            <span>SCH</span>
+          </a>
+        </li>
+
+
+        <li class="dropdown pointer notifications-dropdown"
+            ng-if="common.userName && isAuthorized([userRoles.admin, userRoles.creator, userRoles.manager])">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="javascript:;"
+             tooltip-placement="bottom"
+             tooltip="{{'home.header.notifications' | translate}}"
+             tooltip-trigger="mouseenter"
+             tooltip-popup-delay="500">
+            <span class="menu-label">{{'home.header.notifications' | translate}}</span>
+            <i class="fa fa-bell fa-11x"></i>
+            <span class="badge"
+                  ng-show="common.alertsTotalCount > 0"
+                  ng-bind="common.alertsTotalCount"></span>
+
+          </a>
+          <ul class="dropdown-menu pull-right scrollable-menu" role="menu" aria-labelledby="dropdownMenu1">
+
+            <li role="presentation" class="dropdown-header"
+                translate="home.header.emptyAlerts"
+                ng-if="common.alertsTotalCount == 0">It’s all good! You don’t have any new alerts.</li>
+
+
+            <li role="presentation" class="dropdown-header"
+                ng-repeat-start="(pipelineName, alerts) in common.alertsMap">Pipeline - {{pipelineName}}</li>
+
+            <li role="presentation" ng-repeat="alert in alerts">
+              <a role="menuitem" tabindex="-1" href="#"
+                 ng-click="common.onAlertClick(alert)">
+
+                <span ng-if="alert.gauge.value.exceptionMessage">
+                  <strong>{{alert.ruleDefinition.label}}: </strong> {{alert.gauge.value.exceptionMessage}}
+                </span>
+
+                <span ng-if="!alert.gauge.value.exceptionMessage && alert.ruleDefinition.family !== 'drift'" ng-bind="alert.ruleDefinition.alertText"></span>
+
+                <span ng-if="!alert.gauge.value.exceptionMessage && alert.ruleDefinition.family === 'drift' && alert.gauge.value.alertTexts">
+                  <span class="alert-text" ng-repeat="alertText in alert.gauge.value.alertTexts track by $index">{{alertText}}</span>
+                </span>
+
+                <button type="button" class="close" aria-label="Close"
+                        ng-click="common.deleteTriggeredAlert(alert, $event)">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </a>
+            </li>
+
+            <li ng-repeat-end role="presentation" class="divider" ng-if="!$last"></li>
+          </ul>
+        </li>
+
+
+        <li class="dropdown pointer"
+            ng-if="common.userName && isAuthorized([userRoles.admin, userRoles.creator, userRoles.manager])">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="javascript:;"
+             tooltip-placement="bottom"
+             tooltip="{{'global.menu.admin.main' | translate}}"
+             tooltip-trigger="mouseenter"
+             tooltip-popup-delay="500">
+            <i class="fa fa-cogs fa-lg"></i>
+            <span class="menu-label">{{'global.menu.admin.main' | translate}}</span>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a href="collector/configuration">
+                <i class="fa fa-gear"></i>
+                <span translate="global.menu.admin.configuration">Configuration</span>
+              </a>
+            </li>
+
+            <li>
+              <a href="javascript:;"
+                 ng-if="common.userName && isAuthorized([userRoles.admin])"
+                 ng-click="common.showSDCDirectories()">
+                <i class="fa fa-folder"></i>
+                <span translate="sdcDirectories.title">SDC Directories</span>
+              </a>
+            </li>
+
+            <li ng-if="common.userName && isAuthorized([userRoles.admin])">
+              <a href="collector/jvmMetrics">
+                <i class="fa fa-dashboard"></i>
+                <span translate="global.menu.admin.jvmMetrics">JVM Metrics</span>
+              </a>
+            </li>
+
+            <li ng-if="common.userName && isAuthorized([userRoles.admin, userRoles.creator, userRoles.manager])">
+              <a href="collector/logs">
+                <i class="fa fa-tasks"></i>
+                <span translate="global.menu.admin.logs">Logs</span>
+              </a>
+            </li>
+
+            <li ng-if="isAuthorized([userRoles.admin]) && !common.remoteServerInfo.registrationStatus">
+              <a href="javascript:;" ng-click="common.onEnableDPMClick()">
+                <i class="fa fa-file-text"></i>
+                <span translate="global.menu.admin.enableDPM">Enable Control Hub</span>
+              </a>
+            </li>
+
+            <li ng-if="isAuthorized([userRoles.admin]) && common.remoteServerInfo.registrationStatus">
+              <a href="javascript:;" ng-click="common.onDisableDPMClick()">
+                <i class="fa fa-file-text"></i>
+                <span translate="global.menu.admin.disableDPM">Disable Control Hub</span>
+              </a>
+            </li>
+
+            <li ng-if="common.userName && isAuthorized([userRoles.admin]) && !common.isSlaveNode">
+              <a href="javascript:;" ng-click="common.shutdownCollector()">
+                <i class="fa fa-stop"></i>
+                <span translate="global.menu.admin.shutdown">Shutdown</span>
+              </a>
+            </li>
+
+            <li ng-if="common.userName && isAuthorized([userRoles.admin]) && !common.isSlaveNode">
+              <a href="javascript:;" ng-click="common.restartCollector()">
+                <i class="glyphicon glyphicon-refresh"></i>
+                <span translate="global.menu.admin.restart">Restart</span>
+              </a>
+            </li>
+
+            <li ng-if="common.userName && isAuthorized([userRoles.admin]) && !common.isDPMEnabled && common.authenticationType !== 'none'">
+              <a href="/collector/usersAndGroups">
+                <i class="glyphicon glyphicon-user"></i>
+                <span translate="global.menu.admin.usersAndGroups">Users & Groups</span>
+              </a>
+            </li>
+
+            <li ng-if="common.userName && isAuthorized([userRoles.admin]) && common.isDPMEnabled">
+              <a ng-href="{{common.dpmBaseURL}}#/security/users" target="_blank">
+                <i class="glyphicon glyphicon-user"></i>
+                <span translate="global.menu.admin.usersAndGroups">Users & Groups</span>
+              </a>
+            </li>
+
+            <li ng-if="common.userName && isAuthorized([userRoles.admin]) && (common.authenticationType !== 'none' || common.isDPMEnabled)">
+              <a href="javascript:;" ng-click="common.updatePermissions()">
+                <i class="fa fa-share-alt"></i>
+                <span translate="home.library.transferPermissions">Transfer Permissions</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <li class="dropdown pointer" ng-if="common.authenticationType != 'none' || common.isDPMEnabled">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="javascript:;"
+             tooltip-placement="bottom"
+             tooltip="{{'global.menu.account.title' | translate}}"
+             tooltip-trigger="mouseenter"
+             tooltip-popup-delay="500">
+              <i class="fa fa-user fa-lg"></i>
+            <span class="menu-label">{{'global.menu.account.title' | translate}}</span>
+          </a>
+          <ul class="dropdown-menu">
+
+            <li role="presentation" class="dropdown-header" translate="global.menu.account.loggedInUser">Logged In User</li>
+
+            <li class="disabled">
+              <a href="">
+                <span>{{common.userName}}</span>
+              </a>
+            </li>
+
+            <li role="presentation" class="dropdown-header" translate="global.menu.account.assignedRoles">Assigned Roles</li>
+
+            <li class="disabled">
+              <a href="">
+                <span>{{common.userRoles}}</span>
+              </a>
+            </li>
+
+
+            <li role="presentation" class="dropdown-header"
+                ng-if="common.userGroups && common.userGroups.length"
+                translate="global.menu.account.assignedGroups">Assigned Groups</li>
+
+            <li class="disabled" ng-if="common.userGroups && common.userGroups.length">
+              <a href="">
+                <span>{{common.userGroups}}</span>
+              </a>
+            </li>
+
+            <li role="presentation" class="divider"></li>
+
+            <li ng-if="common.authenticationType === 'form' || common.isDPMEnabled">
+              <a href="javascript:;" ng-click="common.logout()">
+                <span class="glyphicon glyphicon-log-out"></span>
+                <span translate="global.menu.account.logout">Logout</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+
+        <li class="dropdown pointer">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="javascript:;"
+             tooltip-placement="bottom"
+             tooltip="{{'global.menu.help.main' | translate}}"
+             tooltip-trigger="mouseenter"
+             tooltip-popup-delay="500"><i class="fa fa-question-circle fa-15x"></i><span class="menu-label">{{'global.menu.help.main' | translate}}</span></a>
+          <ul class="dropdown-menu">
+
+            <li>
+              <a href="javascript:;" ng-click="common.launchHelpContents()">
+                <span class="fa fa-book"></span>
+                <span translate="global.menu.help.helpContents">Help Contents</span>
+              </a>
+            </li>
+
+            <li ng-if="common.userName && isAuthorized([userRoles.admin])">
+              <a href="javascript:;" ng-click="common.showSupportBundle()">
+                <span class="fa fa-ticket"></span>
+                <span translate="global.menu.help.supportBundle">Support Bundle</span>
+              </a>
+            </li>
+
+            <li>
+              <a href="collector/restapi">
+                <span class="fa fa-globe"></span>
+                <span translate="global.menu.help.restFulAPI">RESTful API</span>
+              </a>
+            </li>
+
+            <li>
+              <a href="javascript:;" ng-click="common.showAbout()">
+                <span class="fa fa-info-circle"></span>
+                <span translate="global.menu.help.about">About</span>
+              </a>
+            </li>
+
+            <li role="presentation" class="divider"></li>
+
+            <li>
+              <a href="https://streamsetters-slack.herokuapp.com/" target="_blank">
+                <span class="fa fa-slack"></span>
+                <span translate="global.menu.help.chatOnSlack">Chat on Slack</span>
+              </a>
+            </li>
+
+            <li>
+              <a href="https://groups.google.com/a/streamsets.com/d/forum/sdc-user" target="_blank">
+                <span class="fa fa-users"></span>
+                <span translate="global.menu.help.joinUserGroup">Join our User Group</span>
+              </a>
+            </li>
+
+
+            <li>
+              <a href="https://ask.streamsets.com/questions/" target="_blank">
+                <span class="fa fa-question-circle"></span>
+                <span translate="global.menu.help.askStreamSets">Ask StreamSets</span>
+              </a>
+            </li>
+
+            <li role="presentation" class="divider"></li>
+
+            <li ng-if="common.activationInfo && common.activationInfo.enabled">
+              <a href="javascript:;" ng-click="common.showRegistrationModal()">
+                <span class="fa fa-key"></span>
+                <span translate="global.menu.help.register">Register</span>
+              </a>
+            </li>
+
+            <li>
+              <a href="javascript:;" ng-click="common.showSettings()">
+                <span class="fa fa-gear"></span>
+                <span translate="global.menu.help.settings">Settings</span>
+              </a>
+            </li>
+
+          </ul>
+        </li>
+
+      </ul>
+    </div>
+  </div>
+</div>
+
+<ng-include src="'app/help/about/aboutModal.tpl.html'"></ng-include>
+-->
+<div ng-view ng-if="!notAuthorized">
+</div>
+
+<div class="panel panel-default page-panel not-authorized-page"
+     ng-class="{'show': true}"
+     ng-if="notAuthorized">
+  <h4>{{'global.messages.error.notAuthorized' | translate}}</h4>
+</div>
+
+</body>
+</html>

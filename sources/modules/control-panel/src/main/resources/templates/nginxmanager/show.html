@@ -1,0 +1,211 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org"  th:with="lang=${#locale.language}" th:lang="${lang}">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"/>
+		
+		
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>		
+		<!-- CODEMIRROR -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/lib/codemirror.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/elegant.css}"/>
+		
+	</head>	
+	
+	<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+	
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+		
+		<!-- HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"> </div>
+			
+		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+			
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+			
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+				
+				<!-- BEGIN PAGE BAR AND BREADCRUM-->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+						<li><span text="Show Nginx Manager">Show Nginx Manager</span></li>
+					</ul>						
+				</div>
+				<!-- END PAGE BAR -->
+				
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{name.app}"> Onesaitplatform Control Panel</span></h1>
+				<!-- END PAGE TITLE-->			
+				
+				<!-- MAIN ROW -->
+				<div class="row">
+					<div class="col-md-12">				
+						<div class="portlet light container">
+							<div class="portlet-title">
+								<div class="caption">
+								
+									<span class="caption-subject " th:object="${nginx}" th:text="#{configuration.nginx.template.show}"></span>
+								</div>															
+							</div>
+							<div class="portlet-body" style="display: block; height: auto;">
+								
+								<div class="row">
+									<div class="col-md-12 alert-zone"><!-- ALERTS ZONE -->																
+									</div>
+									<div class="col-md-12">										
+										<form role="form" id="user_view_form" th:action="@{/nginxmanager/set}" th:object="${nginx}" method="post" class="form">
+											<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+											<div class="form-body">
+												<div class="row">
+													<div class="col-md-12 col-sm-12 col-xs-12">
+														<div class="form-group">												
+															<textarea id="nginxText" name="nginxText"  th:required="true" th:field="*{value}" class="form-control bold autoExpand" rows="40" data-min-rows='5'></textarea>															
+														</div>
+													</div>																					
+												</div>
+											</div>
+											<!-- FORM BUTTONS -->
+											<div class="form-actions">
+												<div class="pull-left">
+													<!-- CANCEL TO-DO: authentication and control -->
+													<!-- <button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-circle no-border btn-outline blue" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/nginxmanager/undo} + '\');'"><i class="la la-arrow-left"></i><span text="PREVIOUS VERSION"> PREVIOUS VERSION </span></button> -->
+													<!-- RESET -->
+													<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="createBtn" type="button" class="btn btn-circle btn-outline btn-primary" name="create"  value="Create" th:attr="onclick='javascript:navigateUrl(\'' + @{/nginxmanager/reset} + '\');'" > <span> ORIGINAL VERSION </span></button>
+												</div>												
+													
+												
+												<div class="pull-right">																								
+													
+													<!-- MODIFY -->
+													<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="editBtn" type="button" class="btn btn-circle btn-outline  blue" name="edit"  value="Edit" onclick="edit();"> <span th:text="#{gen.editBtn}"> Edit </span></button>
+													
+													<!--<span class="sep no-border">&nbsp;</span>
+													
+													 TEST 
+													<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="deleteBtn" type="button" class="btn btn-circle btn-outline  blue" name="delete"  value="Remove"><span text="#{gen.deleteBtn}" onclick="test();"> Test </span></button>-->
+	
+													<span class="sep">&nbsp;</span>
+													
+													<!-- CREATE -->
+													<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="createBtn" type="submit" class="btn btn-circle btn-outline btn-primary" name="create"  value="Create"> <span text="DEPLOY NEW VERSION"> DEPLOY NEW VERSION</span></button>
+												</div>
+											</div>									
+										</form>
+										
+										<!-- AUXILIAR FORM TO DELETE CONFIGURATION -->
+										<!--<form id="delete_configuration_form" class="delete-configuration hide"  action=""  method="post">
+											<input type="hidden" name="_method" value="DELETE"/>
+											<input type="hidden" name="id" th:value="${configuration?.id}"/>
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>-->
+									</div>									
+								</div>
+							</div>
+						</div><!-- END PORTLET BASIC  -->						
+					</div><!-- END COL-12 -->						
+				</div><!-- END MAIN ROW -->
+			</div><!-- END CONTENT BODY -->
+		</div><!-- END CONTENT page-content-wrapper -->		
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+	
+	<!-- FOOTER INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+	
+	<!-- CORE JS CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
+	<script th:src="@{/static/vendor/codemirror/lib/codemirror.js}"></script>
+	<script th:src="@{/static/vendor/codemirror/mode/yaml/yaml.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" ></script>
+	<!-- TEMPLATE CONTROLLER  -->	
+		
+	<!-- MAIN INIT -->
+	<script  th:inline="javascript">
+	
+		var showLog = 1; // console.log toggle
+		
+		document.getElementById('nginxText').readOnly= true;
+		document.getElementById('editBtn').onclick= edit;
+		document.getElementById('generateBtn').onclick= generate;
+		document.getElementById('newMicroServiceBtn').onclick= newMicroService;
+		document.getElementById('formNewMicroServices').style.display = 'none';
+
+	    //<![CDATA[ 
+		// REDIRECT
+		function navigateUrl(url){  window.location.href = url;	}
+			
+		function edit() {	 
+			document.getElementById('nginxText').readOnly= false;
+	     }
+		
+		function generate() {
+			var newMicroService = "location /"+document.getElementById('txtExternal').value+"{\n";			
+			newMicroService = newMicroService + "\tproxy_pass "+ document.getElementById('txtInternal').value + ";\n";
+			newMicroService = newMicroService + "\tproxy_read_timeout 360s;\n\n";
+			newMicroService = newMicroService + "\tproxy_http_version 1.1;\n";
+			newMicroService = newMicroService + "\tproxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n";
+			newMicroService = newMicroService + "\tproxy_set_header Host $http_host;\n";
+			newMicroService = newMicroService + "\tproxy_set_header X-Forwarded-Proto http;\n";
+			newMicroService = newMicroService + "\t#proxy_redirect off;\n";
+			newMicroService = newMicroService + "\tproxy_redirect ~^{INTERNAL_SERVICE_URL}(.+)$ https://$host$1;\n";
+			newMicroService = newMicroService + "\tadd_header 'Access-Control-Allow-Origin' '*' always;\n";
+			newMicroService = newMicroService + "\tadd_header 'Access-Control-Allow-Credentials' 'true';\n";
+			newMicroService = newMicroService + "\tadd_header 'Access-Control-Allow-Methods' 'GET,POST';\n";
+			newMicroService = newMicroService + "\t}\n";
+			
+			document.getElementById('txtNewMicroService').value= newMicroService;
+		}
+		
+		function newMicroService() {
+			if(document.getElementById('formNewMicroServices').style.display === 'block') {
+				document.getElementById('formNewMicroServices').style.display = 'none';				
+			} else {
+				document.getElementById('formNewMicroServices').style.display = 'block';
+			}			
+	    }
+    	
+
+	
+
+	
+	//]]>
+	</script>	
+	
+	
+	
+</body>
+</html>

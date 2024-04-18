@@ -1,0 +1,11 @@
+onesaitplatform.migrationconfig.classes:
+  - com.minsait.onesait.platform.config.model.base.OPResource
+  - com.minsait.onesait.platform.config.model.AppUser
+  - com.minsait.onesait.platform.config.model.AppUserExport
+  - com.minsait.onesait.platform.config.model.BinaryFileAccess
+  - com.minsait.onesait.platform.config.model.DashboardUserAccess
+  - com.minsait.onesait.platform.config.model.NotebookUserAccess
+  - com.minsait.onesait.platform.config.model.Project
+  - com.minsait.onesait.platform.config.model.ProjectResourceAccess
+  - com.minsait.onesait.platform.config.model.ProjectExport
+  - com.minsait.onesait.platform.config.model.ProjectResourceAccessExport

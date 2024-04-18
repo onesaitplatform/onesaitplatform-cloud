@@ -1,0 +1,142 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org" th:with="lang=${#locale.language}" th:lang="${lang}">
+
+	<link href="/controlpanel/static/vendor/google/material-icons.css" rel="stylesheet"/>
+
+	<link rel="stylesheet" href="/controlpanel/static/dashboards/styles/vendor.css"/>
+	
+	<link rel="stylesheet" href="/controlpanel/static/dashboards/gridster.css"/>
+
+	<link rel="stylesheet" href="/controlpanel/static/dashboards/styles/app.css"/>
+	
+	<link rel="stylesheet" th:href="@{/static/css/openLayer7.4.0.css}">
+	
+	<input id="oauthtoken" type="hidden" th:value="${session.oauthToken}"/>
+
+	<link rel="stylesheet" th:href="${@environment.getProperty('onesaitplatform.dashboard.themeonesait.css')}"/>
+	<script type="text/javascript" th:src="${@environment.getProperty('onesaitplatform.dashboard.vue.js')}"></script>
+	<script type="text/javascript" th:src="${@environment.getProperty('onesaitplatform.dashboard.themeonesait.js')}"></script>
+
+	<!-- import CSS -->
+	<link rel="stylesheet" th:href="@{/static/vendor/element-ui/theme-chalk/index.css}">
+	<!-- import JavaScript -->
+	<script th:src="@{/static/vendor/echarts-542/echarts.min.js}"></script>
+	<script th:src="@{/static/vendor/vue-echarts-660/vue-echarts.min.js}"></script>
+	<script th:src="@{/static/vendor/openLayers-7.4.0/openLayer-7.4.0.min.js}"></script>
+	<script th:src="@{/static/vendor/vue-i18n/vue-i18n.js}"></script>
+	<script th:src="@{/static/vendor/xlsx/xlsx.full.min.js}"></script>
+	<script th:src="@{/static/vendor/element-ui/index.js}"></script>
+	<script th:src="@{/static/vendor/element-ui/locale/en.min.js}"></script>
+	<script th:src="@{/static/vendor/element-ui/locale/es.min.js}"></script>
+	<script th:src="@{/static/vendor/element-ui/locale/fr.min.js}"></script>
+
+	<!--headerlibs-->
+	
+  	<script th:inline="javascript">
+     // <![CDATA[ 
+  
+        
+	    window.__env = window.__env || {};
+	    window.__env.socketEndpointConnect = '/dashboardengine/dsengine/solver';
+	    window.__env.socketEndpointSend = '/dsengine/solver';
+	    window.__env.socketEndpointSubscribe = '/dsengine/broker';
+	    window.__env.endpointControlPanel = '/controlpanel';
+	    window.__env.endpointDashboardEngine = '/dashboardengine';
+	    window.__env.dashboardEngineUsername = '';
+		window.__env.dashboardEnginePassword = '';
+		getOauthtoken();
+	    window.__env.dashboardEngineLoginRest = '/loginRest';
+	    window.__env.enableDebug = false;
+	    window.__env.restUrl = '';
+	    window.__env.urlParameters = getURLParameters();
+		
+	 
+			 
+     //Function that catch url parameters and return these like a map   
+     function getURLParameters()
+ 		{	    	 
+	 	    var sPageURL = window.location.search.substring(1);	
+	 	    var sURLVariables = sPageURL.split('&');	
+	 	    var urlParametersMap={};
+	 	    for (var i = 0; i < sURLVariables.length; i++){
+	 	    	if(sURLVariables[i].length>0){	 	    		
+	 	       		var sParameterName = sURLVariables[i].split('=');
+	 	    		if(sParameterName[0]!=="oauthtoken"){	 	    			
+	 	       			urlParametersMap[sParameterName[0]] = sParameterName[1];
+	 	    		}
+	 	    	}
+	 	    } 	   
+	 	    
+	 	    return urlParametersMap;
+ 	    }
+     
+     function getURLParameterOauthtoken()
+		{	    	 
+	 	    var sPageURL = window.location.search.substring(1);	
+	 	    var sURLVariables = sPageURL.split('&');	
+	 	    var urlParametersMap={};
+	 	    for (var i = 0; i < sURLVariables.length; i++)	
+	 	    {
+	 	    	if(sURLVariables[i].length>0){
+	 	       		var sParameterName = sURLVariables[i].split('=');	 	       		
+	 	       		if(sParameterName[0]==="oauthtoken"){
+	 	       			return sParameterName[1]
+	 	       		}	 	       		
+	 	    	}
+	 	    }    
+	 	   return null;
+	    }
+     
+	     function getOauthtoken(){
+	 		if(typeof document.getElementById("oauthtoken").value!== "undefined" && document.getElementById("oauthtoken").value.length>0 ){
+	 			sessionStorage.setItem("dashboardEngineOauthtoken",document.getElementById("oauthtoken").value);
+	 		}else{
+	 			if (getURLParameterOauthtoken() !== null) {
+	 				sessionStorage.setItem("dashboardEngineOauthtoken", getURLParameterOauthtoken());
+	 			}
+	 		}
+	 	}
+	     
+	   
+        // ]]>  
+
+  
+		
+	
+	</script>
+	
+	<div id="gapp" ng-app="dashboardFramework">
+	
+	  <vuetemplate style="height:400px;width:100%;display:inline-block; overflow: auto;" ></vuetemplate>
+	</div>
+	
+	<script src="/controlpanel/static/dashboards/scripts/vendor.js"></script>										
+	<script src="/controlpanel/static/dashboards/gridster.js"></script>
+	
+	<!-- Angular Material Fileinput -->
+	<link rel="stylesheet" href="/controlpanel/static/dashboards/resources/lf-ng-md-file-input.min.css"/>
+	<script src="/controlpanel/static/dashboards/resources/lf-ng-md-file-input.min.js"></script>
+	<script src="/controlpanel/static/dashboards/scripts/app.js"></script>
+
+	<script type="text/javascript">
+		window.addEventListener('load', function () {
+			window.parent.GadgetsTemplateCreateController.updateComponent();
+		});
+	</script>
+
+</html> 

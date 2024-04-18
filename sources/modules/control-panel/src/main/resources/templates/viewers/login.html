@@ -1,0 +1,295 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!doctype html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" th:with="lang=${#locale.language}" th:lang="${lang}">
+<head>
+  	<meta name="_csrf" th:content="${_csrf.token}"/>
+	<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+	<meta charset="UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<meta http-equiv="Content-Language" th:content="${lang}"/>
+	<link href='/controlpanel/static/vendor/google/poppins.css' rel='stylesheet' type='text/css'/>
+	<link rel="stylesheet" th:href="@{/static/css/reset.css}"/> <!-- CSS reset -->
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+	<link rel="stylesheet" th:href="@{/static/webjars/sofia2_theme/css/login.css}"/> <!-- sofia2_theme login style -->
+	<link rel="stylesheet" th:href="@{/static/css/newLogin.css}"/>
+	<script th:src="@{/static/vendor/jquery/jquery.min.js}"></script>
+	<script src="/controlpanel/static/vendor/bootstrap/bootstrap.min.js"></script>
+	<title th:text="#{login.title}">Control Panel Login</title>
+</head>
+<body>
+        <!-- Modal -->
+		  <div class="modal fade" id="myModal" role="dialog" tabindex="-1" aria-labelledby="...">
+		    <div class="modal-dialog" role="document">
+		    
+		      <!-- Modal content-->
+		      <div class="modal-content">
+		        <div class="modal-header">
+		          <button type="button" class="close" data-dismiss="modal">&times;</button>
+		          <h4 class="modal-title"><b>Legal Terms and Conditions of Use</b></h4>
+		        </div>
+		        <div class="modal-body">
+		          <p>When registering and logging to this website, you declare to have read, accept and understand completely the present terms and conditions, explicitly accepting its binding.</p>
+		          <br></br>
+		          <h3>Terms of use</h3>
+		          <br></br> <h4>1. Access</h4>
+		          <br></br><p>By accepting the conditions in the current document and registering in the Web, you will have access and use rights on the platform. You can request the unsubscription at any time following the indications in this same document.</p>
+		          <br></br><br></br><h4>2. Your Account</h4>
+		          <br></br><p>When using the platform, you will be solely responsible for the confidentiality of your password, your account and the activities done with it.</p>
+		          <br></br><p>The administrators may restrict, limit, suspend or terminate your account when, in their opinion, there is a suspected breach of the obligations under these Conditions of access, without liability whatsoever for it.</p>
+		          <br></br><p>When cancelling an account, you will no longer have the right to access the platform and, therefore, may not access or restore his data. In addition, you specifically accept that the administrators has no obligation to provide copies of the content uploaded by him in the Web and that may or may not automatically purge such data from their systems.</p>
+		          <br></br><br></br><h4>3. License to access</h4>
+		          <br></br><p>Free access is offered in order to load data that allow registering in the platform.</p>
+		          <br></br><p>You acknowledge and accept that the information and content hosted on the Web may not always be available due to technical issues or any other reason.</p>
+		          <br></br><p>The administrator is not responsible for any material that you download or obtain otherwise, through the Web will be entirely their responsibility, at their own risk, being solely responsible for any damage to devices or loss of data resulting from the download of such material.</p>
+		          <br></br><br></br><h4>4. User Conduct</h4>
+		          <br></br><p>You guarantee that all materials, data, content or other items loaded do not infringe rights of third parties of any kind, and have all the necessary permissions to upload the data.</p>
+		          <br></br><p>You commit to:</p>
+		          <br></br><p><b>·</b>  Not use the Web and its contents to upload or store any illegal or contrary to morality or moral standards or that in any way, may violate or infringe the rights of third parties.</p>
+		          <br></br><p><b>·</b>  Communicate diligently, through the authorized channel for it in the Web, the loss or suspected theft of their identity.</p>
+		          <br></br><p><b>·</b>  Not perform any action that directly or indirectly, is intended to or simply may prejudice the functioning of the Web and the information contained in it.</p>
+		          <br></br><br></br><h4>5. Unsubscribe</h4>
+		          <br></br><p>You can unsubscribe at any time by requesting it via e-mail, using the address you can find in the Web.</p>
+		        </div>
+		        <div class="modal-footer">
+		          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+		        </div>
+		      </div>
+		      
+		    </div>
+		  </div>
+	<header>
+    <div class="ods-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" width="184" height="84" viewBox="0 0 184 84">
+  <g transform="translate(0 2)">
+    <polygon points="138.585 61.446 141.185 61.446 141.185 70.558 92.707 81.156 92.707 -1.31 141.241 9.301 141.241 18.938 138.641 18.938 138.641 11.394 95.307 1.92 95.307 77.926 138.585 68.465"/>
+    <text ref="controlPanel" font-family="Soho" font-size="13.689" font-weight="300">
+      <tspan x="103.397" y="56.6">ControlPanel</tspan>
+    </text>
+    <text ref="cloud" font-family="Soho" font-size="24.416" font-weight="300">
+      <tspan x="103.397" y="39.57">engine</tspan>
+    </text>
+    <text ref="platform" font-family="Soho" font-size="13.689" font-weight="300">
+      <tspan x=".108" y="56.6">Platform</tspan>
+    </text>
+    <path d="M60.6196721 5.31147541C60.1848712 4.90807958 59.6714032 4.59888257 59.1114754 4.40327869 57.8341698 3.97989793 56.4543548 3.97989793 55.1770492 4.40327869 54.6174022 4.59948025 54.1040503 4.90860741 53.6688525 5.31147541 53.2416225 5.71265944 52.9061011 6.2014022 52.6852459 6.7442623 52.4543329 7.33393581 52.3428856 7.96361338 52.357377 8.59672131L52.357377 13.0557377C52.357377 14.4852459 52.7901639 15.6098361 53.6459016 16.4 54.5016393 17.1901639 55.6590164 17.5803279 57.1344262 17.5836066 58.6098361 17.5868852 59.7901639 17.1803279 60.6360656 16.4 60.6441727 16.3885749 60.6541487 16.3785989 60.6655738 16.3704918L60.6655738 16.4295082 60.6655738 16.4065574 61.0819672 17.4327869 61.9147541 17.4327869 61.9147541 8.59672131C61.9285508 7.96366658 61.8171274 7.33412432 61.5868852 6.7442623 61.3693969 6.20366026 61.0397417 5.71532355 60.6196721 5.31147541zM60.5770492 13.0459016C60.5734489 13.433986 60.5239241 13.82028 60.4295082 14.1967213 60.3384082 14.5703079 60.1647554 14.9187339 59.9213115 15.2163934 59.6427647 15.5458076 59.2898934 15.8042802 58.8918033 15.9704918 58.3375762 16.1903239 57.7432371 16.29087 57.147541 16.2655738 56.5537009 16.29049 55.9613546 16.1887853 55.4098361 15.9672131 55.0132047 15.801481 54.6606969 15.5455199 54.3803279 15.2196721 54.1347543 14.9209114 53.9609065 14.569851 53.8721311 14.1934426 53.7775463 13.8181469 53.7280169 13.4329177 53.7245902 13.0459016L53.7245902 8.59672131C53.7245902 7.56721311 54.0229508 6.76721311 54.6163934 6.20983607 55.2098361 5.65245902 56.0557377 5.37377049 57.147541 5.36721311 58.2393443 5.36065574 59.0983607 5.6557377 59.6885246 6.20983607 60.2786885 6.76393443 60.5770492 7.56721311 60.5770492 8.59672131L60.5770492 13.0459016zM82.6262295 15.5508197C82.025339 16.0869265 81.2369442 16.3638663 80.4327869 16.3213115 79.783914 16.3718494 79.1461058 16.1316203 78.6918033 15.6655738 78.3081967 15.2196721 78.1213115 14.4754098 78.1213115 13.3704918L78.1213115 5.4557377 82.2918033 5.4557377 82.3245902 5.4557377 82.3245902 4.25901639 82.2918033 4.25901639 78.1213115 4.25901639 78.1213115.239344262 76.8098361.239344262 76.8098361 13.4491803C76.8098361 14.8262295 77.1377049 15.8688525 77.7278689 16.5442623 78.3180328 17.2196721 79.252459 17.5737705 80.4196721 17.5737705 81.5868852 17.5737705 82.4688525 17.2852459 83.104918 16.7245902L82.6262295 15.5508197zM70.9245902 16.2393443L70.9245902 4.24590164 66.0327869 4.24590164 66.0327869 5.42622951 69.5967213 5.42622951 69.5967213 16.2459016 66.0327869 16.2459016 66.0327869 17.4262295 73.5737705 17.4262295C73.6122895 17.4228384 73.6505968 17.4173659 73.6885246 17.4098361L73.6885246 16.2590164C73.6505968 16.2514865 73.6122895 16.246014 73.5737705 16.242623L70.9245902 16.2393443zM46.3540984 10.4918033L42.2360656 9.35737705C41.8014851 9.2393122 41.4128451 8.9924115 41.1213115 8.64918033 40.8837944 8.36458078 40.7517724 8.00673171 40.747541 7.63606557 40.7244702 7.22374868 40.8249289 6.81392311 41.0360656 6.45901639 41.219006 6.17848911 41.4737297 5.95206804 41.7737705 5.80327869 42.0935388 5.63362033 42.4410978 5.5225791 42.8 5.47540984 43.176326 5.41610609 43.556735 5.38650654 43.9377049 5.38688525 44.8287946 5.34453047 45.7138395 5.55357831 46.4918033 5.99016393 47.1016393 6.36721311 47.4229508 7 47.4557377 7.86557377 47.4557377 7.86557377 47.4557377 7.88852459 47.4557377 7.90163934L48.7442623 7.90163934C48.7442623 7.8852459 48.7442623 7.87540984 48.7442623 7.85901639 48.7081967 6.6 48.2491803 5.64262295 47.3836066 5.01639344 46.5180328 4.39016393 45.3803279 4.10491803 43.9836066 4.10491803 43.4062797 4.10302124 42.8303802 4.16236966 42.2655738 4.28196721 41.7494077 4.392074 41.2587841 4.59900367 40.8196721 4.89180328 40.4013014 5.17273761 40.0570887 5.55069672 39.8163934 5.99344262 39.5507042 6.49807443 39.4197065 7.06271987 39.4360656 7.63278689 39.4202727 8.29809288 39.6384061 8.94785184 40.052459 9.46885246 40.498816 10.00858 41.1127595 10.3836395 41.7967213 10.5344262L45.9344262 11.7016393C46.4123766 11.821274 46.8341109 12.1028164 47.1278689 12.4983607 47.376833 12.8666334 47.5124719 13.2997659 47.5180328 13.7442623 47.5391189 14.2040545 47.4251421 14.6599616 47.1901639 15.0557377 46.9909506 15.3663394 46.7140482 15.6195072 46.3868852 15.7901639 46.0303487 15.9667133 45.6449918 16.0777672 45.2491803 16.1180328 44.3565395 16.2373245 43.4508562 16.2185253 42.5639344 16.0622951 42.1790568 15.9863763 41.8105764 15.8432017 41.4754098 15.6393443 41.184993 15.453148 40.9433019 15.2002154 40.7704918 14.9016393 40.5829383 14.5504086 40.4934648 14.1551395 40.5114754 13.757377 40.5114754 13.7344262 40.5114754 13.7147541 40.5114754 13.6918033L39.2 13.6918033C39.1984435 13.7147277 39.1984435 13.7377313 39.2 13.7606557 39.2262295 15.0327869 39.6885246 15.9901639 40.5704918 16.6098361 41.452459 17.2295082 42.5934426 17.5409836 44.0032787 17.5409836 44.6272195 17.5422516 45.2498105 17.4829572 45.8622951 17.3639344 46.4181697 17.2600782 46.9483499 17.0484516 47.4229508 16.7409836 47.8673842 16.432462 48.2316083 16.0221478 48.4852459 15.5442623 48.7544999 14.9797214 48.8870382 14.3597117 48.8721311 13.7344262 48.9278381 12.1882986 47.8759674 10.821142 46.3672131 10.4786885L46.3540984 10.4918033zM34.4754098 5.31147541C34.0406089 4.90807958 33.5271409 4.59888257 32.9672131 4.40327869 31.6899075 3.97989793 30.3100925 3.97989793 29.0327869 4.40327869 28.4731399 4.59948025 27.959788 4.90860741 27.5245902 5.31147541 27.1032807 5.71427889 26.7734329 6.20290086 26.557377 6.7442623 26.3264641 7.33393581 26.2150167 7.96361338 26.2295082 8.59672131L26.2295082 13.0557377C26.2295082 14.4852459 26.6622951 15.6098361 27.5180328 16.4 28.3737705 17.1901639 29.5311475 17.5803279 31.0065574 17.5836066 31.3932007 17.5833098 31.7791771 17.5515106 32.1606557 17.4885246L32.1901639 17.4885246 32.295082 17.4688525 32.4098361 17.4459016 32.4918033 17.4262295 32.6885246 17.3803279 32.7114754 17.3803279 32.8918033 17.3245902 32.9245902 17.3245902 33.1114754 17.2622951C33.5043349 17.1208235 33.8735376 16.9207466 34.2065574 16.6688525L34.3377049 16.5606557 34.3606557 16.5442623 34.4885246 16.4295082C34.8721988 16.0736865 35.1771037 15.6414587 35.3836066 15.1606557L34.2098361 14.452459C34.1140848 14.7303225 33.973421 14.9906058 33.7934426 15.2229508 33.7857949 15.2357325 33.7770166 15.2478026 33.7672131 15.2590164 33.6246262 15.432692 33.4579073 15.5850576 33.2721311 15.7114754 33.1050265 15.8276792 32.9271632 15.92759 32.7409836 16.0098361L32.642623 16.052459 32.6 16.0688525 32.4819672 16.1114754 32.452459 16.1114754C32.3584699 16.1398907 32.2568306 16.1661202 32.147541 16.1901639 31.7674717 16.2647218 31.3807261 16.2998805 30.9934426 16.295082 30.3996025 16.3199982 29.8072562 16.2182935 29.2557377 15.9967213 28.8591063 15.8309892 28.5065986 15.5750281 28.2262295 15.2491803 27.981913 14.9496087 27.8082151 14.5988509 27.7180328 14.2229508 27.623448 13.8476551 27.5739185 13.4624259 27.5704918 13.0754098L27.5704918 11.6327869 35.7672131 11.6327869 35.7672131 8.59672131C35.7810098 7.96366658 35.6695864 7.33412432 35.4393443 6.7442623 35.2228189 6.20395428 34.8942968 5.71564084 34.4754098 5.31147541zM34.4327869 10.2295082L27.5803279 10.2295082 27.5803279 8.59016393C27.5803279 7.56065574 27.8786885 6.76065574 28.4721311 6.20327869 29.0655738 5.64590164 29.9114754 5.36721311 31.0032787 5.36065574 32.095082 5.35409836 32.9704918 5.64918033 33.5442623 6.20327869 34.1180328 6.75737705 34.4327869 7.56065574 34.4327869 8.59016393L34.4327869 10.2295082zM17.9967213 4.10163934C17.6194192 4.10500944 17.2439486 4.15455834 16.8786885 4.24918033 16.4918971 4.33457858 16.1165985 4.46554787 15.7606557 4.63934426 15.410692 4.80437784 15.0861012 5.01856363 14.7967213 5.27540984 14.6963392 5.36160703 14.6021194 5.4547312 14.5147541 5.55409836L13.8295082 4.24262295 13.2098361 4.24262295 13.2098361 17.4655738 14.5213115 17.4655738 14.5213115 8.56393443C14.5107129 8.12016479 14.6003705 7.67972203 14.7836066 7.27540984 14.9509921 6.89385592 15.1941631 6.55029318 15.4983607 6.26557377 15.8154543 5.97373843 16.1893768 5.75050114 16.5967213 5.60983607 17.0514991 5.44958875 17.5309708 5.37078669 18.0131148 5.37704918 18.6011884 5.35864525 19.1868525 5.46016037 19.7344262 5.67540984 20.1304273 5.84858702 20.4839717 6.10591362 20.7704918 6.4295082 21.0131915 6.73026387 21.1897126 7.07883716 21.2885246 7.45245902 21.3785675 7.83178046 21.4258566 8.21999103 21.4295082 8.60983607L21.4295082 17.4622951 22.7409836 17.4622951 22.7409836 8.60983607C22.7409836 7.1704918 22.3213115 6.04918033 21.495082 5.27213115 20.6688525 4.49508197 19.4688525 4.10163934 17.9967213 4.10163934zM8.37704918 5.3147541C7.94299786 4.91036294 7.42930937 4.60103313 6.86885246 4.40655738 5.59106136 3.98619497 4.21221733 3.98619497 2.93442623 4.40655738 2.37341333 4.60192721 1.85882756 4.91112517 1.42295082 5.3147541.995006459 5.7153246.659370212 6.20423473.439344262 6.74754098.210012465 7.33765817.0986213355 7.96701805.11147541 8.6L.11147541 13.0557377C.11147541 14.4885246.544262295 15.6131148 1.4 16.4032787 2.2557377 17.1934426 3.41639344 17.5803279 4.89180328 17.5836066 6.36721311 17.5836066 7.5442623 17.1836066 8.38360656 16.4032787 9.22295082 15.6229508 9.66885246 14.4885246 9.66885246 13.0557377L9.66885246 8.6C9.68170653 7.96701805 9.5703154 7.33765817 9.34098361 6.74754098 9.12652699 6.20614096 8.79772722 5.71741477 8.37704918 5.3147541zM8.33442623 13.052459C8.32955281 13.4393747 8.28004499 13.8244354 8.18688525 14.2 8.09514005 14.5753319 7.92160575 14.9257592 7.67868852 15.2262295 7.39725329 15.5531465 7.04369005 15.8101813 6.64590164 15.9770492 6.09379219 16.1965278 5.50189558 16.2981553 4.90819672 16.2754098 4.31340174 16.2986152 3.72034077 16.1969795 3.16721311 15.9770492 2.77036981 15.8101628 2.41787847 15.5530911 2.13770492 15.2262295 1.89478769 14.9257592 1.72125339 14.5753319 1.6295082 14.2 1.53473871 13.8247393 1.48520639 13.4394879 1.48196721 13.052459L1.48196721 8.6C1.48196721 7.5704918 1.78032787 6.7704918 2.37704918 6.20983607 2.97377049 5.64918033 3.81639344 5.37704918 4.90819672 5.3704918 6 5.3704918 6.8557377 5.65901639 7.43934426 6.20983607 8.02295082 6.76065574 8.33442623 7.5704918 8.33442623 8.6L8.33442623 13.052459z" transform="translate(.656 22.295)"/>
+  </g>
+</svg>
+
+    </div>
+	</header>
+
+  <div class="login__main">
+    <form role="form" id="user_login" method="post" class="ods-form login-form__form">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+      <h1 class="login__main__title" th:text="#{login.login}"></h1>
+      <div id="msgError" class="ods-mb-5 hide">
+        <div role="alert" class="ods-alert ods-alert--error" style="max-width: 100%;">
+          <div class="ods-alert__content">
+            <span class="ods-alert__title" th:text="#{login.error}">Invalid username and password.</span>
+            <i class="ods-alert__closebtn ods-icon-close" style="display: none;"></i>
+          </div>
+        </div>
+      </div>
+      <div th:if="${message} != null ? true" class="ods-mb-5">
+        <div role="alert" class="ods-alert ods-alert--warning" style="max-width: 100%;">
+          <div class="ods-alert__content">
+            <span class="ods-alert__title" th:text="${message}">messages</span>
+            <i class="ods-alert__closebtn ods-icon-close" style="display: none;"></i>
+          </div>
+        </div>
+      </div> 
+      <div class="ods-form-item">
+        <label for="user" class="ods-form-item__label" th:text="#{login.login.username}">Username</label>
+        <input class="ods-input__inner" id="username" name="username" type="text" th:placeholder="#{login.data.user}"/>
+      </div>
+
+      <div class="ods-form-item">
+        <label for="user" class="ods-form-item__label" th:text="#{login.data.password}">Password</label>
+        <!-- <input class="full-width has-padding has-border" id="password" name="password" type="text"  th:placeholder="#{login.data.password}"/> -->
+        <input class="ods-input__inner" id="password" name="password" type="password"  th:placeholder="#{login.data.password}"/>
+        <a href="#0" class="hide-password"></a>
+      </div>
+
+      <div class="login-form__action">
+        <div class="login-fom__checkbox">
+          <input type="checkbox" id="remember-me" checked="checked" />
+          <label for="remember-me" th:text="#{login.remember}"></label>
+        </div>
+        <button class="ods-button ods-button--primary is-round" type="button" onclick="submitForm()"  th:value="#{login.login}">Login</button>
+      </div>
+  </form>
+
+  </div> <!-- cd-login -->	
+	<script th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}" type="text/javascript"></script>
+    <script th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
+    <script th:src="@{/static/vendor/jquery-form/jquery.form.min.js}" type="text/javascript"></script>
+	<script type="text/javascript" th:inline="javascript"> 
+	
+	function navigateUrl (url){
+		window.location.href = url; 
+	}
+	
+	function submitForm(){
+		var id=window.location.href.split('/')[window.location.href.split('/').length -2];
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		
+		if(validateLogin()){
+			$("#user_login").ajaxSubmit({type: 'post',
+			headers: {
+				[csrf_header]: csrf_value
+		    }, 
+		    success : function(data){
+				
+				navigateUrl(data.redirect);
+				
+				}, error: function(data){
+					HeaderController.showErrorDialog(data.responseJSON.cause)
+				}
+			})
+		}
+	}
+	
+    function validateLogin() {
+      let userInput = document.querySelector('#username');
+      let passInput = document.querySelector('#password');
+      let msgErr = document.querySelector('#msgError');
+
+      if ( userInput.value == "" || passInput.value == "") {
+        msgErr.classList.remove('hide');
+        return false
+      } else {
+        return true
+      }
+    }
+
+    function validateUserPass() {
+      let msgErr = document.querySelector('#msgError');
+      let url = window.location.href
+
+      if (url.includes('err')) {
+        msgErr.classList.remove('hide');
+      }
+    }
+
+   /*  function toggleSignLogin () {
+      let formSign = document.querySelector('.signup-form__form');
+      let btnToSign = document.querySelector('.btn-formSign');
+      let formLogin = document.querySelector('.login-form__form');
+      let btnToLogin = document.querySelector('#btnSignToLogin');
+      let formResetPass = document.querySelector('.resetPass-form__form');
+      let btnToLoginFromReset = document.querySelector('#btnToLogin');
+      
+      let msgErr = document.querySelector('#msgErrorSignUp');
+
+      btnToSign.addEventListener('click', (e) => {
+        e.preventDefault();
+        
+        formSign.classList.remove('hide');
+        formLogin.classList.add('hide');
+      });
+
+      btnToLogin.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        formSign.classList.add('hide');
+        formLogin.classList.remove('hide');
+
+        msgErr.classList.add('hide');
+      })
+
+      btnToLoginFromReset.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        formLogin.classList.remove('hide');
+        formResetPass.classList.add('hide');
+      })
+
+
+    } */
+
+    function toggleRadioSign () {
+      let radioDeveloper = document.querySelector('#developer');
+      let radioUser = document.querySelector('#user');
+      let inputRadio = document.querySelector('#roleName')
+
+      radioDeveloper.addEventListener('click', () => {
+        radioDeveloper.checked = true;
+        radioUser.checked = false;
+        inputRadio.value = 'developer';
+      })
+
+      radioUser.addEventListener('click', () => {
+        radioUser.checked = true;
+        radioDeveloper.checked = false;
+        inputRadio.value = 'user';
+      })
+    }
+
+    const passRepeatSign = document.querySelector('#repeatpasswordup');
+    const nameSign = document.querySelector('#signup-name');
+
+    function validateSign () {
+      const userSign = document.querySelector('#usernameup');
+      const passSign = document.querySelector('#passwordup');
+      const emailSign = document.querySelector('#signup-email');
+      const msgErrSign = document.querySelector('#msgErrorSignUp');
+      const msgErrPass = document.querySelector('#msgErrorPass');
+
+      if (userSign.value == '' || passSign.value == '' || passRepeatSign.value == '' || nameSign.value == '' || emailSign.value == '') {
+        msgErrSign.classList.remove('hide');
+        window.scrollTo(0, 0);
+        return false
+      } else {
+        if (passSign.value === passRepeatSign.value) {
+          msgErrorPass.classList.add('hide');
+          msgErrorSign.classList.add('hide');
+          return true
+        } else {
+          msgErrPass.classList.remove('hide');
+          window.scrollTo(0, 0);
+          return false
+        }
+      }
+    }
+
+    function formResetPass() {
+      let formLogin = document.querySelector('.login-form__form');
+      let formResetPass = document.querySelector('.resetPass-form__form');
+
+      formLogin.classList.add('hide');
+      formResetPass.classList.remove('hide');
+    }
+
+    $(document).ready(function(){
+        $("#myBtn").click(function(){
+            $("#myModal").modal();
+        });
+    });
+    
+    window.onload = function() {
+      validateUserPass();
+//      toggleSignLogin();
+//      toggleRadioSign();
+    }	
+	
+	</script>
+
+</body>
+</html>

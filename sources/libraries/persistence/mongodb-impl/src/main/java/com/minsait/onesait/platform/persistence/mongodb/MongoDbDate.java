@@ -1,0 +1,73 @@
+/**
+ * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+ * 2013-2023 SPAIN
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.minsait.onesait.platform.persistence.mongodb;
+
+import java.io.Serializable;
+import java.util.Objects;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.minsait.onesait.platform.commons.model.CalendarAdapter;
+
+public class MongoDbDate implements Serializable {
+
+	private static final long serialVersionUID = 1L;
+
+	private String $date;
+
+	public MongoDbDate() {
+		$date = CalendarAdapter.marshalUtcDate();
+	}
+
+	public MongoDbDate(String date) {
+		this.$date = date;
+	}
+
+	public MongoDbDate(JsonNode node) {
+		this.$date = node.findValue("$date").asText();
+	}
+
+	public JsonNode toJson() {
+		return JsonNodeFactory.instance.objectNode().put("$date", this.$date);
+	}
+
+	public String getDate() {
+		return $date;
+	}
+
+	public void setDate(String $date) {
+		this.$date = $date;
+	}
+
+	@Override
+	public String toString() {
+		return "MongoDbDate [$date=" + $date + "]";
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other == null)
+			return false;
+		if (!(other instanceof MongoDbDate))
+			return false;
+		MongoDbDate that = (MongoDbDate) other;
+		return this.$date.equals(that.$date);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash($date);
+	}
+}

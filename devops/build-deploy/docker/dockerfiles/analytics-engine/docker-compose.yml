@@ -1,0 +1,66 @@
+version: "3.3"
+services:
+  spark-master:
+    image: cluster-apache-spark-github:3.2.1
+    container_name: spark-master
+    ports:
+      - "9090:9090"
+      - "7077:7077"
+    volumes:
+       - /data/docker_images/master/apps/:/opt/spark-apps
+       - /data/docker_images/master/data:/opt/spark-data
+    environment:
+      - SPARK_LOCAL_IP=spark-master
+      - SPARK_WORKLOAD=master
+      - SPARK_MASTER_WEBUI_PORT=9090
+      - SPARK_PUBLIC_DNS=192.168.1.216
+    extra_hosts:
+       - "minio:192.168.1.216" 
+  spark-worker-a:
+    image: cluster-apache-spark-github:3.2.1
+    container_name: spark-worker-a
+    ports:
+      - "9091:9091"
+      - "7000:7000"
+    depends_on:
+      - spark-master
+    environment:
+      - SPARK_WORKER_HOST=spark-worker-a
+      - SPARK_WORKER_WEBUI_PORT=9091
+      - SPARK_MASTER=spark://spark-master:7077
+      - SPARK_WORKER_CORES=1
+      - SPARK_WORKER_MEMORY=1G
+      - SPARK_DRIVER_MEMORY=1G
+      - SPARK_EXECUTOR_MEMORY=1G
+      - SPARK_WORKLOAD=worker
+      - SPARK_LOCAL_IP=spark-worker-a
+      - SPARK_PUBLIC_DNS=192.168.1.216
+    volumes:
+       - /data/docker_images/worker_a/apps:/opt/spark-apps
+       - /data/docker_images/worker_a/data:/opt/spark-data
+    extra_hosts:
+       - "minio:192.168.1.216" 
+  spark-worker-b:
+    image: cluster-apache-spark-github:3.2.1
+    container_name: spark-worker-b
+    ports:
+      - "9092:9092"
+      - "7001:7000"
+    depends_on:
+      - spark-master
+    environment:
+      - SPARK_WORKER_HOST=spark-worker-b
+      - SPARK_WORKER_WEBUI_PORT=9092
+      - SPARK_MASTER=spark://spark-master:7077
+      - SPARK_WORKER_CORES=1
+      - SPARK_WORKER_MEMORY=1G
+      - SPARK_DRIVER_MEMORY=1G
+      - SPARK_EXECUTOR_MEMORY=1G
+      - SPARK_WORKLOAD=worker
+      - SPARK_LOCAL_IP=spark-worker-b
+      - SPARK_PUBLIC_DNS=192.168.1.216
+    volumes:
+        - /data/docker_images/worker_b/apps:/opt/spark-apps
+        - /data/docker_images/worker_b/data:/opt/spark-data
+    extra_hosts:
+       - "minio:192.168.1.216" 

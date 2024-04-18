@@ -1,0 +1,215 @@
+{
+  "$v": 1,
+  "$d": {
+    "allData": [
+      {
+        "class": "com.minsait.onesait.platform.config.model.Device",
+        "instances": [
+          {
+            "id": "13972902-1d48-4a21-8db0-4178b4ab49fe",
+            "data": {
+              "jsonActions": "[{\"action_power\":{\"shutdown\":0,\"start\":1,\"reboot\":2}},{\"action_light\":{\"on\":1,\"off\":0}}]",
+              "sessionKey": "49ff897b-58d7-468e-9ead-89318ea4f082",
+              "tags": "Digital, device, testing, onesait",
+              "connected": false,
+              "createdAt": 1534215765000,
+              "serialVersionUID": 1,
+              "protocol": "MQTT",
+              "identification": "MQTT Example App",
+              "clientPlatform": "e07d6f29-ccc0-43bc-9d7c-b64a95774a13",
+              "disabled": true,
+              "location": [
+                56.099963,
+                -90.09999
+              ],
+              "id": "13972902-1d48-4a21-8db0-4178b4ab49fe",
+              "status": "OK",
+              "updatedAt": 1534250129000
+            }
+          },
+          {
+                "id": "13ab2c16-0d88-45f4-b7c9-e12bb97c0892",
+                "data": {
+                    "jsonActions": null,
+                    "sessionKey": "ae1a7171-9e42-4d60-8975-15b705d50a47",
+                    "tags": null,
+                    "connected": false,
+                    "createdAt": 1538127837000,
+                    "serialVersionUID": 1,
+                    "protocol": "REST",
+                    "identification": "SysLog_DigitalClient:d014e743-7978-42f8-ada5-f21868be8681",
+                    "clientPlatform": "e07d6f29-ccc0-43bc-9d7c-b64a95774a13",
+                    "disabled": true,
+                    "location": null,
+                    "id": "13ab2c16-0d88-45f4-b7c9-e12bb97c0892",
+                    "status": "OK",
+                    "updatedAt": 1538127840000
+                }
+            }
+        ]
+      },
+      {
+        "class": "com.minsait.onesait.platform.config.model.ClientPlatform",
+        "instances": [
+          {
+                "id": "e07d6f29-ccc0-43bc-9d7c-b64a95774a13",
+                "data": {
+                    "metadata": "",
+                    "devices": [
+                        "13ab2c16-0d88-45f4-b7c9-e12bb97c0892",
+                        "13972902-1d48-4a21-8db0-4178b4ab49fe"
+                    ],
+                    "description": "Digital Client for SysLog",
+                    "encryptionKey": "bd3dafb8-ff4b-4edb-854d-bb84efeafe2d",
+                    "clientConnections": [],
+                    "createdAt": 1538074557000,
+                    "serialVersionUID": 1,
+                    "clientPlatformOntologies": [
+                        "c4a41c8e-56e8-417e-b0a9-ece3cda7d120",
+                        "3cd6f1da-7130-4c95-8109-7b917066292f"
+                        ],
+                    "identification": "SysLog_DigitalClient",
+                    "tokens": [
+                        "ca209c40-f2b4-4f01-9557-de6583cb44bb"
+                    ],
+                    "id": "e07d6f29-ccc0-43bc-9d7c-b64a95774a13",
+                    "user": "sanaya",
+                    "updatedAt": 1538074557000
+                }
+            }
+        ]
+      },
+      {
+        "class": "com.minsait.onesait.platform.config.model.ClientPlatformOntology",
+        "instances": [
+           {
+                "id": "c4a41c8e-56e8-417e-b0a9-ece3cda7d120",
+                "data": {
+                    "createdAt": 1538074557000,
+                    "serialVersionUID": 1,
+                    "access": "ALL",
+                    "clientPlatform": "e07d6f29-ccc0-43bc-9d7c-b64a95774a13",
+                    "id": "c4a41c8e-56e8-417e-b0a9-ece3cda7d120",
+                    "ontology": "4593125c-25db-45c2-968d-a3be02ac1a07",
+                    "updatedAt": 1538074557000
+                }
+            },
+            {
+                "id": "3cd6f1da-7130-4c95-8109-7b917066292f",
+                "data": {
+                    "createdAt": 1538074557000,
+                    "serialVersionUID": 1,
+                    "access": "ALL",
+                    "clientPlatform": "e07d6f29-ccc0-43bc-9d7c-b64a95774a13",
+                    "id": "3cd6f1da-7130-4c95-8109-7b917066292f",
+                    "ontology": "b2116821-d8cb-46fb-8f12-092388ef6ff2",
+                    "updatedAt": 1538074557000
+                }
+            }
+        ]
+      },
+      {
+        "class": "com.minsait.onesait.platform.config.model.Ontology",
+        "instances": [
+           {
+                "id": "4593125c-25db-45c2-968d-a3be02ac1a07",
+                "data": {
+                    "allowsCypherFields": false,
+                    "rtdbClean": true,
+                    "dataModel": "MASTER-DataModel-3",
+                    "active": true,
+                    "description": "System Ontology. Centralized Log for devices of type SysLog_DigitalClient",
+                    "metainf": null,
+                    "dataModelVersion": null,
+                    "allowsCreateTopic": false,
+                    "createdAt": 1538074557000,
+                    "serialVersionUID": 1,
+                    "identification": "LOG_SysLog_DigitalClient",
+                    "rtdbCleanLapse": "SIX_MONTHS",
+                    "rtdbToHdb": false,
+                    "jsonSchema": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"title\": \"DeviceLog\",\n    \"type\": \"object\",\n    \"required\": [\n        \"DeviceLog\"\n    ],\n    \"properties\": {\n        \"DeviceLog\": {\n            \"type\": \"string\",\n            \"$ref\": \"#/datos\"\n        }\n    },\n    \"datos\": {\n        \"description\": \"Info DeviceLog\",\n        \"type\": \"object\",\n        \"required\": [\n            \"status\",\n            \"level\",\n            \"message\",\n            \"device\",\n            \"timestamp\"\n        ],\n        \"properties\": {\n            \"location\": {\n                \"type\": \"object\",\n                \"required\": [\n                    \"coordinates\",\n                    \"type\"\n                ],\n                \"properties\": {\n                    \"coordinates\": {\n                        \"type\": \"object\",\n                        \"properties\": {\n                            \"latitude\": {\n                                \"type\": \"number\"\n                            },\n                            \"longitude\": {\n                                \"type\": \"number\"\n                            }\n                        }\n                    },\n                    \"type\": {\n                        \"type\": \"string\",\n                        \"enum\": [\n                            \"Point\"\n                        ]\n                    }\n                }\n            },\n            \"status\": {\n                \"type\": \"string\"\n            },\n            \"level\": {\n                \"type\": \"string\"\n            },\n            \"message\": {\n                \"type\": \"string\"\n            },\n            \"extraOptions\": {\n                \"type\": \"string\"\n            },\n            \"device\": {\n                \"type\": \"string\"\n            },\n            \"timestamp\": {\n                \"type\": \"string\",\n                \"format\": \"date-time\"\n            }\n        }\n    },\n    \"description\": \"Device logging\",\n    \"additionalProperties\": true\n}",
+                    "xmlDiagram": null,
+                    "ontologyClass": null,
+                    "isPublic": false,
+                    "topic": null,
+                    "id": "4593125c-25db-45c2-968d-a3be02ac1a07",
+                    "ontologyUserAccesses": [],
+                    "rtdbDatasource": "MONGO",
+                    "user": "sanaya",
+                    "updatedAt": 1538074557000
+                }
+            },
+            {
+                "id": "b2116821-d8cb-46fb-8f12-092388ef6ff2",
+                "data": {
+                    "allowsCypherFields": false,
+                    "rtdbClean": false,
+                    "dataModel": "MASTER-DataModel-5",
+                    "active": true,
+                    "description": "Ontology for syslog ingestion with no process",
+                    "metainf": "syslog",
+                    "dataModelVersion": null,
+                    "allowsCreateTopic": false,
+                    "createdAt": 1538074428000,
+                    "serialVersionUID": 1,
+                    "identification": "SysLogExample",
+                    "rtdbCleanLapse": "NEVER",
+                    "rtdbToHdb": false,
+                    "jsonSchema": "{\r\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\r\n    \"title\": \"SysLogExample\",\r\n    \"type\": \"object\",\r\n    \"required\": [\r\n        \"SysLogExample\"\r\n    ],\r\n    \"properties\": {\r\n        \"SysLogExample\": {\r\n            \"type\": \"string\",\r\n            \"$ref\": \"#/datos\"\r\n        }\r\n    },\r\n    \"datos\": {\r\n        \"description\": \"Info SysLogExample\",\r\n        \"type\": \"object\",\r\n        \"required\": [\r\n            \"rawData\",\r\n            \"dataFormatted\"\r\n        ],\r\n        \"properties\": {\r\n            \"rawData\": {\r\n                \"type\": \"string\"\r\n            },\r\n            \"dataFormatted\": {\r\n                \"type\": \"string\"\r\n            }\r\n        }\r\n    },\r\n    \"description\": \"Ontology for syslog ingestion with no process\",\r\n    \"additionalProperties\": true\r\n}",
+                    "xmlDiagram": null,
+                    "ontologyClass": null,
+                    "isPublic": false,
+                    "topic": null,
+                    "id": "b2116821-d8cb-46fb-8f12-092388ef6ff2",
+                    "ontologyUserAccesses": [],
+                    "rtdbDatasource": "MONGO",
+                    "user": "sanaya",
+                    "updatedAt": 1538074428000
+                }
+            }
+        ]
+      },
+      {
+        "class": "com.minsait.onesait.platform.config.model.User",
+        "instances": [
+           {
+                "id": "sanaya",
+                "data": {
+                    "projects": [],
+                    "role": "ROLE_DATASCIENTIST",
+                    "active": true,
+                    "fullName": "Santiago Anaya Godoy",
+                    "avatar": null,
+                    "userId": "sanaya",
+                    "dateDeleted": null,
+                    "createdAt": 1537868816000,
+                    "serialVersionUID": 1,
+                    "password": "UzoOKkzcwpkJpVm/v7Y6gftS/GvIRB2561tXvcSJrYQ=",
+                    "email": "sanaya@minsait.com",
+                    "extraFields": null,
+                    "updatedAt": 1538074281000
+                }
+            }
+        ]
+      },
+      {
+        "class": "com.minsait.onesait.platform.config.model.Token",
+        "instances": [
+           {
+                "id": "ca209c40-f2b4-4f01-9557-de6583cb44bb",
+                "data": {
+                    "createdAt": 1538074557000,
+                    "serialVersionUID": 1,
+                    "clientPlatform": "e07d6f29-ccc0-43bc-9d7c-b64a95774a13",
+                    "active": true,
+                    "id": "ca209c40-f2b4-4f01-9557-de6583cb44bb",
+                    "token": "818e4ad843a24285af1f6ff525004177",
+                    "lastConnection": null,
+                    "updatedAt": 1538074557000
+                }
+            }
+        ]
+      }
+    ]
+  }
+}

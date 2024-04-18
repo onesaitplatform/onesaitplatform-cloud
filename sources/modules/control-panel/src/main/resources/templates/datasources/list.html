@@ -1,0 +1,414 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:dt="http://www.thymeleaf.org/dandelion/datatables" th:with="lang=${#locale.language}" th:lang="${lang}">
+	<head>
+		<meta name="_csrf" th:content="${_csrf.token}"/>
+		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"/>
+	    <meta name="description" content="Datasource list template"/>
+		<meta name="keywords" content="sofia2,smart,cities,platform,Indra"/>
+		<meta name="author" content="Indra Sistemas, S.A."/>
+
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+
+		<!-- PLUGINS STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>
+	</head>
+
+	<!-- page-sidebar-closed to start page with collapsed menu -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+
+		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"> </div>
+
+		<!-- BEGIN SIDEBAR -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+				<div id="searchFilter"  class="row" >
+					<form id="form_datasource" class="" role="form" method="get">
+						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+						<div class="col-md-3 col-sm-4 col-xs-12">
+							<div class="input-icon">
+								<i class="icon-search font-grey-mint"></i>
+								<input id="identification" th:placeholder="#{gadgets.name}" name="identification" class="form-control" type="text" maxlength="50" value=""/>
+							</div>
+						</div>
+						<div class="col-md-3 col-sm-4 col-xs-12">
+							<div class="input-icon">
+								<i class="icon-search font-grey-mint"></i>
+								<input id="description" th:placeholder="#{gadgets.description}" name="description" class="form-control" type="text" maxlength="50" value=""/>
+							</div>
+						</div>
+						<div class="col-md-2 col-sm-4 col-xs-12 pull-right">
+							<div class="pull-right">
+								<button type="button" id="reset_datasource" name="reset_datasource" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}">Reset</button>
+								<button type="button" id="search_datasource" name="search_datasource" th:value="#{datasource_search_button_form}" value="Search" class="btn btn-primary btn-primary-search" th:text="#{gen.search}"> Search </button>
+							</div>
+						</div>
+					</form>
+				</div>
+				<!-- BEGIN PAGE HEADER-->
+
+				<!-- BEGIN PAGE BAR AND BREADCRUM -->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><span th:text="#{datasources.my}">My Datasources</span></li>
+					</ul>
+				</div>
+				<!-- END PAGE BAR -->
+
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{datasources.my}">My datasources</span></h1>
+				<!-- END PAGE TITLE-->
+
+				<!-- MAIN ROW -->
+				<div class="row">
+					<div class="portlet light ">
+						<div class="portlet-title">
+							<div class="caption">
+								<span class="caption-subject" th:text="#{datasources.my}"> My Datasources </span>
+								<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
+							</div>
+							<div class="caption" style="padding: 22px 8px 8px 10px">
+								<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
+							</div>
+							<div id="search-on-title" class="hide input-icon search-icon">
+								<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
+							</div>
+							<div class="tools hide">
+								<a href="" class="collapse" data-original-title="" title=""> </a>
+								<a href="" class="fullscreen" data-original-title="" title=""> </a>
+							</div>
+							<div class="pull-right btn-group btn-title-group" id="divcreate" >
+								<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-primary button-plus-create" onclick="location.href='../datasources/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>
+							</div>
+						</div>
+						<div class="portlet-body" style="display: block; height: auto;">
+							<div class="row main" style="margin-top: 0px;">
+								<div class="col-md-12 alert-zone" style="padding-top: 0px; padding-bottom: 0px">
+									<!-- ALERT ZONE -->
+								</div>
+
+								<!-- DATASOURCE LIST -->
+								<div class="col-md-12">
+									<div id="contenedor-tabla-outside" class="contiene hidden">
+										<div>
+											<!-- DATATABLE DANDELION CONF. -->
+											<table id="datasources" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
+												<thead>
+													<tr class="cabecera-tabla">
+														<th class="titulo-columnas text-center" ><span th:text="#{gen.id}" >id</span></th>
+														<th class="titulo-columnas text-left" dt:sortInitDirection="asc" dt:sortInitOrder="0" th:text="#{gen.name}">Name</th>
+														<th class="titulo-columnas text-center" ><span th:text="#{gen.owner}" >Owner</span></th>
+														<th class="titulo-columnas text-center" th:text="#{datasources.mode}">Mode</th>
+														<th class="titulo-columnas text-center" th:text="#{datasources.db}">Type</th>
+														<th class="titulo-columnas text-center " th:text="#{datasources.ontoquery}">Ontology/Query</th>
+														<th class="titulo-columnas " th:text="#{datasources.maxvalue}">Max. Value</th>
+														<th class="titulo-columnas " th:text="#{datasources.refresh} + ' (s)'">Refresh Time</th>
+														<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
+														<th class="titulo-columnas text-center" ><span th:text="#{gen.updated}"> Updated At </span></th>
+
+														<th class="titulo-columnas text-center" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
+													</tr>
+												</thead>
+												<tbody th:remove="all-but-first">
+													<tr th:each="datasource : ${datasources}" pages:paginate="10">
+														<!-- ID -->
+														<td class="text-left no-wrap" th:text="${datasource.id}"></td>
+														<!-- IDENTIFICATION/NAME -->
+														<td class="text-left no-wrap" th:text="${datasource.identification}"></td>
+														<!-- USER -->
+														<td class="text-center " th:text="${datasource.user.userId}"></td>
+														<!-- MODE -->
+														<td class="text-center " th:title="${datasource.mode}" th:text="${datasource.mode}"></td>
+														<!-- TYPE -->
+														<td class="text-center text-truncate-sm" th:title="${datasource.dbtype}" th:text="${datasource.dbtype}"></td>
+														<!-- ONTOLOGY -->
+														<td th:if="${datasource.ontologyIdentification!=null}" class="text-left text-truncate-sm" th:title="${datasource.ontologyIdentification}" th:text="${datasource.ontologyIdentification}"></td>
+														<td th:if="${datasource.ontologyIdentification==null}" class="text-left text-truncate-sm" th:title="${datasource.query}" th:text="${datasource.query}"></td>
+														<!-- MAX VALUE -->
+														<td class="text-center text-truncate-sm" th:title="${datasource.maxValues}" th:text="${datasource.maxValues}"></td>
+														<!-- REFRESH TIME -->
+														<td class="text-center text-truncate-sm" th:title="${datasource.refresh}" th:text="${datasource.refresh}"></td>
+														<!-- DATE -->
+														<td class="text-center" th:if="${datasource.created_at!=null}"><span th:text="${#dates.format(datasource.created_at,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(datasource.created_at,'dd/MM/yyyy')}" ></span></td>
+														<td class="text-center" th:if="${datasource.created_at==null}" th:text="'---'"></td>
+														<!-- UPDATE -->
+														<td class="text-center" th:if="${datasource.updated_at!=null}"><span th:text="${#dates.format(datasource.updated_at,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(datasource.updated_at,'dd/MM/yyyy')}" ></span></td>
+														<td class="text-center" th:if="${datasource.updated_at==null}" th:text="'---'"></td>
+														<!-- OPTIONS -->
+														<td class="icon text-center" style="white-space: nowrap">
+															<div class="grupo-iconos">
+																<!-- VIEW -->
+																<span th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom"	th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/datasources/show/${datasource.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
+
+																<!-- EDIT -->
+																<span  class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='showNavigationConfirmDialogDatasource(\'' + @{|/datasources/update/${datasource.id}/|(form)} + '=' + '\', \'' + ${datasource.id} + '\');'"><i class="icon-edit"></i></span>																	
+
+																<!-- DELETE -->
+																<span  class="btn btn-xs btn-no-border color-red icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:attr="onclick='deleteConfirmation(\''+${datasource.id}+'\');'"><i class="icon-delete"></i></span>
+															</div>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+											<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+											<div id="dataTable-vis-toggle" class="btn-group margin-right-10 hide">
+												 <a class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
+
+												<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="0"/>
+														<label th:text="#{gen.id}"> Id</label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
+														<label th:text="#{gen.name}"> Name</label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
+														<label th:text="#{gen.owner}"> Owner</label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+														<label th:text="#{datasources.mode}"> Mode</label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+														<label th:text="#{datasources.db}"> Type</label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
+														<label th:text="#{datasources.ontoquery}"> Ontology/Query</label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="6" checked/>
+														<label th:text="#{datasources.maxvalue}"> Max. Value</label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="7" checked/>
+														<label th:text="#{datasources.refresh}"> Refresh</label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="8" checked/>
+														<label th:text="#{gen.created}"> Created At</label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="9" checked/>
+														<label th:text="#{gen.updated}"> Updated At</label>
+													</span>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div><!-- END PORTLET BASIC LIGHT -->
+				</div><!-- END COL-12 -->
+			</div><!-- END MAIN ROW -->
+			<form id="delete_datasource_form" class="delete-gadgetDatasource hide" method="post">
+				<input type="hidden" name="_method" value="DELETE"/>
+				<input type="hidden" id="delete-id" name="id" />
+				<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+			</form>
+		</div><!-- END CONTENT BODY -->
+	</div><!-- END CONTENT page-content-wrapper -->
+	<!-- END MAIN PAGE WRAPPER -->
+
+	<!-- FOOTER-INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+
+	<!-- CORE CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
+
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
+
+
+	<script th:inline="javascript">
+
+	// TEMPLATE SEARCH FORM.
+	var sname = [[${param.name}]] || '';
+	var stype = [[${param.type}]] || '';
+
+	sname ? $('#name').val(sname) : sname = '';
+	stype ? $('#type').val(stype) : stype = '';
+	console.log('SEARCHING ... [ Name: ' + sname + ' Type: ' + stype + ']');
+	if (( sname != '') || (stype != '')) { $('#search-toggle').trigger('click'); }
+
+	// DATATABLES LANGUAJE FROM PROPERTIES.
+	datatable_lang = [[#{datatables_lang}]];
+	var languageJson = JSON.parse(datatable_lang);
+	if ( languageJson ){ $.extend( true, $.fn.dataTable.defaults, { language: languageJson }); }
+
+	</script>
+
+	<script type="text/javascript"  th:inline="javascript">
+	var optionName = 'DATASOURCES';
+
+	//<![CDATA[
+	function navigateUrl(url){  window.location.href = url;	}
+
+	var showNavigationConfirmDialogDatasource = function(url, id){
+		//
+
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+		$.ajax({
+			url: "getGadgetsUsingDatasource/" + id,
+			headers: { [csrf_header]: csrf_value },
+			type: 'GET',
+			dataType: 'json',
+			contentType: 'application/json',
+			mimeType: 'application/json',
+			success: function (gadgetNames) {
+				if (gadgetNames.length>0){
+					HeaderController.showNavigationConfirmDialogDatasource(url, gadgetNames);
+				} else {
+					navigateUrl(url);
+				}
+			}
+		});
+	}
+
+	var  deleteConfirmation = function (id){
+		showConfirmDeleteDialog(id);
+	}
+
+	var deleteUrl = [[@{/datasources}]];
+
+	var showConfirmDeleteDialog = function(id){
+		$('#delete_datasource_form').attr('action', deleteUrl + '/' + id);
+		$('#delete-id').val(id);
+
+		showGadgetsUsingDatasourceConfirm(id);
+	}
+
+	var showGadgetsUsingDatasourceConfirm = function(id){
+		//
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+		$.ajax({ url: "getGadgetsUsingDatasource/" + id, headers: { [csrf_header]: csrf_value }, type: 'GET', dataType: 'json', contentType: 'application/json', mimeType: 'application/json',
+			success: function (gadgetNames) {
+						HeaderController.showConfirmDialogDatasource('delete_datasource_form', gadgetNames);
+			}
+		});
+	}
+
+	// MAIN WHEN READY
+	$( document ).ready(function() {
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+
+		// AUTO COMPLETE ON DATASOURCE IDENTIFICATION/NAME
+		$.ajax({ url: "getNamesForAutocomplete", headers: { [csrf_header]: csrf_value }, type: 'POST', dataType: 'json', contentType: 'application/json', mimeType: 'application/json',
+			success: function (source) {
+						var namesArray = new Array();
+						for( var i = 0; i < source.length; i++ ){
+							namesArray[i] = { value: source[i] , data: source[i]};
+						}
+
+						// INIT AJAX AUTO COMPLETE
+				$('#identification').autocomplete({
+					lookup: namesArray,
+					lookupFilter: function(suggestion, originalQuery, queryLowerCase) {
+						var re = new RegExp('\\b' + $.Autocomplete.utils.escapeRegExChars(queryLowerCase), 'gi');
+						return re.test(suggestion.value);
+					}
+				});
+			}
+		});
+
+		//SHOW/HIDE DATATABLE COLUMNS HANDLER
+		$('input.toggle-vis').on( 'change', function (e) {
+			e.preventDefault();
+			// Get the column API object
+			var column = $('#datasources').DataTable().column( $(this).attr('data-column') );
+			// Toggle the visibility
+			column.visible( ! column.visible() );
+			// toggle Text
+			$(this).toggleClass('text-muted line-through');
+		});
+
+		// SEARCH FORM RESET
+		$('#reset_datasource').on('click',function(){
+			$('#form_datasource')[0].reset();
+			$('#form_datasource')[0].submit();
+		});
+
+		// SEARCH FORM
+		$('#search_datasource').on('click',function(){ $('#form_datasource')[0].submit(); });
+
+		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
+		var oTable = $('#datasources').dataTable({
+		      "bAutoWidth": false
+		      });
+
+		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)
+		//$.each([ 0,6,7 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		// SHOW/HIDE DATATABLES COLUMN INIT
+		$('#divcreate').prepend($('#dataTable-vis-toggle'));
+		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));
+		$('#dataTable-vis-toggle').removeClass('hide');
+		$('.dataTables_info').addClass('col-md-6 col-sm-6');
+		$('.dataTables_length').addClass('col-md-6 col-sm-6');
+		$('#datasources_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
+		$('#datasources_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
+
+		$('#search-on-title').append($('.dataTables_filter > label > input'));
+		$('#search-on-title > input').removeClass('input-xsmall')
+		$('#datasources_wrapper > div:nth-child(1)').hide();
+
+		$('.dataTables_paginate').attr('style', 'float:right !important');
+		$("#contenedor-tabla-outside").removeClass("hidden");
+
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		$.each([ 0,6,7 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});
+
+	//]]>
+	</script>
+
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org" th:with="lang=${#locale.language}" th:lang="${lang}">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+	<meta http-equiv="Content-Language" th:content="${lang}" />
+	<title th:text="'500 ' + #{name.app}"> </title>
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/error.css}" />
+</head>
+<body>
+	<div class="wrapper">
+		<header class="header">Header</header>
+		<div class="aside aside-1">
+			<img th:src="@{/static/images/logoOnesait.svg}" class="error-logo">
+			<div>
+				<h1 class="error-title">Error 500</h1>
+				<h2 class="error-subtitle">Internal Server Error</h2>
+				<p class="error-message" > Sorry for the inconvenience, we´re working on it.<br /></p>
+				<p class="margin-top-30"><a th:href="@{/}" class="error-btn" th:text="#{error.home}"> Home </a><br /></p>
+			</div>
+		</div>
+		<div class="aside aside-2">
+			<div>
+				<img th:src="@{/static/images/error/error500.svg}">
+			</div>
+		</div>
+		<footer class="footer"><span class="error-copyright"  id = "footer-app">Onesait Platform © 2021 Indra Company</span></footer>
+	</div>
+	<script type="text/javascript" th:inline="javascript"> 
+		
+	 
+	 var appFooter = [[#{footer.app}]];
+	 
+	 if(typeof appFooter !== 'undefined' && appFooter!=null && appFooter.length>0){
+	 	appFooter=appFooter+' '+new Date().getFullYear(); 	 	
+	 	document.getElementById("footer-app").innerHTML = appFooter;
+	 }
+		
+	</script>
+</body>
+</html>

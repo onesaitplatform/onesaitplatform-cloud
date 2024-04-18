@@ -1,0 +1,10 @@
+server.servlet.context-path: /datagrid-manager
+
+hazelcast:
+   client:
+      invocation.timeout.seconds: 5
+      connection:
+           attemp:
+              period: 20000
+              limit: 0
+           timeout: 5000

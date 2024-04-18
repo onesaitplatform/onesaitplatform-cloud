@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" xml:lang="en-US">
+  <id>tag:github.com,2008:/SVG-Edit/svgedit/commits/master</id>
+  <link type="text/html" rel="alternate" href="https://github.com/SVG-Edit/svgedit/commits/master"/>
+  <link type="application/atom+xml" rel="self" href="https://github.com/SVG-Edit/svgedit/commits/master.atom"/>
+  <title>Recent Commits to svgedit:master</title>
+  <updated>2021-01-30T09:02:48Z</updated>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/7c9e9d26d6e526c1a12bedfcb45ea6f85f190eb0</id>
+    <link type="text/html" rel="alternate" href="https://github.com/SVG-Edit/svgedit/commit/7c9e9d26d6e526c1a12bedfcb45ea6f85f190eb0"/>
+    <title>
+        High res rulers (#478)
+    </title>
+    <updated>2021-01-30T09:02:48Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/51445?s=30&amp;u=02275bb2c044610774f41ae205c0d4540707aa06&amp;v=4"/>
+    <author>
+      <name>methodofaction</name>
+      <uri>https://github.com/methodofaction</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;High res rulers (#478)&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/35e6de97efd1d023d76f43e95fb6a2e9adaee110</id>
+    <link type="text/html" rel="alternate" href="https://github.com/SVG-Edit/svgedit/commit/35e6de97efd1d023d76f43e95fb6a2e9adaee110"/>
+    <title>
+        - Added text decoration options (underline, overline, line-through) (…
+    </title>
+    <updated>2021-01-18T23:35:24Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/22032251?s=30&amp;u=a92fdbd690e2bcd9abc69ba0b5d5ff6866b8d4ff&amp;v=4"/>
+    <author>
+      <name>tdittmann</name>
+      <uri>https://github.com/tdittmann</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;- Added text decoration options (underline, overline, line-through) (#469)
+
+- Added german translations to extensions
+
+Co-authored-by: Timo Dittmann &amp;lt;timo.dittmann@kaufland.com&amp;gt;&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/c0f55416a3da7a1aa6f30907626e6fdb229384bc</id>
+    <link type="text/html" rel="alternate" href="https://github.com/SVG-Edit/svgedit/commit/c0f55416a3da7a1aa6f30907626e6fdb229384bc"/>
+    <title>
+        Added object list to layers panel (#466)
+    </title>
+    <updated>2021-01-16T12:34:25Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/22032251?s=30&amp;u=a92fdbd690e2bcd9abc69ba0b5d5ff6866b8d4ff&amp;v=4"/>
+    <author>
+      <name>tdittmann</name>
+      <uri>https://github.com/tdittmann</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Added object list to layers panel (#466)
+
+Co-authored-by: Timo Dittmann &amp;lt;timo.dittmann@kaufland.com&amp;gt;&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/ded5e11e80881cbd1efb4c3bff5ad53e2a20b021</id>
+    <link type="text/html" rel="alternate" href="https://github.com/SVG-Edit/svgedit/commit/ded5e11e80881cbd1efb4c3bff5ad53e2a20b021"/>
+    <title>
+        Update README.md
+    </title>
+    <updated>2021-01-03T22:19:30Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/20402845?s=30&amp;u=8f4c53c925a391e148f27672cfc5535b49f53939&amp;v=4"/>
+    <author>
+      <name>jfhenon</name>
+      <uri>https://github.com/jfhenon</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Update README.md&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/6eb7261f41f80f994485b09ae2c5ae90f20862eb</id>
+    <link type="text/html" rel="alternate" href="https://github.com/SVG-Edit/svgedit/commit/6eb7261f41f80f994485b09ae2c5ae90f20862eb"/>
+    <title>
+        Update netlify.toml
+    </title>
+    <updated>2021-01-03T18:57:10Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/20402845?s=30&amp;u=8f4c53c925a391e148f27672cfc5535b49f53939&amp;v=4"/>
+    <author>
+      <name>jfhenon</name>
+      <uri>https://github.com/jfhenon</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Update netlify.toml&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/36bbcf0d04d782c65a1622d5341b25b043194775</id>
+    <link type="text/html" rel="alternate" href="https://github.com/SVG-Edit/svgedit/commit/36bbcf0d04d782c65a1622d5341b25b043194775"/>
+    <title>
+        Merge pull request #458 from tdittmann/fix-cancel-button
+    </title>
+    <updated>2020-12-23T13:38:02Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/20402845?s=30&amp;u=8f4c53c925a391e148f27672cfc5535b49f53939&amp;v=4"/>
+    <author>
+      <name>jfhenon</name>
+      <uri>https://github.com/jfhenon</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Merge pull request #458 from tdittmann/fix-cancel-button
+
+- Fix #450: Cancel buttons are now working&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/ab00d37f2151abaaaf2372ccf62dbc5ce6f7c2d6</id>
+    <link type="text/html" rel="alternate" href="https://github.com/SVG-Edit/svgedit/commit/ab00d37f2151abaaaf2372ccf62dbc5ce6f7c2d6"/>
+    <title>
+        - Fix #450: Cancel buttons are now working
+    </title>
+    <updated>2020-12-23T12:44:48Z</updated>
+    <media:thumbnail height="30" width="30" url="https://0.gravatar.com/avatar/e1bd315f8e474c7a275fbd6d096ec13b?d=https%3A%2F%2Fgithub.githubassets.com%2Fimages%2Fgravatars%2Fgravatar-user-420.png&amp;r=g&amp;s=30"/>
+    <author>
+      <name></name>
+      <email>timo.dittmann@kaufland.com</email>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;- Fix #450: Cancel buttons are now working&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/1a974384c8ec2aab6502809222f5fb4a8e0b390f</id>
+    <link type="text/html" rel="alternate" href="https://github.com/SVG-Edit/svgedit/commit/1a974384c8ec2aab6502809222f5fb4a8e0b390f"/>
+    <title>
+        build
+    </title>
+    <updated>2020-12-15T13:03:34Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/20402845?s=30&amp;u=8f4c53c925a391e148f27672cfc5535b49f53939&amp;v=4"/>
+    <author>
+      <name>jfhenon</name>
+      <uri>https://github.com/jfhenon</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;build&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/1fd291a1c01a06d8868a2dcc5101238ff7aa6528</id>
+    <link type="text/html" rel="alternate" href="https://github.com/SVG-Edit/svgedit/commit/1fd291a1c01a06d8868a2dcc5101238ff7aa6528"/>
+    <title>
+        Merge pull request #451 from tdittmann/add-text-anchor-for-texts
+    </title>
+    <updated>2020-12-13T21:43:06Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/20402845?s=30&amp;u=8f4c53c925a391e148f27672cfc5535b49f53939&amp;v=4"/>
+    <author>
+      <name>jfhenon</name>
+      <uri>https://github.com/jfhenon</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Merge pull request #451 from tdittmann/add-text-anchor-for-texts
+
+Enhancement: Add text anchor to texts&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/ba89536f41a149f1a3844ccce3efb2b0e6bc308c</id>
+    <link type="text/html" rel="alternate" href="https://github.com/SVG-Edit/svgedit/commit/ba89536f41a149f1a3844ccce3efb2b0e6bc308c"/>
+    <title>
+        fix test
+    </title>
+    <updated>2020-12-13T21:35:45Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/20402845?s=30&amp;u=8f4c53c925a391e148f27672cfc5535b49f53939&amp;v=4"/>
+    <author>
+      <name>jfhenon</name>
+      <uri>https://github.com/jfhenon</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;fix test&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/615f33b0f9f565535d1d2e2bd7397506e457de36</id>
+    <link type="text/html" rel="alternate" href="https://github.com/SVG-Edit/svgedit/commit/615f33b0f9f565535d1d2e2bd7397506e457de36"/>
+    <title>
+        new icons for anchors
+    </title>
+    <updated>2020-12-13T18:13:47Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/20402845?s=30&amp;u=8f4c53c925a391e148f27672cfc5535b49f53939&amp;v=4"/>
+    <author>
+      <name>jfhenon</name>
+      <uri>https://github.com/jfhenon</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;new icons for anchors&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/384bccdd8b7ba648b1a01021a18ca471966dd2a0</id>
+    <link type="text/html" rel="alternate" href="https://github.com/SVG-Edit/svgedit/commit/384bccdd8b7ba648b1a01021a18ca471966dd2a0"/>
+    <title>
+        Update README.md
+    </title>
+    <updated>2020-12-12T14:43:27Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/20402845?s=30&amp;u=8f4c53c925a391e148f27672cfc5535b49f53939&amp;v=4"/>
+    <author>
+      <name>jfhenon</name>
+      <uri>https://github.com/jfhenon</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Update README.md&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/1fc190678873afead62d2e509429889bd963406d</id>
+    <link type="text/html" rel="alternate" href="https://github.com/SVG-Edit/svgedit/commit/1fc190678873afead62d2e509429889bd963406d"/>
+    <title>
+        Update FUNDING.yml
+    </title>
+    <updated>2020-12-12T14:35:42Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/20402845?s=30&amp;u=8f4c53c925a391e148f27672cfc5535b49f53939&amp;v=4"/>
+    <author>
+      <name>jfhenon</name>
+      <uri>https://github.com/jfhenon</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Update FUNDING.yml&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/c405bf9334668003fbf29ee75f1a9eac804cef9d</id>
+    <link type="text/html" rel="alternate" href="https://github.com/SVG-Edit/svgedit/commit/c405bf9334668003fbf29ee75f1a9eac804cef9d"/>
+    <title>
+        Update bug_report.md
+    </title>
+    <updated>2020-12-12T14:34:49Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/20402845?s=30&amp;u=8f4c53c925a391e148f27672cfc5535b49f53939&amp;v=4"/>
+    <author>
+      <name>jfhenon</name>
+      <uri>https://github.com/jfhenon</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Update bug_report.md&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/6bf68e575d5eb5155879d68f8d588bd98109c995</id>
+    <link type="text/html" rel="alternate" href="https://github.com/SVG-Edit/svgedit/commit/6bf68e575d5eb5155879d68f8d588bd98109c995"/>
+    <title>
+        Enhancement: Add text anchor to texts
+    </title>
+    <updated>2020-12-08T11:05:06Z</updated>
+    <media:thumbnail height="30" width="30" url="https://0.gravatar.com/avatar/e1bd315f8e474c7a275fbd6d096ec13b?d=https%3A%2F%2Fgithub.githubassets.com%2Fimages%2Fgravatars%2Fgravatar-user-420.png&amp;r=g&amp;s=30"/>
+    <author>
+      <name></name>
+      <email>timo.dittmann@kaufland.com</email>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Enhancement: Add text anchor to texts&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/ea7156232e0fc332b3ded09fad6b90f7c41e61bf</id>
+    <link type="text/html" rel="alternate" href="https://github.com/SVG-Edit/svgedit/commit/ea7156232e0fc332b3ded09fad6b90f7c41e61bf"/>
+    <title>
+        Fix issue #447 (#449)
+    </title>
+    <updated>2020-12-03T12:42:52Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/20402845?s=30&amp;u=8f4c53c925a391e148f27672cfc5535b49f53939&amp;v=4"/>
+    <author>
+      <name>jfhenon</name>
+      <uri>https://github.com/jfhenon</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Fix issue #447 (#449)
+
+* fix #447
+
+* test and build&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/e673b54ee297bd906552a6161b951f78b0b3a922</id>
+    <link type="text/html" rel="alternate" href="https://github.com/SVG-Edit/svgedit/commit/e673b54ee297bd906552a6161b951f78b0b3a922"/>
+    <title>
+        Only leave the built versions for demo.
+    </title>
+    <updated>2020-11-11T11:14:22Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/20402845?s=30&amp;u=8f4c53c925a391e148f27672cfc5535b49f53939&amp;v=4"/>
+    <author>
+      <name>jfhenon</name>
+      <uri>https://github.com/jfhenon</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Only leave the built versions for demo.&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/28019eef07304cc4df8aff0f2f7bc1be5ab3b77a</id>
+    <link type="text/html" rel="alternate" href="https://github.com/SVG-Edit/svgedit/commit/28019eef07304cc4df8aff0f2f7bc1be5ab3b77a"/>
+    <title>
+        Refactor canvas in multiple pieces to increase maintainability (#446)
+    </title>
+    <updated>2020-11-11T10:38:45Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/20402845?s=30&amp;u=8f4c53c925a391e148f27672cfc5535b49f53939&amp;v=4"/>
+    <author>
+      <name>jfhenon</name>
+      <uri>https://github.com/jfhenon</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;Refactor canvas in multiple pieces to increase maintainability (#446)
+
+* #refactor-canvas getJsonFromSvgElement and svgroot code moved to separate file
+* #refactor-canvas build files changes
+* #refactor-canvas addSVGElementsFromJson move to json file
+* #refactor-canvas selected element option function move separate file
+* #refactor-canvas moveUpDownSelected move to select-elem
+* ##refactor-canvas build file updated
+* #refactor-canvas moveSelectedElements  move to selected-elem
+* #refactor-canvas cloneSelectedElements move to slected-elem
+* #refactor-canvas alignSelectedElements move to selected-elem
+* #refactor-canvas deleteSelectedElements move to selected-elem
+* #refactor-canvas copySelectedElements and groupSelectedElements move to selected-elem
+* #refactor-canvas pushGroupProperty, ungroupSelectedElement move to selected-elem
+* #refactor-canvas comment changes
+* #refactor-canvas UndoManager move to separate file
+* #refactor-canvas event file move to mouseMove, mouseUpEvent and dblClickEvent
+* #refactor-canvas mouseDown move to event
+* #refactor-canvas move to undo file
+* #refactor alignment changes  and set function revert return
+* #refactor-canvas textaction move to separate file
+* #refactor-canvas paste-element function move to separate file
+* #refactor-canvas set and get  method move to separate file
+* #refactor-canvas set and get function moved changes
+* #refactor clear file import and regaring function moved changes changes
+* #refactor-canvas svg related function move to separate file
+* #refactor-canvas setBackground methos move to elem-get-set file
+* #refactor-canvas getBsplinePoint method move to event file
+* #refactor-canvas export functions move to svg-exec
+* #refactor-canvas svg related function moved separate file
+* #refactor-canvas updateCanvas,  cycleElement move to selected-elem file
+* #refactor-canvas removeUnusedDefElems move to svg-exec file
+* #refactor-canvas blur method move to separate file blur-event.js
+* #refactor-canvas selection related function move to separate file slection.js
+* #refactor-canvas convertGradients, mousewheelmove event bind function move to other files
+* #refactor-canvas extension function move to selection file
+* #refactor-canvas svg tag long string changes to es6 format
+* eslint fixes
+* eslint and test fixes
+* add netlify logo per their requirements
+* #refactor-canvas path file separate to path-method.js and path-actions.js
+* #refactor-canvas lint issue fixed
+* #refactor-canvas path.js file class and const move to path-method.js
+* #refactor-canvas eslint issue fixed. &amp;#39;jsdoc/check-examples&amp;#39;: &amp;#39;off&amp;#39; already so removed eslint-disable jsdoc/check-examples
+* #refactor-canvas path class moved changes and copy-elem.js file cypress test issue fixed
+* #refactor-canvas UI - Clipboard paste element  cypress issue fixed
+* #refactor-canvas cypress test cases issue fixed changes
+* #refactor-canvas cypress test cases issue fixed changes
+* #refactor-canvas cypress test case issue fixed
+* npm update and fix a few eslint new errors
+* fix snapshot and run tests
+* add star tool to cypress
+* #refactor-canvas shapelibrary, star, polygon and panning tool issue fixed
+* build
+* Update layer.js
+* revert proper declarations
+
+Authored-by OptimistikSAS&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/087fa44ceaa70826fd618f9e6fd5f63ab2f88e25</id>
+    <link type="text/html" rel="alternate" href="https://github.com/SVG-Edit/svgedit/commit/087fa44ceaa70826fd618f9e6fd5f63ab2f88e25"/>
+    <title>
+        add netlify logo per their requirements
+    </title>
+    <updated>2020-10-25T22:37:47Z</updated>
+    <media:thumbnail height="30" width="30" url="https://0.gravatar.com/avatar/8b94f06d4beca8929c6e0741d15b2b7b?d=https%3A%2F%2Fgithub.githubassets.com%2Fimages%2Fgravatars%2Fgravatar-user-420.png&amp;r=g&amp;s=30"/>
+    <author>
+      <name></name>
+      <email>dev@optimistik.fr</email>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;add netlify logo per their requirements&lt;/pre&gt;
+    </content>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/404222ca40f72f03e785a8efe691b7915955d224</id>
+    <link type="text/html" rel="alternate" href="https://github.com/SVG-Edit/svgedit/commit/404222ca40f72f03e785a8efe691b7915955d224"/>
+    <title>
+        - Docs/npm: Prevent failing of `license-badge` and update badge
+    </title>
+    <updated>2020-10-20T02:14:05Z</updated>
+    <media:thumbnail height="30" width="30" url="https://avatars.githubusercontent.com/u/20234?s=30&amp;v=4"/>
+    <author>
+      <name>brettz9</name>
+      <uri>https://github.com/brettz9</uri>
+    </author>
+    <content type="html">
+      &lt;pre style=&#39;white-space:pre-wrap;width:81ex&#39;&gt;- Docs/npm: Prevent failing of `license-badge` and update badge&lt;/pre&gt;
+    </content>
+  </entry>
+</feed>

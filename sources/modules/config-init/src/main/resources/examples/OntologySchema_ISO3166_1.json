@@ -1,0 +1,44 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "ISO3166_1",
+    "type": "object",
+    "required": [
+        "ISO3166"
+    ],
+    "properties": {
+        "ISO3166": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Info ISO3166",
+        "type": "object",
+        "required": [
+            "number",
+            "name",
+            "language",
+            "alpha2",
+            "alpha3"
+        ],
+        "properties": {
+            "number": {
+                "type": "number"
+            },
+            "name": {
+                "type": "string"
+            },
+            "language": {
+                "type": "string"
+            },
+            "alpha2": {
+                "type": "string"
+            },
+            "alpha3": {
+                "type": "string"
+            }
+        }
+    },
+    "description": "Ontology defining the standard alpha codes and number for all the countries",
+    "additionalProperties": true
+}

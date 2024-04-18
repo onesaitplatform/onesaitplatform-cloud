@@ -1,0 +1,190 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:dt="http://www.thymeleaf.org/dandelion/datatables"
+	th:with="lang=${#locale.language}" th:lang="${lang}">
+
+<head>
+	<meta name="_csrf" th:content="${_csrf.token}" />
+	<meta name="_csrf_header" th:content="${_csrf.headerName}" />
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+	<meta http-equiv="Content-Language" th:content="${lang}" />
+	<title th:text="#{name.app}" />
+
+	<!-- STYLE SHEETS -->
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}" />
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}" />
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}" />
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}" />
+	<!-- THEME -->
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
+
+	<!-- PLUGINS STYLE SHEETS -->
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}" />
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}" />
+</head>
+
+<!-- page-sidebar-closed to start page with collapsed menu -->
+
+<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+
+		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"> </div>
+
+		<!-- BEGIN SIDEBAR -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+				<!-- BEGIN PAGE BAR AND BREADCRUM -->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<!--<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>-->
+						<li><a th:href="@{/environments/list}"> <span th:text="#{environment.title}"></span></a></li>
+					</ul>
+				</div>
+				<!-- END PAGE BAR -->
+
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{environment.title}"> </span></h1>
+				<!-- END PAGE TITLE-->
+
+				<!-- MAIN ROW -->
+				<div class="row">
+					<div class="portlet light ">
+						<div class="portlet-title">
+							<div class="caption">
+								<span class="caption-subject" th:text="#{environment.title}"> </span>
+							</div>
+							<div class="caption" style="padding: 22px 8px 8px 10px">
+								<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon"
+									style="margin-left: 18px;"><i class="icon-search"></i></a>
+							</div>
+							<div id="search-on-title" class="hide input-icon search-icon">
+								<a class="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i
+										class="icon-search"></i></a>
+							</div>
+							<div class="tools hide">
+								<a href="" class="collapse" data-original-title="" title=""> </a>
+								<a href="" class="fullscreen" data-original-title="" title=""> </a>
+							</div>
+						</div>
+						<div class="portlet-body" style="display: block; height: auto;">
+							<div class="margin-bottom-20" id="environment-kpis-fragment" th:include="environments/fragments/kpis"></div>
+							<div id="environment-list-fragment" th:include="environments/fragments/environments"></div>
+						</div>
+					</div>
+				</div>
+			</div><!-- END PORTLET BASIC LIGHT -->
+		</div><!-- END MAIN ROW -->
+	</div><!-- END CONTENT BODY -->
+	</div><!-- END CONTENT page-content-wrapper -->
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+
+	<!-- FOOTER-INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+
+	<!-- CORE CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
+	
+	<!-- TEMPLATE CONTROLLER  -->
+	<script th:src="@{/static/js/pages/environmentController.js}"></script>
+
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
+
+	<script  th:inline="javascript">
+		var oTable;
+		var timeInterval;
+		var timeDelay;
+		var error=[[${error}]];
+		var environmentControllerJson = {
+			"apiPath" : [[@{/environments}]],
+			"close" : [[#{gen.closeBtn}]],
+			"start_module" : [[#{environment.start}]],
+			"stop_module" : [[#{environment.stop}]],
+			"restart_module" : [[#{environment.restart}]],
+			"update_module" : [[#{environment.update}]],
+			"scale_module" : [[#{environment.scale}]],
+			"messages" : {
+				 "operationInProgress" : [[#{environment.operation.progress}]],
+				 "startConfirm" : [[#{environment.start.confirm.message}]],
+				 "stopConfirm" : [[#{environment.stop.confirm.message}]],
+				 "restartConfirm" : [[#{environment.restart.confirm.message}]],
+				 "updateConfirm" : [[#{environment.update.confirm.message}]],
+				 "updateConfirmImage" : [[#{environment.update.confirm.message.image}]],
+				 "updateConfirmError" : [[#{environment.update.confirm.message.error}]],
+				 "scaleConfirm" : [[#{environment.scale.confirm.message}]],
+				 "scaleConfirmPods" : [[#{environment.scale.confirm.message.pods}]],
+				 "scaleConfirmError" : [[#{environment.scale.confirm.message.error}]]
+			},
+			"errors" : {
+				 "general" : [[#{environment.monitor.not.running}]],
+				 "startFailed" : [[#{environment.start.failed}]],
+				 "stopFailed" : [[#{environment.stop.failed}]],
+				 "restartFailed" : [[#{environment.restart.failed}]],
+				 "updateFailed" : [[#{environment.update.failed}]],
+				 "scaleFailed" : [[#{environment.scale.failed}]],
+				 "startError" : [[#{environment.start.error}]],
+				 "stopError" : [[#{environment.stop.error}]],
+				 "restartError" : [[#{environment.restart.error}]],
+				 "updateError" : [[#{environment.update.error}]],
+				 "scaleError" : [[#{environment.scale.error}]]
+			},
+			"datatable_lang" : [[#{datatables_lang}]]
+		};
+		
+		$(document).on('hidden.bs.modal', '#dialog-config', function () {
+		    timeInterval = setInterval(EnvironmentController.reloadFragment, 10000);
+		});
+		
+		// MAIN WHEN READY
+		$(document).ready(function () {
+			var csrf_value = $("meta[name='_csrf']").attr("content");
+			var csrf_header = $("meta[name='_csrf_header']").attr("content");
+
+			EnvironmentController.initTable ();
+			if (error && error!=""){
+				toastr.error(messagesForms.operations.genOpError, environmentControllerJson.errors.general);
+				console.error(environmentControllerJson.errors.general);
+				
+				timeDelay = setTimeout(function(){EnvironmentController.go([[@{/main}]])}, 10000);
+			} else {
+				timeInterval = setInterval(EnvironmentController.reloadFragment, 10000);
+			}
+		});
+	//]]>
+	</script>
+
+</body>
+
+</html>

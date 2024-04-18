@@ -1,0 +1,19 @@
+package com.minsait.onesait.platform.rulesengine;
+import com.minsait.onesait.platform.rulesengine.model.OntologyJsonWrapper;
+global com.minsait.onesait.platform.rulesengine.model.OntologyJsonWrapper input;
+global com.minsait.onesait.platform.rulesengine.model.OntologyJsonWrapper output;
+
+dialect  "mvel"
+
+rule "FIRE ALARM"
+
+    when
+        eval( input.getProperty("temperature") > 80 )
+    then
+    	output.setRootNode("SensorAlarm");
+        output.setProperty("message", "High temperature detected");
+        output.setProperty("type", "CRITICAL");
+        output.setProperty("value", input.getProperty("temperature"));
+        output.setProperty("id", input.getProperty("id"));
+        
+end

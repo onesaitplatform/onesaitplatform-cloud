@@ -1,0 +1,53 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "MetricsQueriesControlPanel",
+    "type": "object",
+    "required": [
+        "TimeSerie"
+    ],
+    "properties": {
+        "TimeSerie": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Properties for DataModel TimeSerie",
+        "type": "object",
+        "properties": {
+            "timestamp": {
+                "type": "object",
+                "required": [
+                    "$date"
+                ],
+                "properties": {
+                    "$date": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "result": {
+                "type": "string"
+            },
+            "user": {
+                "type": "string"
+            },
+            "ontology": {
+                "type": "string"
+            },
+            "value": {
+                "type": "integer"
+            }
+        },
+        "required": [
+            "timestamp",
+            "result",
+            "user",
+            "ontology",
+            "value"
+        ]
+    },
+    "description": "MetricsQueriesControlPanel",
+    "additionalProperties": true
+}

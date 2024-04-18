@@ -1,0 +1,1379 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org"  th:with="lang=${#locale.language}" th:lang="${lang}">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"/>
+
+		
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>		
+		
+		<!-- PLUGINS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
+		<!-- JSON EDITOR -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/lib/codemirror.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/neat.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/ambiance.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/material.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/neo.css}"/>
+		
+	</head>	
+	
+	<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+	
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+		
+		<!-- HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"> </div>
+			
+		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+			
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+			
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+			
+                <div class="alert alert-success display-hide">
+					<span th:text="${globalMessage}"></span>
+				</div>		
+				
+				<!-- BEGIN PAGE BAR AND BREADCRUM-->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/ontologies/list}"> <span th:text="#{ontology.breadcrumb.list}">Ontologies </span></a><i class="fa fa-angle-right"></i></li>
+						<li>
+							<span th:text="#{ontology.breadcrumb.show}">Show Ontology</span>							
+						</li>
+					</ul>						
+				</div>
+				<!-- END PAGE BAR -->
+				
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{name.app}"> Onesait Platform Control Panel</span></h1>
+				<!-- END PAGE TITLE-->			
+				
+				<!-- AUXILIAR FORM TO DELETE ontology -->
+				<form id="delete_ontology_form" class="delete-ontology hide"  action=""  method="post">
+					<input type="hidden" name="_method" value="DELETE"/>
+					<input id="delete-ontologyId" type="hidden" name="ontologyId" th:value="*{id}"/>
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+				</form>
+				
+				<form role="form" id="ontology_view_form" action="show.html" th:object="${ontology}" th:action="@{|/controlpanel/ontologies/${id}|}"  method="post" class="form">
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+				
+					<div id="header">
+						<div class="row pageCreateHeader">
+							<div class="col-md-8 col-sm-8 col-xs-12">
+								<div class="margin-top-4">
+									<span th:text=" ${ontology.identification}"> Update Ontology </span>
+								</div>
+							</div>
+							
+							<div class="col-md-4 col-sm-4 col-xs-12">
+								<div class="pull-right">
+									<!-- DELETE -->
+									<button th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${ontology.user.userId})"  id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='deleteOntologyConfirmation(\'' + ${ontology.id} + '\');'" ><i class="icon-delete"></i> <span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+									
+									<span class="sep" th:if="${#authentication.name} == ${ontology.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')"></span>
+										
+									<!-- CANCEL -->											
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									
+									<span th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${ontology.user.userId} OR ${app_user_access.name()} =='MANAGE')" class="sep no-border"></span>
+										
+									<!-- UPDATE -->
+									<button th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${ontology.user.userId} OR ${app_user_access.name()} =='MANAGE') AND (${'MASTER-DataModel-30' == ontology.dataModel.id})" id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/update/} + ${ontology.id} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
+																																	
+								</div>
+							</div>
+						</div>
+					</div>
+				
+					<!-- MAIN ROW -->
+					<div class="row equal flex-container">				
+						<div class="tabContainer flex-tabs-left">
+							<div id="tab-datos" class="option active">
+								<a href="#tab_1" data-toggle="tab" aria-expanded="false">											
+									<!-- FORM TITLE -->
+									<span class="caption-subject " th:text="#{gen.generalInformation}"> General Information</span>
+								</a>
+							</div>
+							<div id="tab-data-schema" class="option" th:classappend="${'NEBULA_GRAPH' == ontology.rtdbDatasource.name() ? 'hide' : ''}">
+								<a href="#tab_data_schema" data-toggle="tab" aria-expanded="true">
+									<span class="caption-subject " th:text="#{ontology.section.templates.schemas}"> TEMPLATES / SCHEMA</span>
+								</a>
+							</div>
+							<div th:if="${'NEBULA_GRAPH' == ontology.rtdbDatasource.name()}" id="tab-table-schema" class="option">
+								<a href="#tab_table_schema" data-toggle="tab" aria-expanded="true">
+									<span class="caption-subject " th:text="#{nebula.graph.vertices.edges}"> NEBULA SCHEMA</span>
+								</a>
+							</div>
+							<div id="tab-advanced-options" class="option">
+								<a href="#tab_settings" data-toggle="tab" aria-expanded="true">
+									<span th:text="#{ontology.advancedsettings}" >Advanced Settings </span>
+								</a>
+							</div>
+							<div id="tab-autorizaciones" class="option">
+								<a href="#tab_2" data-toggle="tab" th:classappend="${ontology?.id} == null ? disabled : ''" aria-expanded="true">
+									<span th:if="${userOntologyAccess} == 'ALL'" th:text="#{ontology.authorizations}" >AUTORIZACIONES </span>
+								</a>
+							</div>
+							<div id="tab-kpi" th:if="${ontology.ontologyKPI} != null" class="option">
+								<a th:classappend="${ontology.ontologyKPI} == null ? disabled : ''" href="#tab_kpi" onmouseup="setTimeout(function(){myCodeMirrorQueryJs.refresh(),myCodeMirrorJs.refresh()},10);"data-toggle="tab" aria-expanded="true">
+									<span th:text="#{ontology.kpisettings}" >KPI Settings </span>
+								</a>
+							</div>
+							<div id="tab-tseries" class="option" th:style="${ontology.dataModel.id} != 'MASTER-DataModel-30' ? 'display:none' : 'display:block'">
+								<a href="#tab_tseries" data-toggle="tab" th:classappend="${ontology?.id} == null ? disabled : ''" aria-expanded="true">
+									<span th:text="#{ontology.tseriessettings}"> Timeseries Settings</span>
+								</a>
+							</div>
+							<div id="tab-adv-tseries" class="option" th:style="${ontologyTSDTO.rtdbDatasource}!='TIMESCALE' ? 'display:none' : 'display:block'">
+								<a href="#tab_adv_tseries" data-toggle="tab" aria-expanded="true">
+									<span th:text="#{ontology.advancedsettingsts}">TS Advanced Settings</span>
+								</a>
+							</div>
+							<div id="tab-aggrergates" class="option" th:style="${ontologyTSDTO.rtdbDatasource}!='TIMESCALE' ? 'display:none' : 'display:block'">
+								<a href="#tab_aggregates" data-toggle="tab" aria-expanded="true">
+									<span th:text="#{ontology.timeseries.continuous.aggregates}" >Continuous aggregates </span>
+								</a>
+							</div>
+							<div id="tab-data" th:style="(${rtdbDatasourceType}!=null or ${ontologyTSDTO.rtdbDatasource}!= null) and ${ontology.dataModel.id} != 'MASTER-DataModel-30' ? 'display:none' : 'display:block'" class="option">
+								<a href="#tab_data" data-toggle="tab" th:classappend="${ontology?.id} == null ? disabled : ''" aria-expanded="true">
+									<span th:if="${userOntologyAccess} == 'ALL'" th:text="#{ontology.dataaccess}" >Data Access Settings </span>
+								</a>
+							</div>
+								<div id="tab-index" class="option"  th:if="${ontology.id != null} AND ${ontology.rtdbDatasource.name() == 'MONGO'}">
+								<a href="#tab_index_configuration" data-toggle="tab" th:classappend="${ontology?.id} == null ? disabled : ''" aria-expanded="true">
+									<span th:text="#{ontology.index.config}"   >Index Congfiguration </span>
+								</a>
+							</div>
+						</div>
+						
+						<div class="tab-content flex-content-right">
+							<div class="tab-pane active" id="tab_1">
+							<!-- VIEW -->
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{gen.generalInformation}">General Information</span>
+									</div>
+									<div class="col-md-3 col-sm-3 col-xs-3">
+										<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
+									</div>
+								</div>
+								<!-- ontology, id , identification -->
+								<div class="row main">													
+									<div class="col-md-4 col-sm-6 col-xs-12">
+										<div class="form-group">
+											<label class="control-label" th:text="#{ontology.identification}">Name</label>
+											<p class="form-control-static-block " th:text="*{identification}"> ontology Name </p>
+										</div>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-6 col-sm-6 col-xs-12">
+										<div class="form-group">
+											<label class="control-label"><span th:text="#{ontology.metainf}">Meta Information</span></label>
+											<p class="form-control-static-block " th:text="*{metainf}"> meta </p>
+										</div>
+									</div>													
+								</div>
+								<!-- Role, created-at, removed-at -->
+								<div class="row main">
+									<div class="col-md-3 col-sm-6 col-xs-12">
+										<div class="form-group">
+											<label class="control-label" th:text="#{ontology.datamodel}">Datamodel Template</label>
+											<p class="form-control-static-block " th:text="*{dataModel?.identification} "> datamodel </p>
+										</div>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-3 col-sm-6 col-xs-12">
+										<div class="form-group">
+											<label class="control-label" th:text="#{ontology.datamodel.type}">Datamodel Type</label>
+											<p class="form-control-static-block " th:text="*{dataModel?.type} "> datamodel type </p>
+										</div>
+
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-6 col-sm-12 col-xs-12" >
+										<div class="form-group">
+											<label class="control-label" th:text="#{ontology.description}">Description</label>
+											<p class="form-control-static-block " th:text="*{description}"> description </p>
+										</div>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-12 col-sm-12 col-xs-12">
+										<label class="control-label"  th:text="#{gen.options}">Options</label>
+									</div>
+									<div class="col-md-12 col-xs-12">
+										<input id="active" class="margin-right-10" name="active" type="checkbox" checked="checked" th:field="*{active}" disabled="disabled" />
+										<label class="control-label margin-right-5" th:text="#{ontology.activeontology}">Active</label>
+									</div>
+									<div class="col-md-12 col-xs-12">
+										<input id="public" class="margin-right-10" name="public" type="checkbox" checked="checked" th:field="*{public}" disabled="disabled" />
+										<label class="control-label margin-right-5" th:text="#{ontology.publicontology}">Public</label>
+									</div>
+									<div th:if="${ontology.rtdbDatasource.name() != 'PRESTO'}" class="col-md-12 col-xs-12">
+										<input id="allowsCypherFields" class="margin-right-10" name="allowsCypherFields" type="checkbox" checked="checked" th:field="*{allowsCypherFields}" disabled="disabled"/>
+										<label class="control-label margin-right-5" th:text="#{ontology.allowsCypherFields}">Allows Cypher</label>
+									</div>
+									<div th:if="${ontology.rtdbDatasource.name() != 'PRESTO'}" class="col-md-12 col-xs-12">
+										<input id="rtdbClean" class="margin-right-10" name="public" type="checkbox" checked="checked" th:field="*{rtdbClean}" disabled="disabled" />
+										<label class="control-label margin-right-5" th:text="#{ontology.rtdbclean}">rtdbclean</label>
+									</div>
+									<div th:if="${ontology.rtdbDatasource.name() != 'PRESTO'}" class="col-md-12 col-xs-12">
+										<input id="contextDataEnabled" class="margin-right-10" name="public" type="checkbox" checked="checked" th:field="*{contextDataEnabled}" disabled="disabled" />
+										<label class="control-label margin-right-5" th:text="#{ontology.contextDataEnabled}">contextDataEnabled</label>
+									</div>
+                                    <div th:if="${ontology.rtdbDatasource.name() != 'PRESTO'}" class="col-md-2 col-xs-12">
+                                        <input id="supportsJsonLd" class="margin-right-10" name="supportsJsonLd" type="checkbox" checked="checked" th:field="*{supportsJsonLd}" disabled="disabled" />
+                                        <label class="control-label margin-right-5" th:text="#{ontology.supportsJsonLd}">Supports JSON-LD</label>
+                                    </div>
+                                    <div th:if="${ontology.rtdbDatasource.name() != 'PRESTO'}" class="col-md-4 col-xs-12">
+                                        <div class="form-group hide" id="jsonLdCtxt">
+                                            <label class="control-label" th:text="#{ontology.jsonLdContextEdit}">JSON-LD Context </label><span class="required"> *</span>
+                                            <textarea class="form-control" style="height: 100px" id="jsonLdContext" th:field="*{jsonLdContext}" th:required="true" readOnly="readonly" ></textarea>
+                                        </div>
+                                    </div>
+                                    <div th:if="${ontology.rtdbDatasource.name() != 'PRESTO'}" class="col-md-12 col-xs-12">
+                                        <input id="enableDataClass" class="margin-right-10" name="enableDataClass" type="checkbox" checked="checked" th:field="*{enableDataClass}" disabled="disabled" />
+                                        <label class="control-label margin-right-5" th:text="#{ontology.enableDataClass}">Enable data class preprocessing</label>
+                                    </div>
+								</div>
+							</div>
+							<div class="tab-pane " id="tab_data_schema">
+								<div class="row main">	
+									<div class="col-md-3 col-sm-4 col-xs-12 panelHeader">
+										<span id="schema_title" th:text="#{ontology.section.schema.title}">Schema</span>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-12 col-sm-12 col-xs-12">
+										<div id="jsoneditor" class="schema"></div>
+									</div>
+								</div>
+								<div class="row main">	
+									<div class="col-md-12 col-xs-12">
+										<textarea class="form-control" id="ontology_instance" name="ontology_instance" readOnly="readonly" style="height:150px"  cols="" rows=""></textarea>
+									</div>
+								</div>
+							</div>
+							<!-- ONTOLOGY ADVANCED SETTINGS -->
+							<div class="tab-pane " id="tab_settings">
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{ontology.advancedsettings}">Advanced Settings</span>
+									</div>
+								</div>							
+								<div class="row main">
+									<div class="col-md-12 col-sm-12 col-xs-12">
+										<div class="form-group">
+											<label class="control-label" th:text="#{gen.type}">Type</label>
+											<p th:if="${ontology.rtdbDatasource.name()} == 'MONGO'" id="pType" class="form-control-static-block " th:text="${ontology.ontologyKPI} != null ? 'KPI' : (${ontology.dataModel.id} == 'MASTER-DataModel-30' ? 'TIMESERIES' : 'GENERAL')"> Rtdb instance </p>
+											<p th:if="${ontology.rtdbDatasource.name()} == 'TIMESCALE'" id="pType" class="form-control-static-block " th:text="TIMESERIES"> Rtdb instance </p>
+											<p th:if="${ontology.rtdbDatasource.name()} != 'MONGO' AND ${ontology.rtdbDatasource.name()} != 'TIMESCALE'" id="pType" class="form-control-static-block " th:text="${ontology.rtdbDatasource}"> Rtdb instance </p>
+
+										</div>
+										<div th:if="${ontology.rtdbDatasource.name()} == 'MONGO' OR ${ontology.rtdbDatasource.name()} == 'TIMESCALE' OR ${ontology.rtdbDatasource.name()} == 'VIRTUAL' OR ${ontology.rtdbDatasource.name()} == 'PRESTO'" class="form-group">
+											<label class="control-label" th:text="#{ontology.rtdbinstance}">Rtdb instance</label>
+											<p th:if="${ontology.rtdbDatasource.name()} == 'MONGO' OR ${ontology.rtdbDatasource.name()} == 'TIMESCALE'" id="pDatas" class="form-control-static-block " th:text="${ontology.rtdbDatasource}"> Rtdb instance </p>
+											<p th:if="${ontology.rtdbDatasource.name()} == 'VIRTUAL' OR ${ontology.rtdbDatasource.name()} == 'PRESTO'" id="pDatas" class="form-control-static-block " th:text="${connection} + ' ( ' + ${rtdbDatasourceType} + ' )'"> Rtdb instance </p>
+										</div>
+									</div>
+									<div th:if="${ontology.rtdbClean}" class="col-md-12 col-sm-12 col-xs-12">
+										<div class="form-group">
+											<label class="control-label" th:text="#{ontology.clean.options}">Cleanse Options</label>
+											<p id="pClean" class="form-control-static-block " th:text="${ontology.rtdbCleanLapse == null ? 'NEVER' : ontology.rtdbCleanLapse }"> Rtdb instance </p>
+										</div>
+									</div>
+									<div th:if="${ontology.rtdbClean}" class="col-md-12 col-sm-12 col-xs-12">
+										<input id="rtdbToHdb" class="margin-right-10" name="rtdbToHdb" type="checkbox" checked="checked" th:field="*{rtdbToHdb}" disabled="disabled" />
+										<label class="control-label" th:text="#{ontology.rtdb2h}">RTDB to historic</label>
+									</div>
+									<div th:if="${ontology.rtdbClean}" class="col-md-12 col-sm-12 col-xs-12">
+										<div class="form-group">
+											<label class="control-label" th:text="#{ontology.storage}">Storage</label>
+											<p class="form-control-static-block " th:text="${ontology.rtdbToHdbStorage}"> Storage mode </p>
+										</div>
+									</div>
+									<div th:if="${ontology.rtdbDatasource.name() != 'PRESTO'}" class="col-md-12 col-xs-12">
+										<input id="allowsCreateTopic" class="margin-right-10" name="allowsCreateTopic" type="checkbox" checked="checked" th:field="*{allowsCreateTopic}" disabled="disabled" />
+										<label class="control-label margin-right-5" th:text="#{ontology.allowsCreateTopic}">Kafka</label>
+									</div>
+									<div th:if="${ontology.rtdbDatasource.name() != 'PRESTO'}" class="col-md-12 col-xs-12">
+										<input id="allowsCreateNotificationTopic" class="margin-right-10" name="allowsCreateNotificationTopic" type="checkbox" checked="checked" th:field="*{allowsCreateNotificationTopic}" disabled="disabled" />
+										<label class="control-label margin-right-5" th:text="#{ontology.allowsCreateNotificationTopic}">Kafka Notification</label>
+									</div>
+									<div th:if="${ontology.rtdbDatasource.name() != 'PRESTO'} AND ${ontologyTSDTO.rtdbDatasource != 'TIMESCALE'}" class="col-md-12 col-xs-12">
+										<input id="allowsCreateMqttTopic" class="margin-right-10" name="allowsCreateMqttTopic" type="checkbox" checked="checked" th:field="*{allowsCreateMqttTopic}" disabled="disabled" />
+										<label class="control-label margin-right-5" th:text="#{ontology.allowsCreateMqttTopic}">MQTT topic</label>
+									</div>
+									<div th:if="${ontology.allowsCreateMqttTopic}" class="form-group col-md-12 col-sm-6 col-xs-12">
+										<div class="col-md-3">
+											<label class="control-label" th:text="#{ontology.mqtt.topic.name}">Topic name</label>
+											<input th:tabindex="1" id="mqttTopic" type="text" class="form-control" th:value="${mqttTopicPath}" readonly="readonly"/>
+										</div>
+									</div>
+									
+									<div th:if="${ontologyElastic} != null and ${ontologyElastic.customIdConfig} == true"  class="col-md-12 col-xs-12 form-group">
+										<div class="form-group">
+											<label th:if="${ontologyElastic} != null" class="control-label" th:text="#{ontology.elastic.customIdField}">Custom ID field</label>
+											<p th:if="${ontologyElastic} != null" id="customIdField" class="form-control-static-block " th:text="${ontologyElastic.customIdField}"> ID </p>
+										</div>
+									</div>
+									
+									
+									<div th:if="${ontologyElastic} != null" class="col-md-12 col-xs-12 form-group">
+										<div class="form-group">
+											<label class="control-label" th:text="#{ontology.elastic.shards}">Shards</label>
+											<p id="shards" class="form-control-static-block " th:text="${ontologyElastic.shards}"> Shards </p>
+										</div>
+									</div>
+									<div th:if="${ontologyElastic} != null" class="col-md-12 col-xs-12">
+										<div class="form-group">
+											<label class="control-label" th:text="#{ontology.elastic.replicas}">Replicas</label>
+											<p id="replicas" class="form-control-static-block " th:text="${ontologyElastic.replicas}"> Replicas </p>
+										</div>
+									</div>
+									<!-- If template Config is active -->
+									<div th:if="${ontologyElastic} != null and ${ontologyElastic.templateConfig} == true" class="form-group">
+										<label th:if="${ontologyElastic} != null" class="control-label" th:text="#{ontology.elastic.template.pattern.field}">Template Field Pattern</label>
+										<p th:if="${ontologyElastic} != null" id="shards" class="form-control-static-block " th:text="${ontologyElastic.patternField}"> Template Field Pattern </p>
+									</div>
+									<div th:if="${ontologyElastic} != null and ${ontologyElastic.templateConfig} == true " class="form-group">
+										<label th:if="${ontologyElastic} != null" class="control-label" th:text="#{ontology.elastic.template.pattern.function}">Pattern Function</label>
+										<p th:if="${ontologyElastic} != null" id="replicas" class="form-control-static-block " th:text="${ontologyElastic.patternFunction}"> NONE </p>
+									</div>
+									<!-- If template Config is active and Function -->
+									<div th:if="${ontologyElastic} != null and ${ontologyElastic.templateConfig} == true and ${ontologyElastic.patternFunction} == 'SUBSTR'" class="form-group">
+										<label th:if="${ontologyElastic} != null" class="control-label" th:text="#{ontology.elastic.template.pattern.start}">Substring Start</label>
+										<p th:if="${ontologyElastic} != null" id="shards" class="form-control-static-block " th:text="${ontologyElastic.substringStart}"> 0 </p>
+									</div>
+									<div th:if="${ontologyElastic} != null and ${ontologyElastic.templateConfig} == true and ${ontologyElastic.patternFunction} == 'SUBSTR'" class="form-group">
+										<label th:if="${ontologyElastic} != null" class="control-label" th:text="#{ontology.elastic.template.pattern.end}">Substring Stop</label>
+										<p th:if="${ontologyElastic} != null" id="replicas" class="form-control-static-block " th:text="${ontologyElastic.substringEnd}"> -1 </p>
+									</div>
+								</div>	
+							</div>							
+							<div class="tab-pane " id="tab_2">
+							<!-- AUTHORIZATIONS -->
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{ontology.auth.title}">Authorizations</span>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-12">											
+										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
+											<div>
+												<!-- DATATABLE DANDELION CONF. -->												
+												<table id="authorizations" class="table table-hover" dt:table="true" dt:paginationtype="full">
+													<thead class="table-header-background">
+														<tr class="cabecera-tabla">
+															<th class="titulo-columnas text-left" th:text="#{ontology.auth.user}">Identification</th>
+															<th class="titulo-columnas text-left" ><span th:text="#{ontology.auth.userfullname}" >User</span></th>
+															<th class="titulo-columnas text-center" th:text="#{ontology.auth.accesstype}">Description</th>
+														</tr>
+													</thead>
+													<tbody style="border-bottom: 1px solid #ddd;" th:remove="all-but-first">
+														<tr th:each="authorization : ${authorizations}" pages:paginate="10" style="height:32px;">
+															<!-- IDENTIFICATION/NAME -->
+															<td class="text-left no-wrap" th:text="${authorization.userId}"></td>
+															<!-- USER -->
+															<td class="text-left " th:text="${authorization.userFullName}"></td>
+															<!-- ACCESS TYPE  -->
+															<td class="text-center " th:text="${authorization.typeName}"></td>																
+														</tr>
+													</tbody>
+												</table>												
+											</div>
+											<div id="imageNoElementsOnTable" hide>
+												<img id="headerImg" alt="logo" style="width: 72px; height:113px; display: block;   margin-top:27px;  margin-left: auto;margin-right:auto;   "  src="/controlpanel/static/images/authorizationTableEmpty.svg">
+												<label style=" display: block;   margin: 0 auto; font-style: italic;font-weight: normal;font-size: 17px;line-height: 24px;text-align: center;color:#505D66;" th:text="#{ontology.list.noauths}"></label>
+											</div>
+										</div>											
+									</div>
+								</div>
+							</div>							
+							<!-- TAB KPI  -->
+							<div class="tab-pane " id="tab_kpi" th:if="${ontology.ontologyKPI!=null}">
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{ontology.kpisettings}">KPI Settings</span>
+									</div>
+								</div>
+								<div class="row main">
+							        <div class="col-md-4 col-sm-4 col-xs-12">
+										<div class="form-group">
+											<label  class="control-label" th:text="#{ontology.kpi.cron}">CRON</label>																
+											<p class="form-control-static-block " th:text="${ontology.ontologyKPI.cron}">  </p>
+										</div>
+									</div>
+									<div class="col-md-4 col-sm-4 col-xs-12">
+										<div class="form-group">
+											<label  class="control-label" th:text="#{ontology.kpi.date.from.to}">ACTIVATED FROM </label>																
+											<p class="form-control-static-block " th:text="${ontology.ontologyKPI.dateFrom + ' - ' + ontology.ontologyKPI.dateTo}"></p>
+										</div>	
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-12 col-sm-12 col-xs-12">
+										<div class="form-group">
+											<label th:text="#{ontology.kpi.query}">QUERY </label><span	class="required"> *</span>
+											<textarea th:tabindex="4" rows="7" class="form-control" id="query" name="query" th:field="${ontology.ontologyKPI.query}" cols="" ></textarea>
+										</div>
+									</div>															
+								</div>
+								
+								<div class="row main" th:if="${ontology.ontologyKPI.postProcess} != ''">
+									<div class="col-md-12 col-sm-12 col-xs-12">
+										<span class="inline font-s uppercase" th:text="#{ontology.kpi.postProcess}">Post Process </span>
+									</div>
+									<div class="col-md-12 col-sm-12 col-xs-12">
+										<textarea id="postProcess" name="postProcess" th:field="*{ontologyKPI.postProcess}" class="form-control"></textarea>
+									</div>
+								</div>
+							</div><!-- END TAB KPI  -->					
+							<!-- TAB TIMESERIES  -->
+							<div class="tab-pane " id="tab_tseries">
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{ontology.timeseries.properties}">Properties</span>
+									</div>
+								</div>
+								<div class="row main pageCreateHeader no-margin-left padding-left-10" style="width: 30%">
+									<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{ontology.timeseries.tags}">Tags</label>
+								</div>
+								<div class="row main borderPanel no-margin-left" style="width: 30%">
+									<div class="col-md-12 col-sm-12 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px;">
+										<div class="form-group" style="margin-bottom: 0px">
+											<div id="template_schema" class="margin-bottom-20 ">
+												<table class="table no-margin-bottom" id="tag_properties" data-loaded="false">
+													<thead class="table-header-background">
+														<tr class="cabecera-tabla" role="row">
+															<th class="titulo-columnas" th:text="#{ontology.timeseries.name}">Name</th>
+															<th class="titulo-columnas" th:text="#{ontology.timeseries.type}">Type</th>
+														</tr>
+													</thead>
+													<tbody style="border-bottom: 1px solid #ddd;">
+														<tr class="tagRow" th:each="tsprop :${ontologyTSDTO.timeSeriesProperties}" th:if="${#strings.endsWith(tsprop.propertyType,'TAG')}" style="height: 32px;">
+															<td	th:text="${tsprop.propertyName}">A</td> 
+															<td	th:text="${tsprop.propertyDataType}">STRING</td> 
+														</tr>
+													</tbody>
+												</table>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="row main pageCreateHeader no-margin-left padding-left-10 margin-top-20" style="width: 30%">
+									<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{ontology.timeseries.fields}">Fields</label>
+								</div>
+								<div class="row main borderPanel no-margin-left" style="width: 30%">
+									<div class="col-md-12 col-sm-12 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px;">
+										<div class="form-group" style="margin-bottom: 0px">
+											<div id="template_schema" class="margin-bottom-20 ">								
+												<table class="table no-margin-bottom" id="field_properties" data-loaded="false">
+													<thead class="table-header-background">
+														<tr class="cabecera-tabla" role="row">
+															<th class="titulo-columnas" th:text="#{ontology.timeseries.name}">Name</th>
+															<th class="titulo-columnas" th:text="#{ontology.timeseries.type}">Type</th>
+															<th th:if="${ontologyTSDTO.rtdbDatasource=='TIMESCALE'}" class="titulo-columnas" th:text="#{ontology.timeseries.aggregate}">Aggregation Function</th>
+														</tr>
+													</thead>
+													<tbody style="border-bottom: 1px solid #ddd;">
+														<tr class="fieldRow" th:each="tsprop :${ontologyTSDTO.timeSeriesProperties}" th:if="${#strings.endsWith(tsprop.propertyType,'FIELD')}" style="height: 32px;">
+															<td	th:text="${tsprop.propertyName}">A</td> 
+															<td	th:text="${tsprop.propertyDataType}">STRING</td> 
+															<td	th:if="${ontologyTSDTO.rtdbDatasource=='TIMESCALE'}" th:text="${tsprop.propertyAggregationType}">LAST</td> 
+														</tr>
+													</tbody>
+												</table>
+											</div>
+										</div>
+									</div>														
+								</div>
+								<div th:if="${ontologyTSDTO.rtdbDatasource=='MONGO'}" class="row main pageCreateHeader no-margin-left padding-left-10 margin-top-20" style="width: 30%">
+									<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{ontology.timeseries.optional.fields}">Optional Fields</label>
+								</div>
+								<div th:if="${ontologyTSDTO.rtdbDatasource=='MONGO'}" class="row main borderPanel no-margin-left" style="width: 30%">
+									<div class="col-md-12 col-sm-12 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px;">
+										<div class="form-group" style="margin-bottom: 0px">
+											<div id="template_optional" class="margin-bottom-20 ">
+												<table class="table no-margin-bottom" id="optional_field_properties" data-loaded="false">
+													<thead class="table-header-background">
+														<tr class="cabecera-tabla" role="row">
+															<th class="titulo-columnas" th:text="#{ontology.timeseries.name}">Name</th>
+															<th class="titulo-columnas" th:text="#{ontology.timeseries.type}">Type</th>
+														</tr>
+													</thead>
+													<tbody style="border-bottom: 1px solid #ddd;">
+														<tr class="optionalFieldRow" th:each="tsprop :${ontologyTSDTO.timeSeriesProperties}" th:if="${#strings.endsWith(tsprop.propertyType,'FIELD_OPTIONAL')}" style="height: 32px;">
+															<td	th:text="${tsprop.propertyName}">A</td> 
+															<td	th:text="${tsprop.propertyDataType}">STRING</td> 
+														</tr>
+													</tbody>
+												</table>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="row main pageCreateHeader no-margin-left padding-left-10 margin-top-20" style="width: 30%">
+									<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{ontology.timeseries.config}">TimeSeries Window</label>
+								</div>
+								<div class="row main borderPanel no-margin-left" style="width: 30%">
+									<div class="col-md-12 col-sm-12 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px;">
+										<div class="form-group" style="margin-bottom: 0px">								
+											<div th:if="${ontologyTSDTO.rtdbDatasource=='MONGO'}" id="template_schema" class="margin-bottom-20 ">
+												<table class="table no-margin-bottom" id="window_properties" data-loaded="false">
+													<thead class="table-header-background">
+														<tr class="cabecera-tabla" role="row">
+															<th class="titulo-columnas" th:text="#{ontology.timeseries.window}">Window</th>
+															<th class="titulo-columnas" th:text="#{ontology.timeseries.frequency}">Frequency</th>
+															<th class="titulo-columnas" th:text="#{ontology.timeseries.aggregate}">Aggregate</th>
+															<th class="titulo-columnas" th:text="#{ontology.timeseries.delpolicy}">Deletion policy</th>
+														</tr>
+													</thead>
+													<tbody style="border-bottom: 1px solid #ddd;">
+														<tr class="WindowRow" th:each="tswind :${ontologyTSDTO.timeSeriesWindow}" style="height: 32px;" >
+															<td th:text="${tswind.windowType}" ></td> 
+															<td th:text="${tswind.frecuency} + ' ' + ${tswind.frecuencyUnit}"></td> 
+															<td th:text="${tswind.aggregationFunction}"></td> 
+															<td th:if="${tswind.retentionBefore}!=null"	th:text="${tswind.retentionBefore} + ' ' + ${tswind.retentionUnit}"></td> 
+															<td th:if="${tswind.retentionBefore}==null">No</td>
+														</tr>
+													</tbody>
+												</table>
+											</div>
+
+											<div th:if="${ontologyTSDTO.rtdbDatasource=='TIMESCALE'}" id="template_schema" class="margin-bottom-20 ">
+												<table class="table no-margin-bottom" id="window_properties" data-loaded="false">
+													<thead class="table-header-background">
+														<tr class="cabecera-tabla" role="row">
+															<th class="titulo-columnas" th:text="#{ontology.timeseries.timescale.chunk.interval}">Chunk</th>
+															<th class="titulo-columnas" th:text="#{ontology.timeseries.frequency}">Frequency</th>
+														</tr>
+													</thead>
+													<tbody style="border-bottom: 1px solid #ddd;">
+														<tr class="WindowRow" style="height: 32px;" >
+															<td th:text="${ontologyTSDTO.timeSeriesTimescaleProperties.chunkInterval} + ' ' + ${ontologyTSDTO.timeSeriesTimescaleProperties.chunkIntervalUnit}"></td> 
+															<td th:text="${ontologyTSDTO.timeSeriesTimescaleProperties.frecuency} + ' ' + ${ontologyTSDTO.timeSeriesTimescaleProperties.frecuencyUnit}"></td> 
+														</tr>
+													</tbody>
+												</table>
+											</div>
+										</div>									
+									</div>									
+								</div>	
+							</div>
+							<!-- END TAB TIMESERIES  -->	
+							<!-- TAB ADV. TIMESERIES  -->
+							<div class="tab-pane " id="tab_adv_tseries">
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{ontology.advancedsettingsts}">TS Advanced settings</span>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+									<span th:text="#{ontology.timescale.hypertable.settings}" >Hypertable Settings </span>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9">
+										<div style="height:200px; resize: vertical; overflow: auto;" id="querySql"></div>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{ontology.timeseries.compression.policy}">Compression policy</span>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 ">
+										<!-- DATA COMPRESSION SELECTION -->
+										<div class="form-group">													
+											<div class="mt-checkbox-list ">
+												<input id="compressionCheck"  th:field="${ontologyTSDTO.timeSeriesTimescaleProperties.compressionActive}" class="margin-right-10" name="tableCompression" type="checkbox" th:checked="false" onclick="showCompressionQuery()" readonly disabled/>
+												<label class="control-label margin-right-5 popovers" th:text="#{ontology.timeseries.compression}" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.timeseries.compression.help},data-title=#{ontology.timeseries.compression}">Enable compression</label>
+											</div>
+										</div>
+									</div>
+									
+									<div class="col-md-9 col-sm-9 col-xs-9 ">
+										<div class="form-group" th:if="${ontologyTSDTO.timeSeriesTimescaleProperties.compressionActive}">
+											<label class="control-label" th:text="#{ontology.timeseries.compression.options}">Description</label>
+											<p class="form-control-static-block " th:text="${ontologyTSDTO.timeSeriesTimescaleProperties.compressionAfter}+' ' +${ontologyTSDTO.timeSeriesTimescaleProperties.compressionUnit}"> description </p>
+										</div>
+									</div>
+									<div class="col-md-9 col-sm-9 col-xs-9">
+										<div th:if="${ontologyTSDTO.timeSeriesTimescaleProperties.compressionActive}" style="height:200px; resize: vertical; overflow: auto;" id="queryDataCompression"></div>
+									</div>									
+								</div>
+								
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{ontology.timeseries.delpolicy}">Deletion policy</span>
+									</div>
+								</div>
+								
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9">
+										<!-- RTDB CLEANSE SELECTION -->
+										<div class="form-group">													
+											<div class="mt-checkbox-list margin-top-20">
+												<input id="rtdbclean" class="margin-right-10" name="rtdbclean" type="checkbox" th:field="${ontologyTSDTO.timeSeriesTimescaleProperties.retentionActive}" th:checked="false" readonly disabled/>
+												<label class="control-label margin-right-5 popovers" th:text="#{ontology.rtdbclean}" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.rtdbclean.help},data-title=#{ontology.rtdbclean}">rtdbclean</label>
+											</div>
+										</div>
+									</div>
+									
+									<div class="col-md-9 col-sm-9 col-xs-9 ">
+										<div class="form-group" th:if="${ontologyTSDTO.timeSeriesTimescaleProperties.retentionActive}">
+											<label class="control-label" th:text="#{ontology.clean.options}">Cleanse options</label>
+											<p class="form-control-static-block " th:text="${ontologyTSDTO.timeSeriesTimescaleProperties.retentionBefore}+' ' +${ontologyTSDTO.timeSeriesTimescaleProperties.retentionUnit}"> description </p>
+										</div>
+									</div>
+								</div>
+								
+							</div>			
+							<!-- END TAB ADV. TIMESERIES  -->			
+							
+							<!-- TAB AGGR. TIMESERIES  -->
+							<div class="tab-pane " id="tab_aggregates">
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{ontology.timeseries.continuous.aggregates}">Continuous aggregates</span>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-lg-12 col-md-12 col-xs-12">
+										<div id="continuousAggregates" class="margin-bottom-20 ">
+											<table class="table table-hover" id="cont_aggr_properties" data-loaded="false">
+												<thead class="table-header-background">
+													<tr class="cabecera-tabla" role="row">
+														<th class="titulo-columnas" th:text="#{ontology.name}">Name</th>
+														<th class="titulo-columnas" th:text="#{ontology.timescale.bucket.aggregation}">Bucket aggregation</th>
+														<th class="titulo-columnas" th:text="#{ontology.timeseries.schedule.policy }"></th>
+														<th class="titulo-columnas" th:text="#{ontology.timeseries.start.offset}"></th>
+														<th class="titulo-columnas" th:text="#{ontology.timeseries.end.offset}"></th>
+													</tr>
+												</thead>
+												<tbody style="border-bottom: 1px solid #ddd;" th:remove="all-but-first">
+													<tr class="WindowRow" th:each="tsagrr :${ontologyTSDTO.timeSeriesTimescaleAggregates}" >
+														<td	class="aggrName" th:text="${tsagrr.name}" ></td> 
+														<td th:text="${tsagrr.bucketFrequency} + ' ' + ${tsagrr.bucketFrequencyUnit}" ></td> 
+														<td th:text="${tsagrr.schedulerFrequency} + ' ' + ${tsagrr.schedulerFrequencyUnit}" ></td> 
+														<td th:text="${tsagrr.startOffset} + ' ' + ${tsagrr.startOffsetUnit}" ></td> 
+														<td th:text="${tsagrr.endOffset} + ' ' + ${tsagrr.endOffsetUnit}" ></td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
+									</div>	
+								</div>
+							</div>			
+							<!-- END TAB AGGR. TIMESERIES  -->	
+							<div class="tab-pane " id="tab_data">
+							<!-- DATA ACCESSES -->
+								<div class="row main">
+									<div class="col-md-12 col-sm-12 col-xs-12 panelHeader">
+										<span th:text="#{ontology.dataaccess}" >Data Access Settings </span>
+									</div>
+								</div>
+								<div class="row main pageCreateHeader no-margin-left padding-left-10 ">
+									<i class="icon-user"></i>
+									<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{ontology.data.user.title}">User Access Settings</label>
+								</div>
+								<div class="row main borderPanel no-margin-left">
+									<div class="col-md-12 col-sm-12 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(30vh);">
+										<div class="form-group" style="margin-bottom: 0px">						
+											<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
+												<!-- DATATABLE DANDELION CONF. -->												
+												<table id="userdataaccess" class="table table-hover" dt:table="true" dt:paginationtype="full">
+													<thead class="table-header-background">
+														<tr class="cabecera-tabla">
+															<th class="titulo-columnas" th:text="#{ontology.user}">User</th>
+															<th class="titulo-columnas" th:text="#{ontology.data.atributte} + ' = ' + #{ontology.data.atributtevalue}">Attribute = Value</th>
+														</tr>
+													</thead>
+													<tbody style="border-bottom: 1px solid #ddd;" th:remove="all-but-first">
+														<tr th:each="dataaccess : ${dataaccesses}" th:if="${dataaccess.userId}!=null" pages:paginate="10" style="height:32px;">
+															<!-- USER -->
+															<td class="text-left no-wrap" th:text="${dataaccess.userId}"></td>
+															<!-- RULE -->
+															<td class="text-left " th:text="${dataaccess.rule}"></td>													
+														</tr>
+													</tbody>
+												</table>												
+											</div>
+										</div>
+										<div id="imageNoUserRulesOnTable">
+											<img id="headerImg" alt="logo" style="width: 72px; height:113px; display: block;   margin-top:27px;  margin-left: auto;margin-right:auto;"  src="/controlpanel/static/images/emptyUsers.svg">
+											<label style=" display: block;   margin: 0 auto; font-style: italic;font-weight: normal;font-size: 17px;line-height: 24px;text-align: center;color:#505D66;" th:text="#{ontology.userdataaccess.nouser}"></label>
+										</div>
+									</div>
+								</div>
+								<div class="row main pageCreateHeader no-margin-left padding-left-10 margin-top-20">
+									<i class="icon-user"></i>
+									<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{ontology.data.role.title}">Role Data Access</label>
+								</div>
+								<div class="row main borderPanel no-margin-left">
+									<div class="col-md-12 col-sm-12 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(30vh);">
+										<div class="form-group" style="margin-bottom: 0px">						
+											<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
+												<!-- DATATABLE DANDELION CONF. -->												
+												<table id="roledataaccess" class="table table-hover" dt:table="true" dt:paginationtype="full">
+													<thead class="table-header-background">
+														<tr class="cabecera-tabla">
+															<th class="titulo-columnas" th:text="#{ontology.realm}">Realm</th>
+															<th class="titulo-columnas" th:text="#{ontology.role}">Role</th>
+															<th class="titulo-columnas" th:text="#{ontology.data.atributte} + ' = ' + #{ontology.data.atributtevalue}">Attribute = Value</th>
+														</tr>
+													</thead>
+													<tbody style="border-bottom: 1px solid #ddd;" th:remove="all-but-first">
+														<tr th:each="dataaccess : ${dataaccesses}" th:if="${dataaccess.userId}==null" pages:paginate="10" style="height:32px;">
+															<!-- REALM -->
+															<td class="text-left no-wrap" th:text="${dataaccess.appName}"></td>
+															<!-- ROLE -->
+															<td class="text-left no-wrap" th:text="${dataaccess.appRoleName}"></td>
+															<!-- RULE -->
+															<td class="text-left " th:text="${dataaccess.rule}"></td>														
+														</tr>
+													</tbody>
+												</table>													
+											</div>
+										</div>
+										<div id="imageNoUserRulesOnTable">
+											<img id="headerImg" alt="logo" style="width: 72px; height:113px; display: block;   margin-top:27px;  margin-left: auto;margin-right:auto;"  src="/controlpanel/static/images/emptyUsers.svg">
+											<label style=" display: block;   margin: 0 auto; font-style: italic;font-weight: normal;font-size: 17px;line-height: 24px;text-align: center;color:#505D66;" th:text="#{ontology.userdataaccess.nouser}"></label>
+										</div>
+									</div>
+								</div>								
+							</div>
+							<!-- END TAB DATA  -->
+							<div class="tab-pane " id="tab_index_configuration">
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{ontology.indexes}" > Indexes </span>
+									</div>
+								</div>
+								<!-- ONTOLOGY DATA ACCESS -->
+								<div class="row main pageCreateHeader no-margin-left padding-left-10 padding-right-10">
+									
+									<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{ontology.listIndex}">Index List</label>
+									<i class="la popovers" style="color: #1168A6;" data-trigger="hover" data-placement="top" data-container="body"></i>
+								</div>
+								<div class="row main borderPanel no-margin-left" style="margin-top: -3px; min-height: calc(40vh); max-height: calc(42vh); overflow:auto">
+									<div>
+									
+									<table id="listIndex" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
+											<thead>
+												<tr class="cabecera-tabla">
+													<th id="name" class="titulo-columnas" th:text="#{gen.index.name}" >Name Index</th>
+													<th id="name" class="titulo-columnas" th:text="#{ontology.index.property}" >Property</th>
+													<th class="titulo-columnas "> TTL </th>
+													<th id="name" class="titulo-columnas" >Sparse</th>
+													<th id="name" class="titulo-columnas" >Unique</th>
+													<th id="name" class="titulo-columnas" >background</th>
+													<th id="name" class="titulo-columnas" th:text="#{ontology.index.ordination}" >Ordination</th>
+															
+												</tr>
+											</thead>
+											<tbody th:remove="all-but-first">
+												<tr th:each="index : ${listIndex}">
+													<td th:text="${index.property}"  style="padding: 4px;" ></td>
+													<td th:text="${index.key}"  style="padding: 4px;" ></td>
+													<td  th:text="${index.ttl}"  ></td>
+													<td><input  th:checked="${index.sparse}" type="checkbox" class="checkbox" data-row="1" name="row1" disabled></td>
+													<td><input  th:checked="${index.unique}" type="checkbox" class="checkbox" data-row="1" name="row1" disabled></td>
+													<td><input  th:checked="${index.background}" type="checkbox" class="checkbox" data-row="1" name="row1" disabled></td>
+													<td  th:text="${index.ordenation}"></td>
+												</tr>
+											</tbody>
+									</table>
+									</div>
+								</div>
+							</div>
+							
+							
+								<!-- END TAB INDEX  -->	
+							<div class="tab-pane" id="tab_table_schema">
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{nebula.graph.vertices}">Vertices</span>
+									</div>
+								</div>
+								<div id="vertexCreationForm">
+
+									
+									
+									<div class="row main borderPanel no-margin-left">
+										<div class="col-md-12 col-sm-12 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(100vh / 2px);">
+											<!-- FIELD TABLE -->
+											<div class="form-group" style="margin-bottom: 0px">
+												<div id="template_schema" class="margin-bottom-20 ">
+													<table class="table no-margin-bottom" id="field_properties_vertex" data-loaded="false">
+														<thead class="table-header-background">
+															<tr class="cabecera-tabla" role="row">
+																<th class="titulo-columnas text-center" th:text="#{nebula.graph.vertices.name}">Name</th>
+																<th class="titulo-columnas text-center" th:text="#{nebula.graph.vertices.attribute}">Name</th>
+																<th class="titulo-columnas text-center"	th:text="#{nebula.graph.vertices.attribute.type}">Type</th>
+															</tr>
+														</thead>
+														<tbody style="border-bottom: 1px solid #ddd;">
+															<!-- filled in javascript when add field-->
+														</tbody>
+													</table>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{nebula.graph.edges}">Edges</span>
+									</div>
+								</div>
+								<div id="edgeCreationForm">
+									
+									<div class="row main borderPanel no-margin-left">
+										<div class="col-md-12 col-sm-12 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(100vh / 2px);">
+											<!-- FIELD TABLE -->
+											<div class="form-group" style="margin-bottom: 0px">
+												<div id="template_schema" class="margin-bottom-20 ">
+													<table class="table no-margin-bottom" id="field_properties_edge" data-loaded="false">
+														<thead class="table-header-background">
+															<tr class="cabecera-tabla" role="row">
+																<th class="titulo-columnas text-center" th:text="#{nebula.graph.edges.name}">Name</th>
+																<th class="titulo-columnas text-center" th:text="#{nebula.graph.edges.attribute}">Name</th>
+																<th class="titulo-columnas text-center"	th:text="#{nebula.graph.edges.attribute.type}">Type</th>
+															</tr>
+														</thead>
+														<tbody style="border-bottom: 1px solid #ddd;">
+															<!-- filled in javascript when add field-->
+														</tbody>
+													</table>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div> <!--  TAB1 -->							
+						</div>
+					</div>		
+				</form>
+			</div><!-- END CONTENT BODY -->
+		</div><!-- END CONTENT page-content-wrapper -->		
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+	
+	<!-- FOOTER INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+	
+	<!-- CORE JS CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
+
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/codemirror/lib/codemirror.js}"></script>
+	<script th:src="@{/static/vendor/codemirror/mode/javascript/javascript.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/edit/closebrackets.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/comment/comment.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/comment/continuecomment.js}" ></script>
+	
+	<!-- JSON EDITOR -->	
+	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>
+	
+	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
+	<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
+	<script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>
+	
+	<script th:src="@{/static/js/pages/showOntology.js}"></script>
+	
+	<!-- MONACO EDITOR -->
+	<script>	 
+	    var require = { paths: { 'vs': '/controlpanel/static/vendor/vs' } };	 
+	</script>
+	<script th:src="@{/static/vendor/vs/loader.js}"></script> 
+	<script th:src="@{/static/vendor/vs/editor/editor.main.nls.js}"></script> 
+	<script th:src="@{/static/vendor/vs/editor/editor.main.js}"></script>
+	
+	<!-- TEMPLATE CONTROLLER  -->	
+		
+	<!-- MAIN INIT -->
+	<script  th:inline="javascript">
+	var showLog = 1; // console.log toggle
+    //<![CDATA[ 
+	var nebulaTags = [[${nebulaTags}]];
+	var nebulaEdges = [[${nebulaEdges}]];
+	var rtdbDatasource = [[${ontology.rtdbDatasource.name()}]];
+	
+	// DATATABLES LANGUAJE FROM PROPERTIES.
+	datatable_lang = [[#{datatables_lang}]];	
+	var languageJson = JSON.parse(datatable_lang);
+	if ( languageJson ){ $.extend( true, $.fn.dataTable.defaults, { language: languageJson }); }
+	
+
+	var stringSchema = [[${ontology.jsonSchema}]];
+	var jsonSchema = JSON.parse(stringSchema);
+	var myCodeMirrorJs;
+	var myCodeMirrorQueryJs;
+	
+	// REDIRECT
+	function navigateUrl(url){  window.location.href = url;	}
+	
+	// DELETE ontology
+	function deleteOntologyConfirmation(ontologyId){
+		showLog ? console.log('deleteOntologyConfirmation() -> formId: '+ ontologyId): '';
+		
+		// no Id no fun!
+		if ( !ontologyId ) {$.alert({title: 'ERROR!',type: 'red' , theme: 'light', content: 'NO ontology-FORM SELECTED!'}); return false; }
+		
+		// set action and ontologyId to the form
+		$('#delete-ontologyId').attr('ontologyId',ontologyId);
+		$('.delete-ontology').attr('action','/controlpanel/ontologies/' + ontologyId);
+		showLog ? console.log('deleteOntologyConfirmation() -> formAction: ' + $('.delete-ontology').attr('action') + ' ID: ' + $('#delete-ontologyId').attr('ontologyId')): '';
+		
+		// call ontology Confirm at header.
+		HeaderController.showConfirmDialogOntologia('delete_ontology_form',ontologyId);	
+	}
+	
+	// CHECK IF JSON STRING WHEN JSON PARSE IS OK OR NOT, IF THE JSON IS
+	// MALFORMED THE JSON.parse() is broken.
+	var IsJsonString = function(str) {
+		try {
+			JSON.parse(str);
+		}
+		catch (e) {	return false; }
+
+		return true;
+	}
+	
+		// GENERATE EACH PROPERTY FOR ONTOLOGY INSTANCE.
+	var generateProperty = function(propertyName, property, instance){
+    	
+		var thevalue = "";
+
+		// if has internalID (oid) we generate it.
+        if ( propertyName == "$oid") {
+            hasId = true;
+            if ( property.type == "string") { instance = instance + "\"$oid\":\"53b281b1c91cbd35025e3d91\""; }
+            instance = instance + ",";
+        }
+		else {
+			// if not oid, we treat the property
+            instance = instance + "\"" + propertyName + "\":"; // adding name
+
+            var tipo = property.type; // adding type
+            if (tipo.includes("geometry")){ instance = instance + generateBasicType(tipo, "", "");
+            // adding object type
+            } else if ((!Array.isArray(tipo) && tipo.toLowerCase() == "object") || (Array.isArray(tipo) && tipo[0].toLowerCase() == "object")){ console.log('INSTANCE (obj): ' + instance); instance = instance + generateObject(property, "", propertyName);
+			// adding array type
+            } else if ((!Array.isArray(tipo) && tipo.toLowerCase() == "array" ) ||(Array.isArray(tipo) && tipo[0].toLowerCase() == "array" )){ console.log('INSTANCE (arr): ' + instance); instance = instance + generateArray(property, "", propertyName);
+            // date
+            } else if ((!Array.isArray(tipo) && tipo.toLowerCase() == "string" && property.format == "date")||(Array.isArray(tipo) && tipo[0].toLowerCase() == "string" && property.format == "date")){
+            	instance = instance +"\"2014-01-30\""; 
+            // timestamp
+            } else if ((!Array.isArray(tipo) && tipo.toLowerCase() == "string" && property.format != null)||(Array.isArray(tipo) && tipo[0].toLowerCase() == "string" && property.format != null)){
+            	instance = instance +"\"2014-01-30T17:14:00Z\""; 
+            // else basic type
+            } else {
+                thevalue = "";
+                // if enum type, get first value of enum.
+                if ( property.enum != null ){ thevalue = property.enum[0]; }
+				if(Array.isArray(tipo)){tipo = tipo[0];}
+                instance = instance + generateBasicType(tipo, "", "", thevalue);
+            }
+            instance = instance + ",";
+        }
+        return instance;
+    }
+	
+ // GENERARATE PROPERTY TYPES [ ARRAY ]
+	var generateArray = function(ontology, instance, parent){
+		console.log('        |--->   generateArray()');
+        var minItems = 1;
+        // Se obtiene el numero minimo de elementos del array
+		console.log('ARRAY OBJ: ' + JSON.stringify(ontology));
+
+		if (!ontology.hasOwnProperty('items')){
+			instance = instance + "[]";
+			return instance;
+		}
+
+        if (ontology.minItems != null) {
+            minItems =  ontology.minItems;
+        }
+        instance = instance + "[";
+
+
+		// main array iteration
+		for (var i=0; i <= minItems-1; i++) {
+			// object item
+			if (ontology.items[i] && ontology.items[i].type.toLowerCase() == "object"){
+				instance = instance + generateObject(ontology.items[i], "", parent);
+                if (i < minItems -1){
+                    instance = instance + ",";
+                }
+			}
+			else{
+			// non object item
+				var valor = "";
+                if (ontology.items[i] && ontology.items[i].enum != null){
+                    valor = ontology.items[i].enum;
+                }
+                if( ontology.items[i] &&  ontology.items[i].type!="array"){
+                	instance = instance + generateBasicType(ontology.items[i].type, "", "", valor);
+                } else if(ontology.items[i]  ){
+					instance = instance + generateArray(ontology.items[i], "", "");
+				}
+                
+                if (i < minItems -1){
+                    instance = instance + ",";
+                }
+
+			}
+		}
+
+        return instance + "]";
+	};
+    
+	// GENERATE DUMMY ONTOLOGY INSTANCE FROM JSON SCHEMA
+	var generateOntologyInstance = function(){
+		showLog ? console.log('|--->   generateOntologyInstance()') : '';
+
+		var instance 		= "";
+		var data 			= "";
+		var ontologyJson 	= {};
+		hasId = false;
+		document.getElementById("ontology_instance").innerHTML = "";
+
+		// check if json-string can be parsed
+		if(IsJsonString(editor.getText()) && editor.getText() != "{}"){
+
+			// get JSON
+			var ontologyJson = JSON.parse(editor.getText());
+
+			instance = instance + "{"
+            // for each property on json.properties
+			for ( var property in ontologyJson.properties ){
+
+				data = "";
+				// check for root node
+				if ( ontologyJson.properties[property] && ontologyJson.properties[property].$ref ){
+
+					if ( !hasId ){	instance = instance + "\"" + property + "\":"; } else {	instance = instance + "\"" + property + "\":";	}
+
+					// access node root reference
+					var ref = ontologyJson.properties[property].$ref;
+					ref = ref.substring(ref.indexOf("/")+1, ref.length);
+					data = ontologyJson[ref].properties;
+
+					// Se genera la seccion correspondiente a cada propiedad del
+					// elemento de referencia
+					instance = instance + "{ ";
+					for( var propertyName in data ) {
+						instance = generateProperty(propertyName, data[propertyName], instance);
+					}
+					instance = instance.substring(0,instance.length-1);
+					instance = instance + "}";
+				}
+				else {
+					// if no root node, get from main properties.
+					instance = generateProperty(property, ontologyJson.properties[property], instance);
+					instance = instance.substring(0,instance.length-1);
+				}
+
+				instance = instance + ",";
+			}
+
+			instance = instance.substring(0,instance.length-1);
+			instance = instance + "}";
+			$("#ontology_instance").val("");
+			$("#ontology_instance").val(instance);
+
+			if (ontologyJson.properties == null ){
+                	document.getElementById("ontology_instance").innerHTML = "";
+			}
+
+		}
+		else {
+			// no JSON no fun!
+			$.alert({title: 'JSON SCHEMA!', type: 'red' , theme: 'light', content: [[#{ontology.valid.noschema}]]});
+		}
+	}
+	
+	// CODE MIRROR TEXT AREA
+	var handleCodeMirror = function () {			
+		myTextArea = document.getElementById('postProcess');
+		if (myTextArea!=null){
+			myCodeMirrorJs = CodeMirror.fromTextArea(myTextArea, {
+		    	mode: "text/javascript",
+		    	autoRefresh: {delay:0},
+		    	autoCloseBrackets: true,
+		        matchBrackets: true,
+		        styleActiveLine: true,
+		        theme:"material",
+		        lineWrapping: true,
+		        readOnly: 'nocursor'
+		
+		    });
+			myCodeMirrorJs.setSize("100%",300);
+		}
+		
+		myTextAreaQuery = document.getElementById('query');
+		if (myTextAreaQuery!=null){
+			myCodeMirrorQueryJs = CodeMirror.fromTextArea(myTextAreaQuery, {
+		    	mode: "text/javascript",
+		    	autoRefresh: true,
+		    	autoCloseBrackets: true,
+		        matchBrackets: true,
+		        styleActiveLine: true,
+		        theme:"material",
+		        lineWrapping: true,
+		        readOnly: 'nocursor'
+		    });
+			myCodeMirrorQueryJs.setSize("100%",100);
+		}
+		
+	};
+	
+	
+	// MAIN WHEN READY
+	var editor;
+	$( document ).ready(function() {
+		// init when Document is ready
+		showLog ? console.log('SHOW ontology ready()...') : '';
+		//Splitting rtdb porperties
+		var currentDataS = $('#pDatas').text();
+		var currentClean = $('#pClean').text();
+		$('#pClean').text(currentClean.split(/(?=[A-z])(?=[A-Z])/).join (" "));
+		$('#pDatas').text(currentDataS.split(/(?=[A-z])(?=[A-Z])/).join(" "));
+		var container = document.getElementById('jsoneditor');	
+		var options = {
+			mode: 'view',
+			theme: 'bootstrap3',			
+			modes: ['view','text'], // allowed modes
+			error: function (err) {
+				$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: err.toString()});
+				return false;
+			}
+		};
+		
+		editor = new jsoneditor.JSONEditor(container, options, jsonSchema);
+		
+		generateOntologyInstance();
+		
+		//SHOW/HIDE DATATABLE COLUMNS HANDLER
+		$('label.toggle-vis').on( 'click', function (e) {
+			e.preventDefault(); 
+			// Get the column API object
+			var column = $('#authorizations').DataTable().column( $(this).attr('data-column') ); 
+			// Toggle the visibility
+			column.visible( ! column.visible() );
+			// toggle Text
+			$(this).toggleClass('text-muted line-through');			
+		});	
+		
+		if ([[${ontology.ontologyKPI!=null}]]){
+			handleCodeMirror();	 
+		}
+		
+		handleTabsChange();
+		
+		loadNebulaTable();
+		
+	});
+	 
+	var codeEditor;
+	var codeEditorCompression;
+	
+	var setMonacoValue = function (value){
+		if (codeEditor){
+			codeEditor.setValue(value);
+		}
+	}
+	var getMonacoValue = function (){
+		if (codeEditor){
+			return codeEditor.getValue();
+		}
+	}
+
+	var setMonacoCompressionValue = function (value){
+		if (codeEditorCompression){
+			codeEditorCompression.setValue(value);
+		}
+	}
+	var getMonacoCompressionValue = function (){
+		if (codeEditorCompression){
+			return codeEditorCompression.getValue();
+		}
+	}
+	
+	// MAIN WHEN LOAD
+	$(window).on("load",function(){  
+		// init on load.		
+		showLog ? console.log('SHOW ontology load()...') : '';
+		
+		// SHOW/HIDE DATATABLES COLUMN INIT 		
+		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		$('#dataTable-vis-toggle').removeClass('hide');
+
+		if(typeof $('#authorizations > tbody > tr').length =='undefined' || $('#authorizations > tbody > tr').length == 0){
+			$('#imageNoElementsOnTable').show();
+		}else{
+			$('#imageNoElementsOnTable').hide();
+		}
+		
+		if(typeof $('#userdataaccess > tbody > tr').length =='undefined' || $('#userdataaccess > tbody > tr').length == 0) {
+			$('#imageNoUserRulesOnTable').show();
+		}else{
+			$('#imageNoUserRulesOnTable').hide();
+		}
+		
+		if(typeof $('#roledataaccess > tbody > tr').length =='undefined' || $('#roledataaccess > tbody > tr').length == 0){
+			$('#imageNoRoleRulesOnTable').show();
+		}else{
+			$('#imageNoRoleRulesOnTable').hide();
+		}
+		
+		var htmlelement = document.getElementById('querySql');
+		codeEditor = monaco.editor.create(htmlelement, {
+		       language: 'sql', 
+		       scrollBeyondLastLine: false,	 
+		       theme: "vs-dark",	 
+		       automaticLayout: true,
+		       readOnly: true
+		});	
+		setMonacoValue([[${ontologyTSDTO.timeSeriesTimescaleProperties.hypertableQuery}]]);
+		var htmlelement2 = document.getElementById('queryDataCompression');
+		if (htmlelement2!=null){
+			codeEditorCompression = monaco.editor.create(htmlelement2, {
+			       language: 'sql', 
+			       scrollBeyondLastLine: false,	 
+			       theme: "vs-dark",	 
+			       automaticLayout: true,
+			       readOnly: true	 
+			});
+			setMonacoCompressionValue([[${ontologyTSDTO.timeSeriesTimescaleProperties.compressionQuery}]]);
+		}
+		
+		if ([[${ontology.ontologyKPI!=null}]]){
+ 			if ($("#postProcess").length!=0 && $("#postProcess").val()!= ""){
+				myCodeMirrorJs.setValue($("#postProcess").val());
+				myCodeMirrorJs.refresh();
+			}
+			if ($("#query").val()!= ""){
+				myCodeMirrorQueryJs.setValue($("#query").val());
+				myCodeMirrorQueryJs.refresh();
+			}		 
+		}
+		
+		if($('#supportsJsonLd').is(':checked')){
+			$('#jsonLdCtxt').removeClass('hide');
+		}
+	});
+	
+	// FUNCION PARA SELECCION SIMPLE DE REGISTROS DE UN LISTADO DATATABLE
+	var handleSingleSelection = function(pTableId){
+		$("#"+pTableId).on('click','tr:not(.tr-detail)',function(event){
+			if ($(event.target).is('td')){
+				event.stopPropagation();
+				var eleRow = $(event.target).parent('tr');
+				
+				// SE CUENTAN LAS FILAS QUE NO SEAN CABECERA NI FILTRO.
+				if (!$(eleRow).hasClass('cabecera-tabla') && !$(eleRow).hasClass('filtering')){
+					// SUCCESS VISUAL SELECTION
+					$(eleRow).hasClass('success') ?  $(eleRow).removeClass('success') : $(eleRow).addClass('success');
+				}
+			}
+		});
+	}
+	
+	var loadNebulaTable = () => {
+		if(rtdbDatasource === 'NEBULA_GRAPH'){
+			nebulaTags.forEach(function(tag){
+				$(`#field_properties_vertex > tbody`).append('');
+				let keys = Object.keys(tag.tagAttributes);
+				keys.forEach(function(key){
+					let html = '<tr id="field_vertex'+'_'+tag.name+"_"+key+' class="tagRow">';
+					html += `<td class="text-center"><i class="fa flaticon-network font-lg"></i> `+ tag.name + '</td>';
+					html += '<td class="text-center">'+ key + '</td>'
+					html +='<td class="text-center">'+ tag.tagAttributes[key] + '</td></tr>';
+					$(`#field_properties_vertex > tbody`).append(html);
+				})
+				if(keys.length === 0){
+					let html = '<tr id="field_vertex'+'_'+tag.name+"_"+' class="tagRow">';
+					html += `<td class="text-center"><i class="fa flaticon-network font-lg"></i> `+ tag.name + '</td>';
+					html += '<td class="text-center">-</td>'
+					html +='<td class="text-center">-</td></tr>';
+					$(`#field_properties_vertex > tbody`).append(html);
+				}
+			})
+			
+			nebulaEdges.forEach(function(edge){
+				$(`#field_properties_edge > tbody`).append('');
+				let keys = Object.keys(edge.edgeAttributes);
+				keys.forEach(function(key){
+					let html = '<tr id="field_edge'+'_'+edge.name+"_"+key+' class="tagRow">';
+					html += `<td class="text-center"><i class="la la-arrow-up font-lg"></i> `+ edge.name + '</td>';
+					html += '<td class="text-center">'+ key + '</td>'
+					html +='<td class="text-center">'+ edge.edgeAttributes[key] + '</td></tr>';
+					$(`#field_properties_edge > tbody`).append(html);
+				})
+				if(keys.length === 0){
+					let html = '<tr id="field_edge'+'_'+edge.name+"_"+' class="tagRow">';
+					html += `<td class="text-center"><i class="la la-arrow-up font-lg"></i> `+ edge.name + '</td>';
+					html += '<td class="text-center">-</td>'
+					html +='<td class="text-center">-</td></tr>';
+					$(`#field_properties_edge > tbody`).append(html);
+				}
+			})
+		}
+	}
+	
+	//]]>
+	</script>	
+</body>
+</html>

@@ -1,0 +1,74 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "DataModel GSMADevice Schema",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "type": {
+            "type": "string"
+        },
+        "category": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "controlledProperty": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "controlledAsset": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "ipAddress": {
+            "type": "string"
+        },
+        "mcc": {
+            "type": "string"
+        },
+        "mnc": {
+            "type": "string"
+        },
+        "batteryLevel": {
+            "type": "number"
+        },
+        "serialNumer": {
+            "type": "string"
+        },
+        "refDeviceModel": {
+            "type": "string"
+        },
+        "value": {
+            "type": "string"
+        },
+        "deviceState": {
+            "type": "string"
+        },
+        "dateFirstUsed": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "id",
+        "type",
+        "category",
+        "controlledProperty",
+        "controlledAsset",
+        "ipAddress",
+        "mcc",
+        "mnc",
+        "batteryLevel",
+        "serialNumer",
+        "refDeviceModel",
+        "value",
+        "deviceState",
+        "dateFirstUsed"
+    ]
+}

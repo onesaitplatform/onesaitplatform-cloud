@@ -1,0 +1,894 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!-- Copyright Indra Sistemas, S.A. 2013-2018 SPAIN -->
+<html xmlns:th="http://www.thymeleaf.org" th:with="lang=${#locale.language}" th:lang="${lang}">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+        <meta http-equiv="Content-Language" th:content="${lang}" />
+        <title th:text="#{name.app}" />
+
+        <!-- STYLE SHEETS -->
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}" />
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}" />
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}" />
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}" />
+        <!-- THEME -->
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
+
+        <!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND BOOSTRAP-TIMEPICKER  -->
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}" />
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css}" />
+    </head>
+
+    <!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
+    <body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment"	class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+
+		<!-- HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"></div>
+
+		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
+		<div th:include="fragments/menu::#menuFragment"	class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+				<div class="alert alert-success display-hide">
+					<span th:text="${globalMessage}"></span>
+				</div>
+
+				<!-- BEGIN PAGE BAR AND BREADCRUM-->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/microservices/list}"> <span th:text="#{microservice.my}">My Microservices</span></a><i class="fa fa-angle-right"></i></li>
+						<li>
+							<span th:if="${microservice.id} == null" th:text="#{microservice.create}">Create Microservice</span>
+							<span th:if="${microservice.id} != null" th:text="#{microservice.update}">Update Microservice</span>
+						</li>
+					</ul>
+				</div>	
+				<!-- END PAGE BAR -->
+
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{name.app}"> onesait Platform Control Panel</span></h1>
+				<!-- END PAGE TITLE-->
+
+                <form role="form" id="form-microservice" th:object="${microservice}" method="post" class="form" enctype="multipart/form-data">                                           
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <!-- FORM ACTIONS FOR INSERT-->
+
+                    <input th:if="${microservice.id} == null" type="hidden" name="action" th:value="@{/microservices/create}"/>
+                    <!-- FORM ACTIONS FOR UPDATE -->
+                    <input th:if="${microservice.id} != null" type="hidden"  name="action" th:value="@{'/microservices/update/'+${microservice.id}}"/>
+                    
+                                            
+                    <input th:if="${microservice.id} != null" type="hidden" id="microservice-save-id" name="id" th:field="*{id}" />
+                    
+                    <input id="createGitlab" th:field="*{config.createGitlab}" name="createGitlab" class="form-control no-remove" type="hidden" />
+                    <input id="defaultCaaS" th:field="*{config.defaultCaaS}" name="defaultCaaS" class="form-control no-remove" type="hidden" value="false"/>
+                    <input id="defaultJenkins" th:field="*{config.defaultJenkins}" name="defaultJenkins" class="form-control no-remove" type="hidden" value="false"/>
+                    <input id="defaultGitlab" th:field="*{config.defaultGitlab}" name="defaultGitlab" class="form-control no-remove" type="hidden" value="false"/>
+                    <input id="modelRunId" th:field="*{config.modelRunId}" name="modelRunId" class="form-control no-remove" type="hidden" value=""/>
+                    <input id="stripRoutePrefix" th:field="*{stripRoutePrefix}" name="stripRoutePrefix" class="form-control no-remove" type="hidden" th:value="${microservice.stripRoutePrefix}"/>
+                
+                    <div id="header">
+                        <div class="row pageCreateHeader">
+                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                <div class="margin-top-4">
+                                    <span th:if="${microservice.id} == null" class="caption-subject" th:text="#{microservice.create} "> Create Microservice</span>
+                                    <span th:if="${microservice.id} != null" class="caption-subject" th:text="#{microservice.update} + ' ' + ${microservice.name}"> Update Microservice</span>
+                                </div>
+                        
+                                <div class="tools hide">
+                                    <a href="" class="collapse" data-original-title="" title=""></a> 
+                                    <a href="" class="fullscreen" data-original-title="" title=""></a>
+                                </div>
+                            
+                                <div class="actions hide">
+                                    <!-- ACTION INDICATORs -->
+                                    <span th:if="${microservice.id} == null" class="label label-success label-sm uppercase"><i class="fa fa-plus"></i> <span th:text="#{gen.mode.insert}">Insert</span></span>
+                                    <span th:if="${microservice.id} != null" class="label label-warning label-sm uppercase bold "><i class="fa fa-edit"></i> <span th:text="#{gen.mode.update}">Update</span></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                <div class="pull-right">
+                                    <!-- CANCEL  -->
+                                    <button id="btn-cancel" name="btn-cancel" type="button" class="btn btn-circle btn-outline blue no-border" th:value="#{gen.cancelBtn}" value="cancel"><span th:text="#{gen.cancelBtn}"> Cancel </span>
+                                    </button>
+        
+                                    <!-- RESET create -->
+                                    <button id="resetBtn" type="button" th:if="${microservice.id} == null" class="btn btn-outline-search" name="reset" th:value="#{gen.resetBtn}"><span th:text="#{gen.resetBtn}"> Reset </span></button>
+                                    <button th:if="${microservice.id} != null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" disabled="true" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
+                                                            
+                                    <!-- CREATE / UPDATE-->
+                                    <button id="btn-save" type="submit" class="btn btn-circle btn-outline btn-primary">
+                                        <span th:if="${microservice.id} == null" th:text="#{gen.createBtn}"> New </span>
+                                        <span th:unless="${microservice.id} == null" th:text="#{gen.editBtn}"> Edit </span>
+                                    </button>         
+                                </div>
+                            </div>
+                        </div>
+                    </div>  
+    				<!-- MAIN ROW -->
+    				<div class="mainPanel">
+    					<div class="row main">
+                             <div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+                                <span th:text="#{gen.generalInformation}">General Information</span>
+                             </div>
+                             <div class="col-md-3 col-sm-3 col-xs-3">
+                               <span class="denotesRequired">* Denotes Required Field</span>
+                             </div>
+                         </div>						
+    													
+    					 <div class="row main">								
+    					      <!-- IDENTIFICATION/NAME -->
+    					      <div class="col-md-4 col-sm-4 col-xs-12">
+    					          <div class="form-group">
+    					              <label th:text="#{gen.name}">Name</label><span th:if="!*{id}" class="required"> *</span>
+    							      <input th:attrappend="readonly=${microservice.id}?'true'" pattern="^[a-z-]{1,40}$" id="identification" type="text" name="identification" th:required="true" maxlength="100" th:field="*{name}" class="form-control " th:placeholder="#{gen.name}"/>
+    							  </div>
+    						  </div>
+    						  <!-- SELECT TEMPLATE IF NEW -->
+    						  <div th:if="!*{id}" class="col-md-4 col-sm-4 col-xs-12 only-new only-new-nb">
+    						      <div class="form-group">
+    						          <label th:text="#{microservice.template}">Microservice Template</label><span class="required"> *</span>
+    							     <select id="template" class="selectpicker form-control" data-live-search="true" data-size="10" data-width="100%" th:field="*{template}">
+    							         <option th:each="template:${templates}" th:value="${template.key}" th:text="${template.key}"></option>
+    							     </select>
+    							  </div>
+    						  </div>
+    						  <!-- READ TEMPLATE IF NOT NEW -->
+    						  <div th:if="*{id}" class="col-md-4 col-sm-4 col-xs-12" id="mstemplatetext">
+    						      <div class="form-group">
+    							     <label th:text="#{microservice.template}">Microservice Template</label>
+    					             <input readonly="true" id="templateText" type="text" name="identification" th:field="*{template}" class="form-control "/>
+    							  </div>
+    						  </div>
+    						  <div th:if="!*{id}" class="col-md-4 col-sm-4 col-xs-12 only-new" id="select-ontologies" >
+    						      <div class="form-group">
+    							     <label th:text="#{simulation.ontology}">Ontology Template</label>
+    							     <select th:field="*{config.ontology}" id="ontologies" name="ontology" class="selectpicker form-control" data-live-search="true" data-size="10" data-width="100%" >
+    							         <option th:each="ontology:${ontologies}" th:value="${ontology.identification}" th:text="${ontology.identification}"></option>
+    							     </select>
+    						      </div>
+    						  </div>
+    						  <div th:if="!*{id}"  class="only-new" id="file-zip">
+    						      <div class="col-md-4 col-sm-6 col-xs-12 pull-right">
+    							     <div class="form-group">
+    								    <label th:text="#{binaryfiles.select}">File</label><span class="required"> *</span>
+                                     </div>
+                                     <div>
+    									<!-- <input id="file" class="btn btn-default" type="file" th:field="*{file}" style="width:100%"/> -->
+    									<button id="btn-microservice-upload" type="button" class="btn btn-outline btn-circle blue" value="Select"> <i class="fa fa-file-archive-o" style="padding-right:4px;" disabled="disabled"></i><span th:text="#{binaryfiles.select}"></span></button>
+    									<input id="btn-microservice-file" th:field="*{zipInfo.file}" class="form-group button_text hide" type="file" accept=".zip" name="file"  />
+    								 </div>
+    							  </div>
+    						      <div class="col-md-4 col-sm-4 col-xs-12 form-group">
+    							     <label th:text="#{microservice.project.structure.sources}">Project Sources</label><span class="required"> *</span>
+    								 <input th:field="*{zipInfo.sources}"   type="text"  class="form-control " value="sources/" placeholder="sources/"/>
+    						      </div>
+    						      <div class="col-md-4 col-sm-4 col-xs-12 form-group">
+    							    <label th:text="#{microservice.project.structure.docker}">Project Docker</label><span th:if="!*{id}" class="required"> *</span>
+    								<input th:field="*{zipInfo.docker}" type="text"  class="form-control " value="sources/docker/" placeholder="sources/docker/"/>
+    						      </div>
+    					      </div>
+    													
+    						  <div th:if="!*{id}" id="git-template" class="only-new" >
+    						    <div class="col-md-4 col-sm-4 col-xs-12 form-group">
+    							    <label th:text="#{microservice.gitlab.site}">Git Site URL</label><span class="required"> *</span>
+    								<input id="gitlab-site" type="text" name="gitlabSite"  th:field="*{gitTemplate.url}" class="form-control " placeholder="Git URL"/>
+    							</div>
+    							<div class="col-md-4 col-sm-4 col-xs-12 form-group">
+    							     <label th:text="#{microservice.gitlab.privatetoken}">Git Private Token</label><span th:if="!*{id}" class="required"> *</span>
+    							     <input id="gitlab-private-token" type="text" name="privateToken" th:field="*{gitTemplate.privateToken}" class="form-control " placeholder="Token"/>
+    							</div>
+    							<div class="col-md-4 col-sm-4 col-xs-12 form-group">
+    							     <label th:text="#{microservice.project.structure.sources}">Project Sources</label><span class="required"> *</span>
+    								 <input th:field="*{gitTemplate.sources}"   type="text"   class="form-control " value="sources/" placeholder="sources/"/>
+    							</div>
+    							<div class="col-md-4 col-sm-4 col-xs-12 form-group">
+    							     <label th:text="#{microservice.project.structure.docker}">Project Docker</label><span th:if="!*{id}" class="required"> *</span>
+    								 <input th:field="*{gitTemplate.docker}" type="text"   class="form-control " value="sources/docker/" placeholder="sources/docker/"/>
+    							</div>
+    						</div>
+    						<div th:if="!*{id}" class="col-md-4 col-sm-4 col-xs-12 only-new-nb" id="select-notebooks" >
+    						  <div class="form-group">
+    							<label th:text="#{simulation.notebook}">Notebooks Template</label>
+    							<select th:field="*{config.notebook}" id="notebooks" name="notebook" class="selectpicker form-control" data-live-search="true" data-size="10" data-width="100%" >
+    								<option th:each="notebook:${notebooks}" th:value="${notebook.identification}" th:text="${notebook.identification}"></option>
+    							</select>
+    						  </div>
+    						</div>
+    						<div th:if="!*{id}" class="col-md-4 col-sm-4 col-xs-12 only-new-nb" id="select-dependency-architecture" >
+    						  <div class="form-group">
+    							<label th:text="#{microservice.architecture.dependency.options}">Architecture Dependency Options</label>
+    							<div class="mt-checkbox-list"> 
+    								<div class="inline font-xs">
+    									<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.dependency.useradmin.help},data-title=#{microservice.dependency.useradmin}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{microservice.dependency.useradmin}">Dependency user-administrator</div>
+    									<input id="checkbox-dependence-useradmin" class="form-control no-remove" type="checkbox" th:field="*{config.dependencyUserAdmin}" /><span></span></label>
+    									<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.dependency.hazelcast.help},data-title=#{microservice.dependency.hazelcast}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{microservice.dependency.hazelcast}">Dependency hazelcast-platform</div>
+    									<input id="checkbox-dependence-hazelcast" class="form-control no-remove" type="checkbox" th:field="*{config.dependencyHazelcast}" /><span></span></label>
+    									<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.dependency.drools.help},data-title=#{microservice.dependency.drools}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{microservice.dependency.drools}">Dependency drools-platform</div>
+    									<input id="checkbox-dependence-drools" class="form-control no-remove" type="checkbox" th:field="*{config.dependencyDrools}" /><span></span></label>
+    								</div>
+    							</div>
+    						</div>
+    					</div>																						
+    				</div>
+    				<div class="row main">
+    					<!-- CONTEXT PATH -->
+    					<div class="col-md-4 col-sm-4 col-xs-12">
+    					   <div class="form-group">
+    					       <label th:text="#{microservice.contextpath}">Contextpath</label><span th:if="!*{id}" class="required"> *</span>
+    							<label th:if="*{id}" class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.change.contextpath.help},data-title=#{microservice.change.contextpath}"><i class="la la-exclamation-circle font-md"></i> </label>
+    							<input pattern="^/[a-z-]{1,30}$" id="context-path" type="text" name="context-path" th:required="true" maxlength="100" th:field="*{contextPath}" class="form-control " placeholder="/microservice"/>
+    							<label style="margin-top:10px" class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.strip.prefix.help},data-title=#{microservice.strip.prefix}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{microservice.strip.prefix}">Strip?</div>
+    							     <input id="checkbox-strip-prefix" class="form-control no-remove" type="checkbox" th:checked="${microservice.stripRoutePrefix ? true: false}"/>
+    							     <span></span>
+    							 </label>
+    						</div>
+    					</div>
+    					<!-- PORT -->
+    					<div id = "port-div" class="col-md-4 col-sm-4 col-xs-12">
+    					   <div class="form-group">
+    						  <label th:text="#{digitaltwindevice.port}">Port</label><span th:if="!*{id}" class="required"> *</span>
+    						  <label th:if="*{id}" class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.change.port.help},data-title=#{microservice.change.port}"><i class="la la-exclamation-circle font-md"></i> </label>
+    						  <input id="port" type="number" name="port" th:required="true"  th:field="*{port}" class="form-control " th:value="30010"/>
+    					   </div>
+    					</div>
+    					<div id = "port-div" class="col-md-4 col-sm-4 col-xs-12">
+    					   <div class="form-group">
+    						 <div class="mt-checkbox-list"> 
+    							 
+    						  </div>
+    					   </div>
+    					</div>
+    					<div th:if="!*{id}" class="col-md-4 col-sm-4 col-xs-12 only-new-nb" id="select-module-architecture" >
+    					   <div class="form-group">
+    					       <label th:text="#{microservice.architecture.module.options}">Architecture Module Options</label>
+    						   <div class="mt-checkbox-list"> 
+    						      <div class="inline font-xs">
+    							      <label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.module.sso.help},data-title=#{microservice.module.sso}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{microservice.module.sso}">Module sso-project</div>
+    								  <input id="checkbox-module-sso" class="form-control no-remove" type="checkbox" th:field="*{config.moduleSSO}" /><span></span></label>
+    								  <label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.module.useradmin.help},data-title=#{microservice.module.useradmin}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{microservice.module.useradmin}">Module user-administrator</div>
+    								  <input id="checkbox-module-useradmin" class="form-control no-remove" type="checkbox" th:field="*{config.moduleUserAdmin}" /><span></span></label>
+    								  <label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.module.springbatch.help},data-title=#{microservice.module.springbatch}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{microservice.module.springbatch}">Module spring-batch-example</div>
+    								  <input id="checkbox-module-springbatch" class="form-control no-remove" type="checkbox" th:field="*{config.moduleSpringBatch}" /><span></span></label>
+    							  </div>
+    							</div>
+    						</div>
+    					</div>	
+    				</div>
+    				<div th:if="!*{id}" class="row main no-experiments-divs">
+    				    <!-- CHECKBOX CREATE GITLAB REPO  -->
+    					<div class="col-md-4 col-sm-4 col-xs-12">
+    					   <div class="form-group">
+    						  <div class="mt-checkbox-list"> 
+    							 <label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.gitlab.repository.help},data-title=#{microservice.gitlab.repository}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{microservice.gitlab.repository.create}">Create Git Repository?</div>
+    							     <input id="checkbox-publish-gitlab" class="form-control no-remove" type="checkbox" checked="checked" />
+    							     <span></span>
+    							 </label>
+    						  </div>
+    					   </div>
+    				    </div>										
+    			     </div>
+    			     <div th:if="!*{id}" class="row main experiments-divs hide">
+    				    <!-- CHECKBOX CREATE GITLAB REPO  -->
+    					<div class="col-md-4 col-sm-4 col-xs-12">
+    					   <div class="form-group">
+   							<label th:text="#{mlflow.experiments}">Experiments</label>
+   							<select id="experiments" name="experiment" class="selectpicker form-control" data-live-search="true" data-size="10" data-width="100%" >
+   								<option value="" th:text="#{mlflow.select}">Select experiment...</option>
+   							</select>
+   						  </div>
+    				    </div>
+				       </div>
+				       <div th:if="!*{id}" class="row main executions-divs hide">
+    				    <div class="col-md-12 col-sm-12 col-xs-12">
+							<div class="form-group">
+								<label th:text="#{mlflow.executions}">Executions</label>
+								<div id="parameters" class="margin-bottom-20">
+									<table class="table" id="table_parameters" data-loaded="false">
+										<thead>
+											<tr class="cabecera-tabla" role="row" >
+												<th class="titulo-columnas" th:text="#{gen.select}">Select</th>
+												<th class="titulo-columnas" th:text="#{mlflow.rundate}">Run Date</th>
+												<th class="titulo-columnas" th:text="#{mlflow.runid}">Run Id</th>
+												<th class="titulo-columnas" th:text="#{mlflow.runname}">Run Name</th>
+												<th class="titulo-columnas" th:text="#{mlflow.source}">Source</th>
+												<th class="titulo-columnas" th:text="#{mlflow.version}">Version</th>
+												<th class="titulo-columnas" th:text="#{mlflow.models}">Models</th>
+												<th class="titulo-columnas" th:text="#{gen.user}">User</th>
+											</tr>
+										</thead>
+										<tbody id="table-body">
+											<tr class="parameters-model">
+												<td class="hide"><input type="text" name="gitUrl[]"/></td>
+												<td class="hide"><input type="text" name="id[]"/></td>
+												<td style="text-align:center; vertical-align:middle;">
+													<input class="run-checkbox" data-id="0" name="checkparameter[]" type="checkbox" style="width: 20px; height: 20px;" /></td>
+												<td>
+													<input style="text-align: center;" type="text" name="rundate[]" readonly="readonly"   class="form-control"/>
+												</td>
+												<td>
+													<input style="text-align: center;" type="text" name="runid[]" readonly="readonly"   class="form-control"/>
+												</td>
+												<td>
+													<input style="text-align: center;" type="text" name="runname[]" readonly="readonly"   class="form-control"/>
+												</td>
+												<td>
+													<input style="text-align: center;" type="text" name="source[]" readonly="readonly"   class="form-control"/>
+												</td>								
+												<td>
+													<input style="text-align: center;" type="text" name="version[]" readonly="readonly"   class="form-control"/>
+												</td>								
+												<td>
+													<input style="text-align: center;" type="text" name="status[]" readonly="readonly"   class="form-control"/>
+												</td>
+												<td><input style="text-align: center;" type="text" name="user[]" readonly="readonly" class="form-control"/></td>			
+											</tr>
+										</tbody>														
+									</table>
+								</div>
+							</div>
+						</div>										
+    			     </div>
+        			<div id="project-structure" class="row main">
+        			    <div class="col-md-4 col-sm-4 col-xs-12 form-group">
+        				    <label th:text="#{microservice.gitlab.repository}">Git repository</label><span class="required"> *</span>
+        					<input id="gitlab-repository-custom" type="text" th:field="*{gitlab}"  class="form-control " th:placeholder="#{microservice.git.project}" />
+        				</div>
+        				<div class="col-md-4 col-sm-4 col-xs-12 form-group" id="gitToHide">
+        				    <label th:text="#{microservice.project.structure.sources}">Project Sources</label><span class="required"> *</span>
+        					<input th:field="*{config.sources}"  id="sources-path" type="text" name="sourcesPath"  class="form-control " value="sources/" placeholder="sources/"/>
+        				</div>
+        				<div class="col-md-4 col-sm-4 col-xs-12 form-group" id="gitToHide2">
+        					<label th:text="#{microservice.project.structure.docker}">Project Docker</label><span th:if="!*{id}" class="required"> *</span>
+        					<input th:field="*{config.docker}" id="docker-path" type="text" name="dockerPath"  class="form-control " value="sources/docker/" placeholder="sources/docker/"/>
+        				</div>
+        			</div>
+            		<div class="row main no-experiments-divs" id="gitlab-info">
+            			<div class="col-sm-12 col-md-12">
+            				<div class="form-group">
+            					<label class="font-sm" th:text="#{microservice.gitlab.configuration}">Gitlab Configuration</label>
+            				</div>
+            			</div>
+            			<div th:if="${defaultGitlab}" class="col-md-4 col-sm-4 col-xs-12">
+            				<div class="form-group">
+            					<div class="mt-checkbox-list"> 
+            						<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.gitlab.configuration.help},data-title=#{microservice.gitlab.configuration}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{microservice.configuration.default} +'?'">Create Git Repository?</div>
+            							<input id="checkbox-gitlab-default" class="form-control no-remove" type="checkbox" checked="checked"/>
+            							<span></span>
+            						</label>
+            					</div>
+            				</div>
+            			</div>
+            			<div id="gitlab-configuration">
+            				<div class="col-md-4 col-sm-4 col-xs-12 form-group">
+            					<label th:text="#{microservice.gitlab.site}">Git Site URL</label><span class="required"> *</span>
+            					<input id="gitlab-site" type="text" name="gitlabSite"  th:field="*{gitlabConfiguration.site}" class="form-control " placeholder="Git URL"/>
+            				</div>
+            				<div class="col-md-4 col-sm-4 col-xs-12 form-group">
+            					<label th:text="#{microservice.gitlab.privatetoken}">Git Private Token</label><span th:if="!*{id}" class="required"> *</span>
+            					<input id="gitlab-private-token" type="text" name="privateToken"  th:field="*{gitlabConfiguration.privateToken}" class="form-control " placeholder="Token"/>
+            				</div>
+            				<div class="col-md-4 col-sm-4 col-xs-12 form-group">
+            					<label class="popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.gitlab.group.help},data-title=#{microservice.gitlab.group}"> <div class="inline font-xs" th:text="#{microservice.gitlab.group} + ' '">Git Group Name</div><i class="la la-info-circle font-md"></i> </label>
+            					<input id="gitlab-group" type="text" name="gitlabGroup"  th:field="*{config.gitlabGroup}" class="form-control " placeholder="Group Name"/>
+            				</div>
+            			</div>
+            		</div>
+            		<hr/>
+            		<div class="row main" id="jenkins-info">
+            			<div class="col-sm-12 col-md-12">
+            				<div class="form-group">
+            					<label class="font-sm" th:text="#{microservice.jenkins.configuration}">Jenkins Configuration</label>
+            				</div>
+            			</div>
+            			<div th:if="${defaultJenkins}" class="col-md-4 col-sm-4 col-xs-12">
+            				<div class="form-group">
+            					<div class="mt-checkbox-list"> 
+            						<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.jenkins.configuration.help},data-title=#{microservice.jenkins.configuration}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{microservice.configuration.default} +'?'">Create Git Repository?</div>
+            							<input id="checkbox-jenkins-default" class="form-control no-remove" type="checkbox" checked="checked"/>
+            							<span></span>
+            						</label>
+            					</div>
+            				</div>
+            			</div>
+            			<div id="jenkins-configuration" class="col-sm-12 col-md-12">
+            				<div class="row">
+            					<div class="col-md-4 col-sm-4 col-xs-12 form-group">
+            						<label th:text="#{microservice.jenkins.site}">Jenkins Site URL</label><span class="required"> *</span>
+            						<input id="jenkins-site" type="text" name="jenkinsSite" th:field="*{jenkinsConfiguration.jenkinsUrl}" class="form-control " placeholder="Jenkins URL"/>
+            					</div>
+            					<div class="col-md-4 col-sm-4 col-xs-12 form-group">
+            						<label th:text="#{microservice.jenkins.username}">Jenkins Username</label><span th:if="!*{id}" class="required"> *</span>
+            						<input id="jenkins-username" type="text" name="jenkinsUsername"  th:field="*{jenkinsConfiguration.username}" class="form-control " th:placeholder="#{binaryfiles.user}"/>
+            					</div>
+            					<div class="col-md-4 col-sm-4 col-xs-12 form-group">
+            						<label th:text="#{microservice.jenkins.token}">Jenkins Token/Password</label><span th:if="!*{id}" class="required"> *</span>
+            						<input id="jenkins-credentials" type="text" name="jenkinsCredentials"  th:field="*{jenkinsConfiguration.token}" class="form-control " placeholder="Token"/>
+            					</div>
+            				</div>
+            				<div th:if="*{id==null}" class="row">
+            					<div class="col-md-4 col-sm-4 col-xs-12 form-group">
+            						<label th:text="#{microservice.jenkins.jobname}">Jenkins JobName</label>
+            						<input id="jenkins-jobname" type="text" name="jenkinsCredentials"  th:field="*{jobName}" class="form-control " placeholder=""/>
+            					</div>
+            					<div class="col-md-4 col-sm-4 col-xs-12 form-group">
+            						<label class="popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.jenkins.viewName.help},data-title=#{microservice.jenkins.viewName}"> <div class="inline font-xs" th:text="#{microservice.jenkins.viewName} + ' '">Create Git Repository?</div><i class="la la-info-circle font-md"></i> </label>
+            						<input id="jenkins-jobname" type="text" name="jenkinsCredentials"  th:field="*{config.jenkinsView}" class="form-control " placeholder=""/>
+            					</div>
+            				</div>
+            				<div th:if="*{id!=null}" class="row">
+            					<div class="col-md-4 col-sm-4 col-xs-12 form-group">
+            						<label th:text="#{microservice.jenkins.joburl}">Jenkins Job URL</label><span class="required"> *</span>
+            						<input id="jenkins-job-site" type="text" name="jenkinsJobSite" th:field="*{jobUrl}" class="form-control" placeholder="Jenkins Job URL"/>
+            					</div>
+            				</div>
+            			</div>
+            		</div>
+            		<hr/>
+            		<div class="row main" id="caas-info">
+            			<div class="col-sm-12 col-md-12">
+            				<div class="form-group">
+            					<label class="font-sm" th:text="#{microservice.caas.configuration}">CaaS Configuration</label>
+            				</div>
+            			
+            				<div th:if="!${microservice.id}" class="col-md-4 col-sm-4 col-xs-12">
+            					<select id="caas-select" class="selectpicker form-control onto" data-live-search="true" data-size="10" data-width="100%" th:field="*{caas}">
+            						<option th:each="c:${caas}" th:value="${c}" th:text="${c}"></option>
+            					</select>
+            				</div>
+            		
+            				<div th:if="${defaultCaaS}" class="col-md-8 col-sm-4 col-xs-12">
+            					<div class="form-group">
+            						<div class="mt-checkbox-list"> 
+            							<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.caas.configuration.help},data-title=#{microservice.caas.configuration}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{microservice.configuration.default} +'?'">Create Git Repository?</div>
+            								<input id="checkbox-caas-default" class="form-control no-remove" type="checkbox" checked="checked"/>
+            								<span></span>
+            							</label>
+            						</div>
+            					</div>
+            				</div>
+            				<div id="caas-configuration">
+            					<div class="row">
+            						<div id="caas-rancher-configuration" class="col-md-12 col-sm-12 col-xs-12">
+            							<div class="col-md-4 col-sm-4 col-xs-12 form-group">
+            								<label th:text="#{microservice.caas.site}">Site URL</label><span class="required"> *</span>
+            								<input id="caas-site" type="text" name="caasSite"  th:field="*{rancherConfiguration.url}" class="form-control " placeholder="Rancher URL"/>
+            							</div>
+            							<div class="col-md-4 col-sm-4 col-xs-12 form-group">
+            								<label th:text="#{microservice.caas.rancher.accesskey}">Rancher Access Key</label><span th:if="!*{id}" class="required"> *</span>
+            								<input id="rancher-access-key" type="text" name="accessKey"  th:field="*{rancherConfiguration.accessKey}" class="form-control " placeholder=""/>
+            							</div>
+            							<div class="col-md-4 col-sm-4 col-xs-12 form-group">
+            								<label th:text="#{microservice.caas.rancher.secretkey}">Rancher Secret Key</label><span th:if="!*{id}" class="required"> *</span>
+            								<input id="rancher-secret-key" type="text" name="secretKey"  th:field="*{rancherConfiguration.secretKey}" class="form-control " placeholder=""/>
+            							</div>
+            						</div>
+            					</div>
+            					<div class="row">
+            						<div id="caas-openshift-configuration" class="col-md-12 col-sm-12 col-xs-12"  style="display: none;">
+            							<div class="col-md-4 col-sm-4 col-xs-12 form-group">
+            								<label th:text="#{microservice.openshift.site}">Site URL</label><span class="required"> *</span>
+            								<input id="openshift-site" type="text" name="caasSite"  th:field="*{openshiftConfiguration.url}" class="form-control " placeholder="Openshift URL"/>
+            							</div>
+            							<div class="col-md-4 col-sm-4 col-xs-12 form-group">
+            								<label th:text="#{microservice.caas.openshift.user}">Rancher Access Key</label><span th:if="!*{id}" class="required"> *</span>
+            								<input id="openshift-access-key" type="text" name="accessKey"  th:field="*{openshiftConfiguration.user}" class="form-control " placeholder=""/>
+            							</div>
+            							<div class="col-md-4 col-sm-4 col-xs-12 form-group">
+            								<label th:text="#{microservice.caas.openshift.password}">Rancher Secret Key</label><span th:if="!*{id}" class="required"> *</span>
+            								<input id="openshift-secret-key" type="text" name="secretKey"  th:field="*{openshiftConfiguration.password}" class="form-control " placeholder=""/>
+            							</div>
+            						</div>
+            					</div>
+            				</div>
+            			</div>
+            		</div>								
+                </div>			
+    		</form>
+		</div>
+	</div>
+</div>
+	<!-- FOOTER INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+			
+		
+	<!-- Modal error -->
+	<div id="modal-error" class="modal fade" role="dialog">
+		<div class="modal-dialog modal-sm">
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"></button>
+					<h4 class="modal-title" id="response" th:text="#{binaryfiles.maxsize.error}"></h4>
+				</div>											      
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal" th:text="#{binaryfiles.close}">Close</button>
+				</div>
+			</div>
+		</div>
+	</div><!-- // Modal error -->
+		
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" ></script>
+	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}" ></script>
+	
+	<!-- LOADING DEFAULT DATES IF NEEDED -->
+	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}" type="text/javascript"></script>
+	<script	th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}" type="text/javascript"></script>
+	<script	th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
+
+	<!-- LOADING DEFAULT LANG MESSAGES IF NEEDED -->
+	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}" type="text/javascript"></script>
+	<script th:src="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js}" type="text/javascript"></script>
+	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
+	
+	<!-- TEMPLATE CONTROLLER -->
+	<script th:inline="javascript">
+	//<![CDATA[
+		var csrfParameter = [[${_csrf.parameterName}]];
+		var csrfValue = [[${_csrf.token}]];
+		var microserviceCreateJson = {
+			"msName" : /*[[${param.name}]]*/ null,
+			"msTemplate" : /*[[${param.template}]]*/ null,
+			"msContextPath" : /*[[${param.contextPath}]]*/ null,
+			"msPort" : /*[[${param.port}]]*/ null,
+			"msOntologyId" : /*[[${param.ontology}]]*/ null,
+			"msNotebookId" : /*[[${param.notebook}]]*/ null,
+			"optionstemplate" :  /*[[${templates}]]*/ null
+		}
+
+	//]]>
+	</script>
+	
+	<!-- INPUTMASK -->
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
+	
+
+	<!-- CORE JS CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>	
+	
+	<script th:inline="javascript">
+	//<![CDATA[
+		
+		var currentLanguage = [[${lang}]];
+		var mlflowSelect = [[#{mlflow.select}]];
+		
+		var exists = {
+			"gitlab" : [[${defaultGitlab}]],
+			"jenkins" : [[${defaultJenkins}]],
+			"caas" : [[${defaultCaaS}]],
+			"microservice": [[${microservice.id}]]		
+		};
+		
+		var currentCaas = [[${microservice.caas}]];
+		var mockedRuns = {
+				  "runs": [
+					    {
+					      "info": {
+					        "run_uuid": "52e543cea6b4427b805e0163868efe9d",
+					        "experiment_id": "1",
+					        "user_id": "notebook",
+					        "status": "FINISHED",
+					        "start_time": "1645724331038",
+					        "end_time": "1645724344119",
+					        "artifact_uri": "onesait-platform://1610956d3f8c4896a0e3bf23ce853213@moonwalker.onesaitplatform.com/1/52e543cea6b4427b805e0163868efe9d/artifacts",
+					        "lifecycle_stage": "active",
+					        "run_id": "52e543cea6b4427b805e0163868efe9d"
+					      },
+					      "data": {
+					        "metrics": [
+					          {
+					            "key": "mae",
+					            "value": 0.576381895873763,
+					            "timestamp": "1645724337900",
+					            "step": "0"
+					          },
+					          {
+					            "key": "r2",
+					            "value": 0.21136606570632266,
+					            "timestamp": "1645724337693",
+					            "step": "0"
+					          },
+					          {
+					            "key": "rmse",
+					            "value": 0.7460550348172179,
+					            "timestamp": "1645724337493",
+					            "step": "0"
+					          }
+					        ],
+					        "params": [
+					          {
+					            "key": "__artifacts__1",
+					            "value": "[\"model/model.pkl\", \"6217c2b467b113190c9d8edb\", 645]"
+					          },
+					          {
+					            "key": "__artifacts__2",
+					            "value": "[\"model/MLmodel\", \"6217c2b567b113190c9d8edd\", 395]"
+					          },
+					          {
+					            "key": "__artifacts__3",
+					            "value": "[\"model/conda.yaml\", \"6217c2b567b113190c9d8edf\", 143]"
+					          },
+					          {
+					            "key": "__artifacts__4",
+					            "value": "[\"model/requirements.txt\", \"6217c2b667b113190c9d8ee1\", 46]"
+					          },
+					          {
+					            "key": "alpha",
+					            "value": "0.5"
+					          },
+					          {
+					            "key": "dataset",
+					            "value": "/tmp/winequality-red.csv"
+					          },
+					          {
+					            "key": "l1_ratio",
+					            "value": "0.1"
+					          },
+					          {
+					            "key": "train_size",
+					            "value": "0.9"
+					          }
+					        ],
+					        "tags": [
+					          {
+					            "key": "mlflow.gitRepoURL",
+					            "value": "https://github.com/plad88/linear_regression_mlflow.git"
+					          },
+					          {
+					            "key": "mlflow.log-model.history",
+					            "value": "[{\"run_id\": \"52e543cea6b4427b805e0163868efe9d\", \"artifact_path\": \"model\", \"utc_time_created\": \"2022-02-24 17:38:58.105480\", \"flavors\": {\"python_function\": {\"model_path\": \"model.pkl\", \"loader_module\": \"mlflow.sklearn\", \"python_version\": \"3.7.12\", \"env\": \"conda.yaml\"}, \"sklearn\": {\"pickled_model\": \"model.pkl\", \"sklearn_version\": \"0.23.2\", \"serialization_format\": \"cloudpickle\"}}, \"model_uuid\": \"15093a7ea80147188f30b6cdc6d641c4\"}]"
+					          },
+					          {
+					            "key": "mlflow.project.backend",
+					            "value": "local"
+					          },
+					          {
+					            "key": "mlflow.project.entryPoint",
+					            "value": "main"
+					          },
+					          {
+					            "key": "mlflow.project.env",
+					            "value": "conda"
+					          },
+					          {
+					            "key": "mlflow.source.git.commit",
+					            "value": "9831b0874223fd84140139a140f4620f882c7789"
+					          },
+					          {
+					            "key": "mlflow.source.git.repoURL",
+					            "value": "https://github.com/plad88/linear_regression_mlflow.git"
+					          },
+					          {
+					            "key": "mlflow.source.name",
+					            "value": "file:///tmp/linear_regression_mlflow"
+					          },
+					          {
+					            "key": "mlflow.source.type",
+					            "value": "PROJECT"
+					          },
+					          {
+					            "key": "mlflow.user",
+					            "value": "notebook"
+					          }
+					        ]
+					      }
+					    },
+					    {
+					      "info": {
+					        "run_uuid": "3849bb64e7a44a9793cf515a081a73d3",
+					        "experiment_id": "1",
+					        "user_id": "notebook",
+					        "status": "FAILED",
+					        "start_time": "1645724179056",
+					        "end_time": "1645724190815",
+					        "artifact_uri": "onesait-platform://1610956d3f8c4896a0e3bf23ce853213@moonwalker.onesaitplatform.com/1/3849bb64e7a44a9793cf515a081a73d3/artifacts",
+					        "lifecycle_stage": "active",
+					        "run_id": "3849bb64e7a44a9793cf515a081a73d3"
+					      },
+					      "data": {
+					        "metrics": [
+					          {
+					            "key": "mae",
+					            "value": 0.576381895873763,
+					            "timestamp": "1645724186655",
+					            "step": "0"
+					          },
+					          {
+					            "key": "r2",
+					            "value": 0.21136606570632266,
+					            "timestamp": "1645724186455",
+					            "step": "0"
+					          },
+					          {
+					            "key": "rmse",
+					            "value": 0.7460550348172179,
+					            "timestamp": "1645724186217",
+					            "step": "0"
+					          }
+					        ],
+					        "params": [
+					          {
+					            "key": "alpha",
+					            "value": "0.5"
+					          },
+					          {
+					            "key": "dataset",
+					            "value": "/tmp/winequality-red.csv"
+					          },
+					          {
+					            "key": "l1_ratio",
+					            "value": "0.1"
+					          },
+					          {
+					            "key": "train_size",
+					            "value": "0.9"
+					          }
+					        ],
+					        "tags": [
+					          {
+					            "key": "mlflow.gitRepoURL",
+					            "value": "https://github.com/plad88/linear_regression_mlflow.git"
+					          },
+					          {
+					            "key": "mlflow.project.backend",
+					            "value": "local"
+					          },
+					          {
+					            "key": "mlflow.project.entryPoint",
+					            "value": "main"
+					          },
+					          {
+					            "key": "mlflow.project.env",
+					            "value": "conda"
+					          },
+					          {
+					            "key": "mlflow.source.git.commit",
+					            "value": "9831b0874223fd84140139a140f4620f882c7789"
+					          },
+					          {
+					            "key": "mlflow.source.git.repoURL",
+					            "value": "https://github.com/plad88/linear_regression_mlflow.git"
+					          },
+					          {
+					            "key": "mlflow.source.name",
+					            "value": "file:///tmp/linear_regression_mlflow"
+					          },
+					          {
+					            "key": "mlflow.source.type",
+					            "value": "PROJECT"
+					          },
+					          {
+					            "key": "mlflow.user",
+					            "value": "notebook"
+					          }
+					        ]
+					      }
+					    },
+					    {
+					      "info": {
+					        "run_uuid": "ccf442702b244824a69358605e78ce82",
+					        "experiment_id": "1",
+					        "user_id": "notebook",
+					        "status": "FAILED",
+					        "start_time": "1645723491186",
+					        "end_time": "1645723647571",
+					        "artifact_uri": "onesait-platform://1610956d3f8c4896a0e3bf23ce853213@moonwalker.onesaitplatform.com/1/ccf442702b244824a69358605e78ce82/artifacts",
+					        "lifecycle_stage": "active",
+					        "run_id": "ccf442702b244824a69358605e78ce82"
+					      },
+					      "data": {
+					        "metrics": [
+					          {
+					            "key": "mae",
+					            "value": 0.576381895873763,
+					            "timestamp": "1645723643892",
+					            "step": "0"
+					          },
+					          {
+					            "key": "r2",
+					            "value": 0.21136606570632266,
+					            "timestamp": "1645723643698",
+					            "step": "0"
+					          },
+					          {
+					            "key": "rmse",
+					            "value": 0.7460550348172179,
+					            "timestamp": "1645723643487",
+					            "step": "0"
+					          }
+					        ],
+					        "params": [
+					          {
+					            "key": "alpha",
+					            "value": "0.5"
+					          },
+					          {
+					            "key": "dataset",
+					            "value": "/tmp/winequality-red.csv"
+					          },
+					          {
+					            "key": "l1_ratio",
+					            "value": "0.1"
+					          },
+					          {
+					            "key": "train_size",
+					            "value": "0.9"
+					          }
+					        ],
+					        "tags": [
+					          {
+					            "key": "mlflow.gitRepoURL",
+					            "value": "https://github.com/plad88/linear_regression_mlflow.git"
+					          },
+					          {
+					            "key": "mlflow.project.backend",
+					            "value": "local"
+					          },
+					          {
+					            "key": "mlflow.project.entryPoint",
+					            "value": "main"
+					          },
+					          {
+					            "key": "mlflow.project.env",
+					            "value": "conda"
+					          },
+					          {
+					            "key": "mlflow.source.git.commit",
+					            "value": "9831b0874223fd84140139a140f4620f882c7789"
+					          },
+					          {
+					            "key": "mlflow.source.git.repoURL",
+					            "value": "https://github.com/plad88/linear_regression_mlflow.git"
+					          },
+					          {
+					            "key": "mlflow.source.name",
+					            "value": "file:///tmp/linear_regression_mlflow"
+					          },
+					          {
+					            "key": "mlflow.source.type",
+					            "value": "PROJECT"
+					          },
+					          {
+					            "key": "mlflow.user",
+					            "value": "notebook"
+					          }
+					        ]
+					      }
+					    }
+					  ]
+					};
+	//]]>
+	</script>
+	<script th:src="@{/static/js/pages/microservice/create.js}" type="text/javascript"></script>
+	
+</body>
+</html>

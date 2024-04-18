@@ -1,0 +1,137 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!-- BEGIN GRAPH COMPONENT -->
+
+<div th:fragment="formGraphFragment" id="formGraphFragment">
+	<!-- GRAPH CSS -->
+	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/vis/vis.min.css}" />
+	<style>
+		.network-info-style {
+			background-color: white;
+	
+		}
+
+		#infoporlet {
+			left: calc(100% - 454px);
+		}
+		.network-info-style-main{
+					display: flex;
+			margin-top:5px;
+			place-items: center;
+		}
+	</style>
+	<!-- GRAPH SCRIPTS  -->
+	<script type="text/javascript" th:src="@{/static/vendor/vis/vis.min.js}"></script>
+	<!-- <script type="text/javascript" th:src="@{/static/vendor/vis/grafo.js}"></script> -->
+
+	<!-- GRAPH CONTROLLER JS -->
+	<!-- <script th:src="@{/static/js/pages/formGraph.js}"></script>	-->
+
+	<!-- BEGIN GRAPH INNER -->
+	<div class="row main">
+		<div class="col-md-12">
+			<div id="id_panel_botones" class="btn-group pull-right">
+				<div class="btn-group dropup"></div>
+				<div class="btn-group dropup">
+					<button type="button" data-toggle="dropdown" aria-expanded="false"
+						class="btn btn-default btn-sm dropdown-toggle button_text">
+						<i class="fa fa-ellipsis-horizontal"></i>
+						<span class="lang" th:text="#{graph.hierarchy}" data-lang="btn-jerarquia"></span>
+						<i class="fa fa-angle-up"></i>
+					</button>
+					<ul id="" class="dropdown-menu">
+						<li data-original-title="" class="tooltips lang" data-lang-tooltip="mnu-jer-aba">
+							<a>
+								<i class=""></i>
+								<span class="lang" data-lang="mnu-jer-aba" th:text="#{project.form.hierarchy}">
+									Modo Jerarquía
+								</span>
+							</a>
+						</li>
+						<li data-original-title="" class="tooltips lang" data-lang-tooltip="mnu-graph-arr">
+							<a>
+								<i class=""></i>
+								<span class="lang" data-lang="mnu-graph-arr" th:text="#{project.form.flowchart}">
+									Modo flow graph
+								</span>
+							</a>
+						</li>
+
+						<li data-original-title="" class="tooltips lang" data-lang-tooltip="mnu-only-arr">
+							<a>
+								<i class=""></i>
+								<span class="lang" data-lang="mnu-only-arr" th:text="#{project.form.onlyNodes}">
+									Modo Only nodes
+								</span>
+							</a>
+						</li>
+					</ul>
+				</div>
+				<button id="btn-graphInfo" th:text="#{graph.information}"
+					class="btn btn-default btn-sm button_text popovers" data-trigger="hover" data-placement="bottom"
+					data-container="body"
+					th:attr="data-content=#{project.form.informationDescription},data-title=#{graph.information}"></button>
+			</div>
+		</div>
+		<div class="col-md-12">
+			<div id="graphporlet" class="col-lg-12 col-md-12 col-sm-12 col-xs-12 margin-bottom-10" style="
+          border-radius: 4px;
+          background-color: #ffffff;
+          box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.05) !important;
+        ">
+				<div id="networkFormVis" class="" style="padding: 10px"></div>
+				
+				<div id="infoporlet" class="pull-right bg-white" style="background-color: white; min-width: 400px">
+				<div  class="network-info-style" id="TableFormInfoNetworkHeader" style="background-color: white; padding-top: 5px;padding-bottom: 5px">
+	
+					</div>
+					<table style="margin-bottom: 0" id="TableFormInfoNetwork"
+						class="table table-condensed table-hover table-striped table-light"></table>
+					<div class="table-scrollable table-scrollable-borderless">
+						<table id="TableInfoRelations"
+							class="table table-condensed table-hover table-striped table-light"></table>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- END GRAPH INNER -->
+
+		<!-- GRAPH DATA TO SEND TO GRAPH CONTROLLER  -->
+
+
+
+		<script type="text/javascript" th:inline="javascript">
+			let actualMode = 'onlyNodes'
+			let graphHeight = 600;
+			const projectMainId = [[${projectObj.identification}]];
+			var translations = {
+				type: /*[[#{project.form.type}]]*/ 'Type',
+				name: /*[[#{project.form.name}]]*/ 'Nombre',
+				address: /*[[#{project.form.address}]]*/ 'Direccion',
+				actions: /*[[#{project.form.actions}]]*/ 'Acciones',
+				buttonLabel: /*[[#{project.form.buttonLabel}]]*/ 'Ir al Formulario',
+				buttonGo: /*[[#{project.form.go}]]*/ 'Ir',
+				buttonShow: /*[[#{project.form.buttonShow}]]*/ 'Ver',
+				buttonUpdate: /*[[#{project.form.buttonUpdate}]]*/ 'Actualizar',
+				nodeDescription: /*[[#{project.form.nodeDescription}]]*/ 'Descripcion del nodo',
+			};
+		</script>
+		<script th:src="@{/static/js/pages/formGraph.js}"> </script>
+	</div>
+
+	<!-- END GRAPH -->
+</div>

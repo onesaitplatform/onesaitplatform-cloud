@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html class="no-js">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>onesait Platform Monitoring UI</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width">
+  <link rel="shortcut icon" type="image/x-icon" href="img/favicon.png" />
+  <link rel="stylesheet" type="text/css" href="core.css" />
+  <link rel="stylesheet" type="text/css" href="all-modules.css" />
+</head>
+
+<body>
+  <header class="navbar header--navbar desktop-only">
+  </header>
+  <div ui-view></div>
+  <script src="dependencies.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    sbaModules = [];
+  </script>
+<script src="core.js" type="text/javascript"></script>
+<script src="all-modules.js" type="text/javascript"></script>
+<script type="text/javascript">
+  angular.element(document).ready(function () {
+    angular.bootstrap(document, sbaModules.slice(0), {
+      strictDi: true
+    });
+  });
+</script>
+</body>
+
+</html>

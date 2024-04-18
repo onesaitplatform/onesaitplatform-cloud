@@ -1,0 +1,34 @@
+<md-dialog>
+    <md-toolbar>
+        <div class="md-toolbar-tools">
+            <h2>Add Gadget Libs to Header Libs?</h2>
+            <span flex></span>
+            <md-button class="md-icon-button" ng-click="cancel()">
+                <b>X</b>
+            </md-button>
+        </div>
+    </md-toolbar>
+    <form ng-cloak>
+        <md-dialog-content >
+            <div class="md-dialog-content" layout="column">
+                <md-subheader class="">
+                    Gadget libs have not been included in the headers. Would you like to add them?
+                    <br/> 
+                    <br/> 
+                    (The page will be refreshed in order to load them properly)
+                </md-subheader>
+                <div flex>
+                    <div id="headerlibseditor" style="height:500px"></div>
+                </div>
+            </div>
+        </md-dialog-content>
+        <md-dialog-actions layout="row">
+            <md-button class="md-raised md-secondary"  ng-click="cancel()">
+                Close
+            </md-button>
+            <md-button class="md-primary md-raised"  ng-click="saveAndReload()">
+                Save And Reload Page
+            </md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

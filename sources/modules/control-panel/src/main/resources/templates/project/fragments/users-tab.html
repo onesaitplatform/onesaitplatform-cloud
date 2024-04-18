@@ -1,0 +1,133 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<div class="row main">
+    <div class="col-md-8 col-sm-9 col-xs-9 panelHeader">
+        <span th:text="#{project.resource.auths}">Authorizations</span>
+    </div>
+</div>
+<div class="row main">
+	<div class="col-md-2 col-sm-4 col-xs-12" th:if="${projectObj.app == null}">
+		<div class="form-group">
+			<label data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{project.realm.users.tooltip},data-title=#{project.realm.users.title}">
+				<div class="mt-checkbox-list" style="height: 0px; display:inline-block;">
+					<div class="switch"> 
+						<label>
+							<input id="check-realm" name="useRealm" class="form-control no-remove" type="checkbox"></input>
+							<span class="checkbox-slider round" ></span>
+						</label>
+					</div>
+					<div class="inline font-xs" th:text="#{project.use.realm}" style="margin-left:7px;color:#505D66;">Link with Realm</div>
+				</div>
+			</label>
+		</div>
+	</div>
+	<div th:if="${projectObj.app != null}" class="col-md-4 col-sm-6 col-xs-12">
+		<span class="panelHeader padding-right-10" th:text="#{app.realm}">Realm</span>
+		<a th:href="@{|/apps/update/${projectObj.app.identification}|}" target="_blank"><h4 class="" style="display: inline-block;" th:text="${projectObj.app.identification}"></h4></a>
+		<button id="unsetRealm" type="button" class="btn btn-circle btn-primary pull-right" onclick="ProjectCreateController.unsetRealm()" >
+			<span th:text="#{project.unlink.realm}"> Unlink</span>
+		</button>
+	</div>	
+	<div class="col-md-2 col-sm-4 col-xs-12 margin-top-10" th:if="${#lists.isEmpty(realms) AND projectObj.app == null}">
+		<div class="hide" id="create-realm">
+			<button id="createRealm" type="button" class="btn btn-circle btn-primary" th:attr="onclick='javascript:navigateUrl(\''+@{|/apps/create|}+'\')'">
+				<span th:text="#{app.create}"> Create</span>
+			</button>
+		</div>
+	</div>
+	<div class="col-md-3 col-sm-4 col-xs-12 margin-top-10" th:if="${#lists.isEmpty(realms) AND projectObj.app == null}">
+		<div class="form-group hide" id="alert-realm">			
+			<label class="control-label" style="background: #FFFDFA; border: 1px solid #E79E38; border-radius: 2px; padding: 7px 12px 7px 4px;">
+				<i class="icon-exclamation" style="vertical-align: bottom;"></i><span th:text="#{project.norealm}" >Warning</span>
+			</label> 
+		</div>
+	</div>
+	<div th:if="${!#lists.isEmpty(realms) AND projectObj.app ==null}" class="hide" id="realms-select">
+		<div class="col-md-3 col-sm-6 col-xs-12">
+			<div class="form-group">
+				<select id="realms" name="realm" class="selectpicker form-control" data-live-search="true" data-width="100%" >			
+					<option value="" th:text="#{project.realmselect}"> Select Realm...</option>									
+					<option th:each="realm :${realms}" th:value="${realm.identification}" th:text="${realm.identification}" ></option>
+				</select>
+			</div>
+		</div>
+		<div class="col-md-3 col-sm-6 col-xs-12">
+			<div class="form-group">
+				<button type="button" class="btn btn-sm btn-circle btn-outline blue" onclick="ProjectCreateController.setRealm()" th:text="#{project.link.realm}"></button>																		
+				<button type="button" class="btn btn-sm btn-circle btn-outline blue" th:attr="onclick='javascript:navigateUrlBlank(\''+@{|/apps/create|}+'\')'" th:text="#{app.create}"></button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div th:if="${projectObj.app ==null}" class="row main pageCreateHeader no-margin-left padding-left-10 " id="platform-users-header">
+	<label class="no-padding-bottom" th:text=="'+'"></label>
+	<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{project.add.member}"></label>
+</div>
+<div class="row main borderPanel no-margin-left">
+	<div th:if="${projectObj.app ==null}" th:classappend="${projectObj.app == null ? '' : 'hide'}" class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(100vh - 340px);" id="platform-users">
+		<div class="form-group">
+			<label class="control-label" th:text="#{project.users.platform}">Users</label>
+			<select id="users" class="selectpicker form-control" data-live-search="true" data-width="100%" >			
+				<option value="" th:text="#{app.userselect}"> Select User...</option>									
+				<option th:each="user :${users}" th:value="${user.userId}" th:text="${user.fullName}  +' ('+ ${user.userId} +')'" ></option>
+			</select>
+		</div>
+		<div class="form-group pull-right">
+			<button type="button" class="btn btn-circle btn-primary" onclick="ProjectCreateController.addPlatformUser()" th:text=" '+ ' + #{project.add.member}"></button>																		
+		</div>
+	</div>
+	<div th:classappend="${projectObj.app != null ? 'col-md-12 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both' : 'col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both'} " style="margin-top: -3px; min-height: calc(100vh - 340px);" id="platform-users-table">												
+	<!-- AUTHORIZATION ROLE-USER-TYPE -->
+		<div class="form-group" style="margin-bottom: 0px">
+			<div id="members" th:classappend="${#lists.isEmpty(members) ? 'hide' :''}">
+				<table class="table no-margin-bottom" id="project_members" data-loaded="false">
+					<thead class="table-header-background">
+						<tr class="cabecera-tabla" role="row">
+							<th class="titulo-columnas" th:text="#{app.user}">User</th>
+							<th class="titulo-columnas" th:text="#{app.user.fullName}">FullName</th>
+							<th class="titulo-columnas" th:text="#{app.auth.role}">Role</th>
+							<th th:if="${projectObj.app != null}" class="titulo-columnas" th:text="#{app.realm}">Realm</th>
+							<th th:if="${projectObj.app == null}" class="titulo-columnas text-center"></th>
+						</tr>
+					</thead>
+					<tbody style="border-bottom: 1px solid #ddd;">
+						<tr th:each="member : ${members}" class="authorization-model border-bottom">
+							<td class="no-border"><input  type="text" name="users[]" readonly="readonly" class="margin-top-4 no-border" th:value="${member.userId}"/></td>
+							<td class="no-border"><input type="text" name="usersFullName[]" readonly="readonly" class="margin-top-4 no-border" style="width: 250px; min-height: 30px;" th:value="${member.fullName}"/></td>
+							<td class="no-border"><input type="text" name="rolesName[]" readonly="readonly" th:value="${member.roleName}"class="margin-top-4 no-border" style="width: 200px;" /></td>
+							<td class="no-border" th:if="${projectObj.app != null}" ><input type="text" readonly="readonly" th:value="${member.realm}" class="margin-top-4 no-border" /></td>
+							<td th:if="${projectObj.app == null} AND ${member.userId != projectObj.user.userId}" width="150px" class="no-wrap text-center no-border ">
+								<button type="button"
+									class="btn btn-xs btn-no-border icon-on-table color-red tooltips btn-mountable-authorization-remove margin-top-4" style="background-color:transparent;"
+									th:attr="onclick='javascript:ProjectCreateController.removePlatformUser(\''+${member.userId}+'\')'"><i class="icon-delete"></i></button>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div id="imageNoRoleRulesOnTable" th:classappend="${#lists.isEmpty(members) ? '' : 'hide'}">
+				<img id="headerImg" alt="logo" style="width: 72px; height:113px; display: block;   margin-top:27px;  margin-left: auto;margin-right:auto;"  src="/controlpanel/static/images/authorizationTableEmpty.svg">
+				<label style=" display: block;   margin: 0 auto; font-style: italic;font-weight: normal;font-size: 17px;line-height: 24px;text-align: center;color:#505D66;" th:text="#{ontology.list.noauths}"></label>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script th:inline="javascript">
+	var realmLinked = [[${projectObj.app?.identification}]];
+</script>

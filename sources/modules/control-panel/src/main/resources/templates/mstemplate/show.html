@@ -1,0 +1,307 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!-- Copyright Indra Sistemas, S.A. 2013-2018 SPAIN -->
+<html xmlns:th="http://www.thymeleaf.org" th:with="lang=${#locale.language}" th:lang="${lang}">
+    <head>
+    	<meta name="_csrf" th:content="${_csrf.token}" />
+    	<meta name="_csrf_header" th:content="${_csrf.headerName}" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+        <meta http-equiv="Content-Language" th:content="${lang}" />
+        <title th:text="#{name.app}" />
+
+        <!-- STYLE SHEETS -->
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}" />
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}" />
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}" />
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}" />
+        <!-- THEME -->
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
+
+        <!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND BOOSTRAP-TIMEPICKER  -->
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}" />
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css}" />
+    </head>
+
+    <!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
+    <body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment"	class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+
+		<!-- HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"></div>
+
+		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
+		<div th:include="fragments/menu::#menuFragment"	class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+				<div class="alert alert-success display-hide">
+					<span th:text="${globalMessage}"></span>
+				</div>
+
+				<!-- BEGIN PAGE BAR AND BREADCRUM-->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/mstemplates/list}"> <span th:text="#{mstemplate.my}">My Microservices Templates</span></a><i class="fa fa-angle-right"></i></li>
+						<li><span th:text="#{mstemplate.show}">Show Microservice Template</span></li>
+						</li>
+					</ul>
+				</div>	
+				<!-- END PAGE BAR -->
+
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{name.app}"> onesait Platform Control Panel</span></h1>
+				<!-- END PAGE TITLE-->
+
+                <!-- AUXILIAR FORM TO DELETE DATASOURCE -->
+                <form id="delete_mstemplate_form" class="delete-mstemplate hide" th:action="@{'/mstemplates/'+${mstemplate.identification}}" method="post">
+					<input type="hidden" name="_method" value="DELETE" />
+					<input type="hidden" name="id" th:value="${mstemplate.identification}" />
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                </form>
+                
+                <form role="form" id="form-mstemplate" th:object="${mstemplate}" method="post" class="form">                                           
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <div id="header">
+                        <div class="row pageCreateHeader">
+                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                <div class="margin-top-4">
+                                    <span class="caption-subject" th:text="${mstemplate.identification} "> Show Microservice Template</span>
+                                </div>
+                        	</div>
+                            <div class="tools hide">
+                                <a href="" class="collapse" data-original-title="" title=""></a> 
+                                <a href="" class="fullscreen" data-original-title="" title=""></a>
+                            </div>
+                        
+                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                <div class="pull-right">
+                                    <!-- REMOVE -->
+									<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:if="${mstemplate.id} != null"  id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='MicroserviceTemplateController.deleteMsTemplate(\'' + ${mstemplate.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>
+									<button sec:authorize="!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:if="${#authentication.name} == ${mstemplate.user.userId} AND ${mstemplate.id} != null"  id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='MicroserviceTemplateController.deleteMsTemplate(\'' + ${mstemplate.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>
+
+									<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:if="${mstemplate.id} != null" class="sep"></span>
+									<span sec:authorize="!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')"  th:if="${#authentication.name} == ${mstemplate.user.userId} AND ${mstemplate.id} != null" class="sep"></span>
+                                    
+                                    <!-- CANCEL  -->
+                                    <button id="btn-cancel" name="btn-cancel" type="button" class="btn btn-circle btn-outline blue no-border" th:value="#{gen.cancelBtn}" value="cancel"><span th:text="#{gen.cancelBtn}"> Cancel </span>
+                                    </button>
+        
+                                    <!-- UPDATE -->
+                                    <button id="updateBtn" type="button" th:attr="onclick='javascript:navigateUrl(\'' + @{|/mstemplates/update/${mstemplate.id}/|} + '\');'" class="btn btn-primary btn-primary-save" name="update" th:value="#{gen.editBtn}">
+                                        <span th:text="#{gen.edit}">Edit</span>
+                                    </button>         
+                                </div>
+                            </div>
+                        </div>
+                    </div>  
+    				<!-- MAIN ROW -->
+    				<div class="mainPanel">	
+    					<div class="row main">
+                             <div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+                                <span th:text="#{gen.generalInformation}">General Information</span>
+                             </div>
+                         </div>				
+    					 <div class="row main">								
+    					      <!-- IDENTIFICATION/NAME -->
+    					      <div class="col-md-4 col-sm-4 col-xs-12">
+    					      	<div class="form-group">
+									<label class="control-label" th:text="#{gen.identification} ">Identification</label><span class="required"> *</span>
+									<div class="input-icon ">
+                                        <p class="form-control-static-block " th:text="*{identification}">Identification</p>
+                                    </div>
+                                </div>
+    						  </div>
+    						  <!-- READ TEMPLATE IF NOT NEW -->
+    						  <div class="col-md-4 col-sm-4 col-xs-12" >
+    						  	<div class="form-group">
+									<label class="control-label" th:text="#{gen.description} ">Description</label><span class="required"> *</span>									
+									<p class="form-control-static-block " th:text="*{description}"> Description </p></div>	
+    						  </div>
+    						  <div class="col-md-2 col-sm-6 col-xs-12">
+    						  	<div class="form-group">
+    						  		<input id="public" class="margin-right-10" name="public" type="checkbox" checked="checked" th:field="*{public}" disabled="disabled" />
+									<label class="control-label margin-left-5" style="margin-top:34px;" th:text="#{dashboards.public}">Public</label>	
+								</div>
+							  </div>
+						</div>
+						<hr/>
+						<div class="row main">
+                             <div class="col-sm-12 col-md-12">
+	                             <div class="form-group">
+	            					<label class="font-sm" th:text="#{microservice.gitlab.configuration}">Git Configuration</label>
+	                             </div>
+	                         </div>
+                         </div>	
+	            		<div class="row main">
+	           				<div class="col-md-4 col-sm-4 col-xs-12">
+	           					<div class="form-group">	
+		           					<label class="control-label" th:text="#{mstemplate.gitRepository}">Git Repository</label><span class="required"> *</span>
+		           					<p class="form-control-static-block " th:text="*{gitRepository}"> Git Repository </p>
+		           					</div>
+	           				 </div>
+	           				<div class="col-md-4 col-sm-4 col-xs-12">
+	           					<div class="form-group">
+		           					<label class="control-label" th:text="#{mstemplate.gitUser}">Git User</label><span class="required"> *</span>
+		           					<p class="form-control-static-block " th:text="*{gitUser}"> Git User </p>
+		           					</div>
+	           				</div>
+	           				<div class="col-md-4 col-sm-4 col-xs-12">
+	           					<div class="form-group">
+		           					<label class="control-label" th:text="#{microservice.gitlab.privatetoken}">Private token (Credentials)</label><span class="required"> *</span>
+		           					<p th:if="${mstemplate.gitPassword} != null AND ${mstemplate.gitPassword} != '' AND ${mstemplate.gitPassword} != 'null'" class="form-control-static-block ">********</p>
+		           					</div>
+	           				</div>
+	            		</div>
+	            		<div class="row main">	
+	   						  <div class="col-md-4 col-sm-4 col-xs-12">
+	    					  	<div class="form-group">
+	    					  		<label class="control-label" th:text="#{mstemplate.gitBranch}">Git Branch</label><span class="required"> *</span>
+	           						<p class="form-control-static-block " th:text="*{gitBranch}"> Git Branch </p>
+	    						</div>
+	    					  </div>	
+	    				</div>	
+            			<hr/>
+            			<div class="row main">
+                             <div class="col-sm-12 col-md-12">
+	                             <div class="form-group">
+	            					<label class="font-sm" th:text="#{mstemplate.codeinformation}">Source Code Information</label>
+	                             </div>
+	                         </div>
+                         </div>	
+						<div class="row main">	
+    						  <div class="col-md-4 col-sm-4 col-xs-12">
+	    					  	<div class="form-group">
+	    					  		<label class="control-label" th:text="#{mstemplate.relativePath}">Relative Path</label><span class="required"> *</span>
+	    					  		<p class="form-control-static-block " th:text="*{relativePath}"> Relative Path </p>
+	    						</div>
+	    					  </div>	
+	    					  <div class="col-md-2 col-sm-2 col-xs-6">
+	    					  <div class="form-group">
+    						  		<label class="control-label" th:text="#{mstemplate.language}">Language</label><span class="required"> *</span>
+    						  		<p class="form-control-static-block " id="languageOption" th:text="*{language}"> Language </p>
+    							  </div>
+	    					  </div>		
+	    					  <div class="col-md-2 col-sm-2 col-xs-6" id="graalvmCheck">
+	    					  	  <input id="graalvm" name="graalvm" type="checkbox" checked="checked" th:field="*{graalvm}"  disabled="disabled" />
+                                  <label class="control-label margin-left-5" style="margin-top:34px;" th:text="#{mstemplate.graalvm}">GraalVM</label>
+                              </div>	
+	    					  <div class="col-md-4 col-sm-4 col-xs-12" id="dockerRelativePath">
+	    					  	<div class="form-group">
+	    					  		<label class="control-label" th:text="#{mstemplate.dockerRelativePath}">Docker Relative Path</label>
+	    							<p class="form-control-static-block " th:text="*{dockerRelativePath}"> Docker Relative Path </p>
+	    						</div>
+	    					  </div>															
+	    				</div>
+                </div>			
+    		</form>
+		</div>
+	</div>
+</div>
+	<!-- FOOTER INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+			
+		
+	<!-- Modal error -->
+	<div id="modal-error" class="modal fade" role="dialog">
+		<div class="modal-dialog modal-sm">
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"></button>
+					<h4 class="modal-title" id="response" th:text="#{binaryfiles.maxsize.error}"></h4>
+				</div>											      
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal" th:text="#{binaryfiles.close}">Close</button>
+				</div>
+			</div>
+		</div>
+	</div><!-- // Modal error -->
+		
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" ></script>
+	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}" ></script>
+	
+	<!-- LOADING DEFAULT DATES IF NEEDED -->
+	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}" type="text/javascript"></script>
+	<script	th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}" type="text/javascript"></script>
+	<script	th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
+
+	<!-- LOADING DEFAULT LANG MESSAGES IF NEEDED -->
+	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}" type="text/javascript"></script>
+	<script th:src="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js}" type="text/javascript"></script>
+	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
+	   <!-- MAIN INIT -->
+    <script type="text/javascript" th:inline="javascript">
+	//<![CDATA[
+	
+	//]]>
+	</script>
+	<!-- TEMPLATE CONTROLLER -->
+	<script th:inline="javascript">
+		var csrfParameter = [[${_csrf.parameterName}]];
+		var csrfValue = [[${_csrf.token}]];
+		var currentLanguage = [[${lang}]];
+		var mstemplateCreateJson = {
+			"language": currentLanguage,
+			"validations" : {
+				"validform": [[#{mstemplate.validform}]]
+			}
+		};
+		var notebookName =  [[*{notebook}]];
+		var ontologyName =  [[*{ontology}]];
+		var resourcesPathName =  [[*{resourcesPath}]];
+		
+		// REDIRECT URL
+		var navigateUrl = function(url) {
+			window.location.href = url;
+		}
+		
+	    var deleteUrl =  [[@{/mstemplates}]];
+	    
+	    var  deleteMsTemplateConfirmation = function (id){
+	    	
+			showConfirmDeleteDialog(id);	
+		} 
+	    
+	    var showConfirmDeleteDialog = function(id){	
+			$('#delete_mstemplate_form').attr('action', deleteUrl + '/' + id);
+			$('#delete-id').val(id);
+			HeaderController.showConfirmDialog('delete_mstemplate_form');	
+		}
+	</script>
+	
+	<!-- INPUTMASK -->
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
+	
+
+	<!-- CORE JS CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>	
+	<script th:src="@{/static/js/pages/mstemplate/create.js}" type="text/javascript"></script>
+	
+</body>
+</html>

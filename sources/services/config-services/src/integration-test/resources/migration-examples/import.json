@@ -1,0 +1,122 @@
+{
+    "$v": 1,
+    "$d": {
+        "allData": [
+                    {
+                        "class": "com.minsait.onesait.platform.config.model.User",
+                        "instances": [
+                            {
+                                "id": "developer",
+                                "data": {
+                                    "createdAt": 1528376152000,
+                                    "serialVersionUID": 1,
+                                    "password": "T8dMfYpG5qPT4LrE1+nUePyiG9tS4a/T5jikyTFQxzA=",
+                                    "role": "ROLE_DEVELOPER",
+                                    "active": true,
+                                    "fullName": "Developer of the Platform",
+                                    "userId": "developer",
+                                    "email": "developer@onesaitplatform.com",
+                                    "dateDeleted": null,
+                                    "updatedAt": 1528376152000
+                                }
+                            },
+                            {
+                                "id": "TestingImportUser",
+                                "data": {
+                                    "createdAt": 1528376152000,
+                                    "serialVersionUID": 1,
+                                    "password": "T8dMfYpG5qPT4LrE1+nUePyiG9tS4a/T5jikyTFQxzA=",
+                                    "role": "ROLE_USER",
+                                    "active": true,
+                                    "fullName": "Generic User of the Platform",
+                                    "userId": "TestingImportUser",
+                                    "email": "user@onesaitplatform.com",
+                                    "dateDeleted": null,
+                                    "updatedAt": 1528376152000
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "class": "com.minsait.onesait.platform.config.model.OntologyUserAccess",
+                        "instances": [
+                            {
+                                "id": "b24c76f1-625c-4285-b84f-91a83570c488",
+                                "data": {
+                                    "createdAt": 1528826846000,
+                                    "serialVersionUID": 1,
+                                    "ontologyUserAccessType": 1,
+                                    "id": "b24c76f1-625c-4285-b84f-91a83570c488",
+                                    "user": "TestingImportUser",
+                                    "ontology": "TestingImportOntology2",
+                                    "updatedAt": 1528826846000
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "class": "com.minsait.onesait.platform.config.model.Ontology",
+                        "instances": [
+                            {
+                                "id": "TestingImportOntology",
+                                "data": {
+                                    "allowsCypherFields": false,
+                                    "rtdbClean": false,
+                                    "dataModel": "MASTER-DataModel-1",
+                                    "active": true,
+                                    "description": "Air quality retrieved from https://api.waqi.info/search",
+                                    "metainf": null,
+                                    "dataModelVersion": null,
+                                    "allowsCreateTopic": false,
+                                    "createdAt": 1528376153000,
+                                    "serialVersionUID": 1,
+                                    "identification": "TestingImportOntology",
+                                    "rtdbCleanLapse": null,
+                                    "rtdbToHdb": false,
+                                    "jsonSchema": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"title\": \"GeoAirQuality\",\n    \"type\": \"object\",\n    \"required\": [\n        \"GeoAirQuality\"\n    ],\n    \"properties\": {\n        \"GeoAirQuality\": {\n            \"type\": \"string\",\n            \"$ref\": \"#/datos\"\n        }\n    },\n    \"datos\": {\n        \"description\": \"Info EmptyBase\",\n        \"type\": \"object\",\n        \"required\": [\n            \"stationName\",\n            \"stationId\",\n            \"timestamp\",\n            \"city\",\n            \"pm25\",\n            \"pm10\",\n            \"o3\",\n            \"no2\",\n            \"so2\",\n            \"geometry\",\n            \"aqi\"\n        ],\n        \"properties\": {\n            \"stationName\": {\n                \"type\": \"string\"\n            },\n            \"stationId\": {\n                \"type\": \"string\"\n            },\n            \"timestamp\": {\n                \"type\": \"object\"\n            },\n            \"city\": {\n                \"type\": \"string\"\n            },\n            \"pm25\": {\n                \"type\": \"number\"\n            },\n            \"pm10\": {\n                \"type\": \"number\"\n            },\n            \"o3\": {\n                \"type\": \"number\"\n            },\n            \"no2\": {\n                \"type\": \"number\"\n            },\n            \"so2\": {\n                \"type\": \"number\"\n            },\n            \"geometry\": {\n                \"type\": \"object\"\n            },\n            \"aqi\": {\n                \"type\": \"number\"\n            }\n        }\n    },\n    \"description\": \"GeoAirQuality\",\n    \"additionalProperties\": true\n}",
+                                    "xmlDiagram": null,
+                                    "ontologyClass": null,
+                                    "isPublic": true,
+                                    "topic": null,
+                                    "id": "TestingImportOntology",
+                                    "ontologyUserAccesses": [],
+                                    "rtdbDatasource": "MONGO",
+                                    "user": "developer",
+                                    "updatedAt": 1528376153000
+                                }
+                            },
+                            {
+                                "id": "TestingImportOntology2",
+                                "data": {
+                                    "allowsCypherFields": false,
+                                    "rtdbClean": false,
+                                    "dataModel": "MASTER-DataModel-1",
+                                    "active": true,
+                                    "description": "AirQuality",
+                                    "metainf": null,
+                                    "dataModelVersion": null,
+                                    "allowsCreateTopic": false,
+                                    "createdAt": 1528376153000,
+                                    "serialVersionUID": 1,
+                                    "identification": "TestingImportOntology2",
+                                    "rtdbCleanLapse": null,
+                                    "rtdbToHdb": false,
+                                    "jsonSchema": "{\n    \"$schema\": \"http://json-schema.org/draft-04/schema#\",\n    \"title\": \"AirQuality\",\n    \"type\": \"object\",\n    \"required\": [\n        \"AirQuality\"\n    ],\n    \"properties\": {\n        \"AirQuality\": {\n            \"type\": \"string\",\n            \"$ref\": \"#/datos\"\n        }\n    },\n    \"datos\": {\n        \"description\": \"Info EmptyBase\",\n        \"type\": \"object\",\n        \"required\": [\n            \"location\",\n            \"measure\",\n            \"timestamp\"\n        ],\n        \"properties\": {\n            \"location\": {\n                \"type\": \"string\"\n            },\n            \"measure\": {\n                \"type\": \"number\"\n            },\n            \"timestamp\": {\n                \"type\": \"object\",\n                \"required\": [\n                    \"$date\"\n                ],\n                \"properties\": {\n                    \"$date\": {\n                        \"type\": \"string\",\n                        \"format\": \"date-time\"\n                    }\n                }\n            }\n        }\n    },\n    \"description\": \"AirQuality\",\n    \"additionalProperties\": true\n}",
+                                    "xmlDiagram": null,
+                                    "ontologyClass": null,
+                                    "isPublic": true,
+                                    "topic": null,
+                                    "id": "TestingImportOntology2",
+                                    "ontologyUserAccesses": [
+                                        "b24c76f1-625c-4285-b84f-91a83570c488"
+                                    ],
+                                    "rtdbDatasource": "MONGO",
+                                    "user": "developer",
+                                    "updatedAt": 1528376153000
+                                }
+                            }
+                        ]
+                    }
+                ]
+        }
+}

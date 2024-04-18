@@ -1,0 +1,124 @@
+<!doctype html>
+<html ng-app="dashboardFramework">
+<head>
+  <meta charset="utf-8">
+  <title>Dashboard Framework</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width">
+  <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+
+  <style>
+    [ng-cloak] {
+      display: none !important;
+    }
+  </style>
+  <script src="../env/env.js"></script>
+  <script>
+    window.__env = window.__env || {};
+    window.__env.socketEndpointConnect = '/dashboardengine/dsengine/solver';
+    window.__env.socketEndpointSend = '/dsengine/solver';
+    window.__env.socketEndpointSubscribe = '/dsengine/broker';
+    window.__env.endpointControlPanel = '/controlpanel';
+    window.__env.endpointDashboardEngine = '/dashboardengine';
+    window.__env.dashboardEngineUsername = '';
+    window.__env.dashboardEnginePassword = '';
+    window.__env.dashboardEngineLoginRest = '/loginRest';
+    window.__env.dashboardEngineLoginRestTimeout = 5000;
+    window.__env.enableDebug = false;
+    window.__env.dashboardEngineProtocol = 'websocket';
+    window.__env.urlParameters = "";
+    window.__env.dashboardEngineAvoidReassign=false; //avoid reassign template parameters to other levels
+    window.__env.dashboardEngineAvoidFillDefault=false; //avoid fill default template parameters with default options of gform
+    window.__env.dashboardCheckHeaderLibs=true; //avoid fill default template parameters with default options of gform
+    // <![CDATA[    
+    var eventMethod = window.addEventListener
+          ? "addEventListener"
+          : "attachEvent";
+          var eventer = window[eventMethod];
+          var messageEvent = eventMethod === "attachEvent"
+          ? "onmessage"
+          : "message";
+          eventer(messageEvent, function (e) {
+
+    
+      var message;
+      //IF only close
+      if (typeof e.data != "undefined" && e.data.indexOf('closeGadgetFromIframe') >= 0 ){
+          console.log(angular.element( document.querySelector( '#dialogCreateGadget' ) ).scope());    
+          angular.element( document.querySelector( '#dialogCreateGadget' ) ).scope().closeDialog();        
+          return ;
+      } else if (typeof e.message != "undefined" && e.message.indexOf('closeGadgetFromIframe') >=0 ) {
+          angular.element( document.querySelector( '#dialogCreateGadget' ) ).scope().closeDialog();        
+          return ;
+      }
+      
+      if (typeof e.data != "undefined" && e.data.indexOf('createGadgetFromIframe') >= 0 ){
+              message=JSON.parse(e.data)    ;
+          } else if (typeof e.message != "undefined" && e.message.indexOf('createGadgetFromIframe') >=0 ) {
+              message=JSON.parse(e.message)    ;
+          }
+          if(message!=null){
+              console.log(message);            
+              angular.element( document.querySelector( '#dialogCreateGadget' ) ).scope().addGadgetFromIframe(message.createGadgetFromIframe.data.type,message.createGadgetFromIframe.data.id,message.createGadgetFromIframe.data.identification);          
+          }    
+      }); 
+          // ]]>  
+  </script>
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <link rel="stylesheet" href="styles/vendor.css">
+
+  <link rel="stylesheet" href="gridster.css">
+
+  <link rel="stylesheet" href="styles/app.css">
+</head>
+<body class="layout-column" ng-cloak>
+
+<dashboard editmode="true" iframe="false" selectedpage="0" id="1089e42d-34d0-43a9-911d-304a9e74ba01" public="false" class="flex layout-column"></dashboard>
+
+
+<script src="scripts/vendor.js"></script>
+<!-- angular material css override -->
+<link rel="stylesheet" href="./controlpanel/resources/dashboard/app/resources/angular-override.css"> 
+<!-- Angular Material Fileinput -->
+<link rel="stylesheet" href="./app/resources/lf-ng-md-file-input.min.css">
+<script src="./app/resources/lf-ng-md-file-input.min.js"></script>
+
+<script src="gridster.js"></script>
+
+<script src="scripts/app.js"></script>
+
+<!-- Mocano only in edit -->
+<script >	
+  var require = { paths: { 'vs': '/controlpanel/static/vendor/vs' } };
+</script>
+
+<script src="/controlpanel/static/vendor/vs/loader.js"></script>
+
+<script src="/controlpanel/static/vendor/vs/editor/editor.main.nls.js"></script>
+
+<script src="/controlpanel/static/vendor/vs/editor/editor.main.js"></script>
+<!-- End Monaco Require -->
+
+<script>
+  
+  function getURLParameters()
+ 	{	    	 
+ 	    var sPageURL = window.location.search.substring(1);	
+ 	    var sURLVariables = sPageURL.split('&');	
+ 	    var urlParametersMap={};
+ 	    for (var i = 0; i < sURLVariables.length; i++)	
+ 	    {
+ 	    	if(sURLVariables[i].length>0){
+ 	       		var sParameterName = sURLVariables[i].split('=');
+ 	       		urlParametersMap[sParameterName[0]] = sParameterName[1];
+ 	    	}
+ 	    } 	   
+ 	    return urlParametersMap;
+ 	    }
+
+     
+</script>
+</body>
+</html>

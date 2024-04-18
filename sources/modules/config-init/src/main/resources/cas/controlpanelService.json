@@ -1,0 +1,46 @@
+{
+	"_id": 18000,
+    "_class": "org.apereo.cas.services.RegexRegisteredService",
+    "serviceId": "^(http|https)://${SERVER_NAME}/controlpanel.*",
+    "name": "onesait Platform Control Panel",
+    "description": "Controlpanel Service",
+    "proxyPolicy": {
+        "_class": "org.apereo.cas.services.RefuseRegisteredServiceProxyPolicy"
+    },
+    "evaluationOrder": 1,
+    "usernameAttributeProvider": {
+        "_class": "org.apereo.cas.services.DefaultRegisteredServiceUsernameProvider",
+        "canonicalizationMode": "NONE",
+        "encryptUsername": false
+    },
+    "logoutType": "BACK_CHANNEL",
+    "requiredHandlers": [],
+    "attributeReleasePolicy": {
+        "_class": "org.apereo.cas.services.ReturnAllAttributeReleasePolicy",
+        "allowedAttributes": [],
+        "principalAttributesRepository": {
+            "_class": "org.apereo.cas.authentication.principal.DefaultPrincipalAttributesRepository",
+            "expiration": 2,
+            "timeUnit": "HOURS"
+        },
+        "authorizedToReleaseCredentialPassword": false,
+        "authorizedToReleaseProxyGrantingTicket": false,
+        "excludeDefaultAttributes": false
+    },
+    "multifactorPolicy": {
+        "_class": "org.apereo.cas.services.DefaultRegisteredServiceMultifactorPolicy",
+        "multifactorAuthenticationProviders": [],
+        "failureMode": "CLOSED",
+        "bypassEnabled": false
+    },
+    "accessStrategy": {
+        "_class": "org.apereo.cas.services.DefaultRegisteredServiceAccessStrategy",
+        "enabled": true,
+        "ssoEnabled": true,
+        "requireAllAttributes": true,
+        "requiredAttributes": {},
+        "rejectedAttributes": {},
+        "caseInsensitive": false
+    },
+    "properties": {}
+}

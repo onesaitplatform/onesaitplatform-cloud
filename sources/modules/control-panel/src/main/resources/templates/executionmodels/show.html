@@ -1,0 +1,223 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:dt="http://www.thymeleaf.org/dandelion/datatables" th:with="lang=${#locale.language}" th:lang="${lang}">
+
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"/>
+	    <meta name="description" content="Gadget list template"/>
+		<meta name="keywords" content="sofia2,smart,cities,platform,Indra"/>
+		<meta name="author" content="Indra Sistemas, S.A."/>
+		
+		
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-datetimepicker/bootstrap-datetimepicker.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.css}"/>	
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+		
+		<!-- PLUGINS STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
+		
+		<style>
+		#editor_holder h3 > span{
+		    font-size: 16px;
+    		font-weight: 500;
+		}
+		
+		.button_admin{
+			font-size: 13px;
+		    line-height: 1.5;
+		    padding: 7px;
+		}
+	.btn_filters {
+	    outline: none !important;
+	    text-transform: uppercase;
+	     padding: 0px 0px; 
+	    font-size: 11px;
+	  } 
+	  .btn_table {
+	    outline: none !important;
+	    text-transform: uppercase;
+	     padding: 8px 12px; 
+	    font-size: 14px !important;
+	  } 
+		</style>
+		
+	</head>	
+	
+	<!-- page-sidebar-closed to start page with collapsed menu -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+	
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+		
+		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"> </div>		
+			
+		<!-- BEGIN SIDEBAR -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+		
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+			
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+				
+				<!-- BEGIN PAGE HEADER-->
+				
+				<!-- BEGIN PAGE BAR AND BREADCRUM -->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/models/list}"> <span th:text="#{executionmodels.breadcrumb.list}">Models</span></a><i class="fa fa-angle-right"></i></li>
+						<li><span th:text="#{executionmodels.template.show}">RUN</span></li>						
+					</ul>						
+				</div>
+				<!-- END PAGE BAR -->
+				
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{model.run}">RUN</span></h1>
+				<!-- END PAGE TITLE-->		
+				
+				<!-- MAIN ROW -->			
+				<div class="row">
+					<div class="row">
+							</div>
+							<div class="row">
+								<div class="col-md-12">	
+									<div class="portlet light container">
+										<div class="portlet-title tabbable-line">
+											<div class="caption"></div>
+											
+											<div class="tools hide">
+												<a href="" class="collapse" data-original-title="" title=""> </a>
+												<a href="" class="fullscreen" data-original-title="" title=""> </a>
+											</div>
+											
+											<ul id="mytabs" class="nav nav-tabs pull-left">									
+												<li id="tab-form" class="active"><a href="#tab_form" data-toggle="tab" aria-expanded="true" th:text="#{executionmodels.template.show}+ ': ' + ${executionName}" >Model </a></li>
+											</ul>					
+										</div>			
+										<div class="portlet-body" style="display: block; height: auto;">
+											<div class="tab-content">
+												<!-- tab editor -->
+												<div class="tab-pane active" id="tab_form">
+													<div class="row"> 
+														<div class="col-md-12">
+															<div id="parameters" class="col-md-12"></div>
+														</div>
+														<div class="portlet-body" style="display: block; margin-top: -20px;">
+															<div class="row">
+																<div class="col-md-12 col-sm-12 col-xs-12 margin-bottom-20">
+																	<iframe id="iframe" src="" width="100%" frameborder="0" height="100%"></iframe>
+																</div>
+															</div>
+														</div>
+														
+														<hr></hr>							
+														<div class="form-actions">
+															<div class="pull-left">
+																<!-- CANCEL TO-DO: authentication and control -->
+																<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border"  name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/models/list} + '\');'"><i class="la la-arrow-left"></i> <span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+															</div>
+														</div>	
+													</div>
+												</div>
+											</div>
+											<input type="hidden" id="clon" value=""/>
+										</div>									
+									</div>
+								</div>	
+							</div>	
+						
+				</div>
+			</div> <!-- END CONTENT BODY -->
+		</div><!-- END CONTENT page-content-wrapper -->		
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+	
+	<!-- FOOTER-INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
+
+	<!-- CORE CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
+	
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
+	<script th:src="@{/static/vendor/jsoneditor/jsoneditor.js}"></script>
+	
+	<script th:src="@{/static/vendor/moment.js}"></script>	
+	<script th:src="@{/static/vendor/bootstrap-datetimepicker/bootstrap-datetimepicker.min.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js}"></script>
+	
+	<script th:inline="javascript">	
+	
+	// TEMPLATE SEARCH FORM.
+	
+	
+	
+	//<![CDATA[
+	function navigateUrl(url){  window.location.href = url;	}
+
+	var parameters= [[${parameters}]];
+	var currentLanguage = [[${lang}]];
+	var notebookName = [[${notebookName}]];
+	var currentFormat =  'MM/DD/YYYY HH:mm:ss'; 
+	
+	$( document ).ready(function() {
+		
+		loadParameters();
+	
+	});
+	
+	function loadParameters(){
+		
+		$.each(parameters, function(i, param){
+		
+			$("#parameters").append('<div class="col-md-3" id="div_' + param.param + '"></div>');
+			$("#div_" + param.param).append('<label class="control-label">' + param.param + '</label><span class="required"> *</span>');
+			$("#div_" + param.param).append('<input name="string[]" type="text" disabled="disabled" value="' + param.value + '" id="string_'+ param.value +'" class="form-control"/>');
+			
+		});
+		
+		$("#iframe").attr("src",[[${url}]]);
+		
+	}
+	
+	//]]>
+	</script>
+	
+</body>
+</html> 
+
+  

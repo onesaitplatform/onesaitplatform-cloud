@@ -1,0 +1,26 @@
+{
+    "properties": {
+        "_class": {
+            "type": "string"
+        },
+        "json": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "ticketId": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "type": {
+            "type": "string"
+        },
+        "expireAt": {
+            "type": "number"
+        }
+    },
+    "type": "object",
+    "description": "Info cas_ticket",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "cas_ticket",
+    "additionalProperties": true
+}

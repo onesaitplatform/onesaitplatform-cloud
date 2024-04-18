@@ -1,0 +1,13 @@
+KafkaServer{
+   authentication.PlainLoginModule required
+   username="admin"
+   password="admin-secret"
+   url="http://localhost:18000/controlpanel/api-ops/validate/";
+};
+
+//Zookeper config
+Client {
+   authentication.PlainLoginModule required
+   username="admin"
+   password="admin-secret";
+};

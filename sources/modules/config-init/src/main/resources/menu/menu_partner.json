@@ -1,0 +1,110 @@
+{
+	"menu": "onesait Platform",
+	"rol": "ROLE_PARTNER",
+	"noSession": "/console/login",
+	"navigation": [
+
+		
+		{
+			"title": {
+				"EN": "DEVELOPMENT",
+				"ES": "DESARROLLO",
+				"FR": "DÉVELOPPEMENT"
+			},
+			"icon": "icon-development",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "My Applications",
+						"ES": "Mis Aplicaciones",
+						"FR": "Mes Applications"
+					},
+					"icon": "",
+					"url": "/controlpanel/projects/list"
+				},
+				{
+					"title": {
+						"EN": "My Entities",
+						"ES": "Mis Entidades",
+						"FR": "Mes Entités"
+					},
+					"icon": "",
+					"url": "/controlpanel/ontologies/list"
+				}
+			]
+		},
+
+		{
+			"title": {
+				"EN": "VISUALIZATION & GIS",
+				"ES": "VISUALIZATION & GIS",
+				"FR": "VISUALISATION & SIG"
+			},
+			"icon": "icon-visualization",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "My Dashboards",
+						"ES": "Mis Dashboards",
+						"FR": "Mes Tableaux de Bord"
+					},
+					"icon": "",
+					"url": "/controlpanel/dashboards/list"
+				}
+			]
+		},
+
+		{
+			"title": {
+				"EN": "DEV TOOLS",
+				"ES": "HERR. DESARROLLO",
+				"FR": "OUTILS DE DÉVELOPPEMENT"
+			},
+			"icon": "icon-dev-tools",
+			"url": "",
+			"submenu": [			
+				{
+					"title": {
+						"EN": "My Files",
+						"ES": "Mis Ficheros",
+						"FR": "Mes fichiers"
+					},
+					"icon": "",
+					"url": "/controlpanel/files/list"
+				}
+			]
+		},
+
+		{
+			"title": {
+				"EN": "TOOLS",
+				"ES": "HERRAMIENTAS",
+				"FR": "OUTILS"
+			},
+			"icon": "icon-tools",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "Query Tool",
+						"ES": "Herramienta de Consultas",
+						"FR": "Éditeur de Requêtes"
+					},
+					"icon": "",
+					"url": "/controlpanel/querytool/show"
+				},
+				{
+					"title": {
+						"EN": "Assets Market",
+						"ES": "Market de Assets",
+						"FR": "Marché des Actifs"
+					},
+					"icon": "",
+					"url": "/controlpanel/bundlerepository/list"
+				}
+			]
+		}
+	]
+}

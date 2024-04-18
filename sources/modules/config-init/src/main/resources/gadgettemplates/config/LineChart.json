@@ -1,0 +1,328 @@
+{
+    "metainf": {
+        "category": "Predefined",
+        "order": -98
+    },
+    "gform": [
+        {
+            "id": 8,
+            "type": "section",
+            "elements": [
+                {
+                    "id": 1,
+                    "type": "input-text",
+                    "name": "title",
+                    "default": " ",
+                    "title": "Title"
+                },
+                {
+                    "id": 1,
+                    "type": "input-text",
+                    "name": "subtitle",
+                    "default": "",
+                    "title": "Subtitle"
+                },
+                {
+                    "id": 3,
+                    "type": "selector",
+                    "name": "legendShow",
+                    "options": [
+                        {
+                            "value": "ON",
+                            "text": ""
+                        },
+                        {
+                            "value": "OFF",
+                            "text": ""
+                        }
+                    ],
+                    "title": "Legend",
+                    "default": "ON"
+                },
+                {
+                    "id": 3,
+                    "type": "selector",
+                    "name": "toolbox",
+                    "options": [
+                        {
+                            "value": "ON",
+                            "text": ""
+                        },
+                        {
+                            "value": "OFF",
+                            "text": ""
+                        }
+                    ],
+                    "title": "ToolBox",
+                    "default": "ON"
+                },
+                {
+                    "id": 3,
+                    "type": "selector",
+                    "name": "theme",
+                    "options": [
+                        {
+                            "value": "light",
+                            "text": "Light"
+                        },
+                        {
+                            "value": "dark",
+                            "text": "Dark"
+                        },
+                        {
+                            "value": "vintage",
+                            "text": "Vintage"
+                        },
+                        {
+                            "value": "none",
+                            "text": "None"
+                        }
+                    ],
+                    "title": "Chart Theme",
+                    "default": "light"
+                }
+            ],
+            "name": "main",
+            "title": "Main"
+        },
+        {
+            "id": 8,
+            "type": "section",
+            "elements": [
+                {
+                    "id": 8,
+                    "type": "section",
+                    "elements": [
+                        {
+                            "id": 1,
+                            "type": "input-text",
+                            "name": "xName",
+                            "default": " ",
+                            "title": "X Axis Label"
+                        },
+                        {
+                            "id": 6,
+                            "type": "ds-field",
+                            "name": "xAxis",
+                            "title": "X Axis"
+                        },
+                        {
+                            "id": 3,
+                            "type": "selector",
+                            "name": "format",
+                            "options": [
+                                {
+                                    "value": "mm/dd/yy",
+                                    "text": "MM/DD/YY"
+                                },
+                                {
+                                    "value": "dd/mm/yy",
+                                    "text": "DD/MM/YY"
+                                },
+                                {
+                                    "value": "yy/mm/dd",
+                                    "text": "YY/MM/DD"
+                                }
+                            ],
+                            "title": "Date Format"
+                        }
+                    ],
+                    "name": "xAxisConfig",
+                    "title": "X Axis Config"
+                },
+                {
+                    "id": 9,
+                    "type": "section-array",
+                    "elements": [
+                        {
+                            "id": 10,
+                            "type": "autogenerate-id",
+                            "name": "id",
+                            "prefix": "",
+                            "title": "ID"
+                        },
+                        {
+                            "id": 1,
+                            "type": "input-text",
+                            "name": "yName",
+                            "default": "",
+                            "title": "Y Axis Label"
+                        },
+                        {
+                            "id": 3,
+                            "type": "selector",
+                            "name": "position",
+                            "options": [
+                                {
+                                    "value": "left",
+                                    "text": "Left"
+                                },
+                                {
+                                    "value": "right",
+                                    "text": "Right"
+                                }
+                            ],
+                            "title": "Position",
+                            "default": "left"
+                        },
+                        {
+                            "id": 2,
+                            "type": "input-number",
+                            "name": "max",
+                            "default": "",
+                            "title": "Max"
+                        },
+                        {
+                            "id": 2,
+                            "type": "input-number",
+                            "name": "min",
+                            "default": "",
+                            "title": "Min"
+                        }
+                    ],
+                    "name": "yAxisConfig",
+                    "title": "Y Axis Config"
+                }
+            ],
+            "name": "axis",
+            "title": "Axis "
+        },
+        {
+            "id": 9,
+            "type": "section-array",
+            "elements": [
+                {
+                    "id": 1,
+                    "type": "input-text",
+                    "name": "serieName",
+                    "default": "",
+                    "title": "Serie Name"
+                },
+                {
+                    "id": 6,
+                    "type": "ds-field",
+                    "name": "yAxis",
+                    "title": "Serie Field"
+                },
+                {
+                    "id": 11,
+                    "type": "model-selector",
+                    "name": "idAxis",
+                    "title": "Y Axis",
+                    "path": "axis.yAxisConfig.*.id"
+                },
+                {
+                    "id": 2,
+                    "type": "input-number",
+                    "name": "pointRadius",
+                    "default": "10",
+                    "title": "Point Radius",
+                    "min": "0"
+                },
+                {
+                    "id": 3,
+                    "type": "selector",
+                    "name": "type",
+                    "options": [
+                        {
+                            "value": "line",
+                            "text": "Line"
+                        },
+                        {
+                            "value": "bar",
+                            "text": "Bar"
+                        }
+                    ],
+                    "title": "Type",
+                    "default": "line"
+                },
+                {
+                    "id": 5,
+                    "type": "color-picker",
+                    "name": "color",
+                    "default": null,
+                    "title": "Line Color"
+                },
+                {
+                    "id": 4,
+                    "type": "checkbox",
+                    "name": "fullSerie",
+                    "default": false,
+                    "title": "Full Serie"
+                },
+                {
+                    "id": 5,
+                    "type": "color-picker",
+                    "name": "shadowColor",
+                    "default": null,
+                    "title": "Shadow Color"
+                },
+                {
+                    "id": 4,
+                    "type": "checkbox",
+                    "name": "steppedLine",
+                    "default": false,
+                    "title": "Stepped Line"
+                },
+                {
+                    "id": 4,
+                    "type": "checkbox",
+                    "name": "markPoint",
+                    "default": false,
+                    "title": "Max & Min Points"
+                },
+                {
+                    "id": 4,
+                    "type": "checkbox",
+                    "name": "markLine",
+                    "default": false,
+                    "title": "Average Line"
+                }
+            ],
+            "name": "series",
+            "title": "Data"
+        },
+        {
+            "id": 8,
+            "type": "section",
+            "elements": [
+                {
+                    "id": 3,
+                    "type": "selector",
+                    "name": "showzoom",
+                    "options": [
+                        {
+                            "value": "on",
+                            "text": "ON"
+                        },
+                        {
+                            "value": "off",
+                            "text": "OFF"
+                        }
+                    ],
+                    "title": "Show Zoom",
+                    "default": "off"
+                },
+                {
+                    "id": 3,
+                    "type": "selector",
+                    "name": "zoomtype",
+                    "options": [
+                        {
+                            "value": "inside",
+                            "text": "Inside"
+                        },
+                        {
+                            "value": "slider",
+                            "text": "Slider"
+                        }
+                    ],
+                    "title": "Zoom Type",
+                    "default": "inside"
+                }
+            ],
+            "name": "zoom",
+            "title": "Zoom"
+        }
+    ]
+}

@@ -1,0 +1,114 @@
+##--spring.config.name=apimanager
+##security.require_ssl: true
+      
+spring.application.name : router-core
+     
+onesaitplatform: #Config onesaitplatform specific
+   iotbroker.plugable:
+      gateway:
+         kafka:
+            enable: true
+            brokers: none
+            host: localhost
+            port: 9092
+            partitions: 1
+            replication: 1
+            prefix: ONTOLOGY_
+            group: ontologyGroup
+            topic.pattern: ONTOLOGY.*
+            router.topic: router
+            consumer.consumersCount : 10
+            consumer.seekTo : beginning 
+            consumer.group : kafkaGroup
+            consumer.maxPollRecords : 5000
+   database.mongodb:
+      database: onesaitplatform_rtdb
+      authenticationDatabase:  #admin
+      servers: realtimedb:27017
+      autoConnectRetry: true
+      socketTimeout: 5000
+      maxAutoConnectRetryTime: 5000
+      maxWaitTime: 5000
+      useAuth: false
+      username: #username
+      password: #password
+      readFromSecondaries: false
+      queries.executionTimeout: 5000
+      queries.defaultLimit: 1000
+      queries.maxConcurrentQueries: 3
+      writeConcern: UNACKNOWLEDGED
+      tools.mongoexport.path: mongoexport
+      tools.mongoimport.path: mongoimport
+      tools.mongoshell.path: mongo
+      tools.useSequentialOps: true
+      quasar.maxHttpConnections: 10
+      quasar.maxHttpConnectionsPerRoute: 10
+      quasar.connectionTimeout.millis: 10000
+      quasar.connector.http.endpoint: http://localhost:18200/query/fs/
+   router.avoidsslverification: true
+   transaction.check.orphan.timeout.seconds: 1000
+   urls:
+      iotbroker.advice: http://localhost:19000/iot-broker/advice
+#Security Config
+security:
+    user:
+       name: admin
+       password: admin
+   
+spring: ## General Config  
+   application.name: sofia2-router
+   boot.admin: #Spring Boot Admin Config    
+      url: http://localhost:18090
+      username: operations
+      password: changeIt!
+      client.metadata.user.name: ${spring.boot.admin.username}
+      client.metadata.user.password: $spring.boot.admin.password} 
+   datasource: ## JPA Config
+      url: jdbc:mysql://localhost:3306/onesaitplatform_config?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false
+      username: root
+      password: changeIt!
+      driver-class-name: com.mysql.jdbc.Driver
+      # Validate the connection before borrowing it from the pool.
+      test-on-borrow: true
+      validation-query: SELECT 1
+      validationQueryTimeout: 5
+      test-while-idle: true       
+      # Number of ms to wait before throwing an exception if no connection is available.
+      max-wait: 10000
+      # Maximum number of active connections that can be allocated from this pool at the same time.
+      max-active: 30
+      initial-size: 10
+      max-idle: 30
+      min-idle: 10
+   jpa:
+      # The SQL dialect makes Hibernate generate better SQL for the chosen database
+      properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+      # Hibernate ddl auto (create, create-drop, validate, update)
+      hibernate.ddl-auto: validate 
+      properties.hibernate.enable_lazy_load_no_trans: true
+   mail: ##Mail configuration
+      host: smtp.gmail.com
+      username: sofia2oncloud@gmail.com
+      password: Indra2013!
+      port: 587
+      properties.mail.smtp.auth: true
+      properties.mail.smtp.starttls.enable: true
+   jmx:
+    enabled: true
+    
+   # Embedded ActiveMQ Configuration Example
+   activemq:
+      broker-url: vm://localhost
+
+        
+## LOGGING CONF
+logging:
+   level:
+      org.springframework: INFO
+      de.codecentric: DEBUG
+      com.example.boot.thymeleaf: INFO
+      com.indra: DEBUG
+      org.hibernate: INFO
+      
+ 
+ 

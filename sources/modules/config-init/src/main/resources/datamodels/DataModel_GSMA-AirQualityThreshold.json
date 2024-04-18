@@ -1,0 +1,48 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "DataModel AirQualityThreshold Schema",
+    "type": "object",
+    "required": [
+        "id",
+        "type",
+        "category",
+        "frequency",
+        "indexClass",
+        "maxConcentration",
+        "minConcentration",
+        "pollutant",
+        "source"
+    ],
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "type": {
+            "type": "string"
+        },
+        "category": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "frequency": {
+            "type": "string"
+        },
+        "indexClass": {
+            "type": "string"
+        },
+        "maxConcentration": {
+            "type": "integer"
+        },
+        "minConcentration": {
+            "type": "string"
+        },
+        "pollutant": {
+            "type": "string"
+        },
+        "source": {
+            "type": "string"
+        }
+    }
+}

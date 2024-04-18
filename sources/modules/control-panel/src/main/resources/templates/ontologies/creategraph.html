@@ -1,0 +1,522 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org"  th:with="lang=${#locale.language}" th:lang="${lang}">
+	<head>
+		<meta name="_csrf" th:content="${_csrf.token}"/>
+		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+	
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/> 
+		<title th:text="#{name.app}"/>
+
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+
+		<!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND BOOSTRAP-TIMEPICKER, TAGSINPUT, JSONEDITOR  -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}"/>
+		
+		<!-- PLUGINS STYLE SHEETS: BOOSTRAP-TIMEPICKER AND CODEMIRROR -->
+		<link rel="stylesheet" type="text/css" media="all" href="/controlpanel/static/vendor/datatable/datatables.bootstrap.css" />	
+		<link rel="stylesheet" type="text/css" media="all" href="/controlpanel/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css" />
+		<link rel="stylesheet" type="text/css" media="all" href="/controlpanel/static/vendor/codemirror/lib/codemirror.css" />
+		<link rel="stylesheet" type="text/css" media="all" href="/controlpanel/static/vendor/codemirror/theme/neat.css" />
+		<link rel="stylesheet" type="text/css" media="all" href="/controlpanel/static/vendor/codemirror/theme/ambiance.css" />
+		<link rel="stylesheet" type="text/css" media="all" href="/controlpanel/static/vendor/codemirror/theme/material.css" />
+		<link rel="stylesheet" type="text/css" media="all" href="/controlpanel/static/vendor/codemirror/theme/neo.css" />
+			
+	</head>	
+	
+	<style>
+		pre {padding: 32px; margin: 0px; background-color: #f0f4f7; } 
+		.string { color: green; } .number { color: darkorange; } .boolean { color: blue; } 	.null { color: magenta; } .key { color: darkslateblue; }
+	</style>
+	
+	<!-- Funciones AJAX -->
+	<script>
+			/* <![CDATA[ */
+		function syntaxHighlight(json) {
+			json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+			return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+				var cls = 'number';
+				if (/^"/.test(match)) {
+					if (/:$/.test(match)) {
+						cls = 'key';
+					} else {
+						cls = 'string';
+					}
+				} else if (/true|false/.test(match)) {
+					cls = 'boolean';
+				} else if (/null/.test(match)) {
+					cls = 'null';
+				}
+				return '<span class="' + cls + '">' + match + '</span>';
+			});
+		};
+	
+		/* ]]> */
+	</script>
+
+	<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed"> 
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+
+		<!-- HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"> </div>
+
+		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+			
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+			
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+			
+				<!-- BEGIN PAGE BAR AND BREADCRUM-->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/ontologies/list}">
+							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'"  th:text="#{ontology.template.list}">Manage Ontologies</span>
+							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'"  th:text="#{ontology.breadcrumb.list}">My Ontologies</span>
+							</a><i class="fa fa-angle-right"></i>
+						</li>
+						<li><a th:href="@{/ontologies/create}">
+							<span th:text="#{ontology.breadcrumb.create}">Show Ontology</span></a><i class="fa fa-angle-right"></i>
+							<span th:text="#{nebula.graph.creation}">Graph Ontology</span>
+						</li>
+					</ul>						
+				</div>
+				<!-- END PAGE BAR -->
+				
+				
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{name.app}"> </span></h1>
+				<!-- END PAGE TITLE-->			
+
+				
+				
+				<form role="form" id="ontology_create_form" th:object="${ontology}" method="post" class="form">
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+				
+					<!-- FORM ACTIONS FOR INSERT-->
+					<input type="hidden" name="action" th:value="@{/ontologies/createwizard}"/>
+
+
+					<div id="header">
+						<div class="row pageWizardHeader">
+							<div class="wizardContainer col-md-6 col-sm-6 col-xs-12">
+								<div id="tab-datos" class="wizard-option active">
+									<div class="mt-checkbox-list"> 
+										<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body">
+										<div class="inline font-xs">
+											<a href="#tab_1" data-toggle="tab" aria-expanded="false">											
+												<!-- FORM TITLE -->
+												<span class="caption-subject " th:text="#{gen.generalInformation}"> General Information</span><span class="required"> *</span>
+											</a>
+										</div>
+											<input id="stepOneCheckbox" class="form-control no-remove" type="checkbox" disabled="disabled"/>
+											<span></span>
+										</label>
+	    						  	</div>
+
+								</div>
+								<div id="tab-table-schema" class="wizard-option">
+									<div class="mt-checkbox-list"> 
+										<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body">
+										<div class="inline font-xs">
+											<a href="#tab_table_schema" data-toggle="tab" aria-expanded="true" class="disabled">
+												<span class="caption-subject " th:text="#{nebula.graph.vertices.edges}">Vertices & Edges</span><span class="required"> *</span>
+											</a>
+										</div>
+											<input id="stepTwoCheckbox" class="form-control no-remove" type="checkbox" disabled="disabled"/>
+											<span></span>
+										</label>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-6 col-sm-6 col-xs-12">
+								<div class="pull-right">								
+									<!-- CANCEL -->											
+									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrlBack()'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+
+									<!-- RESET -->
+									<button id="resetBtnCreate" type="button" class="btn btn-primary-cancel" onclick="window.location.reload()" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
+
+                                    										
+									<!-- CONTINUE -->
+									<button id="continueBtn" type="button" class="btn btn-primary btn-primary-save" name="continue"  onclick="OntologyCreateGraphController.wizardContinue()" th:value="#{gen.continueBtn}" disabled="disabled" ><span th:text="#{gen.continueBtn}"> Continue</span></button>
+									
+									<!-- CREATE -->
+									<button id="createWizardBtn" type="submit" class="btn btn-primary btn-primary-save hide" name="create" disabled="disabled"><span th:text="#{gen.createBtn}"> New</span></button>								
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- MAIN ROW -->
+					<div class="row equal flex-container">
+						<div class="tab-content col-md-12 padding-left-48">
+							<div class="tab-pane fade in active" id="tab_1">
+							<!-- ONTOLOGY FORM -->
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{gen.generalInformation}">General Information</span>
+									</div>
+									<div class="col-md-3 col-sm-3 col-xs-3">
+										<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-3 col-sm-6 col-xs-12">
+										<div class="form-group ">
+											<label class="control-label" th:text="#{ontology.identification}">Name</label><span class="required"> *</span>
+											<input th:tabindex="1" id="identification" type="text" th:required="true"  maxlength="50" minlength="5" class="form-control no-remove"  th:placeholder="#{ontology.name}"/>
+											<span id="identificationerror" class="help-block font-red hide" th:text="#{ontology.name.error}"><i class="la la-warning"></i></span>
+											<span id="identificationInfo" class="help-block" th:text="#{ontology.description.min}"><i class="la la-warning"></i></span>
+										</div>
+									</div>
+									<div class="col-md-3 col-sm-6 col-xs-12">
+										<div class="form-group ">
+											<label class="control-label" th:text="#{nebula.graph.partition.number}">Partitions</label><span class="required"> *</span>
+											<input th:tabindex="1" id="partitions" type="number" th:required="true"  max="20"  min="1" step="1" class="form-control no-remove" value="3"/>
+										</div>
+									</div>
+									<div class="col-md-3 col-sm-6 col-xs-12">
+										<div class="form-group ">
+											<label class="control-label" th:text="#{nebula.graph.replica.factor}">Replicas</label><span class="required"> *</span>
+											<input th:tabindex="1" id="replicas" type="number" th:required="true"  max="1"  min="1" step="1" class="form-control no-remove" value="1" />
+										</div>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-6 col-xs-12">
+										<div class="form-group">
+											<label th:text="#{ontology.metainf}" class="control-label" data-trigger="hover" data-placement="top" data-container="body" th:attr=" data-content=#{ontology.metainf.help},data-title=#{ontology.metainf}"> Meta-inf</label><span class="required"> *</span>
+											<input data-msg="Please fill this field" th:tabindex="2" id="metainf" name="metainf" data-role="tagsinput" class="form-control tagsinput" type="text" data-minlength="2" pattern=".{2,}" min="2" th:required="true"></input>																
+											<span id="metainferror" class="help-block font-red hide" th:text="#{gen.requiredField}"><i class="la la-warning"></i> Required field</span>
+											<span id="metainfInfo" class="help-block" th:text="#{ontology.description.min}"><i class="la la-warning"></i></span>
+										</div>															
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-6 col-sm-6 col-xs-12">
+										<div class="form-group">
+											<label class="control-label" th:text="#{ontology.description}">Comments </label><span class="required"> *</span>
+											<textarea th:tabindex="3" class="element textarea small form-control" id="description" name="description" maxlength="512" th:required="true" style="resize:vertical; min-height:10%" cols="" rows=""></textarea>
+											<span id="descriptionInfo" class="help-block" th:text="#{ontology.description.min}"><i class="la la-warning"></i></span>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="tab-pane" id="tab_table_schema">
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{nebula.graph.vertices}">Vertices</span>
+									</div>
+									<div class="col-md-3 col-sm-3 col-xs-3">
+										<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
+									</div>
+								</div>
+								<div id="vertexCreationForm">
+
+									<div class="row main pageCreateHeader no-margin-left padding-left-10 ">
+										<label class="no-padding-bottom" th:text=="'+'"></label>
+										<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{nebula.graph.vertices.fields.add}"></label>
+									</div>
+									
+									<div class="row main borderPanel no-margin-left">
+										<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(100vh / 2px);">
+										
+											<!-- Field: Vertex Name Column--> 
+											<div class="form-group"> 
+												<label class="control-label" th:text="#{nebula.graph.vertices.name}">Vertex Name</label><span class="required"> *</span>
+												<input id="vertexName" type="text" name="vertexName" maxlength="20" class="form-control " th:placeholder="#{nebula.graph.vertices.name}"/>
+											</div>
+	
+											<!-- Field: Name Column--> 
+											<div class="form-group"> 
+												<label class="control-label" th:text="#{nebula.graph.vertices.attribute}">V Att Name</label><span class="required"> *</span>
+												<input id="vertexFieldName" type="text" name="vertexFieldName" maxlength="20" class="form-control " th:placeholder="#{nebula.graph.vertices.attribute}"/>
+											</div>
+	
+											<!-- Field: Type Column-->
+											<div class="form-group">
+												<label class="control-label" th:text="#{nebula.graph.vertices.attribute.type}">V att Type</label><span class="required"> *</span>
+												<select id="vertexFieldType" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;">
+													<option value="" th:text="#{ontology.virtual.type.combo}" selected="selected" disabled="disabled" style="display:none;"> Select Type...</option>	
+													<option th:each="type :${fieldTypes}" th:value="${type}" th:id="${type}" th:text="${type}" ></option>													
+												</select>	
+											</div>
+											
+											<!-- Field: AddField Button -->
+											<div class="form-group pull-right">															
+												<button type="button" class="btn btn-primary btn-primary-save" id="button2" onclick="OntologyCreateGraphController.addFieldRow('vertex')"><span th:text="#{nebula.graph.vertices.add}">Add Field</span></button>
+											</div>
+
+										</div>
+										<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(100vh / 2px);">
+											<!-- FIELD TABLE -->
+											<div class="form-group" style="margin-bottom: 0px">
+												<div id="template_schema" class="margin-bottom-20 ">
+													<table class="table no-margin-bottom" id="field_properties_vertex" data-loaded="false">
+														<thead class="table-header-background">
+															<tr class="cabecera-tabla" role="row">
+																<th class="titulo-columnas text-center" th:text="#{nebula.graph.vertices.name}">Name</th>
+																<th class="titulo-columnas text-center" th:text="#{nebula.graph.vertices.attribute}">Name</th>
+																<th class="titulo-columnas text-center"	th:text="#{nebula.graph.vertices.attribute.type}">Type</th>
+																<th class="titulo-columnas text-center" th:text="#{gen.options}">Options</th>
+															</tr>
+														</thead>
+														<tbody style="border-bottom: 1px solid #ddd;">
+															<!-- filled in javascript when add field-->
+														</tbody>
+													</table>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="row main">
+									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
+										<span th:text="#{nebula.graph.edges}">Edges</span>
+									</div>
+								</div>
+								<div id="edgeCreationForm">
+
+									<div class="row main pageCreateHeader no-margin-left padding-left-10 ">
+										<label class="no-padding-bottom" th:text=="'+'"></label>
+										<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{nebula.graph.edges.fields.add}"></label>
+									</div>
+									
+									<div class="row main borderPanel no-margin-left">
+										<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(100vh / 2px);">
+										
+											<!-- Field: Edge Name Column--> 
+											<div class="form-group"> 
+												<label class="control-label" th:text="#{nebula.graph.edges.name}">Edge Name</label><span class="required"> *</span>
+												<input id="edgeName" type="text" name="edgeName" maxlength="20" class="form-control " th:placeholder="#{nebula.graph.edges.name}"/>
+											</div>
+											
+											<!-- Field: Name Column--> 
+											<div class="form-group"> 
+												<label class="control-label" th:text="#{nebula.graph.edges.attribute}">E Att Name</label><span class="required"> *</span>
+												<input id="edgeFieldName" type="text" name="edgeFieldName" maxlength="20" class="form-control " th:placeholder="#{nebula.graph.edges.attribute}"/>
+											</div>
+	
+											<!-- Field: Type Column-->
+											<div class="form-group">
+												<label class="control-label" th:text="#{nebula.graph.edges.attribute.type}">Type</label><span class="required"> *</span>
+												<select id="edgeFieldType" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;">
+													<option value="" th:text="#{ontology.virtual.type.combo}" selected="selected" disabled="disabled" style="display:none;"> Select Type...</option>	
+													<option th:each="type :${fieldTypes}" th:value="${type}" th:id="${type}" th:text="${type}" ></option>													
+												</select>	
+											</div>
+													
+											<!-- Field: AddField Button -->
+											<div class="form-group pull-right">															
+												<button type="button" class="btn btn-primary btn-primary-save" id="button2" onclick="OntologyCreateGraphController.addFieldRow('edge')"><span th:text="#{nebula.graph.edges.add}">Add Field</span></button>
+											</div>
+
+										</div>
+										<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(100vh / 2px);">
+											<!-- FIELD TABLE -->
+											<div class="form-group" style="margin-bottom: 0px">
+												<div id="template_schema" class="margin-bottom-20 ">
+													<table class="table no-margin-bottom" id="field_properties_edge" data-loaded="false">
+														<thead class="table-header-background">
+															<tr class="cabecera-tabla" role="row">
+																<th class="titulo-columnas text-center" th:text="#{nebula.graph.edges.name}">Name</th>
+																<th class="titulo-columnas text-center" th:text="#{nebula.graph.edges.attribute}">Name</th>
+																<th class="titulo-columnas text-center"	th:text="#{nebula.graph.edges.attribute.type}">Type</th>
+																<th class="titulo-columnas text-center" th:text="#{gen.options}">Options</th>
+															</tr>
+														</thead>
+														<tbody style="border-bottom: 1px solid #ddd;">
+															<!-- filled in javascript when add field-->
+														</tbody>
+													</table>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div> <!--  TAB1 -->
+										
+						</div><!-- END PORTLET BASIC  -->
+							
+					</div><!-- END COL-12 -->
+									<!-- MODAL LD -->
+				<div th:include="fragments/ontology-create-ld-modal">
+				</div>
+				<!-- Modal -->
+				<div id="modal-created" data-backdrop="static" class="modal fade" role="dialog">
+					<div class="modal-dialog modal-sm">
+						<!-- Modal content-->
+						<div class="modal-content">
+							<div class="modal-header">
+								<button type="button" class="close" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} +'\');'" data-dismiss="modal"></button>
+								<h4 class="modal-title" th:text="#{json2ont.ontcreated}"></h4>
+							</div>
+							<div class="modal-body">
+						      	<h4 ><a target="_blank" th:text="#{ontology.after.create.api}" th:attr="onclick='javascript:navigateUrl(\'' + @{/apimanager/create} +'?id=\'+$(\'#identification\').val()'+');'">Create API</a></h4>
+						      	<h4 ><a target="_blank" th:text="#{ontology.after.create.device}" th:attr="onclick='javascript:navigateUrl(\'' + @{/devices/create} +'?id=\'+$(\'#identification\').val()'+');'">Create Device</a></h4>
+					      		<h4 ><a target="_blank" th:text="#{ontology.after.create.dashboard}" th:attr="onclick='javascript:navigateUrl(\'' + @{/dashboards/create} +'?id=\'+$(\'#identification\').val()'+');'">Create Dashboard</a></h4>
+					      		<h4 ><a target="_blank" th:text="#{ontology.after.create.gadget}" th:attr="onclick='javascript:navigateUrl(\'' + @{/gadgets/create} +'?id=\'+$(\'#identification\').val()'+');'">Create Gadget</a></h4>
+
+					      	</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-default" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'" data-dismiss="modal">Close</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+				</form>
+					
+			</div><!-- END CONTENT BODY -->
+		</div><!-- END CONTENT page-content-wrapper -->
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+
+	<!-- FOOTER INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+
+	<!-- CORE JS CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
+
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
+	<!-- LOADING DEFAULT DATES IF NEEDED -->
+	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}" type="text/javascript"></script>
+	
+	<script th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}" type="text/javascript"></script>
+    <script th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
+    <script th:src="@{/static/vendor/jquery-form/jquery.form.min.js}" type="text/javascript"></script>
+	<!-- LOADING DEFAULT LANG MESSAGES IF NEEDED -->
+	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}" type="text/javascript"></script>
+
+	<script th:src="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js}" type="text/javascript"></script>
+	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
+	
+	<!-- JSON EDITOR -->
+	<script th:src="@{/static/vendor/json/json2.min.js}"></script>
+	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>
+	
+	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
+	<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
+	<script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>
+	
+	<!-- SCHEMA GENERATOR -->
+	<script th:src="@{/static/vendor/schemagenerator/underscore.js}"></script>
+	<script th:src="@{/static/vendor/schemagenerator/backbone.js}"></script>
+	
+	<script th:src="@{/static/vendor/schemagenerator/Utility.js}"></script>
+	<script th:src="@{/static/vendor/schemagenerator/Schema.js}"></script>
+	<script th:src="@{/static/vendor/schemagenerator/Models.js}"></script>
+	<script th:src="@{/static/vendor/schemagenerator/StaticView.js}"></script>
+	<script th:src="@{/static/vendor/schemagenerator/StringView.js}"></script>
+	
+	
+	<!-- INPUTMASK -->
+	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
+
+	<!-- CODEMIRROR -->
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
+	<script th:src="@{/static/vendor/codemirror/lib/codemirror.js}"></script>
+	<script th:src="@{/static/vendor/codemirror/mode/javascript/javascript.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/mode/sql/sql.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/edit/closebrackets.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/comment/comment.js}" ></script>
+	<script th:src="@{/static/vendor/codemirror/addon/comment/continuecomment.js}" ></script>
+	
+
+	<!-- TEMPLATE CONTROLLER  -->	
+	<script th:src="@{/static/js/pages/ontologyGraphCreate.js}"></script>
+
+	<!-- MAIN INIT -->
+	<script  th:inline="javascript">
+	
+	function navigateUrl(url){  window.location.href = url;	}		
+	var currentLanguage = [[${lang}]];	
+	var ontologyCreateJson = { 	
+		"ontologies": [[@{/ontologies/list}]],
+		"createURL": [[@{/api/ontologies/graph}]],
+		"actionMode": null,
+		"close" : [[#{gen.closeBtn}]],		
+		"language" : currentLanguage,
+		"dataModelSelection" : [[#{ontology.virtual.selection}]],
+		"dataModels" : [[${dataModels}]],
+		"datamodel": [[#{ontology.datamodel}]],
+		"confirmBtn" : [[#{gen.confirmBtn}]],
+		"removeBtn" : [[#{gen.deleteBtn}]],
+		"addpropertyBtn" : [[#{ontology.addproperty}]],
+		"updateSchemaBtn" : [[#{ontology.updateschema}]],
+		"manual" : [[#{ontology.rest.operation.manual}]],
+		"validations" : {
+			"duplicates": [[#{ontology.valid.duplicates}]],
+			"tplschema": [[#{ontology.valid.tplschema}]],
+			"noschema": [[#{ontology.valid.noschema}]],
+			"authinsert": [[#{ontology.valid.authinsert}]],
+			"validform": [[#{ontology.validform}]],
+			"schemaprop": [[#{ontology.valid.schemaprop}]],
+			"schemanoprop": [[#{ontology.valid.schemanoprop}]],			
+			"nonode": [[#{ontology.valid.nonode}]],
+			"norequired": [[#{ontology.valid.norequired}]],
+			"noproperties": [[#{ontology.valid.noproperties}]],
+			"base": [[#{ontology.valid.base}]],
+			"authuser": [[#{ontology.valid.auths.user}]],
+			"datamodelchange" : [[#{ontology.confirm.datamodel}]],
+			"schema" : [[#{ontology.virtual.schema.error}]],
+			"datasource" : [[#{ontology.virtual.datasources.empty}]],
+			"jsonldformat": [[#{ontology.valid.jsonldformat}]]
+		}
+	};
+	
+	$("#stepOneCheckbox").click(function() { return false; });	
+	$("#stepTwoCheckbox").click(function() { return false; });	
+	var backUrl = [[@{/ontologies/create}]];
+	function navigateUrlBack(){  window.location.href = backUrl;	}
+	// LOAD DATA TO USE IN CREATE WIZARD CONTROLLER
+	// CREATE WIZARD CONTROLLER LOAD AND INIT ITSELF	
+	</script>	
+	
+</body>
+</html>

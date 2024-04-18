@@ -1,0 +1,10 @@
+kubernetes:
+   namespace: ${KUBERNETES_NAMESPACE}
+   servicename: ${KUBERNETES_SERVICENAME}
+  
+hazelcast.group.name: ${DATAGRID_IDENTIFIER}
+
+onesaitplatform:
+   datagrid.identifier: ${DATAGRID_IDENTIFIER}
+   datagrid.spi: kubernetes
+   management.registry: ${DATAGRID_MANAGER_URL}

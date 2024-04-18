@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.minsait.onesait.platform</groupId>
+		<artifactId>onesaitplatform-parent</artifactId>
+		<version>${revision}</version>
+		<relativePath>../../..</relativePath>
+	</parent>
+	<artifactId>onesaitplatform-router-digitaltwin</artifactId>
+	<packaging>jar</packaging>
+
+	<name>onesaitplatform-router-digitaltwin</name>
+	<description>onesaitplatform-router-digitaltwin</description>
+	
+	<properties>
+		<license.dir>${project.parent.basedir}</license.dir>
+	</properties>
+	
+	<dependencies>
+		
+		<dependency>
+			<groupId>com.minsait.onesait.platform</groupId>
+			<artifactId>onesaitplatform-router-services</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.minsait.onesait.platform</groupId>
+			<artifactId>onesaitplatform-config-services</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+				
+		<dependency>
+			<groupId>com.minsait.onesait.platform</groupId>
+			<artifactId>onesaitplatform-persistence-mongodb</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
+	</dependencies>
+	
+	<build>
+		<plugins>
+		  <!-- skip deployment -->	
+		  <plugin>
+		    <groupId>org.apache.maven.plugins</groupId>
+		    <artifactId>maven-deploy-plugin</artifactId>
+		    <version>2.7</version>
+		    <configuration>
+		        <skip>true</skip>
+		    </configuration>
+		  </plugin>	
+		</plugins>	
+	</build>	
+
+</project>

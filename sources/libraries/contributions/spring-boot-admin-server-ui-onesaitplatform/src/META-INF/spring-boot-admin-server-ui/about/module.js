@@ -1,0 +1,1 @@
+webpackJsonp([16],[function(t,o,u){(function(t){"use strict";var o=u(1),a=o.module("sba-about",["sba-core"]);t.sbaModules.push(a.name),a.config(["$stateProvider",function(t){t.state("about",{url:"/about",templateUrl:"about/about.html"})}]),a.run(["MainViews",function(t){t.register({title:"About",state:"about",order:200})}])}).call(o,function(){return this}())}]);

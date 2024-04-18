@@ -1,0 +1,55 @@
+#logging.level.org.hibernate.SQL: debug
+spring: ## General Config  
+   datasource: ## JPA Config
+      url: jdbc:mysql://localhost:3306/onesaitplatform_config?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false
+      username: root
+      password: changeIt!
+      # Number of ms to wait before throwing an exception if no connection is available.
+      max-wait: 10000
+      # Maximum number of active connections that can be allocated from this pool at the same time.
+      max-active: 30
+      initial-size: 10
+      max-idle: 30
+      min-idle: 10
+      test-while-idle: true
+      test-on-borrow: true
+   jpa:
+      # The SQL dialect makes Hibernate generate better SQL for the chosen database
+      properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+      # Hibernate ddl auto (create, create-drop, validate, update)
+      hibernate.ddl-auto: validate 
+
+## LOGGING CONF
+logging:
+   level:
+      org.springframework: INFO
+      com.example.boot.thymeleaf: INFO
+      com.indra: DEBUG
+      org.hibernate: INFO
+
+onesaitplatform: #Config onesaitplatform specific
+   docker:
+         tmp: /tmp/
+         rancher:
+             projectname: onesaitplatform
+             domain_name: frescos.northeurope.cloudapp.azure.com
+             image_tag: latest
+             mandatory_services:
+                 - configdb
+                 - configinit
+                 - quasar
+                 - realtimedb
+                 - controlpanelservice
+                 - schedulerdb
+                 - monitoringuiservice
+   flowengine:
+         port:
+            domain:
+               min: 28000
+               max: 28500
+            service:
+               min: 27000
+               max: 27500
+         home.base: /tmp/
+   restPlanner:
+         checkSSL: false

@@ -1,0 +1,708 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:dt="http://www.thymeleaf.org/dandelion/datatables" th:with="lang=${#locale.language}" th:lang="${lang}">
+	<head>
+		<meta name="_csrf" th:content="${_csrf.token}"/>
+		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"/>
+		
+		
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+		
+		<!-- PLUGINS STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>
+		
+		<!-- Funciones AJAX -->
+		<script th:inline="javascript">
+		
+			var selectedDomain = [[${domains}]];
+			
+			
+			function getDomainStartFragment(domain,event,obj) {
+				var index;
+				var cell = $(obj);
+				$.each(selectedDomain, function(i, item){
+					  if(item.domain === domain){
+					    index = i;
+					  }
+				});
+				var data = { 'domain': selectedDomain[index].domain, 'port': selectedDomain[index].port,'servicePort' : selectedDomain[index].servicePort, 'home': selectedDomain[index].home, 'cpu':selectedDomain[index].cpu, 'memory':selectedDomain[index].memory, 'state':selectedDomain[index].state};
+				
+				$.ajax({
+		       	 	url : '/controlpanel/flows/start/',  
+		       	 	headers: headersObj,
+		       	 	contentType:"application/json; charset=utf-8",
+		       	 	dataType:"json",
+		       	 	data: JSON.stringify(data),
+		            type : 'POST'
+		        }).done(function(data) {
+		        	reloadDomainsTable(domain,cell);
+		        }).fail(function(error) {
+		        	
+		        }).always(function(){
+		        	reloadDomainsTable(domain,cell);
+		        });
+				
+			}
+			
+			
+			function getDomainStopFragment(domain,event,obj) {
+				var index;
+				var cell = $(obj);
+				$.each(selectedDomain,function(i, item){
+					  if(item.domain === domain){
+					    index = i;
+					  }
+				});
+				var data = { 'domain': selectedDomain[index].domain, 'port': selectedDomain[index].port,'servicePort' : selectedDomain[index].servicePort, 'home': selectedDomain[index].home, 'cpu':selectedDomain[index].cpu, 'memory':selectedDomain[index].memory, 'state':selectedDomain[index].state};
+				$.ajax({
+		       	 	url : '/controlpanel/flows/stop/',  
+		       	 	headers: headersObj,
+		       	 	contentType:"application/json; charset=utf-8",
+		       	 	dataType:"json",
+		       	 	data: JSON.stringify(data),
+		            type : 'POST'
+		        }).done(function(data) {
+		        	reloadDomainsTable(domain,cell);
+		        }).fail(function(error) {
+		        	
+		        }).always(function(){
+		        	reloadDomainsTable(domain,cell);
+		        });
+			}
+		
+		</script>	
+		
+		<style>
+		.page-sidebar-closed .page-content-wrapper .page-content {
+    		background-color: #ffffff;
+		}
+		
+		</style>
+	</head>	
+	
+	<!-- page-sidebar-closed to start page with collapsed menu -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+	
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+		
+		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"> </div>		
+			
+		<!-- BEGIN SIDEBAR -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+		
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+			
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+				<!-- SEARCH FORM -->
+				<div id="searchFilter"  class="row" >
+					<form id="form_domains" class="" role="form" method="get">
+						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+						<div class="col-md-3 col-sm-4 col-xs-12">														
+							<div class="input-icon">
+								 <i class="icon-search font-grey-mint"></i>									 														
+								<input id="domain-name" th:placeholder="#{gen.name}"  name="name" class="form-control" type="text" maxlength="50" value=""/>
+							</div>
+						</div>
+						<div class="col-md-2 col-sm-4 col-xs-12 pull-right">
+							<div class="pull-right">
+								<button type="button" id="reset_domain" name="reset_domain" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}">Reset</button>
+								<button type="button" id="search_domain" name="search_domain" class="btn btn-primary btn-primary-search" th:text="#{gen.search}">Search</button>
+							</div>
+						</div>									
+					</form>
+				</div>
+				<!-- BEGIN PAGE HEADER-->
+				
+				<!-- BEGIN PAGE BAR AND BREADCRUM -->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<!--<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>-->
+						<li><a th:href="@{/flows/list}"> 
+							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:text="#{flow.template.list}">Manage Flows</span>
+							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" th:text="#{flow.breadcrumb.list}">My Flows</span>
+						</a></li>						
+					</ul>						
+				</div>
+				<!-- END PAGE BAR -->
+				
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{flow.template.list}">My Flows </span></h1>				
+				<!-- END PAGE TITLE-->	
+				<!-- MAIN ROW -->
+				<div class="row">
+						<div class="portlet light ">
+							<div class="portlet-title">
+								<div class="caption " >										
+									<span class="caption-subject" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:text="#{flow.template.list}"> Manage Flows </span>
+									<span class="caption-subject" th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" th:text="#{flow.breadcrumb.list}"> My Flows </span>
+								</div>
+								<div class="caption" style="padding: 22px 8px 8px 10px">
+									<a  onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
+								</div>	
+
+                                <div id="search-on-title" class="hide input-icon search-icon">
+
+                                    <a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
+                                </div>								
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""> </a>
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>
+								</div>
+								<!--<div class="actions ">-->
+									<div class="btn-group pull-right btn-title-group" id="divcreate" >	
+										<a type="button" id="btn-domains-reload" name="btn-domains-reload" value="Reload" th:title="#{gen.reload}" class="btn btn-primary button-dropdown-table-columns  tooltips" style="border: none;" ><i class="icon-reload"></i></a>													
+										<button th:if="${#strings.arrayJoin(#authentication.authorities,'') != 'ROLE_ADMINISTRATOR' AND (domains==null or domains.empty)}" type="button" class="btn btn-primary button-plus-create" onclick="location.href='../flows/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>									
+										<!-- Reload button  -->
+																					
+									</div>										
+								<!--</div>-->
+							</div>
+							<div th:fragment="domain" id="domain" class="portlet-body" style="display: block; height: auto;">
+								
+								<div class="row" style="margin-top: 0px;">
+									<div class="col-md-12 alert-zone" style="padding-top: 0px; padding-bottom: 0px">
+										<!-- ALERT ZONE -->	
+										<div th:if="${messageAlertType == 'SUCCESS' and message != null}" id="messages" class="alert alert-success alert-dismissable">
+											<button class="close" data-close="alert"></button> 
+											<span  th:text="${message}">message</span>
+										</div>
+										
+										<div th:if="${messageAlertType == 'WARNING' and message != null}" id="messages" class="alert alert-warning alert-dismissable">
+											<button class="close" data-close="alert"></button> 
+											<span th:text="${message}">message</span>
+										</div>
+										
+										<div th:if="${messageAlertType == 'ERROR' and message != null}" id="messages" class="alert alert-danger alert-dismissable">
+											<button class="close" data-close="alert"></button> 
+											<span th:text="${message}">message</span>
+										</div>
+										
+										<div th:if="${messageAlertType == 'INFO' and message != null}" id="messages" class="alert alert-info alert-dismissable">
+											<button class="close" data-close="alert"></button> 
+											<span th:text="${message}">message</span>
+										</div>
+										
+									</div>
+									<!-- DOMAIN LIST -->
+									<div class="col-md-12">											
+										
+										<!-- Microservice LIST -->
+																				
+										<div id="contenedor-tabla-outside" class="contiene hidden">																						
+											<div>
+											
+																							
+												<!-- DATATABLE initCompleteCallback (DT function) -->
+												<div dt:conf="domains">
+												  	<div dt:confType="callback" dt:type="init" dt:function="initCompleteCallback"></div>
+												</div><!-- // DATATABLE initCompleteCallback (DT function) -->
+												<!-- VERSIONING -->
+												<th:block th:include="versioning/fragments/form-commit-special"></th:block>
+												<!-- DATATABLE DANDELION CONF. -->												
+												<table id="domains" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers" dt:url="@{/flows/data}"
+													dt:reloadSelector="#btn-domains-reload" dt:reloadFunction="reloadDomainsTable"
+													dt:filterSelector="#filterButton" dt:filterClearSelector="#filterClearButton" > <!-- dt:dom="l0frtip" -->
+													<thead>
+														<tr class="cabecera-tabla">
+															<th class="titulo-columnas text-left" th:text="#{gen.id}">ID</th>
+															<th dt:property="domain" class="titulo-columnas" th:text="#{gen.name}">Name</th>
+															<th dt:property="user" class="titulo-columnas" th:text="#{gen.owner}">Owner</th>
+															<th dt:property="state"  dt:renderFunction="dtRenderState" class="titulo-columnas" th:text="#{domain.state}">State</th>
+															<th dt:property="cpu" dt:renderFunction="dtRenderNonNullCpu" class="titulo-columnas" th:text="#{domain.cpu.use}">Cpu</th>
+															<th dt:property="memory" dt:renderFunction="dtRenderNonNullMem" class="titulo-columnas" th:text="#{domain.memory}">memory</th>
+															<th dt:property="memory" dt:renderFunction="dtRenderNonNullReboot" class="titulo-columnas " th:text="#{domain.reboot.on.failure}">Reboot on failure</th>
+															<th class="titulo-columnas text-left" ><span th:text="#{ontology.createdAt}">Created At</span></th>
+															<th class="titulo-columnas text-left" ><span th:text="#{ontology.updatedAt}">Updated At</span></th>
+															<th dt:sortable="false" dt:renderFunction="dtRenderOptions" class="titulo-columnas text-center" style="width:180px"><span th:text="#{gen.options}">Options</span></th>
+														</tr>
+													</thead>
+													<tbody th:remove="all-but-first">
+														<tr th:each="domain : ${domains}" pages:paginate="10">
+															<td class="text-left " th:text="${domain.id}"></td>
+															<td class="text-left " th:text="${domain.domain}"></td>
+															<td class="text-left " th:text="${domain.user}"></td>
+															
+															<td th:if="${domain.state == 'START'}" class="text-left " >		
+																 <span  th:text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span th:text="#{domain.started}" style="color: #2E6B33; padding-left: 5px;"></span>
+															</td>
+															<td th:if="${domain.state == null OR domain.state == 'STOP'}" class="text-left " >		
+																 <span  th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="#{domain.stopped}" style="color: #A73535; padding-left: 5px;"></span>
+															</td>
+															
+															<td th:if="${domain.cpu != null}" class="text-left " th:text="${domain.cpu}"></td>
+															<td th:if="${domain.cpu == null}" class="text-left ">--</td>	
+															<td th:if="${domain.memory != null}" class="text-left " th:text="${domain.memory}"></td>
+															<td th:if="${domain.memory == null}" class="text-left ">--</td>
+															<td th:if="${(domain.autorecover == null) OR (domain.autorecover == false)}" class="text-left" ><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="#{gen.inactive}" style="color: #A73535; padding-left: 5px;"></span></td>
+															<td th:if="${(domain.autorecover != null) AND (domain.autorecover == true)}" class="text-left" ><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span th:text="#{gen.active}" style="color: #2E6B33; padding-left: 5px;"></span></td>
+															<!-- DATE -->
+															<td class="text-left" th:if="${domain.createdAt!=null}"><span th:text="${#dates.format(domain.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(domain.createdAt,'dd/MM/yyyy')}" ></span></td>
+															<td class="text-left" th:if="${domain.createdAt==null}" th:text="'---'"></td>
+															<!-- UPDATE -->
+															<td class="text-left" th:if="${domain.updatedAt!=null}"><span th:text="${#dates.format(domain.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(domain.updatedAt,'dd/MM/yyyy')}" ></span></td>
+															<td class="text-left" th:if="${domain.updatedAt==null}" th:text="'---'"></td>
+															<td>
+																<div class="grupo-iconos text-center">
+																	<span th:if="${domain.state == 'START'}" th:title="#{gen.stop}" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{gen.stop}" th:attr="onclick='javascript:getDomainStopFragment(\''+${domain.domain}+ '\',event,this);'"><i class="icon-stop"></i></span>
+																	<span th:if="${domain.state == null OR domain.state == 'STOP' }" th:title="#{domain.start}" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{domain.start}" th:attr="onclick='javascript:getDomainStopFragment(\''+${domain.domain}+ '\',event,this);'"><i class="icon-play"></i></span>
+																	<span th:if="${domain.state == 'START' AND flowEngineActive == true}"  th:attr="data-id=${domain.domain},onclick='javascript:navigateUrl(\'' + @{|/flows/show/${domain.domain}|} + '\');'"   class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}"><i class="la la-eye font-hg"></i></span>
+																	<span th:if="${domain.state == null OR domain.state == 'STOP' OR flowEngineActive==false}"  disabled="true"  th:attr="data-id=${domain.domain}" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}"><i class="la la-eye font-hg"></i></span>
+																	
+																	<span class="dropdown" > 																
+																	<span   class="btn btn-xs btn-no-border color-blue icon-on-table" style="margin-right: 0px" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
+																		<ul class="dropdown-menu dropdown-menu-table download-menu">																			
+																			<li style="margin-top: 5px;">
+																				<span th:attr="onclick='javascript:navigateUrl(\'' + @{|/flows/update/${domain.domain}|} + '\');'" ><span th:attr="data-id=${domain.domain}" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom"  th:data-original-title="#{gen.edit}"><i class="icon-edit"></i><span class="span-title-three-dots-icons" th:text="#{gen.edit}" >EDIT</span></span></span>
+																			</li>																			
+																			<li>
+																				<span th:if="${session.versioningEnabled}" class="btn btn-xs btn-no-border btn-circle btn-outline color-blue" style="margin-right: 0px" th:data-original-title="#{versioning.commit.changes}" th:onclick="'javascript:commitChanges(\''+@{|${domain.domain}|}+ '\', \'FlowDomain\');'"><i class="la la-git font-lg"></i> <span class="span-title-three-dots-icons" style=" vertical-align: top; " th:text="#{versioning.commit.changes}" >COMMIT CHANGES</span></span>
+																			</li>
+																			<li>
+																				<span sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" th:if="${#authentication.name} == ${domain.user} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'"  th:attr="onclick='javascript:deleteFlowDomainConfirmation(\''+${domain.domain}+ '\');',data-id=${domain.domain}" data-container="body" data-placement="bottom" class="btn btn-xs btn-no-border btn-circle btn-outline color-red"><i class="icon-delete"></i>  <span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >DELETE</span></span>	
+																			</li>
+																		</ul>
+																	</span>
+																</div>
+															
+															</td>
+														</tr>
+													
+													</tbody>
+												</table><!-- // DATATABLE DANDELION CONF. -->
+												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 ">
+													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
+													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="0"/>
+															<label th:text="#{gen.id}"> ID </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
+															<label th:text="#{gen.name}"> Name </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
+															<label  th:text="#{gen.owner}"> Owner </label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<label th:text="#{domain.state}"> State</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+															<label th:text="#{domain.cpu.use}"> Cpu</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
+															<label  th:text="#{domain.memory}"> Memory</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
+															<label  th:text="#{domain.reboot.on.failure}"> Reboot on failure</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="7" checked/>
+															<label  th:text="#{ontology.createdAt}">Created At</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="8" checked/>
+															<label  th:text="#{ontology.updatedAt}">Updated At</label>
+														</span>
+																												
+													</div>
+												</div>	
+												
+												
+											</div>
+										</div>											
+																				
+									</div>
+									<!-- AUXILIAR FORM TO DELETE DATASOURCE -->
+									<form id="delete_flow_domain_form" class="delete_flow_domain_form hide" method="post">
+										<input type="hidden" name="_method" value="DELETE"/>
+										<input type="hidden" id="delete-id" name="id"/>
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+									</form>	
+								</div>
+							</div>
+						</div><!-- END PORTLET BASIC LIGHT -->							
+											
+				</div><!-- END MAIN ROW -->				
+			</div><!-- END CONTENT BODY -->
+		</div><!-- END CONTENT page-content-wrapper -->		
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+	
+	<!-- FOOTER-INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
+	
+	<!-- CORE CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
+	
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+	
+	
+	<script th:inline="javascript">	
+	//<![CDATA[
+	// DATATABLES LANGUAJE FROM PROPERTIES.
+	datatable_lang = [[#{datatables_lang}]];	
+	var languageJson = JSON.parse(datatable_lang);
+	if ( languageJson ){ $.extend( true, $.fn.dataTable.defaults, { language: languageJson }); }
+	var active = [[${flowEngineActive}]]
+	var constants ={
+			deleteContent: [[#{microservice.delete.confirm}]],
+			go: [[#{microservice.link.go}]],
+			stop: [[#{gen.stop}]],
+			start: [[#{domain.start}]],
+			
+			reload: [[#{gen.reload}]],
+			genDelete: [[#{gen.deleteBtn}]],
+			genUpdate:  [[#{gen.edit}]],
+			genView:  [[#{gen.view}]],
+			monitoring: [[#{domain.monitor}]],
+			stopped:[[#{domain.stopped}]],
+			inactive:[[#{gen.inactive}]],
+			active:[[#{gen.active}]],
+			started:[[#{domain.started}]],
+			commitChanges: [[#{versioning.commit.changes}]]
+		
+		};
+ 
+	</script>
+	<i class="icon-delete"></i>  <span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >DELETE</span><
+	<script type="text/javascript" th:inline="javascript">	
+	var optionName = 'FLOWS';
+	
+
+	function navigateUrl(url){ window.location.href = url;	}
+	
+	var  deleteFlowDomainConfirmation = function (id){
+		
+		showConfirmDeleteDialog(id);	
+	} 
+	
+	var showConfirmDeleteDialog = function(id){	
+		$('#delete_flow_domain_form').attr('action',  '/controlpanel/flows/' + id);
+		$('#delete-id').val(id);
+		HeaderController.showConfirmDialogFlowDomain('delete_flow_domain_form');	
+	
+	}	
+	var headersObj;
+	
+	
+	//	$(window).on('pageshow', function(event) {
+	//		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+	// 		 $.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	//	});
+	// MAIN WHEN READY
+	$( document ).ready(function() {
+		var csrfToken = $("meta[name='_csrf']").attr("content");
+		var csrfHeader = $("meta[name='_csrf_header']").attr("content"); 
+		headersObj = {};
+		headersObj[csrfHeader] = csrfToken;
+		// SEARCH FORM
+		$('#search_flows').on('click',function(){ $('#form_domain')[0].submit(); });
+		
+		
+		//SHOW/HIDE DATATABLE COLUMNS HANDLER
+		$('input.toggle-vis').on( 'change', function (e) {
+			e.preventDefault(); 
+			// Get the column API object
+			var column = $('#domains').DataTable().column( $(this).attr('data-column') ); 
+			// Toggle the visibility
+			column.visible( ! column.visible() );			
+			// toggle Text
+			//$(this).toggleClass('text-muted line-through');			
+		});
+
+		// SEARCH FORM RESET
+		$('#reset_domain').on('click',function(){
+			$('#form_domains')[0].submit();			
+		});
+
+		// SEARCH FORM
+		$('#search_domain').on('click',function(){
+			$('#domains').DataTable().column(1).search( $('#domain-name').val()).draw();
+		});	
+
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+		var dTable = $('#domains').DataTable();
+		dTable.page.len(10);
+		$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$('#domains').on('draw.dt', function () {
+			initCompleteCallback();
+		} );
+		
+		//$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		
+		// SHOW/HIDE DATATABLES COLUMN INIT 		
+		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		//$('#dataTable-vis-toggle').removeClass('hide');
+		//TABLE STYLES
+		$('#divcreate').prepend($('#dataTable-vis-toggle'));		
+		$('#dataTable-vis-toggle').removeClass('hide');
+		$('.dataTables_info').addClass('col-md-6 col-sm-6');
+		$('.dataTables_length').addClass('col-md-6 col-sm-6');
+		$('#domains_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
+		$('#domains_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
+		$('#domains_wrapper > div:nth-child(1)').hide();
+		$('.dataTables_filter > label > input').removeClass('input-xsmall');
+		$('#search-on-title').append($('.dataTables_filter > label > input'));
+		$('.dataTables_paginate').attr('style', 'float:right !important');
+		activateDropDownPopup();
+		
+		$("#contenedor-tabla-outside").removeClass("hidden");
+	});
+	
+	
+	function activateDropDownPopup(){
+		$('.download-menu').parent().on('shown.bs.dropdown', function () {	        
+			 var $menu = $("ul", this);	        
+	         offset = $menu.offset();
+	         position = $menu.position();
+	         $('body').append($menu);
+	         $menu.show();
+	         $menu.css('position', 'absolute');
+	         $menu.css('top', (offset.top) +'px');
+	         $menu.css('left',(offset.left) +'px');
+	         $menu.css('min-width', '100px');
+	        $(this).data("myDropdownMenu", $menu);
+	     });
+	     $('.download-menu').parent().on('hide.bs.dropdown', function () {
+	         $(this).append($(this).data("myDropdownMenu"));
+	         $(this).data("myDropdownMenu").removeAttr('style');
+	     });
+	}
+	
+	
+	var initCompleteCallback = function(){
+		//initTableEvents();
+	}
+	
+	var dtRenderState = function(data, type, row){
+		
+		var html='';
+		if(row.state == 'START'){
+			html+=' <span  text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span  style="color: #2E6B33; padding-left: 5px;">'+constants.started+'</span>';
+		}else{
+			html+='<span  text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span style="color: #A73535; padding-left: 5px;">'+constants.stopped+'</span>';
+		}
+		return html;
+		 
+	}
+	var dtRenderNonNullCpu = function(data, type, row){
+		if(row.cpu == null)
+			return "--";
+		else
+			return row.cpu;
+	}
+	var dtRenderNonNullMem = function(data, type, row){
+		if(row.memory == null)
+			return "--";
+		else
+			return row.memory;
+	}
+	
+	var dtRenderNonNullReboot = function(data, type, row){	
+		if(row.autorecover == null || row.autorecover == false ){
+			return '<span text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span  style="color: #A73535; padding-left: 5px;">'+constants.inactive+'</span>';                                
+	    } else {
+	    	return '<span text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span   style="color: #2E6B33; padding-left: 5px;">'+constants.active+'</span>';
+	    }
+	}       
+
+	
+	var dtRenderOptions = function (data, type, row) {
+		var html= '<div class="grupo-iconos text-center">';
+		if(row.state == 'START') {
+			html +='<span th:title="'+constants.stop+'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="'+constants.stop+'" onclick="getDomainStopFragment(\'' + row.domain + '\')"><i class="icon-stop"></i></span>';
+		}else
+			html +='<span th:title="'+constants.start+'" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="'+constants.start+'" onclick="getDomainStartFragment(\'' + row.domain + '\')"><i class="icon-play"></i></span>';
+		/*if(row.state == 'START' && active == true) {
+			html+= '<a  href="/controlpanel/flows/show/'+row.domain+'"><span data-id="' + row.id + '" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genView+'"><i class="la la-eye font-hg"></i></span></a>'
+			html+= '<a  href="/controlpanel/flows/monitor/'+row.domain+'"><span data-id="' + row.id + '" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genUpdate+'"><i class="la la la-area-chart font-hg"></i></span></a>'
+		}*/
+		html+= '<a  href="/controlpanel/flows/update/'+row.domain+'"><span data-id="' + row.id + '" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genUpdate+'"><i class="la la-edit font-hg"></i></span></a>'
+		html+= '<span data-id="' + row.id + '" onclick="deleteFlowDomainConfirmation(\''+row.domain+'\');" class="icon-microservice-trash btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genDelete+'"><i class="la la-trash font-hg"></i></span>'																											
+		html+= '</div>';
+		return html;
+	};
+	function reloadDomainsTable(id,cell) {
+		
+		reloadTable(id,cell);
+		//reloadDataTable(oTable);
+	}
+	
+	function reloadTable(id,cell) {		
+		var csrfToken = $("meta[name='_csrf']").attr("content");
+		var csrfHeader = $("meta[name='_csrf_header']").attr("content"); 
+		var headersObj = {};
+		headersObj[csrfHeader] = csrfToken;		
+		$.ajax({
+       	 	url : '/controlpanel/flows/data',  
+       	 	headers: headersObj,
+       	 	contentType:"application/json; charset=utf-8",
+       	 	dataType:"json",
+            type : 'GET'
+        }).done(function(data) {
+        	var tr = cell.parent().parent().parent();
+        	var trContent = createRow(data,id);
+        	if(trContent != null){
+        		tr.empty();			
+				tr.append(trContent);
+				activateDropDownPopup();
+        	}
+        	$('.tooltip').tooltip('destroy');
+    		$('.tooltips').tooltip();
+    		var oTable = $('#domains').dataTable();
+        });
+	}
+	
+	function createRow(data,id){
+		if(data!== null && typeof data!='undefined' && data.length>0){	
+			for(var i = 0; i<data.length;i++){
+				if(data[i].domain===id){
+					return createTrContent(data[i]);
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	var versioningEnabled = [[${session.versioningEnabled}]];
+	function createTrContent(data){		
+
+		var html = '<td class="text-left ">'+data.domain+'</td>';
+			html+='<td class="text-left " >'+data.user+'</td>';
+		if(data.state == 'START'){
+			html += '<td class="text-left " ><span  text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span  style="color: #2E6B33; padding-left: 5px;">'+constants.started+'</span></td>';
+		}else{
+			html +='<td class="text-left " ><span  text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span style="color: #A73535; padding-left: 5px;">'+constants.stopped+'</span></td>';
+		}
+		if(data.cpu != null){
+			html +='<td class="text-left "> '+data.cpu+'</td>';
+		}else{
+			html +='<td class="text-left ">--</td>';
+		}
+		if(data.memory != null){
+			html +='<td class="text-left "> '+data.memory+'</td>';
+		}else{
+			html +='<td class="text-left ">--</td>';
+		}
+		if(data.autorecover == null || data.autorecover == false){
+			html +='<td class="text-left" ><span text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span  style="color: #A73535; padding-left: 5px;">'+constants.inactive+'</span></td>'
+		}else{
+			html +='<td class="text-left" ><span text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span   style="color: #2E6B33; padding-left: 5px;">'+constants.active+'</span></td>'
+		}
+		html+='<td class="text-left " >'+ moment(data.createdAt).format('DD/MM/YYYY') +'</td>';
+		html+='<td class="text-left " >'+ moment(data.updatedAt).format('DD/MM/YYYY') +'</td>';
+		
+		
+		/*options buttons*/
+		html +='<td><div class="grupo-iconos text-center">';
+		
+		/*start stop*/
+		if(data.state == 'START'){
+			html +='<span title="'+constants.stop+'" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="margin-right: 0px" data-container="body"  data-placement="bottom" data-original-title="'+constants.stop+'" onclick="javascript:getDomainStopFragment(\''+data.domain+ '\',event,this);"><i class="icon-stop"></i></span>';
+			
+		}else{
+			html +='<span title="'+constants.start+'" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="margin-right: 0px" data-container="body"  data-placement="bottom" data-original-title="'+constants.start+'" onclick="javascript:getDomainStopFragment(\''+data.domain+ '\',event,this);"><i class="icon-play"></i></span>';
+					
+		}
+		/*show */  
+		if(data.state != 'START' && active!=true){	
+			html +='<span title="'+constants.genView+'" disabled="true" data-id="'+data.domain+'" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="    margin-right: 2px; margin-left: 2px;" data-container="body" data-placement="bottom" ><i class="la la-eye font-hg"></i></span>';
+		}else{
+			html +='<span title="'+constants.genView+'" onclick="navigateUrl(\'/controlpanel/flows/show/'+data.domain+'\' );" data-id="'+data.domain+'" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" style="    margin-right: 2px; margin-left: 2px;" data-container="body" data-placement="bottom" ><i class="la la-eye font-hg"></i></span>';
+		}
+		/*show monitor delete*/
+		
+			html +='<span class="dropdown">';
+			html +='<span   class="btn btn-xs btn-no-border color-blue icon-on-table" style="margin-right: 0px" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>';
+			html +='	<ul class="dropdown-menu dropdown-menu-table download-menu">';																		
+			html +='		<li>';
+			html +='<span  onclick="navigateUrl(\'/controlpanel/flows/update/'+data.domain+'\' );"><span data-id="'+domain.domain+'" class="btn btn-xs btn-no-border btn-circle btn-outline  tooltips" data-container="body"  data-placement="bottom"><i class="icon-edit"></i><span class="span-title-three-dots-icons" th:text="#{domain.monitor}" >'+constants.genUpdate+'</span></span></span>';
+			html +='		</li>';
+			html +='		<li>';
+			if(data.state != 'START' && active!=true){
+				html+= '<span   ><span disabled="true"  data-id="' + data.id + '" class="btn btn-xs btn-no-border btn-circle btn-outline  tooltips" data-container="body" data-placement="bottom" ><i class="la la la-area-chart font-hg"></i><span class="span-title-three-dots-icons" th:text="#{domain.monitor}" >'+constants.monitoring+'</span></span></span>'
+			}else{
+				html+= '<span  onclick="navigateUrl(\'/controlpanel/flows/monitor/'+data.domain+'\' );"><span data-id="' + data.id + '" class="btn btn-xs btn-no-border btn-circle btn-outline  tooltips" data-container="body" data-placement="bottom" ><i class="la la la-area-chart font-hg"></i><span class="span-title-three-dots-icons" th:text="#{domain.monitor}" >'+constants.monitoring+'</span></span></span>'
+			}
+			html +='		</li>';
+			if(versioningEnabled){
+			html +='		<li>';
+			html +='<span title="'+constants.commitChanges+'" data-id="'+data.domain+'" class="btn btn-xs btn-no-border btn-circle btn-outline color-blue" style="margin-top: 5px"  data-container="body" data-placement="bottom" onclick="javascript:commitChanges(\''+data.domain+ '\',\'FlowDomain\');"><i class="la la-git font-hg"></i>  <span class="span-title-three-dots-icons"  > '+constants.commitChanges+'</span></span>';
+			html +='		</li>';		
+		}
+		
+			html +='		<li>';
+			html +='			<span data-id="'+data.domain+'" onclick="deleteFlowDomainConfirmation(\''+data.domain+ '\');" class="btn btn-xs btn-no-border btn-circle btn-outline  tooltips color-red" style="margin-top: 6px;" data-container="body" data-placement="bottom" ><i class="icon-delete"></i>  <span class="span-title-three-dots-icons"  >'+constants.genDelete+'</span></span>';																	
+			html +='		</li>';
+			html +='</ul>';
+			html +='</span>';
+		
+		
+
+		html +='</div></td>';
+		/*end options buttons*/
+		return html;
+	}
+	function reloadDataTable(oTable) {		
+		oTable.fnClearTable();
+		
+		oTable.DataTable().ajax.reload(function() {
+			initCompleteCallback()
+		}, true);
+		
+		$('.tooltip').tooltip('destroy');
+		$('.tooltips').tooltip();
+	}
+
+	//]]>
+	</script>
+	
+</body>
+</html>
+  

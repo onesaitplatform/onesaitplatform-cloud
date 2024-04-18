@@ -1,0 +1,72 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<div th:fragment="reportCreateFragment" id="reportCreateFragment"  >
+
+	<div id="report-settings" style="visibility: hidden;">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="tabbable-line">									
+					<ul class="nav nav-tabs pull-left">
+						<li id="tab-parameters" class="active">
+							<a href="#tab_1" data-toggle="tab" aria-expanded="false">
+								<span class="caption-subject">Parameters</span>
+							</a>
+						</li>
+						<li id="tab-datasource">
+							<a href="#tab_2" data-toggle="tab" aria-expanded="true" > 
+								<span class="caption-subject">Datasource</span>
+							</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+												
+		<div class="row">
+			<div class="tab-content">
+				<div class="tab-pane active" id="tab_1">	
+					<div class="col-md-12 col-sm-6 col-xs-12">
+						<div class="table-responsive ">	
+							<table id="table-report-parameters" class="table">
+							  	<thead>
+								    <tr>
+								      	<th scope="col">Nombre</th>
+										<th scope="col">Valor</th>
+										<th scope="col">Description</th>
+								    </tr>
+								</thead>
+								<tbody />
+							</table>
+						</div>
+					</div>
+				</div>
+								
+				<div class="tab-pane " id="tab_2">
+					<div class="col-md-12 col-sm-6 col-xs-12">
+						<div class="panel panel-info">
+							<div class="panel-body">
+								<div class="form-group">
+									<input id="report-datasource" type="text" name="report-datasource" readonly="readonly" class="form-control"/>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

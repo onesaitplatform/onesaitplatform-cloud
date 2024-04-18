@@ -1,0 +1,76 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" th:with="lang=${#locale.language}" th:lang="${lang}">
+<!-- <html xmlns:th="http://www.thymeleaf.org"  th:with="lang=${#locale.language}" th:lang="${lang}">-->
+	<head>
+		<meta charset="utf-8"/>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+	</head>
+	
+
+<body>
+	<!-- Terms and user conditions -->
+	<div id="legalFragment">
+		<div id="contenido" class="wrappercontenido container-fluid quitapadding">
+			<h2 th:text="#{legal.title}" >ACCESS AND USER CONDITIONS</h2><br/>
+			<p th:text="#{legal.intro}">When registering and logging to this website, you declare to have read, accept and understand completely the present terms and conditions, explicitly accepting its binding.</p><br/><br/>
+	   
+			<h3 id="termsofuse" th:text="#{legal.terms.tittle}">Terms of use</h3><br/>
+		   		<h4 th:text="#{legal.access}"></h4><br/>
+		   		<p>
+		   			<span th:text="#{legal.access01}">By accepting the conditions in the current document and registering in the Web, you will have access and use</span>
+					<span th:text="#{legal.acces02}">You can request the unsubscription at any time following the indications in this same document.</span>
+				</p><br/>
+		   		
+				<h4 th:text="#{legal.account}">Your account</h4><br/>
+				<p th:text="#{legal.account01}">You will be solely responsible for the confidentiality of your password, your account and the activities done with it.</p><br/>
+				<p>
+					<span th:text="#{legal.account02}">The administrators may restrict, limit, suspend or terminate your account when, in their opinion</span>
+					<span th:text="#{legal.account03}">, there is a suspected breach of the obligations under these Conditions of access, without liability whatsoever for it.</span>
+				</p><br/>
+				<p th:text="#{legal.account04}"> When cancelling an account, you will no longer have the right to access and, therefore, may not access or restore his data.</p><br/>
+				
+				<h4 th:text="#{legal.license}">3. License to access</h4><br/>
+				<p th:text="#{legal.license01}">Free access is offered in order to load data and use the Web.</p><br/>
+				<p th:text="#{legal.license02}">You acknowledge and accept that the information and content hosted on the Web may not always be available due to technical issues or any other reason.</p><br/>
+				<p>
+					<span th:text="#{legal.license03}">Indra is not responsible for any material that you download or obtain otherwise, through the Web will be entirely their responsibility, </span>
+					<span th:text="#{legal.license04}">at their own risk, being solely responsible for any damage to devices or loss of data resulting from the download of such material.</span>
+				</p><br/>
+				
+				<h4 th:text="#{legal.conduct}">4. User Conduct</h4><br/>
+				<p th:text="#{legal.conduct01}">You guarantee that all materials, data, content or other items loaded in the Web do not infringe rights of third parties of any kind,</p><br/>
+				<p th:text="#{legal.conduct02}">You commit to:</p><br/>
+				<ul style="list-style: inside;margin-left: 30px;" >
+					<li th:text="#{legal.conduct03}" >Not use the Web and its contents to upload or store any illegal or contrary to morality or moral standards or that in any way, may violate or infringe the rights of third parties.</li><br/>
+					<li th:text="#{legal.conduct04}">Communicate diligently, through the authorized channel for it in the Web, the loss or suspected theft of their identity.</li><br/>
+					<li th:text="#{legal.conduct05}" >Not perform any action that directly or indirectly, is intended to or simply may prejudice the functioning of the Web and the information contained in it.</li><br/>
+				</ul>
+				<br/>	
+		  
+		  		<h4 th:text="#{legal.cancelation}">4. Cancelation</h4><br/>
+				<p>
+					<span th:text="#{legal.cancelation01}">You can cancel your account at any time entering at the Control Panel of the Platform and edit your preferences disabling your user</span>
+					<span th:text="#{legal.cancelation02}"> or simply by requesting it via e-mail, using the address </span> <a href="#{legal.email.cancelation}">support@onesaitplatform.com</a>
+				</p><br/>
+				<br/>
+		 	</div>    
+		</div>
+	</body>
+</html>

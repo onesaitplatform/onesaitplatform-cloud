@@ -1,0 +1,103 @@
+pipeline {
+   
+   // Execute the Pipeline, or stage, on any available agent	
+   agent { node { label 'obpsmaster' } }
+
+   options { 
+   	  buildDiscarder(logRotator(numToKeepStr:'1'))
+      disableConcurrentBuilds()
+   }
+      
+   tools { 
+   	  maven 'maven'
+   	  jdk 'java8'
+   }   
+
+   environment {          
+      // Base sources path 
+      SOURCESPATH = 'sources'
+	  DATAGRID_CLIENT_SOURCESPATH = 'sources/datagrid-client'
+      IMAGEGENPATH = 'devops/build-deploy/scripts'
+	  BRANCHNAME = 'develop'
+	  
+	  DOCKER_REGISTRY = 'mps.labs.devops:8443'
+	  
+	  // Rancher auth
+	  //CATTLE_ACCESS_KEY = '1CD18DB0F67C50608DC3'
+      //CATTLE_SECRET_KEY = 'VXAowSGp27LnNXATGFqqVPwxx9EiPDBSgkjPx8nv'	   	
+   }
+   
+  // triggers {
+   	  // some time between 12:00 AM (midnight) to 2:59 AM
+  // 	  cron('H H(0-2) * * *')
+  // }   
+   
+   stages {
+	   
+	   stage('Build Artifacts') {
+            when {
+                branch "${env.BRANCHNAME}"
+            }
+
+	   		steps {
+			
+			 //   withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerregistry',
+             //       usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+
+				
+		    	// Only compile and generate artifacts
+		    	dir("${env.SOURCESPATH}") {
+	        		sh "mvn clean install -Dmaven.test.skip -Pall,kubernetes"
+					sh "mvn deploy:deploy-file -DpomFile=pom.xml -Dfile=./pom.xml -DgroupId=com.minsait.payments.hazelcast-tools -DartifactId=hazelcast-tools-parent -DrepositoryId=payments-nexus-releases -Durl=http://mps.labs.devops/nexus/repository/maven-releases/"
+		    	}
+				
+				dir("${env.DATAGRID_CLIENT_SOURCESPATH}") {
+					sh "mvn clean deploy -Dmaven.test.skip -Pdeploy"
+		    	}
+		    	
+		    	// Docker image generation
+	   			dir("${env.IMAGEGENPATH}") {
+					echo "Genera imagenes"
+					sh "docker login -u registry-docker-user -p registry-docker-user ${env.DOCKER_REGISTRY}"
+	   				sh "./image-generation.sh"
+	   			}		    	
+		    	
+	   		}
+	   		   		
+	   }		 
+   
+   }
+   
+   
+   
+   post {
+        always {     	
+				        		
+        	echo "Removing config init image"
+        	sh "docker rmi -f \$(docker images | grep onesait-banking/hazelcast-tools/datagrid-server | awk '{print \$3}' | uniq) || true"
+			sh "docker rmi -f \$(docker images | grep onesait-banking/hazelcast-tools/datagrid-manager | awk '{print \$3}' | uniq) || true"
+				
+        	echo "Removing orphan volumes"
+        	sh "docker volume rm \$(docker volume ls -qf dangling=true) || true"        					
+			        		
+        	echo 'Clean up workspace...'
+        	deleteDir()       		
+        }   
+	    success {	    
+	        echo "Pipeline: '${currentBuild.fullDisplayName}' completado satisfactoriamente" 
+			emailext attachLog: true, 
+			body: 'La compilación de la rama $BRANCH_NAME del proyecto $PROJECT_NAME se ha completado satisfactoriamente. url del Build: $BUILD_URL', 
+			compressLog: true, 
+			subject: '[SUCCESSFUL!] La compilación de la rama $BRANCH_NAME del proyecto $PROJECT_NAME se ha completado satisfactoriamente. id del Build: $BUILD_NUMBER', 
+			to: 'jfgpimpollo@minsait.com'
+ 		}
+	    failure {   
+	    	echo "El pipeline: '${currentBuild.fullDisplayName}' ha fallado: '${env.BUILD_URL}' se procede a enviar notificación por correo"
+			emailext attachLog: true, 
+			body: 'Ha ocurrido un error al compilar los fuentes de la rama $BRANCH_NAME del proyecto $PROJECT_NAME.url del Build: $BUILD_URL', 
+			compressLog: true, 
+			subject: '[ERROR!] Ha ocurrido un error al compilar los fuentes de la rama $BRANCH_NAME del proyecto $PROJECT_NAME. Se adjuntan los logs de la compilación. id del Build: $BUILD_NUMBER', 
+			to: 'jfgpimpollo@minsait.com'
+	    }
+   }      
+}

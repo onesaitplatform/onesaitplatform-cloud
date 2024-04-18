@@ -1,0 +1,78 @@
+<div class="spinner-margin-top" ng-if="vm.type == 'loading'" layout="row" layout-sm="column" layout-align="space-around">
+  <div class="sk-chase">
+    <div class="sk-chase-dot"></div>
+    <div class="sk-chase-dot"></div>
+    <div class="sk-chase-dot"></div>
+    <div class="sk-chase-dot"></div>
+    <div class="sk-chase-dot"></div>
+    <div class="sk-chase-dot"></div>
+  </div>
+</div>
+<div class="spinner-overlay" ng-if="vm.status == 'pending'" layout="row" layout-sm="column" layout-align="space-around">
+  <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+</div>
+
+<div ng-if="vm.type == 'nodata' || vm.showNoData  " class="no-data-gadget" layout="column"  >
+    <div class="no-data-title">NO DATA</div>
+    <div class="no-data-text">
+        Sorry, we couldn´t load the visual
+        information for this gadget. Try again.
+    </div>
+  </div>
+
+<div ng-if="vm.type == 'removed' || vm.showNoData  " class="no-data-gadget wasremoved" layout="column"  >
+    <div class="no-data-title">NO DATA</div>
+    <div class="no-data-text">
+        Sorry, we couldn´t load the visual
+        information for this gadget.
+        This gadget was removed.
+    </div>
+  </div>
+
+
+
+<canvas ng-if="vm.type == 'line'" chart-dataset-override="vm.datasetOverride" chart-click="vm.clickChartEventProcessorEmitter" class="chart chart-line" chart-data="vm.data" chart-labels="vm.labels" chart-series="vm.series" chart-options="vm.optionsChart"></canvas>
+<canvas ng-if="vm.type == 'mixed'" chart-dataset-override="vm.datasetOverride" chart-click="vm.clickChartEventProcessorEmitter" class="chart-bar" chart-data="vm.data" chart-labels="vm.labels" chart-series="vm.series" chart-options="vm.optionsChart"></canvas>
+<canvas ng-if="vm.type == 'bar'" chart-dataset-override="vm.datasetOverride" chart-click="vm.clickChartEventProcessorEmitter" class="chart chart-bar" chart-data="vm.data" chart-labels="vm.labels" chart-series="vm.series" chart-options="vm.optionsChart"></canvas>
+<canvas ng-if="vm.type == 'pie' && vm.classPie()" chart-click="vm.clickChartEventProcessorEmitter" class="chart chart-pie" chart-data="vm.data" chart-labels="vm.labels" chart-options="vm.optionsChart" chart-colors="vm.swatches.global"></canvas>
+<canvas ng-if="vm.type == 'pie' && !vm.classPie()" chart-click="vm.clickChartEventProcessorEmitter" class="chart chart-doughnut" chart-data="vm.data" chart-labels="vm.labels" chart-options="vm.optionsChart"  chart-colors="vm.swatches.global"></canvas>
+<canvas ng-if="vm.type == 'radar'" chart-dataset-override="vm.datasetOverride" chart-click="vm.clickChartEventProcessorEmitter" class="chart chart-radar" chart-data="vm.data" chart-labels="vm.labels" chart-series="vm.series" chart-options="vm.optionsChart"></canvas>
+<word-cloud ng-if="vm.type == 'wordcloud'" words="vm.words" on-click="vm.clickWordCloudEventProcessorEmitter" width="vm.width" height="vm.height" padding="0" use-tooltip="false" use-transition="true">    </word-cloud>
+<leaflet id="{{'lmap' + vm.id}}" ng-if="vm.type == 'map'" lf-center="vm.center" markers="vm.markers" height="{{vm.height}}" width="100%"></leaflet>
+<md-table-container ng-style="{'height': 'calc(100% - '+{{vm.config.config.tablePagination.style.trHeightFooter}}+'px'+')'}" ng-if="vm.type == 'table'">
+<table md-table  md-progress="promise" md-row-select="vm.config.config.tablePagination.options.rowSelection" ng-model="vm.selected" class="table-light table-hover">
+    <thead  md-head ng-if="!vm.config.config.tablePagination.options.decapitate" ng-style="{'background-color':vm.config.config.tablePagination.style.backGroundTHead}"  md-order="vm.config.config.tablePagination.order"   >
+      <tr md-row ng-style="{'height':vm.config.config.tablePagination.style.trHeightHead}" >
+        <th  ng-if="vm.showCheck[$index]" ng-style="{'color':vm.config.config.tablePagination.style.textColorTHead}" md-column ng-repeat="measure in vm.measures" md-order-by="{{measure.config.order}}"><span>{{measure.config.name | translate}}</span></th>       
+      </tr>
+    </thead>
+    <tbody md-body  >
+      <tr md-row md-auto-select="true" md-on-select="vm.selectItemTable" md-select="dat" ng-style="{'height':vm.config.config.tablePagination.style.trHeightBody}"  ng-repeat="dat in vm.data | orderBy: vm.getValueOrder(vm.config.config.tablePagination.order) : vm.config.config.tablePagination.order.charAt(0) === '-' |  limitTo: vm.config.config.tablePagination.limit : (vm.config.config.tablePagination.page -1) * vm.config.config.tablePagination.limit">
+         
+        <td  ng-if="vm.showCheck[$index]" ng-style="{'color':vm.config.config.tablePagination.style.textColorBody}" md-cell ng-repeat="value in dat" >{{value}}</td> 
+      </tr>
+    </tbody>
+  </table> 
+</md-table-container>
+ <!-- additional toolbar -->
+ <div ng-if="vm.type == 'table'" class="md-table-toolbar md-default" style="min-height: 30px;height: 30px; position: absolute; ">
+    <div class="md-toolbar-tools">                    
+      <md-button class="md-icon-button" ng-click="vm.toggleDecapite()">
+          <md-icon style="color: #ACACAC;  font-size: 18px;">calendar_view_day</md-icon>
+        </md-button>
+        <md-menu md-position-mode="target-left bottom" >
+            <md-button class="md-icon-button"  ng-click="$mdMenu.open()" style="margin-right: 12px;">
+                <md-icon style="color: #ACACAC;  font-size: 18px; margin-right: 8px">visibility</md-icon>
+            </md-button>
+            <md-menu-content width="2">                  
+                <md-menu-item  ng-repeat="measure in vm.measures" >
+                    <md-checkbox class="blue" ng-model="vm.showCheck[$index]" ng-checked="true">
+                        {{measure.config.name | translate}}
+                     </md-checkbox>
+                </md-menu-item>
+            </md-menu-content>
+        </md-menu>           
+    </div>
+  </div>
+  <!-- table pagination -->
+<md-table-pagination ng-if="vm.type == 'table'" md-limit="vm.config.config.tablePagination.limit" md-limit-options="vm.notSmall ? vm.config.config.tablePagination.limitOptions : undefined" md-page="vm.config.config.tablePagination.page" md-total="{{vm.data.length}}" md-page-select="vm.config.config.tablePagination.options.pageSelect && vm.notSmall" md-boundary-links="vm.config.config.tablePagination.options.boundaryLinks && vm.notSmall" ng-style="{'background-color':vm.config.config.tablePagination.style.backGroundTFooter,'height':vm.config.config.tablePagination.style.trHeightFooter, 'color':vm.config.config.tablePagination.style.textColorFooter}" ></md-table-pagination>

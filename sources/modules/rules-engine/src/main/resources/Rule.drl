@@ -1,0 +1,16 @@
+package com.minsait.onesait.platform.rulesengine;
+import com.minsait.onesait.platform.rulesengine.model.OntologyJsonWrapper;
+global com.minsait.onesait.platform.rulesengine.model.OntologyJsonWrapper input;
+global com.minsait.onesait.platform.rulesengine.model.OntologyJsonWrapper output;
+
+dialect  "mvel"
+
+rule "Assign role"
+
+    when
+        eval( input.getProperty("currentSalary") < 1000000 && input.getProperty("experienceInYears") > 10 )
+    then
+    	output.setRootNode("Salarios");
+    	output.copyInputToOutput(input);
+        output.setProperty("role", "Manager");
+end

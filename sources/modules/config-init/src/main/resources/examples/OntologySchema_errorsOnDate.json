@@ -1,0 +1,39 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "errorsOnDate",
+    "type": "object",
+    "required": [
+            "groupDate",
+            "process_date",
+            "totalLoaded",
+            "structural",
+            "integrity",
+            "business",
+            "idAdaptador"
+    ],
+    "properties": {
+            "groupDate": {
+                "type": "string"
+            },
+            "process_date": {
+                "type": "string"
+            },
+            "totalLoaded": {
+                "type": "integer"
+            },
+            "structural": {
+                "type": "integer"
+            },
+            "integrity": {
+                "type": "integer"
+            },
+            "business": {
+                "type": "integer"
+            },
+            "idAdaptador": {
+                "type": "string"
+            }
+    },
+    "description": "Different errors clasified by category and date",
+    "additionalProperties": true
+}

@@ -1,0 +1,54 @@
+<md-dialog aria-label="Layers">
+    <md-toolbar>
+        <div class="md-toolbar-tools">
+          <h2>Page Datasources</h2>
+          <span flex></span>
+          <md-button class="md-icon-button" ng-click="cancel()">
+            <b>X</b>
+          </md-button>
+        </div>
+      </md-toolbar>
+  
+  <form ng-cloak>    
+    <md-dialog-content>
+        <md-subheader class="md-primary form-header">Datasources:</md-subheader>
+      <md-list>
+        <md-list-item ng-repeat="(nameDatasource, data) in dashboard.pages[selectedpage].datasources">
+          <md-input-container flex="60">
+            <label>Datasource name</label>
+            <input ng-model="nameDatasource" md-autofocus disabled>
+          </md-input-container>
+
+          <md-input-container flex="40">
+            <md-button ng-if="data.triggers.length == 0" class="md-icon-button md-warn" aria-label="Delete Datasource" ng-click="delete(nameDatasource)">
+              <md-icon>clear</md-icon>
+            </md-button>
+          </md-input-container>
+        </md-list-item>
+      </md-list>
+
+      <md-subheader>Add New Datasource</md-subheader>
+        <md-list>
+          <md-list-item>
+            <md-input-container flex="80">
+              <md-select required md-autofocus placeholder="Select new page datasource" ng-model="datasource" md-on-open="loadDatasources()">
+                <md-option ng-if="!dashboard.pages[selectedpage].datasources[datasource.identification]" ng-value="datasource" ng-repeat="datasource in datasources">{{datasource.identification}}</md-option>
+              </md-select>
+            </md-input-container>
+
+            <md-input-container flex="30">
+              <md-button class="md-icon-button md-primary" aria-label="Add Datasource" ng-click="create()">
+                <md-icon>add</md-icon>
+              </md-button>
+            </md-input-container>
+          </md-list-item>
+        </md-list>
+    </md-dialog-content>
+    <md-dialog-actions layout="row">
+      <span flex></span>
+      <md-button ng-click="hide()" class="md-raised md-primary">
+        Close
+      </md-button>
+    </md-dialog-actions>
+  </form>
+</md-dialog>

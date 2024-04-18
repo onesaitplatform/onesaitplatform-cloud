@@ -1,0 +1,777 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!-- BEGIN DASHBOARD COMPONENT -->
+<div th:fragment="adminHomeFragment" id="adminHomeFragment">
+	
+	<!-- DASHBOARD ECHARTS -->
+	<script type="text/javascript" th:src="@{/static/vendor/echarts/echarts.min.js}"></script>
+	
+	<!-- DASHBOARD SCRIPTS  -->
+	 
+	<script type="text/javascript" th:src="@{/static/vendor/jquery/jquery.counterup.min.js}"></script>
+		
+	<!-- DASHBOARD CONTROLLER JS -->
+	<script th:src="@{/static/js/pages/main-dashboard.js}"></script>
+	 
+	<!-- BEGIN DASHBOARD INNER -->
+	
+	<div id="header" style="margin-top: -24px;">
+		<div class="row pageCreateHeader">
+			<div class="col-md-6 col-sm-6 col-xs-12">
+				<div class="margin-top-4">
+					<span> Administrator Panel</span>
+				</div>
+			</div>
+			<div class="col-md-6 col-sm-6 col-xs-12">
+			</div>
+		</div>
+	</div>
+		
+	<div class="mainPanel no-padding-left padding-top-8">
+		<div class="row">
+			<div class="col-md-8 col-sm-12 col-xs-12 no-padding-right">
+				<div class="col-md-6 col-sm-12 col-xs-12" style="height: 350px; ">
+					<div class="col-md-11 col-sm-11 col-xs-11 panelHeader">
+						<span th:text="#{home.cpu}">CPU</span>
+					</div>
+					<div class="col-md-12 col-sm-12 col-xs-12 panelHeader">
+						<span class="square"></span><span id="cpupercent"></span>
+					</div>
+					<div class="col-md-12 col-sm-12 col-xs-12">
+						<span id="cpuUsed" class="control-label"></span>
+					</div>
+					<div class="col-md-12 col-sm-12 col-xs-12">
+						<div id="cpu" style="height:200px;"></div>
+					</div>
+				</div>
+				<div class="col-md-6 col-sm-12 col-xs-12" style="height: 350px;">
+					<div class="col-md-11 col-sm-11 col-xs-11 panelHeader">
+						<span th:text="#{home.memory}">MEMORY</span>
+					</div>
+					<div class="col-md-12 col-sm-12 col-xs-12 panelHeader">
+						<span class="square"></span><span id="memorypercent"></span>
+					</div>
+					<div class="col-md-12 col-sm-12 col-xs-12">
+						<span id="memoryUsed" class="control-label"></span>
+					</div>
+					<div class="col-md-12 col-sm-12 col-xs-12">
+						<div id="mem" style="height:200px;"></div>
+					</div>
+				</div>
+				<div id="groupmodules" class="col-md-4 col-sm-4 col-xs-4">
+	                <div class="col-md-12 col-sm-12 col-xs-12 panelHeader">
+	                    <span th:text="#{home.modules}">MODULES</span>
+	                </div>
+	                <div class="col-md-12 col-sm-12 col-xs-12" th:each="groupmodule : ${groupModules}">
+	                	<div th:id="${groupmodule.identification}" class="groupmodule" th:attr="onclick='javascript:showServices(\'' + ${groupmodule.identification} + '\', \'' + ${groupmodule.description} + '\');'">
+	                		<div>
+								<i th:if="${groupmodule.state}" class="badge badge-empty-success"> </i>
+								<i th:if="${!groupmodule.state}" class="badge badge-empty-error"> </i>
+	                			<span style="padding-left:10px;" th:text="${groupmodule.description}">Module</span>
+	                		</div>
+	                		<div class="numberCircle"><span th:text="${groupmodule.numModules}"></span></div>
+	                	</div>
+	                </div>
+				</div>
+	            <div id="groupmodulesdetails" class="col-md-8 col-sm-8 col-xs-8 hidden">
+	                <div class="col-md-12 col-sm-12 col-xs-12" style="margin-top:10px;">
+	                    <span id="dotmodulespan" class="dot" style="height:10px;width:10px;background-color:green;border-radius: 50%;display: inline-block;"></span><span id="modulespan"> Bussines Tools</span>
+	                </div>
+	                <div class="col-md-6 col-sm-12 col-xs-12">
+	                    <div class="col-md-11 col-sm-11 col-xs-11 ">
+	                        <span th:text="#{home.cpu}">CPU</span>
+	                    </div>
+	                    <div class="col-md-12 col-sm-12 col-xs-12 ">
+	                        <span class="square"></span><span id="modulecpu">38 %</span>
+	                    </div>
+	                    <!-- <div class="col-md-6 col-sm-6 col-xs-6 ">
+	                        <span class="square" style="background-color:purple;border-color:purple;"></span><span>37 %</span>
+	                    </div> -->
+	                    <div class="col-md-12 col-sm-12 col-xs-12">
+	                        <span id="modulecpuused" class="control-label-mini">3.1 of 8 Used</span>
+	                    </div>
+	                    <!-- <div class="col-md-6 col-sm-6 col-xs-6">
+	                        <span class="control-label-mini">3 of 8 Reserved</span>
+	                    </div> -->
+	                    <div class="col-md-6 col-sm-12 col-xs-12">
+	                        <progress id="modulecpuprogress" value="38" max="100" style="width: 100%"> 38% </progress>
+	                    </div>
+	                    <!-- <div class="col-md-6 col-sm-6 col-xs-6">
+	                        <progress value="37" max="100" style="width: 100%"> 37% </progress>
+	                    </div> -->
+	                </div>
+	                <div class="col-md-6 col-sm-12 col-xs-12">
+	                    <div class="col-md-11 col-sm-11 col-xs-11 ">
+	                        <span th:text="#{home.memory}">MEMORY</span>
+	                    </div>
+	                    <div class="col-md-12 col-sm-12 col-xs-12">
+	                        <span class="square"></span><span id="modulememory">59 %</span>
+	                    </div>
+	                    <!-- <div class="col-md-6 col-sm-6 col-xs-6">
+	                        <span class="square" style="background-color:purple;border-color:purple;"></span><span>4 %</span>
+	                    </div> -->
+	                    <div class="col-md-12 col-sm-12 col-xs-12">
+	                        <span id="modulememoryused" class="control-label-mini">32.3 of 55 GB Used</span>
+	                    </div>
+	                    <!-- <div class="col-md-6 col-sm-6 col-xs-6">
+	                        <span class="control-label-mini">1.8 of 54.9 GB Reserved</span>
+	                    </div> -->
+	                    <div class="col-md-6 col-sm-12 col-xs-12">
+	                        <progress id="modulememoryprogress" value="59" max="100" style="width: 100%"> 59% </progress>
+	                    </div>
+	                    <!-- <div class="col-md-6 col-sm-6 col-xs-6">
+	                        <progress value="4" max="100" style="width: 100%"> 4% </progress>
+	                    </div> -->
+	                </div>
+	                <div class="col-md-12 col-sm-12 col-xs-12" style="height: 250px;overflow-y: auto;">
+		                <table id="servicesTable" class="table table-hover">
+							<thead id="servicestHead">
+							  <tr style="background-color: #F7F8F8">
+							    <th>Name</th>
+							    <th>CPU</th>
+							    <th>Memory</th>
+							    <th>Pods</th>
+							  </tr>
+							</thead>
+							
+							<tbody id="servicestBody">
+							    <tr data-toggle="collapse" data-target="#accordion1" class="clickable">
+							        <td>
+							        	<i class="badge badge-empty-success"></i>
+							        	<span style="padding-left:10px;">BPM Engine</span>
+							        </td>
+							        <td>
+							        	<div><span class="square"></span><span>38 %</span><span class="control-label-mini padding-left-10">3.1 of 8 Used</span></div>
+							         	<div><span class="square" style="background-color:purple;border-color:purple;"></span><span>37 %</span><span class="control-label-mini padding-left-10">3 of 8 Reserved</span></div>
+							        </td>
+							        <td>
+							        	<div><span class="square"></span><span>59 %</span><span class="control-label-mini padding-left-10">32.3 of 55 GB Used</span></div>
+							         	<div><span class="square" style="background-color:purple;border-color:purple;"></span><span>4 %</span><span class="control-label-mini padding-left-10">1.8 of 54.9 GB Reserved</span></div>
+							        </td>
+							        <td class="padding-top-10 padding-bottom-10">
+							        	<div class="numberCircle"><span>3</span></div>
+							        </td>
+							    </tr>
+							    <tr>
+							        <td colspan="4" >
+							            <div id="accordion1" class="collapse">
+											<div class="margin-top-4 margin-bottom-5">iotbrokerservice-34h34h34h</div>
+											<div class="margin-top-4 margin-bottom-5">iotbrokerservice-3d34h34h</div>
+											<div class="margin-top-4 margin-bottom-5">iotbrokerservice-87h34h34h</div>
+							            </div>
+							        </td>
+							    </tr>
+							    <tr data-toggle="collapse" data-target="#accordion2" class="clickable">
+							        <td>
+							        	<i class="badge badge-empty-success"></i>
+							        	<span style="padding-left:10px;">Rules Engine</span>
+							        </td>
+							        <td>
+							        	<div><span class="square"></span><span>18 %</span><span class="control-label-mini padding-left-10">1.1 of 8 Used</span></div>
+							         	<div><span class="square" style="background-color:purple;border-color:purple;"></span><span>30 %</span><span class="control-label-mini padding-left-10">2 of 8 Reserved</span></div>
+							        </td>
+							        <td>
+							        	<div><span class="square"></span><span>59 %</span><span class="control-label-mini padding-left-10">12.1 of 55 GB Used</span></div>
+							         	<div><span class="square" style="background-color:purple;border-color:purple;"></span><span>4 %</span><span class="control-label-mini padding-left-10">0.8 of 54.9 GB Reserved</span></div>
+							        </td>
+							        <td class="padding-top-10 padding-bottom-10">
+							        	<div class="numberCircle"><span>1</span></div>
+							        </td>
+							    </tr>
+							    <tr>
+							        <td colspan="4" >
+							            <div id="accordion2" class="collapse">
+											<div class="margin-top-4 margin-bottom-5">rulesservice-12BA343H</div>
+							            </div>
+							        </td>
+							    </tr>
+							    <tr data-toggle="collapse" data-target="#accordion3" class="clickable">
+							        <td>
+							        	<i class="badge badge-empty-success"></i>
+							        	<span style="padding-left:10px;">Microservices</span>
+							        </td>
+							        <td>
+							        	<div><span class="square"></span><span>4 %</span><span class="control-label-mini padding-left-10">1.1 of 8 Used</span></div>
+							         	<div><span class="square" style="background-color:purple;border-color:purple;"></span><span>10 %</span><span class="control-label-mini padding-left-10">1 of 8 Reserved</span></div>
+							        </td>
+							        <td>
+							        	<div><span class="square"></span><span>19 %</span><span class="control-label-mini padding-left-10">12.1 of 55 GB Used</span></div>
+							         	<div><span class="square" style="background-color:purple;border-color:purple;"></span><span>20 %</span><span class="control-label-mini padding-left-10">0.8 of 54.9 GB Reserved</span></div>
+							        </td>
+							        <td class="padding-top-10 padding-bottom-10">
+							        	<div class="numberCircle"><span>2</span></div>
+							        </td>
+							    </tr>
+							    <tr>
+							        <td colspan="4" >
+							            <div id="accordion3" class="collapse">
+											<div class="margin-top-4 margin-bottom-5">msaservice-334234h34h</div>
+											<div class="margin-top-4 margin-bottom-5">msaservice-F3434h64h</div>
+							            </div>
+							        </td>
+							    </tr>							    
+							</tbody>
+						</table>
+	                </div>
+	            </div>
+			</div>
+			<div class="col-md-4 col-sm-12 col-xs-12 no-padding-left">
+				<div class="row main margin-left-10">
+					<div class="col-md-3 col-sm-3 col-xs-3 no-padding-both">
+						<a class="nav-link nav-toggle nav-hover" href="/controlpanel/users/list">
+							<div class="dashboard-stat2">
+								<div class="display">
+									<div class="number">
+										<div class="icon">
+											<i class="flaticon-users" style="color: blue;"></i>
+										</div>
+										<h3 class="font-blue-sharp">
+											<span data-counter="counterup" class="counter"  th:attr="data-value=${kpis[0].value},data-counter='counterup'">[[${kpis[0].value]]</span>
+										</h3>
+										<span class="control-label" th:text="#{kpis.totalusers}" >Total users</span>
+									</div>
+								</div>
+							</div>
+						</a>
+					</div>
+					<div class="col-md-3 col-sm-3 col-xs-3 no-padding-both">
+						<a class="nav-link nav-toggle nav-hover" href="/controlpanel/users/list">
+							<div class="dashboard-stat2">
+								<div class="display">
+									<div class="number">
+										<div class="icon">
+											<i class="flaticon-users" style="color: orange;"></i>
+										</div>
+										<h3 class="font-blue-sharp">
+											<span data-counter="counterup" class="counter"  th:attr="data-value=${kpis[1].value},data-counter='counterup'">[[${kpis[1].value]]</span>
+										</h3>
+										<span class="control-label" th:text="#{kpis.newusers}">New users</span>
+									</div>
+								</div>
+							</div>
+						</a>
+					</div>
+					<div class="col-md-3 col-sm-3 col-xs-3 no-padding-both">
+						<a class="nav-link nav-toggle nav-hover" href="/controlpanel/users/list">
+							<div class="dashboard-stat2">
+								<div class="display">
+									<div class="number">
+										<div class="icon">
+											<i class="flaticon-users" style="color: green;"></i>
+										</div>
+										<h3 class="font-blue-sharp">
+											<span data-counter="counterup" class="counter"  th:attr="data-value=${kpis[2].value},data-counter='counterup'">[[${kpis[2].value]]</span>
+										</h3>
+										<span class="control-label" th:text="#{kpis.activeusers}">Active users</span>
+									</div>
+								</div>
+							</div>
+						</a>
+					</div>
+					<div class="col-md-3 col-sm-3 col-xs-3 no-padding-both">
+						<a class="nav-link nav-toggle nav-hover" href="/controlpanel/users/list">
+							<div class="dashboard-stat2">
+								<div class="display">
+									<div class="number">
+										<div class="icon">
+											<i class="flaticon-users" style="color: grey;"></i>
+										</div>
+										<h3 class="font-blue-sharp">
+											<span data-counter="counterup" class="counter"  th:attr="data-value=${kpis[3].value},data-counter='counterup'">[[${kpis[3].value]]</span>
+										</h3>
+										<span class="control-label" th:text="#{kpis.inactiveusers}">Inactive users</span>
+									</div>
+								</div>
+							</div>
+						</a>
+					</div>
+				</div>
+				<div class="row main">
+					<div class="col-md-12 col-sm-12 col-xs-12">
+						<div th:include="fragments/adminGraph::#adminGraphFragment" ></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	<!-- END DASHBOARD INNER -->
+	</div>
+			
+	<!-- DASHBOARD DATA TO SEND TO DASHBOARD CONTROLLER  --> 
+	<script type="text/javascript" th:inline="javascript"> 
+		var currentLanguage = [[${lang}]];	
+		var cpupodsvalues = null;
+		var numCpusValue = null;
+        var memorypodsvalues = null;
+        var totalMemory = null;
+        
+        var usedCPU = null;
+        var usedMemory = null;
+        
+		var dashboardJson = {
+			"info": ''
+		};
+		
+		var memData=[];
+		var memDateMax=0;
+		var memDateMin=0;
+		var groupServices = [[${groupServices}]];
+		
+		function formatMemoryData(dataArray) {
+			memData=[];
+			memDateMax=0;
+			memDateMin=0;
+			dataArray.forEach(addMemory);
+		}
+		
+		function formatCPUData(dataArray) {
+			cpuData=[];
+			cpuDateMax=0;
+			cpuDateMin=0;
+			dataArray.forEach(addCPU);
+		}
+		
+		function addMemory(value, index, array) {
+			var memDataPair= {};
+			var valueDate = new Date(value[0]*1000);
+			
+			
+			memDataPair.name = valueDate.getHours() + ':' + valueDate.getMinutes();
+			//memDataPair.name = valueDate.getHours() * 100 + valueDate.getMinutes();
+
+			if (memDateMin==0 || memDateMin>value[0]*1000){
+				memDateMin=value[0]*1000;
+			}
+			if (memDateMax==0 || memDateMax<value[0]*1000){
+				memDateMax=value[0]*1000;
+			}
+			
+			memDataPair.value = value;
+			memDataPair.value[0]=value[0]*1000;
+			memDataPair.value[1]=(memDataPair.value[1]).toFixed(2);
+			memData.push(memDataPair);
+		}
+		
+		function addCPU(value, index, array) {
+			var cpuDataPair= {};
+			var valueDate = new Date(value[0]*1000);
+			
+			cpuDataPair.name = valueDate.getHours() + ':' + valueDate.getMinutes();
+
+			if (cpuDateMin==0 || cpuDateMin>value[0]*1000){
+				cpuDateMin=value[0]*1000;
+			}
+			if (cpuDateMax==0 || cpuDateMax<value[0]*1000){
+				cpuDateMax=value[0]*1000;
+			}
+			
+			cpuDataPair.value = value;
+			cpuDataPair.value[0]=value[0]*1000;
+			cpuDataPair	.value[1]=(value[1]).toFixed(2);
+			cpuData.push(cpuDataPair);
+		}
+		
+		var getMemStats = function(){
+			var getMemURL = '/controlpanel/main/memstats';
+			var response = {};
+			
+			var csrf_value = $("meta[name='_csrf']").attr("content");
+			var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+							
+			$.ajax({
+				url:getMemURL,
+				headers: {
+					[csrf_header]: csrf_value
+			    },
+				type:"GET",
+				async: true,
+				data: {},			 
+				dataType:"json",
+				success: function(response,status){	
+					formatMemoryData(response.memorygraph);
+					
+					MEM_Chart.setOption({
+					    yAxis: {
+					        type: 'value'
+					    },
+						xAxis: {
+ 					        type:	'value',
+					        min:	memDateMin,
+							max:	memDateMax,
+							minInterval: 10,
+				            boundaryGap:false,
+				            axisLabel: {
+				                formatter: (function(value){
+				                	valueDate = new Date(value);
+				                    return valueDate.getHours() + ':' + valueDate.getMinutes();
+				                })
+				            }
+					    },
+	                    tooltip: {
+	                        trigger: 'item',
+	                        formatter: function (value) {
+	                            return (value.data.name + "  " + value.data.value[1] + '%');
+	                        }
+	                    },
+				        series: [{
+				            data: memData
+				        }]
+				    });
+			        document.getElementById("memorypercent").innerHTML = response.memoryPercent;
+			        document.getElementById("memoryUsed").innerHTML = response.memoryUsed;
+			        memorypodsvalues = response.memorypodsvalues;
+			        totalMemory = response.totalMemory;
+				}
+			});
+		};
+		
+		var getCpuStats = function(){
+			var getCpuURL = '/controlpanel/main/cpustats';
+			var response = {};
+			
+			var csrf_value = $("meta[name='_csrf']").attr("content");
+			var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+							
+			$.ajax({
+				url: getCpuURL,
+				headers: {
+					[csrf_header]: csrf_value
+			    },
+				type:"GET",
+				async: true,
+				data: {},			 
+				dataType:"json",
+				success: function(response,status){	
+					formatCPUData(response.cpugraph);
+					
+			        CPU_Chart.setOption({
+					    yAxis: {
+					        type: 'value'
+					    },
+						xAxis: {
+ 					        type:	'value',
+					        min:	cpuDateMin,
+							max:	cpuDateMax,
+							minInterval: 10,
+				            boundaryGap:false,
+				            axisLabel: {
+				                formatter: (function(value){
+				                	valueDate = new Date(value);
+				                    return valueDate.getHours() + ':' + valueDate.getMinutes();
+				                })
+				            }
+					    },
+	                    tooltip: {
+	                        trigger: 'item',
+	                        formatter: function (value) {
+	                            return (value.data.name + "  " + value.data.value[1] + '%');
+	                        }
+	                    },
+				        series: [{
+				            data: cpuData
+				        }]
+				    });
+			        document.getElementById("cpupercent").innerHTML = response.cpuPercent;
+			        document.getElementById("cpuUsed").innerHTML = response.cpuUsed;
+			        cpupodsvalues = response.cpupodsvalues;
+			        numCpusValue = response.numCpusValue;
+			        
+			        $('.groupmodule').first().click();
+				}
+			});
+		};
+		
+		
+		// LOAD DATA TO USE IN GRAPHCONTROLLER
+		// DASHBOARD CONTROLLER LOAD AND INIT ITSELF
+		
+		var chartCPU = document.getElementById('cpu');
+		var CPU_Chart = echarts.init(chartCPU);
+		var optionChartCPU;
+		
+		optionChartCPU = {
+			grid: {
+				  left: 50,
+				  top: 10,
+				  right: 0,
+				  bottom: 50,
+				  show: true,
+				  borderColor:'#ccc'
+			},
+		    xAxis: {
+		        type: 'value'
+		    },
+		    yAxis: {
+		    	min: 0,
+		    	max: 100,
+		        type: 'value'
+		    },
+		    tooltip: {
+		    	show: true
+		    },
+		    series: [{
+		        data: [],
+		        type: 'line'
+		    }]
+		};
+		
+		optionChartCPU && CPU_Chart.setOption(optionChartCPU);
+
+		// MEM CHART
+		
+		var chartMEM = document.getElementById('mem');
+		var MEM_Chart = echarts.init(chartMEM);
+		var optionChartMEM;
+				
+		function showTooltip(dataIndex) {
+			MEM_Chart.dispatchAction({
+		        type: 'showTip',
+		        seriesIndex: 0,
+		        dataIndex: dataIndex
+		    });
+		}
+		
+		function hideTooltip(dataIndex) {
+			MEM_Chart.dispatchAction({
+		        type: 'hideTip'
+		    });
+		}
+		
+		optionChartMEM = {
+			grid: {
+				  left: 50,
+				  top: 10,
+				  right: 0,
+				  bottom: 50,
+				  show: true,
+				  borderColor:'#ccc'
+			},				
+		    xAxis: {
+		        type: 'value'
+		    },
+		    yAxis: {
+		    	min: 0,
+		    	max: 100,
+		        type: 'value'
+		    },
+		    tooltip: {
+		    	show: true
+		    },
+		    series: [{
+		        data: memData,
+		        type: 'line'
+		    }]
+		};
+		
+		optionChartMEM && MEM_Chart.setOption(optionChartMEM);
+		
+		getCpuStats();
+		getMemStats();
+		
+/* 		setInterval(getMemStats, 100000);
+		setInterval(getCpuStats, 100000); */
+		
+		var drawServicesTable = function (services){
+			//if(/*stado de un servicio ko*/)
+			//	document.getElementById("dotmodulespan").style.backgroundColor = 'red';
+			var tbl = document.getElementById("servicesTable");
+			var old_tbdy = document.getElementById("servicestBody");
+			var new_tbdy = document.createElement('tbody');
+			new_tbdy.setAttribute("id", "servicestBody");
+			const podsArray = new Array();
+			var totalcpupercent = 0;
+			var totalmempercent = 0;
+			for(var i=0; i < services.length; i++){
+				var service = services[i];
+				const podsservicesresult = cpupodsvalues.filter(podvalue => podvalue.pod.startsWith(service.podName));
+				var sumCPUUsageValue = 0;
+				for(var j=0; j < podsservicesresult.length; j++){
+					if(j == 0){
+						service.services = new Array();
+						service.services.push(podsservicesresult[j].pod);
+					}else{
+						service.services.push(podsservicesresult[j].pod);
+					}
+					var values = podsservicesresult[j].values;
+					sumCPUUsageValue += parseFloat(values[values.length - 1][1]);
+				}
+				var totalcpupod = sumCPUUsageValue.toFixed(2);
+				totalcpupercent += parseFloat(totalcpupod);
+				service.cpu = totalcpupod + "%";
+				service.pods = podsservicesresult.length;
+				var cpuusedpoints = (totalcpupod * (numCpusValue/100)).toFixed(2);
+			
+				var tr = document.createElement('tr');
+				tr.className = "clickable";
+				tr.setAttribute("data-toggle", "collapse");
+				tr.setAttribute("data-target", "#accordion" + i);
+				
+				var tdName = document.createElement('td');
+				var i_element = document.createElement('i');
+				i_element.className = "badge badge-empty-success";
+				var span = document.createElement('span');
+				span.style.paddingLeft = "10px";
+				span.innerHTML = service.name;
+				tdName.appendChild(i_element);
+				tdName.appendChild(span);
+				tr.appendChild(tdName);
+				
+				var tdCpu = document.createElement('td');
+				var div1 = document.createElement("div");
+				var span_square = document.createElement('span');
+				span_square.className = "square";
+				var span_used = document.createElement('span');
+				span_used.innerHTML = service.cpu;
+				var span_used2 = document.createElement('span');
+				span_used2.className= "control-label-mini padding-left-10";
+				span_used2.innerHTML = cpuusedpoints + " of " + numCpusValue + " Used";
+				div1.appendChild(span_square);
+				div1.appendChild(span_used);
+				div1.appendChild(span_used2);
+				tdCpu.appendChild(div1);
+				
+				tr.appendChild(tdCpu);
+
+				
+				const podsservicesmemresult = memorypodsvalues.filter(podvalue => podvalue.pod.startsWith(service.podName));
+				var sumMemoryUsageValue = 0;
+				for(var j=0; j < podsservicesmemresult.length; j++){
+					if(j == 0){
+						service.services = new Array();
+						service.services.push(podsservicesmemresult[j].pod);
+					}else{
+						service.services.push(podsservicesmemresult[j].pod);
+					}
+					var values = podsservicesmemresult[j].values;
+					sumMemoryUsageValue += parseFloat(values[values.length - 1][1]);
+				}				
+				var totalmempod = sumMemoryUsageValue;
+				totalmempercent += totalmempod * (100 / parseFloat(totalMemory));
+				service.memory = (totalmempod * (100 / parseFloat(totalMemory))).toFixed(2)  + "%";
+			
+				
+				var tdMemory = document.createElement('td');
+				var div1_m = document.createElement("div");
+				var span_square_m = document.createElement('span');
+				span_square_m.className="square";
+				var span_used_m = document.createElement('span');
+				span_used_m.innerHTML = service.memory;
+				var span_used2_m = document.createElement('span');
+				span_used2_m.className="control-label-mini padding-left-10";
+				span_used2_m.innerHTML = totalmempod.toFixed(2) + " of " + totalMemory + "GB Used";
+				div1_m.appendChild(span_square_m);
+				div1_m.appendChild(span_used_m);
+				div1_m.appendChild(span_used2_m);
+				tdMemory.appendChild(div1_m);
+				
+				/* var div2_m = document.createElement("div");
+				var span_square_m2 = document.createElement('span');
+				span_square_m2.className="square";
+				span_square_m2.setAttribute("style", "background-color:purple;border-color:purple;");
+				var span_reserved_m = document.createElement('span');
+				span_reserved_m.innerHTML = service.memory;
+				var span_reserved2_m = document.createElement('span');
+				span_reserved2_m.className="control-label-mini padding-left-10";
+				span_reserved2_m.innerHTML = service.memory;
+				div2_m.appendChild(span_square_m2);
+				div2_m.appendChild(span_reserved_m);
+				div2_m.appendChild(span_reserved2_m);
+				tdMemory.appendChild(div2_m); */
+				tr.appendChild(tdMemory);
+				
+				var tdPods = document.createElement('td');
+				tdPods.className = "padding-top-10 padding-bottom-10";
+				var div_pod = document.createElement('div');
+				div_pod.className="numberCircle";
+				var span_pod = document.createElement('span');
+				span_pod.innerHTML = service.pods;
+				div_pod.appendChild(span_pod);
+				tdPods.appendChild(div_pod);
+				tr.appendChild(tdPods);
+				
+				new_tbdy.appendChild(tr);
+				
+				var tr_accordion = document.createElement('tr');
+				var td_accordion = document.createElement('td');
+				var div_accordion = document.createElement('div');
+				div_accordion.setAttribute("id", "accordion" + i);
+				div_accordion.className = "collapse";
+				for(j=0; j < service.services.length; j++){
+					var div_sservice = document.createElement('div');
+					div_sservice.className = "margin-top-4 margin-bottom-5";
+					div_sservice.innerHTML = service.services[j];
+					div_accordion.appendChild(div_sservice);
+				}
+				td_accordion.appendChild(div_accordion);
+				tr_accordion.appendChild(td_accordion);
+				new_tbdy.appendChild(tr_accordion);
+			}
+			
+			old_tbdy.parentNode.replaceChild(new_tbdy, old_tbdy);
+			
+			usedCPU = totalcpupercent;
+			usedMemory = totalmempercent;
+		}
+		
+		var showServices = function (identification, description) {
+
+	        $('#groupmodules').find('.groupmodule').removeClass('active');
+	        $('#' + identification).addClass('active');
+	        $('#groupmodulesdetails').addClass('hidden');
+			
+			document.getElementById("modulespan").innerHTML = " " + description;
+			var services = groupServices.filter(groupService => groupService.module == identification);
+			
+			var cpuPercent = document.getElementById("modulecpu");
+			var cpuUsed = document.getElementById("modulecpuused");
+			var cpuProgress = document.getElementById("modulecpuprogress");
+
+			var memPercent = document.getElementById("modulememory");
+			var memUsed = document.getElementById("modulememoryused");
+			var memProgress = document.getElementById("modulememoryprogress");
+			
+			drawServicesTable(services);
+			
+			cpuPercent.innerHTML = usedCPU.toFixed(2) + "%";
+			cpuProgress.innerHTML = usedCPU.toFixed(2) + "%";
+			cpuProgress.value = usedCPU.toFixed(2);
+			cpuUsed.innerHTML = (usedCPU * (numCpusValue/100)).toFixed(2) + " of " + numCpusValue + " Used";
+			
+			memPercent.innerHTML = usedMemory.toFixed(2) + "%";
+			memProgress.innerHTML = usedMemory.toFixed(2) + "%";
+			memProgress.value = usedMemory.toFixed(2);
+			memUsed.innerHTML = usedMemory.toFixed(2) + " of " + totalMemory + "GB Used";
+			
+			$('#groupmodulesdetails').removeClass('hidden');
+		}
+		
+		 const counterUp = window.counterUp.default
+			
+			$( document ).ready(function() {
+			   const counters = $( '.counter' )
+			   console.log(counters)
+			   for(let i=0;i<counters.length;i++){
+			   	counterUp( counters[i], {
+			    duration: 200,
+			    delay: 2
+			} )
+			   }
+			   
+			    
+			});
+	</script>
+</div>
+<!-- END DASHBOARD -->

@@ -1,0 +1,173 @@
+{
+	"menu": "onesait Platform",
+	"rol": "ROLE_DEVOPS",
+	"noSession": "/console/login",
+	"navigation": [
+
+
+		{
+			"title": {
+				"EN": "DEVELOPMENT",
+				"ES": "DESARROLLO",
+				"FR": "DÉVELOPPEMENT"
+			},
+			"icon": "icon-development",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "My Applications",
+						"ES": "Mis Aplicaciones",
+						"FR": "Mes Applications"
+					},
+					"icon": "",
+					"url": "/controlpanel/projects/list"
+				},
+				{
+					"title": {
+						"EN": "My Entities",
+						"ES": "Mis Entidades",
+						"FR": "Mes Entités"
+					},
+					"icon": "",
+					"url": "/controlpanel/ontologies/list"
+				},
+				{
+					"title": {
+						"EN": "User Tokens Management",
+						"ES": "Gestión de Tokens de Usuario",
+						"FR": "Gestion des jetons utilisateur"
+					},
+					"icon": "",
+					"url": "/controlpanel/apimanager/token/list?access=MENU"
+				},
+				{
+					"title": {
+						"EN": "My REST APIs",
+						"ES": "Mis APIs REST",
+						"FR": "Mes APIs REST"
+					},
+					"icon": "",
+					"url": "/controlpanel/apimanager/list"
+				},
+				{
+					"title": {
+						"EN": "My Microservices",
+						"ES": "Mis Microservicios",
+						"FR": "Mes Microservices"
+					},
+					"icon": "",
+					"url": "/controlpanel/microservices/list"
+				},
+				{
+					"title": {
+						"EN": "My Microservices Templates",
+						"ES": "Mis Plantillas de MicroServicios",
+						"FR": "Mes Modèles de microservices"
+					},
+					"icon": "",
+					"url": "/controlpanel/mstemplates/list"
+				}
+			]
+		},
+		{
+					"title": {
+						"EN": "My Serverless Applications",
+						"ES": "Mis aplicaciones serverless",
+						"FR": "Des applications serverless"
+					},
+					"icon": "",
+					"url": "/controlpanel/serverless/applications"
+		},
+
+		{
+			"title": {
+				"EN": "VISUALIZATION & GIS",
+				"ES": "VISUALIZATION & GIS",
+				"FR": "VISUALISATION & SIG"
+			},
+			"icon": "icon-visualization",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "My Dashboards",
+						"ES": "Mis Dashboards",
+						"FR": "Mes Tableaux de Bord"
+					},
+					"icon": "",
+					"url": "/controlpanel/dashboards/list"
+				}
+			]
+		},
+
+		{
+			"title": {
+				"EN": "DEV TOOLS",
+				"ES": "HERR. DESARROLLO",
+				"FR": "OUTILS DE DÉVELOPPEMENT"
+			},
+			"icon": "icon-dev-tools",
+			"url": "",
+			"submenu": [			
+				{
+					"title": {
+						"EN": "My Files",
+						"ES": "Mis Ficheros",
+						"FR": "Mes fichiers"
+					},
+					"icon": "",
+					"url": "/controlpanel/files/list"
+				},
+				{
+					"title": {
+						"EN": "My Configurations",
+						"ES": "Mis Configuraciones",
+						"FR": "Mes Configurations"
+					},
+					"icon": "",
+					"url": "/controlpanel/configurations/list"
+				}
+			]
+		},
+
+		{
+			"title": {
+				"EN": "TOOLS",
+				"ES": "HERRAMIENTAS",
+				"FR": "OUTILS"
+			},
+			"icon": "icon-tools",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "Query Tool",
+						"ES": "Herramienta de Consultas",
+						"FR": "Éditeur de Requêtes"
+					},
+					"icon": "",
+					"url": "/controlpanel/querytool/show"
+				},
+				{
+					"title": {
+						"EN": "My Audit",
+						"ES": "Mi Auditoría",
+						"FR": "Mon Audit"
+					},
+					"icon": "",
+					"url": "/controlpanel/audit/show"
+				},
+				{
+					"title": {
+						"EN": "Assets Market",
+						"ES": "Market de Assets",
+						"FR": "Marché des Actifs"
+					},
+					"icon": "",
+					"url": "/controlpanel/bundlerepository/list"
+				}
+			]
+		}
+	]
+}

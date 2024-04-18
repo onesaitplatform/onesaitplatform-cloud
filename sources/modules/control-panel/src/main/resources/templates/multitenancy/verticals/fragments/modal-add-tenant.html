@@ -1,0 +1,139 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<!-- Modal Authorizations-->
+<div id="add-tenant-modal" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-sm">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"></button>
+        <h4 class="modal-title" th:text="#{multitenancy.add.tenant}">Add tenant</h4>
+      </div>		
+      <div class="modal-body">
+	    <!-- FILE AUTHORIZATION -->
+		<div class="row">
+			<div class="col-md-12 col-sm-6 col-xs-12">
+			<!-- AUTHORIZATION ONTOLOGY-USER-TYPE -->
+				<div class="form-group">
+					<label class="control-label" th:text="#{multitenancy.add.tenant} + ':'">Add tenant</label>
+					<div id="tenants-add-list" class="margin-bottom-20 hide">
+						<table class="table" id="tenants_add_list" data-loaded="false">
+							<thead>
+								<tr class="cabecera-tabla" role="row" >
+									<th class="titulo-columnas" th:text="#{multitenancy.tenant}">Tenant</th>
+									<th class="titulo-columnas text-center" th:text="#{gen.options}">Options</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr class="tenant-add-model">
+									<td><input type="text" name="tenants[]" readonly="readonly"   class="form-control"/></td>
+									<td width="150px" class="no-wrap text-center">																	
+										<button type="button" class="btn btn-sm btn-circle btn-outline btn-primary blue" onclick="addTenant(this)"><i class="la la-plus"></i></button>
+									</td>			
+								</tr>
+							</tbody>														
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+      </div>									      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-circle btn-primary" data-dismiss="modal" th:text="#{binaryfiles.close}">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script th:inline="javascript">
+
+var tenantsAvailable = [[${verticalsAvailable}]];
+var mountableModel2 = $('#tenants_add_list').find('tr.tenant-add-model')[0].outerHTML;
+var tenantsToChoose=[];
+var csrfHeader = headerJson.csrfHeaderName;
+var csrfToken = headerJson.csrfToken;
+var headersObj = {};
+headersObj[csrfHeader] = csrfToken;
+
+var loadInitialData = function(){
+	tenantsAvailable.forEach(function(tenant){
+		var tenantProp = {"tenants":tenant.name};
+		tenantsToChoose.push(tenantProp);
+	});
+}
+
+loadInitialData();
+
+var loadModal = function(){
+	mountTable();
+	$('#add-tenant-modal').modal('show');
+}
+
+var mountTable = function(){
+	// TO-HTML
+	if ($('#tenants-add-list').attr('data-loaded') === 'true'){
+		$('#tenants_add_list > tbody').html("");
+		$('#tenants_add_list > tbody').append(mountableModel2);
+	}
+
+	$('#tenants_add_list').mounTable(tenantsToChoose,{
+		model: '.tenant-add-model',
+		noDebug: false							
+	});
+	
+	// hide info , disable user and show table
+	$('#tenants-add-list').removeClass('hide');
+	$('#tenants-add-list').attr('data-loaded',true);
+}
+
+var addTenant = function(obj){
+	
+	var selTenant = $(obj).closest('tr').find("input[name='tenants\\[\\]']").val();		
+	$.ajax({
+   	 	url : '/controlpanel/multitenancy/verticals/' + vertical +'/tenants/add' ,  
+   	 	headers: headersObj,
+   	 	data: {tenant:selTenant},
+        type : 'POST'
+    }).done(function(data) {
+    	toastr.success(messagesForms.operations.genOpSuccess,'');
+    	var i = foundIndex(selTenant,'tenants',tenantsToChoose);
+    	tenantsToChoose.splice(i, 1);
+    	mountTable();
+    	//Tenant.List.reloadTable();
+    	window.location.href = window.location.href +'#tab_2';
+    	location.reload();
+    	
+    }).fail(function(error) {
+    	toastr.error(messagesForms.operations.genOpError,'');
+    });
+				
+}
+
+var foundIndex = function(what,item,arr){
+	var found = '';
+	console.log(what);
+	arr.forEach(function(element, index, array) {
+		if ( what == element[item]){ found = index; } 
+		
+	});		
+	console.log('index:' + found);
+	return found;
+}
+
+</script>

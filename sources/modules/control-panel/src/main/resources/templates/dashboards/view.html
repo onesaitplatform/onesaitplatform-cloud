@@ -1,0 +1,281 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:dt="http://www.thymeleaf.org/dandelion/datatables" th:with="lang=${#locale.language}" th:lang="${lang}">
+
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"/>
+	    <meta name="description" content="Dashboard list template"/>
+		<meta name="keywords" content="sofia2,smart,cities,platform,Indra"/>
+		<meta name="author" content="Indra Sistemas, S.A."/>
+		<script th:src="@{/static/vendor/jquery/jquery.min.js}"/>
+
+	</head>	
+	
+	<script th:inline="javascript">
+     /*<![CDATA[*/
+    	 
+	  	 
+    if('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/controlpanel/static/opsw.js', { scope: '/controlpanel/static/' })
+          .then(function(registration) {
+                console.log('Service Worker Registered');
+          });
+
+        navigator.serviceWorker.ready.then(function(registration) {
+           console.log('Service Worker Ready');
+        });
+      }
+     
+   /*]]>*/
+
+  
+		
+	
+	</script>
+     
+	
+	<!-- <script src="../env/env.js"></script> -->
+	<script src="/controlpanel/static/js/pages/dashboardMessageHandler.js"></script>
+
+	<input id="oauthtoken" type="hidden" th:value="${session.oauthToken}"/>
+
+  	<script th:inline="javascript">
+     /*<![CDATA[*/
+    	 
+  
+    
+	    window.__env = window.__env || {};
+	    window.__env.socketEndpointConnect = '/dashboardengine/dsengine/solver';
+	    window.__env.socketEndpointSend = '/dsengine/solver';
+	    window.__env.socketEndpointSubscribe = '/dsengine/broker';
+	    window.__env.endpointControlPanel = '/controlpanel';
+	    window.__env.endpointDashboardEngine = '/dashboardengine';
+	    window.__env.dashboardEngineUsername = '';
+		window.__env.dashboardEnginePassword = '';
+		getOauthtoken();
+		window.__env.dashboardEngineOauthtokenFromQP = getOauthtokenFromQP();
+	    window.__env.dashboardEngineLoginRest = '/loginRest';
+	    window.__env.enableDebug = false;
+	    window.__env.restUrl = [[${iotbrokerurl}]];
+		window.__env.urlParameters = getURLParameters();
+		window.__env.i18njson = /*[[${i18njson}]]*/ "{}";
+		window.__env.i18njson = JSON.parse(window.__env.i18njson);
+		window.__env.globalSockMaxWaitTimeout = [[${heartbeatMaxTimeout}]];
+		window.__env.milliIntervalSaveLocalStorage = 10000;
+		window.__env.maxItemsLocalStorage = 5;
+		window.__env.codeLocalStorage = getCodeLocalStorageParameter();
+		window.__env.resourceinuse = [[${resourceinuse}]];
+		window.__env.dashboardEngineProtocol = [[${protocol}]];
+		window.__env.versioningEnabled = [[${session.versioningEnabled}]];
+		//identification and endpoint for to create dashboard from applications (old projects)
+		window.__env.appID = [[${session.appId}]];
+		window.__env.endpointProjectsUpdate = '/projects/update/';
+		window.__env.dashboardEngineBungleMode = false;
+	 
+		window.__env.dashboardEngineBungleMode = false;
+		window.__env.dashboardCheckHeaderLibs=true;
+	    //window.__env.drawAddGadgets = true;  This parameter is for show or hide left add gadgets menu if undefined use window.__env.dashboardEngineBungleMode for this
+     //Function that catch url parameters and return these like a map   
+     function getURLParameters()
+ 		{	    	 
+	 	    var sPageURL = window.location.search.substring(1);	
+	 	    var sURLVariables = sPageURL.split('&');	
+	 	    var urlParametersMap={};
+	 	    for (var i = 0; i < sURLVariables.length; i++){
+	 	    	if(sURLVariables[i].length>0){	 	    		
+	 	       		var sParameterName = sURLVariables[i].split('=');
+	 	    		if(sParameterName[0]!=="oauthtoken" && sParameterName[0]!=="__hist_dash"){	 	    			
+	 	       			urlParametersMap[sParameterName[0]] = sParameterName[1];
+	 	    		}
+	 	    	}
+	 	    } 	   
+	 	    
+	 	    return urlParametersMap;
+ 	    }
+     
+     function getURLParameterOauthtoken()
+		{	    	 
+	 	    var sPageURL = window.location.search.substring(1);	
+	 	    var sURLVariables = sPageURL.split('&');	
+	 	    var urlParametersMap={};
+	 	    for (var i = 0; i < sURLVariables.length; i++)	
+	 	    {
+	 	    	if(sURLVariables[i].length>0){
+	 	       		var sParameterName = sURLVariables[i].split('=');	 	       		
+	 	       		if(sParameterName[0]==="oauthtoken"){
+	 	       			return sParameterName[1]
+	 	       		}	 	       		
+	 	    	}
+	 	    }    
+	 	   return null;
+	    }
+     
+     function getCodeLocalStorageParameter()
+		{	    	 
+	 	    var sPageURL = window.location.search.substring(1);	
+	 	    var sURLVariables = sPageURL.split('&');	
+	 	    var urlParametersMap={};
+	 	    for (var i = 0; i < sURLVariables.length; i++)	
+	 	    {
+	 	    	if(sURLVariables[i].length>0){
+	 	       		var sParameterName = sURLVariables[i].split('=');	 	       		
+	 	       		if(sParameterName[0]==="__hist_dash"){
+	 	       			return sParameterName[1]
+	 	       		}	 	       		
+	 	    	}
+	 	    }    
+	 	   return null;
+	    } 
+     
+	     function getOauthtoken(){
+	 		if(typeof document.getElementById("oauthtoken").value!== "undefined" && document.getElementById("oauthtoken").value.length>0 ){
+	 			sessionStorage.setItem("dashboardEngineOauthtoken",document.getElementById("oauthtoken").value);
+	 		}else{
+				if (getURLParameterOauthtoken() !== null) {
+	 				sessionStorage.setItem("dashboardEngineOauthtoken", getURLParameterOauthtoken());
+	 			}
+	 		}
+	 	}
+	      function getOauthtokenFromQP(){
+	 		if(typeof document.getElementById("oauthtoken").value!== "undefined" && document.getElementById("oauthtoken").value.length>0 ){
+	 		
+	 			return  false;
+	 		}else{
+	 		
+	 			return true;
+	 		}
+	 	}
+	     
+	
+	
+	   
+	     
+        /*]]>*/
+
+  
+		
+	
+	</script>
+
+	
+	<link href="/controlpanel/static/vendor/google/material-icons.css" rel="stylesheet"/>	
+	<link rel="stylesheet" href="/controlpanel/static/dashboards/styles/vendor.css"/>	
+	<link rel="stylesheet" href="/controlpanel/static/dashboards/gridster.css"/>	
+	<link rel="stylesheet" href="/controlpanel/static/dashboards/styles/app.css"/>
+	
+ 	<!-- VUE and onesait components -->
+
+	<link rel="stylesheet" th:href="${@environment.getProperty('onesaitplatform.dashboard.themeonesait.css')}"/>
+	<script type="text/javascript" th:src="${@environment.getProperty('onesaitplatform.dashboard.vue.js')}"></script>
+	<script type="text/javascript" th:src="${@environment.getProperty('onesaitplatform.dashboard.themeonesait.js')}"></script>
+	<!-- CDNJS :: Sortable (https://cdnjs.com/) -->
+	<script th:src="@{/static/vendor/sortable/Sortable.min.js}"></script>
+	<!-- CDNJS :: Vue.Draggable (https://cdnjs.com/) -->
+	<script th:src="@{/static/vendor/vuedraggable/vuedraggable.umd.min.js}"></script>
+	<!-- import CSS -->
+	<link rel="stylesheet" th:href="@{/static/vendor/element-ui/theme-chalk/index.css}">
+	<link rel="stylesheet" th:href="@{/static/css/openLayer7.4.0.css}">
+	<!-- import JavaScript -->
+	<script th:src="@{/static/vendor/echarts-542/echarts.min.js}"></script>
+	<script th:src="@{/static/vendor/vue-echarts-660/vue-echarts.min.js}"></script>
+	<script th:src="@{/static/vendor/openLayers-7.4.0/openLayer-7.4.0.min.js}"></script>
+	<script th:src="@{/static/vendor/xlsx/xlsx.full.min.js}"></script>
+	<script th:src="@{/static/vendor/vue-i18n/vue-i18n.js}"></script>
+	<script th:src="@{/static/vendor/element-ui/index.js}"></script>
+	<script th:src="@{/static/vendor/element-ui/locale/en.min.js}"></script>
+	<script th:src="@{/static/vendor/element-ui/locale/es.min.js}"></script>
+	<script th:src="@{/static/vendor/element-ui/locale/fr.min.js}"></script>
+	<script th:src="@{/static/dashboards/utils/gadget-form-creator.js}"></script>
+	<link rel="stylesheet" th:href="@{/static/dashboards/utils/gadget-form-creator.css}">
+
+	<th:block th:utext="${headerlibs}"></th:block>
+
+ 	<!-- VUE and onesait components -->
+ 	
+ 	
+ 	 	<!-- page-sidebar-closed to start page with collapsed menu -->
+	<body ng-app="dashboardFramework" class="layout-column">
+	
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">	  
+        <dashboard  selectedpage="0" th:id="${dashboard.id}" th:attr="public=${dashboard.public},editmode=${edition},iframe=${iframe},synop=${synop}" class="flex layout-column"></dashboard>
+	</div>
+	
+	<script src="/controlpanel/static/dashboards/scripts/vendor.js"></script>										
+	<script src="/controlpanel/static/dashboards/gridster.js"></script>
+	<link rel="stylesheet" href="/controlpanel/static/dashboards/resources/lf-ng-md-file-input.min.css"/>
+	<script src="/controlpanel/static/dashboards/resources/lf-ng-md-file-input.min.js"></script>	
+	<script src="/controlpanel/static/dashboards/scripts/app.js"></script>	
+	<script type="text/javascript" th:inline="javascript">
+	// Solves the resized out of the iframe
+	// we capture the events when we leave the window to control the resizing of the items,
+	// we launch a mouseup event to stop the resized
+		
+	function addEvent(obj, evt, fn) {
+		    if (obj.addEventListener) {
+		        obj.addEventListener(evt, fn, false);
+		    }
+		    else if (obj.attachEvent) {
+		        obj.attachEvent("on" + evt, fn);
+		    }
+		}
+	
+	function triggerEvent(el, type){
+		   if ('createEvent' in document) {
+		        // modern browsers, IE9+
+		        var e = document.createEvent('HTMLEvents');
+		        e.initEvent(type, false, true);
+		        el.dispatchEvent(e);
+		    } else {
+		        // IE 8
+		        var e = document.createEventObject();
+		        e.eventType = type;
+		        el.fireEvent('on'+e.eventType, e);
+		    }
+		}
+	
+	addEvent(window,"load",function(e) {
+	    addEvent(document, "mouseout", function(e) {
+	        e = e ? e : window.event;
+	        var from = e.relatedTarget || e.toElement;
+	        if (!from || from.nodeName == "HTML") {
+	            // stop your drag event here	         
+	        	triggerEvent(document, 'mouseup');
+	        }
+	    });
+	});	
+	</script>
+
+	<!-- Mocano only in edit -->
+	<script th:if="${edition == true}">	
+		var require = { paths: { 'vs': '/controlpanel/static/vendor/vs' } };
+	</script>
+	
+	<script th:if="${edition == true}" th:src="@{/static/vendor/vs/loader.js}"></script>
+	
+	<script th:if="${edition == true}" th:src="@{/static/vendor/vs/editor/editor.main.nls.js}"></script>
+	
+	<script th:if="${edition == true}" th:src="@{/static/vendor/vs/editor/editor.main.js}"></script>
+	<!-- End Monaco Require -->
+
+
+</body>
+</html> 

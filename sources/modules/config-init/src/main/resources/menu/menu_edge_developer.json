@@ -1,0 +1,512 @@
+{
+    "menu": "OnesaitPlatform",
+    "rol": "ROLE_EDGE_DEVELOPER",
+    "noSession": "/console/login",
+    "navigation": [
+        {
+            "title": {
+                "EN": "EDGE DEVELOPMENT",
+                "ES": "EDGE DESARROLLO",
+				"FR": "EDGE DÉVELOPPEMENT"
+            },
+            "icon": "icon-development",
+            "url": "",
+            "submenu": [
+                {
+                    "title": {
+                        "EN": "My Applications",
+                        "ES": "Mis Aplicaciones",
+						"FR": "Mes Applications"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/projects/list"
+                },
+                {
+                    "title": {
+                        "EN": "My Entities",
+                        "ES": "Mis Entidades",
+						"FR": "Mes Entités"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/ontologies/list"
+                },
+				{
+					"title": {
+						"EN": "User Tokens Management",
+						"ES": "Gestión de Tokens de Usuario",
+						"FR": "Gestion des jetons utilisateur"
+					},
+					"icon": "",
+					"url": "/controlpanel/apimanager/token/list?access=MENU"
+				},
+                {
+                    "title": {
+                        "EN": "My REST APIs",
+                        "ES": "Mis APIs REST",
+						"FR": "Mes APIs REST"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/apimanager/list"
+                },
+                {
+                    "title": {
+                        "EN": "My Flows",
+                        "ES": "Mis Flujos",
+						"FR": "Mes Flux"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/flows/list"
+                },
+                {
+                    "title": {
+                        "EN": "My Rules",
+                        "ES": "Mis Reglas",
+						"FR": "Mes Règles"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/rule-domains/list"
+                },
+                {
+                    "title": {
+                        "EN": "My Microservices",
+                        "ES": "Mis Microservicios",
+						"FR": "Mes Microservices"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/microservices/list"
+                },
+                {
+					"title": {
+						"EN": "My Microservices Templates",
+						"ES": "Mis Plantillas de MicroServicios",
+						"FR": "Mes Modèles de microservices"
+					},
+					"icon": "",
+					"url": "/controlpanel/mstemplates/list"
+				},
+                {
+                    "title": {
+                        "EN": "My BPM Tenants",
+                        "ES": "Mis Dominios de BPM",
+						"FR": "Mis Locataires BPM"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/bpm/list"
+                },
+                {
+                    "title": {
+                        "EN": "My Realms",
+                        "ES": "Mis Dominios de Seguridad",
+						"FR": "Mes Domaines de Sécurité"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/apps/list"
+                }
+            ]
+        },
+        
+       {
+            "title": {
+                "EN": "LANDSCAPE",
+                "ES": "LANDSCAPE",
+				"FR": "LANDSCAPE"
+            },
+            "icon": "icon-broadcast",
+            "url": "",
+            "submenu": [
+                {
+                    "title": {
+                        "EN": "Edge Devices",
+                        "ES": "Dispositivos Edge",
+						"FR": "Gestion des périphériques Edge"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/edge/landscape/devices"
+                },
+                {
+                    "title": {
+                        "EN": "Field Devices",
+                        "ES": "Gestión de campos",
+						"FR": "Gestion des appareils de terrain"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/edge/landscape/field"
+                },
+                {
+                    "title": {
+                        "EN": "Cloud to Cloud",
+                        "ES": "Cloud to Cloud",
+						"FR": "Cloud à Cloud"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/edge/landscape/cloud2cloud"
+                }
+            ]
+        },
+         {
+            "title": {
+                "EN": "EDGE PROJECT",
+                "ES": "PROYECTOS EDGE",
+				"FR": "PROJET EDGE"
+            },
+            "icon": "icon-open-data",
+            "url": "",
+            "submenu": [
+                {
+                    "title": {
+                        "EN": "Projects",
+                        "ES": "Proyectos",
+						"FR": "Projets"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/edge/projects"
+                }
+            ]
+        },{
+            "title": {
+                "EN": "CONNECTORS",
+                "ES": "CONECTORES",
+				"FR": "CONNECTEURS"
+            },
+            "icon": "icon-connect",
+            "url": "",
+            "submenu": [
+                {
+                    "title": {
+                        "EN": "Connectors",
+                        "ES": "Conectores",
+						"FR": "Connecteurs"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/edge/connectors"
+                }
+            ]
+        },{
+            "title": {
+                "EN": "REPOSITORY",
+                "ES": "REPOSITORY",
+				"FR": "REPOSITORY"
+            },
+            "icon": "icon-download",
+            "url": "",
+            "submenu": [
+                {
+                    "title": {
+                        "EN": "Repository",
+                        "ES": "Repository",
+						"FR": "Gestion du référentiel"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/edge/registry"
+                }
+            ]
+        },
+        {
+            "title": {
+                "EN": "VISUALIZATION & GIS",
+                "ES": "VISUALIZATION & GIS",
+				"FR": "VISUALISATION & SIG"
+            },
+            "icon": "icon-visualization",
+            "url": "",
+            "submenu": [
+                {
+                    "title": {
+                        "EN": "My Dashboards",
+                        "ES": "Mis Dashboards",
+						"FR": "Mes Tableaux de Bord"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/dashboards/list"
+                },
+                {
+                    "title": {
+                        "EN": "My Gadgets",
+                        "ES": "Mis Gadgets",
+						"FR": "Mes Gadgets"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/gadgets/list"
+                },
+                {
+                    "title": {
+                        "EN": "My Datasources",
+                        "ES": "Mis Datasources",
+						"FR": "Mes Sources de Données"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/datasources/list"
+                },
+                {
+                    "title": {
+                        "EN": "My Reports",
+                        "ES": "Mis Informes",
+						"FR": "Mes Rapports"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/reports/list"
+                },
+                {
+                    "title": {
+                        "EN": "My GIS Viewers",
+                        "ES": "Mis Visores GIS",
+						"FR": "Mes Visionneuses SIG"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/viewers/list"
+                },
+                {
+                    "title": {
+                        "EN": "My GIS Layers",
+                        "ES": "Mis Capas GIS",
+						"FR": "Mes couches SIG"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/layers/list"
+                }
+            ]
+        },
+        {
+            "title": {
+                "EN": "DEV º",
+                "ES": "HERR. DESARROLLO",
+				"FR": "OUTILS DE DÉVELOPPEMENT"
+            },
+            "icon": "icon-dev-tools",
+            "url": "",
+            "submenu": [
+                {
+                    "title": {
+                        "EN": "Data to Entity Import Tool",
+                        "ES": "Herramienta de importación de datos a Entidad",
+						"FR": "Outils d'importation de Données vers une Entité"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/jsontool/tools"
+                },
+                {
+					"title": {
+						"EN": "Billable modules",
+						"ES": "Modulos facturables",
+						"FR": "Modules facturables"
+					},
+					"icon": "",
+					"url": "/controlpanel/billingmodules/list"
+				},
+                {
+                    "title": {
+						"EN": "My WebApps",
+						"ES": "Mis WebApps",
+						"FR": "Mes WebApps"
+					},
+                    "icon": "",
+                    "url": "/controlpanel/webprojects/list"
+                },
+                {
+                    "title": {
+                        "EN": "My Files",
+                        "ES": "Mis Ficheros",
+						"FR": "Mes fichiers"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/files/list"
+                },
+                {
+					"title": {
+						"EN": "My Configurations",
+						"ES": "Mis Configuraciones",
+						"FR": "MEs Configurations"
+					},
+					"icon": "",
+					"url": "/controlpanel/configurations/list"
+				},
+                {
+                    "title": {
+						"EN": "My REST APIs Planning",
+						"ES": "Mis Planificación de APIs REST",
+						"FR": "Mon planificateur de APIs REST"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/restplanner/list"
+                },
+                {
+                    "title": {
+                        "EN": "My Internationalizations i18n",
+                        "ES": "Mis internacionalizaciones i18n",
+						"FR": "Mes Internationalisations i18n"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/internationalizations/list"
+                },
+                {
+                    "title": {
+						"EN": "My Categorization Trees",
+						"ES": "Mis Árboles de Categorización",
+						"FR": "Mes arbres de catégorisation"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/categorization/list"
+                },
+                {
+					"title": {
+						"EN": "My Database Connections",
+						"ES": "Mis Conexiones a Base de datos",
+						"FR": "Mes connexions à la base de données"
+					},
+					"icon": "",
+					"url": "/controlpanel/virtualdatasources/list"
+				}
+            ]
+      	},
+        {
+            "title": {
+                "EN": "CLIENTS & DIGITAL TWINS",
+                "ES": "CLIENTS & DIGITAL TWINS",
+				"FR": "CLIENTS & JUMEAUX NUMÉRIQUES"
+            },
+            "icon": "icon-clients",
+            "url": "",
+            "submenu": [
+                {
+                    "title": {
+                        "EN": "My Digital Clients",
+                        "ES": "Mis Clientes",
+						"FR": "Mes Clients"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/devices/list"
+                },
+                {
+                    "title": {
+                        "EN": "My Digital Clients Instances",
+                        "ES": "Instancias de Clientes",
+						"FR": "Mes Instances de Clients"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/devices/management/list"
+                },
+                {
+                    "title": {
+                        "EN": "My Digital Clients Simulations",
+                        "ES": "Mis Simulaciones de Clientes",
+						"FR": "Mes Simulations de Clients"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/devicesimulation/list"
+                },
+                {
+                    "title": {
+                        "EN": "Digital Clients Visualization",
+                        "ES": "Visualización de Clientes",
+						"FR": "Visualisation des Clients"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/devices/management/show"
+                },
+                {
+                    "title": {
+                        "EN": "My Digital Twins Definitions",
+                        "ES": "Mis Definiciones de Digital Twins",
+						"FR": "Mes définitions de Digital Twins"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/digitaltwintypes/list"
+                },
+                {
+                    "title": {
+                        "EN": "My Digital Twins",
+                        "ES": "Mis Digital Twins",
+						"FR": "Mes Digital Twins"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/digitaltwindevices/list"
+                },
+                {
+                    "title": {
+                        "EN": "Digital Twin Status",
+                        "ES": "Estado de mis Digital Twins",
+						"FR": "État du Digital Twins"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/digitaltwindisplay/show"
+                }
+            ]
+        },
+        {
+			"title": {
+				"EN": "DATA GOVERNANCE",
+				"ES": "GOBIERNO DEL DATO",
+				"FR": "GOUVERNANCE DES DONNÉES"
+			},
+			"icon": "icon-monitoring",
+			"url": "",
+			"submenu": [			
+				{
+					"title": {
+						"EN": "My Lineage",
+						"ES": "Mi Linaje",
+						"FR": "Ma lignée"
+					},
+					"icon": "",
+					"url": "/controlpanel/lineage/show"
+				},
+				{
+                    "title": {
+                        "EN": "My Data Refiner Projects",
+                        "ES": "Mis Proyectos Data Refiner",
+						"FR": "Mes Projets Data Refiner"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/datacleanerui"
+                },
+				{
+                    "title": {
+                        "EN": "My Process Traceability",
+                        "ES": "Mis Trazabilidades de Procesos",
+						"FR": "Traçabilité des processus"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/process/list"
+                }
+			]
+		},
+        {
+            "title": {
+                "EN": "TOOLS",
+                "ES": "HERRAMIENTAS",
+				"FR": "OUTILS"
+            },
+            "icon": "icon-tools",
+            "url": "",
+            "submenu": [
+                {
+                    "title": {
+                        "EN": "Query Tool",
+                        "ES": "Herramienta de Consultas",
+						"FR": "Éditeur de Requêtes"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/querytool/show"
+                },
+                {
+                    "title": {
+                        "EN": "My Audit",
+                        "ES": "Mi Auditoría",
+						"FR": "Mon Audit"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/audit/show"
+                },
+				{
+					"title": {
+						"EN": "Assets Market",
+						"ES": "Market de Assets",
+						"FR": "Marché des Actifs"
+					},
+					"icon": "",
+					"url": "/controlpanel/bundlerepository/list"
+				}
+            ]
+        }
+    ]
+}

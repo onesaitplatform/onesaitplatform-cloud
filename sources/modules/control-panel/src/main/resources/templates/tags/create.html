@@ -1,0 +1,363 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org" th:with="lang=${#locale.language}" th:lang="${lang}">
+    <head>
+        <meta name="_csrf" th:content="${_csrf.token}"/>
+        <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+        <meta http-equiv="Content-Language" th:content="${lang}" />
+        <title th:text="#{name.app}" />
+        
+        <!-- STYLE SHEETS -->
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}" />
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}" />
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}" />
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}" />
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/glyphicons.css}" />       
+
+        <!-- THEME -->
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
+        
+        <!-- PLUGINS STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
+		
+        <!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND BOOSTRAP-TIMEPICKER  -->
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}" />
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css}" />        
+    </head>
+
+    <!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
+    <body class="page-header-fixed  page-content-white page-sidebar-closed">
+    
+    	<!-- MAIN PAGE WRAPPER -->
+    	<div class="page-wrapper">
+    
+    		<!-- BEGIN HEADER INCLUDE -->
+    		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+    		<!-- END HEADER -->
+    
+    		<!-- HEADER AND CONTENT DIVIDER -->
+    		<div class="clearfix"></div>
+    
+    		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
+    		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+    		<!-- END SIDEBAR -->
+    
+    		<!-- BEGIN CONTENT -->
+    		<div class="page-content-wrapper">
+    
+    			<!-- BEGIN CONTENT BODY -->
+    			<div class="page-content">
+    
+    				<div class="alert alert-success display-hide">
+    					<span th:text="${globalMessage}"></span>
+    				</div>
+    
+    				<!-- BEGIN PAGE BAR AND BREADCRUM-->
+    				<div class="page-bar margin-bottom-20">
+    					<ul class="page-breadcrumb">
+    						<li><a> <span th:text="#{tag.tags}">Tags</span></a></li>
+    					</ul>
+    				</div>
+    				<!-- END PAGE BAR -->
+    
+    				<!-- BEGIN PAGE TITLE-->
+    				<h1 class="page-title hide ">
+    					<span th:text="#{name.app}"> onesait platform Control Panel</span>
+    				</h1>
+    				<!-- END PAGE TITLE-->
+                    <div id="searchFilter"  class="row" >
+						<div class="col-md-3 col-sm-4 col-xs-12">														
+							<div class="input-icon">
+								<i class="icon-search font-grey-mint"></i>									 														
+								<input id="querySearchTags" th:placeholder="#{tag.resource.search.placeholder}" name="querySearchTags" class="form-control" type="text" maxlength="50" onkeypress="return enterSearch(event)" value=""/>
+							</div>
+						</div>
+						<div class="col-md-2 col-sm-4 col-xs-12 pull-right">
+							<div class="pull-right">
+								<button type="button" id="reset_domain" name="reset_domain" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}" onclick="cleanTags();"  >Reset</button>
+								<button type="button" id="search_domain" name="search_domain" class="btn btn-primary btn-primary-search" th:text="#{gen.search}" onclick="findTags();" >Search</button>
+							</div>
+						</div>									
+					
+					</div>
+    				<!-- MAIN ROW -->
+    				<div id="divPortlet" class="row equal flex-container">
+                        <div class="tabContainer flex-tabs-left">
+                            <div id="tab-resources" class="option active" data-toggle="collapse" data-target="#resourcelist" >
+                                <a href="#tab_3" data-toggle="tab" aria-expanded="true">
+                                    <span class="" th:text="#{tag.tags}">TAGS </span>
+                                </a>   
+                            </div>
+                            <div id="resourcelist" class="collapse margin-left-10 padding-left-5" style="height: 0px;" aria-expanded="false" >
+                            	<div id="div_ALL">
+	                            	<input id="checkbox_ALL" class="no-remove" type="checkbox" checked onclick="TagCreateController.filterTable(($(this).attr('id')).split('_')[1])"/>
+									<label class="control-label margin-left-5 small" th:text="#{project.users.all}">all</label>
+									<span th:id="count_ALL" class='pull-right badge badge-info'></span>	
+	                            </div>
+                          		<th:block th:each="type :${tagNames}">
+	                            	<div th:id="'div_' + ${type}">
+	                            		<input th:id="'checkbox_' + ${type}" class="no-remove checkbox-filter" type="checkbox" checked onclick="TagCreateController.filterTable(($(this).attr('id')).split('_')[1])"/>
+										<label class="control-label margin-left-5 small" th:text="${type}">Type</label>
+										<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:id="'new_' + ${type}" class='pull-right icon-delete' th:title="#{tag.delete.tag}" style="padding:1px 0px 0px 3px;" th:attr="onclick='javascript:TagCreateController.deleteTag(\''+${type}+'\');'"></span>
+										<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:id="'unbind_' + ${type}" class='pull-right la la-unlink font-hg' th:title="#{tag.delete.resource.tag}" style="margin:-2px 0px 0px 2px" th:attr="onclick='javascript:TagCreateController.unlinkTag(\''+${type}+'\');'"></span>
+										<span th:id="'count_' + ${type}" class='pull-right badge badge-info'></span>
+	                            	</div>
+                            	</th:block>
+							</div>
+                        </div>                        
+                        <div class="tab-content flex-content-right">
+    						<div class="tab-pane fade in" id="tab_3">
+    							<!-- SEARCH FORM -->
+                                <div class="col-md-12 col-sm-12 col-xs-12 clearfix margin-top-10 margin-bottom-10" >
+                                    <div class="panelHeader padding-left-15" style="display: inline;">
+                                        <span th:text="#{tag.resources}">Tag Resources</span>
+                                    </div>
+									<div class="caption" style="display: inline; float:none; padding-left: 5px;">
+										<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" ><i class="icon-search margin-left-10"></i></a>
+									</div>
+									<div id="search-on-title" class="hide input-icon search-icon" style="display: inline; float:none">
+										<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search" style="display: inline;"></i></a>
+									</div>
+									<div class="tools hide">
+										<a href="" class="collapse" data-original-title="" title=""></a>
+										<a href="" class="fullscreen" data-original-title="" title=""></a>
+									</div>
+									<div class="pull-right btn-title-group no-margin-top">
+										<span id="accessfilter" class="hide" style="display:inline-block" > </span>
+										<span class="separator"></span>
+										<div class="pull-right btn-group " id="divcreate" style="margin-left:30px;">
+											<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" type="button" class="btn btn-primary button-plus-create" th:attr="onclick='TagCreateController.createTagName();'" th:title="#{tag.create.button}"><a ><i class="icon-new" style="color:white;"></i></a></button>
+											<button type="button" class="btn btn-primary margin-left-5" style="min-width: 34px!important;" onclick="$('#resources-modal').modal('show');" th:title="#{tag.resource.button}"><a><i class="icon-multiple" style="color:white;"></i></a></button>
+										</div>		
+									</div>	
+                                </div>                           
+    							<div class="row main" th:include="tags/fragments/resources-tab" id="resources-tab-fragment"></div>
+    							<div id="resources-modal-fragment" th:include="tags/fragments/resources-modal"></div>
+    						</div>
+                           
+    					</div>
+    				</div>
+    				<!-- END MAIN ROW -->
+    			</div>
+    			<!-- END CONTENT BODY -->
+    		</div>
+    		<!-- END CONTENT page-content-wrapper -->
+    	</div>
+    	<!-- END MAIN PAGE WRAPPER -->
+    
+    	<!-- FOOTER INCLUDE -->
+    	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+    		
+    	<style>
+        	.modal-xl {
+        		width: 75% !important;
+        		display: block;
+        		margin-left: 12% !important;
+        	}
+        	@media (max-width: 992px) {
+        	  .modal-xl {
+        	   margin-left: 0% !important;
+        	  }
+        	}
+    	</style>
+    
+    	<!-- CORE JS CONTROLLERS -->
+    	<script th:src="@{/static/js/app.js}" ></script>
+    	<script th:src="@{/static/js/layout.js}" ></script>
+    	
+    	<!-- INPUTMASK -->
+    	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
+    
+    	<!-- PLUGINS -->
+    	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" ></script>
+    	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}" ></script>
+    	<script th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}" ></script>
+    	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+		<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
+    	<script th:src="@{/static/vendor/blockUI.js}"></script>
+    
+    	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
+    	<!-- LOADING DEFAULT DATES IF NEEDED -->
+    	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}" type="text/javascript"></script>
+    	<script th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}" type="text/javascript"></script>
+    	<script th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
+    
+    	<!-- LOADING DEFAULT LANG MESSAGES IF NEEDED -->
+    	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}" type="text/javascript"></script>
+    		
+    	<!-- TEMPLATE CONTROLLER  -->
+    	<script th:src="@{/static/js/pages/tagCreate.js}"></script>
+    
+    	<!-- MAIN INIT -->
+    	<script th:inline="javascript">
+    	
+        	function navigateUrl(url){  window.location.href = url;	}
+        	function navigateUrlBlank(url){ window.open(url, '_blank');};
+        	var currentLanguage = [[${lang}]];
+        	var urlMap = [[${urlsMap}]]
+        
+        	var tagCreateJson = { 
+        		"placeholder" : [[#{tag.create.placeholder}]],
+        		"tagCreateNew" : [[#{tag.create.name}]],
+        		"tagSelectError" : [[#{tag.select.error}]],
+        		"close" : [[#{gen.closeBtn}]],		
+        		"language" : currentLanguage,
+        		"create": [[#{gen.createBtn}]],     		
+        	     "associations" : [[${associations}]],
+        		"fieldEmpty":[[#{app.roles.fieldEmpty}]],
+        	    "deleteAppConfirm":[[#{app.delete.confirm}]],
+        	    "accessType":[[#{project.resource.accesstype}]],
+        		"confirm":{
+        			"deleteTag" : [[#{tag.delete.tag}]],
+        			"deleteTagConfirmation" : [[#{tag.delete.tag.content}]],
+        			"unlinkTag" : [[#{tag.unlink.tag}]],
+        			"unlinkTagConfirmation" : [[#{tag.unlink.tag.content}]]
+        		},
+        		"otologiesAssociated" : [[#{project.addElements}]]
+        	};
+    	</script>
+    	
+    	<script th:inline="javascript">
+		
+		function cleanTags() {
+	    	$("#querySearchTags").val("");
+	        $('#resource-access-list tbody').empty();
+	        findTags();
+		}
+		
+		function enterSearch(e) {
+	    	if (e.keyCode == 13) {
+	        	findTags();
+	    	}
+		}
+	
+		function findTags() { 
+			var csrf_value = $("meta[name='_csrf']").attr("content");
+			var csrf_header = $("meta[name='_csrf_header']").attr("content");
+			var searchTag = $("#querySearchTags").val();
+			
+			var urlFind = '/controlpanel/api/tags/like/' + searchTag;
+			
+			if (searchTag.trim()==""){
+				urlFind = '/controlpanel/api/tags/'
+			}
+			
+			return  $.ajax({
+	            url: urlFind,
+	            type: 'GET',
+	            dataType: 'json',
+	            headers: {
+					[csrf_header]: csrf_value
+			    },
+	            success: function(data) {
+					var table = $('#tag-results tbody');
+				   	table.empty();
+				   	$('#resource-access-list tbody').empty();			   
+				    $.each(data, function(index, tag) {
+						$.each(tag.resources, function(index2, resource) {
+							var resourceType = resource.type.toUpperCase();
+						    var url = "";
+								if (resourceType == "DASHBOARD" || resourceType == "GADGETTEMPLATE" || resourceType == "GADGET"){
+									url = urlMap[resourceType] +"/view/" + resource.id;
+								}else if (resourceType == "CLIENTPLATFORM" || resourceType == "GADGETDATASOURCE" || resourceType == "FLOWDOMAIN" || resourceType == "DIGITALTWINDEVICE" || resourceType == "ONTOLOGY" || resourceType == "NOTEBOOK"){
+									url = urlMap[resourceType] +"/show/" +resource.id;
+								}else if (resourceType == "API"){
+									url = urlMap[resourceType] +"/invoke/"+ resource.id;	
+								}else if (resourceType == "DATAFLOW" || resourceType == "PIPELINE"){
+									url = urlMap["DATAFLOW"] +"/app/collector/pipeline/"+ resource.id;
+								}else if (resourceType == "REPORT"){
+									url = urlMap[resourceType] +"/edit/"+ resource.id;
+								}
+						    link = `<span class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" onclick="navigateUrlBlank('${url}')"><i class="la la-link font-hg"></i></span>`;
+
+						    var fila = $('<tr class="table-model resource-row ' + tag.name + ' "">').append(
+								  $('<td width="29%">').text(tag.name),
+						          $('<td width="35%">').text(resource.name),
+								  $('<td width="35%">').text(resource.type),
+						          $('<td width="1%" class="no-wrap text-center">').append(								
+									$(link)
+						          )
+								 )
+							$('#resource-access-list tbody').append(fila);
+						});
+				    });	
+				    $('#resource-access-list').DataTable();				
+	            },
+	            error: function(data,status,er) {	            	
+	           	 	console.log(data);
+	            }
+	        });
+		}	
+        </script>
+        
+        <script type="text/javascript" th:inline="javascript">
+            var  deleteConfirmation = function (id){
+                showConfirmDeleteDialog(id);    
+            } 
+            var showConfirmDeleteDialog = function(id){ 
+        
+                //i18 labels
+                var Close = headerReg.btnCancelar;
+                var Remove = headerReg.btnEliminar;
+                var Content = [[#{project.del.confirm}]];
+                var Title = [[#{project.delete.confirm.title}]];
+        
+                // jquery-confirm DIALOG SYSTEM.
+                $.confirm({
+                    title: Title,
+                    theme: 'light',
+                    columnClass: 'medium',
+                    content: Content,
+                    draggable: true,
+                    dragWindowGap: 100,
+                    backgroundDismiss: true,
+                    buttons: {
+                        close: {
+                            text: Close,
+                            btnClass: 'btn btn-outline blue dialog',
+                            action: function (){} //GENERIC CLOSE.      
+                        },
+                        remove: {
+                            text: Remove,
+                            btnClass: 'btn btn-primary',
+                            action: function(){ 
+                                console.log(id);
+                                var csrf_value = $("meta[name='_csrf']").attr("content");
+                                var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+                                
+                                $.ajax({
+                                    url: '/controlpanel/projects/'+id,
+                                    headers: {
+                                        [csrf_header]: csrf_value
+                                    },
+                                    type: 'DELETE',                       
+                                    success: function(result) {
+                                        navigateUrl('/controlpanel/projects/list');
+                                    }
+                                });
+                            }                                           
+                        }               
+                    }
+                });
+            } 
+            
+            //]]>
+    </script>
+    </body>
+</html>

@@ -1,0 +1,132 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "DataModel AuditoryPlatform Schema",
+    "type": "object",
+    "properties": {
+        "extraData": {
+            "type": "string"
+        },
+        "module": {
+            "type": "string"
+        },
+        "message": {
+            "type": "string"
+        },
+         "type": {
+            "type": "string"
+        },
+        "version": {
+            "type": "integer"
+        },
+         "otherType": {
+            "type": "string"
+        },
+        "contextData": {
+            "type": "object",
+            "properties": {
+                "timestampMillis": {
+                    "type": "number"
+                },
+                "clientConnection": {
+                    "type": "string"
+                },
+                "clientSession": {
+                    "type": "string"
+                },
+                "timezoneId": {
+                    "type": "string"
+                },
+                "device": {
+                    "type": "string"
+                },
+                "user": {
+                    "type": "string"
+                },
+                "deviceTemplate": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "string"
+                }
+            }
+        },
+        "timeStamp": {
+            "type": "number"
+        },
+        "formatedTimeStamp": {
+            "type": "string"
+        },
+         "mongoTimestamp": {
+	        "type": "object",
+	        "required": [
+	            "$date"
+	        ],
+	        "properties": {
+	            "$date": {
+	                "type": "string",
+	                "format": "date-time"
+	            }
+	        }
+        },
+        "operationType": {
+            "type": "string"
+        },
+        "id": {
+            "type": "string"
+        },
+        "resultOperation": {
+            "type": "string"
+        },
+        "user": {
+            "type": "string"
+        },
+        "ontology": {
+            "type": "string"
+        },
+        "remoteAddress": {
+            "type": "string"
+        },
+        "query": {
+            "type": "string"
+        },
+        "data": {
+            "type": "string"
+        },
+        "domain": {
+            "type": "string"
+        },
+        "sessionKey": {
+            "type": "string"
+        },
+        "gatewayInfo": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "protocol": {
+                    "type": "string"
+                }
+            }
+        },
+        "clientPlatform": {
+            "type": "string"
+        },
+        "clientPlatformInstance": {
+            "type": "string"
+        },
+        "ex": {
+            "type": "object",
+            "properties": {}
+        },
+        "className": {
+            "type": "string"
+        },
+        "methodName": {
+            "type": "string"
+        },
+        "cipherData": {
+            "type": "string"
+        }
+    }
+}

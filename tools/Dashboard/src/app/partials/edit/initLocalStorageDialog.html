@@ -1,0 +1,21 @@
+<md-dialog>
+  <form ng-cloak>
+      <md-dialog-content >
+          <div class="md-dialog-content" layout="column" layout-align="center center" >
+              <div class="md-dialog-alert-title" >Editor</div>
+              <div class="md-dialog-alert-text" >
+                Do you have a local version later than the version recovered from the server,
+                do you want to load the local version?
+              </div>
+           </div>
+      </md-dialog-content>
+      <md-dialog-actions layout="row" layout-align="center center" >
+          <md-button class="cancel-button"  ng-click="hide()">
+              Cancel
+          </md-button>
+          <md-button class="ok-button"  ng-click="ok()">
+              OK
+          </md-button>
+      </md-dialog-actions>
+  </form>
+</md-dialog>

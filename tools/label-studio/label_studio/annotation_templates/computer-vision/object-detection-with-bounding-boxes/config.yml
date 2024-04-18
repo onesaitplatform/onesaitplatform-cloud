@@ -1,0 +1,14 @@
+title: Object Detection with Bounding Boxes
+type: community
+group: Computer Vision
+order: 3
+image: /static/templates/object-detection-with-bounding-boxes.png
+details: <h1>Draw a bounding box around the object</h1>
+config: |
+  <View>
+    <Image name="image" value="$image"/>
+    <RectangleLabels name="label" toName="image">
+      <Label value="Airplane" background="green"/>
+      <Label value="Car" background="blue"/>
+    </RectangleLabels>
+  </View>

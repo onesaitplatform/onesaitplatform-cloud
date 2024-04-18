@@ -1,0 +1,89 @@
+<!-- GADGET COMPONENT -->
+<div class="gadget-app_barChart" style="width:100%; height:100%; padding:24px;">
+	<!-- NO DATA INFO -->
+	<div class="chart-nodata" v-if="!chartShow"
+		style="width: calc(100% - 48px);height: calc(100% - 48px);z-index: 99999999;position: absolute;"
+		:style="chart.theme === 'light' ? {'backgroundColor': 'white'} : chart.theme === 'dark' ? {'backgroundColor': '#100c2a'} : {'backgroundColor': '#fef8ef'}">
+		<p> NO DATA AVAILABLE </p>
+	</div>
+	
+
+
+	<div class="chart-options ms-auto" v-if="chart.options">
+		<div class="toolbar button-items text-end">
+			<button  type="button" title="Exportar a Excel" class="btn-chart btn-light btn-sm overline" v-if="chart.excel" @click="exportExcel(dataForExcel)"><i class="ods-icon-file-export icon-xs"></i></button>
+			<button  type="button" :title="chart.theme" class="btn-chart btn-light btn-sm overline" @click="toggleTheme()"><i class="ods-icon-colorpicker icon-xs"></i></button>
+			<button  type="button" title="Options" class="btn-chart btn-light btn-sm overline" @click="chart.debug = !chart.debug"><i :class="chart.debug ? 'ods-icon-eye icon-xs' : 'ods-icon-edit icon-xs'"></i></button>
+		</div>
+	</div>
+	<v-chart :theme="chart.theme" class="chart" :option="option" :loading="chartLoading"
+		:loading-options="loadingOptions" @click='handleClickEvent' @restore='handleRestore' @datazoom='handleDataZoom'
+		autoresize />
+		
+	
+</div>
+<!-- CHART OPTIONS
+	
+<!-- GADGET SCOPED CSS -->
+<style>
+	.chart {
+		position: relative;
+		height: 100%;
+		width: 100%;
+		overflow: hidden;
+	}
+
+	.chart-options {
+		display: block !important;
+		position: absolute !important;
+		float: right !important;
+		bottom: 135px !important;
+		right: -10px !important;
+		top: unset !important;
+	}
+
+	.toolbar {
+		float: right;
+		position: absolute;
+		top: 0px;
+		right: 30px;
+		font-size: 0.85rem;
+		margin-bottom: 10px;
+		z-index: 999999;
+	}
+
+	.debug-info {
+		position: absolute;
+		bottom: 6px;
+		background: rgb(255 235 205 / 100%);
+		width: 100%;
+		height: 40px;
+		z-index: 99999;
+		margin-left: -24px;
+		display: flex;
+		align-content: center;
+		justify-content: flex-start;
+		flex-wrap: wrap;
+		padding: 12px;
+	}
+
+	.icon-xs {
+		font-size: .85rem
+	}
+
+	.btn-light {
+		margin-bottom: 4px;
+		color: #333 !important;
+		background-color: #eff2f773 !important;
+		border-color: transparent !important;
+	}
+
+	.widget-maximize {
+		left: 0px !important;
+		top: 0px !important;
+		width: 99% !important;
+		height: 100% !important;
+		z-index: 500;
+		margin: 0 !important;
+	}
+</style>

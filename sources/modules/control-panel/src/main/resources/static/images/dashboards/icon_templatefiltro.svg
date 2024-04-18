@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="41px"
+   height="41px"
+   viewBox="0 0 41 41"
+   version="1.1"
+   id="svg4614"
+   sodipodi:docname="icon_template.svg"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)">
+  <metadata
+     id="metadata4620">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>icon_piechart</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs4618" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1057"
+     id="namedview4616"
+     showgrid="false"
+     inkscape:zoom="11.512195"
+     inkscape:cx="22.741152"
+     inkscape:cy="28.673192"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg4614" />
+  <!-- Generator: Sketch 52.2 (67145) - http://www.bohemiancoding.com/sketch -->
+  <title
+     id="title4597">icon_piechart</title>
+  <desc
+     id="desc4599">Created with Sketch.</desc>
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+     x="8.1652546"
+     y="35.440678"
+     id="text5167"><tspan
+       sodipodi:role="line"
+       id="tspan5165"
+       x="8.1652546"
+       y="35.440678">T</tspan></text>
+  <path
+     style="fill:#5789ad;fill-opacity:0.98699478;stroke:#5789ad;stroke-width:0.0868644;stroke-opacity:1"
+     d="M 18.432677,22.489944 V 9.5471475 H 13.264245 8.0958126 V 7.9401559 6.3331644 H 20.387126 32.67844 V 7.9401559 9.5471475 H 27.510008 22.341575 V 22.489944 35.432741 h -1.954449 -1.954449 z"
+     id="path5169"
+     inkscape:connector-curvature="0" />
+</svg>

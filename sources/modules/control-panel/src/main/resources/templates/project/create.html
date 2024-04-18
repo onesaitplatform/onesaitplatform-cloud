@@ -1,0 +1,479 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org" th:with="lang=${#locale.language}" th:lang="${lang}">
+    <head>
+        <meta name="_csrf" th:content="${_csrf.token}"/>
+        <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+        <meta http-equiv="Content-Language" th:content="${lang}" />
+        <title th:text="#{name.app}" />
+        
+        <!-- STYLE SHEETS -->
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}" />
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}" />
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}" />
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}" />
+        <!-- THEME -->
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
+        
+        <!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND BOOSTRAP-TIMEPICKER  -->
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}" />
+        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css}" />
+    </head>
+
+    <!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
+    <body class="page-header-fixed  page-content-white page-sidebar-closed">
+    
+    	<!-- MAIN PAGE WRAPPER -->
+    	<div class="page-wrapper">
+    
+    		<!-- BEGIN HEADER INCLUDE -->
+    		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+    		<!-- END HEADER -->
+    
+    		<!-- HEADER AND CONTENT DIVIDER -->
+    		<div class="clearfix"></div>
+    
+    		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
+    		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+    		<!-- END SIDEBAR -->
+    
+    		<!-- BEGIN CONTENT -->
+    		<div class="page-content-wrapper">
+    
+    			<!-- BEGIN CONTENT BODY -->
+    			<div class="page-content">
+    
+    				<div class="alert alert-success display-hide">
+    					<span th:text="${globalMessage}"></span>
+    				</div>
+    
+    				<!-- BEGIN PAGE BAR AND BREADCRUM-->
+    				<div class="page-bar margin-bottom-20">
+    					<ul class="page-breadcrumb">
+    						<li><a th:href="@{/projects/list}"> <span th:text="#{projects.my}">Projects</span></a><i class="fa fa-angle-right"></i></li>
+    						<li>
+                                <span th:if="${projectObj.id} == null" th:text="#{project.breadcrumb.create}">Create Project</span> 
+                                <span th:if="${projectObj.id} != null" th:text="#{project.breadcrumb.update}">Update Project</span>
+                            </li>
+    					</ul>
+    				</div>
+    				<!-- END PAGE BAR -->
+    
+    				<!-- BEGIN PAGE TITLE-->
+    				<h1 class="page-title hide ">
+    					<span th:text="#{name.app}"> onesait platform Control Panel</span>
+    				</h1>
+    				<!-- END PAGE TITLE-->
+    
+                    <div id="header">
+                        <div class="row pageCreateHeader">
+                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                <div class="margin-top-4">
+                                    <span th:if="${projectObj.id} == null" class=" " th:text="#{project.new}"> New Project</span> 
+                                    <span th:if="${projectObj.id} != null" class=" " th:text="${projectObj.identification}"> Update</span>
+                                </div>
+                            </div>
+                            <div class="tools hide">
+                                <a href="" class="collapse" data-original-title="" title=""></a> 
+                                <a href="" class="fullscreen" data-original-title="" title=""></a>
+                            </div>
+                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                <div class="pull-right">
+                                    <!-- REMOVE -->
+                                    <button th:if="${projectObj.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='deleteConfirmation(\''+${projectObj.id}+'\');'"> <i class="icon-delete"></i> <span th:text="#{gen.deleteBtn}"> Delete </span></button>
+                                    <span th:if="${projectObj.id} != null" class="sep"></span>
+                                    
+                                    <!-- CANCEL -->
+                                    <button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:ProjectCreateController.go(\'' + @{/projects/list} + '\');'"> <span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+                                    <span class="sep no-border"></span>
+                                    
+                                    <!-- RESET -->
+                                    <button th:if="${projectObj.id} == null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
+                                    <button th:if="${projectObj.id} != null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" disabled="true" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
+                                    <span class="sep" th:if="${projectObj.id} != null"></span>
+                                    
+                                    <!-- CREATE -->
+                                    <button th:if="${projectObj.id} == null" id="createBtn" class="btn btn-primary btn-primary-save" name="create" th:value="#{gen.createBtn}" onclick="$('form#project_create_form').submit();"> <span th:text="#{gen.createBtn}"> New</span></button>
+                                    
+                                    <!-- UPDATE -->
+                                    <button th:if="${projectObj.id} != null" id="updateBtn" class="btn btn-primary btn-primary-save" name="update" th:value="#{gen.editBtn}" onclick="$('form#project_create_form').submit();"> <span th:text="#{gen.changes}"> Save Changes</span></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+    				<!-- MAIN ROW -->
+    				<div id="divPortlet" class="row equal flex-container">
+                        <div th:if="${projectObj.id} != null" class="tabContainer flex-tabs-left">
+                            <div id="tab-datos" class="option active">
+                                <a href="#tab_1" data-toggle="tab" aria-expanded="false"> 
+                                    <span class="caption-subject" th:text="#{gen.generalInformation}"> General Information </span> 
+                                </a>
+                            </div>
+                            <div id="tab-users" class="option">
+                                <a href="#tab_2" data-toggle="tab" th:classappend="${projectObj?.id} == null ? disabled : ''" aria-expanded="true">
+                                    <span class="" th:text="#{project.users}">USERS </span>
+                                </a>
+                            </div>
+                            <div id="tab-resources" class="option" data-toggle="collapse" data-target="#resourcelist" >
+                                <a href="#tab_3" data-toggle="tab" th:classappend="${projectObj?.id} == null ? 'disabled' : ''" aria-expanded="true">
+                                    <span class="" th:text="#{project.resources}">RESOURCES </span>
+                                </a>   
+                            </div>
+                            <div id="resourcelist" class="collapse margin-left-10 padding-left-5" style="height: 0px;" aria-expanded="false">
+                            	<div id="div_ALL">
+	                            	<input id="checkbox_ALL" class="no-remove" type="checkbox" checked onclick="ProjectCreateController.filterTable(($(this).attr('id')).split('_')[1])"/>
+									<label class="control-label margin-left-5 small" th:text="#{project.users.all}">all</label>
+									<span th:id="'new_' + ${type}" class='pull-right badge rounded-pill bg-light text-dark'>  </span>
+									<span th:id="count_ALL" class='pull-right badge badge-info'></span>	
+	                            </div>
+                          		<th:block th:each="type :${resourceTypes}">
+	                            	<div th:id="'div_' + ${type}">
+	                            		<input  th:id="'checkbox_' + ${type}" class="no-remove checkbox-filter" type="checkbox" onclick="ProjectCreateController.filterTable(($(this).attr('id')).split('_')[1])" th:disabled="(${#strings.toUpperCase(type)} == 'NOTEBOOK' OR ${#strings.toUpperCase(type)} == 'DATAFLOW') AND (${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_DATASCIENTIST' AND ${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR')"/>
+										
+										<label th:if="${#strings.toUpperCase(type)} == 'ONTOLOGY'" class="control-label margin-left-5 small" th:text="${#strings.toUpperCase('__#{gen.ontology}__')}">Type</label>
+										<label th:if="${#strings.toUpperCase(type)} == 'ONTOLOGYVIRTUALDATASOURCE'" class="control-label margin-left-5 small" th:text="${#strings.toUpperCase('__#{datasource.breadcrumb.list}__')}">Type</label>
+										<label th:if="${#strings.toUpperCase(type)} != 'ONTOLOGY' AND ${#strings.toUpperCase(type)} != 'ONTOLOGYVIRTUALDATASOURCE' AND ${#strings.toUpperCase(type)} != 'NOTEBOOK' AND ${#strings.toUpperCase(type)} != 'DATAFLOW'"class="control-label margin-left-5 small" th:text="${type}">Type</label>
+										
+										<label th:if="(${#strings.toUpperCase(type)} == 'NOTEBOOK' OR ${#strings.toUpperCase(type)} == 'DATAFLOW') AND (${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_DATASCIENTIST' AND ${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR')" class="control-label-disabled margin-left-5 small" th:text="${type}">Type</label>
+										<label th:if="(${#strings.toUpperCase(type)} == 'NOTEBOOK' OR ${#strings.toUpperCase(type)} == 'DATAFLOW') AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_DATASCIENTIST' OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="control-label margin-left-5 small" th:text="${type}">Type</label>
+
+										<span th:if="${#strings.toUpperCase(type)} == 'DATAFLOW' AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_DATASCIENTIST' OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" th:id="'new_' + ${type}" class='pull-right badge badge-primary-action text-light' th:attr="onclick='javascript:navigateUrl(\'' + @{|/${urlsMap.get(#strings.toUpperCase(type))}/${(#strings.toUpperCase(type) == 'BINARYFILE' || #strings.toUpperCase(type) == 'DATAFLOW' || #strings.toUpperCase(type) == 'NOTEBOOK') ? 'list/true' : 'create'}|} + '\');'" th:title="#{project.resources.tooltip}">+</span>
+										<span th:if="${#strings.toUpperCase(type)} == 'NOTEBOOK' AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_DATASCIENTIST' OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" th:id="'new_' + ${type}" class='pull-right badge badge-primary-action text-light' th:attr="onclick='javascript:navigateUrl(\'' + @{|/${urlsMap.get(#strings.toUpperCase(type))}/${(#strings.toUpperCase(type) == 'BINARYFILE' || #strings.toUpperCase(type) == 'DATAFLOW' || #strings.toUpperCase(type) == 'NOTEBOOK') ? 'list/true' : 'create'}|} + '\');'" th:title="#{project.resources.tooltip}">+</span>
+										
+										<span th:if="(${#strings.toUpperCase(type)} == 'NOTEBOOK' OR ${#strings.toUpperCase(type)} == 'DATAFLOW') AND (${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_DATASCIENTIST' AND ${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR')" th:id="'new_' + ${type}" class='pull-right badge badge-default text-light' th:title="#{project.resources.tooltip}">+</span>
+										<span th:if="${#strings.toUpperCase(type)} != 'NOTEBOOK' AND ${#strings.toUpperCase(type)} != 'DATAFLOW'" th:id="'new_' + ${type}" class='pull-right badge badge-primary-action text-light' th:attr="onclick='javascript:navigateUrl(\'' + @{|/${urlsMap.get(#strings.toUpperCase(type))}/${(#strings.toUpperCase(type) == 'BINARYFILE' || #strings.toUpperCase(type) == 'DATAFLOW' || #strings.toUpperCase(type) == 'NOTEBOOK') ? 'list/true' : 'create'}|} + '\');'" th:title="#{project.resources.tooltip}">+</span>
+										
+										<span th:id="'count_' + ${type}" class='pull-right badge badge-default' th:if="(${#strings.toUpperCase(type)} == 'NOTEBOOK' OR ${#strings.toUpperCase(type)} == 'DATAFLOW') AND (${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_DATASCIENTIST' AND ${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR')"></span>
+										<span th:id="'count_' + ${type}" class='pull-right badge badge-info' th:if="(${#strings.toUpperCase(type)} == 'NOTEBOOK' OR ${#strings.toUpperCase(type)} == 'DATAFLOW') AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_DATASCIENTIST' OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')"></span>
+										
+										<span th:id="'count_' + ${type}" class='pull-right badge badge-info' th:if="${#strings.toUpperCase(type)} != 'NOTEBOOK' AND ${#strings.toUpperCase(type)} != 'DATAFLOW'"></span>								
+	                            	</div>
+                            	</th:block>
+							</div>
+                            <div id="tab-webproject" class="option">
+                                <a href="#tab_4" data-toggle="tab" th:classappend="${projectObj?.id} == null ? disabled : ''" aria-expanded="true">
+                                    <span class="" th:text="#{gen.webproject}">WEB PROJECT </span>
+                                </a>
+                            </div>
+                        </div>
+                        <div th:class="${projectObj.id} == null ? 'tab-content col-md-12 padding-left-48' : 'tab-content flex-content-right'">
+                            <div class="tab-pane fade in active" id="tab_1"><!--Begin tab1 -->
+                                 <form role="form" id="project_create_form" th:object="${projectObj}" method="post" class="form" enctype="multipart/form-data">
+                                    <!-- FORM ACTIONS FOR INSERT-->
+                                    <input th:if="*{id} == null" type="hidden" name="action" th:value="@{/projects/create}" />
+                
+                                    <!-- FORM ACTIONS FOR UPDATE -->
+                                    <input th:if="*{id} != null" type="hidden" name="action" th:value="@{/projects/update}" /> 
+                                    <input th:if="*{id} != null" type="hidden" name="_method" value="PUT" />
+                                    
+                                    <div class="row main">
+                                        <div class="col-md-8 col-sm-9 col-xs-9 panelHeader">
+                                            <span th:text="#{gen.generalInformation}">General Information</span>
+                                        </div>
+                                        <div class="col-md-4 col-sm-3 col-xs-3">
+                                            <span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8 col-sm-6">
+									<div class="col-md-8 col-sm-6 col-xs-6" style="position: absolute; overflow: hidden; max-width: 750px; right: -300px; padding-top: 12px; ">
+										<div class="form-group" ><!-- IMAGE -->
+											<label id="imageText" class="control-label" th:text="#{dashboards.image}">Image</label>
+											<div class="clearfix"></div>
+											<div id="imageShow" th:style="*{id} != null  ? 'display:block' : 'display:none'">
+												<button id="removeImgBtn"  type="button" class="btn btn-sm btn-outline red-sunglo" name="removeImgBtn" onclick="manageImg()"><i class="fa fa-times"></i> <span th:text="#{gen.deleteBtn} + ' ' + #{dashboards.image}"> Delete Image</span></button>
+												<img id="showedImg" th:if="*{id} != null and ${projectObj.image} != null" th:src="@{/projects/} + ${projectObj.id + '/getImage'}" class="img-responsive thumbnail" style="max-height: 135px; margin-top: 10px;"/>
+												<img id="showedImg" th:if="*{id} == null or ${projectObj.image} == null" th:src="@{/img/DASHBOARD.png}" class="img-responsive thumbnail" style="max-height: 135px; margin-top: 10px;"/>
+											</div>
+											<div id="imageForm" th:style="*{id} != null ? 'display:none' : 'display:block'">
+												<input id="image" class="btn btn-default" type="file" th:field="*{image}" onchange="ProjectCreateController.validateImageSize();" style="width:100%"/>
+												<img id="showedImgPreview" class="img-responsive thumbnail" th:src="@{/img/DASHBOARD.png}" style="max-height: 135px;  margin-top: 10px;"/>
+											</div>															
+										</div>
+									</div>
+									</div>
+                                    <div class="row main">
+                                        <div class="col-md-5 col-sm-6 col-xs-12">
+                                            <div class="form-group">
+                                                <label class="control-label" th:text="#{project.name}">Name</label><span class="required"> *</span>
+												<input id="projectname" type="text" th:readonly="*{identification}" th:required="true" maxlength="50" th:field="*{identification}" class="form-control" th:placeholder="#{project.name}" />
+                                            </div>
+                                        </div>
+									</div>
+									<div class="row main hide">
+                                        <div class="col-md-5 col-sm-6 col-xs-12">
+                                            <div class="form-group">
+                                                <label class="control-label" th:text="#{project.type}">Type</label><span class="required"> *</span> 
+                                                <select th:field="*{type}" id="projecttypes" class="selectpicker form-control" data-live-search="true" data-width="100%">
+                                                    <option th:each="type :${projectTypes}" th:value="${type}" th:text="${type}"></option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+									<div class="row main">
+                                        <div class="col-md-5 col-sm-6 col-xs-12">
+                                            <div class="form-group">
+                                                <label class="control-label" th:text="#{project.description}">Description</label><span class="required"> *</span>
+												<textarea id="projectdescription" th:required="true" maxlength="50" th:field="*{description}" class="form-control" th:placeholder="#{project.description}" style="height : 100px;">
+												</textarea>
+                                            </div>
+                                        </div>
+									</div>
+									<input id="hasImage" type="hidden" name="hasImage"/>
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                </form> 
+                            </div>
+    					
+    						<div class="tab-pane fade in" id="tab_2">
+    							<div th:include="project/fragments/users-tab" id="users-tab-fragment"></div>
+    						</div>
+                            
+    						<div class="tab-pane fade in" id="tab_3">
+    							<!-- SEARCH FORM -->
+
+                                <div class="row main padding-top-4">
+                                    <div class="panelHeader padding-left-15" style="display: inline;">
+                                        <span th:text="#{project.resources}">Project Resources</span>
+                                    </div>
+									<div class="caption" style="display: inline; float:none; padding-left: 5px;">
+										<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" ><i class="icon-search margin-left-10"></i></a>
+									</div>
+									<div id="search-on-title" class="hide input-icon search-icon" style="display: inline; float:none">
+										<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search" style="display: inline;"></i></a>
+									</div>
+									<div class="tools hide">
+										<a href="" class="collapse" data-original-title="" title=""></a>
+										<a href="" class="fullscreen" data-original-title="" title=""></a>
+									</div>
+									<div class="pull-right btn-title-group margin-top-10">
+										<span class="btn color-blue" data-container="body" data-placement="bottom" onclick="$('#accessfilter').toggleClass('hide');ProjectCreateController.turnFirstOptionToGrey();" style="padding-top:10px"><i class="icon-filter"></i></span>
+										<span id="accessfilter" class="hide" style="display:inline-block" > </span>
+										<span class="separator"></span>
+										<div class="pull-right btn-group " id="divcreate" style="margin-left:30px;">
+											<button type="button" class="btn btn-primary button-plus-create" th:title="#{project.resources.add}" onclick="$('#resources-modal').modal('show');" ><a><i class="icon-new" style="color:white;"></i></a></button>
+											<button type="button" class="btn btn-primary btn-primary-delete margin-left-5" style="min-width: 34px!important;" th:attr="onclick='ProjectCreateController.removeAllAuthorizationsConfirm(\''+${projectObj.id}+'\');'" ><a><i class="icon-delete" style="color:white;"></i></a></button>
+										</div>		
+									</div>	
+                                </div>
+    							<div class="row main" th:include="project/fragments/resources-tab" id="resources-tab-fragment"></div>
+    							<div id="resources-modal-fragment" th:include="project/fragments/resources-modal"></div>
+    							<div id="associated-modal-fragment" th:include="project/fragments/elements-associated-modal"></div>
+    						</div>
+                            
+    						<div class="tab-pane fade in" id="tab_4">
+    							<div th:include="project/fragments/webprojects-tab" id="webprojects-tab-fragment"></div>
+    						</div>
+    					</div>
+    				</div>
+    				<!-- END MAIN ROW -->
+    			</div>
+    			<!-- END CONTENT BODY -->
+    		</div>
+    		<!-- END CONTENT page-content-wrapper -->
+    	</div>
+    	<!-- END MAIN PAGE WRAPPER -->
+    
+    	<!-- FOOTER INCLUDE -->
+    	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+    		
+    	<style>
+        	.modal-xl {
+        		width: 75% !important;
+        		display: block;
+        		margin-left: 12% !important;
+        	}
+        	@media (max-width: 992px) {
+        	  .modal-xl {
+        	   margin-left: 0% !important;
+        	  }
+        	}
+    	</style>
+    
+    	<!-- CORE JS CONTROLLERS -->
+    	<script th:src="@{/static/js/app.js}" ></script>
+    	<script th:src="@{/static/js/layout.js}" ></script>
+    	
+    	<!-- INPUTMASK -->
+    	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
+    
+    	<!-- PLUGINS -->
+    	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" ></script>
+    	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}" ></script>
+    	<script th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}" ></script>
+    	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+		<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
+    	<script th:src="@{/static/vendor/blockUI.js}"></script>
+    
+    	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
+    	<!-- LOADING DEFAULT DATES IF NEEDED -->
+    	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}" type="text/javascript"></script>
+    	<script th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}" type="text/javascript"></script>
+    	<script th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
+    
+    	<!-- LOADING DEFAULT LANG MESSAGES IF NEEDED -->
+    	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}" type="text/javascript"></script>
+    		
+    	<!-- TEMPLATE CONTROLLER  -->
+    	<script th:src="@{/static/js/pages/projectCreate.js}"></script>
+    
+    	<!-- MAIN INIT -->
+    	<script th:inline="javascript">
+    	
+        	function navigateUrl(url){  window.location.href = url;	}
+        	function navigateUrlBlank(url){ window.open(url, '_blank');};
+        	var currentLanguage = [[${lang}]];
+        	var csrfParameter = [[${_csrf.parameterName}]];
+			var csrfValue = [[${_csrf.token}]];
+        	var projectCreateJson = { 
+        		"validation_dates" : [[#{app.valid.dateDeleted}]],
+        		"close" : [[#{gen.closeBtn}]],		
+        		"language" : currentLanguage,
+        		"actionMode" : [[${projectObj.id}]],
+        		"projectId":  [[${projectObj.id}]],
+        		"authorizations" : [[${authorizations}]],
+        		"associations" : [[${associations}]],
+        		"project_image_error" : [[#{dashboards.image.error}]],
+        		"fieldEmpty":[[#{app.roles.fieldEmpty}]],
+        		"realmLinked": [[${projectObj.app?.identification}]],
+        	    "deleteAppConfirm":[[#{app.delete.confirm}]],
+        	    "accessType":[[#{project.resource.accesstype}]],
+        	    "validations" : {
+        			"createfirst": [[#{project.validation.createfirst}]],
+        			"selectRealm": [[#{project.realmselect}]],
+        			"selectUser" : [[#{project.validation.userselect}]],
+        			"selectWebProject" : [[#{project.validation.webprojectselect}]],
+        			"selectAccessAndUser" : [[#{project.validation.acccessselect}]],
+        			"accessALL" :[[#{project.resource.access.all}]]
+        		},
+        		"confirm":{
+        			"unlinkRealm" : [[#{project.confirm.unlinkrealm}]],
+        			"unlinkRealmTitle" : [[#{project.confirm.unlinkrealm.title}]],
+        			"deleteAllSelected" : [[#{project.del.allresources.confirm}]],
+        			"deleteAllSelectedTitle" : [[#{project.del.allresources.confirm.title}]]
+        		},
+        		"ontologiesAssociated" : [[#{project.addElements}]],
+        		"ontologiesAssociatedALL" : [[#{project.addElements.add}]],
+        		"addALLInfo" : [[#{project.add.all}]],
+        		"resourceTypeAdded" : [[${resourceTypeAdded}]],
+        		"resourceIdentificationAdded" : [[${resourceIdentificationAdded}]]
+        	};
+    	</script>
+        
+        <script type="text/javascript" th:inline="javascript">  
+    
+            var  deleteConfirmation = function (id){
+                showConfirmDeleteDialog(id);    
+            } 
+            
+            
+            function manageImg(){
+				$('#imageShow').css('display','none');
+				$('#imageForm').css('display','block');
+				$('#hasImage').val(false);
+			}
+			
+			function hideImage(){
+
+				if(dashboardCreateJson.actionMode == null) {
+					$('#image').toggle('hide');
+					$('#showedImgPreview').toggle('hide');
+					$('#imageText').toggle('hide');
+					
+					$('#image').val(null);
+					$('#hasImage').val(false);
+					$('#showedImgPreview').attr('src','/controlpanel/img/DASHBOARD.png');
+					
+				} else {
+					$('#image').val(null);
+					$('#hasImage').val(false);
+					$('#showedImgPreview').attr('src','/controlpanel/img/DASHBOARD.png');
+					manageImg();
+					
+					if($('#checkboxGenerateImage').prop('checked') == true) {
+		
+							$('#showedImgPreview').addClass('hide');
+							$('#image').removeClass('show');
+							$('#image').addClass('hide');
+							$('#showedImg').addClass('hide');
+							$('#imageText').addClass('hide');
+							$('#showedImgPreview').addClass('hide');
+						} else {
+					
+							$('#showedImgPreview').removeClass('hide');
+							$('#image').addClass('show');
+							$('#showedImg').removeClass('hide');
+							$('#imageText').removeClass('hide');
+							$('#showedImgPreview').removeClass('hide');	
+		
+					}
+				}
+			}
+	
+            
+            var showConfirmDeleteDialog = function(id){ 
+        
+                //i18 labels
+                var Close = headerReg.btnCancelar;
+                var Remove = headerReg.btnEliminar;
+                var Content = [[#{project.del.confirm}]];
+                var Title = [[#{project.delete.confirm.title}]];
+        
+                // jquery-confirm DIALOG SYSTEM.
+                $.confirm({
+                    title: Title,
+                    theme: 'light',
+                    columnClass: 'medium',
+                    content: Content,
+                    draggable: true,
+                    dragWindowGap: 100,
+                    backgroundDismiss: true,
+                    buttons: {
+                        close: {
+                            text: Close,
+                            btnClass: 'btn btn-outline blue dialog',
+                            action: function (){} //GENERIC CLOSE.      
+                        },
+                        remove: {
+                            text: Remove,
+                            btnClass: 'btn btn-primary',
+                            action: function(){ 
+                                console.log(id);
+                                var csrf_value = $("meta[name='_csrf']").attr("content");
+                                var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+                                
+                                $.ajax({
+                                    url: '/controlpanel/projects/'+id,
+                                    headers: {
+                                        [csrf_header]: csrf_value
+                                    },
+                                    type: 'DELETE',                       
+                                    success: function(result) {
+                                        navigateUrl('/controlpanel/projects/list');
+                                    }
+                                });
+                            }                                           
+                        }               
+                    }
+                });
+            } 
+            
+            //]]>
+    </script>
+    </body>
+</html>

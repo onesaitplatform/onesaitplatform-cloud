@@ -1,0 +1,130 @@
+#General Data Class
+dataclass:
+    name: generalDataClass
+    description: general rules
+    dataclassrules:
+        -   ruletype: property
+            rulename: toUpperCase
+            changes:
+                -
+                    order: 0
+                    name: mayus
+                    script: |-
+                        groovy
+                        return value.toUpperCase();
+        -   ruletype: property
+            rulename: toLowerCase
+            changes:
+                -
+                    order: 0
+                    name: minus
+                    script: |-
+                        groovy
+                        return value.toLowerCase();
+        -   ruletype: property
+            rulename: toDatetoString
+            changes:
+                -
+                    order: 0
+                    name: toDate
+                    script: |-
+                        javascript
+                        return value.toDate('dd.mm.yy').toString('yyyy-mm-dd');
+        -   ruletype: property
+            rulename: dniformat
+            validations:
+                -   
+                    name: dniformat
+                    script: |-
+                        javascript
+                        var regular_exp = /^\d{8}[a-zA-Z]$/;
+                        if(regular_exp.test(value) === true){
+                            var numero = value.substr(0,value.length-1);
+                            var letr = value.substr(value.length-1,1);
+                            var num = numero % 23;
+                            var letra='TRWAGMYFPDXBNJZSQVHLCKET';
+                            letra=letra.substring(num,num+1);
+                            if (letra!==letr.toUpperCase()) {
+                                return numero + letra;
+                            } else{
+                                return true;
+                            }
+                        } else{
+                         return false;
+                        }
+                    error: error
+                    errormsg: ${value} no es un formato válido de dni
+        -   ruletype: property
+            rulename: comunidadesEsp
+            changes:
+                -
+                    order: 0
+                    name: comMadrid
+                    script: |-
+                        groovy
+                        return value.replace("Madrid", "Comunidad de Madrid");
+                -
+                    order: 1
+                    name: comValencia
+                    script: |-
+                        groovy
+                        return value.replace("Valencia", "Comunidad Valenciana");
+                -
+                    order: 2
+                    name: Asturias
+                    script: |-
+                        groovy
+                        return value.replace("Asturias", "Principado de Asturias");
+                -
+                    order: 3
+                    name: Murcia
+                    script: |-
+                        groovy
+                        return value.replace("Murcia", "Región de Murcia");
+            validations:
+                -   
+                    name: comunidades
+                    script: |-
+                        groovy
+                        def comunidades = ["Andalucía", "Aragón", "Canarias", "Cantabria", "Castilla y León", "Castilla-La Mancha", "Cataluña", "Ceuta", 
+                            "Comunidad Valenciana","Comunidad de Madrid", "Extremadura", "Galicia", "Islas Baleares", "La Rioja", "Melilla", "Navarra", "País Vasco", "Principado de Asturias", 
+                            "Región de Murcia"] as String[];
+                        return comunidades.contains(value);
+                    error: error
+                    errormsg: ${value} no es una comunidad española
+        -   ruletype: property
+            rulename: provinciasEsp
+            validations:
+                -   
+                    name: provincias
+                    script: |-
+                        javascript
+                        var provincias = ['Alava','Albacete','Alicante','Almería','Asturias','Ávila','Badajoz','Barcelona','Burgos','Cáceres','Cádiz','Cantabria','Castellón','Ciudad Real','Córdoba','La Coruña',
+                        'Cuenca','Gerona','Granada','Guadalajara','Guipúzcoa','Huelva','Huesca','Islas Baleares','Jaén','León','Lérida','Lugo','Madrid','Málaga','Murcia','Navarra','Ourense','Palencia','Las Palmas','Pontevedra',
+                        'La Rioja','Salamanca','Segovia','Sevilla','Soria','Tarragona','Santa Cruz de Tenerife','Teruel','Toledo','Valencia','Valladolid','Vizcaya','Zamora','Zaragoza']; 
+                        return provincias.indexOf(value) != -1;
+                    error: warning
+                    errormsg: ${value} no es una provincia española
+        -   
+            ruletype: entity
+            rulename: adultAge
+            changes:
+                -
+                    name: pediatra
+                    order: 0
+                    condition: rawdata.age > 17
+                    effect: rawdata.adult = 'yes'
+                    else: rawdata.adult = 'no'
+            validations:
+                -
+                    name: isAdult
+                    error: error
+                    errormsg: El paciente ${rawdata.dni} es menor de 18
+                    script: |- 
+                        javascript
+                        var json = JSON.parse(rawdata); 
+                        if(json.age > 17){
+                            return true;
+                        } else {
+                            return false;
+                        }

@@ -1,0 +1,14 @@
+version: "2.1"
+
+services:
+  rules-engine:
+    image: onesaiplatform/rules-engine:latest
+    container_name: rules-engine
+    ports:
+      - "20200:20200"
+    environment:
+      - SERVER_NAME=localhost:21000
+      - CONFIGDBSERVERS=localhost:3306   
+    extra_hosts:
+      - "localhost:172.20.10.4"
+      - "cacheservice:172.20.10.4"

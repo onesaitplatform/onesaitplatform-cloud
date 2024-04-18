@@ -1,0 +1,24 @@
+version: '2'
+services:
+  jaeger-security-proxy:
+      image: registry.onesaitplatform.com/onesaitplatform/jaeger-keycloak:1.0
+      stdin_open: true
+      hostname: jaeger-security-proxy
+      network_mode: container:jaeger
+      volumes:
+      - /datadrive/onesaitplatform/jaeger/proxy.json:/opt/keycloak-proxy/conf/proxy.json:rw
+      tty: true
+      labels:
+        io.rancher.container.pull_image: always
+        io.rancher.container.network: true
+  jaeger:
+    image: registry.onesaitplatform.com/onesaitplatform/jaeger:1.0-dev
+    environment:
+      ES_SERVER_URLS: http://elasticdb.onesait-platform:9200
+      QUERY_BASE_PATH: /jaeger
+      COLLECTOR_OTLP_ENABLED: none
+    stdin_open: true
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.sidekicks: jaeger-security-proxy

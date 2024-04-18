@@ -1,0 +1,377 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org" th:with="lang=${#locale.language}" th:lang="${lang}">
+<head>
+<meta name="_csrf" th:content="${_csrf.token}"/>
+<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+<meta http-equiv="Content-Language" th:content="${lang}" />
+<title th:text="#{name.app}" />
+
+
+<!-- STYLE SHEETS -->
+<link rel="stylesheet" type="text/css" media="all" 	th:href="@{/static/css/bootstrap.min.css}" />
+<link rel="stylesheet" type="text/css" media="all"	th:href="@{/static/css/components.css}" />
+<link rel="stylesheet" type="text/css" media="all"	th:href="@{/static/css/plugins.css}" />
+<link rel="stylesheet" type="text/css" media="all"	th:href="@{/static/css/layout.css}" />
+<!-- THEME -->
+<link rel="stylesheet" type="text/css" media="all"	th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
+
+<!-- PULSE -->
+<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/pulse.css}"/>
+
+<!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND BOOSTRAP-TIMEPICKER  -->
+<link rel="stylesheet" type="text/css" media="all"	th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}" />
+<link rel="stylesheet" type="text/css" media="all"	th:href="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css}" />
+<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-markdown/bootstrap-markdown.min.css}"/>
+
+</head>
+
+<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
+<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment"
+			class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+
+		<!-- HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"></div>
+
+		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
+		<div th:include="fragments/menu::#menuFragment"	class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+		
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+
+				<div class="alert alert-success display-hide">
+					<span th:text="${globalMessage}"></span>
+				</div>
+
+				<!-- BEGIN PAGE BAR AND BREADCRUM-->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/bundlerepository/list}"> <span th:text="#{versioning.bundle.repository.breadcrumb}">bundles</span></a><i class="fa fa-angle-right"></i></li>
+						<li><span th:text="#{versioning.bundle.repository.show}">Show Bundle</span></li>
+					</ul>
+				</div>
+				<!-- END PAGE BAR -->
+
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide ">
+					<span th:text="#{name.app}"> onesait Platform Control Panel</span>
+				</h1>
+				<!-- END PAGE TITLE-->
+				<form role="form" id="bundle_create_form" th:object="${bundle}" method="get" class="form">
+					<!-- MAIN ROW -->
+					<div id="header">
+						<div class="row pageCreateHeader">
+							<div class="col-md-6 col-sm-6 col-xs-12">
+								<div class="margin-top-4">
+									<span th:text="#{gen.generalInformation}">General Information</span>
+								</div>
+							</div>
+							<div class="col-md-6 col-sm-6 col-xs-12">
+								<div class="pull-right">
+									<!-- CANCEL -->
+									<button id="candelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" th:attr="onclick='javascript:navigateUrl(\'' + @{/bundlerepository/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+										
+									<!-- DOWNLOAD -->											
+									<button id="downloadBtn" type="button" class="btn btn-primary btn-primary-save" name="download"  th:value="download" value="download" th:attr="onclick='javascript:$(\'#form_download_document\').submit()'"><span th:text="#{gen.download}"> Download </span></button>
+		
+									<!-- INSTALL -->
+									<button id="installBtn" type="button" class="btn btn-primary btn-primary-save" name="install"  value="install" th:attr="onclick='javascript:$(\'#form_install\').submit()'"><span th:text="#{gen.install}"> Load</span></button>
+								</div>
+							</div>
+						</div>
+						
+					</div>
+					<div class="row main">
+   						<div id="pulse" class="col-md-12 hide">	
+					  		<div class="pulsating-circle"></div>										
+				  	   </div>
+	   				</div>
+					<div class="row main bundleCardGeneralInfo">
+						<div class="col-sm-2 col-md-2 panelHeader" style="display: inline-table;">
+							<img th:if="${bundle.imageBase64 == null OR bundle.imageBase64.length < 10}" th:src="@{/img/APPLICATION.png}" style="max-height: 150px;" />
+							<img th:if="${bundle.imageBase64 != null AND bundle.imageBase64.length > 10}" th:src="@{'data:image/jpeg;base64,'+${bundle.imageBase64}}" style="max-height: 150px;" />
+						</div>
+						<div class="col-sm-4 col-md-4" style="display: inline-table;">
+							<div class="panelHeader margin-bottom-5">
+								<span th:if="${bundle.title} != null" th:text="${bundle.title}">Title</span>
+							</div>
+							<div class="">
+								<label class="control-label" th:text="#{versioning.bundle.projectURL} + ' :'">Project URL</label>
+								<span th:if="${bundle.projectURL} != null" th:text="${bundle.projectURL}">Project URL</span>
+							</div>
+							<div class="">
+								<label class="control-label" th:text="#{versioning.bundle.rootFolder} + ' :'">Root Folder</label>
+								<span th:if="${bundle.rootFolder} != null" th:text="${bundle.rootFolder}">Root Folder</span>
+							</div>
+							<div class="">
+								<label class="control-label" th:text="#{versioning.bundle.gitBranch} + ' :'">Git branch</label>
+								<span th:if="${bundle.gitBranch} != null" th:text="${bundle.gitBranch}">Root Folder</span>
+							</div>
+							<div class="">
+								<img th:unless="${#lists.isEmpty(bundle.resourcesCount)}" style="width: 60px;height: auto; border: 1px solid rgb(0, 255, 255);float: left;" src="/controlpanel/static/img/onesaitplatform.jpeg"/>
+							</div>	
+						</div>
+						<div class="col-sm-6 col-md-6" style="display: contents;">
+							<div class="panelHeader margin-bottom-5" style="min-height: 32px;">
+							</div>
+							<div class="">
+								<label class="control-label" th:text="#{versioning.bundle.version} + ' :'">Version</label>
+								<span th:if="${bundle.projectURL} != null" th:text="${bundle.version}">version</span>
+							</div>
+							<div class="">
+								<label class="control-label" th:text="#{gen.created} + ' :'">Created At</label>
+								<span th:if="${bundle.projectURL} != null" th:text="${bundle.createdAt}">Created At</span>
+							</div>
+							<div class="">
+								<label th:if="${bundle.resourcesCount!=null}" class="control-label" th:text="#{versioning.bundle.platformElements} + ' :'">Elementos de plataforma</label>
+								<th:block th:if="${bundle.resourcesCount!=null}" th:each="key: ${#lists.sort(bundle.resourcesCount.keySet())}">
+									<i th:if="${key == 'Api'}" class="fa flaticon-network font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'App'}" class="fa flaticon-suitcase font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'BinaryFile'}" class="la la-file font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'ClientPlatform'}" class="fa flaticon-truck font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'ClientPlatformInstanceSimulation'}" class="fa flaticon-truck font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'Configuration'}" class="fa flaticon-technology font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'Dashboard'}" class="fa flaticon-graph font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'DashboardConf'}" class="fa flaticon-graph font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'DataModel'}" class="fa flaticon-multimedia font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}" ></i>
+									<i th:if="${key == 'DataflowInstance'}" class="fa flaticon-analytics font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'DroolsRule'}" class="fa flaticon-analytics font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'FlowDomain'}" class="fa flaticon-analytics font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'Gadget'}" class="fa flaticon-app font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'GadgetDatasource'}" class="la la-database font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'GadgetFavorite'}" class="la flaticon-app font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'GadgetMeasure'}" class="la flaticon-app font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'GadgetTemplate'}" class="fa flaticon-app font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'GadgetTemplateType'}" class="fa flaticon-app font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'Layer'}" class="fa flaticon-app font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'MapsLayer'}" class="fa flaticon-app font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'MapsMap'}" class="fa flaticon-app font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'MapsProject'}" class="fa flaticon-app font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'MapsStyle'}" class="fa flaticon-app font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'Notebook'}" class="fa flaticon-interface-5 font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'Ontology'}" class="fa flaticon-network font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}" ></i>
+									<i th:if="${key == 'OntologyAI'}" class="fa flaticon-network font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}" ></i>
+									<i th:if="${key == 'OntologyKPI'}" class="fa flaticon-network font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}" ></i>
+									<i th:if="${key == 'OntologyTimeSeries'}" class="fa flaticon-network font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}" ></i>
+									<i th:if="${key == 'Pipeline'}" class="fa flaticon-technology font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'Project'}" class="fa flaticon-suitcase font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'Report'}" class="la la-folder-open font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'User'}" class="la flaticon-users font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'Viewer'}" class="la la-folder-open font-lg padding-both-5" th:title="${key + ' :' + bundle.resourcesCount.get(key)}"></i>
+									<i th:if="${key == 'WebProject'}" class="fa flaticon-medical font-lg padding-both-5" th:title="${key}"></i>
+								</th:block>
+							</div>						
+						</div>
+					</div>
+					<div th:if="${bundle.shortdescription} != null" class="row main bundleCardShortDescription" >
+						<div class="col-sm-6 col-md-6">
+							<label class="panelHeader" th:text="#{versioning.bundle.generalDesc}">Short Description</label>
+							<p class="form-control-static-block " th:text="${bundle.shortdescription}">Short Description</p>
+						</div>
+					</div>
+					<div class="row main padding-left-40 bundleCardShortDetails">
+						<!-- IDENTIFICATION AND DESCRIPTION -->
+						<div class="col-md-6 col-sm-6 col-xs-12" style="display: inline-table;">
+							<div class="form-group">
+								<label class="panelHeader" th:text="#{versioning.bundle.detailedDesc}"></label>
+								<textarea style="min-height: 43%;" th:placeholder="#{versioning.bundle.image.placeholder}" class="element textarea small form-control" id="readmeArea" data-provide="markdown" data-iconlibrary="fa" rows="22"></textarea>
+							</div>
+							<input id="readme" name="readme" type="hidden"  th:value="${bundle.readme}"/>
+						</div>
+						<div th:attr="class=${not #lists.isEmpty(bundle.extraFiles) ? 'col-sm-3 col-md-3' : 'col-sm-6 col-md-6'}">
+							<div class="form-group">
+								<label class="panelHeader" th:text="#{versioning.bundle.platformElements}">Elementos de plataforma</label>
+								<div style="max-height: 43%; overflow-y: auto; border-left-style: outset;">
+									<div th:each="resourceType: ${#lists.sort(bundle.platformResources.keySet())}">
+										<div class="padding-bottom-10" style="font-weight: bold;">
+											<i th:if="${resourceType == 'Api'}" class="fa flaticon-network font-lg padding-both-5" ></i>
+											<i th:if="${resourceType == 'App'}" class="fa flaticon-suitcase font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'BinaryFile'}" class="la la-file font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'ClientPlatform'}" class="fa flaticon-truck font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'ClientPlatformInstanceSimulation'}" class="fa flaticon-truck font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'Configuration'}" class="fa flaticon-technology font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'Dashboard'}" class="fa flaticon-graph font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'DashboardConf'}" class="fa flaticon-graph font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'DataModel'}" class="fa flaticon-multimedia font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'DataflowInstance'}" class="fa flaticon-analytics font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'DroolsRule'}" class="fa flaticon-analytics font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'FlowDomain'}" class="fa flaticon-analytics font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'Gadget'}" class="fa flaticon-app font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'GadgetDatasource'}" class="la la-database font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'GadgetFavorite'}" class="la flaticon-app font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'GadgetMeasure'}" class="la flaticon-app font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'GadgetTemplate'}" class="fa flaticon-app font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'GadgetTemplateType'}" class="fa flaticon-app font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'Layer'}" class="fa flaticon-app font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'MapsLayer'}" class="fa flaticon-app font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'MapsMap'}" class="fa flaticon-app font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'MapsProject'}" class="fa flaticon-app font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'MapsStyle'}" class="fa flaticon-app font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'Notebook'}" class="fa flaticon-interface-5 font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'Ontology'}" class="fa flaticon-network font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'OntologyAI'}" class="fa flaticon-network font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'OntologyKPI'}" class="fa flaticon-network font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'OntologyTimeSeries'}" class="fa flaticon-network font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'Pipeline'}" class="fa flaticon-technology font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'Project'}" class="fa flaticon-suitcase font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'Report'}" class="la la-folder-open font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'User'}" class="la flaticon-users font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'Viewer'}" class="la la-folder-open font-lg padding-both-5"></i>
+											<i th:if="${resourceType == 'WebProject'}" class="fa flaticon-medical font-lg padding-both-5"></i>
+											<span th:text="${resourceType}" style="font-weight: bold;">resource</span>
+										</div>
+										<div>
+											<th:block th:each="resource: ${bundle.platformResources.get(resourceType)}">
+												<div  th:text="${resource}" class="padding-bottom-10 padding-left-30">
+												</div>
+											</th:block>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-sm-3 col-md-3" th:if="${not #lists.isEmpty(bundle.extraFiles)}">
+							<div class="form-group">
+								<label class="panelHeader" th:text="#{versioning.bundle.resources}">Recursos asociados</label>
+								<div style="max-height: 43%; overflow-y: auto; border-left-style: outset;">
+									<div class="padding-bottom-10" th:each="file: ${bundle.extraFiles}">
+	 									<i class="la la-file font-lg padding-both-5"></i><span th:text="${file.toString()}">resource</span>
+									</div>
+								</div>
+							</div>
+						</div>
+
+					</div>
+				<!-- END MAIN ROW -->
+				</form>
+				<form th:id="form_download_document" th:action="@{|/bundlerepository/download/${bundle.id}|}" method="POST">
+                	<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                </form>
+                <form th:id="form_install" th:action="@{|/bundlerepository/install/${bundle.id}|}" method="POST">
+                	<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                </form>
+			</div>
+			<!-- END CONTENT BODY -->
+		</div>
+		<!-- END CONTENT page-content-wrapper -->
+		
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+
+	<!-- FOOTER INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+
+	<!-- MARKDOWN -->
+	<script th:src="@{/static/vendor/bootstrap-markdown/markdown.js}" type="text/javascript"></script>
+	<script th:src="@{/static/vendor/bootstrap-markdown/bootstrap-markdown.js}" type="text/javascript"></script>
+	
+	<!-- MARKDOWN LOADING DEFAULT LANG MESSAGES IF NEEDED -->
+	<script th:if="${lang} == 'es'" th:src="@{/static/vendor/bootstrap-markdown/locale/bootstrap-markdown.es.js}" type="text/javascript"></script>
+
+	<!-- CORE JS CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}" ></script>
+	<script th:src="@{/static/js/layout.js}" ></script>
+
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" ></script>
+	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}" ></script>
+	<!-- LOADING DEFAULT DATES IF NEEDED -->
+	<script th:if="${lang} == 'es'"	th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}" type="text/javascript"></script>
+	<script	th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}"	type="text/javascript"></script>
+	<script	th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
+
+	<!-- LOADING DEFAULT LANG MESSAGES IF NEEDED -->
+	<script th:if="${lang} == 'es'"	th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}" type="text/javascript"></script>
+
+	<!-- TEMPLATE CONTROLLER 
+	<script th:src="@{/static/js/pages/deviceCreate.js}"></script> -->
+
+	<!-- MAIN INIT -->
+	<script th:inline="javascript">
+	//<![CDATA[ 
+	
+	var currentLanguage = [[${lang}]];	
+	
+	var deviceCreateJson = { 
+		"close" : [[#{gen.closeBtn}]],		
+		"language" : currentLanguage
+	};	
+	var executionId = [[${executionId}]]
+	var executionURL = [[@{/versioning/execution/}]]
+
+	// REDIRECT
+	function navigateUrl(url){  window.location.href = url;	}
+	
+	// MAIN WHEN LOAD
+	$(window).on("load",function(){  
+		// init on load.		
+		$('#readmeArea').val($('#readme').val());
+		$("button[title|='Preview']").click();
+		
+		// SHOW/HIDE DATATABLES COLUMN INIT 		
+		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		$('#dataTable-vis-toggle').removeClass('hide');
+		
+		if(executionId != null){
+			$('#pulse').attr('class', 'col-md-12');
+			intervalFunc = window.setInterval(checkExecution, 5000, executionId);
+		}
+		
+	
+	});
+	
+	var checkExecution = (execution) =>{
+		fetch(`${executionURL}${executionId}`)
+		.then( r => {
+			if (r.status !== 200 ) {
+				throw Error(response.statusText);
+			}
+			$('#pulse').attr('class', 'col-md-12 hide');
+			clearInterval(intervalFunc);
+	 		return r.json();
+		})
+		.then( r => {
+				if(r.operationResult === 'SUCCESS')
+					toastr.info(messagesForms.operations.genOpSuccess,`${r.resultMessage}. Time taken: ${r.timeTaken} ms`);
+				else
+					toastr.info(messagesForms.operations.genOpError,`${r.resultMessage}. Time taken: ${r.timeTaken} ms`);
+			}
+		)
+		.catch(e => console.debug("Waiting for background execution to finish"))
+	}
+	
+	
+	
+
+	
+	//]]>
+	</script>
+</body>
+</html>

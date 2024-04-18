@@ -1,0 +1,673 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org"  xmlns:dt="http://www.thymeleaf.org/dandelion/datatables"  th:with="lang=${#locale.language}" th:lang="${lang}">
+	<head>
+		<meta name="_csrf" th:content="${_csrf.token}"/>
+		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"/>
+
+		
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+
+		<!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND DATATABLES  -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}"/>		
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.css}"/>	
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}"/>
+		
+		<!-- Funciones AJAX -->
+		<script th:inline="javascript">
+		 //<![CDATA[ 
+		var valueObjects = [];
+		var queryResponse = {};
+		var queryErrorResponse = {};
+		var dataJSON = {};
+		
+		window.onload = function(){
+			var htmlelement = document.getElementById('querySql');
+			codeEditor = monaco.editor.create(htmlelement, {
+			       language: 'sql', 
+			       scrollBeyondLastLine: false,	 
+			       theme: "vs-dark",	 
+			       automaticLayout: true	 
+			});
+			
+			var user_ontology = $("#user").val().replace(/\./g, "_")
+			
+			setMonacoValue('select * from Audit_'+ user_ontology +' as c limit 3');      
+			$(window).scroll(function() {
+	      		queryOnTop();
+	  		});
+		};
+		
+		//Functions to manage Monaco Editor
+		var codeEditor;		
+		var setMonacoValue = function (value){
+			if (codeEditor){
+				codeEditor.setValue(value);
+			}
+		}
+		var getMonacoValue = function (){
+			if (codeEditor){
+				return codeEditor.getValue();
+			}
+		}
+
+		function getQueryExecuted(){
+			
+			var csrf_value = $("meta[name='_csrf']").attr("content");
+			var csrf_header = $("meta[name='_csrf_header']").attr("content");
+			
+			$.ajaxSetup({'headers': {
+				[csrf_header]: csrf_value
+		    }});
+			
+			if(!$("#customQuery").is(":checked")){
+				var operation = $("#operation").val();
+				
+				$("#CanvasResponse").load('/controlpanel/audit/executeQuery', {'resultType': $("#resultType").val(),'modulesname': $("#modulesname").val(),'operation': $("#operation").val(),'offset': $("#offset").val(), 'user': $("#user").val()},
+					function(response,status,xhr){
+					
+						queryResponse = $(response);				
+						
+						// check for valid json, or server string error like java.lang.Exception...
+						var IS_JSON = true;
+						try{ var json = $.parseJSON(queryResponse.text());	} catch(err){ IS_JSON = false; }
+						
+						if (!IS_JSON){
+							var text=""+queryResponse.text();
+							// Our own JSON string to mark non JSON ERRORs
+							queryErrorResponse = text;										
+						}
+						
+						if ($('#jsoneditor').attr('data-loaded') == 'false') { createEditor(); $('#jsoneditor').attr('data-loaded', true);	}				
+						if (IS_JSON) { 
+							dataJSON = queryResponse.text();
+							if ($('.table-viewer').is(':visible')){ $('.btn-table-toggle').trigger('click'); }
+							editor.setText(queryResponse.text());
+							editor.setMode('view');
+						}
+						else { editor.setMode('text');  editor.setText(queryErrorResponse); } 
+									
+				});	
+				if ($('#result-panel').hasClass('hide')){ $('#result-panel').toggleClass('hide'); } 
+			}else{
+				$("#CanvasResponse").load('/controlpanel/audit/executeCustomQuery', {'query': getMonacoValue(), 'user': $("#user").val()},
+						function(response,status,xhr){
+						
+							queryResponse = $(response);				
+							
+							// check for valid json, or server string error like java.lang.Exception...
+							var IS_JSON = true;
+							try{ var json = $.parseJSON(queryResponse.text());	} catch(err){ IS_JSON = false; }
+							
+							if (!IS_JSON){
+								var text=""+queryResponse.text();
+								// Our own JSON string to mark non JSON ERRORs
+								queryErrorResponse = text;										
+							}
+							
+							if ($('#jsoneditor').attr('data-loaded') == 'false') { createEditor(); $('#jsoneditor').attr('data-loaded', true);	}				
+							if (IS_JSON) { 
+								dataJSON = queryResponse.text();
+								if ($('.table-viewer').is(':visible')){ $('.btn-table-toggle').trigger('click'); }
+								editor.setText(queryResponse.text());
+								editor.setMode('view');
+							}
+							else { editor.setMode('text');  editor.setText(queryErrorResponse); } 
+										
+					});	
+				if ($('#result-panel').hasClass('hide')){ $('#result-panel').toggleClass('hide'); } 
+			}
+		}
+		
+		
+			function showData(key,str){	
+				
+				$('#jsonDatatTitle').text(str);
+				var str = valueObjects.find(x => x.key === key).json;
+				if (str === 'null') { return false; }
+				jsonToModal = syntaxHighlight(str);
+				document.getElementById("jsonDataView").innerHTML = jsonToModal;
+				$('#jsonModal').modal();
+				
+		
+				//alert(' data: ' + JSON.stringify(valueObjects.find(x => x.key === key).json));		
+		};
+		
+		function verifyData(){
+			
+			var csrf_value = $("meta[name='_csrf']").attr("content");
+			var csrf_header = $("meta[name='_csrf_header']").attr("content");
+			$.ajax({
+				url : "/controlpanel/audit/verify",
+				headers: {
+					[csrf_header]: csrf_value
+			    },
+				type : 'POST',
+				data: {'query': getMonacoValue(), 'user': $("#user").val()},
+				success : function(verify) {
+					
+					if(!verify){
+						$.alert({
+							title : 'Error',
+							theme : 'light',
+							content : [[#{audit.verify.error}]]
+						});
+					}else{
+						$.alert({
+							title : 'Info',
+							theme : 'light',
+							content : [[#{audit.verify.success}]]
+						});
+					}
+					
+				},
+				error : function(data, status, er) {
+					 
+					toastr.error(er,'');
+				}
+			});
+			
+			
+		}
+		
+		function syntaxHighlight(json) {
+			json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+			return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+				var cls = 'number';
+				if (/^"/.test(match)) {
+					if (/:$/.test(match)) {
+						cls = 'key';
+					} else {
+						cls = 'string';
+					}
+				} else if (/true|false/.test(match)) {
+					cls = 'boolean';
+				} else if (/null/.test(match)) {
+					cls = 'null';
+				}
+				return '<span class="' + cls + '">' + match + '</span>';
+			});
+		};
+		//]]>
+		</script>
+		
+		<style>
+			pre { padding: 10px; margin: 10px; }
+			.string { color: #179ca8; }
+			.number { color: #FFCC00; }
+			.boolean { color: #659be0; }
+			.null { color: #337ab7; }
+			.key { color: #525e64; }
+		</style>
+
+	</head>	
+	
+	
+	<!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+	
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+		
+		<!-- HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"> </div>
+			
+		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+			
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+			
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">
+				<!-- SEARCH FORM -->
+				<div id="searchFilter"  class="row" >
+					<form id="form_category" class="" role="form" method="get">
+						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+						<div class="col-md-2 col-sm-4 col-xs-12">
+							<label class="" th:text="#{audit.resultevent}">Resultado</label>
+							<select  class="form-control" id="resultType" name="resultType" th:placeholder="#{audit.resultevent}" >
+								<option name="all" value="all" id="all" th:text="#{audit.operation.all}"> ALL (*) </option>
+								<option th:each="result : ${resultevent}" th:id="${result}" data-type="general" th:value="${result}" th:text="${result}"  ></option>
+							</select>
+						</div>
+						<div class="col-md-2 col-sm-4 col-xs-12">	
+							<label class="" th:text="#{audit.module}">Módulo</label>									
+							<select  class="form-control" id="modulesname" name="module" >
+								<option name="all" value="all" id="all" th:text="#{audit.operation.all}"> ALL (*) </option>
+								<option th:each="modulesname : ${modulesnames}" th:id="${modulesname}" data-type="general" th:value="${modulesname}" th:text="${modulesname}"  ></option>
+							</select>
+						</div>
+						<div class="col-md-2 col-sm-4 col-xs-12">	
+							<label class="" th:text="#{audit.operation}">Operation</label>									
+							<select  class="form-control" id="operation" name="operation" >
+								<option name="all" value="all" id="all" th:text="#{audit.operation.all}"> ALL (*) </option>
+								<option th:each="operation : ${operations}" th:id="${operation}" data-type="general" th:value="${operation}" th:text="${operation}"  ></option>
+							</select>
+						</div>
+						<div class="col-md-2 col-sm-4 col-xs-12">	
+							<label class="" th:text="#{audit.limit}">Limit</label>																
+							<input class="form-control" name="offset" id="offset" th:value="50"/>	
+						</div>
+						<div class="col-md-2 col-sm-4 col-xs-12">
+							<label class="" th:text="#{audit.user}">User</label>									
+							<select  class="form-control" id="user" name="user" >														 
+								<option th:each="user : ${users}" th:id="${user.userId}" data-type="general" th:value="${user.userId}" th:text="${user.userId}"  ></option>
+							</select>
+						</div>
+						<div class="col-md-1 col-sm-4 col-xs-12">
+							<div class="pull-right margin-top-25">
+								<button type="button" id="executeQuery" class="btn btn-primary btn-primary-save" onclick="getQueryExecuted()"><span th:text="#{database.execQuery}">Ejecutar Query</span> </button>
+							</div>
+						</div>	
+						<div class="mt-checkbox-list" style="height: 0px; display:inline-block;  padding-top: 30px;">
+							<div class="switch"> 
+								<label>
+									<input class="form-control no-remove" type="checkbox" id="customQuery" onclick="$('.query-wizard-div').toggle('hide');disableOptions()"></input>											
+									<span class="checkbox-slider round"></span>
+								</label>
+							</div>
+							<div class="inline font-xs" th:text="#{audit.query}" style="margin-left:7px;color:#505D66;">Custom Query</div>
+						</div>								
+					</form>
+					<!-- BEGIN QUERY CREATE -->
+					<div class="panel-body query-wizard-div no-space " style="display:none">
+						<!-- BEGIN QUERY -->
+						<div id="crear-query">
+							<div class="col-md-12 no-space">
+							  	<div id="create_query">
+									<div class="row main panel-footer bg-white" id="div-query-form">
+										<div class="col-md-12 col-sm-12 col-xs-12" style="    padding-left: 0px;   padding-right: 0px;">													
+											<div class="panelHeader col-md-1 col-sm-1 col-xs-1">
+												<span  th:text="#{audit.query}">Custom Query </span>
+											</div>
+										</div>	
+										<div class="panelHeader col-md-12 col-sm-12 col-xs-12">										
+											<div style="height:200px; resize: vertical; overflow: auto;" id="querySql"></div>
+										</div> 	
+									</div> 
+								</div>
+							</div>
+						</div>								
+					<!-- END QUERY -->		
+					</div>
+				</div>	
+
+				<!-- BEGIN PAGE BAR AND BREADCRUM-->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><span  th:text="#{audit.breadcrumb.show}">Audit display</span></li>
+					</ul>						
+				</div>
+				<!-- END PAGE BAR -->
+				
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide"><span th:text="#{name.app}"> onesait Platform Control Panel</span></h1>
+				<!-- END PAGE TITLE-->
+						
+				<!-- RESULTADOS DE CONSULTA -->
+				<div class="row">
+					<div id="result-panel" class="hide">
+					
+						<div id="header">
+							<div class="row pageCreateHeader">
+								<div class="col-md-6 col-sm-6 col-xs-12">
+									<div class="margin-top-4">
+										<span th:if="${datamodel?.id} == null" th:text="#{database.results} + ' AUDIT' ">Results</span>
+									</div>
+								</div>
+								<div class="col-md-6 col-sm-6 col-xs-12">
+									<div class="pull-right">
+										<!-- CREATE -->
+										<button type="button" id="verifyData" class="btn btn-primary btn-primary-save" onclick="verifyData()"><span th:text="#{audit.verify}">Verify Data</span> </button>
+										<span style="margin-top: 0px;"><button class="btn btn-primary btn-primary-search btn-table-toggle "><i class="fa fa-table"> </i> <span th:text="#{gen.tableViewToggle}">Table Viewer Toggle</span></button></span>																	
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row margin-top-10 margin-left-20">
+					<!-- RESPUESTA DE CONSULTA -->
+					<div class="col-md-12">
+						<div class="hide" id="CanvasResponse">
+							<div id="theQueryResponse" th:fragment="query" th:text="${queryResult}"></div>														
+						</div>
+						<div id="jsoneditor" data-loaded="false"></div>
+						<div class="table-viewer" style="display: none;" data-loaded="false"></div>
+						
+						<div class="clearfix"></div>
+					</div>
+				</div><!-- END MAIN ROW -->
+			</div><!-- END CONTENT BODY -->
+		</div><!-- END CONTENT page-content-wrapper -->		
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+	
+	<!-- FOOTER INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
+
+	<!-- FRAGMENT AJAX FOR ONTOLOGY FIELDS -->
+	<div style="display: none">
+	<div th:fragment="fields" id="fields">
+		<script th:inline="javascript">
+		//Map with field,type struct	
+		campos= [[${fields}]];
+		</script>
+			<option th:id="selectFields" th:text="#{querytool.select.fields}"></option>
+			<option th:id="all" th:text="#{querytool.all.fields}"></option>
+			<option th:each="field :${fields}" th:value="${field.key}" th:id="check + ${field.key}" th:text="${field.key}" th:type="${field.value}"/>
+		
+	</div>
+	</div>
+	
+	
+	
+	<!-- JSON OBJECTS MODAL -->
+	<!-- Modal -->
+	<div id="jsonModal" class="modal fade" role="dialog">
+		<div class="modal-dialog">
+
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title"><span th:text="#{gen.json}">JSON value for </span> <span id="jsonDatatTitle" class="bold"></span> </h4>
+				</div>
+				<div class="modal-body">
+					<pre id="jsonDataView"></pre>
+				</div>
+				<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> <span th:text="#{gen.closeBtn}">Close</span></button>
+				</div>
+			</div>
+
+		</div>
+	</div>
+	
+	
+	<!-- CORE JS CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
+	
+	<!-- DATABASE PLUGINS TO-DO: pendiente de ubicación -->
+
+	
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js}"></script>
+	<script th:src="@{/static/vendor/json/jsonToTable.js}"></script>
+
+	<script th:inline="javascript"> 
+	//<![CDATA[
+		
+		
+		var showLog = 1; // VARIABLE GLOBAL PARA CONTROLAR LOS MENSAJES A LA CONSOLA.
+
+		// MOSTRAR/OCULTAR LOS DATOS DE CONTEXTO INTERNO DE LOS REGISTROS EN LA TABLA.
+		function toggleContext(){
+			icon = $('#btnContextToggle').children('i');
+			if (icon.hasClass('fa fa-eye-slash')) { icon.removeClass('fa fa-eye-slash').addClass('fa fa-eye'); } else { icon.removeClass('fa fa-eye').addClass('fa fa-eye-slash'); }
+			$('.context').toggle('hide');
+	
+		}		
+		
+		// UN A-HREF
+		function navigateUrl(url){  window.location.href = url; }
+	   
+
+		//]]>             
+	</script> 
+
+	<script type="text/javascript" th:inline="javascript">
+
+	//<![CDATA[           
+	// we need tabs as spaces and not CSS magin-left 
+	// in order to ratain format when coping and pasing the code
+
+		window.SINGLE_TAB = "  ";
+		window.ImgCollapsed = [[@{/resources/images/Collapsed.gif}]];   
+		window.ImgExpanded = [[@{/resources/images/Expanded.gif}]];   
+		window.QuoteKeys = true;
+		window._dateObj = new Date();
+		window._regexpObj = new RegExp();
+		
+		// RETURN ID
+		function $id(id){ return document.getElementById(id); }
+		
+		// RETURN IS AN ARRAY
+		function IsArray(obj) {  return obj && typeof obj === 'object' && typeof obj.length === 'number' && !(obj.propertyIsEnumerable('length')); }
+		
+		function disableOptions(){
+			if($("#customQuery").is(":checked")){
+				$("#resultType, #modulesname, #operation, #offset, #user").attr("disabled","disabled");
+			}else{
+				$("#resultType, #modulesname, #operation, #offset, #user").removeAttr("disabled");
+			}
+		}
+		
+		
+		// PROCESADO DE FORMA LITERALES
+		function FormatLiteral(literal, quote, comma, indent, isArray, style){
+		  if(typeof literal == 'string')
+			literal = literal.split("<").join("&lt;").split(">").join("&gt;");
+		  var str = "<span class='"+style+"'>"+quote+literal+quote+comma+"</span>";
+		  if(isArray) str = GetRow(indent, str);
+		  return str;
+		}
+		
+		
+		// FUNCION AUXILIAR DE FORMATEO
+		function FormatFunction(indent, obj){
+		  var tabs = "";
+		  for(var i = 0; i < indent; i++) tabs += window.TAB;
+		  var funcStrArray = obj.toString().split("\n");
+		  var str = "";
+		  for(var i = 0; i < funcStrArray.length; i++){
+			str += ((i==0)?"":tabs) + funcStrArray[i] + "\n";
+		  }
+		  return str;
+		}
+		
+		// FUNCION PARA DEVOLVER LOS DATOS DE UNA LINEA
+		function GetRow(indent, data, isPropertyContent){
+		  var tabs = "";
+		  for(var i = 0; i < indent && !isPropertyContent; i++) tabs += window.TAB;
+		  if(data != null && data.length > 0 && data.charAt(data.length-1) != "\n")
+			data = data+"\n";
+		  return tabs+data;                       
+		}
+
+		// FUNCION AUXILIAR PARA REALIZAR TRAVERSE
+		function TraverseChildren(element, func, depth){
+		  for(var i = 0; i < element.childNodes.length; i++){
+			TraverseChildren(element.childNodes[i], func, depth + 1);
+		  }
+		  func(element, depth);
+		}
+		
+		// COLLAPSE EN IMAGEN PARA EL TREE 
+		function ExpImgClicked(img){
+		  var container = img.parentNode.nextSibling;
+		  if(!container) return;
+		  var disp = "none";
+		  var src = window.ImgCollapsed;
+		  if(container.style.display == "none"){
+			  disp = "inline";
+			  src = window.ImgExpanded;
+		  }
+		  container.style.display = disp;
+		  img.src = src;
+		}
+		
+		function SetTab(){
+		  window.TAB = MultiplyString(1, window.SINGLE_TAB);
+		}
+		
+		function EnsureIsPopulated(){
+		  if(!$id("Canvas").innerHTML && !!$id("respuesta").value) Process();
+		}
+
+		
+		function MultiplyString(num, str){
+		  var sb =[];
+		  for(var i = 0; i < num; i++){
+			sb.push(str);
+		  }
+		  return sb.join("");
+		}
+
+		function LinkToJson(){
+		  var val = $id("respuesta").value;
+		  val = escape(val.split('/n').join(' ').split('/r').join(' '));
+		  $id("InvisibleLinkUrl").value = val;
+		  $id("InvisibleLink").submit();
+		}
+	//]]>
+
+
+	</script>
+	<script th:inline="javascript">
+
+	//<![CDATA[
+
+		// CREATE EDITOR FOR JSON SCHEMA 
+		var createEditor = function(){
+			
+			showLog ? console.log('|--->   createEditor()') : '';
+			var container = document.getElementById('jsoneditor');	
+			var options = {
+				mode: 'text',
+				theme: 'bootstrap3',
+				required_by_default: true,
+				modes: ['text', 'tree', 'view'], // allowed modes
+				error: function (err) {
+					$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: err.toString()});
+					return false;
+				},
+				onChange: function(){
+					
+					console.log('se modifica el editor en modo:' + editor.mode + ' contenido: ' + editor.getText());
+				}
+			};
+			
+			editor = new jsoneditor.JSONEditor(container, options, "");		
+			
+		}
+		
+		//]]>     
+			  
+	</script> 
+	
+	
+	<!-- JSON EDITOR -->	
+	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>	
+	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
+	<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
+	<script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>
+	
+	<!-- MONACO EDITOR -->
+	<script>	 
+	    var require = { paths: { 'vs': '/controlpanel/static/vendor/vs' } };	 
+	</script>
+	<script th:src="@{/static/vendor/vs/loader.js}"></script> 
+	<script th:src="@{/static/vendor/vs/editor/editor.main.nls.js}"></script> 
+	<script th:src="@{/static/vendor/vs/editor/editor.main.js}"></script>
+
+	<!-- MAIN INIT -->
+	<script  th:inline="javascript">
+
+	var currentLanguage = [[${lang}]];	
+	
+	var userCreateJson = { 
+		"validation_dates" : [[#{user.valid.dateDeleted}]],
+		"close" : [[#{gen.closeBtn}]],		
+		"language" : currentLanguage		
+	};
+						
+	// LOAD DATA TO USE IN BDTRCONTROLLER
+	// BDTR CONTROLLER LOAD AND INIT ITSELF
+	
+	
+	<!-- CARGA DE SCRIPTS DE LA PAGINA -->
+	$(document).ready(function(){
+		
+		
+		// HANDLE UTILITIES 
+		
+		//	SPINNER OFFSET INIT
+		spinnerEach = $( "#offset" ).TouchSpin({
+			min: 1,
+			max: 999,
+			stepinterval: 1,
+			maxboostedstep: 999,
+			verticalbuttons: true
+		});			
+		
+		($( "#offset" ).val() == "") ? $( "#offset" ).val(1) : null;		
+		spinnerEach.bind("keydown", function (event) { event.preventDefault(); });
+		
+		if("[[${QUERY}]]" != "null"){                 
+            $('#querySql').innerHTML = "[[${QUERY}]]";			
+		}
+		
+		$('.btn-table-toggle').on('click',function(){
+		
+			if (editor){ 
+				if ($('.table-viewer').is(':visible')){					
+					$('#jsoneditor').fadeIn();
+					$('.table-viewer').fadeOut();
+				}
+				else{
+				$('#jsoneditor').fadeOut();
+				$('.table-viewer').createTable(JSON.parse(dataJSON), {});
+				$('.table-viewer').fadeIn();
+				
+				}		
+			}
+			else { return; }
+			
+		
+		});
+		
+	});		
+	
+	
+	
+	
+	</script>	
+</body>
+</html>

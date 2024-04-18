@@ -1,0 +1,12 @@
+# Ignore everything:
+**
+
+# Except:
+!deploy/docker-entrypoint.d/**
+!deploy/docker-entrypoint.sh
+!deploy/requirements-mw.txt
+!deploy/requirements.txt
+!deploy/heroku_run.sh
+!label_studio/**
+!setup.py
+!README.md

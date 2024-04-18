@@ -1,0 +1,71 @@
+spring:
+   application.name: onesaitplatform-planner
+   ## JPA Config
+   datasource:
+      url: jdbc:mysql://localhost:3306/onesaitplatform_config?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false
+      username: root
+      password: changeIt!
+      driver-class-name: com.mysql.jdbc.Driver
+      test-while-idle: true
+      test-on-borrow: true
+      validation-query: SELECT 1
+      validationQueryTimeout: 5
+      # Number of ms to wait before throwing an exception if no connection is available.
+      max-wait: 10000
+      # Maximum number of active connections that can be allocated from this pool at the same time.
+      max-active: 30
+      initial-size: 10
+      max-idle: 30
+      min-idle: 10     
+   jpa:
+      # The SQL dialect makes Hibernate generate better SQL for the chosen database
+      properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+      # Hibernate ddl auto (create, create-drop, validate, update)
+      hibernate.ddl-auto: update
+    
+quartz:      
+   datasource:
+      url: jdbc:mysql://localhost:3306/onesaitplatform_scheduler?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false
+      username: root
+      password: changeIt!
+      driver-class-name: com.mysql.jdbc.Driver
+      test-while-idle: true
+      test-on-borrow: true
+      validation-query: SELECT 1
+      validationQueryTimeout: 5
+      # Number of ms to wait before throwing an exception if no connection is available.
+      max-wait: 10000
+      # Maximum number of active connections that can be allocated from this pool at the same time.
+      max-active: 10
+      initial-size: 3
+      max-idle: 10
+      min-idle: 3   
+          
+   jpa:
+      ## Hibernate Properties
+      # The SQL dialect makes Hibernate generate better SQL for the chosen database
+      properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+      # Hibernate ddl auto (create, create-drop, validate, update)
+      hibernate.ddl-auto: update
+      # The SQL dialect makes Hibernate generate better SQL for the chosen database
+      properties.hibernate.hbm2ddl.import_files: /quartz-schema.sql
+   autoStartupSchedulers:
+      #- scriptScheduler
+      #- twitterScheduler
+
+onesaitplatform:
+  graylog:
+    enabled: false
+    host: 127.0.0.1
+    port: 12201
+
+## LOGGING CONF
+logging:
+   level:
+      org.springframework: INFO
+      com.example.boot.thymeleaf: INFO
+      com.minsait: INFO
+      org.hibernate: INFO
+
+
+ 

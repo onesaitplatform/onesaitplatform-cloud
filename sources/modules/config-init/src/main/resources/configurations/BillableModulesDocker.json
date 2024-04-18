@@ -1,0 +1,115 @@
+[{
+    "module": "controlpanel",
+    "name": "Controlpanel",
+    "servicename": "controlpanelservice",
+    "port": 18000
+}, {
+    "module": "iotbroker",
+    "name": "IoTBroker",
+    "servicename": "iotbrokerservice",
+    "port": 19000
+}, {
+    "module": "identitymanager",
+    "name": "Identity Manager",
+    "servicename": "oauthservice",
+    "port": 21000
+}, {
+    "module": "keycloak",
+    "name": "Advanced Identity Manager (Keycloak)",
+    "servicename": "keycloak-manager",
+    "port": 15500
+}, {
+    "module": "logcentralizado",
+    "name": "Centraliced Log",
+    "servicename": "log-centralizer",
+    "port": 12201
+}, {
+    "module": "flowengine",
+    "name": "Flow Engine",
+    "servicename": "flowengineservice",
+    "port": 20100
+}, {
+    "module": "apimanager",
+    "name": "API Manager",
+    "servicename": "apimanagerservice",
+    "port": 19100
+},{
+    "module": "gravitee",
+    "name": "Advanced API Manager (Gravitee)",
+    "servicename": "graviteemngservice",
+    "port": 25000
+}, {
+    "module": "ruleengine",
+    "name": "Rules Engine",
+    "servicename": "rules-engine-service",
+    "port": 20200
+}, {
+    "module": "bpmengine",
+    "name": "BPM Engine",
+    "servicename": "bpmengine",
+    "port": 27000
+}, {
+    "module": "digitaltwinbroker",
+    "name": "Digital Twin Broker",
+    "servicename": "digitaltwinbrokerservice",
+    "port": 19300
+}, {
+    "module": "kafka",
+    "name": "Kafka",
+    "servicename": "kafkamonitoringservice",
+    "port": 18400
+}, {
+    "module": "dashboardengine",
+    "name": "Dashboard Engine",
+    "servicename": "dashboardengineservice",
+    "port": 18300
+}, {
+    "module": "dataflow",
+    "name": "Dataflow",
+    "servicename": "streamsets",
+    "port": 18630
+}, {
+    "module": "notebooks",
+    "name": "Notebooks",
+    "servicename": "zeppelin",
+    "port": 8080
+}, {
+    "module": "datacleaner",
+    "name": "Data Refiner",
+    "servicename": "datacleanerservice",
+    "port": 3333
+}, {
+    "module": "portalopendata",
+    "name": "Open Data (CKAN)",
+    "servicename": "ckanservice",
+    "stack": "opendata",
+    "port": 5000
+}, {
+    "module": "realtimedb",
+    "name": "RealtimeDB (MongoDB)",
+    "servicename": "realtimedb",
+    "port": 27017
+}, {
+    "module": "historicaldb",
+    "name": "HistoricalDB ",
+    "servicename": "minio",
+    "port": 9000
+},{
+    "module": "presto",
+    "name": "PrestoDB",
+    "servicename": "presto-coordinator",
+    "port": 8080
+},
+{
+    "module": "nebulagraph",
+    "name": "Nebula Graph DB",
+    "servicename": "graphd.nebula",
+    "port": 9669
+},
+{
+    "module": "datalabeling",
+    "name": "Data labeling",
+    "servicename": "datalabelingservice",
+    "port": 8080
+}
+]

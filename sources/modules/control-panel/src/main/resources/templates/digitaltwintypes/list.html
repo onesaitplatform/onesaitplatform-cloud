@@ -1,0 +1,360 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:dt="http://www.thymeleaf.org/dandelion/datatables" th:with="lang=${#locale.language}" th:lang="${lang}">
+	<head>
+		<meta name="_csrf" th:content="${_csrf.token}"/>
+		<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+		<meta http-equiv="Content-Language" th:content="${lang}"/>
+		<title th:text="#{name.app}"/>
+		
+		
+		<!-- STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
+		<!-- THEME -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
+		
+		<!-- PLUGINS STYLE SHEETS -->
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
+	</head>	
+	
+	<!-- page-sidebar-closed to start page with collapsed menu -->
+	<body class="page-header-fixed  page-content-white page-sidebar-closed">
+
+	<!-- MAIN PAGE WRAPPER -->
+	<div class="page-wrapper">
+	
+		<!-- BEGIN HEADER INCLUDE -->
+		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<!-- END HEADER -->
+		
+		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
+		<div class="clearfix"> </div>		
+			
+		<!-- BEGIN SIDEBAR -->
+		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<!-- END SIDEBAR -->
+		
+		<!-- BEGIN CONTENT -->
+		<div class="page-content-wrapper">
+			
+			<!-- BEGIN CONTENT BODY -->
+			<div class="page-content">				
+				<div id="searchFilter"  class="row" >
+					<form id="form_digital_twin_type" class="" role="form" method="get">
+						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+						<div class="col-md-3 col-sm-4 col-xs-12">														
+							<div class="input-icon">									 
+								<i class="icon-search font-grey-mint"></i>									 														
+								<input id="identification" th:placeholder="#{gen.identification}"  name="identification" class="form-control" type="text" maxlength="50" value=""/>
+							</div>
+						</div>
+						<div class="col-md-3 col-sm-4 col-xs-12">														
+							<div class="input-icon">									 
+								<i class="icon-search font-grey-mint"></i>									 														
+								<input id="description" th:placeholder="#{gen.description}"  name="description" class="form-control" type="text" maxlength="50" value=""/>
+							</div>
+						</div>
+						<div class="col-md-2 col-sm-4 col-xs-12 pull-right">
+							<div class="pull-right">
+								<button type="button" id="reset_digital_type" name="reset_digital_type" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}">Reset</button>
+								<button type="button" id="search_digital_type" name="search_digital_type" class="btn btn-primary btn-primary-search" th:text="#{gen.search}">Search</button>
+							</div>	
+						</div>									
+					</form>
+				</div>
+
+				<!-- BEGIN PAGE HEADER-->
+				
+				<!-- BEGIN PAGE BAR AND BREADCRUM -->
+				<div class="page-bar margin-bottom-20">
+					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/digitaltwintypes/list}"> <span th:text="#{digitaltwintype.breadcrumb.list}">Digital Twin Types</span></a></li>						
+					</ul>						
+				</div>
+				<!-- END PAGE BAR -->
+				
+				<!-- BEGIN PAGE TITLE-->
+				<h1 class="page-title hide "><span th:text="#{digitaltwintype.template.list}">My Digital Twin Types </span></h1>
+				<!-- END PAGE TITLE-->			
+				
+				<!-- MAIN ROW -->
+				<div class="row">
+					<div class="portlet light ">
+						<div class="portlet-title">
+							<div class="caption">
+								<span class="caption-subject" th:text="#{digitaltwintype.template.list}"> My Digital Twin Types </span>
+								<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
+							</div>
+							<div class="caption" style="padding: 22px 8px 8px 10px">
+								<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
+							</div>
+							<div id="search-on-title" class="hide input-icon search-icon">
+								<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
+							</div>										
+							<div class="tools hide">
+								<a href="" class="collapse" data-original-title="" title=""> </a>
+								<a href="" class="fullscreen" data-original-title="" title=""> </a>
+							</div>
+							<div class="pull-right btn-group btn-title-group" id="divcreate" >
+								<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')"  type="button" class="btn btn-primary button-plus-create"   onclick="location.href='../digitaltwintypes/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>		
+							</div>									
+												
+						</div>
+						<div class="portlet-body" style="display: block; height: auto;">
+							
+							<div class="row main" style="margin-top: 0px;">
+								<div class="col-md-12 alert-zone" style="padding-top: 0px; padding-bottom: 0px">
+									<!-- ALERT ZONE -->																			
+								</div>
+								
+								<!-- DIGITAL TWIN TYPE LIST -->
+								<div class="col-md-12">											
+									<div id="contenedor-tabla-outside" class="contiene hidden">																						
+										<div>
+											<!-- DATATABLE DANDELION CONF. -->												
+											<table id="digital_twin_types" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
+												<thead>
+													<tr class="cabecera-tabla">
+														<th class="titulo-columnas text-left" th:text="#{gen.id}">id</th>
+														<th class="titulo-columnas text-left" th:text="#{gen.name}">Name</th>
+														<th class="titulo-columnas text-left" ><span th:text="#{ontology.userId}" >Owner</span></th>
+														<th class="titulo-columnas text-left" th:text="#{gen.description}">Description</th>
+														<th class="titulo-columnas text-left" th:text="#{digitaltwintype.type}">type</th>
+														<th class="titulo-columnas text-left" ><span th:text="#{ontology.createdAt}"> Created At </span></th>
+														<th class="titulo-columnas text-left" ><span th:text="#{ontology.updatedAt}"> Updated At </span></th>
+														<th class="titulo-columnas text-center" style="width:85px;"  dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
+													</tr>
+												</thead>
+												<tbody th:remove="all-but-first">
+													<tr th:each="type : ${digitalTwinTypes}" pages:paginate="10">
+														<!-- ID -->
+														<td class="text-left no-wrap " th:text="${type.id}"></td>
+														<!-- IDENTIFICATION/NAME -->
+														<td class="text-left no-wrap " th:text="${type.identification}"></td>
+														<!-- USER -->
+														<td class="text-left " th:text="${type.user.userId}"></td>
+														<!-- DESCRIPTION -->
+														<td class="text-left text-truncate-sm" th:title="${type.description}" th:text="${type.description}"></td>
+														<!-- TYPE -->
+														<td class="text-left" th:title="${type.type}" th:text="${type.type}"></td>
+														<!-- DATE -->
+														<td class="text-left" th:if="${type.createdAt!=null}"><span th:text="${#dates.format(type.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(type.createdAt,'dd/MM/yyyy')}" ></span></td>
+														<td class="text-left" th:if="${type.createdAt==null}" th:text="'---'"></td>
+														<!-- UPDATE -->
+														<td class="text-left" th:if="${type.updatedAt!=null}"><span th:text="${#dates.format(type.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(type.updatedAt,'dd/MM/yyyy')}" ></span></td>
+														<td class="text-left" th:if="${type.updatedAt==null}" th:text="'---'"></td>
+														<!-- OPTIONS -->
+														<td class="icon text-center" style="white-space: nowrap; width:107px">
+															<div class="grupo-iconos">
+																<!-- VIEW -->															
+																<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/digitaltwintypes/show/${type.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
+																																																		
+																<!-- EDIT -->
+																<span  th:if="${#authentication.name} == ${type.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/digitaltwintypes/update/${type.id}/|} + '\');'"><i class="icon-edit"></i></span>
+																<!-- DELETE -->
+															    <span th:if="${#authentication.name} == ${type.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:attr="onclick='deleteDigitalTwinType(\'' + ${type.id} + '\');'"><i class="icon-delete"></i></span>
+															
+															</div>
+														</td>
+													</tr>
+												</tbody>
+											</table>
+											<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+											<div id="dataTable-vis-toggle" class="btn-group margin-right-10 hide">
+												 <a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
+												<div id="column_toggler" class="dropdown-menu hold-on-click pull-right">
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="0"/>
+														<label th:text="#{gen.id}"> id </label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
+														<label th:text="#{gen.name}"> Name </label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
+														<label th:text="#{ontology.userId}"> Owner </label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+														<label th:text="#{gen.description}"> Description </label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+														<label th:text="#{digitaltwintype.type}"> type </label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
+														<label th:text="#{ontology.createdAt}"> Created At </label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="6" checked/>
+														<label th:text="#{ontology.updatedAt}"> Updated At </label>
+													</span>														
+												</div>
+											</div>												
+										</div>
+									</div>											
+								</div>
+							</div>
+							<!-- AUXILIAR FORM TO DELETE DATASOURCE -->
+							<form id="delete_type_form" class="delete-type hide" method="post">
+								<input type="hidden" name="_method" value="DELETE"/>
+								<input type="hidden" id="delete-id" name="id"/>
+								<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+							</form>
+						</div>
+					</div><!-- END PORTLET BASIC LIGHT -->
+				</div><!-- END MAIN ROW -->				
+			</div><!-- END CONTENT BODY -->
+		</div><!-- END CONTENT page-content-wrapper -->		
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+	
+	<!-- FOOTER-INCLUDE -->
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
+	
+	<!-- CORE CONTROLLERS -->
+	<script th:src="@{/static/js/app.js}"></script>
+	<script th:src="@{/static/js/layout.js}"></script>
+	
+	<!-- PLUGINS -->
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
+	
+	
+	<script th:inline="javascript">	
+	
+	// TEMPLATE SEARCH FORM.
+	var search = new Array();
+	var search = [[${param.identification}]] || [];
+	var description = [[${param.description}]] || '';
+	var deleteUrl =  [[@{/digitaltwintypes}]];
+	
+	search[0] ? $('#identification').val(search[0]) : search[0] = '';
+	description ? $('#description').val(description) : description = '';
+	console.log('SEARCHING ... [ Identification: ' + search[0] + ' Description: ' + description + ']');
+	if (( search[0] != '') || (description != '')) { $('#search-toggle').trigger('click'); }
+	
+	// DATATABLES LANGUAJE FROM PROPERTIES.
+	datatable_lang = [[#{datatables_lang}]];	
+	var languageJson = JSON.parse(datatable_lang);
+	if ( languageJson ){ $.extend( true, $.fn.dataTable.defaults, { language: languageJson }); }
+
+	</script>
+	
+	<script type="text/javascript">	
+	var optionName = 'ONTOLOGIES';
+	
+	//<![CDATA[
+	function navigateUrl(url){  window.location.href = url;	}
+	
+	// DELETE TYPE
+	var deleteDigitalTwinType = function(id){
+		console.log('deleteDigitalTwinType() -> formId: '+ id);
+		
+		
+		$('#delete_type_form').attr('action', deleteUrl + '/' + id);
+		$('#delete-id').val(id);
+
+		// call ontology Confirm at header.
+		HeaderController.showConfirmDialogDigitalTwinType('delete_type_form');
+	}
+	
+	//$(window).on('pageshow', function(event) {
+ 	//	 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  	//	 $.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	//});
+	
+	// MAIN WHEN READY
+	$( document ).ready(function() {
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+	
+		// AUTO COMPLETE ON ONTOLOGY IDENTIFICATION/NAME
+		$.ajax({ url: "/controlpanel/digitaltwintypes/getNamesForAutocomplete", headers: {[csrf_header]: csrf_value}, type: 'POST', dataType: 'json', contentType: 'text/html', mimeType: 'application/json',
+			success: function (source) {			 
+						var namesArray = new Array();
+						for( var i = 0; i < source.length; i++ ){
+							namesArray[i] = { value: source[i] , data: source[i]};
+						}
+						
+						// INIT AJAX AUTO COMPLETE
+				$('#identification').autocomplete({ 
+					lookup: namesArray,
+					lookupFilter: function(suggestion, originalQuery, queryLowerCase) {
+						var re = new RegExp('\\b' + $.Autocomplete.utils.escapeRegExChars(queryLowerCase), 'gi');
+						return re.test(suggestion.value);
+					}	
+				});
+			}
+		});
+		
+		//SHOW/HIDE DATATABLE COLUMNS HANDLER
+		$('input.toggle-vis').on( 'change', function (e) {
+			e.preventDefault(); 
+			// Get the column API object
+			var column = $('#digital_twin_types').DataTable().column( $(this).attr('data-column') ); 
+			// Toggle the visibility
+			column.visible( ! column.visible() );			
+			// toggle Text
+			$(this).toggleClass('text-muted line-through');			
+		});	
+		
+		// SEARCH FORM RESET
+		$('#reset_digital_type').on('click',function(){
+			console.log('reset form...');
+			$('#form_digital_twin_type')[0].reset();
+			$('#form_digital_twin_type')[0].submit();
+		});
+		
+		// SEARCH FORM
+		$('#search_digital_type').on('click',function(){ $('#form_digital_twin_type')[0].submit(); });
+ 
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
+		$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		//$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		// SHOW/HIDE DATATABLES COLUMN INIT
+		$('#divcreate').prepend($('#dataTable-vis-toggle')); 		
+		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		$('#dataTable-vis-toggle').removeClass('hide');
+		$('.dataTables_info').addClass('col-md-6 col-sm-6');
+		$('.dataTables_length').addClass('col-md-6 col-sm-6');
+		$('#digital_twin_types_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
+		$('#digital_twin_types_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
+		$('#search-on-title').append($('.dataTables_filter > label > input'));
+		$('#search-on-title > input').removeClass('input-xsmall')
+		$('#digital_twin_types_wrapper > div:nth-child(1)').hide();
+		$('.dataTables_paginate').attr('style', 'float:right !important');
+		$("#contenedor-tabla-outside").removeClass("hidden");
+	});
+	
+	//]]>
+	</script>
+	
+</body>
+</html>
+  

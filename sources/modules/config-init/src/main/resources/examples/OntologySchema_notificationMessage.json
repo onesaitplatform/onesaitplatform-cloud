@@ -1,0 +1,40 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "notificationMessage",
+    "type": "object",
+    "required": [
+        "notificationMessage"
+    ],
+    "properties": {
+        "notificationMessage": {
+            "type": "string",
+            "$ref": "#/datos"
+        }
+    },
+    "datos": {
+        "description": "Info notificationMessage",
+        "type": "object",
+        "required": [
+            "topic",
+            "user",
+            "body",
+            "title"
+        ],
+        "properties": {
+            "topic": {
+                "type": "string"
+            },
+            "user": {
+                "type": "string"
+            },
+            "body": {
+                "type": "string"
+            },
+            "title": {
+                "type": "string"
+            }
+        }
+    },
+    "description": "Ontology to store outbound notification messages",
+    "additionalProperties": true
+}

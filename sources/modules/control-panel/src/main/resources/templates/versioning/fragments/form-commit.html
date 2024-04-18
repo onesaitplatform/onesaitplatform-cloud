@@ -1,0 +1,80 @@
+<!--
+
+    Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
+    2013-2023 SPAIN
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+         http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<th:block th:if="${session.versioningEnabled}">
+	<input id="commit-msg-input" type="hidden" name="commit-msg-inputs"/>
+	<script th:inline="javascript">
+	 	$(window).on("load",function(){
+	 		var commitInfo = [[#{versioning.commit.enabled.content}]];
+	 		var setCommitMessage = (e) =>{
+				e.preventDefault();
+				let btnId = e.target.id !== '' ? e.target.id : e.target.parentElement.id;
+				//if process versioning show confirm, else submit
+				$.confirm({
+					title: 'Commit Message',
+					theme: 'light',
+					content: `<p>${commitInfo}</p><br/><input style="margin-top:10px" id="commit-message-input" type="text" name="commit-message" class="form-control "/>`,
+					draggable: true,
+					dragWindowGap: 300,
+					backgroundDismiss: true,
+					buttons: {	
+						close: {
+							text: headerJson.skip,
+							btnClass: 'btn btn-outline blue dialog',
+							action: function (){
+								try{
+									$(`#${btnId}`).closest("form").submit()
+								}catch(error){
+									$(`#${btnId}`).click()
+								}
+							}
+						},
+						OK: {
+							text: headerJson.commit,
+							btnClass: 'btn btn-primary blue',
+							action: function (){
+								let commitMsg = $('#commit-message-input').val();
+								if(commitMsg !== ''){
+									console.log(commitMsg)
+									$('#commit-msg-input').val(commitMsg)
+									//Binary files
+									$('#commit-msg-input-update').val(commitMsg);
+									
+								}
+								try{
+									$(`#${btnId}`).closest("form").submit()
+								}catch(error){
+									$(`#${btnId}`).click()
+								}
+								
+								
+							} 
+						}
+					}
+				});
+			}
+	 		
+	 		$('#updateBtn').one('click', setCommitMessage);
+			$('#createBtn').one('click', setCommitMessage);
+			$('#createWizardBtn').one('click', setCommitMessage);
+			$('#updateIframeBtn').one('click', setCommitMessage);
+			$('#createIframeBtn').one('click', setCommitMessage);
+			$('#form_new').one('submit', setCommitMessage);
+			$('#form_update').one('submit', setCommitMessage);
+			$('#btn-report-save').one('click', setCommitMessage);
+	 	})
+	</script>
+</th:block>
