@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -57,93 +57,15 @@
 		<div class="page-content-wrapper">
 			
 			<!-- BEGIN CONTENT BODY -->
-			<div class="page-content tabContainer">
-			
-			
-			<div id="header">
-						<div class="row tabslistHeader"  >
-							<div class=" tabslistContainer  col-md-12 col-sm-12 col-xs-12">
-								<div id="tab-dashboards" href="#tab_dashboards" data-toggle="tab" class="tabslist-option  active">
-									<div class="">
-										<label style="margin-bottom: -5px;" class=" popovers font-sm" data-trigger="hover" data-placement="top" data-container="body">
-										<div class="inline font-xs">
-											<a   aria-expanded="false">
-												<!-- FORM TITLE -->
-												<span class="caption-subject"  th:text="#{dashboards.list.dashboard}">Dashboards</span>
-											</a>
-										</div>
-
-										</label>
-	    						  	</div>
-
-								</div>
-								<div id="tab-synoptics" href="#tab_synoptics" data-toggle="tab" class="tabslist-option ">
-									<div class="">
-										<label style="margin-bottom: -5px;" class=" popovers font-sm" data-trigger="hover" data-placement="top" data-container="body">
-										<div class="inline font-xs">
-											<a  aria-expanded="false"  >
-												<span class="caption-subject"  th:text="#{dashboards.list.synoptics}"> Synoptics</span>
-											</a>
-										</div>
-										</label>
-									</div>
-								</div>
-								<div class="pull-right btn-title-group">	
-							
-									<div style="margin-bottom: -10px; margin-top: -35px;" class="btn-group" data-toggle="buttons-radio">
-          								    <button id="DashboardsTable" value="Table" class=" op_button tab-button-table" data-toggle="tab" style="margin-right: -2.5px;"><span  th:text="#{dashboards.table}">Table</span></button>
-            								<button id="DashboardsCards" value="Cards" class=" op_button_selected tab-button-cards " data-toggle="tab"><span  th:text="#{dashboards.cards}">Cards</span></button>						
-           							 </div>
-																	
-								<button style="margin-bottom: -10px; margin-top: -35px;" sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-outline blue dialog btn-no-border" id="createDashboardButton" onclick="location.href='/controlpanel/gadgets/list'"><span th:text="#{gadgets.listGadgetsAndTemplate}">Gadgets and Templates</span></button>	
-								<button  style="margin-bottom: -10px; margin-top: -35px;" sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-outline blue dialog btn-no-border" id="createDashboardButton" onclick="location.href='/controlpanel/datasources/list'"><span  th:text="#{datasources.listDatasources}">Datasources </span></button>
-							</div>
-							</div>
-							
-						</div>
-					</div>
-					
-					
-			
-				<!-- SEARCH FORM -->
-				<div id="searchFilter"  class="row" style="margin-top:16px">
-					<form id="form_dashboard" class="" role="form" method="get">
-						<input type="hidden"  name="current_tab" id="current_tab"/>
-						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-						<div class="col-md-2 col-sm-4 col-xs-12">														
-							<div class="input-icon">
-								<i class="icon-search  font-grey-mint"></i>									 														
-								<input id="name" th:placeholder="#{gen.name}" name="name" class="form-control" type="text" maxlength="50" value=""/>
-							</div>
-						</div>
-						<div class="col-md-4 col-sm-4 col-xs-12">														
-							<div class="input-icon hide">
-								<i class="icon-search font-grey-mint"></i>		
-								<select class="form-control hide" id="type" name="type" disabled>														 
-
-									<option value="DASHBOARD" th:text="#{dashboards.list.dashboard}"></option>
-									<option value="SYNOPTIC" th:text="#{dashboards.list.synoptic}"></option>
-								</select>
-							</div>
-						</div>
-						<div class="col-md-6 col-sm-4  col-xs-12">
-							<div class="pull-right">
-								<button type="button" id="reset_dashboard" name="reset_dashboard" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}">Reset</button>
-								<button type="button"  name="search_dashboard" onclick="realizarBusqueda()" class="btn btn-primary btn-primary-search" th:text="#{gen.search}">Search</button>
-							</div>
-						</div>									
-					</form>
-				</div>
+			<div class="page-content">
 				
 				<!-- BEGIN PAGE HEADER-->
 				
-			<div class="tab-content ">
-				<div class="tab-pane active" id="tab_dashboards">
-
-					<!-- BEGIN PAGE BAR AND BREADCRUM -->
+				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><span th:text="#{dashboards.my.dashboardAndynoptics}">My Dashboards & Synoptics</span></li>
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>						
+						<li><span th:text="#{dashboards.my}">My Dashboards</span></li>
 					</ul>						
 				</div>
 				<!-- END PAGE BAR -->
@@ -153,277 +75,179 @@
 				<!-- END PAGE TITLE-->			
 				
 				<!-- MAIN ROW -->
-				<div class="row">				
-					<div class="portlet light background bg-inverse no-shadow">
-						<div class="portlet-title">
-							<div class="caption">									
-								<span class="caption-subject" th:text="#{dashboards.my}"> My Dashboard </span>									
-							</div>
-							
-							<div  style="float:left; display:inline-block;">
-								<div class="caption" >
-									<a onclick="$('.search-icon').toggleClass('hide')"  th:placeholder="#{gen.filter} + '...'" class="search-icon" style="margin-left: 18px;"><i style="padding: 22px 8px 8px 10px" class="icon-search"></i></a>
-								</div>
-								<div id="search-on-title"  style="padding: 12px 8px 1px 16px" class="hide input-icon search-icon">
-									<a class ="input-icon search-input-table " onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
-								</div>								
+				<div class="row">
+					<div class="col-md-12">					
+						<div class="portlet light">
+							<div class="portlet-title">
+								<div class="caption">									
+									<span class="caption-subject" th:text="#{dashboards.my}"> My Dashboard </span>									
+								</div>									
 								<div class="tools hide">
 									<a href="" class="collapse" data-original-title="" title=""> </a>
 									<a href="" class="fullscreen" data-original-title="" title=""> </a>
-								</div>
-							
-							</div>
-							<div class="pull-right btn-group" style="margin-top: 10px; ">																			
-		
-								<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn dropdown-togglebtn button-dropdown-table-columns margin-right-10" onclick="javascript:showImportDashboardDialog()"><a><i class="icon-upload"></i></a></button>										
-								
-								<div class="pull-right btn-group " id="divcreate" >
-										
-									<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-primary button-plus-create" id="createDashboardButton" onclick="location.href='/controlpanel/dashboards/create'"><a><i class="icon-new" style="color:white;"></i></a></button>											
-								</div>
-							</div>
-						</div>
-						<div id="div_Table" class="hide portlet-body" style="display: block; height: auto;">
-							
-							<div class="row main">
-								<!-- DASHBOARD LIST -->
-								<div class="col-md-12">	
-																		
-									<div id="contenedor-tabla-outside" class="contiene hidden">																						
-										<div>	
-											<!-- DATATABLE DANDELION CONF. -->												
-											<table id="dashboards" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers" dt:url="@{/controlpanel/dashboards/listdashboardpageable}">
-												<thead>
-													<tr class="cabecera-tabla">
-														<th class="titulo-columnas text-center" ><span > ID </span></th>	
-														<th class="titulo-columnas" th:text="#{gen.name}">Name</th>
-														<th class="titulo-columnas text-center" ><span th:text="#{gen.owner}" >Owner</span></th>
-														<th class="titulo-columnas" th:text="#{gen.description}">Description</th>
-														<th class="titulo-columnas text-center" th:text="#{gen.public}">Public</th>																								
-														<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
-														<th class="titulo-columnas text-center" ><span th:text="#{gen.updated}"> Updated At </span></th>
-														<th class="titulo-columnas text-center" dt:sortable="false" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
-													</tr>
-												</thead>
-											</table>	
-											<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
-											<div id="dataTable-vis-toggle" class="btn-group margin-right-10 hide">
-												<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
-												<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="0" />
-														<label > ID</label>
-													</span>	
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="1" />
-														<label th:text="#{gen.name}"> Name </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="2" />
-														<label th:text="#{gen.owner}"> Owner </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="3" />
-														<label th:text="#{gen.description}"> Description </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="4" />
-														<label th:text="#{gen.public}"> Public </label>
-													</span>
-													
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="5" />
-														<label th:text="#{gen.created}"> Created at</label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="6" />
-														<label th:text="#{gen.updated}"> Updatet at</label>
-													</span>		
-												</div>
-											</div>
-																			
-										</div>
-									</div>											
+								</div>								
+								<div class="actions margin-right-20">
+									<div class="btn-group">										
+										<button id="search-toggle" type="button" class="btn btn-circle btn-outline blue" onclick="$('#searchFilter').toggleClass('hide')"><span th:text="#{gen.search}"> Search </span></button>																			
+										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" type="button" class="btn btn-circle btn-outline blue" id="createDashboardButton" onclick="location.href='/controlpanel/gadgets/list'"><span th:text="#{gadgets.listGadgets}">Gadgets</span></button>										
+										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" type="button" class="btn btn-circle btn-outline blue" id="createDashboardButton" onclick="location.href='/controlpanel/datasources/list'"><span th:text="#{datasources.listDatasources}">Datasources </span></button>
+										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" type="button" class="btn btn-circle btn-outline btn-primary" onclick="javascript:showImportDashboardDialog()"><span th:text="#{dashboards.importdashboard}">Import Dashboard</span></button>										
+										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" type="button" class="btn btn-circle btn-outline btn-primary" id="createDashboardButton" onclick="location.href='/controlpanel/dashboards/create'"><span th:text="#{dashboards.create}">New Dashboard</span></button>
+										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" type="button" class="btn btn-circle btn-outline btn-primary" id="createDashboardButton" onclick="location.href='/controlpanel/dashboards/createsynoptic'"><span th:text="#{dashboards.create.synoptic}">New Synoptic</span></button>
+									</div>										
 								</div>
 							</div>
-							<!-- AUXILIAR FORM TO DELETE DATASOURCE -->
-							<form id="delete_dashboard_form" class="delete-dashboard hide" method="post">
-								<input type="hidden" name="_method" value="DELETE"/>
-								<input type="hidden" id="delete-id" name="id"/>
-								<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-							</form>	
-						</div>
-						
-						<div id="div_Card" class="portlet-body" style="display: block; height: auto;">
-							
-					<div class="row">
-					<div class="col-md-12">
-						<div id="blockDownload" class="portlet light bg-inverse no-shadow">						
 							<div class="portlet-body" style="display: block; height: auto;">
-								<div>									
-									<div class="clearfix"></div>															
-									<div id="dashboardCardPanel" class="col-md-24 proyect-list" >
+								
+								<div class="row">									
+									<div id="searchFilter"  class="col-md-12 hide">
+									<!-- SEARCH FORM -->
+										<form id="form_dashboard" class="" role="form" method="get">								
+											<div class="form-body " style="border-bottom: 1px solid #eef1f5;">
+												<div class="row">
+													<div class="col-md-4 col-xs-12">
+														<div class="form-group">															
+															<div class="input-group">
+																<span class="input-group-addon">
+																	<i class="fa fa-tag font-grey-mint"></i>
+																</span>															
+																<input id="name" th:placeholder="#{gen.name}" name="name" class="form-control" type="text" maxlength="50" value=""/>
+															</div>
+														</div>
+													</div>
+													<div class="col-md-4 col-xs-12">
+														<div class="form-group">															
+															<div class="input-group">
+																<span class="input-group-addon">
+																	<i class="fa fa-tag font-grey-mint"></i>
+																</span>
+																<select class="form-control" id="type" name="type" >														 
+																	<option value="" text="" selected="selected"></option>
+																	<option value="DASHBOARD" th:text="#{dashboards.list.dashboard}"></option>
+																	<option value="SYNOPTIC" th:text="#{dashboards.list.synoptic}"></option>
+																</select>
+															</div>
+														</div>
+													</div>
+													<div class="col-md-4 col-xs-12">
+														<div class="btn-group">
+															<button type="button" id="search_dashboard" name="search_dashboard" th:title="#{gen.search}" th:value="#{dashboard_search_button_form}" value="Search" class="btn btn-sm btn-circle btn-outline blue" th:text="#{gen.search}">Search </button>
+															<button type="button" id="reset_dashboard" name="reset_dashboard" value="Reset" class="btn btn-sm btn-circle btn-outline blue" title="Reset"><i class="la la-refresh"></i>&nbsp;</button>													
+														</div>
+													</div>
+												</div>
+											</div>												
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>								
 									</div>
-									<div class="load-dashboards text-center">
-									  <button class="op_button" style=" top:100%; right: 50%;  position: absolute;" id="load-dashboards">Load More</button>
+									<!-- DASHBOARD LIST -->
+									<div class="col-md-12">	
+																			
+										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
+											<div>
+												<!-- DATATABLE DANDELION CONF. -->												
+												<table id="dashboards" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
+													<thead>
+														<tr class="cabecera-tabla">
+															<th class="titulo-columnas" th:text="#{gen.name}">Name</th>
+															<th class="titulo-columnas text-center" ><span th:text="#{gen.owner}" >Owner</span></th>
+															<th class="titulo-columnas" th:text="#{gen.description}">Description</th>
+															<th class="titulo-columnas" th:text="#{gadgets.type}">Type</th>
+															<!--  <th class="titulo-columnas text-center" th:text="#{gen.active}">Active</th> -->	
+															<th class="titulo-columnas text-center" th:text="#{gen.public}">Public</th>															
+															<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{gen.updated}"> Updated At </span></th>
+															<th class="titulo-columnas text-center" ><span > ID </span></th>
+															<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
+														</tr>
+													</thead>
+													<tbody th:remove="all-but-first">
+														<tr th:each="dashboard : ${dashboards}" pages:paginate="10">
+															<!-- IDENTIFICATION/NAME -->
+															<td class="text-left" th:text="${dashboard.identification}"></td>															
+															<!-- USER -->
+															<td class="text-center " th:text="${dashboard.user.userId}"></td>
+															<!-- DESCRIPTION -->
+															<td class="text-left text-truncate-sm" th:title="${dashboard.description}" th:text="${dashboard.description}"></td>
+															<!-- TYPE -->
+															<td class="text-center"  th:if="${dashboard.type != null}  "><i   th:title="#{dashboards.list.synoptic}" class="fa fa-th-large font-hg font-blue-hoki tooltips"></i></td>
+															<td class="text-center"  th:if="${dashboard.type == null}  "><i   th:title="#{dashboards.list.dashboard}" class="fa fa-table font-hg font-blue-hoki tooltips"></i></td>
+															
+															<!-- PUBLIC -->
+															<td class="text-center" th:if="${dashboard.public}"><span th:text="1" style="display:none" ></span><i class="la la-check-circle-o text-success  font-hg"></i></td>
+															<td class="text-center" th:if="${!dashboard.public}"><span th:text="0" style="display:none" ></span><i class="la la-times-circle-o text-danger  font-hg"></i></td>
+															<!-- DATE --> 
+			 												<td class="text-center" th:if="${dashboard.createdAt!=null}"><span th:text="${#dates.format(dashboard.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(dashboard.createdAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${dashboard.createdAt==null}" th:text="'---'"></td>
+															<!-- UPDATE --> 
+			 												<td class="text-center" th:if="${dashboard.updatedAt!=null}"><span th:text="${#dates.format(dashboard.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(dashboard.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${dashboard.updatedAt==null}" th:text="'---'"></td>
+															<td class="text-center " th:text="${dashboard.id}"></td>
+															<!-- OPTIONS -->
+															<td class="icon" style="white-space: nowrap">
+																<div class="grupo-iconos text-center">
+																	<!-- VIEW -->																																																					
+																	<a  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:title="#{gen.view}" th:href="'/controlpanel/dashboards/view/'+@{${dashboard.id}}"><i class="la la-eye font-hg"></i></a>
+																	
+																	<!-- Full EDIT -->																	
+																	<a  sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-placement="bottom" th:title="#{gen.edit}" th:href="'/controlpanel/dashboards/editfull/'+@{${dashboard.id}(form)}+ '='"><i class="la la-book font-hg"></i></a>
+																	
+																	<!-- EDIT ACCESS-->
+																	<span sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{dashboards.auth.title} " th:data-original-title="#{dashboards.auth.title} " th:onclick="'javascript:navigateUrl(\'' + @{|/dashboards/dashboardconf/${dashboard.id}/|} + '\');'"><i class="la la-cog font-hg"></i></span>
+																	
+																	<!-- CLONE-->
+																	<span th:title="#{dashboards.clone}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:onclick="'javascript:cloneDashboardDialog(\''+${dashboard.id}+ '\',\'' +${dashboard.identification}+'\');'"><i class="la la-clone font-hg"></i></span>
+																	
+																	<!-- URL -->
+																	<span  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" title="URL Dashboard" data-original-title="URL Dashboard" th:onclick="'javascript:showDashboardURLDialog(\'' + @{|/dashboards/view/${dashboard.id}} + '\');'"><i class="la la-link font-hg"></i></span>
+				
+																    <!-- DOWNLOAD -->																   
+																    <a th:title="#{dashboards.download}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:alt="#{dashboards.download}" th:if="${dashboard.userAccessType=='EDIT'}"  target="_blank" th:href="'/controlpanel/dashboards/exportDashboard/' +  ${dashboard.id}"><i class="la la-download font-hg"></i></a>
+																    
+																	<!-- IMPORT -->
+																	<span sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{dashboards.import}" data-original-title="Import" th:onclick="'javascript:showImportDashboardTableDialog(\'' + ${dashboard.identification} + '\');'"><i class="la la-upload font-hg"></i></span>
+																    
+																    
+																    <!-- EDIT DASHBOARD JSON-->
+																	<span sec:authorize="hasAuthority('ROLE_ADMINISTRATOR')"  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{dashboards.edit.model.json.tooltip} " th:data-original-title="#{dashboards.edit.model.json.tooltip} " th:onclick="'javascript:navigateUrl(\'' + @{|/dashboards/edit/${dashboard.id}/|} + '\');'"><i class="la la-edit font-hg"></i></span>																	
+																
+																    <!-- DELETE -->
+																    <span sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteDashboardConfirmation(\''+${dashboard.id}+'\');'"><i class="la la-trash font-hg"></i></span>
+																</div>
+															</td>
+														</tr>
+													</tbody>
+												</table>
+												
+												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
+													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
+														<span th:text="#{gen.columns}"></span> <i class="fa fa-angle-down"></i>
+													</a>
+													<div id="column_toggler" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+														<label class="toggle-vis" data-column="0" th:text="#{gen.name}"> Name</label>
+														<label class="toggle-vis" data-column="1" th:text="#{gen.owner}"> Owner</label>
+														<label class="toggle-vis" data-column="2" th:text="#{gen.description}"> Description</label>
+														<label class="toggle-vis" data-column="3" th:text="#{gadgets.type}"> Type</label>
+														<label class="toggle-vis" data-column="4" th:text="#{gen.public}"> Public</label>														
+														<label class="toggle-vis" data-column="5" th:text="#{gen.created}"> Created At</label>
+														<label class="toggle-vis" data-column="6" th:text="#{gen.updated}"> Updated At</label>
+														<label class="toggle-vis" data-column="7"  >ID</label>
+														<label class="toggle-vis" data-column="8" th:text="#{gen.options}"> Options</label>															
+													</div>
+												</div>											
+											</div>
+										</div>											
 									</div>
-									
 								</div>
+								<!-- AUXILIAR FORM TO DELETE DATASOURCE -->
+								<form id="delete_dashboard_form" class="delete-dashboard hide" method="post">
+									<input type="hidden" name="_method" value="DELETE"/>
+									<input type="hidden" id="delete-id" name="id"/>
+								<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>	
 							</div>
 						</div><!-- END PORTLET BASIC LIGHT -->							
 					</div><!-- END COL-12 -->						
 				</div><!-- END MAIN ROW -->				
-							
-							
-							
-						</div>
-					</div><!-- END PORTLET BASIC LIGHT -->							
-				</div><!-- END MAIN ROW -->	
-		
-				</div>
-
-				<div class="tab-pane" id="tab_synoptics">
-
-			
-				<!-- END PAGE BAR -->
-				
-				<!-- BEGIN PAGE TITLE-->
-				<h1 class="page-title hide "><span th:text="#{dashboards.my.synoptics}">My Synoptics </span></h1>
-				<!-- END PAGE TITLE-->			
-				
-				<!-- MAIN ROW -->
-				<div class="row">				
-					<div class="portlet light background bg-inverse no-shadow ">
-						<div class="portlet-title">
-							<div class="caption">									
-								<span class="caption-subject" th:text="#{dashboards.my.synoptics}"> My Synoptics </span>									
-							</div>
-							
-								<div  style="float:left; display:inline-block;">
-								<div class="caption" >
-									<a onclick="$('.search-icon').toggleClass('hide')"  th:placeholder="#{gen.filter} + '...'" class="search-icon" style="margin-left: 18px;"><i style="padding: 22px 8px 8px 10px" class="icon-search"></i></a>
-								</div>
-								<div id="search-on-title-synoptics"  style="padding: 12px 8px 1px 16px" class="hide input-icon search-icon">
-									<a class ="input-icon search-input-table " onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
-								</div>								
-								<div class="tools hide">
-									<a href="" class="collapse" data-original-title="" title=""> </a>
-									<a href="" class="fullscreen" data-original-title="" title=""> </a>
-								</div>
-							
-							</div>		
-							<div class="pull-right btn-group" style="margin-top: 10px;" >																			
-								<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn dropdown-togglebtn button-dropdown-table-columns  margin-right-10" onclick="javascript:showImportSynopticsDialog()"><a><i class="icon-upload"></i></a></button>												
-								<div class="pull-right btn-group" id="divcreate_Synoptics" >
-									<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-primary button-plus-create" id="createDashboardButton" onclick="location.href='/controlpanel/dashboards/createsynoptic'"><a><i class="icon-new" style="color:white;"></i></a></button>
-																			
-								</div>
-							</div>
-						</div>
-						<div id="div_Table_synoptics" class="portlet-body hide" style="display: block; height: auto;">
-							
-							<div class="row main">
-								<!-- Synoptics LIST -->
-								<div class="col-md-12">	
-																		
-									<div id="contenedor-tabla-outside" class="contiene contenedor-tabla-outside ">																						
-										<div>	
-											<!-- DATATABLE DANDELION CONF. -->												
-											<table id="synoptics" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
-												<thead>
-													<tr class="cabecera-tabla">
-														<th class="titulo-columnas text-center" ><span > ID </span></th>
-														<th class="titulo-columnas" th:text="#{gen.name}">Name</th>
-														<th class="titulo-columnas text-center" ><span th:text="#{gen.owner}" >Owner</span></th>
-														<th class="titulo-columnas" th:text="#{gen.description}">Description</th>
-														<th class="titulo-columnas text-center" th:text="#{gen.public}">Public</th>											
-														<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
-														<th class="titulo-columnas text-center" ><span th:text="#{gen.updated}"> Updated At </span></th>
-														<th class="titulo-columnas text-center" dt:sortable="false" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
-													</tr>
-												</thead>
-												
-											</table>	
-											<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
-											<div id="dataTable-vis-toggle-synoptics" class="btn-group margin-right-10 hide">
-												<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
-												<div id="column_toggler_synoptics" data-container="body" class="dropdown-menu hold-on-click pull-right">
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="0" />
-														<label > ID</label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="1" />
-														<label th:text="#{gen.name}"> Name </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="2" />
-														<label th:text="#{gen.owner}"> Owner </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="3" />
-														<label th:text="#{gen.description}"> Description </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="4" />
-														<label th:text="#{gen.public}"> Public </label>
-													</span>
-													
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="5" />
-														<label th:text="#{gen.created}"> Created at</label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="6" />
-														<label th:text="#{gen.updated}"> Updatet at</label>
-													</span>	
-												</div>
-											</div>
-																			
-										</div>
-									</div>											
-								</div>
-							</div>
-							<!-- AUXILIAR FORM TO DELETE DATASOURCE -->
-							<form id="delete_dashboard_form" class="delete-dashboard hide" method="post">
-								<input type="hidden" name="_method" value="DELETE"/>
-								<input type="hidden" id="delete-id" name="id"/>
-								<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-							</form>	
-						</div>
-						
-						
-						<div id="div_Card_synoptics" class="portlet-body " style="display: block; height: auto;">
-							
-					<div class="row">
-					<div class="col-md-12">
-						<div id="blockDownload" class="portlet light bg-inverse no-shadow">						
-							<div class="portlet-body" style="display: block; height: auto;">
-								<div>									
-									<div class="clearfix"></div>															
-									<div id="synopticsCardPanel" class="col-md-24 proyect-list" >
-
-									</div>
-									<div class="load-synoptics text-center">
-									 	<button class="op_button" style=" top:100%; right: 50%;  position: absolute;" id="load-synoptics">Load More</button>
-									</div>
-									
-									
-								</div>
-							</div>
-						</div><!-- END PORTLET BASIC LIGHT -->							
-					</div><!-- END COL-12 -->						
-				</div><!-- END MAIN ROW -->		
-						
-						
-						</div>
-					</div><!-- END PORTLET BASIC LIGHT -->							
-				</div><!-- END MAIN ROW -->	
-
-				</div>
-			</div>
-				
-						
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
 	</div>
@@ -433,74 +257,28 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"></script>
-	<script th:src="@{/static/js/layout.js}"></script>
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
 	
-	<style>
-		#search-on-title-synoptics {
-		    display: inline-block;
-		    padding-top: 13px;
-		}
 
-
-
-	</style>
-	<!-- INPUTMASK -->
-	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
+	
+	
+	
 	
 	<script type="text/javascript" th:inline="javascript">	
 	
-
 	// TEMPLATE SEARCH FORM.
-	
 	var sname = [[${param.name}]] || '';
 	var stype = [[${param.type}]] || '';
 	var cloneTitle = [[#{dashboards.cloneText}]];
-	var Cancel = [[#{gen.cancelBtn}]];
 	var Close = [[#{gen.closeBtn}]];
-	var Delete = [[#{gen.deleteBtn}]];
-	var Confirm = [[#{gen.confirmBtn}]];
-	var LastUpdate = [[#{gen.lastupdate}]];
-	var Copy = [[#{gen.copyBtn}]];
-	var Public = [[#{gen.public}]];
-	var View = [[#{gen.view}]];
-	var Edit = [[#{gen.edit}]];
-	var Download = [[#{dashboards.download}]];
-	var Private = [[#{gen.private}]];
-	var DashboardId = [[${dashboard}]];
-	var EditDashboardJSON = [[#{dashboards.edit.model.json.tooltip}]];
-	var messageErrorName =[[#{ontology.index.nameError}]];
 	var CloneFail = [[#{dashboards.cloneFail}]];
 	var MinLen = [[#{dashboards.minLen}]];
-	var Import = [[#{dashboards.import}]];
-	var ImportSynoptics = [[#{dashboards.import}]];
-	var Clone = [[#{dashboards.clone}]];
-	var ExportPDF = [[#{dashboards.export.pdf}]];
-	var errorTypeSynoptics = [[#{dashboards.wrongimportsynoptics}]];
-	var errorTypeDashoards = [[#{dashboards.wrongimportdashboard}]];
-	var ExportImage = [[#{dashboards.export.image}]];
-	var name = [[#{gen.name}]];
-	var file = [[#{gen.file}]];
-	var impportSuccessfully = [[#{dashboards.import.successfully}]]
-	var typeDashboard;
-	var textCreated =  [[#{dashboards.ontologies.must.be.created}]];
-	var textOverwrite = [[#{dashboards.overwrite}]];
-	var textimportAuth = [[#{dashboards.importAuthorizations}]];
-	var errorFile = [[#{dashboards.jsonfileempty}]]
-	var errorFileName = [[#{dashboards.namejsonfileempty}]];
-	var Title = [[#{dashboards.auth.title}]];
-	var currentTab = [[${currentTab}]];
-	var userRole = [[${userRole}]];
-	var EditDashboardConfUrl = [[@{|/dashboards/dashboardconf/|}]];
-	var DashboardEditJson = [[@{|/dashboards/edit/|}]];
-	var DownloadDashboard = [[@{|/dashboards/exportDashboard/|}]];
-	var UrlDashboard =  [[@{|/dashboards/view/|}]];
 	
 	sname ? $('#name').val(sname) : sname = '';
 	stype ? $('#type').val(stype) : stype = '';
@@ -517,53 +295,36 @@
 	<script type="text/javascript"  th:inline="javascript">	
 	//<![CDATA[
 	var optionName = 'DASHBOARDS';
-
 	
 	var cloneDashboardDialog = function(dashboardId, identification){
 		$.confirm({
+			icon: 'fas fa-chart-pie',
 			title: cloneTitle,
 			theme: 'light',
 			columnClass: 'medium',
-			content: "<div class='form-group'><input class='col-md-12 form-control' type='text' id='cloneIdentification' placeholder='" + MinLen + "'></input>  <spam id='nameError' class='help-block'><i> " + messageErrorName + " </i></spam></div>",
+			content: "<input class='col-md-12 form-control' type=text id='cloneIdentification' placeholder='"+MinLen+"'"+"></input>",
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			onContentReady: function () {
-        	
-		       $('#cloneIdentification').on('input', function () {
-					var clone = $('#cloneIdentification').val();
-					var error1 = $('.alert-danger');
-			        if(typeof clone === 'undefined' || clone.trim().length < 5 || clone == '' ){
-								error1.show();
-								$('#nameError').removeClass('hide').addClass(' font-red');
-								$('#cloneIdentification').closest('.form-group').addClass('has-error')
-								return false;
-							}else{
-								$('#nameError').addClass('hide');
-								$('#cloneIdentification').closest('.form-group').removeClass('has-error')
-								return true;
-							}
-			        });
-        	},
+			closeIcon: true,
 			buttons: {
 				close: {
-					text: Cancel,
-					btnClass: 'btn btn-outline blue dialog',
+					text: Close,
+					btnClass: 'btn btn-sm btn-circle btn-outline blue',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				Ok: {
-					text: Confirm,
-					btnClass: 'btn btn-primary',
+					text: "Ok",
+					btnClass: 'btn btn-sm btn-circle btn-outline btn-primary',
 					action: function(){ 
 						if($("#cloneIdentification").val()=="" || !$("#cloneIdentification").val() ||
 							$("#cloneIdentification").val().length < 5){
-			               toastr.error("Error: "+messageErrorName);
+			                cloneFail();
 						}
 						else {$.post(
 								"/controlpanel/dashboards/clone", 
 								{dashboardId : dashboardId, identification : $("#cloneIdentification").val()}
-							).done(function(){
-								
+							).success(function(){
 								navigateUrl("/controlpanel/dashboards/list")
 								}
 							).fail(
@@ -580,13 +341,15 @@
 	
 	var cloneFail = function (){
 		$.alert({
-			title : "Error",
+			icon: 'la la-exclamation',
+			title : "Fail",
+			type : 'red',
 			theme : 'light',
 			content : CloneFail,
 			buttons: {
 				Ok: {
-					text: Close,
-					btnClass: 'btn btn-primary',
+					text: "Ok",
+					btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
 					action: function (){}		
 					}
 				},
@@ -614,6 +377,7 @@
 		var messageEditIframe = [[#{dashboards.url.edit.embedded}]];
 		
 		$.confirm({
+			icon: 'fas fa-chart-pie',
 			title: "URL Dashboard",
 			theme: 'light',
 			columnClass: 'medium',
@@ -642,357 +406,26 @@
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
+			closeIcon: true,
 			buttons: {
-				Ok: {
-					text: Cancel,
-					btnClass: 'btn btn-outline blue dialog',
-					action: function(){ 
-					}											
-				},
 				Copy: {
-					text: Copy,
-					btnClass: 'btn btn-primary',
+					text: "Copy",
+					btnClass: 'btn btn-sm btn-circle btn-outline btn-primary',
 					action: function(){ 
 						copyURL(window.location.origin + url);
 					}	
-				}
-			}
-		});
-	};
-	
-var showExportImageDialog = function(id){
-
-	
-		var messageExportImage = [[#{dashboards.export.image}]];
-		var messageStandbyTime = [[#{dashboards.export.wait}]];
-		var messageheight= [[#{dashboards.export.height}]];
-		var messagewidth= [[#{dashboards.export.width}]];
-		var messagefullpage= [[#{dashboards.export.fullpage}]];
-		var messagepresetsize= [[#{dashboards.export.presetsize}]];
-		var messageparams= [[#{dashboards.export.params}]];
-		var globalMessage=[[#{dashboards.export.emptyfields}]];
-		
-		$.confirm({
-			icon: 'la la-file-image-o font-hg',
-			title: messageExportImage,
-			theme: 'light',
-			columnClass: 'medium',
-			content:`	
-				<div class="form-body container-fluid">
-				<div id="imagehaserror" class="alert alert-danger display-hide">
-				<span >${globalMessage}</span>
-			    </div>
-					<div class="row">
-						<div class="col-md-6 col-sm-6 col-xs-12">
-						<div class="form-group">
-							<label >${messageStandbyTime}</label><span class="required"> (*)</span>
-							<div class="input-icon ">
-								<input
-									id="imagewaittime" type="number" 
-									required="true" maxlength="100"
-									 class="form-control "  minlength="1" required value="20000" />
-						     </div>
-					    </div>
-				        </div>	
-				        <div class="col-md-5 col-sm-6 col-xs-12">
-						<div class="form-group">							
-						<div class="mt-checkbox-list"> 
-							<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body" ><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" >${messagefullpage}?</div>
-								<input  id="checkboxfullscreen" class="form-control no-remove"  name="checkboxfullscreen" type="checkbox"    />
-								<span></span>
-							</label>
-						</div>
-					    </div>
-				      </div>
-				        
-					 </div>
-					 <div class="row">
-					 <div class="col-md-4 col-sm-6 col-xs-12">
-						<div class="form-group">
-							<label >${messagepresetsize}</label>
-							  <select id="imageselectsize" class="form-control"  data-live-search="true" data-width="100%"  onchange="updateheightwidthimage()"  >
-							   <option   value="A0 H" >A0 H</option>
-							   <option   value="A0 V" >A0 V</option> 
-							   <option   value="A1 H" >A1 H</option>
-							   <option   value="A1 V" >A1 V</option> 
-							   <option   value="A2 H" >A2 H</option>
-							   <option   value="A2 V" >A2 V</option>
-							   <option   value="A3 H" >A3 H</option>
-							   <option   value="A3 V" >A3 V</option>
-							   <option selected  value="A4 H" >A4 H</option>
-							   <option   value="A4 V" >A4 V</option>
-							   <option   value="A5 H" >A5 H</option>
-							   <option   value="A5 V" >A5 V</option>
-							   <option   value="A6 H" >A6 H</option>
-							   <option   value="A6 V" >A6 V</option>							   
-						      </select>
-					    </div>
-				        </div>		
-						<div class="col-md-4 col-sm-6 col-xs-12">
-						<div class="form-group">
-							<label >${messageheight}</label><span class="required"> (*)</span>
-							<div class="input-icon ">
-								<input
-									id="imageheight" type="number" 
-									required="true" 
-									 class="form-control "  minlength="1" required value="794" />
-						     </div>
-					    </div>
-				        </div>	
-				        <div class="col-md-4 col-sm-6 col-xs-12">
-						<div class="form-group">
-							<label >${messagewidth}</label><span class="required"> (*)</span>
-							<div class="input-icon ">
-								<input
-									id="imagewidth" type="number" 
-									required="true" 
-									 class="form-control "  minlength="1" required value="1123" />
-						     </div>
-					    </div>
-				        </div>
-				        
-				        
-				        
-					 </div>
-					 <div class="row">
-						 <div class="col-md-12 col-sm-12 col-xs-12">
-							<div class="form-group">
-								<label>${messageparams}</label>														
-								<textarea id="imageparams"   class="form-control" rows="2" data-min-rows='2'></textarea>
-							</div>							
-						</div>
-					</div> 
-				</div>
-				
-						`,
-			draggable: true,
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			buttons: {
-				close: {
-					text: Cancel,
-					btnClass: 'btn btn-outline blue dialog',
-					action: function(){ 
-					}											
-				},				
-				Send: {
-					text: Confirm,
-					btnClass: 'btn btn-primary',
-					action: function(){						
-						var token = $('#oauthToken').html().substring(7,$('#oauthToken').html().length);						
-						var imageparams = $('#imageparams').val();
-						var imagewidth = $('#imagewidth').val();
-						var imageheight = $('#imageheight').val();
-						var checkboxfullscreen = $('#checkboxfullscreen').prop('checked');
-						var imagewaittime = $('#imagewaittime').val();
-						var ident = id;
-						var csrf_value = $("meta[name='_csrf']").attr("content");
-						var csrf_header = $("meta[name='_csrf_header']").attr("content"); 					
-							
-						var data ={};
-						if(typeof imageparams ==='undefined' || imageparams.trim().length===0){
-							data = {
-						    	waittime:imagewaittime,
-						    	height:imageheight,
-						    	width:imagewidth,
-						    	fullpage:checkboxfullscreen	,
-						    	token:token
-						    }
-						}else{
-							data = {
-							    	waittime:imagewaittime,
-							    	height:imageheight,
-							    	width:imagewidth,
-							    	fullpage:checkboxfullscreen,
-							    	params:imageparams,
-							    	token:token
-							    }
-						}
-						var ok = typeof imagewidth!=='undefined' && imagewidth!==null  && imagewidth.trim().length>0
-						&& typeof imageheight!=='undefined' && imageheight!==null  && imageheight.trim().length>0
-						&& typeof imagewaittime!=='undefined' && imagewaittime!==null  && imagewaittime.trim().length>0 ;	
-						if(ok){
-					    	var downloadUrl ='/controlpanel/dashboards/generateDashboardImage/'+id+'?'+ encodeQueryData(data);							    
-					    	var download = document.createElement('a');
-					    	download.href =   downloadUrl;					    	
-					    	download.click();							    	
-					    	return true;						
-						}else{
-							$('#imagehaserror').show();
-							return false;
-						}
-					}											
-				}
-			}
-		});
-	};
-	
-	function encodeQueryData(data) {
-		   const ret = [];
-		   for (let d in data)
-		     ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(data[d]));
-		   return ret.join('&');
-		}
-	
-	
-	var showExportPDFDialog = function(id){
-		
-		var messageExportPDF = [[#{dashboards.export.pdf}]];
-		var messageStandbyTime = [[#{dashboards.export.wait}]];
-		var messageheight= [[#{dashboards.export.height}]];
-		var messagewidth= [[#{dashboards.export.width}]];		
-		var messagepresetsize= [[#{dashboards.export.presetsize}]];
-		var messageparams= [[#{dashboards.export.params}]];
-		var globalMessage=[[#{dashboards.export.emptyfields}]];
-		
-		$.confirm({
-			icon: 'la la-file-pdf-o font-hg',
-			title: messageExportPDF,
-			theme: 'light',
-			columnClass: 'medium',
-			content:`	
-				<div class="form-body container-fluid">	
-				<div id="imagehaserror" class="alert alert-danger display-hide">
-				<span >${globalMessage}</span>
-			    </div>
-					<div class="row">
-						<div class="col-md-6 col-sm-6 col-xs-12">
-						<div class="form-group">
-							<label >${messageStandbyTime}</label><span class="required"> (*)</span>
-							<div class="input-icon ">
-								<input
-									id="pdfwaittime" type="number" 
-									required="true" maxlength="100"
-									 class="form-control "  minlength="1" required value="20000" />
-						     </div>
-					    </div>
-				        </div>	
-				        
-					 </div>
-					 <div class="row">
-					 <div class="col-md-4 col-sm-6 col-xs-12">
-						<div class="form-group">
-							<label >${messagepresetsize}</label>
-							  <select id="pdfselectsize" class="form-control"  data-live-search="true" data-width="100%"  onchange="updateheightwidthpdf()">
-							   <option   value="A0 H" >A0 H</option>
-							   <option   value="A0 V" >A0 V</option> 
-							   <option   value="A1 H" >A1 H</option>
-							   <option   value="A1 V" >A1 V</option> 
-							   <option   value="A2 H" >A2 H</option>
-							   <option   value="A2 V" >A2 V</option>
-							   <option   value="A3 H" >A3 H</option>
-							   <option   value="A3 V" >A3 V</option>
-							   <option selected  value="A4 H" >A4 H</option>
-							   <option   value="A4 V" >A4 V</option>
-							   <option   value="A5 H" >A5 H</option>
-							   <option   value="A5 V" >A5 V</option>
-							   <option   value="A6 H" >A6 H</option>
-							   <option   value="A6 V" >A6 V</option>							   
-						      </select>
-					    </div>
-				        </div>		
-						<div class="col-md-4 col-sm-6 col-xs-12">
-						<div class="form-group">
-							<label >${messageheight}</label><span class="required"> (*)</span>
-							<div class="input-icon ">
-								<input
-									id="pdfheight" type="number" 
-									required="true" 
-									 class="form-control "  minlength="1" required value="794" />
-						     </div>
-					    </div>
-				        </div>	
-				        <div class="col-md-4 col-sm-6 col-xs-12">
-						<div class="form-group">
-							<label >${messagewidth}</label><span class="required"> (*)</span>
-							<div class="input-icon ">
-								<input
-									id="pdfwidth" type="number" 
-									required="true" 
-									 class="form-control "  minlength="1" required value="1123" />
-						     </div>
-					    </div>
-				        </div>
-				        
-				        
-				        
-					 </div>
-					 <div class="row">
-						 <div class="col-md-12 col-sm-12 col-xs-12">
-							<div class="form-group">
-								<label>${messageparams}</label>														
-								<textarea id="pdfparams"   class="form-control" rows="2" data-min-rows='2'></textarea>
-							</div>							
-						</div>
-					</div> 
-				</div>
-						`,
-			draggable: true,
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			buttons: {
-				close: {
-					text: Cancel,
-					btnClass: 'btn btn-outline blue dialog',
-					action: function(){ 
-					}											
-				},			
+				},
 				Ok: {
-					text: Confirm,
-					btnClass: 'btn btn-primary',
-					action: function(){ 						
-						var token = $('#oauthToken').html().substring(7,$('#oauthToken').html().length);;						
-						var pdfparams = $('#pdfparams').val();
-						var pdfwidth = $('#pdfwidth').val();
-						var pdfheight = $('#pdfheight').val();
-						var checkboxfullscreen = $('#checkboxfullscreen').val();
-						var pdfwaittime = $('#pdfwaittime').val();
-						var ident = id;
-						var csrf_value = $("meta[name='_csrf']").attr("content");
-						var csrf_header = $("meta[name='_csrf_header']").attr("content"); 					
-						var ok = true;	
-						
-						var data ={};
-						if(typeof pdfparams ==='undefined' || pdfparams.trim().length===0){
-							data = {
-									waittime:pdfwaittime,
-							    	height:pdfheight,
-							    	width:pdfwidth,
-							    	fullpage:checkboxfullscreen,
-							    	token:token			    	
-						    }
-						}else{
-							data = {
-									waittime:pdfwaittime,
-							    	height:pdfheight,
-							    	width:pdfwidth,
-							    	fullpage:checkboxfullscreen,
-							    	token:token,
-							    	params:pdfparams
-							    }
-						}
-						var ok = typeof pdfwidth!=='undefined' && pdfwidth!==null  && pdfwidth.trim().length>0
-							&& typeof pdfheight!=='undefined' && pdfheight!==null  && pdfheight.trim().length>0
-							&& typeof pdfwaittime!=='undefined' && pdfwaittime!==null  && pdfwaittime.trim().length>0 ;	
-						if(ok){
-							var downloadUrl ='/controlpanel/dashboards/generatePDFImage/'+id+'?'+ encodeQueryData(data);							    
-					    	var download = document.createElement('a');
-					    	download.href = downloadUrl;					    	
-					    	download.click();							    	
-					    	return true;
-						} else{
-							$('#imagehaserror').show();
-							return false;
-						}
-						}
+					text: "Ok",
+					btnClass: 'btn btn-sm btn-circle btn-outline btn-primary',
+					action: function(){ 
 					}											
-				
+				}
 			}
 		});
 	};
 	
-	
-	
+
 	function updateheightwidthimage(){
 		var selected = $('#imageselectsize').val();
 		var dimensions = getDimensions(selected);
@@ -1062,19 +495,16 @@ var showExportImageDialog = function(id){
 	function navigateNewTab(url){ window.open(url, '_blank');  	}
 	
 	var  deleteDashboardConfirmation = function (id){
+	
+		showConfirmDeleteDialog(id);	
+	} 
+	
+	var deleteUrl =  [[@{/dashboards}]];
+	var showConfirmDeleteDialog = function(id){	
 		$('#delete_dashboard_form').attr('action', deleteUrl + '/' + id);
 		$('#delete-id').val(id);
 		HeaderController.showConfirmDialogDashboard('delete_dashboard_form');	
-	} 
-	
-	var  deleteSynopticsConfirmation = function (id){
-	
-		$('#delete_dashboard_form').attr('action', deleteUrl + '/' + id);
-		$('#delete-id').val(id);
-		HeaderController.showConfirmDialogSynoptics('delete_dashboard_form');		
-	} 
-	var deleteUrl =  [[@{/dashboards}]];
-	
+	}
 	
 	var copyURL = function(url){
 			var $temp = $("<input />");
@@ -1084,6 +514,28 @@ var showExportImageDialog = function(id){
 			$temp.remove();
 			
 	}		
+
+	// MAIN WHEN READY
+	$( document ).ready(function() {
+	
+	
+		
+		//SHOW/HIDE DATATABLE COLUMNS HANDLER
+		$('label.toggle-vis').on( 'click', function (e) {
+			e.preventDefault(); 
+			// Get the column API object
+			var column = $('#dashboards').DataTable().column( $(this).attr('data-column') ); 
+			// Toggle the visibility
+			column.visible( ! column.visible() );			
+			// toggle Text
+			$(this).toggleClass('text-muted line-through');			
+		});	
+		
+		// SEARCH FORM RESET
+		$('#reset_dashboard').on('click',function(){
+			$('#form_dashboard')[0].reset();
+			$('#form_dashboard')[0].submit();
+		});
 		
 		var createDashboard = function(name){
 			$.post(
@@ -1100,6 +552,7 @@ var showExportImageDialog = function(id){
 		
 		var createDashboardDialog = function(){
 			$.confirm({
+				icon: 'fas fa-chart-pie',
 				title: "Insert the new dashboard name",
 				theme: 'light',
 				columnClass: 'medium',
@@ -1107,15 +560,16 @@ var showExportImageDialog = function(id){
 				draggable: true,
 				dragWindowGap: 100,
 				backgroundDismiss: true,
+				closeIcon: true,
 				buttons: {
 					close: {
-						text: Cancel,
-						btnClass: 'btn btn-outline blue dialog',
+						text: Close,
+						btnClass: 'btn btn-sm btn-circle btn-outline blue',
 						action: function (){} //GENERIC CLOSE.		
 					},
 					Ok: {
-						text: Confirm,
-						btnClass: 'btn btn-primary',
+						text: "Ok",
+						btnClass: 'btn btn-sm btn-circle btn-outline btn-blue',
 						action: function(){ 
 							if($("#newDashboard").val()=="" || !$("#newDashboard").val()){
 				                console.log("dashboard empty");
@@ -1131,1039 +585,60 @@ var showExportImageDialog = function(id){
 		
 		
 		/*$("#createDashboardButton").on("click", createDashboardDialog);*/
-
-	$(".tab-button-table").click(function(e) { 
-		e.preventDefault();
-		 $(".tab-button-table").addClass("op_button_selected");
-		  $(".tab-button-cards").removeClass("op_button_selected");
-		  $(".tab-button-cards").addClass("op_button");
-		  $(".tab-button-cards").removeClass("tab-button-active");
-		  $(".tab-button-table").addClass("tab-button-active");
-		  $('#div_Table').removeClass('hide');
-		  $('#div_Card').addClass('hide');
-		  $('#div_Table_synoptics').removeClass('hide');
-		  $('#div_Card_synoptics').addClass('hide');
-		  $(".background").removeClass("bg-inverse no-shadow");
-		  $('#dataTable-vis-toggle-synoptics').removeClass('hide');
-		  $('#dataTable-vis-toggle').removeClass('hide');
-		  
-		
-	});
-	
-	$(".tab-button-cards").click(function(e) { 
-	  e.preventDefault();
-		    $('#div_Table').addClass('hide');
-			$('#div_Card').removeClass('hide');
-		 	$('#div_Table_synoptics').addClass('hide');
-			$('#div_Card_synoptics').removeClass('hide');
-		 	$(".tab-button-cards").addClass("op_button_selected");
-		 	$(".tab-button-cards").removeClass("op_button");
-		 	$(".tab-button-table").addClass("op_button");
-		 	$(".tab-button-table").removeClass("op_button_selected");
-		   	$(".tab-button-cards").addClass("tab-button-active");
-		   	$(".tab-button-table").addClass("tab-button-active");
-		   	$(".background").addClass("bg-inverse no-shadow");
-		   	$('#dataTable-vis-toggle-synoptics').addClass('hide');
-		   	$('#dataTable-vis-toggle').addClass('hide');
-			
-	  
-	});
-	
-	$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
-		 $('#column_toggler_synoptics').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([0],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-	});
-
-	// MAIN WHEN READY
-	$( document ).ready(function() {
-		
-		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-		$('input.toggle-vis').on( 'change', function (e) {
-			e.preventDefault();
-			// Get the column API object
-
-			if($(this).parent().parent()[0].id == "column_toggler_synoptics"){
-				var column = $('#synoptics').DataTable().column( $(this).attr('data-column') );
-				// Toggle the visibility
-				column.visible( ! column.visible() );
-				// toggle Text
-				$(this).toggleClass('text-muted line-through');
-			}
-			else {
-				var column = $('#dashboards').DataTable().column( $(this).attr('data-column') );
-				// Toggle the visibility
-				column.visible( ! column.visible() );
-				// toggle Text
-				$(this).toggleClass('text-muted line-through');
-				}
-		});
-		
-		// SEARCH FORM RESET
-		$('#reset_dashboard').on('click',function(){
-			setCurrentTab();
-			$('#form_dashboard')[0].reset();
-			$('#form_dashboard')[0].submit();
-
-		});
-		
 		// SEARCH FORM
 		$('#search_dashboard').on('click',function(){ $('#form_dashboard')[0].submit(); });
 		
-		$('#form_dashboard').on('submit', function(){
-            setCurrentTab();
-        });
-		
-		   $('#search_dashboard').on('click', function(){
-
-	            $('#form_dashboard').submit();
-
-	        });
-	        
-	        function setCurrentTab() {
-             let tab = $('#tab-synoptics').hasClass('active') ? 'tab-synoptics' : 'tab-dashboards';
-             $('#current_tab').val(tab);
-            
-         }
-         if( currentTab !== null){
-             setTimeout(function(){
-                 $('#' + currentTab).click();
-             },200);
-         }
-         
-		 
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
-		$('#column_toggler_synoptics').find("input[type='checkbox']").prop('checked', true);
-		
-		var oTableDahsboards = $('#dashboards').dataTable({
-			
-		      "bAutoWidth": false,
-		      "processing": true,
-		      "serverSide": true,
-		      "lengthChange": false,
-		     
-		     
-		      "ajax": {
-	              "url": "/controlpanel/dashboards/listdashboardpageable",
-	              "type": "POST",	               
-	          },
-	              "columns": [
-	                { "data": "id" , "name": "id"},
-                    { "data": "identification", "name": "identification" },
-                    { "data": "user.userId", "name": "user" },
-                    { "data": "description", "name": "description" },
-                    { "data": "public", "name": "isPublic" },
-                    { "data": "updatedAt", "name": "updatedAt" },
-                    { "data": "createdAt", "name": "createdAt" }
-                ],
-               columnDefs:[
-               
-			                {targets:0, render:function(data, type, row){
-											return '<div class="text-left"><td >'+data +'</td></div>'
-							
-					        }},
-					       
-					       	{targets:1, render:function(data, type, row){
-								return '<div class="text-left"><td >'+data +'</td></div>'
-							
-												
-					        }},
-               				{targets:2, render:function(data, type, row){
-								return '<div class="text-center  text-truncate-sm"><td >'+data +'</td></div>'
-							
-												
-					        }},
-					         {targets:3, render:function(data, type, row){
-								return '<div class="text-left"><td >'+data +'</td></div>'
-							  }},
-					        {targets:4, render:function(data, type, row){
-								if (data == true)
-            					{ return '<i class="badge badge-empty-success"></i><span style="color: #2E6B33;">'+"  "+ Public +'</span>';}
-           
-          						else
-            						{ return '<i class="badge badge-empty-error"></i><span  style="color: #A73535;">'+ "  "+ Private +'</span>';}
-												
-					        }},
-					         {targets:[5,6], render:function(data, type, row){
-								 if(data != null){
-									 return '<div class="text-center"><td >'+ moment(data).format('DD/MM/YYYY') +'</td></div>'
-								 }else {
-									 return '<div class="text-center"><td > --- </td></div>'
-								 }
-					        	
-					        }},
- 
-					        {targets:7, render:function(data, type, row){
-
-
-								 DashboardsTable= "";
-								
-								DashboardsTable= DashboardsTable + '<div class="grupo-iconos text-center" style="white-space: nowrap"> ';
-									
-								//<!-- VIEW -->	
-									DashboardsTable = DashboardsTable + ' <a  class="btn btn-xs btn-no-border btn-circle btn-outline  tooltips" style="padding-top: 5px;" title="'+View+'" href="/controlpanel/dashboards/view/'+row.id+'"><i class="la la-eye font-hg"></i></a>';					
-								
-								if((userRole == "ROLE_ADMINISTRATOR") || ((row.userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){	
-									//<!-- Full EDIT --> sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
-									DashboardsTable = DashboardsTable + ' <a class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-placement="bottom" title="'+Edit+'" href="/controlpanel/dashboards/editfull/'+row.id+'?form="><i class="icon-edit"></i></a> ';					
-										
-								} else {
-									//<!-- Full EDIT -->sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="!${dashboard.userAccessType=='EDIT'}"
-									DashboardsTable = DashboardsTable + ' <a  disabled="true" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-placement="bottom" title="'+Edit+'"><i class="icon-edit"></i></a> ';
-								}
-								
-																//	<!-- dropdown -->
-								DashboardsTable = DashboardsTable + '<span class="dropdown">'+
-																	'<span   class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>'+
-																		'<ul class="dropdown-menu dropdown-menu-table download-menu">';
-								if((userRole == "ROLE_ADMINISTRATOR") || ((row.userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){	
-																	//<!-- EDIT ACCESS--><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"	
-								DashboardsTable = DashboardsTable + 	'<li>'+
-																		'<span class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:navigateUrl(\'' + EditDashboardConfUrl + row.id+ '\');" ><i class="la la-cog font-hg"></i><span class="span-title-three-dots-icons" th:text="'+Title+'" >Dashboard Conf</span></span>'+
-																	'</li>';
-								}
-								if((userRole == "ROLE_ADMINISTRATOR") || ((row.userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){								
-																	//<!-- CLONE--> sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')"
-								DashboardsTable = DashboardsTable +	'<li>'+
-																		'<span title="'+Clone+'" class="btn btn-xs btn-no-border btn-circle btn-outline" onclick="javascript:cloneDashboardDialog(\''+row.id+ '\',\'' +row.identification+'\');"><i class="la la-clone font-hg"></i><span class="span-title-three-dots-icons" text="'+Clone+'" >Clone</span></span>'+
-																	'</li>';
-								}									
-																	//<!-- URL -->
-								DashboardsTable = DashboardsTable +	'<li>'+
-																		'<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:showDashboardURLDialog(\'' + UrlDashboard + row.id + '\');"><i class="la la-link font-hg"></i><span class="span-title-three-dots-icons">URL Dashboard</span></span>'+
-																	'</li>';
-																	
-																	
-																	// <!-- EXPORT IMAGE -->
-								DashboardsTable = DashboardsTable +	'<li>'+
-																		'<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:showExportImageDialog(\''+row.id+ '\');"><i class="la la-file-image-o font-hg"></i><span class="span-title-three-dots-icons" text="'+ExportImage+'" >Export Image</span></span>'+
-																	'</li>';
-																	
-																	// <!-- EXPORT PDF -->
-								DashboardsTable = DashboardsTable +		   '<li>'+
-																				'<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:showExportPDFDialog(\''+ row.id + '\');"><i class="la la-file-pdf-o font-hg"></i><span class="span-title-three-dots-icons" th:text="'+ExportPDF+'" >Export pdf</span></span>'+
-																			'</li>';
-								if((userRole == "ROLE_ADMINISTRATOR") || ((row.userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){																												
-																    //<!-- DOWNLOAD --> <span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')"
-								DashboardsTable = DashboardsTable +	 '<li>'+																   
-																    	'<span title="'+Download+'" class="btn btn-xs btn-no-border btn-circle btn-outline" alt="'+Download+'" onclick="javascript:navigateUrl(\'' + DownloadDashboard + row.id + '\');"><i class="la la-download font-hg"></i><span class="span-title-three-dots-icons" th:text="'+Download+'" >Download</span></span>'+
-																    '</li>';
-																	
-								}									
-								if((userRole == "ROLE_ADMINISTRATOR") || ((row.userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){	
-																	//<!-- IMPORT --><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
-								DashboardsTable = DashboardsTable +	'<li>'+
-																	'<span class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:showImportDashboardTableDialog(\'' + row.identification + '\');"><i class="la la-upload font-hg"></i><span class="span-title-three-dots-icons" text="'+Import+'" >Import</span></span>'+
-																	'</li>';	
-								}
-																																		    
-								if((userRole == "ROLE_ADMINISTRATOR") || ((row.userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){		
-																	//<!-- EDIT DASHBOARD JSON--><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
-								DashboardsTable = DashboardsTable +	'<li>'+
-																	'<span  class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" onclick="javascript:navigateUrl(\'' + DashboardEditJson + row.id + '\');"><i class="la la-edit font-hg"></i><span class="span-title-three-dots-icons" text="'+EditDashboardJSON+'" >Edit Json</span></span>'+																	
-																	'</li>';
-								}
-								if((userRole == "ROLE_ADMINISTRATOR") || ((row.userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){	
-																	// <!-- DELETE --><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
-								DashboardsTable = DashboardsTable +	'<li>'+
-																	'<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" style="margin-top: 3px" data-container="body" data-placement="bottom" onclick="deleteDashboardConfirmation(\''+row.id+'\');"><i class="icon-delete"></i><span style="margin-left: 3px" class="span-title-three-dots-icons" text="'+Delete+'" >Delete</span></span>'+
-																	 '</li>';
-								}																						
-																															
-								DashboardsTable = DashboardsTable + '</ul>'+
-																   '</span>'+
-															    '</span>'+									
-															'</div>';										
-								return DashboardsTable;
-									
-																																																															
-			
-										
-							}}]		
-		  
-		});
-		
-		  	
-		var oTableSynoptics = $('#synoptics').dataTable({
-		       "bAutoWidth": false,
-		      "processing": true,
-		      "serverSide": true,
-		      "lengthChange": false,
-		     
-		      "ajax": {
-	              "url": "/controlpanel/dashboards/listsynopticspageable",
-	              "type": "POST"
-	          },
-	             "columns": [
-	              	{ "data": "id" , "name": "id"},
-                    { "data": "identification", "name": "identification" },
-                    { "data": "user.userId", "name": "user" },
-                    { "data": "description", "name": "description" },
-                    { "data": "public", "name": "isPublic" },
-                    { "data": "updatedAt", "name": "updatedAt" },
-                    { "data": "createdAt", "name": "createdAt" }
-                ],
-                columnDefs:[
-               
-			                {targets:0, render:function(data, type, row){
-											return '<div class="text-left"><td >'+data +'</td></div>'
-							
-					        }},
-					       
-					       	{targets:1, render:function(data, type, row){
-								return '<div class="text-left"><td >'+data +'</td></div>'
-							
-												
-					        }},
-               				{targets:2, render:function(data, type, row){
-								return '<div class="text-center  text-truncate-sm"><td >'+data +'</td></div>'
-							
-												
-					        }},
-					         {targets:3, render:function(data, type, row){
-								return '<div class="text-left"><td >'+data +'</td></div>'
-							  }},
-					        {targets:4, render:function(data, type, row){
-								if (data == true)
-            					{ return '<i class="badge badge-empty-success"></i><span style="color: #2E6B33;">'+"  "+ Public +'</span>';}
-           
-          						else
-            						{ return '<i class="badge badge-empty-error"></i><span  style="color: #A73535;">'+ "  "+ Private +'</span>';}
-												
-					        }},
-					         {targets:[5,6], render:function(data, type, row){
-								 if(data != null){
-									 return '<div class="text-center"><td >'+ moment(data).format('DD/MM/YYYY') +'</td></div>'
-								 }else {
-									 return '<div class="text-center"><td > --- </td></div>'
-								 }
-					        	
-					        }},
- 
-					        {targets:7, render:function(data, type, row){
-
-
-								 SynopticsTable= "";
-								
-								SynopticsTable= SynopticsTable + '<div class="grupo-iconos text-center" style="white-space: nowrap"> ';
-									
-								//<!-- VIEW -->	
-									SynopticsTable = SynopticsTable + ' <a  class="btn btn-xs btn-no-border btn-circle btn-outline  tooltips"  style="padding-top: 5px;"  title="'+View+'" href="/controlpanel/dashboards/view/'+row.id+'"><i class="la la-eye font-hg"></i></a>';					
-								
-								if((userRole == "ROLE_ADMINISTRATOR") || ((row.userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){	
-									//<!-- Full EDIT --> sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
-									SynopticsTable = SynopticsTable + ' <a class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-placement="bottom" title="'+Edit+'" href="/controlpanel/dashboards/editfull/'+row.id+'?form="><i class="icon-edit"></i></a> ';					
-										
-								} else {
-									//<!-- Full EDIT -->sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="!${dashboard.userAccessType=='EDIT'}"
-									SynopticsTable = SynopticsTable + ' <a  disabled="true" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-placement="bottom" title="'+Edit+'"><i class="icon-edit"></i></a> ';
-								}
-								
-																//	<!-- dropdown -->
-								SynopticsTable = SynopticsTable + '<span class="dropdown">'+
-																	'<span   class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>'+
-																		'<ul class="dropdown-menu dropdown-menu-table download-menu">';
-								if((userRole == "ROLE_ADMINISTRATOR") || ((row.userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){
-																	//<!-- EDIT ACCESS--><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"	
-								SynopticsTable = SynopticsTable + 	'<li>'+
-																		'<span class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:navigateUrl(\'' + EditDashboardConfUrl + row.id+ '\');" ><i class="la la-cog font-hg"></i><span class="span-title-three-dots-icons" th:text="'+Title+'" >Synoptic Conf</span></span>'+
-																	'</li>';
-								}
-								if((userRole == "ROLE_ADMINISTRATOR") || ((row.userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){								
-																	//<!-- CLONE--> sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')"
-								SynopticsTable = SynopticsTable +	'<li>'+
-																		'<span title="'+Clone+'" class="btn btn-xs btn-no-border btn-circle btn-outline" onclick="javascript:cloneDashboardDialog(\''+row.id+ '\',\'' +row.identification+'\');"><i class="la la-clone font-hg"></i><span class="span-title-three-dots-icons" text="'+Clone+'" >Clone</span></span>'+
-																	'</li>';
-								}									
-																	//<!-- URL -->
-								SynopticsTable = SynopticsTable +	'<li>'+
-																		'<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:showDashboardURLDialog(\'' + UrlDashboard + row.id + '\');"><i class="la la-link font-hg"></i><span class="span-title-three-dots-icons">URL Synoptic</span></span>'+
-																	'</li>';
-																	
-																	
-																	// <!-- EXPORT IMAGE -->
-								SynopticsTable = SynopticsTable +	'<li>'+
-																		'<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:showExportImageDialog(\''+row.id+ '\');"><i class="la la-file-image-o font-hg"></i><span class="span-title-three-dots-icons" text="'+ExportImage+'" >Export Image</span></span>'+
-																	'</li>';
-																	
-																	// <!-- EXPORT PDF -->
-								SynopticsTable = SynopticsTable +		   '<li>'+
-																				'<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:showExportPDFDialog(\''+ row.id + '\');"><i class="la la-file-pdf-o font-hg"></i><span class="span-title-three-dots-icons" th:text="'+ExportPDF+'" >Export pdf</span></span>'+
-																			'</li>';
-								if((userRole == "ROLE_ADMINISTRATOR") || ((row.userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){																													
-																    //<!-- DOWNLOAD --> <span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')"
-								SynopticsTable = SynopticsTable +	 '<li>'+																   
-																    	'<span title="'+Download+'" class="btn btn-xs btn-no-border btn-circle btn-outline" alt="'+Download+'" onclick="javascript:navigateUrl(\'' + DownloadDashboard + row.id + '\');"><i class="la la-download font-hg"></i><span class="span-title-three-dots-icons" th:text="'+Download+'" >Download</span></span>'+
-																    '</li>';
-																	
-								}									
-								if((userRole == "ROLE_ADMINISTRATOR") || ((row.userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){	
-																	//<!-- IMPORT --><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
-								SynopticsTable = SynopticsTable +	'<li>'+
-																	'<span class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:showImportSynopticsTableDialog(\'' + row.identification + '\');"><i class="la la-upload font-hg"></i><span class="span-title-three-dots-icons" text="'+Import+'" >Import</span></span>'+
-																	'</li>';	
-								}
-																																		    
-								if((userRole == "ROLE_ADMINISTRATOR") || ((row.userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){		
-																	//<!-- EDIT DASHBOARD JSON--><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
-								SynopticsTable = SynopticsTable +	'<li>'+
-																	'<span  class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" onclick="javascript:navigateUrl(\'' + DashboardEditJson + row.id + '\');"><i class="la la-edit font-hg"></i><span class="span-title-three-dots-icons" text="'+EditDashboardJSON+'" >Edit Json</span></span>'+																	
-																	'</li>';
-								}
-								if((userRole == "ROLE_ADMINISTRATOR") || ((row.userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){	
-																	// <!-- DELETE --><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
-								SynopticsTable = SynopticsTable +	'<li>'+
-																	'<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" style="margin-top: 3px" data-placement="bottom" onclick="deleteSynopticsConfirmation(\''+row.id+'\');"><i class="icon-delete"></i><span style="margin-left: 3px" class="span-title-three-dots-icons" text="'+Delete+'" >Delete</span></span>'+
-																	 '</li>';
-								}																						
-																															
-								SynopticsTable = SynopticsTable + '</ul>'+
-																   '</span>'+
-															    '</span>'+									
-															'</div>';										
-								return SynopticsTable;	
-							}}]
-		});
-		      
-		$("input[type=search][aria-controls=dashboards]").on('input', function() {
-			var inputValueDashboards = $(this).val();
-   			 if (inputValueDashboards.length > 0) {
-      		$("input[type=text][id=name]").val("");
-    		}
-		});
-		
-		$("input[type=search][aria-controls=synoptics]").on('input', function() {
-			var inputValueSynoptics = $(this).val();
-			 if (inputValueSynoptics.length > 0) {
-      		$("input[type=text][id=name]").val("");
-    		}
-		});
-		      
-		      
-		PaginateDashboardCards();  
-		PaginateSynopticsCards();
-		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).load(function(){  
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
-		$('.dataTables_filter').append($('#dataTable-vis-toggle'));	
-
-		//TABLE STYLES
-		$('#divcreate').prepend($('#dataTable-vis-toggle'));
-		$('.dataTables_info').addClass('col-md-6 col-sm-6');
-		$('.dataTables_length').addClass('col-md-6 col-sm-6');
+		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		$('#dataTable-vis-toggle').removeClass('hide');
 		
-		$('#search-on-title').append($('.dataTables_filter > label > input')[0]);
-		$('#search-on-title > input').removeClass('input-xsmall');
+		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
+		$.each([1,3,7],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
-		$('#dashboards_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
-		$('#dashboards_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
-		$('#dashboards_wrapper > div:nth-child(1)').hide();
-		
-		$('.dataTables_paginate').attr('style', 'float:right !important');
-		$('.download-menu').parent().on('shown.bs.dropdown', function () {	        
-			 var $menu = $("ul", this);	        
-	         offset = $menu.offset();
-	         position = $menu.position();
-	         $('body').append($menu);
-	         $menu.show();
-	         $menu.css('position', 'absolute');
-	         $menu.css('top', (offset.top) +'px');
-	         $menu.css('left',(offset.left) +'px');
-	         $menu.css('min-width', '100px');
-	        $(this).data("myDropdownMenu", $menu);
-	     });
-	     $('.download-menu').parent().on('hide.bs.dropdown', function () {
-	         $(this).append($(this).data("myDropdownMenu"));
-	         $(this).data("myDropdownMenu").removeAttr('style');
-	     });
-		
-		
-		$("#contenedor-tabla-outside").removeClass("hidden");
-		
-		//synoptics table
-		
-		//$.each([4],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-		//$.each([4],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-
-		$('.dataTables_filter').append($('#dataTable-vis-toggle-synoptics'));
-		$('#divcreate_Synoptics').prepend($('#dataTable-vis-toggle-synoptics'));
-
-		$('#search-on-title-synoptics').append($('.dataTables_filter > label > input')[0]);
-		$('#search-on-title-synoptics > input').removeClass('input-xsmall');
-		$("#contenedor-tabla-outside-synoptics").removeClass("hidden");
-
-
-		$('#synoptics_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
-		$('#synoptics_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length')[0]);
-		$('#synoptics_wrapper > div:nth-child(1)').hide();
-		
-		 $('.tabslist-option').click(function (ev) {
-	        $('.tabslistContainer').find('.tabslist-option').removeClass('active');
-	        $(ev.currentTarget).addClass('active');
-	        if(ev.currentTarget.id === "tab-synoptics"){
-	        	$('#type').prop( "disabled", true );
-	        	$('#type').val("");
-	        }else{
-	        	$('#type').prop( "disabled", true );
-	        	$('#type').val("");
-	        }
-	    });
-	    
-	    
-
-	   
-	    
-	    //FILTER SYNOPTICS CARDS
-	    var searchTimerSynoptics;
-		
-		$("input[type=search][aria-controls=synoptics]").on('input', function() {
-		    clearTimeout(searchTimerSynoptics);  
-		    searchTimerSynoptics = setTimeout(filterSynopticCards, 300);  
-		});
-		
-		function filterSynopticCards() {
-		    $('.project-container-synoptics').remove();
-		   var filterSynoptics = $( "input[type=search][aria-controls=synoptics]" ).val();     	
-			numpagSynoptics = 0;
-			PaginateSynopticsCards(filterSynoptics);
-		}
-		
-	
-
- 	$("#load-synoptics").on('click', function (e) {
-		e.preventDefault();  
-		var filterSynoptics = $( "input[type=search][aria-controls=synoptics]").val();
-		PaginateSynopticsCards(filterSynoptics);
-		setTimeout(function() {
-			 window.scrollTo({
-				 top: document.documentElement.scrollHeight,
-				 behavior: 'smooth'
-			});
-		}, 200);
-  		
-   	});
-   	
-   	
-   	
-   	
-   	
-   	
-   	
-   	
-   	
-   	
-	    
-	  //FILTER DASHBOARD CARDS  
-
-	var searchTimerDashboard;
-		
-		$("input[type=search][aria-controls=dashboards]").on('input', function() {
-		    clearTimeout(searchTimerDashboard);  
-		    searchTimerDashboard = setTimeout(filterDashboardCards, 300);  
-		});
-		
-		function filterDashboardCards() {
-		  $('.project-container-dashboards').remove();
-		  var searchDashboards = $( "input[type=search][aria-controls=dashboards]" ).val();
-		  numpagDashboard = 0;
-		  PaginateDashboardCards(searchDashboards);
-		}
-	
-
- 	$("#load-dashboards").on('click', function (e) {
-		e.preventDefault();  
-		var searchDashboards = $( "input[type=search][aria-controls=dashboards]" ).val();
-		PaginateDashboardCards(searchDashboards);
-		setTimeout(function() {
-			 window.scrollTo({
-				 top: document.documentElement.scrollHeight,
-				 behavior: 'smooth'
-			});
-		}, 200);
-  		
-   	});
-   	
-  });
-	   
-	   //DASHBOARDS CARDS
-	   
-		var searchDashboards;
-		var numpagDashboard = 0;
-		var limitDashboard = 10;
-		var dataCardsDashboards = document.getElementsByClassName("project-container-dashboards");
-	
-	 
- $("#load-dashboards").on('click', function (e) {
-		numpagDashboard = numpagDashboard + 1;    
-   		});
-	
-
-	function PaginateDashboardCards(searchDashboards){
-			var  Rute = [[@{/dashboards/}]];
-			var image = [[@{/img/wireframe.svg}]];
-			var textNoData = [[#{dashboards.no.element.data}]];
-			var imageNoData =[[@{/images/emptyTemplate.svg}]];
-			
-		
-		$.ajax({
-			  url : "/controlpanel/dashboards/listdashboardpageable",
-			  type: "POST",
-			  data: ({ "start": numpagDashboard * limitDashboard , 'length': limitDashboard, 'draw': 1, 'search[value]': searchDashboards})
-			
-			  }).done(function(data) {
-			  
-			   if((dataCardsDashboards.length + 10) >= data.itotalDisplayRecords){ 
-				  $(".load-dashboards").addClass('hide');
-					  
-			   } else {
-				   $(".load-dashboards").removeClass('hide');
-			   }
-			   
-			   
-			   var panelCardsViewDashboard = $("#dashboardCardPanel");
-			   
-			    for(i=0; i<data.aaData.length; i++){ 
-					
-					var cardPanel="";
-					cardPanel='<div class="project-container project-container-dashboards col-md-2 col-sm-6 col-xs-12 no-padding-all" style="box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px; margin: 20px; ">'+
-											'<div class="panel panel-white ">'+
-												'<div class="panel panel-white card" style=" margin-bottom: -20px">';
-													
-						if(data.aaData[i].image != null && data.aaData[i].image.length > 10 ){
-						cardPanel= cardPanel + '<img src="'+Rute+ data.aaData[i].id+'/getImage" class="img-responsive " data-trigger="hover" data-placement="bottom" data-container="body" style=" width: 100%; height: 100px;  border-bottom:1px solid #D7DADC; object-fit: contain; display: block; margin: auto; "/>';
-					} else if(data.aaData[i].image != null && data.aaData[i].image.length < 10) {
-						cardPanel= cardPanel + '<img  src="'+image+'"  class="img-responsive " style="  height: 100px; width: 100%; padding: 30px;  background-color: #ecf4fa  ; border-bottom: 1px solid #D7DADC;"/>';
-					}else {
-						cardPanel= cardPanel + '<img src="'+image+'" class="img-responsive " style=" height: 100px;  width: 100%; padding: 30px;  background-color:  #ecf4fa  ;  border-bottom: 1px solid #D7DADC;"/>';
-					}				
-					
-					cardPanel = cardPanel + '<span class="dropdown" style="float: right;  padding: 10px 10px 0px 10px;">';
-					
-						//<!-- VIEW -->	
-						cardPanel = cardPanel + ' <a  class="btn btn-xs btn-no-border btn-circle btn-outline tooltips" title="'+View+'" href="/controlpanel/dashboards/view/'+data.aaData[i].id+' "><i class="la la-eye font-hg" style="padding-top: 2.5PX;"></i></a>';					
-									
-					if((userRole == "ROLE_ADMINISTRATOR") || ((data.aaData[i].userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){	
-						//<!-- Full EDIT --> sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
-						cardPanel = cardPanel + ' <a class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-placement="bottom" title="'+Edit+'" href="/controlpanel/dashboards/editfull/'+data.aaData[i].id+'?form="><i class="icon-edit"></i></a> ';					
-							
-					} else {
-						//<!-- Full EDIT -->sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="!${dashboard.userAccessType=='EDIT'}"
-						cardPanel = cardPanel + ' <a  disabled="true" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-placement="bottom" title="'+Edit+'"><i class="icon-edit"></i></a> ';
-					}
-					
-													//	<!-- dropdown -->
-					
-						cardPanel = cardPanel +	'<span   class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>'+
-															'<ul class="dropdown-menu dropdown-menu-table download-menu">';
-					if((userRole == "ROLE_ADMINISTRATOR") || ((data.aaData[i].userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){
-														//<!-- EDIT ACCESS--><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"	
-					cardPanel = cardPanel + 	'<li>'+
-															'<span class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:navigateUrl(\'' + EditDashboardConfUrl + data.aaData[i].id+ '\');" ><i class="la la-cog font-hg"></i><span class="span-title-three-dots-icons" th:text="'+Title+'" >Dashboard Conf</span></span>'+
-														'</li>';
-					}
-					if((userRole == "ROLE_ADMINISTRATOR") || ((data.aaData[i].userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){					
-														//<!-- CLONE--> sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')"
-					cardPanel = cardPanel +	'<li>'+
-															'<span title="'+Clone+'" class="btn btn-xs btn-no-border btn-circle btn-outline" onclick="javascript:cloneDashboardDialog(\''+data.aaData[i].id+ '\',\'' +data.aaData[i].identification+'\');"><i class="la la-clone font-hg"></i><span class="span-title-three-dots-icons" text="'+Clone+'" >Clone</span></span>'+
-														'</li>';
-					}									
-														//<!-- URL -->
-					cardPanel = cardPanel +	'<li>'+
-															'<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:showDashboardURLDialog(\'' + UrlDashboard + data.aaData[i].id + '\');"><i class="la la-link font-hg"></i><span class="span-title-three-dots-icons">URL Dashboard</span></span>'+
-														'</li>';
-														
-														
-														// <!-- EXPORT IMAGE -->
-					cardPanel = cardPanel +	'<li>'+
-															'<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:showExportImageDialog(\''+data.aaData[i].id+ '\');"><i class="la la-file-image-o font-hg"></i><span class="span-title-three-dots-icons" text="'+ExportImage+'" >Export Image</span></span>'+
-														'</li>';
-														
-														// <!-- EXPORT PDF -->
-					cardPanel = cardPanel +		   		'<li>'+
-															'<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:showExportPDFDialog(\''+ data.aaData[i].id + '\');"><i class="la la-file-pdf-o font-hg"></i><span class="span-title-three-dots-icons" th:text="'+ExportPDF+'" >Export pdf</span></span>'+
-														'</li>';
-					if((userRole == "ROLE_ADMINISTRATOR") || ((data.aaData[i].userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){																											
-													    //<!-- DOWNLOAD --> <span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')"
-					cardPanel = cardPanel +	 '<li>'+																   
-													    	'<span title="'+Download+'" class="btn btn-xs btn-no-border btn-circle btn-outline" alt="'+Download+'" onclick="javascript:navigateUrl(\'' + DownloadDashboard + data.aaData[i].id + '\');"><i class="la la-download font-hg"></i><span class="span-title-three-dots-icons" th:text="'+Download+'" >Download</span></span>'+
-													    '</li>';
-														
-					}									
-					if((userRole == "ROLE_ADMINISTRATOR") || ((data.aaData[i].userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){
-														//<!-- IMPORT --><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
-					cardPanel = cardPanel +	'<li>'+
-														'<span class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:showImportDashboardTableDialog(\'' + data.aaData[i].identification + '\');"><i class="la la-upload font-hg"></i><span class="span-title-three-dots-icons" text="'+Import+'" >Import</span></span>'+
-														'</li>';	
-					}
-																															    
-					if((userRole == "ROLE_ADMINISTRATOR") || ((data.aaData[i].userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){
-														//<!-- EDIT DASHBOARD JSON--><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
-					cardPanel = cardPanel +	'<li>'+
-														'<span  class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" onclick="javascript:navigateUrl(\'' + DashboardEditJson + data.aaData[i].id + '\');"><i class="la la-edit font-hg"></i><span class="span-title-three-dots-icons" text="'+EditDashboardJSON+'" >Edit Json</span></span>'+																	
-														'</li>';
-					}
-					if((userRole == "ROLE_ADMINISTRATOR") || ((data.aaData[i].userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){
-														// <!-- DELETE --><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
-					cardPanel = cardPanel +	'<li>'+
-														'<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" style="margin-top: 3px" data-container="body" data-placement="bottom" onclick="deleteDashboardConfirmation(\''+data.aaData[i].id+'\');"><i class="icon-delete"></i><span  style="margin-left: 3px" class="span-title-three-dots-icons" text="'+Delete+'" >Delete</span></span>'+
-														 '</li>';
-					}																						
-																												
-					cardPanel = cardPanel +  '</ul>'+ '</span>' + '</span>';
-													 
-					cardPanel = cardPanel + '<div class="card-body project-title" style="padding:  0px 10px 5px 12px">'+
-													   
-														'<div  style="padding-top: 15px; font-size: 10px;" class="uppercase no-wrap text-truncate-md panelSubHeader btn-circle btn-outline tooltips " title="'+data.aaData[i].identification+'" ><a text="'+data.aaData[i].identification+'" style="color:rgb(0, 0, 0);"  href="/controlpanel/dashboards/view/'+data.aaData[i].id+'" >'+data.aaData[i].identification+'</a></div>'+
-													  	   
-													    '<div  class="card-text text-truncate-md panelSubHeader btn-outline tooltips"  title="'+data.aaData[i].description+'" style="margin: 10px 15px 0px 0px; color: #505D66; font-size: 10px;" text="'+data.aaData[i].description+'">'+data.aaData[i].description+'</div>'+
-						
-														'<p  class="card-text text-truncate-md panelInformation " style="padding-top: 7px;" th:text="'+LastUpdate+'">'+LastUpdate+ ' ' +  moment(data.aaData[i].updatedAt).format('DD/MM/YYYY') +'</p>';
-						
-					if(data.aaData[i].public == true){	
-												    
-					cardPanel = cardPanel +		'<span  style="background: #e5f5e7;  color: #2f7a35ff;  padding: 3px;"   text="'+Public+'" > Public </span>' 
-													
-					} else {
-							
-					cardPanel = cardPanel +		'<span  style="background: #f5dcdc;  color: #c43a3a; padding: 3px;"  text="'+Private+'" > Private </span>'
-					}							
-													
-					
-					cardPanel= cardPanel +  '</div>'+ '</div>'+ '</div>'+ '</div>'
-					
-					panelCardsViewDashboard.append(cardPanel);
-					
-					
-				}
-					if(data.aaData.length === 0 && searchDashboards === undefined){
-					cardPanel = '<div id="imageNoElementData">' ;
-					cardPanel = cardPanel + '<img id="headerImg" alt="logo" style=" height:50px; display: block;   margin-top:120px;  margin-left: auto; margin-right:auto;"  src="'+ imageNoData + '">';
-					cardPanel = cardPanel + '<label style=" display: block;   margin: 0 auto; font-style: italic;font-weight: normal;font-size: 14px;line-height: 24px;text-align: center;color:#505D66;" > '+ textNoData +'</label>';
-					cardPanel= cardPanel +  '</div>';
-					panelCardsViewDashboard.append(cardPanel);
-				}
-			 }).fail(function(data) {
-			    alert( "error" );
-			  });
-			  	
-   }		
-   
-   
-		   // search Identification 
-				    	  
-		 function realizarBusqueda() {
-		  // Obtener el valor del primer input
-		  searchDashboards = document.getElementById("name").value;
-		  filterSynoptics  = document.getElementById("name").value;
-		  
-	
-		
-		 $("input[type=search][aria-controls=dashboards]").val(searchDashboards).trigger('input');
-		 $("input[type=search][aria-controls=synoptics]").val(filterSynoptics).trigger('input');
-		}
-   
-   
-   
-   					
-								
-	
-		var filterSynoptics;
-		var numpagSynoptics = 0;
-		var limitSynoptics = 10;
-		var dataCardsSynoptics = document.getElementsByClassName("project-container-synoptics");
-	
-
-	  $("#load-synoptics").on('click', function (e) {
-		numpagSynoptics = numpagSynoptics + 1;    
-   		});
-	
-
+	});	
 	
 	
-	function PaginateSynopticsCards(filterSynoptics){
-			var  Rute = [[@{/dashboards/}]];
-			var image = [[@{/img/wireframe.svg}]];
-			var textNoData = [[#{synoptics.no.element.data}]];
-			var imageNoData =[[@{/images/emptyTemplate.svg}]];
-		
-		
-		$.ajax({
-			  url : "/controlpanel/dashboards/listsynopticspageable",
-			  type: "POST",
-			  data: ({ "start": numpagSynoptics * limitSynoptics , 'length': limitSynoptics, 'draw': 1, 'search[value]': filterSynoptics})
-			
-			  }).done(function(data) {
-			  
-			   
-			   if((dataCardsSynoptics.length + 10) >= data.itotalDisplayRecords){ 
-				  $(".load-synoptics").addClass('hide');
-					  
-			   } else {
-				     $(".load-synoptics").removeClass('hide');
-			   }
-			   
-			   
-			   var panelViewCardsSynoptics = $("#synopticsCardPanel");
-			   
-			    for(i=0; i<data.aaData.length; i++){ 
-				
-				var panelCardsSynoptics="";
-					panelCardsSynoptics='<div class="project-container project-container-synoptics col-md-2 col-sm-6 col-xs-12 no-padding-all" style="box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px; margin: 20px; ">'+
-											'<div class="panel panel-white ">'+
-												'<div class="panel panel-white card" style=" margin-bottom: -20px">';
-													
-						if(data.aaData[i].image != null && data.aaData[i].image.length > 10 ){
-						panelCardsSynoptics= panelCardsSynoptics + '<img src="'+Rute+ data.aaData[i].id+'/getImage" class="img-responsive " data-trigger="hover" data-placement="bottom" data-container="body" style=" width: 100%; height: 100px;  border-bottom:1px solid #D7DADC; object-fit: contain; display: block; margin: auto; "/>';
-					} else if(data.aaData[i].image != null && data.aaData[i].image.length < 10) {
-						panelCardsSynoptics= panelCardsSynoptics + '<img  src="'+image+'"  class="img-responsive " style="  height: 100px; width: 100%; padding: 30px;  background-color: #ecf4fa  ; border-bottom: 1px solid #D7DADC;"/>';
-					}else {
-						panelCardsSynoptics= panelCardsSynoptics + '<img src="'+image+'" class="img-responsive " style=" height: 100px;  width: 100%; padding: 30px;  background-color:  #ecf4fa  ;  border-bottom: 1px solid #D7DADC;"/>';
-					}			
-					panelCardsSynoptics = panelCardsSynoptics + '<span class="dropdown" style="float: right;  padding: 10px 10px 0px 10px;">';
-					
-						//<!-- VIEW -->	
-						panelCardsSynoptics = panelCardsSynoptics + ' <a  class="btn btn-xs btn-no-border btn-circle btn-outline tooltips" title="'+View+'" href="/controlpanel/dashboards/view/'+data.aaData[i].id+' "><i class="la la-eye font-hg" style="padding-top: 2.5PX;"></i></a>';					
-									
-					if((userRole == "ROLE_ADMINISTRATOR") || ((data.aaData[i].userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){	
-						//<!-- Full EDIT --> sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
-						panelCardsSynoptics = panelCardsSynoptics + ' <a class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-placement="bottom" title="'+Edit+'" href="/controlpanel/dashboards/editfull/'+data.aaData[i].id+'?form="><i class="icon-edit"></i></a> ';					
-							
-					} else {
-						//<!-- Full EDIT -->sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="!${dashboard.userAccessType=='EDIT'}"
-						panelCardsSynoptics = panelCardsSynoptics + ' <a  disabled="true" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-placement="bottom" title="'+Edit+'"><i class="icon-edit"></i></a> ';
-					}
-					
-													//	<!-- dropdown -->
-					
-						panelCardsSynoptics = panelCardsSynoptics +	'<span   class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>'+
-															'<ul class="dropdown-menu dropdown-menu-table download-menu">';
-					if((userRole == "ROLE_ADMINISTRATOR") || ((data.aaData[i].userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){
-														//<!-- EDIT ACCESS--><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"	
-					panelCardsSynoptics = panelCardsSynoptics + 	'<li>'+
-															'<span class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:navigateUrl(\'' + EditDashboardConfUrl + data.aaData[i].id+ '\');" ><i class="la la-cog font-hg"></i><span class="span-title-three-dots-icons" th:text="'+Title+'" >Synoptic Conf</span></span>'+
-														'</li>';
-					}
-					if((userRole == "ROLE_ADMINISTRATOR") || ((data.aaData[i].userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){							
-														//<!-- CLONE--> sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')"
-					panelCardsSynoptics = panelCardsSynoptics +	'<li>'+
-															'<span title="'+Clone+'" class="btn btn-xs btn-no-border btn-circle btn-outline" onclick="javascript:cloneDashboardDialog(\''+data.aaData[i].id+ '\',\'' +data.aaData[i].identification+'\');"><i class="la la-clone font-hg"></i><span class="span-title-three-dots-icons" text="'+Clone+'" >Clone</span></span>'+
-														'</li>';
-					}									
-														//<!-- URL -->
-					panelCardsSynoptics = panelCardsSynoptics +	'<li>'+
-															'<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:showDashboardURLDialog(\'' + UrlDashboard + data.aaData[i].id + '\');"><i class="la la-link font-hg"></i><span class="span-title-three-dots-icons">URL Synoptics</span></span>'+
-														'</li>';
-														
-														
-														// <!-- EXPORT IMAGE -->
-					panelCardsSynoptics = panelCardsSynoptics +	'<li>'+
-															'<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:showExportImageDialog(\''+data.aaData[i].id+ '\');"><i class="la la-file-image-o font-hg"></i><span class="span-title-three-dots-icons" text="'+ExportImage+'" >Export Image</span></span>'+
-														'</li>';
-														
-														// <!-- EXPORT PDF -->
-					panelCardsSynoptics = panelCardsSynoptics +		   		'<li>'+
-															'<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:showExportPDFDialog(\''+ data.aaData[i].id + '\');"><i class="la la-file-pdf-o font-hg"></i><span class="span-title-three-dots-icons" th:text="'+ExportPDF+'" >Export pdf</span></span>'+
-														'</li>';
-					if((userRole == "ROLE_ADMINISTRATOR") || ((data.aaData[i].userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){																											
-													    //<!-- DOWNLOAD --> <span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')"
-					panelCardsSynoptics = panelCardsSynoptics +	 '<li>'+																   
-													    	'<span title="'+Download+'" class="btn btn-xs btn-no-border btn-circle btn-outline" alt="'+Download+'" onclick="javascript:navigateUrl(\'' + DownloadDashboard + data.aaData[i].id + '\');"><i class="la la-download font-hg"></i><span class="span-title-three-dots-icons" th:text="'+Download+'" >Download</span></span>'+
-													    '</li>';
-														
-					}									
-					if((userRole == "ROLE_ADMINISTRATOR") || ((data.aaData[i].userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){
-														//<!-- IMPORT --><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
-					panelCardsSynoptics = panelCardsSynoptics +	'<li>'+
-														'<span class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:showImportSynopticsTableDialog(\'' + data.aaData[i].identification + '\');"><i class="la la-upload font-hg"></i><span class="span-title-three-dots-icons" text="'+Import+'" >Import</span></span>'+
-														'</li>';	
-					}
-																															    
-					if((userRole == "ROLE_ADMINISTRATOR") || ((data.aaData[i].userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){	
-														//<!-- EDIT DASHBOARD JSON--><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
-					panelCardsSynoptics = panelCardsSynoptics +	'<li>'+
-														'<span  class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" onclick="javascript:navigateUrl(\'' + DashboardEditJson + data.aaData[i].id + '\');"><i class="la la-edit font-hg"></i><span class="span-title-three-dots-icons" text="'+EditDashboardJSON+'" >Edit Json</span></span>'+																	
-														'</li>';
-					}
-					if((userRole == "ROLE_ADMINISTRATOR") || ((data.aaData[i].userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){
-														// <!-- DELETE --><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
-					panelCardsSynoptics = panelCardsSynoptics +	'<li>'+
-														'<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" style="margin-top: 3px" data-placement="bottom" onclick="deleteSynopticsConfirmation(\''+data.aaData[i].id+'\');"><i class="icon-delete"></i><span style="margin-left: 3px" class="span-title-three-dots-icons" text="'+Delete+'" >Delete</span></span>'+
-														 '</li>';
-					}																						
-																												
-					panelCardsSynoptics = panelCardsSynoptics +  '</ul>'+ '</span>' + '</span>';
-													 
-					panelCardsSynoptics = panelCardsSynoptics + '<div class="card-body project-title" style="padding:  0px 10px 5px 12px">'+
-													   
-														'<div  style="padding-top: 15px; font-size: 10px;" class="uppercase no-wrap text-truncate-md panelSubHeader btn-circle btn-outline tooltips " title="'+data.aaData[i].identification+'" ><a text="'+data.aaData[i].identification+'" style="color:rgb(0, 0, 0);"  href="/controlpanel/dashboards/view/'+data.aaData[i].id+'" >'+data.aaData[i].identification+'</a></div>'+
-													  	   
-													    '<div  class="card-text text-truncate-md panelSubHeader btn-outline tooltips"  title="'+data.aaData[i].description+'" style="margin: 10px 15px 0px 0px; color: #505D66; font-size: 10px;" text="'+data.aaData[i].description+'">'+data.aaData[i].description+'</div>'+
-						
-														'<p  class="card-text text-truncate-md panelInformation " style="padding-top: 7px;" th:text="'+LastUpdate+'">'+LastUpdate+ ' ' +  moment(data.aaData[i].updatedAt).format('DD/MM/YYYY') +'</p>';
-						
-					if(data.aaData[i].public == true){	
-												    
-					panelCardsSynoptics = panelCardsSynoptics +		'<span  style="background: #e5f5e7;  color: #2f7a35ff;  padding: 3px;"   text="'+Public+'" > Public </span>' 
-													
-					} else {
-							
-					panelCardsSynoptics = panelCardsSynoptics +		'<span  style="background: #f5dcdc;  color: #c43a3a; padding: 3px;"  text="'+Private+'" > Private </span>'
-					}							
-													
-					
-					panelCardsSynoptics= panelCardsSynoptics +  '</div>'+ '</div>'+ '</div>'+ '</div>'
-					panelViewCardsSynoptics.append(panelCardsSynoptics);
-					
-					
-				}
-					
-					if(data.aaData.length === 0 && filterSynoptics === undefined){
-					panelCardsSynoptics = '<div id="imageNoElementData">' ;
-					panelCardsSynoptics = panelCardsSynoptics + '<img id="headerImg" alt="logo" style=" height:50px; display: block;   margin-top:120px;  margin-left: auto; margin-right:auto;"  src="'+ imageNoData + '">';
-					panelCardsSynoptics = panelCardsSynoptics + '<label style=" display: block;   margin: 0 auto; font-style: italic;font-weight: normal;font-size: 14px;line-height: 24px;text-align: center;color:#505D66;" > '+ textNoData +'</label>';
-					panelCardsSynoptics= panelCardsSynoptics +  '</div>';
-					panelViewCardsSynoptics.append(panelCardsSynoptics);
-					
-					
-				}
-			 }).fail(function(data) {
-			    alert( "error" );
-			  });
-			  	
-   }							
 	
 	var showImportDashboardDialog = function(){
+		var textCreated =  [[#{dashboards.ontologies.must.be.created}]];
+		var textOverwrite = [[#{dashboards.overwrite}]];
+		var textimportAuth = [[#{dashboards.importAuthorizations}]];
 		$.confirm({
-			title: [[#{dashboards.importnewdashboard}]],
+			icon: 'fas fa-chart-pie',
+			title: [[#{dashboards.importdashboard}]],
 			theme: 'light',
 			columnClass: 'medium',
-			content: "<div class='alert alert-info ' role='alert'><i class='fa fa-info-circle'></i><span >&nbsp" + textCreated + " </span> </div><div class='form-group'><label id='name' class='control-label'>"+name+"</label><span class='required' style='color:#A73535'> *</span><input class='element text form-control' type='text' id='newImportDashboard' placeholder=''/><spam id='nameError' class='help-block'><i> " + messageErrorName + " </i></spam></div><label id='patternAlert' class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_ ]+</label><input type='hidden' id='dataJSONImport' /><label id='file' class='control-label'>"+file+"</label><span class='required' style='color:#A73535'> *</span><input class='element text form-control' type='file' accept='.json' id='jsonInputData' onchange='fileImportChange(this.files[0])' /><div class='form-group'><div class='mt-checkbox-list'> <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs' >"+textOverwrite+"</div>        <input id='overwritecheck' name='overwritecheck' type='checkbox' class='no-remove' checked='checked'/>        <span></span><!-- needed by styles -->    </label>     <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs'>"+textimportAuth+"</div>        <input id='importAuthcheck' name='importAuthcheck' type='checkbox' class='no-remove'  checked='checked'/>        <span></span><!-- needed by styles -->    </label></div></div>",
+			content: "<div class='alert alert-info' role='alert'><i class='fa fa-info-circle'></i><span >&nbsp" + textCreated + " </span> </div><input class='element text form-control' type='text' id='newImportDashboard' placeholder='[[#{gen.name}]]'/><br/><label id='patternAlert' class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_ ]+</label><br/><input type='hidden' id='dataJSONImport' /><input class='element text form-control' type='file' accept='.json' id='jsonInputData' onchange='fileImportChange(this.files[0])' /><div class='form-group'><div class='mt-checkbox-list'> <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs' >"+textOverwrite+"</div>        <input id='overwritecheck' name='overwritecheck' type='checkbox' class='no-remove' checked='checked'/>        <span></span><!-- needed by styles -->    </label>     <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs'>"+textimportAuth+"</div>        <input id='importAuthcheck' name='importAuthcheck' type='checkbox' class='no-remove'  checked='checked'/>        <span></span><!-- needed by styles -->    </label></div></div>",
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			onContentReady: function () {
-				// INPUT MASK FOR identification allow only letters, numbers and -_
-					$("#newImportDashboard").inputmask({ regex: "[a-zA-Z 0-9_-]*", greedy: false });
-					
-					$('#newImportDashboard').on('input', function () {
-					var clone = $('#newImportDashboard').val();
-					var error1 = $('.alert-danger');
-			        if(typeof clone === 'undefined' || clone.trim().length < 5 || clone == '' ){
-								error1.show();
-								$('#nameError').removeClass('hide').addClass(' font-red');
-								$('#newImportDashboard').closest('.form-group').addClass('has-error')
-								return false;
-							}else{
-								$('#nameError').addClass('hide');
-								$('#newImportDashboard').closest('.form-group').removeClass('has-error')
-								return true;
-							}
-			        });
-				},
+			closeIcon: true,
 			buttons: {
 				close: {
-					text: Cancel,
-					btnClass: 'btn btn-outline blue dialog',
+					text: "Cancel",
+					btnClass: 'btn btn-sm btn-outline btn-circle blue',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				Ok: {
-					text: Confirm,
-					btnClass: 'btn btn-primary',
+					text: "Ok",
+					btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
 					action: function() {
 						
 						if($("#newImportDashboard").val()=="" || !$("#jsonInputData").val() || $("#jsonInputData").val()=="" || !$("#newImportDashboard").val()){
 							console.log("dashboard name or json file empty");
-							toastr.error("Error: "+errorFileName);
-							return;
-						}
-						
-						if($("#newImportDashboard").val().length < 5){
-							console.log("dashboard name or json file empty");
-							toastr.error("Error: "+ messageErrorName);
-							return;
-						}
-						if(typeDashboard != null && typeDashboard != "DASHBOARD"){
-							toastr.error(errorTypeDashoards+" "+typeDashboard);
 							return;
 						}
 						var dashboardName = $("#newImportDashboard").val().trim();
 						var dashboardExtension = $("#jsonInputData").val().split('.').pop();
-						if(/^[a-zA-Z0-9_ ]+$/.test(dashboardName) && $("#jsonInputData").val() && (typeDashboard == null || typeDashboard == "DASHBOARD")){
+						if(/^[a-zA-Z0-9_ ]+$/.test(dashboardName)){
 							importDashboard(dashboardName,$("#dataJSONImport").val(), dashboardExtension,$("#overwritecheck").is(":checked"),$("#importAuthcheck").is(":checked"));
-							toastr.success(impportSuccessfully);
-						}else{
-							$("#patternAlert").removeClass("hidden");
-							return false;
-						}
-					}									
-				}
-			}
-		});
-	}
-	
-	var showImportSynopticsDialog = function(){
-		$.confirm({
-			title: [[#{dashboards.importnewsinoptics}]],
-			theme: 'light',
-			columnClass: 'medium',
-			content: "<div class='alert alert-info ' role='alert'><i class='fa fa-info-circle'></i><span >&nbsp" + textCreated + " </span> </div><div class='form-group'><label id='name' class='control-label'>"+name+"</label><span class='required' style='color:#A73535'> *</span><input class='element text form-control' type='text' id='newImportSynoptics' placeholder=''/><spam id='nameError' class='help-block'><i> " + messageErrorName + " </i></spam></div><label id='patternAlert' class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_ ]+</label><input type='hidden' id='dataJSONImport' /><label id='file' class='control-label'>"+file+"</label><span class='required' style='color:#A73535'> *</span><input class='element text form-control' type='file' accept='.json' id='jsonInputData' onchange='fileImportChange(this.files[0])' /><div class='form-group'><div class='mt-checkbox-list'> <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs' >"+textOverwrite+"</div>        <input id='overwritecheck' name='overwritecheck' type='checkbox' class='no-remove' checked='checked'/>        <span></span><!-- needed by styles -->    </label>     <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs'>"+textimportAuth+"</div>        <input id='importAuthcheck' name='importAuthcheck' type='checkbox' class='no-remove'  checked='checked'/>        <span></span><!-- needed by styles -->    </label></div></div>",
-			draggable: true,
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			onContentReady: function () {
-				// INPUT MASK FOR identification allow only letters, numbers and -_
-					$("#newImportSynoptics").inputmask({ regex: "[a-zA-Z 0-9_-]*", greedy: false });
-					
-					$('#newImportSynoptics').on('input', function () {
-					var clone = $('#newImportSynoptics').val();
-					var error1 = $('.alert-danger');
-			        if(typeof clone === 'undefined' || clone.trim().length < 5 || clone == '' ){
-								error1.show();
-								$('#nameError').removeClass('hide').addClass(' font-red');
-								$('#newImportSynoptics').closest('.form-group').addClass('has-error')
-								return false;
-							}else{
-								$('#nameError').addClass('hide');
-								$('#newImportSynoptics').closest('.form-group').removeClass('has-error')
-								return true;
-							}
-			        });
-					
-					
-				},
-			buttons: {
-				close: {
-					text: Cancel,
-					btnClass: 'btn btn-outline blue dialog',
-					action: function (){} //GENERIC CLOSE.		
-				},
-				Ok: {
-					text: Confirm,
-					btnClass: 'btn btn-primary',
-					action: function() {
-						
-						if($("#newImportSynoptics").val()=="" || !$("#jsonInputData").val() || $("#jsonInputData").val()=="" || !$("#newImportSynoptics").val()){
-							console.log("dashboard name or json file empty");
-							toastr.error("Error: "+errorFileName);
-							return;
-						}
-						if($("#newImportSynoptics").val().length < 5){
-							console.log("dashboard name or json file empty");
-							toastr.error("Error: "+ messageErrorName);
-							return;
-						}
-						if(typeDashboard != "SYNOPTIC"){
-							toastr.error(errorTypeSynoptics+" "+typeDashboard);
-							return;
-						}
-						var dashboardName = $("#newImportSynoptics").val().trim();
-						var dashboardExtension = $("#jsonInputData").val().split('.').pop();
-						if(/^[a-zA-Z0-9_ ]+$/.test(dashboardName)  && $("#jsonInputData").val() && typeDashboard == "SYNOPTIC" ){
-							importDashboard(dashboardName,$("#dataJSONImport").val(), dashboardExtension,$("#overwritecheck").is(":checked"),$("#importAuthcheck").is(":checked"));
-							toastr.success(impportSuccessfully);
 						}
 						else{
 							$("#patternAlert").removeClass("hidden");
@@ -2176,69 +651,38 @@ var showExportImageDialog = function(id){
 	}
 
 	var showImportDashboardTableDialog = function(identifier){
+		
+		var textCreated =  [[#{dashboards.ontologies.must.be.created}]];
+		var textOverwrite = [[#{dashboards.overwrite}]];
+		var textimportAuth = [[#{dashboards.importAuthorizations}]];
 		$.confirm({
+			icon: 'fas fa-chart-pie',
 			title: [[#{dashboards.importdashboard}]],
 			theme: 'light',
 			columnClass: 'medium',
-			content: "</br><div class='alert alert-info' role='alert'><i class='fa fa-info-circle'></i><span >&nbsp" + textCreated + " </span> </div><label id='file' class='control-label'>"+file+"</label><span class='required' style='color:#A73535'> *</span><input type='hidden' id='dataJSONImport' /><input class='element text form-control' type='file' accept='.json' id='jsonInputData' onchange='fileImportChange(this.files[0])' /><div class='form-group'><div class='mt-checkbox-list'> <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' >  </label>     <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs'>"+textimportAuth+"</div>        <input id='importAuthcheck' name='importAuthcheck' type='checkbox' class='no-remove'  checked='checked'/>        <span></span><!-- needed by styles -->    </label></div></div>",
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			buttons: {
-				close: {
-					text: Cancel,
-					btnClass: 'btn btn-outline blue dialog',
-					action: function (){} //GENERIC CLOSE.		
-				},
-				Ok: {
-					text: Confirm,
-					btnClass: 'btn btn-primary',
-					action: function() {
-						if(identifier =="" || !$("#jsonInputData").val() || $("#jsonInputData").val()=="" || ! identifier){
-							console.log("json file empty");
-							toastr.error("Error: "+errorFile);
-						}
-						if(typeDashboard == null || typeDashboard == "DASHBOARD"){
-						var dashboardExtension = $("#jsonInputData").val().split('.').pop();
-						importDashboard(identifier,$("#dataJSONImport").val(), dashboardExtension,true,$("#importAuthcheck").is(":checked"));						
-						} else{
-							toastr.error(errorTypeDashoards+" "+typeDashboard);
-						}
-					}									
-				}
-			}
-		});
-	}
-	var showImportSynopticsTableDialog = function(identifier){
-		
-		$.confirm({
-			title: [[#{dashboards.importsinoptics}]],
-			theme: 'light',
-			columnClass: 'medium',
-			content: "</br><div class='alert alert-info' role='alert'><i class='fa fa-info-circle'></i><span >&nbsp" + textCreated + " </span> </div><label id='file' class='control-label'>"+file+"</label><span class='required' style='color:#A73535'> *</span><input type='hidden' id='dataJSONImport' /><input class='element text form-control' type='file' accept='.json' id='jsonInputData' onchange='fileImportChange(this.files[0])' /><div class='form-group'><div class='mt-checkbox-list'> <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' >  </label>     <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs'>"+textimportAuth+"</div>        <input id='importAuthcheck' name='importAuthcheck' type='checkbox' class='no-remove'  checked='checked'/>        <span></span><!-- needed by styles -->    </label></div></div>",
+			content: "<div class='alert alert-info' role='alert'><i class='fa fa-info-circle'></i><span >&nbsp" + textCreated + " </span> </div><input type='hidden' id='dataJSONImport' /><input class='element text form-control' type='file' accept='.json' id='jsonInputData' onchange='fileImportChange(this.files[0])' /><div class='form-group'><div class='mt-checkbox-list'> <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs' >"+textOverwrite+"</div>        <input id='overwritecheck' name='overwritecheck' type='checkbox' class='no-remove' checked='checked'/>        <span></span><!-- needed by styles -->    </label>     <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs'>"+textimportAuth+"</div>        <input id='importAuthcheck' name='importAuthcheck' type='checkbox' class='no-remove'  checked='checked'/>        <span></span><!-- needed by styles -->    </label></div></div>",
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
+			closeIcon: true,
 			buttons: {
 				close: {
-					text: Cancel,
-					btnClass: 'btn btn-outline blue dialog',
+					text: "Cancel",
+					btnClass: 'btn btn-sm btn-outline btn-circle blue',
 					action: function (){} //GENERIC CLOSE.		
 				},
 				Ok: {
-					text: Confirm,
-					btnClass: 'btn btn-primary',
+					text: "Ok",
+					btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
 					action: function() {
 						if(identifier =="" || !$("#jsonInputData").val() || $("#jsonInputData").val()=="" || ! identifier){
 							console.log("json file empty");
-							toastr.error("Error: "+errorFile);
+							return;
+						}
 						
-						}
-						if(typeDashboard == "SYNOPTIC" ){
 						var dashboardExtension = $("#jsonInputData").val().split('.').pop();
-						importDashboard(identifier,$("#dataJSONImport").val(), dashboardExtension,true,$("#importAuthcheck").is(":checked"));						
-						} else{
-							toastr.error(errorTypeSynoptics+" "+typeDashboard);
-						}
+						importDashboard(identifier,$("#dataJSONImport").val(), dashboardExtension,$("#overwritecheck").is(":checked"),$("#importAuthcheck").is(":checked"));						
+						
 					}									
 				}
 			}
@@ -2255,10 +699,6 @@ var showExportImageDialog = function(id){
 		}
 	}
 
-
- 
- 
-
 	function importDashboard(name,data,extension,overwrite,importAuthcheck){
 		if($("#jsonInputData").val()==="" || $("#newImportDashboard").val()===""){
 			return;//Required params
@@ -2274,7 +714,7 @@ var showExportImageDialog = function(id){
 				jsonData.identification = name;
 				data = JSON.stringify(jsonData);
 			}catch(error) {
-				$.alert({title: 'Error', theme: 'light',  content: /*[[#{dashboards.error.invalidformat}]]*/ 'Error' 
+				$.alert({title: 'ERROR!', theme: 'light',  content: /*[[#{dashboards.error.invalidformat}]]*/ 'Error' 
 					}
 				)
 				}
@@ -2282,40 +722,18 @@ var showExportImageDialog = function(id){
 			    contentType: 'application/json',
 			    data: data,
 			    dataType: 'json',
-			    success: function(data){
-					var messageInf = [[#{dashboards.errorontologydatasource}]] + "<br>";	
-					if(data.status == "INTERNAL_SERVER_ERROR"){
-						for(var i = 0; i< data.datasources.length; i++ ){
-							messageInf += "<br> Datasource: <strong>"+data.datasources[i]+ "</strong><br> Ontology: <strong>"+data.ontologyDatasource[i]+"</strong><br>"
-						}
-						$.alert({
-						  title : [[#{device.state.warning}]],
-						  type : 'orange',
-						  content: messageInf,
-						  theme: 'light',
-						  buttons: {
-						    ok: {
-						      text: 'OK',
-						      action: function () {
-						       navigateUrl("/controlpanel/dashboards/list/",true);
-						      }
-						    }
-						  }
-});
-					}else {
-					navigateUrl("/controlpanel/dashboards/list/",true);
-					}		    	
-			    	
+			    success: function(data){			    	
+			    	navigateUrl("/controlpanel/dashboards/list/",true);
 			    },
 			    error: function(e){			    	
 			    	if(e.statusCode().status==409){
-						$.alert({title: 'Error', theme: 'light',  content: /*[[#{dashboards.error.duplicate}]]*/ 'Error'
+						$.alert({title: 'ERROR!', theme: 'light',  content: /*[[#{dashboards.error.duplicate}]]*/ 'Error'
 							}
 						)
 						console.log("Error importing dashboard, message detail, " + " error: " + e.error + ", " + e.responseText);
 					}
 					else if (e.statusCode().status==400){
-						$.alert({title: 'Error', theme: 'light',  content: /*[[#{dashboards.error.invalidformat}]]*/ 'Error'
+						$.alert({title: 'ERROR!', theme: 'light',  content: /*[[#{dashboards.error.invalidformat}]]*/ 'Error'
 							}
 						)
 						console.log("Error importing dashboard, message detail, " + " error: " + e.error + ", " + e.responseText);
@@ -2333,14 +751,8 @@ var showExportImageDialog = function(id){
 		reader.readAsText(jsonFile);
 		var nameDashboard;
 		reader.onload = function(data) {		
-			nameDashboard = JSON.parse(data.target.result).identification;
-			typeDashboard = JSON.parse(data.target.result).type;
-			if(typeDashboard == "SYNOPTIC" ){
-				$('#newImportSynoptics').val(nameDashboard);
-			}else{
-				$('#newImportDashboard').val(nameDashboard);	
-			}
-			//$('#newImportDashboard').val(nameDashboard);
+			nameDashboard = JSON.parse(data.target.result).name;
+			$('#newImportDashboard').val(nameDashboard);
 			$('#dataJSONImport').val(data.target.result);
 			
 		};

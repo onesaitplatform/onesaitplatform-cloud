@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,14 +83,4 @@ public class NotificationCompositeModel implements Serializable {
 	@Setter
 	@JsonIgnore
 	private String domainOwner;
-	
-	@Getter
-	@Setter
-	@JsonIgnore
-	private String vertical;
-	
-	@Getter
-	@Setter
-	@JsonIgnore
-	private String tenant;
 }

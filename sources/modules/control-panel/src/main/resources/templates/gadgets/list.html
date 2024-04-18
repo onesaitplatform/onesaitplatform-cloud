@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@
 	    <meta name="description" content="Gadget list template"/>
 		<meta name="keywords" content="sofia2,smart,cities,platform,Indra"/>
 		<meta name="author" content="Indra Sistemas, S.A."/>
-
+		
 		<!-- STYLE SHEETS -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
@@ -35,784 +35,392 @@
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}"/>
 		<!-- THEME -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
-
+		
 		<!-- PLUGINS STYLE SHEETS -->
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>
-
-
-		<style>
-		#search-on-title-template {
-		    display: inline-block;
-		    padding-top: 13px;
-		}
-
-
-
-		</style>
-
-	</head>
-
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
+	</head>	
+	
 	<!-- page-sidebar-closed to start page with collapsed menu -->
 	<body class="page-header-fixed  page-content-white page-sidebar-closed">
 
 	<!-- MAIN PAGE WRAPPER -->
 	<div class="page-wrapper">
-
+	
 		<!-- BEGIN HEADER INCLUDE -->
 		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
 		<!-- END HEADER -->
-
+		
 		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
-		<div class="clearfix"> </div>
-
+		<div class="clearfix"> </div>		
+			
 		<!-- BEGIN SIDEBAR -->
 		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
 		<!-- END SIDEBAR -->
-
+		
 		<!-- BEGIN CONTENT -->
 		<div class="page-content-wrapper">
-
+			
 			<!-- BEGIN CONTENT BODY -->
-			<div class="page-content tabContainer">
-				<div id="header">
-						<div class="row tabslistHeader"  >
-							<div class=" tabslistContainer  col-md-12 col-sm-12 col-xs-12">
-								<div id="tab-gadgets" href="#tab_gadgets" data-toggle="tab" class="tabslist-option  active">
-									<div class="">
-										<label class=" popovers font-sm" data-trigger="hover" data-placement="top" data-container="body">
-										<div class="inline font-xs">
-											<a   aria-expanded="false">
-												<!-- FORM TITLE -->
-												<span class="caption-subject " th:text="#{gadgets.listGadgets}"> Gadgets</span>
-											</a>
-										</div>
-
-										</label>
-	    						  	</div>
-
-								</div>
-								<div id="tab-templates" href="#tab_templates" data-toggle="tab" class="tabslist-option ">
-									<div class="">
-										<label class=" popovers font-sm" data-trigger="hover" data-placement="top" data-container="body">
-										<div class="inline font-xs">
-											<a  aria-expanded="false"  >
-												<span class="caption-subject " th:text="#{gadgettemplates.template}"> Templates</span>
-											</a>
-										</div>
-
-										</label>
-									</div>
-								</div>
-
-							</div>
-						</div>
-					</div>
-				<!-- SEARCH FORM -->
-				<div id="searchFilter"  class="row" style="margin-top:16px">
-					<form id="form_gadget" class="" role="form" method="get">
-						<input type="hidden"  name="current_tab" id="current_tab"/>
-						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-						<div class="col-md-3 col-sm-4 col-xs-12">
-							<div class="input-icon">
-								<i class="icon-search font-grey-mint"></i>
-								<input id="name" th:placeholder="#{gadgets.name}" name="name" class="form-control" type="text" maxlength="50" value=""/>
-							</div>
-						</div>
-						<div class="col-md-3 col-sm-4 col-xs-12">
-							<div class="input-icon">
-								<i class="icon-search font-grey-mint"></i>
-								 <select class="form-control" id="type" name="type" >
-									<option value=""  th:text="#{gadgets.type}"  selected></option>
-									<option th:each="gadgetType : ${gadgetTypes}" th:id="${gadgetType}" data-type="general" th:value="${gadgetType.id}" th:text="${gadgetType.identification}"  ></option>
-
-								</select>
-							</div>
-						</div>
-						<div class="col-md-6 col-sm-4  col-xs-12">
-							<div class="pull-right">
-								<button type="button" id="reset_gadget" name="reset_gadget" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}">Reset</button>
-								<button type="button" id="search_gadget" name="search_gadget" class="btn btn-primary btn-primary-search" th:text="#{gen.search}">Search</button>
-							</div>
-						</div>
-					</form>
-				</div>
-				<div class="tab-content ">
-				<div class="tab-pane active" id="tab_gadgets">
-
-
-
+			<div class="page-content">
+				
 				<!-- BEGIN PAGE HEADER-->
-
+				
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/dashboards/list}"> <span th:text="#{dashboards.my}">My Dashboards</span></a><i class="fa fa-angle-right"></i></li>
 						<li><span th:text="#{gadgets.my}">My Gadgets</span></li>
-					</ul>
+					</ul>						
 				</div>
 				<!-- END PAGE BAR -->
-
+				
 				<!-- BEGIN PAGE TITLE-->
 				<h1 class="page-title hide "><span th:text="#{gadgets.my}">My gadgets</span></h1>
-				<!-- END PAGE TITLE-->
-
+				<!-- END PAGE TITLE-->			
+				
 				<!-- MAIN ROW -->
 				<div class="row">
-
-					<div class="portlet light ">
-						<div class="portlet-title">
-							<div class="caption">
-								<span class="caption-subject" th:text="#{gadgets.my}"> My Gadget </span>
-								<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
-							</div>
-							<div class="caption" style="padding: 22px 8px 8px 10px">
-								<a onclick="$('.search-icon-gad').toggleClass('hide')" class="search-icon-gad" style="margin-left: 18px;"><i class="icon-search"></i></a>
-							</div>
-							<div id="search-on-title" class="hide input-icon search-icon-gad">
-								<a class ="input-icon" onclick="$('.search-icon-gad').toggleClass('hide')" ><i class="icon-search"></i></a>
-							</div>
-							<div class="tools hide">
-								<a href="" class="collapse" data-original-title="" title=""> </a>
-								<a href="" class="fullscreen" data-original-title="" title=""> </a>
-							</div>
-							<div class="pull-right btn-title-group">
-
-								<div class="pull-right btn-group" id="divcreate" >
-									<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-primary button-plus-create" onclick="location.href='../gadgets/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>
+					<div class="col-md-12">
+					
+						<div class="portlet light ">
+							<div class="portlet-title">
+								<div class="caption">
+									
+									<span class="caption-subject" th:text="#{gadgets.my}"> My Gadget </span>
+									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
+								</div>									
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""> </a>
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>
+								</div>								
+								<div class="actions margin-right-20">
+									<div class="btn-group">										
+										<button id="search-toggle" type="button" class="btn btn-circle btn-outline blue" onclick="$('#searchFilter').toggleClass('hide')"><span th:text="#{gen.search}"> Search </span></button>
+										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" type="button" class="btn btn-circle btn-outline btn-primary" onclick="location.href='../gadgettemplates/create'" ><span th:text="#{gadgettemplates.create}">New </span></button>									
+										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" type="button" class="btn btn-circle btn-outline btn-primary" onclick="location.href='../gadgets/create'" ><span th:text="#{gadgets.create}">New </span></button>
+									</div>										
 								</div>
 							</div>
-						</div>
-						<div class="portlet-body" style="display: block; height: auto;">
-
-							<div class="row main">
-								<!-- GADGET LIST -->
-								<div class="col-md-12">
-									<div id="contenedor-tabla-outside" class="contiene hidden">
-										<div>
-										<!-- DATATABLE DANDELION CONF. -->
-											<table id="gadgets" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
-												<thead>
-													<tr class="cabecera-tabla">
-														<th class="titulo-columnas text-center" ><span th:text="#{gen.id}"> ID </span></th>
-														<th dt:sortInitDirection="asc" dt:sortInitOrder="0" class="titulo-columnas" th:text="#{gen.name}">Name</th>
-														<th class="titulo-columnas text-center" th:text="#{gen.owner}" >Owner</th>
-														<!-- <th class="titulo-columnas text-center" th:text="#{gen.public}" >Public</th> -->
-														<th dt:sortInitDirection="dsc" dt:sortInitOrder="1"  class="titulo-columnas text-center" th:text="#{gen.type}">Type</th>
-														<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
-														<th class="titulo-columnas text-center" ><span th:text="#{gen.updated}"> Updated At </span></th>
-														<th class="titulo-columnas text-center" dt:sortable="false" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
-													</tr>
-												</thead>
-												<tbody>
-													<tr th:each="gadget : ${gadgets}" pages:paginate="10">
-														<!-- ID -->
-														<td class="text-left " th:text="${gadget.id}"></td>
-														<!-- IDENTIFICATION/NAME -->
-														<td class="text-left " th:text="${gadget.identification}"></td>
-														<!-- USER -->
-														<td class="text-center " th:text="${gadget.user.userId}"></td>
-														<!-- PUBLIC 
-														<td class="text-left" th:if="${gadget.public}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"></i><span th:text="' '+#{gen.public}" style="color: #2E6B33;"></span></td>
-														<td class="text-left" th:if="${!gadget.public}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.private}" style="color: #A73535;"></span></td>-->
-														<!-- TYPE -->
-														<td class="text-center " th:text="${gadget.type.identification}"></td>
-														<!-- DATE -->
-														<td class="text-center" th:if="${gadget.createdAt!=null}"><span th:text="${#dates.format(gadget.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(gadget.createdAt,'dd/MM/yyyy')}" ></span></td>
-														<td class="text-center" th:if="${gadget.createdAt==null}" th:text="'---'"></td>
-														<!-- UPDATE -->
-														<td class="text-center" th:if="${gadget.updatedAt!=null}"><span th:text="${#dates.format(gadget.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(gadget.updatedAt,'dd/MM/yyyy')}" ></span></td>
-														<td class="text-center" th:if="${gadget.updatedAt==null}" th:text="'---'"></td>
-														<!-- OPTIONS -->
-														<td class="icon text-center" style="white-space: nowrap">
-															<div class="grupo-iconos text-center">
-																<!-- VIEW -->
-																<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.view}" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/gadgets/show/${gadget.id}} + '\');'"><i class="la la-eye font-hg"></i></span>
-
-																<!-- EDIT -->
-																<span  class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/gadgets/update/${gadget.id}/|(form)} + '=' + '\');'"><i class="icon-edit"></i></span>
-
-                                                                <span class="dropdown">
-                                                                <span   class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
-                                                                    <ul class="dropdown-menu dropdown-menu-table download-menu">
-                                                                        <!-- CLONE-->
-                                                                        <li>
-                                                                            <span th:title="#{gadgets.clone}" class="btn btn-xs btn-no-border btn-circle btn-outline" style="margin-left: -3px;" th:attr="onclick='cloneGadgetDialog(\''+${gadget.id}+'\',\'${gadget.identification}\')'"><i class="la la-clone font-hg"></i><span class="span-title-three-dots-icons" th:text="#{gadgets.clone}" >Clone Gadget</span></span>
-                                                                        </li> 
-                                                                        <!-- DELETE -->
-                                                                        <li>
-                                                                            <span  class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:attr="onclick='deleteConfirmation(\''+${gadget.id}+'\')'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>
-                                                                        </li>
-                                                                    </ul>
-                                                                </span>
-                                                           </div>
-														</td>
-													</tr>
-
-												</tbody>
-											</table>
-											<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
-											<div id="dataTable-vis-toggle" class="btn-group margin-right-10 hide">
-
-												 <a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
-												<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="0"/>
-														<label th:text="#{gen.id}"> id </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-														<label th:text="#{gen.name}"> identification </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-														<label th:text="#{gen.owner}"> Owner </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
-														<label th:text="#{gen.type}"> Type</label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-														<label th:text="#{gen.created}"> Created at</label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
-														<label th:text="#{gen.updated}"> Updatet at</label>
-													</span>
-
+							<div class="portlet-body" style="display: block; height: auto;">
+								
+								<div class="row">									
+									<div id="searchFilter" class="col-md-12 hide">
+									<!-- SEARCH FORM -->
+										<form id="form_gadget" class="" role="form" method="get">												
+											<div  class="form-body " style="border-bottom: 1px solid #eef1f5;">
+												<div class="row">
+													<div class="col-md-4 col-xs-12">
+														<div class="form-group">															
+															<div class="input-group">
+																<span class="input-group-addon">
+																	<i class="fa fa-tag font-grey-mint"></i>
+																</span>															
+																<input id="name" th:placeholder="#{gadgets.name}" name="name" class="form-control" type="text" maxlength="50" value=""/>
+															</div>
+														</div>
+													</div>
+													<div class="col-md-4 col-xs-12">
+														<div class="form-group">															
+															<div class="input-group">
+																<span class="input-group-addon">
+																	<i class="fa fa-tag font-grey-mint"></i>
+																</span>
+																<select class="form-control" id="type" name="type" >														 
+																	<option value="" text="" selected="selected"></option>
+																	<option th:each="gadgetType : ${gadgetTypes}" th:id="${gadgetType}" data-type="general" th:value="${gadgetType}" th:text="${gadgetType}"  ></option>
+																	<option id="template" data-type="general" th:value="template" th:text="template"></option>
+																</select>
+															</div>
+														</div>
+													</div>
+													<div class="col-md-4 col-xs-12">
+														<div class="btn-group">
+															<button type="button" id="search_gadget" name="search_gadget" th:title="#{gen.search}" th:value="#{gadget_search_button_form}" value="Search" class="btn btn-sm btn-circle btn-outline blue" th:text="#{gen.search}"> Search </button>
+															<button type="button" id="reset_gadget" name="reset_gadget" value="Reset" class="btn btn-sm btn-circle btn-outline blue" title="Reset"><i class="la la-refresh"></i>&nbsp;</button>														
+														</div>
+													</div>
 												</div>
+											</div>												
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>								
+									</div>
+									<!-- GADGET LIST -->
+									<div class="col-md-12">											
+										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
+											<div>
+												<!-- DATATABLE DANDELION CONF. -->												
+												<table id="gadgets" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
+													<thead>
+														<tr class="cabecera-tabla">
+															<th dt:sortInitDirection="asc" dt:sortInitOrder="0" class="titulo-columnas" th:text="#{gen.name}">Name</th>
+															<th class="titulo-columnas text-center" th:text="#{gen.owner}" >Owner</th>
+															<th dt:sortInitDirection="dsc" dt:sortInitOrder="1"  class="titulo-columnas text-center" th:text="#{gen.type}">Type</th>																
+															<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{gen.updated}"> Updated At </span></th>
+															<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
+														</tr>
+													</thead>
+													<tbody>
+														<tr th:each="gadget : ${gadgets}" pages:paginate="10">
+															<!-- IDENTIFICATION/NAME -->
+															<td class="text-left " th:text="${gadget.identification}"></td>
+															<!-- USER -->
+															<td class="text-center " th:text="${gadget.user.userId}"></td>
+															<!-- DESCRIPTION -->
+															<td class="text-center" th:title="${gadget.type}">
+															<!-- line, bar, mixed, pie, map, wordloud radar y table el mixed mezcla line bar y puntos -->
+															<i th:if="${gadget.type} == 'table'" class="fa fa-table font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
+															<i th:if="${gadget.type} == 'bar'" class="la la-bar-chart font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
+															<i th:if="${gadget.type} == 'line'" class="la la-line-chart font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
+															<i th:if="${gadget.type} == 'mixed'" class="la la-area-chart font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
+															<i th:if="${gadget.type} == 'pie'" class="la la-pie-chart font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
+															<i th:if="${gadget.type} == 'map'" class="la la-map font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
+															<i th:if="${gadget.type} == 'wordcloud'" class="la la-cloud font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
+															<i th:if="${gadget.type} == 'radar'" class="la la-bullseye font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
+															<i th:if="${gadget.type} == 'datadiscovery'" class="fa fa-align-justify font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${gadget.type}" th:data-original-title="${gadget.type}"></i>
+															</td>
+															<!-- DATE -->
+															<td class="text-center" th:if="${gadget.createdAt!=null}"><span th:text="${#dates.format(gadget.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(gadget.createdAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${gadget.createdAt==null}" th:text="'---'"></td>
+															<!-- UPDATE --> 
+															<td class="text-center" th:if="${gadget.updatedAt!=null}"><span th:text="${#dates.format(gadget.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(gadget.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${gadget.updatedAt==null}" th:text="'---'"></td>
+															<!-- OPTIONS -->
+															<td class="icon text-center" style="white-space: nowrap">
+																<div class="grupo-iconos text-center">
+																	<!-- VIEW -->
+																	<span class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.view}" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/gadgets/view/${gadget.id}} + '\');'"><i class="la la-eye font-hg"></i></span>
+																																																																			
+																	<!-- EDIT -->
+																	<span  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/gadgets/update/${gadget.id}/|(form)} + '=' + '\');'"><i class="la la-edit font-hg"></i></span>
+																	
+																   <!-- DELETE -->
+																	<span  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'deleteConfirmation(\''+${gadget.id}+'\');'"><i class="la la-trash font-hg"></i></span>
+																</div>
+															</td>
+														</tr>
+														<tr th:each="gadgettemp : ${gadgetTemplates}" pages:paginate="10">
+															<!-- IDENTIFICATION/NAME -->
+															<td class="text-left " th:text="${gadgettemp.identification}"></td>
+															<!-- USER -->
+															<td class="text-center " th:text="${gadgettemp.user.userId}"></td>
+															<!-- DESCRIPTION -->
+															<td class="text-center" th:title="${gadgettemp.description}">
+															<!-- line, bar, mixed, pie, map, wordloud radar y table el mixed mezcla line bar y puntos -->
+															<i class="fa fa-th-large font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="Template" th:data-original-title="Template"></i>
+															</td>
+															<!-- DATE --> 
+															<td class="text-center" th:if="${gadgettemp.createdAt!=null}"><span th:text="${#dates.format(gadgettemp.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(gadgettemp.createdAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${gadgettemp.createdAt==null}" th:text="'---'"></td>
+															<!-- UPDATE --> 
+															<td class="text-center" th:if="${gadgettemp.updatedAt!=null}"><span th:text="${#dates.format(gadgettemp.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(gadgettemp.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${gadgettemp.updatedAt==null}" th:text="'---'"></td>
+															<!-- OPTIONS -->
+															<td class="icon text-center" style="white-space: nowrap">
+																<div class="grupo-iconos text-center">																																																			
+																	<!-- VIEW -->
+																	<span class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.view}" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/gadgettemplates/view/${gadgettemp.id}/|(form)} + '=' + '\');'"><i class="la la-eye font-hg"></i></span>
+																	
+																	<!-- EDIT -->
+																	<span  th:if="${gadgettemp.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/gadgettemplates/update/${gadgettemp.id}/|(form)} + '=' + '\');'"><i class="la la-edit font-hg"></i></span>
+																	
+																   <!-- DELETE -->
+																	<span  th:if="${gadgettemp.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:onclick="'javascript:deleteTemplateConfirmation(\''+${gadgettemp.id}+'\');'"><i class="la la-trash font-hg"></i></span>
+																</div>
+															</td>
+														</tr>
+													</tbody>
+												</table>
+												
+												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
+													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
+														<span th:text="#{gen.columns}"></span> <i class="fa fa-angle-down"></i>
+													</a>
+													<div id="column_toggler" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+														<label class="toggle-vis" data-column="0" th:text="#{gen.name}"> Name</label>
+														<label class="toggle-vis" data-column="1" th:text="#{gen.owner}" > Owner</label>
+														<label class="toggle-vis" data-column="2" th:text="#{gen.type}"> Type</label>
+														<label class="toggle-vis" data-column="3" th:text="#{gen.created}"> Created At</label>
+														<label class="toggle-vis" data-column="4" th:text="#{gen.updated}"> Updated At</label>
+														<label class="toggle-vis" data-column="5" th:text="#{gen.options}"> Options</label>
+													</div>
+												</div>											
 											</div>
-										</div>
+										</div>											
 									</div>
 								</div>
 							</div>
-						</div>
-					</div><!-- END PORTLET BASIC LIGHT -->
-				</div><!-- END MAIN ROW -->
+						</div><!-- END PORTLET BASIC LIGHT -->							
+					</div><!-- END COL-12 -->						
+				</div><!-- END MAIN ROW -->	
 				<form id="delete_gadget_form" class="delete-gadget hide" method="post">
 					<input type="hidden" name="_method" value="DELETE"/>
 					<input type="hidden" id="delete-id" name="id" />
-					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-				</form>
-				</div>
-
-				<div class="tab-pane" id="tab_templates">
-
-				<!-- BEGIN PAGE TITLE-->
-				<h1 class="page-title hide "><span th:text="#{gadgettemplates.my}">My Gadget Templates</span></h1>
-				<!-- END PAGE TITLE-->
-
-				<!-- MAIN ROW -->
-				<div class="row">
-
-					<div class="portlet light ">
-						<div class="portlet-title">
-							<div class="caption">
-								<span class="caption-subject" th:text="#{gadgettemplates.my}"> My Gadget Templates </span>
-								<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
-							</div>
-							<div class="caption" style="padding: 22px 8px 8px 10px">
-								<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
-							</div>
-							<div id="search-on-title-template" class="hide input-icon search-icon">
-								<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
-							</div>
-							<div class="tools hide">
-								<a href="" class="collapse" data-original-title="" title=""> </a>
-								<a href="" class="fullscreen" data-original-title="" title=""> </a>
-							</div>
-							<div class="pull-right btn-title-group">
-								<div class="pull-right btn-group" id="divcreate_template" >
-									<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-primary button-plus-create" onclick="location.href='../gadgettemplates/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>
-								</div>
-							</div>
-						</div>
-						<div class="portlet-body" style="display: block; height: auto;">
-
-							<div class="row main">
-								<!-- TEMPLATE LIST -->
-								<div class="col-md-12">
-									<div id="contenedor-tabla-outside-template" class="contenedor-tabla-outside contiene hidden">
-										<div>
-										<!-- DATATABLE DANDELION CONF. -->
-											<table id="templates" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
-												<thead>
-													<tr class="cabecera-tabla">
-														<th class="titulo-columnas text-center" th:text="#{gen.id}" >Id</th>
-														<th dt:sortInitDirection="asc" dt:sortInitOrder="0" class="titulo-columnas" th:text="#{gen.name}">Name</th>
-														<th class="titulo-columnas text-center" th:text="#{gen.owner}" >Owner</th>
-														<th class="titulo-columnas text-center" ><span th:text="#{gen.public}"> Public </span></th>
-														<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
-														<th class="titulo-columnas text-center" ><span th:text="#{gen.updated}"> Updated At </span></th>
-														<th class="titulo-columnas text-center" dt:sortable="false" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
-													</tr>
-												</thead>
-												<tbody>
-													<tr th:each="gadgettemp : ${gadgetTemplates}" pages:paginate="10">
-														<!-- ID -->
-														<td class="text-left " th:text="${gadgettemp.id}"></td>
-														<!-- IDENTIFICATION/NAME -->
-														<td class="text-left " th:text="${gadgettemp.identification}"></td>
-														<!-- USER -->
-														<td class="text-center " th:text="${gadgettemp.user.userId}"></td>
-														<!-- PUBLIC -->
-														<td class="text-left" th:if="${gadgettemp.public}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"></i><span th:text="' '+#{gen.public}" style="color: #2E6B33;"></span></td>
-														<td class="text-left" th:if="${!gadgettemp.public}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.private}" style="color: #A73535;"></span></td>
-														<!-- DATE -->
-														<td class="text-center" th:if="${gadgettemp.createdAt!=null}"><span th:text="${#dates.format(gadgettemp.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(gadgettemp.createdAt,'dd/MM/yyyy')}" ></span></td>
-														<td class="text-center" th:if="${gadgettemp.createdAt==null}" th:text="'---'"></td>
-														<!-- UPDATE -->
-														<td class="text-center" th:if="${gadgettemp.updatedAt!=null}"><span th:text="${#dates.format(gadgettemp.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(gadgettemp.updatedAt,'dd/MM/yyyy')}" ></span></td>
-														<td class="text-center" th:if="${gadgettemp.updatedAt==null}" th:text="'---'"></td>
-														<!-- OPTIONS -->
-														<td class="icon text-center" style="white-space: nowrap">
-															<div class="grupo-iconos text-center">
-																<!-- VIEW -->
-																<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.view}" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/gadgettemplates/view/${gadgettemp.id}/|(form)} + '=' + '\');'"><i class="la la-eye font-hg"></i></span>
-
-																<!-- EDIT -->
-																<span th:if="${gadgettemp.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'}" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/gadgettemplates/update/${gadgettemp.id}/|(form)} + '=' + '\');'"><i class="icon-edit"></i></span>
-																<span th:if="!(${gadgettemp.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" disabled="true" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}"><i class="icon-edit"></i></span>
-
-
-																<span class="dropdown">
-																	<span   class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
-																		<ul class="dropdown-menu dropdown-menu-table download-menu">
-																			<!-- CREATE CUSTOM GADGET-->
-																			<li>
-																				<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')"  class="btn btn-xs btn-no-border btn-circle btn-outline " style="margin-left: -3px;" data-container="body" data-placement="bottom" th:attr="onclick='javascript:navigateUrl(\'' + @{|/gadgets/createcustomgadget/${gadgettemp.id}/|(form)} + '=' + '\');'"><i class="la la-edit font-hg"></i><span class="span-title-three-dots-icons" th:text="#{gadgets.new.custom}" >New Custom Gadget</span></span>
-
-																			</li>
-                                                                            <!-- CLONE-->
-                                                                            <li>
-                                                                                <span th:title="#{gadgettemplates.clone}" class="btn btn-xs btn-no-border btn-circle btn-outline" style="margin-left: -3px;" th:attr="onclick='cloneGadgetTemplateDialog(\''+${gadgettemp.id}+'\',\'${gadgettemp.identification}\')'"><i class="la la-clone font-hg"></i><span class="span-title-three-dots-icons" style="vertical-align: text-top;" th:text="#{gadgettemplates.clone}" >Clone</span></span>
-                                                                            </li> 
-																		    <!-- DELETE -->
-																		    <li>
-																		    	<!--  <span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:attr="onclick='deleteDashboardConfirmation(\''+${dashboard.id}+'\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>-->
-																	    		<span th:if="${gadgettemp.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'}" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:attr="onclick='deleteTemplateConfirmation(\''+${gadgettemp.id}+'\')'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>
-																				<span th:if="!(${gadgettemp.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" disabled="true" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} "><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>
-
-																	    	</li>
-																	    </ul>
-																    </span>
-
-
-															</div>
-														</td>
-													</tr>
-												</tbody>
-											</table>
-											<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
-											<div id="dataTable-vis-toggle-template" class="btn-group margin-right-10 hide">
-
-												 <a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
-												<div id="column_toggler_template" data-container="body" class="dropdown-menu hold-on-click pull-right">
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="0"/>
-														<label th:text="#{gen.id}"> id </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-														<label th:text="#{gen.name}"> identification </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-														<label th:text="#{gen.owner}"> Owner </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
-														<label th:text="#{gen.public}"> Public </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-														<label th:text="#{gen.created}"> Created at</label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
-														<label th:text="#{gen.updated}"> Update at</label>
-													</span>
-
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div><!-- END PORTLET BASIC LIGHT -->
-				</div><!-- END MAIN ROW -->
-				<form id="delete_gadget_template_form" class="delete-gadget hide" method="post">
-					<input type="hidden" name="_method" value="DELETE"/>
-					<input type="hidden" id="delete-id-template" name="id" />
-					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-				</form>
-
-
-
-
-				</div>
-			</div>
-
-
+				<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>				
 			</div><!-- END CONTENT BODY -->
-		</div><!-- END CONTENT page-content-wrapper -->
+		</div><!-- END CONTENT page-content-wrapper -->		
 	</div>
 	<!-- END MAIN PAGE WRAPPER -->
-
+	
 	<!-- FOOTER-INCLUDE -->
-	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
-
+	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
+	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"></script>
-	<script th:src="@{/static/js/layout.js}"></script>
-
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>
+	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
-
-
-	<script th:inline="javascript">
-
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	
+	
+	<script th:inline="javascript">	
+	
 	// TEMPLATE SEARCH FORM.
-
+	
 	var sname = [[${param.name}]] || '';
 	var stype = [[${param.type}]] || '';
-	var currentTab = [[${currentTab}]];
-
+	
 	sname ? $('#name').val(sname) : sname = '';
 	stype ? $('#type').val(stype) : stype = '';
+	console.log('SEARCHING ... [ Name: ' + sname + ' Type: ' + stype + ']');
 	if (( sname != '') || (stype != '')) { $('#search-toggle').trigger('click'); }
-
+	
 	// DATATABLES LANGUAJE FROM PROPERTIES.
-	datatable_lang = [[#{datatables_lang}]];
+	datatable_lang = [[#{datatables_lang}]];	
 	var languageJson = JSON.parse(datatable_lang);
 	if ( languageJson ){ $.extend( true, $.fn.dataTable.defaults, { language: languageJson }); }
 
 	</script>
-
-	<script type="text/javascript"  th:inline="javascript">
+	
+	<script type="text/javascript"  th:inline="javascript">	
 	var optionName = 'GADGETS';
-	var cloneTitle = [[#{dashboards.cloneText}]];
-	var CloneFail = [[#{gadgets.cloneFail}]];
-	var MinLen = [[#{dashboards.minLen}]];
-	var Cancel = [[#{gen.cancelBtn}]];
-	var Close = [[#{gen.closeBtn}]];
-	var Confirm = [[#{gen.confirmBtn}]];
-
+	
 	//<![CDATA[
-	function navigateUrl(url){
-
-		window.location.href = url;	}
-
+	function navigateUrl(url){  window.location.href = url;	}
+	
 	var  deleteConfirmation = function (id){
-
-		showConfirmDeleteDialog(id);
-	}
+		
+		showConfirmDeleteDialog(id);	
+	} 
 	var deleteUrl = [[@{/gadgets}]];
-
-	var showConfirmDeleteDialog = function(id){
-
+	
+	var showConfirmDeleteDialog = function(id){	
 		$('#delete_gadget_form').attr('action', deleteUrl + '/' + id);
 		$('#delete-id').val(id);
-		HeaderController.showConfirmDialogGadget('delete_gadget_form');
-
-	}
-
+		HeaderController.showConfirmDialogGadget('delete_gadget_form');	
+		
+	}	
+	
 	//Delete Template
 	var  deleteTemplateConfirmation = function (id){
 		console.log("id: "+id)
-		showConfirmDeleteTemplateDialog(id);
-	}
+		showConfirmDeleteTemplateDialog(id);	
+	} 
+	
+	
+	var showConfirmDeleteTemplateDialog = function(id){	
 
-	var deleteTemplUrl = [[@{/gadgettemplates}]];
+		//i18 labels
+		var Close = headerReg.btnCancelar;
+		var Remove = headerReg.btnEliminar;
+		var Content = [[#{gadgettemplates.del.confirm}]];
+		var Title = headerReg.titleConfirm + ':';
 
-	var showConfirmDeleteTemplateDialog = function(id){
-
-		$('#delete_gadget_template_form').attr('action', deleteTemplUrl + '/' + id);
-		$('#delete-id-template').val(id);
-		HeaderController.showConfirmDialogGadgetTemplate('delete_gadget_template_form');
-
-	}
-
-	var cloneGadgetDialog = function(gadgetId, identification){
+		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
-			title: cloneTitle,
+			icon: 'fa fa-warning',
+			title: Title,
 			theme: 'light',
 			columnClass: 'medium',
-			content: "<input class='col-md-12 form-control' type=text id='cloneIdentification' placeholder='"+MinLen+"'"+"></input>" +
-			"<span id='identificationerror' class='help-block font-red hide'><i class='la la-warning'></i>" + MinLen + "</span>",
+			content: Content,
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
+			closeIcon: true,
 			buttons: {
-				close: {
-					text: Cancel,
-					btnClass: 'btn btn-outline blue dialog',
-					action: function (){} //GENERIC CLOSE.
-				},
-				Ok: {
-					text: Confirm,
-					btnClass: 'btn btn-primary',
-					action: function(){
-						if($("#cloneIdentification").val()=="" || !$("#cloneIdentification").val() ||
-							$("#cloneIdentification").val().length < 5){
-							$('#identificationerror').removeClass('hide').addClass('help-block-error font-red');
-							return false;
-						}
-						else {$.post(
-								"/controlpanel/gadgets/clone",
-								{gadgetId : gadgetId, identification : $("#cloneIdentification").val()}
-							).done(function(){
-								navigateUrl("/controlpanel/gadgets/list")
-								}
-							).fail(
-								function(e){
-									console.log("Error cloning gadget, message detail: " + e.responseText);
-									cloneFail();
-								}
-							)}
-					}
-				}
-			}
-		});
-	}
+				remove: {
+					text: Remove,
+					btnClass: 'btn btn-circle btn-outline btn-primary',
+					action: function(){ 
+						url = '/controlpanel/gadgets/gadgettemplates/'+id;
+						$.post(url).done(function(){navigateUrl("/controlpanel/gadgets/list");})
 
-	var cloneGadgetTemplateDialog = function(gadgetId, identification){
-		$.confirm({
-			title: cloneTitle,
-			theme: 'light',
-			columnClass: 'medium',
-			content: "<input class='col-md-12 form-control' type=text id='cloneIdentification' placeholder='"+MinLen+"'"+"></input>" +
-			"<span id='identificationerror' class='help-block font-red hide'><i class='la la-warning'></i>" + MinLen + "</span>",
-			draggable: true,
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			buttons: {
-				close: {
-					text: Cancel,
-					btnClass: 'btn btn-outline blue dialog',
-					action: function (){} //GENERIC CLOSE.
+					}											
 				},
-				Ok: {
-					text: Confirm,
-					btnClass: 'btn btn-primary',
-					action: function(){
-						if($("#cloneIdentification").val()=="" || !$("#cloneIdentification").val() ||
-							$("#cloneIdentification").val().length < 5){
-							$('#identificationerror').removeClass('hide').addClass('help-block-error font-red');
-							return false;
-						}
-						else {$.post(
-								"/controlpanel/gadgets/gadgettemplates/clone",
-								{gadgetId : gadgetId, identification : $("#cloneIdentification").val()}
-							).done(function(){
-								navigateUrl("/controlpanel/gadgets/list")
-								}
-							).fail(
-								function(e){
-									console.log("Error cloning gadget, message detail: " + e.responseText);
-									cloneFail();
-								}
-							)}
-					}
-				}
-			}
-		});
-	}
-
-	var cloneFail = function (){
-		$.alert({
-			title : "Error",
-			theme : 'light',
-			content : CloneFail,
-			buttons: {
-				Ok: {
+				close: {
 					text: Close,
-					btnClass: 'btn btn-primary',
-					action: function (){}
-					}
-				},
-			})
-	}
+					btnClass: 'btn btn-circle btn-outline blue',
+					action: function (){} //GENERIC CLOSE.		
+				}
+			}
+		});
+	}	
 
+	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		var csrf_value = $("meta[name='_csrf']").attr("content");
-		var csrf_header = $("meta[name='_csrf_header']").attr("content");
-
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+	
 		// AUTO COMPLETE ON GADGET IDENTIFICATION/NAME
 		$.ajax({ url: "getNamesForAutocomplete", headers: {[csrf_header]: csrf_value}, type: 'POST', dataType: 'json', contentType: 'application/json', mimeType: 'application/json',
-			success: function (source) {
+			success: function (source) {			 
 						var namesArray = new Array();
 						for( var i = 0; i < source.length; i++ ){
 							namesArray[i] = { value: source[i] , data: source[i]};
 						}
-
+						
 						// INIT AJAX AUTO COMPLETE
-				$('#identification').autocomplete({
+				$('#identification').autocomplete({ 
 					lookup: namesArray,
 					lookupFilter: function(suggestion, originalQuery, queryLowerCase) {
 						var re = new RegExp('\\b' + $.Autocomplete.utils.escapeRegExChars(queryLowerCase), 'gi');
 						return re.test(suggestion.value);
-					}
+					}	
 				});
 			}
 		});
-
+		
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-		$('input.toggle-vis').on( 'change', function (e) {
-			e.preventDefault();
+		$('label.toggle-vis').on( 'click', function (e) {
+			e.preventDefault(); 
 			// Get the column API object
-
-			if($(this).parent().parent()[0].id == "column_toggler_template"){
-				var column = $('#templates').DataTable().column( $(this).attr('data-column') );
-				// Toggle the visibility
-				column.visible( ! column.visible() );
-				// toggle Text
-				$(this).toggleClass('text-muted line-through');
-			}
-			else {
-				var column = $('#gadgets').DataTable().column( $(this).attr('data-column') );
-				// Toggle the visibility
-				column.visible( ! column.visible() );
-				// toggle Text
-				$(this).toggleClass('text-muted line-through');
-			}
-		});
-
+			var column = $('#gadgets').DataTable().column( $(this).attr('data-column') ); 
+			// Toggle the visibility
+			column.visible( ! column.visible() );			
+			// toggle Text
+			$(this).toggleClass('text-muted line-through');			
+		});	
+		
 		// SEARCH FORM RESET
 		$('#reset_gadget').on('click',function(){
-			setCurrentTab();
 			$('#form_gadget')[0].reset();
 			$('#form_gadget')[0].submit();
 		});
-
-
-
+		
 		// SEARCH FORM
 		$('#search_gadget').on('click',function(){ $('#form_gadget')[0].submit(); });
-		
-		$('#form_gadget').on('submit', function(){
-            setCurrentTab();
-        });
-		
-		   $('#search_gadget').on('click', function(){
-
-	            $('#form_gadget').submit()
-
-	        });
-    	
-    	 function setCurrentTab() {
-             let tab = $('#tab-templates').hasClass('active') ? 'tab-templates' : 'tab-gadgets';
-             $('#current_tab').val(tab);
-         }
-         if(currentTab !== null){
-             setTimeout(function(){
-                 $('#' + currentTab).click();
-             },200);
-         }
-		
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-		//$('#column_toggler_template').find("input[type='checkbox']").prop('checked', true);
-		var oTable = $('#gadgets').dataTable({
-		      "bAutoWidth": false
-		      });
-
-
-		var oTable = $('#templates').dataTable({
-	      "bAutoWidth": false
-	      });
-
-		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)
-		//$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-
-		//TABLE STYLES
-		$('#divcreate').prepend($('#dataTable-vis-toggle'));
-		$('#dataTable-vis-toggle').removeClass('hide');
-
-		$('.dataTables_info').addClass('col-md-6 col-sm-6');
-		$('.dataTables_length').addClass('col-md-6 col-sm-6');
-
-		$('#search-on-title').append($('.dataTables_filter > label > input')[0]);
-		$('#search-on-title > input').removeClass('input-xsmall');
-
-		$('#gadgets_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
-		$('#gadgets_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length')[0]);
-		$('#gadgets_wrapper > div:nth-child(1)').hide();
-
-		$('.dataTables_paginate').attr('style', 'float:right !important');
-
-
-		$('.download-menu').parent().on('shown.bs.dropdown', function () {
-
-			 var $menu = $("ul", this);
-	         offset = $menu.offset();
-	         position = $menu.position();
-	         $('body').append($menu);
-	         $menu.show();
-	         $menu.css('position', 'absolute');
-	         $menu.css('top', (offset.top) +'px');
-	         $menu.css('left',(offset.left) +'px');
-	         $menu.css('min-width', '100px');
-	        $(this).data("myDropdownMenu", $menu);
-	     });
-	     $('.download-menu').parent().on('hide.bs.dropdown', function () {
-	         $(this).append($(this).data("myDropdownMenu"));
-	         $(this).data("myDropdownMenu").removeAttr('style');
-	     });
-
-
-		$("#contenedor-tabla-outside").removeClass("hidden");
-
-
-
-		//templates table
-
-
-		$.each([ 0 ],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
-		$.each([ 0 ],function(ind,value){ $("label.toggle-vis[data-column='0']").trigger('click'); });
-
-		$('.dataTables_filter')[1].append($('#dataTable-vis-toggle-template'));
-
-
-		$('#divcreate_template').prepend($('#dataTable-vis-toggle-template'));
-		$('#dataTable-vis-toggle-template').removeClass('hide');
-
-
-
-		$('#search-on-title-template').append($('.dataTables_filter > label > input')[0]);
-		$('#search-on-title-template > input').removeClass('input-xsmall');
-		$("#contenedor-tabla-outside-template").removeClass("hidden");
-
-
-		$('#templates_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
-		$('#templates_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length')[1]);
-		$('#templates_wrapper > div:nth-child(1)').hide();
-
-
-
-
-	    $('.tabslist-option').click(function (ev) {
-	        $('.tabslistContainer').find('.tabslist-option').removeClass('active');
-	        $(ev.currentTarget).addClass('active');
-	        if(ev.currentTarget.id === "tab-templates"){
-	        	$('#type').prop( "disabled", true );
-	        	$('#type').val("");
-	        }else{
-	        	$('#type').prop( "disabled", false );
-	        	$('#type').val("");
-	        }
-	    });
-
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-		$('#column_toggler_template').find("input[type='checkbox']").prop('checked', true);
-  		$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-
 	});
-
+	 
+	// MAIN WHEN LOAD
+	$(window).load(function(){  
+		
+		// SHOW/HIDE DATATABLES COLUMN INIT 		
+		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		$('#dataTable-vis-toggle').removeClass('hide');
+		
+		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
+		$.each([ 1 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		
+	});
+	
 	//]]>
 	</script>
-
+	
 </body>
-</html>
+</html> 
+
+  

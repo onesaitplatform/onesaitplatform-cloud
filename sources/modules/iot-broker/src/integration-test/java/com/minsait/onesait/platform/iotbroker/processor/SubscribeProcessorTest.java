@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,10 +39,13 @@ import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPlu
 import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 import com.minsait.onesait.platform.router.service.app.service.RouterService;
 
+import lombok.extern.slf4j.Slf4j;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Category(IntegrationTest.class)
 @Ignore
+@Slf4j
 public class SubscribeProcessorTest {
 
 	@Autowired
@@ -74,7 +77,7 @@ public class SubscribeProcessorTest {
 		when(deviceManager.registerActivity(any(), any(), any(), any())).thenReturn(true);
 
 		when(securityPluginManager.getSession(anyString())).thenReturn(Optional.of(session));
-		when(securityPluginManager.checkSessionKeyActive(any())).thenReturn(true);
+		when(securityPluginManager.checkSessionKeyActive(anyString())).thenReturn(true);
 		when(securityPluginManager.checkAuthorization(any(), any(), any())).thenReturn(true);
 	}
 

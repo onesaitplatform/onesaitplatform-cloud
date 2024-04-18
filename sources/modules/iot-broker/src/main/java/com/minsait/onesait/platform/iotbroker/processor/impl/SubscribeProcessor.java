@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -36,6 +37,7 @@ import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
 import com.minsait.onesait.platform.iotbroker.common.MessageException;
 import com.minsait.onesait.platform.iotbroker.common.exception.SSAPProcessorException;
 import com.minsait.onesait.platform.iotbroker.common.util.SSAPUtils;
+import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.iotbroker.processor.MessageTypeProcessor;
 import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
@@ -46,6 +48,7 @@ import com.minsait.onesait.platform.router.service.app.service.RouterService;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
+@EnableScheduling
 @Slf4j
 public class SubscribeProcessor implements MessageTypeProcessor {
 
@@ -53,17 +56,21 @@ public class SubscribeProcessor implements MessageTypeProcessor {
 	private RouterService routerService;
 
 	@Autowired
+	SecurityPluginManager securityPluginManager;
+
+	@Autowired
 	ObjectMapper objectMapper;
 
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info,
-			Optional<IoTSession> session) {
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info) {
 
 		@SuppressWarnings("unchecked")
 		final SSAPMessage<SSAPBodySubscribeMessage> subscribeMessage = (SSAPMessage<SSAPBodySubscribeMessage>) message;
 		SSAPMessage<SSAPBodyReturnMessage> response = new SSAPMessage<>();
 		final String subsId = UUID.randomUUID().toString();
 		response.setBody(new SSAPBodyReturnMessage());
+
+		final Optional<IoTSession> session = securityPluginManager.getSession(subscribeMessage.getSessionKey());
 
 		final SubscriptionModel model = new SubscriptionModel();
 		model.setCallback(subscribeMessage.getBody().getCallback());
@@ -80,7 +87,7 @@ public class SubscribeProcessor implements MessageTypeProcessor {
 		try {
 			routerResponse = routerService.subscribe(model);
 		} catch (final Exception e1) {
-			log.error("Error in process:{}", e1.getMessage());
+			log.error("Error in process:" + e1.getMessage());
 			response = SSAPUtils.generateErrorMessage(subscribeMessage, SSAPErrorCode.PROCESSOR, e1.getMessage());
 			return response;
 		}
@@ -89,9 +96,9 @@ public class SubscribeProcessor implements MessageTypeProcessor {
 		final String messageResponse = routerResponse.getMessage();
 		final String operation = routerResponse.getOperation();
 		final String result = routerResponse.getResult();
-		log.error("{} {} {} {}", errorCode, messageResponse, operation, result);
+		log.error(errorCode + " " + messageResponse + " " + operation + " " + result);
 
-		if (StringUtils.hasText(routerResponse.getErrorCode())) {
+		if (!StringUtils.isEmpty(routerResponse.getErrorCode())) {
 			response = SSAPUtils.generateErrorMessage(subscribeMessage, SSAPErrorCode.PROCESSOR,
 					routerResponse.getErrorCode());
 			return response;
@@ -108,7 +115,7 @@ public class SubscribeProcessor implements MessageTypeProcessor {
 			data = objectMapper.readTree(dataStr);
 			response.getBody().setData(data);
 		} catch (final IOException e) {
-			log.error("Error in process:{}", e.getMessage());
+			log.error("Error in process:" + e.getMessage());
 			response = SSAPUtils.generateErrorMessage(subscribeMessage, SSAPErrorCode.PROCESSOR, e.getMessage());
 			return response;
 		}
@@ -126,12 +133,12 @@ public class SubscribeProcessor implements MessageTypeProcessor {
 		@SuppressWarnings("unchecked")
 		final SSAPMessage<SSAPBodySubscribeMessage> subscribeMessage = (SSAPMessage<SSAPBodySubscribeMessage>) message;
 
-		if (!StringUtils.hasText(subscribeMessage.getBody().getSubscription())) {
+		if (StringUtils.isEmpty(subscribeMessage.getBody().getSubscription())) {
 			throw new SSAPProcessorException(String.format(MessageException.ERR_FIELD_IS_MANDATORY, "subscription",
 					message.getMessageType().name()));
 		}
 
-		if (!StringUtils.hasText(subscribeMessage.getBody().getQueryValue())) {
+		if (StringUtils.isEmpty(subscribeMessage.getBody().getQueryValue())) {
 			throw new SSAPProcessorException(String.format(MessageException.ERR_FIELD_IS_MANDATORY, "queryValue",
 					message.getMessageType().name()));
 		}

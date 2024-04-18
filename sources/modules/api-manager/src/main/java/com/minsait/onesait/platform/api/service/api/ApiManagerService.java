@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,11 +85,11 @@ public class ApiManagerService {
 	}
 
 	public String getApiVersion(String pathInfo) {
-		final Pattern pattern = Pattern.compile("/v([\\d]+)/");
+		final Pattern pattern = Pattern.compile("(.*)/api/v(.*)/");
 		final Matcher matcher = pattern.matcher(pathInfo);
 		if (matcher.find()) {
-			final String param = matcher.group(1);
-			return param;
+			final String param = matcher.group(2);
+			return param.substring(0, param.indexOf('/'));
 		} else {
 			String version = pathInfo;
 
@@ -119,8 +119,6 @@ public class ApiManagerService {
 	public String getApiIdentifier(String pathInfo) {
 
 		final String apiVersion = getApiVersion(pathInfo);
-
-		log.debug("apiVersion result: {}", apiVersion);
 
 		String apiIdentifier = pathInfo.substring(pathInfo.indexOf(apiVersion + "/") + (apiVersion + "/").length());
 
@@ -152,7 +150,7 @@ public class ApiManagerService {
 		return objectId.length() == 0 || !objectId.startsWith("/");
 	}
 
-	public ApiOperation getCustomSQL(String pathInfo, Api api, String httpVerb) {
+	public ApiOperation getCustomSQL(String pathInfo, Api api) {
 
 		final String apiIdentifier = getApiIdentifier(pathInfo);
 
@@ -164,21 +162,10 @@ public class ApiManagerService {
 		opIdentifier = opIdentifier.split("/")[0];
 
 		final List<ApiOperation> operaciones = apiOperationRepository.findByApiOrderByOperationDesc(api);
-		Type opType = null;
-		if (httpVerb != null) {
-			opType = Type.valueOf(httpVerb);
-		}
+
 		for (final ApiOperation operacion : operaciones) {
-			if (operacion.getIdentification().equals(opIdentifier)
-					|| !api.getApiType().equals(ApiType.INTERNAL_ONTOLOGY)
-							&& operacion.getPath().startsWith("/" + opIdentifier)) {
-				if (opType != null) {
-					if (opType.equals(operacion.getOperation())) {
-						return operacion;
-					}
-				} else {
-					return operacion;
-				}
+			if (operacion.getIdentification().equals(opIdentifier)) {
+				return operacion;
 			}
 		}
 		return null;
@@ -203,29 +190,15 @@ public class ApiManagerService {
 	public String getOperationPath(String pathInfo) {
 		final String apiIdentifier = getApiIdentifier(pathInfo);
 
-		log.debug("apiIdentifier result: {}", apiIdentifier);
-
 		return pathInfo.substring(pathInfo.indexOf(apiIdentifier) + apiIdentifier.length());
 	}
 
 	public ApiOperation getFlowEngineApiOperation(String pathInfo, Api api, String method,
 			Map<String, String[]> queryParams) {
 
-		log.debug("getFlowEngineApiOperation , path: {}, api: {}, method: {}", pathInfo,
-				api != null ? api.getIdentification() : null, method);
-
-		String opIdentifier = getOperationPath(pathInfo);
-
-		if (opIdentifier != null && !opIdentifier.endsWith("/")) {
-			opIdentifier = opIdentifier + "/";
-		}
-
-		log.debug("opIdentifier result: {}", opIdentifier);
+		final String opIdentifier = getOperationPath(pathInfo);
 
 		final List<ApiOperation> operations = apiOperationRepository.findByApiAndOperation(api, Type.valueOf(method));
-
-		log.debug("ApiOperations found: {}", String.join(",", operations.stream().map(ApiOperation::getPath).toList()));
-
 		// Checks non path param operations
 		for (final ApiOperation operation : operations) {
 			if (!hasPathParams(operation) && operation.getPath().equals(opIdentifier)
@@ -246,12 +219,9 @@ public class ApiManagerService {
 
 		// We need to allow path params on queries that dont were defined without them
 		for (final ApiOperation op : operations) {
-			if (op.getPath().equals(opIdentifier)) {
-				return op;
-			}
+			return op;
 		}
-		throw new BadRequestException(
-				"No operation found for API with pathInfo " + pathInfo + " and opIdentifier " + opIdentifier);
+		return null;
 
 	}
 
@@ -294,8 +264,6 @@ public class ApiManagerService {
 
 			}
 			return paramvalue;
-		case HEADER:
-			return request.getHeader(customqueryparameter.getName());
 		case BODY:
 			return body;
 		default:

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,33 +72,31 @@ public class MessageProcessorDelegate implements MessageProcessor {
 	public <T extends SSAPBodyMessage> SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<T> message,
 			GatewayInfo info) {
 
+		// CHECK: PRE-PROCESSORS
+		// DONE: PROCESS
+		// DONE: CHECK SSAP COMPLIANCE
+		// DONE: CHECK CREDENTIALS
+		// DONE: CHECK AUTHRIZATIONS & PERMISSIONS
+		// CHECK: VALIDATE ONTOLOGY SCHEMA IF NECESSARY
+		// DONE: GET PROCESSOR AN PROCESS
+		// CHECK: POST-PROCESSORS
+		// DONE: RETURN
+
 		SSAPMessage<SSAPBodyReturnMessage> response = null;
 		Optional<IoTSession> session = Optional.empty();
 		try {
+			final Optional<SSAPMessage<SSAPBodyReturnMessage>> validation = validateMessage(message);
 
-			session = securityPluginManager.getSession(message.getSessionKey());
-
-			final Optional<SSAPMessage<SSAPBodyReturnMessage>> error = validateMessage(message, session);
-
-			if (error.isPresent()) {
-				return error.get();
+			if (validation.isPresent()) {
+				return validation.get();
 			}
-
-
+			if (SSAPMessageTypes.LEAVE.equals(message.getMessageType())) {
+				session = securityPluginManager.getSession(message.getSessionKey());
+			}
 			final MessageTypeProcessor processor = proxyProcesor(message);
 
 			processor.validateMessage(message);
-
-			if (session.isPresent()) {
-				String clientPlatform = session.get().getClientPlatform();
-				String clientPlatformInstance = session.get().getDevice();
-				deviceManager.registerActivity(message, clientPlatform, clientPlatformInstance, info);
-			}
-
-			//session parameter can be changed by processors. For example join does it.
-			//this is an optimization to avoid multiple calls to getSession. Multiple calls to getSession has bad performance on
-			//high load scenarios, even getting sessions from cache
-			response = processor.process(message, info, session);
+			response = processor.process(message, info);
 
 			if (!SSAPMessageDirection.ERROR.equals(response.getDirection())) {
 				response.setDirection(SSAPMessageDirection.RESPONSE);
@@ -123,23 +121,29 @@ public class MessageProcessorDelegate implements MessageProcessor {
 			response = SSAPUtils.generateErrorMessage(message, SSAPErrorCode.PROCESSOR,
 					String.format(e.getMessage(), message.getMessageType().name()));
 		} finally {
-
+			if (SSAPMessageTypes.JOIN.equals(message.getMessageType())) {
+				session = response != null ? securityPluginManager.getSession(response.getSessionKey())
+						: Optional.empty();
+			} else if (!SSAPMessageTypes.LEAVE.equals(message.getMessageType()) || !session.isPresent()) {
+				session = securityPluginManager.getSession(message.getSessionKey());
+			}
 			final SSAPMessage<SSAPBodyReturnMessage> resp = response;
 
-			session.ifPresent( s -> {
+			session.ifPresent((s) -> {
+
+				deviceManager.registerActivity(message, resp, s, info);
 
 				// Metrics
-				if (null != metricsManager && metricsManager.isMetricsEnabled()) {
-					String ontology = null;
-					if (message.getBody() instanceof SSAPBodyOntologyMessage) {
-						ontology = ((SSAPBodyOntologyMessage) message.getBody()).getOntology();
-					}
+				String ontology = null;
+				if (message.getBody() instanceof SSAPBodyOntologyMessage) {
+					ontology = ((SSAPBodyOntologyMessage) message.getBody()).getOntology();
+				}
 
-					String metricsStatus = "OK";
-					if (null == resp || null == resp.getBody() || !resp.getBody().isOk()) {
-						metricsStatus = "KO";
-					}
-
+				String metricsStatus = "OK";
+				if (null == resp || null == resp.getBody() || !resp.getBody().isOk()) {
+					metricsStatus = "KO";
+				}
+				if (null != metricsManager) {
 					metricsManager.logMetricDigitalBroker(s.getUserID(), ontology, message.getMessageType(),
 							Source.IOTBROKER, metricsStatus);
 				}
@@ -170,11 +174,11 @@ public class MessageProcessorDelegate implements MessageProcessor {
 	}
 
 	private Optional<SSAPMessage<SSAPBodyReturnMessage>> validateMessage(
-			SSAPMessage<? extends SSAPBodyMessage> message, Optional<IoTSession> session) {
+			SSAPMessage<? extends SSAPBodyMessage> message) {
 		SSAPMessage<SSAPBodyReturnMessage> response = null;
 
 		// Check presence of sessionKey and authorization of sessionKey
-		if (message.getBody().isSessionKeyMandatory() && !StringUtils.hasText(message.getSessionKey())) {
+		if (message.getBody().isSessionKeyMandatory() && StringUtils.isEmpty(message.getSessionKey())) {
 			response = SSAPMessageGenerator.generateResponseErrorMessage(message, SSAPErrorCode.PROCESSOR, String
 					.format(MessageException.ERR_FIELD_IS_MANDATORY, "Sessionkey", message.getMessageType().name()));
 
@@ -182,7 +186,7 @@ public class MessageProcessorDelegate implements MessageProcessor {
 		}
 
 		if (message.getBody().isSessionKeyMandatory()) {
-			if (!securityPluginManager.checkSessionKeyActive(session)) {
+			if (!securityPluginManager.checkSessionKeyActive(message.getSessionKey())) {
 				response = SSAPMessageGenerator.generateResponseErrorMessage(message, SSAPErrorCode.AUTENTICATION,
 						String.format(MessageException.ERR_SESSIONKEY_NOT_VALID, message.getMessageType().name()));
 				return Optional.of(response);
@@ -191,14 +195,14 @@ public class MessageProcessorDelegate implements MessageProcessor {
 		// Check if ontology is present and autorization for ontology
 		if (message.getBody().isOntologyMandatory()) {
 			final SSAPBodyOntologyMessage body = (SSAPBodyOntologyMessage) message.getBody();
-			if (!StringUtils.hasText(body.getOntology())) {
+			if (StringUtils.isEmpty(body.getOntology())) {
 				response = SSAPMessageGenerator.generateResponseErrorMessage(message, SSAPErrorCode.PROCESSOR,
 						String.format(MessageException.ERR_ONTOLOGY_SCHEMA, message.getMessageType().name()));
 				return Optional.of(response);
 			}
 
 			if (!securityPluginManager.checkAuthorization(message.getMessageType(), body.getOntology(),
-					session)) {
+					message.getSessionKey())) {
 				response = SSAPMessageGenerator.generateResponseErrorMessage(message, SSAPErrorCode.AUTHORIZATION,
 						String.format(MessageException.ERR_ONTOLOGY_AUTH, message.getMessageType().name()));
 				return Optional.of(response);

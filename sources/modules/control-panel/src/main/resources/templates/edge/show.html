@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@
 				<!-- MAIN ROW -->
 				<div class="row">
 					<div class="col-md-12">	
-						<div class="portlet light">
+						<div class="portlet light container">
 							<div class="portlet-title">								
 								<div class="tools">
 									<a href="" class="collapse hide" data-original-title="" title=""> </a>
@@ -98,17 +98,17 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
 	
 	<!-- CORE JS CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"></script>
-	<script th:src="@{/static/js/layout.js}"></script>
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>
 
 	<!-- PLUGINS -->
 	
 	<!-- JSON EDITOR -->	
-	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>
+	<script th:src="@{/static/vendor/json/jsoneditor.js}"/>
 	
-	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
-	<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
-	<script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>
+	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"/>
+	<script th:src="@{/static/vendor/ace/mode-json.js}"/>
+	<script th:src="@{/static/vendor/ace/theme-textmate.js}"/>
 	
 	<!-- TEMPLATE CONTROLLER  -->	
 		
@@ -124,18 +124,29 @@
 	// MAIN WHEN READY
 	var editor;
 	$( document ).ready(function() {
+		debugger;
 		// init when Document is ready
-		showLog ? console.log('EDGE console ready()...') : '';
+		showLog ? console.log('HOW NodeRed console ready()...') : '';
 		var url = [[${url}]];
+		var role = [[${role}]];
 		var basepath = [[${basepath}]];
 		var oauthToken = [[${session.oauthToken}]];
-		
-		$('#iframe').attr('src', url + oauthToken);
+		$.ajax({
+		    type: "GET", 
+		    url: url + "?profile=" + role,
+		    contentType: "application/json",
+		    beforeSend: function(xhr, settings){
+		            xhr.setRequestHeader("Authentication", oauthToken);
+		            xhr.setRequestHeader("X-Frame-Options", "allow-from " + basepath);},
+		    success: function(data){
+		        $("#iframe").contents().find('html').html(data); 
+		    }
+		});
 		
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
+	$(window).load(function(){  
 		// init on load.		
 		showLog ? console.log('SHOW NodeRed console load()...') : '';
 			

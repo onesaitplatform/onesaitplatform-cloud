@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
@@ -30,7 +29,6 @@ import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.config.model.Viewer;
 import com.minsait.onesait.platform.config.repository.ViewerRepository;
-import com.minsait.onesait.platform.config.services.exceptions.ViewerServiceException;
 import com.minsait.onesait.platform.config.services.utils.ZipUtil;
 
 import freemarker.cache.ClassTemplateLoader;
@@ -56,29 +54,26 @@ public class ViewerHelper {
 
 	@PostConstruct
 	public void init() {
-		final Configuration cfg = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
+		Configuration cfg = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
 		try {
-			final TemplateLoader templateLoader = new ClassTemplateLoader(getClass(), "/viewers/templates");
+			TemplateLoader templateLoader = new ClassTemplateLoader(getClass(), "/viewers/templates");
 
 			cfg.setTemplateLoader(templateLoader);
 			indexViewerTemplate = cfg.getTemplate("indexViewerTemplate.ftl");
-		} catch (final IOException e) {
+		} catch (IOException e) {
 			log.error("Error configuring the template loader.", e);
 		}
 	}
 
 	public File generateProject(String id) {
 
-		final Optional<Viewer> opt = viewerRepo.findById(id);
-		if (!opt.isPresent())
-			throw new ViewerServiceException("Viewer not found");
-		final Viewer viewer = opt.get();
+		Viewer viewer = viewerRepo.findById(id);
 
-		final String projectDirectory = tempDir + File.separator + UUID.randomUUID();
+		String projectDirectory = tempDir + File.separator + UUID.randomUUID();
 
-		final File src = new File(projectDirectory + File.separator + viewer.getIdentification() + File.separator);
+		File src = new File(projectDirectory + File.separator + viewer.getIdentification() + File.separator);
 		if (!src.exists()) {
-			final Boolean success = src.mkdirs();
+			Boolean success = src.mkdirs();
 			if (!success) {
 				log.error("Creating project for Viewer falied");
 				return null;
@@ -89,7 +84,7 @@ public class ViewerHelper {
 			return null;
 		}
 
-		final Map<String, Object> dataMap = new HashMap<>();
+		Map<String, Object> dataMap = new HashMap<String, Object>();
 		dataMap.put("jsCode", viewer.getJs());
 
 		PrintWriter outLogic = null;
@@ -100,7 +95,7 @@ public class ViewerHelper {
 
 			// Create index.html
 			log.info("New file is going to be generate on: " + src.getAbsolutePath());
-			final File index = new File(src.getAbsolutePath());
+			File index = new File(src.getAbsolutePath());
 			if (!index.isDirectory()) {
 				index.mkdirs();
 			}
@@ -109,7 +104,7 @@ public class ViewerHelper {
 			outLogic.println(viewer.getJs().replace("\\n", System.getProperty("line.separator")));
 			outLogic.flush();
 
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			log.error("Error generating Viewer project", e);
 		} finally {
 
@@ -117,28 +112,28 @@ public class ViewerHelper {
 				if (null != outLogic) {
 					outLogic.close();
 				}
-			} catch (final Exception e) {
+			} catch (Exception e) {
 				log.error("Error closing File object", e);
 			}
 		}
 
-		final File fileProjectDirectory = new File(projectDirectory);
+		File fileProjectDirectory = new File(projectDirectory);
 		try {
 			zipUtil.zipDirectory(fileProjectDirectory, zipFile);
-		} catch (final IOException e) {
+		} catch (IOException e) {
 			log.error("Zip file viewer failed", e);
 		}
 
 		// Removes the directory
-		deleteDirectory(fileProjectDirectory);
+		this.deleteDirectory(fileProjectDirectory);
 
 		return zipFile;
 	}
 
 	private boolean deleteDirectory(File directoryToBeDeleted) {
-		final File[] allContents = directoryToBeDeleted.listFiles();
+		File[] allContents = directoryToBeDeleted.listFiles();
 		if (allContents != null) {
-			for (final File file : allContents) {
+			for (File file : allContents) {
 				deleteDirectory(file);
 			}
 		}

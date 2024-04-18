@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -48,28 +48,25 @@ import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyUserAccess;
 import com.minsait.onesait.platform.config.model.OntologyUserAccessType;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.services.app.AppService;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
 import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
-@RunWith(MockitoJUnitRunner.Silent.class)
+@RunWith(MockitoJUnitRunner.class)
 public class OntologyControllerTest {
 
 	@Mock
 	private OntologyService ontologyService;
 	@Mock
-	private OntologyBusinessService ontologyBusinessService;
+    private OntologyBusinessService ontologyBusinessService;
 	@Mock
 	private AppWebUtils utils;
 	@Mock
 	private UserService userService;
 	@Mock
 	private EntityDeletionService entityDeletionService;
-	@Mock
-	private AppService appService;
 
 	@InjectMocks
 	private OntologyController ontologyController;
@@ -100,12 +97,12 @@ public class OntologyControllerTest {
 
 	@Test
 	public void given_OneOntology_When_CorrectParamentersAreSentToDelete_Then_TheOntologyIsDeleted() throws Exception {
-		final String sessionUserId = "userOntology";
-		final Ontology ontology = ontologyCreator("ontologyId", sessionUserId);
-
-		given(utils.getUserId()).willReturn(sessionUserId);
-		given(utils.isAdministrator()).willReturn(false);
-
+	    final String sessionUserId = "userOntology";
+	    final Ontology ontology = ontologyCreator("ontologyId", sessionUserId);
+		
+	    given(utils.getUserId()).willReturn(sessionUserId);
+        given(utils.isAdministrator()).willReturn(false);
+	    
 		given(ontologyService.getOntologyById(ontology.getId(), sessionUserId)).willReturn(ontology);
 		doNothing().when(ontologyBusinessService).deleteOntology(ontology.getId(), sessionUserId);
 
@@ -150,7 +147,6 @@ public class OntologyControllerTest {
 		given(ontologyService.getOntologyById(ontology.getId(), sessionUserId)).willReturn(ontology);
 		given(ontologyService.getOntologyUserAccesses(ontology.getId(), sessionUserId)).willReturn(accesses);
 		given(userService.getAllActiveUsers()).willReturn(users);
-		given(appService.getAppsByUser(ontology.getUser().getUserId(), null)).willReturn(new ArrayList<>());
 
 		given(utils.getUserId()).willReturn(sessionUserId);
 		given(utils.isAdministrator()).willReturn(false);

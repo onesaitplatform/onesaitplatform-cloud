@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,37 +19,39 @@
 	
 	<!-- GRAPH CSS -->
 	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/vis/vis.min.css}"/>
-	<style>		
-		#networkVis .vis-network:focus{ outline: none;}
-		svg { font-family: Soho; }
-	</style>
 		
 	<!-- GRAPH SCRIPTS  -->	
 	<script type="text/javascript" th:src="@{/static/vendor/vis/vis.min.js}"></script>
 	<!-- <script type="text/javascript" th:src="@{/static/vendor/vis/grafo.js}"></script> -->
 	
 	<!-- GRAPH CONTROLLER JS -->
-	<script th:src="@{/static/js/pages/graph.js}"></script>	
+	<script th:src="@{/static/js/pages/graph.js}"/>	
 	 
 	<!-- BEGIN GRAPH INNER -->
-	<div class="row" style="margin-top: -5px;">
-		<div class="col-md-12" style="padding: 0px;">
-			<div class="portlet light no-shadow no-pad">
-				<div class="portlet-title" style="margin-left: 20px;padding: 0 8px;">
-					<div class="caption">									
-						<span class="caption-subject" th:text="#{graph.universe}">View Resources</span>
-					</div>
-				</div>			
+	<div class="row" style="margin-top: 0px;">
+		<div class="col-md-12">
+			<div class="portlet light bg-inverse no-shadow no-pad">
+				<div class="portlet-title hidden ">
+					<div class="caption">						
+						<span class="caption-subject"> <span th:text="#{graph.universe}">My Universe</span></span>
+					</div>									
+					<div class="tools">
+						<a href="" class="collapse" data-original-title="" title=""> </a>
+						<a href="" class="fullscreen" data-original-title="" title=""> </a>										
+					</div>									
+				</div>
 				<div class="portlet-body" style="display: block; height: auto; padding-top: 0px; ">
-					<div class="row" style="margin:0 0 0 12px">
-						<div class="col-md-4 col-sm-12 " id="enviromentText">							
-						</div>
-						<div class="col-md-8 col-sm-12 col-xs-12 clearfix" id="btnGroup" style="margin-top: -40px;">
+					
+					<div class="row">
+					<div class="col-md-4 col-sm-12 " id="enviromentText">
+						<h3 style="font-size: 16px;margin-top: 8px;color: #555;font-weight: inherit;" th:text="#{graph.universe}">My Enviroment</h3>
+					</div>
+					<div class="col-md-8 col-sm-12 col-xs-12 clearfix" id="btnGroup">
 							<div id="id_panel_botones" class="btn-group pull-right">
-								<div class="btn-group">
-									<button type="button" data-toggle="dropdown" aria-expanded="false" class="btn btn-primary btn-sm dropdown-toggle button_text">
+								<div class="btn-group dropup ">
+									<button type="button" data-toggle="dropdown" aria-expanded="false" class="btn btn-default btn-sm dropdown-toggle button_text">
 										<i class="fa fa-ellipsis-horizontal"></i> <span th:text="#{graph.clustering}"></span>
-										<i class="fa fa-angle-down"></i>
+										<i class="fa fa-angle-up"></i>
 									</button>
 									<ul id="clusterOptions" class="dropdown-menu ">
 										<li>
@@ -60,13 +62,13 @@
 										</li>
 									</ul>
 								</div>
-								<div class="btn-group">
-									<button id="btn-addH" class="btn btn-primary hidden"><i class="la la-plus"></i>&nbsp;</button>
-									<button id="btn-remH" class="btn btn-primary hidden"><i class="la la-minus"></i>&nbsp;</button>
-									<button id="btn-resH" class="btn btn-primary hidden"><i class="la la-refresh"></i>&nbsp;</button>
-									<button type="button" data-toggle="dropdown" aria-expanded="false" class="btn btn-primary btn-sm dropdown-toggle button_text">
+								<div class="btn-group dropup">
+									<button id="btn-addH" class="btn btn-default btn-sm button_text"><i class="la la-plus"></i>&nbsp;</button>
+									<button id="btn-remH" class="btn btn-default btn-sm button_text"><i class="la la-minus"></i>&nbsp;</button>
+									<button id="btn-resH" class="btn btn-default btn-sm button_text"><i class="la la-refresh"></i>&nbsp;</button>
+									<button type="button" data-toggle="dropdown" aria-expanded="false" class="btn btn-default btn-sm dropdown-toggle button_text">
 										<i class="fa fa-ellipsis-horizontal"></i> <span class="lang" th:text="#{graph.hierarchy}" data-lang="btn-jerarquia"></span>
-										<i class="fa fa-angle-down"></i>
+										<i class="fa fa-angle-up"></i>
 									</button>
 									<ul id="hierarchicalOptions" class="dropdown-menu ">
 										<li data-original-title="" class="tooltips lang" data-lang-tooltip="mnu-arr-aba">
@@ -86,14 +88,15 @@
 										</li>
 									</ul>
 								</div>
-								<button id="btn-graphInfo" th:text="#{graph.information}" class="btn btn-primary btn-sm button_text popovers" data-trigger="hover" data-placement="bottom" data-container="body" th:attr="data-content=#{graph.description},data-title=#{graph.information}" onclick="if(!$('#table-info-container').is(':hidden')) $('#table-info-container').hide(); else $('#table-info-container').show()" style="border-left: none"></button>
+								<button id="btn-graphInfo" th:text="#{graph.information}" class="btn btn-default btn-sm button_text popovers" data-trigger="hover" data-placement="bottom" data-container="body" th:attr="data-content=#{graph.description},data-title=#{graph.information}"
+								onclick="if(!$('#table-info-container').is(':hidden')) $('#table-info-container').hide(); else $('#table-info-container').show()"></button>
 							</div>
 						</div>					
-						<div class="col-md-12" style="padding:0">						
+						<div class="col-md-12">						
 								
-							<div id="graphporlet" class="col-lg-12 col-md-12 col-sm-12 col-xs-12 margin-bottom-10">
+							<div id="graphporlet" class="col-lg-12 col-md-12 col-sm-12 col-xs-12 margin-bottom-10" style="border-radius: 4px;	background-color: #FFFFFF;	box-shadow: 0 2px 10px 0 rgba(0,0,0,0.05) !important;">
 								<div class="pull-left">
-									<div class="mt-checkbox-list" style="padding-top:12px; padding-left:12px">
+									<div class="mt-checkbox-list">
 										<label class="mt-checkbox font-md popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{graph.show.help},data-title=#{graph.show.all}"> <div class="inline font-xs" th:text="#{graph.show.all} + '?'">Show all resources?</div>
 											<input id="show-all" type="checkbox" class="form-control no-remove" onchange="GraphController.init($('#show-all').is(':checked'))"/>
 											<span></span><!-- needed by styles -->
@@ -101,7 +104,7 @@
 									</div>
 								
 								</div>
-								<div id="networkVis" style="background: #F0F1F2; box-shadow: inset 0px -1px 0px #d7dadc;" ></div>
+								<div id="networkVis" class="" style=" padding:10px;" ></div>
 								
 								<div id="infoporlet" class="pull-right bg-white" style="background-color:white;">
 								

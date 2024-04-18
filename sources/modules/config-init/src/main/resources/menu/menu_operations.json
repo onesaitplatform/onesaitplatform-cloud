@@ -7,82 +7,76 @@
 		{
 			"title": {
 				"EN": "ADMINISTRATION",
-				"ES": "ADMINISTRACIÓN",
-				"FR": "ADMINISTRATION"
+				"ES": "ADMINISTRACIÓN"
 			},
-			"icon": "icon-configuration",
+			"icon": "flaticon-cogwheel-2",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
 						"EN": "Users Management",
-						"ES": "Gestión de Usuarios",
-						"FR": "Gérer les utilisateurs"
+						"ES": "Gestión de Usuarios"
 					},
 					"icon": "",
 					"url": "/controlpanel/users/list"
 				},
 				{
 					"title": {
-						"EN": "Database Connections Management",
-						"ES": "Gestión de Conexiones a Base de datos",
-						"FR": "Gestion des Connexions à la Base de Donnée"
+						"EN": "JDBC Connections Management",
+						"ES": "Gestión de conexiones JDBC"
 					},
 					"icon": "",
 					"url": "/controlpanel/virtualdatasources/list"
 				},
 				{
 					"title": {
-						"EN": "Configurations Management",
-						"ES": "Gestión de Configuraciones",
-						"FR": "Gestion desConfigurations"
+						"EN": "Configuration Management",
+						"ES": "Gestión de Configuraciones"
 					},
 					"icon": "",
 					"url": "/controlpanel/configurations/list"
-				},
-				{
-					"title": {
-						"EN": "Environment Promotion tool",
-						"ES": "Herramienta promoción entre Entornos",
-						"FR": "Outil de promotion de l'environnement"
-					},
-					"icon": "",
-					"url": "/controlpanel/promotiontool/execute"
 				}
 			]
-		},		
+		},
+
+		{
+			"title": {
+				"EN": "",
+				"ES": ""
+			},
+			"icon": "flaticon-more-v3",
+			"url": "",
+			"submenu": []
+		},
+
 		{
 			"title": {
 				"EN": "DEV TOOLS",
-				"ES": "HERR. DESARROLLO",
-				"FR": "OUTILS DE DÉVELOPPEMENT"
+				"ES": "HERR. DESARROLLO"
 			},
-			"icon": "icon-dev-tools",
+			"icon": "flaticon-open-box",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
 						"EN": "Export & Import Environment Tool",
-						"ES": "Exportación & Importación de Datos",
-						"FR": "Outil d'environnement d'exportation et d'importation"
+						"ES": "Exportación & Importación de Datos"
 					},
 					"icon": "",
 					"url": "/controlpanel/migration/show"
 				},
 				{
 					"title": {
-						"EN": "Data to Entity Import Tool",
-						"ES": "Herramienta de importación de datos a Entidades",
-						"FR": "Outil d'importation de Données vers une Entité"
+						"EN": "Data to Ontology Import Tools",
+						"ES": "Herramientas de importación de datos a ontología"
 					},
 					"icon": "",
 					"url": "/controlpanel/jsontool/tools"
 				},
 				{
 					"title": {
-						"EN": "WebApps Management",
-						"ES": "Gestión de WebApps",
-						"FR": "Gestion de WebApps"
+						"EN": "Web Projects Management",
+						"ES": "Gestión Proyectos Web"
 					},
 					"icon": "",
 					"url": "/controlpanel/webprojects/list"
@@ -90,26 +84,15 @@
 				{
 					"title": {
 						"EN": "Files Management",
-						"ES": "Gestión de Ficheros",
-						"FR": "Gestion des Fichiers"
+						"ES": "Gestión de ficheros"
 					},
 					"icon": "",
 					"url": "/controlpanel/files/list"
 				},
 				{
 					"title": {
-						"EN": "User Tokens Management",
-						"ES": "Gestión de Tokens de Usuario",
-						"FR": "Gestion des jetons utilisateur"
-					},
-					"icon": "",
-					"url": "/controlpanel/apimanager/token/list?access=MENU"
-				},
-				{
-					"title": {
-						"EN": "REST APIs Planning",
-						"ES": "Planificación de APIs REST",
-						"FR": "Planificateur de APIs REST"
+						"EN": "REST Services Planner Management",
+						"ES": "Gestión Planificación de Servicios REST"
 					},
 					"icon": "",
 					"url": "/controlpanel/restplanner/list"
@@ -117,26 +100,23 @@
 				{
 					"title": {
 						"EN": "Cache Management",
-						"ES": "Gestión de Cachés",
-						"FR": "Gestion des caches"
+						"ES": "Gestión de caché"
 					},
 					"icon": "",
 					"url": "/controlpanel/caches/list"
 				},
 				{
 					"title": {
-						"EN": "Internationalizations i18n Management",
-						"ES": "Gestión de internacionalizaciones i18n",
-						"FR": "Gestion des internationalisations i18n"
+						"EN": "Internationalizations Management",
+						"ES": "Gestión de internacionalizaciones"
 					},
 					"icon": "",
 					"url": "/controlpanel/internationalizations/list"
 				},
 				{
 					"title": {
-						"EN": "SQL Query Templates Management",
-						"ES": "Gestión de Plantillas de Consultas SQL",
-						"FR": "Gestion des Modèles de Requête SQL"
+						"EN": "Query Templates Management",
+						"ES": "Gestión de Plantillas de Consulta"
 					},
 					"icon": "",
 					"url": "/controlpanel/querytemplates/list"
@@ -144,20 +124,20 @@
 			]
 		},
 
+		
+		
 		{
 			"title": {
 				"EN": "TOOLS",
-				"ES": "HERRAMIENTAS",
-				"FR": "OUTILS"
+				"ES": "HERRAMIENTAS"
 			},
-			"icon": "icon-tools",
+			"icon": "flaticon-refresh",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
 						"EN": "Query Tool",
-						"ES": "Herramienta de Consultas",
-						"FR": "Éditeur de Requêtes"
+						"ES": "Herramienta Consultas"
 					},
 					"icon": "",
 					"url": "/controlpanel/querytool/show"
@@ -165,8 +145,7 @@
 				{
 					"title": {
 						"EN": "System Audit",
-						"ES": "Auditoría del Sistema",
-						"FR": "Audit du système"
+						"ES": "Auditoría del Sistema"
 					},
 					"icon": "",
 					"url": "/controlpanel/audit/show"
@@ -174,8 +153,7 @@
 				{
 					"title": {
 						"EN": "Stress Tool",
-						"ES": "Herramienta de Carga",
-						"FR": "Outil d'effort"
+						"ES": "Herramienta de Carga"
 					},
 					"icon": "",
 					"url": "/controlpanel/scalability/index.html"

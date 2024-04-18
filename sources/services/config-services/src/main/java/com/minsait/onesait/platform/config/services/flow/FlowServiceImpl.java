@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,6 @@ import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
 import com.minsait.onesait.platform.config.model.Flow;
-import com.minsait.onesait.platform.config.model.FlowDomain;
-import com.minsait.onesait.platform.config.repository.FlowDomainRepository;
 import com.minsait.onesait.platform.config.repository.FlowRepository;
 import com.minsait.onesait.platform.config.services.exceptions.FlowServiceException;
 
@@ -31,9 +29,6 @@ public class FlowServiceImpl implements FlowService {
 
 	@Autowired
 	private FlowRepository flowRepository;
-
-	@Autowired
-	private FlowDomainRepository flowDomainRepository;
 
 	@Autowired(required = false)
 	private MetricsManager metricsManager;
@@ -44,14 +39,11 @@ public class FlowServiceImpl implements FlowService {
 	}
 
 	@Override
-	public Flow createFlow(Flow flow, FlowDomain domain) {
-		final Flow result = flowRepository.findByNodeRedFlowId(flow.getNodeRedFlowId());
+	public Flow createFlow(Flow flow) {
+		Flow result = flowRepository.findByNodeRedFlowId(flow.getNodeRedFlowId());
 		if (result == null) {
-			domain.getFlows().removeIf(f -> f.getIdentification().equals(flow.getIdentification()));
 			metricsManagerLogControlPanelFlowsCreation(flow.getFlowDomain().getUser().getUserId(), "OK");
-			domain.getFlows().add(flow);
-			flowDomainRepository.save(domain);
-			return flow;
+			return flowRepository.save(flow);
 		} else {
 			metricsManagerLogControlPanelFlowsCreation(flow.getFlowDomain().getUser().getUserId(), "KO");
 			throw new FlowServiceException("Flow already exists");
@@ -67,11 +59,6 @@ public class FlowServiceImpl implements FlowService {
 		if (null != metricsManager) {
 			metricsManager.logControlPanelFlowsCreation(userId, result);
 		}
-	}
-
-	@Override
-	public Flow getFlowByIdentificationOrId(String identification) {
-		return flowRepository.findByIdentificationOrId(identification);
 	}
 
 }

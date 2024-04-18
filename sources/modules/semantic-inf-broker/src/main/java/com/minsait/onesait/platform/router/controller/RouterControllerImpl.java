@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import com.minsait.onesait.platform.router.service.app.service.RouterDigitalTwin
 import com.minsait.onesait.platform.router.service.app.service.RouterService;
 import com.minsait.onesait.platform.router.service.app.service.RouterSubscriptionService;
 
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -70,7 +71,7 @@ public class RouterControllerImpl
 
 	@Override
 	@PostMapping(value = "/insert")
-
+	@ApiOperation(value = "insert")
 	public OperationResultModel insert(@RequestBody NotificationModel model) {
 		final long dStart = System.currentTimeMillis();
 		log.debug("Insert:");
@@ -81,14 +82,14 @@ public class RouterControllerImpl
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Insert operation in {}", dEnd - dStart);
+			log.info("Processed Insert operation in {}", (dEnd - dStart));
 		}
 
 	}
 
 	@Override
 	@PutMapping(value = "/update")
-
+	@ApiOperation(value = "update")
 	public OperationResultModel update(@RequestBody NotificationModel model) {
 		final long dStart = System.currentTimeMillis();
 		log.debug("Update:");
@@ -99,13 +100,13 @@ public class RouterControllerImpl
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Update operation in: {} ", dEnd - dStart);
+			log.info("Processed Update operation in: {} ", (dEnd - dStart));
 		}
 	}
 
 	@Override
 	@DeleteMapping(value = "/delete")
-
+	@ApiOperation(value = "delete")
 	public OperationResultModel delete(@RequestBody NotificationModel model) {
 		final long dStart = System.currentTimeMillis();
 		log.debug("Delete:");
@@ -116,19 +117,16 @@ public class RouterControllerImpl
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Delete operation in: {}", dEnd - dStart);
+			log.info("Processed Delete operation in: {}", (dEnd - dStart));
 		}
 	}
 
 	@Override
 	@PostMapping(value = "/query")
-
+	@ApiOperation(value = "query")
 	public OperationResultModel query(@RequestBody NotificationModel model) {
 		final long dStart = System.currentTimeMillis();
-		if (log.isDebugEnabled()) {
-			log.debug("Query: {} Ontology: {} Type {}", model.getOperationModel().getBody(),
-				model.getOperationModel().getOntologyName(), model.getOperationModel().getQueryType());
-		}		
+		log.debug("Query:");
 		try {
 			return routerService.query(model);
 		} catch (final Exception e) {
@@ -136,13 +134,13 @@ public class RouterControllerImpl
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Query operation in: {} ", dEnd - dStart);
+			log.info("Processed Query operation in: {} ", (dEnd - dStart));
 		}
 	}
 
 	@Override
 	@PostMapping(value = "/subscribe")
-
+	@ApiOperation(value = "subscribe")
 	public OperationResultModel subscribe(@RequestBody SubscriptionModel model) {
 		final long dStart = System.currentTimeMillis();
 		log.debug("Subscribe:");
@@ -153,13 +151,13 @@ public class RouterControllerImpl
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Subscribe operation in: {} ", dEnd - dStart);
+			log.info("Processed Subscribe operation in: {} ", (dEnd - dStart));
 		}
 	}
 
 	@Override
 	@PostMapping(value = "/unsubscribe")
-
+	@ApiOperation(value = "unsubscribe")
 	public OperationResultModel unsubscribe(@RequestBody SubscriptionModel model) {
 		final long dStart = System.currentTimeMillis();
 		log.debug("unSuscribe:");
@@ -170,12 +168,12 @@ public class RouterControllerImpl
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Unsuscribe operation in: {} ", dEnd - dStart);
+			log.info("Processed Unsuscribe operation in: {} ", (dEnd - dStart));
 		}
 	}
 
 	@PostMapping(value = "/advice")
-
+	@ApiOperation(value = "advice")
 	@Override
 	public OperationResultModel advicePostProcessing(@RequestBody NotificationCompositeModel input) {
 		final long dStart = System.currentTimeMillis();
@@ -192,24 +190,24 @@ public class RouterControllerImpl
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Advice operation in: {} ", dEnd - dStart);
+			log.info("Processed Advice operation in: {} ", (dEnd - dStart));
 		}
 	}
 
 	@PostMapping(value = "/token")
-
+	@ApiOperation(value = "token")
 	public String tokenPostProcessing(@RequestBody String input) {
 		final long dStart = System.currentTimeMillis();
 		log.debug("tokenPostProcessing:");
 		final String result = jwtService.extractToken(input);
 
 		final long dEnd = System.currentTimeMillis();
-		log.info("Processed Token operation in: {} ", dEnd - dStart);
+		log.info("Processed Token operation in: {} ", (dEnd - dStart));
 		return result;
 	}
 
 	@PostMapping(value = "/event")
-
+	@ApiOperation(value = "event")
 	@Auditable
 	public String eventProcessing(@RequestBody String input) {
 		final long dStart = System.currentTimeMillis();
@@ -219,65 +217,65 @@ public class RouterControllerImpl
 		eventProducer.publish(event);
 
 		final long dEnd = System.currentTimeMillis();
-		log.info("Processed Event operation in: {} ", dEnd - dStart);
+		log.info("Processed Event operation in: {} ", (dEnd - dStart));
 		return input;
 	}
 
 	@PostMapping(value = "/insertEvent")
-
+	@ApiOperation(value = "insertEvent")
 	@Override
 	public OperationResultModel insertEvent(DigitalTwinCompositeModel compositeModel) {
 		final long dStart = System.currentTimeMillis();
 		final OperationResultModel result = routerDigitalTwinService.insertEvent(compositeModel);
 
 		final long dEnd = System.currentTimeMillis();
-		log.info("Processed InsertEvent operation in: {} ", dEnd - dStart);
+		log.info("Processed InsertEvent operation in: {} ", (dEnd - dStart));
 
 		return result;
 	}
 
 	@PostMapping(value = "/insertLog")
-
+	@ApiOperation(value = "insertLog")
 	@Override
 	public OperationResultModel insertLog(DigitalTwinCompositeModel compositeModel) {
 		final long dStart = System.currentTimeMillis();
 		final OperationResultModel result = routerDigitalTwinService.insertLog(compositeModel);
 
 		final long dEnd = System.currentTimeMillis();
-		log.info("Processed InsertLog operation in: {}", dEnd - dStart);
+		log.info("Processed InsertLog operation in: {}", (dEnd - dStart));
 
 		return result;
 	}
 
 	@PostMapping(value = "/updateShadow")
-
+	@ApiOperation(value = "updateShadow")
 	@Override
 	public OperationResultModel updateShadow(DigitalTwinCompositeModel compositeModel) {
 		final long dStart = System.currentTimeMillis();
 		final OperationResultModel result = routerDigitalTwinService.updateShadow(compositeModel);
 
 		final long dEnd = System.currentTimeMillis();
-		log.info("Processed UpdateShadow operation in: {}", dEnd - dStart);
+		log.info("Processed UpdateShadow operation in: {}", (dEnd - dStart));
 
 		return result;
 	}
 
 	@Override
 	@PostMapping(value = "/insertAction")
-
+	@ApiOperation(value = "insertAction")
 	public OperationResultModel insertAction(DigitalTwinCompositeModel compositeModel) {
 		final long dStart = System.currentTimeMillis();
 		final OperationResultModel result = routerDigitalTwinService.insertAction(compositeModel);
 
 		final long dEnd = System.currentTimeMillis();
-		log.info("Processed InsertAction operation in: {}", dEnd - dStart);
+		log.info("Processed InsertAction operation in: {}", (dEnd - dStart));
 
 		return result;
 	}
 
 	@Override
 	@PostMapping(value = "/startTransaction")
-
+	@ApiOperation(value = "startTransaction")
 	public OperationResultModel startTransaction(@RequestBody TransactionModel model) {
 		final long dStart = System.currentTimeMillis();
 		log.info("Start Transaction:");
@@ -289,13 +287,13 @@ public class RouterControllerImpl
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Start Transaction operation in: {}", (dEnd - dStart));
+			log.info("Processed Start Transaction operation in: " + (dEnd - dStart));
 		}
 	}
 
 	@Override
 	@PostMapping(value = "/commitTransaction")
-
+	@ApiOperation(value = "commitTransaction")
 	public OperationResultModel commitTransaction(@RequestBody TransactionModel model) {
 		final long dStart = System.currentTimeMillis();
 		log.info("Commit Transaction:");
@@ -307,13 +305,13 @@ public class RouterControllerImpl
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Commmit Transaction operation in: {}", (dEnd - dStart));
+			log.info("Processed Commmit Transaction operation in: " + (dEnd - dStart));
 		}
 	}
 
 	@Override
 	@PostMapping(value = "/rollbackTransaction")
-
+	@ApiOperation(value = "rollbackTransaction")
 	public OperationResultModel rollbackTransaction(@RequestBody TransactionModel model) {
 		final long dStart = System.currentTimeMillis();
 		log.info("Rollback Transaction:");
@@ -325,13 +323,13 @@ public class RouterControllerImpl
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Rollback Transaction operation in: {}", (dEnd - dStart));
+			log.info("Processed Rollback Transaction operation in: " + (dEnd - dStart));
 		}
 	}
 
 	@Override
 	@PostMapping(value = "/notifyModules")
-
+	@ApiOperation(value = "notifyModules")
 	public OperationResultModel notifyModules(@RequestBody NotificationModel model) {
 		return routerService.notifyModules(model);
 	}

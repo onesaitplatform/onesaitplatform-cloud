@@ -17,21 +17,6 @@ var SubscriptionCreateController = function() {
 	var navigateUrl = function(url) {
 		window.location.href = url;
 	}
-	
-	var freeResource = function(id,url){
-		console.log('freeResource() -> id: '+ id);
-		$.get("/controlpanel/subscriptions/freeResource/" + id).done(
-				function(data){
-					console.log('freeResource() -> ok');
-					navigateUrl(url); 
-				}
-			).fail(
-				function(e){
-					console.error("Error freeResource", e);
-					navigateUrl(url); 
-				}
-			)		
-	}
 	// DELETE DATASOURCE
 	var deleteSubscriptionConfirmation = function(subscriptionId){
 		console.log('deleteSubscriptionConfirmation() -> formId: '+ subscriptionId);
@@ -50,6 +35,9 @@ var SubscriptionCreateController = function() {
         // http://docs.jquery.com/Plugins/Validation
 
         var form1 = $('#subscription_create_form');
+        var error1 = $('.alert-danger');
+        var success1 = $('.alert-success');
+
 
         form1.validate({
             errorElement: 'span', // default input error message container
@@ -81,8 +69,12 @@ var SubscriptionCreateController = function() {
 				queryOperator:		{ required: true },
 				projection:		{ required: true },
             },
-            invalidHandler: function(event, validator) { // display error alert on form submit
-            	toastr.error(subscriptionJson.messages.validationKO);
+            invalidHandler: function(event, validator) { // display error
+															// alert on form
+															// submit
+                success1.hide();
+                error1.show();
+                App.scrollTo(error1, -200);
             },
             errorPlacement: function(error, element) {
             	if 		( element.is(':checkbox'))	{ error.insertAfter(element.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline")); }
@@ -104,12 +96,18 @@ var SubscriptionCreateController = function() {
             },
 			// ALL OK, THEN SUBMIT.
             submitHandler: function(form) {
-            	toastr.success(subscriptionJson.messages.validationOK);
+            	
+            	
+            	
+                error1.hide();
+                
 				// form.submit();
 				form1.ajaxSubmit({type: 'post', success : function(data){
+					
 					navigateUrl(data.redirect);
+					
 					}, error: function(data){
-						toastr.error(data.responseJSON.cause);
+						HeaderController.showErrorDialog(data.responseJSON.cause)
 					}
 				})
 				
@@ -117,29 +115,6 @@ var SubscriptionCreateController = function() {
 			}
         });
     }
-	
-	$('#resetBtn').on('click',function(){ 
-		cleanFields('subscription_create_form');
-	});
-	
-	// CLEAN FIELDS FORM
-	var cleanFields = function (formId) {
-		
-		//CLEAR OUT THE VALIDATION ERRORS
-		$('#'+formId).validate().resetForm(); 
-		$('#'+formId).find('input:text, input:password, input:file, select, textarea').each(function(){
-			// CLEAN ALL EXCEPTS cssClass "no-remote" persistent fields
-			if(!$(this).hasClass("no-remove")){$(this).val('');}
-		});
-		
-		//CLEANING SELECTs
-		$(".selectpicker").each(function(){
-			$(this).val( '' );
-			$(this).selectpicker('deselectAll').selectpicker('refresh');
-		});
-				
-		$("#Canvasrespuesta").empty()
-	}
 	
 	// CONTROLLER PUBLIC FUNCTIONS 
 	return{		
@@ -158,23 +133,11 @@ var SubscriptionCreateController = function() {
 			// INPUT MASK FOR ontology identification allow only letters, numbers and -_
 			$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
 			
-			// Fields OnBlur validation
-			
-			$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
-				$('.form').validate().element('#' + event.target.id);                // checks form for validity
-			});		
-			
-			$('.selectpicker').filter('[required]').parent().on('blur', 'div', function(event) {
-				if (event.currentTarget.getElementsByTagName('select')[0]){
-					$('.form').validate().element('#' + event.currentTarget.getElementsByTagName('select')[0].getAttribute('id'));
-				}
-			})
-			
-			
 			// INSERT MODE ACTIONS (ontologyCreateReg.actionMode = NULL )
 			if ( subscriptionCreateReg.actionMode !== null){
 			logControl ? console.log('|---> Action-mode: UPDATE') : '';
 			
+
 		}
 			
 		},
@@ -183,11 +146,6 @@ var SubscriptionCreateController = function() {
 		go: function(url){
 			logControl ? console.log(LIB_TITLE + ': go()') : '';	
 			navigateUrl(url); 
-		},
-		cancel: function(id,url){
-			logControl ? console.log(LIB_TITLE + ': cancel()') : '';
-			
-			freeResource(id,url);
 		},
 		
 		// DELETE GADGET DATASOURCE 

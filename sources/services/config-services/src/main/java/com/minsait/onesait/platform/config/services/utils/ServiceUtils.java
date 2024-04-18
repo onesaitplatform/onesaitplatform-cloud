@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,28 +43,24 @@ public class ServiceUtils {
 	}
 
 	public String getUserId() {
-		final Authentication auth = getAuthentication();
-		if (auth == null) {
+		Authentication auth = getAuthentication();
+		if (auth == null)
 			return null;
-		}
 		return auth.getName();
 	}
 
 	public String getRole() {
-		final Authentication auth = getAuthentication();
-		if (auth == null) {
+		Authentication auth = getAuthentication();
+		if (auth == null)
 			return null;
-		}
 		return auth.getAuthorities().toArray()[0].toString();
 	}
 
 	public String getMessage(String key, String valueDefault) {
 		try {
 			return messageSource.getMessage(key, null, LocaleContextHolder.getLocale());
-		} catch (final Exception e) {
-			if (log.isDebugEnabled()) {
-				log.debug("Key:{} not found. Returns:{}", key, valueDefault);
-			}
+		} catch (Exception e) {
+			log.debug("Key:" + key + " not found. Returns:" + valueDefault);
 			return valueDefault;
 		}
 	}
@@ -75,22 +71,22 @@ public class ServiceUtils {
 
 	public String jsonStringToString(String json) {
 
-		final ObjectMapper objectMapper = new ObjectMapper();
+		ObjectMapper objectMapper = new ObjectMapper();
 		String formattedJson = null;
 
 		try {
-			final JsonNode tree = objectMapper.readValue(json, JsonNode.class);
+			JsonNode tree = objectMapper.readValue(json, JsonNode.class);
 			formattedJson = tree.toString();
 			return formattedJson;
-		} catch (final Exception e) {
-			log.error("Exception reached {}", e.getMessage(), e);
+		} catch (Exception e) {
+			log.error("Exception reached " + e.getMessage(), e);
 			return null;
 		}
 	}
 
 	public static String getAuditCollectionName(String userId) {
 		if (userId.contains(".")) {
-			final String replacedUser = userId.replace(".", "_");
+			String replacedUser = userId.replace(".", "_");
 			return AUDIT_COLLECTION_NAME + replacedUser;
 		} else {
 			return AUDIT_COLLECTION_NAME + userId;

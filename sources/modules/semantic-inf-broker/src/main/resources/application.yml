@@ -2,50 +2,45 @@
 ##security.require_ssl: true
 server: ## Config Web Server
    port: 20000
-   servlet.contextPath: /router
+   contextPath: /router
    tomcat:
       access_log_enabled: true
       basedir: target/tomcat
-   jetty.max-http-form-post-size: 20000000
+   jetty.max-http-post-size: 20000000      
 
+management.security.enabled: false
+security.basic.enabled: false
 
-logbook:
-  exclude:
-     - ${server.servlet.contextPath}/actuator/**
-     - ${server.servlet.contextPath}/static/**
-     - ${server.servlet.contextPath}/themes/**
-     - ${server.servlet.contextPath}/swagger-ui/**
-  write:
-     max-body-size: 10000
-     
 #hawtio.authenticationEnabled: false
 #hawtio.offline: true
 
-master:
+master: 
    datasource:
-      hikari:
-        jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
-        username: root
-        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph)
-        driver-class-name: com.mysql.cj.jdbc.Driver
-#        jdbc-url: jdbc:postgresql://localhost:5432/onesaitplatform_master_config
-#        username: postgres
-#        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph)
-#        driver-class-name: org.postgresql.Driver
-        pool-name: master-hikari-pool
-        minimum-idle: 1
-        maximum-pool-size: 2
-        connection-timeout: 10000
-
+      url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+      username: root
+      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+      driver-class-name: com.mysql.jdbc.Driver
+      test-while-idle: true
+      test-on-borrow: true
+      validation-query: SELECT 1      
+      validationQueryTimeout: 5
+      # Number of ms to wait before throwing an exception if no connection is available.
+      max-wait: 10000
+      # Maximum number of active connections that can be allocated from this pool at the same time.
+      max-active: 2
+      initial-size: 1
+      max-idle: 2
+      min-idle: 1
+      removeAbandoned: true
+      
 onesaitplatform: #Config onesaitplatform specific
-   audit.global.notify: true
+   audit.global.notify: false
    apimanager:
       cacheable: false
    iotbroker.plugable:
       gateway:
          kafka:
             enable: true
-            brokers: none
             host: localhost
             port: 9095
             partitions: 1
@@ -56,11 +51,10 @@ onesaitplatform: #Config onesaitplatform specific
             topic.pattern: ONTOLOGY.*
             router.topic: router
             consumer.consumersCount : 10
-            consumer.seekTo : beginning
+            consumer.seekTo : beginning 
             consumer.group : kafkaGroup
             consumer.maxPollRecords : 5000
    database.elasticsearch.enabled: false
-   database.opensearch.enabled: false
    database.mongodb:
       database: onesaitplatform_rtdb
       authenticationDatabase:  #admin
@@ -70,8 +64,8 @@ onesaitplatform: #Config onesaitplatform specific
       maxAutoConnectRetryTime: 5000
       maxWaitTime: 5000
       useAuth: false
-      username: #platformadmin
-      password: #0pen-platf0rm-2018!
+      username: #username
+      password: #password
       readFromSecondaries: false
       queries.executionTimeout: 5000
       queries.defaultLimit: 2000
@@ -80,22 +74,37 @@ onesaitplatform: #Config onesaitplatform specific
       tools.mongoexport.path: mongoexport
       tools.mongoimport.path: mongoimport
       tools.mongoshell.path: mongo
-      tools.useSequentialOps: true
+      tools.useSequentialOps: true   
       quasar.maxHttpConnections: 100
       quasar.maxHttpConnectionsPerRoute: 100
       quasar.connectionTimeout.millis: 60000
-      quasar.connector.http.endpoint: http://localhost:18200/query/fs/
+      quasar.connector.http.endpoint: http://localhost:18200/query/fs/ 
+   database.hadoop.enabled: false
+   database.hdfs:
+      url: hdfs://127.0.0.1:8020
+      basePath: /user/hdfs
+   database.hive:
+      url: jdbc:hive2://localhost:10000/default
+      username: cloudera-scm
+      password: 
+      driverClassName: org.apache.hive.jdbc.HiveDriver
+   database.impala:
+      url: jdbc:hive2://localhost:21050/default;auth=noSasl
+   database.kudu:
+      numreplicas: 1
+      address: localhost:7051
+      includeKudutableName: false
+      client:
+        sessionTimeout: 60000
+        flushMode: MANUAL_FLUSH
+        prefix: impala::default.
+        bossThreadPool: 1
+        workerThreadPool: 4
+        operationTimeout: 30000
+        adminOperationTimeout: 30000
+        socketReadTimeout: 10000
    database.timeseries.timezone: UTC
-   database.timescaledb:
-      enabled: false
-      url: jdbc:postgresql://localhost:5432/?currentSchema=public
-      user: ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot)
-      password: ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c)
-      connectionName: op_timeseriesdb
-   database.minio:
-      access-key: ENC(d6bDYa5aGMyXndGA0edIGWFtcw3UygXi)
-      secret-key: ENC(kV79KowPOv0J8QGeQ6iSQcFUqoZalNVj)
-   router.metrics.query.enabled: false
+
    router.avoidsslverification: true
    router.audit:
       enabled: true
@@ -109,45 +118,38 @@ onesaitplatform: #Config onesaitplatform specific
       subscription.notificator: 50
       subscription.attemps: 5
    transaction.timeout.seconds: 60
-   graylog:
-      enabled: false
-      host: 127.0.0.1
-      port: 12201
 
-management.endpoints.web.exposure.include: "*"
-management.endpoint.health.show-details: always
-management.health.elasticsearch.enabled: false
-
-
-
-spring: ## General Config
-   main:
-      allow-circular-references: true
-      allow-bean-definition-overriding: true
+spring: ## General Config  
    application.name: onesaitplatform-semantic-inf-broker
-   boot.admin: #Spring Boot Admin Config
-      client.url: http://localhost:18100/monitoring
-      client.username: operations
-      client.password: changeIt2019!
-      client.instance.metadata.user.name: ${spring.boot.admin.client.username}
-      client.instance.metadata.user.password: ${spring.boot.admin.client.password}
-
-   datasource:
-     hikari:
-      jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
+   boot.admin: #Spring Boot Admin Config    
+      url: http://localhost:18100/monitoring
+      username: operations
+      password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
+      client.metadata.user.name: ${spring.boot.admin.username}
+      client.metadata.user.password: ${spring.boot.admin.password} 
+   datasource: ## JPA Config
+      url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
       username: root
-      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph)
-      connection-timeout: 10000
-      driver-class-name: com.mysql.cj.jdbc.Driver
-#      jdbc-url: jdbc:postgresql://localhost:5432/onesaitplatform_config
-#      username: postgres
-#      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph)
-#      driver-class-name: org.postgresql.Driver
-      minimum-idle: 10
-      maximum-pool-size: 30
-   autoconfigure:
-      exclude:
-         - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+      driver-class-name: com.mysql.jdbc.Driver
+      # Validate the connection before borrowing it from the pool.
+      test-on-borrow: true
+      validation-query: SELECT 1
+      validationQueryTimeout: 5
+      test-while-idle: true
+      test-on-return: false
+      time-between-eviction-runs-millis: 5000
+      min-evictable-idle-time-millis: 6000
+      max-wait-millis: 10000
+      # Number of ms to wait before throwing an exception if no connection is available.
+      max-wait: 10000
+      # Maximum number of active connections that can be allocated from this pool at the same time.
+      initial-size: 10
+      max-active: 30
+      max-idle: 5
+      min-idle: 5
+      removeAbandoned: true
+      
     #tomcat:
       # Number of ms to wait before throwing an exception if no connection is available.
       #max-wait: 10000
@@ -156,14 +158,13 @@ spring: ## General Config
    jpa:
       # The SQL dialect makes Hibernate generate better SQL for the chosen database
       properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
-#      properties.hibernate.dialect: org.hibernate.dialect.PostgreSQL95Dialect
       # Hibernate ddl auto (create, create-drop, validate, update
       hibernate.ddl-auto: validate
       properties:
         hibernate:
           format_sql: false
           show_sql: false
-
+          
 
           #region.factory_class: com.hazelcast.hibernate.HazelcastCacheRegionFactory
           #cache:
@@ -183,12 +184,13 @@ spring.elasticsearch.jest.read-timeout: ${onesaitplatform.database.elasticsearch
 
 ## LOGGING CONF
 logging:
-   file.path: ./target/
-   file.name: ${spring.application.name}
+   path: ./target/ 
+   file: ${spring.application.name}
    level:
       com.minsait: INFO
       org.springframework.boot: INFO
       org.apache.kafka: ERROR
-      org.zalando.logbook: TRACE  
-      com.minsait.onesait.platform.persistence.external: DEBUG
 #      org.springframework.boot.autoconfigure: DEBUG
+
+
+      

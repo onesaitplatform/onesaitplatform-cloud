@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ public interface ConsoleMenuRepository extends JpaRepository<ConsoleMenu, String
 
 	@Override
 
-	<S extends ConsoleMenu> List<S> saveAll(Iterable<S> entities);
+	<S extends ConsoleMenu> List<S> save(Iterable<S> entities);
 
 	@Override
 
@@ -50,6 +50,8 @@ public interface ConsoleMenuRepository extends JpaRepository<ConsoleMenu, String
 	@Override
 
 	void deleteAll();
+
+	ConsoleMenu findById(String id);
 
 	ConsoleMenu findByRoleType(Role roleType);
 

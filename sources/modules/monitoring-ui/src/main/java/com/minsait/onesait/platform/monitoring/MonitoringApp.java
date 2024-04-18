@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,13 @@ package com.minsait.onesait.platform.monitoring;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
-import de.codecentric.boot.admin.server.config.EnableAdminServer;
+import de.codecentric.boot.admin.config.EnableAdminServer;
 
 @EnableAdminServer
 @SpringBootApplication
+@EnableJpaAuditing
 @ComponentScan("com.minsait.onesait.platform")
 public class MonitoringApp {
 

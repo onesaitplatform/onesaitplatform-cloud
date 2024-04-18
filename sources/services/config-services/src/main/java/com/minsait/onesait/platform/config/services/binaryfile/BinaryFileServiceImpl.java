@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,11 @@
 package com.minsait.onesait.platform.config.services.binaryfile;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -30,11 +27,10 @@ import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.BinaryFile;
 import com.minsait.onesait.platform.config.model.BinaryFileAccess;
 import com.minsait.onesait.platform.config.model.BinaryFileAccess.Type;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.BinaryFileAccessRepository;
 import com.minsait.onesait.platform.config.repository.BinaryFileRepository;
-import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 
 @Service
@@ -48,9 +44,6 @@ public class BinaryFileServiceImpl implements BinaryFileService {
 	private BinaryFileAccessRepository accessRepository;
 	@Autowired
 	private UserService userService;
-	@Autowired
-	@Lazy
-	private OPResourceService resourceService;
 
 	@Override
 	public void createBinaryFile(BinaryFile binaryFile) {
@@ -59,72 +52,51 @@ public class BinaryFileServiceImpl implements BinaryFileService {
 
 	@Override
 	public void updateBinaryFile(String id, String metadata, String mime, String fileName) {
-		binaryFileRepository.findById(id).ifPresent(file -> {
-			if (StringUtils.hasText(metadata)) {
-				file.setMetadata(metadata);
-			}
-			if (StringUtils.hasText(mime)) {
-				file.setMime(mime);
-			}
-			if (StringUtils.hasText(fileName)) {
-				file.setFileName(fileName);
-			}
-			file.setUpdatedAt(new Date());
-			binaryFileRepository.save(file);
-		});
-
+		final BinaryFile file = binaryFileRepository.findById(id);
+		if (!StringUtils.isEmpty(metadata))
+			file.setMetadata(metadata);
+		if (!StringUtils.isEmpty(mime))
+			file.setMime(mime);
+		if (!StringUtils.isEmpty(fileName))
+			file.setFileName(fileName);
+		binaryFileRepository.save(file);
 	}
 
 	@Override
 	public boolean hasUserPermissionWrite(String id, User user) {
-		if (userService.isUserAdministrator(user) || binaryFileRepository.findByUserAndIdWrite(user, id) != null) {
-			return true;
-		} else {
-			return resourceService.hasAccess(user.getUserId(), id, ResourceAccessType.MANAGE);
-		}
-	}
-
-	@Override
-	public BinaryFileAccess getAuthorizationById(String id) {
-		return accessRepository.findById(id).orElse(null);
+		return (userService.isUserAdministrator(user)
+				|| binaryFileRepository.findByUserAndIdWrite(user, id) != null);
 	}
 
 	@Override
 	public boolean hasUserPermissionRead(String id, User user) {
 		if (user == null) {
-			final Optional<BinaryFile> file = binaryFileRepository.findById(id);
-			if (file.isPresent()) {
-				return file.get().isPublic();
-			} else {
-				return false;
-			}
+			return (binaryFileRepository.findById(id).isPublic());
 
-		} else if (userService.isUserAdministrator(user) || binaryFileRepository.findByUserAndId(user, id) != null) {
-			return true;
 		} else {
-			return resourceService.hasAccess(user.getUserId(), id, ResourceAccessType.VIEW);
+			return (userService.isUserAdministrator(user)
+					|| binaryFileRepository.findByUserAndId(user, id) != null);
 		}
 	}
 
 	@Override
 	public void authorizeUser(String id, Type accessType, User user) {
-		binaryFileRepository.findById(id).ifPresent(file -> {
-			if (file != null) {
-				BinaryFileAccess access = accessRepository.findByUserAndBinaryFile(user, file);
-				if (access == null) {
-					access = new BinaryFileAccess();
-					access.setAccessType(accessType);
-					access.setUser(user);
-					access.setBinaryFile(file);
-					file.getFileAccesses().add(access);
-				} else {
-					access.setAccessType(accessType);
-					file.getFileAccesses().add(access);
-				}
-				binaryFileRepository.save(file);
-				accessRepository.save(access);
+		final BinaryFile file = binaryFileRepository.findById(id);
+		if (file != null) {
+			BinaryFileAccess access = accessRepository.findByUserAndBinaryFile(user, file);
+			if (access == null) {
+				access = new BinaryFileAccess();
+				access.setAccessType(accessType);
+				access.setUser(user);
+				access.setBinaryFile(file);
+				file.getFileAccesses().add(access);
+			} else {
+				access.setAccessType(accessType);
+				file.getFileAccesses().add(access);
 			}
-		});
+			binaryFileRepository.save(file);
+			accessRepository.save(access);
+		}
 	}
 
 	@Override
@@ -134,100 +106,33 @@ public class BinaryFileServiceImpl implements BinaryFileService {
 	}
 
 	@Override
-	public long countFiles(User user, Boolean showAuditFiles) {
-		if (userService.isUserAdministrator(user)) {
-			if (showAuditFiles) {
-				return binaryFileRepository.count();
-			} else {
-				return binaryFileRepository.countNoAudit();
-			}
-		}
-		if (showAuditFiles) {
-			return binaryFileRepository.countByUser(user);
-		} else {
-			return binaryFileRepository.countByUserNoAudit(user);
-		}
-		
-	}
-	
-	@Override
-	public List<BinaryFile> getAllFiles(User user, Boolean showAuditFiles) {
-		if (userService.isUserAdministrator(user)) {
-			if (showAuditFiles) {
-				return binaryFileRepository.findAll();
-			} else {
-				return binaryFileRepository.findAllNoAudit();
-			}
-		}
-		if (showAuditFiles) {
-			return binaryFileRepository.findByUser(user);
-		} else {
-			return binaryFileRepository.findByUserNoAudit(user);
-		}
-	}
-
-	@Override
-	public List<BinaryFile> getAllFilesFiltered(User user, String fileName, String fileId, String fileExt, String metaData, String owner, Boolean showAuditFiles) {
-		if (userService.isUserAdministrator(user)) {
-			if (showAuditFiles) {
-				return binaryFileRepository.findAllByCriteria(fileName, fileId, fileExt, metaData, owner);
-			} else {
-				return binaryFileRepository.findAllByCriteriaNoAudit(fileName, fileId, fileExt, metaData, owner);
-			}
-		}
-		if (showAuditFiles) {
-			return binaryFileRepository.findByUserByCriteria(user, fileName, fileId, fileExt, metaData);
-		} else {
-			return binaryFileRepository.findByUserByCriteriaNoAudit(user, fileName, fileId, fileExt, metaData);
-		}
-	}
-
-	@Override
-	public List<BinaryFile> getAllFilesUserIsAllowed(User user) {
-		return binaryFileRepository.findByUserAllowed(user);
+	public List<BinaryFile> getAllFiles(User user) {
+		if (userService.isUserAdministrator(user))
+			return binaryFileRepository.findAll();
+		return binaryFileRepository.findByUser(user);
 	}
 
 	@Override
 	public BinaryFile getFile(String fileId) {
-		return binaryFileRepository.findById(fileId).orElse(null);
-	}
-
-	@Override
-	public List<BinaryFile> getFileByPath(String fileId) {
-		return binaryFileRepository.findByPath(fileId);
+		return binaryFileRepository.findById(fileId);
 	}
 
 	@Override
 	public void changePublic(String fileId) {
-		binaryFileRepository.findById(fileId).ifPresent(file -> {
-			if (file != null) {
-				file.setPublic(!file.isPublic());
-				binaryFileRepository.save(file);
-			}
-		});
-
-	}
-
-	@Override
-	public void updateUpdateTime(String fileId) {
-		binaryFileRepository.findById(fileId).ifPresent(file -> {
-			if (file != null) {
-				file.setUpdatedAt(new Date());
-				binaryFileRepository.save(file);
-			}
-		});
+		final BinaryFile file = binaryFileRepository.findById(fileId);
+		if (file != null) {
+			file.setPublic(!file.isPublic());
+			binaryFileRepository.save(file);
+		}
 
 	}
 
 	@Override
 	public boolean isUserOwner(String fileId, User user) {
-		final Optional<BinaryFile> file = binaryFileRepository.findById(fileId);
-		if (file.isPresent()) {
-			if (file.get().getUser().getUserId().equalsIgnoreCase(user.getUserId())
-					|| userService.isUserAdministrator(user)) {
-				return true;
-			}
-		}
+		final BinaryFile file = binaryFileRepository.findById(fileId);
+		if (file.getUser().getUserId().equalsIgnoreCase(user.getUserId())
+				|| userService.isUserAdministrator(user))
+			return true;
 		return false;
 
 	}
@@ -257,27 +162,20 @@ public class BinaryFileServiceImpl implements BinaryFileService {
 	@Transactional
 	public void deleteBinaryFileAccess(String id, User user) throws GenericOPException {
 		if (canUserEditAccess(user, id)) {
-			final Optional<BinaryFileAccess> access = accessRepository.findById(id);
-			if (access.isPresent()) {
-				if (!access.get().getUser().getUserId().equals(user.getUserId())) {
-					accessRepository.deleteById(id);
-				}
-			} else {
+			if (!accessRepository.findById(id).getUser().getUserId().equals(user.getUserId()))
+				accessRepository.deleteById(id);
+			else
 				throw new GenericOPException(RT_EXCEP);
-			}
-		} else {
+		} else
 			throw new GenericOPException(RT_EXCEP);
-		}
 	}
 
 	@Override
 	public BinaryFileAccess updateBinaryFileAccess(String id, String accesstype, User user) throws GenericOPException {
 		if (canUserEditAccess(user, id)) {
-			final Optional<BinaryFileAccess> access = accessRepository.findById(id);
-			if (access.isPresent()) {
-				access.get().setAccessType(Type.valueOf(accesstype));
-				return accessRepository.save(access.get());
-			}
+			final BinaryFileAccess access = accessRepository.findById(id);
+			access.setAccessType(Type.valueOf(accesstype));
+			return accessRepository.save(access);
 		}
 
 		throw new GenericOPException(RT_EXCEP);
@@ -285,59 +183,18 @@ public class BinaryFileServiceImpl implements BinaryFileService {
 
 	@Override
 	public boolean canUserEditAccess(User user, String id) {
-		if (userService.isUserAdministrator(user)) {
+		if (userService.isUserAdministrator(user))
 			return true;
-		}
-		final Optional<BinaryFileAccess> access = accessRepository.findById(id);
-		if (access.isPresent()) {
-			final BinaryFile file = access.get().getBinaryFile();
-			if (file != null) {
-				if (file.getUser().getUserId().equals(user.getUserId())) {
-					return true;
-				}
-				if (accessRepository.findByUserAndWriteAccess(file, user) != null) {
-					return true;
-				}
+		final BinaryFile file = accessRepository.findById(id).getBinaryFile();
+		if (file != null) {
+			if (file.getUser().getUserId().equals(user.getUserId())){
+				return true;
 			}
+			if (accessRepository.findByUserAndWriteAccess(file, user) != null)
+				return true;
 		}
 		return false;
-	}
 
-	@Override
-	public void setAuthorization(String id, Type accessType, User user) {
-		final BinaryFile file = binaryFileRepository.findById(id).orElse(null);
-		if (file != null) {
-			BinaryFileAccess access = accessRepository.findByUserAndBinaryFile(user, file);
-			if (access == null) {
-				access = new BinaryFileAccess();
-				access.setAccessType(accessType);
-				access.setUser(user);
-				access.setBinaryFile(file);
-			} else {
-				access.setAccessType(accessType);
-			}
-			accessRepository.save(access);
-		}
-	}
-
-	@Override
-	@Transactional
-	public void deleteAuthorization(String id, User user) throws GenericOPException {
-		final BinaryFile file = binaryFileRepository.findById(id).orElse(null);
-		if (file != null) {
-			final BinaryFileAccess access = accessRepository.findByUserAndBinaryFile(user, file);
-			if (access != null) {
-				accessRepository.deleteById(access.getId());
-			} else {
-				throw new GenericOPException("Authorization does not exist");
-			}
-		}
-
-	}
-
-	@Override
-	public long countBinaryFiles() {
-		return binaryFileRepository.count();
 	}
 
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.Properties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 
@@ -29,8 +30,7 @@ import com.hazelcast.core.HazelcastInstance;
 
 import lombok.extern.slf4j.Slf4j;
 
-//@Configuration
-//LOADING CONFIG FROM PROJECT onesaitplatform-cache
+@Configuration
 @Slf4j
 public class HazelcastCacheLoaderConfig {
 
@@ -46,9 +46,9 @@ public class HazelcastCacheLoaderConfig {
 	@Bean
 	@Profile("default")
 	public HazelcastInstance defaultHazelcastInstanceEmbedded() {
-		final Config config = new ClasspathXmlConfig("hazelcast.xml");
+		Config config = new ClasspathXmlConfig("hazelcast.xml");
 		log.info("Configured Cache with data: Name : {} Instance Name: {} Group Name: {} ",
-				config.getConfigurationFile(), config.getInstanceName(), config.getClusterName());
+				config.getConfigurationFile(), config.getInstanceName(), config.getGroupConfig().getName());
 		config.getMapConfig("transactionalOperations").setTimeToLiveSeconds(transactionTimeout);
 		config.getMapConfig("lockedOntologies").setTimeToLiveSeconds(transactionTimeout);
 		return Hazelcast.newHazelcastInstance(config);
@@ -57,15 +57,15 @@ public class HazelcastCacheLoaderConfig {
 	@Bean
 	@Profile("docker")
 	public HazelcastInstance dockerHazelcastInstanceEmbedded() {
-		final Properties props = new Properties();
+		Properties props = new Properties();
 		if (hazelcastServiceDiscoveryStrategy.equals("zookeeper")) {
 			props.put("onesaitplatform.hazelcast.service.discovery.zookeeper.url",
 					environment.getProperty("onesaitplatform.hazelcast.service.discovery.zookeeper.url"));
 		}
-		final Config config = new ClasspathXmlConfig("hazelcast-" + hazelcastServiceDiscoveryStrategy + "-docker.xml", props);
+		Config config = new ClasspathXmlConfig("hazelcast-" + hazelcastServiceDiscoveryStrategy + "-docker.xml", props);
 
 		log.info("Configured Cache with data: Name : " + config.getConfigurationFile() + " Instance Name: "
-				+ config.getInstanceName() + " Group Name: " + config.getClusterName());
+				+ config.getInstanceName() + " Group Name: " + config.getGroupConfig().getName());
 		config.getMapConfig("transactionalOperations").setTimeToLiveSeconds(transactionTimeout);
 		config.getMapConfig("lockedOntologies").setTimeToLiveSeconds(transactionTimeout);
 		return Hazelcast.newHazelcastInstance(config);

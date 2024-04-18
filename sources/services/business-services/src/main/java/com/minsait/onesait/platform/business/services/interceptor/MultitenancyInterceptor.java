@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,11 +41,11 @@ public class MultitenancyInterceptor extends HandlerInterceptorAdapter {
 
 		final String vertical = request.getHeader(Tenant2SchemaMapper.VERTICAL_HTTP_HEADER);
 		if (!StringUtils.isEmpty(vertical)) {
-			multitenancyService.getVerticalSchema(vertical).ifPresent(v -> {
-				final String tenant = request.getHeader(Tenant2SchemaMapper.TENANT_HTTP_HEADER);
-				MultitenancyContextHolder.setTenantName(tenant);
-				MultitenancyContextHolder.setVerticalSchema(v);
+			multitenancyService.getVertical(vertical).ifPresent(v -> {
+				MultitenancyContextHolder.setTenantName(request.getHeader(Tenant2SchemaMapper.TENANT_HTTP_HEADER));
+				MultitenancyContextHolder.setVerticalSchema(v.getSchema());
 			});
+
 		}
 		return true;
 	}

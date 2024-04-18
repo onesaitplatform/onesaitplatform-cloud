@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
 package com.minsait.onesait.platform.controlpanel.controller.jsontool;
 
 import java.io.IOException;
-
-import javax.servlet.http.HttpSession;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,11 +31,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonObject;
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessService;
 import com.minsait.onesait.platform.commons.model.InsertResult;
 import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.router.service.app.model.NotificationModel;
@@ -68,13 +64,9 @@ public class JsonToolController {
 
 	@Autowired
 	private JsonToolUtils jsonToolUtils;
-	
-	@Autowired 
-	private HttpSession httpSession;
 
 	private final ObjectMapper mapper = new ObjectMapper();
 
-	private static final String APP_ID = "appId";
 	private static final String PATH_PROPERTIES = "properties";
 
 	@GetMapping("tools")
@@ -82,47 +74,24 @@ public class JsonToolController {
 	public String show(Model model) {
 		model.addAttribute("datasources", ontologyService.getDatasources());
 		model.addAttribute("ontologies", ontologyService.getOntologiesByUserId(utils.getUserId()));
-		
-		final Object projectId = httpSession.getAttribute(APP_ID);
-		if (projectId!=null) {
-			model.addAttribute(APP_ID, projectId.toString());
-			httpSession.removeAttribute(APP_ID);
-		}
-		
 		return "json2ontologytool/import";
 	}
 
 	@PostMapping("createontology")
 	public @ResponseBody String createOntology(Model model, @RequestParam String ontologyIdentification,
-			@RequestParam String ontologyDescription, @RequestParam String schema, @RequestParam String datasource, @RequestParam boolean contextdata, @RequestParam(value = "appId", required = false) String appId)
+			@RequestParam String ontologyDescription, @RequestParam String schema, @RequestParam String datasource)
 			throws IOException {
 
 		final Ontology ontology = jsonToolUtils.createOntology(ontologyIdentification, ontologyDescription,
-				Ontology.RtdbDatasource.valueOf(datasource), schema, contextdata);
+				Ontology.RtdbDatasource.valueOf(datasource), schema);
 
 		try {
 			ontologyBusinessService.createOntology(ontology, ontology.getUser().getUserId(), null);
 		} catch (final Exception e) {
-			if (e.getCause() instanceof com.minsait.onesait.platform.config.services.ontologydata.OntologyDataJsonProblemException) {
-				final JsonObject responseBody = new JsonObject();
-				responseBody.addProperty("result", "ko");
-				responseBody.addProperty("cause", e.getCause().getMessage());
-				return responseBody.toString();
-			} else {
-				final JsonObject responseBody = new JsonObject();
-				responseBody.addProperty("result", "ko");
-				responseBody.addProperty("cause", e.getMessage().replaceAll("\"", "'"));
-				return responseBody.toString();
-			}
+			return "{\"result\":\"ko\", \"cause\" :\"" + e.getMessage().replaceAll("\"", "'") + "\"}";
 		}
 		final Ontology oDb = ontologyService.getOntologyByIdentification(ontology.getIdentification(),
 				utils.getUserId());
-		
-		if (appId!=null) {
-			httpSession.setAttribute("resourceTypeAdded", OPResource.Resources.ONTOLOGY.toString());
-			httpSession.setAttribute("resourceIdentificationAdded", oDb.getIdentification());
-		}
-		
 		return "{\"result\":\"ok\", \"id\":\"" + oDb.getId() + "\"}";
 	}
 
@@ -153,36 +122,25 @@ public class JsonToolController {
 						}
 
 						Integer.parseInt(objMapper.readTree(output).path("count").asText());
-						final JsonObject responseBody = new JsonObject();
-						responseBody.addProperty("result", "ok");
-						responseBody.addProperty("inserted", objMapper.readTree(output).path("count").asText());
-						return responseBody.toString();
+						return "{\"result\":\"ok\", \"inserted\" :" + objMapper.readTree(output).path("count").asText()
+								+ "}";
+
 					} catch (final NumberFormatException | JSONException ne) {
-						final JsonObject responseBody = new JsonObject();
-						responseBody.addProperty("result", "ok");
-						responseBody.addProperty("inserted", "");
-						return responseBody.toString();
+						return "{\"result\":\"ok\", \"inserted\" :\"\"}";
 					}
 
 				} else {
 					log.error("Error insert BULK data:" + response.getMessage());
-					final JsonObject responseBody = new JsonObject();
-					responseBody.addProperty("result", "ERROR");
-					responseBody.addProperty("cause", response.getMessage().replaceAll("\"", "'"));
-					return responseBody.toString();
+					return "{\"result\":\"ERROR\", \"cause\" :\"Error " + response.getMessage() + "\"}";
 				}
 			} catch (final Exception e) {
-				final JsonObject responseBody = new JsonObject();
-				responseBody.addProperty("result", "ERROR");
-				responseBody.addProperty("cause", "Error insert BULK data. " + e.getMessage().replaceAll("\"", "'"));
-				return responseBody.toString();
+				return "{\"result\":\"ERROR\", \"cause\" :\"Error insert BULK data. "
+						+ e.getMessage().replaceAll("\"", "'") + "\"}";
 			}
 
 		} catch (final IOException e) {
-			final JsonObject responseBody = new JsonObject();
-			responseBody.addProperty("result", "ko");
-			responseBody.addProperty("cause", "Error parsing JSON. " + e.getMessage().replaceAll("\"", "'"));
-			return responseBody.toString();
+			return "{\"result\":\"ko\", \"cause\" :\"Error parsing JSON. " + e.getMessage().replaceAll("\"", "'")
+					+ "\"}";
 		}
 
 	}

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import com.minsait.onesait.platform.config.model.BinaryFile;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.Report;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.BinaryFileRepository;
 import com.minsait.onesait.platform.config.repository.ReportRepository;
@@ -63,33 +64,25 @@ public class ReportServiceImpl implements ReportService {
 
 	@Override
 	public Report findById(String id) {
-		if (log.isDebugEnabled()) {
-			log.debug("INI. Find report by Id: {}", id);
-		}
-		return reportRepository.findById(id).orElse(null);
+		log.debug("INI. Find report by Id: {}", id);
+		return reportRepository.findOne(id);
 	}
 
 	@Transactional
 	@Override
 	public void saveOrUpdate(Report report) {
-		if (log.isDebugEnabled()) {
-			log.debug("INI. Save report: {}", report);
-		}
+		log.debug("INI. Save report: {}", report);
 		reportRepository.save(report);
 	}
 
 	@Transactional
 	@Override
 	public void disable(String id) {
-		if (log.isDebugEnabled()) {
-			log.debug("INI. Disable report id: {}", id);
-		}
-		final Report entity = reportRepository.findById(id).orElse(null);
+		log.debug("INI. Disable report id: {}", id);
+		final Report entity = reportRepository.findOne(id);
 
 		if (entity != null) {
-			if (log.isDebugEnabled()) {
-				log.debug("Disable > Find report {}", entity);
-			}
+			log.debug("Disable > Find report {}", entity);
 			entity.setActive(Boolean.FALSE);
 			reportRepository.save(entity);
 		}
@@ -98,7 +91,7 @@ public class ReportServiceImpl implements ReportService {
 	@Transactional
 	@Override
 	public void delete(String id) {
-		reportRepository.deleteById(id);
+		reportRepository.delete(id);
 
 	}
 
@@ -124,7 +117,7 @@ public class ReportServiceImpl implements ReportService {
 	public Collection<BinaryFile> findResourcesForUser(String userId) {
 
 		List<Report> reports;
-		if (userService.getUser(userId).isAdmin())
+		if (userService.getUser(userId).getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()))
 			reports = findAllActiveReports();
 		else
 			reports = findAllActiveReportsByUserId(userId);
@@ -148,7 +141,7 @@ public class ReportServiceImpl implements ReportService {
 	@Override
 	@Transactional
 	public void addBinaryFileToResource(Report report, String binaryFileId) {
-		final BinaryFile file = binaryFileRepository.findById(binaryFileId).orElse(null);
+		final BinaryFile file = binaryFileRepository.findById(binaryFileId);
 		if (file != null) {
 			report.getResources().removeIf(bf -> bf.getId().equals(file.getId()));
 			report.getResources().add(file);

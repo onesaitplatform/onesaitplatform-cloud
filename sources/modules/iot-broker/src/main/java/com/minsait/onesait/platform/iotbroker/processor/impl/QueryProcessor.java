@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import com.minsait.onesait.platform.comms.protocol.enums.SSAPQueryType;
 import com.minsait.onesait.platform.iotbroker.common.MessageException;
 import com.minsait.onesait.platform.iotbroker.common.exception.SSAPProcessorException;
 import com.minsait.onesait.platform.iotbroker.common.util.SSAPUtils;
+import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.iotbroker.processor.MessageTypeProcessor;
 import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
@@ -54,14 +55,17 @@ public class QueryProcessor implements MessageTypeProcessor {
 	private RouterService routerService;
 	@Autowired
 	ObjectMapper objectMapper;
+	@Autowired
+	SecurityPluginManager securityPluginManager;
 
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info, Optional<IoTSession> session) {
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info) {
 
 		final SSAPMessage<SSAPBodyQueryMessage> queryMessage = (SSAPMessage<SSAPBodyQueryMessage>) message;
 		SSAPMessage<SSAPBodyReturnMessage> responseMessage = new SSAPMessage<>();
 		responseMessage.setBody(new SSAPBodyReturnMessage());
 		responseMessage.getBody().setOk(true);
+		final Optional<IoTSession> session = securityPluginManager.getSession(queryMessage.getSessionKey());
 
 		String user = null;
 
@@ -133,7 +137,7 @@ public class QueryProcessor implements MessageTypeProcessor {
 	public boolean validateMessage(SSAPMessage<? extends SSAPBodyMessage> message) {
 		final SSAPMessage<SSAPBodyQueryMessage> queryMessage = (SSAPMessage<SSAPBodyQueryMessage>) message;
 
-		if (!StringUtils.hasText(queryMessage.getBody().getQuery())) {
+		if (StringUtils.isEmpty(queryMessage.getBody().getQuery())) {
 			throw new SSAPProcessorException(
 					String.format(MessageException.ERR_FIELD_IS_MANDATORY, "query", message.getMessageType().name()));
 		}

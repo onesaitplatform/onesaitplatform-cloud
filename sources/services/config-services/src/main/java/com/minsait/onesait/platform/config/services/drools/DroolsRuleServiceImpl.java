@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,10 @@ import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
 import com.minsait.onesait.platform.config.model.DroolsRule;
-import com.minsait.onesait.platform.config.model.DroolsRule.TableExtension;
 import com.minsait.onesait.platform.config.model.DroolsRule.Type;
 import com.minsait.onesait.platform.config.model.DroolsRuleDomain;
 import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.DroolsRuleDomainRepository;
 import com.minsait.onesait.platform.config.repository.DroolsRuleRepository;
@@ -56,7 +56,7 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 
 	@Override
 	public List<DroolsRule> getRulesForOntology(String ontology) {
-		return droolsRuleRepository.findBySourceOntologyIdentificationAndActiveTrue(ontology);
+		return getRulesForOntology(ontologyRepository.findByIdentification(ontology));
 	}
 
 	@Override
@@ -82,7 +82,7 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 	@Override
 	public List<DroolsRuleDomain> getAllDomains(String user) {
 
-		if (userService.getUser(user).isAdmin()) {
+		if (userService.getUser(user).getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
 			return droolsRuleDomainRepository.findAll();
 		} else {
 			return new ArrayList<>(Arrays.asList(this.getUserDomain(user)));
@@ -127,7 +127,7 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 
 	@Override
 	public DroolsRuleDomain getDomain(String id) {
-		return droolsRuleDomainRepository.findById(id).orElse(null);
+		return droolsRuleDomainRepository.findOne(id);
 	}
 
 	@Override
@@ -157,11 +157,6 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 	@Override
 	public void updateDRL(String identification, String drl) {
 		droolsRuleRepository.updateDRLByIdentification(drl, identification);
-	}
-
-	@Override
-	public void updateDecisionTable(String identification, byte[] decisionTable, TableExtension extension) {
-		droolsRuleRepository.updateDecisionTableByIdentification(decisionTable, extension, identification);
 	}
 
 	@Override
@@ -213,7 +208,6 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 		final DroolsRule ruleDb = droolsRuleRepository.findByIdentification(identification);
 		rule.setType(ruleDb.getType());
 		ruleDb.setDRL(rule.getDRL());
-		ruleDb.setDecisionTable(rule.getDecisionTable());
 		if (ruleDb.getType().equals(Type.ONTOLOGY)) {
 			final String previousSource = ruleDb.getSourceOntology().getIdentification();
 			if (!previousSource.equals(rule.getSourceOntology().getIdentification())

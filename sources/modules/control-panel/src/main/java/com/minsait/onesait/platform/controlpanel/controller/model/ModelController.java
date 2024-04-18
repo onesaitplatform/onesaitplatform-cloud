@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.json.JSONArray;
@@ -123,9 +123,6 @@ public class ModelController {
 
 	@Autowired
 	private NotebookManagementController notebookManager;
-	
-	@Autowired 
-	private HttpSession httpSession;
 
 	private static final String PARAMETERS_STR = "parameters";
 	private static final String REDIRECT_MODELS_LIST = "redirect:/models/list";
@@ -136,7 +133,6 @@ public class ModelController {
 	private static final String CAUSE_STR = "cause";
 	private static final String VALIDATION_ERROR_STR = "validation error";
 	private static final String ONTOLOGY_VAL_ERRROR = "ontology.validation.error";
-	private static final String APP_ID = "appId";
 
 	@PostConstruct
 	public void init() {
@@ -147,9 +143,7 @@ public class ModelController {
 	@GetMapping(value = "/list", produces = "text/html")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
 	public String list(org.springframework.ui.Model model) {
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
+
 		final List<com.minsait.onesait.platform.config.model.Model> models = modelService
 				.findAllModelsByUser(utils.getUserId());
 		model.addAttribute("models", models);
@@ -192,7 +186,7 @@ public class ModelController {
 	public String create(org.springframework.ui.Model model) {
 		model.addAttribute(MODEL_DTO_STR, new ModelDTO());
 		model.addAttribute("notebooks", notebookService.getNotebooks(utils.getUserId()));
-		model.addAttribute("categories", categoryService.getCategoriesByTypeAndGeneralType(Category.Type.MODEL));
+		model.addAttribute("categories", categoryService.getAllIdentifications());
 		model.addAttribute("ontologies", ontologyService.getOntologiesByUserId(utils.getUserId()));
 		model.addAttribute("dashboards", dashboardService.getByUserId(utils.getUserId()));
 		return "models/create";
@@ -205,7 +199,7 @@ public class ModelController {
 			Model modelp = modelService.getModelById(id);
 
 			CategoryRelation categoryRelation = categoryRelationService.getByTypeIdAndType(modelp.getId(),
-					Category.Type.MODEL);
+					CategoryRelation.Type.MODEL);
 			Category category = categoryService.getCategoryById(categoryRelation.getCategory());
 			Subcategory subcategory = subcategoryService.getSubcategoryById(categoryRelation.getSubcategory());
 
@@ -252,7 +246,7 @@ public class ModelController {
 			model.addAttribute(PARAMETERS_STR, paramsDto);
 			model.addAttribute("ids", ids);
 			model.addAttribute("notebooks", notebookService.getNotebooks(utils.getUserId()));
-			model.addAttribute("categories", categoryService.getCategoriesByTypeAndGeneralType(Category.Type.MODEL));
+			model.addAttribute("categories", categoryService.getAllIdentifications());
 			model.addAttribute("subcategories", subcategoryService.findSubcategoriesByCategory(category));
 			model.addAttribute("ontologies", ontologyService.getOntologiesByUserId(utils.getUserId()));
 			model.addAttribute("dashboards", dashboardService.getByUserId(utils.getUserId()));
@@ -261,6 +255,13 @@ public class ModelController {
 			log.error("Error prasing parameters model: " + e.getMessage());
 			return REDIRECT_MODELS_LIST;
 		}
+	}
+
+	@GetMapping(value = "/getSubcategories/{category}")
+	public @ResponseBody List<String> getSubcategories(@PathVariable("category") String category,
+			HttpServletResponse response) {
+		return subcategoryService
+				.findSubcategoriesNamesByCategory(categoryService.getCategoryByIdentification(category));
 	}
 
 	@GetMapping(value = "/getConfigParagraph/{notebook}")
@@ -509,7 +510,7 @@ public class ModelController {
 			if (modelp != null) {
 
 				CategoryRelation categoryRelation = categoryRelationService.getByTypeIdAndType(modelp.getId(),
-						Category.Type.MODEL);
+						CategoryRelation.Type.MODEL);
 				Category category = categoryService.getCategoryById(categoryRelation.getCategory());
 				Subcategory subcategory = subcategoryService
 						.getSubcategoryById(categoryRelation.getSubcategory());

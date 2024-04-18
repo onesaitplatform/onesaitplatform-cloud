@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,8 @@ import com.minsait.onesait.platform.config.services.apimanager.dto.ApiDTO;
 import com.minsait.onesait.platform.config.services.apimanager.dto.ApiQueryParameterDTO;
 import com.minsait.onesait.platform.config.services.apimanager.dto.OperacionDTO;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
+import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
 @Service
 public class ApiServiceRest {
@@ -101,9 +103,9 @@ public class ApiServiceRest {
 				.filter(a -> apiSecurityService.authorized(a, token)).collect(Collectors.toList());
 	}
 
-	public Api getApi(String identificationApi) {
+	public Api getApi(String identificacionApi) {
 		Api api = null;
-		final List<Api> apis = apiRepository.findByIdentification(identificationApi);
+		final List<Api> apis = apiRepository.findByIdentification(identificacionApi);
 		for (final Api apiAux : apis) {
 			if (apiAux.getState().name().equalsIgnoreCase(Api.ApiStates.PUBLISHED.name())) {
 				api = apiAux;
@@ -124,9 +126,9 @@ public class ApiServiceRest {
 		return api;
 	}
 
-	public Api getApiMaxVersion(String identificationApi) {
+	public Api getApiMaxVersion(String identificacionApi) {
 		Api api = null;
-		final List<Api> apis = apiRepository.findByIdentification(identificationApi);
+		final List<Api> apis = apiRepository.findByIdentification(identificacionApi);
 		for (final Api apiAux : apis) {
 			if (api == null || api.getNumversion() < apiAux.getNumversion()) {
 				api = apiAux;
@@ -138,8 +140,8 @@ public class ApiServiceRest {
 		return api;
 	}
 
-	public Api findApi(String identification, String token) {
-		final Api api = getApiMaxVersion(identification);
+	public Api findApi(String identificacion, String token) {
+		final Api api = getApiMaxVersion(identificacion);
 		if (api != null) {
 			if (apiSecurityService.authorized(api, token)) {
 				return api;
@@ -150,12 +152,12 @@ public class ApiServiceRest {
 		return null;
 	}
 
-	public List<Api> findApis(String identification, String token) {
+	public List<Api> findApis(String identificacion, String token) {
 		final User user = apiSecurityService.getUserByApiToken(token);
 		if (apiSecurityService.isAdmin(user)) {
-			return apiRepository.findByIdentification(identification);
+			return apiRepository.findByIdentification(identificacion);
 		} else {
-			return apiRepository.findByIdentificationAndUser(identification, user);
+			return apiRepository.findByIdentificationAndUser(identificacion, user);
 		}
 	}
 
@@ -234,7 +236,7 @@ public class ApiServiceRest {
 		}
 	}
 
-	public void removeApiByIdentificationNumversion(String identification, String numversion, String token) {
+	public void removeApiByIdentificacionNumversion(String identificacion, String numversion, String token) {
 		Integer version = null;
 		try {
 			version = Integer.parseInt(numversion);
@@ -242,7 +244,7 @@ public class ApiServiceRest {
 			throw new AuthorizationServiceException(WRONGVERSIONMIN);
 		}
 		try {
-			final Api apiDelete = apiRepository.findByIdentificationAndNumversion(identification, version);
+			final Api apiDelete = apiRepository.findByIdentificationAndNumversion(identificacion, version);
 			if (apiSecurityService.authorized(apiDelete, token)) {
 				removeOperations(apiDelete);
 				apiRepository.delete(apiDelete);
@@ -287,15 +289,15 @@ public class ApiServiceRest {
 		}
 	}
 
-	public UserApi findApiSuscriptions(String identificationApi, String tokenUsuario) {
-		if (identificationApi == null) {
+	public UserApi findApiSuscriptions(String identificacionApi, String tokenUsuario) {
+		if (identificacionApi == null) {
 			throw new IllegalArgumentException(REQUIRED_ID_API);
 		}
 		if (tokenUsuario == null) {
 			throw new IllegalArgumentException(REQUIRED_USER_TOKEN);
 		}
 
-		final Api api = findApi(identificationApi, tokenUsuario);
+		final Api api = findApi(identificacionApi, tokenUsuario);
 		UserApi suscription = null;
 
 		final User user = apiSecurityService.getUserByApiToken(tokenUsuario);
@@ -310,14 +312,14 @@ public class ApiServiceRest {
 		return suscription;
 	}
 
-	public List<UserApi> findApiSuscripcionesUser(String identificationUsuario) {
+	public List<UserApi> findApiSuscripcionesUser(String identificacionUsuario) {
 		List<UserApi> suscriptions = null;
 
-		if (identificationUsuario == null) {
+		if (identificacionUsuario == null) {
 			throw new IllegalArgumentException(REQUIRED_ID_API);
 		}
 
-		final User suscriber = apiSecurityService.getUser(identificationUsuario);
+		final User suscriber = apiSecurityService.getUser(identificacionUsuario);
 		suscriptions = userApiRepository.findByUser(suscriber);
 		return suscriptions;
 	}
@@ -374,35 +376,35 @@ public class ApiServiceRest {
 		}
 	}
 
-	public UserToken findTokenUserByIdentification(String identification, String tokenUsuario) {
+	public UserToken findTokenUserByIdentification(String identificacion, String tokenUsuario) {
 
 		UserToken token = null;
-		if (identification == null) {
+		if (identificacion == null) {
 			throw new IllegalArgumentException(REQUIRED_ID_SCRIPT);
 		}
 
 		final User user = apiSecurityService.getUserByApiToken(tokenUsuario);
 
-		if (apiSecurityService.isAdmin(user) || user.getUserId().equals(identification)) {
-			final User userToTokenize = apiSecurityService.getUser(identification);
-			token = apiSecurityService.getUserToken(userToTokenize, identification);
+		if (apiSecurityService.isAdmin(user) || user.getUserId().equals(identificacion)) {
+			final User userToTokenize = apiSecurityService.getUser(identificacion);
+			token = apiSecurityService.getUserToken(userToTokenize, identificacion);
 		} else {
 			throw new AuthorizationServiceException(NOT_ALLOWED_USER_OPERATION);
 		}
 		return token;
 	}
 
-	public UserToken addTokenUsuario(String identification, String tokenUsuario) {
+	public UserToken addTokenUsuario(String identificacion, String tokenUsuario) {
 		UserToken token = null;
-		if (identification == null) {
+		if (identificacion == null) {
 			throw new IllegalArgumentException(REQUIRED_ID_SCRIPT);
 		}
 
 		final User user = apiSecurityService.getUserByApiToken(tokenUsuario);
 
-		if (apiSecurityService.isAdmin(user) || user.getUserId().equals(identification)) {
+		if (apiSecurityService.isAdmin(user) || user.getUserId().equals(identificacion)) {
 
-			final User userToTokenize = apiSecurityService.getUser(identification);
+			final User userToTokenize = apiSecurityService.getUser(identificacion);
 
 			token = apiSecurityService.getUserToken(userToTokenize, tokenUsuario);
 			if (token == null)
@@ -417,18 +419,18 @@ public class ApiServiceRest {
 		return token;
 	}
 
-	public UserToken generateTokenUsuario(String identification, String tokenUsuario) {
+	public UserToken generateTokenUsuario(String identificacion, String tokenUsuario) {
 
 		UserToken token = null;
-		if (identification == null) {
+		if (identificacion == null) {
 			throw new IllegalArgumentException(REQUIRED_ID_SCRIPT);
 		}
 
 		final User user = apiSecurityService.getUserByApiToken(tokenUsuario);
 
-		if (apiSecurityService.isAdmin(user) || user.getUserId().equals(identification)) {
+		if (apiSecurityService.isAdmin(user) || user.getUserId().equals(identificacion)) {
 
-			final User userToTokenize = apiSecurityService.getUser(identification);
+			final User userToTokenize = apiSecurityService.getUser(identificacion);
 
 			token = initToken(userToTokenize);
 

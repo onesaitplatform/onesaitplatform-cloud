@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.config.model.base;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
@@ -27,9 +28,9 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.User;
 
@@ -38,13 +39,13 @@ import lombok.Setter;
 
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+@JsonIgnoreProperties(value = { "createdAt", "updatedAt" }, allowGetters = true)
+@EntityListeners(AuditingEntityListener.class)
 public abstract class OPResource extends AuditableEntity {
 
 	public enum Resources {
-		API, BINARYFILE, CLIENTPLATFORM, CONFIGURATION, DATAFLOW, DASHBOARD, DIGITALTWINDEVICE, ONTOLOGY,
-		ONTOLOGYVIRTUALDATASOURCE, FLOWDOMAIN, GADGET, GADGETDATASOURCE, GADGETTEMPLATE, NOTEBOOK, REPORT, 
-		FORM, MICROSERVICE
-
+		API, CLIENTPLATFORM, DIGITALTWINDEVICE, DASHBOARD, FLOWDOMAIN, GADGET, GADGETDATASOURCE, NOTEBOOK, ONTOLOGY,
+		DATAFLOW
 	}
 
 	private static final long serialVersionUID = 1L;
@@ -57,7 +58,7 @@ public abstract class OPResource extends AuditableEntity {
 	@Setter
 	private String id;
 
-	@Column(name = "IDENTIFICATION", length = 255, nullable = false)
+	@Column(name = "IDENTIFICATION", length = 50, nullable = false)
 	@NotNull
 	@Getter
 	@Setter
@@ -70,43 +71,28 @@ public abstract class OPResource extends AuditableEntity {
 	@Setter
 	private User user;
 
-	@JsonGetter("user")
-	public String getUserJson() {
-		return user.getUserId();
-	}
-
-	@JsonSetter("user")
-	public void setUserJson(String userId) {
-		final User u = new User();
-		u.setUserId(userId);
-		user = u;
-	}
-
 	@Override
 	public boolean equals(Object obj) {
-		if (obj == null) {
+		if (obj == null)
 			return false;
-		}
 
-		if (this.getClass() != obj.getClass()) {
+		if (this.getClass() != obj.getClass())
 			return false;
-		}
 
 		final OPResource that = (OPResource) obj;
-		if (that instanceof Api && getIdentification() != null && ((Api) this).getNumversion() != null) {
-			return getIdentification().equals(that.getIdentification())
-					&& ((Api) this).getNumversion().equals(((Api) that).getNumversion());
+		if (that instanceof Api && (getIdentification() != null && ((Api) this).getNumversion() != null)) {
+			return (getIdentification().equals(that.getIdentification())
+					&& ((Api) this).getNumversion().equals(((Api) that).getNumversion()));
 		}
-		if (getIdentification() != null) {
+		if (getIdentification() != null)
 			return getIdentification().equals(that.getIdentification());
-		}
 		return false;
 	}
 
 	@Override
 	public int hashCode() {
 		if (this instanceof Api) {
-			return java.util.Objects.hash(getIdentification(), ((Api) this).getNumversion());
+			return java.util.Objects.hash(this.getIdentification(), ((Api) this).getNumversion());
 		}
 
 		return java.util.Objects.hash(getIdentification());

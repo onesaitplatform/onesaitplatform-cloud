@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ import com.minsait.onesait.platform.config.model.User;
 
 public interface ModelExecutionRepository extends JpaRepository<ModelExecution, String> {
 
+	ModelExecution findById(String id);
+
 	List<ModelExecution> findByUser(User user);
 
 	List<ModelExecution> findByModel(Model model);
@@ -31,7 +33,7 @@ public interface ModelExecutionRepository extends JpaRepository<ModelExecution, 
 	ModelExecution findByIdentification(String identification);
 
 	ModelExecution findByIdentificationAndUser(String identification, User user);
-
+	
 	ModelExecution findByIdEject(String executionId);
 
 }

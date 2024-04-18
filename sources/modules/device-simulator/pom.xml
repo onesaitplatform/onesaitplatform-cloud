@@ -4,17 +4,17 @@
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-		<version>${revision}</version>
+		<version>2.0.0-ce</version>
 		<relativePath>../..</relativePath>
 	</parent>
-	<artifactId>onesaitplatform-device-simulator</artifactId>
+	<artifactId>onesaitplatform-device-simulator</artifactId>	
 	<name>onesaitplatform-device-simulator</name>
 	<description>Module in charge of simulating Devices for the rest of the platform</description>
-
+	
 	<properties>
 		<license.dir>${project.parent.basedir}</license.dir>
 	</properties>
-
+	
 	<dependencies>
 		<!-- To overwrite MySQL version-->
 		<dependency>
@@ -22,36 +22,29 @@
 			<artifactId>mysql-connector-java</artifactId>
 			<version>${mysql.driver.version}</version>
 		</dependency>
-
+	
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-config-services</artifactId>
-			<version>${project.version}</version>
+			<version>${onesaitplatform.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-config-resources</artifactId>
-			<version>${project.version}</version>
+			<version>${onesaitplatform.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-planner</artifactId>
-			<version>${project.version}</version>
+			<version>${onesaitplatform.version}</version>
 		</dependency>
-
+	
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-pass-encryptor</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<!-- OneLog -->
-		<dependency>
-			<groupId>com.minsait.onesait.platform</groupId>
-			<artifactId>onesaitplatform-onelog</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
+			<version>${onesaitplatform.version}</version>
+		</dependency>	
+	
 		<dependency>
 			<groupId>de.codecentric</groupId>
 			<artifactId>spring-boot-admin-starter-client</artifactId>
@@ -67,10 +60,6 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-autoconfigure</artifactId>
 		</dependency>
@@ -82,43 +71,29 @@
          			<groupId>org.springframework.boot</groupId>
          			<artifactId>spring-boot-starter-tomcat</artifactId>
       			</exclusion>
-						<exclusion>
-							<groupId>com.fasterxml.jackson.core</groupId>
-							<artifactId>jackson-databind</artifactId>
-						</exclusion>						
    			</exclusions>
 		</dependency>
-
+		
 		<dependency>
    			<groupId>org.springframework.boot</groupId>
    			<artifactId>spring-boot-starter-jetty</artifactId>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>			
-		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
 			<version>1.2.3</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-core</artifactId>
 			<version>1.2.3</version>
 		</dependency>
-		<dependency>
-	        <groupId>io.micrometer</groupId>
-			<artifactId>micrometer-registry-prometheus</artifactId>
-            <scope>runtime</scope>
-        </dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -136,8 +111,8 @@
 					</execution>
 				</executions>
 			</plugin>
-
-		    <!-- skip deployment -->
+			
+		    <!-- skip deployment -->	
 		    <plugin>
 		      <groupId>org.apache.maven.plugins</groupId>
 		      <artifactId>maven-deploy-plugin</artifactId>
@@ -145,7 +120,7 @@
 		      <configuration>
 		          <skip>true</skip>
 		      </configuration>
-		    </plugin>
+		    </plugin>			
 		</plugins>
 		<resources>
 		  <resource>
@@ -154,4 +129,5 @@
 	      </resource>
         </resources>
 	</build>
+	
 </project>

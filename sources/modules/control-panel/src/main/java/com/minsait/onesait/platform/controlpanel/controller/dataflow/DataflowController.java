@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,10 @@
 package com.minsait.onesait.platform.controlpanel.controller.dataflow;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.BadRequestException;
@@ -58,13 +56,13 @@ import org.springframework.web.multipart.MultipartFile;
 import com.minsait.onesait.platform.config.model.DataflowInstance;
 import com.minsait.onesait.platform.config.model.Pipeline;
 import com.minsait.onesait.platform.config.model.PipelineUserAccess;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.PipelineRepository;
 import com.minsait.onesait.platform.config.repository.PipelineUserAccessRepository;
 import com.minsait.onesait.platform.config.services.dataflow.DataflowService;
 import com.minsait.onesait.platform.config.services.dataflow.beans.InstanceBuilder;
 import com.minsait.onesait.platform.config.services.user.UserService;
-import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -92,40 +90,20 @@ public class DataflowController {
 	private AppWebUtils utils;
 
 	@Autowired
-	private ResourcesInUseService resourcesInUseService;
-
-	@Autowired
-	private HttpSession httpSession;
-
-	@Autowired
 	ServletContext context;
-
-	private static final String APP_ID = "appId";
 
 	/* TEMPLATES VIEWS */
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
-	@GetMapping(value = { "/list", "/list/{redirect}" }, produces = "text/html")
-	public String list(Model uiModel, @PathVariable("redirect") Optional<Boolean> redirect) {
+	@GetMapping(value = "/list", produces = "text/html")
+	public String list(Model uiModel) {
 		final String instanceIdentification = dataflowService.getDataflowInstanceForUserId(utils.getUserId())
 				.getIdentification();
 		uiModel.addAttribute("lpl", dataflowService.getPipelinesWithStatus(utils.getUserId()));
 		uiModel.addAttribute("user", utils.getUserId());
 		uiModel.addAttribute("userRole", utils.getRole());
-		uiModel.addAttribute(DATAFLOW_VERSION_STR, dataflowService.getVersion());
+		uiModel.addAttribute(DATAFLOW_VERSION_STR, this.dataflowService.getVersion());
 		uiModel.addAttribute("instance", instanceIdentification);
-
-		if (!redirect.isPresent()) {
-			// CLEANING APP_ID FROM SESSION
-			httpSession.removeAttribute(APP_ID);
-		} else {
-			final Object projectId = httpSession.getAttribute(APP_ID);
-			if (projectId != null) {
-				uiModel.addAttribute(APP_ID, projectId.toString());
-				httpSession.removeAttribute(APP_ID);
-			}
-		}
-
 		return "dataflow/list";
 	}
 
@@ -133,7 +111,7 @@ public class DataflowController {
 	@GetMapping(value = { "/{instance}/app", "/{instance}/app/collector/jvmMetrics", "/{instance}/app/collector/logs",
 			"/{instance}/app/collector/configuration", "/{instance}/app/collector/packageManager" })
 	public String getToolsWithInstance(@PathVariable("instance") String id, Model uiModel) {
-		uiModel.addAttribute(DATAFLOW_VERSION_STR, dataflowService.getVersion());
+		uiModel.addAttribute(DATAFLOW_VERSION_STR, this.dataflowService.getVersion());
 		return "dataflow/index";
 	}
 
@@ -143,10 +121,7 @@ public class DataflowController {
 		final Pipeline dataFlow = pipelineRepository.findByIdstreamsets(id);
 		if (dataFlow != null) {
 			if (dataflowService.hasUserViewPermission(dataFlow, utils.getUserId())) {
-				uiModel.addAttribute(ResourcesInUseService.RESOURCEINUSE,
-						resourcesInUseService.isInUse(id, utils.getUserId()));
-				resourcesInUseService.put(id, utils.getUserId());
-				uiModel.addAttribute(DATAFLOW_VERSION_STR, dataflowService.getVersion());
+				uiModel.addAttribute(DATAFLOW_VERSION_STR, this.dataflowService.getVersion());
 				return "dataflow/index";
 			} else {
 				return "redirect:/403";
@@ -157,7 +132,7 @@ public class DataflowController {
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
-	@GetMapping(value = { "/{instance}/app/collector/pipeline/{id}" })
+	@GetMapping(value = {"/{instance}/app/collector/pipeline/{id}"})
 	public String showDataFlowForManager(@PathVariable("id") String id) {
 		final Pipeline dataFlow = pipelineRepository.findByIdstreamsets(id);
 		if (dataFlow != null) {
@@ -169,9 +144,9 @@ public class DataflowController {
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
-	@GetMapping(value = { "/show/{id}" })
+	@GetMapping(value = {"/show/{id}"})
 	public String showDataFlow(@PathVariable("id") String id) {
-		final Pipeline dataFlow = pipelineRepository.findById(id).orElse(null);
+		final Pipeline dataFlow = pipelineRepository.findById(id);
 		if (dataFlow != null) {
 			final String idStreamsets = dataFlow.getIdstreamsets();
 			return "redirect:/dataflow/app/collector/pipeline/" + idStreamsets;
@@ -236,16 +211,11 @@ public class DataflowController {
 				return "error/404";
 			} else {
 				final List<User> users = dataflowService.getFreeAnalyticsUsers();
-				if (instance.getUser() != null) {
+				if (instance.getUser() != null)
 					users.add(instance.getUser());
-				}
 
 				model.addAttribute("users", users);
 				model.addAttribute("instance", instance);
-				model.addAttribute(ResourcesInUseService.RESOURCEINUSE,
-						resourcesInUseService.isInUse(id, utils.getUserId()));
-				resourcesInUseService.put(id, utils.getUserId());
-
 				return "dataflow/instance";
 			}
 		} catch (final Exception e) {
@@ -258,7 +228,7 @@ public class DataflowController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
 	@PutMapping(value = "/pipeline")
 	@ResponseBody
-	public ResponseEntity<String> createPipeline(@RequestBody Pipeline pipeline, BindingResult bindingResult) {
+	public ResponseEntity<String> createPipeline(@Valid @RequestBody Pipeline pipeline, BindingResult bindingResult) {
 		final Pipeline newPipeline = dataflowService.createPipeline(pipeline, utils.getUserId());
 		return new ResponseEntity<>(newPipeline.getIdstreamsets(), HttpStatus.CREATED);
 	}
@@ -286,14 +256,14 @@ public class DataflowController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
 	@DeleteMapping(value = "/pipeline/{id}", produces = "text/html")
 	public ResponseEntity removePipeline(@PathVariable("id") String id) {
-		dataflowService.deleteHardPipeline(id, utils.getUserId());
+		dataflowService.removePipeline(id, utils.getUserId());
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
 	@DeleteMapping(value = "/pipeline/hardDelete/{id}", produces = "text/html")
 	public ResponseEntity removeHardPipeline(@PathVariable("id") String id) {
-		dataflowService.deletePipeline(id, utils.getUserId());
+		dataflowService.removeHardPipeline(id, utils.getUserId());
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
@@ -342,7 +312,6 @@ public class DataflowController {
 	public ResponseEntity<DataflowInstance> updateDataflowInstance(@PathVariable("id") String id,
 			@Valid @RequestBody InstanceBuilder instanceBuilder, BindingResult bindingResult) {
 		final DataflowInstance updatedInstance = dataflowService.updateDataflowInstance(id, instanceBuilder);
-		resourcesInUseService.removeByUser(id, utils.getUserId());
 		return new ResponseEntity<>(updatedInstance, HttpStatus.OK);
 	}
 
@@ -370,13 +339,7 @@ public class DataflowController {
 			RequestMethod.PUT }, headers = "Accept=application/json")
 	@ResponseBody
 	public ResponseEntity<String> appRest(HttpServletRequest request, @RequestBody(required = false) String body) {
-		ResponseEntity<String> dataflowResponse = dataflowService.sendHttp(request,
-				HttpMethod.valueOf(request.getMethod()), body, utils.getUserId());
-		if (dataflowResponse.getHeaders().containsKey("Content-Disposition")) {
-			return ResponseEntity.status(dataflowResponse.getStatusCode()).headers(dataflowResponse.getHeaders()).body(dataflowResponse.getBody());
-		} else {
-			return ResponseEntity.status(dataflowResponse.getStatusCode()).body(dataflowResponse.getBody());
-		}
+		return dataflowService.sendHttp(request, HttpMethod.valueOf(request.getMethod()), body, utils.getUserId());
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
@@ -385,9 +348,7 @@ public class DataflowController {
 	@ResponseBody
 	public ResponseEntity<String> appRestWithInstance(@PathVariable("instance") String instance,
 			HttpServletRequest request, @RequestBody(required = false) String body) {
-		ResponseEntity<String> dataflowResponse = dataflowService.sendHttpWithInstance(request,
-				HttpMethod.valueOf(request.getMethod()), body, instance);
-		return ResponseEntity.status(dataflowResponse.getStatusCode()).body(dataflowResponse.getBody());
+		return dataflowService.sendHttpWithInstance(request, HttpMethod.valueOf(request.getMethod()), body, instance);
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
@@ -395,7 +356,7 @@ public class DataflowController {
 	@ResponseBody
 	public ResponseEntity<byte[]> getStageIcon(@PathVariable("lib") String lib, @PathVariable("id") String id,
 			HttpServletRequest request) {
-		return ResponseEntity.ok().body(dataflowService.getyHttpBinary(lib, id, request, "", utils.getUserId()));
+		return dataflowService.getyHttpBinary(request, "", utils.getUserId());
 	}
 
 	// To allow uploads of stages extra libraries
@@ -456,25 +417,19 @@ public class DataflowController {
 
 	@GetMapping(value = "/create", produces = "text/html")
 	public String createForm(Model model) {
-		final Pipeline pipeline = new Pipeline();
+		Pipeline pipeline = new Pipeline();
 		String instanceIdentification = "";
 		try {
 			instanceIdentification = dataflowService.getDataflowInstanceForUserId(utils.getUserId())
 					.getIdentification();
 
-		} catch (final Exception e) {
+		} catch (Exception e) {
 		}
 		model.addAttribute("instance", instanceIdentification);
 		model.addAttribute("pipeline", pipeline);
-		model.addAttribute(DATAFLOW_VERSION_STR, dataflowService.getVersion());
+		model.addAttribute(DATAFLOW_VERSION_STR, this.dataflowService.getVersion());
 		return "dataflow/create";
 
-	}
-
-	@GetMapping(value = "/freeResource/{id}")
-	public @ResponseBody void freeResource(@PathVariable("id") String id) {
-		resourcesInUseService.removeByUser(id, utils.getUserId());
-		log.info("free resource", id);
 	}
 
 }

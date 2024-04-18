@@ -19,118 +19,17 @@ var DashboardsCreateController = function() {
         $('#showedImgPreview').attr('src', e.target.result);
        
     }
-    
-    if ($('#dashboard_autthorizations').find('tr.authorization-model')[0]){
-		mountableModel2 = $('#dashboard_autthorizations').find('tr.authorization-model')[0].outerHTML;
-	}
-	
-	function showHideImageTableOntology(){
-		if(typeof $('#dashboard_autthorizations > tbody > tr').length =='undefined' || $('#dashboard_autthorizations > tbody > tr').length == 0 || $('#dashboard_autthorizations > tbody > tr > td > input')[0].value==''){
-			$('#imageNoElementsOnTable').show();
-		}else{
-			$('#imageNoElementsOnTable').hide();
-		}
-	}
-	
-	 var refreshTable = function(){
-		
-		if(authorizationsArr.length != 0) {
-		oTable.clear();
-		oTable.destroy();
-		}
-		// TO-HTML
-		
-		$('#dashboard_autthorizations > tbody').html("");
-		$('#dashboard_autthorizations > tbody').append(mountableModel2);
-		
-	
-		$('#dashboard_autthorizations').mounTable(authorizationsArr,{
-			model: '.authorization-model',
-			noDebug: false							
-		});
-
-		// hide info , disable user and show table
-		$('#alert-authorizations').toggle($('#alert-authorizations').hasClass('hide'));			
-		$("#users").selectpicker('deselectAll');
-		$("#users").selectpicker('refresh');					
-	
-		if(authorizationsArr.length != 0) {
-		initTable();
-		}
-		
-		$('#authorizations').removeClass('hide');
-		$('#authorizations').attr('data-loaded',true);
-		showHideImageTableOntology();
-	}
-	
-	var initTable = function(){
-	    oTable = $('#dashboard_autthorizations').DataTable({
-			   columnDefs: [
-			      {
-			         targets: [0, 2],
-			         type: 'string',
-			         render: function(data, type, full, meta){
-			            if (type === 'filter' || type === 'sort') {
-			               var api = new $.fn.dataTable.Api(meta.settings);
-			               var td = api.cell({row: meta.row, column: meta.col}).node();
-			               data = $('select, input[type="text"]', td).val();
-			               if (!data){
-			            	   if (td.val){
-			            		   data = td.val;
-			            	   } else {
-			            		   data=td.innerHTML;
-			            	   }
-			               }
-			            }
-			            return data;
-			         }
-			      }
-			   ]
-			});
-			
-		$('#dashboard_autthorizations_wrapper div.dataTables_filter').addClass('hide');
-		$('#dashboard_autthorizations_wrapper > div.row').addClass('hide');
-		
-		$('#search-on-title').append($('#dashboard_autthorizations_wrapper div.dataTables_filter > label > input'));
-		$('#search-on-title > input').css('height', 'auto');
-		$('#search-on-title > input').removeClass('input-xsmall')
-		
-		if ($("#search-on-title").children().length>2){
-			$("#search-on-title").find('input:first').remove();
-		}
-		
-	}
 	// CONTROLLER PRIVATE FUNCTIONS	
 	
 	// REDIRECT URL
 	var navigateUrl = function(url) {
 		window.location.href = url;
 	}
-	
-	var freeResource = function(id,url){
-		console.log('freeResource() -> id: '+ id);
-		$.get("/controlpanel/dashboards/freeResource/" + id).done(
-				function(data){
-					console.log('freeResource() -> ok');
-					navigateUrl(url); 
-				}
-			).fail(
-				function(e){
-					console.error("Error freeResource", e);
-					navigateUrl(url); 
-				}
-			)		
-	}
-	
-	$('.selectpicker').selectpicker({iconBase: 'fa', tickIcon: 'fa-check'});
-	
 	// DELETE DASHBOARD
 	var deleteDashboardConfirmation = function(dashboardId){
 		console.log('deleteDashoardConfirmation() -> formId: '+ dashboardId);		
 		// no Id no fun!
-		if ( !dashboardId ) {
-			toastr.error('NO DASHBOARD-FORM SELECTED!','');
-			}
+		if ( !dashboardId ) {$.alert({title: 'ERROR!',type: 'red' , theme: 'dark', content: 'NO DASHBOARD-FORM SELECTED!'}); return false; }
 		
 		logControl ? console.log('deleteDashboardConfirmation() -> formAction: ' + $('.delete-dashboard').attr('action') + ' ID: ' + $('.delete-dashboard').attr('userId')) : '';
 		
@@ -160,9 +59,7 @@ var DashboardsCreateController = function() {
 		if (action === 'insert'){	
 			var propAuth = {"users":user,"description":description,"accesstypes": accesstype};
 			
-			authorizationsArr.push(propAuth);
-		
-				
+			authorizationsArr.push(propAuth);	
 			// TO-HTML
 			if ($('#authorizations').attr('data-loaded') === 'true'){
 				$('#dashboard_autthorizations > tbody').html("");
@@ -181,16 +78,11 @@ var DashboardsCreateController = function() {
 			$("#users").selectpicker('refresh');
 			$('#authorizations').removeClass('hide');
 			$('#authorizations').attr('data-loaded',true);
-			
-			showHideImageTableOntology();
 		}
-		
-		
+	
 		if (action  === 'delete'){
 			
-			 authorizationsArr = authorizationsArr.filter(item => item.users != user)
-			//authorizationsArr.splice(user, 1);
-			
+			authorizationsArr.splice(user, 1);
 			// refresh interface				
 			
 				$(btn).closest('tr').remove();
@@ -198,15 +90,10 @@ var DashboardsCreateController = function() {
 				$("#users").selectpicker('deselectAll');
 				$("#users").selectpicker('refresh');
 				if (authorizationsArr.length == 0){
-					if(!$('#alert-authorizations').is(':visible')){
-						$('#alert-authorizations').show();
-					}		
+					$('#alert-authorizations').toggle(!$('#alert-authorizations').is(':visible'));					
 					$('#authorizations').addClass('hide');
 					
-				}
-				
-				showHideImageTableOntology();
-				
+				}	
 		}	
 	};
 	
@@ -239,7 +126,8 @@ var DashboardsCreateController = function() {
         // http://docs.jquery.com/Plugins/Validation
 		
         var form1 = $('#dashboard_create_form');
-       
+        var error1 = $('.alert-danger');
+        var success1 = $('.alert-success');
 		
 					
 		// set current language
@@ -257,8 +145,10 @@ var DashboardsCreateController = function() {
 				description:	{ minlength: 5, required: true }
             },
             invalidHandler: function(event, validator) { //display error alert on form submit  
-
-            	toastr.error(messagesForms.validation.genFormError,'');
+            	
+                success1.hide();
+                error1.show();
+                App.scrollTo(error1, -200);
             },
             errorPlacement: function(error, element) {				
                 if 		( element.is(':checkbox'))	{ error.insertAfter(element.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline")); }
@@ -278,11 +168,9 @@ var DashboardsCreateController = function() {
                 label.closest('.form-group').removeClass('has-error');
             },
 			// ALL OK, THEN SUBMIT.
-            submitHandler: function(form) {      
-	      	
+            submitHandler: function(form) {            	
             	if(($('#categories_select').val() != undefined && $('#categories_select').val()!="") &&($('#subcategories').val() == undefined && $('#subcategories').val()=="") ){
-            		
-					toastr.error(dashboardCreateReg.subcategory,'');
+            		$.alert({title: 'ERROR!', theme: 'dark', type: 'red', content: dashboardCreateReg.subcategory});
             		return;
             	}else if(($('#categories_select').val() == undefined || $('#categories_select').val()=="") &&($('#subcategories').val() == undefined || $('#subcategories').val()=="")){
             		
@@ -296,7 +184,7 @@ var DashboardsCreateController = function() {
             	    $('#checkboxPublic_aux').val( $('#checkboxPublic').prop('checked'));  
             	    $('#headerlibs_aux').val( myCodeMirror.getValue());
             	    $('#i18n_aux').val($('#i18n').val());
-   		       	    $('#generateImage').val( $('#checkboxGenerateImage').prop('checked'));      	        	   
+            	   
             	    $( "#image_aux" ).remove();
             	    var x = $("#image"),
             	      y = x.clone();
@@ -305,9 +193,9 @@ var DashboardsCreateController = function() {
 	            	  x.attr("class", "hide");
 	            	  y.insertAfter("#checkboxPublic_aux");
             	    
-	            	formAux.attr("action", "?" + csrfParameter + "=" + csrfValue)
-            	    toastr.success(messagesForms.validation.genFormSuccess,'');	
-				
+            	    
+            	    success1.show();
+					error1.hide();					
 					formAux.submit();		
             	}else{
             	    var formAux = $('#dashboard_aux_create_form');           
@@ -320,7 +208,6 @@ var DashboardsCreateController = function() {
             	    $('#checkboxPublic_aux').val( $('#checkboxPublic').prop('checked')); 
             	    $('#headerlibs_aux').val( myCodeMirror.getValue());
             	    $('#i18n_aux').val($('#i18n').val());
-              	    $('#generateImage').val( $('#checkboxGenerateImage').prop('checked'));      	        	    
             	    $( "#image_aux" ).remove();
             	    var x = $("#image"),
             	      y = x.clone();
@@ -329,9 +216,9 @@ var DashboardsCreateController = function() {
 	            	  x.attr("class", "hide");
 	            	  y.insertAfter("#checkboxPublic_aux");
             	    
-	            	formAux.attr("action", "?" + csrfParameter + "=" + csrfValue)
-            	    toastr.success(messagesForms.validation.genFormSuccess,'');	
-		
+            	    
+            	    success1.show();
+					error1.hide();					
 					formAux.submit();	
             	}
 			}
@@ -369,128 +256,18 @@ var DashboardsCreateController = function() {
 	};
 	
 	
-	var initTemplateElements = function(){
-		
-	$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
-			$('.form').validate().element('#' + event.target.id);                // checks form for validity
-		});	
-		
-		
-		
-		$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
-			$('.form').validate().element('#' + event.target.id);                // checks form for validity
-		});		
-	// Reset form
-		$('#resetBtn').on('click',function(){ 
-			cleanFields('dashboard_create_form');
-		});		
-
-	}
-	
-	// CLEAN FIELDS FORM
-	var cleanFields = function (formId) {
-		
-		//CLEAR OUT THE VALIDATION ERRORS
-		$('#'+formId).validate().resetForm(); 
-		$('#'+formId).find('input:text, input:password,  input:file, select, textarea').each(function(){
-			// CLEAN ALL EXCEPTS cssClass "no-remove" persistent fields
-				if(!$(this).hasClass("no-remove")){$(this).val('');}
-		});
-		
-		$('#'+formId).find('input:checkbox').each(function(){
-	
-		
-		
-		    if($(this).attr('id') == 'checkboxGenerateImage' && $(this).prop('checked')) {
-			
-				$('#image').toggle('show');
-			}
-				
-			if(!$(this).hasClass("no-remove")){$(this).prop('checked',false);}
-				
-			
-			
-		});
-		
-		// $('#checkboxPublic').prop('checked',false);
-		
-	/*	if ($('checkboxGenerateImage').val(true)){
-				onclick=$('#image').toggle('hide');}
-			$('input:checkbox').each(function() { this.checked = false; });	
-		
-	*/
-		
-		
-		//CLEANING SELECTs
-		$(".selectpicker").each(function(){
-			$(this).val( '' );
-			$(this).selectpicker('deselectAll').selectpicker('refresh');
-		});
-		
-		// CLEANING tagsinput
-		$('.tagsinput').tagsinput('removeAll');
-		$('.tagsinput').prev().removeClass('tagsinput-has-error');
-		$('.tagsinput').nextAll('span:first').addClass('hide');
-
-		// CLEANING CODEMIRROR
-		if ($('.CodeMirror')[0].CodeMirror){
-			var editor = $('.CodeMirror')[0].CodeMirror;
-			editor.setValue('');
-			$('.CodeMirror').removeClass('editor-has-error');
-			$('.CodeMirror').nextAll('span:first').addClass('hide');
-		}
-		
-		
-		//CLEANING AUTHORIZATION
-		$('#dashboard_autthorizations > tbody > tr > td > button').map(function (obj){
-				var selUser = $(obj).closest('tr').find("input[name='users\\[\\]']").val();					
-				authorization('delete', selUser, '','', obj );
-		})
-		
-		//CLEANING IMAGE
-		$('#image').val('');
-		$('#showedImgPreview').attr('src', '/controlpanel/img/APPLICATION.png');
-		// CLEAN ALERT MSG
-		$('.alert-danger').hide();
-
-	}
-	
-	var showGenericErrorDialog= function(dialogTitle, dialogContent){		
-		logControl ? console.log('showErrorDialog()...') : '';
-		var Close = headerReg.btnCancelar;
-
-		// jquery-confirm DIALOG SYSTEM.
-		$.confirm({
-			title: dialogTitle,
-			theme: 'light',
-			content: dialogContent,
-			draggable: true,
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			buttons: {				
-				close: {
-					text: Close,
-					btnClass: 'btn btn-outline blue dialog',
-					action: function (){} //GENERIC CLOSE.		
-				}
-			}
-		});			
-	}
-	
-	
 	 function validateImgSize() {
 	        if ($('#image').prop('files') && $('#image').prop('files')[0].size>60*1024){
-	        	showGenericErrorDialog('Error', dashboardCreateJson.dashboards_image_error);
+	        	showGenericErrorDialog('Error', marketAssetCreateReg.marketAssetmanager_image_error);
 	        	$("#image").val(null);
 	        	$('#showedImg').val("");
-				$('#hasImage').val(false);
-				$('#showedImgPreview').attr('src','/controlpanel/img/DASHBOARD.png');
 	         } else if ($('#image').prop('files')) {
 	        	 reader.readAsDataURL($("#image").prop('files')[0]);	        	 
 	         }
 	    }
 	
 	// INIT CODEMIRROR
+		
 			logControl ? console.log('handleCodeMirror() on -> headerlibs') : '';
 	        var myTextArea = document.getElementById('headerlibs');
 	        myCodeMirror = CodeMirror.fromTextArea(myTextArea, {
@@ -519,7 +296,7 @@ var DashboardsCreateController = function() {
 		init: function(){
 			logControl ? console.log(LIB_TITLE + ': init()') : '';
 			// INPUT MASK FOR ontology identification allow only letters, numbers and -_
-			$("#identification").inputmask({ regex: "[a-zA-Z 0-9_-]*", greedy: false });
+			$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
 			
 			/*EDITION MODE*/
 			/*Hide dimensions*/
@@ -528,19 +305,16 @@ var DashboardsCreateController = function() {
 				$("#dimensionsPanel").hide();
 			}
 			handleValidation();
+			
+		
 			initAccess();
-			initTemplateElements();
-			initTable();
+		
 		},
 		
 		// REDIRECT
 		go: function(url){
 			logControl ? console.log(LIB_TITLE + ': go()') : '';	
 			navigateUrl(url); 
-		},
-		cancel: function(id,url){
-			logControl ? console.log(LIB_TITLE + ': cancel()') : '';	
-			freeResource(id,url); 
 		},
 		
 		getFieldsFromQueryResult: function (jsonString){
@@ -563,42 +337,14 @@ var DashboardsCreateController = function() {
 		},// INSERT AUTHORIZATION
 		insertAuthorization: function(){
 			logControl ? console.log(LIB_TITLE + ': insertAuthorization()') : '';
-			existe=false;
+			
 				// UPDATE MODE ONLY AND VALUES on user and accesstype
-					
 			if (($('#users').val() !== '') && ($("#users option:selected").attr('disabled') !== 'disabled') && ($('#accesstypes').val() !== '')){
 					
 					// AJAX INSERT (ACTION,ONTOLOGYID,USER,ACCESSTYPE) returns object with data.
 					authorization('insert',$('#users').val(),$('#users')[0].selectedOptions[0].text,$('#accesstypes').val(),'');
-					refreshTable();
-						
-				} else { 
-					  
-					if ($('#users').val() == '') {
-							toastr.error(messagesForms.validation.genFormError,'');
-					} else {
-						
-					
-					
-					if ($("#dashboard_autthorizations > tbody > tr").size() > 0) {
-		                $("#dashboard_autthorizations > tbody > tr").each(
-			
-							function() {
-								let fila = $(this).children().eq(0);
-								if(fila.children().eq(0).val() == $('#users').val()){	
-								   existe=true;	
-								} 
-							}
-						);
-					}
-					if(!existe){
-						toastr.warning(messagesForms.validation.genOpexist,'');
-					}
-						
-					}
-					
-				}
-				
+								
+				} else {  $.alert({title: 'ERROR!', theme: 'dark', type: 'red', content: dashboardCreateReg.validations.authuser}); }
 			
 		},
 		
@@ -607,14 +353,9 @@ var DashboardsCreateController = function() {
 			logControl ? console.log(LIB_TITLE + ': removeAuthorization()') : '';
 				// AJAX REMOVE (ACTION,ONTOLOGYID,USER,ACCESSTYPE) returns object with data.
 				var selUser = $(obj).closest('tr').find("input[name='users\\[\\]']").val();					
-				authorization('delete', selUser, '','', obj );
-				
+				authorization('delete', selUser, '','', obj );				
 		
-		},
-		showErrorDialog: function(dialogTitle, dialogContent) {
-			logControl ? console.log(LIB_TITLE + ': showErrorDialog(dialogTitle, dialogContent)') : '';
-			showGenericErrorDialog(dialogTitle, dialogContent);
-		},	
+		},		
 		
 		// DELETE GADGET DATASOURCE 
 		deleteDashboard: function(dashboardId){

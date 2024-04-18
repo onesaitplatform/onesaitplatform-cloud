@@ -1,44 +1,34 @@
   ##security.require_ssl: true
 server: ## Config Web Server
    port: 20001
-   servlet.contextPath: /cache-server
+   contextPath: /cache-server
    tomcat:
       access_log_enabled: true
       basedir: target/tomcat
-
-management.endpoints.web.exposure.include: "*"
-management.endpoint.health.show-details: always
-
-spring:
-   main:
-      allow-circular-references: true
-      allow-bean-definition-overriding: true
-   application.name : cache-server
-   boot.admin: #Spring Boot Admin Config   
-      client.url: http://localhost:18100/monitoring
-      client.username: operations
-      client.password: changeIt2019!
-      client.instance.metadata.user.name: ${spring.boot.admin.client.username}
-      client.instance.metadata.user.password: ${spring.boot.admin.client.password}
       
-
+spring:
+   application.name : cache-server
+   boot.admin: #Spring Boot Admin Config    
+      url: http://localhost:18100/monitoring
+      username: operations
+      password: changeIt2019!
+      client.metadata.user.name: ${spring.boot.admin.username}
+      client.metadata.user.password: ${spring.boot.admin.password}
+      
+management.security.enabled: false
 endpoints.configprops.enabled: true
-onesaitplatform:
-  transaction.timeout.seconds: 60
-  graylog:
-    enabled: false
-    host: 127.0.0.1
-    port: 12201
+onesaitplatform.transaction.timeout.seconds: 60
 
-
+security:
+   basic.enabled: false
 #hawtio:
 #   authenticationEnabled: false
 #   hawtio.offline: true
             
 ## LOGGING CONF
 logging:
-   file.path: ./target/ 
-   file.name: ${spring.application.name}
+   path: ./target/ 
+   file: ${spring.application.name}
    level:
       com.minsait: INFO 
       org.springframework.boot: INFO

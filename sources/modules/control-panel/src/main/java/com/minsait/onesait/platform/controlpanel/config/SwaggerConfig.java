@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,33 @@
  */
 package com.minsait.onesait.platform.controlpanel.config;
 
-import org.springdoc.core.GroupedOpenApi;
-import org.springdoc.core.customizers.OperationCustomizer;
+import static com.google.common.base.Predicates.or;
+import static springfox.documentation.builders.PathSelectors.regex;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.method.HandlerMethod;
 
-import io.swagger.v3.oas.models.Components;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.Operation;
-import io.swagger.v3.oas.models.info.Contact;
-import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.info.License;
-import io.swagger.v3.oas.models.security.SecurityRequirement;
-import io.swagger.v3.oas.models.security.SecurityScheme;
+import com.google.common.base.Predicate;
+
+import springfox.documentation.builders.ApiInfoBuilder;
+import springfox.documentation.builders.ParameterBuilder;
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.schema.ModelRef;
+import springfox.documentation.service.ApiInfo;
+import springfox.documentation.service.Contact;
+import springfox.documentation.service.Parameter;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @Configuration
+@EnableSwagger2
 public class SwaggerConfig {
 
 	private static final String INFO_VERSION = "";
@@ -43,400 +54,742 @@ public class SwaggerConfig {
 	private static final String CONTACT_URL = "https://onesaitplatform.online";
 	private static final String CONTACT_EMAIL = "support@onesaitplatform.com";
 
+	private static final String HEADER_STR = "header";
+	private static final String STRING_STR = "string";
 	private static final String AUTH_STR = "Authorization";
+	private static final String APP_JSON = "application/json";
+	private static final String TEXT_PL = "text/plain";
+	private static final String APP_YAML = "application/yaml";
 
 	@Bean
-	public OpenAPI springOpenAPI() {
-		return new OpenAPI()
-				.info(new Info().contact(new Contact().email(CONTACT_EMAIL).name(CONTACT_NAME).url(CONTACT_URL))
-						.title(INFO_TITLE).description(INFO_DESCRIPTION).version(INFO_VERSION)
-						.license(new License().name(LICENSE_NAME).url(LICENSE_URL)))
-				.components(new Components()
-						.addSecuritySchemes("X-OP-APIKey",
-								new SecurityScheme().type(SecurityScheme.Type.APIKEY).in(SecurityScheme.In.HEADER)
-										.name("X-OP-APIKey"))
-						.addSecuritySchemes("JWT-Token", new SecurityScheme().type(SecurityScheme.Type.HTTP)
-								.scheme("bearer").bearerFormat("JWT")));
+	public ApiInfo apiInfo() {
+		return new ApiInfoBuilder().title(INFO_TITLE).description(INFO_DESCRIPTION).termsOfServiceUrl(CONTACT_URL)
+				.contact(new Contact(CONTACT_NAME, CONTACT_URL, CONTACT_EMAIL)).license(INFO_VERSION)
+				.licenseUrl(LICENSE_URL).version(LICENSE_NAME).build();
 	}
 
-	public static class GlobalHeaderOperationCustomizer implements OperationCustomizer {
-		@Override
-		public Operation customize(Operation operation, HandlerMethod handlerMethod) {
-			operation.addSecurityItem(new SecurityRequirement().addList("JWT-Token").addList("X-OP-APIKey"));
-			return operation;
-		}
+	List<Parameter> addRestParameters(ParameterBuilder aParameterBuilder, List<Parameter> aParameters) {
+		return aParameters;
 	}
 
 	@Bean
-	public GroupedOpenApi apiOpsAPI() {
-		return GroupedOpenApi.builder().group("All groups")
-				.pathsToMatch("/api/**", "/binary-repository", "/binary-repository/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket apiOpsAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("All groups").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorApiOps()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorApiOps() {
+		return or(regex("/api/.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi loginOpsAPI() {
+	public Docket loginOpsAPI() {
 
-		return GroupedOpenApi.builder().group("Authentication").pathsToMatch("/api/login", "/api/login/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Authentication").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorApiOpsLogin()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorApiOpsLogin() {
+		return or(regex("/api/login.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi apis() {
-		return GroupedOpenApi.builder().group("APIs").pathsToMatch("/api/apis", "/api/apis/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket apis() {
+
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("APIs").select().apis(RequestHandlerSelectors.any())
+				.paths(buildPathSelectorApis()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorApis() {
+		return or(regex("/api/apis.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi clientplatform() {
-		return GroupedOpenApi.builder().group("Clientplatform")
-				.pathsToMatch("/api/clientplatform", "/api/clientplatform/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket clientplatform() {
+
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Clientplatform").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorClientplatform()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorClientplatform() {
+		return or(regex("/api/clientplatform.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi devices() {
-		return GroupedOpenApi.builder().group("Devices").pathsToMatch("/api/devices", "/api/devices/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket devices() {
+
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Devices").select().apis(RequestHandlerSelectors.any())
+				.paths(buildPathSelectorDevices()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorDevices() {
+		return or(regex("/api/devices.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi notebookOpsAPI() {
-		return GroupedOpenApi.builder().group("Notebooks").pathsToMatch("/api/notebooks", "/api/notebooks/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket notebookOpsAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Notebooks").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorNotebookOps()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorNotebookOps() {
+		return or(regex("/api/notebooks.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi userManagementAPI() {
-		return GroupedOpenApi.builder().group("Users").pathsToMatch("/api/users", "/api/users/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket userManagementAPI() {
 
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Users").select().apis(RequestHandlerSelectors.any())
+				.paths(buildPathSelectorUserManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorUserManagement() {
+		return or(regex("/api/users.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi realmManagementAPI() {
-		return GroupedOpenApi.builder().group("Realms").pathsToMatch("/api/realms", "/api/realms/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket realmManagementAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Realms").select().apis(RequestHandlerSelectors.any())
+				.paths(buildPathSelectorRealmManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorRealmManagement() {
+		return or(regex("/api/realms.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi deploymentAPI() {
-		return GroupedOpenApi.builder().group("Deployment").pathsToMatch("/api/deployment", "/api/deployment/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket deploymentAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Deployment").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorDeploymentManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorDeploymentManagement() {
+		return or(regex("/api/deployment.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi dashboardsAPI() {
-		return GroupedOpenApi.builder().group("Dashboards").pathsToMatch("/api/dashboards", "/api/dashboards/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket dashboardsAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, APP_YAML, TEXT_PL));
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Dashboards").select()
+
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorDashoardsManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorDashoardsManagement() {
+		return or(regex("/api/dashboards.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi dataflowAPI() {
-		return GroupedOpenApi.builder().group("Dataflows").pathsToMatch("/api/dataflows", "/api/dataflows/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket dataflowAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, APP_YAML, TEXT_PL));
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Dataflows").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorDataflowsManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorDataflowsManagement() {
+		return or(regex("/api/dataflows.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi cacheAPI() {
-		return GroupedOpenApi.builder().group("Cache").pathsToMatch("/api/caches", "/api/caches/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket cacheAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, APP_YAML, TEXT_PL));
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Cache").select().apis(RequestHandlerSelectors.any())
+				.paths(buildPathSelectorCacheManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorCacheManagement() {
+		return or(regex("/api/cache.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi layerssAPI() {
-		return GroupedOpenApi.builder().group("Layers").pathsToMatch("/api/layers", "/api/layers/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket layerssAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, APP_YAML, TEXT_PL));
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Layers").select().apis(RequestHandlerSelectors.any())
+
+				.paths(buildPathSelectorLayersManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorLayersManagement() {
+		return or(regex("/api/layers.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi modelssAPI() {
-		return GroupedOpenApi.builder().group("Models").pathsToMatch("/api/models", "/api/models/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket modelssAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, APP_YAML, TEXT_PL));
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Models").select().apis(RequestHandlerSelectors.any())
+
+				.paths(buildPathSelectorModelsManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorModelsManagement() {
+		return or(regex("/api/models.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi configurationAPI() {
-		return GroupedOpenApi.builder().group("Configurations")
-				.pathsToMatch("/api/configurations", "/api/configurations/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket configurationAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, APP_YAML, TEXT_PL));
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Configurations").select()
+
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorConfigurationManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorConfigurationManagement() {
+		return or(regex("/api/configurations.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi videobrokerAPI() {
-		return GroupedOpenApi.builder().group("Videobroker").pathsToMatch("/api/videobroker", "/api/videobroker/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket videobrokerAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Videobroker").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorVideobrokerManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorVideobrokerManagement() {
+		return or(regex("/api/videobroker.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi ontologyManagementAPI() {
-		return GroupedOpenApi.builder().group("Ontologies").pathsToMatch("/api/ontologies", "/api/ontologies/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket ontologyManagementAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Ontologies").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorOntologyManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorOntologyManagement() {
+		return or(regex("/api/ontologies.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi reportsApi() {
-		return GroupedOpenApi.builder().group("Reports").pathsToMatch("/api/reports", "/api/reports/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket reportsApi() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Reports").select().apis(RequestHandlerSelectors.any())
+				.paths(buildPathSelectorReportsApi()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorReportsApi() {
+		return or(regex("/api/reports.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi microservicesApi() {
-		return GroupedOpenApi.builder().group("Microservices")
-				.pathsToMatch("/api/microservices", "/api/microservices/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket microservicesApi() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Microservices").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorMicroservicesApi()).build()
+
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+
+	private Predicate<String> buildPathSelectorMicroservicesApi() {
+		return or(regex("/api/microservices.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi mailManagementAPI() {
-		return GroupedOpenApi.builder().group("Mail").pathsToMatch("/api/mail", "/api/mail/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket mailManagementAPI() {
 
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Mail").select().apis(RequestHandlerSelectors.any())
+				.paths(buildPathSelectorMailManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorMailManagement() {
+		return or(regex("/api/mail.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi binaryAPI() {
-		return GroupedOpenApi.builder().group("Binary").pathsToMatch("/binary-repository", "/binary-repository/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket binaryAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Binary").select().apis(RequestHandlerSelectors.any())
+				.paths(buildPathSelectorBinaryManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorBinaryManagement() {
+		return or(regex("/binary-repository.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi projectAPI() {
-		return GroupedOpenApi.builder().group("Projects").pathsToMatch("/api/projects", "/api/projects/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-	}
-	
-	@Bean
-	public GroupedOpenApi kubernetes() {
-		return GroupedOpenApi.builder().group("Kubernetes").pathsToMatch("/api/kubernetes", "/api/kubernetes/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-	}
+	public Docket projectAPI() {
 
-	@Bean
-	public GroupedOpenApi restPlannerAPI() {
-		return GroupedOpenApi.builder().group("Rest Planner").pathsToMatch("/api/restplanner", "/api/restplanner/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Projects").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorProjectManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
 	}
 
-	@Bean
-	public GroupedOpenApi categorizationManagementAPI() {
-		return GroupedOpenApi.builder().group("Categorization")
-				.pathsToMatch("/api/categorization", "/api/categorization/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorProjectManagement() {
+		return or(regex("/api/projects.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi migrationManagementAPI() {
-		return GroupedOpenApi.builder().group("Migration").pathsToMatch("/api/migration", "/api/migration/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket restPlannerAPI() {
 
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Rest Planner").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorRestPlannerManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorRestPlannerManagement() {
+		return or(regex("/api/restplanner.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi querytoolAPI() {
-		return GroupedOpenApi.builder().group("Querytool").pathsToMatch("/api/querytool", "/api/querytool/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket categorizationManagementAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Categorization").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorCategorizationManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorCategorizationManagement() {
+		return or(regex("/api/categorization.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi flowEngineManagementAPI() {
-		return GroupedOpenApi.builder().group("FlowEngine").pathsToMatch("/api/flowengine", "/api/flowengine/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket migrationManagementAPI() {
 
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Migration").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorMigrationManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorMigrationManagement() {
+		return or(regex("/api/migration.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi auditManagementAPI() {
-		return GroupedOpenApi.builder().group("Audit").pathsToMatch("/api/audit", "/api/audit/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket querytoolAPI() {
 
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Querytool").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorQueryToolManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorQueryToolManagement() {
+		return or(regex("/api/querytool.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi gadgetDatasourceManagementAPI() {
-		return GroupedOpenApi.builder().group("Gadget Datasources")
-				.pathsToMatch("/api/gadgetdatasources", "/api/gadgetdatasources/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket flowEngineManagementAPI() {
 
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("FlowEngine").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorFlowEngineManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorFlowEngineManagement() {
+		return or(regex("/api/flowengine.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi webProjectsAPI() {
-		return GroupedOpenApi.builder().group("Web projects").pathsToMatch("/api/webprojects", "/api/webprojects/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket auditManagementAPI() {
 
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Audit").select().apis(RequestHandlerSelectors.any())
+				.paths(buildPathSelectorAuditManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters));
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorAuditManagement() {
+		return or(regex("/api/audit.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi rulesAPI() {
-		return GroupedOpenApi.builder().group("Rules").pathsToMatch("/api/rules", "/api/rules/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket gadgetDatasourceManagementAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, APP_YAML, TEXT_PL));
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Gadget Datasources").select()
+
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorDatasourcesManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorDatasourcesManagement() {
+		return or(regex("/api/gadgetdatasources.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi moduleNotifications() {
-		return GroupedOpenApi.builder().group("Module Notifications").pathsToMatch("/api/notifier", "/api/notifier/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket webProjectsAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, APP_YAML, TEXT_PL));
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Web projects").select()
+
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorWebProjects()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorWebProjects() {
+		return or(regex("/api/webprojects.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi gadgetTemplateManagementAPI() {
-		return GroupedOpenApi.builder().group("Gadget Templates")
-				.pathsToMatch("/api/gadgettemplates", "/api/gadgettemplates/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket rulesAPI() {
 
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, APP_YAML, TEXT_PL));
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Rules").select().apis(RequestHandlerSelectors.any())
+				.paths(buildPathSelectorRules()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorRules() {
+		return or(regex("/api/rules.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi gadgetManagementAPI() {
-		return GroupedOpenApi.builder().group("Gadgets").pathsToMatch("/api/gadgets", "/api/gadgets/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket moduleNotifications() {
 
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, TEXT_PL));
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Module Notifications").select()
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorNotifications()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorNotifications() {
+		return or(regex("/api/notifier.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi importToolAPI() {
-		return GroupedOpenApi.builder().group("Import tool").pathsToMatch("/api/importtool", "/api/importtool/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket gadgetTemplateManagementAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, APP_YAML, TEXT_PL));
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Gadget Templates").select()
+
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorGadgetTemplateManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorGadgetTemplateManagement() {
+		return or(regex("/api/gadgettemplates.*"));
 	}
 
 	@Bean
-	public GroupedOpenApi openDataPortalAPI() {
-		return GroupedOpenApi.builder().group("Open Data Portal").pathsToMatch("/api/opendata", "/api/opendata/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
+	public Docket gadgetManagementAPI() {
+
+		// Adding Header
+		final ParameterBuilder aParameterBuilder = new ParameterBuilder();
+		final List<Parameter> aParameters = new ArrayList<>();
+
+		aParameterBuilder.name(AUTH_STR).modelRef(new ModelRef(STRING_STR)).parameterType(HEADER_STR).required(true)
+				.build();
+		aParameters.add(aParameterBuilder.build());
+		final Set<String> produces = new HashSet<>(Arrays.asList(APP_JSON, APP_YAML, TEXT_PL));
+
+		return new Docket(DocumentationType.SWAGGER_2).groupName("Gadgets").select()
+
+				.apis(RequestHandlerSelectors.any()).paths(buildPathSelectorGadgetManagement()).build()
+				.globalOperationParameters(addRestParameters(aParameterBuilder, aParameters)).produces(produces);
 	}
 
-	@Bean
-	public GroupedOpenApi internationalizationAPI() {
-		return GroupedOpenApi.builder().group("Internationalization")
-				.pathsToMatch("/api/internationalizations", "/api/internationalizations/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-
-	}
-
-	@Bean
-	public GroupedOpenApi dataRefinerAPI() {
-		return GroupedOpenApi.builder().group("Data Refiner").pathsToMatch("/api/datarefiner", "/api/datarefiner/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-	}
-
-	@Bean
-	public GroupedOpenApi lowCodeAPI() {
-		return GroupedOpenApi.builder().group("Low Code Generation").pathsToMatch("/api/low-code", "/api/low-code/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-
-	}
-
-	@Bean
-	public GroupedOpenApi favoriteAPI() {
-		return GroupedOpenApi.builder().group("Favorites").pathsToMatch("/api/favorites", "/api/favorites/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-	}
-
-	@Bean
-	public GroupedOpenApi favoriteGadgetAPI() {
-		return GroupedOpenApi.builder().group("Favorite Gadgets")
-				.pathsToMatch("/api/favoritegadget", "/api/favoritegadget/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-	}
-
-	@Bean
-	public GroupedOpenApi multitenantAPI() {
-		return GroupedOpenApi.builder().group("Multitenant Management")
-				.pathsToMatch("/api/multitenant", "/api/multitenant/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-	}
-
-	@Bean
-	public GroupedOpenApi objectStorageAPI() {
-		return GroupedOpenApi.builder().group("Object Storage Management")
-				.pathsToMatch("/api/objectstorage", "/api/objectstorage/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-
-	}
-
-	@Bean
-	public GroupedOpenApi categoriesAPI() {
-		return GroupedOpenApi.builder().group("Categories").pathsToMatch("/api/categories", "/api/categories/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-
-	}
-
-	@Bean
-	public GroupedOpenApi mapsProjectAPI() {
-		return GroupedOpenApi.builder().group("Maps Project").pathsToMatch("/api/mapsproject", "/api/mapsproject/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-
-	}
-
-	@Bean
-	public GroupedOpenApi versioningAPI() {
-		return GroupedOpenApi.builder().group("Versioning").pathsToMatch("/api/versioning", "/api/versioning/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-
-	}
-
-	@Bean
-	public GroupedOpenApi sparkLauncherAPI() {
-		return GroupedOpenApi.builder().group("Spark Launcher Management")
-				.pathsToMatch("/api/sparklauncher", "/api/sparklauncher/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-
-	}
-
-	@Bean
-	public GroupedOpenApi tagsAPI() {
-		return GroupedOpenApi.builder().group("Tags").pathsToMatch("/api/tags", "/api/tags/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-
-	}
-
-	@Bean
-	public GroupedOpenApi bundlesAPI() {
-		return GroupedOpenApi.builder().group("Bundles").pathsToMatch("/api/bundles", "/api/bundles/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-
-	}
-
-	@Bean
-	public GroupedOpenApi aiAPI() {
-		return GroupedOpenApi.builder().group("AI").pathsToMatch("/api/ai", "/api/ai/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-
-	}
-
-	@Bean
-	public GroupedOpenApi formsAPI() {
-		return GroupedOpenApi.builder().group("Forms").pathsToMatch("/api/forms", "/api/forms/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-
-	}
-
-	@Bean
-	public GroupedOpenApi bpmAPI() {
-		return GroupedOpenApi.builder().group("BPM").pathsToMatch("/api/bpm", "/api/bpm/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-
-	}
-
-	@Bean
-	public GroupedOpenApi codeprojectApi() {
-		return GroupedOpenApi.builder().group("Codeproject").pathsToMatch("/api/codeproject", "/api/codeproject/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-	}
-
-	@Bean
-	public GroupedOpenApi themesAPI() {
-		return GroupedOpenApi.builder().group("Themes").pathsToMatch("/api/themes", "/api/themes/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-
-	}
-	
-	@Bean
-	public GroupedOpenApi virtualDatasourcesAPI() {
-		return GroupedOpenApi.builder().group("External Database Conections").pathsToMatch("/api/externaldatabaseconnections", "/api/externaldatabaseconnections/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-
+	@SuppressWarnings("unchecked")
+	private Predicate<String> buildPathSelectorGadgetManagement() {
+		return or(regex("/api/gadgets.*"));
 	}
 }

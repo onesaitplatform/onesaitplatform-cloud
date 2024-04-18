@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,20 +32,16 @@ public class XSSWhiteList {
 		mWhiteList.put("/viewers/create", new HashSet<>(Arrays.asList("jsViewer", "jsBody", "js")));
 		mWhiteList.put("/viewers/update", new HashSet<>(Arrays.asList("jsViewer", "jsBody", "js")));
 		mWhiteList.put("/dashboards/editfull", new HashSet<>(Arrays.asList(HEADERLIBS, HEADERLIBS_AUX, MODEL, "js")));
-		mWhiteList.put("/dashboards/view", new HashSet<>(Arrays.asList(HEADERLIBS, HEADERLIBS_AUX, MODEL, "js")));
-		mWhiteList.put("/dashboards/viewiframe", new HashSet<>(Arrays.asList(HEADERLIBS, HEADERLIBS_AUX, MODEL, "js")));
 		mWhiteList.put("/dashboards/create", new HashSet<>(Arrays.asList(HEADERLIBS, HEADERLIBS_AUX, MODEL, "js")));
 		mWhiteList.put("/dashboards/edit", new HashSet<>(Arrays.asList("dashboard", MODEL, "js")));
 		mWhiteList.put("/dashboards/dashboardconf", new HashSet<>(Arrays.asList(HEADERLIBS, HEADERLIBS_AUX, "js")));
 		mWhiteList.put("/dashboardconf/update", new HashSet<>(Arrays.asList(HEADERLIBS, HEADERLIBS_AUX, MODEL, "js")));
 		mWhiteList.put("/dashboardconf/create", new HashSet<>(Arrays.asList(HEADERLIBS, HEADERLIBS_AUX, MODEL, "js")));
 		mWhiteList.put("/gadgets/create", new HashSet<>(Arrays.asList("*")));
-		mWhiteList.put("/gadgets/view",
-				new HashSet<>(Arrays.asList("element", "gadget", "gadgetTemplate", "headerlibs")));
-		mWhiteList.put("/gadgettemplates/create", new HashSet<>(
-				Arrays.asList("templateCode", "templateCodeJS", "template", "templateJS", "headerlibs", "js")));
-		mWhiteList.put("/gadgettemplates/update", new HashSet<>(
-				Arrays.asList("templateCode", "templateCodeJS", "template", "templateJS", "headerlibs", "js")));
+		mWhiteList.put("/gadgettemplates/create",
+				new HashSet<>(Arrays.asList("templateCode", "templateCodeJS", "template", "templateJS", "js")));
+		mWhiteList.put("/gadgettemplates/update",
+				new HashSet<>(Arrays.asList("templateCode", "templateCodeJS", "template", "templateJS", "js")));
 		mWhiteList.put("/querytemplates/create", new HashSet<>(Arrays.asList("querySelector", "queryGenerator", "js")));
 		mWhiteList.put("/querytemplates/update", new HashSet<>(Arrays.asList("querySelector", "queryGenerator", "js")));
 		mWhiteList.put("/apimanager/create",
@@ -60,9 +56,6 @@ public class XSSWhiteList {
 		mWhiteList.put("/configurations/create", new HashSet<>(Arrays.asList("ymlConfig")));
 		mWhiteList.put("/configurations/update", new HashSet<>(Arrays.asList("ymlConfig")));
 		mWhiteList.put("/rule-domains", new HashSet<>(Arrays.asList("DRL")));
-		mWhiteList.put("/api/mail/mail", new HashSet<>(Arrays.asList("htmlMessage", "message", "attachment")));
-		mWhiteList.put("/themes/create", new HashSet<>(Arrays.asList("css", "js")));
-		mWhiteList.put("/themes/edit", new HashSet<>(Arrays.asList("css", "js")));
 
 	}
 
@@ -71,8 +64,8 @@ public class XSSWhiteList {
 		if (fields != null) {
 			return fields.contains(field) || fields.contains("*");
 		} else {
-			for (final Map.Entry<String, HashSet<String>> entry : mWhiteList.entrySet()) {
-				final String key = entry.getKey();
+			for (Map.Entry<String, HashSet<String>> entry : mWhiteList.entrySet()) {
+				String key = entry.getKey();
 				if (path.startsWith(key)) {
 					return mWhiteList.get(key).contains(field) || mWhiteList.get(key).contains("*");
 				}

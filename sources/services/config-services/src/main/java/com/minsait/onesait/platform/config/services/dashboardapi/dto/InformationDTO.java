@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,20 +106,4 @@ public class InformationDTO {
 	@Setter
 	private SynopticElementDTO synopticElement;
 
-	@Getter
-	@Setter
-	private Boolean dashboardGenerateImage;
-
-	@Getter
-	@Setter
-	private ArrayList<String> i18n;
-	
-	@Getter
-	@Setter
-	private String category;
-	
-	@Getter
-	@Setter 
-	private String subcategory;
-	
 }

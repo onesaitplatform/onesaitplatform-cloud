@@ -121,9 +121,6 @@ var AppCreateController = function() {
 					}
 				});
 
-		// CLEANING NUMBER INPUTS
-		$(':input[type="number"]').val('');
-		
 		// CLEAN ALERT MSG
 		$('.alert-danger').hide();
 
@@ -193,8 +190,9 @@ var AppCreateController = function() {
 																	// alert on
 																	// form
 																	// submit
-
-						toastr.error(messagesForms.validation.genFormError,'');
+						success1.hide();
+						error1.show();
+						App.scrollTo(error1, -200);
 					},
 					errorPlacement : function(error, element) {
 						if (element.is(':checkbox')) {
@@ -224,12 +222,19 @@ var AppCreateController = function() {
 					submitHandler : function(form) {
 
 						if (valRoles()) {
-							toastr.success(messagesForms.validation.genFormSuccess,'');
+							success1.show();
+							error1.hide();
 							form.submit();
 							// insert();
 						} else {
-							toastr.error(messagesForms.validation.genFormError,'');
+							success1.hide();
+							$.alert({
+								title : 'ERROR!',								
+								theme : 'light',
+								content : appCreateReg.fieldEmpty
+							});
 							return false;
+							error1.show();
 						}
 					}
 				});
@@ -237,53 +242,6 @@ var AppCreateController = function() {
 
 	var valRoles = function() {
 		return (validateRoles().length > 0);
-	}
-	
-	var resetAuthorizations = function(newArray){
-		// if app has authorizations we load it!.
-		authorizationsJson = newArray;			
-		if (authorizationsJson.length > 0 ){
-			
-			// MOUNTING AUTHORIZATIONS ARRAY
-			var authid_update, role_update , userid_update , authorizationUpdate , authorizationIdUpdate = '';
-			authorizationsArr = []
-			$.each( authorizationsJson, function (key, object){			
-				
-				authid_update 		= object.id; 
-				role_update 		= object.roleName; 
-				userid_update 		= object.user;					
-				
-				logControl ? console.log('      |----- authorizations object on Update, ID: ' +  authid_update + ' ROLE: ' +  role_update + ' USER: ' +  userid_update  ) : '';
-				
-				// AUTHs-table {"users":user,"roles":role,"id": response.id}
-				authorizationUpdate = {"users": userid_update, "rolesName": role_update, "id": authid_update};					
-				authorizationsArr.push(authorizationUpdate);
-				
-				// AUTH-Ids {[user_id]:auth_id}
-				authorizationIdUpdate = {[userid_update]:authid_update};
-				authorizationsIds.push(authorizationIdUpdate);
-				
-			});
-
-			// TO-HTML
-			if ($('#authorizations').attr('data-loaded') === 'true'){
-				$('#app_autthorizations > tbody').html("");
-				$('#app_autthorizations > tbody').append(mountableModel);
-			}
-			logControl ? console.log('authorizationsArr on UPDATE: ' + authorizationsArr.length + ' Arr: ' + JSON.stringify(authorizationsArr)) : '';
-			$('#app_autthorizations').mounTable(authorizationsArr,{
-				model: '.authorization-model',
-				noDebug: false							
-			});
-			
-			// hide info , disable user and show table
-			$('#alert-authorizations').toggle($('#alert-authorizations').hasClass('hide'));					
-			$('#authorizations').removeClass('hide');
-			$('#authorizations').attr('data-loaded',true);// TO-HTML
-			$("#users").selectpicker('deselectAll');
-			$("#roles").selectpicker('deselectAll');
-
-		}
 	}
 
 	// INIT TEMPLATE ELEMENTS
@@ -302,58 +260,36 @@ var AppCreateController = function() {
 
 		// INPUT MASK FOR Realm identification allow only letters, numbers and -_
 		$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
-		
-		// Fields OnBlur validation
-		
-		$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
-			$('.form').validate().element('#' + event.target.id);                // checks form for validity
-		});	
-		
+				
 		// authorization tab control 
-		$(".option a[href='#tab_1']").on("click", function(e) {
-			$('.tabContainer').find('.option').removeClass('active');
-	        $(this).closest("div").addClass('active');
-		});		
-		
-		// authorization tab control 
-		$(".option a[href='#tab_2']").on("click", function(e) {
+		$(".nav-tabs a[href='#tab_2']").on("click", function(e) {
 		  if ($(this).hasClass("disabled")) {
 			e.preventDefault();
-			$.alert({title: 'Info',  theme: 'light', content: appCreateReg.validations.authinsert});
+			$.alert({title: 'INFO!',  theme: 'light', content: appCreateReg.validations.authinsert});
 			return false;
-		  } else {
-	        $('.tabContainer').find('.option').removeClass('active');
-	        $(this).closest("div").addClass('active');
 		  }
 		});
 
 		// association tab control 
-		$(".option a[href='#tab_3']").on("click", function(e) {
+		$(".nav-tabs a[href='#tab_3']").on("click", function(e) {
 		  if ($(this).hasClass("disabled1")) {
 			e.preventDefault();
-			$.alert({title: 'Info',  theme: 'light', content: appCreateReg.validations.associnsert});
+			$.alert({title: 'INFO!',  theme: 'light', content: appCreateReg.validations.associnsert});
 			return false;
 		  }
 		  else if ($(this).hasClass("disabled2")){
 		  	e.preventDefault();
-			$.alert({title: 'Info',  theme: 'light', content: appCreateReg.validations.assocchildapps});
+			$.alert({title: 'INFO!',  theme: 'light', content: appCreateReg.validations.assocchildapps});
 			return false;
-		  } else {
-	        $('.tabContainer').find('.option').removeClass('active');
-	        $(this).closest("div").addClass('active');
-		  }
-		  
-		});
-		$(".option a[href='#tab_4']").on("click", function(e) {
-		  if ($(this).hasClass("disabled")) {
-			e.preventDefault();
-			$.alert({title: 'Info',  theme: 'light', content: appCreateReg.validations.createProject});
-			return false;
-		  } else {
-	        $('.tabContainer').find('.option').removeClass('active');
-	        $(this).closest("div").addClass('active');
 		  }
 		});
+		$(".nav-tabs a[href='#tab_4']").on("click", function(e) {
+			  if ($(this).hasClass("disabled")) {
+				e.preventDefault();
+				$.alert({title: 'INFO!',  theme: 'light', content: appCreateReg.validations.createProject});
+				return false;
+			  }
+			});
 
 		// Reset form
 		$('#resetBtn').on('click', function() {
@@ -375,27 +311,17 @@ var AppCreateController = function() {
 			var newProject = $('#check-new-project').is(':checked');
 
 			if(newProject){
-				$('#combo-projects').addClass('hide');
 				$('#project-form-data').removeClass('hide');
 				$('#project-name').attr('required','required')
 				$('#project-description').attr('required','required')
-				$('#createBtn').removeClass('hide');
+				$('#combo-projects').addClass('hide');
 			}else{
 				$('#project-form-data').addClass('hide');
 				$('#project-name').attr('required',false)
 				$('#project-description').attr('required',false)
 				$('#combo-projects').removeClass('hide');
-				$('#createBtn').addClass('hide');
 			}
 			
-		});
-		
-		$('#projects-combo').on('change', function() {
-			if($('#projects-combo').val()!=''){
-				$('#linkAdmBtn').removeClass('hide');
-			}else{
-				$('#linkAdmBtn').addClass('hide');
-			}		
 		});
 		
 
@@ -530,6 +456,7 @@ var AppCreateController = function() {
 				
 			}
 		}
+
 	}
 
 	var addRoleRow = function() {
@@ -540,7 +467,11 @@ var AppCreateController = function() {
 
 		$("#datamodel_properties tbody tr").each(function(tr) {
 			if (roleName === this.dataset.rolename){
-				toastr.error(messagesForms.operations.genOpError,appCreateReg.validations.existingRole);
+				$.alert({
+				title : 'ERROR!',				
+				theme : 'light',
+				content : appCreateReg.validations.existingRole
+				});
 				error = true;
 				return false;
 			}
@@ -551,15 +482,19 @@ var AppCreateController = function() {
 		}
 
 		if (roleName === "" || roleName.length < 2) {
-			toastr.error(messagesForms.operations.genOpError,appCreateReg.fieldEmpty);
-			return false;
-		}
-		if(roleName.length > 24) {
-			toastr.error(messagesForms.operations.genOpError,appCreateReg.longField);
+			$.alert({
+				title : 'ERROR!',				
+				theme : 'light',
+				content : appCreateReg.fieldEmpty
+			});
 			return false;
 		}
 		if (roleDescription === "" || roleDescription.length < 5) {
-			toastr.error(messagesForms.operations.genOpError,appCreateReg.fieldEmpty);
+			$.alert({
+				title : 'ERROR!',				
+				theme : 'light',
+				content : appCreateReg.fieldEmpty
+			});
 			return false;
 		}
 		$('#datamodel_properties > tbody')
@@ -572,11 +507,9 @@ var AppCreateController = function() {
 								+ roleName
 								+ '</td><td >'
 								+ roleDescription
-								+ '</td><td><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="AppCreateController.removeRole(this)"><i class="icon-delete"></i></button></td></tr>');
+								+ '</td><td><button type="button" data-property="" class="btn btn-sm btn-circle btn-outline blue" onclick="AppCreateController.removeRole(this)" th:text="#{app.role.remove}"><span th:text="#{gen.deleteBtn}"> Delete </span></button></td></tr>');
 		$("#roleName").val('');
 		$("#roleDescription").val('');
-		
-		toastr.success(messagesForms.operations.genOpSuccess,'');
 	}
 
 	var updateRoles = function(roles) {
@@ -594,7 +527,7 @@ var AppCreateController = function() {
 										+ role.name
 										+ '</td><td >'
 										+ role.description
-										+ '</td><td><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="AppCreateController.removeRole(this)"><i class="icon-delete"></i></button></td></tr>');
+										+ '</td><td><button type="button" data-property="" class="btn btn-sm btn-circle btn-outline blue" onclick="AppCreateController.removeRole(this)" th:text="#{app.role.remove}"><span th:text="#{gen.deleteBtn}"> Delete </span></button></td></tr>');
 			}
 		}
 
@@ -626,7 +559,6 @@ var AppCreateController = function() {
 		}								
 
 		row.parentElement.parentElement.remove();
-		toastr.success(messagesForms.operations.genOpSuccess,'');
 	}
 
 	var validateRoles = function() {
@@ -670,7 +602,11 @@ var AppCreateController = function() {
 
 		// no Id no fun!
 		if (!idApp) {
-			toastr.error(messagesForms.validation.genFormError,'NO APP-FORM SELECTED!');
+			$.alert({
+				title : 'ERROR!',				
+				theme : 'light',
+				content : 'NO APP-FORM SELECTED!'
+			});
 			return false;
 		}
 
@@ -684,13 +620,14 @@ var AppCreateController = function() {
 		var Close = headerReg.btnCancelar;
 		var Remove = headerReg.btnEliminar;
 		var Content = appCreateReg.deleteAppConfirm;
-		var Title = headerReg.appDelete;
+		var Title = headerReg.titleConfirm + ':';
 
 		var csrf_value = $("meta[name='_csrf']").attr("content");
 		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
 		
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
+			icon : 'fa fa-warning',
 			title : Title,
 			theme : 'light',
 			columnClass : 'medium',
@@ -698,16 +635,17 @@ var AppCreateController = function() {
 			draggable : true,
 			dragWindowGap : 100,
 			backgroundDismiss : true,
+			closeIcon : true,
 			buttons : {
 				close : {
 					text : Close,
-					btnClass : 'btn btn-outline blue dialog',
+					btnClass : 'btn btn-sm btn-circle btn-outline blue',
 					action : function() {
 					} // GENERIC CLOSE.
 				},
 				remove : {
 					text : Remove,
-					btnClass : 'btn btn-primary',
+					btnClass : 'btn btn-sm btn-circle btn-outline btn-primary',
 					action : function() {
 						console.log(idApp);
 						$.ajax({
@@ -783,7 +721,6 @@ var AppCreateController = function() {
 					$('#authorizations').removeClass('hide');
 					$('#authorizations').attr('data-loaded',true);
 					
-					toastr.success(messagesForms.operations.genOpSuccess,'');
 				}
 			});
 
@@ -833,7 +770,6 @@ var AppCreateController = function() {
 					$('#authorizations').removeClass('hide');
 					$('#authorizations').attr('data-loaded',true);
 					
-					toastr.success(messagesForms.operations.genOpSuccess,'');
 				}
 			});
 
@@ -867,10 +803,12 @@ var AppCreateController = function() {
 						if (authorizationsArr.length == 0){
 							$('#alert-authorizations').toggle(!$('#alert-authorizations').is(':visible'));					
 							$('#authorizations').addClass('hide');
+							
 						}
-						toastr.success(messagesForms.operations.genOpSuccess,'');
-					} else { 
-						toastr.error(messagesForms.operations.genOpError,'NO RESPONSE!');
+						
+					}
+					else{ 
+						$.alert({title: 'ALERT!', theme: 'light',  content: 'NO RESPONSE!'}); 
 					}
 				}
 			});			
@@ -933,9 +871,10 @@ var AppCreateController = function() {
 					$('#associations').removeClass('hide');
 					$('#associations').attr('data-loaded',true);
 					
-					toastr.success(messagesForms.operations.genOpSuccess,'');
 				}
 			});
+
+	
 		}
 		
 		if (action  === 'delete'){
@@ -967,22 +906,24 @@ var AppCreateController = function() {
 						if (associationsArr.length == 0){
 							$('#alert-associations').toggle(!$('#alert-associations').is(':visible'));					
 							$('#associations').addClass('hide');
+							
 						}
-						toastr.success(messagesForms.operations.genOpSuccess,'');
+						
 					}
 					else{ 
-						toastr.error(messagesForms.operations.genOpError,'NO RESPONSE!');
+						$.alert({title: 'ALERT!', theme: 'light', content: 'NO RESPONSE!'}); 
 					}
 				}
 			});			
 		}
+		
 	};
 
 	// return position to find authId.
-	var foundIndexAuth = function(what,item,what2,item2,arr){
+	var foundIndexAuth = function(what,item,arr){
 		var found = '';
 		arr.forEach(function(element, index, array) {
-			if ( what === element[item] && what2 === element[item2]){ found = index;  console.log("a[" + index + "] = " + element[item] + ' Founded in position: ' + found ); } 
+			if ( what === element[item]){ found = index;  console.log("a[" + index + "] = " + element[item] + ' Founded in position: ' + found ); } 
 			
 		});		
 		return found;
@@ -1059,6 +1000,7 @@ var AppCreateController = function() {
 										found=true;
 								});
 		
+		
 								if (found){
 									console.log('Not creating auth for user '+user +' and Role ' +selRoleText+' because already exists ');
 								}
@@ -1067,11 +1009,12 @@ var AppCreateController = function() {
 									authorization('insertLDAP',appCreateReg.appId,user,selRoleVal,'');
 								}
 							});
+							
 						}
 					});
-				}else {
-					toastr.error(messagesForms.operations.genOpError,appCreateReg.validations.authuser);
-				}
+					
+					
+				}else {  $.alert({title: 'ERROR!', theme: 'light',  content: appCreateReg.validations.authuser}); }
 		}
 		},
 		//INSERT AUTHORIZATION LDAP
@@ -1090,17 +1033,17 @@ var AppCreateController = function() {
 							found=true;
 					});
 
+
 					if (found){
-						toastr.error(messagesForms.operations.genOpError,appCreateReg.validations.authUserRole);
+						$.alert({title: 'ERROR!', theme: 'light', content: appCreateReg.validations.authUserRole});
 					}
 					else{
 						// AJAX INSERT (ACTION,APPID,USER,ROLE) returns object with data.
 						authorization('insertLDAP',appCreateReg.appId,selUser,selRoleVal,'');
 					}
-				} else {
-					toastr.error(messagesForms.operations.genOpError,appCreateReg.validations.authuser);
 				}
-			}
+			else {  $.alert({title: 'ERROR!', theme: 'light',  content: appCreateReg.validations.authuser}); }
+		}
 		},
 		
 		// INSERT AUTHORIZATION
@@ -1115,7 +1058,18 @@ var AppCreateController = function() {
 						if(auth.users == $('#users').val() && auth.rolesName == $('#roles option:selected').text())
 							found=true;
 					});
-
+//					var usersTable = $('#authorizations').find("input[name='users\\[\\]']");
+//					var rolesTable = $('#authorizations').find("input[name='rolesName\\[\\]']");
+//					$.each(usersTable,function(indexUser,user){
+//						if (user.value === $('#users').val()){
+//							$.each(rolesTable,function(indexRole,role){
+//									if ($('#roles option:selected').text() === role.value){
+//										found = true;
+//									}
+//							});
+//						}
+//					});
+//
 					if (found){
 						$.alert({title: 'ERROR!', theme: 'light', content: appCreateReg.validations.authUserRole});
 					}
@@ -1123,10 +1077,9 @@ var AppCreateController = function() {
 						// AJAX INSERT (ACTION,APPID,USER,ROLE) returns object with data.
 						authorization('insert',appCreateReg.appId,$('#users').val(),$('#roles').val(),'');
 					}
-				} else {
-					toastr.error(messagesForms.operations.genOpError,appCreateReg.validations.authuser);
 				}
-			}
+			else {  $.alert({title: 'ERROR!', theme: 'light',  content: appCreateReg.validations.authuser}); }
+		}
 		},
 
 		// REMOVE authorization
@@ -1138,7 +1091,7 @@ var AppCreateController = function() {
 				var selUser = $(obj).closest('tr').find("input[name='users\\[\\]']").val();
 				var selRole = $(obj).closest('tr').find("input[name='rolesName\\[\\]']").val();				
 				
-				var removeIndex = foundIndexAuth(selUser,'users',selRole,'rolesName',authorizationsArr);				
+				var removeIndex = foundIndexAuth(selUser,'users',authorizationsArr);				
 				var selAuthorizationId = authorizationsIds[removeIndex][selUser];
 				
 				console.log('removeAuthorization:' + selAuthorizationId);
@@ -1173,15 +1126,14 @@ var AppCreateController = function() {
 					});
 
 					if (found){
-						toastr.error(messagesForms.operations.genOpError,appCreateReg.validations.assocAppRole);
+						$.alert({title: 'ERROR!', theme: 'light', content: appCreateReg.validations.assocAppRole});
 					}
 					else{
 						// AJAX INSERT (ACTION,APPID,FATHER ROLE, CHILD APP, CHILD ROLE) returns object with data.
 						association('insert',appCreateReg.appId,$('#rolesFatherApp').val(),$('#childApps').val(),$('#rolesChildApp').val(),'');
 					}
-				} else {  
-					toastr.error(messagesForms.operations.genOpError,appCreateReg.validations.assocEmpty);
 				}
+				else {  $.alert({title: 'ERROR!', theme: 'light', content: appCreateReg.validations.assocEmpty}); }
 			}
 		},
 		// REMOVE authorization
@@ -1211,10 +1163,6 @@ var AppCreateController = function() {
 		
 		getGroups : function(){
 			getGroups();
-		},
-		
-		resetAuthorizations : function(newArray){
-			resetAuthorizations(newArray);
 		}
 	};
 }();

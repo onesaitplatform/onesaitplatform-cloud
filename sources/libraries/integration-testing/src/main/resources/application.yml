@@ -1,14 +1,12 @@
 apimanager: https://development.onesaitplatform.com/api-manager
-oauth-server: https://odeo-int-test-onesait.odeo-ocp.com/oauth-server
+oauth-server: https://development.onesaitplatform.com/oauth-server
 controlpanel: https://development.onesaitplatform.com/controlpanel
 microservice: https://development.onesaitplatform.com/restaurants
-host: http://localhost:18000/
 
-vertical: onesaitplatform
-client-id: OdeoRealm
+client-id: GovConsole
 client-secret: onesaitplatform
-username: 567217fb27dd33a65db807c3158e6f29109eed7a337e853ce24e1e9d8ce2b17b
-password: Passw0rd!!
+username: developer
+password: Changed2019!
 logging:
    level:
       com.minsait: INFO

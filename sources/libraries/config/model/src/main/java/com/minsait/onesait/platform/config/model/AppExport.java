@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,18 +54,18 @@ public class AppExport extends AppParent {
 	@Setter
 	private ProjectExport project;
 
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne
 	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = false)
 	@Getter
 	@Setter
-	private User user;
+	private UserExport user;
 
 	@OneToMany(fetch = FetchType.EAGER, mappedBy = "app", cascade = CascadeType.ALL, orphanRemoval = true)
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@Getter
 	@Setter
 	@JsonIgnore
-	private Set<AppRoleExport> appRoles = new HashSet<>();
+	private Set<AppRole> appRoles = new HashSet<>();
 
 	@JoinTable(name = "app_associated", joinColumns = {
 			@JoinColumn(name = "parent_app", referencedColumnName = "id", nullable = false) }, inverseJoinColumns = {
@@ -79,8 +79,8 @@ public class AppExport extends AppParent {
 	public AppExport() {
 	};
 
-	public AppExport(String id, String identification, String description, User user, String secret,
-			String user_extra_fields, int tokenValiditySeconds, AppRoleExport appRole, Date createAt, Date updateAt) {
+	public AppExport(String id, String identification, String description, UserExport user, String secret,
+			String user_extra_fields, int tokenValiditySeconds, AppRole appRole, Date createAt, Date updateAt) {
 		this.setId(id);
 		this.setIdentification(identification);
 		this.setDescription(description);
@@ -90,7 +90,7 @@ public class AppExport extends AppParent {
 		this.setSecret(secret);
 		this.setUserExtraFields(user_extra_fields);
 		this.setTokenValiditySeconds(tokenValiditySeconds);
-		Set<AppRoleExport> appRoles = new HashSet<AppRoleExport>();
+		Set<AppRole> appRoles = new HashSet<AppRole>();
 		if (appRole != null) {
 			appRoles.add(appRole);
 		}

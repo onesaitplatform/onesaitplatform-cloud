@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,15 @@
  */
 package com.minsait.onesait.platform.multitenant.util;
 
-import java.sql.Connection;
-import java.sql.Statement;
-
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 import com.minsait.onesait.platform.multitenant.config.model.Vertical;
-import com.zaxxer.hikari.HikariDataSource;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,19 +33,15 @@ public class DataSourceUtil {
 	private static final String CONFIGDB_DEFAULT_DB = "onesaitplatform_config";
 	private static final String DEFAULT_DS_BEAN_NAME = "defaultDS";
 
-	@Value("${spring.datasource.hikari.jdbc-url}")
+	@Value("${spring.datasource.url}")
 	private String connUrl;
-	@Value("${spring.datasource.hikari.username}")
+	@Value("${spring.datasource.username}")
 	private String username;
-	@Value("${spring.datasource.hikari.password}")
+	@Value("${spring.datasource.password}")
 	private String passphrase;
 
 	@Autowired
 	private ApplicationContext context;
-
-	@Autowired
-	@Qualifier("masterDataSource")
-	private DataSource masterDS;
 
 	@Autowired
 	private BeanUtil beanUtil;
@@ -60,28 +51,16 @@ public class DataSourceUtil {
 	}
 
 	private DataSource createAndConfigureDataSource(String schema) {
-		final DataSource defaultDS = (DataSource) context.getBean(DEFAULT_DS_BEAN_NAME);
-		createDatabaseIfNotExist(defaultDS, schema);
-		final String newURL = ((HikariDataSource) defaultDS).getJdbcUrl().replace(CONFIGDB_DEFAULT_DB, schema);
-		((HikariDataSource) defaultDS).setJdbcUrl(newURL);
+		final org.apache.tomcat.jdbc.pool.DataSource defaultDS = (org.apache.tomcat.jdbc.pool.DataSource) context
+				.getBean(DEFAULT_DS_BEAN_NAME);
+		final String newURL = defaultDS.getUrl().replace(CONFIGDB_DEFAULT_DB, schema);
+		defaultDS.setUrl(newURL);
+		log.info("Registering tenant datasource {}", defaultDS.toString());
 		return defaultDS;
 	}
 
 	public DataSource createDefaultDatasource() {
 		return this.createAndConfigureDataSource(Tenant2SchemaMapper.DEFAULT_SCHEMA);
-	}
-
-	public void createDatabaseIfNotExist(DataSource defaultDS, String schema) {
-		final String URL = ((HikariDataSource) defaultDS).getJdbcUrl();
-		if (URL.toLowerCase().contains("postgre")) {
-			try (Connection con = masterDS.getConnection(); Statement st = con.createStatement();) {
-				st.execute("CREATE DATABASE " + schema + ";");
-			} catch (final Exception e) {
-				log.warn("Unable to create database on PostgreSQL for current database {}, with error message: {}",
-						schema, e.getMessage());
-			}
-
-		}
 	}
 
 }

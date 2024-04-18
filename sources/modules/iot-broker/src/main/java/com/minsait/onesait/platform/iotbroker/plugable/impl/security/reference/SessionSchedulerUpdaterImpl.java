@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,13 @@
  */
 package com.minsait.onesait.platform.iotbroker.plugable.impl.security.reference;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -25,6 +28,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
+import com.minsait.onesait.platform.multitenant.config.repository.IoTSessionRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,40 +36,51 @@ import lombok.extern.slf4j.Slf4j;
 @ConditionalOnProperty(prefix = "onesaitplatform.iotbroker.session.update.schedule", name = "enable", havingValue = "true")
 @Slf4j
 public class SessionSchedulerUpdaterImpl implements SessionSchedulerUpdater {
-	
-	//to call internal transactional methods
+
 	@Autowired
-	SessionSchedulerUpdaterProxy proxy;
+	IoTSessionRepository ioTSessionRepository;
 
 	private Map<String, IoTSession> mLastUpdates;
+	private List<String> removed;
 
 	@PostConstruct
 	public void init() {
 		this.mLastUpdates = new ConcurrentHashMap<>();
+		this.removed = new ArrayList<>();
 	}
 
 	@Override
-	public void saveSession(IoTSession session) {
-		this.mLastUpdates.put(session.getSessionKey(), session);
+	public void saveSession(String sessionkey, IoTSession session) {
+		synchronized (this.mLastUpdates) {
+			this.mLastUpdates.put(sessionkey, session);
+		}
 	}
 
-	@Scheduled(fixedDelayString = "${onesaitplatform.iotbroker.device.update.schedule.delay.millis: 30000}")
+	@Override
+	public void notifyDeleteSession(String sessionkey) {
+		synchronized (this.mLastUpdates) {
+			this.mLastUpdates.remove(sessionkey);
+			this.removed.add(sessionkey);
+		}
+	}
+
+	@Scheduled(fixedDelayString = "${onesaitplatform.iotbroker.device.update.schedule.delay.millis: 5000}")
+	@Transactional
 	public void updateSessionPhysically() {
-		log.debug("Update Sessions in ConfigDB");
-		
-		mLastUpdates.forEach((key, value) ->{
-			//Using remove to get and remove the value in one operation.
-			//Further puts of the same key in the map will not be processed by the loop but it will be processes on the next iteration of the scheduler.
-			IoTSession session = mLastUpdates.remove(key);
-			if (session != null) {
-				if (log.isDebugEnabled()) {
-					log.debug("Save Session: {} ", key);
-				}				
-				proxy.updateSession(session);				
+		log.info("Update Sessions in ConfigDB");
+		synchronized (this.mLastUpdates) {
+			for (Map.Entry<String, IoTSession> entry : this.mLastUpdates.entrySet()) {
+				IoTSession session = entry.getValue();
+				if (!this.removed.contains(entry.getKey())) {// Due to concurrent conditions can happen
+					if (log.isDebugEnabled()) {
+						log.debug("Save Session: {} " ,entry.getKey());
+					}
+					ioTSessionRepository.save(session);
+				}
 			}
-		});
+			this.mLastUpdates.clear();
+			this.removed.clear();
+		}
 	}
-	
-
 
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -159,34 +159,6 @@ public class ManageDBPersistenceServiceFacade implements ManageDBRepository, Nat
 	@Override
 	public String updateTable4Ontology(String ontology, String jsonSchema, Map<String, String> config) {
 		return manageDBRepositoryFactory.getInstance(ontology).updateTable4Ontology(ontology, jsonSchema, config);
-	}
-
-	@Override
-	public void createTTLIndex(String ontology, String attribute, Long seconds) {
-		manageDBRepositoryFactory.getInstance(ontology).createTTLIndex(ontology, attribute, seconds);
-	}
-
-	@Override
-	public Map<String, List<String>> getListIndexes(String datatableName, String ontology) {
-		return manageDBRepositoryFactory.getInstance(ontology).getListIndexes(datatableName, ontology);
-	}
-
-	@Override
-	public void dropIndex(String ontology, String ontologyVirtual, String indexName) {
-		throw new DBPersistenceException(METHOD_NOT_EXECUTABLE);
-		
-	}
-
-	@Override
-	public String getIndexesOptions(String ontology) {
-		throw new DBPersistenceException(METHOD_NOT_EXECUTABLE);
-	}
-
-	@Override
-	public void createIndexWithParameter(String ontologyName, String typeIndex, String indexName, boolean unique,
-			boolean background, boolean sparse, boolean ttl, String timesecondsTTL, Object checkboxValuesArray) {
-		throw new DBPersistenceException(METHOD_NOT_EXECUTABLE);
-		
 	}
 
 }

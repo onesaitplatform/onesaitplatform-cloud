@@ -1,6 +1,6 @@
 var gadget= [ {
 		type : "line",
-		icon : "/controlpanel/images/dashboards/icon_line_chart.svg",
+		icon : "/controlpanel/images/dashboards/lines-gadget.png",
 
 		attributes : [ {
 			name : "X axis",
@@ -53,7 +53,7 @@ var gadget= [ {
 		}
 	}, {
 		type : "bar",
-		icon : "/controlpanel/static/images/dashboards/icon_bar_chart.svg",
+		icon : "/controlpanel/static/images/dashboards/bars-gadget.png",
 		attributes : [ {
 			name : "X axis",
 			types : [ "date", "number", "string" ]
@@ -82,7 +82,7 @@ var gadget= [ {
 		options:{}
 	},{
 		type : "mixed",
-		icon : "/controlpanel/static/images/dashboards/icon_mixed_chart.svg",
+		icon : "/controlpanel/static/images/dashboards/bars-mixed.png",
 		attributes : [ {
 			name : "X axis",
 			types : [ "date", "number", "string" ]
@@ -135,7 +135,7 @@ var gadget= [ {
 
 	{
 		type : "pie",
-		icon : "/controlpanel/static/images/dashboards/icon_piechart.svg",
+		icon : "/controlpanel/static/images/dashboards/pie-gadget.png",
 		attributes : [ {
 			name : "X axis",
 			types : [ "date", "number", "string" ]
@@ -152,7 +152,7 @@ var gadget= [ {
 
 	{
 		type : "map",
-		icon : "/controlpanel/static/images/dashboards/icon_map.svg",
+		icon : "/controlpanel/static/images/dashboards/map-gadget.png",
 		attributes : [ {
 			name : "Latitude",
 			types : [ "number", "string" ]
@@ -184,7 +184,7 @@ var gadget= [ {
 		}
 	}, {
 		type : "wordcloud",
-		icon : "/controlpanel/static/images/dashboards/icon_wordcloud.svg",
+		icon : "/controlpanel/static/images/dashboards/wordchart.jpg",
 		attributes : [ {
 			name : "Words",
 			types : [ "number", "string" ]
@@ -198,7 +198,7 @@ var gadget= [ {
 		}
 	}, {
 		type : "radar",
-		icon : "/controlpanel/static/images/dashboards/icon_radar.svg",
+		icon : "/controlpanel/static/images/dashboards/radar.png",
 		attributes : [ {
 			name : "category",
 			types : [ "date", "number", "string"  ]
@@ -214,7 +214,7 @@ var gadget= [ {
 		options:{}
 	},{
 		type : "table",
-		icon : "/controlpanel/static/images/dashboards/icon_table.svg",
+		icon : "/controlpanel/static/images/dashboards/table.png",
 		attributes : [ {
 			name : "field",
 			types : [ "number", "string", "boolean"]
@@ -234,7 +234,7 @@ var gadget= [ {
 	},{
 		type : "datadiscovery",
 		disableOnGroup : true, 
-		icon : "/controlpanel/static/images/dashboards/widgets.svg",
+		icon : "/controlpanel/static/images/dashboards/datadiscovery.png",
 		attributes : [],
 		series : {
 			maxseries : 0,

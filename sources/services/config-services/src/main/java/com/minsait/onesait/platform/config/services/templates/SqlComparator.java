@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,6 @@ import net.sf.jsqlparser.statement.select.Distinct;
 import net.sf.jsqlparser.statement.select.Fetch;
 import net.sf.jsqlparser.statement.select.First;
 import net.sf.jsqlparser.statement.select.FromItem;
-import net.sf.jsqlparser.statement.select.GroupByElement;
 import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.Offset;
@@ -134,7 +133,8 @@ public class SqlComparator {
 
 		matchOrderByElements(plainSelect1.getOrderByElements(), plainSelect2.getOrderByElements(), result);
 
-		matchGroupBy(plainSelect1.getGroupBy(), plainSelect2.getGroupBy(), result);
+		matchGroupByColumnReferences(plainSelect1.getGroupByColumnReferences(),
+				plainSelect2.getGroupByColumnReferences(), result);
 
 		matchHaving(plainSelect1.getHaving(), plainSelect2.getHaving(), result);
 
@@ -163,8 +163,7 @@ public class SqlComparator {
 		matchMySqlSqlCalcFoundRows(plainSelect1.getMySqlSqlCalcFoundRows(), plainSelect2.getMySqlSqlCalcFoundRows(),
 				result);
 
-		matchMySqlSqlNoCache(plainSelect1.getMySqlSqlCacheFlag() != null, plainSelect2.getMySqlSqlCacheFlag() != null,
-				result);
+		matchMySqlSqlNoCache(plainSelect1.getMySqlSqlNoCache(), plainSelect2.getMySqlSqlNoCache(), result);
 
 		matchOracleHierarchical(plainSelect1.getOracleHierarchical(), plainSelect2.getOracleHierarchical(), result);
 
@@ -183,17 +182,17 @@ public class SqlComparator {
 			} else if (selectItems2.size() == 1) {
 				// The template consists of a variable which will store some
 				// SelectExpressionItems in Array format
-				// net.sf.jsqlparser.statement.select.AllColumns
-				final SelectItem selectItem = selectItems2.get(0);
-				if (!(selectItem instanceof AllColumns)) {
-					final SelectExpressionItem selectItem2 = (SelectExpressionItem) selectItems2.get(0);
-					if (SelectExpressionItem.class.equals(selectItems2.get(0).getClass())
-							&& UserVariable.class.equals(selectItem2.getExpression().getClass())) {
-						final UserVariable userVariable = (UserVariable) selectItem2.getExpression();
-						result.addVariable(userVariable.getName(), selectItems1.toString(), VariableData.Type.STRING);
-						result.setResult(true);
-					}
-				}
+			    //net.sf.jsqlparser.statement.select.AllColumns
+			    SelectItem selectItem = selectItems2.get(0);
+			    if (!(selectItem instanceof AllColumns)) {
+    				final SelectExpressionItem selectItem2 = (SelectExpressionItem) selectItems2.get(0);
+    				if (SelectExpressionItem.class.equals(selectItems2.get(0).getClass())
+    						&& UserVariable.class.equals(selectItem2.getExpression().getClass())) {
+    					final UserVariable userVariable = (UserVariable) selectItem2.getExpression();
+    					result.addVariable(userVariable.getName(), selectItems1.toString(), VariableData.Type.STRING);
+    					result.setResult(true);
+    				}
+			    }
 			}
 		}
 	}
@@ -284,13 +283,6 @@ public class SqlComparator {
 			MatchResult result) {
 		final boolean match = orderByElement1.toString().equals(orderByElement2.toString());
 		result.setResult(match);
-	}
-
-	private static void matchGroupBy(GroupByElement groupBy1, GroupByElement groupBy2, MatchResult result) {
-		checkNulls(groupBy1, groupBy2, result);
-		if (result.isMatch() && groupBy1 != null) {
-			matchGroupByColumnReferences(groupBy1.getGroupByExpressions(), groupBy2.getGroupByExpressions(), result);
-		}
 	}
 
 	private static void matchGroupByColumnReferences(List<Expression> groupByColumnReferences1,
@@ -438,7 +430,7 @@ public class SqlComparator {
 			if (result.isMatch()) {
 				result.setResult(offset1.getOffsetParam().equals(offset2.getOffsetParam()));
 				if (result.isMatch()) {
-					matchExpression(offset1.getOffset(), offset2.getOffset(), result);
+					matchExpression(offset1.getOffsetJdbcParameter(), offset2.getOffsetJdbcParameter(), result);
 				}
 			}
 		}
@@ -635,11 +627,11 @@ public class SqlComparator {
 	private static void matchFunction(Function function1, Function function2, MatchResult result) {
 		checkNulls(function1, function2, result);
 		if (result.isMatch() && function1 != null) {
-			final String attribute1 = function1.getAttributeName();
-			final String attribute2 = function2.getAttributeName();
+			final String attribute1 = function1.getAttribute();
+			final String attribute2 = function2.getAttribute();
 			checkNulls(attribute1, attribute2, result);
 			if (result.isMatch() && attribute1 != null) {
-				result.setResult(function1.getAttributeName().equals(function2.getAttributeName()));
+				result.setResult(function1.getAttribute().equals(function2.getAttribute()));
 			}
 			if (result.isMatch()) {
 				final KeepExpression keep1 = function1.getKeep();

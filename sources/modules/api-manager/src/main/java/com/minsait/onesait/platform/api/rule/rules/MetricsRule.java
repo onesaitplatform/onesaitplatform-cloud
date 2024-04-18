@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,14 +24,13 @@ import org.jeasy.rules.annotation.Priority;
 import org.jeasy.rules.annotation.Rule;
 import org.jeasy.rules.api.Facts;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.metrics.CounterService;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.api.rule.DefaultRuleBase;
 import com.minsait.onesait.platform.api.rule.RuleManager;
 import com.minsait.onesait.platform.api.service.Constants;
 import com.minsait.onesait.platform.config.model.Api;
-
-import io.micrometer.core.instrument.MeterRegistry;
 
 @Component
 @Rule
@@ -40,7 +39,7 @@ public class MetricsRule extends DefaultRuleBase {
 	private static final String RULE_AUDIT = "rule.audit.";
 
 	@Autowired
-	private MeterRegistry meterRegistry;
+	private CounterService counterService;
 
 	@Priority
 	public int getPriority() {
@@ -49,17 +48,21 @@ public class MetricsRule extends DefaultRuleBase {
 
 	@Condition
 	public boolean existsRequest(Facts facts) {
-		final HttpServletRequest request = facts.get(RuleManager.REQUEST);
+		HttpServletRequest request = facts.get(RuleManager.REQUEST);
 		return ((request != null) && canExecuteRule(facts));
 	}
 
 	@Action
 	public void setFirstDerivedData(Facts facts) {
-		final Map<String, Object> data = facts.get(RuleManager.FACTS);
+		Map<String, Object> data = facts.get(RuleManager.FACTS);
 
-		final Api api = (Api) data.get(Constants.API);
-		final String method = (String) data.get(Constants.METHOD);
-		meterRegistry.counter(RULE_AUDIT, "api", api.getIdentification(), "method", method).increment();
+		Api api = (Api) data.get(Constants.API);
+		String method = (String) data.get(Constants.METHOD);
+		String authenticationHeader = (String) data.get(Constants.AUTHENTICATION_HEADER);
+
+		counterService.increment(RULE_AUDIT + api.getIdentification());
+		counterService.increment(RULE_AUDIT + api.getIdentification() + "." + authenticationHeader);
+		counterService.increment(RULE_AUDIT + api.getIdentification() + "." + method);
 
 	}
 

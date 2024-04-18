@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  */
 package com.minsait.onesait.platform.config.model;
 
-import java.io.Serializable;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -25,16 +23,11 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import com.minsait.onesait.platform.config.model.interfaces.Versionable;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -43,9 +36,8 @@ import lombok.Setter;
 @Entity
 @Table(name = "dataflow_instances", uniqueConstraints = @UniqueConstraint(name = "instance_ident_UQ", columnNames = {
 		"IDENTIFICATION" }))
-public class DataflowInstance implements Serializable, Versionable<DataflowInstance> {
+public class DataflowInstance {
 
-	private static final long serialVersionUID = 1L;
 	@Id
 	@GeneratedValue(generator = "uuid")
 	@GenericGenerator(name = "uuid", strategy = "com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUIDGenerator")
@@ -86,9 +78,7 @@ public class DataflowInstance implements Serializable, Versionable<DataflowInsta
 	@Setter
 	private String guestCredentials;
 
-	@Column(name = "IS_DEFAULT", nullable = false)
-	@Type(type = "org.hibernate.type.BooleanType")
-	@ColumnDefault("false")
+	@Column(name = "IS_DEFAULT", nullable = false, columnDefinition = "BIT default 0")
 	@NotNull
 	@Getter
 	@Setter
@@ -109,11 +99,9 @@ public class DataflowInstance implements Serializable, Versionable<DataflowInsta
 
 	@JsonSetter("user")
 	public void setUserByUserId(String userId) {
-		if (StringUtils.hasText(userId)) {
-			final User newUser = new User();
-			newUser.setUserId(userId);
-			user = newUser;
-		}
+		final User newUser = new User();
+		newUser.setUserId(userId);
+		user = newUser;
 	}
 
 	@Override
@@ -137,23 +125,5 @@ public class DataflowInstance implements Serializable, Versionable<DataflowInsta
 	@Override
 	public int hashCode() {
 		return java.util.Objects.hash(getIdentification());
-	}
-
-	@Override
-	public String fileName() {
-		return getIdentification() + ".yaml";
-	}
-
-	@JsonIgnore
-	@Override
-	public String getUserJson() {
-		return getUserIdentification();
-	}
-
-	@Override
-	public void setOwnerUserId(String userId) {
-		final User u = new User();
-		u.setUserId(userId);
-		setUser(u);
 	}
 }

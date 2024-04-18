@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,15 @@
  * limitations under the License.
  */
 package com.minsait.onesait.platform.config.repository;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.minsait.onesait.platform.config.model.ApiQueryParameter;
 
-public interface ApiQueryParameterRepository extends JpaRepository<ApiQueryParameter, String> {
+public interface ApiQueryParameterRepository extends JpaRepository<ApiQueryParameter,String> {
+
+
+	ApiQueryParameter findById(String id);
+
+
 
 }

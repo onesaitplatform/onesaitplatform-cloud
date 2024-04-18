@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,11 +25,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulation;
 import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
+import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.Token;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformInstanceSimulationRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformOntologyRepository;
-import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
 import com.minsait.onesait.platform.config.repository.TokenRepository;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.user.UserService;
@@ -52,15 +54,15 @@ public class DeviceSimulationServiceImpl implements DeviceSimulationService {
 
 	@Override
 	public List<String> getClientsForUser(String userId) {
-		final List<String> clientIdentifications = new ArrayList<>();
+		List<String> clientIdentifications = new ArrayList<>();
 		List<ClientPlatform> clients = null;
-		final User user = userService.getUser(userId);
+		User user = this.userService.getUser(userId);
 		if (userService.isUserAdministrator(user))
-			clients = clientPlatformRepository.findAll();
+			clients = this.clientPlatformRepository.findAll();
 		else
-			clients = userService.getClientsForUser(user);
+			clients = this.userService.getClientsForUser(user);
 		//
-		for (final ClientPlatform client : clients) {
+		for (ClientPlatform client : clients) {
 			clientIdentifications.add(client.getIdentification());
 		}
 		return clientIdentifications;
@@ -68,9 +70,9 @@ public class DeviceSimulationServiceImpl implements DeviceSimulationService {
 
 	@Override
 	public List<String> getClientTokensIdentification(String clientPlatformId) {
-		final ClientPlatform clientPlatform = clientPlatformRepository.findByIdentification(clientPlatformId);
-		final List<String> tokens = new ArrayList<>();
-		for (final Token token : tokenRepository.findByClientPlatform(clientPlatform)) {
+		ClientPlatform clientPlatform = this.clientPlatformRepository.findByIdentification(clientPlatformId);
+		List<String> tokens = new ArrayList<>();
+		for (Token token : this.tokenRepository.findByClientPlatform(clientPlatform)) {
 			tokens.add(token.getTokenName());
 		}
 		return tokens;
@@ -78,9 +80,9 @@ public class DeviceSimulationServiceImpl implements DeviceSimulationService {
 
 	@Override
 	public List<String> getClientOntologiesIdentification(String clientPlatformId) {
-		final List<String> ontologies = new ArrayList<>();
-		for (final ClientPlatformOntology clientPlatformOntology : clientPlatformOntologyRepository
-				.findByClientPlatformAndInsertAccess(clientPlatformId)) {
+		List<String> ontologies = new ArrayList<>();
+		for (ClientPlatformOntology clientPlatformOntology :this.clientPlatformOntologyRepository.
+				findByClientPlatformAndInsertAccess(clientPlatformId)) {
 			ontologies.add(clientPlatformOntology.getOntology().getIdentification());
 		}
 		return ontologies;
@@ -88,8 +90,8 @@ public class DeviceSimulationServiceImpl implements DeviceSimulationService {
 
 	@Override
 	public List<String> getSimulatorTypes() {
-		final List<String> simulators = new ArrayList<>();
-		for (final ClientPlatformInstanceSimulation.Type type : ClientPlatformInstanceSimulation.Type.values()) {
+		List<String> simulators = new ArrayList<>();
+		for (ClientPlatformInstanceSimulation.Type type : ClientPlatformInstanceSimulation.Type.values()) {
 			simulators.add(type.name());
 		}
 		return simulators;
@@ -97,26 +99,26 @@ public class DeviceSimulationServiceImpl implements DeviceSimulationService {
 
 	@Override
 	public List<ClientPlatformInstanceSimulation> getAllSimulations() {
-		return deviceSimulationRepository.findAll();
+		return this.deviceSimulationRepository.findAll();
 	}
 
 	@Override
 	public ClientPlatformInstanceSimulation getSimulatorByIdentification(String identification) {
-		return deviceSimulationRepository.findByIdentification(identification);
+		return this.deviceSimulationRepository.findByIdentification(identification);
 	}
 
 	@Override
-	public ClientPlatformInstanceSimulation createSimulation(String identification, int interval, String userId,
-			String json) throws IOException {
+	public ClientPlatformInstanceSimulation createSimulation(String identification, int interval, String userId, String json)
+			throws IOException {
 
-		final ObjectMapper mapper = new ObjectMapper();
-		final ClientPlatformInstanceSimulation simulation = new ClientPlatformInstanceSimulation();
+		ObjectMapper mapper = new ObjectMapper();
+		ClientPlatformInstanceSimulation simulation = new ClientPlatformInstanceSimulation();
 
-		simulation.setOntology(
-				ontologyService.getOntologyByIdentification(mapper.readTree(json).path("ontology").asText(), userId));
-		simulation.setClientPlatform(
-				clientPlatformRepository.findByIdentification(mapper.readTree(json).path("clientPlatform").asText()));
-		simulation.setToken(tokenRepository.findByTokenName(mapper.readTree(json).path("token").asText()));
+		simulation.setOntology(this.ontologyService
+				.getOntologyByIdentification(mapper.readTree(json).path("ontology").asText(), userId));
+		simulation.setClientPlatform(this.clientPlatformRepository
+				.findByIdentification(mapper.readTree(json).path("clientPlatform").asText()));
+		simulation.setToken(this.tokenRepository.findByTokenName(mapper.readTree(json).path("token").asText()));
 		simulation.setIdentification(identification);
 		simulation.setJson(json);
 		simulation.setInterval(interval);
@@ -134,20 +136,20 @@ public class DeviceSimulationServiceImpl implements DeviceSimulationService {
 		else
 			simulation.setCron("0/" + seconds + " 0/" + minutes + " * ? * * *");
 		simulation.setActive(false);
-		simulation.setUser(userService.getUser(userId));
-		return deviceSimulationRepository.save(simulation);
+		simulation.setUser(this.userService.getUser(userId));
+		return this.deviceSimulationRepository.save(simulation);
 
 	}
 
 	@Override
 	public ClientPlatformInstanceSimulation updateSimulation(String identification, int interval, String json,
 			ClientPlatformInstanceSimulation simulation) throws IOException {
-		final ObjectMapper mapper = new ObjectMapper();
-		simulation.setOntology(ontologyService.getOntologyByIdentification(
+		ObjectMapper mapper = new ObjectMapper();
+		simulation.setOntology(this.ontologyService.getOntologyByIdentification(
 				mapper.readTree(json).path("ontology").asText(), simulation.getUser().getUserId()));
-		simulation.setClientPlatform(
-				clientPlatformRepository.findByIdentification(mapper.readTree(json).path("clientPlatform").asText()));
-		simulation.setToken(tokenRepository.findByTokenName(mapper.readTree(json).path("token").asText()));
+		simulation.setClientPlatform(this.clientPlatformRepository
+				.findByIdentification(mapper.readTree(json).path("clientPlatform").asText()));
+		simulation.setToken(this.tokenRepository.findByTokenName(mapper.readTree(json).path("token").asText()));
 		simulation.setIdentification(identification);
 		simulation.setJson(json);
 		simulation.setInterval(interval);
@@ -165,29 +167,29 @@ public class DeviceSimulationServiceImpl implements DeviceSimulationService {
 		else
 			simulation.setCron("0/" + seconds + " 0/" + minutes + " * ? * * *");
 		simulation.setActive(false);
-		return deviceSimulationRepository.save(simulation);
+		return this.deviceSimulationRepository.save(simulation);
 	}
 
 	@Override
 	public void save(ClientPlatformInstanceSimulation simulation) {
-		deviceSimulationRepository.save(simulation);
+		this.deviceSimulationRepository.save(simulation);
 	}
 
 	@Override
 	public ClientPlatformInstanceSimulation getSimulationById(String id) {
 
-		return deviceSimulationRepository.findById(id).orElse(null);
+		return this.deviceSimulationRepository.findById(id);
 	}
 
 	@Override
 	public List<ClientPlatformInstanceSimulation> getSimulationsForUser(String userId) {
 
-		return deviceSimulationRepository.findByUser(userService.getUser(userId));
+		return this.deviceSimulationRepository.findByUser(this.userService.getUser(userId));
 	}
 
 	@Override
 	public ClientPlatformInstanceSimulation getSimulationByJobName(String jobName) {
-		return deviceSimulationRepository.findByJobName(jobName);
+		return this.deviceSimulationRepository.findByJobName(jobName);
 	}
 
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,8 +91,8 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 	public String queryAsJson(String collection, String query, int offset, int limit) {
 		String url;
 		try {
-			//if (query.contains("*"))
-			//	query = replaceAsterisk(collection, query);
+			if (query.contains("*"))
+				query = replaceAsterisk(collection, query);
 			query = deleteSemicolonFromEnd(query);
 			url = buildUrl(query, offset, limit);
 		} catch (final UnsupportedEncodingException e) {
@@ -101,7 +101,7 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 		}
 		if (compileQueries())
 			((QuasarMongoDBbHttpConnector) AopContext.currentProxy()).compileQueryAsJson(collection, query, offset);
-		final String result = quasarHttpClient.invokeSQLPlugin(url, null, HttpMethod.GET, MediaType.APPLICATION_JSON_VALUE, null, null);
+		final String result = quasarHttpClient.invokeSQLPlugin(url, null, HttpMethod.GET, MediaType.APPLICATION_JSON_VALUE, null);
 		return formatResult(result);
 	}
 
@@ -114,7 +114,7 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 			log.error(BUILDING_ERROR, e);
 			throw new DBPersistenceException(BUILDING_ERROR, e);
 		}
-		return quasarHttpClient.invokeSQLPlugin(url, null, HttpMethod.GET, BaseHttpClient.ACCEPT_TEXT_CSV, null, null);
+		return quasarHttpClient.invokeSQLPlugin(url, null, HttpMethod.GET, BaseHttpClient.ACCEPT_TEXT_CSV, null);
 
 	}
 
@@ -162,9 +162,7 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 		try {
 			schema = mapper.readTree(ontology.getJsonSchema());
 			if (!ontologyDataService.refJsonSchema(schema).equals("")) {
-				if (log.isDebugEnabled()) {
-					log.debug("Modifying query that contains * {}:", query);
-				}				
+				log.debug("Modifying query that contains * {}:", query);
 				final String parentNode = schema.at("/required/0").asText();
 				if (parentNode != null && parentNode.trim().length() > 0) {
 					query = query.replaceAll("count\\(.*?\\*.*?\\)", "count\\(" + parentNode + "\\)");
@@ -199,9 +197,7 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 
 					}
 				}
-				if (log.isDebugEnabled()) {
-					log.debug("Modified query that contains * {}:", query);
-				}				
+				log.debug("Modified query that contains * {}:", query);
 			} else {
 				log.error("Query for ontology {} contains * please indicate explicitly the fields you want to query",
 						collection);
@@ -218,10 +214,10 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 	private String handleCompileQuery(String url, String query, String collection) {
 		try {
 			final String compileResult = quasarHttpClient.invokeSQLPlugin(url.replace("/query/", "/compile/"),
-					null, HttpMethod.GET, MediaType.APPLICATION_JSON_VALUE, null, null);
+					null, HttpMethod.GET, MediaType.APPLICATION_JSON_VALUE, null);
 			final JsonNode compile = mapper.readTree(compileResult);
 			String nativeQuery = compile.path(PATH_TO_COMPILED_QUERY).asText();
-			if (StringUtils.hasText(nativeQuery)) {
+			if (!StringUtils.isEmpty(nativeQuery)) {
 				nativeQuery = nativeQuery.replaceAll("\\n", "");
 				log.info("Quasar is about to execute native query: {}", nativeQuery);
 				((ObjectNode) compile).put(PATH_TO_COMPILED_QUERY, nativeQuery);
@@ -265,8 +261,8 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 	public String compileQueryAsJson(String collection, String query, int offset) {
 		String url;
 		try {
-			//if (query.contains("*"))
-			//	query = replaceAsterisk(collection, query);
+			if (query.contains("*"))
+				query = replaceAsterisk(collection, query);
 			query = deleteSemicolonFromEnd(query);
 			url = buildUrl(query, offset, getMaxRegisters());
 		} catch (final UnsupportedEncodingException e) {

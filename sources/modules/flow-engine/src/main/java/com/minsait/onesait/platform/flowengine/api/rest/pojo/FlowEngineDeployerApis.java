@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,20 +21,16 @@ import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.services.apimanager.operation.OperationJson;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@NoArgsConstructor
-@AllArgsConstructor
 public class FlowEngineDeployerApis {
 	@Getter
 	@Setter
-	Map<Api, List<OperationJson>> deployedApis;
+	Map<Api, List<OperationJson>> deployedApis ;
 	@Getter
 	@Setter
-	Map<String, List<OperationJson>> apiOperations;
+	Map<String, List<OperationJson>> apiOperations ;
 	@Getter
 	@Setter
 	FlowDomain domain;

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,10 @@ package com.minsait.onesait.platform.rtdbmaintainer.scheduler.listener;
 import org.quartz.Trigger;
 import org.quartz.TriggerKey;
 import org.quartz.listeners.SchedulerListenerSupport;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.minsait.onesait.platform.config.services.simulation.DeviceSimulationService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,14 +28,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OKPISchedulerListener extends SchedulerListenerSupport {
 
+	@Autowired
+	private DeviceSimulationService deviceSimulationService;
+
 	@Override
 	public void jobUnscheduled(TriggerKey triggerKey) {
-		log.debug("job unscheduled");
+		log.info("job unscheduled");
 	}
 
 	@Override
 	public void triggerFinalized(Trigger trigger) {
-		log.debug("job finalized");
+		log.info("job finalized");
 
 	}
 }

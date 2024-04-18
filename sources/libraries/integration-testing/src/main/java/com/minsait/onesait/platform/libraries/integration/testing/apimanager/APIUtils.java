@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,9 +90,6 @@ public class APIUtils {
 	@Value("${controlpanel}")
 	private String controlpanel;
 
-	@Value("${vertical:onesaitplatform}")
-	private String vertical;
-
 	@Value("${username:developer}")
 	private String username;
 	@Value("${password:Changed2019!}")
@@ -139,7 +136,6 @@ public class APIUtils {
 		params.add(SCOPE, SCOPE_DEFAULT);
 		params.add(GRANT_TYPE_PASSWORD, pass);
 		params.add(USER, user);
-		params.add("vertical", vertical);
 		final HttpHeaders headers = new HttpHeaders();
 		headers.add(HttpHeaders.AUTHORIZATION, "Basic "
 				+ Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes(StandardCharsets.UTF_8)));

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,14 +42,6 @@ public class OKPISchedulerListenerConfig implements ApplicationListener<ContextR
 	private SchedulerFactoryBean schedulerExpirationFactory;
 
 	@Autowired
-	@Qualifier("processexecution-scheduler-factory")
-	private SchedulerFactoryBean schedulerProcessFactory;
-
-	@Autowired
-	@Qualifier("backupminio-scheduler-factory")
-	private SchedulerFactoryBean schedulerBackupMinioFactory;
-
-	@Autowired
 	private BatchSchedulerFactory batchSchedulerFactory;
 
 	@Autowired
@@ -58,45 +50,29 @@ public class OKPISchedulerListenerConfig implements ApplicationListener<ContextR
 	@Autowired
 	private SchedulerListener expirationUsersSchedulerListener;
 
-	@Autowired
-	private SchedulerListener expirationResetUsersSchedulerListener;
-
-	@Autowired
-	private SchedulerListener processExecutionSchedulerListener;
-
-	@Autowired
-	private SchedulerListener backupMinioSchedulerListener;
-
 	@Override
+
 	public void onApplicationEvent(ContextRefreshedEvent event) {
 
 		try {
 
-			batchSchedulerFactory.getScheduler(SchedulerType.OKPI).getListenerManager()
-					.addSchedulerListener(okpiSchedulerListener);
+			batchSchedulerFactory.getScheduler(SchedulerType.OKPI).getListenerManager().
 
-			batchSchedulerFactory.getScheduler(SchedulerType.EXPIRATIONUSERS).getListenerManager()
-					.addSchedulerListener(expirationUsersSchedulerListener);
+					addSchedulerListener(okpiSchedulerListener);
 
-			batchSchedulerFactory.getScheduler(SchedulerType.EXPIRATIONRESETUSER).getListenerManager()
-					.addSchedulerListener(expirationResetUsersSchedulerListener);
+			batchSchedulerFactory.getScheduler(SchedulerType.EXPIRATIONUSERS).getListenerManager().
 
-			batchSchedulerFactory.getScheduler(SchedulerType.PROCESSEXECUTION).getListenerManager()
-					.addSchedulerListener(processExecutionSchedulerListener);
-
-			batchSchedulerFactory.getScheduler(SchedulerType.BACKUPMINIO).getListenerManager()
-					.addSchedulerListener(backupMinioSchedulerListener);
+					addSchedulerListener(expirationUsersSchedulerListener);
 
 		} catch (SchedulerException | NotFoundException e) {
 
-			log.error("Error on OKPI or PROCESSEXECUTION Scheduler Listener", e);
+			log.error("Error on OKPI Scheduler Listener", e);
 
 		}
 		log.info("*******init scheduler listener*************");
 
 		schedulerFactory.setSchedulerListeners(okpiSchedulerListener);
 		schedulerExpirationFactory.setSchedulerListeners(expirationUsersSchedulerListener);
-		schedulerProcessFactory.setSchedulerListeners(processExecutionSchedulerListener);
-		schedulerBackupMinioFactory.setSchedulerListeners(backupMinioSchedulerListener);
+
 	}
 }

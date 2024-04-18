@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,55 +35,10 @@ import net.sf.jsqlparser.statement.select.Top;
 public class SQLServerHelper extends SQLHelperImpl implements SQLHelper {
 
 	private final static String LIST_TABLES_QUERY = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES";
-	private static final String GET_CURRENT_DATABASE_QUERY = "SELECT DB_NAME()";
-	private static final String LIST_DATABASES_QUERY = "Select name from sysdatabases";
-	private static final String GET_CURRENT_SCHEMA_QUERY = "SELECT SCHEMA_NAME()";
-	private static final String LIST_SCHEMAS_QUERY = ""
-			+ "DECLARE @SQL VARCHAR(MAX) = 'use %s;SELECT schema_name FROM information_schema.schemata;'"
-			+ "EXEC(@SQL);";
-	private static final String LIST_TABLE_INFORMATION_QUERY = "SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = '%s'";
-	private static final String LIST_TABLES_IN_DATABASE_IN_SCHEMA_QUERY = ""
-			+ "DECLARE @SQL VARCHAR(MAX) = 'use %s;SELECT table_name FROM information_schema.tables WHERE table_schema = ''%s''';"
-			+ "EXEC(@SQL);";
 
 	@Override
 	public String getAllTablesStatement() {
 		return LIST_TABLES_QUERY;
-	}
-
-	@Override
-	public boolean hasDatabase() {
-		return true;
-	}
-
-	@Override
-	public boolean hasSchema() {
-		return true;
-	}
-
-	@Override
-	public String getDatabaseStatement() {
-		return GET_CURRENT_DATABASE_QUERY;
-	}
-
-	@Override
-	public String getSchemaStatement() {
-		return GET_CURRENT_SCHEMA_QUERY;
-	}
-
-	@Override
-	public String getDatabasesStatement() {
-		return LIST_DATABASES_QUERY;
-	}
-
-	@Override
-	public String getSchemasStatement(String database) {
-		return String.format(LIST_SCHEMAS_QUERY, database);
-	}
-
-	@Override
-	public String getAllTablesStatement(String database, String schema) {
-		return String.format(LIST_TABLES_IN_DATABASE_IN_SCHEMA_QUERY, database, schema);
 	}
 
 	@Override
@@ -136,10 +91,10 @@ public class SQLServerHelper extends SQLHelperImpl implements SQLHelper {
 
 			// Set new offset
 			if (hasOffset) {
-				limitedSelect.getOffset().setOffset(new LongValue(offset));
+				limitedSelect.getOffset().setOffset(offset);
 			} else {
 				final Offset newOffset = new Offset();
-				newOffset.setOffset(new LongValue(offset));
+				newOffset.setOffset(offset);
 				newOffset.setOffsetParam("ROWS");
 				limitedSelect.setOffset(newOffset);
 			}
@@ -151,7 +106,7 @@ public class SQLServerHelper extends SQLHelperImpl implements SQLHelper {
 	public String getFieldTypeString(String fieldOspType) {
 		String type = null;
 
-		final OntologyVirtualSchemaFieldType fieldtype = OntologyVirtualSchemaFieldType.valueOff(fieldOspType);
+		OntologyVirtualSchemaFieldType fieldtype = OntologyVirtualSchemaFieldType.valueOff(fieldOspType);
 		switch (fieldtype) {
 		case STRING:
 			type = "VARCHAR(255)";

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.springframework.data.jpa.repository.Query;
 import com.minsait.onesait.platform.config.model.DigitalTwinType;
 import com.minsait.onesait.platform.config.model.User;
 
-public interface DigitalTwinTypeRepository extends JpaRepository<DigitalTwinType, String> {
+public interface DigitalTwinTypeRepository extends JpaRepository<DigitalTwinType, String>{
 
 	List<DigitalTwinType> findByIdentificationIgnoreCase(String identification);
 
@@ -35,20 +35,18 @@ public interface DigitalTwinTypeRepository extends JpaRepository<DigitalTwinType
 	List<DigitalTwinType> findByDescriptionContaining(String description);
 
 	List<DigitalTwinType> findByIdentificationContaining(String identification);
-
+	
 	List<DigitalTwinType> findByIdentificationLikeAndDescriptionLike(String identification, String description);
-
-	List<DigitalTwinType> findByIdentificationContainingAndDescriptionContaining(String identification,
-			String description);
-
-	@Override
+	
+	List<DigitalTwinType> findByIdentificationContainingAndDescriptionContaining(String identification, String description);
+	
+	DigitalTwinType findById(String id);
+	
 	void deleteById(String id);
-
+	
 	List<DigitalTwinType> findByUser(User user);
 	
-	List<DigitalTwinType> findByUserAndIdentificationLike(User user, String identification);
-
 	@Query("SELECT o.identification FROM DigitalTwinType AS o")
 	List<String> findAllIdentifications();
-
+	
 }

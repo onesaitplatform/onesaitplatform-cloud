@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import com.hazelcast.client.Client;
-import com.hazelcast.client.ClientListener;
+import com.hazelcast.core.Client;
+import com.hazelcast.core.ClientListener;
 import com.hazelcast.core.HazelcastInstance;
 
 import lombok.extern.slf4j.Slf4j;
@@ -34,13 +34,13 @@ public class ClusterClientListener implements ClientListener {
 
 	@Override
 	public void clientConnected(Client client) {
-		log.info("Cache. Client Connected: {}", client.getName());
-		log.info("Cache. Info Added: {}", client.getUuid());
+		log.info("Cache. Client Connected: " + client.getName());
+		log.info("Cache. Info Added: " + client.getUuid());
 	}
 
 	@Override
 	public void clientDisconnected(Client client) {
-		log.info("Cache. Client Disconnected: {}", client.getName());
+		log.info("Cache. Client Disconnected: " + client.getName());
 
 	}
 

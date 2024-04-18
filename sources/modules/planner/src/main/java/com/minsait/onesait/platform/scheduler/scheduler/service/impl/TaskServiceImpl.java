@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.minsait.onesait.platform.scheduler.scheduler.service.impl;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.scheduler.SchedulerType;
@@ -87,7 +87,8 @@ public class TaskServiceImpl implements TaskService {
 		String userId = SecurityContextHolder.getContext().getAuthentication().getName();
 		User user = this.userService.getUser(userId);
 
-		if (!userService.isUserAdministrator(user) && !username.equals(user.getUserId())) {
+		if (!userService.isUserAdministrator(user)
+				&& !username.equals(user.getUserId())) {
 			return (new ArrayList<>());
 		}
 
@@ -188,14 +189,14 @@ public class TaskServiceImpl implements TaskService {
 				trigger = triggerGenerator.createTrigger(jobDetail, triggerKey, info.getStartAt(), info.getEndAt());
 			}
 
-			Date date = scheduler.scheduleJob(jobDetail, trigger);
+			scheduler.scheduleJob(jobDetail, trigger);
 
 			ScheduledJob job = new ScheduledJob(info.getUsername(), jobName, jobGroup,
 					info.getSchedulerType().toString(), info.isSingleton());
 
 			scheduledJobService.createScheduledJob(job);
 
-			log.info("job added. Date: {}", date.toString());
+			log.info("job added");
 
 		} catch (SchedulerException | BatchSchedulerException | NotFoundException e) {
 			log.error("Error adding task", e);
@@ -238,7 +239,8 @@ public class TaskServiceImpl implements TaskService {
 
 			ScheduledJob job = scheduledJobService.findByJobName(jobName);
 
-			if (!userService.isUserAdministrator(user) && !job.getUserId().equals(user.getUserId())) {
+			if (!userService.isUserAdministrator(user)
+					&& !job.getUserId().equals(user.getUserId())) {
 				log.info(JOB_WITH_NAME + operation.getJobName() + NOT_FOUND);
 				throw new NotFoundException(JOB_WITH_NAME + operation.getJobName() + NOT_FOUND);
 			}
@@ -338,7 +340,8 @@ public class TaskServiceImpl implements TaskService {
 
 			ScheduledJob job = scheduledJobService.findByJobName(jobName);
 
-			if (!userService.isUserAdministrator(user) && !job.getUserId().equals(user.getUserId())) {
+			if (!userService.isUserAdministrator(user)
+					&& !job.getUserId().equals(user.getUserId())) {
 				log.info(JOB_WITH_NAME + operation.getJobName() + NOT_FOUND);
 				throw new NotFoundException(JOB_WITH_NAME + operation.getJobName() + NOT_FOUND);
 			}
@@ -386,7 +389,8 @@ public class TaskServiceImpl implements TaskService {
 
 			ScheduledJob job = scheduledJobService.findByJobName(jobName);
 
-			if (!userService.isUserAdministrator(user) && !job.getUserId().equals(user.getUserId())) {
+			if (!userService.isUserAdministrator(user)
+					&& !job.getUserId().equals(user.getUserId())) {
 				log.info(JOB_WITH_NAME + operation.getJobName() + NOT_FOUND);
 				throw new NotFoundException(JOB_WITH_NAME + operation.getJobName() + NOT_FOUND);
 			}

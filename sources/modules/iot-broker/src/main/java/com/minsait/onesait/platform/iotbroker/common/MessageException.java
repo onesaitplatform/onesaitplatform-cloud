@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,5 +25,5 @@ public class MessageException {
 	public static final String ERR_FIELD_IS_MANDATORY = "%s field is mandatory for %s messages";
 	public static final String ERR_DATABASE = "Database query error, check your message";
 	public static final String ERR_SESSIONKEY_NOT_OWNER = "The session key exists and its not assigned to this device";
-    public static final String ERR_CLIENTPLATFORM_INSTANCE_LIMIT_REACHED = "The ClientPlatform cannot create more instances, limit is reached";
+
 }

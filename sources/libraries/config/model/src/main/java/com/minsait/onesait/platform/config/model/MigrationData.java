@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,14 +32,6 @@ public class MigrationData extends OPResource {
 
 	private static final long serialVersionUID = 1L;
 
-	public enum DataType {
-		EXPORT, IMPORT, QUERY;
-	}
-
-	public enum Status {
-		FINISHED, IN_PROGRESS, NO_STATUS, ERROR;
-	}
-
 	@Getter
 	@Setter
 	@Column(name = "DESCRIPTION")
@@ -47,20 +39,10 @@ public class MigrationData extends OPResource {
 
 	@Getter
 	@Setter
-	@Column(name = "DATA_TYPE")
-	private DataType type;
-
-	@Getter
-	@Setter
-	@Column(name = "STATUS")
-	private Status status;
-
-	@Getter
-	@Setter
 	@Column(name = "FILE_NAME")
 	private String fileName;
 
-	@Column(name = "MIGRATION_FILE", length = 100000000)
+	@Column(name = "FILE", length = 100000)
 	@Lob
 	@Type(type = "org.hibernate.type.BinaryType")
 	@Getter

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +27,7 @@ import javax.persistence.UniqueConstraint;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import com.minsait.onesait.platform.config.model.Ontology.AccessType;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
@@ -42,7 +38,7 @@ import lombok.Setter;
 @Table(name = "CLIENT_PLATFORM_ONTOLOGY", uniqueConstraints = {
 		@UniqueConstraint(columnNames = { "CLIENT_PLATFORM_ID", "ONTOLOGY_ID" }) })
 @Configurable
-public class ClientPlatformOntology extends AuditableEntityWithUUID{
+public class ClientPlatformOntology extends AuditableEntityWithUUID {
 
 	private static final long serialVersionUID = 1L;
 
@@ -57,24 +53,21 @@ public class ClientPlatformOntology extends AuditableEntityWithUUID{
 	@OnDelete(action = OnDeleteAction.NO_ACTION)
 	@Getter
 	@Setter
-	@JsonIgnore
 	private ClientPlatform clientPlatform;
 
 	@ManyToOne
 	@JoinColumn(name = "ONTOLOGY_ID", referencedColumnName = "ID", nullable = false)
-	@OnDelete(action = OnDeleteAction.CASCADE)
+	@OnDelete(action = OnDeleteAction.NO_ACTION)
 	@Getter
 	@Setter
 	private Ontology ontology;
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) {
+		if (this == o)
 			return true;
-		}
-		if (!(o instanceof ClientPlatformOntology)) {
+		if (!(o instanceof ClientPlatformOntology))
 			return false;
-		}
 		final ClientPlatformOntology that = (ClientPlatformOntology) o;
 		return getClientPlatform() != null && that.getClientPlatform() != null
 				&& getClientPlatform().getIdentification() != null
@@ -89,25 +82,11 @@ public class ClientPlatformOntology extends AuditableEntityWithUUID{
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (getClientPlatform() == null || getClientPlatform().getIdentification() == null ? 0
+		result = prime * result + ((getClientPlatform() == null || getClientPlatform().getIdentification() == null) ? 0
 				: getClientPlatform().getIdentification().hashCode());
-		result = prime * result + (getOntology() == null || getOntology().getIdentification() == null ? 0
+		result = prime * result + ((getOntology() == null || getOntology().getIdentification() == null) ? 0
 				: getOntology().getIdentification().hashCode());
 		return result;
 	}
-
-	@JsonSetter("ontology")
-	public void setOntologyJson(String id) {
-		if (StringUtils.hasText(id)) {
-			final Ontology o = new Ontology();
-			o.setId(id);
-			ontology = o;
-		}
-	}
-	@JsonGetter("ontology")
-	public String getOntologyJson() {
-		return ontology == null ? null : ontology.getId();
-	}
-
 
 }

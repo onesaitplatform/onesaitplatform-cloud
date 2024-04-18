@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,6 @@ import javax.persistence.Table;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -64,7 +62,6 @@ public class AppRoleExport extends AppRoleParent {
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@Getter
 	@Setter
-	@JsonIgnore
-	private Set<AppUser> appUsers = new HashSet<>();
+	private Set<AppUserExport> appUsers = new HashSet<>();
 
 }

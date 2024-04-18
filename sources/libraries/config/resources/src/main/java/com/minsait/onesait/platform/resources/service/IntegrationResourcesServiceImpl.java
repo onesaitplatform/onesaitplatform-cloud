@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,38 +14,24 @@
  */
 package com.minsait.onesait.platform.resources.service;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
 
 import com.minsait.onesait.platform.commons.ActiveProfileDetector;
-import com.minsait.onesait.platform.config.components.AllConfiguration;
 import com.minsait.onesait.platform.config.components.GlobalConfiguration;
-import com.minsait.onesait.platform.config.components.ModulesUrls;
 import com.minsait.onesait.platform.config.components.Urls;
-import com.minsait.onesait.platform.config.model.Configuration;
-import com.minsait.onesait.platform.config.model.Configuration.Type;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
-@Lazy(value = true)
 public class IntegrationResourcesServiceImpl implements IntegrationResourcesService {
 
 	@Autowired
@@ -55,31 +41,21 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 
 	private String profile;
 
-	private Map<String, Urls> urlsMap = new HashMap<>();
-	
-	//private Urls urls;
-
+	private Urls urls;
 	@Getter
 	private GlobalConfiguration globalConfiguration;
 
-	private static final String ENDPOINTS_PREFIX_FILE = "endpoints-";
-	private static final String GLOBAL_CONFIG_PREFIX_FILE = "global-config-";
-	private static final String YML_SUFFIX = ".yml";
-
 	public enum ServiceUrl {
 		BASE, ADVICE, ROUTER, HAWTIO, SWAGGERUI, API, SWAGGERUIMANAGEMENT, SWAGGERJSON, EMBEDDED, UI, GATEWAY,
-		MANAGEMENT, DEPLOYMENT, URL, EDIT, VIEW, ONLYVIEW, PROXYURL, ADMIN;
+		MANAGEMENT, DEPLOYMENT, URL, EDIT, VIEW, ONLYVIEW, PROXYURL;
 	}
 
 	public enum Module {
 		IOTBROKER("iotbroker"), SCRIPTINGENGINE("scriptingEngine"), FLOWENGINE("flowEngine"),
 		ROUTERSTANDALONE("routerStandAlone"), APIMANAGER("apiManager"), CONTROLPANEL("controlpanel"),
-		DIGITALTWINBROKER("digitalTwinBroker"), DOMAIN("domain"), MONITORINGUI("monitoringUI"), GRAVITEE("gravitee"),
-		RULES_ENGINE("rulesEngine"), BPM_ENGINE("bpmEngine"), NOTEBOOK("notebook"), DASHBOARDENGINE("dashboardEngine"),
-		GIS_VIEWER("gisViewer"), REPORT_ENGINE("reportEngine"), OPEN_DATA("openData"), DATACLEANERUI("dataCleanerUI"),
-		LOGCENTRALIZER("logCentralizer"), KEYCLOAK_MANAGER("keycloakManager"), EDGE("edge"), MINIO("minio"),
-		PRESTO("presto"), PROMETHEUS("prometheus"), SERVERLESS("serverless"), MODELJSONLD("modeljsonld"),
-		NEBULA_GRAPH("nebula"), SPARK("spark"), DATALABELING("datalabeling"), TRACINGUI("tracingUI");
+		DIGITALTWINBROKER("digitalTwinBroker"), DOMAIN("domain"), MONITORINGUI("monitoringUI"),
+		RULES_ENGINE("rulesEngine"), NOTEBOOK("notebook"), DASHBOARDENGINE("dashboardEngine"),
+		REPORT_ENGINE("reportEngine");
 
 		String moduleString;
 
@@ -99,22 +75,16 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 	public void getActiveProfile() {
 
 		profile = profileDetector.getActiveProfile();
-		//loadConfigurations();
-		loadGlobalConfigurations();
+		loadConfigurations();
 	}
 
 	@Override
 	public String getUrl(Module module, ServiceUrl service) {
-
-		final Urls urls = getUrls(); //Multitenant compatible
 		try {
 			switch (module) {
 			case CONTROLPANEL:
-				switch (service) {
-				case BASE:
+				if (service.equals(ServiceUrl.BASE)) {
 					return urls.getControlpanel().getBase();
-				default:
-					break;
 				}
 				break;
 			case IOTBROKER:
@@ -203,19 +173,6 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 					return urls.getDomain().getBase();
 				}
 				break;
-
-			case GRAVITEE:
-				switch (service) {
-				case UI:
-					return urls.getGravitee().getUi();
-				case MANAGEMENT:
-					return urls.getGravitee().getManagement();
-				case GATEWAY:
-					return urls.getGravitee().getGateway();
-				default:
-					break;
-				}
-				break;
 			case MONITORINGUI:
 				switch (service) {
 				case BASE:
@@ -232,16 +189,6 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 					return urls.getRulesEngine().getAdvice();
 				case BASE:
 					return urls.getRulesEngine().getBase();
-				default:
-					break;
-				}
-				break;
-			case BPM_ENGINE:
-				switch (service) {
-				case BASE:
-					return urls.getBpmEngine().getBase();
-				case DEPLOYMENT:
-					return urls.getBpmEngine().getDeployment();
 				default:
 					break;
 				}
@@ -264,121 +211,6 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 					break;
 				}
 				break;
-			case GIS_VIEWER:
-				switch (service) {
-				case VIEW:
-					return urls.getGisViewer().getView();
-				default:
-					break;
-				}
-			case OPEN_DATA:
-				switch (service) {
-				case BASE:
-					return urls.getOpenData().getBase();
-				default:
-					break;
-				}
-				break;
-			case DATACLEANERUI:
-				switch (service) {
-				case BASE:
-					return urls.getDataCleanerUI().getBase();
-				case EMBEDDED:
-					return urls.getDataCleanerUI().getEmbedded();
-				default:
-					break;
-				}
-				break;
-			case LOGCENTRALIZER:
-				switch (service) {
-				case BASE:
-					return urls.getLogCentralizer().getBase();
-				}
-			case KEYCLOAK_MANAGER:
-				switch (service) {
-				case BASE:
-					return urls.getKeycloakManager().getBase();
-				case ADVICE:
-					return urls.getKeycloakManager().getAdvice();
-				case ADMIN:
-					return urls.getKeycloakManager().getAdmin();
-				default:
-					break;
-				}
-			case PROMETHEUS:
-				switch (service) {
-				case BASE:
-					return urls.getPrometheus().getBase();
-				default:
-					break;
-				}
-			case EDGE:
-				switch (service) {
-				case BASE:
-					return urls.getEdge().getBase();
-				default:
-					break;
-				}
-			case MINIO:
-				switch (service) {
-				case BASE:
-					return urls.getMinio().getBase();
-				default:
-					break;
-				}
-			case PRESTO:
-				switch (service) {
-				case BASE:
-					return urls.getPresto().getBase();
-				default:
-					break;
-				}
-			case SERVERLESS:
-				switch (service) {
-				case BASE:
-					return urls.getServerless().getBase();
-				default:
-					break;
-				}
-			case MODELJSONLD:
-				switch (service) {
-				case BASE:
-					return urls.getModeljsonld().getBase();
-				default:
-					break;
-				}
-			case DATALABELING:
-				switch (service) {
-				case BASE:
-					return urls.getDatalabeling().getBase();
-				case EMBEDDED:
-					return urls.getDatalabeling().getEmbedded();
-				default:
-					break;
-				}
-				break;
-			case NEBULA_GRAPH:
-				switch (service) {
-				case BASE:
-					return urls.getNebula().getBase();
-				default:
-					break;
-				}
-			case SPARK:
-				switch (service) {
-				case BASE:
-					return urls.getSpark().getMasterBase();
-				default:
-					break;
-				}
-			case TRACINGUI:
-				switch (service) {
-				case BASE:
-					return urls.getTracingUI().getBase();
-				default:
-					break;
-				}
-				break;
 			default:
 				break;
 			}
@@ -393,7 +225,6 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 	@Override
 	public Map<String, String> getSwaggerUrls() {
 		final Map<String, String> map = new HashMap<>();
-		final Urls urls = getUrls(); //Multitenant compatible
 		final String base = urls.getDomain().getBase();
 		String controlpanel = base.endsWith("/") ? base.concat("controlpanel") : base.concat("/controlpanel");
 		String iotbroker = base.endsWith("/") ? base.concat("iot-broker") : base.concat("/iot-broker");
@@ -425,72 +256,12 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 
 	@Override
 	public void reloadConfigurations() {
-		//loadConfigurations();
-		//Empty map so that new requests wil populate it
-		urlsMap = new HashMap<>();
+		loadConfigurations();
 	}
-	
-	private Urls getUrls() { 
-		final String vertical = MultitenancyContextHolder.getVerticalSchema();
-		if (!urlsMap.containsKey(vertical)) {
-			// load config for vertical
-			urlsMap.put(vertical, loadConfigurations());
-		}
-		return urlsMap.get(vertical);
-	}
-	
-	private Urls loadConfigurations() {
-		Urls urls;
-		try {
-			urls = configurationService.getEndpointsUrls(profile);
-		} catch (final Exception e) {
-			log.warn(
-					"No configuration found for endpoints, using the one from classpath. If you are not running Config Init module, please contact with and administrator");
-			urls = getConfigurationFromResource(ENDPOINTS_PREFIX_FILE + profile + YML_SUFFIX, ModulesUrls.class)
-					.getOnesaitplatform().get("urls");
-		}
-		return urls;
-	}
-	
-	private void loadGlobalConfigurations() {
 
+	private void loadConfigurations() {
+		urls = configurationService.getEndpointsUrls(profile);
 		globalConfiguration = configurationService.getGlobalConfiguration(profile);
-		if (globalConfiguration == null) {
-			log.warn(
-					"No OP global configuration found, using the one from classpath. If you are not running Config Init module, please contact with and administrator");
-			globalConfiguration = getConfigurationFromResource(GLOBAL_CONFIG_PREFIX_FILE + profile + YML_SUFFIX,
-					AllConfiguration.class).getOnesaitplatform();
-		}
 
-	}
-
-	private <T> T getConfigurationFromResource(String name, Class<T> clazz) {
-		final String config = loadFromResources(name);
-		final Constructor constructor = new Constructor(AllConfiguration.class);
-		final Yaml yaml = new Yaml(constructor);
-		return yaml.loadAs(config, clazz);
-	}
-
-	private String loadFromResources(String name) {
-		try {
-			return new String(Files.readAllBytes(Paths.get(getClass().getClassLoader().getResource(name).toURI())),
-					StandardCharsets.UTF_8);
-
-		} catch (final Exception e) {
-			try {
-				return new String(IOUtils.toString(getClass().getClassLoader().getResourceAsStream(name)).getBytes(),
-						StandardCharsets.UTF_8);
-			} catch (final IOException e1) {
-				log.error("**********************************************");
-				log.error("Error loading resource: " + name + ".Please check if this error affect your database");
-				log.error(e.getMessage());
-				return null;
-			}
-		}
-	}
-
-	@Override
-	public Configuration getBillableModules() {
-		return configurationService.getConfiguration(Type.ENDPOINT_MODULES, profile, "BillableModules");
 	}
 }

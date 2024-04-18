@@ -2,7 +2,6 @@ var Rules = Rules || {};
 
 Rules.List = (function() {
 	"use-strict";
-	var fileLoaded;
 	var csrfHeader = headerJson.csrfHeaderName;
 	var csrfToken = headerJson.csrfToken;
 	var headersObj = {};
@@ -43,71 +42,23 @@ Rules.List = (function() {
     		automaticLayout: true
     	});
 	    
-	    $("#buttonLoadFile").on("change", function(){
-	  		var file = $('#buttonLoadFile').val().split('\\').pop();
-	  		if(file!=null){
-	  			$("#file_name").val(file);
-	  		}
-	  	});
 	   
 	    $('#updateBtn').on('click',function(){
 	    	var id = $(this).data('id');
-	    	var type = $(this).data('type');
-	    	if(type == 'drl'){
-	    		$.ajax({
-		       	 	url : '/controlpanel/rule-domains/rule/' +id +'/drl' ,  
-		       	 	headers: headersObj,
-		       	 	data: editor.getValue(),
-		            type : 'PUT',
-		            contentType: 'text/plain'
-		        }).done(function(data) {
-		        	location.reload();
-		        }).fail(function(error) {
-		        	console.log(error);
-		        	$('#errors').text(error.responseText);
-		        	$('.alert-danger').show();
-				});
-	    	}else if(type == 'table'){
-	    		if($("#buttonLoadFile").val() == ""){
-	    			console.log("File is empty.");
-		        	$('#errors').text("File is empty, please select a file to upload the rule");
-		        	$('.alert-danger').show();
-	    		}else{
-	    			var fd = new FormData();
-	    	        var files = $('#buttonLoadFile')[0].files;
-	    	        
-	    	        // Check file selected or not
-	    	        if(files.length > 0 ){
-	    	           fd.append('decisionTable',files[0]);
-	    	        }
-	    	        
-	    			$.ajax({
-			       	 	url : '/controlpanel/rule-domains/rule/' +id +'/decisionTable' ,  
-			       	 	headers: headersObj,
-			       	 	data: fd,
-			            type : 'POST',
-			            contentType: false,
-			            processData: false,
-			        }).done(function(data) {
-			        	$("#file_name").val("");
-			        	location.reload();
-			        }).fail(function(error) {
-			        	console.log(error);
-			        	$('#errors').text(error.responseText);
-			        	$('.alert-danger').show();
-					});
-	    		}
-	    		
-	    	}
-	    	
+	    	$.ajax({
+	       	 	url : '/controlpanel/rule-domains/rule/' +id +'/drl' ,  
+	       	 	headers: headersObj,
+	       	 	data: editor.getValue(),
+	            type : 'PUT',
+	            contentType: 'text/plain'
+	        }).done(function(data) {
+	        	location.reload();
+	        }).fail(function(error) {
+	        	console.log(error);
+	        	$('#errors').text(error.responseText);
+	        	$('.alert-danger').show();
+			});
 	    })
-	    
-	    $('#downloadBtn').on('click',function(){
-	    	var id = $(this).data('id');
-	    	window.location.href = "/controlpanel/rule-domains/rule/" + id + "/downloadTable";
-	    	
-	    })
-	    
 	     $('#testBtn').on('click',function(){
 	    	var id = $(this).attr('data-id');
 	    	$('#testBtnSubmit').attr('data-id', id);
@@ -142,81 +93,6 @@ Rules.List = (function() {
 		
 	};
 	
-	var loadJsonFromDoc = function(files){
-		var reader = new FileReader();
-		var size = files[0].size;
-		var chunk_size = Math.pow(2, 13);
-	    var chunks = [];
-	    var offset = 0;
-	    var bytes = 0;
-
-		reader.onloadend = function (e) {
-			
-			if(e.target.readyState == FileReader.DONE){
-				var chunk = e.target.result;
-				bytes += chunk.length;
-				
-				chunks.push(chunk);
-				
-				if(offset < size){
-					offset += chunk_size;
-					var blob = files[0].slice(offset , offset + chunk_size);
-					reader.readAsText(blob);	
-					
-					if (offset > size){
-						var content = chunks.join("");
-						
-						try {
-							var jsonData = JSON.parse(content);	
-							fileLoaded = jsonData;
-						}
-						catch(err) {
-							try{
-								var firstError = err.message;
-								var jsonData = content.replace(/[\r]/g, '');
-								var arrayJson = [];
-								var dataSplitted = jsonData.split("\n");
-								var i;
-								for(var i in dataSplitted){
-									if(dataSplitted[i] != "") {
-										arrayJson.push(JSON.parse(dataSplitted[i]));
-									}
-								}
-								fileLoaded=arrayJson;
-							}catch(err){
-								
-								$('#response').html(firstError+'<br>'+ err.message);
-								$('#returnAction').modal("show");
-								return;
-							}
-						}							
-					
-					printJson();								
-					}						
-				}
-			}
-				
-		}
-		var blob = files[0].slice(offset, offset + chunk_size);
-		reader.readAsText(blob);
-		$('#progressBarModal').modal("show");
-	}
-	
-	var printJson = function(){
-		
-		if(fileLoaded.length > 100){
-			myVSJSONInput.setValue(JSON.stringify(fileLoaded.slice(0,20)));
-		}else{
-			myVSJSONInput.setValue(JSON.stringify(fileLoaded));
-		}
-		beautifyJson();
-		
-	};
-	
-	var beautifyJson = function() {
-		myVSJSONInput.getAction('editor.action.formatDocument').run()
-	};
-	
 	var generateJson = function(){
 		var json = [
 			{ "id" : "ONTOLOGY", "parent" : "#", "text" : "Ontology Rules"},
@@ -226,15 +102,15 @@ Rules.List = (function() {
 		var availableOntologies = [];
 		
 		rules.forEach(function(rule){
-			if(rule.type == 'ONTOLOGY'){
+			if(rule.type.$name == 'ONTOLOGY'){
 				if(availableOntologies.indexOf(rule.inputOntology == -1)){
 					json.push({"id" : rule.inputOntology , "parent" : "ONTOLOGY", "text": rule.inputOntology, icon: "flaticon-network"});
 					availableOntologies.push(rule.inputOntology);
 				}
-				var r = {"id" : rule.id ,"identification": rule.identification, "parent" : rule.inputOntology, "text": rule.identification, "icon": "flaticon-interface-5", "drl": rule.drl, "active": rule.active, "decisionTable" : rule.decisionTable};
+				var r = {"id" : rule.id ,"identification": rule.identification, "parent" : rule.inputOntology, "text": rule.identification, "icon": "flaticon-interface-5", "drl": rule.drl, "active": rule.active};
 				json.push(r);
-			}else if(rule.type == 'REST'){
-				var r = {"id" : rule.id , "identification": rule.identification, "parent" : "REST", "text": rule.identification, "icon": "flaticon-interface-5", "drl": rule.drl, "active": rule.active, "decisionTable" : rule.decisionTable };
+			}else if(rule.type.$name == 'REST'){
+				var r = {"id" : rule.id , "identification": rule.identification, "parent" : "REST", "text": rule.identification, "icon": "flaticon-interface-5", "drl": rule.drl, "active": rule.active };
 				json.push(r);
 			}
 			
@@ -249,6 +125,9 @@ Rules.List = (function() {
 			], 
 			'contextmenu': {               
                 'items' : function(node) {
+                	//only drl nodes
+                	if(node.original.drl == null)
+                		return false;
                 	var id = node.original.identification;
                 	var items = {
                 		disableItem : {
@@ -279,9 +158,7 @@ Rules.List = (function() {
 		.on("select_node.jstree", function (e, data) {
 			var rule = data.instance.get_node(data.selected[0]).original;
 			var drl = rule.drl;
-			if(drl != null && data.selected.length) {
-				$("#drlCode").show();
-				$("#decisionTable-div").addClass("hidden");
+			if(data.selected.length) {
 				if(drl != null){
 					editor.setValue(drl);
 					editor.gotoLine(1);
@@ -289,27 +166,7 @@ Rules.List = (function() {
 					$('#testBtn').prop('disabled', false);
 					$('#updateBtn').attr('data-id', rule.identification);
 					$('#testBtn').attr('data-id', rule.identification);
-					$('#updateBtn').attr('data-type', 'drl');
-					$('#testBtn').attr('data-type', 'drl');
-					$("#downloadBtn").prop('disabled', true);
-					$("#downloadBtn").hide();
-					$("#tableInfo").addClass("hidden");
 				}
-			}else if(drl==undefined && rule.decisionTable!=undefined){
-				
-				$("#drlCode").hide();
-				$("#decisionTable-div").removeClass("hidden");
-				$('#updateBtn').prop('disabled', false);
-				$('#testBtn').prop('disabled', false);
-				$('#updateBtn').attr('data-id', rule.identification);
-				$('#testBtn').attr('data-id', rule.identification);
-				$('#updateBtn').attr('data-type', 'table');
-				$('#testBtn').attr('data-type', 'table');
-				$("#downloadBtn").attr('data-id', rule.identification);
-				$("#downloadBtn").prop('disabled', false);
-				$("#downloadBtn").show();
-				$("#tableInfo").removeClass("hidden");
-				
 			}
 		})
 		.on('state_ready.jstree', function () {
@@ -336,6 +193,7 @@ Rules.List = (function() {
 		$.ajax({
        	 	url : '/controlpanel/rule-domains/rule/' +id +'/active' ,  
        	 	headers: headersObj,
+       	 	data: editor.getValue(),
             type : 'PUT',
             contentType: 'text/plain'
         }).done(function(data) {
@@ -397,10 +255,7 @@ Rules.List = (function() {
 	}
 	// Public API
 	return {
-		init: init,
-		loadJsonFromDoc: function(files){
-			loadJsonFromDoc(files);
-		}
+		init: init
 		
 	};
 	

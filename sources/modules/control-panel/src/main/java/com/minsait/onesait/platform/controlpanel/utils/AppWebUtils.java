@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  */
 package com.minsait.onesait.platform.controlpanel.utils;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -21,18 +22,12 @@ import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.session.SessionInformation;
@@ -52,12 +47,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
 import com.minsait.onesait.platform.commons.security.PasswordPatternMatcher;
 import com.minsait.onesait.platform.config.model.Role;
-import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.RoleRepository;
-import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.controlpanel.rest.management.login.LoginManagementController;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
-import com.minsait.onesait.platform.security.PlugableOauthAuthenticator;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -69,31 +61,24 @@ public class AppWebUtils {
 	private MessageSource messageSource;
 
 	@Autowired
-	@Lazy
 	private SessionRegistry sessionRegistry;
 
-	@Autowired(required = false)
+	@Autowired
 	private LoginManagementController controller;
-	
+
 	@Autowired
 	private PasswordPatternMatcher passwordPatternMatcher;
-	
-	
+
 	private static final String MESSAGE_STR = "message";
 	private static final String INFO_MESSAGE_STR = "info";
 	private static final String OAUTH_TOKEN_SESS_ATT = "oauthToken";
 	public static final String IDENTIFICATION_PATERN = "[a-zA-Z0-9_-]*";
-	public static final String IDENTIFICATION_PATERN_SPACES = "[a-zA-Z 0-9_-]*";
-	private static final String PASSWORD_PATTERN = "password-pattern";
 
 	@Autowired
 	private IntegrationResourcesService resourcesService;
 
 	@Autowired
 	private RoleRepository roleRepository;
-
-	@Autowired
-	private UserRepository userRepository;
 
 	private Tika tika = null;
 
@@ -111,80 +96,48 @@ public class AppWebUtils {
 
 	public String getUserId() {
 		final Authentication auth = getAuthentication();
-		if (auth == null) {
+		if (auth == null)
 			return null;
-		}
 		return auth.getName();
 	}
 
 	public String getRole() {
 		final Authentication auth = getAuthentication();
-		if (auth == null) {
+		if (auth == null)
 			return null;
-		}
-
-		final User u = userRepository.findByUserId(auth.getName());
-		if (u != null) {
-			return u.getRole().getId();
-		} else {
-			return "ROLE_ANONYMOUS";
-		}
-
-	}
-
-	public String getRoleOrParent() {
-		final Role role = roleRepository.findById(getRole()).orElse(null);
-		if (role.getRoleParent() != null) {
-			return role.getRoleParent().getId();
-		} else {
-			return role.getId();
-		}
+		return auth.getAuthorities().toArray()[0].toString();
 	}
 
 	public boolean isAdministrator() {
-		final Role role = roleRepository.findById(getRole()).orElse(null);
-
-		return role != null && (role.getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()) || role.getRoleParent() != null
-				&& role.getRoleParent().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()));
-	}
-
-	public boolean isDeveloper() {
-		final Role role = roleRepository.findById(getRole()).orElse(null);
-
-		return role != null && (role.getId().equals(Role.Type.ROLE_DEVELOPER.name()) || role.getRoleParent() != null
-				&& role.getRoleParent().getId().equals(Role.Type.ROLE_DEVELOPER.name()));
+		Role role = roleRepository.findById(getRole());
+		return ((role != null)
+				&& ((role.getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) || (role.getRoleParent() != null
+						&& role.getRoleParent().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()))));
 	}
 
 	public boolean isPlatformAdmin() {
-
-		final Role role = roleRepository.findById(getRole()).orElse(null);
-
-		return role != null
-				&& (role.getId().equals(Role.Type.ROLE_PLATFORM_ADMIN.name()) || role.getRoleParent() != null
-						&& role.getRoleParent().getId().equals(Role.Type.ROLE_PLATFORM_ADMIN.name()));
-
+		Role role = roleRepository.findById(getRole());
+		return ((role != null)
+				&& ((role.getId().equals(Role.Type.ROLE_PLATFORM_ADMIN.name())) || (role.getRoleParent() != null
+						&& role.getRoleParent().getId().equals(Role.Type.ROLE_PLATFORM_ADMIN.name()))));
 	}
 
 	public boolean isAuthenticated() {
 		final Authentication auth = getAuthentication();
-		return auth != null;
+		return (auth != null);
 	}
 
 	public boolean isUser() {
-
-		final Role role = roleRepository.findById(getRole()).orElse(null);
-
-		return role != null && (role.getId().equals(Role.Type.ROLE_USER.name())
-				|| role.getRoleParent() != null && role.getRoleParent().getId().equals(Role.Type.ROLE_USER.name()));
+		Role role = roleRepository.findById(getRole());
+		return ((role != null) && ((role.getId().equals(Role.Type.ROLE_USER.name()))
+				|| (role.getRoleParent() != null && role.getRoleParent().getId().equals(Role.Type.ROLE_USER.name()))));
 	}
 
 	public boolean isDataViewer() {
-
-		final Role role = roleRepository.findById(getRole()).orElse(null);
-
-		return role != null && (role.getId().equals(Role.Type.ROLE_DATAVIEWER.name()) || role.getRoleParent() != null
-				&& role.getRoleParent().getId().equals(Role.Type.ROLE_DATAVIEWER.name()));
-
+		Role role = roleRepository.findById(getRole());
+		return ((role != null)
+				&& ((role.getId().equals(Role.Type.ROLE_DATAVIEWER.name())) || (role.getRoleParent() != null
+						&& role.getRoleParent().getId().equals(Role.Type.ROLE_DATAVIEWER.name()))));
 	}
 
 	public void addRedirectMessage(String messageKey, RedirectAttributes redirect) {
@@ -211,9 +164,7 @@ public class AppWebUtils {
 		try {
 			return messageSource.getMessage(key, null, LocaleContextHolder.getLocale());
 		} catch (final Exception e) {
-			if (log.isDebugEnabled()) {
-				log.debug("Key:{} not found. Returns:{}", key, valueDefault);
-			}
+			log.debug("Key:" + key + " not found. Returns:" + valueDefault);
 			return valueDefault;
 		}
 	}
@@ -224,36 +175,18 @@ public class AppWebUtils {
 
 	public String getCurrentUserOauthToken() {
 		final Optional<HttpServletRequest> request = getCurrentHttpRequest();
-		
+
 		if (request.isPresent()) {
-			
-			if (WebUtils.getSessionAttribute(request.get(), OAUTH_TOKEN_SESS_ATT) != null) {
-				return (String) WebUtils.getSessionAttribute(request.get(), OAUTH_TOKEN_SESS_ATT);
-			} else if (request.get().getHeader(HttpHeaders.AUTHORIZATION) != null) {
-				return request.get().getHeader(HttpHeaders.AUTHORIZATION).substring("Bearer ".length());
-			} else if (SecurityContextHolder.getContext().getAuthentication() != null
-					&& !(SecurityContextHolder.getContext().getAuthentication() instanceof AnonymousAuthenticationToken)){
-				if(controller != null) {
-					return controller.postLoginOauthNopass(SecurityContextHolder.getContext().getAuthentication())
-							.getValue();
-				}else {
-					log.error("Authentication Context not compabible with auth method for this Operation. Probably you need Oauth Token due to Keycloak further integration with other System");
-					throw new GenericRuntimeOPException("Authentication Context not compabible with auth method for this Operation. Probably you need Oauth Token due to Keycloak further integration with other System");
-				}
-
-			}
-
+			String token = ((String) WebUtils.getSessionAttribute(request.get(), OAUTH_TOKEN_SESS_ATT));
+			if (null != token) {
+				return token;
+			} else if (null != request.get().getHeader("Authorization")) {
+				return request.get().getHeader("Authorization").substring("Bearer ".length());
+			} else
+				return null;
+		} else {
+			throw new GenericRuntimeOPException("No request currently active");
 		}
-		throw new GenericRuntimeOPException("No request currently active");
-
-	}
-
-	public String getCurrentXOpAPIKey() {
-		final Optional<HttpServletRequest> request = getCurrentHttpRequest();
-		if (request.isPresent()) {
-			return request.get().getHeader("X-OP-APIKey");
-		}
-		return null;
 	}
 
 	private static Optional<HttpServletRequest> getCurrentHttpRequest() {
@@ -276,7 +209,7 @@ public class AppWebUtils {
 	}
 
 	public boolean paswordValidation(String data) {
-		return passwordPatternMatcher.isValidPassword(data, getPasswordPattern());
+		return passwordPatternMatcher.isValidPassword(data);
 	}
 
 	public String beautifyJson(String json) throws JsonProcessingException {
@@ -301,9 +234,11 @@ public class AppWebUtils {
 		if (enc == null) {
 			enc = WebUtils.DEFAULT_CHARACTER_ENCODING;
 		}
-
-		pathSegmentEncode = UriUtils.encodePathSegment(pathSegment, enc);
-
+		try {
+			pathSegmentEncode = UriUtils.encodePathSegment(pathSegment, enc);
+		} catch (final UnsupportedEncodingException uee) {
+			log.warn("Error encoding path segment " + uee.getMessage());
+		}
 		return pathSegmentEncode;
 	}
 
@@ -313,9 +248,8 @@ public class AppWebUtils {
 
 	public boolean isFileExtensionForbidden(MultipartFile file) {
 		try {
-			if (getAllowedFileExtensions().stream().anyMatch(file.getOriginalFilename()::contains)) {
+			if (getAllowedFileExtensions().stream().anyMatch(file.getOriginalFilename()::contains))
 				return false;
-			}
 			final String contentType = tika.detect(file.getInputStream());
 			final String[] arrayMimeTypes = mimeTypesNotAllowed.split(",");
 			final boolean isForbidden = Arrays.stream(arrayMimeTypes).parallel().anyMatch(contentType::contains);
@@ -348,40 +282,6 @@ public class AppWebUtils {
 	}
 
 	public void renewOauth2AccessToken(HttpServletRequest request, Authentication authentication) {
-		if(controller != null) {
-			request.getSession().setAttribute("oauthToken", controller.postLoginOauthNopass(authentication).getValue());
-		}
-	}
-
-	public String getUserOauthTokenByCurrentHttpRequest() {
-		final Optional<HttpServletRequest> request = getCurrentHttpRequest();
-
-		if (request.isPresent()) {
-			if (request.get().getHeader(HttpHeaders.AUTHORIZATION) != null) {
-				return request.get().getHeader(HttpHeaders.AUTHORIZATION).substring("Bearer ".length());
-			} else if (SecurityContextHolder.getContext().getAuthentication() != null
-					&& !(SecurityContextHolder.getContext().getAuthentication() instanceof AnonymousAuthenticationToken)) {
-				if(controller != null) {
-					return controller.postLoginOauthNopass(SecurityContextHolder.getContext().getAuthentication())
-							.getValue();
-				}else {
-					log.error("Authentication Context not compabible with auth method for this Operation. Probably you need Oauth Token due to Keycloak further integration with other System");
-					throw new GenericRuntimeOPException("Authentication Context not compabible with auth method for this Operation. Probably you need Oauth Token due to Keycloak further integration with other System");
-				}
-
-			}
-
-		}
-		log.warn("Unable to get credentials from headers or context");
-		throw new GenericRuntimeOPException("No request currently active");
-	}
-
-	private String getPasswordPattern() {
-		return (String) resourcesService.getGlobalConfiguration().getEnv().getControlpanel().get(PASSWORD_PATTERN);
-	}
-
-	public void cleanInvalidSpringCookie(HttpServletResponse response) {
-		final ResponseCookie deleteSpringCookie = ResponseCookie.from("JSESSIONID", null).build();
-		response.setHeader(HttpHeaders.SET_COOKIE, deleteSpringCookie.toString());
+		request.getSession().setAttribute("oauthToken", (controller.postLoginOauthNopass(authentication).getValue()));
 	}
 }

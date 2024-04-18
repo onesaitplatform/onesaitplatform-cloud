@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,13 @@ import lombok.Setter;
 
 @NoArgsConstructor
 @AllArgsConstructor
-public class RealmUpdate implements java.io.Serializable {
-
+public class RealmUpdate  implements java.io.Serializable {
+	
 	/**
-	 *
+	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-
+	
 	@Getter
 	@Setter
 	protected String identification;
@@ -40,7 +40,4 @@ public class RealmUpdate implements java.io.Serializable {
 	@Getter
 	@Setter
 	private Integer tokenValiditySeconds;
-	@Getter
-	@Setter
-	private boolean publicClient;
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToMany;
@@ -27,6 +28,8 @@ import javax.persistence.UniqueConstraint;
 
 import org.springframework.beans.factory.annotation.Configurable;
 
+import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -35,12 +38,17 @@ import lombok.Setter;
 @Configurable
 @Getter
 @Setter
-public class Tenant extends TenantParent {
+public class Tenant extends AuditableEntityWithUUID {
 
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = 1L;
+
+	@Column(name = "NAME", length = 50, nullable = false)
+	private String name;
+
+	// TO-DO nivel intermedio Vertical-Tenant
 
 	@OneToMany(mappedBy = "tenant", fetch = FetchType.EAGER, cascade = { CascadeType.REMOVE,
 			CascadeType.PERSIST }, orphanRemoval = true)

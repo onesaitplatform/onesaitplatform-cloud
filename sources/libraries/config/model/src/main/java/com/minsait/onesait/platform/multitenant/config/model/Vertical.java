@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.minsait.onesait.platform.multitenant.config.model;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -27,6 +28,8 @@ import javax.persistence.UniqueConstraint;
 
 import org.springframework.beans.factory.annotation.Configurable;
 
+import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -36,17 +39,23 @@ import lombok.Setter;
 @Configurable
 @Getter
 @Setter
-public class Vertical extends VerticalParent {
+public class Vertical extends AuditableEntityWithUUID {
 
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = 1L;
 
+	@Column(name = "NAME", length = 50, unique = true, nullable = false)
+	private String name;
+
 	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "VERTICAL_TENANT", joinColumns = { @JoinColumn(name = "VERTICAL_ID") }, inverseJoinColumns = {
 			@JoinColumn(name = "TENANT_ID") }, uniqueConstraints = @UniqueConstraint(columnNames = { "VERTICAL_ID",
 					"TENANT_ID" }))
 	private Set<Tenant> tenants = new HashSet<>();
+
+	@Column(name = "SCHEMA_DB", length = 50, unique = true, nullable = false)
+	private String schema;
 
 }

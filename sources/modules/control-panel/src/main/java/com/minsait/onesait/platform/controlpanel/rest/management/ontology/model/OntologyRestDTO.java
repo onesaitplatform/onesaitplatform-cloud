@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,9 @@ import javax.validation.constraints.NotNull;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import com.minsait.onesait.platform.config.model.OntologyRest;
-import com.minsait.onesait.platform.config.model.OntologyRest.SecurityType;
 import com.minsait.onesait.platform.config.model.OntologyRestHeaders;
 import com.minsait.onesait.platform.config.model.OntologyRestOperation;
+import com.minsait.onesait.platform.config.model.OntologyRest.SecurityType;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

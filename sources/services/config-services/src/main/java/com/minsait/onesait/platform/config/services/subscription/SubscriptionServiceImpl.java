@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,18 @@
  */
 package com.minsait.onesait.platform.config.services.subscription;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.Subscription;
 import com.minsait.onesait.platform.config.model.Subscriptor;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.repository.SubscriptionRepository;
 import com.minsait.onesait.platform.config.repository.SubscriptorRepository;
 import com.minsait.onesait.platform.config.services.exceptions.SubscriptionServiceException;
@@ -35,6 +39,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 	private SubscriptionRepository subscriptionRepository;
 
 	@Autowired
+	private OntologyRepository ontologyRepository;
+
+	@Autowired
 	private SubscriptorRepository subscriptorRepository;
 
 	@Override
@@ -44,8 +51,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
 	@Override
 	public Subscription findById(String id, User user) {
-		final Subscription subscription = subscriptionRepository.findById(id).get();
-		if (user.isAdmin() || subscription.getUser().equals(user)) {
+		Subscription subscription = subscriptionRepository.findById(id);
+		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
+				|| subscription.getUser().equals(user)) {
 			return subscription;
 		} else {
 			throw new SubscriptionServiceException(USER_NOT_AUTHORIZED);
@@ -54,10 +62,11 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
 	@Override
 	public void deleteSubscription(Subscription subscription, User user) {
-		if (user.isAdmin() || subscription.getUser().equals(user)) {
-			final List<Subscriptor> subscriptors = subscriptorRepository.findBySubscription(subscription);
+		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
+				|| subscription.getUser().equals(user)) {
+			List<Subscriptor> subscriptors = subscriptorRepository.findBySubscription(subscription);
 			if (!subscriptors.isEmpty()) {
-				subscriptorRepository.deleteAll(subscriptors);
+				subscriptorRepository.delete(subscriptors);
 			}
 			subscriptionRepository.delete(subscription);
 		} else {
@@ -73,7 +82,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 		description = description == null ? "" : description;
 		identification = identification == null ? "" : identification;
 
-		if (user.isAdmin()) {
+		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 			subscriptions = subscriptionRepository
 					.findByIdentificationContainingAndDescriptionContainingOrderByIdentificationAsc(identification,
 							description);
@@ -95,14 +104,20 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
 	@Override
 	public boolean existSubscriptionWithIdentification(String identification) {
-		final Integer count = subscriptionRepository.findByIdentification(identification).size();
-		return count != 0;
+		Integer count = subscriptionRepository.findByIdentification(identification).size();
+		if (count != 0) {
+			return true;
+		}
+		return false;
 	}
 
 	@Override
 	public List<Subscription> findByOntology(String ontologyName) {
-		List<Subscription> subscriptions = subscriptionRepository.findByOntologyIdentification(ontologyName);
-		return subscriptions;
+		Ontology ontology = ontologyRepository.findByIdentification(ontologyName);
+		if (ontology == null) {
+			return new ArrayList<>();
+		}
+		return subscriptionRepository.findByOntology(ontology);
 	}
 
 }

@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 -->
 <html xmlns:th="http://www.thymeleaf.org" th:with="lang=${#locale.language}" th:lang="${lang}">
 
-	<link href="/controlpanel/static/vendor/google/material-icons.css" rel="stylesheet"/>
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
 
 	<link rel="stylesheet" href="/controlpanel/static/dashboards/styles/vendor.css"/>
 	
@@ -25,9 +25,7 @@
 	<link rel="stylesheet" href="/controlpanel/static/dashboards/styles/app.css"/>
 	
 	<input id="oauthtoken" type="hidden" th:value="${session.oauthToken}"/>
-
-	<!--headerlibs-->
-
+	
   	<script th:inline="javascript">
      // <![CDATA[ 
   
@@ -40,7 +38,7 @@
 	    window.__env.endpointDashboardEngine = '/dashboardengine';
 	    window.__env.dashboardEngineUsername = '';
 		window.__env.dashboardEnginePassword = '';
-		getOauthtoken();
+		window.__env.dashboardEngineOauthtoken = getOauthtoken();
 	    window.__env.dashboardEngineLoginRest = '/loginRest';
 	    window.__env.enableDebug = false;
 	    window.__env.restUrl = '';
@@ -85,11 +83,11 @@
      
 	     function getOauthtoken(){
 	 		if(typeof document.getElementById("oauthtoken").value!== "undefined" && document.getElementById("oauthtoken").value.length>0 ){
-	 			sessionStorage.setItem("dashboardEngineOauthtoken",document.getElementById("oauthtoken").value);
+	 		
+	 			return  document.getElementById("oauthtoken").value;
 	 		}else{
-	 			if (getURLParameterOauthtoken() !== null) {
-	 				sessionStorage.setItem("dashboardEngineOauthtoken", getURLParameterOauthtoken());
-	 			}
+	 		
+	 			return getURLParameterOauthtoken();
 	 		}
 	 	}
 	     
@@ -113,12 +111,5 @@
 	<link rel="stylesheet" href="/controlpanel/static/dashboards/resources/lf-ng-md-file-input.min.css"/>
 	<script src="/controlpanel/static/dashboards/resources/lf-ng-md-file-input.min.js"></script>
 	<script src="/controlpanel/static/dashboards/scripts/app.js"></script>
-	<script th:src="@{/static/vendor/xlsx/xlsx.full.min.js}"></script>
-
-	<script type="text/javascript">
-		window.addEventListener('load', function () {
-			window.parent.GadgetsTemplateCreateController.updateComponent();
-		});
-	</script>
 			
 </html> 

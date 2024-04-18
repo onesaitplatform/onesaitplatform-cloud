@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,8 @@ package com.minsait.onesait.platform.commons.kafka;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -34,24 +33,18 @@ import org.apache.kafka.clients.admin.DeleteAclsResult;
 import org.apache.kafka.clients.admin.DeleteTopicsResult;
 import org.apache.kafka.clients.admin.ListTopicsResult;
 import org.apache.kafka.clients.admin.NewTopic;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.acl.AccessControlEntry;
 import org.apache.kafka.common.acl.AccessControlEntryFilter;
 import org.apache.kafka.common.acl.AclBinding;
 import org.apache.kafka.common.acl.AclBindingFilter;
 import org.apache.kafka.common.acl.AclOperation;
 import org.apache.kafka.common.acl.AclPermissionType;
-import org.apache.kafka.common.resource.PatternType;
-import org.apache.kafka.common.resource.ResourcePattern;
-import org.apache.kafka.common.resource.ResourcePatternFilter;
+import org.apache.kafka.common.resource.Resource;
+import org.apache.kafka.common.resource.ResourceFilter;
 import org.apache.kafka.common.resource.ResourceType;
-import org.apache.kafka.common.serialization.StringSerializer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
-
-import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -59,9 +52,6 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class KafkaService {
-
-	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.brokers:none}")
-	private String kafkaBrokers;
 
 	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.host:localhost}")
 	private String kafkaHost;
@@ -93,11 +83,8 @@ public class KafkaService {
 	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.ksql.out.prefix:KSQLDESTYNY_}")
 	private String ksqlOutTopicPrefix;
 
-	@Value("${onesaitplatform.multitenancy.enabled:false}")
-	private boolean isMultitenancyEnabled;
-
-	@Autowired(required = false)
-	private KafkaConfigService kafkaConfigService;
+	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.group:ontologyGroup}")
+	private String ontologyGroup;
 
 	private static final String CREATING_TOPIC = "Creating topic '{}'";
 	private static final String CANNOT_ENSURE_CREATING_TOPIC = "Cannot ensure topic creation for  '{}'";
@@ -106,12 +93,10 @@ public class KafkaService {
 	private static final String ACL_CREATED = "Creating {} access for user {} to topic {}...";
 	private static final String PRINCIPAL = "User:";
 
-	private static final String EMPTY_BROKERS = "none";
-
 	private AdminClient adminAcl;
 
-	private void applySecurity(Map<String, Object> config) {
-		if (!KAFKA_DEFAULTPORT.equals(kafkaPort) || kafkaBrokers.contains(KAFKA_DEFAULTPORT)) {
+	private void applySecurity(Properties config) {
+		if (!KAFKA_DEFAULTPORT.equals(kafkaPort)) {
 			config.put("security.protocol", "SASL_PLAINTEXT");
 			config.put("sasl.mechanism", "PLAIN");
 
@@ -123,84 +108,29 @@ public class KafkaService {
 		}
 	}
 
-	private Map<String, Object> getKafkaClientPropertiesLegacy() {
-		Map<String, Object> configProps = new HashMap<>();
-		if (!EMPTY_BROKERS.equals(kafkaBrokers)) {
-			configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBrokers);
-		} else {
-			configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaHost + ":" + kafkaPort);
-		}
-		configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-		configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-
-		applySecurity(configProps);
-
-		return configProps;
-	}
-
-	@SuppressWarnings("unchecked")
-	private Map<String, Object> getKafkaClientPropertiesFromConfig() {
-		Map<String, Object> props = new HashMap<>();
-		if (kafkaConfigService != null) {
-			props = kafkaConfigService.getKafkaConfigProperties();
-			return props;
-		}
-		return null;
-	}
-
 	@PostConstruct
 	public void postKafka() {
 
 		try {
-
-			Map<String, Object> props = getKafkaClientPropertiesFromConfig();
-			if (props == null) {
-				props = getKafkaClientPropertiesLegacy();
-			}
-
-			adminAcl = AdminClient.create(props);
+			Properties config = new Properties();
+			config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaHost + ":" + kafkaPort);
+			applySecurity(config);
+			adminAcl = AdminClient.create(config);
 		} catch (Exception e) {
 			log.error("Something went wrong applying kafka security config, or not established", e);
 		}
 
 	}
 
-	public String getTopicName(String ontology, String vertical, String tenant) {
-		if (vertical == null || vertical.isEmpty()) {
-			vertical = Tenant2SchemaMapper.DEFAULT_VERTICAL_NAME;
-		}
-		if (tenant == null || tenant.isEmpty()) {
-			tenant = Tenant2SchemaMapper.defaultTenantName(vertical);
-		}
-		if (Tenant2SchemaMapper.defaultTenantName(vertical).equals(tenant)
-				&& Tenant2SchemaMapper.DEFAULT_VERTICAL_NAME.equals(vertical)) {
-			// if default used, then topic name has no vertical and tenant
-			return (ontologyInputPrefix + ontology).toUpperCase();
-		} else {
-			return (ontologyInputPrefix.substring(0, ontologyInputPrefix.length() - 1) + "-" + vertical + "-" + tenant
-					+ "-" + ontology).toUpperCase();
-		}
+	public String getTopicName(String ontology) {
+		return (ontologyInputPrefix + ontology).toUpperCase();
 	}
 
-	public String getNotificationTopicName(String ontology, String vertical, String tenant) {
-
-		if (vertical == null || vertical.isEmpty()) {
-			vertical = Tenant2SchemaMapper.DEFAULT_VERTICAL_NAME;
-		}
-		if (tenant == null || tenant.isEmpty()) {
-			tenant = Tenant2SchemaMapper.defaultTenantName(vertical);
-		}
-		if (Tenant2SchemaMapper.defaultTenantName(vertical).equals(tenant)
-				&& Tenant2SchemaMapper.DEFAULT_VERTICAL_NAME.equals(vertical)) {
-			// if default used, then topic name has no vertical and tenant
-			return (ontologyNotificationPrefix + ontology).toUpperCase();
-		} else {
-			return (ontologyNotificationPrefix.substring(0, ontologyNotificationPrefix.length() - 1) + "-" + vertical
-					+ "-" + tenant + "-" + ontology).toUpperCase();
-		}
+	public String getNotificationTopicName(String ontology) {
+		return (ontologyNotificationPrefix + ontology).toUpperCase();
 	}
 
-	private boolean createTopic(String name, int partitions, short replication) {
+	public boolean createTopic(String name, int partitions, short replication) {
 
 		NewTopic t = new NewTopic(name, partitions, replication);
 		try {
@@ -214,40 +144,38 @@ public class KafkaService {
 		}
 	}
 
-	public boolean createInputTopicForOntology(String ontologyName, String vertical, String tenant) {
+	public boolean createInputTopicForOntology(String name) {
 		try {
 			// chekc if topic exists
 			ListTopicsResult topicList = adminAcl.listTopics();
 			Set<String> currentTopicList = topicList.names().get();
 			for (String existingTopic : currentTopicList) {
-				if (existingTopic.equals(getTopicName(ontologyName, vertical, tenant))) {
+				if (existingTopic.equals(getTopicName(name))) {
 					return true;
 				}
 			}
-			return createTopic(getTopicName(ontologyName, vertical, tenant), partitions, replication);
+			return createTopic(getTopicName(name), partitions, replication);
 		} catch (Exception e) {
-			log.info(CANNOT_ENSURE_CREATING_TOPIC, getTopicName(ontologyName, vertical, tenant));
-			log.error("Error creating input topic for Ontology={}, vertical={}, tenant={}", ontologyName, vertical,
-					tenant, e);
+			log.info(CANNOT_ENSURE_CREATING_TOPIC, getTopicName(name));
+			log.error("Error creating input topic for Ontology", e);
 			return false;
 		}
 	}
 
-	public boolean createNotificationTopicForOntology(String ontologyName, String vertical, String tenant) {
+	public boolean createNotificationTopicForOntology(String name) {
 		try {
-			// check if topic exists
+			// chekc if topic exists
 			ListTopicsResult topicList = adminAcl.listTopics();
 			Set<String> currentTopicList = topicList.names().get();
 			for (String existingTopic : currentTopicList) {
-				if (existingTopic.equals(getNotificationTopicName(ontologyName, vertical, tenant))) {
+				if (existingTopic.equals(getNotificationTopicName(name))) {
 					return true;
 				}
 			}
-			return createTopic(getNotificationTopicName(ontologyName, vertical, tenant), partitions, replication);
+			return createTopic(getNotificationTopicName(name), partitions, replication);
 		} catch (Exception e) {
-			log.info(CANNOT_ENSURE_CREATING_TOPIC, getTopicName(ontologyName, vertical, tenant));
-			log.error("Error creating notification topic for Ontology={}, vertical={}, tenant={}", ontologyName,
-					vertical, tenant, e);
+			log.info(CANNOT_ENSURE_CREATING_TOPIC, getTopicName(name));
+			log.error("Error creating notification topic for Ontology", e);
 			return false;
 		}
 	}
@@ -256,22 +184,8 @@ public class KafkaService {
 		return createTopic(name, partitions, replication);
 	}
 
-	public boolean createTopicForKsqlInput(String ontologyName, String vertical, String tenant) {
-		if (vertical == null || vertical.isEmpty()) {
-			vertical = Tenant2SchemaMapper.DEFAULT_VERTICAL_NAME;
-		}
-		if (tenant == null || tenant.isEmpty()) {
-			Tenant2SchemaMapper.defaultTenantName(vertical);
-		}
-		if (Tenant2SchemaMapper.defaultTenantName(vertical).equals(tenant)
-				&& Tenant2SchemaMapper.DEFAULT_VERTICAL_NAME.equals(vertical)) {
-			// if default used, then topic name has no vertical and tenant
-			return createTopic(ksqlInTopicPrefix + ontologyName, partitions, replication);
-		} else {
-			return createTopic(ksqlInTopicPrefix.substring(0, ksqlInTopicPrefix.length() - 1) + "-" + vertical + "-"
-					+ tenant + "-" + ontologyName, partitions, replication);
-		}
-
+	public boolean createTopicForKsqlInput(String name) {
+		return createTopic(ksqlInTopicPrefix + name, partitions, replication);
 	}
 
 	public DeleteTopicsResult deleteTopic(String name) {
@@ -286,8 +200,7 @@ public class KafkaService {
 
 	public void addAcls(String client, String operation, String topic) {
 		List<AclBinding> acls = new ArrayList<>();
-		// Resource kafkaResource = new Resource(ResourceType.TOPIC, topic);
-		ResourcePattern kafkaResource = new ResourcePattern(ResourceType.TOPIC, topic, PatternType.LITERAL);
+		Resource kafkaResource = new Resource(ResourceType.TOPIC, topic);
 
 		switch (operation) {
 		case "QUERY":
@@ -322,14 +235,10 @@ public class KafkaService {
 
 	public void deleteAcls(String client, String topic) {
 		List<AclBindingFilter> filters = new ArrayList<>();
-		// ResourceFilter resourceFilter = new ResourceFilter(ResourceType.TOPIC,
-		// topic);
+		ResourceFilter resourceFilter = new ResourceFilter(ResourceType.TOPIC, topic);
 		AccessControlEntryFilter entityFilter = new AccessControlEntryFilter(PRINCIPAL + client, "*", AclOperation.ANY,
 				AclPermissionType.ANY);
-		ResourcePatternFilter resourceFilter = new ResourcePatternFilter(ResourceType.TOPIC, topic,
-				PatternType.LITERAL);
 		AclBindingFilter filter = new AclBindingFilter(resourceFilter, entityFilter);
-
 		filters.add(filter);
 		log.info("Deleting ACLs for user {} to topic {}.", client, topic);
 		DeleteAclsResult result = adminAcl.deleteAcls(filters);
@@ -342,7 +251,7 @@ public class KafkaService {
 		log.info("ACLs successfully deleted for user {} to topic {}.", client, topic);
 	}
 
-	private AclBinding generateAclBinding(String principal, AclOperation operation, ResourcePattern kafkaResource) {
+	private AclBinding generateAclBinding(String principal, AclOperation operation, Resource kafkaResource) {
 		AccessControlEntry accessControlEntity = new AccessControlEntry(principal, "*", operation,
 				AclPermissionType.ALLOW);
 		return new AclBinding(kafkaResource, accessControlEntity);

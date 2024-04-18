@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.services.client.ClientPlatformService;
 import com.minsait.onesait.platform.iotbroker.common.MessageException;
 import com.minsait.onesait.platform.iotbroker.common.exception.SSAPProcessorException;
+import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.iotbroker.processor.DeviceManager;
 import com.minsait.onesait.platform.iotbroker.processor.MessageTypeProcessor;
@@ -54,6 +55,8 @@ public class LogProcessor implements MessageTypeProcessor {
 	@Autowired
 	private ClientPlatformService clientPlatformService;
 	@Autowired
+	private SecurityPluginManager securityPluginManager;
+	@Autowired
 	private RouterService routerService;
 	@Autowired
 	private DeviceManager deviceManager;
@@ -61,10 +64,11 @@ public class LogProcessor implements MessageTypeProcessor {
 	private OntologyBusinessService ontologyBussinessService;
 
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info, Optional<IoTSession> session)
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info)
 			throws OntologyBusinessServiceException, IOException {
 		final SSAPMessage<SSAPBodyLogMessage> logMessage = (SSAPMessage<SSAPBodyLogMessage>) message;
 		final SSAPMessage<SSAPBodyReturnMessage> response = new SSAPMessage<>();
+		final Optional<IoTSession> session = securityPluginManager.getSession(logMessage.getSessionKey());
 		ClientPlatform client = null;
 		Ontology ontology = null;
 		if (session.isPresent()) {
@@ -94,6 +98,7 @@ public class LogProcessor implements MessageTypeProcessor {
 					response.setDirection(SSAPMessageDirection.RESPONSE);
 					response.setMessageId(logMessage.getMessageId());
 					response.setMessageType(logMessage.getMessageType());
+					// responseMessage.setOntology(insertMessage.getOntology());
 					response.setSessionKey(logMessage.getSessionKey());
 					response.setBody(new SSAPBodyReturnMessage());
 					response.getBody().setOk(true);

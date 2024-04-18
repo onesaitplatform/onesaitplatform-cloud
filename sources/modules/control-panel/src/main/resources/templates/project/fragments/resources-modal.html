@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,43 +17,20 @@
 <!-- Modal Authorizations-->
 <div id="resources-modal" class="modal fade" role="dialog">
 	<div class="modal-dialog modal-xl">
+
 		<!-- Modal content-->
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal"></button>
 				<h4 class="modal-title" th:text="#{project.resources.results}">Resources matching input search</h4>
 			</div>
-			<div class="modal-body" style="height: calc(100vh - 300px);overflow-y:auto">
-				<div class="row" style="background-color: #F0F1F2; padding-top: 8px; padding-bottom: 8px;" >
-					<div class="col-md-4 col-xs-12">
-						<div class="input-icon">
-							<i class="icon-search font-grey-mint"></i>																
-							<input id="resource-identification-filter" th:placeholder="#{gadgets.name}" name="name" class="form-control" type="text" maxlength="50" value=""/>
-						</div>
-					</div>
-					<div class="col-md-4 col-xs-12">
-						<select id="resource-type-filter" class="form-control select-modal selectpicker" data-live-search="true" data-width="100%" >
-							<th:block th:each="type :${resourceTypes}">						
-								<option th:if="${#strings.toUpperCase(type)} == 'ONTOLOGY'" th:value="${#strings.toUpperCase(type)}" th:text="${#strings.toUpperCase('__#{gen.ontology}__')}" class="" th:classappend="${'resource-combo ' + #strings.toUpperCase(type)}"></option>
-								<option th:if="${#strings.toUpperCase(type)} == 'ONTOLOGYVIRTUALDATASOURCE'" th:value="${#strings.toUpperCase(type)}" th:text="${#strings.toUpperCase('__#{datasource.breadcrumb.list}__')}" class="" th:classappend="${'resource-combo ' + #strings.toUpperCase(type)}"></option>
-								<option th:if="${#strings.toUpperCase(type)} != 'ONTOLOGY' AND ${#strings.toUpperCase(type)} != 'ONTOLOGYVIRTUALDATASOURCE' AND ${#strings.toUpperCase(type)} != 'FORM'" th:value="${#strings.toUpperCase(type)}" th:text="${#strings.toUpperCase(type)}" class="" th:classappend="${'resource-combo ' + #strings.toUpperCase(type)}"></option>
-								<option th:if="${#strings.toUpperCase(type)} == 'FORM'" th:value="${#strings.toUpperCase(type)}" th:text="${#strings.toUpperCase(type)}" class="" th:classappend="${'resource-combo _' + #strings.toUpperCase(type)}"></option>
-							</th:block>
-						</select>
-					</div>
-					<div class="col-md-4 col-xs-12">
-						<div class="btn-group pull-right">
-							<button type="button" id="search" th:text="#{gen.search}" th:value="#{gen.search}" class="btn btn-sm btn-circle btn-outline blue" onclick="ProjectCreateController.getResourcesFiltered()"> Search </button>
-						</div>
-					</div>
-   				</div>
-
+			<div class="modal-body">
 			<!-- AUTHORIZATION ROLE-USER-TYPE -->
 				<div class="form-group">
 					<div id="resources-results" class="margin-bottom-20">
 						<table class="table" id="resources-results" data-loaded="false">
 						<caption th:text="#{project.resource.auths}"></caption>
-							<thead class="table-header-background">
+							<thead>
 								<tr class="cabecera-tabla" role="row" >
 									<th class="titulo-columnas" th:text="#{project.resource.identification}">Identification</th>
 									<th class="titulo-columnas" th:text="#{project.resource.type}">Type</th>
@@ -63,17 +40,15 @@
 									<th class="titulo-columnas text-center" th:text="#{gen.options}">Options</th>
 								</tr>
 							</thead>
-							<tbody >
+							<tbody>
 								<tr th:each="resource : ${resourcesMatch}" class="ldap-authorization-model">
 									<td>
-										<input type="text" name="identifications[]" readonly="readonly" class="margin-top-4 no-border" th:value="${resource.identification}"/>
+										<input type="text" name="identifications[]" readonly="readonly"  class="form-control"  th:value="${resource.identification}"/>
 										<input type="hidden" name="ids[]" th:value="${resource.id}"/>
 									</td>
 									<td>
-										<input th:if="${resource.type != 'Pipeline'} AND ${resource.type != 'Ontology'}" type="text" name="types[]" readonly="readonly"  class="margin-top-4 no-border" th:value="${resource.type}"/>
-										<input th:if="${resource.type == 'Pipeline'}" type="text" name="types[]" readonly="readonly"  class="margin-top-4 no-border" th:value="Dataflow"/>
-										<input th:if="${#strings.toUpperCase(resource.type) == 'ONTOLOGY'}" type="text" name="types[]" readonly="readonly"  class="margin-top-4 no-border" th:value="#{gen.ontology}"/>
-										<input th:if="${#strings.toUpperCase(resource.type) == 'ONTOLOGYVIRTUALDATASOURCE'}" type="text" name="types[]" readonly="readonly"  class="margin-top-4 no-border" th:value="#{datasource.breadcrumb.list}"/>
+										<input th:if="${resource.type != 'Pipeline'}" type="text" name="types[]" readonly="readonly"  class="form-control" th:value="${resource.type}"/>
+										<input th:if="${resource.type == 'Pipeline'}" type="text" name="types[]" readonly="readonly"  class="form-control" th:value="Dataflow"/>
 									</td>
 									<td>
 										<select name="accesstypes[]" class="form-control select-modal accesstypes" data-live-search="true" data-width="100%" >			
@@ -84,14 +59,14 @@
 									<td th:if="${projectObj.app == null}">
 										<select name="authorizing[]" class="form-control select-modal authorizing" data-live-search="true" data-width="100%" >			
 											<option value="" th:text="#{app.userselect}"> Select User...</option>
-											<option th:if="${members.size() != 0}" value="ALL" th:text="#{project.users.all}">ALL</option>									
+											<option th:if="${members.size() != 0}" th:value="#{project.users.all}" th:text="#{project.users.all}">ALL</option>									
 											<option th:each="member :${members}" th:value="${member.userId}" th:text="${member.fullName}  +' ('+ ${member.userId} +')'" ></option>
 										</select>
 									</td>
 									<td th:if="${projectObj.app != null}">
 										<select name="authorizing[]" class="form-control select-modal authorizing" data-live-search="true" data-width="100%" >			
 											<option value="" th:text="#{app.roleselect}"> Select Role...</option>
-											<option th:if="${roles.size() != 0}" value="ALL" th:text="#{project.users.all}">ALL</option>										
+											<option th:if="${roles.size() != 0}" th:value="#{project.users.all}" th:text="#{project.users.all}">ALL</option>										
 											<option th:each="role :${roles}" th:value="${role.id}" th:text="${role.name}  +' ('+ ${role.app.identification} +')'" ></option>
 										</select>
 									</td>											

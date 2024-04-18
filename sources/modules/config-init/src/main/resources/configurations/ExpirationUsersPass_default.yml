@@ -1,19 +1,17 @@
 ExpirationUsersPass: 
-   # At 00:00:00am every day
-   cron: "0 0 0 ? * * *"
-   # days of life of the pasword with value -1 the restriction is not applied
-   timeLifePass: 180
-   # period of days before the password expires where reminders are sent with value -1 the restriction is not applied
-   noticesDaysBefore: 10
-   #  maximum number of days of inactivity with value -1 the restriction is not applied
-   maxInactiveDays: 30 
+  # At 00:00:00am every day
+  cron: "0 0 0 ? * * *"
+  # days of life of the pasword
+  timeLifePass: 180
+  # period of days before the password expires where reminders are sent
+  noticesDaysBefore: 10
+  #  maximum number of days of inactivity
+  maxInactiveDays: 30 
 Authentication:
-   # maximum number of attempts with value -1 restriction is not applied
-   limitFailedAttemp: 5
-   # number of last entries to validate with value -1 the restriction is not applied
+   limitFailedAttemp: 3
    numberLastEntriesToCheck: 5
 ResetUserPass:
-   # hours of validity of the temporary password with value -1 the restriction is not applied
+   # hours of validity of the temporary password
    hours: 7
    # At second :00 of minute :00 of every hour
    cron: "0 0 * ? * * *"

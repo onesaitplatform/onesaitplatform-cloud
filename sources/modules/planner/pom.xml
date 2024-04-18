@@ -1,44 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-		<version>${revision}</version>
+		<version>2.0.0-ce</version>
 		<relativePath>../..</relativePath>
-	</parent>
+	</parent>	
 	<artifactId>onesaitplatform-planner</artifactId>
 	<packaging>jar</packaging>
 
 	<name>onesaitplatform-planner</name>
 	<description>onesaitplatform Planner (only plans executions, not execute them)</description>
-
+		
 	<properties>
-		<license.dir>${project.parent.basedir}</license.dir>
+    	<license.dir>${project.parent.basedir}</license.dir>
 	</properties>
-
+	
 	<dependencies>
-		<!-- To overwrite MySQL version -->
+		<!-- To overwrite MySQL version-->
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>${mysql.driver.version}</version>
 		</dependency>
-
+	
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-config-services</artifactId>
-			<version>${project.version}</version>
+			<version>${onesaitplatform.version}</version>
 		</dependency>
-		<!-- OneLog -->
-		<dependency>
-			<groupId>com.minsait.onesait.platform</groupId>
-			<artifactId>onesaitplatform-onelog</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
+	
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-autoconfigure</artifactId>
@@ -46,94 +39,84 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-databind</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
+		
 		<dependency>
-			<groupId>com.github.javafaker</groupId>
-			<artifactId>javafaker</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
+	    		<groupId>com.github.javafaker</groupId>
+	    		<artifactId>javafaker</artifactId>
+	    		<scope>test</scope>
+		</dependency>		
+        <dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>org.quartz-scheduler</groupId>
 			<artifactId>quartz</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>com.zaxxer</groupId>
-					<artifactId>HikariCP-java6</artifactId>
-				</exclusion>
-			</exclusions>
+			<version>2.2.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.quartz-scheduler</groupId>
 			<artifactId>quartz-jobs</artifactId>
+			<version>2.2.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context-support</artifactId>
-		</dependency>
-
+		</dependency>	
+		
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
-
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>	
+		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
-		</dependency>		
-
+		</dependency>
+		
 		<!-- https://mvnrepository.com/artifact/com.h2database/h2 -->
 		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<scope>test</scope>
+		    <groupId>com.h2database</groupId>
+		    <artifactId>h2</artifactId>
+		    <scope>test</scope>
 		</dependency>
-	</dependencies>
-
+	</dependencies>	
+	
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>repackage</goal>
-						</goals>
-						<configuration>
-							<classifier>exec</classifier>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<!-- skip deployment -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-deploy-plugin</artifactId>
-				<version>2.7</version>
+		  <plugin>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-maven-plugin</artifactId>
+			<executions>
+			  <execution>
+				<goals>
+				  <goal>repackage</goal>
+				</goals>
 				<configuration>
-					<skip>true</skip>
+				  <classifier>exec</classifier>
 				</configuration>
-			</plugin>
-
+			  </execution>
+			</executions>
+		  </plugin>
+		  
+		  <!-- skip deployment -->	
+		  <plugin>
+		    <groupId>org.apache.maven.plugins</groupId>
+		    <artifactId>maven-deploy-plugin</artifactId>
+		    <version>2.7</version>
+		    <configuration>
+		        <skip>true</skip>
+		    </configuration>
+		  </plugin>		  
+		  
 		</plugins>
-	</build>
+  </build>
 </project>

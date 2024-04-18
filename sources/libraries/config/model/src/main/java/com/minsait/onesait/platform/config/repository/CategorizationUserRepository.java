@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,28 +25,28 @@ import com.minsait.onesait.platform.config.model.CategorizationUser;
 import com.minsait.onesait.platform.config.model.User;
 
 public interface CategorizationUserRepository extends JpaRepository<CategorizationUser, String> {
-
+	
+	CategorizationUser findById(String id);
+	
 	List<CategorizationUser> findByCategorization(Categorization categorization);
-
+	
 	@Query("SELECT o FROM CategorizationUser AS o WHERE o.user!=:user AND o.categorization=:categorization")
-	List<CategorizationUser> findByCategorizationNotOwn(@Param("user") User user,
-			@Param("categorization") Categorization categorization);
-
+	List<CategorizationUser> findByCategorizationNotOwn(@Param("user") User user, @Param("categorization") Categorization categorization);
+	
 	@Query("SELECT o FROM CategorizationUser AS o WHERE o.user=:user")
 	List<CategorizationUser> findByUserAndAuth(@Param("user") User user);
-
+	
 	@Query("SELECT o FROM CategorizationUser AS o WHERE o.user=:user AND o.categorization=:categorization")
-	CategorizationUser findByUserAndCategorization(@Param("user") User user,
-			@Param("categorization") Categorization categorization);
+	CategorizationUser findByUserAndCategorization(@Param("user") User user, @Param("categorization") Categorization categorization);
 
 	@Query("SELECT o FROM CategorizationUser AS o WHERE o.user=:user AND o.active=TRUE")
 	List<CategorizationUser> findByUserAndActive(@Param("user") User user);
 	
-	@Query("SELECT cu FROM CategorizationUser AS cu WHERE ((cu.user=:user) OR ((cu.user!=:user) AND cu.authorizationType='OWNER' AND cu.categorization NOT IN (SELECT cuadm.categorization FROM CategorizationUser AS cuadm WHERE (cuadm.user=:user))))")
-	List<CategorizationUser> findAllOwnerAndAuth(@Param("user") User user);
-
+	@Query("SELECT o FROM CategorizationUser AS o WHERE o.authorizationType='OWNER'")
+	List<CategorizationUser> findAllOwner();
+	
 	@SuppressWarnings("unchecked")
 	@Override
-	CategorizationUser save(CategorizationUser entity);
+	CategorizationUser save (CategorizationUser entity);
 
 }

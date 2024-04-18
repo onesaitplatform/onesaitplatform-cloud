@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,19 +71,6 @@ public class OPEventFactory {
 		return event;
 	}
 
-	public OPAuditError createAuditEventWarning(String message) {
-        final OPAuditError event = new OPAuditError();
-	    final Date today = new Date();
-        event.setId(UUID.randomUUID().toString());
-        event.setTimeStamp(today.getTime());
-        event.setFormatedTimeStamp(CalendarUtil.builder().build().convert(today));
-        event.setMessage(message);
-        event.setType(EventType.WARNING);
-        event.setOperationType("");
-        setSecurityData(event);
-        return event;
-    }
-	
 	public OPAuditEvent createAuditEvent(AuditApplicationEvent actualAuditEvent, EventType type, String message) {
 		final OPAuditEvent event = new OPAuditEvent();
 
@@ -92,8 +79,8 @@ public class OPEventFactory {
 		setSecurityData(event);
 
 		event.setUser(audit.getPrincipal());
-		event.setTimeStamp(audit.getTimestamp().toEpochMilli());
-		event.setFormatedTimeStamp(audit.getTimestamp().toString());
+		event.setTimeStamp(audit.getTimestamp().getTime());
+		event.setFormatedTimeStamp(CalendarUtil.builder().build().convert(audit.getTimestamp()));
 
 		event.setMessage(message);
 		event.setOtherType(audit.getType());

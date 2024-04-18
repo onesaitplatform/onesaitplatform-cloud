@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import org.springframework.core.env.Environment;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.client.config.XmlClientConfigBuilder;
-import com.hazelcast.config.NearCacheConfig;
 import com.hazelcast.core.HazelcastInstance;
 
 import lombok.extern.slf4j.Slf4j;
@@ -50,11 +49,7 @@ public class HazelcastCacheLoaderClient {
 		final String configFile = "hazelcast-client.xml";
 		final ClientConfig config = new XmlClientConfigBuilder(configFile).build();
 		log.info("Configured Local Cache with data: Name : {} Instance Name {} Group Name: {}", configFile,
-				config.getInstanceName());
-
-		config.addNearCacheConfig(new NearCacheConfig("MasterUserRepository"));
-		config.addNearCacheConfig(new NearCacheConfig("VerticalRepository"));
-		config.addNearCacheConfig(new NearCacheConfig("MasterUserRepositoryLazy"));
+				config.getInstanceName(), config.getGroupConfig().getName());
 		return HazelcastClient.newHazelcastClient(config);
 	}
 
@@ -74,22 +69,18 @@ public class HazelcastCacheLoaderClient {
 		xmlClientConfigBuilder.setProperties(props);
 		final ClientConfig config = xmlClientConfigBuilder.build();
 
-		log.info("Configured Local Cache with data: Name : {} Instance Name: {} Group Name: ", configFile,
-				config.getInstanceName());
+		log.info("Configured Local Cache with data: Name : " + configFile + " Instance Name: "
+				+ config.getInstanceName() + " Group Name: " + config.getGroupConfig().getName());
 
-		config.addNearCacheConfig(new NearCacheConfig("MasterUserRepository"));
-		config.addNearCacheConfig(new NearCacheConfig("VerticalRepository"));
-		config.addNearCacheConfig(new NearCacheConfig("MasterUserRepositoryLazy"));
 		return HazelcastClient.newHazelcastClient(config);
 	}
 
 	@Bean
 	public CacheManager cacheManager(HazelcastInstance hazelcastInstance) {
-		if (hazelcastInstance != null) {
+		if (hazelcastInstance != null)
 			return new HazelcastCacheManagerOP(hazelcastInstance);
-		} else {
+		else
 			return new NoOpCacheManager();
-		}
 	}
 
 }

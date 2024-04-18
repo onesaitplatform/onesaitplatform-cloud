@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package com.minsait.onesait.platform.controlpanel.controller.support;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,7 +32,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.minsait.onesait.platform.config.model.Role;
-import com.minsait.onesait.platform.config.model.SupportRequest;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.SupportRepository;
 import com.minsait.onesait.platform.config.services.support.SupportService;
@@ -47,13 +45,13 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/support")
 @Slf4j
 public class SupportController {
-
+	
 	private static final String FAIL = "{\"status\" : \"fail\"}";
 	private static final String OK = "{\"status\" : \"ok\"}";
 
 	@Value("${onesaitplatform.mailService.mailSupport:support@onesaitplatform.com}")
 	private String supportEmail;
-
+	
 	@Autowired
 	private AppWebUtils utils;
 	@Autowired
@@ -64,10 +62,10 @@ public class SupportController {
 	private SupportService supportService;
 	@Autowired
 	private SupportRepository supportRepository;
-
+	
 	@GetMapping(value = "/create", produces = "text/html")
 	public String create(Model model) {
-		final List<String> rolesToSelect = new ArrayList<>();
+		List<String> rolesToSelect = new ArrayList<>();
 		rolesToSelect.add("ROLE_DATASCIENTIST");
 		rolesToSelect.add("ROLE_DATAVIEWER");
 		rolesToSelect.add("ROLE_DEVELOPER");
@@ -75,89 +73,87 @@ public class SupportController {
 		model.addAttribute("roleTypes", rolesToSelect);
 		return "support/create";
 	}
-
+	
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/notifications", produces = "text/html")
 	public String notifications(Model model) {
 		model.addAttribute("notifications", supportRepository.findAll());
 		return "support/notifications";
 	}
-
+	
 	@PostMapping(value = "/send")
-	public ResponseEntity<String> send(@RequestParam("text") String text, @RequestParam("rol") String rol,
-			@RequestParam("type") String type) {
-		final User user = userService.getUserByIdentification(utils.getUserId());
+	public ResponseEntity<String> send(@RequestParam("text") String text, @RequestParam("rol") String rol, @RequestParam("type") String type) {
+		User user = userService.getUserByIdentification(utils.getUserId());
 		final String supportRequest;
 		supportService.createSupportRequest(user, type, text, rol);
-		if (!type.equals("ROLE_CHANGE")) {
-			supportRequest = "User: " + user.getUserId() + "\nEmail: " + user.getEmail() + "\nRequest Type: " + type
-					+ "\nText:\n	" + text;
-		} else {
-			supportRequest = "User: " + user.getUserId() + "\nEmail: " + user.getEmail() + "\nRequest Type: " + type
-					+ "\nChange to: " + rol + "\nText:\n	" + text;
-		}
+		if (!type.equals("ROLE_CHANGE")) {supportRequest = "User: "+user.getUserId()
+														+ "\nEmail: "+user.getEmail()
+														+ "\nRequest Type: "+type 
+														+ "\nText:\n	"+text;}
+		else {supportRequest = "User: "+user.getUserId()
+							+ "\nEmail: "+user.getEmail()
+							+ "\nRequest Type: "+type 
+							+ "\nChange to: "+rol
+							+ "\nText:\n	"+text;}
 		try {
 			mailService.sendMail(supportEmail, "Support Request", supportRequest);
-		} catch (final RuntimeException e) {
+		}
+		catch (final RuntimeException e) {
 			log.error("Error sending the support request: " + e.getMessage());
-			return new ResponseEntity<>(FAIL, HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(FAIL,HttpStatus.BAD_REQUEST);
 		}
 		return new ResponseEntity<>(OK, HttpStatus.OK);
 	}
-
+	
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping(value = "/notifications/update")
 	public ResponseEntity<String> update(@RequestParam("user") User user, @RequestParam("role") Role role) {
 		try {
 			supportService.changeRole(user, role);
-
+			
 			return new ResponseEntity<>(OK, HttpStatus.OK);
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			log.error("Error updating the role: " + e);
 			return new ResponseEntity<>(FAIL, HttpStatus.BAD_REQUEST);
 		}
 	}
-
+	
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping(value = "/notifications/updateStatus")
 	public ResponseEntity<String> updateStatus(@RequestParam("supportRequestId") String supportRequestId) {
 		try {
-			supportRepository.findById(supportRequestId).ifPresent(s -> supportService.updateStatus(s));
-
+			supportService.updateStatus(supportRepository.findById(supportRequestId));
+			
 			return new ResponseEntity<>(OK, HttpStatus.OK);
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			log.error("Error updating the notification status: " + e);
 			return new ResponseEntity<>(FAIL, HttpStatus.BAD_REQUEST);
 		}
 	}
-
+	
 	@PostMapping(value = "/notifications/delete/{id}")
 	public @ResponseBody String delete(Model model, @PathVariable("id") String id) {
 		try {
-			supportRepository.deleteById(id);
-		} catch (final Exception e) {
-			log.error("Error delating the support request: " + e);
-		}
+			supportRepository.delete(id);}
+		catch(final Exception e) {log.error("Error delating the support request: " + e);}
 		return "redirect:/support/notifications";
 	}
-
+	
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping(value = "/notifications/sendEmail")
-	public ResponseEntity<String> sendEmail(@RequestParam("supportRequestId") String supportRequestId,
-			@RequestParam("message") String message) {
-		final Optional<SupportRequest> opt = supportRepository.findById(supportRequestId);
-		if (!opt.isPresent())
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-		final User user = opt.get().getUser();
-
+	public ResponseEntity<String> sendEmail(@RequestParam("supportRequestId") String supportRequestId, @RequestParam("message") String message) {
+		
+		User user = supportRepository.findById(supportRequestId).getUser();
+		
 		try {
 			mailService.sendMail(user.getEmail(), "Support Request", message);
-			log.info("Send email to: " + user.getEmail() + "with the message" + message);
-		} catch (final RuntimeException e) {
-			log.error("Error sending the e-mail: " + e.getMessage());
-			return new ResponseEntity<>(FAIL, HttpStatus.BAD_REQUEST);
+			log.info("Send email to: "+user.getEmail()+ "with the message" + message);
 		}
-
+		catch (final RuntimeException e) {
+			log.error("Error sending the e-mail: " + e.getMessage());
+			return new ResponseEntity<>(FAIL,HttpStatus.BAD_REQUEST);
+		}
+		
 		return new ResponseEntity<>(OK, HttpStatus.OK);
 	}
 

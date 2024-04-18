@@ -1,58 +1,55 @@
 server: ## Config Web Server
    port: 18400
-   servlet.contextPath: /report-engine
-   max-http-header-size: 20000
+   contextPath: /report-engine
+   max-http-header-size: 10000000
    tomcat:
       access_log_enabled: true
       basedir: target/tomcat
-   jetty.max-http-form-post-size: 20000000
-   
-   
-logbook:
-  exclude:
-     - ${server.servlet.contextPath}/actuator/**
-     - ${server.servlet.contextPath}/static/**
-     - ${server.servlet.contextPath}/themes/**
-     - ${server.servlet.contextPath}/swagger-ui/**
-  write:
-     max-body-size: 10000
-     
+   jetty.max-http-post-size: 20000000
+
+      
 master: 
    datasource:
-      hikari: 
-        jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
-        username: root
-        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-        driver-class-name: com.mysql.cj.jdbc.Driver
-        pool-name: master-hikari-pool
-        minimum-idle: 3
-        maximum-pool-size: 10
-        connection-timeout: 10000
-        
-management.endpoints.web.exposure.include: "*"
-management.endpoint.health.show-details: always
-management.health.elasticsearch.enabled: false
-
-spring: ## General Config  
-   main:
-      allow-circular-references: true
-      allow-bean-definition-overriding: true
-   boot.admin: #Spring Boot Admin Config   
-      client.url: http://localhost:18100/monitoring
-      client.username: operations
-      client.password: changeIt2019!
-      client.instance.metadata.user.name: ${spring.boot.admin.client.username}
-      client.instance.metadata.user.password: ${spring.boot.admin.client.password}
-   application.name: onesaitplatform-report-engine
-   datasource:
-     hikari:
-      jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
+      url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
       username: root
       password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-      connection-timeout: 10000
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      minimum-idle: 5
-      maximum-pool-size: 10
+      driver-class-name: com.mysql.jdbc.Driver
+      test-while-idle: true
+      test-on-borrow: true
+      validation-query: SELECT 1
+      validationQueryTimeout: 5
+      # Number of ms to wait before throwing an exception if no connection is available.
+      max-wait: 10000
+      # Maximum number of active connections that can be allocated from this pool at the same time.
+      max-active: 2
+      initial-size: 1
+      max-idle: 2
+      min-idle: 1
+      removeAbandoned: true
+spring: ## General Config  
+   boot.admin: #Spring Boot Admin Config   
+      url: http://localhost:18100/monitoring
+      username: operations
+      password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
+      client.metadata.user.name: ${spring.boot.admin.username}
+      client.metadata.user.password: ${spring.boot.admin.password}
+   main.allow-bean-definition-overriding: true
+   application.name: onesaitplatform-report-engine
+   datasource: ## JPA Config
+      url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
+      username: root
+      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+      driver-class-name: com.mysql.jdbc.Driver
+      test-while-idle: true
+      test-on-borrow: true
+      validation-query: SELECT 1      
+      validationQueryTimeout: 5
+      max-wait: 10000
+      max-active: 30
+      initial-size: 10
+      max-idle: 30
+      min-idle: 10
+      removeAbandoned: true
      
    jpa:
       open-in-view: false
@@ -62,24 +59,13 @@ spring: ## General Config
         hibernate:
           format_sql: false
           show_sql: false
-     
-onesaitplatform:
-   authentication:
-      oauth:
-        osp-keycloak: false
-   graylog:
-      enabled: false
-      host: 127.0.0.1
-      port: 12201
-         
+          
 logging:
-   file.path: ./target/ 
-   file.name: ${spring.application.name}
+   path: ./target/ 
+   file: ${spring.application.name}
    level:
       com.minsait: INFO 
       org.springframework.security: INFO
       org.camunda.bpm: WARN
-      org.zalando.logbook: TRACE  
-    
 
      

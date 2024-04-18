@@ -1,30 +1,27 @@
 master:
-   datasource:
-     hikari:
-      jdbc-url: ${CONFIGDBMASTERURL}
-      username: ${CONFIGDBUSER}
-      password: ${CONFIGDBPASS}
-      driver-class-name: ${CONFIGDB_DRIVER}
+   datasource:  
+      url: ${JDBCPROTOCOL}//${CONFIGDBSERVERS}/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+     
 spring:
   boot.admin: #Spring Boot Admin Config    
-    client.url: http://monitoringuiservice:18100/monitoring  
-    client.instance.service-url: http://videobrokerservice:${server.port}${server.servlet.contextPath}/ 
-  datasource:
-     hikari:
-      jdbc-url: ${CONFIGDBURL}${DBADDPROPS}
-      username: ${CONFIGDBUSER}
-      password: ${CONFIGDBPASS}
-      connection-timeout: ${DS_MAX_WAIT_MILLIS}
-      maximum-pool-size: ${DS_MAX_ACTIVE}
-      minimum-idle: ${DS_MIN_IDLE}
-      driver-class-name: ${CONFIGDB_DRIVER}
-   jpa:
-      properties.hibernate.dialect: ${CONFIGDB_DIALECT}
+    url: http://monitoringuiservice:18100/monitoring  
+    client.service-url: http://videobrokerservice:${server.port}${server.contextPath}/ 
+  datasource:  
+    url: ${JDBCPROTOCOL}//${CONFIGDBSERVERS}/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
+    time-between-eviction-runs-millis: ${DS_TIME_BETWEEN_EVICTION_RUNS_MILLIS}
+    min-evictable-idle-time-millis: ${DS_MIN_EVICTABLE_IDLE_TIME_MILLIS}
+    max-wait-millis: ${DS_MAX_WAIT_MILLIS}
+    max-wait: ${DS_MAX_WAIT}
+    initial-size: ${DS_INITIAL_SIZE}
+    max-active: ${DS_MAX_ACTIVE}
+    max-idle: ${DS_MAX_IDLE}
+    min-idle: ${DS_MIN_IDLE}
+    removeAbandoned: ${DS_REMOVE_ABANDONED}
+    removeAbandonedTimeout: ${DS_REMOVE_ABANDONED_TIMEOUT}
 
 onesaitplatform:
   kafka:
     enable: ${KAFKAENABLED}
-    brokers: ${KAFKABROKERS}
     host: ${KAFKAHOST}
     port: ${KAFKAPORT}  
     user: ${KAFKAUSER}
@@ -34,14 +31,7 @@ onesaitplatform:
   audit.global.notify: ${AUDITGLOBALNOTIFY}   
   hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY} 
   hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
-  graylog:
-    enabled: ${GRAYLOG_ENABLED}
-    host: ${GRAYLOG_HOST}
-    port: ${GRAYLOG_PORT}
 
 ## LOGGING CONF
 logging:
-   file.path: /var/log/platform-logs 
-   level:
-      com.minsait: ${OP_LOG_LEVEL}
-      org.springframework.boot: ${OP_LOG_LEVEL}
+   path: /var/log/platform-logs 

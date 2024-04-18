@@ -2,7 +2,7 @@ var eventMethod = window.addEventListener ? "addEventListener": "attachEvent";
 var eventer = window[eventMethod];
 var messageEvent = eventMethod === "attachEvent" ? "onmessage" : "message";
 
-function processEvent(e) {
+eventer(messageEvent, function (e) {
 
   
     var message;
@@ -65,7 +65,7 @@ function processEvent(e) {
     		return ;
     	}else if(message.command === "saveSynopticAndDashboard"){    	
     		apiSaveSynopticAndDashboard(messageString);
-    		return ;
+    		return ;    		
     	}else if(message.command === "hideShowSynopticEditor"){    	
     		apiHideShowSynopticEditor(messageString);
     		return ;
@@ -85,11 +85,8 @@ function processEvent(e) {
     		sendMessageParent(messageString);
     		return ;
     	}
-    }
-    }
-
-
-eventer(messageEvent, processEvent);
+    } 
+    }); 
      
        //Functions
     
@@ -258,7 +255,4 @@ eventer(messageEvent, processEvent);
     		   parent.postMessage(t,"*");
     	   }
        }
-
-window.DSMessageApi = function(e){
-    processEvent({"data":e});
-};
+          

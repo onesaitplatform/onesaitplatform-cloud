@@ -1,22 +1,19 @@
 master:
    datasource:
-     hikari:
-      jdbc-url: ${CONFIGDBMASTERURL}
+      url: ${CONFIGDBMASTERURL}
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
-      maximum-pool-size: ${CONFIGDB_MAX_ACTIVE}
-      driver-class-name: ${CONFIGDB_DRIVER}
+      max-active: ${CONFIGDB_MAX_ACTIVE}
+      max-idle: ${CONFIGDB_MAX_IDLE}
      
 onesaitplatform: #Config onesaitplatform specific
    iotbroker.plugable:
       gateway:
          kafka:
             enable: ${KAFKAENABLED}
-            brokers: ${KAFKABROKERS}
             host: ${KAFKAHOST}
             port: ${KAFKAPORT}
    database.elasticsearch.enabled: ${ELASTICSEARCH_ENABLED}
-   database.opensearch.enabled: ${OPENSEARCH_ENABLED}
    database.mongodb:
       database: ${REALTIMEDBNAME}
       servers: ${REALTIMEDBSERVERS}
@@ -28,19 +25,35 @@ onesaitplatform: #Config onesaitplatform specific
       quasar.connector.http.endpoint: http://${QUASARHOST}:${QUASARPORT}/query/fs/
       quasar.maxHttpConnections: ${MAXCONN}
       quasar.maxHttpConnectionsPerRoute: ${MAXCONNROUTE}
+   database.hadoop.enabled: ${ENABLEHADOOP}
+   database.hdfs:
+      url: ${HDFSURL}
+      basePath: ${HDFSPATH}
+   database.hive:
+      url: ${HIVEURL}
+      username: ${HIVEUSERNAME}
+      password: ${HIVEPASSWORD}
+      driverClassName: ${HIVEDRIVERCLASS}
+   database.impala:
+      url: ${IMPALAURL}
+   database.kudu:
+      numreplicas: ${KUDUNUMREPLICAS}
+      address: ${KUDUURL}
+      includeKudutableName: ${INCLUDEKUDUTABLENAME}
+      client:
+        sessionTimeout: ${KUDUCLIENTSESSIONTIMEOUT}
+        flushMode: ${KUDUCLIENTFLUSHMODE}
+        prefix: ${KUDUCLIENTIMPALAPREFIX}
+        bossThreadPool: ${KUDUCLIENTBOSSTHREADPOOL}
+        workerThreadPool: ${KUDUCLIENTWORKERTHREADPOOL}
+        operationTimeout: ${KUDUCLIENTOPTIMEOUT}
+        adminOperationTimeout: ${KUDUCLIENTADMINOPTIMEOUT}
+        socketReadTimeout: ${KUDUCLIENTSOCKETREADTIMEOUT}
    database.timeseries.timezone: ${TIMESERIES_TIMEZONE}
-   database.timescaledb:
-      enabled: ${TIMESCALE_ENABLED}
-      url: ${TIMESCALE_URL}
-      user: ${TIMESCALE_USER}
-      password: ${TIMESCALE_PASS}
-   database.minio:
-      access-key: ${MINIO_ROOT_USER}
-      secret-key: ${MINIO_ROOT_PASSWORD}
+
    audit.global.notify: ${AUDITGLOBALNOTIFY}
    hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
    hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
-   router.metrics.query.enabled: ${QUERY_METRICS_ENABLED}
    router.notifications.pool:
       nodered: ${NOTIFICATION_POOL_NODERED}
       kafka: ${NOTIFICATION_POOL_KAFKA}
@@ -50,37 +63,33 @@ onesaitplatform: #Config onesaitplatform specific
       subscription.attemps: ${NOTIFICATION_SUBSCRIPTION_ATTEMPS}
    urls:
       iotbroker.advice: http://iotbrokerservice:19000/iot-broker/advice
-   graylog:
-      enabled: ${GRAYLOG_ENABLED}
-      host: ${GRAYLOG_HOST}
-      port: ${GRAYLOG_PORT}
 
 spring: ## General Config
    boot.admin: #Spring Boot Admin Config
-      client.url: http://monitoringuiservice:18100/monitoring
-      client.instance.service-url: http://routerservice:${server.port}${server.servlet.contextPath}/
-      client.username: ${SBA_USERNAME}
-      client.password: ${SBA_SECRET}
-   datasource:
-     hikari:
-      jdbc-url: ${CONFIGDBURL}${DBADDPROPS}
+      url: http://monitoringuiservice:18100/monitoring
+      client.service-url: http://routerservice:${server.port}${server.contextPath}/
+   datasource: ## JPA Config
+      url: ${CONFIGDBURL}${DBADDPROPS}
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
-      connection-timeout: ${DS_MAX_WAIT_MILLIS}
-      maximum-pool-size: ${DS_MAX_ACTIVE}
-      minimum-idle: ${DS_MIN_IDLE}
-      driver-class-name: ${CONFIGDB_DRIVER}
+      time-between-eviction-runs-millis: ${DS_TIME_BETWEEN_EVICTION_RUNS_MILLIS}
+      min-evictable-idle-time-millis: ${DS_MIN_EVICTABLE_IDLE_TIME_MILLIS}
+      max-wait-millis: ${DS_MAX_WAIT_MILLIS}
+      max-wait: ${DS_MAX_WAIT}
+      initial-size: ${DS_INITIAL_SIZE}
+      max-active: ${DS_MAX_ACTIVE}
+      max-idle: ${DS_MAX_IDLE}
+      min-idle: ${DS_MIN_IDLE}
+      removeAbandoned: ${DS_REMOVE_ABANDONED}
+      removeAbandonedTimeout: ${DS_REMOVE_ABANDONED_TIMEOUT}
    data.mongodb:
       host: ${REALTIMEDBSERVERS}
    elasticsearch.jest:
       uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}
-   jpa:
-      properties.hibernate.dialect: ${CONFIGDB_DIALECT}
 
 ## LOGGING CONF
 logging:
-   file.path: /var/log/platform-logs
+   path: /var/log/platform-logs
    level:
       com.minsait: ${OP_LOG_LEVEL}
       org.springframework.boot: ${OP_LOG_LEVEL}
-      org.zalando.logbook: ${HTTP_LOG_LEVEL}

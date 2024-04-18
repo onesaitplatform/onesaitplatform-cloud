@@ -1,59 +1,62 @@
+security.ignored: /**
+
+management.security.enabled: false
+management.endpoints.enabled: true
+
 
 ## Config Web Server
 server:
    port: 19000
-   servlet.contextPath: /iot-broker
+   contextPath: /iot-broker
    jetty.max-http-post-size: 20000000   
-   forward-headers-strategy: native
- 
-logbook:
-  exclude:
-     - ${server.servlet.contextPath}/actuator/**
-     - ${server.servlet.contextPath}/static/**
-     - ${server.servlet.contextPath}/themes/**
-     - ${server.servlet.contextPath}/swagger-ui/**
-  write:
-     max-body-size: 10000
-     
+   
 master: 
    datasource:
-      hikari: 
-        jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
-        username: root
-        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-        driver-class-name: com.mysql.cj.jdbc.Driver
-#        jdbc-url: jdbc:postgresql://localhost:5432/onesaitplatform_master_config
-#        username: postgres
-#        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph)
-#        driver-class-name: org.postgresql.Driver
-        pool-name: master-hikari-pool
-        minimum-idle: 1
-        maximum-pool-size: 2
-        connection-timeout: 10000
-spring:
-  main:
-      allow-circular-references: true
-      allow-bean-definition-overriding: true
-  application.name: onesaitplatform-iot-broker
-  datasource:
-     hikari:
-      jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
+      url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
       username: root
       password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-      connection-timeout: 10000
-      driver-class-name: com.mysql.cj.jdbc.Driver
-#      jdbc-url: jdbc:postgresql://localhost:5432/onesaitplatform_config
-#      username: postgres
-#      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph)
-#      driver-class-name: org.postgresql.Driver
-      minimum-idle: 10
-      maximum-pool-size: 30
+      driver-class-name: com.mysql.jdbc.Driver
+      test-while-idle: true
+      test-on-borrow: true
+      validation-query: SELECT 1      
+      validationQueryTimeout: 5
+      # Number of ms to wait before throwing an exception if no connection is available.
+      max-wait: 10000
+      # Maximum number of active connections that can be allocated from this pool at the same time.
+      max-active: 2
+      initial-size: 1
+      max-idle: 2
+      min-idle: 1
+      removeAbandoned: true
+spring:
+  application.name: onesaitplatform-iot-broker
+  datasource:
+    url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
+    username: root
+    password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+    driver-class-name: com.mysql.jdbc.Driver
+    # Validate the connection before borrowing it from the pool.
+    test-on-borrow: true
+    validation-query: SELECT 1
+    validationQueryTimeout: 5
+    test-while-idle: true
+    test-on-return: false
+    time-between-eviction-runs-millis: 5000
+    min-evictable-idle-time-millis: 6000
+    max-wait-millis: 10000
+    # Number of ms to wait before throwing an exception if no connection is available.
+    max-wait: 10000
+    # Maximum number of active connections that can be allocated from this pool at the same time.
+    initial-size: 10
+    max-active: 30
+    max-idle: 5
+    min-idle: 5
+    removeAbandoned: true
       
   jpa:
       open-in-view: false
       # The SQL dialect makes Hibernate generate better SQL for the chosen database
       properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
-#      properties.hibernate.dialect: org.hibernate.dialect.PostgreSQL95Dialect
       hibernate.ddl-auto: none
       # Hibernate ddl auto (create, create-drop, validate, update
       properties:
@@ -75,16 +78,12 @@ spring:
               #native_client_password: onesaitplatform
                        
           
-  boot.admin: #Spring Boot Admin Config   
-      client.url: http://localhost:18100/monitoring
-      client.username: operations
-      client.password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
-      client.instance.metadata.user.name: ${spring.boot.admin.client.username}
-      client.instance.metadata.user.password: ${spring.boot.admin.client.password}
-      
-management.endpoints.web.exposure.include: "*"
-management.endpoint.health.show-details: always
-management.health.elasticsearch.enabled: false
+  boot.admin: #Spring Boot Admin Config    
+    url: http://localhost:18100/monitoring
+    username: operations
+    password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
+    client.metadata.user.name: ${spring.boot.admin.username}
+    client.metadata.user.password: ${spring.boot.admin.password} 
 
 spring.elasticsearch.jest.uris: ${onesaitplatform.database.elasticsearch.sql.connector.http.endpoint}
 spring.elasticsearch.jest.read-timeout: ${onesaitplatform.database.elasticsearch.sql.connectionTimeout.millis}
@@ -100,11 +99,7 @@ onesaitplatform: #Config onesait Platform specific
       sql.connector.http.endpoint: http://localhost:9200
       url: localhost
       port: 9300
-  database.timescaledb:
-      enabled: false
-      url: jdbc:postgresql://localhost:5432/?currentSchema=public
-      user: ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot)
-      password: ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c)
+  
   router.avoidsslverification: true
   router.alternativeURL: http://localhost:20000/router/router/   
   router:
@@ -143,11 +138,11 @@ onesaitplatform: #Config onesait Platform specific
           jks_path: develkeystore.jks
           keystore_password: changeIt!
           keymanager_password: changeIt!
+        
       rest:
         enable: true
       kafka:
         enable: true
-        brokers: none
         host: localhost
         port: 9095
         user: admin
@@ -156,7 +151,7 @@ onesaitplatform: #Config onesait Platform specific
         replication: 1
         prefix: ONTOLOGY_
         group: ontologyGroup
-        topic.pattern: ONTOLOGY(?!_OUTPUT).*
+        topic.pattern: ONTOLOGY.*
         router.topic: router
         consumer.consumersCount : 10
         consumer.seekTo : beginning 
@@ -171,29 +166,23 @@ onesaitplatform: #Config onesait Platform specific
             
   iotbroker.device.update.schedule:
         enable: true
-        delay.millis: 30000
+        delay.millis: 10000    
   iotbroker.session.update.schedule:
         enable: true
-        delay.millis: 30000
+        delay.millis: 10000
         
   iotbroker.devices.perclient.max: 20
   metrics:
-        collector.endpoint: http://localhost:20002/router/metrics-collector/refresh
-        enabled: false
-  graylog:
-    enabled: false
-    host: 127.0.0.1
-    port: 12201
+        collector.endpoint: http://localhost:20000/router/metrics-collector/refresh
+        enabled: true
         
 ## LOGGING CONF
 logging:
-   file.path: ./target/ 
-   file.name: ${spring.application.name}
+   path: ./target/ 
+   file: ${spring.application.name}
    level:
-      com.minsait: INFO
+      com.minsait: INFO 
       org.apache.kafka: ERROR
       org.springframework.boot: INFO
-      org.hibernate.type: WARN
-      org.zalando.logbook: TRACE
 #      org.springframework.boot.autoconfigure: DEBUG
 

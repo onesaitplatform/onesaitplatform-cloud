@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -64,33 +64,14 @@
 			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
-				<!-- SEARCH FORM -->
-				<div id="searchFilter"  class="row" >
-					<form id="form_instance" class="" role="form" method="get">
-						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-						<div class="col-md-3 col-sm-4 col-xs-12">														
-							<div class="input-icon">
-								 
-									<i class="icon-search font-grey-mint"></i>									 														
-								<input id="instance-identification" th:placeholder="#{gen.identification}"  name="identification" class="form-control" type="text" maxlength="50" value=""/>
-							</div>
-						</div>
-						<div class="col-md-2 col-sm-4 col-xs-12 pull-right">
-							<div class="pull-right">
-								<button type="button" id="reset_instance" name="reset_instance" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}">Reset</button>
-								<button type="button" id="search_instance" name="search_instance" class="btn btn-primary btn-primary-search" th:text="#{gen.search}">Search</button>
-							</div>
-						</div>									
-					</form>
-				</div>
 				
 				<!-- BEGIN PAGE HEADER-->
 				
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<!--<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>-->
-						<li><a th:href="@{/dataflow/list}"> <span th:text="#{dataflow.breadcrumb.manage}">Dataflows</span></a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/dataflow/list}"> <span th:text="#{dataflow.breadcrumb.list}">Dataflows</span></a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/dataflow/instances}"> <span th:text="#{dataflow.instances.breadcrumb.list}">Dataflow instances</span></a></li>
 					</ul>
 				</div>
@@ -101,36 +82,29 @@
 				<!-- END PAGE TITLE-->			
 				
 				<!-- MAIN ROW -->
-				<div class="row">					
+				<div class="row">
+					<div class="col-md-12">
+					
 						<div class="portlet light">
 							<div class="portlet-title">
 								<div class="caption">
-									<span class="caption-subject " th:text="#{dataflow.instances.breadcrumb.list}">Manage Dataflow instances</span>
-								</div>
-								<div class="caption" style="padding: 22px 8px 8px 10px">
-									<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
-								</div>
-								<div id="search-on-title" class="hide input-icon search-icon">
-									<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
+									<span class="caption-subject " th:text="#{dataflow.instances.list}">My Dataflow instances</span>
 								</div>									
 								<div class="tools hide">
 									<a href="" class="collapse" data-original-title="" title=""> </a>
 									<a href="" class="fullscreen" data-original-title="" title=""> </a>
 								</div>
-								<div class="pull-right btn-group btn-title-group" id="divcreate" >
-									<button type="button" class="btn btn-primary button-plus-create" onclick="location.href='../dataflow/instances/instance'" ><a><i class="icon-new" style="color:white;"></i></a></button>		
-								</div>
-								<!--<div class="actions margin-right-20">
+								<div class="actions margin-right-20">
 									<div class="btn-group">
 										<a type="button" href="/controlpanel/dataflow/instances/instance" class="btn btn-circle btn-sm  btn-primary btn-outline" th:text="#{dataflow.instances.new}" ></a>
 									</div>
-								</div>-->
+								</div>
 							</div>
 							<div th:fragment="domain" id="domain" class="portlet-body" style="display: block; height: auto;">
 								
-								<div class="row main">
-									<!--<div class="col-md-12 alert-zone">
-										// ALERT ZONE 	
+								<div class="row">
+									<div class="col-md-12 alert-zone">
+										<!-- ALERT ZONE -->	
 										<div th:if="${messageAlertType == 'SUCCESS' and message != null}" id="messages" class="alert alert-success alert-dismissable" th:text="${message}">
 										</div>
 										<div th:if="${messageAlertType == 'WARNING' and message != null}" id="messages" class="alert alert-warning alert-dismissable" th:text="${message}">
@@ -139,20 +113,20 @@
 										</div>
 										<div th:if="${messageAlertType == 'INFO' and message != null}" id="messages" class="alert alert-info alert-dismissable" th:text="${message}">
 										</div>
-									</div>-->
+									</div>
 									<!-- INSTANCES LIST -->
 									<div class="col-md-12">											
-										<div id="contenedor-tabla-outside" class="contiene hidden">																						
+										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
 											<div>
 												<!-- DATATABLE DANDELION CONF. -->												
-												<table id="instances" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
+												<table id="instances" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
 													<thead>
 														<tr class="cabecera-tabla">
 															<th class="titulo-columnas" th:text="#{dataflow.instances.identification}">Identification</th>
 															<th class="titulo-columnas" th:text="#{dataflow.instances.url}">URL</th>
-															<th class="titulo-columnas text-left" th:text="#{dataflow.instances.assigned}">Assigned to</th>
-															<th class="titulo-columnas text-center" style="width:85px;"><span th:text="#{dataflow.instances.management}">Management</span></th>
-															<th class="titulo-columnas text-center" style="width:85px;"><span th:text="#{dataflow.instances.options}">Options</span></th>
+															<th class="titulo-columnas text-center" th:text="#{dataflow.instances.assigned}">Assigned to</th>
+															<th class="titulo-columnas text-center" ><span th:text="#{dataflow.instances.management}">Management</span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{dataflow.instances.options}">Options</span></th>
 														</tr>
 													</thead>
 													<tbody th:remove="all-but-first">
@@ -160,68 +134,35 @@
 															<td th:if="${instance.defaultInstance}" th:text="'(*) '+${instance.identification}" ></td>
 															<td th:if="${!instance.defaultInstance}" th:text="${instance.identification}" ></td>
 															<td th:text="${instance.url}"></td>
-															<td th:text="${instance.user?.userId}"></td>
+															<td th:text="${instance.user}"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos text-center" th:if="${instance.id}" >
-																	<span th:title="#{dataflow.instances.restart}" href="#" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:alt="#{dataflow.instances.restart}" th:attr="onclick='restartDataflow(event, \'' + ${instance.id} + '\');'"  ><i class="icon-reload"></i></span>
-
-																	<span th:title="#{dataflow.instances.pipeline.manager}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/dataflow/${instance.id}/app/ |} + '\');'" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:alt="#{dataflow.instances.pipeline.manager}" ><i class="la la-stream font-hg"></i></span>
-
-																	<span class="dropdown">
-																	<span   class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
-																	<ul class="dropdown-menu dropdown-menu-table download-menu">
-																		<li>
-																			<span th:attr="onclick='javascript:navigateUrl(\'' + @{|/dataflow/${instance.id}/app/collector/jvmMetrics |} + '\');'" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{dataflow.instances.metrics}" ><i class="icon-monitoring"></i><span class="span-title-three-dots-icons" th:text="#{dataflow.instances.metrics}" >Metrics</span></span>
-																		</li>
-																		<li>
-																			<span th:attr="onclick='javascript:navigateUrl(\'' + @{|/dataflow/${instance.id}/app/collector/logs |} + '\');'" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{dataflow.instances.logs}" ><i class="icon-file"></i><span class="span-title-three-dots-icons" th:text="#{dataflow.instances.logs}" >Logs</span></span>
-																		</li>
-																		<li>
-																			<span th:attr="onclick='javascript:navigateUrl(\'' + @{|/dataflow/${instance.id}/app/collector/configuration |} + '\');'" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{dataflow.instances.configuration}" ><i class="icon-configuration"></i><span class="span-title-three-dots-icons" th:text="#{dataflow.instances.configuration}" >Configuration</span></span>
-																		</li>
-																		<li>
-																			<span th:attr="onclick='javascript:navigateUrl(\'' + @{|/dataflow/${instance.id}/app/collector/packageManager |} + '\');'" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{dataflow.instances.package.manager}" ><i class="icon-gift"></i><span class="span-title-three-dots-icons" th:text="#{dataflow.instances.package.manager}" >Package Manager</span></span>
-																		</li>
-																	</ul>
-																	</span>
-																</div>
+																	<a th:title="#{dataflow.instances.restart}" href="#" class="btn btn-xs btn-circle btn-outline no-border blue tooltips" th:alt="#{dataflow.instances.restart}" th:onclick="'restartDataflow(event, \'' + ${instance.id} + '\');'"  ><i class="la la-sync font-hg"></i></a>
+																	<a th:title="#{dataflow.instances.metrics}" th:href="@{| /controlpanel/dataflow/${instance.id}/app/collector/jvmMetrics |}" class="btn btn-xs btn-circle btn-outline no-border blue tooltips" th:alt="#{dataflow.instances.metrics}" ><i class="la la-tachometer-alt font-hg"></i></a>
+																	<a th:title="#{dataflow.instances.logs}" th:href="@{| /controlpanel/dataflow/${instance.id}/app/collector/logs |}" class="btn btn-xs btn-circle btn-outline no-border blue tooltips" th:alt="#{dataflow.instances.logs}" ><i class="la la-file-alt font-hg"></i></a>
+																	<a th:title="#{dataflow.instances.configuration}" th:href="@{| /controlpanel/dataflow/${instance.id}/app/collector/configuration |}" class="btn btn-xs btn-circle btn-outline no-border blue tooltips" th:alt="#{dataflow.instances.configuration}" ><i class="la la-cog font-hg"></i></a>
+																	<a th:title="#{dataflow.instances.package.manager}" th:href="@{| /controlpanel/dataflow/${instance.id}/app/collector/packageManager |}" class="btn btn-xs btn-circle btn-outline no-border blue tooltips" th:alt="#{dataflow.instances.package.manager}" ><i class="la la-gift font-hg"></i></a>
+																	<a th:title="#{dataflow.instances.pipeline.manager}" th:href="@{| /controlpanel/dataflow/${instance.id}/app/ |}" class="btn btn-xs btn-circle btn-outline no-border blue tooltips" th:alt="#{dataflow.instances.pipeline.manager}" ><i class="la la-stream font-hg"></i></a>
+																	</div>
 															</td>
-															<td class="icon text-center">
+															<td class="icon tex-center">
 																<div class="grupo-iconos text-center" th:if="${instance.id}" >
-																	<span th:title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/dataflow/instances/instance/${instance.id}/|} + '\');'" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" th:alt="#{gen.edit}" ><i class="icon-edit"></i></span>
-																	<span th:if="${!instance.defaultInstance}" th:title="#{gen.deleteBtn}" href="#" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" th:attr="onclick='removeInstanceModal(event, \'' + ${instance.id} + '\');'" th:alt="#{gen.deleteBtn}" ><i class="icon-delete"></i></span>
+																	<a th:title="#{gen.edit}" th:href="@{| instances/instance/${instance.id} |}" class="btn btn-xs btn-circle btn-outline no-border blue tooltips" th:alt="#{gen.edit}" ><i class="la la-edit font-hg"></i></a>
+																	<a th:if="${!instance.defaultInstance}" th:title="#{gen.deleteBtn}" href="#" class="btn btn-xs btn-circle btn-outline no-border blue tooltips" th:onclick="'removeInstanceModal(event, \'' + ${instance.id} + '\');'" th:alt="#{gen.deleteBtn}" ><i class="la la-trash font-hg"></i></a>
 																</div>
 															</td>
 														</tr>
 													</tbody>
-												</table>
-													<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
-												<div id="dataTable-vis-toggle" class="btn-group margin-right-10 hide" >
-												
-													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
-													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
-															<label th:text="#{dataflow.instances.identification}"> Identification </label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-															<label th:text="#{dataflow.instances.url}"> URL </label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-															<label th:text="#{dataflow.instances.assigned}"> Assigned To</label>
-														</span>
-													</div>
-												</div>																							
+												</table>																							
 											</div>
-										</div>
-										<div th:text="#{dataflow.instances.defaultNote}" style="font-style: italic;margin-top:10px;font-size: 10px;" >(*) Points out default instance</div>									
+										</div>											
 									</div>
+									<div th:text="#{dataflow.instances.defaultNote}" style="font-style: italic;" >(*) Points out default instance</div>
 								</div>
 							</div>
 						</div><!-- END PORTLET BASIC LIGHT -->							
+					</div><!-- END COL-12 -->						
 				</div><!-- END MAIN ROW -->				
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
@@ -232,13 +173,13 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"></script>
-	<script th:src="@{/static/js/layout.js}"></script>
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
 	
 	
 	<script th:inline="javascript">	
@@ -257,13 +198,12 @@
 	var csrf_value = $("meta[name='_csrf']").attr("content");
 	var csrf_header = $("meta[name='_csrf_header']").attr("content");
 
-	function navigateUrl(url){  window.location.href = url;	}
-
 	function removeInstanceModal(event, instanceId) {
 		event.preventDefault();
 		//datatable_lang = [[#{datatables_lang}]];
 
 		$.confirm({
+			icon: 'fas fa-chart-pie',
 			title: [[#{dataflow.instances.instance.deleteModal}]],
 			theme: 'light',
 			columnClass: 'medium',
@@ -271,29 +211,25 @@
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
+			closeIcon: true,
 			buttons: {
-				close: {
-					text: [[#{gen.cancelBtn}]],
-					btnClass: 'btn btn-outline blue dialog',
-					action: function (){} //GENERIC CLOSE.		
-				},
 				"remove": {
 					text: "Remove instance",
-					btnClass: 'btn btn-primary',
+					btnClass: 'btn btn-sm btn-danger btn-outline',
 					action: function() {
 						removeInstance(instanceId, "REMOVE");
 					}
 				},
 				"hardremove": {
 					text: "Hard remove instance (Logic delete)",
-					btnClass: 'btn btn-primary',
+					btnClass: 'btn btn-sm btn-danger btn-outline',
 					action: function() {
 						removeInstance(instanceId, "HARD_REMOVE");
 					}
 				},
 				"move": {
 					text: "Export to default instance too",
-					btnClass: 'btn btn-primary',
+					btnClass: 'btn btn-sm btn-danger btn-outline',
 					action: function() {
 						removeInstance(instanceId, "EXPORT");
 					}
@@ -318,7 +254,8 @@
 		}).fail(function(e){
 			$.alert({
 				title: 'Error removing instance',
-				content: "Response message: " + e.responseText
+				content: "Response message: " + e.responseText,
+				type: 'red'
 			});
 		})
 	}
@@ -336,79 +273,25 @@
 			$.dialog('Restart dataflow ok');
 		}).fail(function(e){
 			$.alert({
-				title: 'Error restarting',
-				content: "Error restarting Dataflow, message detail: " + e.responseText
+				title: 'Error restarting!',
+				content: "Error restarting Dataflow, message detail: " + e.responseText,
+				type: 'red'
 			});
 		})
 
 	}
-	
-	$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
-		 $.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
-	});
-	
+
 	// MAIN WHEN READY
 	$( document ).ready(function() {
-		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-		$('input.toggle-vis').on( 'change', function (e) {
-			e.preventDefault(); 
-			var column = $('#instances').DataTable().column( $(this).attr('data-column') ); 
-			column.visible( ! column.visible() );
-			//$(this).toggleClass('text-muted line-through');			
-		});
-
-		// SEARCH FORM RESET
-		$('#reset_instance').on('click',function(){
-			$('#instance-identification').val('');
-			$('#instances').DataTable().column(0).search('').draw();
-		});
-
-		// SEARCH FORM
-		$('#search_instance').on('click',function(){
-			$('#instances').DataTable().column(0).search( $('#instance-identification').val()).draw();
-		});
 		
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
-		var oTable = $('#instances').dataTable({
-	      "bAutoWidth": false
-	      });
-		//$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
-		//$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
-		// SHOW/HIDE DATATABLES COLUMN INIT
-		$('#divcreate').prepend($('#dataTable-vis-toggle'));			
-		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).load(function(){  
+		
+		// SHOW/HIDE DATATABLES COLUMN INIT 		
+		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
-
-		$('.dataTables_info').addClass('col-md-6 col-sm-6');
-		$('.dataTables_length').addClass('col-md-6 col-sm-6');
-		$('#instances_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
-		$('#instances_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
-
-		$('#search-on-title').append($('.dataTables_filter > label > input'));
-		$('#search-on-title > input').removeClass('input-xsmall')
-		$('#instances_wrapper > div:nth-child(1)').hide();
-
-		$('.dataTables_paginate').attr('style', 'float:right !important');
-		$('.download-menu').parent().on('shown.bs.dropdown', function () {	        
-			 var $menu = $("ul", this);	        
-	         offset = $menu.offset();
-	         position = $menu.position();
-	         $('body').append($menu);
-	         $menu.show();
-	         $menu.css('position', 'absolute');
-	         $menu.css('top', (offset.top) +'px');
-	         $menu.css('left',(offset.left) +'px');
-	         $menu.css('min-width', '100px');
-	        $(this).data("myDropdownMenu", $menu);
-	     });
-		$('.download-menu').parent().on('hide.bs.dropdown', function () {
-	         $(this).append($(this).data("myDropdownMenu"));
-	         $(this).data("myDropdownMenu").removeAttr('style');
-	     });
-		
-		$("#contenedor-tabla-outside").removeClass("hidden");
 		
 	});
 	

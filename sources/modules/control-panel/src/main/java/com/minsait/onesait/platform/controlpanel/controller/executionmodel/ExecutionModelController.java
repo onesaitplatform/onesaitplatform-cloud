@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,11 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -53,9 +53,6 @@ public class ExecutionModelController {
 	
 	@Autowired
 	private IntegrationResourcesService resourcesService;
-	
-	@Autowired 
-	private HttpSession httpSession;
 
 	private String dashboardUrl;
 
@@ -67,7 +64,6 @@ public class ExecutionModelController {
 	private static final String AS_IFRAME_STR = "?asIframe";
 	private static final String PARAGRAPH_STR = "/paragraph/";
 	private static final String ERROR_PARSE_PARAM = "Error parsing parameters of execution model ";
-	private static final String APP_ID = "appId";
 
 	@PostConstruct
 	public void init() {
@@ -77,9 +73,7 @@ public class ExecutionModelController {
 	
 	@GetMapping(value = "/list/{id}", produces = "text/html")
 	public String list(org.springframework.ui.Model model, @PathVariable("id") String id) {
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
+
 		final Model modl = modelService.getModelById(id);
 		if (modl != null) {
 			final List<ModelExecution> executions = modelExecutionService.findExecutionModelsByModel(modl);

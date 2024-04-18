@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,14 +32,14 @@ public class DashboardConfServiceImpl implements DashboardConfService {
 
 	@Override
 	public List<DashboardConf> findAllDashboardConf() {
-		return dashboardConfRepository.findAll();
+		return this.dashboardConfRepository.findAll();
 	}
 
 	@Override
 	public List<String> getAllIdentifications() {
-		final List<DashboardConf> dashboardConfs = dashboardConfRepository.findAllByOrderByIdentificationAsc();
-		final List<String> names = new ArrayList<>();
-		for (final DashboardConf dc : dashboardConfs) {
+		List<DashboardConf> dashboardConfs = this.dashboardConfRepository.findAllByOrderByIdentificationAsc();
+		List<String> names = new ArrayList<>();
+		for (DashboardConf dc : dashboardConfs) {
 			names.add(dc.getIdentification());
 		}
 		return names;
@@ -47,28 +47,28 @@ public class DashboardConfServiceImpl implements DashboardConfService {
 
 	@Override
 	public DashboardConf getDashboardConfById(String id) {
-		return dashboardConfRepository.findById(id).orElse(null);
+		return this.dashboardConfRepository.findById(id);
 	}
 
 	@Override
 	public List<DashboardConf> getDashboardConfByIdentification(String identification) {
-		return dashboardConfRepository.findByIdentification(identification);
+		return this.dashboardConfRepository.findByIdentification(identification);
 	}
 
 	@Override
 	public void saveDashboardConf(DashboardConf dashboardConf) {
 		try {
 			dashboardConfRepository.save(dashboardConf);
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			throw new DashboardConfServiceException("Cannot create dashboard configuration");
 		}
 	}
 
 	@Override
 	public void deleteDashboardConf(String id) {
-		final DashboardConf dc = dashboardConfRepository.findById(id).orElse(null);
+		DashboardConf dc = this.dashboardConfRepository.findById(id);
 		if (dc != null) {
-			dashboardConfRepository.delete(dc);
+			this.dashboardConfRepository.delete(dc);
 		} else
 			throw new DashboardConfServiceException("Cannot delete dashboard configuration that does not exist");
 	}

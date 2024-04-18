@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,21 +50,6 @@ public class CosmosDBQueryAsTextDBRepository implements QueryAsTextDBRepository 
 	public String querySQLAsJson(String ontology, String query, int offset) {
 		if (sqlUtils.isSelect(query))
 			return cosmosDBBasicOpsRepository.querySQLAsJson(ontology, query, offset);
-		else if (sqlUtils.isDelete(query)) {
-			final MultiDocumentOperationResult result = cosmosDBBasicOpsRepository.deleteNative(ontology, query, true);
-			return String.valueOf(result.getCount());
-		} else if (sqlUtils.isUpdate(query)) {
-			final MultiDocumentOperationResult result = cosmosDBBasicOpsRepository.updateNative(ontology, query, true);
-			return String.valueOf(result.getCount());
-		} else {
-			throw new DBPersistenceException("Not supported SQL operation");
-		}
-	}
-
-	@Override
-	public String querySQLAsJson(String ontology, String query, int offset, int limit) {
-		if (sqlUtils.isSelect(query))
-			return cosmosDBBasicOpsRepository.querySQLAsJson(ontology, query, offset, limit);
 		else if (sqlUtils.isDelete(query)) {
 			final MultiDocumentOperationResult result = cosmosDBBasicOpsRepository.deleteNative(ontology, query, true);
 			return String.valueOf(result.getCount());

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,8 +35,7 @@ import lombok.Setter;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({ @JsonSubTypes.Type(OntologyRestDTO.class), @JsonSubTypes.Type(OntologyTimeSeriesDTO.class),
-		@JsonSubTypes.Type(OntologyVirtualDTO.class), @JsonSubTypes.Type(OntologyKpiDTO.class),
-		@JsonSubTypes.Type(OntologyElasticDTO.class) })
+	@JsonSubTypes.Type(OntologyVirtualDTO.class), @JsonSubTypes.Type(OntologyKpiDTO.class)})
 @NoArgsConstructor
 @AllArgsConstructor
 public class OntologyDTO {
@@ -48,89 +47,81 @@ public class OntologyDTO {
 	@Getter
 	@Setter
 	private String updatedAt;
-
+	
 	@NotNull
 	@Getter
 	@Setter
 	private String identification;
-
+	
 	@NotNull
 	@Getter
 	@Setter
 	private String userId;
-
+	
 	@Getter
 	@Setter
 	private boolean active = true;
-
+	
 	@Getter
 	@Setter
 	private boolean allowsCreateTopic = false;
-
-	@Getter
-	@Setter
-	private boolean allowsCreateNotificationTopic = false;
-
+	
 	@Getter
 	@Setter
 	private boolean allowsCypherFields = false;
 
 	@Getter
 	@Setter
-	private boolean contextDataEnabled = true;
-
-	@Getter
-	@Setter
 	private String dataModelVersion;
-
+	
 	@Getter
 	@Setter
 	private String description;
-
+	
 	@Getter
 	@Setter
 	private boolean isPublic = false;
-
+	
 	@NotNull
 	@Getter
 	@Setter
 	private String jsonSchema;
-
+	
 	@Getter
 	@Setter
 	private String metainf;
-
+	
 	@Getter
 	@Setter
 	private String ontologyClass;
-
+	
 	@Getter
 	@Setter
 	private boolean rtdbClean = false;
-
+	
 	@Enumerated(EnumType.STRING)
 	@Getter
 	@Setter
 	private RtdbCleanLapse rtdbCleanLapse = RtdbCleanLapse.NEVER;
-
+	
 	@Getter
 	@Setter
 	@Enumerated(EnumType.STRING)
 	private RtdbDatasource rtdbDatasource = RtdbDatasource.MONGO;
-
+	
 	@Getter
 	@Setter
 	private boolean rtdbToHdb = false;
-
+	
 	@Enumerated(EnumType.STRING)
 	@Getter
 	@Setter
 	private RtdbToHdbStorage rtdbToHdbStorage = RtdbToHdbStorage.MONGO_GRIDFS;
-
+	
 	@Getter
 	@Setter
 	private String topic;
-
+	
 	@Getter
 	@Setter
 	private String xmlDiagram;
@@ -142,11 +133,11 @@ public class OntologyDTO {
 	@Getter
 	@Setter
 	private DataModelDTO dataModel;
-
+	
 	@Getter
 	@Setter
 	private String dataModelIdentification = "EmptyBase";
-
+	
 	public OntologyDTO(Ontology ontology) {
 		this.createdAt = ontology.getCreatedAt().toString();
 		this.updatedAt = ontology.getUpdatedAt().toString();
@@ -154,7 +145,6 @@ public class OntologyDTO {
 		this.userId = ontology.getUser().getUserId();
 		this.active = ontology.isActive();
 		this.allowsCreateTopic = ontology.isAllowsCreateTopic();
-		this.allowsCreateNotificationTopic = ontology.isAllowsCreateNotificationTopic();
 		this.allowsCypherFields = ontology.isAllowsCypherFields();
 		this.dataModelVersion = ontology.getDataModelVersion();
 		this.description = ontology.getDescription();
@@ -167,10 +157,11 @@ public class OntologyDTO {
 		this.rtdbDatasource = ontology.getRtdbDatasource();
 		this.rtdbToHdb = ontology.isRtdbToHdb();
 		this.rtdbToHdbStorage = ontology.getRtdbToHdbStorage();
+		this.topic = ontology.getTopic();
 		this.xmlDiagram = ontology.getXmlDiagram();
 		this.dataModel = DataModelDTO.fromDataModel(ontology.getDataModel());
 		this.authorizations = new ArrayList<>();
-
+		
 	}
 
 }

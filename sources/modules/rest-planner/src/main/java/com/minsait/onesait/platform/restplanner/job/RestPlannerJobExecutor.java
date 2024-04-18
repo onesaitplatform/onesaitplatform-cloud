@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,9 +38,7 @@ public class RestPlannerJobExecutor implements BatchGenericExecutor {
 		try {
 			if (context.getScheduler().getSchedulerName().equals(SchedulerType.RESTPLANNER.getSchedulerName())) {
 				restPlannerJob.executeJob(context);
-				if (log.isDebugEnabled()) {
-					log.debug("Rest Planner {} executed", context.getJobDetail().getJobDataMap().getString("id"));
-				}
+				log.debug("Rest Planner " + context.getJobDetail().getJobDataMap().getString("id") + " executed");
 			}
 
 		} catch (final Exception e) {

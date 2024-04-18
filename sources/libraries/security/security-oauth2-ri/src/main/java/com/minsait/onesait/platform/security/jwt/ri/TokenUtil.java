@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package com.minsait.onesait.platform.security.jwt.ri;
 
 import java.io.IOException;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,20 +26,17 @@ import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.crypto.codec.Base64;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
 import org.springframework.stereotype.Service;
 
-import com.minsait.onesait.platform.config.model.App;
-import com.minsait.onesait.platform.config.model.AppRoleListOauth;
-import com.minsait.onesait.platform.config.model.AppUser;
-import com.minsait.onesait.platform.config.model.AppUserListOauth;
-import com.minsait.onesait.platform.config.repository.AppRepository;
+import com.minsait.onesait.platform.config.model.AppRoleList;
+import com.minsait.onesait.platform.config.model.AppUserList;
 import com.minsait.onesait.platform.config.repository.AppRoleRepository;
 import com.minsait.onesait.platform.config.repository.AppUserRepository;
-import com.minsait.onesait.platform.config.repository.UserRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,25 +47,18 @@ public class TokenUtil {
 	@Autowired
 	private AppUserRepository userRepo;
 	@Autowired
-	private AppRepository appRepo;
-	@Autowired
 	private AppRoleRepository roleRepository;
-	@Autowired
-	private UserRepository userRepository;
 
 	private static final String PRINCIPAL = "principal";
 	private static final String USER_NAME = "user_name";
 	private static final String NAME = "name";
-
-	private static final String TENANT = "tenant";
-	private static final String VERICALS = "verticals";
 
 	public String[] extractAndDecodeHeader(String header) throws IOException {
 
 		final byte[] base64Token = header.substring(6).getBytes("UTF-8");
 		byte[] decoded;
 		try {
-			decoded = Base64.getDecoder().decode(base64Token);
+			decoded = Base64.decode(base64Token);
 		} catch (final IllegalArgumentException e) {
 			throw new BadCredentialsException("Failed to decode basic authentication token");
 		}
@@ -133,14 +122,6 @@ public class TokenUtil {
 		if (clientToken.getResourceIds() != null && !clientToken.getResourceIds().isEmpty()) {
 			response.put(DefaultAccessTokenConverter.AUD, clientToken.getResourceIds());
 		}
-
-		if (token.getAdditionalInformation().containsKey(TENANT)) {
-			response.put(TENANT, token.getAdditionalInformation().get(TENANT));
-		}
-
-		if (token.getAdditionalInformation().containsKey(VERICALS)) {
-			response.put(VERICALS, token.getAdditionalInformation().get(VERICALS));
-		}
 		return response;
 	}
 
@@ -153,15 +134,12 @@ public class TokenUtil {
 
 			final String userId = authentication.getUserAuthentication().getName();
 
-			final List<AppRoleListOauth> roles = getAppRoles(userId, appTokenId);
+			final List<AppRoleList> roles = getAppRoles(userId, appTokenId);
 
 			final Set<String> rolesList = new HashSet<>();
 
-			for (final AppRoleListOauth role : roles) {
+			for (final AppRoleList role : roles) {
 				rolesList.add(role.getName());
-			}
-			if (rolesList.isEmpty()) {
-				rolesList.add(userRepository.findByUserId(userId).getRole().getId());
 			}
 
 			response.put(DefaultAccessTokenConverter.AUTHORITIES, rolesList);
@@ -169,9 +147,9 @@ public class TokenUtil {
 			final String userId = authentication.getUserAuthentication().getName();
 
 			// Assoc. Realm's Roles
-			final List<AppRoleListOauth> roles = getAppRoles(userId, appTokenId);
+			final List<AppRoleList> roles = getAppRoles(userId, appTokenId);
 
-			final Map<String, Set<String>> appsRoles = getChildRoles(roles, userId);
+			final Map<String, Set<String>> appsRoles = getChildRoles(roles);
 
 			Set<String> rolesList;
 			rolesList = appsRoles.get(appId);
@@ -180,11 +158,11 @@ public class TokenUtil {
 				rolesList = new HashSet<>();
 			}
 
-			// If App Asociated add user's roles as Associated Realm
-			if (asociatedApp(appId, appTokenId)) {
-				final List<AppUser> notAsociatedRoles = userRepo.findByUserId(userId, appId);
-				rolesList.addAll(notAsociatedRoles.stream().map(appuser -> appuser.getRole().getName())
-						.collect(Collectors.toList()));
+			// App Roles
+			final List<AppRoleList> appRoles = getAppRoles(userId, appId);
+
+			for (final AppRoleList role : appRoles) {
+				rolesList.add(role.getName());
 			}
 
 			response.put(DefaultAccessTokenConverter.AUTHORITIES, rolesList);
@@ -194,23 +172,17 @@ public class TokenUtil {
 		return response;
 	}
 
-	private boolean asociatedApp(String appId, String appTokenId) {
-		final App appFather = appRepo.findByIdentification(appTokenId);
-		return appFather.getChildApps().stream().anyMatch(childApp -> childApp.getIdentification().equals(appId));
-	}
-
-	public Map<String, Set<String>> getChildRoles(List<AppRoleListOauth> roles, String userId) {
+	public Map<String, Set<String>> getChildRoles(List<AppRoleList> roles) {
 
 		final Map<String, Set<String>> retorno = new HashMap<>();
-		roles.forEach((AppRoleListOauth role) -> retorno.putAll(getChildRoles(role, retorno, userId)));
+		roles.forEach((AppRoleList role) -> retorno.putAll(getChildRoles(role, retorno)));
 
 		return retorno;
 	}
 
-	public Map<String, Set<String>> getChildRoles(AppRoleListOauth role, Map<String, Set<String>> relationshipMap,
-			String userId) {
+	public Map<String, Set<String>> getChildRoles(AppRoleList role, Map<String, Set<String>> relationshipMap) {
 		final Map<String, Set<String>> retorno = new HashMap<>();
-		final List<AppRoleListOauth> childs = roleRepository.findChildAppRoleListOauthById(role.getId());
+		final List<AppRoleList> childs = roleRepository.findChildAppRoleListById(role.getId());
 		childs.forEach(childRole -> {
 			final String appId = childRole.getApp().getIdentification();
 			if (!retorno.containsKey(appId) && relationshipMap.containsKey(appId)) {
@@ -223,45 +195,15 @@ public class TokenUtil {
 				retorno.put(appId, new HashSet<>());
 			}
 
-			if (!retorno.get(appId).contains(childRole.getName())) {
-				retorno.get(appId).add(childRole.getName());
-			}
-
-			// App Roles
-			final List<AppRoleListOauth> appRoles = getAppRoles(userId, appId);
-			appRoles.forEach(appRole -> {
-				if (!retorno.get(appId).contains(appRole.getName())) {
-					retorno.get(appId).add(appRole.getName());
-				}
-			});
-
+			retorno.get(appId).add(childRole.getName());
 		});
 
 		return retorno;
 	}
 
-	public List<AppRoleListOauth> getAppRoles(String userId, String clientId) {
-		final List<AppUserListOauth> roles = userRepo.findAppUserListByUserAndIdentification(userId, clientId);
-		return roles.stream().map(AppUserListOauth::getRole).collect(Collectors.toList());
-	}
-
-	public Map<String, Set<String>> addChildRolesNotAssociated(String userId, String appTokenId,
-			Map<String, Set<String>> relationshipMap) {
-		final List<String> childApps = appRepo.findChildAppsList(appTokenId);
-
-		for (final String appChild : childApps) {
-			if (!relationshipMap.containsKey(appChild)) {
-				relationshipMap.put(appChild, new HashSet<>());
-
-			}
-			final List<String> appRoles = userRepo.findRoleNamesByUserIdAndAppIdentification(userId, appChild);
-			for (final String role : appRoles) {
-				if (!relationshipMap.get(appChild).contains(role)) {
-					relationshipMap.get(appChild).add(role);
-				}
-			}
-		}
-		return relationshipMap;
+	public List<AppRoleList> getAppRoles(String userId, String clientId) {
+		final List<AppUserList> roles = userRepo.findAppUserListByUserAndIdentification(userId, clientId);
+		return roles.stream().map(AppUserList::getRole).collect(Collectors.toList());
 	}
 
 }

@@ -1,8 +1,0 @@
-providers:
-   #This service carries costs for each request made according to the chosen algorithm. Check api prices in https://openai.com/pricing
-   OpenAI:
-      security.apikey: (openai_apikey)
-      texttosql.model.name: gpt-4
-      texttosql.model.temperature: 0.0
-      texttoanswer.model.name: gpt-4
-      texttoanswer.model.temperature: 0.0

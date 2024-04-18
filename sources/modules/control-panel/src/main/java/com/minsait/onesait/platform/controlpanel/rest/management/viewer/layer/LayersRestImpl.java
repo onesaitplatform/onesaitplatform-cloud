@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
 
@@ -60,7 +59,6 @@ import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceExceptio
 import com.minsait.onesait.platform.persistence.factory.ManageDBRepositoryFactory;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
 import com.minsait.onesait.platform.persistence.services.QueryToolService;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.JSQLParserException;
@@ -114,19 +112,6 @@ public class LayersRestImpl implements LayersRest {
 
 	@Autowired
 	private AppWebUtils utils;
-
-	@Autowired
-	private IntegrationResourcesService resourcesService;
-
-	private String defaultQuery;
-
-	@PostConstruct
-	private void postConstruct() {
-
-		defaultQuery = "select * from ";
-		if (useQuasar())
-			defaultQuery = "select _id,c from ";
-	}
 
 	@Override
 	public ResponseEntity<?> getLayerData(HttpServletRequest request) {
@@ -189,12 +174,7 @@ public class LayersRestImpl implements LayersRest {
 
 						String fieldGeometry = null;
 						if (obj.has("_id")) {
-							String oid;
-							try {
-								oid = obj.getString("_id");
-							} catch (JSONException e) {
-								oid = obj.getJSONObject("_id").getString("$oid");
-							}
+							String oid = obj.getString("_id");
 							feature.setOid(oid);
 						} else {
 							ObjectId objOid = new ObjectId();
@@ -210,7 +190,7 @@ public class LayersRestImpl implements LayersRest {
 							rootObject = obj;
 							fieldGeometry = mapFields.get(geometryField);
 						} else {
-							rootObject = root != null ? obj.getJSONObject(root) : obj;
+							rootObject = obj.getJSONObject(root);
 							fieldGeometry = geometryField;
 						}
 
@@ -392,14 +372,14 @@ public class LayersRestImpl implements LayersRest {
 							try {
 								final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 								df.parse(value);
-								value = "'" + value + "'";
+								value = "\"" + value + "\"";
 							} catch (final Exception e) {
 								throw new BadRequestException(
 										"com.indra.sofia2.api.service.wrongparametertype " + param);
 							}
 						} else if (type.equals(STRING)) {
 							try {
-								value = "'" + value + "'";
+								value = "\"" + value + "\"";
 							} catch (final Exception e) {
 								throw new BadRequestException(WRONG_PARAMETER_TYPE + param);
 							}
@@ -681,13 +661,8 @@ public class LayersRestImpl implements LayersRest {
 			}
 			String queryResult = null;
 			if (query == null) {
-				if (useQuasar()) {
-					queryResult = queryToolService.querySQLAsJson(userId, ontologyIdentification,
-							defaultQuery + ontologyIdentification + " as c", 0);
-				} else {
-					queryResult = queryToolService.querySQLAsJson(userId, ontologyIdentification,
-							defaultQuery + ontologyIdentification, 0);
-				}
+				queryResult = queryToolService.querySQLAsJson(userId, ontologyIdentification,
+						"select _id,c from " + ontologyIdentification + " as c", 0);
 			} else {
 				queryResult = queryToolService.querySQLAsJson(userId, ontologyIdentification, query, 0);
 			}
@@ -697,15 +672,6 @@ public class LayersRestImpl implements LayersRest {
 		} else {
 			return utils.getMessage("querytool.ontology.access.denied.json",
 					"You don't have permissions for this ontology");
-		}
-	}
-
-	private boolean useQuasar() {
-		try {
-			return ((Boolean) resourcesService.getGlobalConfiguration().getEnv().getDatabase()
-					.get("mongodb-use-quasar")).booleanValue();
-		} catch (final RuntimeException e) {
-			return true;
 		}
 	}
 

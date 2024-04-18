@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.Optional;
 
 import javax.transaction.Transactional;
 
@@ -36,7 +35,6 @@ import com.minsait.onesait.platform.commons.ssl.SSLUtil;
 import com.minsait.onesait.platform.config.model.RestPlanner;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.RestPlannerRepository;
-import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
 import com.minsait.onesait.platform.config.services.user.UserService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -59,7 +57,7 @@ public class RestPlannerServiceImpl implements RestPlannerService {
 
 	@Override
 	public List<RestPlanner> getAllRestPlannersByUser(String userId) {
-		final User user = userService.getUser(userId);
+		User user = userService.getUser(userId);
 		return restPlannerRepository.findByUser(user);
 	}
 
@@ -69,17 +67,13 @@ public class RestPlannerServiceImpl implements RestPlannerService {
 		if (userService.isUserAdministrator(user)) {
 			return true;
 		} else {
-			final Optional<RestPlanner> rp = restPlannerRepository.findById(id);
-			if (rp.isPresent())
-				return rp.get().getUser().getUserId().equals(userId);
-			else
-				return false;
+			return restPlannerRepository.findById(id).getUser().getUserId().equals(userId);
 		}
 	}
 
 	@Override
 	public RestPlanner getRestPlannerById(String id) {
-		return restPlannerRepository.findById(id).orElse(null);
+		return restPlannerRepository.findById(id);
 	}
 
 	@Override
@@ -97,10 +91,7 @@ public class RestPlannerServiceImpl implements RestPlannerService {
 
 	@Override
 	public RestPlanner updateRestPlanner(RestPlanner restPlanner) {
-		final Optional<RestPlanner> opt = restPlannerRepository.findById(restPlanner.getId());
-		if (!opt.isPresent())
-			throw new OPResourceServiceException("Rest Planner not found");
-		final RestPlanner restPlannerDB = opt.get();
+		final RestPlanner restPlannerDB = restPlannerRepository.findById(restPlanner.getId());
 		restPlannerDB.setCron(restPlanner.getCron());
 		restPlannerDB.setDescription(restPlanner.getDescription());
 		restPlannerDB.setMethod(restPlanner.getMethod());
@@ -116,8 +107,8 @@ public class RestPlannerServiceImpl implements RestPlannerService {
 	@Override
 	@Transactional
 	public void deleteRestPlannerById(String id) {
-		restPlannerRepository.findById(id).ifPresent(rp -> restPlannerRepository.delete(rp));
-
+		final RestPlanner restPlannerDB = restPlannerRepository.findById(id);
+		restPlannerRepository.delete(restPlannerDB);
 	}
 
 	@Override
@@ -130,7 +121,7 @@ public class RestPlannerServiceImpl implements RestPlannerService {
 			else
 				result = "OK - " + resp.getStatusCodeValue() + " - " + resp.getBody();
 			return result;
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			return "ERROR - " + e.getMessage();
 		} finally {
 
@@ -143,27 +134,19 @@ public class RestPlannerServiceImpl implements RestPlannerService {
 		int statusCode;
 		if (checkSSL) {
 			restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
-
 		} else {
 			restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
 		}
-
-		final HttpHeaders headers = toHttpHeaders(headersStr);
+		HttpHeaders headers = toHttpHeaders(headersStr);
 		final org.springframework.http.HttpEntity<String> request = new org.springframework.http.HttpEntity<>(body,
 				headers);
-		if (log.isDebugEnabled()) {
-			log.debug("Sending method {}", httpMethod.toString());
-		}
+		log.debug("Sending method " + httpMethod.toString());
 		ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.ACCEPTED);
 		try {
-			if (log.isDebugEnabled()) {
-				log.debug("Execute method {} {}", httpMethod.toString(), url);
-			}
+			log.debug("Execute method " + httpMethod.toString() + " " + url);
 			response = restTemplate.exchange(new URI(url), httpMethod, request, String.class);
 		} catch (final Exception e) {
-			if (log.isDebugEnabled()) {
-				log.debug(e.getMessage());
-			}
+			log.debug(e.getMessage());
 			statusCode = getStatusCode(e.getMessage());
 			return new ResponseEntity<>(e.getMessage(), new HttpHeaders(), HttpStatus.valueOf(statusCode));
 		}
@@ -186,11 +169,11 @@ public class RestPlannerServiceImpl implements RestPlannerService {
 	}
 
 	private HttpHeaders toHttpHeaders(String headersStr) {
-		final HttpHeaders httpHeaders = new HttpHeaders();
-		final String[] heads = headersStr.split("\n");
+		HttpHeaders httpHeaders = new HttpHeaders();
+		String[] heads = headersStr.split("\n");
 		String headerName = "";
 		String headerValue = "";
-		for (final String head : heads) {
+		for (String head : heads) {
 			headerName = head.split(":")[0];
 			headerValue = head.substring(head.indexOf(':') + 1).trim();
 			httpHeaders.add(headerName, headerValue);

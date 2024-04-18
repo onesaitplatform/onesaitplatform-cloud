@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,13 +39,11 @@ import com.minsait.onesait.platform.config.model.Dashboard;
 import com.minsait.onesait.platform.config.model.DigitalTwinDevice;
 import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.Gadget;
-import com.minsait.onesait.platform.config.model.Microservice;
 import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Pipeline;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.repository.ApiOperationRepository;
-import com.minsait.onesait.platform.config.repository.ClientPlatformOntologyRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
 import com.minsait.onesait.platform.config.repository.DashboardRepository;
 import com.minsait.onesait.platform.config.repository.GadgetRepository;
@@ -54,10 +52,8 @@ import com.minsait.onesait.platform.config.services.apimanager.ApiManagerService
 import com.minsait.onesait.platform.config.services.dataflow.DataflowService;
 import com.minsait.onesait.platform.config.services.digitaltwin.device.DigitalTwinDeviceService;
 import com.minsait.onesait.platform.config.services.flowdomain.FlowDomainService;
-import com.minsait.onesait.platform.config.services.microservice.MicroserviceService;
 import com.minsait.onesait.platform.config.services.notebook.NotebookService;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyRelation;
-import com.minsait.onesait.platform.config.services.ontology.dto.OntologyRelation.RelationType;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.config.services.webproject.WebProjectDTO;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
@@ -81,7 +77,6 @@ public class GraphUtil {
 	private String urlWebProjects;
 	private String urlNotebook;
 	private String urlDataflow;
-	private String urlMicroservice;
 	private static final String GENERIC_USER_NAME = "USER";
 	@Autowired
 	private OntologyRepository ontologyRepository;
@@ -107,16 +102,10 @@ public class GraphUtil {
 	private NotebookService notebookService;
 	@Autowired
 	private DataflowService dataflowService;
-	@Autowired
-	private MicroserviceService microserviceService;
-	@Autowired
-	private ClientPlatformOntologyRepository clientPlatformOntologyRepo;
-	@Autowired
-	private ApiOperationRepository apiOperationRepository;
 
 	private static final String CREATE_STR = "create";
 	private static final String SHOW_STR = "show/";
-	private static final String ONTOLOGY_STR = "entity";
+	private static final String ONTOLOGY_STR = "ontology";
 	private static final String LICENSING_STR = "licensing";
 	private static final String COLUMNS_STR = "columns";
 
@@ -135,7 +124,6 @@ public class GraphUtil {
 		urlWebProjects = url + "/webprojects/";
 		urlNotebook = url + "/notebooks/";
 		urlDataflow = url + "/dataflow/";
-		urlMicroservice = url + "/microservices/";
 
 	}
 
@@ -145,21 +133,19 @@ public class GraphUtil {
 		final String name = utils.getMessage("name.ontologies", "ONTOLOGIES");
 		final String description = utils.getMessage("tooltip_ontologies", null);
 
-		arrayLinks.add(new GraphDTO(GENERIC_USER_NAME, name, null, urlOntology + "list", GENERIC_USER_NAME, "ENTITIES",
-				utils.getUserId(), name, "suit", description, urlOntology + CREATE_STR));
+		arrayLinks.add(new GraphDTO(GENERIC_USER_NAME, name, null, urlOntology + "list", GENERIC_USER_NAME,
+				"ONTOLOGIES", utils.getUserId(), name, "suit", description, urlOntology + CREATE_STR));
 
 		if (ontologies == null) {
-			if (utils.isAdministrator()) {
+			if (utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name()))
 				ontologies = ontologyRepository.findAll();
-			} else {
+			else
 				ontologies = ontologyRepository
 						.findByUserAndOntologyUserAccessAndAllPermissions(userService.getUser(utils.getUserId()));
-			}
 
 		}
-		if (null != user) {
+		if (null != user)
 			ontologies = ontologies.stream().filter(o -> o.getUser().equals(user)).collect(Collectors.toList());
-		}
 		for (final Ontology ont : ontologies) {
 			final Set<OntologyRelation> relations = new TreeSet<>();
 			try {
@@ -181,33 +167,28 @@ public class GraphUtil {
 		final JsonNode schemaOrigin = mapper.readTree(ontology.getJsonSchema());
 		if (!schemaOrigin.path("_references").isMissingNode()) {
 			schemaOrigin.path("_references").forEach(r -> {
-				final RelationType relationType = r.path("relationType").isMissingNode() ? RelationType.ONE_TO_ONE
-						: RelationType.valueOf(r.path("relationType").asText());
 				String originAtt = getOriginAtt(r.get("self").asText());
 				String targetAtt = r.get("target").asText().split("#")[1].replaceAll("properties.", "");
 				final String targetOntology = getTargetOntology(r.get("target").asText());
 				final Ontology target = ontologyRepository.findByIdentification(targetOntology);
 				final String refOrigin = refJsonSchema(schemaOrigin);
-				if (!"".equals(refOrigin)) {
+				if (!"".equals(refOrigin))
 					originAtt = originAtt.replaceAll(refOrigin.replace("/", ""),
 							schemaOrigin.at("/required/0").asText());
-				}
-				if (target == null) {
+				if (target == null)
 					throw new GenericRuntimeOPException(
 							"Target ontology of " + ontology.getIdentification() + " not found on platform");
-				}
 				try {
 					final JsonNode schemaTarget = mapper.readTree(target.getJsonSchema());
 					final String refTarget = refJsonSchema(schemaTarget);
-					if (!"".equals(refTarget)) {
+					if (!"".equals(refTarget))
 						targetAtt = targetAtt.replaceAll(refTarget.replace("/", ""),
 								schemaTarget.at("/required/0").asText());
-					}
 				} catch (final IOException e) {
 					log.debug("No $ref");
 				}
 				relations.add(new OntologyRelation(ontology.getIdentification(), target.getIdentification(), originAtt,
-						targetAtt, relationType));
+						targetAtt));
 				arrayLinks.add(new GraphDTO(ontology.getId(), target.getId(), urlOntology + SHOW_STR + ontology.getId(),
 						urlOntology + SHOW_STR + target.getId(), ONTOLOGY_STR, ONTOLOGY_STR,
 						ontology.getIdentification(), target.getIdentification(), LICENSING_STR, "Linked"));
@@ -245,21 +226,19 @@ public class GraphUtil {
 		if (apis == null) {
 			apis = apiManagerService.loadAPISByFilter(null, null, null, utils.getUserId());
 		}
-		if (null != user) {
+		if (null != user)
 			apis = apis.stream().filter(a -> a.getUser().equals(user)).collect(Collectors.toList());
-		}
 		try {
 			arrayLinks.add(new GraphDTO(GENERIC_USER_NAME, name, null, urlApis + "list", GENERIC_USER_NAME, "apis",
 					utils.getUserId(), name, "suit", description, urlApis + CREATE_STR));
 			apis.forEach(a -> {
 				arrayLinks.add(new GraphDTO(name, a.getId(), urlApis + "list", urlApis + SHOW_STR + a.getId(), name,
 						"api", name, a.getIdentification(), LICENSING_STR, a.getIdentification()));
-				if (a.getApiType().equals(ApiType.INTERNAL_ONTOLOGY)) {
+				if (a.getApiType().equals(ApiType.INTERNAL_ONTOLOGY))
 					arrayLinks.add(new GraphDTO(a.getId(), a.getOntology().getId(), urlApis + SHOW_STR + a.getId(),
 							urlOntology + SHOW_STR + a.getOntology().getId(), "api", ONTOLOGY_STR,
 							a.getIdentification(), a.getOntology().getIdentification(), LICENSING_STR,
 							a.getIdentification(), a.getOntology().getIdentification()));
-				}
 			});
 		} catch (final Exception e) {
 			log.error("An error has ocurred loading graph with apis", e);
@@ -276,9 +255,8 @@ public class GraphUtil {
 		if (domains == null) {
 			domains = flowService.getFlowDomainByUser(userService.getUser(utils.getUserId()));
 		}
-		if (null != user) {
+		if (null != user)
 			domains = domains.stream().filter(d -> d.getUser().equals(user)).collect(Collectors.toList());
-		}
 		try {
 			arrayLinks.add(new GraphDTO(GENERIC_USER_NAME, name, null, urlFlows + "list", GENERIC_USER_NAME, "flows",
 					utils.getUserId(), name, "suit", description, urlFlows + CREATE_STR));
@@ -302,10 +280,9 @@ public class GraphUtil {
 		arrayLinks.add(new GraphDTO(GENERIC_USER_NAME, name, null, urlWebProjects + "list", GENERIC_USER_NAME,
 				"webprojects", utils.getUserId(), name, "suite", description, urlWebProjects + CREATE_STR));
 		if (projects != null) {
-			if (null != user) {
+			if (null != user)
 				projects = projects.stream().filter(p -> p.getUserId().equals(user.getUserId()))
 						.collect(Collectors.toList());
-			}
 			try {
 				projects.forEach(p -> {
 					arrayLinks.add(new GraphDTO(name, p.getIdentification(), urlWebProjects + "list",
@@ -329,9 +306,8 @@ public class GraphUtil {
 		if (twins == null) {
 			twins = digitalTwinDeviceService.getAllByUserId(utils.getUserId());
 		}
-		if (null != user) {
+		if (null != user)
 			twins = twins.stream().filter(t -> t.getUser().equals(user)).collect(Collectors.toList());
-		}
 		try {
 			arrayLinks.add(new GraphDTO(GENERIC_USER_NAME, name, null, urlDigitalTwin + "list", GENERIC_USER_NAME,
 					"digitaltwins", utils.getUserId(), name, "suit", description, urlDigitalTwin + CREATE_STR));
@@ -360,10 +336,9 @@ public class GraphUtil {
 		if (clientPlatforms == null) {
 			clientPlatforms = clientPlatformRepository.findByUser(userService.getUser(utils.getUserId()));
 		}
-		if (null != user) {
+		if (null != user)
 			clientPlatforms = clientPlatforms.stream().filter(c -> c.getUser().equals(user))
 					.collect(Collectors.toList());
-		}
 		try {
 			for (final ClientPlatform clientPlatform : clientPlatforms) {
 				// Creación de enlaces
@@ -407,9 +382,8 @@ public class GraphUtil {
 		if (gadgets == null) {
 			gadgets = gadgetRepository.findByUser(userService.getUser(utils.getUserId()));
 		}
-		if (null != user) {
+		if (null != user)
 			gadgets = gadgets.stream().filter(o -> o.getUser().equals(user)).collect(Collectors.toList());
-		}
 		if (gadgets != null) {
 			try {
 				for (final Gadget gadget : gadgets) {
@@ -441,9 +415,8 @@ public class GraphUtil {
 		if (dashboards == null) {
 			dashboards = dashboardRepository.findByUser(userService.getUser(utils.getUserId()));
 		}
-		if (null != user) {
+		if (null != user)
 			dashboards = dashboards.stream().filter(o -> o.getUser().equals(user)).collect(Collectors.toList());
-		}
 		try {
 			for (final Dashboard dashboard : dashboards) {
 				try {
@@ -492,9 +465,8 @@ public class GraphUtil {
 			if (notebooks == null) {
 				notebooks = notebookService.getNotebooks(utils.getUserId());
 			}
-			if (null != user) {
+			if (null != user)
 				notebooks = notebooks.stream().filter(n -> n.getUser().equals(user)).collect(Collectors.toList());
-			}
 			try {
 				arrayLinks.add(new GraphDTO(GENERIC_USER_NAME, name, null, urlNotebook + "list", GENERIC_USER_NAME,
 						"notebooks", utils.getUserId(), name, "suit", description, urlNotebook + CREATE_STR));
@@ -520,9 +492,8 @@ public class GraphUtil {
 			if (dataflows == null) {
 				dataflows = dataflowService.getPipelines(utils.getUserId());
 			}
-			if (null != user) {
+			if (null != user)
 				dataflows = dataflows.stream().filter(o -> o.getUser().equals(user)).collect(Collectors.toList());
-			}
 			try {
 				arrayLinks.add(new GraphDTO(GENERIC_USER_NAME, name, null, urlDataflow + "list", GENERIC_USER_NAME,
 						"pipelines", utils.getUserId(), name, "suit", description, urlDataflow + CREATE_STR));
@@ -537,33 +508,6 @@ public class GraphUtil {
 		}
 		return arrayLinks;
 
-	}
-
-	public List<GraphDTO> constructGraphWithMicroservices(List<Microservice> microservices, User user) {
-
-		final List<GraphDTO> arrayLinks = new LinkedList<>();
-		final String name = utils.getMessage("name.microservice", "MICROSERVICES");
-		final String description = utils.getMessage("tooltip_microservices", null);
-
-		if (microservices == null) {
-			final User userUtils = userService.getUser(utils.getUserId());
-			microservices = microserviceService.getMicroservices(userUtils);
-		}
-		if (null != user) {
-			microservices = microservices.stream().filter(o -> o.getUser().equals(user)).collect(Collectors.toList());
-		}
-		try {
-			arrayLinks.add(new GraphDTO(GENERIC_USER_NAME, name, null, urlMicroservice + "list", GENERIC_USER_NAME,
-					"microservices", utils.getUserId(), name, "suit", description, urlMicroservice + CREATE_STR));
-			microservices.forEach(dt -> {
-				arrayLinks.add(new GraphDTO(name, dt.getId(), urlMicroservice + "list",
-						urlMicroservice + "update/" + dt.getId(), name, "microservice", name, dt.getIdentification(),
-						LICENSING_STR, dt.getIdentification()));
-			});
-		} catch (final Exception e) {
-			log.error("An error has ocurred loading graph with dataflows", e);
-		}
-		return arrayLinks;
 	}
 
 	public List<String> getGadgetIdsFromModel(String modelJson) throws IOException {

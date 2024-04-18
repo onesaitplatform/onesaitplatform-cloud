@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ import lombok.extern.slf4j.Slf4j;
 public class EventRestManager implements EventManager {
 
 	private final int timeOut = (int) TimeUnit.SECONDS.toMillis(10);
-
+	
 	private static final String BROKERMESSAGE = "Broker message {}";
 
 	@Value("${api.key}")
@@ -127,6 +127,7 @@ public class EventRestManager implements EventManager {
 		httpRequestFactory.setHttpClient(httpClient);
 
 		this.restTemplate = new RestTemplate(httpRequestFactory);
+
 		this.headers = new HttpHeaders();
 		this.headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 		this.headers.setContentType(MediaType.APPLICATION_JSON);
@@ -152,7 +153,7 @@ public class EventRestManager implements EventManager {
 		public void run() {
 
 			try {
-				if (ip == null || ip.isEmpty())
+				if (ip == null)
 					ip = getLocalIp();
 			} catch (Exception e) {
 				log.error("Unable to get local IP to register device in broker", e);

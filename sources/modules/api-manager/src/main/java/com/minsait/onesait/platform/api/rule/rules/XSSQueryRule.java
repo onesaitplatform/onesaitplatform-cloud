@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,9 +61,8 @@ public class XSSQueryRule extends DefaultRuleBase {
 
 	private String stripXSS(String value) {
 		String cleanValue = null;
-		if (value != null) {  
-		    //TO-DO fix accents
-			//cleanValue = Normalizer.normalize(value, Normalizer.Form.NFD);
+		if (value != null) {
+			cleanValue = Normalizer.normalize(value, Normalizer.Form.NFD);
 
 			// Avoid null characters
 			cleanValue = cleanValue.replaceAll("\0", "");

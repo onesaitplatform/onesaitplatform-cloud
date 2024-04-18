@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.minsait.onesait.platform.config.model.DigitalTwinType;
 import com.minsait.onesait.platform.config.model.PropertyDigitalTwinType;
 
-public interface PropertyDigitalTwinTypeRepository extends JpaRepository<PropertyDigitalTwinType, String> {
 
+public interface PropertyDigitalTwinTypeRepository extends JpaRepository<PropertyDigitalTwinType, String>{
+	
 	List<PropertyDigitalTwinType> findByNameIgnoreCase(String name);
 
 	List<PropertyDigitalTwinType> findByDescription(String description);
@@ -34,11 +35,13 @@ public interface PropertyDigitalTwinTypeRepository extends JpaRepository<Propert
 	List<PropertyDigitalTwinType> findByDescriptionContaining(String description);
 
 	List<PropertyDigitalTwinType> findByNameContaining(String name);
-
+	
 	List<PropertyDigitalTwinType> findByNameLikeAndDescriptionLike(String name, String description);
-
+	
 	List<PropertyDigitalTwinType> findByNameContainingAndDescriptionContaining(String name, String description);
-
+	
+	PropertyDigitalTwinType findById(String id);
+	
 	List<PropertyDigitalTwinType> findByTypeId(DigitalTwinType digitalTwinType);
-
+	
 }

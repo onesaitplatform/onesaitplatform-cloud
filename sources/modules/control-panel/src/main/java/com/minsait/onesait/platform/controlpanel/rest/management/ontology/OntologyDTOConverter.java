@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -35,16 +34,13 @@ import com.google.gson.JsonParser;
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessService;
 import com.minsait.onesait.platform.config.model.DataModel;
 import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.OntologyKPI;
+import com.minsait.onesait.platform.config.model.OntologyRestHeaders;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbCleanLapse;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbToHdbStorage;
-import com.minsait.onesait.platform.config.model.OntologyKPI;
-import com.minsait.onesait.platform.config.model.OntologyRestHeaders;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesProperty;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow;
-import com.minsait.onesait.platform.config.model.OntologyTimeseriesTimescaleAggregates;
-import com.minsait.onesait.platform.config.model.OntologyTimeseriesTimescaleProperties;
-import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow.FrecuencyUnit;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow.RetentionUnit;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow.WindowType;
 import com.minsait.onesait.platform.config.model.OntologyUserAccess;
@@ -71,13 +67,11 @@ import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.
 import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.OntologyVirtualDTO;
 import com.minsait.onesait.platform.controlpanel.rest.management.ontology.model.OntologyVirtualDataSourceDTO;
 
-import edu.emory.mathcs.backport.java.util.Collections;
 import lombok.Getter;
-import lombok.Setter;
 
 @Component
 public class OntologyDTOConverter {
-
+	
 	@Autowired
 	UserService userService;
 	@Autowired
@@ -88,49 +82,49 @@ public class OntologyDTOConverter {
 	OntologyTimeSeriesService ontologyTimeSeriesService;
 	@Autowired
 	DataModelService dataModelService;
-
+	
 	@Getter
 	ObjectMapper mapper;
-
+	
 	@PostConstruct
 	private void init() {
 		mapper = new ObjectMapper();
 	}
-
+	
 	public Date parseDateTime(String dateString) throws ParseException {
 		return new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").parse(dateString);
 	}
-
+	
 	public OntologyDTO jsonStringToOntologyDTO(String jsonString) throws IOException {
-		return mapper.readValue(jsonString, OntologyDTO.class);
+        return mapper.readValue(jsonString, OntologyDTO.class);
 	}
-
+	
 	public Object ontologyDTOToAnyOntologyDTO(OntologyDTO ontologyDTO, Class<?> ontlogyClass) {
-
-		return mapper.convertValue(ontologyDTO, ontlogyClass);
+		
+        return mapper.convertValue(ontologyDTO, ontlogyClass);
 	}
-
+	
 	public boolean canConvert(String jsonString, Class<?> ontlogyClass) {
-		try {
-			mapper.readValue(jsonString, ontlogyClass);
-			return true;
-		} catch (Exception e) {
-			return false;
-		}
+        try {
+            mapper.readValue(jsonString, ontlogyClass);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
 	}
-
-	public boolean canConvert(OntologyDTO ontologyDTO, Class<?> ontlogyClass) {
-		try {
-			mapper.convertValue(ontologyDTO, ontlogyClass);
-			return true;
-		} catch (Exception e) {
-			return false;
-		}
+	
+	public boolean canConvert(OntologyDTO ontologyDTO, Class<?> ontlogyClass ) {
+        try {
+            mapper.convertValue(ontologyDTO, ontlogyClass);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
 	}
-
+	
 	public Ontology ontologyCreateDTOToOntology(OntologyCreateDTO ontologyCreate, User user) {
 		Ontology ontology = new Ontology();
-
+		
 		ontology.setUser(user);
 		ontology.setIdentification(ontologyCreate.getIdentification());
 		ontology.setDescription(ontologyCreate.getDescription());
@@ -152,14 +146,14 @@ public class OntologyDTOConverter {
 		} else {
 			ontology.setRtdbToHdbStorage(ontologyCreate.getRtdbToHdbStorage());
 		}
-		ontology.setAllowsCreateNotificationTopic(ontologyCreate.isAllowsCreateNotificationTopic());
-		ontology.setContextDataEnabled(ontologyCreate.isContextDataEnabled());
+		ontology.setAllowsCreateTopic(ontologyCreate.isAllowsCreateTopic());
+		
 		return ontology;
 	}
-
+	
 	public Ontology ontologyDTOToOntology(OntologyDTO ontologyDTO, User user) {
 		Ontology ontology = new Ontology();
-
+		
 		ontology.setUser(user);
 		ontology.setIdentification(ontologyDTO.getIdentification());
 		ontology.setDescription(ontologyDTO.getDescription());
@@ -185,16 +179,14 @@ public class OntologyDTOConverter {
 			ontology.setRtdbToHdbStorage(ontologyDTO.getRtdbToHdbStorage());
 		}
 		ontology.setDataModel(datamodelDTOToDataModel(ontologyDTO.getDataModel()));
-		ontology.setAllowsCreateNotificationTopic(ontologyDTO.isAllowsCreateNotificationTopic());
-		ontology.setContextDataEnabled(ontologyDTO.isContextDataEnabled());
 		ontology.setAllowsCreateTopic(ontologyDTO.isAllowsCreateTopic());
-
+		
 		return ontology;
 	}
-
+	
 	public DataModel datamodelDTOToDataModel(DataModelDTO dataModelDTO) {
 		DataModel datamodel = new DataModel();
-
+		
 		datamodel.setUser(userService.getUser(dataModelDTO.getUser()));
 		datamodel.setJsonSchema(dataModelDTO.getJsonSchema());
 		datamodel.setIdentification(dataModelDTO.getName());
@@ -202,27 +194,19 @@ public class OntologyDTOConverter {
 		datamodel.setTypeEnum(DataModel.MainType.valueOf(dataModelDTO.getType()));
 		datamodel.setDescription(dataModelDTO.getDescription());
 		datamodel.setLabels(dataModelDTO.getLabels());
-
+		
 		return datamodel;
 	}
-
-	public List<OntologyUserAccessSimplified> ontologyUserAccessesToOntologyUserAccessSimplified(
-			Set<OntologyUserAccess> authorizations) {
-		List<OntologyUserAccessSimplified> autorizationsDTO = new ArrayList<>();
-		for (OntologyUserAccess userac : authorizations) {
+	
+	public List<OntologyUserAccessSimplified> ontologyUserAccessesToOntologyUserAccessSimplified(Set<OntologyUserAccess> authorizations) {
+		List<OntologyUserAccessSimplified> autorizationsDTO = new ArrayList<>(); 
+		for (OntologyUserAccess userac: authorizations) {
 			autorizationsDTO.add(new OntologyUserAccessSimplified(userac));
 		}
-
-		Collections.sort(autorizationsDTO, new Comparator<OntologyUserAccessSimplified>() {
-			@Override
-			public int compare(OntologyUserAccessSimplified s1, OntologyUserAccessSimplified s2) {
-				return s1.getUserId().compareToIgnoreCase(s2.getUserId());
-			}
-		});
-
+		
 		return autorizationsDTO;
 	}
-
+	
 	public Ontology ontologyKPIDTOToOntology(OntologyKPIDTO ontologyKPIDTO, User user) throws IOException {
 		final Ontology ontology = new Ontology();
 		ontology.setJsonSchema(ontologyBusinessService
@@ -236,10 +220,9 @@ public class OntologyDTOConverter {
 		ontology.setUser(user);
 		ontology.setMetainf(ontologyKPIDTO.getMetainf());
 		ontology.setRtdbDatasource(Ontology.RtdbDatasource.valueOf(ontologyKPIDTO.getDatasource()));
-		ontology.setContextDataEnabled(ontologyKPIDTO.isContextDataEnabled());
 		return ontology;
 	}
-
+	
 	public OntologyKPI ontologyKPIDTOToOntologyKPI(OntologyKPIDTO ontologyKPIDTO, Ontology ontology, User user) {
 		final OntologyKPI oKPI = new OntologyKPI();
 		oKPI.setCron(ontologyKPIDTO.getCron());
@@ -252,34 +235,34 @@ public class OntologyDTOConverter {
 		oKPI.setPostProcess(ontologyKPIDTO.getPostProcess());
 		return oKPI;
 	}
-
-	public OntologyTimeSeriesProperty ontologyTimeSeriesPropertyDTOToOntologyTimeSeriesProperty(Ontology ontology,
-			OntologyTimeSeriesPropertyDTO propertyDTO) {
+	
+	public OntologyTimeSeriesProperty ontologyTimeSeriesPropertyDTOToOntologyTimeSeriesProperty(Ontology ontology, OntologyTimeSeriesPropertyDTO propertyDTO) {
 		OntologyTimeSeriesProperty property = new OntologyTimeSeriesProperty();
-		property.setOntologyTimeSeries(ontologyTimeSeriesService
-				.getOntologyByOntology(ontologyService.getOntologyByIdentification(ontology.getIdentification())));
+		property.setOntologyTimeSeries(ontologyTimeSeriesService.getOntologyByOntology(
+				ontologyService.getOntologyByIdentification(ontology.getIdentification())
+				));
 		property.setPropertyDataType(propertyDTO.getPropertyDataType());
 		property.setPropertyName(propertyDTO.getPropertyName());
 		property.setPropertyType(propertyDTO.getPropertyType());
-
+		
 		return property;
 	}
-
-	public List<OntologyTimeSeriesProperty> ontologyTimeSeriesPropertesDTOToOntologyTimeSeriesProperties(
-			Ontology ontology, List<OntologyTimeSeriesPropertyDTO> propertiesDTO) {
+	
+	public List<OntologyTimeSeriesProperty> ontologyTimeSeriesPropertesDTOToOntologyTimeSeriesProperties (Ontology ontology, List<OntologyTimeSeriesPropertyDTO> propertiesDTO) {
 		List<OntologyTimeSeriesProperty> properties = new ArrayList<>();
-		for (OntologyTimeSeriesPropertyDTO propDTO : propertiesDTO) {
+		for (OntologyTimeSeriesPropertyDTO propDTO: propertiesDTO) {
 			properties.add(ontologyTimeSeriesPropertyDTOToOntologyTimeSeriesProperty(ontology, propDTO));
 		}
-
+			
+		
 		return properties;
 	}
-
-	public OntologyTimeSeriesWindow ontologyTimeSeriesWindowDTOToOntologyTimeSeriesWindow(Ontology ontology,
-			OntologyTimeSeriesWindowDTO windowsDTO) {
+	
+	public OntologyTimeSeriesWindow ontologyTimeSeriesWindowDTOToOntologyTimeSeriesWindow(Ontology ontology, OntologyTimeSeriesWindowDTO windowsDTO) {
 		OntologyTimeSeriesWindow window = new OntologyTimeSeriesWindow();
-		window.setOntologyTimeSeries(ontologyTimeSeriesService
-				.getOntologyByOntology(ontologyService.getOntologyByIdentification(ontology.getIdentification())));
+		window.setOntologyTimeSeries(ontologyTimeSeriesService.getOntologyByOntology(
+				ontologyService.getOntologyByIdentification(ontology.getIdentification())
+				));
 		window.setAggregationFunction(windowsDTO.getAggregationFunction());
 		window.setBdh(windowsDTO.isBdh());
 		window.setFrecuency(windowsDTO.getFrecuency());
@@ -287,22 +270,21 @@ public class OntologyDTOConverter {
 		window.setRetentionBefore(windowsDTO.getRetentionBefore());
 		window.setRetentionUnit(RetentionUnit.valueOf(windowsDTO.getRetentionUnit()));
 		window.setWindowType(WindowType.valueOf(windowsDTO.getWindowType()));
-
+		
 		return window;
 	}
-
-	public List<OntologyTimeSeriesWindow> ontologyTimeSeriesWindowsDTOToOntologyTimeSeriesWindows(Ontology ontology,
-			List<OntologyTimeSeriesWindowDTO> windowsDTO) {
+	
+	public List<OntologyTimeSeriesWindow> ontologyTimeSeriesWindowsDTOToOntologyTimeSeriesWindows (Ontology ontology, List<OntologyTimeSeriesWindowDTO> windowsDTO) {
 		List<OntologyTimeSeriesWindow> windows = new ArrayList<>();
-		for (OntologyTimeSeriesWindowDTO windowDTO : windowsDTO) {
+		for (OntologyTimeSeriesWindowDTO windowDTO: windowsDTO) {
 			windows.add(ontologyTimeSeriesWindowDTOToOntologyTimeSeriesWindow(ontology, windowDTO));
 		}
-
+			
+		
 		return windows;
 	}
-
-	public OntologyTimeSeriesServiceDTO ontologyTimeSeriesDTOToOntologyTimeSeriesServiceDTO(
-			OntologyTimeSeriesDTO ontology, User user) {
+	
+	public OntologyTimeSeriesServiceDTO ontologyTimeSeriesDTOToOntologyTimeSeriesServiceDTO(OntologyTimeSeriesDTO ontology, User user) {
 		OntologyTimeSeriesServiceDTO seriesDTO = new OntologyTimeSeriesServiceDTO();
 		seriesDTO.setActive(ontology.isActive());
 		seriesDTO.setIdentification(ontology.getIdentification());
@@ -318,17 +300,17 @@ public class OntologyDTOConverter {
 		seriesDTO.setRtdbToHdb(ontology.isRtdbToHdb());
 		seriesDTO.setAllowsCreateTopic(ontology.isAllowsCreateTopic());
 		seriesDTO.setUser(user);
-		seriesDTO.setTags(new String[] {});
-		seriesDTO.setFieldnames(new String[] {});
-		seriesDTO.setWindowtypes(new String[] {});
+		seriesDTO.setTags(new String[]{});
+		seriesDTO.setFieldnames(new String[]{});
+		seriesDTO.setWindowtypes(new String[]{});
 //		Ontology ont = ontologyService.getOntologyByIdentification(ontology.getIdentification());
 //		seriesDTO.setTimeSeriesProperties(
 //				new HashSet<>(ontologyTimeSeriesPropertesDTOToOntologyTimeSeriesProperties(ont, ontology.getProperties())));
 //		seriesDTO.setTimeSeriesWindow(
 //				new HashSet<>(ontologyTimeSeriesWindowsDTOToOntologyTimeSeriesWindows(ont, ontology.getWindows())));
-
+		
 		Set<OntologyTimeSeriesProperty> properties = new HashSet<>();
-		for (OntologyTimeSeriesPropertyDTO propertyDTO : ontology.getProperties()) {
+		for (OntologyTimeSeriesPropertyDTO propertyDTO: ontology.getProperties()) {
 			OntologyTimeSeriesProperty property = new OntologyTimeSeriesProperty();
 			property.setPropertyDataType(propertyDTO.getPropertyDataType());
 			property.setPropertyName(propertyDTO.getPropertyName());
@@ -336,9 +318,9 @@ public class OntologyDTOConverter {
 			properties.add(property);
 		}
 		seriesDTO.setTimeSeriesProperties(properties);
-
+		
 		Set<OntologyTimeSeriesWindow> windows = new HashSet<>();
-		for (OntologyTimeSeriesWindowDTO windowsDTO : ontology.getWindows()) {
+		for (OntologyTimeSeriesWindowDTO windowsDTO: ontology.getWindows()) {
 			OntologyTimeSeriesWindow window = new OntologyTimeSeriesWindow();
 			window.setAggregationFunction(windowsDTO.getAggregationFunction());
 			window.setBdh(windowsDTO.isBdh());
@@ -352,39 +334,18 @@ public class OntologyDTOConverter {
 			windows.add(window);
 		}
 		seriesDTO.setTimeSeriesWindow(windows);
-		if (ontology.getRtdbDatasource()==RtdbDatasource.TIMESCALE) {
-			final String[] bucketType =  new String[] {ontology.getTimescaleProperties().getChunkInterval() + " " + ontology.getTimescaleProperties().getChunkIntervalUnit().toString()};
-			seriesDTO.setBuckettypes(bucketType);
-			seriesDTO.setHypertableQuery(ontology.getTimescaleProperties().getHypertableQuery());
-			seriesDTO.setCompressionActive(ontology.getTimescaleProperties().isCompressionActive());
-			seriesDTO.setCompressionConfig(ontology.getTimescaleProperties().getCompressionAfter() + "_" + ontology.getTimescaleProperties().getCompressionUnit().toString());
-			seriesDTO.setCompressionQuery(ontology.getTimescaleProperties().getCompressionQuery());
-			String[] freqTypes;
-			switch(ontology.getTimescaleProperties().getFrecuencyUnit()) {
-			case NONE:
-			case NODUPS:
-				freqTypes = new String[] {ontology.getTimescaleProperties().getFrecuencyUnit().toString()};
-				break;
-			default:
-				freqTypes = new String[] {ontology.getTimescaleProperties().getFrecuency() + " " + ontology.getTimescaleProperties().getFrecuencyUnit().toString()};
-				break;
-			}
-			
-			seriesDTO.setFreqtypes(freqTypes);
-		}
-	
-
+		
 		return seriesDTO;
 	}
-
+	
 	public List<KpiDTO> ontologyKpisToListOntologyKpisDTO(List<OntologyKPI> kpis) {
 		List<KpiDTO> kpisDTO = new ArrayList<>();
-		for (OntologyKPI kpi : kpis) {
+		for (OntologyKPI kpi:  kpis) {
 			kpisDTO.add(new KpiDTO(kpi));
 		}
 		return kpisDTO;
 	}
-
+	
 	public OntologyKPIDTO ontologyKpiDTOToOntologyKPIDTO(OntologyKpiDTO ontologyKpisDTO) throws ParseException {
 		OntologyKPIDTO ontologyServiceDTO = new OntologyKPIDTO();
 		ontologyServiceDTO.setDatasource(RtdbDatasource.MONGO.name());
@@ -410,10 +371,10 @@ public class OntologyDTOConverter {
 		ontologyServiceDTO.setPostProcess(ontologyKpisDTO.getKpi().getPostProcess());
 		ontologyServiceDTO.setQuery(ontologyKpisDTO.getKpi().getQuery());
 		ontologyServiceDTO.setCron(ontologyKpisDTO.getKpi().getCron());
-
+				
 		return ontologyServiceDTO;
 	}
-
+	
 	public List<OntologyRestHeaderDTO> ontologyRestHeadersToListOntologyRestHeaderDTO(OntologyRestHeaders headers) {
 		List<OntologyRestHeaderDTO> headersDTO = new ArrayList<>();
 		JsonArray jsonArray = new JsonParser().parse(headers.getConfig()).getAsJsonArray();
@@ -422,30 +383,29 @@ public class OntologyDTOConverter {
 		}
 		return headersDTO;
 	}
-
-	public OntologyVirtualDatasource ontologyVirtualDatasourceDTOToOntologyVirtualDataSource(
-			OntologyVirtualDataSourceDTO datasourceDTO, User user) {
+	
+	public OntologyVirtualDatasource ontologyVirtualDatasourceDTOToOntologyVirtualDataSource(OntologyVirtualDataSourceDTO datasourceDTO, User user) {
 		OntologyVirtualDatasource datasource = new OntologyVirtualDatasource();
-		datasource.setUser(user);
-		datasource.setUserId(datasourceDTO.getUser());
+		datasource.setUserId(user);
+		datasource.setUser(datasourceDTO.getUser());
 		datasource.setConnectionString(datasourceDTO.getConnectionString());
 		datasource.setCredentials(datasourceDTO.getCredentials());
-		datasource.setIdentification(datasourceDTO.getName());
+		datasource.setDatasourceName(datasourceDTO.getName());
 		datasource.setDatasourceDomain(datasourceDTO.getDomain());
 		datasource.setPublic(datasourceDTO.isPublic());
 		datasource.setPoolSize(datasourceDTO.getPoolSize());
 		datasource.setQueryLimit(datasourceDTO.getQueryLimit());
 		datasource.setSgdb(datasourceDTO.getSgbd());
-
+		
 		return datasource;
 	}
-
+	
 	public OntologyConfiguration ontologyRestDTOToOntologyConfiguration(OntologyRestDTO ontologyDTO) {
 		OntologyConfiguration configuration = new OntologyConfiguration();
-
+		
 		configuration.setBaseUrl(ontologyDTO.getBaseUrl());
 		configuration.setSchema(ontologyDTO.getJsonSchema());
-		String[] hds = { ontologyDTO.headersToJsonArray().toString() };
+		String[] hds = {ontologyDTO.headersToJsonArray().toString()};
 		configuration.setHeaders(hds);
 		if (ontologyDTO.getSecurityType() != null) {
 			configuration.setAuthMethod(ontologyDTO.getSecurityType().name());
@@ -453,7 +413,7 @@ public class OntologyDTOConverter {
 			configuration.setAuthMethod(null);
 		}
 		configuration.setSwagger(ontologyDTO.getSwaggerUrl());
-		String[] ops = { ontologyDTO.operationsToJsonArray().toString() };
+		String[] ops = {ontologyDTO.operationsToJsonArray().toString()};
 		configuration.setOperations(ops);
 		configuration.setHeader(ontologyDTO.getSecurity().getHeader());
 		configuration.setToken(ontologyDTO.getSecurity().getToken());
@@ -461,25 +421,24 @@ public class OntologyDTOConverter {
 		configuration.setBasicPass(ontologyDTO.getSecurity().getPassword());
 		configuration.setOauthUser(ontologyDTO.getSecurity().getUser());
 		configuration.setOauthPass(ontologyDTO.getSecurity().getPassword());
-
+		
 		return configuration;
 	}
-
+	
 	public OntologyConfiguration ontologyTimeSeriesDTOToOntologyConfiguration(OntologyTimeSeriesDTO ontologyDTO) {
 		// for future logic
 		return new OntologyConfiguration();
 	}
-
-	public OntologyConfiguration ontologyVirtualDTOToOntologyConfiguration(OntologyVirtualDTO ontologyDTO,
-			String datasourceId) {
+	
+	public OntologyConfiguration ontologyVirtualDTOToOntologyConfiguration(OntologyVirtualDTO ontologyDTO, String datasourceId) {
 		OntologyConfiguration configuration = new OntologyConfiguration();
-		configuration.setDatasource(ontologyDTO.getDatasource().getName());
+		configuration.setDatasource(ontologyDTO.getDatasource().getName());	
 		configuration.setObjectId(datasourceId);
 		configuration.setAllowsCreateTable(ontologyDTO.isAllowsCreateTable());
 		configuration.setSqlStatement(ontologyDTO.getSqlStatement());
 		return configuration;
 	}
-
+	
 	public OntologyConfiguration ontologyKpiDTOToOntologyConfiguration(OntologyKPIDTO ontologyDTO) {
 		// for future logic
 		return new OntologyConfiguration();

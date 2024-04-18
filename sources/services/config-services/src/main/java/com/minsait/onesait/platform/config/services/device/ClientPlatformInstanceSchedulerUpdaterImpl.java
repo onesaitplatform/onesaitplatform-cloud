@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,19 @@
  */
 package com.minsait.onesait.platform.config.services.device;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.config.model.ClientPlatformInstance;
+import com.minsait.onesait.platform.config.repository.ClientPlatformInstanceRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,14 +34,11 @@ import lombok.extern.slf4j.Slf4j;
 @ConditionalOnProperty(prefix = "onesaitplatform.iotbroker.device.update.schedule", name = "enable", havingValue = "true")
 @Slf4j
 public class ClientPlatformInstanceSchedulerUpdaterImpl implements ClientPlatformInstanceScheduledUpdater {
-	
-	@Autowired
-	ClientPlatformInstanceService cpiService;
-	
-	private ConcurrentHashMap<String, Pair<String,ClientPlatformInstance>> mLastUpdates;
-	
 
-	
+	@Autowired
+	ClientPlatformInstanceRepository deviceRepository;
+
+	private Map<String, ClientPlatformInstance> mLastUpdates;
 
 	@PostConstruct
 	public void init() {
@@ -47,25 +46,31 @@ public class ClientPlatformInstanceSchedulerUpdaterImpl implements ClientPlatfor
 	}
 
 	@Override
-	public ClientPlatformInstance saveDevice(ClientPlatformInstance device, String cpIdentification) {
-		String key = String.join("-", cpIdentification, device.getIdentification());
-		this.mLastUpdates.put(key, Pair.of(cpIdentification, device));
+	public ClientPlatformInstance updateDevice(ClientPlatformInstance device) {
+		synchronized (this.mLastUpdates) {
+			String key = device.getClientPlatform().getId() + device.getIdentification() + device.getSessionKey();
+			this.mLastUpdates.put(key, device);
+		}
+
 		return device;
 	}
-	
 
-	@Scheduled(fixedDelayString = "${onesaitplatform.iotbroker.device.update.schedule.delay.millis: 30000}")
+	@Scheduled(fixedDelayString = "${onesaitplatform.iotbroker.device.update.schedule.delay.millis: 5000}")
+	@Transactional
 	public void updateDevicePhysically() {
-		log.debug("Update Devices in BDC");
-		
-		mLastUpdates.forEach((key, value) -> {
-			
-			//Using remove to get and remove the value in one operation.
-			//Further puts in the map will not be processed by the loop but they will be processes on the next iteration of the scheduler.
-			Pair<String, ClientPlatformInstance> data = mLastUpdates.remove(key);
-			if (data != null) {
-				cpiService.createOrUpdateClientPlatformInstance(data.getRight(), data.getLeft());
-			}		    
-		});
+		log.info("Update Devices in BDC");
+		synchronized (this.mLastUpdates) {
+			for (Map.Entry<String, ClientPlatformInstance> entry : this.mLastUpdates.entrySet()) {
+				if (log.isDebugEnabled()) {
+					log.debug("Update Device: " + entry.getKey());
+				}
+				ClientPlatformInstance device = entry.getValue();
+				deviceRepository.updateClientPlatformInstance(device.getClientPlatform(), device.getIdentification(),
+						device.getSessionKey(), device.getProtocol(), device.getLocation(), device.getUpdatedAt(),
+						device.getStatus(), device.isConnected(), device.isDisabled(), device.getId());
+			}
+			this.mLastUpdates.clear();
+		}
 	}
+
 }

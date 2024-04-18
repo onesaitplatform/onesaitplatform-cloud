@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,126 +15,60 @@
 package com.minsait.onesait.platform.controlpanel.controller.edge;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
+import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
 @Controller
 @RequestMapping("/edge")
-@PreAuthorize("@securityService.hasAnyRole('ROLE_EDGE_ADMINISTRATOR,ROLE_EDGE_DEVELOPER,ROLE_EDGE_USER')")
+@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_USER')")
 public class EdgeController {
 
-	private static final String EDGE_SHOW = "edge/show";
-	private static final String BASE_PATH = "basepath";
-	private static final String URL = "url";
+	private final static String EDGE_SHOW = "edge/show";
+
+	@Value("${edge.base.url: https://watergylab.homedns.org}")
+	private String baseUrl;
 
 	@Autowired
-	IntegrationResourcesService integrationResourcesService;
+	private AppWebUtils utils;
 
-	public String getBaseUrl() {
-		return integrationResourcesService.getUrl(Module.EDGE, ServiceUrl.BASE);
-	}
-
-	@GetMapping(value = "/landscape/devices", produces = "text/html")
+	@GetMapping(value = "/devices", produces = "text/html")
 	public String showDevices(Model model) {
-		String baseUrl = getBaseUrl();
-		model.addAttribute(URL, baseUrl + "/#/landscape/edge?token=");
-		model.addAttribute(BASE_PATH, baseUrl);
+
+		String url = baseUrl + "/ui/#/devices";
+
+		model.addAttribute("url", url);
+		model.addAttribute("role", utils.getRole());
+		model.addAttribute("basepath", baseUrl);
 		return EDGE_SHOW;
+
 	}
 
-	@GetMapping(value = "/landscape/field", produces = "text/html")
-	public String showField(Model model) {
-		String baseUrl = getBaseUrl();
-		model.addAttribute(URL, baseUrl + "/#/landscape/field?token=");
-		model.addAttribute(BASE_PATH, baseUrl);
+	@GetMapping(value = "/bastions", produces = "text/html")
+	public String showBastions(Model model) {
+
+		String url = baseUrl + "/ui/#/bastions";
+
+		model.addAttribute("url", url);
+		model.addAttribute("role", utils.getRole());
 		return EDGE_SHOW;
+
 	}
 
-	@GetMapping(value = "/landscape/cloud2cloud", produces = "text/html")
-	public String showCloud(Model model) {
-		String baseUrl = getBaseUrl();
-		model.addAttribute(URL, baseUrl + "/#/landscape/cloud2cloud?token=");
-		model.addAttribute(BASE_PATH, baseUrl);
-		return EDGE_SHOW;
-	}
+	@GetMapping(value = "/organizations", produces = "text/html")
+	public String showOrganizations(Model model) {
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_EDGE_ADMINISTRATOR,ROLE_EDGE_DEVELOPER')")
-	@GetMapping(value = "/projects", produces = "text/html")
-	public String showProjet(Model model) {
-		String baseUrl = getBaseUrl();
-		model.addAttribute(URL, baseUrl + "/#/projects?token=");
-		model.addAttribute(BASE_PATH, baseUrl);
-		return EDGE_SHOW;
-	}
+		String url = baseUrl + "/ui/#/organizations";
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_EDGE_ADMINISTRATOR,ROLE_EDGE_DEVELOPER')")
-	@GetMapping(value = "/registry", produces = "text/html")
-	public String showRepository(Model model) {
-		String baseUrl = getBaseUrl();
-		model.addAttribute(URL, baseUrl + "/#/registry?token=");
-		model.addAttribute(BASE_PATH, baseUrl);
+		model.addAttribute("url", url);
+		model.addAttribute("role", utils.getRole());
 		return EDGE_SHOW;
-	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_EDGE_ADMINISTRATOR')")
-	@GetMapping(value = "/admin/user", produces = "text/html")
-	public String showUser(Model model) {
-		String baseUrl = getBaseUrl();
-		model.addAttribute(URL, baseUrl + "/#/user-roles?token=");
-		model.addAttribute(BASE_PATH, baseUrl);
-		return EDGE_SHOW;
-	}
-
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_EDGE_ADMINISTRATOR')")
-	@GetMapping(value = "/admin/config", produces = "text/html")
-	public String showConfig(Model model) {
-		String baseUrl = getBaseUrl();
-		model.addAttribute(URL, baseUrl + "/#/configuration?token=");
-		model.addAttribute(BASE_PATH, baseUrl);
-		return EDGE_SHOW;
-	}
-
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_EDGE_ADMINISTRATOR')")
-	@GetMapping(value = "/cibersecurity/keys", produces = "text/html")
-	public String showKeys(Model model) {
-		String baseUrl = getBaseUrl();
-		model.addAttribute(URL, baseUrl + "/#/cybersecurity/keys?token=");
-		model.addAttribute(BASE_PATH, baseUrl);
-		return EDGE_SHOW;
-	}
-
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_EDGE_ADMINISTRATOR')")
-	@GetMapping(value = "/cibersecurity/secrets", produces = "text/html")
-	public String showSecrets(Model model) {
-		String baseUrl = getBaseUrl();
-		model.addAttribute(URL, baseUrl + "/#/cybersecurity/secrets?token=");
-		model.addAttribute(BASE_PATH, baseUrl);
-		return EDGE_SHOW;
-	}
-
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_EDGE_ADMINISTRATOR')")
-	@GetMapping(value = "/admin/dashboards", produces = "text/html")
-	public String showDashboard(Model model) {
-		String baseUrl = getBaseUrl();
-		model.addAttribute(URL, baseUrl + "/#/dashboards?token=");
-		model.addAttribute(BASE_PATH, baseUrl);
-		return EDGE_SHOW;
-	}
-
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_EDGE_ADMINISTRATOR,ROLE_EDGE_DEVELOPER')")
-	@GetMapping(value = "/connectors", produces = "text/html")
-	public String showConnectors(Model model) {
-		String baseUrl = getBaseUrl();
-		model.addAttribute(URL, baseUrl + "/#/connectors?token=");
-		model.addAttribute(BASE_PATH, baseUrl);
-		return EDGE_SHOW;
 	}
 
 }

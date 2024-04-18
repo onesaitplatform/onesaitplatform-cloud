@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +39,7 @@ import com.minsait.onesait.platform.commons.ksql.KsqlExecutionException;
 import com.minsait.onesait.platform.config.model.KsqlFlow;
 import com.minsait.onesait.platform.config.model.KsqlRelation;
 import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.exceptions.KsqlFlowServiceException;
 import com.minsait.onesait.platform.config.services.ksql.flow.KsqlFlowService;
@@ -70,22 +70,17 @@ public class KsqlFlowController {
 	private OntologyService ontologyService;
 	@Autowired
 	private KsqlRelationFIQL ksqlRelationFIQL;
-	@Autowired 
-	private HttpSession httpSession;
 
 	private static final String KSQL_FLOW_VALIDATION_ERROR = "ksql.flow.validation.error";
 	private static final String REDIRECT_KSQL_FLOW_LIST = "redirect:/ksql/flow/list";
-	private static final String KSQL_FLOW = "ksqlFlow";
-	private static final String APP_ID = "appId";
+	private static final String KSQL_FLOW= "ksqlFlow";
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, HttpServletRequest request,
 			@RequestParam(required = false, name = "identification") String identification,
 			@RequestParam(required = false, name = "description") String description) {
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
+
 		List<KsqlFlow> ksqlFlows = this.ksqlFlowService.getKsqlFlowsWithDescriptionAndIdentification(
 				userService.getUser(utils.getUserId()), identification, description);
 		model.addAttribute("ksqlFlows", ksqlFlows);
@@ -150,19 +145,17 @@ public class KsqlFlowController {
 			RedirectAttributes redirect) {
 		// Flow info
 		KsqlFlow ksqlFlow = ksqlFlowService.getKsqlFlowWithId(id);
-
-		if (ksqlFlow.getUser().getUserId().equals(utils.getUserId())
-				|| userService.getUser(utils.getUserId()).isAdmin()) {
+		
+		if (ksqlFlow.getUser().getUserId().equals(utils.getUserId()) || userService.getUser(utils.getUserId()).getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 			model.addAttribute(KSQL_FLOW, ksqlFlow);
 			// Relations Info
-			List<KsqlRelation> ksqlRelations = ksqlRelationService
-					.getKsqlRelationsWithFlowIdDescriptionAndIdentification(userService.getUser(utils.getUserId()), id,
-							relationIdentification, relationDescription);
+			List<KsqlRelation> ksqlRelations = ksqlRelationService.getKsqlRelationsWithFlowIdDescriptionAndIdentification(
+					userService.getUser(utils.getUserId()), id, relationIdentification, relationDescription);
 			model.addAttribute("ksqlRelations", ksqlRelationFIQL.toKsqlRelationDTO(ksqlRelations));
 			// Available Ontologies Info
 			List<Ontology> ontologies = ontologyService.getOntologiesByUserId(ksqlFlow.getUser().getUserId());
 			List<OntologyJsonSchemaDto> ontologiesDto = new ArrayList<>();
-			for (Ontology ontol : ontologies) {
+			for(Ontology ontol:ontologies){
 				OntologyJsonSchemaDto dto = new OntologyJsonSchemaDto();
 				dto.setIdentification(ontol.getIdentification());
 				dto.setJsonSchema(ontol.getJsonSchema());
@@ -208,9 +201,7 @@ public class KsqlFlowController {
 			cdbFlow.setDescription(ksqlFlow.getDescription());
 			ksqlFlowService.updateKsqlFlow(id, cdbFlow, utils.getUserId());
 		} else {
-			if (log.isDebugEnabled()) {
-				log.debug("Unable to update flow. Identification = {}", ksqlFlow.getIdentification());
-			}
+			log.debug("Unable to update flow. Identification = {}", ksqlFlow.getIdentification());
 			utils.addRedirectMessage(KSQL_FLOW_VALIDATION_ERROR, redirect);
 			return REDIRECT_KSQL_FLOW_LIST;
 		}
@@ -225,18 +216,16 @@ public class KsqlFlowController {
 			RedirectAttributes redirect) {
 		// Flow info
 		KsqlFlow ksqlFlow = ksqlFlowService.getKsqlFlowWithId(id);
-		if (ksqlFlow.getUser().getUserId().equals(utils.getUserId())
-				|| userService.getUser(utils.getUserId()).isAdmin()) {
+		if (ksqlFlow.getUser().getUserId().equals(utils.getUserId()) || userService.getUser(utils.getUserId()).getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 			model.addAttribute(KSQL_FLOW, ksqlFlow);
 			// Relations Info
-			List<KsqlRelation> ksqlRelations = ksqlRelationService
-					.getKsqlRelationsWithFlowIdDescriptionAndIdentification(userService.getUser(utils.getUserId()), id,
-							relationIdentification, relationDescription);
+			List<KsqlRelation> ksqlRelations = ksqlRelationService.getKsqlRelationsWithFlowIdDescriptionAndIdentification(
+					userService.getUser(utils.getUserId()), id, relationIdentification, relationDescription);
 			model.addAttribute("ksqlRelations", ksqlRelationFIQL.toKsqlRelationDTO(ksqlRelations));
 			// Available Ontologies Info
 			List<Ontology> ontologies = ontologyService.getOntologiesByUserId(utils.getUserId());
 			List<OntologyJsonSchemaDto> ontologiesDto = new ArrayList<>();
-			for (Ontology ontol : ontologies) {
+			for(Ontology ontol:ontologies){
 				OntologyJsonSchemaDto dto = new OntologyJsonSchemaDto();
 				dto.setIdentification(ontol.getIdentification());
 				dto.setJsonSchema(ontol.getJsonSchema());

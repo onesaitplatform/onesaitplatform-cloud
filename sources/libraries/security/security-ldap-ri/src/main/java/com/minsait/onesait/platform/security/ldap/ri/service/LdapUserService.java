@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,14 @@
 package com.minsait.onesait.platform.security.ldap.ri.service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import javax.naming.NamingException;
+import javax.naming.directory.Attributes;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -34,10 +34,8 @@ import org.springframework.ldap.filter.AndFilter;
 import org.springframework.ldap.filter.EqualsFilter;
 import org.springframework.ldap.filter.Filter;
 import org.springframework.ldap.support.LdapUtils;
-import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
@@ -113,41 +111,18 @@ public class LdapUserService {
 	private static final String OBJECT_CLASS_STR = "objectClass";
 	private static final String PERSON_STR = "person";
 
-	private Set<String> administratorWhitelist;
-	private Set<String> groupWhitelist;
-
-	@Autowired
-	public void setAdministratorWhitelist(@Value("${ldap.administratorWhitelist}") final String whitelist) {
-		final List<String> clList = Arrays.asList(whitelist.split(","));
-		administratorWhitelist = new HashSet<>(clList);
-	}
-
-	@Autowired
-	public void setGroupWhitelist(@Value("${ldap.groupWhitelist}") final String whitelist) {
-		if (StringUtils.hasText(whitelist)) {
-			final List<String> clList = Arrays.asList(whitelist.split(";"));
-			groupWhitelist = new HashSet<>(clList);
-		}else {
-			groupWhitelist = null;
-		}
-	}
-
-
 	public User createUser(User user, String password, List<String> groups) {
-		checkGroups(groups);
 		user.setPassword(password);
 		user.setActive(true);
-		if (administratorWhitelist.contains(user.getUserId())) {
-			user.setRole(roleRepository.findById(Role.Type.ROLE_ADMINISTRATOR.name()).orElse(null));
-		} else if (groups != null && groups.size() > 0) {
-			user.setRole(getRole(groups));
+
+		if (groups != null && groups.size() > 0) {
+			user.setRole(this.getRole(groups));
 		} else {
-			user.setRole(roleRepository.findById(defaultRole).orElse(null));
+			user.setRole(roleRepository.findById(defaultRole));
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("Importing user {} from LDAP server", user.getUserId());
-		}		
-		final User createdUser = userRepository.save(user);
+
+		log.debug("Importing user {} from LDAP server", user.getUserId());
+		User createdUser = userRepository.save(user);
 		try {
 			generateToken(user);
 		} catch (final Exception e) {
@@ -158,21 +133,16 @@ public class LdapUserService {
 	}
 
 	public void updateUserRole(User user, List<String> groups) {
-		checkGroups(groups);
-		final Role currentRole = user.getRole();
+		Role currentRole = user.getRole();
 		Role ldapRole;
-		if (administratorWhitelist.contains(user.getUserId())) {
-			ldapRole = roleRepository.findById(Role.Type.ROLE_ADMINISTRATOR.name()).orElse(null);
-		} else if (groups != null && groups.size() > 0) {
-			ldapRole = getRole(groups);
+		if (groups != null && groups.size() > 0) {
+			ldapRole = this.getRole(groups);
 		} else {
-			ldapRole = roleRepository.findById(defaultRole).orElse(null);
+			ldapRole = roleRepository.findById(defaultRole);
 		}
 
 		if (!currentRole.getId().equals(ldapRole.getId())) {
-			if (log.isDebugEnabled()) {
-				log.debug("Updating user {} from LDAP server", user.getUserId());
-			}			
+			log.debug("Updating user {} from LDAP server", user.getUserId());
 			user.setRole(ldapRole);
 			userRepository.save(user);
 		}
@@ -192,7 +162,7 @@ public class LdapUserService {
 		}
 
 		if (matches.isEmpty()) {// Es posible que el usuario este en otro grupo y en el rol solo se tenga una
-			// referencia a su DN
+								// referencia a su DN
 			try {
 				final AndFilter filter2 = new AndFilter();
 				filter2.and(new EqualsFilter(OBJECT_CLASS_STR, PERSON_STR));
@@ -211,16 +181,14 @@ public class LdapUserService {
 		final User user = matches.get(0);
 		user.setUserId(userId);
 
-		List<String> groups = null;
-		try {
-			groups = ldapTemplateBase
-					.search(LdapUtils.emptyLdapName(), filter.encode(), (AttributesMapper<List<String>>) attributes -> {
-						final Enumeration<String> enMember = (Enumeration<String>) attributes.get(memberAtt).getAll();
+		final List<String> groups = ldapTemplateBase
+				.search(LdapUtils.emptyLdapName(), filter.encode(), new AttributesMapper<List<String>>() {
+					@Override
+					public List<String> mapFromAttributes(Attributes attributes) throws NamingException {
+						Enumeration<String> enMember = (Enumeration<String>) attributes.get(memberAtt).getAll();
 						return Collections.list(enMember);
-					}).get(0);
-		} catch (final Exception e) {
-			log.error("Error while retrieving ldap groups for user {}", userId, e);
-		}
+					}
+				}).get(0);
 
 		createUser(user, defaultPassword, groups);
 	}
@@ -232,9 +200,8 @@ public class LdapUserService {
 	}
 
 	public List<User> getAllUsers(String dn) {
-		if (!StringUtils.hasText(dn)) {
+		if (StringUtils.isEmpty(dn))
 			return getAllUsers();
-		}
 		final Filter filter = new EqualsFilter(OBJECT_CLASS_STR, PERSON_STR);
 		return ldapTemplateNoBase.search(LdapUtils.newLdapName(dn), filter.encode(),
 				new LdapUserMapper(userIdAtt, userMailAtt, userCnAtt));
@@ -248,13 +215,13 @@ public class LdapUserService {
 				new LdapGroupMemberMapper(MEMBER_OF_GROUP));
 
 		if (!users.isEmpty() && users.get(0).isEmpty()) {// en el atributo member es posible que tengamos el DN del
-			// usuario en vez del uid (Esto pasa en Logrono)
+															// usuario en vez del uid (Esto pasa en Logrono)
 			final List<List<String>> membersDn = ldapTemplateNoBase.search(LdapUtils.newLdapName(dn),
 					filterAnd.encode(), new LdapGroupMemberFromDNMapper(MEMBER_OF_GROUP));
 
-			final List<User> usersInGroup = new ArrayList<>();
+			List<User> usersInGroup = new ArrayList<User>();
 			membersDn.get(0).stream().forEach(member -> {
-				final List<User> currentUser = getAllUsers(member);
+				List<User> currentUser = getAllUsers(member);
 				if (currentUser != null && !currentUser.isEmpty()) {
 					usersInGroup.add(getAllUsers(member).get(0));
 				}
@@ -264,11 +231,10 @@ public class LdapUserService {
 
 		}
 
-		if (!users.isEmpty()) {
+		if (!users.isEmpty())
 			return users.stream().flatMap(List::stream).collect(Collectors.toList());
-		} else {
+		else
 			return new ArrayList<>();
-		}
 	}
 
 	public List<String> getAllGroups() {
@@ -278,9 +244,8 @@ public class LdapUserService {
 	}
 
 	public List<String> getAllGroups(String dn) {
-		if (!StringUtils.hasText(dn)) {
+		if (StringUtils.isEmpty(dn))
 			return getAllGroups();
-		}
 		final Filter filter = new EqualsFilter(OBJECT_CLASS_STR, groupOfNamesAtt);
 		return ldapTemplateNoBase.search(LdapUtils.newLdapName(dn), filter.encode(), new LdapGroupNameMapper());
 
@@ -288,27 +253,27 @@ public class LdapUserService {
 
 	private Role getRole(List<String> groups) {
 		if (null != administratorDn && groups.contains(administratorDn)) {
-			return roleRepository.findById("ROLE_ADMINISTRATOR").orElse(null);
+			return roleRepository.findById("ROLE_ADMINISTRATOR");
 		} else if (null != datascientistDn && groups.contains(datascientistDn)) {
-			return roleRepository.findById("ROLE_DATASCIENTIST").orElse(null);
+			return roleRepository.findById("ROLE_DATASCIENTIST");
 		} else if (null != dataviewerDn && groups.contains(dataviewerDn)) {
-			return roleRepository.findById("ROLE_DATAVIEWER").orElse(null);
+			return roleRepository.findById("ROLE_DATAVIEWER");
 		} else if (null != developerDn && groups.contains(developerDn)) {
-			return roleRepository.findById("ROLE_DEVELOPER").orElse(null);
+			return roleRepository.findById("ROLE_DEVELOPER");
 		} else if (null != devopsDn && groups.contains(devopsDn)) {
-			return roleRepository.findById("ROLE_DEVOPS").orElse(null);
+			return roleRepository.findById("ROLE_DEVOPS");
 		} else if (null != operationsDn && groups.contains(operationsDn)) {
-			return roleRepository.findById("ROLE_OPERATIONS").orElse(null);
+			return roleRepository.findById("ROLE_OPERATIONS");
 		} else if (null != partnerDn && groups.contains(partnerDn)) {
-			return roleRepository.findById("ROLE_PARTNER").orElse(null);
+			return roleRepository.findById("ROLE_PARTNER");
 		} else if (null != platformAdminDn && groups.contains(platformAdminDn)) {
-			return roleRepository.findById("ROLE_PLATFORM_ADMIN").orElse(null);
+			return roleRepository.findById("ROLE_PLATFORM_ADMIN");
 		} else if (null != sysAdminDn && groups.contains(sysAdminDn)) {
-			return roleRepository.findById("ROLE_SYS_ADMIN").orElse(null);
+			return roleRepository.findById("ROLE_SYS_ADMIN");
 		} else if (null != userDn && groups.contains(userDn)) {
-			return roleRepository.findById("ROLE_USER").orElse(null);
+			return roleRepository.findById("ROLE_USER");
 		} else {
-			return roleRepository.findById(defaultRole).orElse(null);
+			return roleRepository.findById(defaultRole);
 		}
 
 	}
@@ -318,24 +283,12 @@ public class LdapUserService {
 		if (user.getUserId() != null) {
 			userToken.setUser(user);
 			userToken.setToken(UUID.randomUUID().toString().replaceAll("-", ""));
-			if (userTokenRepository.findByToken(userToken.getToken()) == null) {
-				userToken = userTokenRepository.save(userToken);
+			if (this.userTokenRepository.findByToken(userToken.getToken()) == null) {
+				userToken = this.userTokenRepository.save(userToken);
 			} else {
 				throw new GenericOPException("Token with value " + userToken.getToken() + " already exists");
 			}
 		}
 		return userToken;
 	}
-
-	private void checkGroups(List<String> groups) {
-		if (!CollectionUtils.isEmpty(groups) && !CollectionUtils.isEmpty(groupWhitelist)) {
-			final boolean valid = groupWhitelist.stream().anyMatch(groups::contains);
-			if (!valid) {
-				log.error("User group was not whitelisted. User groups: {}, whitelisted groups: {}",
-						String.join(",", groups), String.join(",", groupWhitelist));
-				throw new InsufficientAuthenticationException("User group was not whitelisted");
-			}
-		}
-	}
-
 }

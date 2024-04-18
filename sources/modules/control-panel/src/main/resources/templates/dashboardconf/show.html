@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 
 -->
 <html xmlns:th="http://www.thymeleaf.org" th:with="lang=${#locale.language}" th:lang="${lang}">
+
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
@@ -72,6 +73,7 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/dashboardconf/list}"> <span th:text="#{dashboardconf.my}">Dashboard initial styles management</span></a><i class="fa fa-angle-right"></i> </li>
 						<li><span th:text="#{dashboardconf.show.my}">Show Dashboard initial style</span>
 						</li>
@@ -83,74 +85,104 @@
 				<h1 class="page-title hide "><span th:text="#{dashboardconf.show.my}">Show Dashboard initial style</span></h1>
 				<!-- END PAGE TITLE-->			
 				
-				<form role="form" id="dashboardconf_form" th:object="${dashboardconf}" method="post" class="form">
-					<input type="hidden" id="id" th:field="*{id}"/>	
-				
-					<div id="header">
-						<div class="row pageCreateHeader">
-							<div class="col-md-8 col-sm-8 col-xs-12">
-								<div class="margin-top-4">
-									<span th:text="${dashboardconf.identification}" > Show Dashboard initial style </span>
+				<!-- MAIN ROW -->
+				<div class="row">
+					<div class="col-md-12">
+					
+						<div class="portlet light container">
+							<div class="portlet-title">
+								<div class="caption">
+									
+									<span  class="caption-subject" th:text="#{dashboardconf.show.my}" > Show Dashboard initial style </span>
+									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
+								</div>									
+								<div class="tools hide">
+									<!--  <a href="" class="collapse" data-original-title="" title=""> </a>-->
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>
 								</div>
+								<div class="actions hide">
+									<!-- ACTION INDICATORs -->
+									<span th:if="${dashboardconf.id} == null"
+										class="label label-success label-sm uppercase"><i
+										class="fa fa-plus"></i> <span th:text="#{gen.mode.insert}">Insert</span></span>
+									<span th:if="${dashboardconf.id} != null"
+										class="label label-warning label-sm uppercase bold "><i
+										class="fa fa-edit"></i> <span th:text="#{gen.mode.update}">Update</span></span>
+								</div>
+								
+								
 							</div>
-							
-							<div class="col-md-4 col-sm-4 col-xs-12">
-								<div class="pull-right">
-									<!-- CANCEL -->	
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:DashboardConfController.navigateUrl(\'' + @{/dashboardconf/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+							<div class="portlet-body" style="display: block; height: auto;">
+								
+								<div class="row">	
+									<div class="col-md-12 margin-bottom-20">									
+										<form role="form" id="dashboardconf_form" th:object="${dashboardconf}" method="post" class="form">									  	
+								 			<input type="hidden" id="id" th:field="*{id}"/>
+								 			<div class="form-body">
+									 			<div class="row">											
+													<div class="col-md-4 col-sm-12">
+														<div class="form-group">
+															 <label class="control-label"  th:text="#{gen.identification} + ':'">Identification</label><span class="required"> (*)</span>
+															<div class="input-icon ">
+																<i class="fa fa-credit-card"></i>
+																<input id="identification" type="text" name="identification"  th:required="true"   maxlength="50" th:field="*{identification}" class="form-control " th:readonly="*{identification}" th:placeholder="#{gen.identification}" />
+															</div>
+														</div>
+													</div>	
+													<div class="col-md-8 col-sm-12">														
+														<div class="form-group">
+															<label class="control-label"  th:text="#{gen.description} + ':'">Description</label><span class="required"> (*)</span>
+																														
+																<input id="description" type="text" name="description"  th:required="true"   maxlength="50" th:field="*{description}" th:readonly="*{description}" class="form-control " th:placeholder="#{gen.description}" />
+															
+														</div>
+													</div>		
+													<div class="clearfix"></div>													
+												</div>											
+															
+											
+											<!-- Json-->
+											<div class="row">
+												<div class="col-md-6 col-sm-6 col-xs-6">
+													<div class="form-group">
+														<label th:text="#{dashboards.styles.libraries.scripts}">GLOBAL STYLES, LIBRARIES AND SCRIPTS</label>														
+														<textarea id="templateCode" name="templateCode" th:field="*{headerlibs}" th:required="true" th:disabled="true" class="hidden"></textarea>
+														<div style="height:400px" id="htmlcode"></div>
+													</div>
+													<div class="clearfix"></div>
+												</div>
+												<div class="col-md-6 col-sm-6 col-xs-6">
+													<div class="form-group">
+														<label th:text="#{dashboards.initial.styles.configuration}">INITIAL DASHBOARD STYLE CONFIGURATION</label>														
+														<textarea id="templateCodeJS" name="templateCodeJS" th:field="*{model}" th:required="true" th:disabled="true" class="hidden"></textarea>
+														<div style="height:400px" id="jscode"></div>
+													</div>
+													<div class="clearfix"></div>
+												</div>												
+											</div>						
+											
+										
+											<div class="clearfix"></div>
+											<div style="margin-top:20px" class="form-actions">
+												<div class="pull-left">
+													<!-- CANCEL  -->
+													<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:DashboardConfController.go(\'' + @{/dashboardconf/list} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+												</div>
+											
+											</div>
+											
+											
+										</div>
+									</form>																					
 								</div>
 							</div>
 						</div>
-					</div>				
-				
-					<!-- MAIN ROW -->
-					<div class="mainPanel">
-						<div class="row main">
-							<div class="col-md-12 col-sm-12 col-xs-12 panelHeader">
-								<span th:text="#{gen.generalInformation}">General Information</span>
-							</div>
-						</div>					
-			 			<div class="row main">											
-							<div class="col-md-4 col-sm-12">
-								<div class="form-group">
-									 <label class="control-label"  th:text="#{gen.identification}">Identification</label>
-									<div class="input-icon ">
-										<i class="fa fa-credit-card"></i>
-										<input id="identification" type="text" name="identification"  th:required="true"   maxlength="50" th:field="*{identification}" class="form-control " th:readonly="*{identification}" th:placeholder="#{gen.identification}" />
-									</div>
-								</div>
-							</div>	
-							<div class="col-md-8 col-sm-12">														
-								<div class="form-group">
-									<label class="control-label"  th:text="#{gen.description}">Description</label>
-									<input id="description" type="text" name="description"  th:required="true"   maxlength="50" th:field="*{description}" th:readonly="*{description}" class="form-control " th:placeholder="#{gen.description}" />
-								</div>
-							</div>		
-						</div>											
-						<!-- Json-->
-						<div class="row main">
-							<div class="col-md-6 col-sm-6 col-xs-6">
-								<div class="form-group">
-									<label class="panelHeader" th:text="#{dashboards.styles.libraries.scripts}">GLOBAL STYLES, LIBRARIES AND SCRIPTS</label>														
-									<textarea id="templateCode" name="templateCode" th:field="*{headerlibs}" th:required="true" th:disabled="true" class="hidden"></textarea>
-									<div style="height:400px" id="htmlcode"></div>
-								</div>
-								<div class="clearfix"></div>
-							</div>
-							<div class="col-md-6 col-sm-6 col-xs-6">
-								<div class="form-group">
-									<label class="panelHeader" th:text="#{dashboards.initial.styles.configuration}">INITIAL DASHBOARD STYLE CONFIGURATION</label>														
-									<textarea id="templateCodeJS" name="templateCodeJS" th:field="*{model}" th:required="true" th:disabled="true" class="hidden"></textarea>
-									<div style="height:400px" id="jscode"></div>
-								</div>
-								<div class="clearfix"></div>
-							</div>												
-						</div>
-					</div>					
-				</form>																					
+					</div>  <!-- END PORTLET BASIC LIGHT -->							
+				</div><!-- END COL-12 -->						
 			</div><!-- END MAIN ROW -->				
 		</div><!-- END CONTENT BODY -->
 	</div><!-- END CONTENT page-content-wrapper -->		
+  </div>
 	 
 </body>
 
@@ -163,7 +195,7 @@
 	
 	
 	<!-- TEMPLATE CONTROLLER  -->	
-	<script th:src="@{/static/js/pages/dashboardConfCreate.js}"></script>
+	<script th:src="@{/static/js/pages/dashboardConfCreate.js}"/>
 	
 	<script
 		th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}"

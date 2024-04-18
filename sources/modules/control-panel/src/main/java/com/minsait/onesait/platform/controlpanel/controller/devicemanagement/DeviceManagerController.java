@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
-
-import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,12 +36,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.ClientPlatformInstance;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.services.client.ClientPlatformService;
 import com.minsait.onesait.platform.config.services.device.ClientPlatformInstanceService;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
-import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.services.QueryToolService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
@@ -74,23 +71,16 @@ public class DeviceManagerController {
 
 	@Autowired
 	private GraphDeviceUtil graphDeviceUtil;
-	
-	@Autowired 
-	private HttpSession httpSession;
 
 	private static final String LOG_PREFIX = "LOG_";
 	private final ObjectMapper mapper = new ObjectMapper();
-	private static final String APP_ID = "appId";
-
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, @RequestParam(required = false) String identification,
 			@RequestParam(required = false) String[] ontologies) throws JsonProcessingException {
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
-		if (!utils.isAdministrator()) {
+
+		if (!utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
 			final List<ClientPlatformInstance> devices = new ArrayList<>();
 			for (final ClientPlatform client : clientPlatformService
 					.getclientPlatformsByUser(userService.getUser(utils.getUserId()))) {
@@ -127,16 +117,9 @@ public class DeviceManagerController {
 	public String info(Model model, RedirectAttributes redirect, @PathVariable String id)
 			throws IOException, DBPersistenceException, OntologyDataUnauthorizedException, GenericOPException {
 		final ClientPlatformInstance device = deviceService.getById(id);
-		if (null == device) {
+		if (null == device)
 			return "redirect:/devices/management/list";
-		}
 		model.addAttribute("device", device);
-		Optional<IoTSession> sessionKey = deviceService.getSessionKeys(device).stream().findFirst();
-		if (sessionKey.isPresent()) {
-			model.addAttribute("sessionkey", sessionKey.get().getSessionKey());
-		} else {
-			model.addAttribute("sessionkey", "");
-		}
 		final String ontology = LOG_PREFIX + device.getClientPlatform().getIdentification().replaceAll(" ", "");
 		final String query = "select * from " + ontology + " as c where c.DeviceLog.device = \""
 				+ device.getIdentification() + "\" ORDER BY c.contextData.timestampMillis Desc limit 50";

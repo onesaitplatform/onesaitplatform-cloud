@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,13 @@
  */
 package com.minsait.onesait.platform.multitenant.config.model;
 
+import java.sql.Blob;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Table;
-
-import org.hibernate.annotations.Type;
 
 @Entity
 @Table(name = "oauth_code")
@@ -29,10 +30,9 @@ public class OAuthCode {
 	@Column(name = "code", unique = true, nullable = false)
 	private String code;
 
-//	@Lob
-	@Column(name = "authentication", length = 16777217)
-	@Type(type = "org.hibernate.type.BinaryType")
-	private byte[] authentication;
+	@Lob
+	@Column(name = "authentication")
+	private Blob authentication;
 
 	public String getCode() {
 		return code;
@@ -42,11 +42,11 @@ public class OAuthCode {
 		this.code = code;
 	}
 
-	public byte[] getAuthentication() {
+	public Blob getAuthentication() {
 		return authentication;
 	}
 
-	public void setAuthentication(byte[] authentication) {
+	public void setAuthentication(Blob authentication) {
 		this.authentication = authentication;
 	}
 

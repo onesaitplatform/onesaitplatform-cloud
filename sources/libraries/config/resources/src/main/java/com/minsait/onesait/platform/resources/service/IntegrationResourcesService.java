@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.minsait.onesait.platform.resources.service;
 import java.util.Map;
 
 import com.minsait.onesait.platform.config.components.GlobalConfiguration;
-import com.minsait.onesait.platform.config.model.Configuration;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
@@ -30,7 +29,5 @@ public interface IntegrationResourcesService {
 	void reloadConfigurations();
 
 	GlobalConfiguration getGlobalConfiguration();
-
-	Configuration getBillableModules();
 
 }

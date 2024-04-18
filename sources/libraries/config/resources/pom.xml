@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+	<modelVersion>4.0.0</modelVersion>		
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-		<version>${revision}</version>
+		<version>2.0.0-ce</version>
 		<relativePath>../../..</relativePath>
 	</parent>
 	<artifactId>onesaitplatform-config-resources</artifactId>
 	<packaging>jar</packaging>
 
 	<name>onesaitplatform-config-resources</name>
-
+		
 	<properties>
     <license.dir>${project.parent.basedir}</license.dir>
 	</properties>
-
+	
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -30,23 +30,18 @@
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-config-services</artifactId>
-			<version>${project.version}</version>
+			<version>${onesaitplatform.version}</version>
 		</dependency>		
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-mail-services</artifactId>
-			<version>${project.version}</version>
+			<version>${onesaitplatform.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.sun.mail</groupId>
-			<artifactId>javax.mail</artifactId>
-			<version>1.6.0</version>
-		</dependency>		
 	</dependencies>
 
 	<build>
 		<plugins>
-		  <!-- skip deployment -->
+		  <!-- skip deployment -->	
 		  <plugin>
 		    <groupId>org.apache.maven.plugins</groupId>
 		    <artifactId>maven-deploy-plugin</artifactId>
@@ -54,8 +49,8 @@
 		    <configuration>
 		        <skip>true</skip>
 		    </configuration>
-		  </plugin>
-		</plugins>
+		  </plugin>	
+		</plugins>	
 	</build>
 
 </project>

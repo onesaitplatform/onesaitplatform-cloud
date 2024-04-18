@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,40 +14,29 @@
  */
 package com.minsait.onesait.platform.flowengine.api.rest.service.impl;
 
-import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.ApiOperation.Type;
 import com.minsait.onesait.platform.config.services.exceptions.FlowDomainServiceException;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineInvokeRestApiOperationRequest;
-import com.minsait.onesait.platform.flowengine.api.rest.pojo.NodeREDAPIInvokerInputFile;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.RestApiInvocationParams;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.RestApiOperationDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.RestApiOperationParamDTO;
@@ -56,14 +45,10 @@ import com.minsait.onesait.platform.resources.service.IntegrationResourcesServic
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
-import io.swagger.models.parameters.FormParameter;
 import io.swagger.parser.OpenAPIParser;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
-import io.swagger.v3.oas.models.media.MediaType;
-import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
@@ -77,10 +62,8 @@ public class OpenAPI3Utils {
 	private RestTemplate template;
 	@Autowired
 	IntegrationResourcesService resourcesService;
-	final Map<String, Components> cacheExternalReferences = new HashMap<>();
 
 	private static final String DEFAULT_RESPONSE_DESC = "Other status code";
-	private static final String API_KEY = "X-OP-APIKey";
 
 	@PostConstruct
 	private void setUp() {
@@ -92,6 +75,7 @@ public class OpenAPI3Utils {
 			String opMethodFilter) {
 		final List<RestApiOperationDTO> operationNames = new ArrayList<>();
 
+		final Map<String, Components> cacheExternalReferences = new HashMap<>();
 		final OpenAPI openAPI = getOpenAPI(openApi);
 		openAPI.getPaths().entrySet().forEach(p -> {
 			final PathItem path = p.getValue();
@@ -162,9 +146,7 @@ public class OpenAPI3Utils {
 		if (parameter.get$ref() == null) {
 			final RestApiOperationParamDTO paramDTO = new RestApiOperationParamDTO();
 			paramDTO.setName(parameter.getName());
-			paramDTO.setRequired(parameter.getRequired() != null ? parameter.getRequired() : Boolean.FALSE);
 			paramDTO.setType(parameter.getIn().toUpperCase());
-			paramDTO.setRequired(parameter.getRequired() != null ? parameter.getRequired() : Boolean.FALSE);
 			return paramDTO;
 		} else {
 			return getApiParamFromRef(parameter, openAPI, cacheExternalReferences);
@@ -207,15 +189,9 @@ public class OpenAPI3Utils {
 			final String[] splitedRef = ref.split("#");
 			final String url = splitedRef[0];
 			if (cacheExternalReferences.get(url) != null) {
-				if (log.isDebugEnabled()) {
-					log.debug("getStatusDescriptionFromRef: Returning cached instance for url {}", url);
-				}				
 				return cacheExternalReferences.get(url).getResponses().get(getParameterComponent(splitedRef[1]))
 						.getDescription();
 			} else {
-				if (log.isDebugEnabled()) {
-					log.debug("getStatusDescriptionFromRef: Downloading decriptor from url {}", url);
-				}				
 				final OpenAPI yaml = getOpenApiYaml(url);
 				final String description = yaml.getComponents().getResponses().get(getParameterComponent(splitedRef[1]))
 						.getDescription();
@@ -236,33 +212,25 @@ public class OpenAPI3Utils {
 			if (p != null) {
 				paramDTO.setName(p.getName());
 				paramDTO.setType(p.getIn().toUpperCase());
-				paramDTO.setRequired(p.getRequired() != null ? p.getRequired() : Boolean.FALSE);
 			}
 		} else {
 			// Is an http reference -> download yaml and get component.
 			final String[] splitedRef = ref.split("#");
 			final String url = splitedRef[0];
 			if (cacheExternalReferences.get(url) != null) {
-				if (log.isDebugEnabled()) {
-					log.debug("getApiParamFromRef: Returning cached instance for url {}", url);
-				}				
 				final Parameter p = cacheExternalReferences.get(url).getParameters()
 						.get(getParameterComponent(splitedRef[1]));
 				paramDTO.setName(p.getName());
 				paramDTO.setType(p.getIn().toUpperCase());
-				paramDTO.setRequired(p.getRequired() != null ? p.getRequired() : Boolean.FALSE);
 
 				return paramDTO;
 			}
-			if (log.isDebugEnabled()) {
-				log.debug("getApiParamFromRef: Downloading decriptor from url {}", url);
-			}			
+
 			final OpenAPI yaml = getOpenApiYaml(url);
 			final Parameter p = yaml.getComponents().getParameters().get(getParameterComponent(splitedRef[1]));
 			if (p != null) {
 				paramDTO.setName(p.getName());
 				paramDTO.setType(p.getIn().toUpperCase());
-				paramDTO.setRequired(p.getRequired() != null ? p.getRequired() : Boolean.FALSE);
 				cacheExternalReferences.put(url, yaml.getComponents());
 			}
 		}
@@ -317,7 +285,6 @@ public class OpenAPI3Utils {
 		for (final RestApiOperationParamDTO param : params) {
 			// QUERY, PATH, BODY (formData ignore) or HEADER
 			String value = "";
-			boolean skipParam = false;
 			try {
 				value = getValueForParam(param.getName(), invokeRequest.getOperationInputParams());
 			} catch (final FlowDomainServiceException e) {
@@ -325,33 +292,24 @@ public class OpenAPI3Utils {
 				final String msg = "No value was found for parameter " + param.getName() + " in operation ["
 						+ invokeRequest.getOperationMethod() + "] - " + invokeRequest.getOperationName() + " from API ["
 						+ invokeRequest.getApiVersion() + "] - " + selectedApi.getIdentification() + ".";
-				if (param.getRequired()) {
-					log.error(msg);
-					throw new NoValueForParamIvocationException(msg);
-				} else {
-					if (log.isDebugEnabled()) {
-						log.debug("Skipping parameter. Optional parameter not received. {}", msg);
-					}					
-					skipParam = true;
-				}
+				log.error(msg);
+				throw new NoValueForParamIvocationException(msg);
 			}
-			if (!skipParam) {
-				switch (param.getType().toUpperCase()) {
-				case "QUERY":
-					resultInvocationParams.getQueryParams().put(param.getName(), value);
-					break;
-				case "PATH":
-					resultInvocationParams.getPathParams().put(param.getName(), value);
-					break;
-				case "BODY":
-					resultInvocationParams.setBody(value);
-					break;
-				case "HEADER":
-					resultInvocationParams.getHeaders().add(param.getName(), value);
-					break;
-				default:
-					break;
-				}
+			switch (param.getType().toUpperCase()) {
+			case "QUERY":
+				resultInvocationParams.getQueryParams().put(param.getName(), value);
+				break;
+			case "PATH":
+				resultInvocationParams.getPathParams().put(param.getName(), value);
+				break;
+			case "BODY":
+				resultInvocationParams.setBody(value);
+				break;
+			case "HEADER":
+				resultInvocationParams.getHeaders().add(param.getName(), value);
+				break;
+			default:
+				break;
 			}
 		}
 
@@ -373,130 +331,4 @@ public class OpenAPI3Utils {
 		}
 		return value;
 	}
-
-	public void fillSwaggerInvocationParams(Operation operation, FlowEngineInvokeRestApiOperationRequest invokeRequest,
-			RestApiInvocationParams resultInvocationParams) {
-		Set<Entry<String, MediaType>> consumes = null;
-		if (operation.getRequestBody() != null) {
-			consumes = operation.getRequestBody().getContent().entrySet();
-		}
-		if (consumes != null && !consumes.isEmpty()) {
-			Entry<String, MediaType> contentType = consumes.iterator().next();
-			resultInvocationParams.getHeaders().add(HttpHeaders.CONTENT_TYPE, contentType.getKey());
-
-			// MULTIPART
-			if (contentType.getKey().equals("multipart/form-data")) {
-				resultInvocationParams.setMultipart(true);
-				Map<String, Schema> multipartProperties = contentType.getValue().getSchema().getProperties();
-
-				for (Entry<String, Schema> entry : multipartProperties.entrySet()) {
-					String value = "";
-					try {
-						value = getValueForParam(entry.getKey(), invokeRequest.getOperationInputParams());
-					} catch (final FlowDomainServiceException e) {
-						final String msg = "No value was found for parameter body in operation ["
-								+ invokeRequest.getOperationMethod() + "] - " + invokeRequest.getOperationName()
-								+ " from API [" + invokeRequest.getApiVersion() + "] - " + invokeRequest.getApiName()
-								+ ".";
-
-						log.error(msg);
-						throw new NoValueForParamIvocationException(msg);
-					}
-					if (entry.getValue().getFormat().equalsIgnoreCase("binary")) {
-						try {
-							// transform JSON (NodeJS) buffer to Bytes array
-							final ObjectMapper mapper = new ObjectMapper();
-							final NodeREDAPIInvokerInputFile nodeFile = mapper.readValue(value,
-									NodeREDAPIInvokerInputFile.class);
-							final File file = new File("/tmp/" + nodeFile.getFileName());
-							Files.write(file.toPath(), nodeFile.getFile().getData());
-							resultInvocationParams.getMultipartData().add(entry.getKey(),
-									new FileSystemResource(file));
-						} catch (final IOException e1) {
-							log.error("Could not create temp file for multipart request");
-						}
-
-					} else {
-						resultInvocationParams.getMultipartData().add(entry.getValue().getName(), value);
-					}
-
-				}
-
-			} else {
-				// Regular body
-				String value = "";
-				try {
-					value = getValueForParam("body", invokeRequest.getOperationInputParams());
-				} catch (final FlowDomainServiceException e) {
-					final String msg = "No value was found for parameter body in operation ["
-							+ invokeRequest.getOperationMethod() + "] - " + invokeRequest.getOperationName()
-							+ " from API [" + invokeRequest.getApiVersion() + "] - " + invokeRequest.getApiName() + ".";
-
-					log.error(msg);
-					throw new NoValueForParamIvocationException(msg);
-				}
-				resultInvocationParams.setBody(value);
-			}
-		}
-		// Check if we have the api token key on the invication params
-		try {
-			String apiTokenKey = getValueForParam(API_KEY, invokeRequest.getOperationInputParams());
-			if (!apiTokenKey.isEmpty()) {
-				resultInvocationParams.getHeaders().add(API_KEY, apiTokenKey);
-			}
-			String authorization = getValueForParam("Authorization", invokeRequest.getOperationInputParams());
-			if (!authorization.isEmpty()) {
-				resultInvocationParams.getHeaders().add("Authorization", authorization);
-			}
-		} catch (final FlowDomainServiceException e) {
-			log.debug("No api key used");
-		}
-		if (operation.getParameters() != null) {
-			for (final Parameter param : operation.getParameters()) {
-				// QUERY, PATH, BODY (formData ignore) or HEADER
-				String value = "";
-				boolean skipParam = false;
-				try {
-					value = getValueForParam(param.getName(), invokeRequest.getOperationInputParams());
-					if (value.isEmpty() && param.getName().equalsIgnoreCase("Authorization")) {
-						// if empty we do not use it
-						skipParam = true;
-					}
-				} catch (final FlowDomainServiceException e) {
-					final String msg = "No value was found for parameter " + param.getName() + " in operation ["
-							+ invokeRequest.getOperationMethod() + "] - " + invokeRequest.getOperationName()
-							+ " from API [" + invokeRequest.getApiVersion() + "] - " + invokeRequest.getApiName() + ".";
-					if (param.getRequired()) {
-						log.error(msg);
-						throw new NoValueForParamIvocationException(msg);
-					} else {
-						if (log.isDebugEnabled()) {
-							log.debug("Skipping parameter. Optional parameter not received. {}", msg);
-						}						
-						skipParam = true;
-					}
-
-				}
-				if (!skipParam) {
-					switch (param.getIn().toUpperCase()) {
-					case "QUERY":
-						resultInvocationParams.getQueryParams().put(param.getName(), value);
-						break;
-					case "PATH":
-						resultInvocationParams.getPathParams().put(param.getName(), value);
-						break;
-					case "BODY":
-						resultInvocationParams.setBody(value);
-						break;
-					case "HEADER":
-						resultInvocationParams.getHeaders().add(param.getName(), value);
-						break;
-					default:
-						break;
-					}
-				}
-			}
-		}
-	}
-
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,13 +33,9 @@ public class SecurityService {
 	private AppWebUtils utils;
 
 	public boolean hasAnyRole(List<String> roles) {
-		final Role role = roleRepository.findById(utils.getRole()).orElse(null);
-		if (role == null)
-			return false;
-		for (final String roleName : roles) {
-			final Role roleAuth = roleRepository.findById(roleName).orElse(null);
-			if (roleAuth == null)
-				return false;
+		Role role = roleRepository.findById(utils.getRole());
+		for (String roleName : roles) {
+			Role roleAuth = roleRepository.findById(roleName);
 			if (role.getId().equalsIgnoreCase(roleAuth.getId()) || (role.getRoleParent() != null
 					&& role.getRoleParent().getId().equalsIgnoreCase(roleAuth.getId()))) {
 				return true;

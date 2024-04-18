@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,18 +30,8 @@ import java.util.Set;
 import javax.persistence.EntityManager;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.minsait.onesait.platform.config.model.AppChildExport;
-import com.minsait.onesait.platform.config.model.AppExport;
-import com.minsait.onesait.platform.config.model.AppRoleChildExport;
-import com.minsait.onesait.platform.config.model.AppRoleExport;
-import com.minsait.onesait.platform.config.model.AppUserChildExport;
-import com.minsait.onesait.platform.config.model.AppUserExport;
-import com.minsait.onesait.platform.config.model.Gadget;
 import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
-import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.model.UserExport;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +45,6 @@ public class DataFromDB {
 	private static final String OP_RESOURCES = "com.minsait.onesait.platform.config.model.base.OPResource";
 	private static final String PROJECT_EXPORT = "com.minsait.onesait.platform.config.model.ProjectExport";
 	private static final String USER_EXPORT = "com.minsait.onesait.platform.config.model.UserExport";
-	private static final String USER = "com.minsait.onesait.platform.config.model.User";
 
 	public DataFromDB() {
 
@@ -92,11 +81,7 @@ public class DataFromDB {
 				}
 			}
 		}
-		if (data.get(clazz) != null) {
-			return data.get(clazz).get(id);
-		} else {
-			return null;
-		}
+		return data.get(clazz).get(id);
 	}
 
 	public Class<?> getOPResourceClass(Class<?> clazz, Serializable id) {
@@ -129,18 +114,12 @@ public class DataFromDB {
 
 		Set<Class<?>> types = config.getTypes();
 		for (Class<?> type : types) {
-			if (log.isDebugEnabled()) {
-				log.debug("*********** DBEXPORT:         {}", type.getCanonicalName());
-			}
-			
+			log.debug("*********** DBEXPORT:         " + type.getCanonicalName());
 			Set<Serializable> ids = config.get(type);
 			if (ids != null) {
 
 				for (Serializable id : ids) {
-					if (log.isDebugEnabled()) {
-						log.debug("*********** DBEXPORT:ID       {}", id);
-					}
-					
+					log.debug("*********** DBEXPORT:ID       " + id);
 					Object entity = em.find(type, id);
 					Instance instanceToExport = new Instance(type, id, null, null);
 					if (entity == null || MigrationUtils.getId(entity) == null) {
@@ -153,7 +132,7 @@ public class DataFromDB {
 							if (insert) {
 								if (processedInstances.get(id) == null) {
 									processedInstances.put(id, id);
-									Set<Instance> notFoundInstances = addEntity(entity, id, em);
+									Set<Instance> notFoundInstances = addEntity(entity, id, null);
 									MigrationConfiguration newConfig = new MigrationConfiguration();
 
 									for (Instance instanceNotFound : notFoundInstances) {
@@ -188,17 +167,12 @@ public class DataFromDB {
 
 		Set<Class<?>> types = config.getTypes();
 		for (Class<?> type : types) {
-			if (log.isDebugEnabled()) {
-				log.debug("*********** DBEXPORT:         {}", type.getCanonicalName());
-			}
-			
+			log.debug("*********** DBEXPORT:         " + type.getCanonicalName());
 			Set<Serializable> ids = config.get(type);
 			if (ids != null) {
 
 				for (Serializable id : ids) {
-					if (log.isDebugEnabled()) {
-						log.debug("*********** DBEXPORT:ID       {}", id);
-					}					
+					log.debug("*********** DBEXPORT:ID       " + id);
 
 					Object entity = em.find(type, id);
 
@@ -287,77 +261,12 @@ public class DataFromDB {
 			Map<String, Object> attrs = obj.get(id);
 
 			for (Field field : fields.values()) {
-				if (!field.getType().getName().equals("org.slf4j.Logger")) {
-					Object value = processField(field, o, notFoundData);
-					if (clazz.getCanonicalName().equals(USER_EXPORT) && field.getName().equals("projects")
-							&& !value.toString().equals("[]")) {
-						attrs.put(field.getName(), new ArrayList<>());
-					} else {
-						attrs.put(field.getName(), value);
-					}
-					if (clazz.equals(AppExport.class) && field.getName().equals("childApps")
-							&& !value.toString().equals("[]")) {
-						String childs = value.toString().substring(1, value.toString().length() - 1);
-						for (int i = 0; i < childs.split(",").length; i++) {
-							String childId = childs.split(",")[i];
-							if (obj.containsKey(childId)) {
-								obj.remove(childId);
-								Object entity = em.find(AppChildExport.class, childId);
-								addEntity(entity, childId, em);
-							}
-						}
-
-					}
-					if (clazz.equals(AppRoleExport.class) && field.getName().equals("childRoles")
-							&& !value.toString().equals("[]")) {
-						String childs = value.toString().substring(1, value.toString().length() - 1);
-						for (int i = 0; i < childs.split(",").length; i++) {
-							String childId = childs.split(",")[i];
-							if (obj.containsKey(childId)) {
-								obj.remove(childId);
-								Object entity = em.find(AppRoleChildExport.class, childId);
-								addEntity(entity, childId, em);
-							}
-						}
-					}
-					if (clazz.equals(AppUserExport.class) && field.getName().equals("appUsers")
-							&& !value.toString().equals("[]")) {
-						String childs = value.toString().substring(1, value.toString().length() - 1);
-						for (int i = 0; i < childs.split(",").length; i++) {
-							String childId = childs.split(",")[i];
-							if (obj.containsKey(childId)) {
-								obj.remove(childId);
-								Object entity = em.find(AppUserChildExport.class, childId);
-								addEntity(entity, childId, em);
-							}
-						}
-					}
-				}
-			}
-
-			if (clazz.equals(Gadget.class)) {
-				// Export table gadget_measure
-				List<Object> result = em.createQuery("SELECT c FROM GadgetMeasure as c WHERE c.gadget.id = :id")
-						.setParameter("id", id).getResultList();
-
-				if (!result.isEmpty()) {
-					for (Object r : result) {
-						final Serializable idAux = MigrationUtils.getId(r);
-						addEntityProject(r, idAux, em, null);
-					}
-				}
-			}
-
-			if (clazz.equals(UserExport.class) || clazz.equals(User.class)) {
-				// Export table user_token
-				List<Object> result = em.createQuery("SELECT c FROM UserToken as c WHERE c.user.userId = :userId")
-						.setParameter("userId", id).getResultList();
-
-				if (!result.isEmpty()) {
-					for (Object r : result) {
-						final Serializable idAux = MigrationUtils.getId(r);
-						addEntityProject(r, idAux, em, null);
-					}
+				Object value = processField(field, o, notFoundData);
+				if (clazz.getCanonicalName().equals(USER_EXPORT) && field.getName().equals("projects")
+						&& !value.toString().equals("[]")) {
+					attrs.put(field.getName(), new ArrayList<>());
+				} else {
+					attrs.put(field.getName(), value);
 				}
 			}
 		}
@@ -388,76 +297,12 @@ public class DataFromDB {
 			Map<String, Object> attrs = obj.get(id);
 
 			for (Field field : fields.values()) {
-				if (!field.getType().getName().equals("org.slf4j.Logger")) {
-					if (clazz.getCanonicalName().equals(USER) && field.getName().equals("projects")) {
-						// Because lazy of project in user we get ids manually
-						List<String> result = em
-								.createQuery("SELECT c.id FROM Project as c WHERE c.user.userId = :userId")
-								.setParameter("userId", ((User) o).getUserId()).getResultList();
-						List<String> ps = new ArrayList<>();
-						if (result.toString().contains(projectId.toString())) {
-							ps.add(projectId.toString());
-						}
-						attrs.put(field.getName(), ps);
-					} else {
-
-						Object value = processField(field, o, notFoundData);
-						if (clazz.getCanonicalName().equals(USER_EXPORT) && field.getName().equals("projects")
-								&& !value.toString().equals("[" + projectId.toString() + "]")) {
-							if (value.toString().contains(projectId.toString())) {
-								List<String> ps = new ArrayList<>();
-								ps.add(projectId.toString());
-								attrs.put(field.getName(), ps);
-							} else {
-								attrs.put(field.getName(), new ArrayList<>());
-							}
-						} else {
-							attrs.put(field.getName(), value);
-						}
-					}
-				}
-			}
-
-			if (clazz.equals(Gadget.class)) {
-				// Export table gadget_measure
-				List<Object> result = em.createQuery("SELECT c FROM GadgetMeasure as c WHERE c.gadget.id = :id")
-						.setParameter("id", id).getResultList();
-
-				if (!result.isEmpty()) {
-					for (Object r : result) {
-						final Serializable idAux = MigrationUtils.getId(r);
-						addEntityProject(r, idAux, em, projectId);
-					}
-				}
-			}
-
-			if (clazz.equals(Ontology.class)) {
-				// Export ontology_virtual table
-				Ontology ont = (Ontology) o;
-				if (ont.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)) {
-					List<Object> result = em
-							.createQuery("SELECT c FROM OntologyVirtual as c WHERE c.ontologyId.id = :id")
-							.setParameter("id", id).getResultList();
-					if (!result.isEmpty()) {
-						for (Object r : result) {
-							final Serializable idAux = MigrationUtils.getId(r);
-							addEntityProject(r, idAux, em, projectId);
-						}
-					}
-				}
-
-			}
-
-			if (clazz.equals(UserExport.class) || clazz.equals(User.class)) {
-				// Export table user_token
-				List<Object> result = em.createQuery("SELECT c FROM UserToken as c WHERE c.user.userId = :userId")
-						.setParameter("userId", id).getResultList();
-
-				if (!result.isEmpty()) {
-					for (Object r : result) {
-						final Serializable idAux = MigrationUtils.getId(r);
-						addEntityProject(r, idAux, em, null);
-					}
+				Object value = processField(field, o, notFoundData);
+				if (clazz.getCanonicalName().equals(USER_EXPORT) && field.getName().equals("projects")
+						&& !value.toString().equals("[" + projectId.toString() + "]")) {
+					attrs.put(field.getName(), new ArrayList<>());
+				} else {
+					attrs.put(field.getName(), value);
 				}
 			}
 		}
@@ -558,43 +403,9 @@ public class DataFromDB {
 	}
 
 	public boolean isDataStored(Class<?> clazz, Serializable id) {
-		if (!clazz.getName().equals(OP_RESOURCES)) {
-			if (clazz.equals(AppExport.class) && data.containsKey(clazz)) {
-				Map<Serializable, Map<String, Object>> dataForClass = data.get(clazz);
-				if (!dataForClass.containsKey(id)) {
-					dataForClass = data.get(AppChildExport.class);
-					return dataForClass == null ? false : dataForClass.containsKey(id);
-				} else {
-					return dataForClass == null ? false : dataForClass.containsKey(id);
-				}
-			} else if (clazz.equals(AppChildExport.class) && data.containsKey(clazz)) {
-				Map<Serializable, Map<String, Object>> dataForClass = data.get(clazz);
-				if (!dataForClass.containsKey(id)) {
-					dataForClass = data.get(AppExport.class);
-					return dataForClass == null ? false : dataForClass.containsKey(id);
-				} else {
-					return dataForClass == null ? false : dataForClass.containsKey(id);
-				}
-			} else if (clazz.equals(AppRoleExport.class) && data.containsKey(clazz)) {
-				Map<Serializable, Map<String, Object>> dataForClass = data.get(clazz);
-				if (!dataForClass.containsKey(id)) {
-					dataForClass = data.get(AppRoleChildExport.class);
-					return dataForClass == null ? false : dataForClass.containsKey(id);
-				} else {
-					return dataForClass == null ? false : dataForClass.containsKey(id);
-				}
-			} else if (clazz.equals(AppRoleChildExport.class) && data.containsKey(clazz)) {
-				Map<Serializable, Map<String, Object>> dataForClass = data.get(clazz);
-				if (!dataForClass.containsKey(id)) {
-					dataForClass = data.get(AppRoleExport.class);
-					return dataForClass == null ? false : dataForClass.containsKey(id);
-				} else {
-					return dataForClass == null ? false : dataForClass.containsKey(id);
-				}
-			} else if (data.containsKey(clazz)) {
-				Map<Serializable, Map<String, Object>> dataForClass = data.get(clazz);
-				return dataForClass == null ? false : dataForClass.containsKey(id);
-			}
+		if (!clazz.getName().equals(OP_RESOURCES) && data.containsKey(clazz)) {
+			Map<Serializable, Map<String, Object>> dataForClass = data.get(clazz);
+			return dataForClass.containsKey(id);
 		} else if (clazz.getName().equals(OP_RESOURCES)) {
 			for (Map.Entry<Class<?>, Map<Serializable, Map<String, Object>>> entry : data.entrySet()) {
 				if (OPResource.class.isAssignableFrom(entry.getKey())) {
@@ -607,6 +418,5 @@ public class DataFromDB {
 		}
 
 		return false;
-
 	}
 }

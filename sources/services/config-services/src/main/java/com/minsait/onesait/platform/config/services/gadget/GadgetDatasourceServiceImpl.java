@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,19 @@
 package com.minsait.onesait.platform.config.services.gadget;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.config.dto.GadgetDatasourceForList;
-import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.GadgetMeasure;
-import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.GadgetDatasourceRepository;
@@ -44,18 +41,6 @@ import com.minsait.onesait.platform.config.services.project.ProjectService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 
 import lombok.extern.slf4j.Slf4j;
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.expression.LongValue;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.AllColumns;
-import net.sf.jsqlparser.statement.select.Limit;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectBody;
-import net.sf.jsqlparser.statement.select.SelectItem;
-import net.sf.jsqlparser.statement.select.SetOperationList;
-import net.sf.jsqlparser.statement.select.SubSelect;
 
 @Service
 @Slf4j
@@ -76,7 +61,6 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 	@Autowired
 	private UserRepository userRepository;
 	@Autowired
-	@Lazy
 	private OPResourceService resourceService;
 	@Autowired
 	private UserService userService;
@@ -124,18 +108,8 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 	}
 
 	@Override
-	public List<String> getAllIdentificationsByUser(String userId) {
-		User user = userService.getUser(userId);
-		if (user.isAdmin()) {
-			return gadgetDatasourceRepository.findAllIdentifications();
-		} else {
-			return gadgetDatasourceRepository.findIdentificationByUser(user);
-		}
-	}
-
-	@Override
 	public GadgetDatasource getGadgetDatasourceById(String id) {
-		return gadgetDatasourceRepository.findById(id).orElse(null);
+		return gadgetDatasourceRepository.findById(id);
 	}
 
 	@Override
@@ -143,29 +117,17 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 		if (gadgetDatasource.getOntology() == null) {
 			throw new GadgetDatasourceServiceException("Ontology is a field required.");
 		}
-		if (gadgetDatasource.getOntology().getRtdbDatasource() != RtdbDatasource.NEBULA_GRAPH
-				&& !isOntologyOnQuery(gadgetDatasource.getOntology().getIdentification(),
-						gadgetDatasource.getQuery())) {
-			throw new GadgetDatasourceServiceException("The query: " + gadgetDatasource.getQuery()
-					+ " is not for the ontology selected: " + gadgetDatasource.getOntology().getIdentification());
+		if (!isOntologyOnQuery(gadgetDatasource.getOntology().getIdentification(), gadgetDatasource.getQuery())){
+			throw new GadgetDatasourceServiceException(
+					"The query: "+gadgetDatasource.getQuery()+" is not for the ontology selected: "+gadgetDatasource.getOntology().getIdentification()) ;
 		}
 		if (!gadgetDatasourceExists(gadgetDatasource)) {
 			log.debug("Gadget datasource no exist, creating...");
-			return gadgetDatasourceRepository.save(cleanQuery(gadgetDatasource));
+			return gadgetDatasourceRepository.save(gadgetDatasource);
 		} else {
 			throw new GadgetDatasourceServiceException(
 					"GadgetDatasource with identification: " + gadgetDatasource.getIdentification() + " exist");
 		}
-	}
-
-	private GadgetDatasource cleanQuery(GadgetDatasource gadgetDatasource) {
-		String datasource = gadgetDatasource.getQuery();
-		// replace the tab (\t), the new line (\n) and the carriage return (\r)
-		datasource = datasource.replaceAll("\\t|\\r|\\r\\n\\t|\\n|\\r\\t", BLANK_CHARACTER);
-		// delete final ;
-		datasource = datasource.replaceAll("\\s*;\\s*$", "");
-		gadgetDatasource.setQuery(datasource);
-		return gadgetDatasource;
 	}
 
 	@Override
@@ -179,18 +141,12 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 		if (gadgetDatasource.getOntology() == null) {
 			throw new GadgetDatasourceServiceException("Ontology is a field required.");
 		}
-		if (gadgetDatasource.getOntology().getRtdbDatasource() != RtdbDatasource.NEBULA_GRAPH
-				&& !isOntologyOnQuery(gadgetDatasource.getOntology().getIdentification(),
-						gadgetDatasource.getQuery())) {
-			throw new GadgetDatasourceServiceException("The query: " + gadgetDatasource.getQuery()
-					+ " is not for the ontology selected: " + gadgetDatasource.getOntology().getIdentification());
+		if (!isOntologyOnQuery(gadgetDatasource.getOntology().getIdentification(), gadgetDatasource.getQuery())){
+			throw new GadgetDatasourceServiceException(
+					"The query: "+gadgetDatasource.getQuery()+" is not for the ontology selected: "+gadgetDatasource.getOntology().getIdentification()) ;
 		}
 		if (gadgetDatasourceExists(gadgetDatasource)) {
-			final GadgetDatasource gadgetDatasourceDB = gadgetDatasourceRepository.findById(gadgetDatasource.getId())
-					.orElse(new GadgetDatasource());
-			if (gadgetDatasourceDB.getIdentification() == null) {
-				gadgetDatasourceDB.setIdentification(gadgetDatasource.getIdentification());
-			}
+			final GadgetDatasource gadgetDatasourceDB = gadgetDatasourceRepository.findById(gadgetDatasource.getId());
 			gadgetDatasourceDB.setConfig(gadgetDatasource.getConfig());
 			gadgetDatasourceDB.setDbtype(gadgetDatasource.getDbtype());
 			gadgetDatasourceDB.setDescription(gadgetDatasource.getDescription());
@@ -199,7 +155,7 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 			gadgetDatasourceDB.setOntology(gadgetDatasource.getOntology());
 			gadgetDatasourceDB.setQuery(gadgetDatasource.getQuery());
 			gadgetDatasourceDB.setRefresh(gadgetDatasource.getRefresh());
-			gadgetDatasourceRepository.save(cleanQuery(gadgetDatasourceDB));
+			gadgetDatasourceRepository.save(gadgetDatasourceDB);
 		} else {
 			throw new GadgetDatasourceServiceException("Cannot update GadgetDatasource that does not exist");
 		}
@@ -208,8 +164,7 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 	@Override
 	public void deleteGadgetDatasource(String gadgetDatasourceId, String userId) {
 		if (hasUserEditPermission(gadgetDatasourceId, userId)) {
-			final GadgetDatasource gadgetDatasource = gadgetDatasourceRepository.findById(gadgetDatasourceId)
-					.orElse(null);
+			final GadgetDatasource gadgetDatasource = gadgetDatasourceRepository.findById(gadgetDatasourceId);
 			if (gadgetDatasource != null) {
 				gadgetDatasourceRepository.delete(gadgetDatasource);
 			} else {
@@ -224,9 +179,8 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 		final User user = userRepository.findByUserId(userId);
 		if (userService.isUserAdministrator(user)) {
 			return true;
-		} else if (gadgetDatasourceRepository.findById(id).isPresent()) {
-			return gadgetDatasourceRepository.findById(id).get().getUser().getUserId().equals(userId)
-					|| gadgetDatasourceRepository.findById(id).get().getOntology().isPublic();
+		} else if (gadgetDatasourceRepository.findById(id).getUser().getUserId().equals(userId)) {
+			return true;
 		} else {
 			return resourceService.hasAccess(userId, id, ResourceAccessType.MANAGE);
 		}
@@ -239,11 +193,9 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 
 	@Override
 	public String getAccessType(String id, String userId) {
-		if (!gadgetDatasourceRepository.findById(id).isPresent())
-			return null;
 		final User user = userRepository.findByUserId(userId);
 		if (userService.isUserAdministrator(user)
-				|| gadgetDatasourceRepository.findById(id).get().getUser().getUserId().equals(userId)
+				|| gadgetDatasourceRepository.findById(id).getUser().getUserId().equals(userId)
 				|| resourceService.hasAccess(userId, id, ResourceAccessType.MANAGE)) {
 			return ResourceAccessType.MANAGE.toString();
 		} else if (resourceService.hasAccess(userId, id, ResourceAccessType.VIEW)) {
@@ -273,27 +225,15 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 	public List<GadgetDatasourceDTOForList> getUserGadgetDatasourcesForList(String userId) {
 		final User user = userRepository.findByUserId(userId);
 		List<GadgetDatasourceForList> datasourcesForList = new ArrayList<>();
-
+		
 		if (userService.isUserAdministrator(user)) {
 			datasourcesForList = gadgetDatasourceRepository.findAllForListByOrderByIdentificationAsc();
 		} else {
 			datasourcesForList = gadgetDatasourceRepository.findForListByUserOrderByIdentificationAsc(user);
-
-			Set<GadgetDatasource> dsSharedProj = projectService.getResourcesForUserOfType(userId,
-					GadgetDatasource.class);
-			for (final GadgetDatasource tempDs : dsSharedProj) {
-				final GadgetDatasourceForList obj = new GadgetDatasourceForList(tempDs.getId(),
-						tempDs.getIdentification(), tempDs.getDescription(), tempDs.getUser(), "null",
-						tempDs.getCreatedAt(), tempDs.getUpdatedAt(), tempDs.getMode(), tempDs.getDbtype(),
-						tempDs.getOntology().getIdentification(), tempDs.getRefresh(), tempDs.getMaxvalues(),
-						tempDs.getQuery());
-				datasourcesForList.add(obj);
-			}
-
 			securityService.setSecurityToInputList(datasourcesForList, user, "GadgetDatasource");
 		}
-		final List<GadgetDatasourceDTOForList> dtos = new ArrayList<>();
-		for (final GadgetDatasourceForList temp : datasourcesForList) {
+		List<GadgetDatasourceDTOForList> dtos = new ArrayList<>();
+		for (GadgetDatasourceForList temp : datasourcesForList) {
 			if (temp.getAccessType() != null) {
 
 				final GadgetDatasourceDTOForList obj = new GadgetDatasourceDTOForList();
@@ -318,47 +258,15 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 	}
 
 	@Override
-	public String getSampleQueryGadgetDatasourceById(String datasourceId, String ontology, String user, int limit)
-			throws JSQLParserException {
-		final String query = gadgetDatasourceRepository.findById(datasourceId).orElse(null).getQuery();
+	public String getSampleQueryGadgetDatasourceById(String datasourceId, String ontology, String user) {
+		final String query = gadgetDatasourceRepository.findById(datasourceId).getQuery();
 
-		Statement statement = CCJSqlParserUtil.parse(query);
-		SelectBody selectBody = ((Select) statement).getSelectBody();
-		PlainSelect select = getPlainSelectFromSelect(selectBody);
-
-		Limit limitObj = new Limit();
-		limitObj.setRowCount(new LongValue(limit));
-		select.setLimit(limitObj);
-
-		return select.toString();
-
-		/*
-		 * final int i = query.toLowerCase().lastIndexOf(LIMIT_LOWERCASE); if (i == -1)
-		 * {// Add limit add the end return query + " limit " + limit; } else { return
-		 * query.substring(0, i) + " limit " + limit; }
-		 */
-	}
-
-	@Override
-	public String getSampleQueryForFilterGadgetDatasourceById(String datasourceId, String ontology, String user,
-			int limit) throws JSQLParserException {
-		final String query = gadgetDatasourceRepository.findById(datasourceId).orElse(null).getQuery();
-
-		Statement statement = CCJSqlParserUtil.parse(query);
-		SelectBody selectBody = ((Select) statement).getSelectBody();
-		PlainSelect select = getPlainSelectFromSelect(selectBody);
-
-		Limit limitObj = new Limit();
-		limitObj.setRowCount(new LongValue(limit));
-		select.setLimit(limitObj);
-		select.setGroupByElement(null);
-		select.setHaving(null);
-		List<SelectItem> ls = new LinkedList<>();
-		ls.add(new AllColumns());
-		select.setSelectItems(ls);
-		select.setDistinct(null);
-		return select.toString();
-
+		final int i = query.toLowerCase().lastIndexOf(LIMIT_LOWERCASE);
+		if (i == -1) {// Add limit add the end
+			return query + " limit 1";
+		} else {
+			return query.substring(0, i) + " limit 1";
+		}
 	}
 
 	@Override
@@ -368,7 +276,7 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 
 	@Override
 	public boolean isGroupDatasourceById(String id) {
-		final GadgetDatasource datasource = gadgetDatasourceRepository.findById(id).orElse(null);
+		GadgetDatasource datasource = gadgetDatasourceRepository.findById(id);
 		return datasource.getQuery().toLowerCase().indexOf(" group by ") != -1;
 	}
 
@@ -377,7 +285,7 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 		final JSONArray elements = new JSONArray();
 		final JSONObject element = new JSONObject();
 
-		final GadgetDatasource datasource = gadgetDatasourceRepository.findById(datasourceId).orElse(null);
+		final GadgetDatasource datasource = gadgetDatasourceRepository.findById(datasourceId);
 
 		if (datasource != null) {
 			element.put("id", datasource.getOntology().getId());
@@ -394,12 +302,15 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 	public String getOntologyFromDatasource(String datasource) {
 		datasource = datasource.replaceAll("\\t|\\r|\\r\\n\\t|\\n|\\r\\t", BLANK_CHARACTER);
 		datasource = datasource.trim().replaceAll(PLUS_CHARACTER, BLANK_CHARACTER);
-		String[] list = datasource.split("from |FROM |From ");
+		String[] list = datasource.split(FROM_LOWERCASE);
+		if (list.length == 1) {
+			list = datasource.split(FROM_UPPERCASE);
+		}
 		if (list.length > 1) {
 			for (int i = 1; i < list.length; i++) {
 				if (!list[i].startsWith(OPEN_PARENTHESIS)) {
 					int indexOf = list[i].toLowerCase().indexOf(BLANK_CHARACTER, 0);
-					final int indexOfCloseBracket = list[i].toLowerCase().indexOf(CLOSE_PARENTHESIS, 0);
+					int indexOfCloseBracket = list[i].toLowerCase().indexOf(CLOSE_PARENTHESIS, 0);
 					indexOf = (indexOfCloseBracket != -1 && indexOfCloseBracket < indexOf) ? indexOfCloseBracket
 							: indexOf;
 					if (indexOf == -1) {
@@ -428,39 +339,13 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 		}
 		return null;
 	}
-
-	/*
-	 * Get Plain Select even in union cases with subquery at first level
-	 */
-	private PlainSelect getPlainSelectFromSelect(SelectBody selectBody) {
-		PlainSelect select;
-		if (SetOperationList.class.isInstance(selectBody)) { // union
-			PlainSelect plainSelect = new PlainSelect();
-
-			List<SelectItem> ls = new LinkedList<>();
-			ls.add(new AllColumns());
-			plainSelect.setSelectItems(ls);
-
-			SubSelect subSelect = new SubSelect();
-			subSelect.setSelectBody(selectBody);
-			plainSelect.setFromItem(subSelect);
-
-			select = plainSelect;
-		} else if (PlainSelect.class.isInstance(selectBody)) { // select
-			select = (PlainSelect) selectBody;
-		} else {
-			log.error("Wrong query type: " + selectBody.toString());
-			throw new GadgetDatasourceServiceException("Wrong query");
-		}
-		return select;
-	}
-
-	private Boolean isOntologyOnQuery(String ontology, String query) {
-		query = query.replaceAll("\n|\\t|\\r|\\r\\n\\t|\\n|\\r\\t", BLANK_CHARACTER);
+	
+	private Boolean isOntologyOnQuery (String ontology, String query) {
+		query = query.replace("\n", "");		
 		while (query.contains("  ")) {
 			query = query.replace("  ", " ");
 		}
-
+		
 		if (query.toLowerCase().indexOf("from ") == -1 && query.toLowerCase().indexOf("update ") == -1
 				&& query.toLowerCase().indexOf("join ") == -1)
 			return false;
@@ -468,30 +353,18 @@ public class GadgetDatasourceServiceImpl implements GadgetDatasourceService {
 				&& query.toLowerCase().indexOf("update " + ontology.toLowerCase()) == -1
 				&& query.toLowerCase().indexOf("join " + ontology.toLowerCase()) == -1)
 			return false;
-
+		
 		return true;
 	}
 
 	@Override
-	public List<String> getGadgetsUsingDatasource(String id) {
-		final List<GadgetMeasure> gadgetMeasureList = gadgetMeasureRepository.findByDatasource(id);
-		final HashMap<String, String> gadgetsIdentification = new HashMap<>();
-		for (final GadgetMeasure gadgetMeasure : gadgetMeasureList) {
-			gadgetsIdentification.put(gadgetMeasure.getGadget().getIdentification(),
-					gadgetMeasure.getGadget().getIdentification());
+	public List<Object> getGadgetsUsingDatasource(String id) {
+		List<GadgetMeasure> gadgetMeasureList = gadgetMeasureRepository.findByDatasource(id);
+		HashMap<String, String> gadgetsIdentification = new HashMap<>();
+		for (GadgetMeasure gadgetMeasure : gadgetMeasureList) {
+			gadgetsIdentification.put(gadgetMeasure.getGadget().getIdentification(), gadgetMeasure.getGadget().getIdentification());
 		}
-		List<String> identificatinoList = new ArrayList<>(gadgetsIdentification.keySet());
-		return identificatinoList;
-	}
-
-	@Override
-	public List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification, String description) {
-		User user = userService.getUser(userId);
-		if (user.isAdmin()) {
-			return gadgetDatasourceRepository.findAllDto(identification, description);
-		} else {
-			return gadgetDatasourceRepository.findDtoByUserAndPermissions(user, identification, description);
-		}
+		return Arrays.asList(gadgetsIdentification.keySet().toArray());
 	}
 
 }

@@ -13,8 +13,8 @@
             selector = '#' + element[0].id + ' ';
         }
 
-        //var table = '<div class="table-scrollable table-scrollable-borderless"><table class="json-to-table table table-hover table-striped">';
-		var table = '<div class="table-scrollable table-scrollable-borderless"><table class="json-to-table table table-hover table-striped" dt:table="true">';
+        var table = '<div class="table-scrollable table-scrollable-borderless"><table class="json-to-table table table-hover table-striped">';
+
         table += '<thead><th class="jsl"></th>';
         table += $.fn.createTable.parseTableData(data, true);
         table += '</thead>';
@@ -24,15 +24,7 @@
         table += '</table></div>';
 
         element.html(table);
-		/*setTimeout(function(){
-			$('.json-to-table').DataTable();
-		$('.dataTables_info').addClass('col-md-6 col-sm-6');
-		$('.dataTables_length').addClass('col-md-6 col-sm-6');
-		$('#DataTables_Table_0_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
-		$('#DataTables_Table_0_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
-		$('.dataTables_paginate').attr('style', 'float:right !important');
-		},2000);*/
-		
+
         return function () {
 
             $(selector + '.json-to-table').css({
@@ -102,28 +94,7 @@
 		var isObject = false;
 		var objKey = '';
 		var keyType = '';
-		var keys = [];
-		let result = [];
-		let json = {};
-		   console.log(' Data: ' + JSON.stringify(data) + ' colspan: ' + colspan);
 		
-		 for (var p = 0; p < data.length; p++) {					
-            $.each(data[p], function (key, value) {
-				keys.push(key);
-				result = keys.filter((item,index)=>{
-    			return keys.indexOf(item) === index;
-				 })
-			 });
-		}
-			var arrayObject ="{";
-			for (var h = 0; h < result.length ; h++) {
-				arrayObject = arrayObject + "\""+result[h]+"\":\"null\"";
-				  if (h < result.length - 1) {
-				        arrayObject = arrayObject + ",";
-				  }
-			}
-			arrayObject = arrayObject + "}";
- 
 				
 		console.log(' Data: ' + JSON.stringify(data) + ' colspan: ' + colspan);
 		
@@ -132,19 +103,10 @@
             $.each(data[i], function (key, value) {
 				isObject = false;
 				console.log('key: ' + key);
-				
-				json = JSON.parse(arrayObject);
-				data[i] = Object.assign(json, data[i]);
-				console.log("pruebaaaaaaaaaa",data[i], i);
-
-				
                 if (thead === true) {
                     if (i === $.fn.createTable.getHighestColumnCount(data).when) {
-						  for (var j = 0; j < result.length; j++) {			
-								if(typeof value == 'object'){ keyType = "<small>(Object)</small>";   } else { keyType = ''; }
-		                        row += '<th>' + $.fn.humanize(result[j]) + ' ' + keyType + '</th>'; 
-                    	   } 
-                    	   result = [];
+						if(typeof value == 'object'){ keyType = "<small>(Object)</small>";   } else { keyType = ''; }
+                        row += '<th>' + $.fn.humanize(key) + ' ' + keyType + '</th>';
                     }
                 } else if (thead === false) {
                 	if(typeof value =='object'){

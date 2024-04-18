@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.Index;
-import net.sf.jsqlparser.statement.select.PlainSelect;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,12 +39,6 @@ public class CreateStatement extends CreateTable implements SQLStatement {
 	@Size(min = 1)
 	@Getter
 	private String ontology;
-	@Getter
-	@Setter
-	private String database;
-	@Getter
-	@Setter
-	private String schema;
 	@Getter
 	@Setter
 	private String type = null;
@@ -115,19 +108,6 @@ public class CreateStatement extends CreateTable implements SQLStatement {
 		} else {
 			throw new IllegalStateException("SQL Generator service is not set, use SQLGenerator instance to generate or build the statement instead");
 		}
-	}
-	
-    public String toString(boolean enClosePathElements) {
-    	if(enClosePathElements) {
-    		this.setTable(new Table((database == null || "".equals(database)?"":"\"" + database + "\".")
-				+ (schema == null || "".equals(schema)?"":"\"" + schema + "\".")
-				+ (ontology == null || "".equals(ontology)?"":"\"" + ontology + "\"")));
-    	} else {
-    		this.setTable(new Table((database == null || "".equals(database)?"":database + ".")
-    				+ (schema == null || "".equals(schema)?"":schema + ".")
-    				+ (ontology == null || "".equals(ontology)?"":ontology)));
-    	}
-        return super.toString();
 	}
 
 }

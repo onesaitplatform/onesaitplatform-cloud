@@ -6,34 +6,35 @@ server: ## Config Web Server
     #  key-store-password: Changed!
    #   key-store: classpath:keystore.jks
     #  key-alias: tomcat
-   #session.cookie.name : APPSESSIONID
-   max-http-header-size: 20000
+   session.cookie.name : APPSESSIONID
    port: 18100
-   servlet.contextPath: /monitoring
+   contextPath: /monitoring
    tomcat:
       access_log_enabled: true
       basedir: target/tomcat
       
 master: 
    datasource:
-      hikari: 
-        jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
-        username: root
-        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-        driver-class-name: com.mysql.cj.jdbc.Driver
-        pool-name: master-hikari-pool
-        minimum-idle: 1
-        maximum-pool-size: 2
-        connection-timeout: 10000
+      url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+      username: root
+      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+      driver-class-name: com.mysql.jdbc.Driver
+      test-while-idle: true
+      test-on-borrow: true
+      validation-query: SELECT 1      
+      validationQueryTimeout: 5
+      # Number of ms to wait before throwing an exception if no connection is available.
+      max-wait: 10000
+      # Maximum number of active connections that can be allocated from this pool at the same time.
+      max-active: 2
+      initial-size: 1
+      max-idle: 2
+      min-idle: 1
+      removeAbandoned: true
      
 onesaitplatform: #Config onesait Platform specific
-   encryption:
-      key: ENC(VYVseIUh5xiRd8ws0prbEAg6bGq7vmbfi3gkM65HECy+YPbjz4f49w==)
-      iteration-count: 5
    environment.name: local
    authentication:
-      oauth:
-        osp-keycloak: false
       provider: configdb
       configdb:
         acl:
@@ -44,49 +45,43 @@ onesaitplatform: #Config onesait Platform specific
       eachInMs: 300000
       enabled: false
       statuses: DOWN,OFFLINE
-   secure:
-      cookie: false
-   graylog:
-      enabled: false
-      host: 127.0.0.1
-      port: 12201
 
 ## Config Reference      
-spring: ## General Config
-   mvc.hiddenmethod.filter.enabled: true
-   main:
-      allow-circular-references: true
-      allow-bean-definition-overriding: true
+spring: ## General Config  
    application.name: onesaitplatform-monitoring-ui
    boot.admin: #Spring Boot Admin Config    
-      routes.endpoints: env,metrics,trace,dump,jolokia,info,configprops,logfile,refresh,loggers
-      monitor.period: 120000
-      monitor.status-lifetime: 120000
-      monitor.connect-timeout: 30000
-      monitor.read-timeout: 30000     
-      notify.mail.enabled: false
-      notify.mail.to: support@onesaitplatform.com
-      notify.mail.from: onesaitplatform@gmail.com      
-      notify.mail.text: "ENV:#{onesaitplatform.environment.name} App:#{application.name} (#{application.id}) is #{to.status}"
-      ui.title: Monitoring UI
-      ui.brand: "<img src='assets/img/icon-spring-boot-admin.svg'><span>Monitoring UI</span>"
-      hazelcast.enabled: false
-      instance-auth.default-user-name: operations
-      instance-auth.default-password: changeIt2019! 
+      routes.endpoints:env,metrics,trace,dump,jolokia,info,configprops,logfile,refresh,loggers
+      monitor.period:120000
+      monitor.status-lifetime:120000
+      monitor.connect-timeout:30000
+      monitor.read-timeout:30000     
+      notify.mail.enabled:false
+      notify.mail.to:support@onesaitplatform.com
+      notify.mail.from:onesaitplatform@gmail.com      
+      notify.mail.text:"ENV:#{onesaitplatform.environment.name} App:#{application.name} (#{application.id}) is #{to.status}"
+         
       #Not autoregister as Spring Boot Admin client
       # username: operations
       # password: changeIt!
       # client.metadata.user.name: ${spring.boot.admin.username}
       # client.metadata.user.password: $spring.boot.admin.password} 
-   datasource:
-     hikari:
-      jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
+   datasource: ## JPA Config
+      url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
       username: root
       password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-      connection-timeout: 10000
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      minimum-idle: 5
-      maximum-pool-size: 10
+      driver-class-name: com.mysql.jdbc.Driver
+      test-while-idle: true
+      test-on-borrow: true
+      validation-query: SELECT 1
+      validationQueryTimeout: 5
+      # Number of ms to wait before throwing an exception if no connection is available.
+      max-wait: 10000
+      # Maximum number of active connections that can be allocated from this pool at the same time.
+      max-active: 30
+      initial-size: 10
+      max-idle: 30
+      min-idle: 10
+      removeAbandoned: true
          
    jpa:
       # The SQL dialect makes Hibernate generate better SQL for the chosen database
@@ -107,23 +102,17 @@ security:
     enabled: false
   oauth2:
     client:
-      useCurrentUri: false
-      preEstablishedRedirectUri: http://localhost:18100/${server.servlet.contextPath}/login/oauth
       clientId: onesaitplatform
       clientSecret: onesaitplatform
       accessTokenUri: http://localhost:21000/oauth-server/oauth/token
       userAuthorizationUri: http://localhost:21000/oauth-server/oauth/authorize
     resource:
       userInfoUri: http://localhost:21000/oauth-server/user
-      checkTokenEndpoint: http://localhost:21000/oauth-server/oauth/check_token
           
 
 ## LOGGING CONF
 logging:
-   file.path: ./target/ 
-   file.name: ${spring.application.name}
+   path: ./target/ 
+   file: ${spring.application.name}
    level:
       com.minsait: INFO 
-      org.springframework: ERROR
-      de.codecentric: WARN
-      root: INFO

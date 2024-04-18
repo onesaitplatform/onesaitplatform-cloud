@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,26 +53,24 @@ public class ApiManagerAuditProcessor {
 				final String method = (String) data.get(Constants.METHOD);
 
 				final String query = (String) data.get(Constants.QUERY);
-				final String body = data.get(Constants.BODY) instanceof byte[]
-						? new String((byte[]) data.get(Constants.BODY))
-								: (String) data.get(Constants.BODY);
+				final String body = (String) data.get(Constants.BODY);
 
-						final OperationType operationType = getAuditOperationFromMethod(method);
+				final OperationType operationType = getAuditOperationFromMethod(method);
 
-						final User user = (User) data.get(Constants.USER);
+				final User user = (User) data.get(Constants.USER);
 
-						final String userId = getUserId(user);
-						final String ontologyId = getOntologyId(ontology);
-						final String operation = getOperation(operationType);
+				final String userId = getUserId(user);
+				final String ontologyId = getOntologyId(ontology);
+				final String operation = getOperation(operationType);
 
-						final Api api = (Api) data.get(Constants.API);
-						final Date today = new Date();
+				final Api api = (Api) data.get(Constants.API);
+				final Date today = new Date();
 
-						event = ApiManagerAuditEvent.builder().id(UUID.randomUUID().toString()).module(Module.APIMANAGER)
-								.type(EventType.APIMANAGER).operationType(operation).resultOperation(ResultOperationType.ERROR)
-								.remoteAddress(remoteAddress).message(reason).data(body).ontology(ontologyId).query(query)
-								.timeStamp(today.getTime()).user(userId).api(api != null ? api.getIdentification() : null)
-								.formatedTimeStamp(CalendarUtil.builder().build().convert(today)).build();
+				event = ApiManagerAuditEvent.builder().id(UUID.randomUUID().toString()).module(Module.APIMANAGER)
+						.type(EventType.APIMANAGER).operationType(operation).resultOperation(ResultOperationType.ERROR)
+						.remoteAddress(remoteAddress).message(reason).data(body).ontology(ontologyId).query(query)
+						.timeStamp(today.getTime()).user(userId).api(api != null ? api.getIdentification() : null)
+						.formatedTimeStamp(CalendarUtil.builder().build().convert(today)).build();
 			}
 
 		} catch (final Exception e) {
@@ -91,37 +89,20 @@ public class ApiManagerAuditProcessor {
 		final Api api = (Api) data.get(Constants.API);
 		final OperationType operationType = getAuditOperationFromMethod(method);
 		final String operation = getOperation(operationType);
-		final String pathInfo = (String) data.get(Constants.PATH_INFO);
 
 		final Date today = new Date();
 
 		final String userId = getUserId(user);
 		final String ontologyId = getOntologyId(ontology);
 
-		String message = operation + " on ontology " + ontologyId + " by user " + userId;
-		if (api != null) {
-			switch (api.getApiType()) {
-			case INTERNAL_ONTOLOGY:
-				message = operation + " on ontology " + ontologyId + " by user " + userId;
-				break;
-			case EXTERNAL:
-			case EXTERNAL_FROM_JSON:
-				message = "External API HTTP operation with Method " + method + "  on path " + pathInfo + " by user " + userId;
-				break;
-			case NODE_RED:
-				message = "Flow Engine API HTTP operation with Method " + method + "  on path " + pathInfo + " by user " + userId;
-				break;
-			default:
-				break;
-			}
-		}
+		final String message = operation + " on ontology " + ontologyId + " by user " + userId;
 
-		return ApiManagerAuditEvent.builder().id(UUID.randomUUID().toString()).module(Module.APIMANAGER)
+		return (ApiManagerAuditEvent.builder().id(UUID.randomUUID().toString()).module(Module.APIMANAGER)
 				.type(EventType.APIMANAGER).operationType(operation).resultOperation(ResultOperationType.SUCCESS)
 				.remoteAddress(remoteAddress).message(message).data(body == null ? null : new String(body))
 				.ontology(ontologyId).query(query).timeStamp(today.getTime()).user(userId)
 				.api(api != null ? api.getIdentification() : null)
-				.formatedTimeStamp(CalendarUtil.builder().build().convert(today)).build();
+				.formatedTimeStamp(CalendarUtil.builder().build().convert(today)).build());
 
 	}
 
@@ -130,32 +111,17 @@ public class ApiManagerAuditProcessor {
 		final Ontology ontology = (Ontology) data.get(Constants.ONTOLOGY);
 		final String method = (String) data.get(Constants.METHOD);
 		final User user = (User) data.get(Constants.USER);
-		final Api api = (Api) data.get(Constants.API);
+
 		final OperationType operationType = getAuditOperationFromMethod(method);
 		final String operation = getOperation(operationType);
-		final String pathInfo = (String) data.get(Constants.PATH_INFO);
+
 		final String userId = getUserId(user);
 		final String ontologyId = getOntologyId(ontology);
 
-		String messageOperation = "Exception Detected while operation : " + ontologyId + " Type : " + operation;
-		if (api != null) {
-			switch (api.getApiType()) {
-			case INTERNAL_ONTOLOGY:
-				messageOperation = "Exception Detected while operation : " + ontologyId + " Type : " + operation;
-				break;
-			case EXTERNAL:
-			case EXTERNAL_FROM_JSON:
-				messageOperation = "Exception Detected while invoking external API HTTP operation with Method " + method + "  on path " + pathInfo + " by user " + userId;
-				break;
-			case NODE_RED:
-				messageOperation = "Exception Detected while invoking Flow Engine API HTTP operation with Method " + method + "  on path " + pathInfo + " by user " + userId;
-				break;
-			default:
-				break;
-			}
-		}
-		return OPEventFactory.builder().build().createAuditEventError(userId, messageOperation, remoteAddress,
-				Module.APIMANAGER, ex);
+		final String messageOperation = "Exception Detected while operation : " + ontologyId + " Type : " + operation;
+
+		return (OPEventFactory.builder().build().createAuditEventError(userId, messageOperation, remoteAddress,
+				Module.APIMANAGER, ex));
 
 	}
 
@@ -180,9 +146,7 @@ public class ApiManagerAuditProcessor {
 				operationType = OperationType.DELETE;
 			}
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("The audit operation from method {} is {} ", method, operationType);
-		}
+		log.debug("The audit operation from method {} is {} ", method, operationType);
 		return operationType;
 
 	}

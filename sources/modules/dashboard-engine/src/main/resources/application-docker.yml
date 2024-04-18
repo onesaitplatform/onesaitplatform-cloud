@@ -1,22 +1,15 @@
-server: 
-   max-http-header-size: ${MAX_HTTP_HEADER_SIZE}
 master:
    datasource:
-     hikari:
-      jdbc-url: ${CONFIGDBMASTERURL}
+      url: ${CONFIGDBMASTERURL}
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
-      maximum-pool-size: ${CONFIGDB_MAX_ACTIVE}
-      driver-class-name: ${CONFIGDB_DRIVER}
+      max-active: ${CONFIGDB_MAX_ACTIVE}
+      max-idle: ${CONFIGDB_MAX_IDLE}
+      
 
 onesaitplatform:
-   encryption:
-      key: ${ENCRYPTION_KEY}
-      iteration-count: ${ENCRYPTION_ITERATIONS}
-   secure.cookie: true
    authentication:
-      oauth:
-        osp-keycloak: ${USE_KEYCLOAK}
+      authentication:
       configdb:
         acl:
           enabled: ${CONFIGDB_ACL_ENABLED}
@@ -68,46 +61,59 @@ onesaitplatform:
       password: ${REALTIMEDBPASS}
       writeConcern: ${REALTIMEDBWRITECONCERN}
       quasar.connector.http.endpoint: http://${QUASARHOST}:${QUASARPORT}/query/fs/
+   database.hadoop.enabled: ${ENABLEHADOOP}
+   database.hdfs:
+      url: ${HDFSURL}
+      basePath: ${HDFSPATH}
+   database.hive:
+      url: ${HIVEURL}
+      username: ${HIVEUSERNAME}
+      password: ${HIVEPASSWORD}
+      driverClassName: ${HIVEDRIVERCLASS}
+   database.impala:
+      url: ${IMPALAURL}
+   database.kudu:
+      numreplicas: ${KUDUNUMREPLICAS}
+      address: ${KUDUURL}
+      includeKudutableName: ${INCLUDEKUDUTABLENAME}
+      client:
+        sessionTimeout: ${KUDUCLIENTSESSIONTIMEOUT}
+        flushMode: ${KUDUCLIENTFLUSHMODE}
+        prefix: ${KUDUCLIENTIMPALAPREFIX}
+        bossThreadPool: ${KUDUCLIENTBOSSTHREADPOOL}
+        workerThreadPool: ${KUDUCLIENTWORKERTHREADPOOL}
+        operationTimeout: ${KUDUCLIENTOPTIMEOUT}
+        adminOperationTimeout: ${KUDUCLIENTADMINOPTIMEOUT}
+        socketReadTimeout: ${KUDUCLIENTSOCKETREADTIMEOUT}
    database.elasticsearch.enabled: ${ELASTICSEARCH_ENABLED}
-   database.timescaledb:
-      enabled: ${TIMESCALE_ENABLED}
-      url: ${TIMESCALE_URL}
-      user: ${TIMESCALE_USER}
-      password: ${TIMESCALE_PASS}
    router.alternativeURL: http://routerservice:20000/router/router/
-   router.metrics.query.enabled: ${QUERY_METRICS_ENABLED}
-   audit.global.notify: ${AUDITGLOBALNOTIFY}   
+   audit.global.notify: ${AUDITGLOBALNOTIFY}
+   password.pattern: (?=^.{10,20}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$
    hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
    hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
-   graylog:
-      enabled: ${GRAYLOG_ENABLED}
-      host: ${GRAYLOG_HOST}
-      port: ${GRAYLOG_PORT}
-   binary-repository:
-      tmp.file.path: /tmp/files/
+
 spring:
    datasource:
-     hikari:
-      jdbc-url: ${CONFIGDBURL}${DBADDPROPS}
+      url: ${CONFIGDBURL}${DBADDPROPS}
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
-      connection-timeout: ${DS_MAX_WAIT_MILLIS}
-      maximum-pool-size: ${DS_MAX_ACTIVE}
-      minimum-idle: ${DS_MIN_IDLE}
-      driver-class-name: ${CONFIGDB_DRIVER}
+      time-between-eviction-runs-millis: ${DS_TIME_BETWEEN_EVICTION_RUNS_MILLIS}
+      min-evictable-idle-time-millis: ${DS_MIN_EVICTABLE_IDLE_TIME_MILLIS}
+      max-wait-millis: ${DS_MAX_WAIT_MILLIS}
+      max-wait: ${DS_MAX_WAIT}
+      initial-size: ${DS_INITIAL_SIZE}
+      max-active: ${DS_MAX_ACTIVE}
+      max-idle: ${DS_MAX_IDLE}
+      min-idle: ${DS_MIN_IDLE}
+      removeAbandoned: ${DS_REMOVE_ABANDONED}
+      removeAbandonedTimeout: ${DS_REMOVE_ABANDONED_TIMEOUT}
    boot.admin: #Spring Boot Admin Config
-      client.url: http://monitoringuiservice:18100/monitoring
-      client.instance.service-url: http://dashboardengineservice:${server.port}${server.servlet.contextPath}/
-      client.username: ${SBA_USERNAME}
-      client.password: ${SBA_SECRET}
+      url: http://monitoringuiservice:18100/monitoring
+      client.service-url: http://dashboardengineservice:${server.port}${server.contextPath}/
    data.mongodb:
       host: ${REALTIMEDBSERVERS}
    elasticsearch.jest:
       uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}
-   jpa:
-      properties.hibernate.dialect: ${CONFIGDB_DIALECT}
 ## LOGGING CONF
 logging:
-   file.path: /var/log/platform-logs
-   level:
-      org.zalando.logbook: ${HTTP_LOG_LEVEL}
+   path: /var/log/platform-logs

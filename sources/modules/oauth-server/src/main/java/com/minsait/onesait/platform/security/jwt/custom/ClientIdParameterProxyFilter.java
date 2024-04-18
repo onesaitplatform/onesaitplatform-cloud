@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,9 @@ public class ClientIdParameterProxyFilter extends GenericFilterBean {
 	private static String clientId = "client_id";
 
 	private static final String VERTICAL = "vertical";
-
+	private static final String TENANT = "tenant";
+	private static final String ERROR_MSG_MULTITENANCY = "Request must contain vertical and tenant parameters.";
+	private static final String ERROR_MSG_VERTICAL = "Request must contain vertical and tenant parameters.";
 	@Value("${onesaitplatform.multitenancy.enabled:false}")
 	private boolean multitenancyEnabled;
 

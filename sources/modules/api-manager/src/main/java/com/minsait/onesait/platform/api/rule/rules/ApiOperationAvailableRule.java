@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ public class ApiOperationAvailableRule extends DefaultRuleBase {
 	public boolean existsRequest(Facts facts) {
 		final Map<String, Object> data = facts.get(RuleManager.FACTS);
 		final Api api = (Api) data.get(Constants.API);
-		return api != null && api.getApiType().equals(ApiType.INTERNAL_ONTOLOGY);
+		return api != null && !api.getApiType().equals(ApiType.EXTERNAL_FROM_JSON);
 	}
 
 	@Action
@@ -65,21 +65,16 @@ public class ApiOperationAvailableRule extends DefaultRuleBase {
 		final Api api = (Api) data.get(Constants.API);
 		final String method = (String) data.get(Constants.METHOD);
 		final String pathInfo = (String) data.get(Constants.PATH_INFO);
-		final ApiOperation customSQL = apiService.getCustomSQL(pathInfo, api, method);
+		final ApiOperation customSQL = apiService.getCustomSQL(pathInfo, api);
 		final String objectId = apiService.getObjectidFromPathQuery(pathInfo, customSQL);
 		final List<ApiOperation> operations = apiManagerService.getOperationsByMethod(api, Type.valueOf(method));
 		ApiOperation operation = null;
-		if (StringUtils.hasText(objectId)) {
-			// PREDICTIVE APIS MINDSDB && NEBULA
-			if (objectId.equals("predict") || objectId.equals("execute-ngql")) {
-				operation = operations.stream().filter(o -> o.getPath().equals("/predict") || o.getPath().equals("/execute-ngql")).findFirst().orElse(null);
-			} else {
-				operation = operations.stream().filter(a -> a.getPath().equals("/{id}")).findAny().orElse(null);
-			}
+		if (!StringUtils.isEmpty(objectId)) {
+			operation = operations.stream().filter(a -> a.getPath().equals("/{id}")).findAny().orElse(null);
 		} else if (customSQL != null) {
 			operation = customSQL;
 		} else {
-			operation = operations.stream().filter(a -> !StringUtils.hasText(a.getPath()) || "/".equals(a.getPath()))
+			operation = operations.stream().filter(a -> StringUtils.isEmpty(a.getPath()) || "/".equals(a.getPath()))
 					.findAny().orElse(null);
 		}
 
