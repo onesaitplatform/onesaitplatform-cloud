@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -57,7 +56,6 @@ import com.minsait.onesait.platform.config.repository.RoleRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.controlpanel.rest.management.login.LoginManagementController;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
-import com.minsait.onesait.platform.security.PlugableOauthAuthenticator;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -74,11 +72,10 @@ public class AppWebUtils {
 
 	@Autowired(required = false)
 	private LoginManagementController controller;
-	
+
 	@Autowired
 	private PasswordPatternMatcher passwordPatternMatcher;
-	
-	
+
 	private static final String MESSAGE_STR = "message";
 	private static final String INFO_MESSAGE_STR = "info";
 	private static final String OAUTH_TOKEN_SESS_ATT = "oauthToken";
@@ -224,22 +221,17 @@ public class AppWebUtils {
 
 	public String getCurrentUserOauthToken() {
 		final Optional<HttpServletRequest> request = getCurrentHttpRequest();
-		
+
 		if (request.isPresent()) {
-			
 			if (WebUtils.getSessionAttribute(request.get(), OAUTH_TOKEN_SESS_ATT) != null) {
 				return (String) WebUtils.getSessionAttribute(request.get(), OAUTH_TOKEN_SESS_ATT);
 			} else if (request.get().getHeader(HttpHeaders.AUTHORIZATION) != null) {
 				return request.get().getHeader(HttpHeaders.AUTHORIZATION).substring("Bearer ".length());
 			} else if (SecurityContextHolder.getContext().getAuthentication() != null
-					&& !(SecurityContextHolder.getContext().getAuthentication() instanceof AnonymousAuthenticationToken)){
-				if(controller != null) {
-					return controller.postLoginOauthNopass(SecurityContextHolder.getContext().getAuthentication())
-							.getValue();
-				}else {
-					log.error("Authentication Context not compabible with auth method for this Operation. Probably you need Oauth Token due to Keycloak further integration with other System");
-					throw new GenericRuntimeOPException("Authentication Context not compabible with auth method for this Operation. Probably you need Oauth Token due to Keycloak further integration with other System");
-				}
+					&& !(SecurityContextHolder.getContext().getAuthentication() instanceof AnonymousAuthenticationToken)
+					&& controller != null) {
+				return controller.postLoginOauthNopass(SecurityContextHolder.getContext().getAuthentication())
+						.getValue();
 
 			}
 
@@ -348,9 +340,7 @@ public class AppWebUtils {
 	}
 
 	public void renewOauth2AccessToken(HttpServletRequest request, Authentication authentication) {
-		if(controller != null) {
-			request.getSession().setAttribute("oauthToken", controller.postLoginOauthNopass(authentication).getValue());
-		}
+		request.getSession().setAttribute("oauthToken", controller.postLoginOauthNopass(authentication).getValue());
 	}
 
 	public String getUserOauthTokenByCurrentHttpRequest() {
@@ -360,19 +350,14 @@ public class AppWebUtils {
 			if (request.get().getHeader(HttpHeaders.AUTHORIZATION) != null) {
 				return request.get().getHeader(HttpHeaders.AUTHORIZATION).substring("Bearer ".length());
 			} else if (SecurityContextHolder.getContext().getAuthentication() != null
-					&& !(SecurityContextHolder.getContext().getAuthentication() instanceof AnonymousAuthenticationToken)) {
-				if(controller != null) {
-					return controller.postLoginOauthNopass(SecurityContextHolder.getContext().getAuthentication())
-							.getValue();
-				}else {
-					log.error("Authentication Context not compabible with auth method for this Operation. Probably you need Oauth Token due to Keycloak further integration with other System");
-					throw new GenericRuntimeOPException("Authentication Context not compabible with auth method for this Operation. Probably you need Oauth Token due to Keycloak further integration with other System");
-				}
+					&& !(SecurityContextHolder.getContext().getAuthentication() instanceof AnonymousAuthenticationToken)
+					&& controller != null) {
+				return controller.postLoginOauthNopass(SecurityContextHolder.getContext().getAuthentication())
+						.getValue();
 
 			}
 
 		}
-		log.warn("Unable to get credentials from headers or context");
 		throw new GenericRuntimeOPException("No request currently active");
 	}
 

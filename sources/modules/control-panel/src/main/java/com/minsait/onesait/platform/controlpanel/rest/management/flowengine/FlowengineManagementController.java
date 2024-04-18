@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,11 +55,9 @@ import org.springframework.web.client.RestTemplate;
 
 import com.minsait.onesait.platform.commons.flow.engine.dto.FlowEngineDomain;
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
-import com.minsait.onesait.platform.config.model.Flow;
 import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.FlowDomain.State;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.services.flow.FlowService;
 import com.minsait.onesait.platform.config.services.flowdomain.FlowDomainService;
 import com.minsait.onesait.platform.config.services.flownode.FlowDTO;
 import com.minsait.onesait.platform.config.services.user.UserService;
@@ -108,8 +106,6 @@ public class FlowengineManagementController {
 	private FlowDomainService flowDomainService;
 	@Autowired
 	private FlowEngineService flowEngineService;
-	@Autowired
-	private FlowService flowService;
 
 	@Autowired
 	private NoderedAuthenticationService noderedAuthService;
@@ -173,21 +169,6 @@ public class FlowengineManagementController {
 				.collect(Collectors.toList());
 
 		return ResponseEntity.ok().body(flows);
-	}
-	
-	@Operation(summary = "Get flow by identification or id")
-	@GetMapping("/flows/{id}")
-	@ApiResponses(@ApiResponse(content = @Content(schema = @Schema(implementation = FlowDTO[].class)), responseCode = "200", description = "OK"))
-	public ResponseEntity<FlowDTO> getFlow(@PathVariable("id") String identification) {	
-		Flow flow = flowService.getFlowByIdentificationOrId(identification);
-		
-		if (!flowDomainService.hasUserViewAccess(flow.getFlowDomain().getId(), utils.getUserId())) {
-			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-		}
-
-		final FlowDTO flowDTO = FlowDTO.builder().active(flow.getActive()).domain(flow.getFlowDomain().getIdentification())
-				.identification(flow.getIdentification()).nodeRedFlowId(flow.getNodeRedFlowId()).build();
-		return ResponseEntity.ok().body(flowDTO);
 	}
 
 	@Operation(summary = "Exports a flow (NodeRED tab) from the desired FlowDomain (Administrator only)")

@@ -13,7 +13,7 @@
 
 	<properties>
 
-		<revision>5.3.0-ce</revision>
+		<revision>5.2.0-ce</revision>
 		<docker.image.username>onesaitplatform</docker.image.username>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -77,9 +77,6 @@
 		<snakeyaml.version>1.30</snakeyaml.version>
 		<thymeleaf-extras-springsecurity4.version>3.0.4.RELEASE</thymeleaf-extras-springsecurity4.version>
 		<nashorn.version>15.4</nashorn.version>
-        <h2.version>2.2.224</h2.version>		
-		<dependency.check.version>8.4.0</dependency.check.version>
-		<properties.maven.version>1.0.0</properties.maven.version>
 	</properties>
 
 	<dependencyManagement>
@@ -333,14 +330,6 @@
     			<artifactId>nashorn-core</artifactId>
     			<version>${nashorn.version}</version>
 			</dependency>
-            
-            <!-- H2 dependency check internal database -->
-            <dependency>
-                <groupId>com.h2database</groupId>
-                <artifactId>h2</artifactId>
-                <version>${h2.version}</version>
-            </dependency>
-
 
 		</dependencies>
 	</dependencyManagement>
@@ -731,7 +720,6 @@
 					</execution>
 				</executions>
 			</plugin>
-    
 		</plugins>
 		
 		<pluginManagement> 
@@ -860,95 +848,15 @@
 			</properties>
 		</profile>
 		<!-- En Dashboard Compile Section -->
-
-		<!-- BEGIN: Dependency Check plugin execution control -->
-		<profile>
-			<id>vulscan</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
-
-            <!-- Dependency Check plugin -->
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>properties-maven-plugin</artifactId>
-						<version>${properties.maven.version}</version>
-						<executions>
-						<execution>
-							<phase>initialize</phase>
-								<goals>
-									<goal>read-project-properties</goal>
-								</goals>
-						</execution>
-						</executions>
-						<configuration>
-						<files>
-							<file>/usr/share/maven/conf/h2.properties</file>
-						</files>
-						</configuration>
-					</plugin>				
-					<plugin>
-						<groupId>org.owasp</groupId>
-						<artifactId>dependency-check-maven</artifactId>
-						<version>${dependency.check.version}</version>
-						<dependencies>
-							<dependency>
-								<groupId>com.h2database</groupId>
-								<artifactId>h2</artifactId>
-								<version>${h2.version}</version>
-							</dependency>
-						</dependencies>
-						<configuration>
-							<databaseDriverName>org.h2.Driver</databaseDriverName>
-							<connectionString>jdbc:h2:~/test</connectionString>
-							<databaseUser>${h2database.user}</databaseUser>
-							<databasePassword>${h2database.pass}</databasePassword>
-							<formats>
-								<format>HTML</format>
-								<format>CSV</format>
-								<format>JSON</format>
-							</formats>
-							<prettyPrint>true</prettyPrint>							
-						</configuration>
-						<executions>
-							<execution>
-								<goals>
-									<goal>aggregate</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-            <!-- Dependency plugin -->	
-
-			<reporting>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-surefire-report-plugin</artifactId>
-						<version>2.21.0</version>
-					</plugin>
-					<plugin>
-						<groupId>org.owasp</groupId>
-						<artifactId>dependency-check-maven</artifactId>
-						<version>8.4.0</version>
-						<reportSets>
-							<reportSet>
-								<reports>
-									<report>aggregate</report>
-								</reports>
-							</reportSet>
-						</reportSets>
-					</plugin>
-				</plugins>
-			</reporting>					
-
-		</profile>	
-
-		<!-- END: Dependency Check plugin execution control -->
 	</profiles>
-    
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-report-plugin</artifactId>
+				<version>2.21.0</version>
+			</plugin>
+		</plugins>
+	</reporting>
 </project>

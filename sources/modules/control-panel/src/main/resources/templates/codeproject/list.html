@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -217,13 +217,11 @@
 	<script th:src="@{/static/js/pages/codeproject/list.js}" th:inline="javascript"></script>
 	<script type="text/javascript" th:inline="javascript">	
 		var constants ={
-			deleteTitle: [[#{codeproject.delete}]],
 			deleteContent: [[#{codeproject.delete.confirm}]],
 			genDelete: [[#{gen.deleteBtn}]],
 			genUpdate:  [[#{gen.edit}]],
 			genView:  [[#{gen.view}]],
 			genUrl:  [[#{gen.url}]]
-		
 		};
 	
 		$(document).ready(function() {
@@ -243,7 +241,7 @@
 	
 			// SEARCH FORM
 			$('#search_codeproject').on('click',function(){
-				$('#codeprojects').DataTable().column(1).search($('#find_codeproject').val()).draw();		
+				$('#form_codeproject')[0].submit();			
 			});
 			
 		

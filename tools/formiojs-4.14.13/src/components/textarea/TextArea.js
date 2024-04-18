@@ -67,10 +67,10 @@ export default class TextAreaComponent extends TextFieldComponent {
     if ((this.options.readOnly || this.disabled) && !this.isHtmlRenderMode()) {
       const elementStyle = this.info.attr.style || '';
       const children = `<div ref="input" class="formio-editor-read-only-content" ${elementStyle ? `style='${elementStyle}'` : ''}></div>`;
+
       return this.renderTemplate('well', {
         children,
         nestedKey: this.key,
-        customClass:'disabled-text-area',
         value
       });
     }
@@ -138,9 +138,6 @@ export default class TextAreaComponent extends TextFieldComponent {
             settings = {};
           }
           settings.mode = this.component.as ? `ace/mode/${this.component.as}` : 'ace/mode/javascript';
-          if (this.component.theme) {
-            settings.theme = this.component.theme;
-          }
           this.addAce(element, settings, (newValue) => this.updateEditorValue(index, newValue)).then((ace) => {
             this.editors[index] = ace;
             let dataValue = this.dataValue;

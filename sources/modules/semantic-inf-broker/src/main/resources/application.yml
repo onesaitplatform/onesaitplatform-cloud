@@ -190,5 +190,4 @@ logging:
       org.springframework.boot: INFO
       org.apache.kafka: ERROR
       org.zalando.logbook: TRACE  
-      com.minsait.onesait.platform.persistence.external: DEBUG
 #      org.springframework.boot.autoconfigure: DEBUG

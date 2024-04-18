@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -308,7 +308,6 @@
 												<table id="files" class="table table-hover table-striped" dt:table="true" dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none"  dt:paginationtype="full">
 													<thead>
 														<tr class="cabecera-tabla">
-															<th class="titulo-columnas text-left "  ><span th:text="Id">#{binaryfiles.id}</span></th>
 															<th class="titulo-columnas text-left" dt:filterable="true" dt:filterCssClass="input-small" dt:selector="fileFilter"><span th:text="#{binaryfiles.filename}"> filename </span></th>
 															<th class="titulo-columnas text-left "  ><span th:text="#{binaryfiles.owner}">Owner</span></th>
 															<th class="titulo-columnas text-left" ><span th:text="#{binaryfiles.fileid}">file id</span></th>
@@ -322,8 +321,6 @@
 													</thead>
 													<tbody th:remove="all-but-first">
 														<tr th:each="file : ${files}" pages:paginate="10">
-															<!-- Binary File Id -->
-															<td class="text-left bold no-wrap" th:text="${file.id}"></td>
 															<!-- File name -->
 															<td class="text-left bold no-wrap" th:text="${file.fileName}"></td>
 															<!-- OWNER -->
@@ -360,7 +357,7 @@
 																	<ul class="dropdown-menu dropdown-menu-table download-menu">
 																		<li>
 																			<!-- Copy link, accesible always -->
-																			<span class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" th:attr="onclick='BinaryFilesController.copyToClipboard(\''+|@{/files/gcp/}|+${file.id}+'?vertical=' + ${#strings.toLowerCase(#authentication.getPrincipal().getVertical())}+ '\')'"><i class="icon-url"></i><span class="span-title-three-dots-icons" th:text="#{binaryfiles.copy}" >Copy URL</span></span>
+																			<span class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" th:attr="onclick='BinaryFilesController.copyToClipboard(\''+|@{/files/gcp/}|+${file.id}+ '\')'"><i class="icon-url"></i><span class="span-title-three-dots-icons" th:text="#{binaryfiles.copy}" >Copy URL</span></span>
 																		</li>
 																		<li>
 																			<!-- SHARE -->	
@@ -380,7 +377,7 @@
 																</th:block>
 																<th:block  th:unless="${((file.user.userId eq #authentication.getName()) OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR') OR (accessMap.get(file.id) eq 'WRITE'))}">
 																	<!-- Copy link, accesible always -->
-																	<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{binaryfiles.copy}" th:attr="onclick='BinaryFilesController.copyToClipboard(\''+|@{/files/gcp/}|+${file.id}+'?vertical=' + ${#strings.toLowerCase(#authentication.getPrincipal().getVertical())}+ '\')'"><i class="icon-url"></i></span>
+																	<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:attr="onclick='BinaryFilesController.copyToClipboard(\''+|@{/files/gcp/}|+${file.id}+ '\')'"><i class="icon-url"></i></span>
 																</th:block>					
 															</td>
 														</tr>
@@ -413,37 +410,33 @@
 													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
-															<label th:text="#{binaryfiles.id}"> Id</label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
 															<label th:text="#{binaryfiles.filename}"> File Name </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
 															<label th:text="#{binaryfiles.owner}"> Owner</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
 															<label th:text="#{binaryfiles.fileid}"> File Id </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
 															<label th:text="#{binaryfiles.metadata}"> Metadata</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
 															<label th:text="#{binaryfiles.accesstypes}"> Access Types</label>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 															<label th:text="#{gen.public}"> Public</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="7" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
 															<label th:text="#{gen.created}"> Created At</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="8" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="7" checked/>
 															<label th:text="#{gen.updated}"> Updated At</label>
 														</span>
 													</div>
@@ -494,7 +487,10 @@
 	function navigateUrl(url){  window.location.href = url;	}
 	function navigateWindow(url){ window.open(url,'_blank');	}
 	
-	
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		$.each([2,3],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		//var currentMode = $('#repositories').text();
@@ -528,13 +524,13 @@
 		});
 		
 		
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
+		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
 	
 		//DATATABLE 
 		var oTable = $('#files').dataTable({
 	      "bAutoWidth": false
 	      });
-		$.each([0,3,4],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		
 		// SHOW/HIDE DATATABLES COLUMN INIT
 		$('#divcreate').prepend($('#dataTable-vis-toggle')); 		
 		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		

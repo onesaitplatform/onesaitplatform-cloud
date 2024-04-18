@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@
     					<span th:text="#{name.app}"> onesait platform Control Panel</span>
     				</h1>
     				<!-- END PAGE TITLE-->
-                    <div id="searchFilter"  class="row" >
+                    <div id="searchFilter"  class="row" th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'"  >
 						<div class="col-md-3 col-sm-4 col-xs-12">														
 							<div class="input-icon">
 								<i class="icon-search font-grey-mint"></i>									 														
@@ -105,17 +105,18 @@
                                 </a>   
                             </div>
                             <div id="resourcelist" class="collapse margin-left-10 padding-left-5" style="height: 0px;" aria-expanded="false" >
-                            	<div id="div_ALL">
+                            	<div id="div_ALL" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'">
 	                            	<input id="checkbox_ALL" class="no-remove" type="checkbox" checked onclick="TagCreateController.filterTable(($(this).attr('id')).split('_')[1])"/>
 									<label class="control-label margin-left-5 small" th:text="#{project.users.all}">all</label>
+									<span th:id="'new_' + ${type}" class='pull-right badge rounded-pill bg-light text-dark'>  </span>
 									<span th:id="count_ALL" class='pull-right badge badge-info'></span>	
 	                            </div>
                           		<th:block th:each="type :${tagNames}">
 	                            	<div th:id="'div_' + ${type}">
-	                            		<input th:id="'checkbox_' + ${type}" class="no-remove checkbox-filter" type="checkbox" checked onclick="TagCreateController.filterTable(($(this).attr('id')).split('_')[1])"/>
+	                            		<input th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:id="'checkbox_' + ${type}" class="no-remove checkbox-filter" type="checkbox" checked onclick="TagCreateController.filterTable(($(this).attr('id')).split('_')[1])"/>
 										<label class="control-label margin-left-5 small" th:text="${type}">Type</label>
 										<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:id="'new_' + ${type}" class='pull-right icon-delete' th:title="#{tag.delete.tag}" style="padding:1px 0px 0px 3px;" th:attr="onclick='javascript:TagCreateController.deleteTag(\''+${type}+'\');'"></span>
-										<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:id="'unbind_' + ${type}" class='pull-right la la-unlink font-hg' th:title="#{tag.delete.resource.tag}" style="margin:-2px 0px 0px 2px" th:attr="onclick='javascript:TagCreateController.unlinkTag(\''+${type}+'\');'"></span>
+										<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:id="'unbind_' + ${type}" class='pull-right la la-unlink font-hg' th:title="#{tag.delete.resource.tag}" th:attr="onclick='javascript:TagCreateController.unlinkTag(\''+${type}+'\');'"></span>
 										<span th:id="'count_' + ${type}" class='pull-right badge badge-info'></span>
 	                            	</div>
                             	</th:block>
@@ -124,7 +125,7 @@
                         <div class="tab-content flex-content-right">
     						<div class="tab-pane fade in" id="tab_3">
     							<!-- SEARCH FORM -->
-                                <div class="col-md-12 col-sm-12 col-xs-12 clearfix margin-top-10 margin-bottom-10" >
+                                <div class="row main padding-top-4" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" >
                                     <div class="panelHeader padding-left-15" style="display: inline;">
                                         <span th:text="#{tag.resources}">Tag Resources</span>
                                     </div>
@@ -138,15 +139,20 @@
 										<a href="" class="collapse" data-original-title="" title=""></a>
 										<a href="" class="fullscreen" data-original-title="" title=""></a>
 									</div>
-									<div class="pull-right btn-title-group no-margin-top">
+									<div class="pull-right btn-title-group margin-top-10">
 										<span id="accessfilter" class="hide" style="display:inline-block" > </span>
 										<span class="separator"></span>
 										<div class="pull-right btn-group " id="divcreate" style="margin-left:30px;">
-											<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" type="button" class="btn btn-primary button-plus-create" th:attr="onclick='TagCreateController.createTagName();'" th:title="#{tag.create.button}"><a ><i class="icon-new" style="color:white;"></i></a></button>
-											<button type="button" class="btn btn-primary margin-left-5" style="min-width: 34px!important;" onclick="$('#resources-modal').modal('show');" th:title="#{tag.resource.button}"><a><i class="icon-multiple" style="color:white;"></i></a></button>
+											<button type="button" class="btn btn-primary button-plus-create" th:attr="onclick='TagCreateController.createTagName();'"  ><a ><i class="icon-new" style="color:white;"></i></a></button>
+											<button type="button" class="btn btn-primary margin-left-5" style="min-width: 34px!important;" onclick="$('#resources-modal').modal('show');"><a><i class="icon-multiple" style="color:white;"></i></a></button>
 										</div>		
 									</div>	
-                                </div>                           
+                                </div>
+                                <div class="col-md-8 col-sm-12 col-xs-12 clearfix padding-top-4" th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" >
+                                    <div class="col-md-4 panelHeader padding-left-15" style="display: inline;">
+                                        <span th:text="#{tag.resources}">Tag Resources</span>                                        
+                                    </div>                                    
+                                </div>                                
     							<div class="row main" th:include="tags/fragments/resources-tab" id="resources-tab-fragment"></div>
     							<div id="resources-modal-fragment" th:include="tags/fragments/resources-modal"></div>
     						</div>
@@ -225,9 +231,7 @@
         	    "accessType":[[#{project.resource.accesstype}]],
         		"confirm":{
         			"deleteTag" : [[#{tag.delete.tag}]],
-        			"deleteTagConfirmation" : [[#{tag.delete.tag.content}]],
-        			"unlinkTag" : [[#{tag.unlink.tag}]],
-        			"unlinkTagConfirmation" : [[#{tag.unlink.tag.content}]]
+        			"deleteTagConfirmation" : [[#{tag.delete.tag.content}]]
         		},
         		"otologiesAssociated" : [[#{project.addElements}]]
         	};
@@ -238,7 +242,6 @@
 		function cleanTags() {
 	    	$("#querySearchTags").val("");
 	        $('#resource-access-list tbody').empty();
-	        findTags();
 		}
 		
 		function enterSearch(e) {
@@ -251,13 +254,7 @@
 			var csrf_value = $("meta[name='_csrf']").attr("content");
 			var csrf_header = $("meta[name='_csrf_header']").attr("content");
 			var searchTag = $("#querySearchTags").val();
-			
-			var urlFind = '/controlpanel/api/tags/like/' + searchTag;
-			
-			if (searchTag.trim()==""){
-				urlFind = '/controlpanel/api/tags/'
-			}
-			
+			var urlFind = '/controlpanel/api/tags/name/'+searchTag;
 			return  $.ajax({
 	            url: urlFind,
 	            type: 'GET',
@@ -268,34 +265,31 @@
 	            success: function(data) {
 					var table = $('#tag-results tbody');
 				   	table.empty();
-				   	$('#resource-access-list tbody').empty();			   
-				    $.each(data, function(index, tag) {
-						$.each(tag.resources, function(index2, resource) {
-							var resourceType = resource.type.toUpperCase();
-						    var url = "";
-								if (resourceType == "DASHBOARD" || resourceType == "GADGETTEMPLATE" || resourceType == "GADGET"){
-									url = urlMap[resourceType] +"/view/" + resource.id;
-								}else if (resourceType == "CLIENTPLATFORM" || resourceType == "GADGETDATASOURCE" || resourceType == "FLOWDOMAIN" || resourceType == "DIGITALTWINDEVICE" || resourceType == "ONTOLOGY" || resourceType == "NOTEBOOK"){
-									url = urlMap[resourceType] +"/show/" +resource.id;
-								}else if (resourceType == "API"){
-									url = urlMap[resourceType] +"/invoke/"+ resource.id;	
-								}else if (resourceType == "DATAFLOW" || resourceType == "PIPELINE"){
-									url = urlMap["DATAFLOW"] +"/app/collector/pipeline/"+ resource.id;
-								}else if (resourceType == "REPORT"){
-									url = urlMap[resourceType] +"/edit/"+ resource.id;
-								}
-						    link = `<span class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" onclick="navigateUrlBlank('${url}')"><i class="la la-link font-hg"></i></span>`;
-
-						    var fila = $('<tr class="table-model resource-row ' + tag.name + ' "">').append(
-								  $('<td width="29%">').text(tag.name),
-						          $('<td width="35%">').text(resource.name),
-								  $('<td width="35%">').text(resource.type),
-						          $('<td width="1%" class="no-wrap text-center">').append(								
-									$(link)
-						          )
-								 )
-							$('#resource-access-list tbody').append(fila);
-						});
+				   	$('#resource-access-list tbody').empty();				   
+				    $.each(data, function(index, item) {
+						var resourceType = item.resource.type.toUpperCase();
+					    var url = "";
+							if (resourceType == "DASHBOARD" || resourceType == "GADGETTEMPLATE" || resourceType == "GADGET"){
+								url = urlMap[resourceType] +"/view/" + item.resource.id;
+							}else if (resourceType == "CLIENTPLATFORM" || resourceType == "GADGETDATASOURCE" || resourceType == "FLOWDOMAIN" || resourceType == "DIGITALTWINDEVICE" || resourceType == "ONTOLOGY" || resourceType == "NOTEBOOK"){
+								url = urlMap[resourceType] +"/show/" +item.resource.id;
+							}else if (resourceType == "API"){
+								url = urlMap[resourceType] +"/invoke/"+ item.resource.id;	
+							}else if (resourceType == "DATAFLOW" || resourceType == "PIPELINE"){
+								url = urlMap["DATAFLOW"] +"/app/collector/pipeline/"+ item.resource.id;
+							}else if (resourceType == "REPORT"){
+								url = urlMap[resourceType] +"/edit/"+ item.resource.id;
+							}
+					    link = `<span class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" onclick="navigateUrlBlank('${url}')"><i class="la la-link font-hg"></i></span>`;
+					    var fila = $('<tr>').append(
+							  $('<td width="29%">').text(item.tagName),
+					          $('<td width="35%">').text(item.resource.name),
+							  $('<td width="35%">').text(item.resource.type),
+					          $('<td width="1%" class="no-wrap text-center">').append(								
+								$(link)
+					          )
+							 )
+						$('#resource-access-list tbody').append(fila);
 				    });	
 				    $('#resource-access-list').DataTable();				
 	            },

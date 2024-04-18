@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -61,10 +61,10 @@
 					</ul>
 				</div>	
 				<h1 class="page-title hide "><span th:text="#{name.app}"> onesait Platform Control Panel</span></h1>
-				
-				<form role="form" id="form-codeproject" th:object="${codeproject}" class="form" enctype="multipart/form-data">
+				<form role="form" id="form-codeproject" th:object="${codeproject}" method="post" class="form" enctype="multipart/form-data">
 					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                   
+                    <input th:if="${codeproject.id} == null" type="hidden" name="action" th:value="@{/codeproject/create}"/>
+                    <input th:if="${codeproject.id} != null" type="hidden"  name="action" th:value="@{'/codeproject/update/'+${codeproject.id}}"/>
                     <input th:if="${codeproject.id} != null" type="hidden" id="codeproject-save-id" name="id" th:field="*{id}" />
                     <div id="header">
 						<div class="row pageCreateHeader">
@@ -84,6 +84,10 @@
                                 <div class="pull-right">
                                     <!-- CANCEL  -->
                                     <button id="btn-cancel" name="btn-cancel" type="button" class="btn btn-circle btn-outline blue no-border" th:value="#{gen.cancelBtn}" value="cancel"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+                                    <!-- RESET create -->
+                                    <button id="resetBtn" type="button" class="btn btn-outline-search" name="reset" th:value="#{gen.resetBtn}" disabled="true" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
+                                    <button id="btn-save" type="submit" class="btn btn-circle btn-outline btn-primary">
+                                        <span th:text="#{gen.changesBtn}"> Save changes </span>
                                     </button>         
                                 </div>
                             </div>
@@ -110,7 +114,7 @@
 						</div>	
 						<div style='min-width: 0px;'>
 							<div style="height: calc(100% - 400px); margin: 1rem">
-								<img style="top:340px !important; right:30px !important" class="ailogobutton" height="100" width="100" src="/controlpanel/static/img/ailogo.png" onclick="showDialogGenerate()"/>
+								<img style="top:30% !important; right:2% !important" class="ailogobutton" height="100" width="100" src="/controlpanel/static/img/ailogo.png" onclick="showDialogGenerate()"/>
 								<git-editor-app api-data th:lang="${#locale}" th:project-id="${codeproject.id}" id="git-editor">
 								</git-editor-app>
 							</div>

@@ -10,7 +10,6 @@ export default class ButtonComponent extends Field {
       type: 'button',
       label: 'Submit',
       key: 'submit',
-      input:'false',
       size: 'md',
       leftIcon: '',
       rightIcon: '',
@@ -52,9 +51,9 @@ export default class ButtonComponent extends Field {
     info.attr.type = (['submit', 'saveState'].includes(this.component.action)) ? 'submit' : 'button';
     this.component.theme = this.component.theme || 'default';
     info.attr.class = `btn btn-${this.component.theme}`;
-    /* if (this.component.size) {
+    if (this.component.size) {
       info.attr.class += ` btn-${this.component.size}`;
-    } */
+    }
     if (this.component.block) {
       info.attr.class += ' btn-block';
     }
@@ -151,60 +150,27 @@ export default class ButtonComponent extends Field {
       this.on('cancelSubmit', () => {
         this.disabled = false;
       }, true);
-      this.on(`submitDone${this.component.key?this.component.key:''}`, (message) => {
+      this.on('submitDone', (message) => {
         const resultMessage = _.isString(message) ? message : this.t('complete');
         this.loading = false;
         this.disabled = false;
-        // this.addClass(this.refs.button, 'btn-success submit-success');
-        // this.removeClass(this.refs.button, 'btn-danger submit-fail');
-        // this.addClass(this.refs.buttonMessageContainer, 'has-success');
-        // this.removeClass(this.refs.buttonMessageContainer, 'has-error');
-        this.removeClass(this.refs.buttonMessageContainer, 'formio-button-message-container-show-error');
-        this.removeClass(this.refs.buttonMessageContainer, 'formio-button-message-container-hide');
-        this.addClass(this.refs.buttonMessageContainer, 'formio-button-message-container-show-done');
+        this.addClass(this.refs.button, 'btn-success submit-success');
+        this.removeClass(this.refs.button, 'btn-danger submit-fail');
+        this.addClass(this.refs.buttonMessageContainer, 'has-success');
+        this.removeClass(this.refs.buttonMessageContainer, 'has-error');
         this.setContent(this.refs.buttonMessage, resultMessage);
-        this.timeout = setTimeout(() => {
-          this.removeClass(this.refs.buttonMessageContainer, 'formio-button-message-container-show-done');
-          this.addClass(this.refs.buttonMessageContainer, 'formio-button-message-container-hide');
-          this.setContent(this.refs.buttonMessage, '');
-        }, 10000);
         if (this.component.formCode && this.component.formCode.trim().length > 0 ) {
-          if (window.redirectBy && window.redirectBy === 'events') {
-            if ( this.component.formOid && this.component.formOid.trim().length > 0 ) {
-              if ( this.component.formOid.replace(/ /g, '').includes('{{') ) {
-                try {
-                  this.emit('redirect',{ formcode: this.component.formCode, dataoid:this.getDataFromPath( this.parent.submission.data,this.component.formOid.replace(/ /g, '').replace('{{', '').replace('}}', '')) } );
-                }
-                catch (error) {
-                  this.emit('redirect',{ formcode: this.component.formCode, dataoid:this.interpolate(this.component.formOid) } );
-                }
-              }
-              else {
-                this.emit('redirect',{ formcode: this.component.formCode, dataoid:this.component.formOid } );
-              }
-            }
-            else {
-              this.emit('redirect',{ formcode: this.component.formCode, dataoid:null } );
-            }
-          }
-          else {
           var url = `${window.showformbase}/${this.component.formCode}`;
           if ( this.component.formOid && this.component.formOid.trim().length > 0 ) {
             if ( this.component.formOid.replace(/ /g, '').includes('{{') ) {
-              try {
-                var pathOid = this.getDataFromPath( this.parent.submission.data,this.component.formOid.replace(/ /g, '').replace('{{', '').replace('}}', ''));
-                url = `${url}/${pathOid}`;
-              }
-              catch (error) {
-                url = `${url}/${this.interpolate(this.component.formOid)}`;
-              }
+              var pathOid = this.getDataFromPath( this.parent.submission.data,this.component.formOid.replace(/ /g, '').replace('{{', '').replace('}}', ''));
+              url = `${url}/${pathOid}`;
             }
             else {
               url= `${url}/${this.component.formOid}`;
             }
           }
           window.location.href = url;
-        }
         }
         if ( this.component.redirect && this.component.redirect.trim().length>0 ) {
           if ( this.component.redirect.includes('http') ) {
@@ -220,19 +186,11 @@ export default class ButtonComponent extends Field {
         this.loading = false;
         this.disabled = false;
         this.hasError = true;
-        // this.removeClass(this.refs.button, 'btn-success submit-success');
-        // this.addClass(this.refs.button, 'btn-danger submit-fail');
-        // this.removeClass(this.refs.buttonMessageContainer, 'has-success');
-        // this.addClass(this.refs.buttonMessageContainer, 'has-error');
-        this.removeClass(this.refs.buttonMessageContainer, 'formio-button-message-container-show-done');
-        this.removeClass(this.refs.buttonMessageContainer, 'formio-button-message-container-hide');
-        this.addClass(this.refs.buttonMessageContainer, 'formio-button-message-container-show-error');
+        this.removeClass(this.refs.button, 'btn-success submit-success');
+        this.addClass(this.refs.button, 'btn-danger submit-fail');
+        this.removeClass(this.refs.buttonMessageContainer, 'has-success');
+        this.addClass(this.refs.buttonMessageContainer, 'has-error');
         this.setContent(this.refs.buttonMessage, resultMessage);
-        this.timeout = setTimeout(() => {
-          this.removeClass(this.refs.buttonMessageContainer, 'formio-button-message-container-show-error');
-          this.addClass(this.refs.buttonMessageContainer, 'formio-button-message-container-hide');
-          this.setContent(this.refs.buttonMessage, '');
-        }, 10000);
       }, true);
 
       this.on('fileUploadingStart', (filePromise) => {
@@ -251,36 +209,24 @@ export default class ButtonComponent extends Field {
       }, true);
 
       onChange = (value, isValid) => {
-       /* if (value.changed) {
-          this.removeClass(this.refs.buttonMessageContainer, 'formio-button-message-container-show-error');
-          this.removeClass(this.refs.buttonMessageContainer, 'formio-button-message-container-show-done');
-        } */
-        // this.removeClass(this.refs.button, 'btn-success submit-success');
+        this.removeClass(this.refs.button, 'btn-success submit-success');
         if (isValid) {
-          // this.removeClass(this.refs.button, 'btn-danger submit-fail');
+          this.removeClass(this.refs.button, 'btn-danger submit-fail');
           if (this.hasError) {
             this.hasError = false;
-            /* this.setContent(this.refs.buttonMessage, '');
+            this.setContent(this.refs.buttonMessage, '');
             this.removeClass(this.refs.buttonMessageContainer, 'has-success');
-            this.removeClass(this.refs.buttonMessageContainer, 'has-error'); */
+            this.removeClass(this.refs.buttonMessageContainer, 'has-error');
           }
         }
       };
       onError = () => {
         this.hasError = true;
-        // this.removeClass(this.refs.button, 'btn-success submit-success');
-        // this.addClass(this.refs.button, 'btn-danger submit-fail');
+        this.removeClass(this.refs.button, 'btn-success submit-success');
+        this.addClass(this.refs.button, 'btn-danger submit-fail');
         this.removeClass(this.refs.buttonMessageContainer, 'has-success');
         this.addClass(this.refs.buttonMessageContainer, 'has-error');
         this.setContent(this.refs.buttonMessage, this.t(this.errorMessage('submitError')));
-        this.removeClass(this.refs.buttonMessageContainer, 'formio-button-message-container-show-done');
-        this.removeClass(this.refs.buttonMessageContainer, 'formio-button-message-container-hide');
-        this.addClass(this.refs.buttonMessageContainer, 'formio-button-message-container-show-error');
-        this.timeout = setTimeout(() => {
-          this.removeClass(this.refs.buttonMessageContainer, 'formio-button-message-container-show-error');
-          this.addClass(this.refs.buttonMessageContainer, 'formio-button-message-container-hide');
-          this.setContent(this.refs.buttonMessage, '');
-        }, 10000);
       };
     }
 
@@ -381,14 +327,6 @@ export default class ButtonComponent extends Field {
     super.detach();
   }
 
-  filterDataFields() {
-    if (this.component.filtersubmission) {
-      if (this.component.submissionfieldslist && this.component.submissionfieldslist.length > 0 ) {
-        window.submissionfieldslist = { ...this.component.submissionfieldslist };
-      }
-    }
-  }
-
   onClick(event) {
     this.triggerReCaptcha();
     // Don't click if disabled or in builder mode.
@@ -399,8 +337,6 @@ export default class ButtonComponent extends Field {
     if (this.component.action !== 'submit' && this.component.showValidations) {
       this.emit('checkValidity', this.data);
     }
-    window.buttonclicked = this.component.key;
-    this.filterDataFields();
     switch (this.component.action) {
       case 'saveState':
       case 'submit':
@@ -484,52 +420,27 @@ export default class ButtonComponent extends Field {
 
         break;
       case 'redirect':
-      if (this.component.formCode && this.component.formCode.trim().length > 0 ) {
-        if (window.redirectBy && window.redirectBy === 'events') {
+        if (this.component.formCode && this.component.formCode.trim().length > 0 ) {
+          var url = `${window.showformbase}/${this.component.formCode}`;
           if ( this.component.formOid && this.component.formOid.trim().length > 0 ) {
             if ( this.component.formOid.replace(/ /g, '').includes('{{') ) {
-              try {
-                this.emit('redirect',{ formcode: this.component.formCode, dataoid:this.getDataFromPath( this.parent.submission.data,this.component.formOid.replace(/ /g, '').replace('{{', '').replace('}}', '')) } );
-              }
-              catch (error) {
-                this.emit('redirect',{ formcode: this.component.formCode, dataoid:this.interpolate(this.component.formOid) } );
-              }
-            }
-            else {
-              this.emit('redirect',{ formcode: this.component.formCode, dataoid:this.component.formOid } );
-            }
-          }
-          else {
-            this.emit('redirect',{ formcode: this.component.formCode, dataoid:null } );
-          }
-        }
-        else {
-        var url = `${window.showformbase}/${this.component.formCode}`;
-        if ( this.component.formOid && this.component.formOid.trim().length > 0 ) {
-          if ( this.component.formOid.replace(/ /g, '').includes('{{') ) {
-            try {
               var pathOid = this.getDataFromPath( this.parent.submission.data,this.component.formOid.replace(/ /g, '').replace('{{', '').replace('}}', ''));
               url = `${url}/${pathOid}`;
             }
-            catch (error) {
-              url = `${url}/${this.interpolate(this.component.formOid)}`;
+            else {
+              url= `${url}/${this.component.formOid}`;
             }
           }
+          window.location.href = url;
+        }
+        if ( this.component.redirect && this.component.redirect.trim().length>0 ) {
+          if ( this.component.redirect.includes('http') ) {
+            window.location.href = this.component.redirect;
+          }
           else {
-            url= `${url}/${this.component.formOid}`;
+            window.location.href = window.appbase + this.component.redirect;
           }
         }
-        window.location.href = url;
-      }
-      }
-      if ( this.component.redirect && this.component.redirect.trim().length>0 ) {
-        if ( this.component.redirect.includes('http') ) {
-          window.location.href = this.component.redirect;
-        }
-        else {
-          window.location.href = window.appbase + this.component.redirect;
-        }
-      }
       break;
     }
   }

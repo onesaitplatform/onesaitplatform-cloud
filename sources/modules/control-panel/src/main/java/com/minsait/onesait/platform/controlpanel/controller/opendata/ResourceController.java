@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -72,6 +73,7 @@ import com.minsait.onesait.platform.config.repository.DashboardRepository;
 import com.minsait.onesait.platform.config.repository.DatasetResourceRepository;
 import com.minsait.onesait.platform.config.repository.ViewerRepository;
 import com.minsait.onesait.platform.config.services.apimanager.ApiManagerService;
+import com.minsait.onesait.platform.config.services.exceptions.OpenDataServiceException;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.opendata.dto.ApiMultipart;
 import com.minsait.onesait.platform.config.services.opendata.dto.OpenDataField;
@@ -80,13 +82,13 @@ import com.minsait.onesait.platform.config.services.opendata.dto.OpenDataPackage
 import com.minsait.onesait.platform.config.services.opendata.dto.OpenDataResource;
 import com.minsait.onesait.platform.config.services.opendata.dto.OpenDataResourceDTO;
 import com.minsait.onesait.platform.config.services.user.UserService;
-import com.minsait.onesait.platform.controlpanel.gravitee.dto.GraviteeApi;
-import com.minsait.onesait.platform.controlpanel.gravitee.dto.GraviteeException;
-import com.minsait.onesait.platform.controlpanel.services.gravitee.GraviteeService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
+import com.minsait.onesait.platform.controlpanel.gravitee.dto.GraviteeApi;
+import com.minsait.onesait.platform.controlpanel.gravitee.dto.GraviteeException;
+import com.minsait.onesait.platform.controlpanel.services.gravitee.GraviteeService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -139,10 +141,10 @@ public class ResourceController {
 
 	@Autowired(required = false)
 	private GraviteeService graviteeService;
-
-	@Autowired
+	
+	@Autowired 
 	private HttpSession httpSession;
-
+	
 	private static final String APP_ID = "appId";
 
 	private final ObjectMapper mapper = new ObjectMapper();
@@ -157,7 +159,7 @@ public class ResourceController {
 	@GetMapping(value = "/list", produces = "text/html")
 	public String listResources(Model model, RedirectAttributes redirect,
 			@RequestParam(required = false, name = "name") String name) {
-		// CLEANING APP_ID FROM SESSION
+		//CLEANING APP_ID FROM SESSION
 		httpSession.removeAttribute(APP_ID);
 
 		final String userToken = utils.getCurrentUserOauthToken();
@@ -196,19 +198,19 @@ public class ResourceController {
 	@PostMapping("/getNamesForAutocomplete")
 	public @ResponseBody List<String> getNamesForAutocomplete() {
 
-		final String userToken = utils.getCurrentUserOauthToken();
-		final List<OpenDataPackage> datasets = datasetService.getDatasetsByUser(userToken);
+	    final String userToken = utils.getCurrentUserOauthToken();
+        final List<OpenDataPackage> datasets = datasetService.getDatasetsByUser(userToken);
+    
+        List<OpenDataResource> resources = new ArrayList<>();
+        for (final OpenDataPackage dataset : datasets) {
+            resources.addAll(dataset.getResources());
+        }
 
-		final List<OpenDataResource> resources = new ArrayList<>();
-		for (final OpenDataPackage dataset : datasets) {
-			resources.addAll(dataset.getResources());
-		}
-
-		final List<String> resourceNames = new ArrayList<>();
-		for (final OpenDataResource resource : resources) {
-			resourceNames.add(resource.getName());
-		}
-		return resourceNames;
+        final List<String> resourceNames = new ArrayList<>();
+        for (final OpenDataResource resource : resources) {
+            resourceNames.add(resource.getName());
+        }
+        return resourceNames;
 	}
 
 	@GetMapping(value = "/create")
@@ -422,9 +424,8 @@ public class ResourceController {
 				resourceDTO.getApi().setState(Api.ApiStates.DEVELOPMENT.toString());
 				final String apiId = apiManagerService
 						.createApi(apiMultipartMap(resourceDTO.getApi(), utils.getUserId()), null, null);
-				if (!StringUtils.isEmpty(postProcessFx)) {
+				if (!StringUtils.isEmpty(postProcessFx))
 					apiManagerService.updateApiPostProcess(apiId, postProcessFx);
-				}
 				if (graviteeService != null && publish2gravitee) {
 					publish2Gravitee(apiId);
 				}
@@ -584,9 +585,8 @@ public class ResourceController {
 			if (utils.isAdministrator() || dashboard.getUser().getUserId().equals(userId)) {
 				isOwner = true;
 			}
-			if (dashboards.stream().filter(o -> o.getId().equals(dashboard.getId())).findAny().orElse(null) == null) {
+			if (dashboards.stream().filter(o -> o.getId().equals(dashboard.getId())).findAny().orElse(null) == null)
 				dashboards.add(dashboard);
-			}
 			resourceDTO.setDashboardId(dashboard.getId());
 			resourceDTO.setPlatformResource("dashboard");
 			resourceDTO.setPlatformResourcePublic(dashboard.isPublic());
@@ -594,9 +594,8 @@ public class ResourceController {
 			if (utils.isAdministrator() || viewer.getUser().getUserId().equals(userId)) {
 				isOwner = true;
 			}
-			if (viewers.stream().filter(o -> o.getId().equals(viewer.getId())).findAny().orElse(null) == null) {
+			if (viewers.stream().filter(o -> o.getId().equals(viewer.getId())).findAny().orElse(null) == null)
 				viewers.add(viewer);
-			}
 			resourceDTO.setViewerId(viewer.getId());
 			resourceDTO.setPlatformResource("viewer");
 			resourceDTO.setPlatformResourcePublic(viewer.isPublic());
@@ -604,9 +603,8 @@ public class ResourceController {
 			if (utils.isAdministrator() || api.getUser().getUserId().equals(userId)) {
 				isOwner = true;
 			}
-			if (apis.stream().filter(o -> o.getId().equals(api.getId())).findAny().orElse(null) == null) {
+			if (apis.stream().filter(o -> o.getId().equals(api.getId())).findAny().orElse(null) == null)
 				apis.add(api);
-			}
 			resourceDTO.setApiId(api.getId());
 			resourceDTO.setPlatformResource("api");
 			resourceDTO.setPlatformResourcePublic(api.isPublic());
@@ -903,7 +901,7 @@ public class ResourceController {
 	private void publish2Gravitee(String apiId) throws GenericOPException {
 		final Api apiDb = apiManagerService.getById(apiId);
 		try {
-			final GraviteeApi graviteeApi = graviteeService.processApi(apiDb, false, null);
+			final GraviteeApi graviteeApi = graviteeService.processApi(apiDb);
 			apiDb.setGraviteeId(graviteeApi.getApiId());
 			apiManagerService.updateApi(apiDb);
 		} catch (final GraviteeException e) {
@@ -920,7 +918,7 @@ public class ResourceController {
 				integrationResourcesService.getUrl(Module.APIMANAGER, ServiceUrl.SWAGGERUI));
 
 		model.addAttribute("categories", Api.ApiCategories.values());
-		final Api api = new Api();
+		Api api = new Api();
 		api.setApiType(ApiType.EXTERNAL_FROM_JSON);
 		model.addAttribute("api", api);
 		model.addAttribute("graviteeOn", graviteeOn);

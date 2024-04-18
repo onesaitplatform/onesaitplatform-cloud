@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@ package com.minsait.onesait.platform.config.services.tag;
 
 import java.util.List;
 
+import com.minsait.onesait.platform.config.dto.ResourceTagVO;
 import com.minsait.onesait.platform.config.model.Tag;
 
 public interface TagService {
@@ -24,7 +25,7 @@ public interface TagService {
 
 	public boolean tagExists(String name);
 
-	public List<Tag> createTags(List<TagCreate> tags);
+	public void createTags(List<TagCreate> tags);
 
 	public List<String> getTagNames();
 
@@ -34,14 +35,10 @@ public interface TagService {
 
 	public void deleteByResourceIds(List<String> ids);
 	
-	public void deleteResourceByResourceIdAndTagId(String resourceId, String tagId);
+	public void deleteByResourceIdAndTagId(String resourceId, String tagId);
 	
-	public void deleteResourcesByTagId(String tagId);
+	public void deleteByTagId(String tagId);
 	
-	public List<Tag> findResourceTagsByNameLike(String name);
-	
-	public Tag findResourceTagsByName(String name);
-
-	public void deleteByResourceIdsAndTag(String name, List asList);
+	public List<ResourceTagVO> findResourceTagsByName(String name);
 
 }

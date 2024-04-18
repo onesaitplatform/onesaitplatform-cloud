@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -609,20 +609,19 @@
 				$('#form_dashboard')[0].reset();
 				$('#form_dashboard')[0].submit();
 			});
-			$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
+
 			// SEARCH FORM
 			$('#search_email').on('click', function () {
 				$('#emails').DataTable().column(1).search($('#email-name').val()).draw();
 			});
-		
-		
+		});
 
 		function turnFirstOptionToGrey() {
 			$(".yadcf-filter").css('color', 'grey');
 			$(".yadcf-filter option").css('color', 'black');
 		}
 
-		
+		$(window).on("load", function () {
 			$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 
 			//DATATABLE 
@@ -630,7 +629,6 @@
 				"bAutoWidth": false
 			});
 			oTable.page.len(10);
-				$.each([0, 2], function (ind, value) {$("input.toggle-vis[data-column='" + value + "']").trigger('click');});
 			/*
 			$('#emails').on('draw.dt', function () {
 				Email.List.initTableEvents();
@@ -699,13 +697,13 @@
 			});
 
 			// HIDE COLUMNS 		
-			
+			$.each([0, 2], function (ind, value) {$("input.toggle-vis[data-column='" + value + "']").trigger('click');});
 			$('.tooltips').tooltip('destroy');
 			$('.tooltips').tooltip();
 
 			$("#contenedor-tabla-outside").removeClass("hidden");
 
-	});
+		});
 
 	</script>
 

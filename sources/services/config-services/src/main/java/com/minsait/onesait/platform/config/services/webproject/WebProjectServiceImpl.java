@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,23 +34,19 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
-
-import org.apache.commons.io.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
 import org.zeroturnaround.zip.ZipUtil;
 
-import com.minsait.onesait.platform.config.model.GitEditorConfig;
+import org.apache.commons.io.IOUtils;
+import org.apache.ivy.plugins.matcher.NoMatcher;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.WebProject;
+import com.minsait.onesait.platform.config.model.GitEditorConfig;
 import com.minsait.onesait.platform.config.repository.GitEditorConfigRepository;
 import com.minsait.onesait.platform.config.repository.WebProjectRepository;
 import com.minsait.onesait.platform.config.services.exceptions.WebProjectServiceException;
@@ -72,9 +68,9 @@ public class WebProjectServiceImpl implements WebProjectService {
 
 	@Autowired
 	private GitEditorConfigRepository gitEditorConfigRepository;
-
+	
 	private boolean npmInstall = false;
-
+	
 	private NPMCommandResultStatus npmStatus;
 
 	@Autowired
@@ -104,6 +100,7 @@ public class WebProjectServiceImpl implements WebProjectService {
 	private String wtop;
 
 	private ExecutorService exService = Executors.newSingleThreadExecutor();
+
 
 	@Override
 	public List<WebProjectDTO> getWebProjectsWithDescriptionAndIdentification(String userId, String identification,
@@ -169,13 +166,13 @@ public class WebProjectServiceImpl implements WebProjectService {
 			final WebProject wp = WebProjectDTO.convert(webProject, user);
 
 			if (wp.getMainFile().isEmpty()) {
-				if (webProject.getNpm()) {
+				if(webProject.getNpm()) {
 					wp.setMainFile("");
-				} else {
+				}else {
 					wp.setMainFile("index.html");
 
 				}
-
+				
 			}
 
 			createFolderWebProject(wp.getIdentification(), userId);
@@ -226,35 +223,36 @@ public class WebProjectServiceImpl implements WebProjectService {
 	@Override
 	public void compileNPM(WebProjectDTO web, String userId) throws IOException {
 		String path = tmpDirectory + SLASH_STRING + web.getIdentification();
-		log.info("compileNPM " + web.getIdentification() + " target directory: " + web.getTargetDirectory());
-		NPMCommandResult npmResult = webProjectNPMHelper.executeNPMInstall(path, web.getRunCommand());
-		log.info("compileNPM Status: " + npmResult.getStatus());
-		if (npmResult.getStatus() == NPMCommandResultStatus.OK) {
-			log.info("npmResult.getStatus() OK ");
-			npmStatus = npmResult.getStatus();
-			npmInstall = false;
-			String route = tmpDirectory + SLASH_STRING + web.getIdentification() + SLASH_STRING
-					+ web.getTargetDirectory();
-			ZipUtil.pack(new File(route), new File(route + ".zip"));
-			File zipNPM = new File(route + ".zip");
-			log.info("zipNPM");
-			uploadZip(zipNPM, userId);
-			log.info("uploadZip");
-			updateWebProject(web, userId);
-			log.info("updateWebProject");
-			deleteFolder(tmpDirectory + SLASH_STRING + web.getIdentification());
-			log.info("deleteFolder");
-		} else {
-			log.info("npmResult.getStatus() KO ");
-			npmStatus = npmResult.getStatus();
-			npmInstall = false;
-		}
+
+		exService.submit(new Runnable() {
+
+			@Override
+			public void run() {
+				NPMCommandResult npmResult= webProjectNPMHelper.executeNPMInstall(path, web.getRunCommand());
+				
+				if (npmResult.getStatus() == NPMCommandResultStatus.OK) {
+					npmStatus = npmResult.getStatus();
+					npmInstall = false;
+					String route = tmpDirectory + SLASH_STRING + web.getIdentification() + SLASH_STRING
+							+ web.getTargetDirectory();
+					ZipUtil.pack(new File(route), new File(route + ".zip"));
+					File zipNPM = new File(route + ".zip");
+					uploadZip(zipNPM, userId);
+					updateWebProject(web, userId);
+					deleteFolder(tmpDirectory + SLASH_STRING + web.getIdentification());
+				}else {
+					npmStatus = npmResult.getStatus();
+					npmInstall = false;
+				}
+				
+			}
+		});
 
 	}
 
 	@Override
 	public String getCurrentStatus() {
-
+		
 		return this.webProjectNPMHelper.getCurrentStatus();
 	}
 
@@ -545,10 +543,8 @@ public class WebProjectServiceImpl implements WebProjectService {
 				.getName();
 		File file = null;
 		if (vertical_name.equals(DEFAULT_VERTICAL)) {
-			log.info("Main webproject root {}", rootFolder + userId + SLASH_STRING);
 			file = new File(rootFolder + userId + SLASH_STRING);
 		} else {
-			log.info("Main webproject root {}", rootFolder + vertical_name + SLASH_STRING + userId + SLASH_STRING);
 			file = new File(rootFolder + vertical_name + SLASH_STRING + userId + SLASH_STRING);
 		}
 		if (file.exists() && file.isDirectory()) {
@@ -558,17 +554,8 @@ public class WebProjectServiceImpl implements WebProjectService {
 			} else {
 				newFile = new File(rootFolder + vertical_name + SLASH_STRING + identification + SLASH_STRING);
 			}
-			log.info("New webproject root {}", newFile.getAbsolutePath());
 			if (!file.renameTo(newFile)) {
-				log.info("Unable to rename webproject to root {}", newFile.getAbsolutePath());
-				boolean created=newFile.mkdirs();
-				if(!created) {
-					log.info("Unable to create new webproject root {}", newFile.getAbsolutePath());
-				}
-				if(!file.renameTo(newFile)) {
-					log.info("Unable to create new webproject root after 2 attempts {}", newFile.getAbsolutePath());
-					throw new WebProjectServiceException("Cannot create web project folder " + identification);
-				}
+				throw new WebProjectServiceException("Cannot create web project folder " + identification);
 			}
 			if (log.isDebugEnabled()) {
 				log.debug("New folder for Web Project {} has been created", identification);
@@ -581,10 +568,8 @@ public class WebProjectServiceImpl implements WebProjectService {
 				.getName();
 		File file = null;
 		if (vertical_name.equals(DEFAULT_VERTICAL)) {
-			log.info("Main webproject root {}", rootFolder + userId + SLASH_STRING);
 			file = new File(rootFolder + userId + SLASH_STRING);
 		} else {
-			log.info("Main webproject root {}", rootFolder + vertical_name + SLASH_STRING + userId + SLASH_STRING);
 			file = new File(rootFolder + vertical_name + SLASH_STRING + userId + SLASH_STRING);
 		}
 		if (file.exists() && file.isDirectory()) {
@@ -596,17 +581,8 @@ public class WebProjectServiceImpl implements WebProjectService {
 				deleteFolder(rootFolder + vertical_name + SLASH_STRING + identification + SLASH_STRING);
 				newFile = new File(rootFolder + vertical_name + SLASH_STRING + identification + SLASH_STRING);
 			}
-			log.info("New webproject root {}", newFile.getAbsolutePath());
 			if (!file.renameTo(newFile)) {
-				log.info("Unable to rename webproject to root {}", newFile.getAbsolutePath());
-				boolean created=newFile.mkdirs();
-				if(!created) {
-					log.info("Unable to create new webproject root {}", newFile.getAbsolutePath());
-				}
-				if(!file.renameTo(newFile)) {
-					log.info("Unable to create new webproject root after 2 attempts {}", newFile.getAbsolutePath());
-					throw new WebProjectServiceException("Cannot create web project folder " + identification);
-				}
+				throw new WebProjectServiceException("Cannot create web project folder " + identification);
 			}
 			if (log.isDebugEnabled()) {
 				log.debug("Folder for Web Project {} has been created", identification);
@@ -769,7 +745,7 @@ public class WebProjectServiceImpl implements WebProjectService {
 	public boolean isNpmInstall() {
 		return npmInstall;
 	}
-
+	
 	@Override
 	public void setNpmInstall(boolean val) {
 		npmInstall = val;
@@ -779,61 +755,8 @@ public class WebProjectServiceImpl implements WebProjectService {
 	public NPMCommandResultStatus getNpmStatus() {
 		return npmStatus;
 	}
+	 
+	
+	
 
-	@Override
-	public void cloneGitAndDownload(final WebProjectDTO webProject, RestTemplate template, HttpEntity<?> httpEntity,
-			String url, String urlDelete, String userId) {
-
-		log.debug("cloneGitAndDownload");
-		exService.submit(new Runnable() {
-
-			@Override
-			public void run() {
-				try {
-					log.debug("cloneGitAndDownload run");
-					ResponseEntity<Resource> response = template.exchange(url, HttpMethod.POST, httpEntity,
-							Resource.class);
-					log.debug("cloneGitAndDownload run response:" + (response.getBody() != null));
-					Resource resource = response.getBody();
-					byte[] bytes = resource.getInputStream().readAllBytes();
-					File targetFile = new File(tmpDirectory + "/" + webProject.getIdentification() + "/"
-							+ webProject.getIdentification() + ".zip");
-					File directory = new File(tmpDirectory + "/" + webProject.getIdentification());
-					if (!directory.exists()) {
-						directory.mkdir();
-					}
-					OutputStream outStream = new FileOutputStream(targetFile);
-					outStream.write(bytes);
-					outStream.close();
-					// Delete tempfiles
-					template.exchange(urlDelete, HttpMethod.POST, httpEntity, String.class);
-					log.debug("cloneGitAndDownload zip generated");
-					if (webProject.getNpm()) {
-						log.debug("cloneGitAndDownload is Npm, unzipfile");
-						unzipFile(tmpDirectory + "/" + webProject.getIdentification() + "/",
-								webProject.getIdentification() + ".zip");
-						log.debug("cloneGitAndDownload is Npm, compileNPM");
-						compileNPM(webProject, userId);
-						targetFile.delete();
-						directory.delete();
-
-					} else {
-						log.debug("cloneGitAndDownload is not Npm, uploadZip");
-						uploadZip(targetFile, userId);
-						log.debug("cloneGitAndDownload is not Npm, updateWebProject");
-						updateWebProject(webProject, userId);
-						targetFile.delete();
-						directory.delete();
-					}
-				} catch (Exception e) {
-					if (webProject.getNpm()) {
-						if (isNpmInstall()) {
-							setNpmInstall(false);
-						}
-					}
-					log.error("Error:", e);
-				}
-			}
-		});
-	}
 }

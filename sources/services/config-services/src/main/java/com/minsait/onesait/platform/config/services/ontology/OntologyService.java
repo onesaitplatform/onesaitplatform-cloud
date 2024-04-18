@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -160,8 +160,6 @@ public interface OntologyService {
 
 	OntologyVirtual getOntologyVirtualByOntologyId(Ontology ontology);
 
-	List<OntologyVirtual> getOntologyVirtualByTableName(String tableName);
-
 	String getRtdbFromOntology(String ontologyIdentification);
 
 	void checkOntologySchema(String schema);
@@ -215,12 +213,11 @@ public interface OntologyService {
 	OntologyElastic getOntologyElasticByOntologyId(Ontology ontology);
 
 	String getElementsAssociated(String ontologyId);
-
-	List<OntologyPropertiesIndexConfDTO> getPropertiesOntology(Ontology ontology, List<String> indexList);
-
-	List<OntologyPropertiesIndexConfDTO> getPropertiesOntologyVirtual(Ontology ontology,
-			Map<String, List<String>> indexList);
-
+	
+	List<OntologyPropertiesIndexConfDTO> getPropertiesOntology(Ontology ontology , List<String> indexList);
+	
+	List<OntologyPropertiesIndexConfDTO> getPropertiesOntologyVirtual(Ontology ontology , Map<String,List<String>> indexList);
+	
 	List<OntologyListIndexMongoConfDTO> getIndexTrue(String getindexMongoDB);
 
 	OntologyPresto getOntologyPrestoByOntologyId(Ontology ontology);
@@ -240,6 +237,4 @@ public interface OntologyService {
 			throws IOException;
 
 	boolean isTimescaleVirtualOntology(Ontology o);
-
-	Ontology getOntologyByIdOrIdentification(String ontologyId, String sessionUserId);
 }

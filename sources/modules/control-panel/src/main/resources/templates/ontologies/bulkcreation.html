@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -112,21 +112,10 @@
 								<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
 							</div>
 						</div>
-						<div class="row main pageCreateHeader no-margin-left padding-left-10">
-						    <div class="col-md-3">
-						        <div class="caption" style="display: flex; align-items: center; margin-top: 8px">
-						            <label class="no-padding-bottom" th:text="'+'"></label>
-						            <label class="no-padding-bottom" style="font-weight: bold;" th:text="#{datasource.add.tables}"></label>
-						        </div>
-						    </div>
-						    <div class="col-md-2">
-						        <div class="input-icon">
-						            <i style="margin-left: -9px;" class="icon-search font-grey-mint"></i>
-						            <input id="searchBulkTableName" th:placeholder="#{gen.search}" name="name" style="margin-left: -20px;" class="form-control" type="text" maxlength="50" value="" disabled />
-						        </div>
-						    </div>
-						</div>
-								
+						<div class="row main pageCreateHeader no-margin-left padding-left-10 ">
+							<label class="no-padding-bottom" th:text=="'+'"></label>
+							<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{datasource.add.tables}"></label>
+						</div>					
 						<div class="row main borderPanel no-margin-left">
 							<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(30vh);">
 							<div class="form-group">
@@ -289,37 +278,14 @@
 		var noSelected = [[#{ontology.warning.select}]];
 		var noDatasource = [[#{ontology.warning.datasource}]];
 		var noSchema = [[#{ontology.warning.schema}]];
-		var dataTables;
 	
 		// REDIRECT URL
 		var navigateUrl = function(url){
 			window.location.href = url;
 		}
-   
-		var searchInputBulk = document.getElementById('searchBulkTableName');
-			searchInputBulk.addEventListener('input', function() {
-			var inputValue = this.value.toLowerCase();
-			
-		    for (var i = 0; i < dataTables.length; i++) {
-    			var tdToHide = document.getElementById(dataTables[i].TABLE_NAME+'_tableName');
-
-				if (tdToHide) {
-			        var trToHide = tdToHide.closest('tr'); 
-			        var tdText = tdToHide.textContent.toLowerCase();
-			        if (tdText.includes(inputValue)) {
-			            trToHide.style.display = '';
-			        } else {
-			            trToHide.style.display = 'none'; 
-			        }
-		    	}
-		    }
-		});
-
 		$("#databases").on("change", function (){
 			var csrf_header = $("meta[name='_csrf_header']").attr("content");
 			var csrf_value = $("meta[name='_csrf']").attr("content");
-			var inputSearchBulk = document.getElementById("searchBulkTableName");
-    		inputSearchBulk.value = "";
 		    if (!infojson.hasSchema) {
 	            getTables("/controlpanel/ontologies/getTableInformation/"+ $("#datasources").val() + "/db/" + $("#databases").val());
 			} else {
@@ -363,9 +329,6 @@
 		$("#datasources").on("change", function (datasource){
 			var csrf_header = $("meta[name='_csrf_header']").attr("content");
 			var csrf_value = $("meta[name='_csrf']").attr("content");
-			document.getElementById("searchBulkTableName").removeAttribute("disabled");
-			var inputSearchBulk = document.getElementById("searchBulkTableName");
-    		inputSearchBulk.value = "";
 			$("#databaseDiv").removeClass("hidden");
 			$("#tableTbody").empty();
 			$.ajax({
@@ -580,7 +543,6 @@
 						tables = [];
 					} else {
 						tables = JSON.parse(data);
-						dataTables = tables;
 						tables.sort((a, b) => a.TABLE_NAME.localeCompare(b.TABLE_NAME));
 					}
 	

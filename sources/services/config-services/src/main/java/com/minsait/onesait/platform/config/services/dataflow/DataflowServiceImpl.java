@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -400,21 +400,6 @@ public class DataflowServiceImpl implements DataflowService {
 		} else {
 			final Pipeline pipeline = pipelineRepository.findByIdentification(identification);
 			return checkPipeline(pipeline);
-		}
-	}
-	
-	@Override
-	public ResponseEntity<Object> getPipelineByIdentificationOrId(String identification, String userId) {
-		if (identification == null || identification.trim().isEmpty()) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-		} else {
-			final Pipeline pipeline = pipelineRepository.findByIdentificationOrId(identification);
-			if (hasUserViewPermission(pipeline, userId)) {
-				return ResponseEntity.ok(pipeline);
-			} else {
-				return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
-			}
-			
 		}
 	}
 

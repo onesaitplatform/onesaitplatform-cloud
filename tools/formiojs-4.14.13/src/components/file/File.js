@@ -57,7 +57,7 @@ export default class FileComponent extends Field {
   static get builderInfo() {
     return {
       title: 'File',
-      group: 'data',
+      group: 'premium',
       icon: 'file',
       documentation: '/userguide/forms/premium-components#file',
       weight: 100,
@@ -808,9 +808,6 @@ export default class FileComponent extends Field {
           download(file.url, file.originalName || file.name, file.type);
         }
         else {
-          if (file.storage === 'url') {
-            file.url = this.interpolate(this.component.downloadurl || '') + fileInfo.originalName;
-          }
           window.open(file.url, '_blank');
         }
       }

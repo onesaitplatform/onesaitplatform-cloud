@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -117,7 +117,7 @@
 									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/virtualdatasources/list} + '\');'" th:value="#{gen.cancelBtn}" ><span th:text="#{gen.cancelBtn}"> Cancel</span></button>
 
 									<!-- UPDATE -->
-									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.user.userId} OR ${app_user_access.name()} =='MANAGE'" id="updateBtn" type="button" class="btn btn-primary btn-primary-save" name="update" th:attr="onclick='javascript:navigateUrl(\'' + @{|/virtualdatasources/update/${datasource.id}/|} + '\');'" th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
+									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${datasource.user.userId}" id="updateBtn" type="button" class="btn btn-primary btn-primary-save" name="update" th:attr="onclick='javascript:navigateUrl(\'' + @{|/virtualdatasources/update/${datasource.id}/|} + '\');'" th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
 								</div>
 							</div>
 						</div>

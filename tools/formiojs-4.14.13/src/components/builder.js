@@ -43,7 +43,6 @@ import UrlForm from './url/Url.form';
 import WellForm from './well/Well.form';
 import HTMLtable from './htmltable/HTMLtable.form';
 import TablePag from './tablepag/TABLEPAG.form';
-import TablePagServer from './tablepagserver/TABLEPAGserver.form';
 
 Components.address.editForm = AddressForm;
 Components.button.editForm = ButtonForm;
@@ -89,5 +88,4 @@ Components.url.editForm = UrlForm;
 Components.well.editForm = WellForm;
 Components.htmltable.editForm = HTMLtable;
 Components.tablepag.editForm = TablePag;
-Components.tablepagserver.editForm = TablePagServer;
 export default Components;

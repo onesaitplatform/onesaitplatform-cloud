@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package com.minsait.onesait.platform.controlpanel.controller.opendata;
 
 import java.io.File;
-import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +23,6 @@ import java.util.UUID;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -185,9 +183,7 @@ public class OpenDataController {
 								+ "<div><strong>" + validationUrl + "</strong></div>" + "<br/>" + "<div>"
 								+ emailParts[3] + "</div>" + "</body></html>";
 
-						InputStream imgOnesaitPlatformIS = new ClassPathResource("static/img/onesaitplatform.jpeg").getInputStream();
-						File imgOnesaitPlatform = File.createTempFile("onesaitplatform", ".jpeg");
-						FileUtils.copyInputStreamToFile(imgOnesaitPlatformIS, imgOnesaitPlatform);
+						File imgOnesaitPlatform = new ClassPathResource("static/img/onesaitplatform.jpeg").getFile();
 
 						HtmlFileAttachment demoImg = new HtmlFileAttachment();
 						demoImg.setFile(imgOnesaitPlatform);

@@ -1,4 +1,4 @@
-FROM registry.onesaitplatform.com/onesaitplatform/dataflow:3.23.1
+FROM onesaitplatform/dataflow:3.23.1
 
 # Metadata
 LABEL module.maintainer="onesaitplatform@indra.es" \

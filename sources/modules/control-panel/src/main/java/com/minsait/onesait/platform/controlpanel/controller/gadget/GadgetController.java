@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,6 @@ import com.minsait.onesait.platform.config.model.GadgetMeasure;
 import com.minsait.onesait.platform.config.model.GadgetTemplate;
 import com.minsait.onesait.platform.config.model.Subcategory;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.repository.GadgetRepository;
 import com.minsait.onesait.platform.config.repository.GadgetTemplateRepository;
@@ -73,7 +72,6 @@ import com.minsait.onesait.platform.config.services.gadget.dto.OntologyDTO;
 import com.minsait.onesait.platform.config.services.gadgetfavorite.GadgetFavoriteService;
 import com.minsait.onesait.platform.config.services.gadgettemplate.GadgetTemplateService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
-import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.subcategory.SubcategoryService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
@@ -130,9 +128,6 @@ public class GadgetController {
 
 	@Autowired
 	private HttpSession httpSession;
-	
-	@Autowired
-	private OPResourceService resourceService;
 
 	private static final String IFRAME_STR = "iframe";
 	private static final String GADGET_STR = "gadget";
@@ -155,8 +150,6 @@ public class GadgetController {
 	private static final String APP_ID = "appId";
 	private static final String REDIRECT_PROJECT_SHOW = "redirect:/projects/update/";
 	private static final String GADGETTYPE = "gadgetType";
-	private static final String APP_USER_ACCESS = "app_user_access";
-	private static final String OWNER_USER = "owner";
 
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
@@ -370,14 +363,9 @@ public class GadgetController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/update/{gadgetId}", produces = "text/html")
 	public String createGadget(Model model, @PathVariable("gadgetId") String gadgetId) {
-		if (!gadgetService.hasUserPermission(gadgetId, utils.getUserId())) {
+		if (!gadgetService.hasUserPermission(gadgetId, utils.getUserId()))
 			return REDIRECT_ERROR;
-		}
-
 		Gadget gad = gadgetService.getGadgetById(utils.getUserId(), gadgetId);
-		ResourceAccessType resourceAccess = resourceService.getResourceAccess(utils.getUserId(),gadgetId);
-		model.addAttribute(APP_USER_ACCESS, resourceAccess);		
-		model.addAttribute(OWNER_USER, gad.getUser().getUserId());
 		if (gad.isInstance()) {
 			model.addAttribute(GADGET_TEMPLATE, gad.getType());
 			model.addAttribute(GADGET_STR, mapGadgetToGadgetDTO(gad));

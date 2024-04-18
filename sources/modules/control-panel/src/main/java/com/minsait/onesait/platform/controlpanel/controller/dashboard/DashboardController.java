@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,6 @@ import com.minsait.onesait.platform.config.model.Category;
 import com.minsait.onesait.platform.config.model.CategoryRelation;
 import com.minsait.onesait.platform.config.model.Dashboard;
 import com.minsait.onesait.platform.config.model.Dashboard.DashboardType;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.DashboardUserAccess;
 import com.minsait.onesait.platform.config.model.I18nResources;
 import com.minsait.onesait.platform.config.model.Subcategory;
@@ -71,7 +70,6 @@ import com.minsait.onesait.platform.config.repository.CategoryRepository;
 import com.minsait.onesait.platform.config.repository.DashboardConfRepository;
 import com.minsait.onesait.platform.config.repository.DashboardRepository;
 import com.minsait.onesait.platform.config.repository.I18nResourcesRepository;
-import com.minsait.onesait.platform.config.repository.ProjectResourceAccessRepository;
 import com.minsait.onesait.platform.config.repository.SubcategoryRepository;
 import com.minsait.onesait.platform.config.services.category.CategoryService;
 import com.minsait.onesait.platform.config.services.dashboard.DashboardService;
@@ -84,7 +82,6 @@ import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardTable
 import com.minsait.onesait.platform.config.services.exceptions.DashboardServiceException;
 import com.minsait.onesait.platform.config.services.internationalization.InternationalizationService;
 import com.minsait.onesait.platform.config.services.oauth.JWTService;
-import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.controller.dashboard.dto.EditorDTO;
 import com.minsait.onesait.platform.controlpanel.controller.dashboard.dto.UserDTO;
@@ -135,9 +132,6 @@ public class DashboardController {
 	@Autowired
 	private HttpSession httpSession;
 
-	@Autowired
-	private OPResourceService resourceService;
-	
 	@Autowired()
 	private ResourcesInUseService resourcesInUseService;
 
@@ -170,8 +164,6 @@ public class DashboardController {
 	private static final String EDITFULLIFRAME = "editfulliframe";
 	private static final String EDITFULL = "editfull";
 	private static final String APP_ID = "appId";
-	private static final String APP_USER_ACCESS = "app_user_access";
-	private static final String OWNER_USER = "owner";
 
 	@Value("${onesaitplatform.urls.iotbroker}")
 	private String IOTRBROKERSERVER;
@@ -539,12 +531,8 @@ public class DashboardController {
 					dashBDTO.setSubcategory(subcategory.getIdentification());
 				}
 			}
-			
-			ResourceAccessType resourceAccess = resourceService.getResourceAccess(utils.getUserId(),dashboard.getId());
 
 			model.addAttribute(DASHBOARD_STR, dashBDTO);
-			model.addAttribute(OWNER_USER, dashboard.getUser().getUserId());
-			model.addAttribute(APP_USER_ACCESS, resourceAccess);
 
 			String currentUser = utils.getUserId();
 

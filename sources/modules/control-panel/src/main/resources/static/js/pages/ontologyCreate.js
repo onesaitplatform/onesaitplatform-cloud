@@ -273,14 +273,13 @@ var OntologyCreateController = function() {
 					var srcAtt = srcAttPath.split(".")[ srcAttPath.split(".").length - 1]
 					var target = r["target"];
 					var validate = r["validate"];
-					var relationType = r["relationType"];
 					var dstOnt = target.split(schemaUrl)[1].split("#")[0];
 					var dstAttPath = target.split(schemaUrl)[1].split("#")[1];
 					if(dstAttPath.endsWith(".items"))
 					dstAttPath = dstAttPath.replace(/.items/g, '');
 
 					var dstAtt = dstAttPath.split(".")[ dstAttPath.split(".").length - 1]
-					referencesArr.push({ "srcAtt" : srcAtt, "dstOntology" : dstOnt, "dstAtt": dstAtt, "srcAttPath" : srcAttPath, "dstAttPath" : dstAttPath, "validate": validate, "relationType": relationType});
+					referencesArr.push({ "srcAtt" : srcAtt, "dstOntology" : dstOnt, "dstAtt": dstAtt, "srcAttPath" : srcAttPath, "dstAttPath" : dstAttPath, "validate": validate});
 					referencesIds.push(srcAtt + dstOnt + dstAtt);
 				});
 				mountTableReferences();
@@ -298,8 +297,7 @@ var OntologyCreateController = function() {
 				var self = r.srcAttPath;
 				var target = schemaUrl + r.dstOntology + '#' + r.dstAttPath;
 				var validate = r.validate;
-				let relationType = r.relationType;
-				refs.push({"self":self, "target": target, "validate":validate, "relationType": relationType});
+				refs.push({"self":self, "target": target, "validate":validate});
 			});
 			schema["_references"] = refs;
 		}
@@ -362,9 +360,9 @@ var OntologyCreateController = function() {
 	}
 		
 	// INSERT RELATION
-	var insertRelation = function (srcAtt, dstOnt, dstAtt, srcAttPath, dstAttPath, validate, relationType){
+	var insertRelation = function (srcAtt, dstOnt, dstAtt, srcAttPath, dstAttPath, validate){
 		if(referencesIds.indexOf(srcAtt + dstOnt + dstAtt) == -1){
-			var relation = { "srcAtt" : srcAtt, "dstOntology" : dstOnt, "dstAtt": dstAtt, "srcAttPath" : srcAttPath, "dstAttPath" : dstAttPath, "validate" : validate, "relationType": relationType};
+			var relation = { "srcAtt" : srcAtt, "dstOntology" : dstOnt, "dstAtt": dstAtt, "srcAttPath" : srcAttPath, "dstAttPath" : dstAttPath, "validate" : validate};
 			referencesArr.push(relation);
 			referencesIds.push(srcAtt + dstOnt + dstAtt);
 			mountTableReferences();
@@ -1415,7 +1413,6 @@ var OntologyCreateController = function() {
 	var initTemplateElements = function(){
 		logControl ? console.log('initTemplateElements() ->  resetForm,  currentLanguage: ' + currentLanguage) : '';
 		
-		$('#linked-data-modal').on("hide.bs.modal", function() {updateSchemaProperties()})
 		// tagsinput validate fix when handleValidation()
 		$('#metainf').on('itemAdded', function(event) {
 			if ($(this).val() !== ''){ $('#metainferror').addClass('hide');}
@@ -3210,9 +3207,8 @@ var OntologyCreateController = function() {
 			var dstProperty = $('#target-property :selected').text();
 			var dstPropertyPath = $('#target-property').val();
 			var validate = $('#validate-property').val();
-			var relationType = $('#relation-type').val();
 			if(dstOntology != "" && dstProperty != "")
-				insertRelation(srcProperty, dstOntology, dstProperty, srcPropertyPath, dstPropertyPath, validate, relationType);
+				insertRelation(srcProperty, dstOntology, dstProperty, srcPropertyPath, dstPropertyPath, validate);
 			// TODO: else alert red selections
 			
 		},

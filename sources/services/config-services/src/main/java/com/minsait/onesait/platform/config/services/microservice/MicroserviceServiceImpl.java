@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,11 +76,6 @@ public class MicroserviceServiceImpl implements MicroserviceService {
 	@Override
 	public Microservice getById(String id) {
 		return microserviceRepository.findById(id).orElse(null);
-	}
-	
-	@Override
-	public Microservice getByIdentificationOrId(String identification) {
-		return microserviceRepository.findByIdentificationOrId(identification);
 	}
 
 	@Override

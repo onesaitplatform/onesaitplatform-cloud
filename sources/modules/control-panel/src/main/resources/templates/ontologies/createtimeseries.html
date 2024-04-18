@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -353,7 +353,7 @@
 										<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
 									</div>
 								</div>
-															
+								
 								<div id="tagCreationForm">
 									<div class="row main pageCreateHeader no-margin-left padding-left-10">
 										<label class="no-padding-bottom" th:text=="'+'"></label>
@@ -401,54 +401,7 @@
 										</div>
 									</div>
 								</div>
-								<div id="informationFieldsCreationForm" class="margin-top-20">
-									<div class="row main pageCreateHeader no-margin-left padding-left-10">
-										<label class="no-padding-bottom" th:text=="'+'"></label>
-										<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{ontology.timeseries.optional.fields}"></label>
-									</div>
-									<div class="row main borderPanel no-margin-left">
-										<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(100vh / 2px);">
-											<div class="form-group">
-												<label class="control-label" th:text="#{ontology.timeseries.name}">Nombre</label><span class="required"> *</span>
-												<input id="optionalFieldName" type="text" name="optionalFieldName" maxlength="50" class="form-control " th:placeholder="#{ontology.timeseries.name}"/>
-											</div>
-											<div class="form-group">
-												<label class="control-label" th:text="#{ontology.timeseries.type}">Tipo</label><span class="required"> *</span>
-												<select id="optionalFieldType" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;">
-													<option value="" th:text="#{ontology.timeseries.type.combo}" selected="selected" disabled="disabled" style="display:none;"> Select Type...</option>	
-													<option th:each="type :${types}" th:value="${type}" th:id="${type}" th:text="${type}" ></option>													
-												</select>	
-											</div>
-											<div class="form-group pull-right">															
-												<button type="button" class="btn btn-primary btn-primary-save" id="button3" onclick="addOpotionalFieldRow()"><span th:text="#{ontology.timeseries.add.optional.field}">Add</span></button>															
-											</div>
-											<input type="hidden" id="optionalFieldsNames" th:field="*{optionalFieldNames}" />
-											<input type="hidden" id="optionalFieldTypes" th:field="*{optionalFieldTypes}" />									
-										</div>
-										<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(100vh / 2px);">
-											<div class="form-group" style="margin-bottom: 0px">
-												<div id="template_schema" class="margin-bottom-20 ">
-													<table class="table no-margin-bottom" id="optional_fields_properties" data-loaded="false">
-														<thead class="table-header-background">
-															<tr class="cabecera-tabla" role="row">
-																<th class="titulo-columnas" th:text="#{ontology.timeseries.name}">Name</th>
-																<th class="titulo-columnas" th:text="#{ontology.timeseries.type}">Type</th>
-																<th class="titulo-columnas" style="width:50px"></th>
-															</tr>
-														</thead>
-														<tbody style="border-bottom: 1px solid #ddd;">
-															<tr class="tagRow" th:each="tsprop :${ontologyTSDTO.timeSeriesProperties}" th:if="${#strings.endsWith(tsprop.propertyType,'FIELD_OPTIONAL')}"	>
-													 			<td	th:text="${tsprop.propertyName}" >A</td> 
-																<td	th:text="${tsprop.propertyDataType}" >STRING</td> 
-																<td class="text-center"><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="removeTagRow(this)"><i class="icon-delete"></i><!--<span th:text="#{gen.deleteBtn}"> Delete </span>--></button></td>
-															</tr>
-														</tbody>
-													</table>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
+								
 								<div id="fieldCreationForm" class="margin-top-20">
 									<div class="row main pageCreateHeader no-margin-left padding-left-10 " id="platform-users-header">
 										<label class="no-padding-bottom" th:text=="'+'"></label>
@@ -1625,10 +1578,10 @@
 			//Hide timescale conf
 			document.getElementById("MongoDBDesc").style.display = '';
 			document.getElementById("TimescaleDBDesc").style.display = 'none';
-			document.getElementById("informationFieldsCreationForm").style.display = '';
 			$('.timescaleSignalProps').hide();
 			$("#auxdataDiv").show();
 			$('#tab-advanced-options').hide()
+			
 		} else {	
 			//Add ARRAY data types if not exists
 			$("#auxdataDiv").hide();
@@ -1684,7 +1637,6 @@
 			}
 			document.getElementById("MongoDBDesc").style.display = 'none';
 			document.getElementById("TimescaleDBDesc").style.display = '';
-			document.getElementById("informationFieldsCreationForm").style.display = 'none';
 			$('.timescaleSignalProps').show(); // Shows
 		}
 	}
@@ -1722,36 +1674,6 @@
 			
 			toastr.success(messagesForms.operations.genOpSuccess,'');
 		} else {
-			toastr.error(messagesForms.operations.genOpError,[[#{ontology.valid.duplicates}]]);
-			return false;
-		}
-	}
-	
-	var addOpotionalFieldRow = function() {
-		var NameSelected = $("#optionalFieldName").val();
-		var typeSelected = $("#optionalFieldType option:selected").val();
-		if (NameSelected === "" || typeSelected=== "") {
-			toastr.error(messagesForms.operations.genOpError,[[#{apimanager.customsql.error.fields}]]);
-			return false;
-		}
-		if(!tagsAndFieldsList.includes(NameSelected))
-		{
-			tagsAndFieldsList.push(NameSelected);
-			$('#optional_fields_properties > tbody')
-					.append(
-							'<tr class="optionalFieldRow"><td>'
-									+ NameSelected
-									+ '</td><td >'
-									+ typeSelected
-									+ '</td><td class="text-center"><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="removeTagRow(this)"><i class="icon-delete"></i></button></td></tr>');
-			$('#optionalFieldName').val( '' );
-			$('#optionalFieldName').selectpicker('deselectAll').selectpicker('refresh');
-			$('#optionalFieldType').val( '' );
-			$('#optionalFieldType').selectpicker('deselectAll').selectpicker('refresh');
-			
-			toastr.success(messagesForms.operations.genOpSuccess,'');
-		}
-		else{
 			toastr.error(messagesForms.operations.genOpError,[[#{ontology.valid.duplicates}]]);
 			return false;
 		}
@@ -2157,31 +2079,7 @@
 		$('#field_types').val(ftypes);
 		$('#field_aggregations').val(faggrfunctions);
 		$('#field_push_signals').val(fpushsignals);
-
-		//optional fields
-		var optionalfieldinfo = document.getElementsByClassName('optionalFieldRow');
-		var ofnames=[];
-		var oftypes=[];
-		var tds=[];
-		for(i=0;optionalfieldinfo.length>i;i++)
-		{
-			tds=[];
-			for(j=0;optionalfieldinfo[i].childNodes.length>j;j++)
-			{
-				if(optionalfieldinfo[i].childNodes[j].localName == "td")
-				{
-					tds.push(optionalfieldinfo[i].childNodes[j].innerText);
-				}
-				
-			}
-			ofnames.push(tds[0]);
-			oftypes.push(tds[1]);
-		}
-		$('#optionalFieldsNames').val(ofnames);
-		$('#optionalFieldTypes').val(oftypes);
-		//end optional fields
-		if(document.getElementById('enginetimeseries').value=="MONGO")
-		{
+		if (document.getElementById('enginetimeseries').value=="MONGO") {
 			var windowinfo = document.getElementsByClassName('windowRow');
 			var windows=[];
 			var freqs=[];
@@ -2489,10 +2387,8 @@
     			wizardStep = 2;
 			
 		} else if (wizardStep == 2){
-			if(document.getElementById('enginetimeseries').value=="TIMESCALE") {
-				$('#tab-advanced-options a').removeClass('disabled');
-				$('#tab-advanced-options a').click();
-			}
+			$('#tab-advanced-options a').removeClass('disabled');
+			$('#tab-advanced-options a').click();
 			$('#continueBtn').addClass('hide');
 			$('#createWizardBtn').removeClass('hide');
 			wizardStep = 3;	

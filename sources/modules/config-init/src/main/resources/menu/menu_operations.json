@@ -98,15 +98,6 @@
 				},
 				{
 					"title": {
-						"EN": "User Tokens Management",
-						"ES": "Gestión de Tokens de Usuario",
-						"FR": "Gestion des jetons utilisateur"
-					},
-					"icon": "",
-					"url": "/controlpanel/apimanager/token/list?access=MENU"
-				},
-				{
-					"title": {
 						"EN": "REST APIs Planning",
 						"ES": "Planificación de APIs REST",
 						"FR": "Planificateur de APIs REST"

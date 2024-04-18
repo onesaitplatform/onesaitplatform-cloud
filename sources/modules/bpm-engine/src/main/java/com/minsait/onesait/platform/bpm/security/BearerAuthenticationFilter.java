@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package com.minsait.onesait.platform.bpm.security;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -27,7 +26,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.kafka.common.Uuid;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -82,7 +80,6 @@ public class BearerAuthenticationFilter implements Filter {
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
-		
 		final HttpServletResponse resp = (HttpServletResponse) response;
 		if (((HttpServletRequest) request).getHeader(HttpHeaders.AUTHORIZATION) != null) {
 			final Authentication auth = tokenExtractor.extract((HttpServletRequest) request);
@@ -169,8 +166,7 @@ public class BearerAuthenticationFilter implements Filter {
 
 	private void clearContexts() {
 		clearMultitenantContext();
-//		SecurityContextHolder.getContext().setAuthentication(null);
-		SecurityContextHolder.clearContext();
+		SecurityContextHolder.getContext().setAuthentication(null);
 	}
 
 	private void setMultitenantContext(Authentication auth) {

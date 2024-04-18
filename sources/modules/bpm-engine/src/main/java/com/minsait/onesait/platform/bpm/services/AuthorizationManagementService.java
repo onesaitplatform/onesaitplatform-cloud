@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  */
 package com.minsait.onesait.platform.bpm.services;
 
-import java.util.List;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.minsait.onesait.platform.config.components.AuthorizationLevel;
 
@@ -27,14 +25,6 @@ public interface AuthorizationManagementService {
 
 	public void createGroup(String groupName, AuthorizationLevel authorizationLevel);
 
-	public List<String> getTenants(String userId);
-
-	public List<String> getAllTenants();
-
-	public void authorizeUserOnTenat(String userId, String tenantId);
-
 	public JsonNode getConfigMap();
-
-	public List<String> getUsersInTenant(String tenantId);
 
 }

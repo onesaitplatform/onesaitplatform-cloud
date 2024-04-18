@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -61,14 +60,12 @@ import com.minsait.onesait.platform.config.dto.report.ReportInfoMSTemplateDTO;
 import com.minsait.onesait.platform.config.dto.report.ReportParameter;
 import com.minsait.onesait.platform.config.dto.report.ReportType;
 import com.minsait.onesait.platform.config.dto.report.ReportTypeSwagger;
-import com.minsait.onesait.platform.config.model.BinaryFile;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.Report;
 import com.minsait.onesait.platform.config.model.Report.ReportExtension;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.reports.ReportService;
 import com.minsait.onesait.platform.config.services.templates.poi.PoiTemplatesUtil;
-import com.minsait.onesait.platform.controlpanel.rest.report.model.Report2DTO;
 import com.minsait.onesait.platform.controlpanel.rest.report.model.ReportDTO;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
@@ -78,6 +75,7 @@ import com.minsait.onesait.platform.resources.service.IntegrationResourcesServic
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
 import fr.opensagres.xdocreport.converter.XDocConverterException;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -212,27 +210,6 @@ public class ReportRestController {
 			dto.setCreatedAt(report.getCreatedAt());
 			dto.setDescription(report.getDescription());
 			dto.setName(report.getIdentification());
-			listDTO.add(dto);
-		}
-
-		return new ResponseEntity<>(listDTO, HttpStatus.OK);
-	}
-
-	@Operation(summary = "Get all reports with ids")
-	@ApiResponse(content = @Content(schema = @Schema(implementation = ReportDTO[].class)), responseCode = "200", description = "OK")
-	@GetMapping("/withId")
-	public ResponseEntity<List<Report2DTO>> getReportsWithIds() {
-
-		final List<Report> reports = utils.isAdministrator() ? reportService.findAllActiveReports()
-				: reportService.findAllActiveReportsByUserId(utils.getUserId());
-
-		final List<Report2DTO> listDTO = new ArrayList<>();
-		for (final Report report : reports) {
-			final Report2DTO dto = new Report2DTO();
-			dto.setCreatedAt(report.getCreatedAt());
-			dto.setDescription(report.getDescription());
-			dto.setName(report.getIdentification());
-			dto.setId(report.getId());
 			listDTO.add(dto);
 		}
 
@@ -446,34 +423,36 @@ public class ReportRestController {
 				.header(HttpHeaders.SET_COOKIE, "fileDownload=true").body(byteArray);
 
 	}
-
+	
 	@Operation(summary = "Get json from MS Word Template")
 	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "OK"),
 			@ApiResponse(responseCode = "404", description = "Not found") })
 	@PostMapping("/getJsonFromMsTemplate/{id}")
-	public ResponseEntity<?> getJsonFromTemplate(@PathVariable("id") String id) throws IOException, OpenXML4JException {
-
+	public ResponseEntity<?> getJsonFromTemplate(@PathVariable("id") String id)
+			throws IOException, OpenXML4JException {
+				
 		Report report = reportService.findById(id);
 		if (report == null) {
 			report = reportService.findByIdentificationOrId(id);
 		}
 		List<String> parameters = poiTemplatesUtil.extractFromDocx(new ByteArrayInputStream(report.getFile()));
-
+		
 		ReportInfoMSTemplateDTO reportInfoMSTemplateDTO = new ReportInfoMSTemplateDTO();
 
 		reportInfoMSTemplateDTO.setJsonParameters(
 				poiTemplatesUtil.generateJSONObject(parameters, reportInfoMSTemplateDTO.getFormType()));
-
+		
 		return new ResponseEntity(reportInfoMSTemplateDTO.getJsonParameters(), HttpStatus.OK);
 	}
-
+	
 	@Operation(summary = "Download report from MS Word Template")
 	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "OK"),
 			@ApiResponse(responseCode = "404", description = "Not found") })
 	@PostMapping("/downloadMSWordTemplate/{id}")
 	public ResponseEntity<?> generateAndDownloadReport(@PathVariable("id") String id,
 			@Parameter(description = "Parameters") @RequestBody(required = false) String params,
-			@RequestParam("extension") ReportTypeSwagger extension) throws IOException {
+			@RequestParam("extension") ReportTypeSwagger extension)
+			throws IOException {
 		Report report = reportService.findById(id);
 		if (report == null) {
 			report = reportService.findByIdentificationOrId(id);
@@ -513,42 +492,10 @@ public class ReportRestController {
 
 			return response;
 
-		} else {
+		}else {
 			return new ResponseEntity<>("Extension is not valid", HttpStatus.BAD_REQUEST);
 		}
-	}
 
-	@Operation(summary = "Clone report")
-	@ApiResponse(responseCode = "201", description = "CLONED")
-	@PostMapping("/clone")
-	@Transactional
-	public ResponseEntity<Object> cloneReport(@RequestParam(required = true, value = "id") String id,
-			@RequestParam(required = true, value = "newIdentification") String newIdentification) {
-
-		if (!newIdentification.matches(AppWebUtils.IDENTIFICATION_PATERN)) {
-			return new ResponseEntity<>(" Error: Use alphanumeric characters and '-', '_'", HttpStatus.BAD_REQUEST);
-		}
-		final Report report = reportService.findByIdentificationOrId(id);
-
-		final Report reportNew = reportService.findByIdentificationOrId(newIdentification);
-		if (reportNew != null) {
-			return new ResponseEntity<>(" Error: A report already exists with that identifier", HttpStatus.CONFLICT);
-		}
-		Report newReport = new Report();
-		newReport.setActive(report.getActive());
-		newReport.setDataSourceUrl(report.getDataSourceUrl());
-		newReport.setDescription(report.getDescription());
-		newReport.setExtension(report.getExtension());
-		newReport.setFile(report.getFile());
-		newReport.setIdentification(newIdentification);
-		newReport.setIsPublic(report.getIsPublic());
-		newReport.setResources(new HashSet<BinaryFile>(report.getResources()));
-		final User user = new User();
-		user.setUserId(utils.getUserId());
-		newReport.setUser(user);
-
-		reportService.saveOrUpdate(newReport);
-
-		return new ResponseEntity<>(HttpStatus.CREATED);
+	
 	}
 }

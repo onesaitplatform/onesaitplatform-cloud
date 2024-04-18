@@ -1116,7 +1116,7 @@ export default class Webform extends NestedDataComponent {
     }
     if (message) {
       const attrs = {
-        class: (options && options.classes) || `d-none alert alert-${type}`,
+        class: (options && options.classes) || `alert alert-${type}`,
         id: `error-list-${this.id}`,
       };
 
@@ -1301,14 +1301,10 @@ export default class Webform extends NestedDataComponent {
     if (this.draftEnabled && this.triggerSaveDraft?.cancel) {
       this.triggerSaveDraft.cancel();
     }
-    // filter result
-    if (window.submissionfieldslist) {
-      submission.data=_.cloneDeep(_.pick(submission.data, Object.values(_.mapValues(window.submissionfieldslist,'key'))));
-      delete window.submissionfieldslist;
-    }
     this.emit('submit', submission, saved);
-    const submitDone =`submitDone${window.buttonclicked?window.buttonclicked:''}`;
-    this.emit(submitDone, submission);
+    if (saved) {
+      this.emit('submitDone', submission);
+    }
     return submission;
   }
 
@@ -1627,11 +1623,7 @@ export default class Webform extends NestedDataComponent {
       method: 'POST',
       headers: {}
     };
-    // filter result
-    if (window.submissionfieldslist) {
-      submission.data=_.cloneDeep(_.pick(submission.data, Object.values(_.mapValues(window.submissionfieldslist,'key'))));
-      delete window.submissionfieldslist;
-    }
+
     if (headers && headers.length > 0) {
       headers.map((e) => {
         if (e.header !== '' && e.value !== '') {
@@ -1644,18 +1636,14 @@ export default class Webform extends NestedDataComponent {
           this.emit('requestDone');
           this.setAlert('success', '<p> Success </p>');
         }).catch((e) => {
-          /* if (e && typeof e !== 'string' && !(e instanceof String) ) {
-            this.showErrors(`${e.statusText ? e.statusText : ''} ${e.status ? e.status : e}`);
-          } */
+          this.showErrors(`${e.statusText ? e.statusText : ''} ${e.status ? e.status : e}`);
           this.emit('error',`${e.statusText ? e.statusText : ''} ${e.status ? e.status : e}`);
-          this.emit('submitError',`${e.statusText ? e.statusText : ''} ${e.status ? e.status : e}`);
           console.error(`${e.statusText ? e.statusText : ''} ${e.status ? e.status : e}`);
           this.setAlert('danger', `<p> ${e.statusText ? e.statusText : ''} ${e.status ? e.status : e} </p>`);
         });
     }
     else {
       this.emit('error', 'You should add a URL to this button.');
-      this.emit('submitError', 'You should add a URL to this button.');
       this.setAlert('warning', 'You should add a URL to this button.');
       return console.warn('You should add a URL to this button.');
     }

@@ -308,7 +308,6 @@ vm.vueconfig = {
             const light = { background: 'white', color: '#333' }
             const dark = { background: '#100c2a', color: 'white' }
             const vintage = { background: '#fef8ef', color: '#333' }
-            const none = { background: null, color: null }
 
             // ELEMENTS: TOOGLE, GADGET (OPTIONAL HEADER), CONTAINER, GRIDSTER-ITEM
             var gadget = this.$el
@@ -343,14 +342,6 @@ vm.vueconfig = {
                     if (containerHeader) { containerHeader.style.backgroundColor = light.background; containerTitle.style.color = light.color }
                     vuetemplate.style.backgroundColor = light.background
                     gridster.style.backgroundColor = light.background
-                    break;
-                case "none":
-                    gadget.style.backgroundColor = none.background
-                    // toolbar.style.color = none.color
-                     container.style.backgroundColor = none.background
-                    if (containerHeader) { containerHeader.style.backgroundColor = none.background; containerTitle.style.color = none.color }
-                    vuetemplate.style.backgroundColor = none.background
-                    gridster.style.backgroundColor = none.background
                     break;
                 default:
                     console.log('This theme is not available')

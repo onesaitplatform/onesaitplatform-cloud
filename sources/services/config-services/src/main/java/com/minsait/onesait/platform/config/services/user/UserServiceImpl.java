@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -276,16 +276,6 @@ public class UserServiceImpl implements UserService {
 		return usersDTO;
 
 	}
-	
-	@Override
-	public List<UserAmplified> getAllUsersActiveByFullNameLike(String fullNameLike) {
-
-		final List<UserAmplified> usersDTO = userRepository.findByFullNameLike(fullNameLike).stream()
-				.map(UserAmplified::new).collect(Collectors.toList());
-
-		addTenantInfo(usersDTO, getActiveMasterUsersForCurrentVertical(true));
-		return usersDTO;
-	}
 
 	@Override
 	public List<User> getDifferentUsersWithRole(User user, Type roleType) {
@@ -543,10 +533,10 @@ public class UserServiceImpl implements UserService {
 		List<User> users;
 
 		if (active != null) {
-			users = userRepository.findByUserIdAndFullNameAndEmailAndRoleTypeAndActive(userId, fullName, email, roleType,
+			users = userRepository.findByUserIdOrFullNameOrEmailOrRoleTypeOrActive(userId, fullName, email, roleType,
 					active);
 		} else {
-			users = userRepository.findByUserIdAndFullNameAndEmailAndRoleType(userId, fullName, email, roleType);
+			users = userRepository.findByUserIdOrFullNameOrEmailOrRoleType(userId, fullName, email, roleType);
 		}
 		return users;
 	}

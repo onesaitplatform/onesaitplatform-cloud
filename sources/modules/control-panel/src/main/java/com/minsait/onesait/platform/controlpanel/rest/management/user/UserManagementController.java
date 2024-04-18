@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import static com.minsait.onesait.platform.controlpanel.rest.management.user.Use
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,7 +30,6 @@ import java.util.UUID;
 
 import javax.validation.Valid;
 
-import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -225,30 +223,10 @@ public class UserManagementController {
 	@Operation(summary = "Get user by id")
 	@GetMapping("/username/like/{filter}")
 	@ApiResponses(@ApiResponse(content = @Content(schema = @Schema(implementation = UserAmplified.class)), responseCode = "200", description = "OK"))
-	public ResponseEntity<List<UserAmplified>> getByUserIdLike(@Parameter(description = "Filter search", example = "dev", required = true) @PathVariable("filter") String filter,
-															@RequestParam(value = "active", required = false, defaultValue = "true") boolean active) {
-
-		if (utils.isAdministrator() || utils.isDeveloper()) {
-			if (filter == null || filter.equals("")) {
-				filter = "%%";
-			} else {
-				filter = "%" + filter + "%";
-			}
-			final List<UserAmplified> users = userService.getAllUsersByCriteriaList(filter, "%%", "%%", "%%", active);
-			return ResponseEntity.ok().body(users);
-		} else {
-			log.warn("Forbidden access");
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		}
-	}
-	
-	@Operation(summary = "Get user by fullname like")
-	@GetMapping("/fullname/like/{filter}")
-	@ApiResponses(@ApiResponse(content = @Content(schema = @Schema(implementation = UserAmplified.class)), responseCode = "200", description = "OK"))
-	public ResponseEntity<List<UserAmplified>> getByFullNameLike(
-			@Parameter(description = "Filter search", example = "Smith", required = true) @PathVariable("filter") String filter) {
+	public ResponseEntity<List<UserAmplified>> getByUserIdLike(
+			@Parameter(description = "Filter search", example = "dev", required = true) @PathVariable("filter") String filter) {
 		if (utils.isAdministrator()) {
-			final List<UserAmplified> users = userService.getAllUsersActiveByFullNameLike(filter);
+			final List<UserAmplified> users = userService.getAllUsersActiveByUsernameLike(filter);
 			return ResponseEntity.ok().body(users);
 		} else {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -716,9 +694,7 @@ public class UserManagementController {
 			final HtmlFileAttachment demoImg = new HtmlFileAttachment();
 
 			try {
-				InputStream imgOnesaitPlatformIS = new ClassPathResource("static/img/onesaitplatform.jpeg").getInputStream();
-				File imgOnesaitPlatform = File.createTempFile("onesaitplatform", ".jpeg");
-				FileUtils.copyInputStreamToFile(imgOnesaitPlatformIS, imgOnesaitPlatform);
+				final File imgOnesaitPlatform = new ClassPathResource("static/img/onesaitplatform.jpeg").getFile();
 
 				demoImg.setFile(imgOnesaitPlatform);
 				demoImg.setFileKey("onesaitplatformimg");

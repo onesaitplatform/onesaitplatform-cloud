@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -55,22 +54,16 @@ public class TagController {
 
 	@GetMapping
 	public String listTags(Model model) {
-		model.addAttribute("tags", tagService.getAllTags());	
+		if (utils.isAdministrator()){
+			model.addAttribute("tags", tagService.getAllTags());	
+		}else {
+			model.addAttribute("tags", new ArrayList<>());
+		}		
 		model.addAttribute("tagNames", tagService.getTagNames());
 		model.addAttribute("resourceTypes", Resources.values());
 		model.addAttribute("resourcesMatch", new ArrayList<>());
 		model.addAttribute("urlsMap", getUrlsMap());
 		return "tags/create";
-	}
-	
-	@PostMapping("/name")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
-	public String createTag(Model model, @RequestParam("name") String name) {
-		tagService.createTag(name);
-		model.addAttribute("tagNames", tagService.getTagNames());
-		model.addAttribute("tags", tagService.getAllTags());
-		model.addAttribute("resourceTypes", Resources.values());
-		return "tags/fragments/resources-tab";
 	}
 
 	@GetMapping("resources")
@@ -82,19 +75,8 @@ public class TagController {
 		model.addAttribute("resourcesMatch", getAllResourcesDTO2(identification, resource));
 		return "tags/fragments/resources-modal";
 	}
-	
-	@DeleteMapping
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
-	public String deleteTag(Model model, @RequestParam("name") String name) {
-		tagService.deleteTag(name);
-		model.addAttribute("tagNames", tagService.getTagNames());
-		model.addAttribute("tags", tagService.getAllTags());
-		model.addAttribute("resourceTypes", Resources.values());
-		return "tags/fragments/resources-tab";
-	}
 
 	@PostMapping
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
 	public String createTags(Model model, @RequestBody List<TagCreate> tags) {
 		tagService.createTags(tags);
 		model.addAttribute("tagNames", tagService.getTagNames());
@@ -102,11 +84,28 @@ public class TagController {
 		model.addAttribute("resourceTypes", Resources.values());
 		return "tags/fragments/resources-tab";
 	}
+
+	@PostMapping("/name")
+	public String createTagName(Model model, @RequestParam("name") String name) {
+		tagService.createTag(name);
+		model.addAttribute("tagNames", tagService.getTagNames());
+		model.addAttribute("tags", tagService.getAllTags());
+		model.addAttribute("resourceTypes", Resources.values());
+		return "tags/fragments/resources-tab";
+	}
+
+	@DeleteMapping
+	public String deleteTags(Model model, @RequestParam("name") String name) {
+		tagService.deleteTag(name);
+		model.addAttribute("tagNames", tagService.getTagNames());
+		model.addAttribute("tags", tagService.getAllTags());
+		model.addAttribute("resourceTypes", Resources.values());
+		return "tags/fragments/resources-tab";
+	}
 	
 	@DeleteMapping("/tagId")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
-	public String deleteResourceByResourceIdAndTagId(Model model, @RequestParam("resourceId") String resourceId, @RequestParam("tagId") String tagId) {
-		tagService.deleteResourceByResourceIdAndTagId(resourceId, tagId);
+	public String deleteByResourceIdAndTagId(Model model, @RequestParam("resourceId") String resourceId, @RequestParam("tagId") String tagId) {
+		tagService.deleteByResourceIdAndTagId(resourceId, tagId);
 		model.addAttribute("tagNames", tagService.getTagNames());
 		model.addAttribute("tags", tagService.getAllTags());
 		model.addAttribute("resourceTypes", Resources.values());
@@ -115,9 +114,8 @@ public class TagController {
 	}
 	
 	@DeleteMapping("/unlink")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	public String deleteByTagId(Model model, @RequestParam("tagId") String tagId) {
-		tagService.deleteResourcesByTagId(tagId);
+		tagService.deleteByTagId(tagId);
 		model.addAttribute("tagNames", tagService.getTagNames());
 		model.addAttribute("tags", tagService.getAllTags());
 		model.addAttribute("resourceTypes", Resources.values());
@@ -173,8 +171,6 @@ public class TagController {
 		urls.put(Resources.CONFIGURATION.name(), "configurations");
 		urls.put(Resources.GADGETTEMPLATE.name(), "gadgettemplates");
 		urls.put(Resources.REPORT.name(), "reports");
-		urls.put(Resources.FORM.name(), "forms");
-		urls.put(Resources.MICROSERVICE.name(), "microservices");
 		return urls;
 	}
 }

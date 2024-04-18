@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -105,18 +105,23 @@
 							<div class="col-md-4 col-sm-4 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${ontology.user.userId})"  id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='deleteOntologyConfirmation(\'' + ${ontology.id} + '\');'" ><i class="icon-delete"></i> <span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
-									
+									<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')"  id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='deleteOntologyConfirmation(\'' + ${ontology.id} + '\');'" ><i class="icon-delete"></i> <span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+									<button sec:authorize="!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')"  th:if="${#authentication.name} == ${ontology.user.userId}"  id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='deleteOntologyConfirmation(\'' + ${ontology.id} + '\');'" ><i class="icon-delete"></i> <span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>			
 									<span class="sep" th:if="${#authentication.name} == ${ontology.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')"></span>
 										
 									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+									<button sec:authorize="!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 									
-									<span th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${ontology.user.userId} OR ${app_user_access.name()} =='MANAGE')" class="sep no-border"></span>
+									<span class="sep no-border" th:if="${ontology?.id} != null"></span>
 										
 									<!-- UPDATE -->
-									<button th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${ontology.user.userId} OR ${app_user_access.name()} =='MANAGE') AND (${'MASTER-DataModel-30' == ontology.dataModel.id})" id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/update/} + ${ontology.id} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
-																																	
+									<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:if="${'MASTER-DataModel-30' != ontology.dataModel.id}" id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:attr="onclick='javascript:navigateUrl(\'' + @{|/ontologies/update/${ontology.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
+									<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:if="${'MASTER-DataModel-30' == ontology.dataModel.id}" id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:attr="onclick='javascript:navigateUrl(\'' + @{|/ontologies/updatetimeseries/${ontology.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
+									
+									<button sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER') AND !@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:if="${#authentication.name} == ${ontology.user.userId} AND ${'MASTER-DataModel-30' != ontology.dataModel.id}" id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/update/} + ${ontology.id} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
+									<button sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER') AND !@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:if="${#authentication.name} == ${ontology.user.userId} AND ${'MASTER-DataModel-30' == ontology.dataModel.id}" id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:attr="onclick='javascript:navigateUrl(\'' + @{|/ontologies/updatetimeseries/${ontology.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
+																								
 								</div>
 							</div>
 						</div>
@@ -304,16 +309,8 @@
 								<div class="row main">
 									<div class="col-md-12 col-sm-12 col-xs-12">
 										<div class="form-group">
-											<label class="control-label" th:text="#{gen.type}">Type</label>
-											<p th:if="${ontology.rtdbDatasource.name()} == 'MONGO'" id="pType" class="form-control-static-block " th:text="${ontology.ontologyKPI} != null ? 'KPI' : (${ontology.dataModel.id} == 'MASTER-DataModel-30' ? 'TIMESERIES' : 'GENERAL')"> Rtdb instance </p>
-											<p th:if="${ontology.rtdbDatasource.name()} == 'TIMESCALE'" id="pType" class="form-control-static-block " th:text="TIMESERIES"> Rtdb instance </p>
-											<p th:if="${ontology.rtdbDatasource.name()} != 'MONGO' AND ${ontology.rtdbDatasource.name()} != 'TIMESCALE'" id="pType" class="form-control-static-block " th:text="${ontology.rtdbDatasource}"> Rtdb instance </p>
-
-										</div>
-										<div th:if="${ontology.rtdbDatasource.name()} == 'MONGO' OR ${ontology.rtdbDatasource.name()} == 'TIMESCALE' OR ${ontology.rtdbDatasource.name()} == 'VIRTUAL' OR ${ontology.rtdbDatasource.name()} == 'PRESTO'" class="form-group">
 											<label class="control-label" th:text="#{ontology.rtdbinstance}">Rtdb instance</label>
-											<p th:if="${ontology.rtdbDatasource.name()} == 'MONGO' OR ${ontology.rtdbDatasource.name()} == 'TIMESCALE'" id="pDatas" class="form-control-static-block " th:text="${ontology.rtdbDatasource}"> Rtdb instance </p>
-											<p th:if="${ontology.rtdbDatasource.name()} == 'VIRTUAL' OR ${ontology.rtdbDatasource.name()} == 'PRESTO'" id="pDatas" class="form-control-static-block " th:text="${connection} + ' ( ' + ${rtdbDatasourceType} + ' )'"> Rtdb instance </p>
+											<p id="pDatas" class="form-control-static-block " th:text="${rtdbDatasourceType}? ${ontology.rtdbDatasource} + '  -  ' + ${rtdbDatasourceType} : ${ontology.rtdbDatasource}"> Rtdb instance </p>
 										</div>
 									</div>
 									<div th:if="${ontology.rtdbClean}" class="col-md-12 col-sm-12 col-xs-12">
@@ -528,32 +525,7 @@
 											</div>
 										</div>
 									</div>														
-								</div>
-								<div th:if="${ontologyTSDTO.rtdbDatasource=='MONGO'}" class="row main pageCreateHeader no-margin-left padding-left-10 margin-top-20" style="width: 30%">
-									<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{ontology.timeseries.optional.fields}">Optional Fields</label>
-								</div>
-								<div th:if="${ontologyTSDTO.rtdbDatasource=='MONGO'}" class="row main borderPanel no-margin-left" style="width: 30%">
-									<div class="col-md-12 col-sm-12 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px;">
-										<div class="form-group" style="margin-bottom: 0px">
-											<div id="template_optional" class="margin-bottom-20 ">
-												<table class="table no-margin-bottom" id="optional_field_properties" data-loaded="false">
-													<thead class="table-header-background">
-														<tr class="cabecera-tabla" role="row">
-															<th class="titulo-columnas" th:text="#{ontology.timeseries.name}">Name</th>
-															<th class="titulo-columnas" th:text="#{ontology.timeseries.type}">Type</th>
-														</tr>
-													</thead>
-													<tbody style="border-bottom: 1px solid #ddd;">
-														<tr class="optionalFieldRow" th:each="tsprop :${ontologyTSDTO.timeSeriesProperties}" th:if="${#strings.endsWith(tsprop.propertyType,'FIELD_OPTIONAL')}" style="height: 32px;">
-															<td	th:text="${tsprop.propertyName}">A</td> 
-															<td	th:text="${tsprop.propertyDataType}">STRING</td> 
-														</tr>
-													</tbody>
-												</table>
-											</div>
-										</div>
-									</div>
-								</div>
+								</div>	
 								<div class="row main pageCreateHeader no-margin-left padding-left-10 margin-top-20" style="width: 30%">
 									<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{ontology.timeseries.config}">TimeSeries Window</label>
 								</div>

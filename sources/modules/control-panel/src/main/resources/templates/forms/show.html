@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -78,25 +78,20 @@
 				<h1 class="page-title hide "><span th:text="#{name.app}"> onesait Platform Control Panel</span></h1>
 				<div id="header">
 					<div class="row pageCreateHeader">
-						<div class="col-md-6 col-sm-6 col-xs-12">
-							<div class="margin-top-4">
-								<span class="caption-subject" th:text="*{form.code}"></span>
-							</div>
-						</div>
-						
-						<div class="col-md-6 col-sm-6 col-xs-6">
+						<div class="col-md-12 col-sm-12 col-xs-12">
 							<div class="pull-right">
 								<!-- DELETE -->
-								<button th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${form.userId}) AND ${form?.id} != null" id="deleteBtn" type="button"
-									class="btn btn-primary btn-primary-delete" name="delete" value="Remove"	th:attr="onclick='deleteFormConfirmation(\'' + ${form.code} + '\');'">
-									<span th:text="#{gen.deleteBtn}" class="delete-btn-text">Delete</span>
-								</button>
+								<button th:if="${form?.id} != null" id="deleteBtn" type="button"
+									class="btn btn-primary btn-primary-delete" name="delete" value="Remove"
+									th:attr="onclick='deleteFormConfirmation(\'' + ${form.code} + '\');'"><span
+										th:text="#{gen.deleteBtn}" class="delete-btn-text">Delete</span></button>
 
-								<span th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${form.userId}) AND ${form?.id} != null" class="sep"></span>
-								
+								<span th:if="${form?.id} != null" class="sep"></span>
 								<!-- CANCEL  -->
-								<button th:attr="onclick='javascript:navigateUrlBack();'" id="btn-cancel" name="btn-cancel" type="button" class="btn btn-circle btn-outline blue no-border"	th:value="#{gen.cancelBtn}" value="cancel">
-									<span th:text="#{gen.cancelBtn}"> Cancel </span>
+								<button th:attr="onclick='javascript:navigateUrlBack();'" id="btn-cancel"
+									name="btn-cancel" type="button" class="btn btn-circle btn-outline blue no-border"
+									th:value="#{gen.cancelBtn}" value="cancel"><span th:text="#{gen.cancelBtn}"> Cancel
+									</span>
 								</button>
 
 							</div>
@@ -108,7 +103,7 @@
 					<!-- END PAGE TITLE-->
 					<!-- MAIN ROW -->
 					<div class="row main">
-						<div id="colleft" class="col-md-12">
+						<div id="colleft" class="col-md-9">
 							<div>
 								<div class="portlet-title">
 									<div class="tools">
@@ -122,13 +117,11 @@
 								</iframe>
 							</div> <!-- END PORTLET -->
 						</div><!-- END COL-9 -->
-						<button id="buttonTips" onclick="showHideTips()" style="right: 0px;position:absolute; -moz-transform:rotate(-90deg);    -ms-transform:rotate(-90deg);    -o-transform:rotate(-90deg);    -webkit-transform:rotate(-90deg);    transform-origin: bottom right;" >TIPS</button>
-						<div id="colright" class="hide">
+						<button id="buttonTips" onclick="showHideTips()" style="right: 0px;position:absolute; -moz-transform:rotate(-90deg);    -ms-transform:rotate(-90deg);    -o-transform:rotate(-90deg);    -webkit-transform:rotate(-90deg);    transform-origin: bottom right;" class="hide">TIPS</button>
+						<div id="colright" class="col-md-3">
 							<div
 								style="border-left-color: #1b809e;padding: 20px;    margin: 20px 0;    border: 1px solid #1b809e;    border-left-width: 5px;    border-radius: 3px;">
-									<button type="button" onclick="showHideTips()" class="btn color-blue pull-right"
-									style="width: 3rem;    height: 3rem;    font-size: 3rem;    color: #000000;    align-items: center;    display: flex;    background-color: #ffffff;    border: 0;    padding: 8px;"><i
-										class="icon-double-right"></i></button>
+								<button type="button" onclick="showHideTips()" class="close" >×</button>
 								<h4 style="color: #1b809e;">TIPS</h5>
 									<label th:text="#{forms.tips.tip0}"></label>
 									<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
@@ -287,13 +280,6 @@
 									type: 'DELETE',
 									success: function (result) {
 										navigateUrlBack();
-									},
-									error: function (result){
-										if (result.status==409){
-											toastr.error(messagesForms.operations.genOpError, [[#{forms.delete.error.app}]]);
-										} else {
-											toastr.error(messagesForms.operations.genOpError, [[#{forms.delete.error}]]);
-										}
 									}
 								});
 							}
@@ -302,7 +288,7 @@
 					}
 				});
 			}
-  	var hideTips = true; 
+  	var hideTips = false; 
 			var showHideTips = function(){
 				hideTips =! hideTips;
 				if(hideTips){

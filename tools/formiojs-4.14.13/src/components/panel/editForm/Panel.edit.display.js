@@ -58,7 +58,6 @@ export default [
     input: true,
     label: 'Theme',
     key: 'theme',
-    hidden: true,
     dataSrc: 'values',
     data: {
       values: [
@@ -205,32 +204,5 @@ export default [
     conditional: {
       json: { '===': [{ var: 'data.collapsible' }, true] }
     }
-  },
-  {
-    weight: 652,
-    type: 'checkbox',
-    label: 'Adapt height to screen size',
-    tooltip: 'When checked, it allows you to give a height size in percentage of the height of the screen.',
-    key: 'windowheightcheck',
-    input: true
-  },
-  {
-    weight: 653,
-    label: 'Size in percentage depending of the height of the screen',
-    mask: false,
-    tableView: false,
-    delimiter: false,
-    requireDecimal: false,
-    inputFormat: 'plain',
-    truncateMultipleSpaces: false,
-    key: 'valuewindowheight',
-    type: 'number',
-    input: true,
-    decimalLimit: 0,
-    defaultValue: 90,
-    conditional: {
-      json: { '===': [{ var: 'data.windowheightcheck' }, true] }
-    }
-
   }
 ];

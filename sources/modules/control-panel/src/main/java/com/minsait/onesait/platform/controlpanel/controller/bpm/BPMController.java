@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@ package com.minsait.onesait.platform.controlpanel.controller.bpm;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -117,23 +117,25 @@ public class BPMController {
 	}
 
 	@GetMapping("authorizations/{tenantId}")
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@Deprecated
 	public ResponseEntity<List<BPMAuthorization>> authorizations(@PathVariable("tenantId") String tenantId) {
-		final HttpHeaders headers = new HttpHeaders();
-		headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + utils.getCurrentUserOauthToken());
-		final ResponseEntity<List<String>> response = restTemplate.exchange(
-				resourcesService.getUrl(Module.BPM_ENGINE, ServiceUrl.BASE) + "/management/tenants/" + tenantId
-						+ "/users",
-				HttpMethod.GET, new HttpEntity<>(headers), new ParameterizedTypeReference<List<String>>() {
-				});
-		return ResponseEntity.ok(response.getBody().stream()
-				.map(u -> BPMAuthorization.builder().tenantId(tenantId).userId(u).build()).toList());
+		if (!tenantService.hasUserPermissions(tenantId, utils.getUserId())) {
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		}
+		final List<BPMAuthorization> auths = tenantService.getTenantAuthorizations(tenantId).stream()
+				.map(a -> BPMAuthorization.builder().tenantId(a.getBpmTenant().getIdentification())
+						.userId(a.getAuthorizedUser().getUserId()).build())
+				.collect(Collectors.toList());
+		return new ResponseEntity<>(auths, HttpStatus.OK);
 	}
 
 	@DeleteMapping("authorizations/{tenantId}/{userId}")
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@Deprecated
 	public ResponseEntity<List<BPMAuthorization>> deleteAuth(@PathVariable("tenantId") String tenantId,
 			@PathVariable("userId") String userId) {
+		if (!tenantService.hasUserPermissions(tenantId, utils.getUserId())) {
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		}
 		tenantService.removeAuthorization(tenantId, userId);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
@@ -149,23 +151,19 @@ public class BPMController {
 	}
 
 	@GetMapping("tenants")
-	public @ResponseBody List<String> tenants() {
-		final HttpHeaders headers = new HttpHeaders();
-		headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + utils.getCurrentUserOauthToken());
-		final ResponseEntity<List<String>> response = restTemplate.exchange(
-				resourcesService.getUrl(Module.BPM_ENGINE, ServiceUrl.BASE) + "/management/tenants/user/"
-						+ utils.getUserId(),
-				HttpMethod.GET, new HttpEntity<>(headers), new ParameterizedTypeReference<List<String>>() {
-				});
-		return response.getBody();
+	@Deprecated
+	public @ResponseBody List<BPMTenant> tenants() {
+		return tenantService
+				.list(userService.getUser(utils.getUserId())).stream().map(t -> BPMTenant.builder().id(t.getId())
+						.name(t.getIdentification()).owner(t.getUser().getUserId()).build())
+				.collect(Collectors.toList());
 
 	}
 
 	@PostMapping("upload")
 	public ResponseEntity<String> upload(@RequestParam("data") List<MultipartFile> data,
 			@RequestParam(required = false, value = "useTenat", defaultValue = "true") boolean useTenant,
-			@RequestParam(value = "name") String name,
-			@RequestParam(required = false, value = "tenantId") String tenantId) {
+			@RequestParam(value = "name") String name) {
 
 		File file = null;
 
@@ -181,7 +179,8 @@ public class BPMController {
 			formData.add("deployment-name", name);
 			formData.add("deployment-source", "onesait platform");
 			if (useTenant) {
-				formData.add("tenant-id", tenantId);
+				formData.add("tenant-id",
+						com.minsait.onesait.platform.config.model.BPMTenant.TENANT_PREFIX + utils.getUserId());
 			}
 			final HttpHeaders headers = new HttpHeaders();
 			headers.add(HttpHeaders.CONTENT_TYPE, MediaType.MULTIPART_FORM_DATA_VALUE);

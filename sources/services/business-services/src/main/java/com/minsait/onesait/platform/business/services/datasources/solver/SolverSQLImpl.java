@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,7 +87,6 @@ public class SolverSQLImpl implements SolverInterface {
 			List<String> group, List<OrderByStt> sort, long offset, long limit, List<ParamStt> param, boolean debug,
 			String executeAs, String ontology, boolean isSimpleMode) {
 
-		
 		String processedQuery;
 		String trimQuery = query.replaceAll("\\t|\\r|\\r\\n\\t|\\n|\\r\\t", " ");
 		trimQuery = trimQuery.trim().replaceAll(" +", " ");
@@ -121,7 +120,7 @@ public class SolverSQLImpl implements SolverInterface {
 		} catch (final JSQLParserException e) {
 			throw new DashboardEngineException(DashboardEngineException.Error.PARSE_EXCEPTION, e.getCause());
 		}
-			log.info("SQL built to execute : {}", processedQuery);
+			log.info("SQL execute query: {}", processedQuery);
 
 		return processedQuery;
 

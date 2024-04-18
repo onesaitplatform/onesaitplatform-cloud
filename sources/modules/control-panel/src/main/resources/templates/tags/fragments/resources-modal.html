@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@
 								<option th:if="${#strings.toUpperCase(type)} == 'ONTOLOGY'" th:value="${#strings.toUpperCase(type)}" th:text="${#strings.toUpperCase('__#{gen.ontology}__')}" class="" th:classappend="${'resource-combo ' + #strings.toUpperCase(type)}"></option>
 								<option th:if="${#strings.toUpperCase(type)} == 'ONTOLOGYVIRTUALDATASOURCE'" th:value="${#strings.toUpperCase(type)}" th:text="${#strings.toUpperCase('__#{datasource.breadcrumb.list}__')}" class="" th:classappend="${'resource-combo ' + #strings.toUpperCase(type)}"></option>
 								<option th:if="${#strings.toUpperCase(type)} != 'ONTOLOGY' AND ${#strings.toUpperCase(type)} != 'ONTOLOGYVIRTUALDATASOURCE'" th:value="${#strings.toUpperCase(type)}" th:text="${#strings.toUpperCase(type)}" class="" th:classappend="${'resource-combo ' + #strings.toUpperCase(type)}"></option>
-							</th:block>
+							</th:block>)
 						</select>
 					</div>
 					<div class="col-md-4 col-xs-12">

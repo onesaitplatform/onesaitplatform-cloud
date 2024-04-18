@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.config.services.datamodel;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -27,15 +26,11 @@ import com.hazelcast.org.json.JSONException;
 import com.hazelcast.org.json.JSONObject;
 import com.minsait.onesait.platform.config.model.DataModel;
 import com.minsait.onesait.platform.config.model.DataModel.MainType;
-import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.repository.DataModelRepository;
-import com.minsait.onesait.platform.config.repository.OntologyRepository;
 
 @Service
 public class DataModelServiceImpl implements DataModelService {
 
-	@Autowired
-	private OntologyRepository ontologyRepository;
 	@Autowired
 	private DataModelRepository dataModelRepository;
 
@@ -68,23 +63,7 @@ public class DataModelServiceImpl implements DataModelService {
 	public DataModel getDataModelById(String dataModelId) {
 		return dataModelRepository.findById(dataModelId).orElse(null);
 	}
-	
-	@Override
-	public String getOntologiesById(DataModel datamodel) {
-		List<Ontology> ontologies = ontologyRepository.findIdenficationByDataModel(datamodel);
-		if(ontologies.size() == 0) {	
-			return "";
-		}else {
-			List<String> identificationList = new ArrayList<>();
-			for (Ontology ontology : ontologies) {
-				identificationList.add(ontology.getIdentification());
-		    }
-			String OntologiesIdentifications = String.join(";", identificationList);
-			return OntologiesIdentifications;
-		}
-	}
-	
-	
+
 	@Override
 	public DataModel getDataModelByName(String dataModelName) {
 		return dataModelRepository.findByIdentification(dataModelName).get(0);

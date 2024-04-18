@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@
 	<style type="text/css">
 	body {
 	    background-color: #ffffff !important;
-	    font-size: 12px !important;
 	}	
 	</style>
 </head>
@@ -58,8 +57,6 @@
 	    let schema = {}
 		let ff = {}
 		window.useCache = false;
-		//use redirectBy on vue apps for router
-		//window.redirectBy = 'events'
 		window.urlLibraries = urlLibraries;
 		if(!window.showformbase){			
 			window.showformbase = formsShow;
@@ -101,9 +98,6 @@
 		                if(!response.data.i18nJson){
 							response.data.i18nJson=null;
 						}
-						if(response.data && response.data.datasources){
-							window.ds = response.data.datasources;
-						}
 				        Formio.createForm(document.getElementById('builder'), response.data.schema,JSON.parse(response.data.i18nJson))
 				        .then(function(instance){
 				        	ff = instance;
@@ -113,22 +107,21 @@
 				            window.setLanguage = function(lang) {
 							   ff.language = lang;
 							};	
-							ff.on('redirect', function(message) {
-								console.log(message);
-							})		
 				        	ff.on('submit', function(submission) {
 				        		submission.metadata.formId = formId
 				        		submission.metadata.dataId = oid
-				        		//cleanFormForSubmit(ff, submission.data)
+				        		cleanFormForSubmit(ff, submission.data)
 				        	    console.log('Submission was made!', submission);
-				        		const request = new XMLHttpRequest();
-								request.open("POST", `${formsBaseURLCreate}/submit/update`, false); // `false` makes the request synchronous
-								request.send(JSON.stringify(submission));
-								if (request.status === 200) {									
-								  ff.emit("submitDone", submission);
-								}else{
-								  ff.emit("submitError", request.responseText);
-								}
+				        		//AJAX /api/forms/submit
+				        		fetch(`${formsBaseURLCreate}/submit/update`, {				        		
+				        			'method': 'POST',
+				        			'Content-Type' : 'application/json',
+				        			'body' : JSON.stringify(submission)
+				        		})
+				        		 .then(function () {
+				                    ff.emit("submitDone", submission);
+				                  })				        		 
+				        		.catch(e => console.error(e))
 				        	});
 				        })			        
 	
@@ -151,36 +144,26 @@
 		                if(!response.data.i18nJson){
 							response.data.i18nJson=null;
 						}
-						if(response.data && response.data.datasources){
-							window.ds = response.data.datasources;
-						}						
 				        Formio.createForm(document.getElementById('builder'), JSON.parse(response.data.jsonSchema),JSON.parse(response.data.i18nJson))
 				        .then(function(instance){
 				        	ff = instance;
 				        	window.setLanguage = function(lang) {
 							   ff.language = lang;
-							};
-							ff.on('redirect', function(message) {
-								console.log(message);
-							})				        	
+							};				        	
 				        	ff.on('submit', function(submission) {
 				        		submission.metadata.formId = formId				        		 
-				        		//cleanFormForSubmit(ff, submission.data)
+				        		cleanFormForSubmit(ff, submission.data)
 				        	    console.log('Submission was made!', submission);
-								const request = new XMLHttpRequest();
-								request.open("POST", `${formsBaseURLCreate}/submit`, false); // `false` makes the request synchronous
-								request.send(JSON.stringify(submission));
-								if (request.status === 200) {		 
-									if(request.response){
-										const resp=JSON.parse(request.response);
-										if(resp.ids && resp.ids.length>0){
-											window.resultId = resp.ids[0];
-										}
-									}									 
-								  ff.emit("submitDone", submission);
-								}else{
-								  ff.emit("submitError", request.responseText);
-								}
+				        		//AJAX /api/forms/submit
+				        		fetch(`${formsBaseURLCreate}/submit`, {				        		
+				        			'method': 'POST',
+				        			'Content-Type' : 'application/json',
+				        			'body' : JSON.stringify(submission)
+				        		})
+				        		 .then(function () {
+				                    ff.emit("submitDone", submission);
+				                  })	
+				        		.catch(e => console.error(e))
 				        	});
 				        })			        
 	

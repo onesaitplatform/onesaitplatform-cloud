@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -863,14 +864,19 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 		return apiRepository.findById(id).orElse(null);
 	}
 
-	@Override
-	public List<Api> getByIdentification(String identification) {
-		List<Api> apis = apiRepository.findByIdentification(identification);
-		if(apis.isEmpty()) {
-			return null;
-		} else {
-			return apis;
+	private Api getApiByIdentificationAndVersion(String apiId, String version) {
+		Api api = null;
+		int versionInt = 0;
+		try {
+			if (version.toLowerCase().startsWith("v")) {
+				version = version.substring(1);
+			}
+			versionInt = Integer.valueOf(version);
+			api = apiRepository.findByIdentificationAndNumversion(apiId, versionInt);
+		} catch (final NumberFormatException e) {
+			log.info("Not possible to convert version str {} to int", version);
 		}
+		return api;
 	}
 
 	@Override
@@ -885,23 +891,7 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 		}
 		return api;
 	}
-	
-	@Override
-	public Api getApiByIdentificationAndVersion(String apiId, String version) {
-		Api api = null;
-		int versionInt = 0;
-		try {
-			if (version.toLowerCase().startsWith("v")) {
-				version = version.substring(1);
-			}
-			versionInt = Integer.valueOf(version);
-			api = apiRepository.findByIdentificationAndNumversion(apiId, versionInt);
-		} catch (final NumberFormatException e) {
-			log.info("Not possible to convert version str {} to int", version);
-		}
-		return api;
-	}
-	
+
 	@Override
 	public List<Api> getAllApis(User user) {
 		List<Api> apis = new ArrayList<>();

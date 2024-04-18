@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -154,8 +154,7 @@ public class DatasourceServiceImpl implements DatasourceService {
 		if (ont == null) {
 			ont = getOntologyFromDatasource(gd, userId);
 		}
-		
-		log.info("Invoke datasource");
+
 		return getSolverByDatasource(ont.getRtdbDatasource(), ont.getIdentification()).buildQueryAndSolve(gd.getQuery(),
 				gd.getMaxvalues(), im.getFilter(), im.getProject(), im.getGroup(), im.getSort(), im.getOffset(),
 				im.getLimit(), im.getParam(), im.isDebug(), userId, ont.getIdentification(), isSimpleMode);

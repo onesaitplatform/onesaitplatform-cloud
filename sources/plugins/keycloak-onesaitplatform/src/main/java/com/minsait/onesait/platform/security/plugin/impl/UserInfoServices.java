@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,7 +110,7 @@ public class UserInfoServices extends UserInfoTokenServices {
 	private Map<String, Object> getMap(String path, String accessToken) {
 		if (log.isDebugEnabled()) {
 			log.debug("Getting user info from: " + path);
-		}	
+		}		
 		try {
 			OAuth2RestOperations restTemplate = this.restTemplate;
 			if (restTemplate == null) {
@@ -124,10 +124,7 @@ public class UserInfoServices extends UserInfoTokenServices {
 				token.setTokenType(tokenType);
 				restTemplate.getOAuth2ClientContext().setAccessToken(token);
 			}
-			log.info("RestTemplate to keycloak");
-			Map<String, Object> toReturn=restTemplate.getForEntity(path, Map.class).getBody();
-			log.info("End RestTemplate to keycloak");
-			return toReturn;
+			return restTemplate.getForEntity(path, Map.class).getBody();
 		} catch (final Exception ex) {
 			log.warn("Could not fetch user details: " + ex.getClass() + ", " + ex.getMessage());
 			return Collections.<String, Object>singletonMap("error", "Could not fetch user details");

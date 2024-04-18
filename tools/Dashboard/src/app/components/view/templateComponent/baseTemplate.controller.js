@@ -333,7 +333,6 @@
 
         //CRUD services
         vm.getEntities = httpService.getEntities;
-        vm.getEntitiesQueryPermission = httpService.getEntitiesQueryPermission;
         vm.crudGetEntityInfo = httpService.getEntityCrudInfo;       
         vm.crudQueryParams = httpService.queryParams;
         vm.crudFindById = httpService.findById;

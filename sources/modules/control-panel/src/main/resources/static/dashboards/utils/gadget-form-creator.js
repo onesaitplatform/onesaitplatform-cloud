@@ -137,9 +137,6 @@ Vue.component('nested-draggable', {
                     <el-form-item label="Default">
                       <el-input placeholder="Default" type="text" v-model='element.default' type='text' ></el-input>
                     </el-form-item>
-                    <el-form-item label="Required">
-                      <el-checkbox v-model='element.required'></el-checkbox>
-                    </el-form-item>
                   </span>
                   <span v-if="element.type == 'input-number'"><!-- input number only -->
                     <el-form-item label="Min">
@@ -150,9 +147,6 @@ Vue.component('nested-draggable', {
                     </el-form-item>
                     <el-form-item label="Default">
                       <el-input type="number" style="width:100px" placeholder="Default" v-model='element.default' type='number'></el-input>
-                    </el-form-item>
-                    <el-form-item label="Required">
-                      <el-checkbox v-model='element.required'></el-checkbox>
                     </el-form-item>
                   </span>
                   <span v-if="element.type == 'selector'"><!-- selector only -->
@@ -168,9 +162,6 @@ Vue.component('nested-draggable', {
                     <el-form-item label="Options">
                       <option-compositor v-model='element.options'/>
                     </el-form-item>
-                    <el-form-item label="Required">
-                      <el-checkbox v-model='element.required'></el-checkbox>
-                    </el-form-item>
                   </span>
                   <span v-if="element.type == 'checkbox'"><!-- checkbox only -->
                     <el-form-item label="Default">
@@ -180,9 +171,6 @@ Vue.component('nested-draggable', {
 				  <span v-if="element.type == 'color-picker'"><!-- color-picker only -->
                     <el-form-item label="Default">
 					  <el-color-picker v-model='element.default' :predefine="predefineColors" show-alpha/>
-                    </el-form-item>
-                    <el-form-item label="Required">
-                      <el-checkbox v-model='element.required'></el-checkbox>
                     </el-form-item>
                   </span>
 			      <span v-if="element.type == 'autogenerate-id'"><!-- autogenerate-id only -->
@@ -362,7 +350,7 @@ Vue.component('gform-drawer', {
     }
   },
   computed: {
-   
+    
   },
   beforeMount() {
   },
@@ -565,122 +553,61 @@ Vue.component('gform-drawer', {
 			i++
 		}
 		return [auxmodel];
-	},
-
-  hiddenBadge(localvalue, elements){
-    return this.handleBadge(localvalue, elements) == 0
-  },
-
-    handleBadge(localvalue, elements) {
-      var n = 0
-      if (Array.isArray(localvalue)) {
-        for (e in localvalue) {
-          for (i in elements) {
-            if (Array.isArray(elements[i].elements)) {
-              n += this.handleBadge(localvalue[e][elements[i]], elements[i])
-            } else {
-              if ((elements[i].required === true) && (!localvalue[e][elements[i].name])) {
-                n++
-              }
-            }
-          }
-        }
-      } else {
-        for (i in elements) {
-          if (Array.isArray(elements[i].elements)) {
-            n += this.handleBadge(localvalue[elements[i]], elements[i])
-          } else {
-            if ((elements[i].required === true) && (!localvalue[elements[i].name])) {
-              n++
-            }
-          }
-        }
-      }
-      return n
-    }
+	}
   },
   template: `
   <el-collapse>
     <el-form size="mini" label-width="110px" style="margin-top:10px">
-        <el-form-item style="margin-left:-15px" label="Datasource" v-if="showDatasource && hasDSField">
-            <el-select v-model="datasource" filterable @change="updateDSFields()" style="width:100%">
-                <el-option v-for="item in datasources" :key="item.id" :label="item.identification"
-                    :value="item.id"></el-option>
-            </el-select>
-        </el-form-item>
-
-        <span v-for="(element,index) in elements">
-            <el-form-item v-if="!(element.elements)" :label="element.title ? element.title : element.name">
-                <el-badge is-dot v-if="element.required && !localvalue[element.name]"></el-badge>
-                <el-popover v-if="(element.desc)" trigger="click">
-                    <p style="padding:10px; word-break: break-word;">{{element.desc}}</p>
-                    <el-button class="botton-desc" slot="reference" icon="el-icon-info" circle></el-button>
-                </el-popover>
-
-                <el-input v-if="element.type == 'autogenerate-id'" :value="localvalue[element.name]" :disabled="true" />
-                <el-input v-if="element.type == 'input-text'" :value="localvalue[element.name]"
-                    @input="updateElem(element.name,$event)" />
-                <el-input type="number" style="width:183px" v-if="element.type == 'input-number'" :min="element.min"
-                    :max="element.max" precision="5" :value="localvalue[element.name]"
-                    @input="updateElem(element.name,$event)" style="width:100%" />
-                <el-switch v-if="element.type == 'checkbox'" :value="localvalue[element.name]"
-                    @input="updateElem(element.name,$event)" style="width:100%;margin-top: 5px;" />
-                <el-select v-if="element.type == 'selector' && (element.options.length > 3 || element.multiple)"
-                    filterable :multiple="element.multiple" :value="localvalue[element.name]"
-                    @input="updateElem(element.name,$event)" style="width:100%">
-                    <el-option v-for="item in element.options" :key="item.value" :label="item.text"
-                        :value="item.value"></el-option>
-                </el-select>
-                <el-radio-group v-if="element.type == 'selector' && element.options.length <= 3 && !element.multiple"
-                    :name="element.name" :value="localvalue[element.name]" @input="updateElem(element.name,$event)"
-                    style="width:100%">
-                    <el-radio-button v-for="item in element.options" :name="element.name"
-                        :label="item.value">{{item.text?item.text:item.value}}</el-radio-button>
-                </el-radio-group>
-                <!--<el-checkbox-group  v-if="element.type == 'selector' && element.options.length <= 3 && element.multiple" :name="element.name" :value="localvalue[element.name]" @input="updateElem(element.name,$event)" style="width:100%">
-            <el-checkbox-button v-for="item in element.options" :name="element.name" :label="item.value">{{item.text?item.text:item.value}}</el-radio-button>
+      <el-form-item style="margin-left:-15px" label="Datasource" v-if="showDatasource && hasDSField">
+        <el-select v-model="datasource" filterable @change="updateDSFields()" style="width:100%">
+          <el-option v-for="item in datasources" :key="item.id" :label="item.identification" :value="item.id"></el-option>
+        </el-select>
+      </el-form-item>
+      <span v-for="(element,index) in elements">
+        <el-form-item v-if="!(element.elements)" :label="element.title ? element.title : element.name" >
+          <el-popover v-if="(element.desc)" trigger="click">
+          	<p style="padding:10px; word-break: break-word;">{{element.desc}}</p>
+            <el-button class="botton-desc" slot="reference" icon="el-icon-info" circle></el-button>
+          </el-popover>
+		  <el-input v-if="element.type == 'autogenerate-id'" :value="localvalue[element.name]" :disabled="true" />
+          <el-input v-if="element.type == 'input-text'" :value="localvalue[element.name]" @input="updateElem(element.name,$event)"/>
+          <el-input type="number" style="width:183px" v-if="element.type == 'input-number'" :min="element.min" :max="element.max" precision="5" :value="localvalue[element.name]" @input="updateElem(element.name,$event)" style="width:100%"/>
+          <el-switch v-if="element.type == 'checkbox'" :value="localvalue[element.name]" @input="updateElem(element.name,$event)" style="width:100%;margin-top: 5px;"/>
+          <el-select v-if="element.type == 'selector' && (element.options.length > 3 || element.multiple)" filterable :multiple="element.multiple" :value="localvalue[element.name]" @input="updateElem(element.name,$event)" style="width:100%">
+            <el-option v-for="item in element.options" :key="item.value" :label="item.text" :value="item.value"></el-option>
+          </el-select>
+          <el-radio-group  v-if="element.type == 'selector' && element.options.length <= 3 && !element.multiple" :name="element.name" :value="localvalue[element.name]" @input="updateElem(element.name,$event)" style="width:100%">
+          	<el-radio-button v-for="item in element.options" :name="element.name" :label="item.value">{{item.text?item.text:item.value}}</el-radio-button>
+          </el-radio-group>
+          <!--<el-checkbox-group  v-if="element.type == 'selector' && element.options.length <= 3 && element.multiple" :name="element.name" :value="localvalue[element.name]" @input="updateElem(element.name,$event)" style="width:100%">
+          	<el-checkbox-button v-for="item in element.options" :name="element.name" :label="item.value">{{item.text?item.text:item.value}}</el-radio-button>
           </el-checkbox-group>-->
-                <el-select v-if="element.type == 'model-selector'" filterable :multiple="element.multiple"
-                    :value="localvalue[element.name]" @input="updateElem(element.name,$event)" style="width:100%">
-                    <el-option v-for="item in generateValuesFromModelPath(element.path)" :key="item" :label="item"
-                        :value="item"></el-option>
-                </el-select>
-                <el-color-picker :predefine="predefineColors" style="width:183px" v-if="element.type == 'color-picker'"
-                    show-alpha :value="localvalue[element.name]" @input="updateElem(element.name,$event)"
-                    style="width:100%" />
-                <el-select :placeholder="dsfields.length == 0 ? 'Select Datasource First' : 'Select Field'"
-                    v-if="element.type == 'ds-field' || element.type == 'ds-field(ds[0].)'" filterable
-                    :multiple="element.multiple" :value="localvalue[element.name]"
-                    @input="element.type == 'ds-field' ? updateElem(element.name,$event) : updateElem(element.name,'ds[0].' + $event)"
-                    style="width:100%">
-                    <el-option key="null" label="No field" :value="null"></el-option>
-                    <el-option v-for="item in dsfields" :key="item" :label="item" :value="item"></el-option>
-                </el-select>
-                <el-select v-if="element.type == 'datasource-picker'" filterable :value="localvalue[element.name]"
-                    @input="updateElem(element.name,$event)">
-                    <el-option key="null" label="No datasource" :value="null"></el-option>
-                    <el-option v-for="item in datasources" :key="item.identification" :label="item.identification"
-                        :value="item.identification"></el-option>
-                </el-select>
-            </el-form-item>
-            <span v-if="element.elements">
-                <!-- <h5 v-if="showDatasource" class="section">{{element.title ? element.title : element.name}}</h5>
-                <h6 v-if="!showDatasource" class="sub-section">{{element.title ? element.title : element.name}}</h6>-->
-                <el-badge :value="handleBadge(localvalue[element.name], element.elements)" class="item_badge" :class="{badge_hidden : hiddenBadge(localvalue[element.name], element.elements)}">
-                    <el-collapse-item :title="element.title ? element.title : element.name">
-                        <div>
-                            <gform-drawer :index="index" :fullmodelin="fullmodel" v-if="element.type == 'section'"
-                                :showDatasource="false" :cdsfields="dsfields" :elements="element.elements"
-                                v-model="localvalue[element.name]"></gform-drawer>
-                            <section-array-drawer :fullmodelin="fullmodel" v-if="element.type == 'section-array'"
-                                :showDatasource="false" :cdsfields="dsfields" :elements="element.elements"
-                                v-model="localvalue[element.name]"></gform-drawer>
-                        </div>
-                    </el-collapse-item>
-                </el-badge>
-            </span>
+		  <el-select v-if="element.type == 'model-selector'" filterable :multiple="element.multiple" :value="localvalue[element.name]" @input="updateElem(element.name,$event)" style="width:100%">
+            <el-option v-for="item in generateValuesFromModelPath(element.path)" :key="item" :label="item" :value="item"></el-option>
+          </el-select>
+          <el-color-picker :predefine="predefineColors" style="width:183px" v-if="element.type == 'color-picker'" show-alpha :value="localvalue[element.name]" @input="updateElem(element.name,$event)" style="width:100%"/>
+          <el-select :placeholder="dsfields.length == 0 ? 'Select Datasource First' : 'Select Field'" v-if="element.type == 'ds-field' || element.type == 'ds-field(ds[0].)'" filterable :multiple="element.multiple" :value="localvalue[element.name]" @input="element.type == 'ds-field' ? updateElem(element.name,$event) : updateElem(element.name,'ds[0].' + $event)" style="width:100%">
+            <el-option key="null" label="No field" :value="null"></el-option>
+            <el-option v-for="item in dsfields" :key="item" :label="item" :value="item"></el-option>
+          </el-select>
+          <el-select v-if="element.type == 'datasource-picker'" filterable :value="localvalue[element.name]" @input="updateElem(element.name,$event)">
+	        <el-option key="null" label="No datasource" :value="null"></el-option>
+	        <el-option v-for="item in datasources" :key="item.identification" :label="item.identification" :value="item.identification"></el-option>
+	      </el-select>
+        </el-form-item>
+        <span  v-if="element.elements">
+         <!-- <h5 v-if="showDatasource" class="section">{{element.title ? element.title : element.name}}</h5>
+		  <h6 v-if="!showDatasource" class="sub-section">{{element.title ? element.title : element.name}}</h6>-->
+		   <el-collapse-item :title="element.title ? element.title : element.name"   >
+		    
+		  <div>
+          	<gform-drawer :index="index" :fullmodelin="fullmodel" v-if="element.type == 'section'" :showDatasource="false" :cdsfields="dsfields" :elements="element.elements" v-model="localvalue[element.name]"></gform-drawer>
+			<section-array-drawer :fullmodelin="fullmodel" v-if="element.type == 'section-array'" :showDatasource="false" :cdsfields="dsfields" :elements="element.elements" v-model="localvalue[element.name]"></gform-drawer>
+		  </div>
+		  </el-collapse-item>
         </span>
+      </span>
     </el-form>
-  </el-collapse>
+    </el-collapse>
   `
 });

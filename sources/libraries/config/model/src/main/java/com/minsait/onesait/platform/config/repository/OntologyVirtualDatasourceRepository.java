@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,11 +46,7 @@ public interface OntologyVirtualDatasourceRepository extends JpaRepository<Ontol
 	@Query("SELECT o FROM OntologyVirtualDatasource AS o WHERE o.datasourceDomain=:datasourceDomain")
 	List<OntologyVirtualDatasource> findByDatasourceDomain(@Param("datasourceDomain") String datasourceDomain);
 
-	@Query("SELECT o FROM OntologyVirtualDatasource AS o WHERE o.user =:user OR o.isPublic=TRUE OR "
-			+ "o.id IN (SELECT pra.id FROM ProjectResourceAccess pra WHERE pra.user = :user) OR "
-			+ "o.id IN (SELECT prar.id FROM ProjectResourceAccess prar JOIN prar.appRole.appUsers au WHERE au.user= :user) OR "
-			+ "o.id IN (SELECT prapr FROM ProjectResourceAccessList prapr JOIN prapr.project.users pru WHERE pru=:user AND prapr.access_all = true)")
-	List<OntologyVirtualDatasource> findByUserOrIsPublicTrueOrAccess(@Param("user") User user);
+	List<OntologyVirtualDatasource> findByUserOrIsPublicTrue(User user);
 
 	@Query("SELECT o FROM OntologyVirtualDatasource AS o "
 			+ "WHERE (o.identification like %:datasouceName%) AND (o.user =:user OR o.isPublic=TRUE)"

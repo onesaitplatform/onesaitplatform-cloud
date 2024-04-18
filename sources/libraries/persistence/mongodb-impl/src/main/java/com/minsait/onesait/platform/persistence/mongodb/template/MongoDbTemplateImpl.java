@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
-import org.bson.BsonArray;
-import org.bson.BsonInvalidOperationException;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -51,14 +49,13 @@ import com.minsait.onesait.platform.persistence.mongodb.template.multitenant.Mon
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.mongodb.MongoBulkWriteException;
+import com.mongodb.client.MongoClient;
 import com.mongodb.MongoException;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.DistinctIterable;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.ListIndexesIterable;
-import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoIterable;
 import com.mongodb.client.gridfs.GridFSBucket;
@@ -780,109 +777,13 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 			throw new DBPersistenceException(errorMessage, e);
 		}
 	}
-	
-	public MongoDBUpdateMultiResponse updatePipeline(String database, String collection, String query, String update,
-			boolean multi, boolean includeIds) throws DBPersistenceException {
-
-		UpdateResult dbResult = null;
-		
-		try {
-		//Split pipeline from options
-		int endOfPipeline = endOfUpdatePipelineQuery(update);
-		String finalPipelineUpdate = update.substring(0, endOfPipeline + 1).trim();
-		
-		//Split pipeline stages
-		List<BasicDBObject> updatePipeline = new ArrayList<>();
-		
-		//remove tailing and leading square bracket
-		finalPipelineUpdate = finalPipelineUpdate.substring(1, finalPipelineUpdate.length()-1);
-		//loop, retrieve all stages and parse to document
-		
-		boolean end = false;
-		String pipelineToParse = finalPipelineUpdate;
-		while (!end) {
-			int endOfQuery = endOfQuery(pipelineToParse);
-			String stage = pipelineToParse.substring(0, endOfQuery + 1);
-			final BasicDBObject parsedUpdate = BasicDBObject.parse(stage);
-			updatePipeline.add(parsedUpdate);
-			pipelineToParse = pipelineToParse.substring(endOfQuery+1,pipelineToParse.length()).trim();
-			if(pipelineToParse.startsWith(",")) {
-				pipelineToParse = pipelineToParse.substring(1);
-			}
-			if(pipelineToParse.trim().length()<3 ||  endOfQuery <1) {
-				end = true;
-			}
-			
-		}
-		
-		//Split options
-		String options = update.substring(endOfPipeline + 1, update.length());
-		options = options.substring(options.indexOf(',') + 1, options.length());
-		if (options.indexOf('{') == -1) {
-			options = "{" + options + "}";
-		}
-		
-		final BasicDBObject parsedQuery = BasicDBObject.parse(query);
-		final BasicDBObject parsedOptions = BasicDBObject.parse(options);
-		
-		final UpdateOptions updateOptions = new UpdateOptions().upsert(parsedOptions.getBoolean("upsert", false));
-		final MongoCollection<?> dbCollection = getCollection(database, collection, BasicDBObject.class);
-
-		final MultiDocumentOperationResult updateResult = new MultiDocumentOperationResult();
-		if (multi) {
-			dbResult = dbCollection.updateMany(parsedQuery, updatePipeline, updateOptions);
-		} else {
-			dbResult = dbCollection.updateOne(parsedQuery, updatePipeline, updateOptions);
-		}
-		updateResult.setCount(dbResult.getModifiedCount());
-		
-		if (dbResult != null) {
-			final int upserted = dbResult.getUpsertedId() != null ? 1 : 0;
-			log.info("Executed update, with query {}, rows found and {} rows updated and {} rows upserted", query,
-					dbResult.getMatchedCount(), dbResult.getModifiedCount(), upserted);
-		}
-		log.info("Executed update, with query {}, rows found and 0 rows updated and 0 rows upserted", query);
-
-		MongoDBUpdateMultiResponse updateMultiResponse = new MongoDBUpdateMultiResponse();
-		updateMultiResponse.setMultiDocumentOperationResult(updateResult);
-		updateMultiResponse.setUpdateResult(dbResult);
-		return updateMultiResponse;
-		
-		} catch (final MongoException e) {
-			final String errorMessage = String.format(
-					"Unable to update the document. Database = %s, collection = %s, document = %s, update = %s, cause = %s , errorMessage = %s.",
-					database, collection, query, update, e.getCause(), e.getMessage());
-			log.error(errorMessage);
-			if (e.getCode() == 11000) {
-				throw new DBPersistenceException(e, new ErrorResult(ErrorResult.ErrorType.DUPLICATED,
-						ErrorResult.PersistenceType.MONGO, e.getMessage()), e.getMessage());
-			} else {
-				throw new DBPersistenceException(e, new ErrorResult(ErrorResult.PersistenceType.MONGO, e.getMessage()),
-						e.getMessage());
-			}
-		} catch (final Throwable e) {
-			final String errorMessage = String.format(
-					"Unable to update the document. Database = %s, collection = %s, document = %s, update = %s, cause = %s , errorMessage = %s.",
-					database, collection, query, update, e.getCause(), e.getMessage());
-			log.error(errorMessage);
-			throw new DBPersistenceException(errorMessage, e);
-		}
-	}
 
 	private MongoDBUpdateMultiResponse updateBasicOp(String database, String collection, String query, String update,
 			boolean multi, boolean includeIds) throws DBPersistenceException {
-		log.info("Updating document. Database= {} , collection = {}, document = {} , update = {}.", database,
-				collection, query, update);
-		
-		if (update.trim().startsWith("[")) {
-			//this is an aggregate pipeline, we need to split the pipeline into a list of objects
-			return updatePipeline(database, collection, query, update, multi, includeIds);
-		}
-		
 		UpdateResult dbResult = null;
 		MongoDBUpdateMultiResponse updateMultiResponse = new MongoDBUpdateMultiResponse();
 		try {
-			
+
 			final int endOfQuery = endOfQuery(update);
 
 			String finalUpdate = update.substring(0, endOfQuery + 1);
@@ -1001,39 +902,6 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 			if (c == '{' && countDoubleQuotes == 0) {
 				openBracketCount++;
 			} else if (c == '}' && countDoubleQuotes == 0) {
-				closeBracketCount++;
-			}
-			found = openBracketCount > 0 && openBracketCount == closeBracketCount;
-
-		}
-		if (!found) {
-			throw new InvalidParameterException("Bad formed updated query");
-		}
-		return i;
-	}
-	
-	private int endOfUpdatePipelineQuery(String query) {
-		int i = -1;
-		int countDoubleQuotes = 0;
-		boolean found = false;
-		int openBracketCount = 0;
-		int closeBracketCount = 0;
-		final char OPEN_SQ_BRACKET = '[';
-		final char CLOSE_SQ_BRACKET = ']';
-		while (i < query.length() && !found) {
-			i++;
-			final char c = query.charAt(i);
-			if(c == '"' && i > 0 && query.charAt(i-1) != '\\' ) {
-				if (countDoubleQuotes == 0) {
-					countDoubleQuotes ++;
-				} else {
-					countDoubleQuotes --;
-				}
-			}
-
-			if (c == OPEN_SQ_BRACKET && countDoubleQuotes == 0) {
-				openBracketCount++;
-			} else if (c == CLOSE_SQ_BRACKET && countDoubleQuotes == 0) {
 				closeBracketCount++;
 			}
 			found = openBracketCount > 0 && openBracketCount == closeBracketCount;
@@ -1206,24 +1074,17 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 				database, collection, writeConcern, orderedOp, includeIds);
 		}		
 		// mapa con indice de lDatos y Object
-		final Map<Integer, DBObject> mapDocs = new HashMap<>();
+		final Map<Integer, BasicDBObject> mapDocs = new HashMap<>();
 
 		try {
 
 			String errorMsg;
 			for (int i = 0; i < instances.size(); i++) {
 				errorMsg = null;
-				DBObject doc = null;
+				BasicDBObject doc = null;
 				boolean jsonParseError = false;
 				try {
 					doc = BasicDBObject.parse(instances.get(i));
-				}catch(BsonInvalidOperationException ex) {
-					// If instance is an array, BasicDBObject will fail parse method
-					// then try as a List
-					final BsonArray parse = BsonArray.parse(instances.get(i));
-					final BasicDBList dbList = new BasicDBList();
-					dbList.addAll(parse);
-					doc = dbList;
 				} finally {
 					if (!jsonParseError) {
 						mapDocs.put(i, doc);
@@ -1266,7 +1127,7 @@ public class MongoDbTemplateImpl implements MongoDbTemplate {
 					} else {
 						bwResult.setOk(true);
 						if (includeIds) {
-							bwResult.setId(((BasicDBObject)(mapDocs.get(i))).getObjectId("_id").toString());
+							bwResult.setId(mapDocs.get(i).getObjectId("_id").toString());
 						}
 						bwResults[i] = bwResult;
 					}

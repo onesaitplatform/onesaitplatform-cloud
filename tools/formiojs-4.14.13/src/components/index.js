@@ -48,7 +48,6 @@ import UrlComponent from './url/Url';
 import WellComponent from './well/Well';
 import HTMLtableComponent from './htmltable/HTMLtable';
 import TablePagComponent from './tablepag/TABLEPAG';
-import TablePagServerComponent from './tablepagserver/TABLEPAGserver';
 
 export default {
   address: AddressComponent,
@@ -101,6 +100,5 @@ export default {
   url: UrlComponent,
   well: WellComponent,
   htmltable: HTMLtableComponent,
-  tablepag: TablePagComponent,
-  tablepagserver: TablePagServerComponent
+  tablepag: TablePagComponent
 };

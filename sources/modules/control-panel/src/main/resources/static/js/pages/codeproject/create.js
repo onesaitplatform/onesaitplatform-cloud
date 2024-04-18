@@ -363,11 +363,8 @@ Codeproject.Create = (function(){
             focusInvalid: false, 
             ignore: ":hidden:not('.selectpicker, .hidden-validation')", 
 			lang: currentLanguage,
-            rules: {
-				name: { minlength: 5, maxlength: 100, required: true },
-                repo: { minlength: 5, required: true },
-                username: { minlength: 5, required: true },
-                privateToken: { minlength: 5, required: true }
+            rules: {				
+                identification: { required: true }
             },
             invalidHandler: function(event, validator) {
             	toastr.error(messagesForms.validation.genFormError,'');

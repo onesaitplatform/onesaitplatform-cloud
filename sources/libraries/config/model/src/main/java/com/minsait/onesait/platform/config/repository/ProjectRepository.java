@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,12 @@ import java.util.List;
 
 import javax.transaction.Transactional;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.minsait.onesait.platform.config.dto.DashboardForList;
 import com.minsait.onesait.platform.config.model.App;
-import com.minsait.onesait.platform.config.model.Dashboard;
 import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.ProjectList;
 import com.minsait.onesait.platform.config.model.User;
@@ -59,9 +56,6 @@ public interface ProjectRepository extends JpaRepository<Project, String> {
 
 	@Query("SELECT o.id FROM Project AS o Where o.user = :user")
 	List<String> findIdsByUser(@Param("user") User user);
-	
-	@Query("SELECT o FROM Project AS o Where o.webProject.id = :webProjectId")
-	public List<Project> findByWebProject(@Param("webProjectId") String webProjectId);
 
 	@Modifying
 	@Transactional
@@ -124,26 +118,5 @@ public interface ProjectRepository extends JpaRepository<Project, String> {
 
 	@Query("SELECT new com.minsait.onesait.platform.config.versioning.VersionableVO(o.identification, o.id, 'Project') FROM Project AS o")
 	public List<VersionableVO> findVersionableViews();
-	
-	@Query("SELECT o FROM ProjectList AS o Where LOWER(o.identification) LIKE LOWER('%' || :identification || '%')")
-	 List<ProjectList> findByIdentificationProject(@Param("identification") String identification,Pageable pageable);
-	
-	
-	@Query("SELECT DISTINCT o FROM ProjectList AS o LEFT JOIN o.users ou LEFT JOIN o.app ap LEFT JOIN ap.appRoles apr LEFT JOIN apr.appUsers apru " 
-			+ " WHERE (o.user=:user OR ou =:user OR apru.user=:user) AND"
-			+ "(LOWER(o.identification) LIKE LOWER('%' || :identification || '%'))")
-	List<ProjectList> findByUserAndPermissionsProjects(@Param("user") User user,
-			@Param("identification") String identification, Pageable pageable);
-	
-	@Query("SELECT COUNT(*) "
-			+ "FROM ProjectList AS o " + "WHERE "
-			+ "LOWER(o.identification) LIKE LOWER('%' || :identification || '%')")
-	
-	Integer countByIdentificationProject(@Param("identification") String identification);
 
-	@Query("SELECT COUNT(DISTINCT o.id) FROM ProjectList AS o LEFT JOIN o.users ou LEFT JOIN o.app ap LEFT JOIN ap.appRoles apr LEFT JOIN apr.appUsers apru " 
-			+ " WHERE (o.user=:user OR ou =:user OR apru.user=:user) AND"
-			+ "(LOWER(o.identification) LIKE LOWER('%' || :identification || '%'))")
-	Integer countByUserAndPermissionsProjects(@Param("user") User user,
-			@Param("identification") String identification);
 }

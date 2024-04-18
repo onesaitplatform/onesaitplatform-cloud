@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,16 @@
  */
 package com.minsait.onesait.platform.controlpanel.controller.project;
 
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
@@ -34,8 +32,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -43,6 +39,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -102,7 +99,7 @@ public class ProjectController {
 	/*
 	 * @Autowired private ResourcesInUseService resourcesInUseService;
 	 */
-	@Autowired
+	@Autowired 
 	private HttpSession httpSession;
 
 	private static final String ALL_USERS = "ALL";
@@ -113,7 +110,8 @@ public class ProjectController {
 	private static final String PROJ_FRAG_RESTAB = "project/fragments/resources-tab";
 	private static final String ACCESSES = "accesses";
 	private static final String APP_ID = "appId";
-
+	
+	
 	@Value("${onesaitplatform.webproject.baseurl:https://localhost:18000/web/}")
 	private String rootWWW;
 
@@ -150,18 +148,7 @@ public class ProjectController {
 					.collect(Collectors.groupingBy(ProjectResourceAccess::getResource)).values();
 			final List<ProjectResourceAccess> pra = new ArrayList<>();
 			for (final List<ProjectResourceAccess> elem : prfil) {
-				Boolean found = false;
-				if (elem.size()>1) {
-					for (ProjectResourceAccess praelem : elem) {
-						if (praelem.getUser().getUserId().equals(utils.getUserId())) {
-							pra.add(praelem);
-							found = true;
-						}
-					}
-				}
-				if (!found) {
-					pra.add(elem.get(0));
-				}
+				pra.add(elem.get(0));
 			}
 			model.addAttribute("objResources", pra);
 		} else {
@@ -177,7 +164,7 @@ public class ProjectController {
 		project.setUser(userService.getUser(utils.getUserId()));
 		try {
 			projectService.createProject(project);
-			final Project projectDb = projectService.getByName(project.getIdentification());
+			Project projectDb = projectService.getByName(project.getIdentification());
 			projectService.addUserToProject(projectDb.getUser().getUserId(), projectDb.getId());
 			populateUsertabData(model, projectDb.getId());
 		} catch (final ProjectServiceException e) {
@@ -186,19 +173,6 @@ public class ProjectController {
 			return "redirect:/projects/create";
 		}
 		return REDIRECT_PROJ_LIST;
-	}
-	
-	@RequestMapping(value = "/{id}/getImage")
-	public void showImg(@PathVariable("id") String id, HttpServletResponse response) {
-		final byte[] buffer = projectService.getImgBytes(id);
-		if (buffer.length > 0) {
-			try (OutputStream output = response.getOutputStream();) {
-				response.setContentLength(buffer.length);
-				output.write(buffer);
-			} catch (final Exception e) {
-				log.error("showImg", e);
-			}
-		}
 	}
 
 	@GetMapping("update/{id}")
@@ -212,8 +186,8 @@ public class ProjectController {
 		model.addAttribute("projectTypes", Project.ProjectType.values());
 		model.addAttribute("resourceTypes", Resources.values());
 		model.addAttribute("urlsMap", getUrlsMap());
-
-		if (httpSession.getAttribute("resourceTypeAdded") != null) {
+		
+		if (httpSession.getAttribute("resourceTypeAdded")!=null) {
 			model.addAttribute("resourceTypeAdded", httpSession.getAttribute("resourceTypeAdded"));
 			model.addAttribute("resourceIdentificationAdded", httpSession.getAttribute("resourceIdentificationAdded"));
 		}
@@ -240,7 +214,7 @@ public class ProjectController {
 		return "project/share";
 	}
 
-	@PostMapping("update/{id}")
+	@PutMapping("update/{id}")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String updateProject(Model model, @Valid ProjectDTO project, @PathVariable("id") String id) {
 		if (!projectService.isUserAuthorized(id, utils.getUserId())) {
@@ -250,7 +224,6 @@ public class ProjectController {
 		projectService.updateWithParameters(project);
 		return REDIRECT_PROJ_LIST;
 	}
-	
 
 	@PostMapping("setrealm")
 	public String setRealm(Model model, @RequestParam("realm") String realmId,
@@ -385,11 +358,6 @@ public class ProjectController {
 		model.addAttribute(PROJECT_OBJ_STR, projectService.getById(projectId));
 		return PROJ_FRAG_RESTAB;
 	}
-	
-	@PostMapping("authorizations/ALL")
-	public ResponseEntity<?> getAutorizationALL(Model model, @RequestBody @Valid ProjectResourceAccessDTO authorization) {
-		return new ResponseEntity<>(resourceService.getAutorizationALL(authorization.getResource(), authorization.getProject()), HttpStatus.OK);
-	}
 
 	@PostMapping("authorizations")
 	@Transactional
@@ -400,30 +368,80 @@ public class ProjectController {
 		}
 		if (log.isDebugEnabled()) {
 			log.debug("New request for access for user {} with permission {} to resource {} in project {}",
-					authorization.getAuthorizing(), authorization.getAccess().name(), authorization.getResource(),
-					authorization.getProject());
+				authorization.getAuthorizing(), authorization.getAccess().name(), authorization.getResource(),
+				authorization.getProject());
 		}
 		final Project project = projectService.getById(authorization.getProject());
-		
-		resourceService.insertAuthorization(project, authorization);
+		final Set<ProjectResourceAccess> accesses = new HashSet<>();
+		if (project.getApp() != null) {
+			if (authorization.getAuthorizing().equals(ALL_USERS)) {
+				accesses.add(new ProjectResourceAccess(null, authorization.getAccess(),
+						resourceService.getResourceById(authorization.getResource()), project,
+						null,true));
+				resourceService.insertAuthorizations(accesses);
+			} else {
+				resourceService.createUpdateAuthorization(new ProjectResourceAccess(null, authorization.getAccess(),
+						resourceService.getResourceById(authorization.getResource()), project,
+						appService.findRole(authorization.getAuthorizing()), false));
+			}
+		} else {
+			if (authorization.getAuthorizing().equals(ALL_USERS)) {
+				accesses.add(new ProjectResourceAccess(null, authorization.getAccess(),
+						resourceService.getResourceById(authorization.getResource()), project, null, true));
+				
+				if (authorization.getResourceType().equalsIgnoreCase(Resources.DATAFLOW.toString())
+						|| authorization.getResourceType().equalsIgnoreCase(Resources.NOTEBOOK.toString())) {
+					resourceService.insertAuthorizations(accesses.stream()
+							.filter(a -> userService.isUserAnalytics(a.getUser())).collect(Collectors.toSet()));
+				} else {
+					resourceService.insertAuthorizations(accesses);
+				}
+			} else {
+				resourceService.createUpdateAuthorization(new ProjectResourceAccess(
+						userService.getUser(authorization.getAuthorizing()), authorization.getAccess(),
+						resourceService.getResourceById(authorization.getResource()), project, null, false));
+			}
 
+		}
 		model.addAttribute(PROJECT_OBJ_STR, projectService.getById(authorization.getProject()));
 		return PROJ_FRAG_RESTAB;
 	}
 
 	@PostMapping("authorizationsAssociated")
 	@Transactional
-	public String insertAuthorizationAssociated(Model model, @RequestBody @Valid List<ProjectResourceAccessDTO> authorizations) {
-		if (authorizations.size()>0) {
-			final Project project = projectService.getById(authorizations.iterator().next().getProject());
-			for (final ProjectResourceAccessDTO authorization : authorizations) {
-				if (!projectService.isUserAuthorized(authorization.getProject(), utils.getUserId())
-						&& !resourceService.isUserAuthorized(utils.getUserId(), authorization.getResource())) {
-					return ERROR_403;
-				}
-				resourceService.insertAuthorization(project, authorization);
+	public String insertAuthorizationAssociated(Model model,
+			@RequestBody @Valid List<ProjectResourceAccessDTO> authorizations) {
+		for (final ProjectResourceAccessDTO authorization : authorizations) {
+			if (!projectService.isUserAuthorized(authorization.getProject(), utils.getUserId())
+					&& !resourceService.isUserAuthorized(utils.getUserId(), authorization.getResource())) {
+				return ERROR_403;
 			}
-			model.addAttribute(PROJECT_OBJ_STR, projectService.getById(project.getId()));
+			final Project project = projectService.getById(authorization.getProject());
+			final Set<ProjectResourceAccess> accesses = new HashSet<>();
+			if (project.getApp() != null) {
+				if (authorization.getAuthorizing().equals(ALL_USERS)) {
+					accesses.add(new ProjectResourceAccess(null, authorization.getAccess(),
+							resourceService.getResourceById(authorization.getResource()), project, null, false));
+					
+					resourceService.insertAuthorizations(accesses);
+
+				} else {
+					resourceService.createUpdateAuthorization(new ProjectResourceAccess(null, authorization.getAccess(),
+							resourceService.getResourceById(authorization.getResource()), project,
+							appService.findRole(authorization.getAuthorizing()), false));
+				}
+			} else {
+				if (authorization.getAuthorizing().equals(ALL_USERS)) {
+					accesses.add(new ProjectResourceAccess(null, authorization.getAccess(),
+								resourceService.getResourceById(authorization.getResource()), project, null, true));
+					resourceService.insertAuthorizations(accesses);
+				} else {
+					resourceService.createUpdateAuthorization(new ProjectResourceAccess(
+							userService.getUser(authorization.getAuthorizing()), authorization.getAccess(),
+							resourceService.getResourceById(authorization.getResource()), project, null , false));
+				}
+			}
+			model.addAttribute(PROJECT_OBJ_STR, projectService.getById(authorization.getProject()));
 		}
 		return PROJ_FRAG_RESTAB;
 	}
@@ -440,14 +458,14 @@ public class ProjectController {
 		model.addAttribute(PROJECT_OBJ_STR, projectService.getById(projectId));
 		return PROJ_FRAG_RESTAB;
 	}
-
+	
 	@DeleteMapping("authorizations/all")
 	public String deleteAllAuthorization(Model model, @RequestParam("id") String id,
 			@RequestParam("idsArray") String idsStringArray) {
 
 		try {
-			final List<String> idsArray = new ArrayList<String>(Arrays.asList(idsStringArray.split(",")));
-			for (final String idAuth : idsArray) {
+			List<String> idsArray = new ArrayList<String>(Arrays.asList(idsStringArray.split(",")));
+			for (String idAuth : idsArray) {
 				resourceService.removeAuthorization(idAuth, id, utils.getUserId());
 			}
 		} catch (final Exception e) {
@@ -471,6 +489,8 @@ public class ProjectController {
 		return list(model);
 	}
 
+
+	
 	private void populateUsertabData(Model model, String projectId) {
 		final Project project = projectService.getById(projectId);
 		final List<ProjectUserDTO> members = projectService.getProjectMembers(project.getId());
@@ -582,7 +602,6 @@ public class ProjectController {
 		urls.put(Resources.CONFIGURATION.name(), "configurations");
 		urls.put(Resources.GADGETTEMPLATE.name(), "gadgettemplates");
 		urls.put(Resources.REPORT.name(), "reports");
-		urls.put(Resources.FORM.name(), "forms");
 		return urls;
 	}
 }

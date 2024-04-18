@@ -14,13 +14,6 @@
 {% } %}
 {% if (ctx.component.rightIcon) { %}&nbsp;<span class="{{ctx.component.rightIcon}}"></span>{% } %}
 </{{ctx.input.type}}>
-<div ref="buttonMessageContainer" class="formio-button-message-container-hide">
+<div ref="buttonMessageContainer">
   <span class="help-block" ref="buttonMessage"></span>
-  <button onclick="this.parentNode.classList.remove('formio-button-message-container-show-error');this.parentNode.classList.remove('formio-button-message-container-show-done');this.parentNode.classList.add('formio-button-message-container-hide');" style="
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    border: none;
-    background: transparent;
-">x</button>
 </div>

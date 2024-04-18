@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.dto.OntologyForList;
 import com.minsait.onesait.platform.config.model.DataModel;
 import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.model.Report;
 import com.minsait.onesait.platform.config.model.User;
 
 public interface OntologyRepository extends JpaRepository<Ontology, String> {
@@ -156,8 +155,6 @@ public interface OntologyRepository extends JpaRepository<Ontology, String> {
 	@Cacheable(cacheNames = "OntologyRepository", key = "#p0")
 	Optional<Ontology> findById(String id);
 
-	Ontology findByIdentificationOrId(String identification, String id);
-	
 	List<Ontology> findByUserAndIsPublicTrue(User user);
 
 	long countByActiveTrueAndIsPublicTrue();
@@ -277,9 +274,6 @@ public interface OntologyRepository extends JpaRepository<Ontology, String> {
 		return ontology.getJsonSchema();
 
 	}
-	
-	@Query("SELECT o FROM Ontology AS o WHERE o.dataModel=:datamodel")
-	List<Ontology> findIdenficationByDataModel(@Param("datamodel") DataModel datamodel);
 
 	@Modifying
 	@Transactional

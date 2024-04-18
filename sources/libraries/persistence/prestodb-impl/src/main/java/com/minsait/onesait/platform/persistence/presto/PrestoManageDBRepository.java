@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,10 @@ import com.minsait.onesait.platform.commons.model.DescribeColumnData;
 import com.minsait.onesait.platform.commons.rtdbmaintainer.dto.ExportData;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
+import com.minsait.onesait.platform.persistence.external.generator.SQLGenerator;
 import com.minsait.onesait.platform.persistence.historical.minio.HistoricalMinioException;
 import com.minsait.onesait.platform.persistence.historical.minio.HistoricalMinioService;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
-import com.minsait.onesait.platform.persistence.presto.generator.PrestoSQLGenerator;
 import com.minsait.onesait.platform.persistence.presto.generator.PrestoSQLHelper;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
@@ -62,7 +62,7 @@ public class PrestoManageDBRepository implements ManageDBRepository {
 	private HistoricalMinioService historicalMinioService;
 
 	@Autowired
-	private PrestoSQLGenerator sqlGenerator;
+	private SQLGenerator sqlGenerator;
 
 	@Autowired
 	private PrestoSQLHelper prestoSQLHelper;

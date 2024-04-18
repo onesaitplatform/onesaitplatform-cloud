@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,10 +37,10 @@ public class MicroserviceTemplatesServiceImpl implements MicroserviceTemplatesSe
 
 	@Autowired
 	private MicroserviceTemplateRepository msTemplateRepository;
-
+	
 	@Autowired
 	private UserRepository userRepository;
-
+	
 	@Autowired
 	private UserService userService;
 	@Autowired
@@ -51,9 +51,8 @@ public class MicroserviceTemplatesServiceImpl implements MicroserviceTemplatesSe
 
 	@Override
 	public String createNewTemplate(MicroserviceTemplate template, String userId) {
-		if (mstemplateExists(template.getIdentification())) {
+		if (mstemplateExists(template.getIdentification()))
 			throw new MicroserviceTemplateException("Microservice template already exists in Database");
-		}
 
 		final MicroserviceTemplate mstemplateAux = getNewMsTemplate(template, userId);
 
@@ -79,16 +78,18 @@ public class MicroserviceTemplatesServiceImpl implements MicroserviceTemplatesSe
 		return msTemplateRepository.save(mst);
 	}
 
+
 	@Override
 	public MicroserviceTemplate save(MicroserviceTemplate service) {
 		return msTemplateRepository.save(service);
 	}
 
+
 	@Override
 	public MicroserviceTemplate getById(String id) {
 		return msTemplateRepository.findById(id).orElse(null);
 	}
-
+	
 	@Override
 	public MicroserviceTemplate getMsTemplateById(String id, String userId) {
 		if (hasUserEditPermission(id, userId)) {
@@ -116,10 +117,9 @@ public class MicroserviceTemplatesServiceImpl implements MicroserviceTemplatesSe
 		if (hasUserEditPermission(id, userId)) {
 			return msTemplateRepository.findMicroserviceTemplateById(id);
 		}
-		throw new MicroserviceTemplateException(
-				"Cannot view Microservice Template that does not exist or don't have permission");
+		throw new MicroserviceTemplateException("Cannot view Microservice Template that does not exist or don't have permission");
 	}
-
+	
 	@Transactional
 	@Override
 	public String updateMsTemplate(MicroserviceTemplate mstemplate, String userId) {
@@ -133,9 +133,8 @@ public class MicroserviceTemplatesServiceImpl implements MicroserviceTemplatesSe
 			d.setGitPassword(mstemplate.getGitPassword());
 			d.setGitRepository(mstemplate.getGitRepository());
 			d.setGitUser(mstemplate.getGitUser());
-			if (mstemplate.getLanguage() != null) {
+			if(mstemplate.getLanguage() != null)
 				d.setLanguage(mstemplate.getLanguage());
-			}
 			d.setPublic(mstemplate.isPublic());
 			d.setRelativePath(mstemplate.getRelativePath());
 			d.setGraalvm(mstemplate.isGraalvm());
@@ -145,21 +144,21 @@ public class MicroserviceTemplatesServiceImpl implements MicroserviceTemplatesSe
 
 	@Override
 	public List<String> getAllIdentificationsByUser(String userId) {
-		final User user = userService.getUser(userId);
+		User user = userService.getUser(userId);
 		if (user.isAdmin()) {
 			return msTemplateRepository.findAllIdentifications();
 		} else {
 			return msTemplateRepository.findAllIdentificationsByUser(user);
 		}
 	}
-
+	
 	@Override
 	public List<MicroserviceTemplate> getAllMicroserviceTemplatesByUser(String userId) {
-		final User user = userService.getUser(userId);
+		User user = userService.getUser(userId);
 		if (user.isAdmin()) {
 			return msTemplateRepository.findAll();
 		} else {
-			return msTemplateRepository.findByUserOrIsPublicTrueOrderByIdentificationAsc(user);
+			return msTemplateRepository.findByUserOrderByIdentificationAsc(user);
 		}
 	}
 
@@ -168,15 +167,17 @@ public class MicroserviceTemplatesServiceImpl implements MicroserviceTemplatesSe
 		List<MicroserviceTemplate> msTemplates;
 
 		identification = identification == null ? "" : identification;
-
+		
 		final User user = userRepository.findByUserId(userId);
-
+		
 		if (userService.isUserAdministrator(user)) {
-			msTemplates = msTemplateRepository.findByIdentificationContaining(identification);
+			msTemplates = msTemplateRepository
+					.findByIdentificationContaining(identification);
 		} else {
-			msTemplates = msTemplateRepository.findByUserAndIdentificationContainingOrderByIdentificationAsc(user,
-					identification);
+			msTemplates = msTemplateRepository
+					.findByUserAndIdentificationContainingOrderByIdentificationAsc(user, identification);
 		}
+		
 
 		return msTemplates.stream().map(temp -> {
 			final MicroserviceTemplate obj = new MicroserviceTemplate();
@@ -189,7 +190,7 @@ public class MicroserviceTemplatesServiceImpl implements MicroserviceTemplatesSe
 		}).collect(Collectors.toList());
 
 	}
-
+	
 	@Override
 	public boolean hasUserEditPermission(String id, String userId) {
 		final User user = userRepository.findByUserId(userId);
@@ -208,11 +209,11 @@ public class MicroserviceTemplatesServiceImpl implements MicroserviceTemplatesSe
 			}
 		}
 	}
-
+	
 	@Override
 	public boolean mstemplateExists(String identification) {
-		final MicroserviceTemplate mstemplate = msTemplateRepository.findByIdentification(identification);
-		if (mstemplate != null) {
+		MicroserviceTemplate mstemplate = msTemplateRepository.findByIdentification(identification);
+		if(mstemplate!=null) {
 			return true;
 		} else {
 			return false;
@@ -249,12 +250,8 @@ public class MicroserviceTemplatesServiceImpl implements MicroserviceTemplatesSe
 		if (user.isAdmin()) {
 			return true;
 		} else {
-			final MicroserviceTemplate mst = msTemplateRepository.findMicroserviceTemplateById(id);
-			final boolean propietary = mst.getUser().getUserId().equals(userId);
+			final boolean propietary = msTemplateRepository.findMicroserviceTemplateById(id).getUser().getUserId().equals(userId);
 			if (propietary) {
-				return true;
-			}
-			if (mst.isPublic()) {
 				return true;
 			}
 
@@ -271,8 +268,15 @@ public class MicroserviceTemplatesServiceImpl implements MicroserviceTemplatesSe
 	@Override
 	public MicroserviceTemplate getMsTemplateByIdentification(String identification, String userId) {
 		identification = identification == null ? "" : identification;
-		final MicroserviceTemplate msTemplate = msTemplateRepository.findByIdentification(identification);
+		MicroserviceTemplate msTemplate = null;
+		final User user = userRepository.findByUserId(userId);
+		
+		if (userService.isUserAdministrator(user)) {
+			msTemplate = msTemplateRepository.findByIdentification(identification);
+		} else {
+			msTemplate = msTemplateRepository.findMicroserviceTemplateByIdentificationAndUser(identification, user);
+		}
 		return msTemplate;
 	}
-
+	
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -171,21 +171,6 @@ public class DataFlowStorageManagementController {
 
 		ResponseEntity<String> response = dataflowService.pipelines(utils.getUserId(), filterText, label, offset, len, orderBy, order, status);
 		return new ResponseEntity<String>(response.getBody(), response.getStatusCode());
-	}
-	
-	@Operation(summary = "get pipeline by identification or id")
-	@GetMapping("/pipelines/{id}")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Status of all pipelines obtained", content=@Content(schema=@Schema(implementation=String.class))),
-			@ApiResponse(responseCode = "400", description = "Bad request"), @ApiResponse(responseCode = "401", description = "Unauthorized"),
-			@ApiResponse(responseCode = "403", description = "Forbidden"), @ApiResponse(responseCode = "404", description = "Not Found"),
-			@ApiResponse(responseCode = "500", description = "Internal Server Error") })
-	public ResponseEntity<Object> getPipeline(
-			@Parameter(description= "Dataflow pipeline identification or id", required = true) @PathVariable("id") String pipelineIdentification)
-					throws UnsupportedEncodingException {
-
-		final String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
-		return dataflowService.getPipelineByIdentificationOrId(identification, utils.getUserId());
 	}
 
 	@Operation(summary = "delete pipeline")

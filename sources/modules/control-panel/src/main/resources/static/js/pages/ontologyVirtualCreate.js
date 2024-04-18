@@ -17,11 +17,6 @@ var wizardStep = 1;
 var OntologyCreateController = function() {
     
 	// DEFAULT PARAMETERS, VAR, CONSTS. 
-	var mapPropType = {};
-	var referencesArr 			=[]; // references LD array
-	var referencesIds			=[]; // references ID avoid duplication
-	var mountableModelLD = $('#ontology_references').find('tr.reference-model')[0].outerHTML;
-	var schemaUrl = 'ontologies/schema/';
     var APPNAME = 'onesait Platform Control Panel'; 
 	var LIB_TITLE = 'Ontology Controller';	
     var logControl = 1;
@@ -580,18 +575,10 @@ var OntologyCreateController = function() {
 			return true;
 		}
 	}
-	
-	var validateDescription = function(){
-		if ($('#description').val().length <= 4) { 
-			return false; 
-		} else {
-			return true;
-		}
-	}
 
 	// VALIDATE TAGSINPUT
 	var validateMetaInf = function(){
-		if ($('#metainf').val() === '' || $('#metainf').val().length <=4){
+		if ($('#metainf').val() === ''){
 			$('#metainf').prev().addClass('tagsinput-has-error');
 			$('#metainf').nextAll('span:first').removeClass('hide');
 			return false;
@@ -737,7 +724,7 @@ var OntologyCreateController = function() {
 	
 	var validateSpecialComponentsAndSubmit = function (submit) {
         // VALIDATE IDENTIFICATION METAINF AND SCHEMA
-		if (validateIdName() && validateMetaInf() && validateJsonSchema() && validateDescription()){
+		if (validateIdName() && validateMetaInf() && validateJsonSchema()){
 			// VALIDATE JSON SCHEMA 
 
 			if($("#id").is(":checked")){
@@ -793,9 +780,6 @@ var OntologyCreateController = function() {
 	var initTemplateElements = function(){
 		logControl ? console.log('initTemplateElements() ->  resetForm,  currentLanguage: ' + currentLanguage) : '';
 		
-		$('#linked-data-modal').on("hide.bs.modal", function() {updateSchemaProperties()})
-		$('#btn-updateSchema').on('click',function(){ updateSchemaProperties(); });
-		$('#btn-ld').on('click',function(){ mountLDModal(); });
 		// INPUT MASK FOR ontology identification allow only letters, numbers
 		// and -_
 		$("#identification").inputmask({ regex: "[a-zA-Z0-9_]*", greedy: false });
@@ -1030,12 +1014,10 @@ var OntologyCreateController = function() {
 				$("#users").selectpicker('deselectAll');
 				
 				$('#imageNoElementsOnTable').hide();
-
 			}		
 			
 			// take schema from ontology and load it
 			schema = ontologyCreateReg.schemaEditMode;
-			editor.setText(schema)
 		}		
 	}	
 
@@ -1388,191 +1370,6 @@ var OntologyCreateController = function() {
 		});
 	}
 	
-	var mountLDModal = function(){
-		//TO-DO sacar properties del schema y tipos si es array filtrar tipo
-		cleanLDSelects();
-		$('#linked-data-modal').modal('show');
-		var schemaObj = {};
-		if (typeof schema == 'string'){
-			schemaObj = JSON.parse(schema);
-		}
-		var parentNode = 'properties.';
-		if(schemaObj.hasOwnProperty('datos'))
-			parentNode = 'datos.' + parentNode;
-		let properties = Object.keys(schemaObj.properties);
-		let propTypes = []
-		Object.keys(schemaObj.properties).forEach(function(item){
-			if(typeof schemaObj.properties[item].type !== 'undefined' && typeof schemaObj.properties[item].type === 'object'){
-				schemaObj.properties[item].type.forEach(function(t){ if(t !== 'null') propTypes.push(t) })
-			}else if(typeof schemaObj.properties[item].type !== 'undefined' && typeof schemaObj.properties[item].type === 'string'){
-				propTypes.push(schemaObj.properties[item].type);
-			}
-		});
-		
-		// get current schema
-
-
-		properties.forEach(function(property,i){
-			$('#self-property').append($('<option>', {value: parentNode + property, text: property}));
-			mapPropType[property]=propTypes[i];
-		})
-		$('#self-property').selectpicker('refresh');
-	}
-	var cleanLDSelects =  function(){
-		var selects = ['self-property','target-property'];
-		selects.forEach(function(select){
-			$('#' + select +' option').each(function(i, option){
-				if(option.value != "")
-					option.remove();
-			});
-			$('#' + select).selectpicker('refresh');
-		})
-		$('#target-ontology').val("");
-		
-	
-	}
-	
-	var mountTableReferences = function(){
-		// TO-HTML
-		if ($('#references').attr('data-loaded') === 'true'){
-			$('#ontology_references > tbody').html("");
-			$('#ontology_references > tbody').append(mountableModelLD);
-		}
-		console.log('referencesArr: ' + referencesArr.length + ' Arr: ' + JSON.stringify(referencesArr));
-		$('#ontology_references').mounTable(referencesArr,{
-			model: '.reference-model',
-			noDebug: false							
-		});
-
-		$('#references').removeClass('hide');
-		$('#references').attr('data-loaded',true);
-	}
-		// INSERT RELATION
-	var insertRelation = function (srcAtt, dstOnt, dstAtt, srcAttPath, dstAttPath, validate, relationType){
-		if(referencesIds.indexOf(srcAtt + dstOnt + dstAtt) == -1){
-			var relation = { "srcAtt" : srcAtt, "dstOntology" : dstOnt, "dstAtt": dstAtt, "srcAttPath" : srcAttPath, "dstAttPath" : dstAttPath, "validate" : validate, "relationType": relationType};
-			referencesArr.push(relation);
-			referencesIds.push(srcAtt + dstOnt + dstAtt);
-			mountTableReferences();
-		}
-		
-	}
-		// DELETE RELATION
-	var deleteRelation = function(obj){
-		
-		var srcAtt = $(obj).closest('tr').find("input[name='srcAtt\\[\\]']").val();
-		var dstAtt = $(obj).closest('tr').find("input[name='dstAtt\\[\\]']").val();			
-		var dstOnt = $(obj).closest('tr').find("input[name='dstOntology\\[\\]']").val();
-		if(referencesIds.indexOf(srcAtt + dstOnt + dstAtt) > -1){
-			referencesArr.forEach(function(reference, i){
-				if(reference["srcAtt"] == srcAtt && reference["dstAtt"] == dstAtt && reference["dstOntology"] == dstOnt)
-					referencesArr.splice(i, 1);
-			});
-			referencesIds.splice(referencesIds.indexOf(srcAtt + dstOnt + dstAtt),1);
-		}
-		
-		mountTableReferences();
-		
-	}
-	var getTargetOntologyProperties = function(){
-		$('#target-property option').each(function(i, option){
-			if(option.value != "")
-				option.remove();
-		});
-		var dstOnt = $('#target-ontology').val();
-		var srcAtt = $('#self-property :selected').text()
-		
-		var csrf_value = $("meta[name='_csrf']").attr("content");
-		var csrf_header = $("meta[name='_csrf_header']").attr("content");
-		$.ajaxSetup({'headers': {
-			[csrf_header]: csrf_value
-	    }});
-
-		jQuery.get('/controlpanel/ontologies/' + dstOnt + '/properties/type/' + mapPropType[srcAtt], function(data){
-			var properties = data;
-			Object.keys(properties).forEach(function(key){
-				$('#target-property').append($('<option>', {value: properties[key] , text: key }));
-			});
-			$('#target-property').selectpicker('refresh');
-		});
-		
-	}
-	
-	var updateSchemaProperties = function(){
-		logControl ? console.log('updateSchemaProperties() -> ') : '';
-		// properties, types and required arrays
-		var schemaObj = {};
-
-		// get current schema
-		if (typeof schema == 'string'){
-			schemaObj = JSON.parse(schema);
-
-		}else if (typeof schema == 'object') { schemaObj = schema; } else { $.alert({title: 'ERROR!', theme: 'light', content: ontologyCreateReg.validations.tplschema}); return false; }
-
-		
-
-		// HANDLE REFERENCES
-		createReferences(schemaObj);
-
-		// ADD INFO TO SCHEMA EDITOR
-		schema = JSON.stringify(schemaObj);
-		editor.setMode("text");
-        editor.setText('');
-		editor.setText(schema);
-		editor.setMode("tree");
-
-			
-		
-		// UPDATING FORM FIELDS
-		$('#jsonschema').val(schema);
-		 
-	}
-	var createReferences = function(schema){
-		delete schema["_references"];
-		if(referencesArr.length > 0){
-			var refs = [];
-			referencesArr.forEach(function(r){
-				var self = r.srcAttPath;
-				var target = schemaUrl + r.dstOntology + '#' + r.dstAttPath;
-				var validate = r.validate;
-				let relationType = r.relationType;
-				refs.push({"self":self, "target": target, "validate":validate, "relationType": relationType});
-			});
-			schema["_references"] = refs;
-		}
-	}
-		// HANDLE LINKED DATA
-	var mountReferenceInitialTable = function(){
-		if(ontologyCreateReg.actionMode != null){
-			var schemaObj = JSON.parse(schema);
-
-			console.log('references:  ' + JSON.stringify(schemaObj));
-			if (schemaObj.hasOwnProperty("_references")){
-				var references = schemaObj["_references"];
-				references.forEach(function(r){
-					var srcAttPath = r["self"];
-					// if is referencing from array
-					if(srcAttPath.endsWith(".items"))
-					srcAttPath = srcAttPath.replace(/.items/g, '');
-					var srcAtt = srcAttPath.split(".")[ srcAttPath.split(".").length - 1]
-					var target = r["target"];
-					var validate = r["validate"];
-					var relationType = r["relationType"];
-					var dstOnt = target.split(schemaUrl)[1].split("#")[0];
-					var dstAttPath = target.split(schemaUrl)[1].split("#")[1];
-					if(dstAttPath.endsWith(".items"))
-					dstAttPath = dstAttPath.replace(/.items/g, '');
-
-					var dstAtt = dstAttPath.split(".")[ dstAttPath.split(".").length - 1]
-					referencesArr.push({ "srcAtt" : srcAtt, "dstOntology" : dstOnt, "dstAtt": dstAtt, "srcAttPath" : srcAttPath, "dstAttPath" : dstAttPath, "validate": validate, "relationType": relationType});
-					referencesIds.push(srcAtt + dstOnt + dstAtt);
-				});
-				mountTableReferences();
-
-			}
-		}
-			
-	}
 	
 	// CONTROLLER PUBLIC FUNCTIONS 
 	return{
@@ -1591,7 +1388,6 @@ var OntologyCreateController = function() {
 			createEditor();
 			initTemplateElements();
 			this.loadCodeMirror();
-			mountReferenceInitialTable();
 			
 			$('#jsonschema').val(ontologyCreateJson.dataModels[0].jsonSchema);
 			$('#datamodelid').val(ontologyCreateJson.dataModels[0].id); 
@@ -1625,7 +1421,6 @@ var OntologyCreateController = function() {
 			
 			
 		},
-		
 		
 		// REDIRECT
 		go: function(url){
@@ -2601,34 +2396,7 @@ var OntologyCreateController = function() {
 				historicalPartitions.push(column);
 			}
 		},
-		enableComboOntologies : function(){
-			if($('#self-property').val() != ''){
-				$('#target-ontology').prop( "disabled", false);
-			}else{
-				$('#target-ontology').prop( "disabled", true);
-			}
-			$('#target-ontology').selectpicker('refresh');
-
-		},
-		getTargetOntologyProperties : function(){
-			getTargetOntologyProperties();
-		},
-		insertRelation : function(){
-			var srcProperty = $('#self-property :selected').text();
-			var srcPropertyPath = $('#self-property').val();
-			var dstOntology = $('#target-ontology').val();
-			var dstProperty = $('#target-property :selected').text();
-			var dstPropertyPath = $('#target-property').val();
-			var validate = $('#validate-property').val();
-			var relationType = $('#relation-type').val();
-			if(dstOntology != "" && dstProperty != "")
-				insertRelation(srcProperty, dstOntology, dstProperty, srcPropertyPath, dstPropertyPath, validate, relationType);
-			// TODO: else alert red selections
-			
-		},
-		deleteRelation : function(object){
-			deleteRelation(object);
-		},
+		
 		submitModalFile: function() {
 		 	$('#ontologyName').val($('#identification').val());
 		 	var form2 = $('#form_new');

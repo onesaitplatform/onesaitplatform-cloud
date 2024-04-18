@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ public class PostgreSQLHelper extends SQLHelperImpl implements SQLHelper {
 	public boolean hasCrossDatabase() {
 		return false;
 	}
-
+	
 	@Override
 	public String getTableInformationStatement(String database, String schema) {
 		return String.format(LIST_TABLE_INFORMATION_QUERY, schema);
@@ -104,7 +104,7 @@ public class PostgreSQLHelper extends SQLHelperImpl implements SQLHelper {
 	public String getAllTablesStatement(String database, String schema) {
 		return String.format(LIST_TABLES_IN_SCHEMA_QUERY, schema);
 	}
-
+	
 	@Override
 	public String getTableIndexes(String database, String schema) {
 		return String.format(GET_TABLE_INFORMATION_QUERY, schema);
@@ -198,10 +198,9 @@ public class PostgreSQLHelper extends SQLHelperImpl implements SQLHelper {
 		final String jsonSchema = o.getJsonSchema();
 		final JSONObject obj = new JSONObject(jsonSchema);
 		final JSONObject columns = obj.getJSONObject("properties");
-		// Comentado porque no se pueden pedir las columnas fk: user_id, api_id...
-//		if (query.contains("_id,")) {
-//			query = query.replace("_id,", "");
-//		}
+		if (query.contains("_id,")) {
+			query = query.replace("_id,", "");
+		}
 
 		if (virtual.getObjectGeometry() != null && !virtual.getObjectGeometry().trim().equals("")) {
 			final Select selectStatement = (Select) CCJSqlParserUtil.parse(query);

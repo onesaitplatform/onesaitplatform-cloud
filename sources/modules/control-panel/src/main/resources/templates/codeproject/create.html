@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -108,7 +108,7 @@
     						<div class="col-md-4 col-sm-4 col-xs-12">
     					    	<div class="form-group">
     					        	<label th:text="#{gen.name}">Name</label><span th:if="!*{id}" class="required"> *</span>
-    							      <input th:attrappend="readonly=${codeproject.id}?'true'" pattern="^[a-zA-Z0-9_]{1,40}$" id="identification" type="text" name="identification" th:required="true" maxlength="100" th:field="*{name}" class="form-control " th:placeholder="#{gen.name}"/>
+    							      <input th:attrappend="readonly=${codeproject.id}?'true'" pattern="^[a-z-]{1,40}$" id="identification" type="text" name="identification" th:required="true" maxlength="100" th:field="*{name}" class="form-control " th:placeholder="#{gen.name}"/>
     							  </div>
     						  </div>
     					</div>
@@ -121,15 +121,15 @@
 							<div id="git-template" class="only-new" >
     							<div class="col-md-4 col-sm-4 col-xs-12 form-group">
     							    <label th:text="#{codeproject.git.url}">Url</label><span class="required"> *</span>
-    								<input id="gitlab-site" type="text" name="gitlabSite"  th:field="*{repo}" class="form-control " placeholder="Git URL" th:required="true"/>
+    								<input id="gitlab-site" type="text" name="gitlabSite"  th:field="*{repo}" class="form-control " placeholder="Git URL"/>
     							</div>
     							<div class="col-md-4 col-sm-4 col-xs-12 form-group">
-	            					<label th:text="#{codeproject.git.user}">Gitlab User </label><span class="required"> *</span>
+	            					<label th:text="#{codeproject.git.user}">Gitlab User </label><class="required"> *</span>
 	            					<input id="git-username" type="text" name="gitUsername"  th:field="*{username}" class="form-control " placeholder="git username" th:required="true"/>
 	            				</div>
     							<div class="col-md-4 col-sm-4 col-xs-12 form-group">
     							     <label th:text="#{microservice.gitlab.privatetoken}">Gitlab Private Token</label><span th:if="!*{id}" class="required"> *</span>
-    							     <input id="gitlab-private-token" type="text" name="privateToken" th:field="*{privateToken}" class="form-control " placeholder="Token" th:required="true"/>
+    							     <input id="gitlab-private-token" type="text" name="privateToken" th:field="*{privateToken}" class="form-control " placeholder="Token"/>
     							</div>    														
     						</div>	
 						</div>

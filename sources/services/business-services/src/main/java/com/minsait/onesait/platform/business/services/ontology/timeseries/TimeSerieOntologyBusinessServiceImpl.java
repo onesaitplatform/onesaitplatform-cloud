@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,14 +29,12 @@ import com.minsait.onesait.platform.config.model.OntologyTimeSeries;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesProperty.PropertyType;
 import com.minsait.onesait.platform.config.model.OntologyTimeseriesTimescaleAggregates;
 import com.minsait.onesait.platform.config.model.OntologyTimeseriesTimescaleProperties;
-import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;
 import com.minsait.onesait.platform.config.services.kafka.KafkaAuthorizationServiceImpl;
 import com.minsait.onesait.platform.config.services.ontology.OntologyConfiguration;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyTimeSeriesService;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyTimeSeriesServiceDTO;
 import com.minsait.onesait.platform.config.services.ontology.dto.TimescaleContinuousAggregateRequest;
-import com.minsait.onesait.platform.persistence.factory.ManageDBRepositoryFactory;
 import com.minsait.onesait.platform.persistence.timescaledb.TimescaleDBManageDBRepository;
 
 import lombok.extern.slf4j.Slf4j;
@@ -55,8 +53,6 @@ public class TimeSerieOntologyBusinessServiceImpl implements TimeSeriesOntologyB
 	private KafkaAuthorizationServiceImpl kafkaAuthorizationService;
 	@Autowired
 	private TimescaleDBManageDBRepository timescaleManageRepository;
-	@Autowired
-	private ManageDBRepositoryFactory manageDBPersistence;
 
 	@Override
 	public Ontology createOntology(OntologyTimeSeriesServiceDTO ontologyTimeSeriesDTO, OntologyConfiguration config,
@@ -70,33 +66,10 @@ public class TimeSerieOntologyBusinessServiceImpl implements TimeSeriesOntologyB
 			if (createdOnt.getRtdbDatasource().equals(Ontology.RtdbDatasource.TIMESCALE)) {
 				// create table
 				timescaleManageRepository.createTable4Ontology(createdOnt.getIdentification(), null, null);
-			} else {
-				// create index for timeserie
-				// create index
-				StringBuilder index = new StringBuilder().append("db.")
-						.append(ontologyTimeSeriesDTO.getIdentification()).append(".createIndex({");
-				index.append("\"TimeSerie.timestamp\":-1");
-				for (String tag : ontologyTimeSeriesDTO.getTags()) {
-					for (String tagElement : tag.split("-")) {
-						final String[] tagElementParsed = tagElement.split(":");
-						if (tagElement != null && !tagElement.isEmpty() && tagElementParsed[0].trim().equals("name")) {
-							index.append(",\"TimeSerie.").append(tagElementParsed[1].trim()).append("\":-1");
-						}
-					}
-				}
-				index.append(",\"TimeSerie.propertyName\":-1");
-				index.append(",\"TimeSerie.windowType\":-1");
-				index.append(",\"TimeSerie.windowFrecuency\":-1");
-				index.append(",\"TimeSerie.windowFrecuencyUnit\":-1");
-				index.append("},{\"unique\":true,\"name\":\"").append(ontologyTimeSeriesDTO.getIdentification())
-						.append("_UNIQ_IDX\"})");
-				manageDBPersistence.getInstance(createdOnt.getRtdbDatasource()).createIndex(index.toString());
 			}
 			return createdOnt;
 		} catch (Exception e) {
-			if (createdOnt != null) {
-				ontologyBusinessService.deleteOntology(createdOnt.getId(), createdOnt.getUser().getUserId());
-			}
+			ontologyBusinessService.deleteOntology(createdOnt.getId(), createdOnt.getUser().getUserId());
 			throw new TimeSerieOntologyBusinessServiceException(e.getMessage());
 		}
 
@@ -156,8 +129,7 @@ public class TimeSerieOntologyBusinessServiceImpl implements TimeSeriesOntologyB
 			timescaleManageRepository.activateCompressionPolicy(ontologyTimeSeriesDTO.getIdentification(),
 					ontologyTimeseriesTimescaleProperties);
 		}
-		// if compression policy changes frequency or query: deactivate and activate
-		// with new
+		// if compression policy changes frequency or query: deactivate and activate with new
 		// policy
 		else if (ontologyTimeseriesTimescaleProperties.isCompressionActive()
 				&& ontologyTimeserie.getTimeSeriesTimescaleProperties().isCompressionActive()

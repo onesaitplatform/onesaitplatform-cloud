@@ -6,33 +6,6 @@
   font-size: 14px Base
 
 }
-.el-badge__content.is-dot {
-  position: absolute !important;
-  height: 8px !important;
-  width: 8px !important;
-  padding: 0 !important;
-  right: 15 !important;
-  margin-right: 5px !important;
-  border-radius: 50% !important;
-}
-
-.el-badge{
-  display: block !important;
-}
-
-.el-form-item__content > .el-badge {
-  position: absolute !important;
-}
-
-.badge_hidden > sup {
-  visibility: hidden;
-}
-
-.item_badge {
-  margin-top: 10px;
-  margin-right: 20px;
-}
-
 .botton-desc{
   padding: 0px !important;
   margin-top: 5px !important;

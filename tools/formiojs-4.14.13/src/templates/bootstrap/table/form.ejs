@@ -3,9 +3,6 @@
     {{ ctx.component.bordered ? 'table-bordered' : ''}}
     {{ ctx.component.hover ? 'table-hover' : ''}}
     {{ ctx.component.condensed ? 'table-sm' : ''}}
-    {{ ctx.component.fitcontent ? 'table-fitcontent' : ''}}
-    {{ ctx.component.float && ctx.component.float != 'none' ? ctx.component.float === 'float-start'? 'table-float-start' : 'table-float-end' : ''}}
-
   ">
   <caption class="sr-only">{{ctx.t(ctx.component.label)}}</caption>
   {% if (ctx.component.header && ctx.component.header.length > 0) { %}

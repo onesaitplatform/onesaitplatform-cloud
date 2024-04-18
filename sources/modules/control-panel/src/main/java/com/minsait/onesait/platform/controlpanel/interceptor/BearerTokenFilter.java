@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.filter.OAuth2AuthenticationFailureEvent;
 import org.springframework.security.oauth2.provider.authentication.TokenExtractor;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
@@ -86,7 +85,6 @@ public class BearerTokenFilter implements Filter {
 		final HttpServletResponse resp = (HttpServletResponse) response;
 		final Authentication auth = tokenExtractor.extract(req);
 		boolean hasSession = false;
-	
 		if (auth instanceof PreAuthenticatedAuthenticationToken) {
 			try {
 				// save previous auth

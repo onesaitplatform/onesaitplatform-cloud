@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,21 +92,21 @@ public class CodeprojectController {
 	}
 
 	@GetMapping("data")
-	public @ResponseBody List<CodeProjectDTO> listData(Model model, @RequestParam(required = false, name = "find_codeproject") String findCodeProject) {
+	public @ResponseBody List<CodeProjectDTO> listData(Model model, @RequestParam(required = false, name = "find_codeproject") String desc) {
 		List<CodeProject> codeProject = null;
 		if (utils.isAdministrator()) {
-			if (findCodeProject == null || findCodeProject.equals("")) {
+			if (desc == null || desc.equals("")) {
 				codeProject = codeProjectService.getAllCodeProjects();
 			}else {
-				codeProjectService.getCodeProjects(findCodeProject);
-				model.addAttribute("find_codeproject",findCodeProject);
+				codeProjectService.getCodeProjects(desc);
+				model.addAttribute("find_codeproject",desc);
 			}
 		} else {
-			if (findCodeProject == null || findCodeProject.equals("")) {
+			if (desc == null || desc.equals("")) {
 				codeProject = codeProjectService.getCodeProjects(userService.getUser(utils.getUserId()));
 			}else {
-				codeProjectService.getCodeProjects(findCodeProject);
-				model.addAttribute("find_codeproject",findCodeProject);
+				codeProjectService.getCodeProjects(desc);
+				model.addAttribute("find_codeproject",desc);
 			}
 		}
 		return codeProject.stream()

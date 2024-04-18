@@ -254,66 +254,6 @@ export default [
         ]
       }
     },
-    weight: 418
-  }, {
-    type: 'select',
-    key: 'theme',
-    label: 'ACE Theme',
-    input: true,
-    tooltip: 'Themes available for the ACE editor',
-    dataSrc: 'values',
-    weight: 416,
-    data: {
-      values: [
-        { label: 'xcode', value: 'ace/theme/xcode' },
-        { label: 'ambiance', value: 'ace/theme/ambiance' },
-        { label: 'chaos', value: 'ace/theme/chaos' },
-        { label: 'chrome', value: 'ace/theme/chrome' },
-        { label: 'clouds midnight', value: 'ace/theme/clouds_midnight' },
-        { label: 'clouds', value: 'ace/theme/clouds' },
-        { label: 'cobalt', value: 'ace/theme/cobalt' },
-        { label: 'crimson editor', value: 'ace/theme/crimson_editor' },
-        { label: 'dawn', value: 'ace/theme/dawn' },
-        { label: 'dracula', value: 'ace/theme/dracula' },
-        { label: 'dreamweaver', value: 'ace/theme/dreamweaver' },
-        { label: 'eclipse', value: 'ace/theme/eclipse' },
-        { label: 'github', value: 'ace/theme/github' },
-        { label: 'gob', value: 'ace/theme/gob' },
-        { label: 'gruvbox', value: 'ace/theme/gruvbox' },
-        { label: 'idle fingers', value: 'ace/theme/idle_fingers' },
-        { label: 'iplastic', value: 'ace/theme/iplastic' },
-        { label: 'katzenmilch', value: 'ace/theme/katzenmilch' },
-        { label: 'kr theme', value: 'ace/theme/kr_theme' },
-        { label: 'kuroir', value: 'ace/theme/kuroir' },
-        { label: 'merbivore soft', value: 'ace/theme/merbivore_soft' },
-        { label: 'merbivore', value: 'ace/theme/merbivore' },
-        { label: 'mono_industrial', value: 'ace/theme/mono_industrial' },
-        { label: 'monokai', value: 'ace/theme/monokai' },
-        { label: 'nord dark', value: 'ace/theme/nord_dark' },
-        { label: 'pastel on dark', value: 'ace/theme/pastel_on_dark' },
-        { label: 'solarized dark', value: 'ace/theme/solarized_dark' },
-        { label: 'solarized light', value: 'ace/theme/solarized_light' },
-        { label: 'sqlserver', value: 'ace/theme/sqlserver' },
-        { label: 'terminal', value: 'ace/theme/terminal' },
-        { label: 'textmate', value: 'ace/theme/textmate' },
-        { label: 'tomorrow', value: 'ace/theme/tomorrow' },
-        { label: 'tomorrow night', value: 'ace/theme/tomorrow_night' },
-        { label: 'tomorrow night blue', value: 'ace/theme/tomorrow_night_blue' },
-        { label: 'tomorrow night bright', value: 'ace/theme/tomorrow_night_bright' },
-        { label: 'tomorrow night eighties', value: 'ace/theme/tomorrow_night_eighties' },
-        { label: 'twilight', value: 'ace/theme/twilight' },
-        { label: 'vibrant ink', value: 'ace/theme/vibrant_ink' },
-      ],
-    },
-    conditional: {
-      json: {
-        or: [
-          { '===': [
-              { var: 'data.editor' },
-              'ace'
-            ] }
-        ]
-      }
-    },
-  },
+    weight: 417
+  }
 ];

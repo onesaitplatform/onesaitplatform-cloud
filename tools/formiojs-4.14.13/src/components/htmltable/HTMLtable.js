@@ -20,7 +20,7 @@ export default class HTMLTableComponent extends Component {
   static get builderInfo() {
     return {
       title: 'List',
-      group: 'premium',
+      group: 'data',
       icon: 'code',
       weight: 0,
       documentation: '/userguide/forms/layout-components#html-element',

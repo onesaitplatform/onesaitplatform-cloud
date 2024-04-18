@@ -17,7 +17,7 @@ export default class ContentComponent extends Component {
     return {
       title: 'Content',
       group: 'layout',
-      icon: 'file-text-o',
+      icon: 'html5',
       preview: false,
       documentation: '/userguide/forms/layout-components#content',
       weight: 5,

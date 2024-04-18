@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -1366,7 +1366,7 @@ var showExportImageDialog = function(id){
 								if((userRole == "ROLE_ADMINISTRATOR") || ((row.userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){	
 																	// <!-- DELETE --><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
 								DashboardsTable = DashboardsTable +	'<li>'+
-																	'<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" style="margin-top: 3px" data-container="body" data-placement="bottom" onclick="deleteDashboardConfirmation(\''+row.id+'\');"><i class="icon-delete"></i><span style="margin-left: 3px" class="span-title-three-dots-icons" text="'+Delete+'" >Delete</span></span>'+
+																	'<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" onclick="deleteDashboardConfirmation(\''+row.id+'\');"><i class="icon-delete"></i><span class="span-title-three-dots-icons" text="'+Delete+'" >Delete</span></span>'+
 																	 '</li>';
 								}																						
 																															
@@ -1513,7 +1513,7 @@ var showExportImageDialog = function(id){
 								if((userRole == "ROLE_ADMINISTRATOR") || ((row.userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){	
 																	// <!-- DELETE --><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
 								SynopticsTable = SynopticsTable +	'<li>'+
-																	'<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" style="margin-top: 3px" data-placement="bottom" onclick="deleteSynopticsConfirmation(\''+row.id+'\');"><i class="icon-delete"></i><span style="margin-left: 3px" class="span-title-three-dots-icons" text="'+Delete+'" >Delete</span></span>'+
+																	'<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" onclick="deleteSynopticsConfirmation(\''+row.id+'\');"><i class="icon-delete"></i><span class="span-title-three-dots-icons" text="'+Delete+'" >Delete</span></span>'+
 																	 '</li>';
 								}																						
 																															
@@ -1617,21 +1617,29 @@ var showExportImageDialog = function(id){
 	   
 	    
 	    //FILTER SYNOPTICS CARDS
-	    var searchTimerSynoptics;
+	    var isEventSynopticsRunning = false; 
 		
-		$("input[type=search][aria-controls=synoptics]").on('input', function() {
-		    clearTimeout(searchTimerSynoptics);  
-		    searchTimerSynoptics = setTimeout(filterSynopticCards, 300);  
-		});
+	function filterSynopticCards() {
+		    if (isEventSynopticsRunning) {
+		      return; 
+		    }
 		
-		function filterSynopticCards() {
-		    $('.project-container-synoptics').remove();
-		   var filterSynoptics = $( "input[type=search][aria-controls=synoptics]" ).val();     	
-			numpagSynoptics = 0;
-			PaginateSynopticsCards(filterSynoptics);
-		}
-		
-	
+		    	isEventSynopticsRunning = true; 
+			     	$('.project-container-synoptics').remove();
+			     	var filterSynoptics = $( "input[type=search][aria-controls=synoptics]" ).val();
+			     	
+					numpagSynoptics = 0;
+					PaginateSynopticsCards(filterSynoptics);
+		   
+		   		isEventSynopticsRunning = false; 
+		      	console.log("Evento finalizado Synoptics");  
+		  
+		  }
+
+		  // Asignar el evento a un elemento específico
+	 $("input[type=search][aria-controls=synoptics]").on('input', function() {
+		    filterSynopticCards();
+	 });
 
  	$("#load-synoptics").on('click', function (e) {
 		e.preventDefault();  
@@ -1658,20 +1666,30 @@ var showExportImageDialog = function(id){
 	    
 	  //FILTER DASHBOARD CARDS  
 
-	var searchTimerDashboard;
+	var isEventRunning = false; 
 		
-		$("input[type=search][aria-controls=dashboards]").on('input', function() {
-		    clearTimeout(searchTimerDashboard);  
-		    searchTimerDashboard = setTimeout(filterDashboardCards, 300);  
-		});
+	function filterDashboardCards() {
+		    if (isEventRunning) {
+		      return; 
+		    }
 		
-		function filterDashboardCards() {
-		  $('.project-container-dashboards').remove();
-		  var searchDashboards = $( "input[type=search][aria-controls=dashboards]" ).val();
-		  numpagDashboard = 0;
-		  PaginateDashboardCards(searchDashboards);
-		}
-	
+		    	isEventRunning = true; 
+			     	$('.project-container-dashbords').remove();
+			     	var searchDashboards = $( "input[type=search][aria-controls=dashboards]" ).val();
+			     	
+					numpagDashboard = 0;
+					PaginateDashboardCards(searchDashboards);
+		   
+		   		isEventRunning = false; 
+		      	console.log("Evento finalizado");  
+		  
+		  }
+
+		  // Asignar el evento a un elemento específico
+	 $("input[type=search][aria-controls=dashboards]").on('input', function() {
+		    filterDashboardCards();
+		    
+	 });
 
  	$("#load-dashboards").on('click', function (e) {
 		e.preventDefault();  
@@ -1688,12 +1706,18 @@ var showExportImageDialog = function(id){
    	
   });
 	   
+	   
+	   
+
+	   
+	   
+	   
 	   //DASHBOARDS CARDS
 	   
 		var searchDashboards;
 		var numpagDashboard = 0;
 		var limitDashboard = 10;
-		var dataCardsDashboards = document.getElementsByClassName("project-container-dashboards");
+		var dataCardsDashboards = document.getElementsByClassName("project-container-dashbords");
 	
 	 
  $("#load-dashboards").on('click', function (e) {
@@ -1704,8 +1728,6 @@ var showExportImageDialog = function(id){
 	function PaginateDashboardCards(searchDashboards){
 			var  Rute = [[@{/dashboards/}]];
 			var image = [[@{/img/wireframe.svg}]];
-			var textNoData = [[#{dashboards.no.element.data}]];
-			var imageNoData =[[@{/images/emptyTemplate.svg}]];
 			
 		
 		$.ajax({
@@ -1728,17 +1750,17 @@ var showExportImageDialog = function(id){
 			    for(i=0; i<data.aaData.length; i++){ 
 					
 					var cardPanel="";
-					cardPanel='<div class="project-container project-container-dashboards col-md-2 col-sm-6 col-xs-12 no-padding-all" style="box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px; margin: 20px; ">'+
+					cardPanel='<div class="project-container project-container-dashbords col-md-2 col-sm-6 col-xs-12 no-padding-all" style="box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px; margin: 20px; ">'+
 											'<div class="panel panel-white ">'+
 												'<div class="panel panel-white card" style=" margin-bottom: -20px">';
 													
-						if(data.aaData[i].image != null && data.aaData[i].image.length > 10 ){
-						cardPanel= cardPanel + '<img src="'+Rute+ data.aaData[i].id+'/getImage" class="img-responsive " data-trigger="hover" data-placement="bottom" data-container="body" style=" width: 100%; height: 100px;  border-bottom:1px solid #D7DADC; object-fit: contain; display: block; margin: auto; "/>';
+					if(data.aaData[i].image != null && data.aaData[i].image.length > 10 ){
+						cardPanel= cardPanel + '<img src="'+Rute+ data.aaData[i].id+'/getImage" class="img-responsive " data-trigger="hover" data-placement="bottom" data-container="body" style=" width: 100%; height: 15%; border-bottom: 1px solid #D7DADC; "/>';
 					} else if(data.aaData[i].image != null && data.aaData[i].image.length < 10) {
-						cardPanel= cardPanel + '<img  src="'+image+'"  class="img-responsive " style="  height: 100px; width: 100%; padding: 30px;  background-color: #ecf4fa  ; border-bottom: 1px solid #D7DADC;"/>';
+						cardPanel= cardPanel + '<img  src="'+image+'"  class="img-responsive " style=" height: 15%;  width: 100%; padding: 30px; background-color: #ecf4fa  ; border-bottom: 1px solid #D7DADC;"/>';
 					}else {
-						cardPanel= cardPanel + '<img src="'+image+'" class="img-responsive " style=" height: 100px;  width: 100%; padding: 30px;  background-color:  #ecf4fa  ;  border-bottom: 1px solid #D7DADC;"/>';
-					}				
+						cardPanel= cardPanel + '<img src="'+image+'" class="img-responsive " style=" height: 15%;  width: 100%; padding: 30px; background-color:  #ecf4fa  ; border-bottom: 1px solid #D7DADC;"/>';
+					}					
 					
 					cardPanel = cardPanel + '<span class="dropdown" style="float: right;  padding: 10px 10px 0px 10px;">';
 					
@@ -1808,7 +1830,7 @@ var showExportImageDialog = function(id){
 					if((userRole == "ROLE_ADMINISTRATOR") || ((data.aaData[i].userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){
 														// <!-- DELETE --><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
 					cardPanel = cardPanel +	'<li>'+
-														'<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" style="margin-top: 3px" data-container="body" data-placement="bottom" onclick="deleteDashboardConfirmation(\''+data.aaData[i].id+'\');"><i class="icon-delete"></i><span  style="margin-left: 3px" class="span-title-three-dots-icons" text="'+Delete+'" >Delete</span></span>'+
+														'<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" onclick="deleteDashboardConfirmation(\''+data.aaData[i].id+'\');"><i class="icon-delete"></i><span class="span-title-three-dots-icons" text="'+Delete+'" >Delete</span></span>'+
 														 '</li>';
 					}																						
 																												
@@ -1837,13 +1859,6 @@ var showExportImageDialog = function(id){
 					panelCardsViewDashboard.append(cardPanel);
 					
 					
-				}
-					if(data.aaData.length === 0 && searchDashboards === undefined){
-					cardPanel = '<div id="imageNoElementData">' ;
-					cardPanel = cardPanel + '<img id="headerImg" alt="logo" style=" height:50px; display: block;   margin-top:120px;  margin-left: auto; margin-right:auto;"  src="'+ imageNoData + '">';
-					cardPanel = cardPanel + '<label style=" display: block;   margin: 0 auto; font-style: italic;font-weight: normal;font-size: 14px;line-height: 24px;text-align: center;color:#505D66;" > '+ textNoData +'</label>';
-					cardPanel= cardPanel +  '</div>';
-					panelCardsViewDashboard.append(cardPanel);
 				}
 			 }).fail(function(data) {
 			    alert( "error" );
@@ -1886,8 +1901,7 @@ var showExportImageDialog = function(id){
 	function PaginateSynopticsCards(filterSynoptics){
 			var  Rute = [[@{/dashboards/}]];
 			var image = [[@{/img/wireframe.svg}]];
-			var textNoData = [[#{synoptics.no.element.data}]];
-			var imageNoData =[[@{/images/emptyTemplate.svg}]];
+			
 		
 		
 		$.ajax({
@@ -1910,18 +1924,19 @@ var showExportImageDialog = function(id){
 			   
 			    for(i=0; i<data.aaData.length; i++){ 
 				
-				var panelCardsSynoptics="";
+					var panelCardsSynoptics="";
 					panelCardsSynoptics='<div class="project-container project-container-synoptics col-md-2 col-sm-6 col-xs-12 no-padding-all" style="box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px; margin: 20px; ">'+
 											'<div class="panel panel-white ">'+
 												'<div class="panel panel-white card" style=" margin-bottom: -20px">';
 													
-						if(data.aaData[i].image != null && data.aaData[i].image.length > 10 ){
-						panelCardsSynoptics= panelCardsSynoptics + '<img src="'+Rute+ data.aaData[i].id+'/getImage" class="img-responsive " data-trigger="hover" data-placement="bottom" data-container="body" style=" width: 100%; height: 100px;  border-bottom:1px solid #D7DADC; object-fit: contain; display: block; margin: auto; "/>';
+					if(data.aaData[i].image != null && data.aaData[i].image.length > 10 ){
+						panelCardsSynoptics= panelCardsSynoptics + '<img src="'+Rute+ data.aaData[i].id+'/getImage" class="img-responsive " data-trigger="hover" data-placement="bottom" data-container="body" style=" width: 100%; height: 15%; border-bottom: 1px solid #D7DADC; "/>';
 					} else if(data.aaData[i].image != null && data.aaData[i].image.length < 10) {
-						panelCardsSynoptics= panelCardsSynoptics + '<img  src="'+image+'"  class="img-responsive " style="  height: 100px; width: 100%; padding: 30px;  background-color: #ecf4fa  ; border-bottom: 1px solid #D7DADC;"/>';
+						panelCardsSynoptics= panelCardsSynoptics + '<img  src="'+image+'"  class="img-responsive " style=" height: 15%;  width: 100%; padding: 30px; background-color: #ecf4fa  ; border-bottom: 1px solid #D7DADC;"/>';
 					}else {
-						panelCardsSynoptics= panelCardsSynoptics + '<img src="'+image+'" class="img-responsive " style=" height: 100px;  width: 100%; padding: 30px;  background-color:  #ecf4fa  ;  border-bottom: 1px solid #D7DADC;"/>';
-					}			
+						panelCardsSynoptics= panelCardsSynoptics + '<img src="'+image+'" class="img-responsive " style=" height: 15%;  width: 100%; padding: 30px; background-color:  #ecf4fa  ; border-bottom: 1px solid #D7DADC;"/>';
+					}					
+					
 					panelCardsSynoptics = panelCardsSynoptics + '<span class="dropdown" style="float: right;  padding: 10px 10px 0px 10px;">';
 					
 						//<!-- VIEW -->	
@@ -1990,7 +2005,7 @@ var showExportImageDialog = function(id){
 					if((userRole == "ROLE_ADMINISTRATOR") || ((data.aaData[i].userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){
 														// <!-- DELETE --><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
 					panelCardsSynoptics = panelCardsSynoptics +	'<li>'+
-														'<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" style="margin-top: 3px" data-placement="bottom" onclick="deleteSynopticsConfirmation(\''+data.aaData[i].id+'\');"><i class="icon-delete"></i><span style="margin-left: 3px" class="span-title-three-dots-icons" text="'+Delete+'" >Delete</span></span>'+
+														'<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" onclick="deleteSynopticsConfirmation(\''+data.aaData[i].id+'\');"><i class="icon-delete"></i><span class="span-title-three-dots-icons" text="'+Delete+'" >Delete</span></span>'+
 														 '</li>';
 					}																						
 																												
@@ -2015,16 +2030,7 @@ var showExportImageDialog = function(id){
 													
 					
 					panelCardsSynoptics= panelCardsSynoptics +  '</div>'+ '</div>'+ '</div>'+ '</div>'
-					panelViewCardsSynoptics.append(panelCardsSynoptics);
 					
-					
-				}
-					
-					if(data.aaData.length === 0 && filterSynoptics === undefined){
-					panelCardsSynoptics = '<div id="imageNoElementData">' ;
-					panelCardsSynoptics = panelCardsSynoptics + '<img id="headerImg" alt="logo" style=" height:50px; display: block;   margin-top:120px;  margin-left: auto; margin-right:auto;"  src="'+ imageNoData + '">';
-					panelCardsSynoptics = panelCardsSynoptics + '<label style=" display: block;   margin: 0 auto; font-style: italic;font-weight: normal;font-size: 14px;line-height: 24px;text-align: center;color:#505D66;" > '+ textNoData +'</label>';
-					panelCardsSynoptics= panelCardsSynoptics +  '</div>';
 					panelViewCardsSynoptics.append(panelCardsSynoptics);
 					
 					

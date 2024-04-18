@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,8 @@
  */
 package com.minsait.onesait.platform.config.services.themes;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -93,32 +89,6 @@ public class ThemesServiceImpl implements ThemesService {
 	}
 
 	@Override
-	public ThemesDTO getTheme(String id) {
-		try {
-			Optional<Themes> theme = themesRepository.findById(id);
-			if (theme.isPresent()) {
-				return castThemetoDTO(theme.get());
-			}
-		} catch (final Exception e) {
-			log.error("Error getting theme: {}", e.getMessage());
-		}
-		return null;
-	}
-
-	@Override
-	public ThemesDTO getThemeByIdentification(String id) {
-		try {
-			Themes theme = themesRepository.findByIdentificationOrId(id, id);
-			if (theme != null) {
-				return castThemetoDTO(theme);
-			}
-		} catch (final Exception e) {
-			log.error("Error getting theme: {}", e.getMessage());
-		}
-		return null;
-	}
-
-	@Override
 	public void deactivate(String id) {
 		try {
 			themesRepository.findById(id).ifPresent(theme -> {
@@ -143,18 +113,6 @@ public class ThemesServiceImpl implements ThemesService {
 		} catch (final Exception e) {
 			log.error("Error setting default theme: {}", e.getMessage());
 		}
-	}
-
-	private ThemesDTO castThemetoDTO(Themes theme) {
-		ThemesDTO themeDTO = new ThemesDTO();
-		themeDTO.setIdentification(theme.getIdentification());
-		themeDTO.setJson(new JSONObject(theme.getJson()));
-		return themeDTO;
-	}
-	
-	@Override
-	public List<String> listThemes() {
-		return themesRepository.findAll().stream().map(Themes::getIdentification).collect(Collectors.toList());
 	}
 
 }

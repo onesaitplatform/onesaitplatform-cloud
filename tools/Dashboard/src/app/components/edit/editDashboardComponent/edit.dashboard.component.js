@@ -571,7 +571,6 @@ ed.showHideMoveToolBarButton = function () {
           if(d){
             $mdDialog.show({
               controller: DialogController,
-              locals:{showSynoptic:  ed.synopticedit.showSynoptic},  
               templateUrl: 'app/partials/edit/saveDialog.html',
               parent: angular.element(document.body),
               targetEvent: ev,
@@ -591,7 +590,6 @@ ed.showHideMoveToolBarButton = function () {
           if(d){           
             $mdDialog.show({
               controller: DialogController,
-              locals:{showSynoptic:  ed.synopticedit.showSynoptic},  
               templateUrl: 'app/partials/edit/saveErrorDialog.html',
               parent: angular.element(document.body),
               targetEvent: ev,
@@ -667,7 +665,6 @@ ed.showHideMoveToolBarButton = function () {
     ed.showSaveOK = function (ev) {
       $mdDialog.show({
         controller: DialogController,
-        locals:{showSynoptic:  ed.synopticedit.showSynoptic},  
         templateUrl: 'app/partials/edit/saveDialog.html',
         parent: angular.element(document.body),
         targetEvent: ev,
@@ -678,8 +675,7 @@ ed.showHideMoveToolBarButton = function () {
 
 
 
-    function DialogController($scope, $mdDialog, showSynoptic) {
-      $scope.showSynoptic = showSynoptic
+    function DialogController($scope, $mdDialog) {
       $scope.hide = function() {
         $mdDialog.hide();
       };
@@ -697,7 +693,6 @@ ed.showHideMoveToolBarButton = function () {
 
       $mdDialog.show({
         controller: DialogController,
-        locals:{showSynoptic:  ed.synopticedit.showSynoptic},  
         templateUrl: 'app/partials/edit/askDeleteDashboardDialog.html',
         parent: angular.element(document.body),
         targetEvent: ev,
@@ -711,7 +706,6 @@ ed.showHideMoveToolBarButton = function () {
             if(d){
               $mdDialog.show({
                 controller: DialogController,
-                locals:{showSynoptic:  ed.synopticedit.showSynoptic},  
                 templateUrl: 'app/partials/edit/deleteOKDialog.html',
                 parent: angular.element(document.body),
                 targetEvent: ev,
@@ -730,7 +724,6 @@ ed.showHideMoveToolBarButton = function () {
             if(d){
               $mdDialog.show({
                 controller: DialogController,
-                locals:{showSynoptic:  ed.synopticedit.showSynoptic},  
                 templateUrl: 'app/partials/edit/deleteErrorDialog.html',
                 parent: angular.element(document.body),
                 targetEvent: ev,
@@ -760,7 +753,6 @@ ed.showHideMoveToolBarButton = function () {
  
       $mdDialog.show({
         controller: DialogController,
-        locals:{showSynoptic:  ed.synopticedit.showSynoptic},  
         templateUrl: 'app/partials/edit/askCloseDashboardDialog.html',
         parent: angular.element(document.body),
         targetEvent: ev,
@@ -776,7 +768,6 @@ ed.showHideMoveToolBarButton = function () {
               if(d){
                 $mdDialog.show({
                   controller: DialogController,
-                  locals:{showSynoptic:  ed.synopticedit.showSynoptic},  
                   templateUrl: 'app/partials/edit/saveDialog.html',
                   parent: angular.element(document.body),
                   targetEvent: ev,
@@ -801,7 +792,6 @@ ed.showHideMoveToolBarButton = function () {
               if(d){           
                 $mdDialog.show({
                   controller: DialogController,
-                  locals:{showSynoptic:  ed.synopticedit.showSynoptic},  
                   templateUrl: 'app/partials/edit/saveErrorDialog.html',
                   parent: angular.element(document.body),
                   targetEvent: ev,

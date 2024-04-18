@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -169,7 +169,7 @@ public class AppServiceImpl implements AppService {
 			app.setTokenValiditySeconds(appDTO.getTokenValiditySeconds());
 			app.setIdentification(appDTO.getIdentification());
 			app.setDescription(appDTO.getDescription());
-			app.setPublicClient(appDTO.isPublicClient());
+
 			// TO-DO review this logic
 			app.getChildApps().clear();
 			updateAppRoles(app, appDTO);
@@ -207,7 +207,7 @@ public class AppServiceImpl implements AppService {
 							if (child.getId().equals(deletedRole.getId())) {
 								throw new AppServiceException(
 										"The deleted role is a child of the " + fatherRole.getApp().getIdentification()
-												+ " realm. Remove the association before removing the role.");
+										+ " realm. Remove the association before removing the role.");
 							}
 						}
 						if (app.getProject() != null) {
@@ -234,8 +234,8 @@ public class AppServiceImpl implements AppService {
 			app.getAppRoles().removeIf(r -> !roles.stream().map(AppRoleListOauth::getName).collect(Collectors.toList())
 					.contains(r.getName()));
 			app.getAppRoles()
-					.addAll(roles.stream().filter(r -> !app.getAppRoles().stream().map(AppRoleListOauth::getName)
-							.collect(Collectors.toList()).contains(r.getName())).collect(Collectors.toSet()));
+			.addAll(roles.stream().filter(r -> !app.getAppRoles().stream().map(AppRoleListOauth::getName)
+					.collect(Collectors.toList()).contains(r.getName())).collect(Collectors.toSet()));
 			for (final AppRoleListOauth role : app.getAppRoles()) {
 				if (role.getApp() == null) {
 					role.setApp(app);
@@ -283,7 +283,7 @@ public class AppServiceImpl implements AppService {
 							if (child.getId().equals(deletedRole.getId())) {
 								throw new AppServiceException(
 										"The deleted role is a child of the " + fatherRole.getApp().getIdentification()
-												+ " realm. Remove the association before removing the role.");
+										+ " realm. Remove the association before removing the role.");
 							}
 						}
 					}
@@ -631,8 +631,8 @@ public class AppServiceImpl implements AppService {
 			fatherRole.getChildRoles().removeIf(ar -> ar.getId().equals(childRole.getId()));
 			if (fatherApp.getProject() != null) {
 				final Project project = fatherApp.getProject();
-				project.getProjectResourceAccesses().removeIf(
-						pra -> pra.getAppRole() != null && pra.getAppRole().getId().equals(childRole.getId()));
+				project.getProjectResourceAccesses()
+				.removeIf(pra -> pra.getAppRole() != null && pra.getAppRole().getId().equals(childRole.getId()));
 				projectService.updateProject(project);
 			}
 		}
@@ -643,16 +643,14 @@ public class AppServiceImpl implements AppService {
 		final List<AppRole> coincidentes = new ArrayList<>();
 		for (final AppRole rolPadre : fatherApp.getAppRoles()) {
 			if (rolPadre.getChildRoles() != null && !rolPadre.getChildRoles().isEmpty()) {
-				final boolean hasMoreRelations = rolPadre.getChildRoles().stream()
-						.anyMatch(ar -> ar.getApp().getId().equals(childApp.getId()));
-				if (hasMoreRelations) {
+				final boolean hasMoreRelations = rolPadre.getChildRoles().stream().anyMatch(ar -> ar.getApp().getId().equals(childApp.getId()));
+				if(hasMoreRelations) {
 					coincidentes.add(rolPadre);
 				}
 			}
 		}
 
-		if (coincidentes.isEmpty()
-				&& fatherApp.getChildApps().stream().anyMatch(a -> a.getId().equals(childApp.getId()))) {
+		if (coincidentes.isEmpty() && fatherApp.getChildApps().stream().anyMatch(a -> a.getId().equals(childApp.getId()))) {
 			fatherApp.getChildApps().removeIf(a -> a.getId().equals(childApp.getId()));
 		}
 

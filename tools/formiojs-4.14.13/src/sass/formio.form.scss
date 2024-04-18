@@ -5,8 +5,6 @@ $autocomplete-in-dialog-z-index: $dialog-z-index + 1000;
 .formio-form {
   position: relative;
   min-height: 80px;
-  max-width: 1400px;
-  margin: auto;
 }
 
 .formio-error-wrapper,
@@ -1723,23 +1721,4 @@ div[data-oembed-url] {
 span[role="link"] {
   text-decoration: underline;
   cursor: pointer;
-}
-.table-options {
-  text-align: right;
-}
-.formio-table-footer{
-  display:flex;
-  background-color: rgb(247, 248, 248);
-  max-height: 32px;
-}
-.table-float-start {
-  margin-left: 0px;
-  margin-right: auto; 
-}
-.table-float-end {
-  margin-right: 0px;
-  margin-left: auto; 
-}
-.table-fitcontent {
-  width: auto !important;
 }

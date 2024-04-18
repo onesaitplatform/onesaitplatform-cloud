@@ -28,19 +28,7 @@ export default [
     label: 'Url',
     weight: 10,
     placeholder: 'Enter the url to post the files to.',
-    tooltip: 'You can enter a url like this one https://lab.onesaitplatform.com/controlpanel/api/objectstorage?filePath=files for platform objects storage',
-    conditional: {
-      json: { '===': [{ var: 'data.storage' }, 'url'] }
-    }
-  },
-  {
-    type: 'textfield',
-    input: true,
-    key: 'downloadurl',
-    label: 'Download Url',
-    weight: 11,
-    placeholder: 'Enter the download url .',
-    tooltip: 'You can enter a url like this one https://lab.onesaitplatform.com/controlpanel/api/objectstorage?filePath=files for platform objects storage',
+    tooltip: "See <a href='https://github.com/danialfarid/ng-file-upload#server-side' target='_blank'>https://github.com/danialfarid/ng-file-upload#server-side</a> for how to set up the server.",
     conditional: {
       json: { '===': [{ var: 'data.storage' }, 'url'] }
     }

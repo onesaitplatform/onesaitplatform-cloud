@@ -52,8 +52,7 @@ export default class Element {
      *
      * @type {*|boolean}
      */
-    // this.helplinks = (this.options.helplinks === 'false') ? false : (this.options.helplinks || 'https://help.form.io');
-    this.helplinks = false;
+    this.helplinks = (this.options.helplinks === 'false') ? false : (this.options.helplinks || 'https://help.form.io');
   }
 
   /**
@@ -554,7 +553,6 @@ export default class Element {
       token: Formio.getToken({
         decode: true
       }),
-      ds: window.ds,
       config: this.root && this.root.form && this.root.form.config
         ? this.root.form.config
         : this.options?.formConfig

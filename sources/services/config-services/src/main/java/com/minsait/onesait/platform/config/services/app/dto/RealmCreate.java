@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,16 +55,13 @@ public class RealmCreate {
 	@Setter
 	@JsonIgnore
 	protected User user;
-	@Getter
-	@Setter
-	private boolean publicClient;
 
 	public RealmCreate(App app) {
 
 		identification = app.getIdentification();
-
+		
 		realmId = app.getIdentification();
-
+		
 		name = app.getIdentification();
 
 		if (null != app.getSecret()) {

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.minsait.onesait.platform.config.model.WebProject;
 import com.minsait.onesait.platform.config.services.webproject.NPMCommandResult.NPMCommandResultStatus;
 
 public interface WebProjectService {
@@ -46,7 +45,7 @@ public interface WebProjectService {
 	void deleteWebProjectById(String webProjectId, String userId);
 
 	void uploadZip(MultipartFile file, String userId);
-
+	
 	void uploadWebTemplate(String userId);
 
 	void deleteWebProject(String webProjectId, String userId);
@@ -75,7 +74,5 @@ public interface WebProjectService {
 
 	boolean isNpmInstall();
 
-	void cloneGitAndDownload(WebProjectDTO webProject, RestTemplate template, HttpEntity<?> httpEntity, String url,
-			String urlDelete, String userId);
 
 }

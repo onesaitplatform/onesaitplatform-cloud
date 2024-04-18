@@ -15,9 +15,7 @@ var ApiCreateController = function() {
 	var internalLanguage = 'en';
 	var reader = new FileReader();
 	var mountableModel2 = "";
-	var mountableModel;
 	var oTable;
-	var subscriptions = [];
 	
 	if ($('#api_authorizations').find('tr.authorization-model')[0]){
 		mountableModel2 = $('#api_authorizations').find('tr.authorization-model')[0].outerHTML;
@@ -240,9 +238,7 @@ var ApiCreateController = function() {
     			$('#row-operations-ai').addClass('hide');
     		}else{
     			$('.common-ops').removeClass('hide');
-    			if(apiCreateReg.apiType === 'IOT' || apiCreateReg.apiType === 'INTERNAL_ONTOLOGY' || apiCreateReg.apiType === 'NODE_RED'){
-    				$('#row-operations').removeClass('hide');
-    			}
+    			$('#row-operations').removeClass('hide');
     			$('#row-operations-nebula').addClass('hide');
     			$('#row-operations-ai').addClass('hide');
     		}
@@ -660,8 +656,7 @@ var ApiCreateController = function() {
 		else {
 			createOperationsOntology();
 			loadOperations();
-			if(apiCreateReg.graviteeId != null && apiCreateReg.hasJWTPlan)
-				mountableModel = $('#table_subscriptions').find('tr.subscriptions-model')[0].outerHTML;
+			
 			
 			$('#id_endpoint').val($('#id_endpoint_hidden').val());
 			
@@ -680,67 +675,7 @@ var ApiCreateController = function() {
 		    if ($('#checkboxLimit').prop('checked')) {
 		    	$('#id_limit').prop('disabled', false);
 		    }
-		    
-		    if(apiCreateReg.graviteeId && apiCreateReg.hasJWTPlan){
-				applications = apiCreateReg.subscriptions;
-				mountTableSubscriptions();
-			}
 		}
-	}
-	
-	function subscribe(){
-		let app = $('#apps').val()
-		let apiId = apiCreateReg.apiId;
-		fetch(`/controlpanel/api/apis/${apiId}/gravitee/subscribe?application=${app}`,
-			{
-			  method: 'POST'	
-			}
-		)
-		.then(r => r.json())
-		.then(data => {
-			applications = data;
-			mountTableSubscriptions();
-		})
-	}
-	
-	function unsubscribe(obj){
-		let app = $(obj).closest('tr').find("input[name='applications\\[\\]']").val();
-		let apiId = apiCreateReg.apiId;
-		fetch(`/controlpanel/api/apis/${apiId}/gravitee/unsubscribe?application=${app}`,
-			{
-			  method: 'POST'	
-			}
-		)
-		.then(r => r.json())
-		.then(data => {
-			applications = data;
-			mountTableSubscriptions();
-		})
-	}
-	
-	function mountTableSubscriptions(){
-		let subsArr = []
-		$.each( applications, function (key, object){			
-			
-			subsArr.push({'applications': object, 'clientIds': object})
-			
-		});
-
-		// TO-HTML
-		if ($('#subscriptions').attr('data-loaded') === 'true'){
-			$('#table_subscriptions > tbody').html("");
-			$('#table_subscriptions > tbody').append(mountableModel);
-		}
-		$('#table_subscriptions').mounTable(subsArr,{
-			model: '.subscriptions-model',
-			noDebug: false							
-		});
-		
-		// hide info , disable user and show table
-					
-		$('#subscriptions').removeClass('hide');
-		$('#subscriptions').attr('data-loaded',true);// TO-HTML
-
 	}
 	
     function replaceOperation(newOp){
@@ -1330,12 +1265,6 @@ var ApiCreateController = function() {
 				}	
 			}
 		},
-		subscribe: function(){
-			subscribe();
-		},
-		unsubscribe: function(obj){
-			unsubscribe(obj);
-		}
 
 	};
 }();

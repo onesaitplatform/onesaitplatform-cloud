@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -212,7 +212,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 					new RegexRequestMatcher("^/modelsmanager.*", null), new RegexRequestMatcher("^/process.*", null),
 					new RegexRequestMatcher("^/microservices.*", null),
 					new RegexRequestMatcher("^/codeproject.*", null), new RegexRequestMatcher("^/mapsproject.*", null),
-					new RegexRequestMatcher("^/forms.*", null), new RegexRequestMatcher("^/themes.*", null));
+					new RegexRequestMatcher("^/forms.*", null));
 
 			// When using CsrfProtectionMatcher we need to explicitly declare allowed
 			// methods
@@ -243,25 +243,24 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
 		http.headers().frameOptions().disable();
 		http.authorizeRequests().antMatchers("/", "/home", "/favicon.ico", "/blocked", "/loginerror").permitAll()
-				.antMatchers("/api/applications", "/api/applications/", "/api/themes/css/**").permitAll()
-				.antMatchers("/opendata/register").permitAll()
-				.antMatchers("/users/register", "/oauth/authorize", "/oauth/token", "/oauth/check_token").permitAll()
-				.antMatchers(HttpMethod.POST, "/users/reset-password").permitAll()
+				.antMatchers("/api/applications", "/api/applications/").permitAll().antMatchers("/opendata/register")
+				.permitAll().antMatchers("/users/register", "/oauth/authorize", "/oauth/token", "/oauth/check_token")
+				.permitAll().antMatchers(HttpMethod.POST, "/users/reset-password").permitAll()
 				.antMatchers("/resources/**", "/static/**", "/css/**", "/js/**", "/images/**", "/webjars/**")
 				.permitAll().antMatchers(HttpMethod.PUT, "/users/update/**/**").permitAll()
 				.antMatchers(HttpMethod.GET, "/users/update/**/**").permitAll()
 				.antMatchers("/health/", "/info", "/metrics", "/trace", "/logfile").permitAll()
 				.antMatchers("/nodered/auth/**/**").permitAll()
-				.antMatchers("/api/**", "/dashboards/view/**", "/dashboards/model/**", "/dashboards/editfulliframe/**",
-						"/dashboards/viewiframe/**", "/viewers/view/**", "/viewers/viewiframe/**", "/gadgets/**",
-						"/viewers/**", "/datasources/**", "/v3/api-docs/", "/v3/api-docs/**", "/swagger-resources/",
-						"/swagger-resources/**", "/users/validateNewUserFromLogin/**",
-						"/users/showGeneratedCredentials/**", "/users/createNewUserFromLogin",
-						"/users/validateResetPassword/**", "/users/resetPasswordFromLogin", "/swagger-ui.html",
-						"/layer/**", "/notebooks/app/**", "/403",
+				.antMatchers("/actuator/**", "/api/**", "/dashboards/view/**", "/dashboards/model/**",
+						"/dashboards/editfulliframe/**", "/dashboards/viewiframe/**", "/viewers/view/**",
+						"/viewers/viewiframe/**", "/gadgets/**", "/viewers/**", "/datasources/**", "/v3/api-docs/",
+						"/v3/api-docs/**", "/swagger-resources/", "/swagger-resources/**",
+						"/users/validateNewUserFromLogin/**", "/users/showGeneratedCredentials/**",
+						"/users/createNewUserFromLogin", "/users/validateResetPassword/**",
+						"/users/resetPasswordFromLogin", "/swagger-ui.html", "/layer/**", "/notebooks/app/**", "/403",
 						"/gadgettemplates/getGadgetTemplateByIdentification/**", "/modelsmanager/api/**",
 						"/datamodelsjsonld/**")
-				.permitAll().regexMatchers("^/actuator(?!/health)").hasAnyRole("OPERATIONS", "ADMINISTRATOR");
+				.permitAll().antMatchers("/actuator/**").hasAnyRole("OPERATIONS", "ADMINISTRATOR");
 
 		// This line deactivates login page when using SAML or other Auth Provider
 		// if (!authProvider.equalsIgnoreCase(CONFIGDB))
@@ -270,7 +269,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 		http.formLogin().successHandler(successHandler).failureHandler(failureHandler).permitAll();
 		http.authorizeRequests().regexMatchers("^/login/cas.*", "^/cas.*", "^/login*", "^/saml*").permitAll()
 				.antMatchers("/oauth/").permitAll().antMatchers("/api-ops", "/api-ops/**").permitAll()
-				.antMatchers("/management", "/management/**").permitAll().antMatchers("/actuator/health").permitAll()
+				.antMatchers("/management", "/management/**").permitAll()
 				.antMatchers("/notebook-ops", "/notebook-ops/**").permitAll().antMatchers(HttpMethod.GET, "/files/list")
 				.authenticated().antMatchers(HttpMethod.GET, "/files/**").permitAll()
 				.antMatchers(HttpMethod.POST, "/binary-repository", "/binary-repository/**").authenticated()
@@ -366,6 +365,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 						|| path.startsWith("/gadgets/getGadgetConfigById/")
 						|| path.startsWith("/datasources/getDatasourceById/") || path.startsWith("/viewers/view/")
 						|| path.startsWith("/viewers/viewiframe/") || path.startsWith("/datamodelsjsonld/");
+
 			}
 		});
 		registration.addUrlPatterns("/*");

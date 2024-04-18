@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package com.minsait.onesait.platform.controlpanel.controller.user;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
@@ -28,7 +27,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
-import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,6 +59,7 @@ import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyUserAccess;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserToken;
+import com.minsait.onesait.platform.config.model.Role.Type;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionServiceImpl;
@@ -425,38 +424,28 @@ public class UserController {
 		// CLEANING APP_ID FROM SESSION
 		httpSession.removeAttribute(APP_ID);
 
-		Boolean filtered = false;
-		
-		if (userId == null || userId.equals("")) {
-			userId = "%%";
-		} else if (userId != "") {
+		if (userId != null && userId.equals("")) {
+			userId = null;
+		} else if(userId != null) {
 			userId = "%" + userId + "%";
-			filtered = true;
 		}
-		
-		if (fullName == null || fullName.equals("")) {
-			fullName = "%%";
-		} else if (fullName != "") {
+		if (fullName != null && fullName.equals("")) {
+			fullName = null;
+		} else if (fullName != null){
 			fullName = "%" + fullName + "%";
-			filtered = true;
 		}
-		
-		if (email == null || email.equals("")) {
-			email = "%%";
-		} else if (email != "") {
+		if (email != null && email.equals("")) {
+			email = null;
+		} else if (email != null) {
 			email = "%" + email + "%";
-			filtered = true;
 		}
-		
-		if (roleType == null || roleType.equals("")) {
-			roleType = "%%";
-		} else if (roleType != "") {
-			filtered = true;
+		if (roleType != null && roleType.equals("")) {
+			roleType = null;
 		}
 
 		model.addAttribute("roleTypes", userService.getAllRoles());
 
-		if (!filtered && active == null) {
+		if (userId == null && email == null && fullName == null && active == null && roleType == null) {
 			log.debug("No params for filtering, loading all users");
 			if (userService.countUsers() < 200L) {
 				model.addAttribute("users", userService.getAllUsersList());
@@ -467,7 +456,6 @@ public class UserController {
 			model.addAttribute("users",
 					userService.getAllUsersByCriteriaList(userId, fullName, email, roleType, active));
 		}
-
 
 		return "users/list";
 
@@ -585,9 +573,8 @@ public class UserController {
 								+ "<div><strong>" + validationUrl + "</strong></div>" + "<br/>" + "<div>"
 								+ emailParts[3] + "</div>" + "</body></html>";
 
-						InputStream imgOnesaitPlatformIS = new ClassPathResource("static/img/onesaitplatform.jpeg").getInputStream();
-						File imgOnesaitPlatform = File.createTempFile("onesaitplatform", ".jpeg");
-						FileUtils.copyInputStreamToFile(imgOnesaitPlatformIS, imgOnesaitPlatform);
+						final File imgOnesaitPlatform = new ClassPathResource("static/img/onesaitplatform.jpeg")
+								.getFile();
 
 						final HtmlFileAttachment demoImg = new HtmlFileAttachment();
 						demoImg.setFile(imgOnesaitPlatform);
@@ -799,9 +786,7 @@ public class UserController {
 				final HtmlFileAttachment demoImg = new HtmlFileAttachment();
 
 				try {
-					InputStream imgOnesaitPlatformIS = new ClassPathResource("static/img/onesaitplatform.jpeg").getInputStream();
-					File imgOnesaitPlatform = File.createTempFile("onesaitplatform", ".jpeg");
-					FileUtils.copyInputStreamToFile(imgOnesaitPlatformIS, imgOnesaitPlatform);
+					final File imgOnesaitPlatform = new ClassPathResource("static/img/onesaitplatform.jpeg").getFile();
 
 					demoImg.setFile(imgOnesaitPlatform);
 					demoImg.setFileKey("onesaitplatformimg");
@@ -966,9 +951,7 @@ public class UserController {
 		final HtmlFileAttachment demoImg = new HtmlFileAttachment();
 
 		try {
-			InputStream imgOnesaitPlatformIS = new ClassPathResource("static/img/onesaitplatform.jpeg").getInputStream();
-			File imgOnesaitPlatform = File.createTempFile("onesaitplatform", ".jpeg");
-			FileUtils.copyInputStreamToFile(imgOnesaitPlatformIS, imgOnesaitPlatform);
+			final File imgOnesaitPlatform = new ClassPathResource("static/img/onesaitplatform.jpeg").getFile();
 
 			demoImg.setFile(imgOnesaitPlatform);
 			demoImg.setFileKey("onesaitplatformimg");

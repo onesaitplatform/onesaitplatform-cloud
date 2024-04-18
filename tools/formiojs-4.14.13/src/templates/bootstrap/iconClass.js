@@ -11,10 +11,10 @@ export default (iconset, name, spinning) => {
         name = 'search-minus';
         break;
       case 'question-sign':
-        name = ' op-icon-info';
+        name = 'question-circle';
         break;
       case 'remove-circle':
-        name = 'trash';
+        name = 'times-circle-o';
         break;
       case 'new-window':
         name = 'window-restore';

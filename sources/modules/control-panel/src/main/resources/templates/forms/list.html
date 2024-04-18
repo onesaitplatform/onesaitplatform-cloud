@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -138,14 +138,14 @@
 
 												<thead>
 													<tr class="cabecera-tabla">
-														<th class="titulo-columnas"> <span th:text="#{gen.id}">ID</span>
-														</th>
 														<th class="titulo-columnas"> <span
 																th:text="#{gen.name}">Name</span></th>
 														<th class="titulo-columnas"> <span
 																th:text="#{forms.code}">Code</span></th>
 														<th class="titulo-columnas"> <span
 																th:text="#{gen.description}">Description</span></th>
+														<th class="titulo-columnas"> <span th:text="#{gen.id}">ID</span>
+														</th>
 														<th class="titulo-columnas"> <span
 																th:text="#{gen.ontology}">Entity</span></th>
 														<th class="titulo-columnas"> <span
@@ -159,8 +159,6 @@
 												</thead>
 												<tbody th:remove="all-but-first">
 													<tr th:each="form : ${forms}" pages:paginate="10">
-														<!-- ID -->
-														<td class="text-left no-wrap  internalId" th:text="${form.id}">
 														<!-- IDENTIFICATION -->
 														<td class="text-left no-wrap  internalId"
 															th:text="${form.name}"></td>
@@ -170,6 +168,8 @@
 														<!-- DESCRIPTION -->
 														<td class="text-left no-wrap  internalId"
 															th:text="${form.description}"></td>
+														<!-- ID -->
+														<td class="text-left no-wrap  internalId" th:text="${form.id}">
 														</td>
 														<!-- FORM ENTITY -->
 														<td class="text-left no-wrap  internalId"
@@ -261,23 +261,23 @@
 												<div id="column_toggler" data-container="body"
 													class="dropdown-menu hold-on-click pull-right">
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="0" />
-														<label th:text="#{gen.id}"> Id </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="1"
+														<input class="toggle-vis" type="checkbox" data-column="0"
 															checked />
 														<label th:text="#{app.appId}"> Identification </label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="2"
+														<input class="toggle-vis" type="checkbox" data-column="1"
 															checked />
 														<label th:text="#{forms.code}"> Code </label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="3"
+														<input class="toggle-vis" type="checkbox" data-column="2"
 															checked />
 														<label th:text="#{gen.description}"> Description </label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="3" />
+														<label th:text="#{gen.id}"> Id </label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="4"
@@ -386,13 +386,6 @@
 								type: 'DELETE',
 								success: function (result) {
 									navigateUrlBack();
-								},
-								error: function (result){
-									if (result.status==409){
-										toastr.error(messagesForms.operations.genOpError, [[#{forms.delete.error.app}]]);
-									} else {
-										toastr.error(messagesForms.operations.genOpError, [[#{forms.delete.error}]]);
-									}
 								}
 							});
 						}
@@ -403,10 +396,10 @@
 		}
 
 
-	//	$(window).on('pageshow', function (event) {
-	//			$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-	//		 $.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-	//	});
+		$(window).on('pageshow', function (event) {
+			$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+			 $.each([ 3 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		});
 		// MAIN WHEN READY
 		$(document).ready(function () {
 
@@ -427,12 +420,12 @@
 			});
 
 
-			$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
+			//	$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
 			//DATATABLE 
 			var oTable = $('#formsTable').DataTable({
 				"bAutoWidth": false
 			});
-			$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+
 			$('#divcreate').prepend($('#dataTable-vis-toggle'));
 			//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 			$('#dataTable-vis-toggle').removeClass('hide');
@@ -474,7 +467,7 @@
 		var Confirm = [[#{gen.confirmBtn}]];
 		var cloneDialog = function(mapsprojectId){
 		
-		var CloneFail = [[#{mapsproject.cloneFail}]];
+		var CloneFail = [[#{dashboards.cloneFail}]];
 	    var MinLen = [[#{dashboards.minLen}]];
 	    var cloneFail = function (message){
 		$.alert({

@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,14 +14,17 @@
     limitations under the License.
 
 -->
-<html xmlns:th="http://www.thymeleaf.org" xmlns:dt="http://www.thymeleaf.org/dandelion/datatables" th:with="lang=${#locale.language}" th:lang="${lang}">
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:dt="http://www.thymeleaf.org/dandelion/datatables"
+	th:with="lang=${#locale.language}" th:lang="${lang}">
 
 <head>
 <meta name="_csrf" th:content="${_csrf.token}"/>
 <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 <meta http-equiv="Content-Language" th:content="${lang}" />
 <title th:text="#{name.app}" />
 <meta name="description" content="Gadget list template" />
@@ -29,15 +32,21 @@
 <meta name="author" content="Indra Sistemas, S.A." />
 
 <!-- STYLE SHEETS -->
-<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}" />
-<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}" />
-<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}" />
-<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/bootstrap.min.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/components.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/plugins.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/layout.css}" />
 <!-- THEME -->
-<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
 
 <!-- PLUGINS STYLE SHEETS -->
-<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/vendor/datatable/datatables.bootstrap.css}" />
 </head>
 
 <!-- page-sidebar-closed to start page with collapsed menu -->
@@ -47,14 +56,16 @@
 	<div class="page-wrapper">
 
 		<!-- BEGIN HEADER INCLUDE -->
-		<div th:include="fragments/header::#headerFragment"	class="page-header navbar navbar-fixed-top"></div>
+		<div th:include="fragments/header::#headerFragment"
+			class="page-header navbar navbar-fixed-top"></div>
 		<!-- END HEADER -->
 
 		<!-- BEGIN HEADER AND CONTENT DIVIDER -->
 		<div class="clearfix"></div>
 
 		<!-- BEGIN SIDEBAR -->
-		<div th:include="fragments/menu::#menuFragment"	class="page-sidebar-wrapper"></div>
+		<div th:include="fragments/menu::#menuFragment"
+			class="page-sidebar-wrapper"></div>
 		<!-- END SIDEBAR -->
 
 		<!-- BEGIN CONTENT -->
@@ -145,15 +156,18 @@
 							<div class="row main">
 								<!-- PROJECT LIST -->
 								<div class="col-md-12">
-									<div id="contenedor-tabla-outside" class="contiene hidden">
+									<div id="contenedor-tabla-outside"
+										class="contiene hidden">
 										<div>
 											<!-- DATATABLE DANDELION CONF. -->
-											<table id="projects" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
+											<table id="projects" class="table table-hover table-striped"
+												dt:table="true" dt:paginationtype="full">
 												<thead>
 													<tr class="cabecera-tabla">
 														<th class="titulo-columnas text-left"><span th:text="#{gen.id}"> ID </span></th>
 														<th dt:sortInitDirection="asc" dt:sortInitOrder="0" class="titulo-columnas" th:text="#{gen.name}">Name</th>
 														<th class="titulo-columnas text-left" th:text="#{gen.owner}">Owner</th>
+														<th dt:sortInitDirection="dsc" dt:sortInitOrder="1" class="titulo-columnas text-left" th:text="#{gen.type}">Type</th>
 														<th class="titulo-columnas text-left"><span th:text="#{gen.description}"> Description </span></th>
 														<th class="titulo-columnas text-left"><span th:text="#{app.realm}"> Realm </span></th>
 														<th class="titulo-columnas text-left"><span	th:text="#{gen.webproject}">Webproject </span></th>
@@ -170,6 +184,8 @@
 														<td class="text-left " th:text="${p.identification}"></td>
 														<!-- USER -->
 														<td class="text-left " th:text="${p.user.userId}"></td>
+														<!-- TYPE -->
+														<td class="text-left" th:title="${p.type}" th:text="${p.type}"></td>
 														<!-- DESCRIPTION -->
 														<td class="text-left text-truncate-sm" th:title="${p.description}" th:text="${p.description}"></td>
 														<!-- REALM -->
@@ -216,7 +232,8 @@
 											</table>
 
 											<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
-											<div id="dataTable-vis-toggle" class="btn-group margin-right-10 hide">
+											<div id="dataTable-vis-toggle"
+												class="btn-group margin-right-10 hide">
 												<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
 												<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
 													<span class="checkbox-column">
@@ -233,22 +250,26 @@
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
-														<label th:text="#{gen.description}"> Description</label>
+														<label th:text="#{gen.type}"> Type</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-														<label th:text="#{app.realm}"> Realm</label>
+														<label th:text="#{gen.description}"> Description</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
-														<label th:text="#{gen.webproject}"> Web project</label>
+														<label th:text="#{app.realm}"> Realm</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="6" checked/>
-														<label th:text="#{gen.created}"> Created at</label>
+														<label th:text="#{marketasset.webproject}"> Web project</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="7" checked/>
+														<label th:text="#{gen.created}"> Created at</label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="8" checked/>
 														<label th:text="#{gen.updated}"> Updated at</label>
 													</span>
 												</div>
@@ -355,6 +376,11 @@
 		});
 	}	
 	
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([ 0, 3 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});	
+	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 
@@ -407,9 +433,6 @@
 		$('.dataTables_paginate').attr('style', 'float:right !important');
 		
 		$("#contenedor-tabla-outside").removeClass("hidden");
-		
-		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 	});
 	
 	//]]>

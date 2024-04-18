@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import com.minsait.onesait.platform.persistence.external.generator.model.stateme
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.PreparedStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.SelectStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.UpdateStatement;
-import com.minsait.onesait.platform.persistence.external.generator.model.statements.UpsertStatement;
 
 public interface SQLGeneratorInt {
 	PreparedStatement generate(SelectStatement selectStatement, boolean withParams);
@@ -34,11 +33,11 @@ public interface SQLGeneratorInt {
 	PreparedStatement generate(UpdateStatement updateStatement, boolean withParams);
 
 	PreparedStatement generate(DropStatement dropStatement);
-
+	
 	PreparedStatement generate(CreateStatement createStatement);
-
+	
 	PreparedStatement generate(GetIndexStatement getIndexStatement);
-
+	
 	SelectStatement buildSelect();
 
 	InsertStatement buildInsert();
@@ -48,13 +47,13 @@ public interface SQLGeneratorInt {
 	DeleteStatement buildDelete();
 
 	DropStatement buildDrop();
-
+	
 	CreateStatement buildCreate();
 
 	GetIndexStatement buildGetIndex();
 
-	PreparedStatement generate(UpsertStatement updateStatement, boolean withParams);
+	
 
-	UpsertStatement buildUpsert();
-
+	
+	
 }

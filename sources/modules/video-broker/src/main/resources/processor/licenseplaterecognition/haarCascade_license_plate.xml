@@ -65,7 +65,7 @@
               <tilted>0</tilted></feature>
             <threshold>2.0863260142505169e-003</threshold>
             <left_val>-8.7998157739639282e-001</left_val>
-            <right_val>5.865178108215.3.0e-001</right_val></_></_></trees>
+            <right_val>5.8651781082153320e-001</right_val></_></_></trees>
       <stage_threshold>-2.0683259963989258e+000</stage_threshold>
       <parent>-1</parent>
       <next>-1</next></_>
@@ -285,7 +285,7 @@
                 <_>
                   44 10 10 5 3.</_></rects>
               <tilted>0</tilted></feature>
-            <threshold>4.221715.3.0543518e-002</threshold>
+            <threshold>4.2217150330543518e-002</threshold>
             <left_val>-7.5190877914428711e-001</left_val>
             <right_val>6.3705182075500488e-001</right_val></_></_>
         <_>
@@ -883,7 +883,7 @@
                 <_>
                   41 7 8 4 3.</_></rects>
               <tilted>0</tilted></feature>
-            <threshold>5.3.04141217470169e-003</threshold>
+            <threshold>5.3404141217470169e-003</threshold>
             <left_val>-9.4317251443862915e-001</left_val>
             <right_val>9.0425151586532593e-001</right_val></_></_></trees>
       <stage_threshold>-6.0007210820913315e-002</stage_threshold>
@@ -1086,7 +1086,7 @@
                   19 3 20 1 2.</_></rects>
               <tilted>0</tilted></feature>
             <threshold>1.6897840425372124e-002</threshold>
-            <left_val>-5.3.01992130279541e-001</left_val>
+            <left_val>-5.3601992130279541e-001</left_val>
             <right_val>9.5484441518783569e-001</right_val></_></_>
         <_>
           <!-- tree 3 -->
@@ -1353,7 +1353,7 @@
               <tilted>0</tilted></feature>
             <threshold>2.7599320746958256e-003</threshold>
             <left_val>-9.9757021665573120e-001</left_val>
-            <right_val>1.00002896785.3.08e+000</right_val></_></_>
+            <right_val>1.0000289678573608e+000</right_val></_></_>
         <_>
           <!-- tree 2 -->
           <_>

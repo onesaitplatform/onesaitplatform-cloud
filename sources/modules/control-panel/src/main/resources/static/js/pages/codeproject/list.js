@@ -154,7 +154,7 @@ Codeproject.List = (function() {
 	
 	var deleteCodeprojectDialog = function(id) {
 		$.confirm({
-			title: constants.deleteTitle,
+			title: headerJson.codeprojectDelete,
 			theme: 'light',
 			columnClass: 'medium',
 			content: constants.deleteContent,

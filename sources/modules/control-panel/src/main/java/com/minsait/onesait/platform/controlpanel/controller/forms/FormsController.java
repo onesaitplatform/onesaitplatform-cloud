@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,24 +29,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.minsait.onesait.platform.config.model.I18nResources;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.repository.I18nResourcesRepository;
 import com.minsait.onesait.platform.config.services.form.FormDTO;
 import com.minsait.onesait.platform.config.services.form.FormService;
-import com.minsait.onesait.platform.config.services.gadget.GadgetDatasourceService;
 import com.minsait.onesait.platform.config.services.internationalization.InternationalizationService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
-import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
-import lombok.extern.slf4j.Slf4j;
-
 @Controller
 @RequestMapping("forms")
-@Slf4j
 public class FormsController {
 
 	private static final String I18NS = "i18ns";
@@ -62,13 +56,6 @@ public class FormsController {
 	private I18nResourcesRepository i18nRepository;
 	@Autowired
 	private IntegrationResourcesService resourcesService;
-	@Autowired
-	private GadgetDatasourceService gadgetDatasourceService;
-	@Autowired
-	private OPResourceService resourceService;
-
-	private static final String DATASOURCES = "datasources";
-	private static final String APP_USER_ACCESS = "app_user_access";
 
 	@GetMapping("form")
 	public String formIframe(@RequestParam(value = "id", required = false) String formId, Model model) {
@@ -96,30 +83,20 @@ public class FormsController {
 
 	@GetMapping("show/{id}")
 	public String show(Model model, @PathVariable("id") String id) {
-		if (formService.hasUserAccess(utils.getUserId(), id, ResourceAccessType.VIEW)) {
-			final FormDTO form = formService.getForm(id);
-			model.addAttribute("form", form);
-			final String path = "/forms/form-show?id=" + form.getCode();
-			model.addAttribute("formpath", path);
-			return "forms/show";
-		} else {
-			log.warn("User {} does not have access to form {}", utils.getUserId(), id);
-			return "error/403";
-		}
+		final FormDTO form = formService.getForm(id);
+		model.addAttribute("form", form);
+		final String path = "/forms/form-show?id=" + form.getCode();
+		model.addAttribute("formpath", path);
+		return "forms/show";
 	}
 
 	@GetMapping("show/{id}/{oid}")
 	public String showOid(Model model, @PathVariable("id") String id, @PathVariable("oid") String oid) {
-		if (formService.hasUserAccess(utils.getUserId(), id, ResourceAccessType.VIEW)) {
-			final FormDTO form = formService.getForm(id);
-			model.addAttribute("form", form);
-			final String path = "/forms/form-show?id=" + form.getCode() + "&&oid=" + oid;
-			model.addAttribute("formpath", path);
-			return "forms/show";
-		} else {
-			log.warn("User {} does not have access to form {}", utils.getUserId(), id);
-			return "error/403";
-		}
+		final FormDTO form = formService.getForm(id);
+		model.addAttribute("form", form);
+		final String path = "/forms/form-show?id=" + form.getCode() + "&&oid=" + oid;
+		model.addAttribute("formpath", path);
+		return "forms/show";
 	}
 
 	@GetMapping("form-show/{id}")
@@ -156,37 +133,29 @@ public class FormsController {
 		model.addAttribute("entities", ontologyService.getOntologiesByUserId(utils.getUserId()));
 		model.addAttribute(I18NS, internationalizationService.getByUserIdOrPublic(utils.getUserId()));
 		model.addAttribute("iframe", "");
-		model.addAttribute(DATASOURCES, gadgetDatasourceService.getAllIdentificationsByUser(utils.getUserId()));
 		return "forms/create";
 	}
 
 	@GetMapping("update/{id}")
 	public String update(Model model, @PathVariable("id") String id) {
-		if (formService.hasUserAccess(utils.getUserId(), id, ResourceAccessType.MANAGE)) {
-			final FormDTO form = formService.getForm(id);
-			model.addAttribute("entities", ontologyService.getOntologiesByUserId(utils.getUserId()));
-			model.addAttribute(I18NS, internationalizationService.getByUserIdOrPublic(utils.getUserId()));
-			// find internationalization
-			String i18nR = "";
-			final List<I18nResources> i18nResources = i18nRepository.findByOPResourceId(form.getId());
-			for (final I18nResources ir : i18nResources) {
-				if (i18nR.isEmpty()) {
-					i18nR = ir.getI18n().getId();
-				} else {
-					i18nR = i18nR + "," + ir.getI18n().getId();
-				}
+		final FormDTO form = formService.getForm(id);
+		model.addAttribute("entities", ontologyService.getOntologiesByUserId(utils.getUserId()));
+		model.addAttribute(I18NS, internationalizationService.getByUserIdOrPublic(utils.getUserId()));
+		// find internationalization
+		String i18nR = "";
+		final List<I18nResources> i18nResources = i18nRepository.findByOPResourceId(form.getId());
+		for (int i = 0; i < i18nResources.size(); i++) {
+			final I18nResources ir = i18nResources.get(i);
+			if (i18nR.isEmpty()) {
+				i18nR = ir.getI18n().getId();
+			} else {
+				i18nR = i18nR + "," + ir.getI18n().getId();
 			}
-			form.setI18n(i18nR);
-			ResourceAccessType resourceAccess = resourceService.getResourceAccess(utils.getUserId(),form.getId());
-			model.addAttribute(APP_USER_ACCESS, resourceAccess);
-			model.addAttribute("form", form);
-			model.addAttribute("iframe", "?id=" + form.getCode());
-			model.addAttribute(DATASOURCES, gadgetDatasourceService.getAllIdentificationsByUser(utils.getUserId()));
-			return "forms/create";
-		} else {
-			log.warn("User {} does not have access to form {}", utils.getUserId(), id);
-			return "error/403";
 		}
+		form.setI18n(i18nR);
+		model.addAttribute("form", form);
+		model.addAttribute("iframe", "?id=" + form.getCode());
+		return "forms/create";
 	}
 
 	@PostMapping(value = "/clone")
@@ -194,13 +163,8 @@ public class FormsController {
 			@RequestParam String identification) {
 
 		try {
-			if (formService.hasUserAccess(utils.getUserId(), elementid, ResourceAccessType.VIEW)) {
-				formService.clone(elementid, identification, utils.getUserId());
-				return new ResponseEntity<>(identification, HttpStatus.OK);
-			} else {
-				log.warn("User {} does not have access to form {}", utils.getUserId(), elementid);
-				return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-			}
+			formService.clone(elementid, identification, utils.getUserId());
+			return new ResponseEntity<>(identification, HttpStatus.OK);
 		} catch (final Exception e) {
 
 			return new ResponseEntity<>("{\"status\" : \"fail\"}", HttpStatus.BAD_REQUEST);

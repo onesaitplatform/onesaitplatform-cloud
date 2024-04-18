@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,8 +35,6 @@ import org.camunda.bpm.engine.authorization.Authorization;
 import org.camunda.bpm.engine.authorization.Resources;
 import org.camunda.bpm.engine.filter.Filter;
 import org.camunda.bpm.engine.identity.Group;
-import org.camunda.bpm.engine.identity.Tenant;
-import org.camunda.bpm.engine.identity.User;
 import org.camunda.bpm.engine.impl.IdentityServiceImpl;
 import org.camunda.bpm.engine.task.TaskQuery;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -375,26 +373,6 @@ public class AuthorizationManagementServiceImpl implements AuthorizationManageme
 			log.info("No configurations found of type BPM_ROLE_MAPPING");
 		}
 		return null;
-	}
-
-	@Override
-	public List<String> getTenants(String userId) {
-		return identityService.createTenantQuery().userMember(userId).list().stream().map(Tenant::getId).toList();
-	}
-
-	@Override
-	public List<String> getAllTenants() {
-		return identityService.createTenantQuery().list().stream().map(Tenant::getId).toList();
-	}
-
-	@Override
-	public void authorizeUserOnTenat(String userId, String tenantId) {
-		identityService.createTenantUserMembership(tenantId, userId);
-	}
-
-	@Override
-	public List<String> getUsersInTenant(String tenantId) {
-		return identityService.createUserQuery().memberOfTenant(tenantId).list().stream().map(User::getId).toList();
 	}
 
 }

@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -108,9 +108,9 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="(${#authentication.name} == ${api.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR') AND (${api.id} != null) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'})" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  th:value="#{gen.deleteBtn}" th:attr="onclick='javascript:ApiCreateController.deleteConfirmation();'"> <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>
+									<button th:if="(${api.id} != null) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'})" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  th:value="#{gen.deleteBtn}" th:attr="onclick='javascript:ApiCreateController.deleteConfirmation();'"> <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>
 
-									<span class="sep" th:if="(${#authentication.name} == ${api.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR') AND (${api.id} != null) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'})"></span>
+									<span class="sep" th:if="(${api.id} != null)"></span>
 
 									<!-- CANCEL -->
 									<button th:if="(${appId} == null)" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:ApiCreateController.cancel(\'' +${api.id}+ '\',\'' + @{/apimanager/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
@@ -150,11 +150,6 @@
 							<div th:if="*{graviteeId}" id="tab-gravitee-swagger" class="option" >
 								<a href="#tab_3" data-toggle="tab" th:classappend="${api?.id} == null or ${api?.graviteeId} == null or ${graviteeSwaggerDoc.id} == null ? disabled : ''" aria-expanded="true">
 									<span class="" th:text="#{apimanager.gravitee.swagger}" >EDIT GRAVITEE SWAGGER </span>
-								</a>
-							</div>
-							<div th:if="${api.graviteeId != null AND hasJWTPlan}" id="tab-gravitee-subscriptions" class="option" >
-								<a href="#tab_4" data-toggle="tab" th:classappend="${api?.id} == null or ${api?.graviteeId} == null ? disabled : ''" aria-expanded="true">
-									<span class="" th:text="#{apimanager.gravitee.subscriptions}" >SUBS </span>
 								</a>
 							</div>
 						</div>
@@ -309,18 +304,6 @@
 													<input type="hidden" name="publish2gravitee" id="publish2gravitee" value="false"/>
 													<label class="control-label" th:if="!*{graviteeId}" th:text="#{apimanager.publish.gravitee}">Publish to gravitee</label>
 													<label class="control-label" th:if="*{graviteeId}" th:text="#{apimanager.published.gravitee}">Published to gravitee</label>
-												</div>
-												<div th:if="${graviteeOn && !hasJWTPlan}" id="JWTPlanDiv" class="col-md-4 col-sm-6 col-xs-6 padding-top-8 no-padding-both hide">
-													<input th:if="${graviteeOn && !hasJWTPlan}" class="margin-right-10" id="checkbox-jwt-plan" name="checkbox-jwt-plan" type="checkbox" />
-													<input type="hidden" name="graviteeJWTPlan" id="graviteeJWTPlan" value="false"/>
-													<label class="control-label" th:if="${graviteeOn && !hasJWTPlan}" th:text="#{apimanager.gravitee.jwtplan}">Publish to gravitee</label>
-												</div>
-												<div id="applicationDiv" class="col-md-8 col-sm-6 col-xs-6 no-padding-right hide">
-													<label class="control-label" th:text="#{apimanager.gravitee.application}"></label>
-													<select name="application" id="applications" class="selectpicker form-control" data-live-search="true" data-width="100%" >
-														<option value="onesaitplatform">onesaitplatform (default)</option> 
-														<option th:each="app :${applications}" th:value="${app}" th:text="${app}" ></option>
-													</select>
 												</div>
 											</div>
 										</div>
@@ -597,74 +580,23 @@
 							</div>
 							<div th:if="*{graviteeId}" class="tab-pane fade in" id="tab_3">
 								<!-- GRAVITEE SWAGGER -->
-								<div class="row">
-								  <div class="col-md-12 col-sm-12 col-xs-12">
-									<div class="form-group">
-										<label>Swagger YML/JSON </label>
-										<div style="height:600px" id="graviteeDocumentationAce" ></div>
-										<input type="hidden" id="graviteeDocumentation" th:field="${graviteeSwaggerDoc.content}"/>
-									</div>
-									<div class="clearfix"></div>
-									<div class="form-group">
-										<div class="pull-right">
-											<button type="button" class="btn btn-circle btn-outline blue" th:text="#{apimanager.save.changes}" onclick="ApiCreateController.updateGraviteeSwaggerDocumentation()">Save changes</button>
-											<button type="button" class="btn btn-circle btn-outline blue" th:text="#{apimanager.show.swagger.editor}" th:attr="onclick='javascript:navigateWindow(\'https://editor.swagger.io/?url=' + @{|${endpointGraviteeManagement}/apis/${graviteeSwaggerDoc.api}/pages/${graviteeSwaggerDoc.id}/content|} + '\');'">Show Swagger Editor</button>			
+									<div class="row">
+									  <div class="col-md-12 col-sm-12 col-xs-12">
+										<div class="form-group">
+											<label>Swagger YML/JSON </label>
+											<div style="height:600px" id="graviteeDocumentationAce" ></div>
+											<input type="hidden" id="graviteeDocumentation" th:field="${graviteeSwaggerDoc.content}"/>
 										</div>
-									</div>
-								  </div>
-								</div>
-							</div>
-							<div th:if="${api.graviteeId != null AND hasJWTPlan}" class="tab-pane fade in" id="tab_4">
-								<!-- APP SUBS -->
-								<div class="row main">	
-									<div class="col-md-8 col-sm-9 col-xs-9 panelHeader">
-										<span th:text="#{apimanager.gravitee.subscriptions}" >SUBS </span>
+										<div class="clearfix"></div>
+										<div class="form-group">
+											<div class="pull-right">
+												<button type="button" class="btn btn-circle btn-outline blue" th:text="#{apimanager.save.changes}" onclick="ApiCreateController.updateGraviteeSwaggerDocumentation()">Save changes</button>
+												<button type="button" class="btn btn-circle btn-outline blue" th:text="#{apimanager.show.swagger.editor}" th:attr="onclick='javascript:navigateWindow(\'https://editor.swagger.io/?url=' + @{|${endpointGraviteeManagement}/apis/${graviteeSwaggerDoc.api}/pages/${graviteeSwaggerDoc.id}/content|} + '\');'">Show Swagger Editor</button>			
+											</div>
+										</div>
+									  </div>
 									</div>
 								</div>
-								
-								<div class="row main pageCreateHeader no-margin-left padding-left-10 ">
-									<label class="no-padding-bottom" th:text=="'+'"></label>
-									<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{apimanager.gravitee.subscriptions}"></label>
-									<i class="la la-info-circle popovers" style="color: #1168A6;" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{apimanager.gravitee.subs.info},data-title=#{apimanager.gravitee.subscriptions}"></i>
-								</div>
-								
-								<div class="row main borderPanel no-margin-left">
-									<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(35vh);">
-										<div class="row" style="padding-right: 10px; padding-left: 10px;">
-											<label class="control-label" th:text="#{apimanager.gravitee.application}">Apps</label>
-											<select id="apps" class="selectpicker form-control" data-live-search="true" data-width="100%" >
-												<option value="onesaitplatform">onesaitplatform (default)</option>
-												<option th:each="app :${applications}" th:value="${app}" th:text="${app}" ></option>
-											</select>
-										</div>
-										<div class="row" style="padding-right: 10px; padding-left: 10px;">
-											<button type="button" class="btn btn-primary btn-primary-save pull-right" onclick="ApiCreateController.subscribe()" th:text="#{apimanager.subscribe}">Subscribe</button>
-										</div>
-									</div>
-									<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(25vh); max-height: calc(45vh); overflow:auto">
-										<div id="subscriptions" class="margin-bottom-20">
-											<table class="table table-hover" id="table_subscriptions" data-loaded="false">
-												<thead>
-													<tr class="cabecera-tabla" role="row" >
-														<th class="titulo-columnas" th:text="#{apimanager.gravitee.application}">App</th>
-														<th class="titulo-columnas" th:text="#{apimanager.gravitee.clientId}">ClientId</th>
-													</tr>
-												</thead>
-												<tbody style="border-bottom: 1px solid #ddd;" th:remove="all-but-first">
-													<tr class="subscriptions-model">
-														<td><input type="text" name="applications[]" readonly="readonly"  class="form-control"/></td>
-														<td><input type="text" name="clientIds[]" readonly="readonly"   class="form-control"/></td>												
-														<td width="150px" class="no-wrap text-center">
-															<button type="button" class="btn btn-xs btn-no-border icon-on-table color-red tooltips btn-mountable-authorization-remove" style="background-color:transparent;" onclick="ApiCreateController.unsubscribe(this)"> <i class="icon-delete"></i></button>
-														</td>			
-													</tr>
-												</tbody>														
-											</table>
-										</div>
-									</div>
-								</div>
-							</div>
-						
 						</div><!-- END COL-12 -->
 					</div>
 				</form>
@@ -997,8 +929,6 @@
 	var currentLanguage = [[${lang}]];
 	var graviteeSWDoc = /*[[${graviteeSwaggerDoc}]]*/;
 	var swaggerEditor;
-	var graviteeId = [[${api.graviteeId}]]
-	var hasJWTPlan = [[${hasJWTPlan}]]
 
 	var apiCreateJson = {
 		"endpoint" : endpoint,
@@ -1021,10 +951,7 @@
 			"authinsert": [[#{apimanager.valid.authinsert}]],
 			"graviteeswagger": [[#{apimanager.valid.graviteeswagger}]]
 		},
-		"graviteeSwaggerDocSaved": [[#{apimanager.save.changes.ok}]],
-		"graviteeId": graviteeId,
-		"hasJWTPlan": hasJWTPlan,
-		"subscriptions": [[${JWTapps}]]
+		"graviteeSwaggerDocSaved": [[#{apimanager.save.changes.ok}]]
 	};
 
 	var apiCustomOpsJson = {
@@ -1083,10 +1010,6 @@
 	$(document).ready(function(){
 		handleCodeMirror();
 		handleTabsChange();
-		
-		if(graviteeId != null && !hasJWTPlan){
-		 	$('#JWTPlanDiv').removeClass('hide');
-		 }
 	});
 
 	function loadCodeMirror(){
@@ -1241,27 +1164,8 @@
 		codeEditor.onDidBlurEditorText((event) => {
 		    ApiCustomOpsController.loadParamsQuery(codeEditor.getValue())
 		 })
-		 
-		 $('#checkbox-gravitee').on('change', function(){
-			 if($('#checkbox-gravitee').is(':checked')){
-				 $('#JWTPlanDiv').removeClass('hide');
-			 }else{
-				 $('#JWTPlanDiv').addClass('hide');
-				 $('#applicationDiv').addClass('hide');
-				 $( "#checkbox-jwt-plan" ).prop( "checked", false )
-			 }
-		 })
-		 $('#checkbox-jwt-plan').on('change', function(){
-			 $('#graviteeJWTPlan').val($('#checkbox-jwt-plan').is(':checked'))
-			 if($('#checkbox-jwt-plan').is(':checked')){
-				 $('#applicationDiv').removeClass('hide');
-			 }else{
-				 $('#applicationDiv').addClass('hide');
-			 }
-		 })
-		 
 	});
-	
+
 	</script>
 
 </body>

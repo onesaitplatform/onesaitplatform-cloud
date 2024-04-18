@@ -1127,21 +1127,6 @@ export function getContextComponents(context) {
   return values;
 }
 
-export function getContextComponentsNoButtons(context) {
-  const values = [];
-
-  context.utils.eachComponent(context.instance.options.editForm.components, (component, path) => {
-    if (component.type !== 'button') {
-      values.push({
-        label: `${component.label || component.key} (${path})`,
-        value: path,
-      });
-    }
-  });
-
-  return values;
-}
-
 export function getContextButtons(context) {
   const values = [];
 

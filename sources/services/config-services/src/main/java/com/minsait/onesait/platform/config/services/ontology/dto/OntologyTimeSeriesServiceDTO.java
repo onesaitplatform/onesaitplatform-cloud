@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,14 +78,6 @@ public class OntologyTimeSeriesServiceDTO {
 
 	@Getter
 	@Setter
-	private String[] optionalFieldNames;
-
-	@Getter
-	@Setter
-	private String[] optionalFieldTypes;
-
-	@Getter
-	@Setter
 	private String[] fieldAggregations;
 
 	@Getter
@@ -108,6 +100,8 @@ public class OntologyTimeSeriesServiceDTO {
 	@Setter
 	private String[] deletepolicies;
 
+	// Timeseries fields
+
 	// ontology fields
 
 	@Getter
@@ -121,7 +115,7 @@ public class OntologyTimeSeriesServiceDTO {
 	@Getter
 	@Setter
 	private boolean allowsCreateTopic;
-
+	
 	@Getter
 	@Setter
 	private boolean allowsCreateNotificationTopic;
@@ -188,11 +182,12 @@ public class OntologyTimeSeriesServiceDTO {
 	@Getter
 	@Setter
 	private OntologyTimeseriesTimescaleProperties timeSeriesTimescaleProperties;
+	
 
 	@Getter
 	@Setter
 	private Set<OntologyTimeseriesTimescaleAggregates> timeSeriesTimescaleAggregates;
-
+	
 	@Getter
 	@Setter
 	private String[] buckettypes;
@@ -212,18 +207,18 @@ public class OntologyTimeSeriesServiceDTO {
 	@Getter
 	@Setter
 	private String compressionQuery;
-
-	@Getter
-	@Setter
-	private boolean supportsJsonLd;
-
-	@Getter
-	@Setter
-	private String jsonLdContext;
-
-	@Getter
-	@Setter
-	private boolean enableDataClass;
+	
+    @Getter
+    @Setter
+    private boolean supportsJsonLd;
+    
+    @Getter
+    @Setter
+    private String jsonLdContext;
+    
+    @Getter
+    @Setter
+    private boolean enableDataClass;
 
 	public void setTimeSeriesProperties() {
 		this.timeSeriesProperties = new HashSet<>();
@@ -262,17 +257,6 @@ public class OntologyTimeSeriesServiceDTO {
 					OntologyTimeSeriesProperty.AggregationFunction.valueOf(aggregationFunction));
 			otsproperty.setPropertyPushSignal(pushSignal);
 			this.timeSeriesProperties.add(otsproperty);
-		}
-		if (this.optionalFieldNames != null && this.rtdbDatasource.equals(RtdbDatasource.TIMESCALE.toString())) {
-			for (int i = 0; i < this.optionalFieldNames.length; i++) {
-				name = this.optionalFieldNames[i];
-				datatype = this.optionalFieldTypes[i];
-				otsproperty = new OntologyTimeSeriesProperty();
-				otsproperty.setPropertyType(PropertyType.FIELD_OPTIONAL);
-				otsproperty.setPropertyDataType(OntologyTimeSeriesProperty.PropertyDataType.valueOf(datatype));
-				otsproperty.setPropertyName(name);
-				this.timeSeriesProperties.add(otsproperty);
-			}
 		}
 	}
 
@@ -323,7 +307,7 @@ public class OntologyTimeSeriesServiceDTO {
 			ontologyTimescaleProperties.setFrecuencyUnit(OntologyTimeSeriesWindow.FrecuencyUnit.valueOf("NONE"));
 		} else if (this.freqtypes[0].equalsIgnoreCase("NODUPS")) {
 			ontologyTimescaleProperties.setFrecuency(0);
-			ontologyTimescaleProperties.setFrecuencyUnit(OntologyTimeSeriesWindow.FrecuencyUnit.valueOf("NODUPS"));
+			ontologyTimescaleProperties.setFrecuencyUnit(OntologyTimeSeriesWindow.FrecuencyUnit.valueOf("NODUPS"));	
 		} else {
 			int freqnum = Integer.parseInt(this.freqtypes[0].trim().split(" ")[0]);
 			String frequnit = this.freqtypes[0].trim().split(" ")[1];
@@ -355,5 +339,5 @@ public class OntologyTimeSeriesServiceDTO {
 		ontologyTimescaleProperties.setRetentionUnit(RetentionUnit.valueOf(retentionUnit));
 		return ontologyTimescaleProperties;
 	}
-
+	
 }

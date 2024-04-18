@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -38,6 +40,7 @@ import javax.transaction.Transactional;
 import org.apache.commons.collections4.CollectionUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,6 +49,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonschema.core.report.ProcessingMessage;
@@ -53,6 +57,7 @@ import com.github.fge.jsonschema.core.report.ProcessingReport;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.hazelcast.com.fasterxml.jackson.jr.ob.JSON;
 import com.minsait.onesait.platform.commons.ActiveProfileDetector;
 import com.minsait.onesait.platform.commons.model.InsertResult;
 import com.minsait.onesait.platform.config.components.GlobalConfiguration;
@@ -102,7 +107,6 @@ import com.minsait.onesait.platform.config.repository.LayerRepository;
 import com.minsait.onesait.platform.config.repository.OntologyDataAccessRepository;
 import com.minsait.onesait.platform.config.repository.OntologyElasticRepository;
 import com.minsait.onesait.platform.config.repository.OntologyKPIRepository;
-import com.minsait.onesait.platform.config.repository.OntologyPrestoDatasourceRepository;
 import com.minsait.onesait.platform.config.repository.OntologyPrestoRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRestHeadersRepository;
@@ -146,9 +150,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OntologyServiceImpl implements OntologyService {
 
-	private static final String KPI = "KPI";
-	private static final String GENERAL = "GENERAL";
-	private static final String TIMESERIES = "TIMESERIES";
 	@Autowired
 	@Lazy
 	EntityDeletionService deletionService;
@@ -214,7 +215,7 @@ public class OntologyServiceImpl implements OntologyService {
 
 	@Autowired
 	LayerRepository layerRepository;
-
+	
 	@Autowired
 	private OntologyVirtualRepository ontologyVirtualRepository;
 
@@ -224,9 +225,6 @@ public class OntologyServiceImpl implements OntologyService {
 	@Autowired
 	OntologyPrestoRepository ontologyPrestoRepository;
 
-	@Autowired
-	OntologyPrestoDatasourceRepository ontologyPrestoDatasourceRepository;
-	
 	@Autowired(required = false)
 	@Qualifier("routerServiceImpl")
 	private RouterService routerService;
@@ -351,10 +349,10 @@ public class OntologyServiceImpl implements OntologyService {
 		String filterAudit = "";
 		String filterLog = "";
 		if (!showAudit) {
-			filterAudit = "Audit\\_%";
+			filterAudit = "Audit_%";
 		}
 		if (!showLog) {
-			filterLog = "LOG\\_%";
+			filterLog = "LOG_%";
 		}
 
 		if (showOwned) {
@@ -416,12 +414,6 @@ public class OntologyServiceImpl implements OntologyService {
 			mapPresto.put(op.getOntologyId().getId(), op);
 		}
 
-		final List<OntologyTimeSeries> timeseriesOntologies = ontologyTimeSeriesRepository.findAll();
-		final Map<String, OntologyTimeSeries> mapTimeseries = new HashMap<>();
-		for (final OntologyTimeSeries ot : timeseriesOntologies) {
-			mapTimeseries.put(ot.getOntology().getId(), ot);			
-		}
-		
 		final List<OntologyDTO> dtos = new ArrayList<>();
 		for (final OntologyForList temp : ontologiesForList) {
 			if (temp.getAccessType() != null) {
@@ -443,7 +435,7 @@ public class OntologyServiceImpl implements OntologyService {
 						obj.setIsAuthorizationsPermissions("QUERY");
 					}
 
-					for (final OntologyUserAccess permission : access) {
+					for (OntologyUserAccess permission : access) {
 						if (permission.getUser().getId().equals(sessionUser.getId())
 								&& permission.getOntology().getId().equalsIgnoreCase(temp.getId())) {
 							obj.setIsAuthorizationsPermissions(
@@ -458,24 +450,11 @@ public class OntologyServiceImpl implements OntologyService {
 				obj.setOntologyKPI(mapKpis.get(obj.getId()));
 				obj.setOntologyUserAccesses(mapAccess.containsKey(obj.getId()) ? mapAccess.get(obj.getId())
 						: new ArrayList<OntologyUserAccess>());
-				if (obj.getRtdbDatasource().equals(RtdbDatasource.MONGO)) {
-					if (obj.getOntologyKPI() != null) {
-						obj.setType(KPI);
-					} else if (mapTimeseries.get(obj.getId()) != null) {
-						obj.setType(TIMESERIES);
-					} else {
-						obj.setType(GENERAL);
-					}
-				} else if (obj.getRtdbDatasource().equals(RtdbDatasource.TIMESCALE)) {
-					obj.setType(TIMESERIES);
-				} else if (obj.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL) && mapVirtual.get(obj.getId()) != null) {
+				if (obj.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL) && mapVirtual.get(obj.getId()) != null) {
 					obj.setRtdbDatasourceType(mapVirtual.get(obj.getId()).getDatasourceId().getSgdb().toString());
-					obj.setConnection(mapVirtual.get(obj.getId()).getDatasourceId().getIdentification());
 				} else if (obj.getRtdbDatasource().equals(RtdbDatasource.PRESTO)
 						&& mapPresto.get(obj.getId()) != null) {
-					final String catalog = mapPresto.get(obj.getId()).getDatasourceCatalog();
-					obj.setRtdbDatasourceType(ontologyPrestoDatasourceRepository.findByIdentification(catalog).getType().toString());
-					obj.setConnection(catalog);					
+					obj.setRtdbDatasourceType(mapPresto.get(obj.getId()).getDatasourceCatalog().toUpperCase());
 				}
 				dtos.add(obj);
 			}
@@ -515,12 +494,6 @@ public class OntologyServiceImpl implements OntologyService {
 		for (final OntologyPresto op : prestoOntologies) {
 			mapPresto.put(op.getOntologyId().getId(), op);
 		}
-		
-		final List<OntologyTimeSeries> timeseriesOntologies = ontologyTimeSeriesRepository.findByUser(sessionUser);
-		final Map<String, OntologyTimeSeries> mapTimeseries = new HashMap<>();
-		for (final OntologyTimeSeries ot : timeseriesOntologies) {
-			mapTimeseries.put(ot.getOntology().getId(), ot);			
-		}
 
 		access = ontologyUserAccessRepository.findAll();
 		for (final OntologyUserAccess a : access) {
@@ -554,24 +527,11 @@ public class OntologyServiceImpl implements OntologyService {
 				obj.setOntologyKPI(ids.get(obj.getId()));
 				obj.setOntologyUserAccesses(mapAccess.containsKey(obj.getId()) ? mapAccess.get(obj.getId())
 						: new ArrayList<OntologyUserAccess>());
-				if (obj.getRtdbDatasource().equals(RtdbDatasource.MONGO)) {
-					if (obj.getOntologyKPI() != null) {
-						obj.setType(KPI);
-					} else if (mapTimeseries.get(obj.getId()) != null) {
-						obj.setType(TIMESERIES);
-					} else {
-						obj.setType(GENERAL);
-					}
-				} else if (obj.getRtdbDatasource().equals(RtdbDatasource.TIMESCALE)) {
-					obj.setType(TIMESERIES);
-				} else if (obj.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL) && mapVirtual.get(obj.getId()) != null) {
+				if (obj.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL) && mapVirtual.get(obj.getId()) != null) {
 					obj.setRtdbDatasourceType(mapVirtual.get(obj.getId()).getDatasourceId().getSgdb().toString());
-					obj.setConnection(mapVirtual.get(obj.getId()).getDatasourceId().getIdentification());
 				} else if (obj.getRtdbDatasource().equals(RtdbDatasource.PRESTO)
 						&& mapPresto.get(obj.getId()) != null) {
-					final String catalog = mapPresto.get(obj.getId()).getDatasourceCatalog();
-					obj.setRtdbDatasourceType(ontologyPrestoDatasourceRepository.findByIdentification(catalog).getType().toString());
-					obj.setConnection(catalog);	
+					obj.setRtdbDatasourceType(mapPresto.get(obj.getId()).getDatasourceCatalog().toUpperCase());
 				}
 				dtos.add(obj);
 			}
@@ -590,181 +550,177 @@ public class OntologyServiceImpl implements OntologyService {
 					sessionUser, "", "", "", "");
 		}
 	}
-
+	
+	
 	@Override
-	public List<OntologyPropertiesIndexConfDTO> getPropertiesOntology(Ontology ontology, List<String> indexList) {
-
-		final ArrayList<OntologyPropertiesIndexConfDTO> properties = new ArrayList<>();
-		JSONObject jsonDatos;
-		String rootElementName = null;
-		final JSONObject obj = new JSONObject(ontology.getJsonSchema());
-		if (obj.has("datos")) {
+	public List<OntologyPropertiesIndexConfDTO> getPropertiesOntology (Ontology ontology, List<String> indexList) {
 		
-			JSONObject jsonRaiz = obj.getJSONObject("properties");
-			if(jsonRaiz != null) {
-				  rootElementName = jsonRaiz.keys().next();
-			}
+		
+		ArrayList<OntologyPropertiesIndexConfDTO> properties = new ArrayList<>();
+		JSONObject jsonDatos;
+		JSONObject obj = new JSONObject(ontology.getJsonSchema());
+		if(obj.has("datos")) {
 			jsonDatos = obj.getJSONObject("datos").getJSONObject("properties");
 		} else {
 			jsonDatos = obj.getJSONObject("properties");
 		}
-
+		
 		final OntologyVirtual ontologyVirtual = getOntologyVirtualByOntologyId(ontology);
 		OntologyVirtualDatasource datasource;
-		datasource = ontologyVirtualRepository
-				.findOntologyVirtualDatasourceByOntologyIdentification(ontology.getIdentification());
-
-		for (final Iterator iterator = jsonDatos.keys(); iterator.hasNext();) {
-			final String key = (String) iterator.next();
+		datasource = ontologyVirtualRepository.findOntologyVirtualDatasourceByOntologyIdentification(ontology.getIdentification());
+		
+		
+		for (Iterator iterator =  jsonDatos.keys(); iterator.hasNext();) {
+			String key = (String) iterator.next();
 			String type;
 			JSONObject rute;
-			if (jsonDatos.getJSONObject(key).get("type") instanceof String) {
+			if(jsonDatos.getJSONObject(key).get("type") instanceof String ) {
 				type = jsonDatos.getJSONObject(key).getString("type");
-				if (jsonDatos.getJSONObject(key).has("format")) {
-					type = jsonDatos.getJSONObject(key).getString("format");
-					if (type.equals("date-time")) {
-						type = "	timestamp";
+					if(jsonDatos.getJSONObject(key).has("format")){
+						type = jsonDatos.getJSONObject(key).getString("format");
+						if(type.equals("date-time")) {
+							type= "	timestamp";
+						}
+					} 
+					if(jsonDatos.getJSONObject(key).has("properties")){
+						rute = jsonDatos.getJSONObject(key).getJSONObject("properties");
+						if(rute.has("media")) {
+							type = "file";
+						}
+						if(rute.has("coordinates")) {
+							type = "geometry";
+						}
+						if(rute.has("$date")){
+							type = "timestamp-mongo";
+						}
 					}
-				}
-				if (jsonDatos.getJSONObject(key).has("properties")) {
-					rute = jsonDatos.getJSONObject(key).getJSONObject("properties");
-					if (rute.has("media")) {
-						type = "file";
-					}
-					if (rute.has("coordinates")) {
-						type = "geometry";
-					}
-					if (rute.has("$date")) {
-						type = "timestamp-mongo";
-					}
-				}
-			} else {
-				type = jsonDatos.getJSONObject(key).getJSONArray("type").get(0).toString();
+			}else {
+				type = jsonDatos.getJSONObject(key).getJSONArray("type").get(0).toString();			
 			}
-			final OntologyPropertiesIndexConfDTO property = new OntologyPropertiesIndexConfDTO();
-			if(rootElementName != null) {
-				property.setProperty(rootElementName +"."+ key);
-			} else {
-				property.setProperty(key);
-			}
-			property.setType(type);
-			property.setState(indexList.contains(key));
-			properties.add(property);
-		}
-
-		return properties;
+			OntologyPropertiesIndexConfDTO property = new OntologyPropertiesIndexConfDTO();
+			property.setProperty(key);
+			property.setType(type);	
+			property.setState(indexList.contains(key));	
+		    properties.add(property);
+		}   
+	
+		return  properties;
 	}
-
+	
 	@Override
-	public List<OntologyPropertiesIndexConfDTO> getPropertiesOntologyVirtual(Ontology ontology,
-			Map<String, List<String>> indexMap) {
-
-		final ArrayList<OntologyPropertiesIndexConfDTO> properties = new ArrayList<>();
+	public List<OntologyPropertiesIndexConfDTO> getPropertiesOntologyVirtual (Ontology ontology, Map<String,List<String>> indexMap) {
+		
+		
+		ArrayList<OntologyPropertiesIndexConfDTO> properties = new ArrayList<>();
 		JSONObject jsonDatos;
-		final JSONObject obj = new JSONObject(ontology.getJsonSchema());
-		if (obj.has("datos")) {
+		JSONObject obj = new JSONObject(ontology.getJsonSchema());
+		if(obj.has("datos")) {
 			jsonDatos = obj.getJSONObject("datos").getJSONObject("properties");
 		} else {
 			jsonDatos = obj.getJSONObject("properties");
 		}
-
+		
 		final OntologyVirtual ontologyVirtual = getOntologyVirtualByOntologyId(ontology);
 		OntologyVirtualDatasource datasource;
-		datasource = ontologyVirtualRepository
-				.findOntologyVirtualDatasourceByOntologyIdentification(ontology.getIdentification());
-
-		for (final Iterator iterator = jsonDatos.keys(); iterator.hasNext();) {
-			final String key = (String) iterator.next();
+		datasource = ontologyVirtualRepository.findOntologyVirtualDatasourceByOntologyIdentification(ontology.getIdentification());
+		
+		for (Iterator iterator =  jsonDatos.keys(); iterator.hasNext();) {
+			String key = (String) iterator.next();
 			String type;
-			if (jsonDatos.getJSONObject(key).get("type") instanceof String) {
+			if(jsonDatos.getJSONObject(key).get("type") instanceof String ) {
 				type = jsonDatos.getJSONObject(key).getString("type");
 			} else {
-				type = jsonDatos.getJSONObject(key).getJSONArray("type").get(0).toString();
+				type = jsonDatos.getJSONObject(key).getJSONArray("type").get(0).toString();			
 			}
-			final OntologyPropertiesIndexConfDTO property = new OntologyPropertiesIndexConfDTO();
+			OntologyPropertiesIndexConfDTO property = new OntologyPropertiesIndexConfDTO();
 			property.setProperty(key);
-			property.setType(type);
-
-			final List<String> columIndexes = indexMap.get(key);
+			property.setType(type);	
+			
+			List<String> columIndexes = indexMap.get(key);
 			property.setDisabled(false);
 			property.setState(false);
-
-			if (columIndexes != null) {
-				for (final Object element : columIndexes) {
-					final String index = (String) element;
-
-					if (index.endsWith("_index")) {
-						property.setState(true);
-					} else {
-						property.setDisabled(true);
-						property.setState(true);
-					}
-
+			
+			if(columIndexes != null) {
+			for (Iterator iterator2 = columIndexes.iterator(); iterator2.hasNext();) {
+				String index = (String) iterator2.next();
+				
+				if(index.endsWith("_index")) {
+					property.setState(true);
+				} else {
+					property.setDisabled(true);
+					property.setState(true);
 				}
+			
 			}
-
-			properties.add(property);
-		}
-
-		return properties;
+			}
+			
+		    properties.add(property);
+		}   
+	
+		return  properties;
 	}
-
+	
+	
+	
+	
 	@Override
-	public List<OntologyListIndexMongoConfDTO> getIndexTrue(String indexTrue) {
-		final List<OntologyListIndexMongoConfDTO> listIndex = new ArrayList<OntologyListIndexMongoConfDTO>();
-		final ObjectMapper objectMapper = new ObjectMapper();
-
-		JsonNode jsonNode = null;
+	public List<OntologyListIndexMongoConfDTO> getIndexTrue (String indexTrue) {
+		List<OntologyListIndexMongoConfDTO> listIndex = new ArrayList<OntologyListIndexMongoConfDTO>();
+		ObjectMapper objectMapper = new ObjectMapper();
+       
+		 JsonNode jsonNode = null;
 		try {
 			jsonNode = objectMapper.readTree(indexTrue);
-		} catch (final JsonProcessingException e) {
-
+		} catch (JsonProcessingException e) {
+			
 			e.printStackTrace();
 		}
 
-		for (final JsonNode objectNode : jsonNode) {
+	        for (JsonNode objectNode : jsonNode) {
+	            
 
-			if (objectNode != null && objectNode.isObject()) {
-				final OntologyListIndexMongoConfDTO dto = new OntologyListIndexMongoConfDTO();
-				dto.setProperty(objectNode.get("name").asText());
-				if (objectNode.get("expireAfterSeconds") != null) {
-					dto.setTtl(objectNode.get("expireAfterSeconds").toString());
-				} else {
-					dto.setTtl("-");
-				}
-
-				if (objectNode.get("key").toString().contains(":-1")) {
-					dto.setOrdenation("DESC");
-				} else {
-					dto.setOrdenation("ASC");
-				}
-
-				final JsonParser parser = new JsonParser();
-				final JsonObject jsonObject = parser.parse(objectNode.get("key").toString()).getAsJsonObject();
-				String keys = "";
-				String ordination = "";
-				for (final Entry<String, JsonElement> listOrdination : jsonObject.entrySet()) {
-					final String key = listOrdination.getKey().toString();
-					final String value = listOrdination.getValue().toString();
-					keys += key + ", ";
-					if (value.contains("-1")) {
-						ordination += "DESC, ";
-					} else {
-						ordination += "ASC, ";
-					}
-				}
-				keys = keys.substring(0, keys.length() - 2);
-				ordination = ordination.substring(0, ordination.length() - 2);
-				dto.setOrdenation(ordination);
-				dto.setKey(keys);
-				dto.setUnique(objectNode.get("unique").asBoolean());
-				dto.setSparse(objectNode.get("sparse").asBoolean());
-				dto.setBackground(String.valueOf(objectNode.get("background").asBoolean()));
-				listIndex.add(dto);
-			}
-		}
-		return listIndex;
+	            if (objectNode != null && objectNode.isObject()) {
+	                OntologyListIndexMongoConfDTO dto = new OntologyListIndexMongoConfDTO();
+	                dto.setProperty(objectNode.get("name").asText());
+	                if(objectNode.get("expireAfterSeconds") != null) {
+	                	 dto.setTtl(objectNode.get("expireAfterSeconds").toString());
+	                }else {
+	                	 dto.setTtl("-");
+	                }
+	              
+	                if(objectNode.get("key").toString().contains(":-1")) {
+	                	dto.setOrdenation("DESC");	
+	                } else {
+	                	dto.setOrdenation("ASC");
+	                }
+	                
+	                JsonParser parser = new JsonParser();
+	                JsonObject jsonObject = parser.parse( objectNode.get("key").toString()).getAsJsonObject();
+	                String keys = "";
+	                String ordination = "";
+	                for (Entry<String, JsonElement> listOrdination : jsonObject.entrySet()) {
+	                    String key = listOrdination.getKey().toString();
+	                    String value = listOrdination.getValue().toString();
+	                    keys += key +", ";
+	                    if (value.contains("-1")) {
+	                        ordination += "DESC, ";
+	                    } else { 
+	                        ordination += "ASC, ";
+	                    }
+	                }
+	                keys = keys.substring(0, keys.length() - 2);
+	                ordination = ordination.substring(0, ordination.length() - 2);
+	                dto.setOrdenation(ordination);
+		            dto.setKey(keys);
+	                dto.setUnique(objectNode.get("unique").asBoolean());
+	                dto.setSparse(objectNode.get("sparse").asBoolean()); 
+	                dto.setBackground(String.valueOf(objectNode.get("background").asBoolean()));
+	                listIndex.add(dto);	           
+	            }
+	        }
+		return  listIndex;
 	}
+	
 
 	@Override
 	public List<Ontology> getOntologiesByUserId(String sessionUserId) {
@@ -934,22 +890,6 @@ public class OntologyServiceImpl implements OntologyService {
 	@Override
 	public Ontology getOntologyById(String ontologyId, String sessionUserId) {
 		final Ontology ontology = ontologyRepository.findById(ontologyId).orElse(null);
-		final User sessionUser = userService.getUser(sessionUserId);
-		if (ontology != null) {
-			if (hasUserPermissionForQuery(sessionUser, ontology)) {
-				return ontology;
-			} else {
-				throw new OntologyServiceException(USER_UNAUTH_STR);
-			}
-		} else {
-			return null;
-		}
-
-	}
-
-	@Override
-	public Ontology getOntologyByIdOrIdentification(String ontologyId, String sessionUserId) {
-		final Ontology ontology = ontologyRepository.findByIdentificationOrId(ontologyId, ontologyId);
 		final User sessionUser = userService.getUser(sessionUserId);
 		if (ontology != null) {
 			if (hasUserPermissionForQuery(sessionUser, ontology)) {
@@ -1908,7 +1848,7 @@ public class OntologyServiceImpl implements OntologyService {
 	private void createPrestoOntology(Ontology ontology, String datasourceName, String datasourceTableName,
 			String datasourceCatalog, String datasourceSchema) {
 		final OntologyPresto ontologyPresto = new OntologyPresto();
-		ontologyPresto.setDatasourceTableName(datasourceTableName.toLowerCase());
+		ontologyPresto.setDatasourceTableName(datasourceTableName);
 		ontologyPresto.setDatasourceCatalog(datasourceCatalog);
 		ontologyPresto.setDatasourceSchema(datasourceSchema);
 		ontologyPresto.setOntologyId(ontology);
@@ -2309,10 +2249,9 @@ public class OntologyServiceImpl implements OntologyService {
 					userAuthorization.getOntologyUserAccessType().getName()) == OntologyUserAccessType.Type.ALL) {
 				return true;
 			}
-			
-			ResourceAccessType resourceAccess = resourceService.getResourceAccess(user.getUserId(),ontology.getId());
-			return (resourceAccess.equals(ResourceAccessType.MANAGE));
+
 		}
+		return false;
 
 	}
 
@@ -2411,7 +2350,7 @@ public class OntologyServiceImpl implements OntologyService {
 		final List<VirtualDatasourceDTO> virtualDatasetDTOList = new ArrayList<>();
 		final User sessionUser = userService.getUser(sessionUserId);
 		final List<OntologyVirtualDatasource> virtualDatasources = ontologyVirtualDatasourceRepository
-				.findByUserOrIsPublicTrueOrAccess(sessionUser);
+				.findByUserOrIsPublicTrue(sessionUser);
 
 		for (final OntologyVirtualDatasource ontologyVirtualDatasource : virtualDatasources) {
 			final VirtualDatasourceDTO virtualDatasetDTO = new VirtualDatasourceDTO(ontologyVirtualDatasource);
@@ -2816,11 +2755,10 @@ public class OntologyServiceImpl implements OntologyService {
 		final Ontology ontology = ontologyRepository.findById(ontologyId).orElse(null);
 		final User sessionUser = userService.getUser(sessionUserId);
 		if (resourceService.isResourceSharedInAnyProject(ontology)) {
-			final List<String> projects = new ArrayList<>();
+			List<String> projects = new ArrayList<>();
 			resourceService.getProjectsByResource(ontology).forEach(pra -> {
-				if (!projects.contains(pra.getProject().getIdentification())) {
+				if (!projects.contains(pra.getProject().getIdentification()))
 					projects.add(pra.getProject().getIdentification());
-				}
 			});
 			throw new OPResourceServiceException(
 					" This Ontology is shared within the Projects: " + new ObjectMapper().writeValueAsString(projects)
@@ -2831,31 +2769,23 @@ public class OntologyServiceImpl implements OntologyService {
 		} else {
 			throw new OntologyServiceException(" User does not have rights to delete ontology");
 		}
-	}
-
+	}	
+	
 	@Value("${onesaitplatform.database.timescaledb.enabled:false}")
 	private Boolean timescaledbEnabled;
 	@Value("${onesaitplatform.database.timescaledb.connectionName:op_timeseriesdb}")
 	private String timeseriesdbConnection;
-
-	@Override
+	
 	public boolean isTimescaleVirtualOntology(Ontology o) {
-		if (!timescaledbEnabled) {
+		if (!timescaledbEnabled)
 			return false;
-		}
 
 		final OntologyVirtual ov = getOntologyVirtualByOntologyId(o);
-		if (ov != null) {
+		if (ov != null)
 			if (ov.getDatasourceId().getIdentification().equals(timeseriesdbConnection)) {
 				return true;
 			}
-		}
-		return false;
-	}
-
-	@Override
-	public List<OntologyVirtual> getOntologyVirtualByTableName(String tableName) {
-		return ontologyvirtualRepository.findByDatasourceTableName(tableName);
+			return false;
 	}
 
 }

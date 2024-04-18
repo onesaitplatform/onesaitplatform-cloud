@@ -4,7 +4,7 @@ Bpm.List = (function() {
 	"use-strict";
 	var authsUrl = '/controlpanel/bpm/authorizations';
 	var uploadUrl = '/controlpanel/bpm/upload?'+ csrfParameter + "=" + csrfValue;
-	var useTenantHelp = "";
+	
 	var authorizationsArr 		= []; // add authorizations
 	var authorizationObj 		= {}; // object to receive authorizations responses.
 	//var mountableModel2 = $('#tenant_authorizations').find('tr.authorization-model')[0].outerHTML;
@@ -14,7 +14,6 @@ Bpm.List = (function() {
 	headersObj[csrfHeader] = csrfToken;
 	var init = function() {
 		initTableEvents();
-		useTenantHelp = $('#useTenantHelp').text();
 	};
 	
 	var dtRenderOptions = function (data, type, row) {
@@ -215,8 +214,6 @@ Bpm.List = (function() {
 		$('.upload-btn').each(function() {
 			$(this).off().on('click', function (e) {
 				e.preventDefault(); 
-				$('#useTenantHelp').text(useTenantHelp + ': ' +  $(this).data('id') )
-				$('#tenantId').val($(this).data('id'));
 				$('#uploadModal').modal('show');
 			});
 		});

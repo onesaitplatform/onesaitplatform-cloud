@@ -2218,6 +2218,3 @@ table.dataTable th.select-checkbox.selected::after {
     50% {background-color:rgba(95, 158, 160, 0.05);}
     100% {background-color:rgba(95, 158, 160, 0.65);}
 }
-.nav-link-tab {
-  display: block;
-}

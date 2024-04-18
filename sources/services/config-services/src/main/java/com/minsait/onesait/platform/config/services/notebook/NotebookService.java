@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,10 @@ public interface NotebookService {
 	public Notebook importNotebook(String name, String data, String userId, boolean overwrite,
 			boolean importAuthorizations);
 
-	public Notebook importNotebookFromJupyter(String name, String data, String userId, boolean overwrite, boolean importAuthorizations);
+	public Notebook importNotebookFromJupyter(String name, String data, String userId);
+
+	public Notebook importNotebookFromJupyter(String name, String data, String userId, boolean overwrite,
+			boolean importAuthorizations);
 
 	public Notebook cloneNotebook(String name, String idzep, String userId);
 
@@ -162,7 +165,5 @@ public interface NotebookService {
 	public boolean hasUserPermissionReadForNotebook(String zeppelinId, String userId);
 	
 	public boolean hasUserPermissionRunForNotebook(String zeppelinId, String userId);
-
-	public Notebook getNotebookByIdentificationOrId(String identification, String userId);
 
 }

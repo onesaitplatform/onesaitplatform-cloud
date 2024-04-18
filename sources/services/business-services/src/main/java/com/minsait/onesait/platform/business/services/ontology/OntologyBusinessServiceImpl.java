@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,13 @@
 package com.minsait.onesait.platform.business.services.ontology;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -27,9 +29,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -45,7 +48,6 @@ import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbCleanLapse;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbToHdbStorage;
-import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
@@ -60,8 +62,8 @@ import com.minsait.onesait.platform.config.services.ontologymqtttopic.OntologyMq
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.persistence.cosmosdb.CosmosDBBasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.cosmosdb.CosmosDBManageDBRepository;
+import com.minsait.onesait.platform.persistence.external.generator.helper.SQLHelper;
 import com.minsait.onesait.platform.persistence.external.virtual.VirtualOntologyOpsDBRepository;
-import com.minsait.onesait.platform.persistence.external.virtual.constraints.TableKeysHolder;
 import com.minsait.onesait.platform.persistence.historical.minio.HistoricalMinioException;
 import com.minsait.onesait.platform.persistence.historical.minio.HistoricalMinioService;
 import com.minsait.onesait.platform.persistence.nebula.model.NebulaSpace;
@@ -77,6 +79,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 
+	@Autowired
+	private OntologyService ontologyConfigService;
+	
 	@Autowired
 	private OntologyService ontologyService;
 
@@ -206,119 +211,7 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 		return schemaSubTree;
 	}
 
-	public Map<String, TableKeysHolder> getDatabaseTree(Ontology sourceEntity, Map<String, TableKeysHolder> keyMap) {
-		if (keyMap == null) {
-			keyMap = new HashMap<>();
-		}
-		final OntologyVirtual ov = ontologyService.getOntologyVirtualByOntologyId(sourceEntity);
-		final TableKeysHolder tkh = virtualRepo.getTableKeysHolder(sourceEntity,
-				ontologyService.getOntologyVirtualByOntologyId(sourceEntity).getDatasourceTableName());
-		keyMap.put(sourceEntity.getIdentification(), tkh);
-		if (!tkh.getReferendTables().isEmpty()) {
-			for (final String t : tkh.getReferendTables()) {
-				final List<OntologyVirtual> os = ontologyService.getOntologyVirtualByTableName(t).stream()
-						.filter(ovv -> ovv.getDatasourceId().getId().equals(ov.getDatasourceId().getId())).toList();
-				if (!os.isEmpty() && !keyMap.containsKey(os.get(0).getOntologyId().getIdentification())) {
-					getDatabaseTree(os.get(0).getOntologyId(), keyMap);
-				} else if (os.isEmpty()) {
-					log.warn("Table {} found referenced by {} but not found on platform entities", t,
-							sourceEntity.getIdentification());
-				}
-
-			}
-		}
-		return keyMap;
-	}
-
-	private void cloneOntologyVirtual(Ontology ontology, String identification, User user,
-			OntologyConfiguration config) {
-		final String prefix = identification.endsWith("_") ? identification : identification + "_";
-		final Map<String, TableKeysHolder> tkhMap = getDatabaseTree(ontology, null);
-		checkEntitesAndModifyFKs(tkhMap, prefix);
-		tkhMap.entrySet().forEach(e -> {
-			final Ontology o = ontologyService.getOntologyByIdentification(e.getKey());
-			final OntologyVirtual ov = ontologyService.getOntologyVirtualByOntologyId(o);
-			config.setDatasourceTableName(prefix + e.getKey());
-			config.setDatasourceDatabase(ov.getDatasourceDatabase());
-			config.setDatasource(ov.getDatasourceId().getIdentification());
-			config.setDatasourceSchema(ov.getDatasourceSchema());
-			config.setObjectId(ov.getObjectId());
-			config.setObjectGeometry(ov.getObjectGeometry());
-			if (!ontologyService.existsOntology(prefix + e.getKey())) {
-				cloneOntology(o, prefix + e.getKey(), user, config);
-				virtualRepo.cloneTableNoData(e.getKey(), e.getValue().getTableName(), prefix + e.getKey(),
-						e.getValue().getDatabaseType());
-				virtualRepo.cloneUKeys(e.getKey(), prefix + e.getKey(), e.getValue());
-			}
-
-		});
-		tkhMap.entrySet().forEach(e -> {
-			virtualRepo.cloneFKeys(e.getKey(), prefix + e.getKey(), e.getValue());
-		});
-
-	}
-
-	private void checkEntitesAndModifyFKs(Map<String, TableKeysHolder> tkhMap, String prefix) {
-		tkhMap.entrySet().forEach(e -> {
-			final Ontology o = ontologyService.getOntologyByIdentification(e.getKey());
-			final OntologyVirtual ov = ontologyService.getOntologyVirtualByOntologyId(o);
-			e.getValue().getForeignKeys().forEach(fk -> {
-				final OntologyVirtual fkReferencedEntity = ontologyService
-						.getOntologyVirtualByTableName(fk.getReferencedTable()).stream().filter(ovv -> ovv
-								.getDatasourceId().getIdentification().equals(ov.getDatasourceId().getIdentification()))
-						.findFirst().orElse(null);
-				if (fkReferencedEntity == null) {
-					throw new RuntimeException("Entity " + fk.getReferencedTable() + " does not exist on platform.");
-				} else {
-					fk.setReferencedTable(prefix + fkReferencedEntity.getOntologyId().getIdentification());
-				}
-			});
-		});
-	}
-
-	private void cloneOntology(Ontology ontology, String identification, User user, OntologyConfiguration config) {
-		final Ontology clone = new Ontology();
-
-		clone.setIdentification(identification);
-		clone.setUser(user);
-		clone.setDescription(ontology.getDescription());
-		clone.setActive(ontology.isActive());
-		clone.setPublic(ontology.isPublic());
-		clone.setDataModel(ontology.getDataModel());
-		clone.setDataModelVersion(ontology.getDataModelVersion());
-		clone.setJsonSchema(ontology.getJsonSchema());
-		clone.setMetainf(ontology.getMetainf());
-		clone.setRtdbToHdbStorage(ontology.getRtdbToHdbStorage());
-		clone.setRtdbDatasource(ontology.getRtdbDatasource());
-		clone.setAllowsCypherFields(ontology.isAllowsCypherFields());
-		clone.setAllowsCreateNotificationTopic(ontology.isAllowsCreateNotificationTopic());
-		clone.setAllowsCreateTopic(ontology.isAllowsCreateTopic());
-		clone.setSupportsJsonLd(ontology.isSupportsJsonLd());
-		clone.setJsonLdContext(ontology.getJsonLdContext());
-		clone.setContextDataEnabled(ontology.isContextDataEnabled());
-		clone.setEnableDataClass(ontology.isEnableDataClass());
-		clone.setAllowsCreateMqttTopic(ontology.isAllowsCreateMqttTopic());
-		ontologyService.createOntology(clone, config);
-
-		// if its Nebula clone to Nebula
-
-		if (ontology.getRtdbDatasource().equals(RtdbDatasource.NEBULA_GRAPH)) {
-			final NebulaGraphEntity entity = new NebulaGraphEntity();
-			entity.setEdges(nebulaGraphBusinessService.getEdges(ontology.getIdentification()));
-			entity.setTags(nebulaGraphBusinessService.getTags(ontology.getIdentification()));
-			entity.setName(clone.getIdentification());
-			entity.setDescription(ontology.getDescription());
-			entity.setMetainf(ontology.getMetainf());
-			entity.setUser(user.getUserId());
-			final NebulaSpace space = nebulaGraphBusinessService.getSpace(ontology.getIdentification());
-			entity.setPartitions(space.getPartitionNum());
-			entity.setReplicas(space.getReplicaFactor());
-			nebulaGraphBusinessService.createNebulaGraphEntity(entity, false);
-		}
-	}
-
 	@Override
-	@Transactional(propagation=Propagation.REQUIRES_NEW)
 	public void cloneOntology(String id, String identification, String userId, OntologyConfiguration config)
 			throws OntologyBusinessServiceException {
 		final Ontology ontology = ontologyService.getOntologyById(id, userId);
@@ -337,13 +230,44 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 		}
 
 		if (!ontology.getDataModel().getId().equals("MASTER-DataModel-30")) {
-			if (!ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)) {
-				cloneOntology(ontology, identification, user, config);
-			} else {
-				if (config == null) {
-					config = new OntologyConfiguration();
-				}
-				cloneOntologyVirtual(ontology, identification, user, config);
+			final Ontology clone = new Ontology();
+
+			clone.setIdentification(identification);
+			clone.setUser(user);
+			clone.setDescription(ontology.getDescription());
+			clone.setActive(ontology.isActive());
+			clone.setPublic(ontology.isPublic());
+			clone.setDataModel(ontology.getDataModel());
+			clone.setDataModelVersion(ontology.getDataModelVersion());
+			clone.setJsonSchema(ontology.getJsonSchema());
+			clone.setMetainf(ontology.getMetainf());
+			clone.setRtdbToHdbStorage(ontology.getRtdbToHdbStorage());
+			clone.setRtdbDatasource(ontology.getRtdbDatasource());
+			clone.setAllowsCypherFields(ontology.isAllowsCypherFields());
+			clone.setAllowsCreateNotificationTopic(ontology.isAllowsCreateNotificationTopic());
+			clone.setAllowsCreateTopic(ontology.isAllowsCreateTopic());
+			clone.setSupportsJsonLd(ontology.isSupportsJsonLd());
+			clone.setJsonLdContext(ontology.getJsonLdContext());
+			clone.setContextDataEnabled(ontology.isContextDataEnabled());
+			clone.setEnableDataClass(ontology.isEnableDataClass());
+			clone.setAllowsCreateMqttTopic(ontology.isAllowsCreateMqttTopic());
+
+			ontologyService.createOntology(clone, config);
+
+			// if its Nebula clone to Nebula
+
+			if (ontology.getRtdbDatasource().equals(RtdbDatasource.NEBULA_GRAPH)) {
+				final NebulaGraphEntity entity = new NebulaGraphEntity();
+				entity.setEdges(nebulaGraphBusinessService.getEdges(ontology.getIdentification()));
+				entity.setTags(nebulaGraphBusinessService.getTags(ontology.getIdentification()));
+				entity.setName(clone.getIdentification());
+				entity.setDescription(ontology.getDescription());
+				entity.setMetainf(ontology.getMetainf());
+				entity.setUser(userId);
+				final NebulaSpace space = nebulaGraphBusinessService.getSpace(ontology.getIdentification());
+				entity.setPartitions(space.getPartitionNum());
+				entity.setReplicas(space.getReplicaFactor());
+				nebulaGraphBusinessService.createNebulaGraphEntity(entity, false);
 			}
 
 		} else {
@@ -413,8 +337,7 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 	}
 
 	@Override
-	public List<Map<String, Object>> getTableInformationFromDatasource(String datasource, String database,
-			String schema) {
+	public List<Map<String, Object>> getTableInformationFromDatasource(String datasource, String database, String schema) {
 		return virtualRepo.getTableInformation(datasource, database, schema);
 	}
 
@@ -422,7 +345,7 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 	public List<Map<String, Object>> getTablePKInformation(String datasource, String database, String schema) {
 		return virtualRepo.getTablePKInformation(datasource, database, schema);
 	}
-
+	
 	@Override
 	public List<String> getTablesFromDatasource(String datasource, String database, String schema) {
 		if (datasource.equals(VirtualDatasourceType.PRESTO.toString())) {
@@ -626,27 +549,27 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 		}
 		entityDeleteionService.deleteOntology(id, userId, false);
 	}
-
+	
 	@Override
-	public JSONArray ontologyBulkGeneration(HttpServletRequest request, String userId) {
-
-		final JSONArray failedOntologiesArray = new JSONArray();
-
-		final String datasourceId = request.getParameter("datasourceId");
-		final String ontologies = request.getParameter("ontolgiesObject");
-		final String database = request.getParameter("databaseObject");
-		final String schema = request.getParameter("schemaObject");
-		final JSONArray ontologiesArray = new JSONArray(request.getParameter("ontolgiesObject"));
-
-		final String authorization = request.getParameter("authorizationsObject");
-		final JSONArray authorizationsArray = new JSONArray(request.getParameter("authorizationsObject"));
-
+	public JSONArray ontologyBulkGeneration (HttpServletRequest request, String userId) {
+		
+		JSONArray failedOntologiesArray = new JSONArray();
+		
+		String datasourceId = request.getParameter("datasourceId");
+		String ontologies = request.getParameter("ontolgiesObject");
+		String database = request.getParameter("databaseObject");
+		String schema = request.getParameter("schemaObject");
+		JSONArray ontologiesArray = new JSONArray(request.getParameter("ontolgiesObject"));
+		
+		String authorization = request.getParameter("authorizationsObject");
+		JSONArray authorizationsArray = new JSONArray(request.getParameter("authorizationsObject"));
+		
 		for (int i = 0; i < ontologiesArray.length(); i++) {
-			final JSONObject failedOntologies = new JSONObject();
-			final Ontology ontology = new Ontology();
-			final JSONObject ontologyObject = ontologiesArray.getJSONObject(i);
-			final JSONObject ontologySchema = ontologyObject.getJSONObject("schema");
-
+			JSONObject failedOntologies = new JSONObject();
+			Ontology ontology = new Ontology();
+			JSONObject ontologyObject = ontologiesArray.getJSONObject(i);
+			JSONObject ontologySchema = ontologyObject.getJSONObject("schema");
+			
 			ontology.setIdentification(ontologyObject.getString("identification"));
 			ontology.setXmlDiagram(null);
 			ontology.setOntologyClass(null);
@@ -665,30 +588,29 @@ public class OntologyBusinessServiceImpl implements OntologyBusinessService {
 			ontology.setRtdbDatasource(RtdbDatasource.VIRTUAL);
 			ontology.setAllowsCreateMqttTopic(false);
 			ontology.setPartitionKey(null);
-
-			final OntologyConfiguration ontologyConfiguration = new OntologyConfiguration();
-			ontologyConfiguration.setDatasource(datasourceId);
+			
+			OntologyConfiguration ontologyConfiguration = new OntologyConfiguration();
+			ontologyConfiguration.setDatasource(datasourceId);		
 			ontologyConfiguration.setDatasourceTableName(ontologyObject.getString("tableName"));
 			ontologyConfiguration.setDatasourceDatabase(database);
 			ontologyConfiguration.setDatasourceSchema(schema);
 			ontologyConfiguration.setObjectId(ontologyObject.getString("associatedId"));
 			try {
-				ontologyService.createOntology(ontology, ontologyConfiguration);
-
+				ontologyConfigService.createOntology(ontology, ontologyConfiguration);
+			
 				for (int i2 = 0; i2 < authorizationsArray.length(); i2++) {
-
-					final JSONObject auth = authorizationsArray.getJSONObject(i2);
-					final User userAuth = userService.getUser(auth.getString("users"));
-					ontologyService.createUserAccess(ontology.getId(), userAuth.getId().toString(),
-							auth.getString("accesstypes"), userId);
+					
+					JSONObject auth = authorizationsArray.getJSONObject(i2);
+					User userAuth = userService.getUser(auth.getString("users"));
+					ontologyConfigService.createUserAccess(ontology.getId(),userAuth.getId().toString(), auth.getString("accesstypes") , userId);
 				}
-			} catch (final Exception e) {
-
+			} catch (Exception e) {
+				
 				failedOntologies.put("TableName", ontologyObject.getString("tableName"));
 				failedOntologies.put("EntityName", ontologyObject.getString("identification"));
 				failedOntologiesArray.put(failedOntologies);
 			}
-
+			
 		}
 		return failedOntologiesArray;
 	}

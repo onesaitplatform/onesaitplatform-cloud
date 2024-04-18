@@ -124,9 +124,10 @@ body {
   font-style: normal;
   font-display: block;
 }
+
 [class^="icon-"], [class*=" icon-"] {
   /* use !important to prevent issues with browser extensions that change fonts */
-  font-family: 'icomoon';
+  font-family: 'icomoon' !important;
   speak: never;
   font-style: normal;
   font-weight: normal;
@@ -137,16 +138,6 @@ body {
   /* Better Font Rendering =========== */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-i [class^="icon-map"], i [class*=" icon-map"] {
-    font-family: Simple-Line-Icons !important;
-    speak: none;
-    font-style: normal;
-    font-weight: 400;
-    font-variant: normal;
-    text-transform: none;
-    line-height: 1;
-    -webkit-font-smoothing: antialiased;
 }
 .icon-zoom-out:before {
   content: "\e900";
@@ -6909,11 +6900,6 @@ Form Layouts
 .control-label {
   margin-top: 1px;
   color: #505D66;
-  font-weight: normal; }
-
-.control-label-disabled{
-  margin-top: 1px;
-  color: #959595ad;
   font-weight: normal; }
 
 .control-label-mini {
@@ -24317,15 +24303,6 @@ margin-right: 8px; }
 	margin-top: 20%;
 }
 
-.user-style {
-	background: #1168A6;
-    color: #fff;
-	display: inline-block;
-    padding: 3px 8px;
-    margin-right: 10px;
-    font-size: 12px;
-}
-
 @media (min-width: 992px) {
   .modal-lg,
   .modal-xl {
@@ -24338,61 +24315,3 @@ margin-right: 8px; }
     max-width: 1300px;
   }
  }
-.environment-edit__main {
-	display: flex;
-}
-
-.environment-edit__bar-info-main {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin: 0 25px;
-}
-
-.environment-edit__bar-info-left,
-.environment-edit__bar-info-right {
-	flex: end;
-	width: 90%;
-}
-
-.environment-edit__bar-info-separator {
-	width: 2px;
-	height: 84px;
-	background-color: #ccc;
-	margin: 0 20px;
-}
-
-.environment-edit__bar-box {
-	text-align: left;
-	font-weight: 500;
-	font-style: normal;
-	line-height: 1.25rem;
-	font-family: Soho Gothic Pro, Helvetica, Arial, sans-serif;
-}
-
-.environment-edit__item-numbers {
-	font-size: 2.5rem;
-}
-
-.environment-edit__item-subtitle {
-	font-size: 0.9rem;
-}
-
-.environment-edit__item-kpi {
-	font-size: 2rem;
-}
-
-.environment-edit__item-title {
-	font-family: Soho Gothic Pro, Helvetica, Arial, sans-serif;
-	font-size: 1.5rem;
-	font-weight: 500;
-	font-style: normal;
-	line-height: 1.25rem;
-}
-.environment-edit__item-text {
-	font-family: Soho Gothic Pro, Helvetica, Arial, sans-serif;
-	font-size: 1.2rem;
-	font-weight: 300;
-	font-style: normal;
-	line-height: 1.25rem;
-}

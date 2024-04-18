@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -109,7 +109,7 @@
 								</div>
 								<div id="search-on-title" class="hide input-icon search-icon">
 									<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
-								</div>			
+								</div>								
 								<div class="tools hide">
 									<a href="" class="collapse" data-original-title="" title=""> </a>
 									<a href="" class="fullscreen" data-original-title="" title=""> </a>
@@ -360,13 +360,18 @@
 		
 	}
 	
-
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([ 3,4 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});	
 	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 	
 		var csrf_value = $("meta[name='_csrf']").attr("content");
 		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		
+		
 			
 			// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
 			//$.each([ 2,6,7 ],
@@ -388,7 +393,10 @@
 		// SEARCH FORM RESET
 		$('#reset_model').on('click',function(){
 			console.log('reset form...');
-			 location.reload();
+			/*$('#form_model')[0].reset();
+			$('#form_model')[0].submit();*/
+			$('#identification').val('');
+			$('#predictors').DataTable().column(0).search('').draw();
 		});
 		
 		// SEARCH FORM
@@ -435,9 +443,6 @@
 	     });
 		
 		$("#contenedor-tabla-outside").removeClass("hidden");
-		
-		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([ 3,4 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 	});
 	
 	//]]>

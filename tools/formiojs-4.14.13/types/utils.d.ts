@@ -108,7 +108,6 @@ export namespace Utils {
   function withSwitch(a: any, b: any): [Function, Function];
   function observeOverload(callback: Function, options?: { limit?: number; delay?: number }): any;
   function getContextComponents(context: any): any;
-  function getContextComponentsNoButtons(context: any): any;
   function sanitize(string: string, options: any): any;
 
   // Form Utils

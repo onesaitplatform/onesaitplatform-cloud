@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,28 +17,9 @@ package com.minsait.onesait.platform.business.services.api;
 import java.io.File;
 import java.util.List;
 
-import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Api.ClientJS;
-
-import io.swagger.v3.oas.models.OpenAPI;
 
 public interface APIBusinessService {
 
 	File generateJSClient(ClientJS framework, List<String> apiIds, String userId);
-
-	String getSwaggerJSONInternal(Api api);
-
-	OpenAPI getSwaggerJSONInternalOpenAPI(Api api);
-
-	String getSwaggerJSONExternal(Api api);
-
-	OpenAPI getSwaggerJSONExternalOpenAPI(Api api);
-
-	String getOtherApiWithSwagger(Api api, Integer numVersion);
-
-	OpenAPI getOtherApiWithSwaggerOpenAPI(Api api, Integer numVersion);
-
-	String getSwagger(Api api);
-
-	OpenAPI getOpenAPI(Api api);
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,28 @@
  */
 package com.minsait.onesait.platform.controlpanel.controller.webproject;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.FileOutputStream;
+import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
-import org.json.JSONObject;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpEntity;
+import org.json.JSONObject;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -42,14 +49,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.services.exceptions.WebProjectServiceException;
-import com.minsait.onesait.platform.config.services.project.ProjectService;
 import com.minsait.onesait.platform.config.services.webproject.NPMCommandResult.NPMCommandResultStatus;
 import com.minsait.onesait.platform.config.services.webproject.WebProjectDTO;
 import com.minsait.onesait.platform.config.services.webproject.WebProjectService;
@@ -65,12 +69,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WebProjectController {
 
+
 	@Autowired
 	private WebProjectService webProjectService;
 
-	@Autowired
-	private ProjectService projectService;
-	
 	@Autowired
 	private AppWebUtils utils;
 
@@ -87,15 +89,9 @@ public class WebProjectController {
 
 	@Value("${onesaitplatform.webproject.baseurl:https://localhost:18000/web/}")
 	private String rootWWW;
-	@Value("${onesaitplatform.webproject.maxsize:60000000}")
-	private Long fileMaxSize;
 
 	@Value("${onesaitplatform.gitlab.manager.server:http://localhost:10050/gitlab/api/v1}")
 	private String gitManagerUrl;
-	@Value("${onesaitplatform.gitlab.manager.server.internal:http://localhost:10050/gitlab/api/v1}")
-	private String gitManagerUrlInternal;
-	@Value("${onesaitplatform.gitlab.maxlimitsecondscompilenpmbloqued:600}")
-	private int maxLimitSecondsCompileNpmBloqued;
 
 	@Value("${digitaltwin.temp.dir:/tmp}")
 	private String tmpDirectory;
@@ -160,13 +156,6 @@ public class WebProjectController {
 							HttpStatus.INTERNAL_SERVER_ERROR);
 
 				} else {
-					Timer timer = new Timer();
-					timer.schedule(new TimerTask() {
-						@Override
-						public void run() {
-							webProjectService.setNpmInstall(false);
-						}
-					}, maxLimitSecondsCompileNpmBloqued * 1000L);
 					webProjectService.setNpmInstall(true);
 				}
 			}
@@ -193,9 +182,71 @@ public class WebProjectController {
 			headers.add("X-Git-Token", webProject.getGitToken());
 			headers.setContentType(MediaType.APPLICATION_JSON);
 			HttpEntity<?> httpEntity = new HttpEntity<Object>(map, headers);
-			String url = gitManagerUrlInternal + "/gitlab/downloadZip/" + webProject.getIdentification();
-			String urlDelete = gitManagerUrlInternal + "/gitlab/deleteFiles/" + webProject.getIdentification();
-			webProjectService.cloneGitAndDownload(webProject, template, httpEntity, url, urlDelete, utils.getUserId());
+			String url = gitManagerUrl + "/gitlab/downloadZip/placeHolder";
+
+			try {
+				ResponseEntity<Resource> response = template.exchange(url, HttpMethod.POST, httpEntity, Resource.class);
+				Resource resource = response.getBody();
+				byte[] bytes = resource.getInputStream().readAllBytes();
+				File targetFile = new File(tmpDirectory + "/" + webProject.getIdentification() + "/"
+						+ webProject.getIdentification() + ".zip");
+				File directory = new File(tmpDirectory + "/" + webProject.getIdentification());
+				if (!directory.exists()) {
+					directory.mkdir();
+				}
+				OutputStream outStream = new FileOutputStream(targetFile);
+				outStream.write(bytes);
+				outStream.close();
+				if (webProject.getNpm()) {
+					webProjectService.unzipFile(tmpDirectory + "/" + webProject.getIdentification() + "/",
+							webProject.getIdentification() + ".zip");
+					webProjectService.compileNPM(webProject, utils.getUserId());
+					targetFile.delete();
+
+				} else {
+					webProjectService.uploadZip(targetFile, utils.getUserId());
+					webProjectService.updateWebProject(webProject, utils.getUserId());
+					targetFile.delete();
+
+				}
+
+			} catch (IOException e) {
+				log.error("Error:", e);
+				if (webProject.getNpm()) {
+					if (webProjectService.isNpmInstall()) {
+						webProjectService.setNpmInstall(false);
+					}
+				}
+				return new ResponseEntity<String>("Error when reading the files", HttpStatus.INTERNAL_SERVER_ERROR);
+			} catch (HttpClientErrorException e) {
+				if (webProject.getNpm()) {
+					if (webProjectService.isNpmInstall()) {
+						webProjectService.setNpmInstall(false);
+					}
+				}
+				log.error("Error:", e);
+				return new ResponseEntity<String>("Error when downloading the files from Git",
+						HttpStatus.INTERNAL_SERVER_ERROR);
+			} catch (HttpServerErrorException e) {
+				if (webProject.getNpm()) {
+					if (webProjectService.isNpmInstall()) {
+						webProjectService.setNpmInstall(false);
+					}
+				}
+				log.error("Error:", e);
+				return new ResponseEntity<String>("Error when downloading the files from Git",
+						HttpStatus.INTERNAL_SERVER_ERROR);
+			} catch (final WebProjectServiceException e) {
+				if (webProject.getNpm()) {
+					if (webProjectService.isNpmInstall()) {
+						webProjectService.setNpmInstall(true);
+					}
+				}
+				log.error("Error:", e);
+				return new ResponseEntity<String>("Error updating Web Project details",
+						HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+
 			return new ResponseEntity<String>("SUCCESS", HttpStatus.OK);
 
 		} else {
@@ -309,23 +360,10 @@ public class WebProjectController {
 
 		final WebProjectDTO webProject = webProjectService.getWebProjectById(id, utils.getUserId());
 		if (webProject != null) {
-			
-			List<Project> projects = projectService.findWebprojectProjects(id);
-			
-			if (projects!=null && projects.size()>0) {
-				log.error("Cannot delete web project because is assigned to a project: " + projects.get(0).getIdentification());
-				utils.addRedirectMessage("webproject.delete.error.app", redirect);
-				return REDIRECT_WEBPROJ_LIST;
-			}
-			
 			try {
 				webProjectService.deleteWebProject(id, utils.getUserId());
 			} catch (final WebProjectServiceException e) {
-				log.error("Cannot delete web project because of: " + e);
-				utils.addRedirectMessage("webproject.delete.error", redirect);
-				return REDIRECT_WEBPROJ_LIST;
-			} catch (Exception e) {
-				log.error("Cannot delete web project because of: " + e);
+				log.error("Cannot update web project because of: " + e);
 				utils.addRedirectMessage("webproject.delete.error", redirect);
 				return REDIRECT_WEBPROJ_LIST;
 			}
@@ -346,7 +384,7 @@ public class WebProjectController {
 			if (utils.isFileExtensionForbidden(file)) {
 				return new ResponseEntity<>("File type not allowed", HttpStatus.BAD_REQUEST);
 			}
-			if (file.getSize() > fileMaxSize) {
+			if (file.getSize() > utils.getMaxFileSizeAllowed()) {
 				return new ResponseEntity<>("File size too large", HttpStatus.PAYLOAD_TOO_LARGE);
 			}
 		}

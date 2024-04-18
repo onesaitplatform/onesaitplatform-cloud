@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -49,12 +44,10 @@ import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.ProjectList;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessList;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessVersioning;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.model.Viewer;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.model.base.OPResource.Resources;
 import com.minsait.onesait.platform.config.model.interfaces.Versionable;
@@ -71,7 +64,6 @@ import com.minsait.onesait.platform.config.services.entity.cast.EntitiesCast;
 import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
 import com.minsait.onesait.platform.config.services.gadget.GadgetDatasourceService;
 import com.minsait.onesait.platform.config.services.gadget.GadgetService;
-import com.minsait.onesait.platform.config.services.project.ProjectResourceAccessDTO;
 import com.minsait.onesait.platform.config.services.project.ProjectService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 
@@ -110,7 +102,6 @@ public class OPResourceServiceImpl implements OPResourceService {
 	@Autowired
 	private GadgetDatasourceService datasourceService;
 
-	private static final String ALL_USERS = "ALL";
 	private static final String ERROR = "ERROR: ";
 	private static final String ERROR_MISSING_DATA = "Missing data in message";
 	private static final String ERROR_USERACCESS_PROPR = "Not possible to manage access to user creator of project";
@@ -205,25 +196,21 @@ public class OPResourceServiceImpl implements OPResourceService {
 
 		if (pRADB != null) {
 			if (log.isDebugEnabled()) {
-				log.debug("Project already had authorization, will replace it: {}", pRADB.toString());
+				log.debug("Project already had authorization, will remove it: {}", pRADB.toString());
 			}
-			pRADB.setAccess(pRA.getAccess());
-			pRADB.setAccess_all(pRA.getAccess_all());
-			projectService.updateProject(pRADB.getProject());
-		} else {
-			if (log.isDebugEnabled()) {
-				log.debug("createUpdateAuthorization() persisting new entity: {}", pRA.toString());
-			}
-			pRA.getProject().getProjectResourceAccesses().add(pRA);
-			projectService.updateProject(pRA.getProject());
+			pRA.getProject().getProjectResourceAccesses().remove(pRADB);
 		}
+		if (log.isDebugEnabled()) {
+			log.debug("createUpdateAuthorization() persisting new entity: {}", pRA.toString());
+		}
+		pRA.getProject().getProjectResourceAccesses().add(pRA);
 		if (log.isDebugEnabled()) {
 			log.debug("Project {} now has the following accesess:", pRA.getProject().getIdentification());
 		}
 		if (log.isDebugEnabled()) {
 			pRA.getProject().getProjectResourceAccesses().forEach(ra -> log.debug("{}", ra.toString()));
 		}
-		
+		projectService.updateProject(pRA.getProject());
 
 	}
 
@@ -288,48 +275,23 @@ public class OPResourceServiceImpl implements OPResourceService {
 		boolean hasAccess = false;
 		switch (access) {
 		case MANAGE:
-			hasAccess = !resourceAccessRepository.findByUserIdAndResourceIdOrALLAndAccessManage(userId, resourceId).isEmpty();
+			hasAccess = !resourceAccessRepository.findByUserIdAndResourceIdAndAcessManage(userId, resourceId).isEmpty();
 			break;
+
 		case VIEW:
 		default:
-			hasAccess = !resourceAccessRepository.findByUserIdAndResourceIdOrALLAndAccessView(userId, resourceId).isEmpty();
+			hasAccess = !resourceAccessRepository.findByUserIdAndResourceIdAndAccessView(userId, resourceId).isEmpty();
 		}
 		return hasAccess;
+
 	}
 
 	@Override
 	public ResourceAccessType getResourceAccess(String userId, String resourceId) {
-		final List<ProjectResourceAccessList> accesses = resourceAccessRepository.findByUserIdAndResourceId(userId, resourceId);
-		
-		ResourceAccessType resourceAccessType = null;
-		User user = userService.getUser(userId);
-		
-		if (accesses.isEmpty()) {
-			return null;
-		} else {
-			for (ProjectResourceAccessList access : accesses) {
-				if (resourceAccessType==null || !resourceAccessType.equals(ResourceAccessType.MANAGE)){
-					if (access.getAccess_all()) {
-						Optional<ProjectResourceAccess> praopt = resourceAccessRepository.findById(access.getId());
-						final ProjectResourceAccess pra = praopt.get();
-						if (pra.getProject().getUsers()!=null && pra.getProject().getUsers().contains(user)) {
-							resourceAccessType = access.getAccess();
-						} else if (pra.getProject().getApp()!=null) {
-							for (AppRole appRole : pra.getProject().getApp().getAppRoles()) {
-								for (AppUser appUser : appRole.getAppUsers()) {
-									if (appUser.getUser().equals(user)) {
-										resourceAccessType = access.getAccess();
-									}
-								}
-							}
-						}
-					} else {
-						resourceAccessType = access.getAccess();
-					}
-				}
-			}
-		}
-		return resourceAccessType;
+		final List<ProjectResourceAccessList> accesses = resourceAccessRepository.findByUserIdAndResourceId(userId,
+				resourceId);
+		return accesses.stream().map(ProjectResourceAccessList::getAccess).findAny().orElse(null);
+
 	}
 
 	@Override
@@ -922,66 +884,4 @@ public class OPResourceServiceImpl implements OPResourceService {
 		resourceAccessRepository.deleteById(projectResourceAccessId);
 	}
 
-	@Override
-	public void insertAuthorization(Project project, @Valid ProjectResourceAccessDTO authorization) {
-		final Set<ProjectResourceAccess> accesses = new HashSet<>();
-		if (project.getApp() != null) {
-			if (authorization.getAuthorizing().equals(ALL_USERS)) {
-				//Remove ALL Previous project resource authorizations
-				
-				List<ProjectResourceAccess> accesstoRemove = project.getProjectResourceAccesses().stream().filter(pra -> pra.getResource().getId().equals(authorization.getResource())).collect(Collectors.toList());
-				resourceAccessRepository.deleteAll(accesstoRemove);
-				project.getProjectResourceAccesses().removeAll(accesstoRemove);
-
-				accesses.add(new ProjectResourceAccess(null, authorization.getAccess(),
-						getResourceById(authorization.getResource()), project, null, true));
-				insertAuthorizations(accesses);
-			} else {
-				createUpdateAuthorization(new ProjectResourceAccess(null, authorization.getAccess(),
-						getResourceById(authorization.getResource()), project,
-						appService.findRole(authorization.getAuthorizing()), false));
-			}
-		} else {
-			if (authorization.getAuthorizing().equals(ALL_USERS)) {
-				//Delete ALL Previous project resource authorizations
-				List<ProjectResourceAccess> accesstoRemove = project.getProjectResourceAccesses().stream().filter(pra -> pra.getResource().getId().equals(authorization.getResource())).collect(Collectors.toList());
-				resourceAccessRepository.deleteAll(accesstoRemove);
-				project.getProjectResourceAccesses().removeAll(accesstoRemove);
-				
-				accesses.add(new ProjectResourceAccess(null, authorization.getAccess(),
-						getResourceById(authorization.getResource()), project, null, true));
-				insertAuthorizations(accesses);
-
-			} else {
-				// ADD RESOURCE ACCESS TO USER
-				if (!getResourceById(authorization.getResource()).getUser().equals(userService.getUser(authorization.getAuthorizing()))) {
-					createUpdateAuthorization(new ProjectResourceAccess(
-							userService.getUser(authorization.getAuthorizing()), authorization.getAccess(),
-							getResourceById(authorization.getResource()), project, null, false));
-				} else {
-					createUpdateAuthorization(new ProjectResourceAccess(
-							userService.getUser(authorization.getAuthorizing()), ResourceAccessType.MANAGE,
-							getResourceById(authorization.getResource()), project, null, false));
-				}
-				
-				// ADD RESOURCE ACCESS TO APP OWNER
-				if (!userService.getUser(authorization.getAuthorizing()).equals(project.getUser())){
-					if (!getResourceById(authorization.getResource()).getUser().equals(project.getUser())) {
-						ResourceAccessType access = getResourceAccess(project.getUser().getUserId(), authorization.getResource());
-						if (access==null) {
-							createUpdateAuthorization(new ProjectResourceAccess(
-									userService.getUser(project.getUser().getUserId()), ResourceAccessType.VIEW,
-									getResourceById(authorization.getResource()), project, null, false));
-						}
-					}
-				}
-			}
-		}
-	}
-
-	@Override
-	public ProjectResourceAccessList getAutorizationALL(@NotNull String resourceId, @NotNull String projectId) {
-		return (resourceAccessRepository.findByResourceAndProjectAndAccessALL(resourceId, projectId));
-	}
-	
 }

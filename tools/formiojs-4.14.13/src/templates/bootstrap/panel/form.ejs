@@ -23,7 +23,7 @@
   </div>
   {% } %}
   {% if (!ctx.collapsed || ctx.builder) { %}
-  <div class="card-body" ref="{{ctx.nestedKey}}" id="{{ctx.instance.id}}-{{ctx.component.key}}"  {{ctx.component.windowheightcheck?'style="min-height:'+ctx.component.valuewindowheight+'vh;height: fit-content;"':''}} >
+  <div class="card-body" ref="{{ctx.nestedKey}}" id="{{ctx.instance.id}}-{{ctx.component.key}}">
     {{ctx.children}}
   </div>
   {% } %}

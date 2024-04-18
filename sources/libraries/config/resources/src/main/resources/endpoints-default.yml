@@ -45,7 +45,7 @@ onesaitplatform:
       base: http://localhost:20200/rules-engine
     bpmEngine:
       base: http://localhost:8085/bpm-engine
-      deployment: http://localhost:8085/bpm-engine/engine-rest/deployment/create
+      deployment: http://localhost:8085/bpm-engine/rest/deployment/create
     dashboardEngine:
       edit: http://localhost:8087/controlpanel/dashboards/editfulliframe/
       view: http://localhost:8087/controlpanel/dashboards/viewiframe/

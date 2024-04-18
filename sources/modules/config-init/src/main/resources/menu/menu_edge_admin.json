@@ -50,9 +50,9 @@
 				},
 				{
 					"title": {
-						"EN": "Assets Market",
-						"ES": "Market de Assets",
-						"FR": "Marché des Actifs"
+						"EN": "Bundle Repository",
+						"ES": "Repositorio de Bundles",
+						"FR": "Référentiel du groupées groupé"
 					},
 					"icon": "",
 					"url": "/controlpanel/bundlerepository/list"
@@ -333,15 +333,6 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/ontologies/list"
-				},
-				{
-					"title": {
-						"EN": "User Tokens Management",
-						"ES": "Gestión de Tokens de Usuario",
-						"FR": "Gestion des jetons utilisateur"
-					},
-					"icon": "",
-					"url": "/controlpanel/apimanager/token/list?access=MENU"
 				},
 				{
 					"title": {

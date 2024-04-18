@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,11 +85,11 @@ public class ApiManagerService {
 	}
 
 	public String getApiVersion(String pathInfo) {
-		final Pattern pattern = Pattern.compile("/v([\\d]+)/");
+		final Pattern pattern = Pattern.compile("(.*)/api/v(.*)/");
 		final Matcher matcher = pattern.matcher(pathInfo);
 		if (matcher.find()) {
-			final String param = matcher.group(1);
-			return param;
+			final String param = matcher.group(2);
+			return param.substring(0, param.indexOf('/'));
 		} else {
 			String version = pathInfo;
 

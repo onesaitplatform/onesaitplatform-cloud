@@ -14,11 +14,7 @@ server:
    forward-headers-strategy: native
    servlet:
       contextPath: /controlpanel
-
-monitoring:
-   credentials: "placeholder"
-
-
+      
 logbook:
   exclude:
      - ${server.servlet.contextPath}/actuator/**
@@ -78,10 +74,6 @@ master:
 edge.base.url: https://iothub02.onesaitplatform.com
 
 onesaitplatform: #Config onesait Platform specific
-   web.staticresurces.cache.minutes: 60
-   manager:
-      credentials: 866412dff0b56975c6a007bc20206402
-   bpm.url: http://localhost:8085/bpm-engine
    microservices:
       remedy:
          enabled: false
@@ -162,8 +154,8 @@ onesaitplatform: #Config onesait Platform specific
    controlpanel:
          url: http://localhost:18000/controlpanel
          realms:
-             max.users.app.assign.table: 100
-             max.users.combo: 50
+             max.users.app.assign.table: 0
+             max.users.combo: 0
    ontologies:
          schema:
              ignore-case-properties: false
@@ -187,8 +179,6 @@ onesaitplatform: #Config onesait Platform specific
                 tmp_path: /tmp/oc-templates/
    gitlab:
          manager.server: http://localhost:10050/gitlab/api/v1
-         manager.server.internal: http://localhost:10050/gitlab/api/v1
-         maxlimitsecondscompilenpmbloqued: 600
          scaffolding.directory: /tmp/scaffolding
          namespace:
            id: 120
@@ -221,7 +211,7 @@ onesaitplatform: #Config onesait Platform specific
       readFromSecondaries: false
       queries.executionTimeout: 5000
       queries.defaultLimit: 2000
-      queries.maxConcurrentQueries: 100
+      queries.maxConcurrentQueries: 10
       writeConcern: UNACKNOWLEDGED
       tools.mongoexport.path: mongoexport
       tools.mongoimport.path: mongoimport
@@ -265,7 +255,6 @@ onesaitplatform: #Config onesait Platform specific
           max: 27500
    controlpanel.avoidsslverification: true
    webproject:
-      maxsize: 60000000
       rootfolder.path: /usr/local/webprojects/
       baseurl: http://localhost:8087/web/
       template.zip: http://localhost:18000/controlpanel/static/wtop/wtop.zip
@@ -327,7 +316,7 @@ onesaitplatform: #Config onesait Platform specific
       hostname: localhost
       port: 5000
       pathname:
-   router.metrics.query.enabled: false
+   router.metrics.query.enabled: true
    router.avoidsslverification: true
    router.alternativeURL: http://localhost:20000/router/router/
    kafka.burrow.monitoring:
@@ -431,7 +420,6 @@ management.endpoint.health.show-details: always
 management.health.ldap.enabled: false
 management.health.elasticsearch.enabled: false
 
-
 quartz:
    datasource:
      hikari:
@@ -502,13 +490,11 @@ cloud-gateway:
 
 
 gravitee:
-  version: 3.3
-  migrate-apis: true
   enable: true
-  clientId: admin
+  clientId: onesait
   clientSecret: admin
   header-value: Gravitee-Server
-  corsEnabled: true
+  corsEnabled: false
 
 captcha:
   enable: false
@@ -534,10 +520,10 @@ opendata:
 proxy-mail:
   host: localhost
   port: 8080
-
+  
 #open-telemetry
-#config spring sleuth
+#config spring sleuth      
 spring.sleuth.otel.config.trace-id-ratio-based: 1.0
-#spring.sleuth.otel.exporter.otlp.endpoint: http://collector:4317
+#spring.sleuth.otel.exporter.otlp.endpoint: http://collector:4317      
 spring.sleuth.otel.exporter.otlp.endpoint: http://localhost:4317
 #open-telemetry

@@ -1,3 +1,4 @@
+
 var fromTriggerToMessage = function(trigger, dsname) {
 	var baseMsg = trigger.params;
 	baseMsg.ds = dsname;
@@ -35,14 +36,9 @@ datasourceCache.getKey = function(datasourcename, triggers){
 	return JSON.stringify(datasourcename) + JSON.stringify(triggers);
 }
 
-var getdatasource = function(datasourcename, triggers, type) {
-    if (undefined == type || 'datasource' == type) {
-	  type = 'datasource';
-    }else{
-	  type = 'entity';
-	}
+var getdatasource = function(datasourcename, triggers) {
+	
 	var key = datasourceCache.getKey(datasourcename, triggers);
-	key = type + key;	
 	if (window.useCache && datasourceCache.exist(key)) {
 		return new Promise(function(resolve) {
 			resolve(datasourceCache.get(key));
@@ -58,9 +54,8 @@ var getdatasource = function(datasourcename, triggers, type) {
 			if(window.authorization && window.authorization.token_type == 'bearer' ){
 		    		headers['Authorization'] = 'Bearer '+window.authorization.access_token
 			}
-			let service = type=='datasource'?'/datasource/':'/entitydata/';
 			 
-			fetch(window.formsBaseURLCreate + service, {
+			fetch(window.formsBaseURLCreate + '/datasource/', {
 			  method: "POST",
 			  body: JSON.stringify(fromTriggerToMessage({ "params": triggers ? triggers : {} }, datasourcename)),
 			  headers: headers
@@ -86,10 +81,9 @@ var getdatasource = function(datasourcename, triggers, type) {
 
 
 
-var from = function(datasource,type) {
+var from = function(datasource) {
 	var datasourceCallBuilder = {
 		datasource: datasource,
-		type: type,
 		params: {},
 		filter: function(field_filters, value, op) {
 			var filterList;
@@ -173,7 +167,7 @@ var from = function(datasource,type) {
 			return this;
 		},
 		execute: function() {
-			return getdatasource(this.datasource, this.params, this.type);
+			return getdatasource(this.datasource, this.params);
 		}
 	}
 	//aliases
@@ -186,31 +180,7 @@ var from = function(datasource,type) {
 	return datasourceCallBuilder;
 }
 //delete record by form and oid
-var deleteRecordFromForm = function(form,oid,title,message) {
-	if(document.getElementById("delete-modal")){
-		document.getElementById("delete-modal").remove()
-	}
-	if(!form){
-		form = formId;
-	}
-	
-	var body = document.body;
-	
-	var modal = `<div id="delete-modal" style="padding:20px;width:400px;height:200px;position:fixed;left:40%;top:20%;background-color:white; box-shadow: 0 2px 6px rgba(0,0,0,0.2); border-radius: 10px; border-top-left-radius: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 10px;" >
-	<label style="font-size:17px;font-weight:500;" >${title}</label></br>
-	<label style="font-size:12px;font-stretch:100%;font-style:normal;font-weight:400">${message}</label></br>	
-	<label id="errordeleteMessage"></label></br>	
-	<button id="cancelDelete" class="btn btn-secondary " style="margin: 5px 0px 5px 5px;text-transform: capitalize;position: absolute;bottom: 20px;right: 92px;" onclick="document.getElementById('delete-modal').remove()">Cancel</button>	
-	<button id="okDelete" class="btn btn-primary " style="margin: 5px 0px 5px 5px;text-transform: capitalize;position: absolute;bottom: 20px;right: 20px;" onclick="okDeleteRecordFromForm('${form}','${oid}')">${title}</button> 
-	</div>
-	`
-	body.insertAdjacentHTML("afterend", modal); 
-	
-}
-
-
-//delete record by form and oid
-var okDeleteRecordFromForm = function(form,oid) {
+var deleteRecordFromForm = function(oid,form) {
 	if(!form){
 		form = formId;
 	}
@@ -220,23 +190,21 @@ var okDeleteRecordFromForm = function(form,oid) {
 	}
 	if (window.authorization && window.authorization.token_type == 'bearer') {
 		headers['Authorization'] = 'Bearer ' + window.authorization.access_token
-	}	 
-	fetch(`${window.formsBaseURLCreate}/${form}/${oid}`, {
+	}
+	 
+	fetch(`${window.formsBaseURLCreate}${form}/${oid}`, {
 		method: "DELETE",
 		body: null,
 		headers: headers
-	}).then((msg) => {
+	})
+		.then((msg) => {
 			if (msg.status == 200) {
-				    document.getElementById('delete-modal').remove();
-					window.listThat.redraw(); 
+					ff.redraw(); 
 			} else {
-				    document.getElementById("errordeleteMessage").style.backgroundColor = "#f8d7da";
-					document.getElementById("errordeleteMessage").innerHTML = 'A '+ msg.status+' error has occurred ' ;
-					console.log(msg.statusText);
+				console.log(msg.status);
 			}
 		})
 }
-
 
 var deletePropoertyPath = function (obj, path) {
   if (!obj || !path) {
@@ -266,61 +234,3 @@ var cleanFormForSubmit = function (ff,submission){
 	return submission;	
 }
 
-//clone record by form and oid
-var cloneRecordFromForm = function(form,oid,cloneIdentification,title,message) {
-	if(document.getElementById("clone-modal")){
-		document.getElementById("clone-modal").remove()
-	}
-	if(!form){
-		form = formId;
-	}
-	
-	var body = document.body;
-	
-	var modal = `<div id="clone-modal" style="padding:20px;width:400px;height:200px;position:fixed;left:40%;top:20%;background-color:white; box-shadow: 0 2px 6px rgba(0,0,0,0.2); border-radius: 10px; border-top-left-radius: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 10px;" >
-	<label style="font-size:17px;font-weight:500;" >${title}</label></br>
-	<label style="font-size:12px;font-stretch:100%;font-style:normal;font-weight:400">${message}</label></br>
-	<label style="font-size:12px;font-stretch:100%;font-style:normal;font-weight:400">${cloneIdentification}<span style="color:red"> *</span></label>
-	<input class="form-control" type="text" id="newIdentifierClone" >
-	<label id="errorcloneMessage"></label></br>	
-	<button id="cancelClone" class="btn btn-secondary "style="margin: 5px 0px 5px 5px;text-transform: capitalize;position: absolute;bottom: 20px;right: 84px;" onclick="document.getElementById('clone-modal').remove()">Cancel</button>	
-	<button id="okClone" class="btn btn-primary pull-right" style="margin: 5px 0px 5px 5px;text-transform: capitalize;position: absolute;bottom: 20px;right: 20px;" onclick="okCloneRecordFromForm('${form}','${oid}','${cloneIdentification}')">Save</button> 
-	</div>
-	`
-	body.insertAdjacentHTML("afterend", modal); 
-	
-	
-}
-
-var okCloneRecordFromForm = function(form, oid, cloneIdentification) {
-
-	var newValue = document.getElementById("newIdentifierClone").value
-	if (!newValue || newValue.length == 0) {		 
-		document.getElementById("newIdentifierClone").style.backgroundColor = "#f8d7da";
-	} else {
-		document.getElementById("newIdentifierClone").style.backgroundColor = "white";
-		var headers = {
-			'accept': '*/*',
-			'Content-Type': 'application/json'
-		}
-		if (window.authorization && window.authorization.token_type == 'bearer') {
-			headers['Authorization'] = 'Bearer ' + window.authorization.access_token
-		}
-		var body=JSON.stringify({form:form,oid:oid,cloneIdentification:cloneIdentification,newValue:newValue})
-		fetch(`${window.formsBaseURLCreate}/clonevalue`, {
-			method: "POST",
-			body: body,
-			headers: headers
-		}).then((msg) => {
-				if (msg.status == 200) {
-					document.getElementById('clone-modal').remove();
-					window.listThat.redraw();
-				} else {
-					document.getElementById("errorcloneMessage").style.backgroundColor = "#f8d7da";
-					document.getElementById("errorcloneMessage").innerHTML = 'A '+ msg.status+' error has occurred ' ;
-					console.log(msg.statusText);
-				}
-			})
-	}
-
-}

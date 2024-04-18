@@ -17,10 +17,10 @@ export default class ReCaptchaComponent extends Component {
   static get builderInfo() {
     return {
       title: 'reCAPTCHA',
-      group: 'data',
+      group: 'premium',
       icon: 'refresh',
       documentation: '/userguide/forms/premium-components#recaptcha',
-      weight: 101,
+      weight: 40,
       schema: ReCaptchaComponent.schema()
     };
   }

@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -198,11 +198,11 @@
     													
     						  <div th:if="!*{id}" id="git-template" class="only-new" >
     						    <div class="col-md-4 col-sm-4 col-xs-12 form-group">
-    							    <label th:text="#{microservice.gitlab.site}">Git Site URL</label><span class="required"> *</span>
+    							    <label th:text="#{microservice.gitlab.site}">Gitlab Site URL</label><span class="required"> *</span>
     								<input id="gitlab-site" type="text" name="gitlabSite"  th:field="*{gitTemplate.url}" class="form-control " placeholder="Git URL"/>
     							</div>
     							<div class="col-md-4 col-sm-4 col-xs-12 form-group">
-    							     <label th:text="#{microservice.gitlab.privatetoken}">Git Private Token</label><span th:if="!*{id}" class="required"> *</span>
+    							     <label th:text="#{microservice.gitlab.privatetoken}">Gitlab Private Token</label><span th:if="!*{id}" class="required"> *</span>
     							     <input id="gitlab-private-token" type="text" name="privateToken" th:field="*{gitTemplate.privateToken}" class="form-control " placeholder="Token"/>
     							</div>
     							<div class="col-md-4 col-sm-4 col-xs-12 form-group">
@@ -287,7 +287,7 @@
     					<div class="col-md-4 col-sm-4 col-xs-12">
     					   <div class="form-group">
     						  <div class="mt-checkbox-list"> 
-    							 <label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.gitlab.repository.help},data-title=#{microservice.gitlab.repository}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{microservice.gitlab.repository.create}">Create Git Repository?</div>
+    							 <label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.gitlab.repository.help},data-title=#{microservice.gitlab.repository}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{microservice.gitlab.repository.create}">Create Gitlab Repository?</div>
     							     <input id="checkbox-publish-gitlab" class="form-control no-remove" type="checkbox" checked="checked" />
     							     <span></span>
     							 </label>
@@ -358,7 +358,7 @@
     			     </div>
         			<div id="project-structure" class="row main">
         			    <div class="col-md-4 col-sm-4 col-xs-12 form-group">
-        				    <label th:text="#{microservice.gitlab.repository}">Git repository</label><span class="required"> *</span>
+        				    <label th:text="#{microservice.gitlab.repository}">Gitlab repository</label><span class="required"> *</span>
         					<input id="gitlab-repository-custom" type="text" th:field="*{gitlab}"  class="form-control " th:placeholder="#{microservice.git.project}" />
         				</div>
         				<div class="col-md-4 col-sm-4 col-xs-12 form-group" id="gitToHide">
@@ -379,7 +379,7 @@
             			<div th:if="${defaultGitlab}" class="col-md-4 col-sm-4 col-xs-12">
             				<div class="form-group">
             					<div class="mt-checkbox-list"> 
-            						<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.gitlab.configuration.help},data-title=#{microservice.gitlab.configuration}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{microservice.configuration.default} +'?'">Create Git Repository?</div>
+            						<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.gitlab.configuration.help},data-title=#{microservice.gitlab.configuration}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{microservice.configuration.default} +'?'">Create Gitlab Repository?</div>
             							<input id="checkbox-gitlab-default" class="form-control no-remove" type="checkbox" checked="checked"/>
             							<span></span>
             						</label>
@@ -388,15 +388,15 @@
             			</div>
             			<div id="gitlab-configuration">
             				<div class="col-md-4 col-sm-4 col-xs-12 form-group">
-            					<label th:text="#{microservice.gitlab.site}">Git Site URL</label><span class="required"> *</span>
+            					<label th:text="#{microservice.gitlab.site}">Gitlab Site URL</label><span class="required"> *</span>
             					<input id="gitlab-site" type="text" name="gitlabSite"  th:field="*{gitlabConfiguration.site}" class="form-control " placeholder="Git URL"/>
             				</div>
             				<div class="col-md-4 col-sm-4 col-xs-12 form-group">
-            					<label th:text="#{microservice.gitlab.privatetoken}">Git Private Token</label><span th:if="!*{id}" class="required"> *</span>
+            					<label th:text="#{microservice.gitlab.privatetoken}">Gitlab Private Token</label><span th:if="!*{id}" class="required"> *</span>
             					<input id="gitlab-private-token" type="text" name="privateToken"  th:field="*{gitlabConfiguration.privateToken}" class="form-control " placeholder="Token"/>
             				</div>
             				<div class="col-md-4 col-sm-4 col-xs-12 form-group">
-            					<label class="popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.gitlab.group.help},data-title=#{microservice.gitlab.group}"> <div class="inline font-xs" th:text="#{microservice.gitlab.group} + ' '">Git Group Name</div><i class="la la-info-circle font-md"></i> </label>
+            					<label class="popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.gitlab.group.help},data-title=#{microservice.gitlab.group}"> <div class="inline font-xs" th:text="#{microservice.gitlab.group} + ' '">Gitlab Group Name</div><i class="la la-info-circle font-md"></i> </label>
             					<input id="gitlab-group" type="text" name="gitlabGroup"  th:field="*{config.gitlabGroup}" class="form-control " placeholder="Group Name"/>
             				</div>
             			</div>
@@ -411,7 +411,7 @@
             			<div th:if="${defaultJenkins}" class="col-md-4 col-sm-4 col-xs-12">
             				<div class="form-group">
             					<div class="mt-checkbox-list"> 
-            						<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.jenkins.configuration.help},data-title=#{microservice.jenkins.configuration}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{microservice.configuration.default} +'?'">Create Git Repository?</div>
+            						<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.jenkins.configuration.help},data-title=#{microservice.jenkins.configuration}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{microservice.configuration.default} +'?'">Create Gitlab Repository?</div>
             							<input id="checkbox-jenkins-default" class="form-control no-remove" type="checkbox" checked="checked"/>
             							<span></span>
             						</label>
@@ -439,7 +439,7 @@
             						<input id="jenkins-jobname" type="text" name="jenkinsCredentials"  th:field="*{jobName}" class="form-control " placeholder=""/>
             					</div>
             					<div class="col-md-4 col-sm-4 col-xs-12 form-group">
-            						<label class="popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.jenkins.viewName.help},data-title=#{microservice.jenkins.viewName}"> <div class="inline font-xs" th:text="#{microservice.jenkins.viewName} + ' '">Create Git Repository?</div><i class="la la-info-circle font-md"></i> </label>
+            						<label class="popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.jenkins.viewName.help},data-title=#{microservice.jenkins.viewName}"> <div class="inline font-xs" th:text="#{microservice.jenkins.viewName} + ' '">Create Gitlab Repository?</div><i class="la la-info-circle font-md"></i> </label>
             						<input id="jenkins-jobname" type="text" name="jenkinsCredentials"  th:field="*{config.jenkinsView}" class="form-control " placeholder=""/>
             					</div>
             				</div>
@@ -467,7 +467,7 @@
             				<div th:if="${defaultCaaS}" class="col-md-8 col-sm-4 col-xs-12">
             					<div class="form-group">
             						<div class="mt-checkbox-list"> 
-            							<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.caas.configuration.help},data-title=#{microservice.caas.configuration}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{microservice.configuration.default} +'?'">Create Git Repository?</div>
+            							<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{microservice.caas.configuration.help},data-title=#{microservice.caas.configuration}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{microservice.configuration.default} +'?'">Create Gitlab Repository?</div>
             								<input id="checkbox-caas-default" class="form-control no-remove" type="checkbox" checked="checked"/>
             								<span></span>
             							</label>

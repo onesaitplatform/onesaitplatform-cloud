@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,7 +101,7 @@ public class VirtualDatasourceServiceImpl implements VirtualDatasourceService {
 
 	@Override
 	public List<OntologyVirtualDatasource> getAllDatasourcesByUser(User user) {
-		return ontologyVirtualDatasourceRepository.findByUserOrIsPublicTrueOrAccess(user);
+		return ontologyVirtualDatasourceRepository.findByUserOrIsPublicTrue(user);
 	}
 
 	@Override
@@ -131,12 +131,7 @@ public class VirtualDatasourceServiceImpl implements VirtualDatasourceService {
 	public OntologyVirtualDatasource getDatasourceById(final String id) {
 		return ontologyVirtualDatasourceRepository.findById(id).orElse(null);
 	}
-	
-	@Override
-	public List <OntologyVirtualDatasource> getDatasourceByDomain (final String domain) {
-		return (ontologyVirtualDatasourceRepository.findByDatasourceDomain(domain));
-	}
-	
+
 	@Override
 	public void updateOntology(final OntologyVirtualDatasource datasource, Boolean maintainCredentials,
 			String oldCredentials) {

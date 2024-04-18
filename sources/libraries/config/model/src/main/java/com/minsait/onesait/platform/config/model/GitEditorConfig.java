@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,13 @@ package com.minsait.onesait.platform.config.model;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
+import com.minsait.onesait.platform.config.model.base.OPResource;
+import com.minsait.onesait.platform.config.model.interfaces.Versionable;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -28,9 +31,9 @@ import lombok.Setter;
 @Configurable
 @Entity
 @Table(name = "GIT_EDITOR_CONFIG")
-public class GitEditorConfig extends AuditableEntityWithUUID  {
+public class GitEditorConfig extends AuditableEntityWithUUID implements Versionable<GitEditorConfig>  {
 	
-	private static final long serialVersionUID = 1L;
+
 	
 	@Column(name = "GIT_URL", length = 100, nullable = false)
 	@Getter
@@ -51,5 +54,26 @@ public class GitEditorConfig extends AuditableEntityWithUUID  {
 	@Getter
 	@Setter
 	private String type;
+
+	@Override
+	public String fileName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getUserJson() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setOwnerUserId(String userId) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	
+	
 
 }

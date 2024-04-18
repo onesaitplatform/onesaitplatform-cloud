@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -372,11 +372,7 @@ public class DataflowController {
 	public ResponseEntity<String> appRest(HttpServletRequest request, @RequestBody(required = false) String body) {
 		ResponseEntity<String> dataflowResponse = dataflowService.sendHttp(request,
 				HttpMethod.valueOf(request.getMethod()), body, utils.getUserId());
-		if (dataflowResponse.getHeaders().containsKey("Content-Disposition")) {
-			return ResponseEntity.status(dataflowResponse.getStatusCode()).headers(dataflowResponse.getHeaders()).body(dataflowResponse.getBody());
-		} else {
-			return ResponseEntity.status(dataflowResponse.getStatusCode()).body(dataflowResponse.getBody());
-		}
+		return ResponseEntity.status(dataflowResponse.getStatusCode()).body(dataflowResponse.getBody());
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")

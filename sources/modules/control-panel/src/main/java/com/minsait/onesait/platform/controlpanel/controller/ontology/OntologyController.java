@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
+
 import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
@@ -90,6 +92,7 @@ import com.minsait.onesait.platform.business.services.presto.datasource.PrestoDa
 import com.minsait.onesait.platform.business.services.swagger.SwaggerApiImporterService;
 import com.minsait.onesait.platform.business.services.virtual.datasources.VirtualDatasourceService;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
+
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
@@ -101,7 +104,6 @@ import com.minsait.onesait.platform.config.model.OntologyDataAccess;
 import com.minsait.onesait.platform.config.model.OntologyElastic;
 import com.minsait.onesait.platform.config.model.OntologyKPI;
 import com.minsait.onesait.platform.config.model.OntologyPresto;
-import com.minsait.onesait.platform.config.model.OntologyPrestoDatasource;
 import com.minsait.onesait.platform.config.model.OntologyRest;
 import com.minsait.onesait.platform.config.model.OntologyRestHeaders;
 import com.minsait.onesait.platform.config.model.OntologyRestOperation;
@@ -113,7 +115,6 @@ import com.minsait.onesait.platform.config.model.OntologyUserAccess;
 import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.model.security.UserPrincipal;
@@ -144,7 +145,6 @@ import com.minsait.onesait.platform.config.services.ontology.dto.VirtualDatasour
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataJsonProblemException;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataService;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
-import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.templates.PlatformQuery;
 import com.minsait.onesait.platform.config.services.templates.QueryTemplateService;
 import com.minsait.onesait.platform.config.services.user.UserService;
@@ -275,12 +275,6 @@ public class OntologyController {
 
 	@Autowired
 	OntologyMqttTopicRepository ontologyMqttTopicRepo;
-	
-	@Autowired
-	private TimeSeriesOntologyBusinessService timeseriesBusinessService;
-	
-	@Autowired
-	private OPResourceService resourceService;
 
 	private static final String ONTOLOGIES_STR = "ontologies";
 	private static final String ONTOLOGY_STR = "ontology";
@@ -334,8 +328,6 @@ public class OntologyController {
 	private static final String ONTOLOGIES_CREATEPRESTO = "ontologies/createpresto";
 	private static final String MQTT_TOPIC_NAME = "mqttTopicPath";
 	private static final String TIMESERIESDB = "timeseriesdb";
-	private static final String CONNECTION = "connection";
-	private static final String APP_USER_ACCESS = "app_user_access";
 
 	@Value("${onesaitplatform.database.timescaledb.connectionName:op_timeseriesdb}")
 	private String timeseriesdbConnection;
@@ -392,7 +384,7 @@ public class OntologyController {
 
 		final Ontology ontology = ontologyConfigService.getOntologyById(id, utils.getUserId());
 
-		final List<String> listIndexTrue = new ArrayList<>();
+		List<String> listIndexTrue = new ArrayList<>();
 		Map<String, List<String>> virtualIndexConfigMap = new HashMap<>();
 		List<OntologyPropertiesIndexConfDTO> listProperties = new ArrayList<OntologyPropertiesIndexConfDTO>();
 
@@ -416,20 +408,20 @@ public class OntologyController {
 	public @ResponseBody ResponseEntity<String> createindexdatabase(Model model, HttpServletRequest request,
 			@RequestBody String dataIndex) {
 
-		final JSONObject data = new JSONObject(dataIndex);
+		JSONObject data = new JSONObject(dataIndex);
 		final Ontology ontology = ontologyConfigService.getOntologyById(data.getString("id"), utils.getUserId());
 		ResponseEntity<String> response = null;
 		if (ontology != null) {
 
-			final String ontologyName = data.getString("ontology");
-			final String typeIndex = data.getString("typeIndex");
-			final String indexName = data.getString("indexName");
-			final boolean unique = data.getBoolean("unique");
-			final boolean background = data.getBoolean("background");
-			final boolean sparse = data.getBoolean("sparse");
-			final boolean ttl = data.getBoolean("ttl");
-			final String timesecondsTTL = data.get("timesecondsTTL").toString();
-			final JSONArray checkboxValuesArray = data.getJSONArray("checkboxValues");
+			String ontologyName = data.getString("ontology");
+			String typeIndex = data.getString("typeIndex");
+			String indexName = data.getString("indexName");
+			boolean unique = data.getBoolean("unique");
+			boolean background = data.getBoolean("background");
+			boolean sparse = data.getBoolean("sparse");
+			boolean ttl = data.getBoolean("ttl");
+			String timesecondsTTL = data.get("timesecondsTTL").toString();
+			JSONArray checkboxValuesArray = data.getJSONArray("checkboxValues");
 
 			if (ontology.getRtdbDatasource().name() == "MONGO") {
 
@@ -437,7 +429,7 @@ public class OntologyController {
 					MongoNativeDBRepository.createIndexWithParameter(ontologyName, typeIndex, indexName, unique,
 							background, sparse, ttl, timesecondsTTL, checkboxValuesArray);
 					response = new ResponseEntity<>("Create Index successfully", HttpStatus.OK);
-				} catch (final DBPersistenceException e) {
+				} catch (DBPersistenceException e) {
 					if (e.getMessage().contains("already exists with a different")) {
 						response = new ResponseEntity<>("messageErrorIndexAlreadyExist", HttpStatus.BAD_REQUEST);
 					} else if (e.getMessage().contains("E11000 duplicate key error collection")) {
@@ -474,14 +466,13 @@ public class OntologyController {
 	public @ResponseBody ResponseEntity<String> dropindexdatabase(Model model, HttpServletRequest request,
 			@RequestBody String dataIndex) {
 
-		final JSONObject data = new JSONObject(dataIndex);
+		JSONObject data = new JSONObject(dataIndex);
 		final Ontology ontology = ontologyConfigService.getOntologyById(data.getString("id"), utils.getUserId());
 		if (ontology != null) {
-
 			ResponseEntity<String> response = null;
-			final String ontologyName = data.getString("ontology");
-			final String indexName = data.getString("indexName");
-			final String property = data.getString("property");
+			String ontologyName = data.getString("ontology");
+			String indexName = data.getString("indexName");
+			String property = data.getString("property");
 
 			if (property.equals("_id")) {
 				response = new ResponseEntity<>("meessageCannotdelete_id", HttpStatus.BAD_REQUEST);
@@ -558,7 +549,7 @@ public class OntologyController {
 	}
 
 	private String getMqttTopicPath() {
-		final UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication()
+		UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication()
 				.getPrincipal();
 		String vertical = null;
 		String tenant = null;
@@ -663,7 +654,7 @@ public class OntologyController {
 
 		try {
 			ontologyBusinessService.cloneOntology(id, identification, utils.getUserId(), config);
-		} catch (final Exception e) {
+		} catch (final OntologyServiceException | OntologyBusinessServiceException e) {
 			log.error("Error clonning ontology", e);
 			response.put(STATUS_STR, ERROR_STR);
 			response.put(CAUSE_STR, e.getMessage());
@@ -796,6 +787,11 @@ public class OntologyController {
 		try {
 			ontologyTimeSeriesDTO.setUser(userService.getUser(utils.getUserId()));
 			final OntologyConfiguration config = new OntologyConfiguration(request);
+			/*
+			 * final Ontology createdOnt =
+			 * ontologyTimeSeriesService.createOntologyTimeSeries(ontologyTimeSeriesDTO,
+			 * config, true, true);
+			 */
 			final Ontology createdOnt = timeSeriesBusinessService.createOntology(ontologyTimeSeriesDTO, config, true,
 					true);
 			if (createdOnt != null) {
@@ -975,15 +971,15 @@ public class OntologyController {
 				final List<String> propdclasses = new ArrayList<>();
 				final List<String> entitydclasses = new ArrayList<>();
 				;
-				final List<Configuration> configs = configurationRepository.findByType(Type.DATACLASS);
-				for (final Configuration config : configs) {
-					final String dcname = config.getIdentification();
+				List<Configuration> configs = configurationRepository.findByType(Type.DATACLASS);
+				for (Configuration config : configs) {
+					String dcname = config.getIdentification();
 
 					final Map<String, Object> dclassyml = (Map<String, Object>) configurationService
 							.fromYaml(config.getYmlConfig()).get("dataclass");
-					final ArrayList<Map<String, Object>> rules = (ArrayList<Map<String, Object>>) dclassyml
+					ArrayList<Map<String, Object>> rules = (ArrayList<Map<String, Object>>) dclassyml
 							.get("dataclassrules");
-					for (final Map<String, Object> rule : rules) {
+					for (Map<String, Object> rule : rules) {
 						if (rule.get("ruletype").toString().equalsIgnoreCase("entity")) {
 							entitydclasses.add(dcname + "." + rule.get("rulename").toString());
 						} else if (rule.get("ruletype").toString().equalsIgnoreCase("property")) {
@@ -1086,12 +1082,11 @@ public class OntologyController {
 				model.addAttribute(ONTOLOGY_ELASTIC_STR, elasticOntologyDTO);
 
 				if (ontology.getRtdbDatasource().equals(RtdbDatasource.MONGO)) {
-					final List<String> listIndexTrue = new ArrayList<>();
+					List<String> listIndexTrue = new ArrayList<>();
 					List<OntologyPropertiesIndexConfDTO> listProperties = new ArrayList<OntologyPropertiesIndexConfDTO>();
 					List<OntologyListIndexMongoConfDTO> listIndex = new ArrayList<OntologyListIndexMongoConfDTO>();
 
-					final String getindexMongoDB = MongoNativeDBRepository
-							.getIndexesOptions(ontology.getIdentification());
+					String getindexMongoDB = MongoNativeDBRepository.getIndexesOptions(ontology.getIdentification());
 					listIndex = ontologyConfigService.getIndexTrue(getindexMongoDB);
 					listProperties = ontologyConfigService.getPropertiesOntology(ontology, listIndexTrue);
 
@@ -1402,10 +1397,6 @@ public class OntologyController {
 
 					}
 				}
-				
-				ResourceAccessType resourceAccess = resourceService.getResourceAccess(utils.getUserId(),ontology.getId());
-				
-				model.addAttribute(APP_USER_ACCESS, resourceAccess);
 
 				final List<User> users = userService.getAllActiveUsers();
 				OntologyTimeSeriesServiceDTO otsDTO = new OntologyTimeSeriesServiceDTO();
@@ -1435,10 +1426,10 @@ public class OntologyController {
 									+ ontology.getIdentification());
 				}
 				model.addAttribute(AUTHORIZATIONS, authorizationsDTO);
-				final User sessionUser = userService.getUser(id);
-				for (final OntologyUserAccessDTO permission : authorizationsDTO) {
+				User sessionUser = userService.getUser(id);
+				for (OntologyUserAccessDTO permission : authorizationsDTO) {
 					if (permission.getTypeName() == "ALL" && permission.getUserId().equals(sessionUser)) {
-						final OntologyDataAccessDTO obj = new OntologyDataAccessDTO(null);
+						OntologyDataAccessDTO obj = new OntologyDataAccessDTO(null);
 						obj.setOntologyPermission(true);
 					}
 				}
@@ -1476,13 +1467,10 @@ public class OntologyController {
 				} else if (ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)) {
 					final OntologyVirtual ov = ontologyConfigService.getOntologyVirtualByOntologyId(ontology);
 					model.addAttribute(RTDB_DATASOURCE_TYPE, ov.getDatasourceId().getSgdb());
-					model.addAttribute(CONNECTION, ov.getDatasourceId().getIdentification());
 					model.addAttribute(IS_ONTOLOGY_REST, false);
 				} else if (ontology.getRtdbDatasource().equals(RtdbDatasource.PRESTO)) {
 					final OntologyPresto op = ontologyConfigService.getOntologyPrestoByOntologyId(ontology);
-					final OntologyPrestoDatasource opd = prestoDatasourceService.getPrestoDatasourceByIdentification(op.getDatasourceCatalog());
-					model.addAttribute(RTDB_DATASOURCE_TYPE, opd.getType());
-					model.addAttribute(CONNECTION, op.getDatasourceCatalog());
+					model.addAttribute(RTDB_DATASOURCE_TYPE, op.getDatasourceCatalog().toUpperCase());
 					model.addAttribute(IS_ONTOLOGY_REST, false);
 				} else if (ontology.getRtdbDatasource().equals(RtdbDatasource.NEBULA_GRAPH)) {
 					model.addAttribute(IS_ONTOLOGY_REST, false);
@@ -1498,7 +1486,7 @@ public class OntologyController {
 					if (ontology.getRtdbDatasource().name() == "MONGO") {
 						// String getindexMongoDB =
 						// MongoNativeDBRepository.getIndexes(entity.getIdentification());
-						final String getindexMongoDB = MongoNativeDBRepository
+						String getindexMongoDB = MongoNativeDBRepository
 								.getIndexesOptions(ontology.getIdentification());
 						listIndex = ontologyConfigService.getIndexTrue(getindexMongoDB);
 
@@ -1547,15 +1535,14 @@ public class OntologyController {
 		final List<String> propdclasses = new ArrayList<>();
 		final List<String> entitydclasses = new ArrayList<>();
 		;
-		final List<Configuration> configs = configurationRepository.findByType(Type.DATACLASS);
-		for (final Configuration config : configs) {
-			final String dcname = config.getIdentification();
+		List<Configuration> configs = configurationRepository.findByType(Type.DATACLASS);
+		for (Configuration config : configs) {
+			String dcname = config.getIdentification();
 
 			final Map<String, Object> dclassyml = (Map<String, Object>) configurationService
 					.fromYaml(config.getYmlConfig()).get("dataclass");
-			final ArrayList<Map<String, Object>> rules = (ArrayList<Map<String, Object>>) dclassyml
-					.get("dataclassrules");
-			for (final Map<String, Object> rule : rules) {
+			ArrayList<Map<String, Object>> rules = (ArrayList<Map<String, Object>>) dclassyml.get("dataclassrules");
+			for (Map<String, Object> rule : rules) {
 				if (rule.get("ruletype").toString().equalsIgnoreCase("entity")) {
 					entitydclasses.add(dcname + "." + rule.get("rulename").toString());
 				} else if (rule.get("ruletype").toString().equalsIgnoreCase("property")) {
@@ -1568,9 +1555,9 @@ public class OntologyController {
 	}
 
 	private List<RtdbDatasource> filterRtdbForKPIs(List<RtdbDatasource> list) {
-		final List<RtdbDatasource> result = new ArrayList<RtdbDatasource>();
-		for (final Object element : list) {
-			final RtdbDatasource rtdbDatasource = (RtdbDatasource) element;
+		List<RtdbDatasource> result = new ArrayList<RtdbDatasource>();
+		for (Iterator iterator = list.iterator(); iterator.hasNext();) {
+			RtdbDatasource rtdbDatasource = (RtdbDatasource) iterator.next();
 			if (rtdbDatasource.name().equals("MONGO") || rtdbDatasource.name().equals("ELASTIC_SEARCH")
 					|| rtdbDatasource.name().equals("OPEN_SEARCH") || rtdbDatasource.name().equals("COSMOS_DB")) {
 				result.add(rtdbDatasource);
@@ -1582,9 +1569,9 @@ public class OntologyController {
 	}
 
 	private List<Ontology> filterOntologyForKPIs(List<Ontology> list) {
-		final List<Ontology> result = new ArrayList<Ontology>();
-		for (final Object element : list) {
-			final Ontology onto = (Ontology) element;
+		List<Ontology> result = new ArrayList<Ontology>();
+		for (Iterator iterator = list.iterator(); iterator.hasNext();) {
+			Ontology onto = (Ontology) iterator.next();
 			if (onto.getRtdbDatasource().name().equals("MONGO")
 					|| onto.getRtdbDatasource().name().equals("ELASTIC_SEARCH")
 					|| onto.getRtdbDatasource().name().equals("OPEN_SEARCH")
@@ -1616,7 +1603,7 @@ public class OntologyController {
 		model.addAttribute(DATA_MODELS_STR, ontologyConfigService.getEmptyBaseDataModel());
 		model.addAttribute(DATA_MODEL_TYPES_STR, ontologyConfigService.getAllDataModelTypes());
 		model.addAttribute(RTDBS, ontologyConfigService.getDatasources());
-		model.addAttribute(ONTOLOGIES_STR, ontologyConfigService.getOntologiesByUserId(utils.getUserId()));
+
 		model.addAttribute("fieldTypes", ontologyBusinessService.getStringSupportedFieldDataTypes());
 
 		model.addAttribute("constraintTypes", ontologyBusinessService.getStringSupportedConstraintTypes());
@@ -1783,18 +1770,17 @@ public class OntologyController {
 	@GetMapping(value = "/getInfoDto/{datasource}")
 	public @ResponseBody ResponseEntity<?> getInfoDto(@PathVariable("datasource") String datasourceIdentification) {
 
-		final VirtualDatasourceInfoDTO infoDTO = ontologyBusinessService
-				.getInfoFromDatasource(datasourceIdentification);
+		VirtualDatasourceInfoDTO infoDTO = ontologyBusinessService.getInfoFromDatasource(datasourceIdentification);
 		return new ResponseEntity<>(infoDTO, HttpStatus.OK);
 	}
 
 	@GetMapping(value = "/getDomain/{datasource}")
 	public @ResponseBody ResponseEntity<?> getDomain(@PathVariable("datasource") String datasourceIdentification) {
-		final User user = userService.getUser(utils.getUserId());
+		User user = userService.getUser(utils.getUserId());
 
-		final List<OntologyVirtualDatasource> datasources = virtualDatasourceService.getAllDatasourcesByUser(user);
+		List<OntologyVirtualDatasource> datasources = virtualDatasourceService.getAllDatasourcesByUser(user);
 
-		for (final OntologyVirtualDatasource datasource : datasources) {
+		for (OntologyVirtualDatasource datasource : datasources) {
 			if (datasource.getIdentification().equals(datasourceIdentification)) {
 				return new ResponseEntity<>(datasource.getDatasourceDomain(), HttpStatus.OK);
 			}
@@ -1835,22 +1821,21 @@ public class OntologyController {
 		try {
 			final List<Map<String, Object>> columns = ontologyBusinessService
 					.getTableInformationFromDatasource(datasource, database, schema);
-			final List<Map<String, Object>> tablesPKInformation = ontologyBusinessService
-					.getTablePKInformation(datasource, database, schema);
-
+			List<Map<String, Object>> tablesPKInformation = ontologyBusinessService.getTablePKInformation(datasource,
+					database, schema);
 			if (columns.isEmpty()) {
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			} else {
-				final Map<String, JSONArray> tableInfMap = new HashMap<>();
+				Map<String, JSONArray> tableInfMap = new HashMap<>();
 
-				for (final Map<String, Object> tableColumnInf : columns) {
+				for (Map<String, Object> tableColumnInf : columns) {
 
 					if (tableInfMap.get(tableColumnInf.get("TABLE_NAME")) == null) {
-						final JSONArray columnInfArray = new JSONArray();
-						final JSONObject columnInf = new JSONObject();
-						columnInf.put("COLUMN_NAME", tableColumnInf.get("COLUMN_NAME"));
+						JSONArray columnInfArray = new JSONArray();
+						JSONObject columnInf = new JSONObject();
+						columnInf.put("COLUMN_NAME", (String) tableColumnInf.get("COLUMN_NAME"));
 
-						for (final Map<String, Object> pkInf : tablesPKInformation) {
+						for (Map<String, Object> pkInf : tablesPKInformation) {
 							if (tableColumnInf.get("TABLE_NAME").equals(pkInf.get("TABLE_NAME"))
 									&& tableColumnInf.get("COLUMN_NAME").equals(pkInf.get("COLUMN_NAME"))) {
 								columnInf.put("PK", true);
@@ -1862,10 +1847,10 @@ public class OntologyController {
 						columnInfArray.put(columnInf);
 						tableInfMap.put((String) tableColumnInf.get("TABLE_NAME"), columnInfArray);
 					} else {
-						final JSONObject columnInf = new JSONObject();
-						columnInf.put("COLUMN_NAME", tableColumnInf.get("COLUMN_NAME"));
+						JSONObject columnInf = new JSONObject();
+						columnInf.put("COLUMN_NAME", (String) tableColumnInf.get("COLUMN_NAME"));
 
-						for (final Map<String, Object> pkInf : tablesPKInformation) {
+						for (Map<String, Object> pkInf : tablesPKInformation) {
 							if (tableColumnInf.get("TABLE_NAME").equals(pkInf.get("TABLE_NAME"))
 									&& tableColumnInf.get("COLUMN_NAME").equals(pkInf.get("COLUMN_NAME"))) {
 								columnInf.put("PK", true);
@@ -1878,11 +1863,11 @@ public class OntologyController {
 					}
 				}
 
-				final JSONArray tableInfArray = new JSONArray();
+				JSONArray tableInfArray = new JSONArray();
 
-				for (final String tableName : tableInfMap.keySet()) {
+				for (String tableName : tableInfMap.keySet()) {
 
-					final JSONObject tableInf = new JSONObject();
+					JSONObject tableInf = new JSONObject();
 					tableInf.put("TABLE_NAME", tableName);
 					tableInf.put("COLUMS_NAMES", tableInfMap.get(tableName));
 					tableInfArray.put(tableInf);
@@ -1891,10 +1876,9 @@ public class OntologyController {
 				if (datasource.equals(RtdbDatasource.PRESTO.toString())
 						&& (prestoDatasourceConfigurationService.isHistoricalCatalog(database)
 								|| prestoDatasourceConfigurationService.isRealtimedbCatalog(database))) {
-					final List<String> ontologies = ontologyConfigService
-							.getAllIdentificationsByUser(utils.getUserId());
+					List<String> ontologies = ontologyConfigService.getAllIdentificationsByUser(utils.getUserId());
 
-					final List<String> authorizedEntities = ontologies.stream().map(s -> s.toLowerCase())
+					List<String> authorizedEntities = ontologies.stream().map(s -> s.toLowerCase())
 							.filter(columns::contains).collect(Collectors.toList());
 
 					return new ResponseEntity<>(authorizedEntities, HttpStatus.OK);
@@ -1930,10 +1914,9 @@ public class OntologyController {
 				if (datasource.equals(RtdbDatasource.PRESTO.toString())
 						&& (prestoDatasourceConfigurationService.isHistoricalCatalog(database)
 								|| prestoDatasourceConfigurationService.isRealtimedbCatalog(database))) {
-					final List<String> ontologies = ontologyConfigService
-							.getAllIdentificationsByUser(utils.getUserId());
+					List<String> ontologies = ontologyConfigService.getAllIdentificationsByUser(utils.getUserId());
 
-					final List<String> authorizedEntities = ontologies.stream().map(s -> s.toLowerCase())
+					List<String> authorizedEntities = ontologies.stream().map(s -> s.toLowerCase())
 							.filter(tables::contains).collect(Collectors.toList());
 
 					return new ResponseEntity<>(authorizedEntities, HttpStatus.OK);
@@ -2380,11 +2363,11 @@ public class OntologyController {
 
 			if (ontologyConfigService.hasUserPermissionForQuery(utils.getUserId(), identification)) {
 
-				final String queryResult = queryToolService.querySQLAsJson(utils.getUserId(), identification,
+				String queryResult = queryToolService.querySQLAsJson(utils.getUserId(), identification,
 						"select * from " + identification + " limit 1000", 0);
-				final Table table = new JsonReader().read(Source.fromString(queryResult));
+				Table table = new JsonReader().read(Source.fromString(queryResult));
 
-				final List<OntologyStatisticsDTO> statistics = generateStatistics(queryResult, table);
+				List<OntologyStatisticsDTO> statistics = generateStatistics(queryResult, table);
 
 				model.addAttribute("statistics", statistics);
 			} else {
@@ -2403,49 +2386,41 @@ public class OntologyController {
 	}
 
 	private List<OntologyStatisticsDTO> generateStatistics(String data, Table table) throws JsonProcessingException {
-		if (table.columnNames().contains("_id.$oid")) {
+		if (table.columnNames().contains("_id.$oid"))
 			table = table.rejectColumns("_id.$oid");
-		}
-		if (table.columnNames().contains("contextData.user")) {
+		if (table.columnNames().contains("contextData.user"))
 			table = table.rejectColumns("contextData.user", "contextData.clientConnection", "contextData.timestamp",
 					"contextData.timestampMillis", "contextData.clientSession", "contextData.device",
 					"contextData.deviceTemplate", "contextData.source", "contextData.timezoneId");
-		}
-		final List<OntologyStatisticsDTO> statistics = new ArrayList<>();
-		for (final Column<?> c : table.columns()) {
-			final OntologyStatisticsDTO ontStat = new OntologyStatisticsDTO();
+		List<OntologyStatisticsDTO> statistics = new ArrayList<>();
+		for (Column<?> c : table.columns()) {
+			OntologyStatisticsDTO ontStat = new OntologyStatisticsDTO();
 			ontStat.setField(c.name());
 			ontStat.setType(c.type().name());
-			final Table sum = table.summarize(c, countNonMissing, mean, min, max, stdDev).apply();
-			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Count"))) {
+			Table sum = table.summarize(c, countNonMissing, mean, min, max, stdDev).apply();
+			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Count")))
 				ontStat.setCountNonNull(null);
-			}
-			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Mean"))) {
+			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Mean")))
 				ontStat.setMean(null);
-			}
-			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Min"))) {
+			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Min")))
 				ontStat.setMin(null);
-			}
-			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Max"))) {
+			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Max")))
 				ontStat.setMax(null);
-			}
-			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Std"))) {
+			if (!sum.columnNames().stream().anyMatch((a) -> a.startsWith("Std")))
 				ontStat.setStd(null);
-			}
 
-			for (final String cName : sum.columnNames()) {
-				final double value = (double) sum.column(cName).get(0);
-				if (cName.startsWith("Count")) {
+			for (String cName : sum.columnNames()) {
+				double value = (double) sum.column(cName).get(0);
+				if (cName.startsWith("Count"))
 					ontStat.setCountNonNull(value);
-				} else if (cName.startsWith("Mean")) {
+				else if (cName.startsWith("Mean"))
 					ontStat.setMean(value);
-				} else if (cName.startsWith("Min")) {
+				else if (cName.startsWith("Min"))
 					ontStat.setMin(value);
-				} else if (cName.startsWith("Max")) {
+				else if (cName.startsWith("Max"))
 					ontStat.setMax(value);
-				} else if (cName.startsWith("Std")) {
+				else if (cName.startsWith("Std"))
 					ontStat.setStd(value);
-				}
 			}
 
 			if (c.type().equals(ColumnType.DOUBLE) || c.type().equals(ColumnType.FLOAT)
@@ -2454,8 +2429,8 @@ public class OntologyController {
 				ontStat.setP25(AggregateFunctions.percentile((NumericColumn<?>) c, 0.25));
 				ontStat.setP50(AggregateFunctions.percentile((NumericColumn<?>) c, 0.50));
 				ontStat.setP75(AggregateFunctions.percentile((NumericColumn<?>) c, 0.75));
-				final Trace t = Histogram.create("Distribution of " + c.name(), table, c.name()).getTraces()[0];
-				final double[] graph = Stream.of(t.asJavascript(0).split("=")[1].split("x:")[1].split("opacity")[0]
+				Trace t = Histogram.create("Distribution of " + c.name(), table, c.name()).getTraces()[0];
+				double[] graph = Stream.of(t.asJavascript(0).split("=")[1].split("x:")[1].split("opacity")[0]
 						.substring(2, t.asJavascript(0).split("=")[1].split("x:")[1].split("opacity")[0].length() - 3)
 						.trim().replace("\"", "").split(",")).mapToDouble(Double::parseDouble).toArray();
 
@@ -2489,9 +2464,8 @@ public class OntologyController {
 		if (o.getRtdbDatasource().equals(Ontology.RtdbDatasource.PRESTO)) {
 			final OntologyPresto op = ontologyConfigService.getOntologyPrestoByOntologyId(o);
 			if (op != null) {
-				if (prestoDatasourceConfigurationService.isHistoricalCatalog(op.getDatasourceCatalog())) {
+				if (prestoDatasourceConfigurationService.isHistoricalCatalog(op.getDatasourceCatalog()))
 					return true;
-				}
 			}
 		}
 		return false;
@@ -2796,8 +2770,8 @@ public class OntologyController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String bulkCreation(Model model) {
 
-		final User user = userService.getUser(utils.getUserId());
-		final List<OntologyVirtualDatasource> datasources = virtualDatasourceService.getAllDatasourcesByUser(user).stream()
+		User user = userService.getUser(utils.getUserId());
+		List<OntologyVirtualDatasource> datasources = virtualDatasourceService.getAllDatasourcesByUser(user).stream()
 				.filter(ovd -> !ovd.getIdentification().equals(timeseriesdbConnection)).collect(Collectors.toList());
 		final List<User> users = userService.getAllActiveUsers();
 		model.addAttribute("datasources", datasources);
@@ -2811,7 +2785,7 @@ public class OntologyController {
 	public ResponseEntity<Map<String, String>> ontologiesBulkCreation(Model model, RedirectAttributes redirect,
 			HttpServletRequest request) throws IOException {
 
-		final JSONArray failedOntologies = ontologyBusinessService.ontologyBulkGeneration(request, utils.getUserId());
+		JSONArray failedOntologies = ontologyBusinessService.ontologyBulkGeneration(request, utils.getUserId());
 		final Map<String, String> response = new HashMap<>();
 
 		if (failedOntologies.length() == 0) {

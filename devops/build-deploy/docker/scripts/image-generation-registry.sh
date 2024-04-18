@@ -212,7 +212,7 @@ homepath=$PWD
 #####################################################
 
 if [[ "$PLATFORM_BASE_IMAGE" = true && "$(docker images -q $USERNAME/baseimage 2> /dev/null)" == "" ]]; then
-   echo "Platform Base JRE image generation with Docker CLI: "
+   echo "Platform Base JRE image generation with Docker CLI: "   
    buildImage2 $homepath/../dockerfiles/platform-base-image baseimage $BASEIMAGE_TAG Dockerfile
 fi
 
@@ -280,7 +280,7 @@ if [[ "$MODULE_GATEWAY" = true && "$(docker images -q $USERNAME/microservices-ga
    echo "Docker image generation for onesaitplatform module: microservices-gateway"
 	cd $homepath/../../../../sources/modules/microservices-gateway/docker
 	cp $homepath/../../../../sources/modules/microservices-gateway/target/*.jar $homepath/../../../../sources/modules/microservices-gateway/docker/
-   buildImage2 $homepath/../../../../sources/modules/microservices-gateway microservices-gateway/docker $MODULE_TAG Dockerfile
+   buildImage2 $homepath/../../../../sources/modules/microservices-gateway microservices-gateway $MODULE_TAG Dockerfile
 	rm $homepath/../../../../sources/modules/microservices-gateway/docker/*.jar
 
 fi
@@ -305,8 +305,8 @@ if [[ "$MODULE_KEYCLOAK_MANAGER" = true && "$(docker images -q $USERNAME/microse
    echo "Docker image generation for onesaitplatform module: keycloak-manager"
 	cd $homepath/../../../../tools/keycloak/onesaitplatform-keycloak-manager/docker
 	cp $homepath/../../../../tools/keycloak/onesaitplatform-keycloak-manager/target/*.jar $homepath/../../../../tools/keycloak/onesaitplatform-keycloak-manager/docker/
-   buildImage2 $homepath/../../../../tools/keycloak/onesaitplatform-keycloak-manager/docker keycloak-manager $MODULE_TAG Dockerfile
-	rm $homepath/../../../../tools/keycloak/onesaitplatform-keycloak-manager/docker/*.jar
+   buildImage2 $homepath/../../../../tools/keycloak/onesaitplatform-keycloak-manager keycloak-manager $MODULE_TAG Dockerfile
+	rm $homepath/../../../../tools/keycloak/onesaitplatform-keycloak-manager/docker/*.ja
 fi
 
 if [[ "$MODULE_SERVERLESS_MANAGER" = true && "$(docker images -q $USERNAME/serverless-manager 2> /dev/null)" == "" ]]; then
@@ -520,14 +520,11 @@ fi
 
 if [[ "$INFRA_GRAVITEE" = true && "$(docker images -q $USERNAME/gravitee-* 2> /dev/null)" == "" ]]; then
    echo "Build Gravitee managament API"
-   buildImage2 $homepath/../dockerfiles/gravitee/3.20/management-api gravitee-management-api $INFRA_TAG Dockerfile
-	 echo "Build Gravitee managament UI"
-   buildImage2 $homepath/../dockerfiles/gravitee/3.20/management-ui gravitee-management-ui $INFRA_TAG Dockerfile
-	 echo "Build Gravitee gateway"
-   buildImage2 $homepath/../dockerfiles/gravitee/3.20/gateway gravitee-gateway $INFRA_TAG Dockerfile
-	 echo "Build Portal UI"
-   buildImage2 $homepath/../dockerfiles/gravitee/3.20/portal-ui gravitee-portal-ui $INFRA_TAG Dockerfile
-
+   buildImage2 $homepath/../dockerfiles/gravitee gravitee-management-api $INFRA_TAG managament/Dockerfile
+	echo "Build Gravitee gateway"
+   buildImage2 $homepath/../dockerfiles/gravitee gravitee-gateway $INFRA_TAG gateway/Dockerfile
+	echo "Build Gravitee managament UI"
+   buildImage2 $homepath/../dockerfiles/gravitee gravitee-management-ui $INFRA_TAG ui/Dockerfile
 fi
 
 if [[ "$INFRA_SIDECAR" = true && "$(docker images -q $USERNAME/consul-proxy* 2> /dev/null)" == "" ]]; then
@@ -537,7 +534,7 @@ fi
 
 if [[ "$INFRA_CAS" = true  ]]; then
 	buildCas $homepath/../../../../tools/cas-overlay-template-5.2 $INFRA_TAG
-
+   
    cd $homepath/../../../../tools/cas-overlay-template-5.2
 	$homepath/../../../../tools/cas-overlay-template-5.2/build.sh packageDocker
 	cd $homepath/../../../../tools/cas-overlay-template-5.2/docker
@@ -696,7 +693,6 @@ if [ "$PUSH2GCPREGISTRY" = true ]; then
 	pushImage2GCPRegistry gravitee-management-api $INFRA_TAG
 	pushImage2GCPRegistry gravitee-management-ui $INFRA_TAG
 	pushImage2GCPRegistry gravitee-gateway $INFRA_TAG
-	pushImage2GCPRegistry gravitee-portal-ui $INFRA_TAG
 	pushImage2GCPRegistry consul-proxy-sidecar $INFRA_TAG
 	pushImage2GCPRegistry data-cleaner $INFRA_TAG
 	pushImage2GCPRegistry log-centralizer $INFRA_TAG
@@ -762,7 +758,6 @@ if [ "$PUSH2DOCKERHUBREGISTRY" = true ]; then
 	pushImage2Registry gravitee-management-api $INFRA_TAG
 	pushImage2Registry gravitee-management-ui $INFRA_TAG
 	pushImage2Registry gravitee-gateway $INFRA_TAG
-	pushImage2Registry gravitee-portal-ui $INFRA_TAG
 	pushImage2Registry cas-server $INFRA_TAG
 	pushImage2Registry consul-proxy-sidecar $INFRA_TAG
 	pushImage2Registry jdbc4datahub-baseimage $INFRA_TAG
@@ -830,7 +825,6 @@ if [ "$PUSH2PRIVREGISTRY" = true ]; then
 	pushImage2Registry gravitee-management-api $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry gravitee-management-ui $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry gravitee-gateway $INFRA_TAG $PRIVATE_REGISTRY/
-	pushImage2Registry gravitee-portal-ui $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry cas-server $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry consul-proxy-sidecar $INFRA_TAG $PRIVATE_REGISTRY/
 	pushImage2Registry jdbc4datahub-baseimage $INFRA_TAG $PRIVATE_REGISTRY/

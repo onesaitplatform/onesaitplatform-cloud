@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -127,7 +127,7 @@
 	    				    <div class="col-md-6 col-sm-6 col-xs-6 margin-top-20 " id="div-uploadZIP">
 								<div class="form-group pull-right">																	
 									<button id="uploadZIP" type="button" class="btn btn-circle btn-outline blue" name="uploadZIP" value="Upload ZIP" onclick="$('#buttonLoadZip').click();" aria-invalid="false"> <i class="fa fa-file-archive-o" style="padding-right:4px;"></i><span>Upload ZIP</span></button><span class="required"> *</span> 
-									<span id="zipNames"></span>
+									<span id="zipNameS"></span>
                                 </div>
 							</div>
     					</div>
@@ -274,9 +274,6 @@
 		    		$('#importAsCurrent').val("false")
 		    	}
 		    })
-		    $("#buttonLoadZip").on("change", function(e){
-		    	$('#zipNames').text(e.target.files[0].name);
-			})
 		});
 
 	//]]>

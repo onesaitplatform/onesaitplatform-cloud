@@ -200,7 +200,7 @@ export default [
       ],
     },
   },
-  /* {
+  {
     type: 'select',
     key: 'size',
     label: 'Size',
@@ -216,22 +216,6 @@ export default [
       ],
     },
   },
-  {
-    type: 'select',
-    key: 'float',
-    label: 'Float button',
-    input: true,
-    tooltip: 'These option float this element to the left or right',
-    dataSrc: 'values',
-    weight: 149,
-    data: {
-      values: [
-        { label: 'none', value: '  ' },
-        { label: 'left', value: 'float-start' },
-        { label: 'right', value: 'float-end' },
-      ],
-    },
-  },*/
   {
     type: 'textfield',
     key: 'leftIcon',
@@ -285,91 +269,5 @@ export default [
     tooltip: 'This will disable this field if the form is invalid.',
     input: true,
     weight: 620,
-  },
-  {
-    type: 'checkbox',
-    input: true,
-    inputType: 'checkbox',
-    key: 'filtersubmission',
-    label: 'filter fields that are sent?',
-    weight: 181,
-    tooltip: 'The list will include the fields that will be sent, excluding the rest taking into account their API key.',
-    conditional: {
-      json: {
-        or: [
-          {
-            '===': [
-              { var: 'data.action' },
-              'submit'
-            ],
-          },
-          {
-            '===': [
-              { var: 'data.action' },
-              'url'
-            ],
-          }
-        ]
-      }
-    }
-  },
-  {
-    weight:182,
-    label: 'Load Fields',
-    action: 'event',
-    showValidations: false,
-    tableView: false,
-    key: 'loadFields',
-    type: 'button',
-    input: true,
-    event: 'updatesubmitlist',
-    conditional: {
-      eq: 'true',
-      when: 'filtersubmission',
-      show: 'true'
-    }
-  },
-  {
-    type: 'datagrid',
-    input: true,
-    label: 'Submission field list',
-    key: 'submissionfieldslist',
-    tooltip: 'The list will include the fields that will be sent, excluding the rest taking into account their API key.',
-    weight: 183,
-    conditional: {
-      eq: 'true',
-      when: 'filtersubmission',
-      show: 'true'
-    },
-    components: [
-      {
-        label: 'Field label',
-        key: 'label',
-        input: true,
-        type: 'textfield'
-      },
-      {
-        label: 'Field Api key',
-        key: 'key',
-        input: true,
-        type: 'textfield'
-      }
-    ],
-    logic: [
-      {
-        name: 'loadsubmissionfieldslist',
-        trigger: {
-          type: 'event',
-          event: 'updatesubmitlist'
-        },
-        actions: [
-          {
-            name: 'loadsubmissionfieldslist',
-            type: 'value',
-            value: 'value = (window.componentsPaths?window.componentsPaths.map((elem)=>({label:elem.label, key:elem.value})):[]);'
-          }
-        ]
-      }
-    ],
   },
 ];

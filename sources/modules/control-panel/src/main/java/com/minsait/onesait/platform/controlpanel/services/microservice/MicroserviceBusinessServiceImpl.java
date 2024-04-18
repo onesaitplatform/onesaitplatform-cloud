@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -510,8 +510,8 @@ public class MicroserviceBusinessServiceImpl implements MicroserviceBusinessServ
 				ms.setJobName(microservice.getName().concat("-pipeline"));
 				if (config.isCreateGitlab() && microservice.getTemplate() != null) {
 					// will overwrite paths at MicroserviceTemplateUtil
-					ms.setJenkinsXML(microserviceJenkinsTemplateUtil.compileXMLTemplate(config, microservice,
-							config.getSources(), config.getDocker()));
+					ms.setJenkinsXML(microserviceJenkinsTemplateUtil.compileXMLTemplate(config, microservice, "./",
+							"./docker/"));
 				} else {
 					ms.setJenkinsXML(microserviceJenkinsTemplateUtil.compileXMLTemplate(config, microservice));
 				}

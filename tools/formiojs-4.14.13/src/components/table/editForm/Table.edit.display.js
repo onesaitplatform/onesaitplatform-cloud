@@ -106,28 +106,4 @@ export default [
     tooltip: 'Condense the size of the table.',
     weight: 704
   },
-  {
-    type: 'checkbox',
-    label: 'Fit Content ',
-    key: 'fitcontent',
-    input: true,
-    tooltip: 'Fit the table to the contents of the cells.',
-    weight: 705
-  },
-  {
-    type: 'select',
-    key: 'float',
-    label: 'Float table',
-    input: true,
-    tooltip: 'These option float this table to the left or right',
-    dataSrc: 'values',
-    weight: 149,
-    data: {
-      values: [
-        { label: 'none', value: '  ' },
-        { label: 'left', value: 'float-start' },
-        { label: 'right', value: 'float-end' },
-      ],
-    },
-  },
 ];

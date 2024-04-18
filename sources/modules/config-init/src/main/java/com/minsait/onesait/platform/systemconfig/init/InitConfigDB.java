@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 package com.minsait.onesait.platform.systemconfig.init;
-
-import static com.minsait.onesait.platform.encryptor.config.JasyptConfig.JASYPT_BEAN;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -112,8 +110,8 @@ import com.minsait.onesait.platform.config.model.Internationalization;
 import com.minsait.onesait.platform.config.model.Layer;
 import com.minsait.onesait.platform.config.model.LineageRelations;
 import com.minsait.onesait.platform.config.model.LineageRelations.Group;
-import com.minsait.onesait.platform.config.model.MicroserviceTemplate;
 import com.minsait.onesait.platform.config.model.MicroserviceTemplate.Language;
+import com.minsait.onesait.platform.config.model.MicroserviceTemplate;
 import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.model.NotebookUserAccessType;
 import com.minsait.onesait.platform.config.model.ODTypology;
@@ -222,6 +220,8 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
 
+import static com.minsait.onesait.platform.encryptor.config.JasyptConfig.JASYPT_BEAN;
+
 @Slf4j
 @Component
 @DependsOn(JASYPT_BEAN)
@@ -253,6 +253,7 @@ public class InitConfigDB {
 	private static final String OPERATIONTYPE_STR = "operationType";
 	private static final String VALUE_STR = "value";
 	private static final String SHA_STR = "SHA256(LoOY0z1pq+O2/h05ysBSS28kcFc8rSr7veWmyEi7uLs=)";
+	private static final String SHA_EDGE_STR = "SHA256(LoOY0z1pq+O2/h05ysBSS28kcFc8rSr7veWmyEi7uLs=)";
 	private static final String BUNDLE_STR = "BundlesRepository";
 	private static final String RESTSCHEMA_STR = "examples/Restaurants-schema.json";
 	private static final String GTKPEXAMPLE_STR = "GTKP-Example";
@@ -494,14 +495,13 @@ public class InitConfigDB {
 	@Value("${onesaitplatform.init.multitenant.adminToken:}")
 	private String adminVerticalToken;
 
-	// id enabled (true) it will create a custon Streamsets instance for the
-	// vertical
+	//id enabled (true) it will create a custon Streamsets instance for the vertical
 	@Value("${onesaitplatform.dataflow.create.vertical.instance:false}")
 	private boolean dataflowCreateVerticalInstance;
-
+	
 	@Autowired
 	private MasterConfigurationRepository masterConfigurationRepository;
-
+	
 	@Autowired
 	private MicroserviceTemplateRepository mstemplateRepository;
 
@@ -699,7 +699,7 @@ public class InitConfigDB {
 			log.info("OK init_GadgetTemplate_CrudAndImportTool");
 			initGadgetsTemplatesDefCharts();
 			log.info("OK init_GadgetTemplate_LineBarPie");
-
+			
 			if (initSamples) {
 
 				initGadgetTemplate();
@@ -848,10 +848,10 @@ public class InitConfigDB {
 
 			initDataTags();
 			log.info("OK init_DataTags");
-
+			
 			initMsTemplates();
 			log.info("OK init_MsTemplates");
-
+			
 			if (timeseriesdbEnabled) {
 				initTimeseriesdbConnection();
 				log.info("Init Timeseriesdb Connection");
@@ -1644,7 +1644,6 @@ public class InitConfigDB {
 			config.setDescription("BillableModules for docker environment");
 			config.setYmlConfig(loadFromResources("configurations/BillableModulesDocker.json"));
 			configurationRepository.save(config);
-
 		}
 
 		Configuration config = configurationRepository.findByTypeAndEnvironment(Type.LINEAGE, DEFAULT);
@@ -1885,7 +1884,7 @@ public class InitConfigDB {
 			config.setYmlConfig(loadFromResources("configurations/MapsProjectConfiguration.yml"));
 			configurationRepository.save(config);
 		}
-
+		
 		config = configurationRepository.findByTypeAndEnvironment(Type.BUNDLE_GIT, DEFAULT);
 		if (config == null) {
 			config = new Configuration();
@@ -1909,18 +1908,6 @@ public class InitConfigDB {
 			config.setEnvironment(DEFAULT);
 			config.setDescription("AI Properties for OpenAI and other providers");
 			config.setYmlConfig(loadFromResources("configurations/AIConfiguration.yml"));
-			configurationRepository.save(config);
-		}
-		config = configurationRepository.findById("MASTER-Configuration-35").orElse(null);
-		if (config == null) {
-			config = new Configuration();
-			config.setId("MASTER-Configuration-35");
-			config.setIdentification("KubernetesManager");
-			config.setType(Configuration.Type.CUSTOM);
-			config.setUser(getUserAdministrator());
-			config.setEnvironment(DEFAULT);
-			config.setDescription("Environment Info for Kubernetes Manager ");
-			config.setYmlConfig(loadFromResources("configurations/KubernetesManager.yml"));
 			configurationRepository.save(config);
 		}
 	}
@@ -2014,149 +2001,161 @@ public class InitConfigDB {
 		log.info("init ConsoleMenu");
 		final List<ConsoleMenu> menus = consoleMenuRepository.findAll();
 
-		if (!consoleMenuRepository.findById("MASTER-ConsoleMenu-1").isPresent()) {
-			try {
-				log.info("Adding menu for role ADMIN");
-
-				final ConsoleMenu menu = new ConsoleMenu();
-				menu.setId("MASTER-ConsoleMenu-1");
-				menu.setJson(loadFromResources("menu/menu_admin.json"));
-				menu.setRoleType(roleRepository.findById(Role.Type.ROLE_ADMINISTRATOR.toString()).orElse(null));
-				consoleMenuRepository.save(menu);
-			} catch (final Exception e) {
-				log.error("Error adding menu for role ADMIN");
-			}
+		if (!menus.isEmpty()) {
+			consoleMenuRepository.deleteAll();
 		}
-		
-		if (!consoleMenuRepository.findById("MASTER-ConsoleMenu-2").isPresent()) {
-			try {
-				log.info("Adding menu for role DEVELOPER");
 
-				final ConsoleMenu menu = new ConsoleMenu();
-				menu.setId("MASTER-ConsoleMenu-2");
-				menu.setJson(loadFromResources("menu/menu_developer.json"));
-				menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DEVELOPER.toString()).orElse(null));
-				consoleMenuRepository.save(menu);
-			} catch (final Exception e) {
-				log.error("Error adding menu for role DEVELOPER");
-			}
+		log.info("No menu elents found...adding");
+		try {
+			log.info("Adding menu for role ADMIN");
+
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-1");
+			menu.setJson(loadFromResources("menu/menu_admin.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_ADMINISTRATOR.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role ADMIN");
 		}
-		
-		if (!consoleMenuRepository.findById("MASTER-ConsoleMenu-3").isPresent()) {
-			try {
-				log.info("Adding menu for role USER");
+		try {
+			log.info("Adding menu for role DEVELOPER");
 
-				final ConsoleMenu menu = new ConsoleMenu();
-				menu.setId("MASTER-ConsoleMenu-3");
-
-				menu.setJson(loadFromResources("menu/menu_user.json"));
-				menu.setRoleType(roleRepository.findById(Role.Type.ROLE_USER.toString()).orElse(null));
-				consoleMenuRepository.save(menu);
-			} catch (final Exception e) {
-				log.error("Error adding menu for role USER");
-			}			
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-2");
+			menu.setJson(loadFromResources("menu/menu_developer.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DEVELOPER.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role DEVELOPER");
 		}
-		
-		if (!consoleMenuRepository.findById("MASTER-ConsoleMenu-4").isPresent()) {
-			try {
-				log.info("Adding menu for role ANALYTIC");
+		try {
+			log.info("Adding menu for role USER");
 
-				final ConsoleMenu menu = new ConsoleMenu();
-				menu.setId("MASTER-ConsoleMenu-4");
-				menu.setJson(loadFromResources("menu/menu_analytic.json"));
-				menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DATASCIENTIST.toString()).orElse(null));
-				consoleMenuRepository.save(menu);
-			} catch (final Exception e) {
-				log.error("Error adding menu for role ANALYTIC");
-			}			
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-3");
+
+			menu.setJson(loadFromResources("menu/menu_user.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_USER.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role USER");
 		}
-		
-		if (!consoleMenuRepository.findById("MASTER-ConsoleMenu-5").isPresent()) {
-			try {
-				log.info("Adding menu for role DATAVIEWER");
+		try {
+			log.info("Adding menu for role ANALYTIC");
 
-				final ConsoleMenu menu = new ConsoleMenu();
-				menu.setId("MASTER-ConsoleMenu-5");
-				menu.setJson(loadFromResources("menu/menu_dataviewer.json"));
-				menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DATAVIEWER.toString()).orElse(null));
-				consoleMenuRepository.save(menu);
-			} catch (final Exception e) {
-				log.error("Error adding menu for role DATAVIEWER");
-			}			
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-4");
+			menu.setJson(loadFromResources("menu/menu_analytic.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DATASCIENTIST.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role ANALYTIC");
 		}
-		
-		if (!consoleMenuRepository.findById("MASTER-ConsoleMenu-6").isPresent()) {
-			try {
-				log.info("Adding menu for role PLATFORM_ADMINISTRATOR");
+		try {
+			log.info("Adding menu for role DATAVIEWER");
 
-				final ConsoleMenu menu = new ConsoleMenu();
-				menu.setId("MASTER-ConsoleMenu-6");
-				menu.setJson(loadFromResources("menu/menu_platform_admin.json"));
-				menu.setRoleType(roleRepository.findById(Role.Type.ROLE_PLATFORM_ADMIN.toString()).orElse(null));
-				consoleMenuRepository.save(menu);
-			} catch (final Exception e) {
-				log.error("Error adding menu for role PLATFORM_ADMINISTRATOR");
-			}			
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-5");
+			menu.setJson(loadFromResources("menu/menu_dataviewer.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DATAVIEWER.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role DATAVIEWER");
 		}
-		
-		if (!consoleMenuRepository.findById("MASTER-ConsoleMenu-7").isPresent()) {
-			try {
-				log.info("Adding menu for role DEVOPS");
+		try {
+			log.info("Adding menu for role PLATFORM_ADMINISTRATOR");
 
-				final ConsoleMenu menu = new ConsoleMenu();
-				menu.setId("MASTER-ConsoleMenu-7");
-
-				menu.setJson(loadFromResources("menu/menu_devops.json"));
-				menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DEVOPS.toString()).orElse(null));
-				consoleMenuRepository.save(menu);
-			} catch (final Exception e) {
-				log.error("Error adding menu for role DEVOPS");
-			}				
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-6");
+			menu.setJson(loadFromResources("menu/menu_platform_admin.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_PLATFORM_ADMIN.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role DATAVIEWER");
 		}
-		
-		if (!consoleMenuRepository.findById("MASTER-ConsoleMenu-8").isPresent()) {
-			try {
-				log.info("Adding menu for role PARTNER");
+		try {
+			log.info("Adding menu for role DEVOPS");
 
-				final ConsoleMenu menu = new ConsoleMenu();
-				menu.setId("MASTER-ConsoleMenu-8");
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-7");
 
-				menu.setJson(loadFromResources("menu/menu_partner.json"));
-				menu.setRoleType(roleRepository.findById(Role.Type.ROLE_PARTNER.toString()).orElse(null));
-				consoleMenuRepository.save(menu);
-			} catch (final Exception e) {
-				log.error("Error adding menu for role PARTNER");
-			}
+			menu.setJson(loadFromResources("menu/menu_devops.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DEVOPS.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role DEVOPS");
 		}
-		
-		if (!consoleMenuRepository.findById("MASTER-ConsoleMenu-9").isPresent()) {
-			try {
-				log.info("Adding menu for role OPERATIONS");
+		try {
+			log.info("Adding menu for role PARTNER");
 
-				final ConsoleMenu menu = new ConsoleMenu();
-				menu.setId("MASTER-ConsoleMenu-9");
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-8");
 
-				menu.setJson(loadFromResources("menu/menu_operations.json"));
-				menu.setRoleType(roleRepository.findById(Role.Type.ROLE_OPERATIONS.toString()).orElse(null));
-				consoleMenuRepository.save(menu);
-			} catch (final Exception e) {
-				log.error("Error adding menu for role OPERATIONS");
-			}			
+			menu.setJson(loadFromResources("menu/menu_partner.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_PARTNER.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role PARTNER");
 		}
-		
-		if (!consoleMenuRepository.findById("MASTER-ConsoleMenu-10").isPresent()) {
-			try {
-				log.info("Adding menu for role SYS_ADMIN");
+		try {
+			log.info("Adding menu for role OPERATIONS");
 
-				final ConsoleMenu menu = new ConsoleMenu();
-				menu.setId("MASTER-ConsoleMenu-10");
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-9");
 
-				menu.setJson(loadFromResources("menu/menu_sys_admin.json"));
-				menu.setRoleType(roleRepository.findById(Role.Type.ROLE_SYS_ADMIN.toString()).orElse(null));
-				consoleMenuRepository.save(menu);
-			} catch (final Exception e) {
-				log.error("Error adding menu for role SYS_ADMIN");
-			}			
+			menu.setJson(loadFromResources("menu/menu_operations.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_OPERATIONS.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role OPERATIONS");
+		}
+		try {
+			log.info("Adding menu for role SYS_ADMIN");
+
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-10");
+
+			menu.setJson(loadFromResources("menu/menu_sys_admin.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_SYS_ADMIN.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role SYS_ADMIN");
+		}
+		try {
+			log.info("Adding menu for role EDGE_USER");
+
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-11");
+
+			menu.setJson(loadFromResources("menu/menu_edge_user.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_EDGE_USER.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role SYS_ADMIN");
+		}
+		try {
+			log.info("Adding menu for role EDGE_USER");
+
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-12");
+
+			menu.setJson(loadFromResources("menu/menu_edge_developer.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_EDGE_DEVELOPER.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role EDGE_DEVELOPER");
+		}
+		try {
+			log.info("Adding menu for role EDGE_ADMINISTRATOR");
+
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-13");
+
+			menu.setJson(loadFromResources("menu/menu_edge_admin.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_EDGE_ADMINISTRATOR.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role EDGE_ADMINISTRATOR");
 		}
 	}
 
@@ -6358,6 +6357,33 @@ public class InitConfigDB {
 				type.setRole(roleRepository.findById(Role.Type.ROLE_USER.toString()).orElse(null));
 				userCDBRepository.save(type);
 
+				type = new User();
+				type.setUserId("edge_administrator");
+				type.setPassword(SHA_EDGE_STR);
+				type.setFullName("EDGE Administrator User of the Platform");
+				type.setEmail("edge_admin@onesaitplatform.com");
+				type.setActive(true);
+				type.setRole(roleRepository.findById(Role.Type.ROLE_EDGE_ADMINISTRATOR.toString()).orElse(null));
+				userCDBRepository.save(type);
+
+				type = new User();
+				type.setUserId("edge_developer");
+				type.setPassword(SHA_EDGE_STR);
+				type.setFullName("EDGE Developer User of the Platform");
+				type.setEmail("edge_developer@onesaitplatform.com");
+				type.setActive(true);
+				type.setRole(roleRepository.findById(Role.Type.ROLE_EDGE_DEVELOPER.toString()).orElse(null));
+				userCDBRepository.save(type);
+
+				type = new User();
+				type.setUserId("edge_user");
+				type.setPassword(SHA_EDGE_STR);
+				type.setFullName("EDGE User User of the Platform");
+				type.setEmail("edge_user@onesaitplatform.com");
+				type.setActive(true);
+				type.setRole(roleRepository.findById(Role.Type.ROLE_EDGE_USER.toString()).orElse(null));
+				userCDBRepository.save(type);
+
 			} catch (final Exception e) {
 				log.error("Error UserCDB:" + e.getMessage());
 				userCDBRepository.deleteAll();
@@ -6426,20 +6452,19 @@ public class InitConfigDB {
 		log.info("init dataflow instances");
 		final boolean hasDefault = dataflowInstanceRepository.findByDefaultInstance(true) != null;
 		if (!hasDefault) {
-
+			
 			// Default vertical has no sufix
 			String verticalSufix = "";
-			if (!MultitenancyContextHolder.getVerticalSchema().equals("onesaitplatform_config")
-					&& dataflowCreateVerticalInstance) {
+			if(!MultitenancyContextHolder.getVerticalSchema().equals("onesaitplatform_config") && dataflowCreateVerticalInstance) {
 				// if vertical is not the default one
 				verticalSufix = "-" + MultitenancyContextHolder.getVerticalSchema().substring(23);
 			}
-
+			
 			final DataflowInstance instance = new DataflowInstance();
-			instance.setId("MASTER-DataflowInstance" + verticalSufix + "-1");
+			instance.setId("MASTER-DataflowInstance"+verticalSufix+"-1");
 			instance.setIdentification("Default");
-			instance.setId("MASTER-DataflowInstance" + verticalSufix + "-1");
-			instance.setUrl("http://streamsets" + verticalSufix + ":18630");
+			instance.setId("MASTER-DataflowInstance"+verticalSufix+"-1");
+			instance.setUrl("http://streamsets"+verticalSufix+":18630");
 			instance.setDefaultInstance(true);
 
 			final DataflowCredential adminCredential = new DataflowCredential();
@@ -6508,7 +6533,7 @@ public class InitConfigDB {
 				log.info("Could not create notebook access type by:" + e.getMessage());
 			}
 		}
-
+		
 		if (!notebookUat.contains("ACCESS-TYPE-3")) {
 			try {
 				final NotebookUserAccessType p = new NotebookUserAccessType();
@@ -6520,7 +6545,8 @@ public class InitConfigDB {
 				log.info("Could not create notebook access type by:" + e.getMessage());
 			}
 		}
-
+		
+		
 	}
 
 	public void initDataflowUserAccessType() {
@@ -6717,7 +6743,8 @@ public class InitConfigDB {
 				+ "    }\n" + "</style>");
 
 		gadgetTemplate.setTemplateJS("\n" + "const {\n" + "  List,\n" + "  ListItem,\n" + "  ListItemText\n"
-				+ "} = MaterialUI;\n" + "\n" + "var key = /*label-osp  name=\"key\" type=\"ds_parameter\"*/\"dummyk\"\n"
+				+ "} = MaterialUI;\n" + "\n"
+				+ "var key = /*label-osp  name=\"key\" type=\"ds_parameter\"*/\"dummyk\"\n"
 				+ "var value = /*label-osp  name=\"value\" type=\"ds_parameter\"*/\"dummyv\"\n" + "\n" + "\n"
 				+ "function GadgetComponent(props) {\n" + "    const ds = props.ds;\n"
 				+ "    const listItems = ds.map(inst => React.createElement(ListItem, {button: true}, React.createElement(ListItemText, {\n"
@@ -6770,9 +6797,9 @@ public class InitConfigDB {
 				+ "        resizeEvent: function () {\n" + "            //Resize event\n" + "        },\n"
 				+ "        destroyVueComponent: function () {\n" + "            vm.vueapp.$destroy();\n"
 				+ "        },\n" + "        receiveValue: function (data) {\n"
-				+ "            //data received from datalink\n" + "        },\n" + "        sendValue: vm.sendValue,\n"
-				+ "        sendFilter: vm.sendFilter\n" + "    },\n" + "\tcomponents: {\n"
-				+ "\t\t'v-chart':VueECharts\n" + "\t}\n" + "}\n" + "\n" + "//Init Vue app\n"
+				+ "            //data received from datalink\n" + "        },\n"
+				+ "        sendValue: vm.sendValue,\n" + "        sendFilter: vm.sendFilter\n" + "    },\n"
+				+ "\tcomponents: {\n" + "\t\t'v-chart':VueECharts\n" + "\t}\n" + "}\n" + "\n" + "//Init Vue app\n"
 				+ "vm.vueapp = new Vue(vm.vueconfig);\n");
 		gadgetTemplate.setUser(getUserAdministrator());
 		gadgetTemplateRepository.save(gadgetTemplate);
@@ -6801,7 +6828,7 @@ public class InitConfigDB {
 		} else {
 			gadgetTemplate = gadgetTemplateRepository.findById("MASTER-GadgetTemplate-9").get();
 		}
-
+		
 		gadgetTemplate = new GadgetTemplate();
 		gadgetTemplate.setId("MASTER-GadgetTemplate-9");
 		gadgetTemplate.setIdentification("VueEchartMixed");
@@ -6821,7 +6848,7 @@ public class InitConfigDB {
 		} else {
 			gadgetTemplate = gadgetTemplateRepository.findById("MASTER-GadgetTemplate-10").get();
 		}
-
+		
 		gadgetTemplate = new GadgetTemplate();
 		gadgetTemplate.setId("MASTER-GadgetTemplate-10");
 		gadgetTemplate.setIdentification("ScatterMap");
@@ -6840,13 +6867,15 @@ public class InitConfigDB {
 				+ "    var minmax;\n" + "    if (!data.length) {\n" + "        console.warn(\"no data\")\n"
 				+ "        var minmax = {\n" + "            min: 0,\n" + "            max: 0\n" + "        }\n"
 				+ "    } else {\n" + "        var minmax = {\n" + "            min: data[0][field],\n"
-				+ "            max: data[0][field]\n" + "        }\n" + "        for (var i=1;i < data.length; i++) {\n"
+				+ "            max: data[0][field]\n" + "        }\n"
+				+ "        for (var i=1;i < data.length; i++) {\n"
 				+ "            minmax.min = Math.min(minmax.min, data[i][field]);\n"
 				+ "            minmax.max = Math.max(minmax.max, data[i][field]);\n" + "        }\n" + "    }\n"
 				+ "    return minmax;\n" + "}\n" + "\n" + "function valueToSize (min,max,value,minsize,maxsize) {\n"
 				+ "    var range = max-min;\n" + "    var rangesize = maxsize-minsize;\n"
 				+ "    return (value/range)*rangesize + parseFloat(minsize)\n" + "}\n" + "\n"
-				+ "//This function will be call once to init components\n" + "vm.initLiveComponent = function () {\n"
+				+ "//This function will be call once to init components\n"
+				+ "vm.initLiveComponent = function () {\n"
 				+ "    var mapElem = document.querySelector('#' + vm.id + ' .gadget-app')\n"
 				+ "    vm.map = L.map(mapElem, {\n"
 				+ "        center: [parseFloat(vm.tparams.parameters.center.latitude), parseFloat(vm.tparams.parameters.center.longitude)],\n"
@@ -6876,12 +6905,13 @@ public class InitConfigDB {
 		gadgetTemplate.setUser(getUserAdministrator());
 		gadgetTemplateRepository.save(gadgetTemplate);
 
+		
 		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-11").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
 		} else {
 			gadgetTemplate = gadgetTemplateRepository.findById("MASTER-GadgetTemplate-11").get();
 		}
-
+		
 		gadgetTemplate = new GadgetTemplate();
 		gadgetTemplate.setId("MASTER-GadgetTemplate-11");
 		gadgetTemplate.setIdentification("Simple Value (Vue)");
@@ -6912,24 +6942,26 @@ public class InitConfigDB {
 				+ "//This function will be call once to init components\n" + "\n"
 				+ "var title = vm.tparams.parameters.title;\n" + "var field = vm.tparams.parameters.field;\n"
 				+ "var colorField = vm.tparams.parameters.colorField;\n" + "\n" + "vm.vueconfig = {\n"
-				+ "	el: document.querySelector('#' + vm.id + ' .gadget-app'),\n" + "	data:{\n" + "		ds:[],\n"
-				+ "        title: title,\n" + "        field: field,\n" + "		colorField: colorField\n" + "	},\n"
-				+ "	computed: {\n" + "        increase() {\n" + "			if (this.ds.length<2) {\n"
-				+ "				return {\n" + "					value: \"+\" + 0,\n"
-				+ "					color: 'orange'\n" + "				}\n" + "			} else {\n"
+				+ "	el: document.querySelector('#' + vm.id + ' .gadget-app'),\n" + "	data:{\n"
+				+ "		ds:[],\n" + "        title: title,\n" + "        field: field,\n"
+				+ "		colorField: colorField\n" + "	},\n" + "	computed: {\n" + "        increase() {\n"
+				+ "			if (this.ds.length<2) {\n" + "				return {\n"
+				+ "					value: \"+\" + 0,\n" + "					color: 'orange'\n"
+				+ "				}\n" + "			} else {\n"
 				+ "				if (!(isNaN(this.ds[0][this.field]) || isNaN(this.ds[1][this.field]))) {\n"
 				+ "					var value = 100-((this.ds[0][this.field]/this.ds[1][this.field])*100)\n"
 				+ "					return {\n" + "						value: value.toFixed(2),\n"
-				+ "						color: (value>0?'green':(value==0?'orange':'red'))\n" + "					}\n"
-				+ "				} else {\n" + "					return {\n" + "						value: \"?\",\n"
-				+ "						color: 'orange'\n" + "					}\n" + "				}\n"
-				+ "			}\n" + "		}\n" + "	},		\n" + "	methods:{\n"
-				+ "		drawVueComponent: function(newData,oldData){\n" + "			//This will be call on new data\n"
-				+ "		},\n" + "		resizeEvent: function(){\n" + "			//Resize event\n" + "		},\n"
-				+ "		destroyVueComponent: function(){\n" + "			vm.vueapp.$destroy();\n" + "		},\n"
-				+ "		receiveValue: function(data){\n" + "			//data received from datalink\n"
-				+ "		},\n" + "		sendValue: vm.sendValue,\n" + "		sendFilter: vm.sendFilter\n" + "	}\n"
-				+ "}\n" + "\n" + "//Init Vue app\n" + "vm.vueapp = new Vue(vm.vueconfig);\n" + "");
+				+ "						color: (value>0?'green':(value==0?'orange':'red'))\n"
+				+ "					}\n" + "				} else {\n" + "					return {\n"
+				+ "						value: \"?\",\n" + "						color: 'orange'\n"
+				+ "					}\n" + "				}\n" + "			}\n" + "		}\n"
+				+ "	},		\n" + "	methods:{\n" + "		drawVueComponent: function(newData,oldData){\n"
+				+ "			//This will be call on new data\n" + "		},\n" + "		resizeEvent: function(){\n"
+				+ "			//Resize event\n" + "		},\n" + "		destroyVueComponent: function(){\n"
+				+ "			vm.vueapp.$destroy();\n" + "		},\n" + "		receiveValue: function(data){\n"
+				+ "			//data received from datalink\n" + "		},\n" + "		sendValue: vm.sendValue,\n"
+				+ "		sendFilter: vm.sendFilter\n" + "	}\n" + "}\n" + "\n" + "//Init Vue app\n"
+				+ "vm.vueapp = new Vue(vm.vueconfig);\n" + "");
 		gadgetTemplate.setConfig(
 				"{\"metainf\":{\"category\":\"Predefined\",\"order\":-94},\"gform\":[{\"name\":\"title\",\"type\":\"input-text\",\"title\":\"Title of KPI\"},{\"name\":\"field\",\"type\":\"ds-field\",\"title\":\"Field to show\"},{\"id\":5,\"type\":\"color-picker\",\"name\":\"colorField\",\"default\":\"rgba(0, 0, 0, 1)\",\"title\":\"Field Color\"}]}");
 		gadgetTemplate.setUser(getUserAdministrator());
@@ -6954,15 +6986,14 @@ public class InitConfigDB {
 		gadgetTemplate.setPublic(true);
 		gadgetTemplate.setType("base");
 		gadgetTemplate.setHeaderlibs("");
-		gadgetTemplate
-				.setDescription("Legacy line gadget (this gadget always create a Prebuild Gadget with popup form)");
+		gadgetTemplate.setDescription("Legacy line gadget (this gadget always create a Prebuild Gadget with popup form)");
 		gadgetTemplate.setTemplate("");
 		gadgetTemplate.setTemplateJS("");
 		gadgetTemplate.setUser(getUserAdministrator());
 		gadgetTemplate.setConfig("{\"metainf\":{\"category\":\"Predefined\",\"order\":2}}");
 		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/line.svg"));
 		gadgetTemplateRepository.save(gadgetTemplate);
-
+		
 		if (gadgetTemplateRepository.findById("bar").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
 		} else {
@@ -6974,15 +7005,14 @@ public class InitConfigDB {
 		gadgetTemplate.setPublic(true);
 		gadgetTemplate.setType("base");
 		gadgetTemplate.setHeaderlibs("");
-		gadgetTemplate
-				.setDescription("Legacy bar gadget (this gadget always create a Prebuild Gadget with popup form)");
+		gadgetTemplate.setDescription("Legacy bar gadget (this gadget always create a Prebuild Gadget with popup form)");
 		gadgetTemplate.setTemplate("");
 		gadgetTemplate.setTemplateJS("");
 		gadgetTemplate.setUser(getUserAdministrator());
 		gadgetTemplate.setConfig("{\"metainf\":{\"category\":\"Predefined\",\"order\":2}}");
 		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/bar.svg"));
 		gadgetTemplateRepository.save(gadgetTemplate);
-
+		
 		if (gadgetTemplateRepository.findById("mixed").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
 		} else {
@@ -6994,8 +7024,7 @@ public class InitConfigDB {
 		gadgetTemplate.setPublic(true);
 		gadgetTemplate.setType("base");
 		gadgetTemplate.setHeaderlibs("");
-		gadgetTemplate.setDescription(
-				"Legacy mixed gadget with lines, points or bars (this gadget always create a Prebuild Gadget with popup form)");
+		gadgetTemplate.setDescription("Legacy mixed gadget with lines, points or bars (this gadget always create a Prebuild Gadget with popup form)");
 		gadgetTemplate.setTemplate("");
 		gadgetTemplate.setTemplateJS("");
 		gadgetTemplate.setUser(getUserAdministrator());
@@ -7014,8 +7043,7 @@ public class InitConfigDB {
 		gadgetTemplate.setPublic(true);
 		gadgetTemplate.setType("base");
 		gadgetTemplate.setHeaderlibs("");
-		gadgetTemplate
-				.setDescription("Legacy pie gadget (this gadget always create a Prebuild Gadget with popup form)");
+		gadgetTemplate.setDescription("Legacy pie gadget (this gadget always create a Prebuild Gadget with popup form)");
 		gadgetTemplate.setTemplate("");
 		gadgetTemplate.setTemplateJS("");
 		gadgetTemplate.setUser(getUserAdministrator());
@@ -7034,8 +7062,7 @@ public class InitConfigDB {
 		gadgetTemplate.setPublic(true);
 		gadgetTemplate.setType("base");
 		gadgetTemplate.setHeaderlibs("");
-		gadgetTemplate.setDescription(
-				"Legacy wordcloud gadget (this gadget always create a Prebuild Gadget with popup form)");
+		gadgetTemplate.setDescription("Legacy wordcloud gadget (this gadget always create a Prebuild Gadget with popup form)");
 		gadgetTemplate.setTemplate("");
 		gadgetTemplate.setTemplateJS("");
 		gadgetTemplate.setUser(getUserAdministrator());
@@ -7054,8 +7081,7 @@ public class InitConfigDB {
 		gadgetTemplate.setPublic(true);
 		gadgetTemplate.setType("base");
 		gadgetTemplate.setHeaderlibs("");
-		gadgetTemplate.setDescription(
-				"Legacy leaflet map gadget for drawing points (this gadget always create a Prebuild Gadget with popup form)");
+		gadgetTemplate.setDescription("Legacy leaflet map gadget for drawing points (this gadget always create a Prebuild Gadget with popup form)");
 		gadgetTemplate.setTemplate("");
 		gadgetTemplate.setTemplateJS("");
 		gadgetTemplate.setUser(getUserAdministrator());
@@ -7074,8 +7100,7 @@ public class InitConfigDB {
 		gadgetTemplate.setPublic(true);
 		gadgetTemplate.setType("base");
 		gadgetTemplate.setHeaderlibs("");
-		gadgetTemplate
-				.setDescription("Legacy radar gadget (this gadget always create a Prebuild Gadget with popup form)");
+		gadgetTemplate.setDescription("Legacy radar gadget (this gadget always create a Prebuild Gadget with popup form)");
 		gadgetTemplate.setTemplate("");
 		gadgetTemplate.setTemplateJS("");
 		gadgetTemplate.setUser(getUserAdministrator());
@@ -7094,8 +7119,7 @@ public class InitConfigDB {
 		gadgetTemplate.setPublic(true);
 		gadgetTemplate.setType("base");
 		gadgetTemplate.setHeaderlibs("");
-		gadgetTemplate
-				.setDescription("Legacy table gadget (this gadget always create a Prebuild Gadget with popup form)");
+		gadgetTemplate.setDescription("Legacy table gadget (this gadget always create a Prebuild Gadget with popup form)");
 		gadgetTemplate.setTemplate("");
 		gadgetTemplate.setTemplateJS("");
 		gadgetTemplate.setUser(getUserAdministrator());
@@ -7114,8 +7138,7 @@ public class InitConfigDB {
 		gadgetTemplate.setPublic(true);
 		gadgetTemplate.setType("base");
 		gadgetTemplate.setHeaderlibs("");
-		gadgetTemplate.setDescription(
-				"Legacy datadiscovery gadget for table autoservice with dimensions and metrics from datasource (this gadget always create a Prebuild Gadget with popup form)");
+		gadgetTemplate.setDescription("Legacy datadiscovery gadget for table autoservice with dimensions and metrics from datasource (this gadget always create a Prebuild Gadget with popup form)");
 		gadgetTemplate.setTemplate("");
 		gadgetTemplate.setTemplateJS("");
 		gadgetTemplate.setUser(getUserAdministrator());
@@ -8156,8 +8179,7 @@ public class InitConfigDB {
 						+ "window.i18n = new VueI18n({\n" + " locale: getLocale(),\n" + " fallbackLocale: 'EN',\n"
 						+ " // link messages with internacionalization json on controlpanel\n"
 						+ " messages: __env.i18njson.languages\n" + " });\n" + "\n" + "</script>");
-		gadgetTemplate.setDescription(
-				"Table from file gadget. That gadget allow you to upload files in csv or json to some entity of the platform");
+		gadgetTemplate.setDescription("Table from file gadget. That gadget allow you to upload files in csv or json to some entity of the platform");
 		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/import.webp"));
 		gadgetTemplate.setTemplate("<style>\n" + ".el-upload-list__item-name {\n" + "  max-height:30px;\n"
 				+ "  font-size: small;}\n" + ".control-label {\n" + "  margin-top: 1px;\n" + "  color: #505D66;\n"
@@ -9459,8 +9481,7 @@ public class InitConfigDB {
 				+ " // link messages with internacionalization json on controlpanel\n"
 				+ " messages: __env.i18njson.languages\n" + " });\n" + "\n" + "</script>");
 
-		gadgetTemplate.setDescription(
-				"Table from file gadget. That gadget allow you to upload files in csv or json to some entity of the platform (ODS version)");
+		gadgetTemplate.setDescription("Table from file gadget. That gadget allow you to upload files in csv or json to some entity of the platform (ODS version)");
 		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/import.webp"));
 		gadgetTemplate.setTemplate("<style>\n" + "  .ods-upload-list__item-name {\n" + "    max-height:30px;\n"
 				+ "    font-size: small;}\n" + "  .control-label {\n" + "    margin-top: 1px;\n"
@@ -9509,7 +9530,7 @@ public class InitConfigDB {
 				+ "        <div slot=\"tip\" class=\"ods-upload__tip\" style=\"font-size: 11px;line-height: 16px;color: #A7AEB2;\">{{ $t(\"form.info.max\") }}</div>\n"
 				+ "      </ods-upload>\n" + "    \n" + "    </div>\n" + "    <footer style=\"margin-top: 10px;\">\n"
 				+ "      <div slot=\"tip\" style=\"text-align: right;\">\n"
-				+ "        <ods-button class=\"textButtonColor\"  style=\"margin-left: 10px; background: #F0F1F2; border: none;text-align: center;\"  size=\"small\" plain @click=\"clearFiles\">Cancel</ods-button>\n"
+				+ "        <ods-button class=\"secundary\" style=\"margin-left: 10px; background: #F0F1F2;text-align: center;\" size=\"small\" plain @click=\"clearFiles\">Cancel</ods-button>\n"
 				+ "        <ods-button style=\"margin-left: 10px; background: #1168A6; border-radius: 2px;text-align: center;\" ref=\"importbutton\" size=\"small\" \n"
 				+ "          :disabled=\"importdisabled\" type=\"primary\" @click=\"submitUpload\">{{ $t(\"button.import\") }} <i class=\"el-icon-upload2\"></i></ods-button>\n"
 				+ "      </div>\n" + "    </footer>\n"
@@ -9668,7 +9689,8 @@ public class InitConfigDB {
 		gadgetTemplate.setConfig(loadFromResources("gadgettemplates/config/LineChart.json"));
 		gadgetTemplate.setUser(getUserAdministrator());
 		gadgetTemplateRepository.save(gadgetTemplate);
-
+		
+		
 		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-15").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
 		} else {
@@ -9687,7 +9709,8 @@ public class InitConfigDB {
 		gadgetTemplate.setConfig(loadFromResources("gadgettemplates/config/BarChart.json"));
 		gadgetTemplate.setUser(getUserAdministrator());
 		gadgetTemplateRepository.save(gadgetTemplate);
-
+		
+		
 		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-16").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
 		} else {
@@ -9706,7 +9729,7 @@ public class InitConfigDB {
 		gadgetTemplate.setConfig(loadFromResources("gadgettemplates/config/PieChart.json"));
 		gadgetTemplate.setUser(getUserAdministrator());
 		gadgetTemplateRepository.save(gadgetTemplate);
-
+		
 		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-17").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
 		} else {
@@ -9725,7 +9748,7 @@ public class InitConfigDB {
 		gadgetTemplate.setConfig(loadFromResources("gadgettemplates/config/TableChart.json"));
 		gadgetTemplate.setUser(getUserAdministrator());
 		gadgetTemplateRepository.save(gadgetTemplate);
-
+		
 		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-18").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
 		} else {
@@ -9744,7 +9767,7 @@ public class InitConfigDB {
 		gadgetTemplate.setConfig(loadFromResources("gadgettemplates/config/DatePicker.json"));
 		gadgetTemplate.setUser(getUserAdministrator());
 		gadgetTemplateRepository.save(gadgetTemplate);
-
+		
 		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-19").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
 		} else {
@@ -9762,7 +9785,8 @@ public class InitConfigDB {
 		gadgetTemplate.setConfig(loadFromResources("gadgettemplates/config/KPI_Obj.json"));
 		gadgetTemplate.setUser(getUserAdministrator());
 		gadgetTemplateRepository.save(gadgetTemplate);
-
+		
+		
 		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-20").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
 		} else {
@@ -9781,7 +9805,7 @@ public class InitConfigDB {
 		gadgetTemplate.setUser(getUserAdministrator());
 		gadgetTemplateRepository.save(gadgetTemplate);
 	}
-
+	
 	private void initOntologyRestaurants() {
 
 		log.info("init OntologyRestaurants");
@@ -9922,7 +9946,7 @@ public class InitConfigDB {
 			throw new WebProjectServiceException("Error uploading files " + e);
 		}
 		if (log.isDebugEnabled()) {
-			log.debug("File {} {} uploaded", path, fileName);
+			log.debug("File {} {} uploaded", path, fileName );
 		}
 	}
 
@@ -9932,6 +9956,7 @@ public class InitConfigDB {
 		if (log.isDebugEnabled()) {
 			log.debug("Unzipping zip file: {}", folder);
 		}
+		
 
 		DataInputStream is = null;
 		try (ZipInputStream zis = new ZipInputStream(new FileInputStream(folder))) {
@@ -9955,7 +9980,7 @@ public class InitConfigDB {
 					if (log.isDebugEnabled()) {
 						log.debug("Unzipping file: {}", ze.getName());
 					}
-
+					
 					final FileOutputStream fos = new FileOutputStream(path + ze.getName());
 					IOUtils.copy(zis, fos);
 					fos.close();
@@ -10041,7 +10066,7 @@ public class InitConfigDB {
 			tagRepository.save(tag);
 		}
 	}
-
+	
 	private void initMsTemplates() {
 		log.info("init initMsTemplates");
 		if (mstemplateRepository.findMicroserviceTemplateById("MSTEMPLATE_ML_MODEL_ARCHETYPE") == null) {
@@ -10052,8 +10077,7 @@ public class InitConfigDB {
 			mstemplate.setDockerRelativePath("sources/docker");
 			mstemplate.setGitBranch("master");
 			mstemplate.setGitPassword("b1hhwxqke6ewvNZ1-RKs");
-			mstemplate.setGitRepository(
-					"https://gitlab.devops.onesait.com/onesait/platform/engine/onesait-platform/microservice-templates/microservice-ml.git");
+			mstemplate.setGitRepository("https://gitlab.devops.onesait.com/onesait/platform/engine/onesait-platform/microservice-templates/microservice-ml.git");
 			mstemplate.setGitUser("devopsonesait");
 			mstemplate.setLanguage(Language.ML_MODEL_ARCHETYPE);
 			mstemplate.setPublic(false);
@@ -10070,8 +10094,7 @@ public class InitConfigDB {
 			mstemplate.setDockerRelativePath("sources/docker");
 			mstemplate.setGitBranch("master");
 			mstemplate.setGitPassword("b1hhwxqke6ewvNZ1-RKs");
-			mstemplate.setGitRepository(
-					"https://gitlab.devops.onesait.com/onesait/platform/engine/onesait-platform/microservice-templates/microservice-iot.git");
+			mstemplate.setGitRepository("https://gitlab.devops.onesait.com/onesait/platform/engine/onesait-platform/microservice-templates/microservice-iot.git");
 			mstemplate.setGitUser("devopsonesait");
 			mstemplate.setLanguage(Language.IOT_CLIENT_ARCHETYPE);
 			mstemplate.setPublic(false);
@@ -10088,8 +10111,7 @@ public class InitConfigDB {
 			mstemplate.setDockerRelativePath("zeppelin-spark/notebook");
 			mstemplate.setGitBranch("master");
 			mstemplate.setGitPassword("b1hhwxqke6ewvNZ1-RKs");
-			mstemplate.setGitRepository(
-					"https://gitlab.devops.onesait.com/onesait/platform/engine/onesait-platform/microservice-templates/microservice-nb.git");
+			mstemplate.setGitRepository("https://gitlab.devops.onesait.com/onesait/platform/engine/onesait-platform/microservice-templates/microservice-nb.git");
 			mstemplate.setGitUser("devopsonesait");
 			mstemplate.setLanguage(Language.NOTEBOOK_ARCHETYPE);
 			mstemplate.setPublic(false);
@@ -10106,8 +10128,7 @@ public class InitConfigDB {
 			mstemplate.setDockerRelativePath("");
 			mstemplate.setGitBranch("master");
 			mstemplate.setGitPassword("b1hhwxqke6ewvNZ1-RKs");
-			mstemplate.setGitRepository(
-					"https://gitlab.devops.onesait.com/onesait/platform/engine/onesait-platform/microservice-templates/microservice-graalvm.git");
+			mstemplate.setGitRepository("https://gitlab.devops.onesait.com/onesait/platform/engine/onesait-platform/microservice-templates/microservice-graalvm.git");
 			mstemplate.setGitUser("devopsonesait");
 			mstemplate.setLanguage(Language.Java17);
 			mstemplate.setPublic(false);
@@ -10124,8 +10145,7 @@ public class InitConfigDB {
 			mstemplate.setDockerRelativePath("docker");
 			mstemplate.setGitBranch("master");
 			mstemplate.setGitPassword("b1hhwxqke6ewvNZ1-RKs");
-			mstemplate.setGitRepository(
-					"https://gitlab.devops.onesait.com/onesait/platform/engine/onesait-platform/microservice-templates/microservice-java17.git");
+			mstemplate.setGitRepository("https://gitlab.devops.onesait.com/onesait/platform/engine/onesait-platform/microservice-templates/microservice-java17.git");
 			mstemplate.setGitUser("devopsonesait");
 			mstemplate.setLanguage(Language.Java17);
 			mstemplate.setPublic(false);
@@ -10136,6 +10156,7 @@ public class InitConfigDB {
 		}
 	}
 
+	
 	@Value("${onesaitplatform.database.timescaledb.enabled:false}")
 	private Boolean timeseriesdbEnabled;
 	@Value("${onesaitplatform.database.timescaledb.url}")

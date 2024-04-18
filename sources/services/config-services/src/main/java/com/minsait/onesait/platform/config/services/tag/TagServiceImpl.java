@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,20 @@
  */
 package com.minsait.onesait.platform.config.services.tag;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.config.dto.OPResourceVO;
+import com.minsait.onesait.platform.config.dto.ResourceTagVO;
 import com.minsait.onesait.platform.config.model.Tag;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.repository.OPResourceRepository;
 import com.minsait.onesait.platform.config.repository.TagRepository;
+import com.minsait.onesait.platform.config.services.exceptions.ApiManagerServiceException;
 import com.minsait.onesait.platform.config.services.exceptions.TagServiceException;
+import com.minsait.onesait.platform.config.services.exceptions.UserServiceException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,13 +52,12 @@ public class TagServiceImpl implements TagService {
 	}
 
 	@Override
-	public List<Tag> createTags(List<TagCreate> tags) throws TagServiceException {
-		List<Tag> res = new ArrayList<Tag>();
-		for(TagCreate t : tags) {
+	public void createTags(List<TagCreate> tags) {
+		tags.forEach(t -> {
 			final boolean exists = tagExists(t.getName());
 			final OPResource r = opResourceRepository.findById(t.getResourceId()).orElse(null);
 			if (r == null) {
-				throw new TagServiceException("There is no resource with this id: " + t.getResourceId());
+				log.warn("Resource with id {} does not exist", t.getResourceId());
 			} else {
 				final OPResourceVO vo = new OPResourceVO();
 				vo.setId(t.getResourceId());
@@ -66,16 +66,15 @@ public class TagServiceImpl implements TagService {
 				if (exists) {
 					final Tag tag = tagRepository.findByName(t.getName()).iterator().next();
 					tag.getResources().add(vo);
-					res.add(tagRepository.save(tag));
-					} else {
-						final Tag tag = new Tag();
-						tag.setName(t.getName());
-						tag.getResources().add(vo);
-						res.add(tagRepository.save(tag));
-					}
+					tagRepository.save(tag);
+				} else {
+					final Tag tag = new Tag();
+					tag.setName(t.getName());
+					tag.getResources().add(vo);
+					tagRepository.save(tag);
 				}
 			}
-		return res;
+		});
 	}
 
 	@Override
@@ -91,14 +90,7 @@ public class TagServiceImpl implements TagService {
 	@Override
 	public void deleteByResourceIds(List<String> ids) {
 		tagRepository.deleteByResourceId(ids);
-	}
-	
-	@Override
-	public void deleteByResourceIdsAndTag(String name, List asList) {
-		List<Tag> tags = tagRepository.findByName(name);
-		if (tags.size()>0){
-			tagRepository.deleteByResourcesIdsAndTagId(tags.get(0).getId(), asList);
-		}
+
 	}
 
 	@Override
@@ -117,25 +109,18 @@ public class TagServiceImpl implements TagService {
 	}
 	
 	@Override
-	public void deleteResourceByResourceIdAndTagId(String resourceId, String tagId){
-		tagRepository.deleteResourceByResourceIdAndTagId(tagId, List.of(resourceId));
+	public void deleteByResourceIdAndTagId(String resourceId, String tagId){
+		tagRepository.deleteByResourceIdAndTagId(tagId, List.of(resourceId));
 	}
 	
 	@Override
-	public void deleteResourcesByTagId(String tagId){
-		tagRepository.deleteResourcesByTagId(tagId);
+	public void deleteByTagId(String tagId){
+		tagRepository.deleteByTagId(tagId);
 	}
 	
 	@Override
-	public List<Tag> findResourceTagsByNameLike(String name) {
-		List<Tag> taglist = tagRepository.findTagsLike(name);
-		return 	taglist;
-	}
-	
-	@Override
-	public Tag findResourceTagsByName(String name) {
-		Tag tag = tagRepository.findTag(name);
-		return 	tag;
+	public List<ResourceTagVO> findResourceTagsByName(String name) {
+		return tagRepository.findResourceTagsVO(name);		
 	}
 	
 }

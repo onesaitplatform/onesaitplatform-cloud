@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,11 @@
  */
 package com.minsait.onesait.platform.controlpanel.controller.datamodel;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -39,7 +34,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.minsait.onesait.platform.config.model.DataModel;
-import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.services.datamodel.DataModelService;
 import com.minsait.onesait.platform.config.services.exceptions.DataModelServiceException;
 import com.minsait.onesait.platform.config.services.user.UserService;
@@ -210,22 +204,22 @@ public class DataModelController {
 	}
 
 	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<String> deleteDataModel(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
+	public String deleteDataModel(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
+
 		DataModel dataModel = dataModelService.getDataModelById(id);
-		String ontologies = dataModelService.getOntologiesById(dataModel);
-		if(ontologies == "") {
-			if (dataModel != null) {
-				try {
-					this.dataModelService.deleteDataModel(id);
-					return new ResponseEntity<>("messageDeletedSuccessfully", HttpStatus.OK);
-				} catch (DataModelServiceException e) {
-					return new ResponseEntity<>("messageNotDeleteDataModel", HttpStatus.INTERNAL_SERVER_ERROR);
-				}
-			} else {
-				return new ResponseEntity<>("messageNotExistDataModel", HttpStatus.INTERNAL_SERVER_ERROR);
+		if (dataModel != null) {
+			try {
+				this.dataModelService.deleteDataModel(id);
+			} catch (DataModelServiceException e) {
+				log.debug("Could not delete the Data Model");
+				utils.addRedirectMessage("datamodel.error.delete", redirect);
+				return REDIRECT_DATAMOD_LIST;
 			}
-		}else {
-			return new ResponseEntity<>(ontologies, HttpStatus.BAD_REQUEST);
+			log.debug("The Data Model has been deleted correctly");
+			return REDIRECT_DATAMOD_LIST;
+		} else {
+			log.debug("The Data Model does not exist");
+			return REDIRECT_DATAMOD_LIST;
 		}
 	}
 

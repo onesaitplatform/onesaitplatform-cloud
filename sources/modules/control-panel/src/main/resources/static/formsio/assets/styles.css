@@ -29,7 +29,7 @@
   margin-bottom: 1rem;
 }
 body {
- /* background-color: #f7f8f8 !important;*/
+  background-color: #f7f8f8 !important;
 }
 .hide-element {
   display: none !important;
@@ -39,8 +39,7 @@ body {
 }
 .table {
   position: relative;
-  /* overflow: hidden;*/
-  overflow-y:auto;
+  overflow: hidden;
   box-sizing: border-box;
   flex: 1 1;
   width: 100%;
@@ -85,10 +84,6 @@ td {
 td:not(:has(button)) {
   padding-top: 20px !important;
 }
-table.datagrid-table tbody tr td:not(:has(button)) {
-  padding-top: 10px !important;
-}
-
 .text-info {
   display: flex;
   place-content: center;
