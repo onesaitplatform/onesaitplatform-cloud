@@ -1,5 +1,3 @@
-server: 
-   max-http-header-size: ${MAX_HTTP_HEADER_SIZE}
 master:
    datasource:
      hikari:
@@ -7,7 +5,7 @@ master:
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
       maximum-pool-size: ${CONFIGDB_MAX_ACTIVE}
-      driver-class-name: ${CONFIGDB_DRIVER}
+     
 
 spring: ## General Config
    datasource:
@@ -18,24 +16,12 @@ spring: ## General Config
       connection-timeout: ${DS_MAX_WAIT_MILLIS}
       maximum-pool-size: ${DS_MAX_ACTIVE}
       minimum-idle: ${DS_MIN_IDLE}
-      driver-class-name: ${CONFIGDB_DRIVER}
    boot.admin: #Spring Boot Admin Config
       client.url: http://monitoringuiservice:18100/monitoring
       client.instance.service-url: http://rules-engine-service:${server.port}${server.servlet.contextPath}/
-      client.username: ${SBA_USERNAME}
-      client.password: ${SBA_SECRET}
-   jpa:
-      properties.hibernate.dialect: ${CONFIGDB_DIALECT}
 onesaitplatform:
-   authentication:
-      oauth:
-        osp-keycloak: ${USE_KEYCLOAK}
    hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
    hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
-   graylog:
-      enabled: ${GRAYLOG_ENABLED}
-      host: ${GRAYLOG_HOST}
-      port: ${GRAYLOG_PORT}
 security:
   oauth2:
     client:
@@ -50,4 +36,4 @@ security:
 
 ## LOGGING CONF
 logging:
-   file.path: /var/log/platform-logs
+   path: /var/log/platform-logs

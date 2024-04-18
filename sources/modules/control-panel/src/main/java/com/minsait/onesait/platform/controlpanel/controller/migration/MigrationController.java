@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,25 +26,18 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.ClientErrorException;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -53,17 +46,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.map.IMap;
-import com.minsait.onesait.platform.commons.ssl.SSLUtil;
-import com.minsait.onesait.platform.config.model.ActionsDigitalTwinType;
+import com.hazelcast.core.IMap;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.ApiOperation;
 import com.minsait.onesait.platform.config.model.ApiQueryParameter;
@@ -75,39 +64,23 @@ import com.minsait.onesait.platform.config.model.AppUserExport;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.ClientPlatformInstance;
 import com.minsait.onesait.platform.config.model.Dashboard;
-import com.minsait.onesait.platform.config.model.DigitalTwinType;
-import com.minsait.onesait.platform.config.model.Flow;
 import com.minsait.onesait.platform.config.model.FlowDomain;
-import com.minsait.onesait.platform.config.model.FlowNode;
 import com.minsait.onesait.platform.config.model.Gadget;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.GadgetMeasure;
-import com.minsait.onesait.platform.config.model.GadgetTemplate;
-import com.minsait.onesait.platform.config.model.Layer;
 import com.minsait.onesait.platform.config.model.MigrationData;
-import com.minsait.onesait.platform.config.model.MigrationData.DataType;
-import com.minsait.onesait.platform.config.model.MigrationData.Status;
 import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeries;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesProperty;
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow;
-import com.minsait.onesait.platform.config.model.OntologyUserAccess;
 import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
 import com.minsait.onesait.platform.config.model.Pipeline;
-import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.ProjectExport;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessExport;
-import com.minsait.onesait.platform.config.model.PropertyDigitalTwinType;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.model.UserExport;
-import com.minsait.onesait.platform.config.model.UserToken;
-import com.minsait.onesait.platform.config.model.Viewer;
 import com.minsait.onesait.platform.config.model.base.OPResource;
-import com.minsait.onesait.platform.config.repository.MigrationDataRepository;
-import com.minsait.onesait.platform.config.services.binaryfile.BinaryFileService;
 import com.minsait.onesait.platform.config.services.migration.DataFromDB;
 import com.minsait.onesait.platform.config.services.migration.ExportResult;
 import com.minsait.onesait.platform.config.services.migration.Instance;
@@ -125,7 +98,7 @@ import com.minsait.onesait.platform.controlpanel.rest.management.flowengine.Flow
 import com.minsait.onesait.platform.controlpanel.rest.management.notebook.NotebookManagementController;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.libraries.nodered.auth.exception.NoderedAuthException;
-import com.mongodb.BasicDBObject;
+import com.mongodb.util.JSON;
 
 import de.galan.verjson.core.IOReadException;
 import de.galan.verjson.core.NamespaceMismatchException;
@@ -138,9 +111,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/migration")
 @Slf4j
 public class MigrationController {
-
-	@Value("${onesaitplatform.controlpanel.url:http://localhost:18000/controlpanel}")
-	private String controlpanelUrl;
 
 	@Autowired
 	MigrationService migrationService;
@@ -172,14 +142,6 @@ public class MigrationController {
 	@Autowired
 	HazelcastInstance hazelcast;
 
-	@Autowired
-	private MigrationDataRepository migrationDateRepository;
-
-	@Autowired
-	private BinaryFileService binaryFileService;
-
-	private final RestTemplate restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
-
 	private static final String IMPORT_DATA_STR = "importData";
 	private static final String OTHER_SCHEMA_STR = "otherSchema";
 	private static final String CLASS_NAMES_STR = "classNames";
@@ -193,8 +155,7 @@ public class MigrationController {
 	private static final String CACHE_CONTROL = "Cache-Control";
 	private static final String PROJECT = "com.minsait.onesait.platform.config.model.Project";
 	private static final String PROJECT_EXPORT = "com.minsait.onesait.platform.config.model.ProjectExport";
-	private static final String USER = "com.minsait.onesait.platform.config.model.User";
-	private static final String USER_EXPORT = "com.minsait.onesait.platform.config.model.UserExport";
+	private static final String USER = "com.minsait.onesait.platform.config.model.UserExport";
 	private static final String DOMAIN_DATA = "domainData";
 	private static final String IDENTIFICATION = "identification";
 	private static final String NOTEBOOK_DATA = "notebookData";
@@ -203,12 +164,6 @@ public class MigrationController {
 	private static final String NOTEBOOK = "com.minsait.onesait.platform.config.model.Notebook";
 	private static final String DATAFLOW = "com.minsait.onesait.platform.config.model.Pipeline";
 	private static final String FLOW_DOMAIN = "com.minsait.onesait.platform.config.model.FlowDomain";
-
-	@PostConstruct
-	void setUTF8Encoding() {
-		restTemplate.getMessageConverters().removeIf(c -> c instanceof StringHttpMessageConverter);
-		restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
-	}
 
 	@GetMapping(value = "/show", produces = "text/html")
 	public String show(Model model, HttpServletRequest request) {
@@ -220,303 +175,71 @@ public class MigrationController {
 		model.addAttribute(OTHER_SCHEMA_STR, otherSchema);
 		model.addAttribute(CLASS_NAMES_STR, new ArrayList<String>());
 		model.addAttribute("selectedClasses", new SelectedClasses());
-		model.addAttribute("ontologies", ontologyService.getAllOntologiesForList(utils.getUserId(), "", "", "", ""));
-		model.addAttribute("binaryFiles", binaryFileService.getAllFiles(userService.getUser(utils.getUserId()), true));
+		model.addAttribute("ontologies", ontologyService.getAllOntologiesForList(utils.getUserId(), null, null));
 		return MIGRATION_SHOW;
 	}
 
 	@GetMapping(value = "/export")
 	public ResponseEntity<String> export(Model model, HttpServletResponse response, HttpServletRequest request)
 			throws IllegalAccessException, IOException {
-		User loggedUser = userService.getUser(utils.getUserId());
-		final List<MigrationData> migrationData = migrationDateRepository.findByUser(loggedUser);
-
-		Boolean status = checkExport();
-		if (status != null && !status) {
-			return new ResponseEntity<>(utils.getMessage("migration.export.not.finished",
-					"There is another export in progress for this user, please wait a few minutes for it to finish to launch a new one."),
-					HttpStatus.FORBIDDEN);
-		} else if (status == null) {
-			return new ResponseEntity<>(
-					utils.getMessage("migration.export.error",
-							"There was an error with the export, please contact the support team."),
-					HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
-		if (!migrationData.isEmpty()) {
-			migrationDateRepository.delete(migrationData.get(0));
-		}
-		migrationService.storeMigrationData(loggedUser, "exportAll", "File for export", "exportAll", null,
-				DataType.EXPORT, Status.IN_PROGRESS);
-
-		ExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-		executor.execute(exportRunnable(loggedUser, request.getHeader("Authorization"), controlpanelUrl));
-		return new ResponseEntity<>(HttpStatus.OK);
-	}
-
-	private Runnable exportRunnable(User loggedUser, String token, String controlpanelUrl) {
-
-		return new Runnable() {
-
-			MigrationController migrationController = new MigrationController();
-
-			@Override
-			public void run() {
-				try {
-					ExportResult allData = migrationService.exportAll();
-					allData = migrationController.exportDomain(allData, token, controlpanelUrl);
-					allData = migrationController.exportNotebooks(allData, token, controlpanelUrl);
-					allData = migrationController.exportDataflow(allData, token, controlpanelUrl);
-					String json = migrationService.getJsonFromData(allData.getData());
-
-					migrationService.updateStoreMigrationData(loggedUser, json, DataType.EXPORT);
-
-				} catch (final Exception e) {
-					log.error("Error exporting migration all data", e);
-					migrationService.updateStoreMigrationData(loggedUser, null, DataType.EXPORT);
-				}
-			}
-		};
-
+		ExportResult allData = migrationService.exportAll();
+		allData = this.exportDomain(allData);
+		allData = this.exportNotebooks(allData);
+		allData = this.exportDataflow(allData);
+		String json = migrationService.getJsonFromData(allData.getData());
+		ResponseEntity<String> output = new ResponseEntity<>(json, HttpStatus.OK);
+		response.setContentType(APPLICATION_DOWNLOAD);
+		response.setHeader(CONTENT_DISPOSITION, ATTACHMENT);
+		response.setHeader(PRAGMA, NO_CACHE_STR);
+		response.setHeader(CACHE_CONTROL, NO_CACHE_STR);
+		return output;
 	}
 
 	@GetMapping(value = "/exportUser/{id}")
 	public ResponseEntity<String> exportUser(Model model, HttpServletResponse response, HttpServletRequest request,
 			@PathVariable("id") String userId) throws IllegalArgumentException, IllegalAccessException, IOException {
-		User loggedUser = userService.getUser(utils.getUserId());
-		User userToExport = userService.getUser(userId);
-		final List<MigrationData> migrationData = migrationDateRepository.findByUser(loggedUser);
-
-		Boolean status = checkExport();
-		if (status != null && !status) {
-			return new ResponseEntity<>(utils.getMessage("migration.export.not.finished",
-					"There is another export in progress for this user, please wait a few minutes for it to finish to launch a new one."),
-					HttpStatus.FORBIDDEN);
-		} else if (status == null) {
-			return new ResponseEntity<>(
-					utils.getMessage("migration.export.error",
-							"There was an error with the export, please contact the support team."),
-					HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		if (!migrationData.isEmpty()) {
-			migrationDateRepository.delete(migrationData.get(0));
-		}
-		migrationService.storeMigrationData(loggedUser, "exportByUser", "File for export", "exportByUser", null,
-				DataType.EXPORT, Status.IN_PROGRESS);
-
-		ExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-		executor.execute(
-				exportByUserRunnable(userToExport, loggedUser, request.getHeader("Authorization"), controlpanelUrl));
-		return new ResponseEntity<>(HttpStatus.OK);
-	}
-
-	private Runnable exportByUserRunnable(User user, User loggedUser, String token, String controlpanelUrl) {
-
-		return new Runnable() {
-
-			MigrationController migrationController = new MigrationController();
-
-			@Override
-			public void run() {
-				try {
-					ExportResult userData = migrationService.exportUser(user);
-					userData = migrationController.exportDomain(userData, token, controlpanelUrl);
-					userData = migrationController.exportNotebooks(userData, token, controlpanelUrl);
-					userData = migrationController.exportDataflow(userData, token, controlpanelUrl);
-					String json = migrationService.getJsonFromData(userData.getData());
-
-					migrationService.updateStoreMigrationData(loggedUser, json, DataType.EXPORT);
-
-				} catch (final Exception e) {
-					log.error("Error exporting migration data by user {}", user.getUserId(), e);
-					migrationService.updateStoreMigrationData(loggedUser, null, DataType.EXPORT);
-				}
-			}
-		};
-
-	}
-
-	@GetMapping(value = "/downloadExport")
-	public ResponseEntity<String> downloadExport(Model model, HttpServletResponse response, HttpServletRequest request)
-			throws IllegalArgumentException, IllegalAccessException, IOException {
-		User loggedUser = userService.getUser(utils.getUserId());
-		final List<MigrationData> migrationDataFinished = migrationDateRepository.findByUserAndTypeAndStatus(loggedUser,
-				DataType.EXPORT, Status.FINISHED);
-
-		ResponseEntity<String> output = new ResponseEntity<>(new String(migrationDataFinished.get(0).getFile()),
-				HttpStatus.OK);
+		ExportResult userData = migrationService.exportUser(userService.getUser(userId));
+		userData = this.exportDomain(userData);
+		userData = this.exportNotebooks(userData);
+		userData = this.exportDataflow(userData);
+		String json = migrationService.getJsonFromData(userData.getData());
+		ResponseEntity<String> output = new ResponseEntity<>(json, HttpStatus.OK);
 		response.setContentType(APPLICATION_DOWNLOAD);
 		response.setHeader(CONTENT_DISPOSITION, ATTACHMENT);
 		response.setHeader(PRAGMA, NO_CACHE_STR);
 		response.setHeader(CACHE_CONTROL, NO_CACHE_STR);
-
-		migrationDateRepository.delete(migrationDataFinished.get(0));
 		return output;
-
-	}
-
-	@GetMapping(value = "/checkDownloadExport")
-	public ResponseEntity<String> checkDownloadExport(Model model, HttpServletResponse response,
-			HttpServletRequest request) throws IllegalArgumentException, IllegalAccessException, IOException {
-		User loggedUser = userService.getUser(utils.getUserId());
-		final List<MigrationData> migrationDataFinished = migrationDateRepository.findByUserAndTypeAndStatus(loggedUser,
-				DataType.EXPORT, Status.FINISHED);
-
-		if (migrationDataFinished != null && !migrationDataFinished.isEmpty() && migrationDataFinished.size() == 1) {
-			return new ResponseEntity<>("true", HttpStatus.OK);
-		}
-
-		final List<MigrationData> migrationDataError = migrationDateRepository.findByUserAndTypeAndStatus(loggedUser,
-				DataType.EXPORT, Status.ERROR);
-
-		if (migrationDataError != null && !migrationDataError.isEmpty() && migrationDataError.size() == 1) {
-			migrationDateRepository.delete(migrationDataError.get(0));
-			return new ResponseEntity<>("error", HttpStatus.OK);
-		}
-
-		final List<MigrationData> migrationDataInProgress = migrationDateRepository
-				.findByUserAndTypeAndStatus(loggedUser, DataType.EXPORT, Status.IN_PROGRESS);
-
-		if (migrationDataInProgress != null && !migrationDataInProgress.isEmpty()
-				&& migrationDataInProgress.size() == 1) {
-			return new ResponseEntity<>("false", HttpStatus.OK);
-		}
-
-		return new ResponseEntity<>("null", HttpStatus.OK);
 	}
 
 	@GetMapping(value = "/exportUsers/{users}")
 	public ResponseEntity<String> exportUsers(Model model, HttpServletResponse response, HttpServletRequest request,
 			@PathVariable("users") List<String> users)
 			throws IllegalArgumentException, IllegalAccessException, IOException {
-		if (users==null || users.isEmpty() || users.get(0).equals("null")) {
-			return new ResponseEntity<>(utils.getMessage("migration.export.select.user.error",
-					"Please select users to export."),
-					HttpStatus.FORBIDDEN);
-		}
-		
-		User loggedUser = userService.getUser(utils.getUserId());
-		final List<MigrationData> migrationData = migrationDateRepository.findByUser(loggedUser);
-		Boolean status = checkExport();
-		if (status != null && !status) {
-			return new ResponseEntity<>(utils.getMessage("migration.export.not.finished",
-					"There is another export in progress for this user, please wait a few minutes for it to finish to launch a new one."),
-					HttpStatus.FORBIDDEN);
-		} else if (status == null) {
-			return new ResponseEntity<>(
-					utils.getMessage("migration.export.error",
-							"There was an error with the export, please contact the support team."),
-					HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
-		if (!migrationData.isEmpty()) {
-			migrationDateRepository.delete(migrationData.get(0));
-		}
-		migrationService.storeMigrationData(loggedUser, "exportUsers", "File for export", "exportUsers", null,
-				DataType.EXPORT, Status.IN_PROGRESS);
-
-		ExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-		executor.execute(exportUsersRunnable(loggedUser, users));
-		return new ResponseEntity<>(HttpStatus.OK);
-	}
-
-	private Runnable exportUsersRunnable(User loggedUser, List<String> users) {
-
-		return new Runnable() {
-
-			@Override
-			public void run() {
-				try {
-					ExportResult userData = migrationService.exportUsers(users);
-					String json = migrationService.getJsonFromData(userData.getData());
-
-					migrationService.updateStoreMigrationData(loggedUser, json, DataType.EXPORT);
-
-				} catch (final Exception e) {
-					log.error("Error exporting users {}", users, e);
-					migrationService.updateStoreMigrationData(loggedUser, null, DataType.EXPORT);
-				}
-			}
-		};
-
+		ExportResult userData = migrationService.exportUsers(users);
+		String json = migrationService.getJsonFromData(userData.getData());
+		ResponseEntity<String> output = new ResponseEntity<>(json, HttpStatus.OK);
+		response.setContentType(APPLICATION_DOWNLOAD);
+		response.setHeader(CONTENT_DISPOSITION, ATTACHMENT);
+		response.setHeader(PRAGMA, NO_CACHE_STR);
+		response.setHeader(CACHE_CONTROL, NO_CACHE_STR);
+		return output;
 	}
 
 	@GetMapping(value = "/exportProject/{project}")
 	public ResponseEntity<String> exportProject(Model model, HttpServletResponse response, HttpServletRequest request,
 			@PathVariable("project") String project)
 			throws IllegalArgumentException, IllegalAccessException, IOException {
-		if (project==null || project.equals("null")) {
-			return new ResponseEntity<>(utils.getMessage("migration.export.select.project.error",
-					"Please select project to export."),
-					HttpStatus.FORBIDDEN);
-		}
-		
-		User loggedUser = userService.getUser(utils.getUserId());
-		final List<MigrationData> migrationData = migrationDateRepository.findByUser(loggedUser);
-
-		Boolean status = checkExport();
-		if (status != null && !status) {
-			return new ResponseEntity<>(utils.getMessage("migration.export.not.finished",
-					"There is another export in progress for this user, please wait a few minutes for it to finish to launch a new one."),
-					HttpStatus.FORBIDDEN);
-		} else if (status == null) {
-			return new ResponseEntity<>(
-					utils.getMessage("migration.export.error",
-							"There was an error with the export, please contact the support team."),
-					HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
-		if (!migrationData.isEmpty()) {
-			migrationDateRepository.delete(migrationData.get(0));
-		}
-		migrationService.storeMigrationData(loggedUser, "exportByProject", "File for export", "exportByProject", null,
-				DataType.EXPORT, Status.IN_PROGRESS);
-
-		ExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-		executor.execute(
-				exportByProjectRunnable(project, loggedUser, request.getHeader("Authorization"), controlpanelUrl));
-		return new ResponseEntity<>(HttpStatus.OK);
-	}
-
-	private Boolean checkExport() {
-		User loggedUser = userService.getUser(utils.getUserId());
-		final List<MigrationData> migrationData = migrationDateRepository.findByUser(loggedUser);
-		if (migrationData != null && !migrationData.isEmpty()
-				&& migrationData.get(0).getStatus().equals(Status.ERROR)) {
-			return null;
-		}
-		if (migrationData != null && !migrationData.isEmpty() && migrationData.size() == 1
-				&& migrationData.get(0).getType().equals(DataType.EXPORT)
-				&& migrationData.get(0).getStatus().equals(Status.IN_PROGRESS)) {
-			return false;
-		}
-		return true;
-	}
-
-	private Runnable exportByProjectRunnable(String project, User loggedUser, String token, String controlpanelUrl) {
-
-		return new Runnable() {
-
-			MigrationController migrationController = new MigrationController();
-
-			@Override
-			public void run() {
-				try {
-					ExportResult projectData = migrationService.exportProject(project);
-					projectData = migrationController.exportDomain(projectData, token, controlpanelUrl);
-					projectData = migrationController.exportNotebooks(projectData, token, controlpanelUrl);
-					projectData = migrationController.exportDataflow(projectData, token, controlpanelUrl);
-					String json = migrationService.getJsonFromData(projectData.getData());
-
-					migrationService.updateStoreMigrationData(loggedUser, json, DataType.EXPORT);
-
-				} catch (final Exception e) {
-					log.error("Error exporting migration data by project {}", project, e);
-					migrationService.updateStoreMigrationData(loggedUser, null, DataType.EXPORT);
-				}
-			}
-		};
-
+		ExportResult projectData = migrationService.exportProject(project);
+		projectData = this.exportDomain(projectData);
+		projectData = this.exportNotebooks(projectData);
+		projectData = this.exportDataflow(projectData);
+		String json = migrationService.getJsonFromData(projectData.getData());
+		ResponseEntity<String> output = new ResponseEntity<>(json, HttpStatus.OK);
+		response.setContentType(APPLICATION_DOWNLOAD);
+		response.setHeader(CONTENT_DISPOSITION, ATTACHMENT);
+		response.setHeader(PRAGMA, NO_CACHE_STR);
+		response.setHeader(CACHE_CONTROL, NO_CACHE_STR);
+		return output;
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
@@ -540,22 +263,6 @@ public class MigrationController {
 			throws IOException {
 		JSONObject jsonBody = new JSONObject(body);
 		File file = migrationHelper.generateFiles(ontologies, jsonBody.getString("userMongo"),
-				jsonBody.getString("passwordMongo"));
-		final HttpHeaders respHeaders = new HttpHeaders();
-		respHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-		respHeaders.setContentDispositionFormData("attachment", file.getName());
-		respHeaders.setContentLength(file.length());
-		final InputStreamResource isr = new InputStreamResource(new FileInputStream(file));
-		return new ResponseEntity<>(isr, respHeaders, HttpStatus.OK);
-	}
-
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
-	@PostMapping(value = "/exportFiles/{files}")
-	public ResponseEntity<InputStreamResource> exportFiles(Model model, HttpServletResponse response,
-			HttpServletRequest request, @PathVariable("files") List<String> files, @RequestBody String body)
-			throws IOException {
-		JSONObject jsonBody = new JSONObject(body);
-		File file = migrationHelper.generateBinaryFilesExport(files, jsonBody.getString("userMongo"),
 				jsonBody.getString("passwordMongo"));
 		final HttpHeaders respHeaders = new HttpHeaders();
 		respHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
@@ -597,7 +304,7 @@ public class MigrationController {
 			String userId = utils.getUserId();
 			User user = userService.getUser(userId);
 			migrationService.storeMigrationData(user, importData.getFileName(), "File for import",
-					importData.getFileName(), bytes, DataType.IMPORT, Status.NO_STATUS);
+					importData.getFileName(), bytes);
 
 			model.addAttribute(OTHER_SCHEMA_STR, new ImportData());
 
@@ -622,7 +329,7 @@ public class MigrationController {
 
 		String userId = utils.getUserId();
 		User user = userService.getUser(userId);
-		MigrationData migrationData = migrationService.findMigrationData(user, DataType.IMPORT);
+		MigrationData migrationData = migrationService.findMigrationData(user);
 		if (migrationData == null) {
 			throw new IllegalStateException("The file should be loaded previouly");
 		}
@@ -632,24 +339,17 @@ public class MigrationController {
 		MigrationConfiguration config = new MigrationConfiguration();
 
 		List<Class<?>> sortedClazz = new LinkedList<>();
-		sortedClazz.add(User.class);
-		sortedClazz.add(UserExport.class);
-		sortedClazz.add(UserToken.class);
-		sortedClazz.add(Project.class);
 		sortedClazz.add(ProjectExport.class);
 		sortedClazz.add(OPResource.class);
 		sortedClazz.add(Pipeline.class);
 		sortedClazz.add(Notebook.class);
 		sortedClazz.add(FlowDomain.class);
 		sortedClazz.add(Ontology.class);
-		sortedClazz.add(Flow.class);
-		sortedClazz.add(FlowNode.class);
 		sortedClazz.add(OntologyVirtualDatasource.class);
 		sortedClazz.add(OntologyVirtual.class);
 		sortedClazz.add(OntologyTimeSeries.class);
 		sortedClazz.add(OntologyTimeSeriesWindow.class);
 		sortedClazz.add(OntologyTimeSeriesProperty.class);
-		sortedClazz.add(OntologyUserAccess.class);
 		sortedClazz.add(Api.class);
 		sortedClazz.add(ApiOperation.class);
 		sortedClazz.add(ApiQueryParameter.class);
@@ -661,36 +361,20 @@ public class MigrationController {
 		sortedClazz.add(AppUserExport.class);
 		sortedClazz.add(ClientPlatform.class);
 		sortedClazz.add(ClientPlatformInstance.class);
+		sortedClazz.add(ProjectResourceAccessExport.class);
 		sortedClazz.add(Gadget.class);
-		sortedClazz.add(GadgetTemplate.class);
 		sortedClazz.add(GadgetMeasure.class);
 		sortedClazz.add(Dashboard.class);
-		sortedClazz.add(DigitalTwinType.class);
-		sortedClazz.add(PropertyDigitalTwinType.class);
-		sortedClazz.add(ActionsDigitalTwinType.class);
-		sortedClazz.add(Layer.class);
-		sortedClazz.add(Viewer.class);
-		sortedClazz.add(ProjectResourceAccess.class);
-		sortedClazz.add(ProjectResourceAccessExport.class);
 
 		for (Class<?> c : sortedClazz) {
-			if (importData.getClasses().contains(c.getName())) {
-				for (Serializable id : data.getInstances(c)) {
-					Map<String, Object> result = data.getInstanceData(c, id);
-					if (c.getName().startsWith(PROJECT)) {
-						config.addProject(c, id, (Serializable) result.get(IDENTIFICATION));
-					} else if (c.getName().equals(USER)) {
-						config.addUser(c, id);
-					} else {
-						config.add(c, id, (Serializable) result.get(IDENTIFICATION),
-								(Serializable) result.get("numversion"));
-					}
-				}
+			for (Serializable id : data.getInstances(c)) {
+				Map<String, Object> result = data.getInstanceData(c, id);
+				config.add(c, id, (Serializable) result.get(IDENTIFICATION), (Serializable) result.get("numversion"));
 			}
 		}
 
 		for (Class<?> clazz : data.getClasses()) {
-			if (importData.getClasses().contains(clazz.getName()) && !sortedClazz.contains(clazz)) {
+			if (importData.getClasses().contains(clazz.getName())) {
 				for (Serializable id : data.getInstances(clazz)) {
 					Map<String, Object> result = data.getInstanceData(clazz, id);
 					if (clazz.getName().startsWith(PROJECT)) {
@@ -711,18 +395,17 @@ public class MigrationController {
 
 		MigrationErrors errors = new MigrationErrors();
 
-		if (importData.getClasses().contains(FLOW_DOMAIN)) {
-			this.importDomain(data, errors, importData.getOverride());
-		}
-
-		if (importData.getClasses().contains(PROJECT) || importData.getClasses().contains(PROJECT_EXPORT)) {
+		if (importData.getClasses().contains(PROJECT_EXPORT)) {
 			errors = migrationService.importData(config, data, true, false, importData.getOverride());
-		} else if (importData.getClasses().contains(USER) || importData.getClasses().contains(USER_EXPORT)) {
+		} else if (importData.getClasses().contains(USER)) {
 			errors = migrationService.importData(config, data, false, true, importData.getOverride());
 		} else {
 			errors = migrationService.importData(config, data, false, false, importData.getOverride());
 		}
 
+		if (importData.getClasses().contains(FLOW_DOMAIN)) {
+			this.importDomain(data, errors, importData.getOverride());
+		}
 		if (importData.getClasses().contains(NOTEBOOK)) {
 			errors = this.importNotebook(data, errors, importData.getOverride());
 		}
@@ -752,44 +435,25 @@ public class MigrationController {
 		return MIGRATION_SHOW;
 	}
 
-	private ExportResult exportDomain(ExportResult data, String token, String controlpanelUrl) {
+	private ExportResult exportDomain(ExportResult data) {
 		// if data has FlowDomain.class then all domain data are exported too
 		Iterator<Serializable> iterator = data.getData().getInstances(FlowDomain.class).iterator();
-		ObjectMapper mapper = new ObjectMapper();
 		while (iterator.hasNext()) {
 			Serializable id = iterator.next();
 			Map<String, Object> obj = data.getData().getInstanceData(FlowDomain.class, id);
 			try {
-				HttpHeaders headers = new HttpHeaders();
-				headers.add("Authorization", token);
-
-				HttpEntity<?> entity = new HttpEntity<>(headers);
-				ResponseEntity<String> result = restTemplate.exchange(
-						controlpanelUrl.concat("/api/flowengine/export/domain/" + obj.get(IDENTIFICATION).toString()),
-						HttpMethod.GET, entity, String.class);
+				ResponseEntity<String> result = flowengineController
+						.exportFlowDomainByIdentification(obj.get(IDENTIFICATION).toString());
 				if (result.getStatusCode().equals(HttpStatus.OK)) {
-					obj.put(DOMAIN_DATA, mapper.readValue(result.getBody(), JsonNode.class));
+					obj.put(DOMAIN_DATA, JSON.parse(result.getBody()));
 				} else {
 					log.error("Error exporting domain data {}. StatusCode {}", obj.get(IDENTIFICATION).toString(),
 							result.getStatusCode().name());
-					obj.put(DOMAIN_DATA, mapper.readValue("[]", JsonNode.class));
+					obj.put(DOMAIN_DATA, JSON.parse("[]"));
 				}
 			} catch (NoderedAuthException e) {
 				log.warn("Domain are not started. {}", e.getMessage());
-				try {
-					obj.put(DOMAIN_DATA, mapper.readValue("[]", JsonNode.class));
-				} catch (IOException e1) {
-					log.error("Error parsing domain export result. DomainId: {} ", obj.get(IDENTIFICATION).toString(),
-							e);
-				}
-			} catch (IOException e) {
-				log.error("Error parsing domain export result. DomainId: {} ", obj.get(IDENTIFICATION).toString(), e);
-				try {
-					obj.put(DOMAIN_DATA, mapper.readValue("[]", JsonNode.class));
-				} catch (IOException e1) {
-					log.error("Error parsing domain export result. DomainId: {} ", obj.get(IDENTIFICATION).toString(),
-							e);
-				}
+				obj.put(DOMAIN_DATA, JSON.parse("[]"));
 			}
 		}
 		return data;
@@ -803,9 +467,9 @@ public class MigrationController {
 			Serializable id = iterator.next();
 			Map<String, Object> obj = data.getInstanceData(FlowDomain.class, id);
 			try {
-				ResponseEntity<String> result = flowengineController.importDomainToUserFromProject(
-						obj.get("user").toString(), mapper.writeValueAsString(obj), obj.get(IDENTIFICATION).toString(),
-						override);
+				ResponseEntity<String> result = flowengineController.importFlowDomainToUserAdmin(
+						mapper.writeValueAsString(obj.get(DOMAIN_DATA)), obj.get(IDENTIFICATION).toString(),
+						obj.get("user").toString(), override);
 				if (result.getStatusCode().equals(HttpStatus.OK)) {
 					log.info("Domain data imported successfully for domain {} and user {}",
 							obj.get(IDENTIFICATION).toString(), obj.get("user").toString());
@@ -826,40 +490,20 @@ public class MigrationController {
 		}
 	}
 
-	private ExportResult exportNotebooks(ExportResult data, String token, String controlpanelUrl) {
+	private ExportResult exportNotebooks(ExportResult data) {
 		// if data has Notebook.class then all notebooks data are exported too
 		Iterator<Serializable> iterator = data.getData().getInstances(Notebook.class).iterator();
-		ObjectMapper mapper = new ObjectMapper();
 		while (iterator.hasNext()) {
 			Serializable id = iterator.next();
 			Map<String, Object> obj = data.getData().getInstanceData(Notebook.class, id);
 
-			HttpHeaders headers = new HttpHeaders();
-			headers.add("Authorization", token);
-
-			HttpEntity<?> entity = new HttpEntity<>(headers);
-			ResponseEntity<String> result = restTemplate.exchange(
-					controlpanelUrl.concat("/api/notebooks/export/" + obj.get(IDZEP).toString()), HttpMethod.GET,
-					entity, String.class);
-			try {
-				if (result.getStatusCode().equals(HttpStatus.OK)) {
-
-					obj.put(NOTEBOOK_DATA, mapper.readValue(result.getBody(), JsonNode.class));
-
-				} else {
-					log.error("Error exporting notebook data {}. StatusCode {}", obj.get(IDENTIFICATION).toString(),
-							result.getStatusCode().name());
-					obj.put(NOTEBOOK_DATA, mapper.readValue("[]", JsonNode.class));
-				}
-
-			} catch (IOException e) {
-				log.error("Error parsing notebook export result. notebook: {} ", obj.get(IDENTIFICATION).toString(), e);
-				try {
-					obj.put(NOTEBOOK_DATA, mapper.readValue("[]", JsonNode.class));
-				} catch (IOException e1) {
-					log.error("Error parsing notebook export result. notebook: {} ", obj.get(IDENTIFICATION).toString(),
-							e);
-				}
+			ResponseEntity<?> result = notebookController.exportNotebook(obj.get(IDZEP).toString());
+			if (result.getStatusCode().equals(HttpStatus.OK)) {
+				obj.put(NOTEBOOK_DATA, JSON.parse(new String((byte[]) result.getBody(), StandardCharsets.UTF_8)));
+			} else {
+				log.error("Error exporting notebook data {}. StatusCode {}", obj.get(IDENTIFICATION).toString(),
+						result.getStatusCode().name());
+				obj.put(NOTEBOOK_DATA, JSON.parse("[]"));
 			}
 
 		}
@@ -903,29 +547,24 @@ public class MigrationController {
 		return errors;
 	}
 
-	private ExportResult exportDataflow(ExportResult data, String token, String controlpanelUrl) {
+	private ExportResult exportDataflow(ExportResult data) {
 		// if data has Pipeline.class then all pipelines data are exported too
-		DataFlowStorageManagementController dataflowController = new DataFlowStorageManagementController();
 		Iterator<Serializable> iterator = data.getData().getInstances(Pipeline.class).iterator();
 		while (iterator.hasNext()) {
 			Serializable id = iterator.next();
 			Map<String, Object> obj = data.getData().getInstanceData(Pipeline.class, id);
 
-			HttpHeaders headers = new HttpHeaders();
-			headers.add("Authorization", token);
-
-			HttpEntity<?> entity = new HttpEntity<>(headers);
-			ResponseEntity<?> result = restTemplate.exchange(
-					controlpanelUrl
-							.concat("/api/dataflows/pipelines/" + obj.get(IDENTIFICATION).toString() + "/export/"),
-					HttpMethod.POST, entity, String.class);
-
-			if (result.getStatusCode().equals(HttpStatus.OK)) {
-				obj.put(DATAFLOW_DATA, BasicDBObject.parse(result.getBody().toString()));
-			} else {
-				log.error("Error exporting dataflow data {}. StatusCode {}", obj.get(IDENTIFICATION).toString(),
-						result.getStatusCode().name());
-				obj.put(DATAFLOW_DATA, BasicDBObject.parse("[]"));
+			try {
+				ResponseEntity<?> result = dataflowController.exportPipeline(obj.get(IDENTIFICATION).toString());
+				if (result.getStatusCode().equals(HttpStatus.OK)) {
+					obj.put(DATAFLOW_DATA, JSON.parse(result.getBody().toString()));
+				} else {
+					log.error("Error exporting dataflow data {}. StatusCode {}", obj.get(IDENTIFICATION).toString(),
+							result.getStatusCode().name());
+					obj.put(DATAFLOW_DATA, JSON.parse("[]"));
+				}
+			} catch (UnsupportedEncodingException e) {
+				log.error("Error exportin dataflow data: {}. {}", obj.get(IDENTIFICATION).toString(), e);
 			}
 
 		}

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,8 +46,8 @@ public interface DataModelRepository extends JpaRepository<DataModel, String> {
 
 	long countByType(String type);
 
-	@Query("SELECT o " + "FROM DataModel AS o " + "WHERE o.id LIKE :id OR "
-			+ "o.identification LIKE :identification OR " + "o.description LIKE :description")
+	@Query("SELECT o " + "FROM DataModel AS o " + "WHERE o.id LIKE %:id% OR "
+			+ "o.identification LIKE %:identification% OR " + "o.description LIKE %:description%")
 	List<DataModel> findByIdOrIdentificationOrDescription(@Param(value = "id") String id,
 			@Param(value = "identification") String identification, @Param(value = "description") String description);
 
@@ -79,9 +78,4 @@ public interface DataModelRepository extends JpaRepository<DataModel, String> {
 			"DataModelRepositoryByIdentification", "DataModelRepositoryByType" }, allEntries = true)
 	void flush();
 
-	@Modifying
-	@Transactional
-	@CacheEvict(cacheNames = { "DataModelRepositoryAll", "DataModelRepositoryById",
-			"DataModelRepositoryByIdentification", "DataModelRepositoryByType" }, allEntries = true)
-	void deleteByIdNotIn(Collection<String> ids);
 }

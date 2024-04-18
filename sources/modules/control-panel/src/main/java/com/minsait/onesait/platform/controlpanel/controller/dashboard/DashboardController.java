@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,13 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
-import org.elasticsearch.core.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,19 +56,20 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.config.model.Category;
 import com.minsait.onesait.platform.config.model.CategoryRelation;
+import com.minsait.onesait.platform.config.model.CategoryRelation.Type;
 import com.minsait.onesait.platform.config.model.Dashboard;
 import com.minsait.onesait.platform.config.model.Dashboard.DashboardType;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.DashboardUserAccess;
 import com.minsait.onesait.platform.config.model.I18nResources;
+import com.minsait.onesait.platform.config.model.Internationalization;
 import com.minsait.onesait.platform.config.model.Subcategory;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.repository.CategoryRelationRepository;
 import com.minsait.onesait.platform.config.repository.CategoryRepository;
 import com.minsait.onesait.platform.config.repository.DashboardConfRepository;
 import com.minsait.onesait.platform.config.repository.DashboardRepository;
 import com.minsait.onesait.platform.config.repository.I18nResourcesRepository;
-import com.minsait.onesait.platform.config.repository.ProjectResourceAccessRepository;
 import com.minsait.onesait.platform.config.repository.SubcategoryRepository;
 import com.minsait.onesait.platform.config.services.category.CategoryService;
 import com.minsait.onesait.platform.config.services.dashboard.DashboardService;
@@ -79,12 +77,10 @@ import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardAcces
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardCreateDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardExportDTO;
-import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardImportResponsetDTO;
-import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardTablePaginationDTO;
 import com.minsait.onesait.platform.config.services.exceptions.DashboardServiceException;
 import com.minsait.onesait.platform.config.services.internationalization.InternationalizationService;
 import com.minsait.onesait.platform.config.services.oauth.JWTService;
-import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
+import com.minsait.onesait.platform.config.services.subcategory.SubcategoryService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.controller.dashboard.dto.EditorDTO;
 import com.minsait.onesait.platform.controlpanel.controller.dashboard.dto.UserDTO;
@@ -93,7 +89,7 @@ import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 
 @RequestMapping("/dashboards")
@@ -124,6 +120,8 @@ public class DashboardController {
 	@Autowired
 	private InternationalizationService internationalizationService;
 	@Autowired
+	private SubcategoryService subcategoryService;
+	@Autowired
 	private DashboardConfRepository dashboardConfRepository;
 	@Autowired
 	private CategoryRepository categoryRepository;
@@ -132,12 +130,6 @@ public class DashboardController {
 	@Autowired
 	private CategoryRelationRepository categoryRelationRepository;
 
-	@Autowired
-	private HttpSession httpSession;
-
-	@Autowired
-	private OPResourceService resourceService;
-	
 	@Autowired()
 	private ResourcesInUseService resourcesInUseService;
 
@@ -150,7 +142,6 @@ public class DashboardController {
 	private static final String DASHB_EDIT = "dashboards/edit";
 	private static final String REDIRECT_DASHB_EDIT = "redirect:/dashboards/edit/";
 	private static final String REDIRECT_DASHB_CREATE = "redirect:/dashboards/create";
-	private static final String REDIRECT_LOGIN = "redirect:/login";
 	private static final String REDIRECT_DASHB_CREATE_SYNOPTIC = "redirect:/dashboards/createsynoptic";
 	private static final String REDIRECT_DASHB_LIST = "redirect:/dashboards/list/";
 	private static final String HEADERLIBS = "headerlibs";
@@ -164,14 +155,6 @@ public class DashboardController {
 	private static final String ERROR_DASHBOARD_PDF = "Error generating Dashboard PDF";
 	private static final String DATE_PATTERN = "_yyyy_MM_dd_HH_mm_ss";
 	private static final String HEARTBEATTIMEOUT = "heartbeatMaxTimeout";
-	private static final String PROTOCOL = "protocol";
-	private static final String VIEW = "view";
-	private static final String VIEWIFRAME = "viewiframe";
-	private static final String EDITFULLIFRAME = "editfulliframe";
-	private static final String EDITFULL = "editfull";
-	private static final String APP_ID = "appId";
-	private static final String APP_USER_ACCESS = "app_user_access";
-	private static final String OWNER_USER = "owner";
 
 	@Value("${onesaitplatform.urls.iotbroker}")
 	private String IOTRBROKERSERVER;
@@ -188,13 +171,18 @@ public class DashboardController {
 			@RequestParam(required = false, name = "type") String type) {
 
 		// Scaping "" string values for parameters
-		String currentTab = request.getParameter("current_tab");
 		if (identification == null) {
 			identification = "";
 		}
-		
-		final String userRole = utils.getRoleOrParent();
-		
+		if (type != null && type.equals("")) {
+			type = null;
+		} else if (type != null && type.equals(Dashboard.DashboardType.DASHBOARD.name())) {
+			type = "";
+		}
+
+		final List<DashboardDTO> dashboard = dashboardService.findDashboardWithIdentificationAndType(identification,
+				type, utils.getUserId());
+
 		if (multitenancyEnabled) {
 			multitenancyService.getVertical(MultitenancyContextHolder.getVerticalSchema()).ifPresent(v -> {
 				uiModel.addAttribute("tenant", MultitenancyContextHolder.getTenantName());
@@ -202,92 +190,10 @@ public class DashboardController {
 			});
 
 		}
-		
-		uiModel.addAttribute("userRole", userRole);
-	
-		uiModel.addAttribute("currentTab", currentTab);
+		uiModel.addAttribute("dashboards", dashboard);
 
 		return "dashboards/list";
 
-	}
-	
-	@PostMapping(value = "listdashboardpageable")
-	public @ResponseBody DashboardTablePaginationDTO listDahboardpageable (HttpServletRequest request , 
-			@RequestParam(required = false, name = "name") String identification) {
-		
-		
-		
-		Integer page = Integer.valueOf( request.getParameter("start"));
-		Integer	limit = Integer.valueOf( request.getParameter("length"));
-		Integer	draw = Integer.valueOf( request.getParameter("draw"));
-		String filter = request.getParameter("search[value]");
-		
-		
-		String columnIndex = request.getParameter("order[0][column]");
-		String columName = request.getParameter("columns[" + columnIndex + "][name]");
-		String order = request.getParameter("order[0][dir]");
-		
-		if(columName == null) {
-			columName = "identification";
-		}
-		if(order == null) {
-			order = "ASC";
-		}
-			
-		final List<DashboardDTO> dashboardList  = dashboardService.findDashboardIdentification(filter, columName, order, utils.getUserId(), page, limit);
-		final Integer countDashboard  = dashboardService.countDashboardIdentification(filter, utils.getUserId());
-		
-		
-			
-		DashboardTablePaginationDTO dashboardTable = new DashboardTablePaginationDTO();
-				
-		dashboardTable.setITotalRecords(countDashboard);		
-		dashboardTable.setITotalDisplayRecords(countDashboard);
-		dashboardTable.setDraw(draw);
-		dashboardTable.setAaData(dashboardList);
-						
-		return dashboardTable;
-			
-			
-	}
-		
-	
-	@PostMapping(value = "listsynopticspageable")
-	public @ResponseBody DashboardTablePaginationDTO listsynopticspageable (HttpServletRequest request , 
-			@RequestParam(required = false, name = "name") String identification){
-		
-		Integer page = Integer.valueOf( request.getParameter("start"));
-		Integer	limit = Integer.valueOf( request.getParameter("length"));
-		Integer	draw = Integer.valueOf( request.getParameter("draw"));
-		String filter = request.getParameter("search[value]");
-		
-		String columnIndex = request.getParameter("order[0][column]");
-		String columName = request.getParameter("columns[" + columnIndex + "][name]");
-		String order = request.getParameter("order[0][dir]");
-		
-		if(columName == null) {
-			columName = "identification";
-		}
-		if(order == null) {
-			order = "ASC";
-		}
-		
-		
-		final List<DashboardDTO> synopticsList  = dashboardService.findSynopticsIdentification(filter, columName, order, utils.getUserId(), page, limit);
-		final Integer countSynoptics  = dashboardService.countSynopticIdentification(filter, utils.getUserId());
-		
-		
-			
-		DashboardTablePaginationDTO synopticsTable = new DashboardTablePaginationDTO();
-				
-		synopticsTable.setITotalRecords(countSynoptics);		
-		synopticsTable.setITotalDisplayRecords(countSynoptics);
-		synopticsTable.setDraw(draw);
-		synopticsTable.setAaData(synopticsList);
-						
-		return synopticsTable;
-			
-			
 	}
 
 	@RequestMapping(value = "/viewerlist", produces = "text/html")
@@ -313,19 +219,11 @@ public class DashboardController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/create")
 	public String create(Model model) {
-		final DashboardCreateDTO dash = new DashboardCreateDTO();
-		dash.setType(DashboardType.DASHBOARD);
-		model.addAttribute(DASHBOARD_STR, dash);
+		model.addAttribute(DASHBOARD_STR, new DashboardCreateDTO());
 		model.addAttribute(USERS, getUserListDTO());
-		model.addAttribute(CATEGORIES, categoryService.getCategoriesByTypeAndGeneralType(Category.Type.DASHBOARD));
+		model.addAttribute(CATEGORIES, categoryService.findAllCategories());
 		model.addAttribute(I18NS, internationalizationService.getByUserIdOrPublic(utils.getUserId()));
-		model.addAttribute("schema", dashboardConfRepository.findAllByOrderByIdentificationAsc());
-
-		final Object projectId = httpSession.getAttribute(APP_ID);
-		if (projectId != null) {
-			model.addAttribute(APP_ID, projectId.toString());
-		}
-
+		model.addAttribute("schema", dashboardConfRepository.findAll());
 		return DASHB_CREATE;
 	}
 
@@ -336,7 +234,7 @@ public class DashboardController {
 		dash.setType(DashboardType.SYNOPTIC);
 		model.addAttribute(DASHBOARD_STR, dash);
 		model.addAttribute(USERS, getUserListDTO());
-		model.addAttribute(CATEGORIES, categoryService.getCategoriesByTypeAndGeneralType(Category.Type.DASHBOARD));
+		model.addAttribute(CATEGORIES, categoryService.findAllCategories());
 		model.addAttribute(I18NS, internationalizationService.getByUserIdOrPublic(utils.getUserId()));
 		model.addAttribute("schema", dashboardConfRepository.findByIdentification(FIXED));
 		return DASHB_CREATE;
@@ -349,7 +247,7 @@ public class DashboardController {
 		return DASHB_CREATE;
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/edit/{id}", produces = "text/html")
 	public String edit(Model model, @PathVariable("id") String id) {
 		model.addAttribute(DASHBOARD_STR, dashboardService.getDashboardEditById(id, utils.getUserId()));
@@ -357,7 +255,7 @@ public class DashboardController {
 
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PutMapping(value = "/edit/{id}", produces = "text/html")
 	public String updateEditDashboardModel(Model model, @PathVariable("id") String id, @Valid Dashboard dashboard,
 			BindingResult bindingResult, RedirectAttributes redirect) {
@@ -369,7 +267,6 @@ public class DashboardController {
 		try {
 			if (dashboardService.hasUserEditPermission(id, utils.getUserId())) {
 				dashboardService.saveDashboardModel(id, dashboard.getModel(), utils.getUserId());
-				dashboardService.generateDashboardImage(id, utils.getCurrentUserOauthToken());
 			} else {
 				throw new DashboardServiceException(
 						"Cannot update Dashboard that does not exist or don't have permission");
@@ -390,8 +287,9 @@ public class DashboardController {
 		try {
 			String id = "";
 			final String userId = utils.getUserId();
+
 			id = dashboardService.cloneDashboard(dashboardService.getDashboardById(dashboardId, userId), identification,
-					userId);
+					userService.getUser(userId));
 			final Optional<Dashboard> opt = dashboardRepository.findById(id);
 			if (!opt.isPresent()) {
 				return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -416,6 +314,9 @@ public class DashboardController {
 		try {
 
 			final String dashboardId = dashboardService.createNewDashboard(dashboard, utils.getUserId());
+			if (dashboardId != null) {
+				createModifyI18nResource(dashboardId, dashboard);
+			}
 
 			return "redirect:/dashboards/editfull/" + dashboardId;
 
@@ -437,7 +338,9 @@ public class DashboardController {
 		try {
 
 			final String dashboardId = dashboardService.createNewDashboard(dashboard, utils.getUserId());
-
+			if (dashboardId != null) {
+				createModifyI18nResource(dashboardId, dashboard);
+			}
 			return "redirect:/dashboards/editfull/" + dashboardId;
 
 		} catch (final DashboardServiceException e) {
@@ -461,8 +364,7 @@ public class DashboardController {
 				dashboardService.saveUpdateAccess(dashboard, utils.getUserId());
 				dashboardService.updatePublicDashboard(dashboard, utils.getUserId());
 
-				dashboardService.createModifyI18nResource(id, dashboard, utils.getUserId());
-				dashboardService.generateDashboardImage(id, utils.getCurrentUserOauthToken());
+				createModifyI18nResource(id, dashboard);
 
 			} else {
 				throw new DashboardServiceException(
@@ -490,8 +392,7 @@ public class DashboardController {
 			dashBDTO.setDescription(dashboard.getDescription());
 			dashBDTO.setHeaderlibs(dashboard.getHeaderlibs());
 			dashBDTO.setType(dashboard.getType());
-			dashBDTO.setGenerateImage(dashboard.isGenerateImage());
-			if (null != dashboard.getImage() && dashboard.getImage().length > 10 ) {
+			if (null != dashboard.getImage()) {
 				dashBDTO.setHasImage(Boolean.TRUE);
 			} else {
 				dashBDTO.setHasImage(Boolean.FALSE);
@@ -513,7 +414,7 @@ public class DashboardController {
 			final List<DashboardUserAccess> userAccess = dashboardService.getDashboardUserAccesses(dashboard);
 			if (userAccess != null && !userAccess.isEmpty()) {
 				final ArrayList<DashboardAccessDTO> list = new ArrayList<>();
-				for (DashboardUserAccess dua : userAccess) {
+				for (final DashboardUserAccess dua : userAccess) {
 					if (userIsActive(dua.getUser().getUserId())) {
 						final DashboardAccessDTO daDTO = new DashboardAccessDTO();
 						daDTO.setAccesstypes(dua.getDashboardUserAccessType().getName());
@@ -530,46 +431,23 @@ public class DashboardController {
 			}
 
 			final CategoryRelation categoryRelation = categoryRelationRepository.findByTypeIdAndType(dashboard.getId(),
-					Category.Type.DASHBOARD);
+					Type.DASHBOARD);
 			if (categoryRelation != null) {
 				final Category category = categoryRepository.findById(categoryRelation.getCategory());
 				dashBDTO.setCategory(category.getIdentification());
 				final Subcategory subcategory = subcategoryRepository.findById(categoryRelation.getSubcategory());
-				if (subcategory != null) {
-					dashBDTO.setSubcategory(subcategory.getIdentification());
-				}
+				dashBDTO.setSubcategory(subcategory.getIdentification());
 			}
-			
-			ResourceAccessType resourceAccess = resourceService.getResourceAccess(utils.getUserId(),dashboard.getId());
 
 			model.addAttribute(DASHBOARD_STR, dashBDTO);
-			model.addAttribute(OWNER_USER, dashboard.getUser().getUserId());
-			model.addAttribute(APP_USER_ACCESS, resourceAccess);
-
-			String currentUser = utils.getUserId();
-
-			ArrayList<UserDTO> usuarios = new ArrayList<UserDTO>();
-
-			for (UserDTO user : getUserListDTO()) {
-
-				if (!user.getUserId().equals(currentUser)) {
-
-					usuarios.add(user);
-				}
-
-			}
-
-			model.addAttribute(USERS, usuarios);
-
-			model.addAttribute(CATEGORIES, categoryService.getCategoriesByTypeAndGeneralType(Category.Type.DASHBOARD));
+			model.addAttribute(USERS, getUserListDTO());
+			model.addAttribute(CATEGORIES, categoryService.findAllCategories());
 			model.addAttribute(I18NS, internationalizationService.getByUserIdOrPublic(utils.getUserId()));
 			model.addAttribute(I18NJSON, dashboardService.getAllInternationalizationJSON(dashboard).toString());
 			model.addAttribute(RESOURCEINUSE, resourcesInUseService.isInUse(id, utils.getUserId()));
 			resourcesInUseService.put(id, utils.getUserId());
 			return DASHB_CREATE;
-		} else
-
-		{
+		} else {
 			return "redirect:/dashboards/list";
 		}
 	}
@@ -582,15 +460,10 @@ public class DashboardController {
 
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@GetMapping(value = "/headerlibs/{id}", produces = "text/plain")
 	public @ResponseBody String getHeaderLibsById(@PathVariable("id") String id) {
 		return dashboardService.getDashboardById(id, utils.getUserId()).getHeaderlibs();
-	}
-
-	@GetMapping(value = "/isalive", produces = "text/plain")
-	public @ResponseBody String isalive() {
-		return "OK";
 	}
 
 	@GetMapping(value = "/model/{id}", produces = "application/json")
@@ -601,146 +474,62 @@ public class DashboardController {
 	}
 
 	@GetMapping(value = "/i18n/{id}", produces = "application/json")
-	public @ResponseBody String getI18NById(@PathVariable("id") String id, HttpServletResponse response) {
-		utils.cleanInvalidSpringCookie(response);
-		return dashboardService.getAllInternationalizationJSON(dashboardService.getDashboardById(id, utils.getUserId()))
-				.toString();
+	public @ResponseBody String getI18NById(@PathVariable("id") String id) {
+		return dashboardService.getAllInternationalizationJSON(dashboardService.getDashboardById(id, utils.getUserId())).toString();
 	}
 
 	@GetMapping(value = "/bunglemodel/{id}", produces = "application/json")
-	public @ResponseBody ResponseEntity<DashboardExportDTO> getBungleModelById(@PathVariable("id") String id,
-			HttpServletResponse response) {
-		utils.cleanInvalidSpringCookie(response);
-		ResponseEntity<DashboardExportDTO> dashboardResponse;
-		try {
-			dashboardResponse = new ResponseEntity<DashboardExportDTO>(
-					dashboardService.getBungleDashboardDTO(id, utils.getUserId()), HttpStatus.OK);
-		} catch (final DashboardServiceException e) {
-			log.error(e.getMessage());
-			switch (e.getErrorType()) {
-			case NOT_FOUND:
-				dashboardResponse = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-				break;
-			case UNAUTHORIZED:
-				dashboardResponse = new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-				break;
-			default:
-				return null;
-			}
-		} catch (final Exception e) {
-			log.error(e.getMessage());
-			dashboardResponse = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		return dashboardResponse;
+	public @ResponseBody DashboardExportDTO getBungleModelById(@PathVariable("id") String id) {
+		DashboardExportDTO dashboard = dashboardService.lightExportDashboardDTO(id, utils.getUserId());
+		return dashboard;
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/editfull/{id}", produces = "text/html")
-	public String editFullDashboard(Model model, @PathVariable("id") String id, HttpServletRequest request) {
-		return openDashboard(model, id, null, request, EDITFULL);
-	}
+	public String editFullDashboard(Model model, @PathVariable("id") String id) {
+		if (dashboardService.hasUserEditPermission(id, utils.getUserId())) {
+			final Dashboard dashboard = dashboardService.getDashboardById(id, utils.getUserId());
+			model.addAttribute(DASHBOARD_STR, dashboard);
+			model.addAttribute(HEADERLIBS, dashboard.getHeaderlibs());
+			model.addAttribute(I18NJSON, dashboardService.getAllInternationalizationJSON(dashboard).toString());
+			model.addAttribute(EDITION, true);
+			model.addAttribute(IFRAME, false);
+			model.addAttribute(HEARTBEATTIMEOUT, dashboardService.getClientMaxHeartbeatTime());
+			model.addAttribute(SYNOPT,
+					dashboard.getType() != null && dashboard.getType().equals(DashboardType.SYNOPTIC));
 
-	@GetMapping(value = "/editfulliframe/{id}", produces = "text/html")
-	public String editFullDashboardIframe(Model model, @PathVariable("id") String id,
-			@RequestParam(value = "oauthtoken", required = false) String oauthtoken, HttpServletRequest request) {
-		return openDashboard(model, id, oauthtoken, request, EDITFULLIFRAME);
-
+			final String url = IOTRBROKERSERVER.concat("/iot-broker/rest");
+			model.addAttribute(IOTBROKERURL, url);
+			// add to the model if a user is using the dashboard
+			model.addAttribute(RESOURCEINUSE, resourcesInUseService.isInUse(id, utils.getUserId()));
+			resourcesInUseService.put(id, utils.getUserId());
+			log.info("in use dashboard resource ", id);
+			return REDIRECT_DASHBOARDS_VIEW;
+		} else {
+			return REDIRECT_ERROR_403;
+		}
 	}
 
 	@GetMapping(value = "/view/{id}", produces = "text/html")
 	public String viewerDashboard(Model model, @PathVariable("id") String id, HttpServletRequest request) {
-		return openDashboard(model, id, null, request, VIEW);
-	}
-
-	@GetMapping(value = "/viewiframe/{id}", produces = "text/html")
-	public String viewerDashboardIframe(Model model, @PathVariable("id") String id,
-			@RequestParam(value = "oauthtoken", required = false) String oauthtoken, HttpServletRequest request,
-			HttpServletResponse response) {
-		utils.cleanInvalidSpringCookie(response);
-		return openDashboard(model, id, oauthtoken, request, VIEWIFRAME);
-
-	}
-
-	private String openDashboard(Model model, String id, String userToken, HttpServletRequest request, String from) {
-		// validate the origin
-		if (from.equals(EDITFULL) || from.equals(VIEW) || from.equals(EDITFULLIFRAME) || from.equals(VIEWIFRAME)) {
-			try {
-				// initialization of the variables that grant the permission
-				OAuth2Authentication info = null;
-				boolean hasPermission = false;
-				String userId;
-				// if we access with oauth2
-				if (userToken != null && userToken.length() > 0) {
-					info = (OAuth2Authentication) jwtService.getAuthentication(userToken);
-					userId = info.getUserAuthentication().getName();
-				} else {
-					// if we access with session
-					userId = utils.getUserId();
-				}
-				// We check the editing and viewing permissions
-				hasPermission = (from.equals(EDITFULLIFRAME) || from.equals(EDITFULL))
-						&& dashboardService.hasUserEditPermission(id, userId)
-						|| (from.equals(VIEW) || from.equals(VIEWIFRAME))
-								&& dashboardService.hasUserViewPermission(id, userId);
-				if (hasPermission) {
-					final Dashboard dashboard = dashboardService.getDashboardById(id, utils.getUserId());
-					model.addAttribute(DASHBOARD_STR, dashboard);
-					model.addAttribute(HEADERLIBS, dashboard.getHeaderlibs());
-					model.addAttribute(I18NJSON, dashboardService.getAllInternationalizationJSON(dashboard).toString());
-					model.addAttribute(HEARTBEATTIMEOUT, dashboardService.getClientMaxHeartbeatTime());
-					model.addAttribute(PROTOCOL, dashboardService.getProtocol());
-					model.addAttribute(SYNOPT,
-							dashboard.getType() != null && dashboard.getType().equals(DashboardType.SYNOPTIC));
-					final String url = IOTRBROKERSERVER.concat("/iot-broker/rest");
-					model.addAttribute(IOTBROKERURL, url);
-					// we assign the variables to the model based on the origin
-					if (request != null) {
-						HttpSession session = request.getSession();
-						final Object projectId = session.getAttribute(APP_ID);
-						if (projectId != null) {
-							model.addAttribute(APP_ID, projectId.toString());
-						}
-					}
-					if (from.equals(EDITFULL)) {
-						model.addAttribute(EDITION, true);
-						model.addAttribute(IFRAME, false);
-						// add to the model if a user is using the dashboard
-						model.addAttribute(RESOURCEINUSE, resourcesInUseService.isInUse(id, utils.getUserId()));
-						resourcesInUseService.put(id, utils.getUserId());
-						log.info("in use dashboard resource ", id);
-					} else if (from.equals(VIEW)) {
-						model.addAttribute(EDITION, false);
-						model.addAttribute(IFRAME, false);
-						request.getSession().removeAttribute(BLOCK_PRIOR_LOGIN);
-					} else if (from.equals(EDITFULLIFRAME)) {
-						model.addAttribute(EDITION, true);
-						model.addAttribute(IFRAME, true);
-					} else if (from.equals(VIEWIFRAME)) {
-						model.addAttribute(EDITION, false);
-						model.addAttribute(IFRAME, true);
-						request.getSession().removeAttribute(BLOCK_PRIOR_LOGIN);
-					}
-					return REDIRECT_DASHBOARDS_VIEW;
-				} else {
-					if (from.equals(VIEW)) {
-						request.getSession().setAttribute(BLOCK_PRIOR_LOGIN, request.getRequestURI());
-						return REDIRECT_LOGIN;
-					} else if (from.equals(VIEWIFRAME)) {
-						request.getSession().setAttribute(BLOCK_PRIOR_LOGIN, request.getRequestURI());
-						return REDIRECT_ERROR_403;
-					} else {
-						return REDIRECT_ERROR_403;
-					}
-				}
-			} catch (final Exception e) {
-				log.error("openDashboard", e);
-				if (from.equals(VIEW) || from.equals(VIEWIFRAME)) {
-					request.getSession().removeAttribute(BLOCK_PRIOR_LOGIN);
-				}
-				return REDIRECT_ERROR_403;
-			}
+		if (dashboardService.hasUserViewPermission(id, utils.getUserId())) {
+			final Dashboard dashboard = dashboardService.getDashboardById(id, utils.getUserId());
+			model.addAttribute(DASHBOARD_STR, dashboard);
+			model.addAttribute(HEADERLIBS, dashboard.getHeaderlibs());
+			model.addAttribute(I18NJSON, dashboardService.getAllInternationalizationJSON(dashboard).toString());
+			model.addAttribute(EDITION, false);
+			model.addAttribute(IFRAME, false);
+			model.addAttribute(HEARTBEATTIMEOUT, dashboardService.getClientMaxHeartbeatTime());
+			model.addAttribute(SYNOPT,
+					dashboard.getType() != null && dashboard.getType().equals(DashboardType.SYNOPTIC));
+			final String url = IOTRBROKERSERVER.concat("/iot-broker/rest");
+			model.addAttribute(IOTBROKERURL, url);
+			request.getSession().removeAttribute(BLOCK_PRIOR_LOGIN);
+			return REDIRECT_DASHBOARDS_VIEW;
+		} else {
+			request.getSession().setAttribute(BLOCK_PRIOR_LOGIN, request.getRequestURI());
+			return "redirect:/login";
 		}
-		return REDIRECT_ERROR_403;
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
@@ -748,7 +537,6 @@ public class DashboardController {
 	public @ResponseBody String updateDashboard(@PathVariable("id") String id,
 			@RequestParam("data") Dashboard dashboard) {
 		dashboardService.saveDashboard(id, dashboard, utils.getUserId());
-		dashboardService.generateDashboardImage(id, utils.getCurrentUserOauthToken());
 		return "ok";
 	}
 
@@ -756,16 +544,16 @@ public class DashboardController {
 	@PutMapping(value = "/savemodel/{id}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public @ResponseBody String updateDashboardModel(@PathVariable("id") String id, @RequestBody EditorDTO model) {
 		dashboardService.saveDashboardModel(id, model.getModel(), utils.getUserId());
-		dashboardService.generateDashboardImage(id, utils.getCurrentUserOauthToken());
 		return "{\"ok\":true}";
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+
+
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DEVELOPER')")
 	@PutMapping(value = "/saveheaderlibs/{id}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.TEXT_HTML_VALUE)
 	public @ResponseBody String updateDashboardHeaderLibs(@PathVariable("id") String id,
 			@RequestBody String headerlibs) {
 		dashboardService.saveDashboardHeaderLibs(id, headerlibs, utils.getUserId());
-		dashboardService.generateDashboardImage(id, utils.getCurrentUserOauthToken());
 		return "{\"ok\":true}";
 	}
 
@@ -774,6 +562,7 @@ public class DashboardController {
 	public @ResponseBody String deleteDashboard(@PathVariable("id") String id) {
 
 		try {
+			i18nRepository.deleteAll(i18nRepository.findByOPResourceId(id));
 			dashboardService.deleteDashboard(id, utils.getUserId());
 		} catch (final RuntimeException e) {
 			return "{\"ok\":false, \"error\":\"" + e.getMessage() + "\"}";
@@ -806,16 +595,59 @@ public class DashboardController {
 		}
 	}
 
+	@GetMapping(value = "/getSubcategories/{category}")
+	public @ResponseBody List<String> getSubcategories(@PathVariable("category") String category,
+			HttpServletResponse response) {
+		return subcategoryService
+				.findSubcategoriesNamesByCategory(categoryService.getCategoryByIdentification(category));
+	}
+
+	@GetMapping(value = "/editfulliframe/{id}", produces = "text/html")
+	public String editFullDashboardIframe(Model model, @PathVariable("id") String id,
+			@RequestParam("oauthtoken") String userToken) {
+
+		try {
+			OAuth2Authentication info = null;
+			if (userToken != null) {
+				info = (OAuth2Authentication) jwtService.getAuthentication(userToken);
+
+				if (dashboardService.hasUserEditPermission(id, info.getUserAuthentication().getName())) {
+					final Dashboard dashboard = dashboardService.getDashboardById(id,
+							info.getUserAuthentication().getName());
+					model.addAttribute(DASHBOARD_STR, dashboard);
+					model.addAttribute(HEADERLIBS, dashboard.getHeaderlibs());
+					model.addAttribute(I18NJSON, dashboardService.getAllInternationalizationJSON(dashboard).toString());
+					model.addAttribute(EDITION, true);
+					model.addAttribute(IFRAME, true);
+					model.addAttribute(HEARTBEATTIMEOUT, dashboardService.getClientMaxHeartbeatTime());
+					model.addAttribute(SYNOPT,
+							dashboard.getType() != null && dashboard.getType().equals(DashboardType.SYNOPTIC));
+					final String url = IOTRBROKERSERVER.concat("/iot-broker/rest");
+					model.addAttribute(IOTBROKERURL, url);
+					return REDIRECT_DASHBOARDS_VIEW;
+				} else {
+					return REDIRECT_ERROR_403;
+				}
+
+			}
+		} catch (final Exception e) {
+			log.error("editFullDashboardIframe", e);
+			return REDIRECT_ERROR_403;
+		}
+		return REDIRECT_ERROR_403;
+
+	}
+
 	@GetMapping(value = "/generateDashboardImage/{identification}")
 	@ResponseBody
 	public ResponseEntity<byte[]> generateDashboardImage(
-			@Parameter(description = "Dashboard ID", required = true) @PathVariable("identification") String id,
-			@Parameter(description = "Wait time (ms) for rendering dashboard", required = true) @RequestParam("waittime") int waittime,
-			@Parameter(description = "Render Height", required = true) @RequestParam("height") int height,
-			@Parameter(description = "Render Width", required = true) @RequestParam("width") int width,
-			@Parameter(description = "Fullpage", required = false) @RequestParam(value = "fullpage", defaultValue = "false") Boolean fullpage,
-			@Parameter(description = "Authorization", required = true) @RequestParam("token") String bearerToken,
-			@Parameter(description = "Dashboard Params", required = false) @RequestParam(value = "params", required = false) String params) {
+			@ApiParam(value = "Dashboard ID", required = true) @PathVariable("identification") String id,
+			@ApiParam(value = "Wait time (ms) for rendering dashboard", required = true) @RequestParam("waittime") int waittime,
+			@ApiParam(value = "Render Height", required = true) @RequestParam("height") int height,
+			@ApiParam(value = "Render Width", required = true) @RequestParam("width") int width,
+			@ApiParam(value = "Fullpage", required = false, defaultValue = "false") @RequestParam("fullpage") Boolean fullpage,
+			@ApiParam(value = "Authorization", required = true) @RequestParam("token") String bearerToken,
+			@ApiParam(value = "Dashboard Params", required = false) @RequestParam(value = "params", required = false) String params) {
 
 		ResponseEntity<byte[]> responseEntity;
 
@@ -840,12 +672,12 @@ public class DashboardController {
 	@GetMapping(value = "/generatePDFImage/{identification}")
 	@ResponseBody
 	public ResponseEntity<byte[]> generateDashboardPDF(
-			@Parameter(description = "Dashboard ID", required = true) @PathVariable("identification") String id,
-			@Parameter(description = "Wait time (ms) for rendering dashboard", required = true) @RequestParam("waittime") int waittime,
-			@Parameter(description = "Render Height", required = true) @RequestParam("height") int height,
-			@Parameter(description = "Render Width", required = true) @RequestParam("width") int width,
-			@Parameter(description = "Authorization", required = true) @RequestParam("token") String bearerToken,
-			@Parameter(description = "Dashboard Params", required = false) @RequestParam(value = "params", required = false) String params) {
+			@ApiParam(value = "Dashboard ID", required = true) @PathVariable("identification") String id,
+			@ApiParam(value = "Wait time (ms) for rendering dashboard", required = true) @RequestParam("waittime") int waittime,
+			@ApiParam(value = "Render Height", required = true) @RequestParam("height") int height,
+			@ApiParam(value = "Render Width", required = true) @RequestParam("width") int width,
+			@ApiParam(value = "Authorization", required = true) @RequestParam("token") String bearerToken,
+			@ApiParam(value = "Dashboard Params", required = false) @RequestParam(value = "params", required = false) String params) {
 
 		ResponseEntity<byte[]> responseEntity;
 
@@ -864,11 +696,65 @@ public class DashboardController {
 		return new ResponseEntity<>(responseEntity.getBody(), headers, HttpStatus.OK);
 	}
 
+	@GetMapping(value = "/viewiframe/{id}", produces = "text/html")
+	public String viewerDashboardIframe(Model model, @PathVariable("id") String id,
+			@RequestParam("oauthtoken") String userToken, HttpServletRequest request) {
+
+		try {
+			OAuth2Authentication info = null;
+			if (userToken != null && userToken.length() > 0) {
+				info = (OAuth2Authentication) jwtService.getAuthentication(userToken);
+				if (dashboardService.hasUserViewPermission(id, info.getUserAuthentication().getName())) {
+					final Dashboard dashboard = dashboardService.getDashboardById(id,
+							info.getUserAuthentication().getName());
+					model.addAttribute(DASHBOARD_STR, dashboard);
+					model.addAttribute(HEADERLIBS, dashboard.getHeaderlibs());
+					model.addAttribute(I18NJSON, dashboardService.getAllInternationalizationJSON(dashboard).toString());
+					model.addAttribute(EDITION, false);
+					model.addAttribute(IFRAME, true);
+					model.addAttribute(HEARTBEATTIMEOUT, dashboardService.getClientMaxHeartbeatTime());
+					model.addAttribute(SYNOPT,
+							dashboard.getType() != null && dashboard.getType().equals(DashboardType.SYNOPTIC));
+					final String url = IOTRBROKERSERVER.concat("/iot-broker/rest");
+					model.addAttribute(IOTBROKERURL, url);
+					request.getSession().removeAttribute(BLOCK_PRIOR_LOGIN);
+					return REDIRECT_DASHBOARDS_VIEW;
+				} else {
+					request.getSession().removeAttribute(BLOCK_PRIOR_LOGIN);
+					return REDIRECT_ERROR_403;
+				}
+			} else {
+				if (dashboardService.hasUserViewPermission(id, utils.getUserId())) {
+					final Dashboard dashboard = dashboardService.getDashboardById(id, utils.getUserId());
+					model.addAttribute(DASHBOARD_STR, dashboard);
+					model.addAttribute(HEADERLIBS, dashboard.getHeaderlibs());
+					model.addAttribute(I18NJSON, dashboardService.getAllInternationalizationJSON(dashboard).toString());
+					model.addAttribute(EDITION, false);
+					model.addAttribute(IFRAME, true);
+					model.addAttribute(SYNOPT,
+							dashboard.getType() != null && dashboard.getType().equals(DashboardType.SYNOPTIC));
+					final String url = IOTRBROKERSERVER.concat("/iot-broker/rest");
+					model.addAttribute(IOTBROKERURL, url);
+					request.getSession().removeAttribute(BLOCK_PRIOR_LOGIN);
+					return REDIRECT_DASHBOARDS_VIEW;
+				} else {
+					request.getSession().removeAttribute(BLOCK_PRIOR_LOGIN);
+					return REDIRECT_ERROR_403;
+				}
+			}
+		} catch (final Exception e) {
+			log.error("viewerDashboardIframe", e);
+			request.getSession().removeAttribute(BLOCK_PRIOR_LOGIN);
+			return REDIRECT_ERROR_403;
+		}
+
+	}
+
 	private ArrayList<UserDTO> getUserListDTO() {
 		final List<User> users = userService.getAllActiveUsers();
 		final ArrayList<UserDTO> userList = new ArrayList<>();
 		if (users != null && !users.isEmpty()) {
-			for (User user : users) {
+			for (final User user : users) {
 				final UserDTO uDTO = new UserDTO();
 				uDTO.setUserId(user.getUserId());
 				uDTO.setFullName(user.getFullName());
@@ -883,6 +769,25 @@ public class DashboardController {
 		return user.isActive();
 	}
 
+	private void createModifyI18nResource(String dashboardId, DashboardCreateDTO dashboard) {
+		final String i18n = dashboard.getI18n();
+		i18nRepository.deleteAll(i18nRepository.findByOPResourceId(dashboardId));
+		if (!i18n.isEmpty()) {
+			final String[] internationIds = i18n.split(",");
+			for (final String internationId : internationIds) {
+				final Internationalization inter = internationalizationService
+						.getInternationalizationById(internationId, utils.getUserId());
+				final OPResource opr = dashboardService.getDashboardById(dashboardId, utils.getUserId());
+				if (inter != null || opr != null) {
+					final I18nResources i18nR = new I18nResources();
+					i18nR.setI18n(inter);
+					i18nR.setOpResource(opr);
+					i18nRepository.save(i18nR);
+				}
+			}
+		}
+	}
+
 	@Transactional
 
 	@RequestMapping(value = "/importDashboard", method = RequestMethod.POST)
@@ -891,32 +796,12 @@ public class DashboardController {
 			@RequestParam(required = false, defaultValue = "true") boolean overwrite,
 			@RequestParam(required = false, defaultValue = "true") boolean importAuthorizations) {
 		try {
-			
 			final JSONObject response = new JSONObject();
-			final DashboardImportResponsetDTO dashboardImport = dashboardService.importDashboard(dashboardimportDTO, utils.getUserId(), overwrite, importAuthorizations);
-			final String identification = dashboardService.importDashboard(dashboardimportDTO, utils.getUserId(), overwrite, importAuthorizations).getIdentification();
-			
-			if(dashboardImport.getErrorOntologies().size() == 0) {
-				response.put("status", HttpStatus.OK);
-				response.put("message", identification);
-			} else {
-				List<String> messageontologies = new ArrayList<>();	
-				List<String> messagedatasources = new ArrayList<>();	
-				
-				List<HashMap<String, String>> list = dashboardImport.getErrorOntologies();
-				for(HashMap<String, String> hashmap : list) {
-					for(String clave : hashmap.keySet()) {
-						String valor = hashmap.get(clave);
-						messagedatasources.add(clave);
-						messageontologies.add(valor);
-					}
-				}
-				response.put("status", HttpStatus.INTERNAL_SERVER_ERROR);
-				response.put("datasources", messagedatasources);
-				response.put("ontologyDatasource", messageontologies);
-			}
-					
-			
+			final String identification = dashboardService
+					.importDashboard(dashboardimportDTO, utils.getUserId(), overwrite, importAuthorizations)
+					.getIdentification();
+			response.put("status", HttpStatus.OK);
+			response.put("message", identification);
 			return response.toString();
 
 		} catch (final DashboardServiceException e) {
@@ -967,6 +852,7 @@ public class DashboardController {
 	public @ResponseBody void freeResource(@PathVariable("id") String id) {
 		resourcesInUseService.removeByUser(id, utils.getUserId());
 		log.info("free resource", id);
+
 	}
 
 }

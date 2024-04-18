@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,8 +54,7 @@ public class UnsubscribeProcessor implements MessageTypeProcessor {
 	ObjectMapper objectMapper;
 
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info,
-			Optional<IoTSession> session) {
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info, Optional<IoTSession> session) {
 		final SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribeMessage = (SSAPMessage<SSAPBodyUnsubscribeMessage>) message;
 		SSAPMessage<SSAPBodyReturnMessage> response = new SSAPMessage<>();
 		response.setBody(new SSAPBodyReturnMessage());
@@ -70,7 +69,7 @@ public class UnsubscribeProcessor implements MessageTypeProcessor {
 		try {
 			routerResponse = routerService.unsubscribe(model);
 		} catch (final Exception e1) {
-			log.error("Error in process:{}", e1.getMessage());
+			log.error("Error in process:" + e1.getMessage());
 			response = SSAPUtils.generateErrorMessage(unsubscribeMessage, SSAPErrorCode.PROCESSOR, e1.getMessage());
 			return response;
 		}
@@ -78,9 +77,9 @@ public class UnsubscribeProcessor implements MessageTypeProcessor {
 		final String messageResponse = routerResponse.getMessage();
 		final String operation = routerResponse.getOperation();
 		final String result = routerResponse.getResult();
-		log.error("{} {} {} {}", errorCode, messageResponse, operation, result);
+		log.error(errorCode + " " + messageResponse + " " + operation + " " + result);
 
-		if (StringUtils.hasText(routerResponse.getErrorCode())) {
+		if (!StringUtils.isEmpty(routerResponse.getErrorCode())) {
 			response = SSAPUtils.generateErrorMessage(unsubscribeMessage, SSAPErrorCode.PROCESSOR,
 					routerResponse.getErrorCode());
 			return response;
@@ -97,7 +96,7 @@ public class UnsubscribeProcessor implements MessageTypeProcessor {
 			data = objectMapper.readTree(dataStr);
 			response.getBody().setData(data);
 		} catch (final IOException e) {
-			log.error("Error in process:{}", e.getMessage());
+			log.error("Error in process:" + e.getMessage());
 			response = SSAPUtils.generateErrorMessage(unsubscribeMessage, SSAPErrorCode.PROCESSOR, e.getMessage());
 			return response;
 		}
@@ -115,7 +114,7 @@ public class UnsubscribeProcessor implements MessageTypeProcessor {
 	public boolean validateMessage(SSAPMessage<? extends SSAPBodyMessage> message) {
 		final SSAPMessage<SSAPBodyUnsubscribeMessage> unsubscribeMessage = (SSAPMessage<SSAPBodyUnsubscribeMessage>) message;
 
-		if (!StringUtils.hasText(unsubscribeMessage.getBody().getSubscriptionId())) {
+		if (StringUtils.isEmpty(unsubscribeMessage.getBody().getSubscriptionId())) {
 			throw new SSAPProcessorException(String.format(MessageException.ERR_FIELD_IS_MANDATORY, "subscriptionId",
 					message.getMessageType().name()));
 		}

@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -107,7 +107,6 @@
 								<div class="caption">
 									
 									<span class="caption-subject" th:text="#{apimanager.template.autorizations}"> Authorizations</span>
-									
 									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
 								</div>									
 								<div class="tools hide">
@@ -123,9 +122,7 @@
 									</div>
 									<div class="col-md-12 margin-bottom-20">
 									<!-- SEARCH FORM -->
-										<form id="form_create_auth" action="authorize.html" th:action="@{/apimanager/authorize}" class="" role="form" method="post">
-											<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-																						
+										<form id="form_create_auth" action="authorize.html" th:action="@{/apimanager/authorize}" class="" role="form" method="post">												
 											<div class="col-md-12 no-space">
 												<h4 data-toggle="collapse" data-target="#authFilter" class="search-toggle margin-bottom-15 collapsed"  ><i class="fa fa-search"></i> <span  class="popovers"  data-trigger="hover" data-placement="top" th:attr="data-content=#{apimanager.auth.description},data-original-title=#{apimanager.auth}" th:text="#{apimanager.auth}">Search</span></h4>
 											</div>
@@ -159,13 +156,13 @@
 													</div>
 													<div class="col-md-2 col-xs-12">
 														<div class="btn-group">
-															<button type="button" id="create_api" name="create_api" th:title="#{gen.createBtn}" th:value="#{gen.createBtn}" value="Create" class="btn  btn-sm  btn-circle btn-outline blue" onclick= "validate()"> Search </button>
+															<button type="button" id="create_api" name="create_api" th:title="#{gen.createBtn}" th:value="#{gen.createBtn}" value="Create" class="btn  btn-sm  btn-circle btn-outline blue" th:onclick= "'javascript:validate();'"> Search </button>
 															<button type="button" id="reset_api" name="reset_api" value="Reset" class="btn  btn-sm  btn-circle btn-outline blue" title="Reset"><i class="la la-refresh"></i>&nbsp;</button>
 														</div>
 													</div>
 												</div>
 											</div>												
-										</form>
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
 									</div>
 									<!-- Authorization List -->
 									<div class="col-md-12">											
@@ -189,9 +186,8 @@
 							                            <td class="icon" style="white-space: nowrap">
 						                                    <form th:id="command + ${client.id}" action="list.html" th:action="@{|/apimanager/authorize/list/${client.id}|}" method="post">
 						                                        <input type="hidden" name="_method" value="DELETE"/>
-						                                        <span class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn}" th:data-original-title="#{gen.deleteBtn}" th:attr="onclick=showConfirmDialog('command[[${client.id}]]');'"><i class="la la-trash font-hg"></i></span>
-						                                    	<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-						                                    </form>                                                                                                                                                                          
+						                                        <span class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn}" th:data-original-title="#{gen.deleteBtn}" th:onclick="'javascript:showConfirmDialog(\'' + 'command' + ${client.id} + '\');'"><i class="la la-trash font-hg"></i></span>
+						                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>                                                                                                                                                                          
 							                           </td>
 							                        </tr>
 							                      </tbody>

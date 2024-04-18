@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -65,6 +65,7 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM-->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/flows/list}"> <span th:text="#{flow.breadcrumb.list}">Flows </span></a><i class="fa fa-angle-right"></i></li>
 						<li>
 							<span th:text="#{flow.breadcrumb.show}">Show Flows</span>							
@@ -78,9 +79,9 @@
 				<!-- END PAGE TITLE-->			
 				
 				<!-- MAIN ROW -->
-				<div class="row main">
+				<div class="row">
 					<div class="col-md-12">	
-						<div class="portlet light">
+						<div class="portlet light container">
 							<div class="portlet-title">
 								<div class="caption hide">									
 									<span class="caption-subject" th:text="#{flow.template.list}"> My Flows </span>
@@ -137,7 +138,7 @@
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
+	$(window).load(function(){  
 		// init on load.		
 		showLog ? console.log('SHOW NodeRed console load()...') : '';
 			

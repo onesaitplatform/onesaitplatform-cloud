@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -59,71 +59,16 @@
 			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
-				<div id="searchFilter" class="row">
-				<!-- SEARCH FORM -->
-					<form id="form_user" action="list.html" th:action="@{/users/list}" class="" role="form" method="get">
-						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-						<div class="col-md-2 col-md-6 col-xs-12">
-							<div class="input-icon">
-								<i class="icon-search font-grey-mint"></i>							
-								<input id="userid" th:placeholder="#{user.id}" name="userId" class="form-control" type="text" maxlength="70" value=""/>
-							</div>
-						</div>
-						<div class="col-md-2 col-md-6 col-xs-12">
-							<div class="input-icon">
-								<i class="icon-search font-grey-mint"></i>				
-								<input id="fullname" th:placeholder="#{user.name}" name="fullName" class="form-control" type="text" maxlength="100" value=""/>
-							</div>
-						</div>
-						<div class="col-md-2 col-md-6 col-xs-12">
-							<div class="input-icon">
-								<i class="icon-search font-grey-mint"></i>
-								<input id="email" th:placeholder="#{user.email}" name="email" class="form-control" type="text" maxlength="100" value=""/>
-							</div>
-						</div>
-						<div class="col-md-2 col-md-6 col-xs-12">
-							<div class="input-icon">
-								<i class="icon-search font-grey-mint"></i>	
-								<select id="roles" class="selectpicker form-control" data-live-search="true" data-width="100%" th:title="#{user.rolTypeName}" name="roleType">
-									<option value=""></option>
-									<option th:each="role:${roleTypes}" th:value="${role.name}" th:text="${role.name}" ></option>
-								</select>
-							</div>
-						</div>
-						<div class="col-md-2 col-md-6 col-xs-12">
-							<div class="input-icon">
-								<i class="icon-search font-grey-mint" ></i>
-								<select id="isActive" class="selectpicker form-control" data-live-search="true" data-width="100%" th:title="#{gen.active}" name="active" style="    margin-left: 30px;">
-									<option value="true" th:text="#{gen.active}"></option>
-									<option value="false" th:text="#{gen.inactive}"></option>
-								</select>
-							</div>
-						</div>											
-						<div class="col-md-2 col-xs-12">
-							<div class="pull-right">
-								<button type="button" id="reset_user" name="reset_user" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}">Reset</button>
-								<button type="button" id="search_user" name="search_user" th:value="#{gen.search}" value="Search" class="btn btn-primary btn-primary-search"> Search </button>
-							</div>
-						</div>												
-					
-					</form>								
-				</div>
 				
 				<!-- BEGIN PAGE HEADER-->
-				
-			
 				
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<!--<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>-->
-						<li><a th:href="@{/users/list}"><span th:text="#{user.template.list}"> Manage Users</span></a></li>
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+						<li><span th:text="#{user.breadcrumb.prev}">users</span></li>						
 					</ul>						
 				</div>
-				
-				
-				
-				
 				<!-- END PAGE BAR -->
 				
 				<!-- BEGIN PAGE TITLE-->
@@ -131,56 +76,91 @@
 				<!-- END PAGE TITLE-->			
 				
 				<!-- MAIN ROW -->
-				<div class="row">					
+				<div class="row">
+					<div class="col-md-12">
+					
 						<div class="portlet light">
 							<div class="portlet-title">
-								<div class="col-md-12 col-sm-6 col-xs-16" >
-									<div class="alert alert-info alert-dismissable">
-										<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
-										<i class="fa fa-info-circle"></i>
-										<span th:text="#{user.limit.excedeed}"></span>
-									</div>	
-								</div>
 								<div class="caption">									
 									<span class="caption-subject" th:text="#{user.template.list}"> Manage Users</span>
 									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
-								</div>
-								<div class="caption" style="padding: 22px 8px 8px 10px">
-									<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
-								</div>
-								<div id="search-on-title" class="hide input-icon search-icon">
-									<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
-								</div>
+								</div>							
 								
-						
-								<div class="pull-right btn-title-group">
-									<span class="btn color-blue" data-container="body" data-placement="bottom" onclick="$('#rolefilter').toggleClass('hide');turnFirstOptionToGrey();" style="margin-top:10px;padding:0"><i class="icon-filter"></i></span>
-									<span id="rolefilter" class="hide" style="display:inline-block" > </span>
-									<span class="separator"></span>
-									<div class="pull-right btn-group " id="divcreate" style="margin-left:30px;">
-										<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" type="button" class="btn btn-primary button-plus-create"   onclick="location.href='../users/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>
-									</div>		
-								</div>						
-								
-								<!--<div class="actions margin-right-20">
+								<div class="actions margin-right-20">
 									<div class="btn-group">									
 										<button id="search-toggle" type="button" class="btn btn-outline btn-circle blue" onclick="$('#searchFilter').toggleClass('hide')"><span th:text="#{gen.search}"> Search </span></button>									
-										<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='../users/create'" ><span th:text="#{gen.create}">New </span></button>									
+										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR')" type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='../users/create'" ><span th:text="#{gen.create}">New </span></button>									
 									</div>										
-								</div>-->
+								</div>
 							</div>
 							<div class="portlet-body" style="display: block; height: auto;">
 								
-								<div class="row main">									
+								<div class="row">									
+									<div id="search-container" class="col-md-12 margin-bottom-10">
+									<!-- SEARCH FORM -->
+										<form id="form_user" action="list.html" th:action="@{/users/list}" class="" role="form" method="get">																							
+											<div id="searchFilter" class="form-body hide" style="border-bottom: 1px solid #eef1f5;">
+												<div class="row">
+													<div class="col-md-2 col-md-6 col-xs-12">
+														<div class="form-group">															
+															<div class="input-group">																													
+																<input id="userid" th:placeholder="#{user.id}" name="userId" class="form-control" type="text" maxlength="70" value=""/>
+															</div>
+														</div>
+													</div>
+													<div class="col-md-2 col-md-6 col-xs-12">
+														<div class="form-group">															
+															<div class="input-group">																
+																<input id="fullname" th:placeholder="#{user.name}" name="fullName" class="form-control" type="text" maxlength="100" value=""/>
+															</div>
+														</div>
+													</div>
+													<div class="col-md-2 col-md-6 col-xs-12">
+														<div class="form-group">															
+															<div class="input-group">																
+																<input id="email" th:placeholder="#{user.email}" name="email" class="form-control" type="text" maxlength="100" value=""/>
+															</div>
+														</div>
+													</div>
+													<div class="col-md-2 col-md-6 col-xs-12">
+														<div class="form-group">															
+															<div class="input-group">															
+																<select id="roles" class="selectpicker form-control" data-live-search="true" data-width="100%" th:title="#{user.rolTypeName}" name="roleType">
+																	<option value=""></option>
+																	<option th:each="role:${roleTypes}" th:value="${role.name}" th:text="${role.name}" ></option>
+																</select>
+															</div>
+														</div>
+													</div>
+													<div class="col-md-2 col-md-6 col-xs-12">
+														<div class="form-group">															
+															<div class="input-group">															
+																<select id="isActive" class="selectpicker form-control" data-width="100%" th:title="#{gen.active}" name="active">
+																	<option value="true" th:text="#{gen.active}"></option>
+																	<option value="false" th:text="#{gen.inactive}"></option>
+																</select>
+															</div>
+														</div>
+													</div>											
+													<div class="col-md-2 col-xs-12">
+														<div class="btn-group">
+															<button type="button" id="search_user" name="search_user" th:title="#{gen.search}" th:value="#{gen.search}" value="Search" class="btn  btn-sm  btn-circle btn-outline blue" th:text="#{gen.search}"> Search </button>
+															<button type="button" id="reset_user" name="reset_user" value="Reset" class="btn  btn-sm  btn-circle btn-outline blue" title="Reset"><i class="la la-refresh"></i>&nbsp;</button>
+														</div>
+													</div>
+												</div>
+											</div>												
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>								
+									</div>
 									<!-- USER LIST -->
 									<div class="col-md-12">											
-										<div id="contenedor-tabla-outside" class="contiene hidden">																						
+										<div id="contenedor-tabla-outside" class="contiene">																						
 											<div>
 												
-												<table id="users" class="table table-hover table-striped" dt:table="true"  dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none" dt:paginationtype="full">
+												<table id="users" class="table table-light table-hover" dt:table="true"  dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none" dt:paginationtype="full_numbers">
 												
 													<thead>
-													<!--<tr class="cabecera-tabla">
+													<tr class="cabecera-tabla">
 															<th class="titulo-columnas" > <span id="identificationfilter" ></span></th>
 															<th class="titulo-columnas" > </th>
 															<th class="titulo-columnas" > </th>
@@ -192,19 +172,20 @@
 															<th class="titulo-columnas text-center"  >  </th>
 															<th th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')}" class="titulo-columnas" >  </th>
 															
-														</tr>-->
+														</tr>
 													
 														<tr class="cabecera-tabla">
 															<th dt:filterable="true" dt:filterCssClass="input-small" dt:selector="userFilter" class="titulo-columnas" > <span th:text="#{user.id}">Identification</span></th>
 															<th class="titulo-columnas" > <span th:text="#{user.name}" >Name</span></th>
 															<th class="titulo-columnas" > <span th:text="#{user.email}" >eMail</span></th>
 															<th id="roleType" dt:filterable="true" dt:filterType="select" dt:selector="roleFilter" dt:filterCssClass="input-small" class="titulo-columnas text-left" th:text="#{user.rolTypeName}">Role</th>
-															<th class="titulo-columnas text-left" > <span th:text="#{user.dateDeleted}">Deleted At </span></th>																
-															<th class="titulo-columnas text-left" th:text="#{user.active}">Active</th>
+															<th class="titulo-columnas text-center" > <span th:text="#{user.dateCreated}">Created At</span></th>
+															<th class="titulo-columnas text-center" > <span th:text="#{user.dateUpdated}">Updated At</span></th>
+															<th class="titulo-columnas text-center" > <span th:text="#{user.dateDeleted}">Deleted At </span></th>																
+															<th class="titulo-columnas text-center" th:text="#{user.active}">Active</th>
+															<th class="titulo-columnas text-center" dt:sortable="false"> <span th:text="#{gen.options}"> Options</span></th>
 															<th th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')}" class="titulo-columnas" > <span th:text="#{multitenancy.tenant}" >Tenant</span></th>
-															<th class="titulo-columnas text-left" > <span th:text="#{user.dateCreated}">Created At</span></th>
-															<th class="titulo-columnas text-left" > <span th:text="#{user.dateUpdated}">Updated At</span></th>
-															<th class="titulo-columnas text-center" dt:sortable="false" style="width:85px"> <span th:text="#{gen.options}"> Options</span></th>
+															
 														</tr>
 													</thead>
 													<tbody th:remove="all-but-first">														
@@ -217,58 +198,40 @@
 															<td class="text-left no-wrap " th:text="${user.mail}"></td>
 															<!-- ROLE -->
 															<td  class="text-left no-wrap " th:text="${user.role}"></td>
-															
-															<!-- DATE DELETED -->
-															<td class="text-left" th:if="${user.deleted!=null}">
-															<span th:with="sdf = ${new java.text.SimpleDateFormat('dd/MM/yyyy')}" th:text="${#dates.format(sdf.parse(user.deleted),'yyyy/MM/dd')}"  style="display:none"></span>
-															<span th:text="${user.deleted}" ></span></td>
-															<td class="text-left" th:if="${user.deleted==null}" th:text="'---'"></td>
-															<!-- ACTIVE -->														
-															<td class="text-left" th:if="${user.active}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span th:text="' '+#{gen.active}" style="color: #2E6B33;"></span></td>
-															<td class="text-left" th:if="${!user.active}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.inactive}" style="color: #A73535;"></span></td>
-															<!-- TENANT -->
-															<td th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')}"  class="text-left no-wrap " th:text="${user.tenant}"></td>
 															<!-- DATE CREATED -->
-															<td class="text-left" th:if="${user.created!=null}">
+															<td class="text-center" th:if="${user.created!=null}">
 															<span th:with="sdf = ${new java.text.SimpleDateFormat('dd/MM/yyyy')}" th:text="${#dates.format(sdf.parse(user.created),'yyyy/MM/dd')}"  style="display:none"></span>
 															<span th:text="${user.created}" ></span></td>
-															<td class="text-left" th:if="${user.created==null}" th:text="'---'"></td>
+															<td class="text-center" th:if="${user.created==null}" th:text="'---'"></td>
 															<!-- DATE UPDATED -->
-															<td class="text-left" th:if="${user.updated!=null}">
+															<td class="text-center" th:if="${user.updated!=null}">
 															<span th:with="sdf = ${new java.text.SimpleDateFormat('dd/MM/yyyy')}" th:text="${#dates.format(sdf.parse(user.updated),'yyyy/MM/dd')}"  style="display:none"></span>
 															<span th:text="${user.updated}" ></span></td>
-															<td class="text-left" th:if="${user.updated==null}" th:text="'---'"></td>
+															<td class="text-center" th:if="${user.updated==null}" th:text="'---'"></td>
+															<!-- DATE DELETED -->
+															<td class="text-center" th:if="${user.deleted!=null}">
+															<span th:with="sdf = ${new java.text.SimpleDateFormat('dd/MM/yyyy')}" th:text="${#dates.format(sdf.parse(user.deleted),'yyyy/MM/dd')}"  style="display:none"></span>
+															<span th:text="${user.deleted}" ></span></td>
+															<td class="text-center" th:if="${user.deleted==null}" th:text="'---'"></td>
+															<!-- ACTIVE -->
+															<td class="text-center" th:if="${user.active}"><span th:text="1" style="display:none" ></span><i class="la la-check-circle-o text-success font-hg"></i></td>
+															<td class="text-center" th:if="${!user.active}"><span th:text="0" style="display:none" ></span><i class="la la-times-circle-o text-danger font-hg"></i></td>															
+															
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
 																	<!-- VIEW -->															
-																	<span th:if="(${#authentication.name} == ${user.username}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.view}" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/users/show/${user.username}/|} + '\');'" ><i class="la la-eye font-hg"></i></span>
+																	<span th:if="(${#authentication.name} == ${user.username}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.view}" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/users/show/${user.username}/|} + '\');'" ><i class="la la-eye font-hg"></i></span>
 																	
 																	<!-- EDIT -->
-																	<span th:if="(${#authentication.name} == ${user.username}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/users/update/${user.username}|} + '/false\');'"><i class="icon-edit"></i></span>
-
-																	<span class="dropdown">
-																	<span   class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
-																	<ul class="dropdown-menu dropdown-menu-table download-menu">
-																		<li>
-																		<!-- RESET PASS -->
-																		<span th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:resetPass(\'' + ${user.username}+ '\');'"><i class="icon-key"></i><span class="span-title-three-dots-icons" th:text="#{user.reset.password}" >Reset password</span></span>
-																		</li>
-																		<li>
-																		<!-- DEACTIVATE -->
-																		<span th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR') AND ${user.active} == true" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" th:attr="onclick='javascript:deactivateUser(\'' + ${user.username}+ '\');'"><i class="icon-close" th:attr="onclick=''"></i><span class="span-title-three-dots-icons" th:text="#{user.deactivateBtn}" >Deactivate user</span></span>
-																		</li>
-																		<li>
-																		<!-- DELETE -->
-																		<span th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:attr="onclick='javascript:deleteUser(\'' + ${user.username}+ '\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete user</span></span>
-																		</li>
-																		<!-- HARD DELETE -->
-																		<span th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:attr="onclick='javascript:hardDeleteUser(\'' + ${user.username}+ '\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{user.template.list.hard.delete}" >Hard Delete user</span></span>
-																		</li>
-																	</ul>
-																	</span>
+																	<span th:if="(${#authentication.name} == ${user.username}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/users/update/${user.username}|} + '/false\');'"><i class="la la-edit font-hg"></i></span>
+																	
+																	<!-- RESET PASS -->
+																	<span th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{user.reset.password}" th:data-original-title="#{user.reset.password}" th:onclick="'javascript:resetPass(\'' + ${user.username}+ '\');'"><i class="la la-key font-hg"></i></span>
 																</div>
 															</td>
+															<!-- TENANT -->
+															<td th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')}"  class="text-left no-wrap " th:text="${user.tenant}"></td>
 														</tr>
 													</tbody>
 												</table>
@@ -276,47 +239,28 @@
 												
 												
 												<!-- TABLE TOOLBAR -->
-												<div id="dataTable-vis-toggle" class="btn-group margin-right-10 hide">
-													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
-													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
-															<label th:text="#{user.id}"> Id </label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-															<label th:text="#{user.name}"> Name </label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-															<label th:text="#{user.email}"> Email</label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
-															<label th:text="#{user.rolTypeName}"> Role</label>
-														
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-															<label th:text="#{user.dateDeleted}"> Deleted at</label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
-															<label th:text="#{user.active}"> Active </label>
-														</span>
-														<span th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')}" class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
-															<label th:text="#{multitenancy.tenant}"> Tenant </label>
-														</span>
-														
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="7" checked/>
-															<label th:text="#{user.dateCreated}"> Created At</label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="8" checked/>
-															<label th:text="#{user.dateUpdated}"> Updated At</label>
-														</span>
-													</div>		
+												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
+												
+													<!-- CLEAR-FILTERS, TOGGLE-SELECTION AND DELETE-SELECTED -->
+													<button id="clearFilters" th:value="#{gen.resetBtn}" class="btn btn-default btn-sm"><i class="fa fa-times"></i></button>
+													
+													<!-- COLUMNS TOGGLE -->
+													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-outline btn-default" th:text="#{gen.columns}">
+														<i class="fa fa-eye"></i><i class="fa fa-angle-down"></i>
+													</a>
+													<div id="column_toggler" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+														<label class="toggle-vis" data-column="0" th:text="#{user.id}"> Identification</label>
+														<label class="toggle-vis" data-column="1" th:text="#{user.name}"> Name</label>
+														<label class="toggle-vis" data-column="2" th:text="#{user.email}"> email</label>
+														<label class="toggle-vis" data-column="3" th:text="#{user.rolTypeName}"> Rol</label>
+														<label class="toggle-vis" data-column="4" th:text="#{user.dateCreated}"> Created At</label>
+														<label class="toggle-vis" data-column="5" th:text="#{user.dateUpdated}"> Updated At</label>														
+														<label class="toggle-vis" data-column="6" th:text="#{user.dateDeleted}"> Deleted At</label>
+														<label class="toggle-vis" data-column="7" th:text="#{user.active}"> Active</label>															
+														<label class="toggle-vis" data-column="8" th:text="#{gen.options}"> Options</label>
+														<label th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')}" class="toggle-vis" data-column="9" th:text="#{multitenancy.tenant}"> Tenant</label>
+													</div>
+													
 												</div>											
 											</div>
 										</div>											
@@ -324,6 +268,7 @@
 								</div>
 							</div>
 						</div><!-- END PORTLET BASIC LIGHT -->							
+					</div><!-- END COL-12 -->						
 				</div><!-- END MAIN ROW -->				
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
@@ -351,9 +296,9 @@
 	var fullname = [[${param.fullName}]] || '';
 	var email = [[${param.email}]] || '';
 	var roles = [[${param.roleType}]] || '';
+	var roles = [[${param.roleType}]] || '';
 	var active = [[${param.active}]] || '';
 	var multitenancyEnabled= [[${@environment.getProperty('onesaitplatform.multitenancy.enabled')}]]
-	var closeBtn = [[#{gen.closeBtn}]];
 	//GET SEARCH DATA
 	userid ? $('#userid').val(userid) : userid = '';
 	fullname ? $('#fullname').val(fullname) : fullname = '';
@@ -371,20 +316,9 @@
 	
 	var resetOK =[[#{user.reset.rest.mail.ok.list}]] ;
 	var resetKO = [[#{user.reset.rest.mail.ko.list}]];
-	var cancelBtn = [[#{gen.cancelBtn}]] || 'Cancel';
-	var confirmBtn = [[#{gen.confirmBtn}]] || 'Confirm';
-	var deleteTitle = [[#{user.delete.title}]] || 'Delete User';
-	var deleteText = [[#{user.hardDelete}]] || '';
-	var hardDeleteText = [[#{user.template.checkbox.hard.delete}]] || '';
-	var deleteError = [[#{user.deleteError}]] || 'Error!';
-	var deleteResourceError = [[#{user.delete.resource.error}]] || 'Error!';
-	var deleteResourceErrorAccess = [[#{user.delete.resource.error.access}]] || 'Error!';
-	
-	var deactivateTitle = [[#{user.deactivate.title}]] || 'Deactivate User';
-	var deactivateText = [[#{user.deactivateText}]] || '';
 	var languageJson = JSON.parse(datatable_lang);
 	if ( languageJson ){ $.extend( true, $.fn.dataTable.defaults, { language: languageJson }); }
-	var usersList = [[@{/users/list}]];
+
 	</script>
 	
 	<script type="text/javascript">	
@@ -409,181 +343,10 @@
 		
 	}
 	
-	// DEACTIVATE USER
-	function deactivateUser (userId){
-		console.log('deleteUserConfirmation() -> formId: '+ userId);
-		
-		// no Id no fun!
-		if ( !userId ) {$.alert({title: 'ERROR!', theme: 'light', content: 'NO USER-FORM SELECTED!'}); return false; }
-		
-		console.log('deleteUserConfirmation() -> ID: ' + userId);
-		
-		// i18 labels
-		var Remove = headerReg.btnEliminar;
-		var Close = headerReg.btnCancelar;
-		var Title = headerReg.titleConfirm + ':';
-		
-		// call user Confirm at header.
-		$.confirm({
-			title: deactivateTitle,
-			theme: 'light',
-			columnClass: 'medium',
-			content: deactivateText,
-			draggable: true,
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			buttons: {
-				close: {
-					text: cancelBtn,
-					btnClass: 'btn btn-circle btn-outline blue',
-					action: function (){} //GENERIC CLOSE.		
-				},
-				remove: {
-					text: confirmBtn,
-					btnClass: 'btn btn-primary',
-					action: function(){ 
-						navigateUrl("/controlpanel/users/deactivateUser/" +userId);
-					}											
-				}				
-			}
-		});		
-	}
-	
-	function deleteUser(id) {
-		
-		var csrf = {};
-		csrf[headerJson.csrfHeaderName] = headerJson.csrfToken;
-		
-		$.confirm({
-			title: deleteTitle,
-			theme: 'light',			
-			columnClass: 'medium',
-			content: deleteText,
-			draggable: true,
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			buttons: {
-				close: {
-					text: cancelBtn,
-					btnClass: 'btn btn-circle btn-outline blue',
-					action: function (){} //GENERIC CLOSE.		
-				},
-				remove: {
-					text: confirmBtn,
-					btnClass: 'btn btn-primary',
-					action: function(){
-						$.ajax({
-							url : "/controlpanel/users/hardDelete/"+id,
-							type : "DELETE",
-							headers: csrf,
-							success : function(response){
-								location.reload();
-							},
-						    error :  function (dataError) {						    
-						    
-						    if(dataError!=null && dataError.responseText!=null 
-						    	&& typeof dataError.responseText!='undefined' 
-						    	&& dataError.responseText.indexOf(', there are resources owned')>-1){
-						    	
-						    
-						    $.alert({
-									title : 'WARNING!',
-									type : 'orange',
-									theme : 'light',
-									content :  deleteResourceError
-								});
-						    }
-						    else  if(dataError!=null && dataError.responseText!=null 
-						    	&& typeof dataError.responseText!='undefined' 
-						    	&& dataError.responseText.indexOf('cannot be deleted because there are access permissions assigned to the user')>-1){
-						      $.alert({
-									title : 'WARNING!',
-									type : 'orange',
-									theme : 'light',
-									content :  deleteResourceErrorAccess
-								});
-						    }else{
-						    $.alert({
-									title : 'ERROR!',
-									type : 'red',
-									theme : 'light',
-									content :  deleteError
-								});
-						    }
-						    	
-						    }
-						})
-					}
-				}
-			}
-		});
-	}
-	
-	function hardDeleteUser(id) {
-		
-		var csrf = {};
-		csrf[headerJson.csrfHeaderName] = headerJson.csrfToken;
-		
-		$.confirm({
-			title: deleteTitle,
-			theme: 'light',			
-			columnClass: 'medium',
-			content: hardDeleteText,
-			draggable: true,
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			buttons: {
-				close: {
-					text: cancelBtn,
-					btnClass: 'btn btn-circle btn-outline blue',
-					action: function (){} //GENERIC CLOSE.		
-				},
-				remove: {
-					text: confirmBtn,
-					btnClass: 'btn btn-primary',
-					action: function(){
-						$.ajax({
-							url : "/controlpanel/users/forgetDataUser/"+id,
-							type : "GET",
-							headers: csrf,
-							success : function(response){
-								location.reload();
-							},
-						    error :  function (dataError) {						    
-						    
-						    if(dataError!=null && dataError.responseText!=null 
-						    	&& typeof dataError.responseText!='undefined' 
-						    	&& dataError.responseText.indexOf(', there are resources owned')>-1){
-						    	
-						    
-						    $.alert({
-									title : 'WARNING!',
-									type : 'orange',
-									theme : 'light',
-									content :  deleteResourceError
-								});
-						    }else{
-						    $.alert({
-									title : 'ERROR!',
-									type : 'red',
-									theme : 'light',
-									content :  deleteError
-								});
-						    }
-						    	
-						    }
-						})
-					}
-				}
-			}
-		});
-	}
-	
-	
-	
 function modalMessage(message){
 	$.confirm({
-		title: "Reset Password",
+		icon: 'fas fa-chart-pie',
+		title: "",
 		theme: 'light',
 		columnClass: 'medium',
 		content:`	
@@ -595,10 +358,11 @@ function modalMessage(message){
 		draggable: true,
 		dragWindowGap: 100,
 		backgroundDismiss: true,
+		closeIcon: true,
 		buttons: {			 
 			Ok: {
-				text: closeBtn,					
-				btnClass: 'btn btn-primary',
+				text: 'OK',					
+				btnClass: 'btn btn-sm btn-circle btn-outline btn-primary',
 				action: function(){ 
 				}											
 			}
@@ -607,7 +371,36 @@ function modalMessage(message){
 }
 	
 	
-
+	// MAIN WHEN READY
+	$( document ).ready(function() {
+	
+	
+		//SHOW/HIDE DATATABLE COLUMNS HANDLER
+		$('label.toggle-vis').on( 'click', function (e) {
+			e.preventDefault(); 
+			// Get the column API object
+			var column = $('#users').DataTable().column( $(this).attr('data-column') ); 
+			// Toggle the visibility
+			column.visible( ! column.visible() );
+			// Toggle visibility on filtering row
+			if ($('#filtering')){
+				$('#filtering th').eq($(this).attr('data-column')).toggle();
+			}
+			// toggle Text
+			$(this).toggleClass('text-muted line-through');			
+		});	
+		
+					
+		// SEARCH FORM RESET
+		$('#reset_user').on('click',function(){
+			$('#form_user')[0].reset();
+			$('#form_user')[0].submit();
+		});
+		
+		// SEARCH FORM
+		$('#search_user').on('click',function(){ $('#form_user')[0].submit(); });
+		
+	});
 	
 	// FUNCION PARA SELECCION SIMPLE DE REGISTROS DE UN LISTADO DATATABLE
 	var handleSingleSelection = function(pTableId){
@@ -624,87 +417,16 @@ function modalMessage(message){
 			}
 		});
 	}
-
-	function turnFirstOptionToGrey(){
-		$(".yadcf-filter").css('color','grey');
-		$(".yadcf-filter option").css('color','black');
-	}
-
-		// MAIN WHEN READY
-	$( document ).ready(function() {
-	
-		setTimeout(function(){
-			$('#users_filter input').on('keypress', function(event){
-				if (event.keyCode === 13) {
-					location.href = usersList+'?userId='+ event.target.value;
-				}
-			})
-		},1500);
-		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-		$('input.toggle-vis').on( 'change', function (e) {
-			e.preventDefault(); 
-			// Get the column API object
-			var column = $('#users').DataTable().column( $(this).attr('data-column') ); 
-			// Toggle the visibility
-			column.visible( ! column.visible() );
-			// Toggle visibility on filtering row
-			if ($('#filtering')){
-				$('#filtering th').eq($(this).attr('data-column')).toggle();
-			}
-			// toggle Text
-			//$(this).toggleClass('text-muted line-through');			
-		});	
+		 
+	// MAIN WHEN LOAD
+	$(window).load(function(){  
 		
-					
-		// SEARCH FORM RESET
-		$('#reset_user').on('click',function(){
-			$('#form_user')[0].reset();
-			$('#form_user')[0].submit();
-		});
-		
-		// SEARCH FORM
-		$('#search_user').on('click',function(){ $('#form_user')[0].submit(); });
-	
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
 		//DATATABLE 
-		var oTable = $('#users').DataTable({
-			"bAutoWidth": false
-		});
+		var oTable = $('#users').DataTable();
 		
-		// SHOW/HIDE DATATABLES COLUMN INIT
-		$('#divcreate').prepend($('#dataTable-vis-toggle'));	
-		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		// SHOW/HIDE DATATABLES COLUMN INIT 		
+		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
-
-		$('.dataTables_info').addClass('col-md-6 col-sm-6');
-		$('.dataTables_length').addClass('col-md-6 col-sm-6');
-		$('#users_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
-		$('#users_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
-
-		$('#search-on-title').append($('.dataTables_filter > label > input'));
-		$('#search-on-title > input').removeClass('input-xsmall')
-		$('#users_wrapper > div:nth-child(1)').hide();
-
-		$('.dataTables_paginate').attr('style', 'float:right !important');
-		$('.download-menu').parent().on('shown.bs.dropdown', function () {	        
-			 var $menu = $("ul", this);	        
-	         offset = $menu.offset();
-	         position = $menu.position();
-	         $('body').append($menu);
-	         $menu.show();
-	         $menu.css('position', 'absolute');
-	         $menu.css('top', (offset.top) +'px');
-	         $menu.css('left',(offset.left) +'px');
-	         $menu.css('min-width', '100px');
-	        $(this).data("myDropdownMenu", $menu);
-	     });
-		$('.download-menu').parent().on('hide.bs.dropdown', function () {
-	         $(this).append($(this).data("myDropdownMenu"));
-	         $(this).data("myDropdownMenu").removeAttr('style');
-	     });
-
-		$("#form_user > div:nth-child(4) > div > div > button > span.filter-option.pull-left").attr('style', 'padding-left: 30px;');
-		$("#form_user > div:nth-child(5) > div > div > button > span.filter-option.pull-left").attr('style', 'padding-left: 30px;');
 		
 		// FILTERING COLUMNS INIT
 		//$('#filtering').appendTo($('#users > thead'));
@@ -723,37 +445,23 @@ function modalMessage(message){
 		filtersResets.addClass('hide');				*/
 		
 		// INIT row selection
-		//handleSingleSelection('users');
+		handleSingleSelection('users');
 		
 		// HIDE COLUMNS 	
 		
 		
-		//$.each([ 1,4,6 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([ 1,6 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
-		 yadcf.init(oTable, [			
-			    {column_number : 3,   filter_type: "select",filter_container_id:"rolefilter",filter_default_label: "[[#{user.rolTypeName}]]"}			 
+		 yadcf.init(oTable, [	 			
+			    {column_number : 0, filter_type: "text",  filter_container_id:"identificationfilter",filter_default_label: "[[#{apimanager.list.text.placeholder}]]"},				
+			    {column_number : 3,   filter_type: "select",filter_container_id:"rolesFilter",filter_default_label: "[[#{apimanager.list.value.placeholder}]]"}				 
 			  ]);
 		
 		 var filtersResets = $('.yadcf-filter-reset-button');
-	    filtersResets.html('<i class="icon-delete"></i>');
-	    filtersResets.addClass("btn color-blue");
-	    filtersResets.on('click',function(e){
-	    	$('#rolefilter').toggleClass('hide');
-	    });
-
-	    turnFirstOptionToGrey();
-		$(".yadcf-filter").on("change",function(e){
-			if ($(".yadcf-filter option[value='-1']").is(":selected")){
-				turnFirstOptionToGrey();
-			} else {
-				$(".yadcf-filter").css('color','black');
-			}
-		});
+	 	 filtersResets.css('margin-left', '10px'); 
+	     filtersResets.html('<i class="fa fa-times"></i>');
+	     filtersResets.addClass("btn btn-default btn-sm");
 		 
-	     $("#contenedor-tabla-outside").removeClass("hidden");
-	     
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-   		 $.each([ 1,4,6 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 	});
 	
 	//]]>

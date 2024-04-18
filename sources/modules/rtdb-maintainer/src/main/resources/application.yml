@@ -9,13 +9,9 @@ master:
         username: root
         password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
         driver-class-name: com.mysql.cj.jdbc.Driver
-#        jdbc-url: jdbc:postgresql://localhost:5432/onesaitplatform_master_config
-#        username: postgres
-#        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph)
-#        driver-class-name: org.postgresql.Driver
         pool-name: master-hikari-pool
         minimum-idle: 1
-        maximum-pool-size: 2
+        maximum-pool-size: 3
         connection-timeout: 10000
 onesaitplatform:
    audit.global.notify: true
@@ -53,30 +49,12 @@ onesaitplatform:
       digitaltwin.database: digital_twin
       export.path: /tmp/export/
       mongoexport.path: s:/tools/mongo/bin/mongoexport
-   database.minio:
-      access-key: ENC(d6bDYa5aGMyXndGA0edIGWFtcw3UygXi)
-      secret-key: ENC(kV79KowPOv0J8QGeQ6iSQcFUqoZalNVj)
-   database.configdb:  
-      username: root
-      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph)
-      export:
-         minio.enabled: true
-         tmp.path: D:\\OP_SDK\\OP_SDK_Win_19032020\\tmp\\minio\\export\\
-         default.path: D:\\OP_SDK\\OP_SDK_Win_19032020\\tools\\mariadb\\bin\\mysqldump
-   graylog:
-      enabled: false
-      host: 127.0.0.1
-      port: 12201
    
    
 management.endpoints.web.exposure.include: "*"
 management.endpoint.health.show-details: always
-management.health.elasticsearch.enabled: false
  
 spring: ## General Config  
-   main:
-      allow-circular-references: true
-      allow-bean-definition-overriding: true
    application.name: onesaitplatform-rtdb-maintainer
    datasource:
      hikari:
@@ -85,18 +63,13 @@ spring: ## General Config
       password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
       connection-timeout: 10000
       driver-class-name: com.mysql.cj.jdbc.Driver
-#      jdbc-url: jdbc:postgresql://localhost:5432/onesaitplatform_config
-#      username: postgres
-#      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph)
-#      driver-class-name: org.postgresql.Driver
       minimum-idle: 5
-      maximum-pool-size: 10
+      maximum-pool-size: 5
       
            
    jpa:
       # The SQL dialect makes Hibernate generate better SQL for the chosen database
       properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
-#      properties.hibernate.dialect: org.hibernate.dialect.PostgreSQL95Dialect
       # Hibernate ddl auto (create, create-drop, validate, update)
       hibernate.ddl-auto: validate
       hibernate.temp.use_jdbc_metadata_defaults: false
@@ -104,8 +77,8 @@ spring: ## General Config
       client.url: http://localhost:18100/monitoring
       client.username: operations
       client.password: changeIt2019!
-      client.instance.metadata.user.name: ${spring.boot.admin.client.username}
-      client.instance.metadata.user.password: ${spring.boot.admin.client.password}
+      client.metadata.user.name: ${spring.boot.admin.username}
+      client.metadata.user.password: ${spring.boot.admin.password}
 
 quartz:      
    datasource:
@@ -114,10 +87,6 @@ quartz:
         username: root
         password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
         driver-class-name: com.mysql.cj.jdbc.Driver
-#        jdbc-url: jdbc:postgresql://localhost:5432/onesaitplatform_scheduler
-#        username: postgres
-#        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph)
-#        driver-class-name: org.postgresql.Driver
         connection-timeout: 10000
         minimum-idle: 3
         maximum-pool-size: 6 
@@ -126,7 +95,6 @@ quartz:
       ## Hibernate Properties
       # The SQL dialect makes Hibernate generate better SQL for the chosen database
       properties.hibernate.dialect: org.hibernate.dialect.MySQL5Dialect
-#      properties.hibernate.dialect: org.hibernate.dialect.PostgreSQL95Dialect
       # Hibernate ddl auto (create, create-drop, validate, update)
       properties.hibernate.hbm2ddl.auto: validate
    autoStartupSchedulers:
@@ -134,14 +102,10 @@ quartz:
       - okpiScheduler
       - expirationUsersScheduler
       - expirationResetUsersScheduler
-      - processExecutionScheduler
-      - backupMinioScheduler
-#   driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
-   driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate  
-   
+
 ## LOGGING CONF
 logging:
-   file.path: ./target/ 
-   file.name: ${spring.application.name}
+   path: ./target/ 
+   file: ${spring.application.name}
    level:
-      com.minsait: DEBUG 
+      com.minsait: INFO 

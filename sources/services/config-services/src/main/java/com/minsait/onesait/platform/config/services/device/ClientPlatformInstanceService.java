@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.List;
 import com.minsait.onesait.platform.config.components.LogOntology;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.ClientPlatformInstance;
-import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 public interface ClientPlatformInstanceService {
 
@@ -47,8 +46,7 @@ public interface ClientPlatformInstanceService {
 	void deleteClientPlatformInstance(ClientPlatformInstance clientPlatformInstance);
 	int createOrUpdateClientPlatformInstance(ClientPlatformInstance clientPlatformInstance, String cpIdentification);
 	
-	ClientPlatformInstance updateClientPlatformInstance(ClientPlatformInstance clientPlatformInstance, String cpIdentification);
-	
-	List<IoTSession> getSessionKeys(ClientPlatformInstance clientPlatformInstance);
+	ClientPlatformInstance updateClientPlatformInstance(ClientPlatformInstance clientPlatformInstance,
+			String cpIdentification);
 
 }

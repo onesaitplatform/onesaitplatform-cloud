@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.minsait.onesait.platform.commons.security.PasswordPatternMatcher;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,16 +39,12 @@ import lombok.extern.slf4j.Slf4j;
 public class AppWebUtils {
 
 	public static final String ADMINISTRATOR = "ROLE_ADMINISTRATOR";
-	private static final String PASSWORD_PATTERN = "password-pattern";
 
 	@Autowired
 	private MessageSource messageSource;
 
 	@Autowired
 	private PasswordPatternMatcher passwordPatternMatcher;
-
-	@Autowired
-	private IntegrationResourcesService resourcesService;
 
 	public Authentication getAuthentication() {
 		return SecurityContextHolder.getContext().getAuthentication();
@@ -88,9 +83,7 @@ public class AppWebUtils {
 		try {
 			return messageSource.getMessage(key, null, LocaleContextHolder.getLocale());
 		} catch (final Exception e) {
-			if (log.isDebugEnabled()) {
-				log.debug("Key:{} not found. Returns:", key, valueDefault);
-			}			
+			log.debug("Key:" + key + " not found. Returns:" + valueDefault);
 			return valueDefault;
 		}
 	}
@@ -112,7 +105,7 @@ public class AppWebUtils {
 	}
 
 	public boolean paswordValidation(String data) {
-		return passwordPatternMatcher.isValidPassword(data, getPasswordPattern());
+		return passwordPatternMatcher.isValidPassword(data);
 	}
 
 	public String beautifyJson(String json) throws JsonProcessingException {
@@ -142,7 +135,4 @@ public class AppWebUtils {
 		return pathSegmentEncode;
 	}
 
-	private String getPasswordPattern() {
-		return ((String) resourcesService.getGlobalConfiguration().getEnv().getControlpanel().get(PASSWORD_PATTERN));
-	}
 }

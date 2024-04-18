@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,7 @@ import java.util.Map;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 
-import com.minsait.onesait.platform.config.components.AIConfiguration;
-import com.minsait.onesait.platform.config.components.BundleConfiguration;
-import com.minsait.onesait.platform.config.components.CaasConfiguration;
+import com.minsait.onesait.platform.config.components.GitlabConfiguration;
 import com.minsait.onesait.platform.config.components.GlobalConfiguration;
 import com.minsait.onesait.platform.config.components.GoogleAnalyticsConfiguration;
 import com.minsait.onesait.platform.config.components.JenkinsConfiguration;
@@ -32,7 +30,6 @@ import com.minsait.onesait.platform.config.components.TwitterConfiguration;
 import com.minsait.onesait.platform.config.components.Urls;
 import com.minsait.onesait.platform.config.model.Configuration;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.git.GitlabConfiguration;
 
 public interface ConfigurationService {
 
@@ -41,11 +38,10 @@ public interface ConfigurationService {
 
 	List<Configuration> getAllConfigurations(User user);
 
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	void deleteConfiguration(String id);
 
 	Configuration getConfiguration(String id);
-
-	Configuration getConfigurationByIdentification(String identification);
 
 	List<Configuration> getConfigurations(Configuration.Type configurationTypeId);
 
@@ -79,7 +75,7 @@ public interface ConfigurationService {
 
 	OpenshiftConfiguration getOpenshiftConfiguration(String id);
 
-	List<Configuration.Type> getAllConfigurationTypes(User user);
+	List<Configuration.Type> getAllConfigurationTypes();
 
 	Configuration createConfiguration(Configuration configuration);
 
@@ -98,11 +94,5 @@ public interface ConfigurationService {
 	GlobalConfiguration getGlobalConfiguration(String environment);
 
 	GoogleAnalyticsConfiguration getGoogleAnalyticsConfiguration(String environment);
-
-	CaasConfiguration getCaasConfiguration(String id);
-
-	BundleConfiguration getBundleConfiguration();
-
-	AIConfiguration getAIConfiguration();
 
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,9 @@ import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
+import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 
 import lombok.Getter;
@@ -32,31 +32,29 @@ import lombok.Setter;
 @Entity
 @Table(name = "CATEGORIZATION")
 public class Categorization extends OPResource {
-
+	
 	private static final long serialVersionUID = 1L;
-
+	
 	@Column(name = "JSON", nullable = false)
 	@NotNull
 	@Lob
-	@Type(type = "org.hibernate.type.TextType")
+	@JsonRawValue
 	@Getter
 	@Setter
 	private String json;
-
+	
 	@Override
 	public boolean equals(Object obj) {
 
-		if (this == obj) {
+		if (this == obj)
 			return true;
-		}
 
-		if (!(obj instanceof Categorization)) {
+		if (!(obj instanceof Categorization))
 			return false;
-		}
 
 		return getIdentification().equals(((Categorization) obj).getIdentification());
 	}
-
+	
 	@Override
 	public int hashCode() {
 		return java.util.Objects.hash(getIdentification());

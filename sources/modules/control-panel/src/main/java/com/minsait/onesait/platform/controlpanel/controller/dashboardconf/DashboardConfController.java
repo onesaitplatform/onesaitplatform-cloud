@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.minsait.onesait.platform.controlpanel.controller.dashboardconf;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,12 +58,8 @@ public class DashboardConfController {
 
 	@Autowired
 	private AppWebUtils utils;
-	
-	@Autowired 
-	private HttpSession httpSession;
 
 	private static final String REDIRECT_DASHBOARD_CONF_LIST = "redirect:/dashboardconf/list";
-	private static final String APP_ID = "appId";
 
 	@RequestMapping(method = RequestMethod.POST, value = "getNamesForAutocomplete")
 	public @ResponseBody List<String> getNamesForAutocomplete() {
@@ -75,9 +70,6 @@ public class DashboardConfController {
 	@RequestMapping(value = "/list", produces = "text/html")
 	public String list(Model uiModel, HttpServletRequest request) {
 
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
 		final List<DashboardConf> dc = this.dashboardConfService.findAllDashboardConf();
 
 		uiModel.addAttribute(DASHBOARD_CONF, dc);

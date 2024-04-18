@@ -5,17 +5,8 @@ master:
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
       maximum-pool-size: ${CONFIGDB_MAX_ACTIVE}
-      driver-class-name: ${CONFIGDB_DRIVER}
      
 onesaitplatform:
-   oauth.cache:
-      timeout.seconds: ${REVOKED_TOKENS_EVICT_SEC}
-      size: ${REVOKED_TOKENS_SIZE}
-      maxsize.policy: ${REVOKED_TOKENS_SIZE_POLICY}
-   encryption:
-      key: ${ENCRYPTION_KEY}
-      iteration-count: ${ENCRYPTION_ITERATIONS}
-   secure.cors: ${CORS_ALLOWED_URLS}
    multitenancy:
       enabled: ${MULTITENANCY_ENABLED}
    database.mongodb:
@@ -26,17 +17,13 @@ onesaitplatform:
       port: 9300
    hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
    hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}      
-   audit.global.notify: ${AUDITGLOBALNOTIFY}  
+   audit.global.notify: ${AUDITGLOBALNOTIFY}
+   password.pattern: (?=^.{10,128}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$
    authentication:
-      provider: ${AUTH_PROVIDER}
       configdb:
         acl:
           enabled: ${CONFIGDB_ACL_ENABLED}
           list: ${CONFIGDB_ACL_LIST}
-   graylog:
-      enabled: ${GRAYLOG_ENABLED}
-      host: ${GRAYLOG_HOST}
-      port: ${GRAYLOG_PORT}
 
 ldap:
   url: ${LDAP_URL}
@@ -45,8 +32,6 @@ ldap:
   username: ${LDAP_ADMIN_DN}
   password: ${LDAP_ADMIN_PASSWORD}
   defaultRole: ${LDAP_DEFAULT_ROLE}
-  administratorWhitelist: ${LDAP_ADMIN_WHITELIST}
-  groupWhitelist: ${LDAP_GROUP_WHITELIST}
   platformRolesGroup:
       administrator: ${LDAP_ADMINISTRATOR_DN}
       datascientist: ${LDAP_ANALYTICS_DN}
@@ -64,7 +49,6 @@ ldap:
      cn: ${LDAP_CN_ATT}
      groupOfNames: ${LDAP_GROUP_OF_NAMES_ATT}
   rolesmemberattribute: ${LDAP_ROLES_MEMBER_ATT}
-  authentication.regex: ${LDAP_AUTH_REGEX}
 
 
 spring:
@@ -76,29 +60,17 @@ spring:
       connection-timeout: ${DS_MAX_WAIT_MILLIS}
       maximum-pool-size: ${DS_MAX_ACTIVE}
       minimum-idle: ${DS_MIN_IDLE}
-      driver-class-name: ${CONFIGDB_DRIVER}
    boot.admin: #Spring Boot Admin Config
       client.url: http://monitoringuiservice:18100/monitoring
       client.instance.service-url: http://oauthservice:${server.port}${server.servlet.contextPath}/
-      client.username: ${SBA_USERNAME}
-      client.password: ${SBA_SECRET}
    data.mongodb:
       host: ${REALTIMEDBSERVERS}
    elasticsearch.jest:
       uris: http://${ELASTICDBHOST}:${ELASTICDBPORT}
-   jpa:
-      properties.hibernate.dialect: ${CONFIGDB_DIALECT}
 quartz:
     datasource:
       hikari.jdbc-url: ${SCHEDULERDBBURL}${DBADDPROPS}
 
-security:
-  signing-key: ${JWT_KEY}
-  jwt:
-    client-secret: ${JWT_CLIENT_SECRET}
-    expiration-time: ${JWT_EXPIRATION_TIME}
 ## LOGGING CONF
 logging:
-   file.path: /var/log/platform-logs
-   level:
-      org.zalando.logbook: ${HTTP_LOG_LEVEL}
+   path: /var/log/platform-logs

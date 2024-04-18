@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,12 @@
  */
 package com.minsait.onesait.platform.config.services.flowdomain;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.config.model.Api;
@@ -30,6 +29,7 @@ import com.minsait.onesait.platform.config.model.FlowDomain.State;
 import com.minsait.onesait.platform.config.model.FlowNode;
 import com.minsait.onesait.platform.config.model.FlowNode.Type;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.FlowDomainRepository;
 import com.minsait.onesait.platform.config.repository.FlowNodeRepository;
@@ -68,7 +68,6 @@ public class FlowDomainServiceImpl implements FlowDomainService {
 	private FlowNodeRepository nodeRepository;
 
 	@Autowired
-	@Lazy
 	private OPResourceService resourceService;
 	@Autowired
 	private UserService userService;
@@ -79,10 +78,14 @@ public class FlowDomainServiceImpl implements FlowDomainService {
 
 	@Override
 	public List<FlowDomain> getFlowDomainByUser(User user) {
-		if (user.isAdmin()) {
+		if (Role.Type.ROLE_ADMINISTRATOR.name().equalsIgnoreCase(user.getRole().getId())) {
 			return domainRepository.findAll();
 		}
-		final List<FlowDomain> domains = domainRepository.findByUserAndPermissions(user);
+		final List<FlowDomain> domains = new ArrayList<>();
+		final FlowDomain domain = domainRepository.findByUserUserId(user.getUserId());
+		if (domain != null) {
+			domains.add(domain);
+		}
 		return domains;
 	}
 
@@ -98,12 +101,10 @@ public class FlowDomainServiceImpl implements FlowDomainService {
 				if (node.getFlowNodeType() == Type.API_REST) {
 					deleteFlowAPI(node, user);
 				}
-				//				nodeRepository.delete(node);
+				nodeRepository.delete(node);
 			}
-			//			flowRepository.delete(flow);
+			flowRepository.delete(flow);
 		}
-		domain.getFlows().clear();
-		domainRepository.save(domain);
 	}
 
 	private void deleteFlowAPI(FlowNode node, User user) {
@@ -142,26 +143,15 @@ public class FlowDomainServiceImpl implements FlowDomainService {
 	}
 
 	@Override
-	public FlowDomain createFlowDomain(String identification, User user, String... domainAttributes) {
+	public FlowDomain createFlowDomain(String identification, User user) {
 
 		// validate against global domains
 		if (multitenancyService.getFlowDomainByIdentification(identification) != null) {
-			if (log.isDebugEnabled()) {
-				log.debug("Flow domain {} already exist.", identification);
-			}			
+			log.debug("Flow domain {} already exist.", identification);
 			throw new FlowDomainServiceException("The requested flow domain already exists in CDB");
 		}
 
 		final FlowDomain domain = new FlowDomain();
-		// Add domain atributes if they exist
-		if (domainAttributes != null && domainAttributes.length == 1 && domainAttributes[0] != null) {
-			final JSONObject properties = new JSONObject(domainAttributes[0]);
-			domain.setId(properties.getString("id"));
-			domain.setThresholds(properties.has("thresholds") && properties.isNull("thresholds") ? null
-					: properties.getString("thresholds"));
-			domain.setAutorecover(properties.has("autorecover") && properties.isNull("autorecover") ? null
-					: properties.getBoolean("autorecover"));
-		}
 		domain.setIdentification(identification);
 		domain.setActive(true);
 		domain.setState(State.STOP.name());
@@ -239,7 +229,7 @@ public class FlowDomainServiceImpl implements FlowDomainService {
 		final FlowDomain domain = opt.get();
 		if (domain.getUser().getUserId().equals(userId)) {
 			return true;
-		} else if (userService.getUser(userId).isAdmin()) {
+		} else if (userService.getUser(userId).getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
 			return true;
 		} else {
 			return resourceService.hasAccess(userId, id, ResourceAccessType.MANAGE);
@@ -256,7 +246,7 @@ public class FlowDomainServiceImpl implements FlowDomainService {
 		final FlowDomain domain = opt.get();
 		if (domain.getUser().getUserId().equals(userId)) {
 			return true;
-		} else if (userService.getUser(userId).isAdmin()) {
+		} else if (userService.getUser(userId).getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
 			return true;
 		} else {
 			return resourceService.hasAccess(userId, id, ResourceAccessType.VIEW);
@@ -267,5 +257,4 @@ public class FlowDomainServiceImpl implements FlowDomainService {
 	public List<Flow> getFlows(FlowDomain domain) {
 		return flowRepository.findByFlowDomain_Identification(domain.getIdentification());
 	}
-
 }

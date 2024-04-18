@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -35,9 +35,7 @@
 
 	<!-- PLUGINS -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
-        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.css}" />
-        <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}" />
-	<!-- JSON EDITOR -->
+		<!-- JSON EDITOR -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}"/>
 
 <!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND BOOSTRAP-TIMEPICKER  -->
@@ -80,6 +78,7 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM-->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/apps/list}"> <span th:text="#{app.breadcrumb.prev}">apps</span></a><i class="fa fa-angle-right"></i></li>
 						<li><span th:text="#{app.breadcrumb.show}">Show	App</span></li>
 					</ul>
@@ -87,251 +86,288 @@
 				<!-- END PAGE BAR -->
 
 				<!-- BEGIN PAGE TITLE-->
-				<h1 class="page-title hide "><span th:text="#{name.app}"> onesait Platform Control Panel</span></h1>
+				<h1 class="page-title hide ">
+					<span th:text="#{name.app}"> onesait Platform Control Panel</span>
+				</h1>
 				<!-- END PAGE TITLE-->
-				
-				<div id="header">
-					<div class="row pageCreateHeader">
-						<div class="col-md-6 col-sm-6 col-xs-12">
-							<div class="margin-top-4">
-								<span th:if="${app.id} == null"	class="caption-subject " th:text="#{app.create}"> New App</span>
-								<span th:if="${app.id} != null"	class="caption-subject " th:text="${app.identification}"> Update App</span>
-							</div>
-						</div>
-						
-						<div class="col-md-6 col-sm-6 col-xs-12">
-							<div class="pull-right">
-								<!-- DELETE -->
-								<button id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete" value="Remove" th:attr="onclick='deleteAppConfirmation();'"><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
 
-								<span class="sep" th:if="${app.id} != null"></span>
-									
-								<!-- CANCEL -->											
-								<button id="cancelBtn" type="button" class="btn btn-primary-cancel"	name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/apps/list} + '\');'"><span	th:text="#{gen.cancelBtn}"> Cancel </span></button>
-
-								<span class="sep" th:if="${app.id} != null"></span>
-
-								<!-- UPDATE -->								
-								<button id="editBtn" type="button" class="btn btn-circle btn-outline blue" name="edit" value="Edit"	th:attr="onclick='javascript:navigateUrl(\'' + @{|/apps/update/${app.id}/|} + '\');'"><span th:text="#{gen.editBtn}">	Edit </span></button>
-							</div>
-						</div>
-					</div>
-				</div>
-				
 				<!-- MAIN ROW -->
-				<div class="row equal flex-container">					
-					<div class="tabContainer flex-tabs-left">
-						<div id="tab-datos" class="option active">
-							<a href="#tab_1" data-toggle="tab" aria-expanded="false">
-								<span class="" th:text="#{gen.generalInformation}">General Information</span>
-							</a>
-						</div>
-						<div id="tab-autorizaciones" class="option">
-							<a href="#tab_2" data-toggle="tab" aria-expanded="true">
-								<span class="" th:text="#{app.authorizations}">ASIGNACION DE USUARIOS </span>
-							</a>
-						</div>
-						<div id="tab-asociaciones" class="option">
-							<a href="#tab_3" data-toggle="tab" aria-expanded="true">
-								<span class="" th:text="#{app.associations}" >ASOCIACIONES </span>
-							</a>
-						</div>
-					</div>
-					<div class="tab-content flex-content-right">
-						<div class="tab-pane fade in active" id="tab_1">
-							<form role="form" id="app_create_form" th:object="${app}" method="post" class="form">
-								<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-								<!-- FORM ACTIONS FOR INSERT-->
-								<input th:if="${app.id} == null" type="hidden" name="action" th:value="@{/apps/create}" />
-
-								<!-- FORM ACTIONS FOR UPDATE -->
-								<input th:if="${app.id} != null" type="hidden" name="action" th:value="@{/apps/update}" />
-								<input th:if="${app.id} != null" type="hidden" name="_method" value="PUT" />
-								
-								<input id="id" name="id" type="hidden" th:value="${app.id}"/>
-
-								<div class="row main">
-									<div class="col-md-8 col-sm-9 col-xs-9 panelHeader">
-										<span th:text="#{gen.generalInformation}">General Information</span>
-									</div>
+				<div class="row">
+					<div class="col-md-12">
+						<div class="portlet light container">
+							<div class="portlet-title tabbable-line">
+								<div class="caption">
 								</div>
-
-								<div class="row main">
-									<div class="col-md-4 col-sm-6 col-xs-12">
-										<div class="form-group">
-											<label class="control-label" th:text="#{app.appId}">Identification</label>
-											<p id="identification"	class="form-control-static-block "	th:text="*{identification}">Identification</p>
-										</div>
-									</div>
-									<div class="col-md-4 col-sm-6 col-xs-12">
-										<div class="form-group">
-											<label class="control-label" th:text="#{app.secret}">Secret</label>
-											<p id="name" class="form-control-static-block "	th:text="*{secret}">Secret</p>
-										</div>
-									</div>
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""></a> 
+									<a href="" class="fullscreen" data-original-title="" title=""></a>
 								</div>
-								<div class="row main">
-									<div class="col-md-4 col-sm-6 col-xs-12">
-										<div class="form-group">
-											<label class="control-label" th:text="#{app.tokenValiditySeconds}">tokenValiditySeconds</label>
-											<p class="form-control-static-block " th:text="*{tokenValiditySeconds}">tokenValiditySeconds</p>
-										</div>
-									</div>
-									<div class="col-md-8 col-sm-6 col-xs-12">
-										<div class="form-group">
-											<label class="control-label" th:text="#{app.description}">description</label>
-											<p class="form-control-static-block " th:text="*{description}">Description</p>
-										</div>
-									</div>
-								</div>
-								
-								<div class="portlet light " style="padding:0px; margin:0px">
-									<div class="portlet-title" style="padding:0px; margin:0px">
-										<div class="caption">
-											 <span class="caption-subject" th:text="#{app.roles}"> Roles</span>
-										</div>
-										<div class="caption" style="padding: 22px 8px 8px 10px">
-											<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
-										</div>
-										<div id="search-on-title" class="hide input-icon search-icon">
-											<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
-										</div>
-										<div class="tools hide">
-											<a href="" class="collapse" data-original-title="" title=""></a>
-											<a href="" class="fullscreen" data-original-title="" title=""></a>
-										</div>
-									</div>
-									<div class="portlet-body" style="display: block; height: auto;">
-										<div class="row main">
-											<div class="col-md-12">
-												<div id="contenedor-tabla-outside" class="contiene">
-													<table class="table table-hover" id="datamodel_properties" data-loaded="false"  dt:table="true" dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none">
-														<thead>
-															<tr class="cabecera-tabla" role="row">
-																<th class="titulo-columnas"	th:text="#{app.role.name}">Role Name</th>
-																<th class="titulo-columnas"	th:text="#{app.role.description}">Role Description</th>
-															</tr>
-														</thead>
-														<tbody th:remove="all-but-first">
-														</tbody>
-													</table>
-												</div>
-											</div>
-										</div>
-									</div>	
-								</div>							
-								<div class="col-sm-12 col-md-12" style="display: none;">
-									<div class="form-group" style="height: auto !important;">
-										<div type="text" class="col-md-12 form-control bootstrap-tagsinput"	id="id_parameter_roles"></div>
-										<input type="hidden" id="parameter_roles" th:field="*{roles}" />
-									</div>
-								</div>
-							</form>
-						</div>
-						<div class="tab-pane fade in" id="tab_2">
-							<!-- AUTHORIZATIONS -->
-							<div class="portlet light " style="padding:0px; margin:0px">
-								<div class="portlet-title" style="padding:0px; margin:0px; padding-top:5px;">
-									<div class="panelHeader" style="display: inline;">
-										<span th:text="#{app.authorizations}">ASIGNACION DE USUARIOS</span>
-									</div>
-									<div class="caption" style="display: inline; float:none; padding-left: 5px;">
-										<a onclick="$('.search-auth-icon').toggleClass('hide')" class="search-auth-icon" ><i class="icon-search"></i></a>
-									</div>
-									<div id="search-on-title-auth" class="hide input-icon search-auth-icon" style="display: inline; float:none">
-										<a class ="input-icon" onclick="$('.search-auth-icon').toggleClass('hide')"><i class="icon-search" style="display: inline;"></i></a>
-									</div>
-									<div class="tools hide">
-										<a href="" class="collapse" data-original-title="" title=""></a>
-										<a href="" class="fullscreen" data-original-title="" title=""></a>
-									</div>
-								</div>
-								<div class="portlet-body" style="display: block; height: auto;">
-									<div class="row main">
-										<div class="col-md-12">
-											<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
-												<!-- DATATABLE DANDELION CONF. -->												
-												<table id="authorizations" class="table table-hover" data-loaded="false"  dt:table="true" dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none">
-													<thead>
-														<tr class="cabecera-tabla" role="row">
-															<th class="titulo-columnas text-left" th:text="#{app.user}">User</th>
-															<th class="titulo-columnas text-left" ><span th:text="#{app.user.fullName}" >Full Name</span></th>
-															<th id="roleType" class="titulo-columnas text-left" th:text="#{app.auth.role}">Role</th>
-														</tr>
-													</thead>
-													<tbody th:remove="all-but-first">
-														<tr th:each="authorization : ${authorizations}" pages:paginate="10" style="height:32px">
-															<!-- IDENTIFICATION/NAME -->
-															<td class="text-left" th:text="${authorization.user}"></td>
-															<!-- USER -->
-															<td class="text-left" th:text="${authorization.userName}"></td>
-															<!-- ROLE  -->
-															<td class="text-left" th:text="${authorization.roleName}"></td>																
-														</tr>
-													</tbody>
-												</table>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-						<div class="tab-pane fade in" id="tab_3">
-						<!-- APP ASSOCIATIONS -->
-							<div class="portlet light " style="padding:0px; margin:0px">
-								<div class="portlet-title" style="padding:0px; margin:0px; padding-top:5px;">
-									<div class="panelHeader" style="display: inline;">
-										<span th:text="#{app.associations}" >ASOCIACIONES </span>
-									</div>
-									<div class="caption" style="display: inline; float:none; padding-left: 5px;">
-										<a onclick="$('.search-assoc-icon').toggleClass('hide')" class="search-assoc-icon" ><i class="icon-search"></i></a>
-									</div>
-									<div id="search-on-title-assoc" class="hide input-icon search-assoc-icon" style="display: inline; float:none">
-										<a class ="input-icon" onclick="$('.search-assoc-icon').toggleClass('hide')"><i class="icon-search" style="display: inline;"></i></a>
-									</div>
-									<div class="tools hide">
-										<a href="" class="collapse" data-original-title="" title=""></a>
-										<a href="" class="fullscreen" data-original-title="" title=""></a>
-									</div>
-								</div>
+								<!-- SECCIONES DE LA APP TABS -->
+								<ul class="nav nav-tabs pull-left">
+									<li id="tab-datos" class="active"><a href="#tab_1" data-toggle="tab" aria-expanded="false">	<span class="" th:text="#{app.breadcrumb.show} + ' ' + ${app.identification}"> App Identification</span></a></li>
+									<li id="tab-autorizaciones" class=""><a href="#tab_2" data-toggle="tab" aria-expanded="true"><span class="" th:text="#{app.authorizations}">ASIGNACION DE USUARIOS </span></a></li>
+									<li id="tab-asociaciones" class=""><a href="#tab_3" data-toggle="tab" aria-expanded="true"><span class="" th:text="#{app.associations}" >ASOCIACIONES </span></a></li>						
+								</ul>
 							</div>
 							<div class="portlet-body" style="display: block; height: auto;">
-								<div class="row main">
-									<div class="col-md-12">								
-										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
-											<!-- DATATABLE DANDELION CONF. -->												
-											<table id="associations" class="table table-hover" data-loaded="false"  dt:table="true" dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none">
-												<thead>
-													<tr class="cabecera-tabla">
-														<th class="titulo-columnas text-left" th:text="#{app.appFather}">Father App</th>
-														<th class="titulo-columnas text-left" th:text="#{app.appChild}" >Child App</th>
-														<th class="titulo-columnas text-left" th:text="#{app.roleFather}">Father Role</th>
-														<th class="titulo-columnas text-left" th:text="#{app.roleChild}">Child Role</th>
-													</tr>
-												</thead>
-												<tbody th:remove="all-but-first">
-													<tr th:each="association : ${associations}" pages:paginate="10" style="height:32px">
-														<!-- FATHER APP -->
-														<td class="text-left" th:text="${association.fatherAppId}"></td>
-														<!-- CHILD APP-->
-														<td class="text-left " th:text="${association.childAppId}"></td>
-														<!-- FATHER ROLE  -->
-														<td class="text-left " th:text="${association.fatherRoleName}"></td>	
-														<!-- CHILD ROLE  -->
-														<td class="text-left " th:text="${association.childRoleName}"></td>																
-													</tr>
-												</tbody>
-											</table>																						
+								<div class="tab-content">
+									<div class="tab-pane active" id="tab_1">
+								<div class="row">
+									<div class="col-md-12 alert-zone">
+										<!-- ALERTS ZONE -->
+										<div class="alert alert-danger display-hide">
+											<button class="close" data-close="alert"></button>
+											<span th:text="#{gen.form.error}">You have some form
+												errors. Please check below.</span>
 										</div>
-									</div>											
+										<div class="alert alert-success display-hide">
+											<button class="close" data-close="alert"></button>
+											<span th:text="#{app.form.success}">You have successfully saved the app!</span>
+										</div>
+									</div>
+									<div class="col-md-12">
+										<form role="form" id="app_create_form"
+											th:object="${app}" method="post" class="form">
+											<!-- FORM ACTIONS FOR INSERT-->
+											<input th:if="${app.id} == null" type="hidden" name="action" th:value="@{/apps/create}" />
+
+											<!-- FORM ACTIONS FOR UPDATE -->
+											<input th:if="${app.id} != null" type="hidden" name="action" th:value="@{/apps/update}" /> <input
+												th:if="${app.id} != null" type="hidden" name="_method" value="PUT" />
+
+											<input id="id" name="id" type="hidden" th:value="${app.id}"/>
+
+											<div class="form-body">
+												<!-- user, name and email -->
+												<div class="row">
+													<div class="col-md-4 col-sm-6 col-xs-12">
+														<div class="form-group">
+															<label th:text="#{app.appId} + ':'">Identification</label>
+															<p id="identification"	class="form-control-static-block "	th:text="*{identification}">Identification</p>
+														</div>
+													</div>
+													<div class="col-md-4 col-sm-6 col-xs-12">
+														<div class="form-group">
+															<label th:text="#{app.secret} + ':'">Secret</label>
+															<p id="name" class="form-control-static-block "	th:text="*{secret}">Secret</p>
+														</div>
+													</div>
+													<div class="col-md-4 col-sm-6 col-xs-12">
+														<div class="form-group">
+															<label th:text="#{app.tokenValiditySeconds} + ':'">tokenValiditySeconds</label>
+															<p class="form-control-static-block " th:text="*{tokenValiditySeconds}">tokenValiditySeconds</p>
+														</div>
+													</div>
+													<div class="col-md-12 col-sm-12 col-xs-12">
+														<div class="form-group">
+															<label th:text="#{app.description} + ':'">description</label>
+															<p class="form-control-static-block " th:text="*{description}">Description</p>
+														</div>
+													</div>
+												</div>
+												<hr></hr>
+												<!-- Roles -->
+												<div class="row">
+
+													<!-- TEMPLATE FIELDS -->
+													<div class="col-lg-12 col-md-12 col-xs-12">
+														<div id="template_schema" class="margin-bottom-20 ">
+															<table class="table table-light table-hover table-striped" id="datamodel_properties" data-loaded="false">
+																<thead>
+																	<tr class="cabecera-tabla" role="row">
+																		<th class="titulo-columnas"><label
+																			id="label_available" class="description"
+																			th:text="#{app.role.name}">Role Name</label></th>
+																		<th class="titulo-columnas"><label
+																			id="label_available" class="description"
+																			th:text="#{app.role.description}">Role
+																				Description</label></th>
+																	</tr>
+																</thead>
+																<tbody>
+
+																</tbody>
+																<tfoot>
+																	<tr>
+																		<td colspan="4"></td>
+																	</tr>
+																</tfoot>
+															</table>
+														</div>
+													</div>
+												</div>
+												<div class="col-sm-12 col-md-12" style="display: none;">
+																<div class="form-group" style="height: auto !important;">
+																	<div type="text"
+																class="col-md-12 form-control bootstrap-tagsinput"
+																id="id_parameter_roles"></div>
+																	<input type="hidden"
+																		id="parameter_roles"
+																		th:field="*{roles}" />
+																</div>
+												</div>
+											</div>
+											<div class="form-actions">
+												<div class="pull-left">
+													<!-- CANCEL TO-DO: authentication and control -->
+													<button id="cancelBtn" type="button"
+														class="btn btn-circle btn-outline blue no-border"
+														name="cancel" th:value="#{gen.cancelBtn}" value="cancel"
+														th:onclick="'javascript:navigateUrl(\'' + @{/apps/list} + '\');'">
+														<i class="la la-arrow-left"></i><span
+															th:text="#{gen.cancelBtn}"> Cancel </span>
+													</button>
+												</div>
+												<div class="pull-right">
+													
+
+													<!-- REMOVE -->
+													<button id="deleteBtn" type="button"
+														class="btn btn-circle btn-outline blue" name="delete"
+														value="Remove" th:onclick="'deleteAppConfirmation();'">
+														 <span
+															th:text="#{gen.deleteBtn}"> Delete </span>
+													</button>
+													
+													<span class="sep no-border"></span>
+													
+													<!-- MODIFY TO-DO: == and != has the same onClick? check! -->
+													<button id="editBtn" type="button"
+														class="btn btn-circle btn-outline blue" name="edit"
+														value="Edit"
+														th:onclick="'javascript:navigateUrl(\'' + @{|/apps/update/${app.id}/|} + '\');'">
+														<span th:text="#{gen.editBtn}">
+															Edit </span>
+													</button>
+
+													<span class="sep"></span>
+													
+													
+													<!-- CREATE -->
+													<button id="createBtn" type="button"
+														class="btn btn-circle btn-outline btn-primary" name="create"
+														value="Create"
+														th:onclick="'javascript:navigateUrl(\'' + @{/apps/} + 'create' + '\');'">
+														 <span
+															th:text="#{gen.createBtn}"> New</span>
+													</button>
+
+													
+
+													
+
+												</div>
+											</div>
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+
+
+									</div>
 								</div>
 							</div>
+							<div class="tab-pane " id="tab_2">
+									<!-- AUTHORIZATIONS -->
+										<div class="row">
+											<div class="col-md-12">											
+												<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
+													<div>
+														<!-- DATATABLE DANDELION CONF. -->												
+														<table id="authorizations" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
+															<thead>
+																<tr class="cabecera-tabla">
+																	<th class="titulo-columnas text-left" th:text="#{app.user}">User</th>
+																	<th class="titulo-columnas text-left" ><span th:text="#{app.user.fullName}" >Full Name</span></th>
+																	<th class="titulo-columnas text-left" th:text="#{app.auth.role}">Role</th>
+																</tr>
+															</thead>
+															<tbody th:remove="all-but-first">
+																<tr th:each="authorization : ${authorizations}" pages:paginate="10">
+																	<!-- IDENTIFICATION/NAME -->
+																	<td class="text-left no-wrap bold" th:text="${authorization.user}"></td>
+																	<!-- USER -->
+																	<td class="text-left " th:text="${authorization.userName}"></td>
+																	<!-- ROLE  -->
+																	<td class="text-left " th:text="${authorization.roleName}"></td>																
+																</tr>
+															</tbody>
+														</table>
+														<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+														<div id="dataTable-vis-toggle-auth" class="btn-group margin-left-10 hide">
+															<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
+																<span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
+															</a>
+															<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+																<label class="toggle-vis-auth" data-column="0" th:text="#{app.user}"> User </label>
+																<label class="toggle-vis-auth" data-column="1" th:text="#{app.user.fullName}"> Full Name </label>
+																<label class="toggle-vis-auth" data-column="2" th:text="#{app.auth.role}"> Role </label>															
+															</div>
+														</div>																							
+													</div>
+												</div>											
+											</div>
+										</div>
+									</div>
+									<div class="tab-pane " id="tab_3">
+									<!-- ASSOCIATIONS -->
+										<div class="row">
+											<div class="col-md-12">											
+												<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
+													<div>
+														<!-- DATATABLE DANDELION CONF. -->												
+														<table id="associations" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
+															<thead>
+																<tr class="cabecera-tabla">
+																	<th class="titulo-columnas text-left" th:text="#{app.appFather}">Father App</th>
+																	<th class="titulo-columnas text-left" th:text="#{app.appChild}" >Child App</th>
+																	<th class="titulo-columnas text-left" th:text="#{app.roleFather}">Father Role</th>
+																	<th class="titulo-columnas text-left" th:text="#{app.roleChild}">Child Role</th>
+																</tr>
+															</thead>
+															<tbody th:remove="all-but-first">
+																<tr th:each="association : ${associations}" pages:paginate="10">
+																	<!-- FATHER APP -->
+																	<td class="text-left no-wrap bold" th:text="${association.fatherAppId}"></td>
+																	<!-- CHILD APP-->
+																	<td class="text-left " th:text="${association.childAppId}"></td>
+																	<!-- FATHER ROLE  -->
+																	<td class="text-left " th:text="${association.fatherRoleName}"></td>	
+																	<!-- CHILD ROLE  -->
+																	<td class="text-left " th:text="${association.childRoleName}"></td>																
+																</tr>
+															</tbody>
+														</table>
+														<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+														<div id="dataTable-vis-toggle-assoc" class="btn-group margin-left-10 hide">
+															<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
+																<span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
+															</a>
+															<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+																<label class="toggle-vis-assoc" data-column="0" th:text="#{app.appFather}"> Father App </label>
+																<label class="toggle-vis-assoc" data-column="1" th:text="#{app.appChild}"> Child App </label>
+																<label class="toggle-vis-assoc" data-column="2" th:text="#{app.roleFather}"> Father Role </label>
+																<label class="toggle-vis-assoc" data-column="3" th:text="#{app.roleChild}"> Child Role </label>															
+															</div>
+														</div>																							
+													</div>
+												</div>											
+											</div>
+										</div>
+									</div>
+
+
 						</div>
+							</div>
+						</div>
+						<!-- END PORTLET BASIC  -->
 					</div>
+					<!-- END COL-12 -->
 				</div>
+				<!-- END MAIN ROW -->
 			</div>
-		</div><!-- END CONTENT page-content-wrapper -->
-	</div><!-- END MAIN PAGE WRAPPER -->
+			<!-- END CONTENT BODY -->
+		</div>
+		<!-- END CONTENT page-content-wrapper -->
+	</div>
+	<!-- END MAIN PAGE WRAPPER -->
 
 	<!-- FOOTER INCLUDE -->
 	<footer th:include="fragments/footer::#footerFragment"
@@ -344,8 +380,7 @@
 	<!-- PLUGINS -->
 	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" ></script>
 	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}" ></script>
-	<script th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}" ></script>
-    <script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
 	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
 
 	<!-- JSON EDITOR -->	
@@ -376,175 +411,35 @@
 	
 	// REDIRECT
 	function navigateUrl(url){  window.location.href = url;	}
-	var oTable ;
-	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
-		// init on load.		
-		//DATATABLE 
-		oTable =  $('#authorizations').DataTable();
-		var oTable2 = $('#associations').DataTable();
-		var oTable3 = $('#datamodel_properties').DataTable();
-		
-		// SHOW/HIDE DATATABLES COLUMN INIT 		
-		$('#datamodel_properties_wrapper div.dataTables_filter').addClass('hide');
-		$('#datamodel_properties_wrapper > div.row').addClass('hide');
-		
-		$('#dataTable-vis-toggle-datamodel').removeClass('hide');
-		// SHOW/HIDE DATATABLES COLUMN INIT 		
-		$('#authorizations_wrapper div.dataTables_filter').addClass('hide');
-		$('#authorizations_wrapper > div.row').addClass('hide');
-		$('#dataTable-vis-toggle-auth').removeClass('hide');
-		// SHOW/HIDE DATATABLES COLUMN INIT
-		$('#associations_wrapper div.dataTables_filter').addClass('hide');
-		$('#associations_wrapper > div.row').addClass('hide');
-		$('#dataTable-vis-toggle-assoc').removeClass('hide');
-		
-		$('.dataTables_info').addClass('col-md-6 col-sm-6');
-		$('.dataTables_length').addClass('col-md-6 col-sm-6');
-		$('#authorizations_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
-		$('#authorizations_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('#authorizations_length'));
-		$('#associations_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
-		$('#associations_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('#associations_length'));
-		$('#datamodel_properties_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
-		$('#datamodel_properties_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('#datamodel_properties_length'));
-
-		$('#search-on-title-assoc').append($('#associations_wrapper div.dataTables_filter > label > input'));
-		$('#search-on-title-assoc > input').removeClass('input-xsmall')
-		$('#search-on-title-auth').append($('#authorizations_wrapper div.dataTables_filter > label > input'));
-		$('#search-on-title-auth > input').removeClass('input-xsmall')
-		$('#search-on-title').append($('#datamodel_properties_wrapper div.dataTables_filter > label > input'));
-		$('#search-on-title > input').removeClass('input-xsmall')
-		
-		$('.dataTables_paginate').attr('style', 'float:right !important');
-		
-		// FILTERING COLUMNS INIT
-		$('#filtering').appendTo($('#datamodel_properties > thead'));
-		$('#filtering').removeClass('hide');
-		// FILTERING COLUMNS INIT
-		$('#filtering').appendTo($('#authorizations > thead'));
-		$('#filtering').removeClass('hide');
-		// FILTERING COLUMNS INIT
-		$('#filtering').appendTo($('#associations > thead'));
-		$('#filtering').removeClass('hide');
-		
-		// RESET ALL FILTERS BTN
-		$('#clearFilters').on('click', function(){			
-			yadcf.exResetAllFilters(oTable3);		
-		});	
-		// RESET ALL FILTERS BTN
-		$('#clearFilters').on('click', function(){			
-			yadcf.exResetAllFilters(oTable);		
-		});	
-		// RESET ALL FILTERS BTN
-		$('#clearFilters').on('click', function(){			
-			yadcf.exResetAllFilters(oTable2);		
-		});	
-
-		// INIT row selection
-		handleSingleSelection('datamodel_properties');
-		// INIT row selection
-		handleSingleSelection('authorizations');
-		// INIT row selection
-		handleSingleSelection('associations');
-		
-		
-/* 		yadcf.init(oTable, [	 			
-		    {column_number : 0, filter_type: "text",  filter_container_id:"usersFilter",filter_default_label: [[#{apimanager.list.text.placeholder}]]},				
-		    {column_number : 2,   filter_type: "select",filter_container_id:"rolesFilter",filter_default_label: [[#{apimanager.list.value.placeholder}]]}				 
-		  ]);
 	
-    	 var filtersResets = $('.yadcf-filter-reset-button');
-     	 filtersResets.css('margin-left', '10px'); 
-         filtersResets.html('<i class="fa fa-times"></i>');
-         filtersResets.addClass("btn btn-default btn-sm"); */
+	// MAIN WHEN LOAD
+	$(window).load(function(){  
+		// init on load.		
+		
+		
+		// SHOW/HIDE DATATABLES COLUMN INIT 		
+		$('#authorizations_wrapper div.dataTables_filter').append($('#dataTable-vis-toggle-auth'));		
+		$('#dataTable-vis-toggle-auth').removeClass('hide');
+
+		// SHOW/HIDE DATATABLES COLUMN INIT
+		$('#associations_wrapper div.dataTables_filter').append($('#dataTable-vis-toggle-assoc'));		
+		$('#dataTable-vis-toggle-assoc').removeClass('hide');
 	
 	});
 
-	function searchAuthorizations(value){
-		//searchAutorizations
-		let url = [[@{|/api/realms/${app.identification}/authorizations/|}]];
-		fetch(url + value)
-		.then(r => r.json())
-		.then(r => {
-			oTable.destroy();
-			
-			oTable = $('#authorizations').DataTable(
-				{  data: r,
-				  "columns" : [
-				      { "data" : "user" },
-				      { "data" : "userName" },
-				      { "data" : "roleName" }
-				  ]
-				}
-			)
-			// RESET ALL FILTERS BTN
- 			$('#clearFilters').on('click', function(){			
-				yadcf.exResetAllFilters(oTable);		
-			});	
-			yadcf.init(oTable, [	 			
-			    {column_number : 0, filter_type: "text",  filter_container_id:"usersFilter",filter_default_label: [[#{apimanager.list.text.placeholder}]]},				
-			    {column_number : 2,   filter_type: "select",filter_container_id:"rolesFilter",filter_default_label: [[#{apimanager.list.value.placeholder}]]}				 
-			  ]);
-			 var filtersResets = $('.yadcf-filter-reset-button');
-	     	 filtersResets.css('margin-left', '10px'); 
-	         filtersResets.html('<i class="fa fa-times"></i>');
-	         filtersResets.addClass("btn btn-default btn-sm");
-	         $('#authorizations_filter input').on('keypress', function(event){
-					if (event.keyCode === 13) {
-						searchAuthorizations(event.target.value);
-					}
-				})
-		});
-		
-		/*$.get(url + value, function(response) {
-			
-		});*/
-	}
-	
 	$( document ).ready(function() {
-		
-		//Search if users empty
-		if([[${authorizations.isEmpty()}]]){
-			setTimeout(function(){
-					$('#authorizations_filter input').on('keypress', function(event){
-						if (event.keyCode === 13) {
-							searchAuthorizations(event.target.value);
-						}
-					})
-			},1500);
-		}
-		
 		updateRoles($("#parameter_roles").val());
-		
+
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-		$('label.toggle-vis-datamodel').on( 'click', function (e) {
-			e.preventDefault(); 
-			// Get the column API object
-			var columnAuth = $('#datamodel_properties').DataTable().column( $(this).attr('data-column') ); 
-			// Toggle the visibility
-			columnAuth.visible( ! columnAuth.visible() );	
-			// Toggle visibility on filtering row
-			if ($('#filtering')){
-				$('#filtering th').eq($(this).attr('data-column')).toggle();
-			}
-			// toggle Text
-			$(this).toggleClass('text-muted line-through');			
-		});	
-		
-		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-/* 		$('label.toggle-vis-auth').on( 'click', function (e) {
+		$('label.toggle-vis-auth').on( 'click', function (e) {
 			e.preventDefault(); 
 			// Get the column API object
 			var columnAuth = $('#authorizations').DataTable().column( $(this).attr('data-column') ); 
 			// Toggle the visibility
 			columnAuth.visible( ! columnAuth.visible() );	
-			// Toggle visibility on filtering row
-			if ($('#filtering')){
-				$('#filtering th').eq($(this).attr('data-column')).toggle();
-			}
 			// toggle Text
 			$(this).toggleClass('text-muted line-through');			
-		});	 */
+		});	
 
 		$('label.toggle-vis-assoc').on( 'click', function (e) {
 			e.preventDefault(); 
@@ -552,47 +447,21 @@
 			var columnAssoc = $('#associations').DataTable().column( $(this).attr('data-column') );
 			// Toggle the visibility
 			columnAssoc.visible( ! columnAssoc.visible() );		
-			// Toggle visibility on filtering row
-			if ($('#filtering')){
-				$('#filtering th').eq($(this).attr('data-column')).toggle();
-			}
 			// toggle Text
 			$(this).toggleClass('text-muted line-through');			
 		});	
-		
-		// tab control 
-		$(".option").on("click", function(e) {
-			$('.tabContainer').find('.option').removeClass('active');
-	        $(this).closest("div").addClass('active');
-		});	
-		
 	});
-	
-	// FUNCION PARA SELECCION SIMPLE DE REGISTROS DE UN LISTADO DATATABLE
-	var handleSingleSelection = function(pTableId){
-		$("#"+pTableId).on('click','tr:not(.tr-detail)',function(event){
-			if ($(event.target).is('td')){
-				event.stopPropagation();
-				var eleRow = $(event.target).parent('tr');
-				
-				// SE CUENTAN LAS FILAS QUE NO SEAN CABECERA NI FILTRO.
-				if (!$(eleRow).hasClass('cabecera-tabla') && !$(eleRow).hasClass('filtering')){
-					// SUCCESS VISUAL SELECTION
-					$(eleRow).hasClass('success') ?  $(eleRow).removeClass('success') : $(eleRow).addClass('success');
-				}
-			}
-		});
-	}
 
 	function  updateRoles  (roles){		 
 		 var createdRoles =  JSON.parse(roles);		 
 		if(createdRoles!==null && createdRoles.length >0){
 			 for (var i = 0; i < createdRoles.length; i++) {
 				var role = createdRoles[i];
-				 $('#datamodel_properties > tbody').append('<tr pages:paginate="10" data-roleName="'+role.name+'" style="height:32px; data-roleDescription="'+role.description+'"><td>'+role.name+'</td><td >'+role.description+'</td></tr>');			
+				 $('#datamodel_properties > tbody').append('<tr data-roleName="'+role.name+'" data-roleDescription="'+role.description+'"><td>'+role.name+'</td><td >'+role.description+'</td></tr>');			
 			 }
 		}
-	  }
+	    	
+	    }
 	
 		 
 	 function deleteAppConfirmation (){
@@ -600,7 +469,7 @@
 		var id = $("#id").val();
 		
 		// no Id no fun!
-		if ( !id ) {$.alert({title: 'Error',type: 'red' , theme: 'light', content: 'NO USER-FORM SELECTED!'}); return false; }
+		if ( !id ) {$.alert({title: 'ERROR!',type: 'red' , theme: 'dark', content: 'NO USER-FORM SELECTED!'}); return false; }
 		
 		// call  Confirm 
 		showConfirmDeleteDialog(id);	
@@ -615,26 +484,23 @@
 		var Close = headerReg.btnCancelar;
 		var Remove = headerReg.btnEliminar;
 		var Content = [[#{app.delete.confirm}]];
-		var Title = headerReg.appDelete;
+		var Title = headerReg.titleConfirm + ':';
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
+			icon: 'fa fa-warning',
 			title: Title,
-			theme: 'light',
+			theme: 'dark',
 			columnClass: 'medium',
 			content: Content,
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
+			closeIcon: true,
 			buttons: {
-				close: {
-					text: Close,
-					btnClass: 'btn btn-outline blue dialog',
-					action: function (){} //GENERIC CLOSE.		
-				},
 				remove: {
 					text: Remove,
-					btnClass: 'btn btn-primary',
+					btnClass: 'btn btn-sm btn-danger btn-outline',
 					action: function(){ 
 						console.log(id);
 						$.ajax({
@@ -649,6 +515,11 @@
 						    }
 						});
 					}											
+				},
+				close: {
+					text: Close,
+					btnClass: 'btn btn-sm btn-default btn-outline',
+					action: function (){} //GENERIC CLOSE.		
 				}
 			}
 		});

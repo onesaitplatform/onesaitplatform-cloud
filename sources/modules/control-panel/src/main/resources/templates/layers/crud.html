@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/cesium/Widgets/widgets.css}"/>
 		
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/fontawesome/v5.6.1/all.css}"/>
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous"/>
 		<style>
 		
 	  #cesiumContainer {
@@ -124,20 +124,26 @@
 											</div>
 											<div class="col-md-4 col-sm-6 col-xs-12">
 												<div class="form-group">
-													<label class="" th:text="#{viewer.latitude}">Latitude</label><span class="required"> *</span>
-													<input th:tabindex="1" id="latitude_gen" type="text" name="latitude" maxlength="50" class="form-control"/>
+													<label class="" th:text="#{viewer.latitude} + ':'">Latitude</label><span class="required"> *</span>
+													<div class="input-icon ">
+														<input th:tabindex="1" id="latitude_gen" type="text" name="latitude"  maxlength="50" class="form-control "  th:placeholder="#{viewer.latitude}"/>
+													</div>
 												</div>
 											</div>
 											<div class="col-md-4 col-sm-6 col-xs-12">
 												<div class="form-group">
-													<label class="" th:text="#{viewer.longitude}">Longitude</label><span class="required"> *</span>
-													<input th:tabindex="2" name="longitude" id="longitude_gen" type="text" maxlength="50" class="form-control"/>
+													<label class="" th:text="#{viewer.longitude} + ':'">Longitude</label><span class="required"> *</span>
+													<div class="input-icon ">
+														<input th:tabindex="1" name="longitude" id="longitude_gen" type="text"   maxlength="50" class="form-control " th:placeholder="#{viewer.longitude}"/>
+													</div>
 												</div>
 											</div>
 											<div class="col-md-4 col-sm-6 col-xs-12">
 												<div class="form-group">
-													<label class="" th:text="#{viewer.height}">Height</label><span class="required"> *</span>
-													<input th:tabindex="3" name="height" id="height" type="text" maxlength="50" class="form-control"/>
+													<label class="" th:text="#{viewer.height} + ':'">Height</label><span class="required"> *</span>
+													<div class="input-icon ">
+														<input th:tabindex="1" name="height" id="height" type="text"   maxlength="50" class="form-control " th:placeholder="#{viewer.height}"/>
+													</div>
 												</div>
 											</div>
 											<div class="col-md-12">
@@ -147,7 +153,7 @@
 											</div>
 										</div>
 										<div class="col-md-12">
-											<table id="table_attributes" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
+											<table id="table_attributes" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
 												<thead>
 													<tr class="cabecera-tabla">
 													</tr>
@@ -189,13 +195,12 @@
 	
 	<!-- CORE CONTROLLERS -->
 	
-	<script th:src="${onesaitCesiumPath + 'cesium/Cesium1.92/Cesium.js'}"></script>
+	<script th:src="@{/static/vendor/cesium/Cesium.js}"></script>
 	<script th:src="@{/static/js/pages/viewerCrud.js}"></script>
 	<!-- PLUGINS -->
 	<script th:src="@{/static/vendor/jsoneditor/jsoneditor.js}"></script>
 	
-	<!-- INPUTMASK -->
-	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
+	
 	<script th:inline="javascript">	
 	
 	// TEMPLATE SEARCH FORM.
@@ -220,12 +225,7 @@
 
 	$( document ).ready(function() {
 		
-		defineViewerInitialExtent(null,null,null);
-		
-		// INPUT MASK FOR lon&lat´
-		$("#latitude_gen").inputmask({regex: "[0-9-+.]*", greedy: false });
-		$("#longitude_gen").inputmask({regex: "[0-9-+.]*", greedy: false });
-		$("#height").inputmask({regex: "[0-9]*", greedy: false });
+		defineViewerInitialExtent(null,null,null)
 		
 		$(".cesium-widget-credits").css("display", "none");
 		
@@ -338,7 +338,7 @@
 									});
 				    			})
 				            	
-				            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border icon-on-table color-blue tooltips' onclick='editAttribute(this)' data-container='body' data-placement='bottom' th:text='#{gen.edit}'><i class='icon-edit'></i></span><span class='btn btn-xs btn-no-border icon-on-table color-red tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='icon-delete'></i></span></div></div></div></td>";
+				            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='editAttribute(this)' data-container='body' data-placement='bottom' th:text='#{gen.edit}'><i class='la la-edit font-hg'></i></span><span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='la la-trash font-hg'></i></span></div></div></div></td>";
 				            	add += "</tr>";
 				            	
 				            	$("#table_attributes tbody").append(add);
@@ -370,7 +370,7 @@
 									});
 				    			})
 				            	
-				            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border icon-on-table color-red tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='icon-delete'></i></span></div></div></div></td>";
+				            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='la la-trash font-hg'></i></span></div></div></div></td>";
 				            	add += "</tr>";
 				            	
 				            	$("#table_attributes tbody").append(add);
@@ -476,7 +476,7 @@
 				    			    			add += "<td class='text-left no-wrap "+v.attribute+"'>"+value+"</td>";
 				    			    		});
 				    		            	
-				    		            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border icon-on-table color-blue tooltips' onclick='editAttribute(this)' data-container='body' data-placement='bottom' th:text='#{gen.edit}'><i class='icon-edit'></i></span><span class='btn btn-xs btn-no-border icon-on-table color-red tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='icon-delete'></i></span></div></div></div></td>";
+				    		            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='editAttribute(this)' data-container='body' data-placement='bottom' th:text='#{gen.edit}'><i class='la la-edit font-hg'></i></span><span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='la la-trash font-hg'></i></span></div></div></div></td>";
 				    		            	add += "</tr>";
 				    		            	
 				    		            	$("#table_attributes tbody").append(add);
@@ -501,7 +501,6 @@
 		            	
 		        },
 		        cancel: function () {
-		        	removeEntityById(id);
 		        },
 		    },
 		    onContentReady: function () {
@@ -592,7 +591,7 @@
 				    			    			add += "<td class='text-left no-wrap "+v.attribute+"'>"+value+"</td>";
 				    			    		});
 				    		            	
-				    		            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border icon-on-table color-red tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='icon-delete'></i></span></div></div></div></td>";
+				    		            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='la la-trash font-hg'></i></span></div></div></div></td>";
 				    		            	add += "</tr>";
 				    		            	
 				    		            	$("#table_attributes tbody").append(add);
@@ -800,7 +799,7 @@
 			        			    			add += "<td class='text-left no-wrap "+v.attribute+"'>"+value+"</td>";
 			        			    		});
 			        		            	
-			        		            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border icon-on-table color-blue tooltips' onclick='editAttribute(this)' data-container='body' data-placement='bottom' th:text='#{gen.edit}'><i class='icon-edit'></i></span><span class='btn btn-xs btn-no-border icon-on-table color-red tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='icon-delete'></i></span></div></div></div></td>";
+			        		            	add += "<td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='editAttribute(this)' data-container='body' data-placement='bottom' th:text='#{gen.edit}'><i class='la la-edit font-hg'></i></span><span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='la la-trash font-hg'></i></span></div></div></div></td>";
 			        		            	add += "</tr>";
 			        		            	
 			        		            	$("#table_attributes tbody").append(add);

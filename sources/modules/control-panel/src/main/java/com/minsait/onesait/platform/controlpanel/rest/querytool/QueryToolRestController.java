@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,19 +32,17 @@ import com.minsait.onesait.platform.persistence.factory.ManageDBRepositoryFactor
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
 import com.minsait.onesait.platform.persistence.services.QueryToolService;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 
-@Tag(name = "QUERYTOOL Management")
+@Api(value = "QUERYTOOL Management", tags = { "QUERYTOOL Management" })
 @RestController
-@ApiResponses({ @ApiResponse(responseCode = "400",description = "Bad request"),
-	@ApiResponse(responseCode = "500",description = "Internal server error"), @ApiResponse(responseCode = "403",description = "Forbidden") })
+@ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
+		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
 @RequestMapping("api/querytool")
 @Slf4j
 public class QueryToolRestController {
@@ -63,14 +61,14 @@ public class QueryToolRestController {
 	private static final String CONTEXT_USER = "$context.userId";
 	private static final String RUNQUERYERROR = "Error in runQuery";
 
-	@Operation(summary = "returns the data resulting from executing the query. The query field and the ontology field are mandatory, the offset field of not entering will be initialized to 0)")
+	@ApiOperation(value = "returns the data resulting from executing the query. The query field and the ontology field are mandatory, the offset field of not entering will be initialized to 0)")
 	@GetMapping
-	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String.class)), responseCode = "200",description = "OK"))
+	@ApiResponses(@ApiResponse(response = String.class, code = 200, message = "OK"))
 	public ResponseEntity<?> query(
-			@Parameter(description= "Query Allowed values:(Select * from ontology)", required = false) @RequestParam(value = "query", required = true, defaultValue = "") String query,
-			@Parameter(description= "Allowed values: (ontology identification)", required = false) @RequestParam(value = "ontology", required = true, defaultValue = "") String ontology,
-			@Parameter(description= "Allowed values: (SQL,NATIVE)", required = false) @RequestParam(value = "querytype", required = true, defaultValue = "") String querytype,
-			@Parameter(description= "Allowed numeric values. Ignored if empty", required = false) @RequestParam(value = "offset", required = false, defaultValue = "0") Integer offset) {
+			@ApiParam(value = "Query Allowed values:(Select * from ontology)", required = false) @RequestParam(value = "query", required = true, defaultValue = "") String query,
+			@ApiParam(value = "Allowed values: (ontology identification)", required = false) @RequestParam(value = "ontology", required = true, defaultValue = "") String ontology,
+			@ApiParam(value = "Allowed values: (SQL,NATIVE)", required = false) @RequestParam(value = "querytype", required = true, defaultValue = "") String querytype,
+			@ApiParam(value = "Allowed numeric values. Ignored if empty", required = false) @RequestParam(value = "offset", required = false, defaultValue = "0") Integer offset) {
 
 		if (query.trim().length() == 0) {
 			log.error("query not can be empty");
@@ -85,7 +83,7 @@ public class QueryToolRestController {
 			log.error("ontology not can be empty");
 			return new ResponseEntity<>("ontology not can be empty", HttpStatus.BAD_REQUEST);
 		}
-		return getQuery(query, querytype, ontology, offset);
+		return this.getQuery(query, querytype, ontology, offset);
 	}
 
 	private ResponseEntity<?> getQuery(String query, String queryType, String ontologyIdentification, int offset) {
@@ -100,8 +98,8 @@ public class QueryToolRestController {
 				final ManageDBRepository manageDB = manageFactory.getInstance(ontologyIdentification);
 				if (!ontology.getRtdbDatasource().equals(RtdbDatasource.VIRTUAL)
 						&& !ontology.getRtdbDatasource().equals(RtdbDatasource.API_REST)
-						&& manageDB.getListOfTables4Ontology(ontologyIdentification).isEmpty()
-						) {
+						&& manageDB.getListOfTables4Ontology(ontologyIdentification).isEmpty() 
+							) {
 					manageDB.createTable4Ontology(ontologyIdentification, "{}", null);
 				}
 				query = query.replace(CONTEXT_USER, utils.getUserId());

@@ -7,17 +7,15 @@
 		{
 			"title": {
 				"EN": "MULTITENANCY ADMINISTRATION",
-				"ES": "ADMINISTRACIÓN MULTITENANT",
-				"FR": "ADMINISTRATION MULTILOCATIVE"
+				"ES": "ADMINISTRACIÓN MULTITENANT"
 			},
-			"icon": "icon-configuration",
+			"icon": "flaticon-cogwheel-2",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
 						"EN": "Platform Verticals",
-						"ES": "Verticales de Plataforma",
-						"FR": "Plateformes Verticales"
+						"ES": "Verticales de plataforma"
 					},
 					"icon": "",
 					"url": "/controlpanel/multitenancy/verticals"
@@ -25,8 +23,7 @@
 				{
 					"title": {
 						"EN": "Multitenant Configurations",
-						"ES": "Configuraciones Multitenant",
-						"FR": "Paramètres multi-locataires"
+						"ES": "Configuraciones multiinquilino"
 					},
 					"icon": "",
 					"url": "/controlpanel/multitenancy/configuration"
@@ -37,22 +34,30 @@
 		{
 			"title": {
 				"EN": "MARKET PLACE",
-				"ES": "MARKET PLACE",
-				"FR": "PLACE DU MARCHÉ"
+				"ES": "MARKET PLACE"
 			},
-			"icon": "icon-money",
+			"icon": "flaticon-cart",
 			"url": "",
 			"submenu": [
 				{
 					"title": {
-						"EN": "Assets Market",
-						"ES": "Market de Assets",
-						"FR": "Marché des Actifs"
+						"EN": "My Market",
+						"ES": "Mi Market"
 					},
 					"icon": "",
-					"url": "/controlpanel/bundlerepository/list"
+					"url": "/controlpanel/marketasset/list"
 				}
 			]
+		},
+		
+		{
+			"title": {
+				"EN": "",
+				"ES": ""
+			},
+			"icon": "flaticon-more-v3",
+			"url": "",
+			"submenu": []
 		}
 	]
 }

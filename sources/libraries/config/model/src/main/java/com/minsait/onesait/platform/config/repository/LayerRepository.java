@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,9 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
-import java.util.Collection;
 import java.util.List;
 
-import javax.transaction.Transactional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -57,9 +53,5 @@ public interface LayerRepository extends JpaRepository<Layer, String> {
 
 	@Query("SELECT o.identification FROM Layer AS o where o.ontology.identification=:ontology ORDER BY o.identification ASC")
 	List<String> findIdentificationByOntology(@Param("ontology") String ontology);
-
-	@Modifying
-	@Transactional
-	void deleteByIdNotIn(Collection<String> ids);
 
 }

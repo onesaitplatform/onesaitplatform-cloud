@@ -1,19 +1,10 @@
 app:
   name: dashboardengine
 server:
-  max-http-header-size: 20000
   port: 18300
   servlet.contextPath: /dashboardengine
   
-logbook:
-  exclude:
-     - ${server.servlet.contextPath}/actuator/**
-     - ${server.servlet.contextPath}/static/**
-     - ${server.servlet.contextPath}/themes/**
-     - ${server.servlet.contextPath}/swagger-ui/**
-     - ${server.servlet.contextPath}/dsengine/rest/solver/**
-  write:
-     max-body-size: 10000
+  
 
 master: 
    datasource:
@@ -31,16 +22,13 @@ management.endpoints.web.exposure.include: "*"
 management.endpoint.health.show-details: always
 
 spring:
-  main:
-      allow-circular-references: true
-      allow-bean-definition-overriding: true
   application.name: onesaitplatform-dashboard-engine
   boot.admin: #Spring Boot Admin Config   
       client.url: http://localhost:18100/monitoring
       client.username: operations
       client.password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
-      client.instance.metadata.user.name: ${spring.boot.admin.client.username}
-      client.instance.metadata.user.password: ${spring.boot.admin.client.password}
+      client.metadata.user.name: ${spring.boot.admin.username}
+      client.metadata.user.password: ${spring.boot.admin.password}
   datasource:
      hikari:
       jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
@@ -63,16 +51,10 @@ spring:
           ddl-auto: validate
 
 onesaitplatform: #Config Onesait Platform specific
-   router.metrics.query.enabled: false
-   encryption:
-      key: ENC(VYVseIUh5xiRd8ws0prbEAg6bGq7vmbfi3gkM65HECy+YPbjz4f49w==)
-      iteration-count: 5
    metrics:
       enabled: false
    secure.cookie: false
    authentication:
-      oauth:
-        osp-keycloak: false
       configdb:
         acl:
           enabled: false
@@ -130,24 +112,38 @@ onesaitplatform: #Config Onesait Platform specific
       quasar.maxHttpConnectionsPerRoute: 50
       quasar.connectionTimeout.millis: 10000
       quasar.connector.http.endpoint: http://localhost:18200/query/fs/
+   database.hadoop.enabled: false
+   database.hdfs:
+      url: hdfs://127.0.0.1:8020
+      basePath: /user/hdfs
+   database.hive:
+      url: jdbc:hive2://localhost:10000/default
+      username: cloudera-scm
+      password: 
+      driverClassName: org.apache.hive.jdbc.HiveDriver
+   database.impala:
+      url: jdbc:hive2://localhost:21050/default;auth=noSasl
+   database.kudu:
+      numreplicas: 1
+      address: localhost:7051
+      includeKudutableName: false
+      client:
+        sessionTimeout: 60000
+        flushMode: MANUAL_FLUSH
+        prefix: impala::default.
+        bossThreadPool: 1
+        workerThreadPool: 4
+        operationTimeout: 30000
+        adminOperationTimeout: 30000
+        socketReadTimeout: 10000
    database.elasticsearch.enabled: false
-   database.timescaledb:
-      enabled: false
-      url: jdbc:postgresql://localhost:5432/?currentSchema=public
-      user: ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot)
-      password: ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c)
-   graylog:
-      enabled: false
-      host: 127.0.0.1
-      port: 12201
-   binary-repository:
-      tmp.file.path: /tmp/files/   
+   password.pattern: (?=^.{10,128}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$
+      
 ## LOGGING CONF
 logging:
-   file.path: ./target/ 
-   file.name: ${spring.application.name}
+   path: ./target/ 
+   file: ${spring.application.name}
    level:
       com.minsait: INFO 
-      org.springframework.boot: INFO  
-      org.zalando.logbook: TRACE  
+      org.springframework.boot: INFO    
      

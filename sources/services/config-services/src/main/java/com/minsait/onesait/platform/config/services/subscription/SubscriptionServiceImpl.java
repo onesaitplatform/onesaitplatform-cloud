@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.Subscription;
 import com.minsait.onesait.platform.config.model.Subscriptor;
 import com.minsait.onesait.platform.config.model.User;
@@ -30,7 +31,7 @@ import com.minsait.onesait.platform.config.services.exceptions.SubscriptionServi
 public class SubscriptionServiceImpl implements SubscriptionService {
 
 	private static final String USER_NOT_AUTHORIZED = "The user is not authorized";
-
+	
 	@Autowired
 	private SubscriptionRepository subscriptionRepository;
 
@@ -45,16 +46,19 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 	@Override
 	public Subscription findById(String id, User user) {
 		final Subscription subscription = subscriptionRepository.findById(id).get();
-		if (user.isAdmin() || subscription.getUser().equals(user)) {
+		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
+				|| subscription.getUser().equals(user)) {
 			return subscription;
 		} else {
 			throw new SubscriptionServiceException(USER_NOT_AUTHORIZED);
 		}
 	}
 
+
 	@Override
 	public void deleteSubscription(Subscription subscription, User user) {
-		if (user.isAdmin() || subscription.getUser().equals(user)) {
+		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
+				|| subscription.getUser().equals(user)) {
 			final List<Subscriptor> subscriptors = subscriptorRepository.findBySubscription(subscription);
 			if (!subscriptors.isEmpty()) {
 				subscriptorRepository.deleteAll(subscriptors);
@@ -73,7 +77,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 		description = description == null ? "" : description;
 		identification = identification == null ? "" : identification;
 
-		if (user.isAdmin()) {
+		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 			subscriptions = subscriptionRepository
 					.findByIdentificationContainingAndDescriptionContainingOrderByIdentificationAsc(identification,
 							description);
@@ -104,5 +108,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 		List<Subscription> subscriptions = subscriptionRepository.findByOntologyIdentification(ontologyName);
 		return subscriptions;
 	}
+
 
 }

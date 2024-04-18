@@ -1,0 +1,6 @@
+{
+	"title":"ACS (Language) Node-Red flow",
+	"technologies":"Node-Red",
+	"description":"Azure Cognitive Services (Language) integration",
+	"detailedDescription":"This Node-Red Flow includes all interconnection logic to provide all Azuure Cognitive Services (language related) as REST API."
+}

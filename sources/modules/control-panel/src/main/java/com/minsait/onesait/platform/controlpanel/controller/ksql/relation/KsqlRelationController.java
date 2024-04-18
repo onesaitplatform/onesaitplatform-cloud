@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import com.minsait.onesait.platform.config.model.KsqlFlow;
 import com.minsait.onesait.platform.config.model.KsqlRelation;
 import com.minsait.onesait.platform.config.model.KsqlResource;
 import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.services.exceptions.KsqlRelationServiceException;
 import com.minsait.onesait.platform.config.services.ksql.flow.KsqlFlowService;
 import com.minsait.onesait.platform.config.services.ksql.relation.KsqlRelationService;
@@ -91,7 +92,7 @@ public class KsqlRelationController {
 			String error = utils.getMessage("ksql.relation.creation.error.flow.not.found", KSQL_SYNTAX_ERROR);
 			return new ResponseEntity<>(MSG_STR + error + "\"}", HttpStatus.NOT_FOUND);
 		}
-		if (!userService.getUser(utils.getUserId()).isAdmin()
+		if (!userService.getUser(utils.getUserId()).getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
 				&& !ksqlFlow.getUser().getUserId().equals(utils.getUserId())) {
 			// No permissions for this operation
 			String error = utils.getMessage("ksql.relation.creation.error.no.permissions",
@@ -139,7 +140,7 @@ public class KsqlRelationController {
 			return new ResponseEntity<>(MSG_STR + error + "\"}", HttpStatus.NOT_FOUND);
 		}
 
-		if (userService.getUser(utils.getUserId()).isAdmin()
+		if (userService.getUser(utils.getUserId()).getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
 				|| relation.getKsqlFlow().getUser().getUserId().equals(utils.getUserId())) {
 
 			try {
@@ -187,7 +188,7 @@ public class KsqlRelationController {
 			String error = utils.getMessage("ksql.relation.creation.error.flow.not.found", "KSQL Flow not found.");
 			return new ResponseEntity<>(MSG_STR + error + "\"}", HttpStatus.NOT_FOUND);
 		}
-		if (!userService.getUser(utils.getUserId()).isAdmin()
+		if (!userService.getUser(utils.getUserId()).getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
 				&& !ksqlFlow.getUser().getUserId().equals(utils.getUserId())) {
 			// No permissions for this operation
 			String error = utils.getMessage("ksql.relation.creation.error.no.permissions",

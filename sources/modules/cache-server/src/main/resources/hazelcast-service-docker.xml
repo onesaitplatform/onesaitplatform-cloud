@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- ~ ~ Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved. ~
-	~ Licensed under the Apache License, Version 2.0 (the "License"); ~ you may
-	not use this file except in compliance with the License. ~ You may obtain
-	a copy of the License at ~ ~ http://www.apache.org/licenses/LICENSE-2.0 ~
-	~ Unless required by applicable law or agreed to in writing, software ~ distributed
-	under the License is distributed on an "AS IS" BASIS, ~ WITHOUT WARRANTIES
-	OR CONDITIONS OF ANY KIND, either express or implied. ~ See the License for
-	the specific language governing permissions and ~ limitations under the License.
+<!-- ~ ~ Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved. ~ 
+	~ Licensed under the Apache License, Version 2.0 (the "License"); ~ you may 
+	not use this file except in compliance with the License. ~ You may obtain 
+	a copy of the License at ~ ~ http://www.apache.org/licenses/LICENSE-2.0 ~ 
+	~ Unless required by applicable law or agreed to in writing, software ~ distributed 
+	under the License is distributed on an "AS IS" BASIS, ~ WITHOUT WARRANTIES 
+	OR CONDITIONS OF ANY KIND, either express or implied. ~ See the License for 
+	the specific language governing permissions and ~ limitations under the License. 
 	~ -->
 
 <hazelcast
-	xsi:schemaLocation="http://www.hazelcast.com/schema/config http://www.hazelcast.com/schema/config/hazelcast-config-5.1.xsd"
+	xsi:schemaLocation="http://www.hazelcast.com/schema/config http://www.hazelcast.com/schema/config/hazelcast-config-3.10.xsd"
 	xmlns="http://www.hazelcast.com/schema/config"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
@@ -20,7 +20,6 @@
 		<property name="hazelcast.version.check.enabled">false</property>
 		<property name="hazelcast.memcache.enabled">true</property>
 		<property name="hazelcast.rest.enabled">true</property>
-		<property name="hazelcast.network.rest-api.enabled">true</property>
 		<property name="hazelcast.wait.seconds.before.join">5</property>
 		<property name="hazelcast.connection.monitor.interval">300</property>
 
@@ -28,11 +27,14 @@
 		<property name="hazelcast.elastic.memory.total.size">4G</property>
 	</properties>
 
-	<cluster-name>onesaitplatform</cluster-name>
+	<group>
+		<name>onesaitplatform</name>
+		<password>onesaitplatform</password>
+	</group>
 
-	<!-- <management-center enabled="false"
+	<management-center enabled="false"
 		update-interval="3">http://localhost:8080/mancenter
-	</management-center> -->
+	</management-center>
 	<network>
 	    <public-address>cacheservice:5701</public-address>
 		<port auto-increment="true">5701</port>
@@ -44,67 +46,44 @@
 				<!-- member>192.168.102.200</member -->
 			</tcp-ip>
 		</join>
-		 <rest-api enabled="true">
-            <endpoint-group name="DATA" enabled="true"/>
-        </rest-api>
 	</network>
-
-<!--Config Maps see: https://docs.hazelcast.org/docs/latest-dev/manual/html-single/index.html#map -->
-
-	<map name="default"><!-- applicates to default maps -->
-		<eviction eviction-policy="LFU" max-size-policy="FREE_HEAP_PERCENTAGE"
-			size="20" />
-	</map>
-
-	<map name="cachePendingRegistryUsers">
-		<time-to-live-seconds>600</time-to-live-seconds> <!-- 10 minutes -->
-		<eviction eviction-policy="LRU" max-size-policy="PER_NODE"
-			size="300" />
-	</map>
-
-	<map name="cacheResetPasswordUsers">
-		<time-to-live-seconds>600</time-to-live-seconds> <!-- 10 minutes -->
-		<eviction eviction-policy="LRU" max-size-policy="PER_NODE"
-			size="300" />
-	</map>
-
-	<map name="cachePasswordChangedByAdministrator">
-		<time-to-live-seconds>7200</time-to-live-seconds> <!-- 2 horus -->
-		<eviction eviction-policy="LRU" max-size-policy="PER_NODE"
-			size="300" />
-	</map>
-
-	<map name="transactionalOperations">
-		<time-to-live-seconds>60</time-to-live-seconds> <!-- 1 minute -->
-		<eviction eviction-policy="LRU" max-size-policy="PER_NODE"
-			size="300" />
-	</map>
-
-	<map name="lockedOntologies">
-		<eviction eviction-policy="NONE" max-size-policy="PER_NODE"
-			size="300" />
-	</map>
-
-	<map name="IoTSessionRepository">
-		<eviction eviction-policy="LRU" max-size-policy="PER_NODE"
-			size="20000" />
-		<time-to-live-seconds>0</time-to-live-seconds>
-		<max-idle-seconds>86400</max-idle-seconds>
-	</map>
-
-	<map name="ApiManagerCache">
-		<eviction eviction-policy="LFU" max-size-policy="USED_HEAP_PERCENTAGE"
-			size="10" />
-	</map>
-
-	<map name="timeseriesUpdateTransaction">
-		<time-to-live-seconds>5</time-to-live-seconds>
-		<eviction eviction-policy="NONE" max-size-policy="PER_NODE"
-			size="300" />
-	</map>
 	
-	<queue name="auditQueue">	
-		 <max-size>100000</max-size>
-    </queue>
+		<!--Config Maps see: https://docs.hazelcast.org/docs/latest-dev/manual/html-single/index.html#map -->
+	 <map name="default"> <!-- applicates to all maps -->
+	    <!--<max-idle-seconds>300</max-idle-seconds>  if not accessed in 5 minutes remove from cache-->
+        <eviction-policy>LFU</eviction-policy> <!--Valid values are:
+            NONE (no extra eviction, <time-to-live-seconds> may still apply),
+            LRU  (Least Recently Used),
+            LFU  (Least Frequently Used).
+            NONE is the default.
+            Regardless of the eviction policy used, <time-to-live-seconds> will still apply. 
+        -->
+        <max-size policy="FREE_HEAP_PERCENTAGE">20</max-size> <!--Maximum used heap size percentage per map for each Hazelcast instance, When max size is reached, map is evicted based on the policy defined-->
+    </map>
+    
+     <map name="cachePendingRegistryUsers">
+    	<time-to-live-seconds>600</time-to-live-seconds> <!-- 10 minutes -->
+    	<eviction-policy>LRU</eviction-policy>
+    	<max-size policy="PER_NODE">300</max-size>
+  	</map>
+  	
+  	
+  	<map name="transactionalOperations">
+    	<time-to-live-seconds>60</time-to-live-seconds> <!-- 1 minute -->
+    	<eviction-policy>NONE</eviction-policy>
+    	<max-size policy="PER_NODE">300</max-size>
+  	</map>
+  	
+  	<map name="lockedOntologies">
+    	<eviction-policy>NONE</eviction-policy>
+    	<max-size policy="PER_NODE">300</max-size>
+  	</map>
+  	
+  	<map name="IoTSessionRepository">
+    	<eviction-policy>LRU</eviction-policy>
+    	<max-size policy="PER_NODE">20000</max-size>
+    	<time-to-live-seconds>0</time-to-live-seconds>
+    	<max-idle-seconds>86400</max-idle-seconds> <!-- 1 día -->
+  	</map>
 
 </hazelcast>

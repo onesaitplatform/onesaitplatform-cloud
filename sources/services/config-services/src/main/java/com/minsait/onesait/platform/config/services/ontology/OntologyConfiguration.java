@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class OntologyConfiguration {
-	private static final String ALLOWS_CUSTOM_CONFIG = "allowsCustomConfig";
-	private static final String ALLOWS_TEMPLATE_CONFIG = "allowsTemplateConfig";
-	private static final String ALLOWS_CREATE_TABLE = "allowsCreateTable";
-	private static final String ALLOWS_CUSTOM_ID_CONFIG = "allowsCustomIdConfig";
-	private static final String ALLOWS_UPSERT_BY_ID = "allowsUpsertById";
 
 	private String schema;
 
@@ -64,8 +59,6 @@ public class OntologyConfiguration {
 	private String objectGeometry;
 	private String datasource;
 	private String datasourceTableName;
-	private String datasourceDatabase;
-	private String datasourceSchema;
 
 	private String enablePartitionIndexes;
 
@@ -82,31 +75,6 @@ public class OntologyConfiguration {
 	private String partitionKey;
 
 	private String uniqueKeys;
-
-	private String shards;
-
-	private String replicas;
-
-	private boolean allowsCustomElasticConfig = false;
-
-	private boolean allowsTemplateConfig = false;
-
-	private String patternField;
-
-	private String patternFunction;
-
-	private String substringStart;
-
-	private String substringEnd;
-
-	private boolean allowsCustomIdConfig = false;
-	private boolean allowsUpsertById = false;
-	private String customIdField;
-	private String ttlRetentionPeriod;
-
-	private String datasourceCatalog;
-	private String bucketName;
-	private String mqttTopicName;
 
 	public OntologyConfiguration(HttpServletRequest request) {
 		// rest ontology
@@ -131,17 +99,15 @@ public class OntologyConfiguration {
 		objectGeometry = request.getParameter("objectGeometry");
 		datasource = request.getParameter("datasource");
 
-		if (request.getParameter(ALLOWS_CREATE_TABLE) != null) {
+		if (request.getParameter("allowsCreateTable") != null) {
 
-			allowsCreateTable = request.getParameter(ALLOWS_CREATE_TABLE).equals("on")
-					|| request.getParameter(ALLOWS_CREATE_TABLE).equals("true");
+			allowsCreateTable = request.getParameter("allowsCreateTable").equals("on")
+					|| request.getParameter("allowsCreateTable").equals("true");
 			schema = request.getParameter("jsonSchema"); // form of ontologyVistualCreate.js
 			sqlStatement = request.getParameter("sqlStatement");
 		}
 
 		datasourceTableName = request.getParameter("datasourceTableName");
-		datasourceDatabase = request.getParameter("datasourceDatabase");
-		datasourceSchema = request.getParameter("datasourceSchema");
 
 		// otras
 		enablePartitionIndexes = request.getParameter("enablePartitionIndexes");
@@ -153,41 +119,6 @@ public class OntologyConfiguration {
 
 		partitionKey = request.getParameter("partitionkey");
 
-		// elasticsearch
-
-		if (request.getParameter(ALLOWS_CUSTOM_CONFIG) != null) {
-			allowsCustomElasticConfig = request.getParameter(ALLOWS_CUSTOM_CONFIG).equals("on")
-					|| request.getParameter(ALLOWS_CUSTOM_CONFIG).equals("true");
-		}
-		shards = request.getParameter("shards");
-		replicas = request.getParameter("replicas");
-		if (request.getParameter(ALLOWS_TEMPLATE_CONFIG) != null) {
-			allowsTemplateConfig = request.getParameter(ALLOWS_TEMPLATE_CONFIG).equals("on")
-					|| request.getParameter(ALLOWS_TEMPLATE_CONFIG).equals("true");
-		}
-
-		patternField = request.getParameter("patternField");
-		patternFunction = request.getParameter("patternFunction");
-		substringStart = request.getParameter("substringStart");
-		substringEnd = request.getParameter("substringEnd");
-
-		if (request.getParameter(ALLOWS_CUSTOM_ID_CONFIG) != null) {
-			allowsCustomIdConfig = request.getParameter(ALLOWS_CUSTOM_ID_CONFIG).equals("on")
-					|| request.getParameter(ALLOWS_CUSTOM_ID_CONFIG).equals("true");
-		}
-
-		if (request.getParameter(ALLOWS_UPSERT_BY_ID) != null) {
-			allowsUpsertById = request.getParameter(ALLOWS_UPSERT_BY_ID).equals("on")
-					|| request.getParameter(ALLOWS_UPSERT_BY_ID).equals("true");
-		}
-
-		customIdField = request.getParameter("customIdField");
-		ttlRetentionPeriod = request.getParameter("ttlRetentionPeriod");
-		// presto
-
-		datasourceCatalog = request.getParameter("datasourceCatalog");
-		bucketName = request.getParameter("bucketName");
-		mqttTopicName = request.getParameter("nameTopicMqtt");
 	}
 
 }

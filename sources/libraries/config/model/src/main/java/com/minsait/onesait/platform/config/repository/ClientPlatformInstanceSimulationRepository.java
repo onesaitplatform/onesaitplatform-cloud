@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,9 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
-import java.util.Collection;
 import java.util.List;
 
-import javax.transaction.Transactional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulation;
@@ -28,7 +24,7 @@ import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.User;
 
 public interface ClientPlatformInstanceSimulationRepository
-extends JpaRepository<ClientPlatformInstanceSimulation, String> {
+		extends JpaRepository<ClientPlatformInstanceSimulation, String> {
 
 	ClientPlatformInstanceSimulation findByIdentification(String identification);
 
@@ -44,9 +40,5 @@ extends JpaRepository<ClientPlatformInstanceSimulation, String> {
 	void deleteById(String id);
 
 	ClientPlatformInstanceSimulation findByJobName(String jobName);
-
-	@Modifying
-	@Transactional
-	void deleteByIdNotIn(Collection<String> ids);
 
 }

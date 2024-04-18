@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,18 +49,14 @@ public class LeaveProcessor implements MessageTypeProcessor {
 	@Override
 	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info, Optional<IoTSession> session) {
 		final String sessionKey = message.getSessionKey();
+
+		securityManager.closeSession(sessionKey);
+
 		final SSAPMessage<SSAPBodyReturnMessage> response = new SSAPMessage<>();
+		String dataStr = "{\"message\":\"Disconnected\"}";
 		JsonNode data;
-		
 		try {
-			if(securityManager.checkSessionKeyActive(session)) {
-				securityManager.closeSession(sessionKey);
-				String dataStr = "{\"message\":\"Disconnected\"}";
-				data = objectMapper.readTree(dataStr);
-			} else {
-				String dataStr = "{\"message\":\"The session is not valid or does not exist\"}";
-				data = objectMapper.readTree(dataStr);
-			}
+			data = objectMapper.readTree(dataStr);
 			response.setBody(new SSAPBodyReturnMessage());
 			response.getBody().setData(data);
 		} catch (final IOException e) {

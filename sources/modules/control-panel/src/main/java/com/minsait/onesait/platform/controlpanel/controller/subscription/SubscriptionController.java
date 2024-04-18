@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,7 +75,6 @@ public class SubscriptionController {
 	private static final String REDIRECT_CONTROLPANEL_SUBSCRIPTIONS_CREATE = "/controlpanel/subscriptions/create";
 	private static final String ERROR_403 = "error/403";
 	private static final String ERROR_500 = "error/500";
-	private static final String APP_ID = "appId";
 
 	@Autowired
 	private SubscriptionService subscriptionService;
@@ -92,18 +90,13 @@ public class SubscriptionController {
 
 	@Autowired
 	private ResourcesInUseService resourcesInUseService;
-	
-	@Autowired 
-	private HttpSession httpSession;
 
 	@GetMapping(value = "/list", produces = "text/html")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	public String listAll(Model model, HttpServletRequest request,
 			@RequestParam(required = false, name = "identification") String identification,
 			@RequestParam(required = false, name = "description") String description) {
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
+
 		final List<Subscription> subscriptions = subscriptionService.getWebProjectsWithDescriptionAndIdentification(
 				userService.getUser(utils.getUserId()), identification, description);
 
@@ -111,7 +104,7 @@ public class SubscriptionController {
 		return SUBSCRIPTIONS_LIST;
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@GetMapping(value = "/show/{id}")
 	public String show(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 		User user = userService.getUser(utils.getUserId());
@@ -128,7 +121,7 @@ public class SubscriptionController {
 	}
 
 	@GetMapping(value = "/create")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	public String create(Model model) {
 
 		model.addAttribute(SUBSCRIPTION_STR, new SubscriptionDTO());
@@ -137,7 +130,7 @@ public class SubscriptionController {
 		return SUBSCRIPTIONS_CREATE;
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@GetMapping(value = "/update/{id}")
 	public String update(Model model, @PathVariable("id") String id) {
 		User user = userService.getUser(utils.getUserId());
@@ -165,7 +158,7 @@ public class SubscriptionController {
 
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@PutMapping(value = "/update/{id}")
 	@Transactional
 	public ResponseEntity<Map<String, String>> updateSubscription(Model model, @Valid SubscriptionDTO subscriptionDto,
@@ -210,7 +203,7 @@ public class SubscriptionController {
 	}
 
 	@PostMapping(value = "/create")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	public ResponseEntity<Map<String, String>> createSubscription(Model model, @Valid SubscriptionDTO subscriptionDto,
 			BindingResult bindingResult, RedirectAttributes redirect, HttpServletRequest request) {
 		final Map<String, String> response = new HashMap<>();
@@ -256,7 +249,7 @@ public class SubscriptionController {
 		}
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_DATASCIENTIST')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@DeleteMapping("/{id}")
 	public String delete(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 		User user = userService.getUser(utils.getUserId());

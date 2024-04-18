@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ public interface PipelineUserAccessRepository extends JpaRepository<PipelineUser
 
 	List<PipelineUserAccess> findAllByOrderById();
 
-	
 	@Query("SELECT o FROM PipelineUserAccess AS o WHERE o.pipeline=:id")
 	List<PipelineUserAccess> findByPipeline(@Param("id") Pipeline id);
 
@@ -43,8 +42,5 @@ public interface PipelineUserAccessRepository extends JpaRepository<PipelineUser
 	@Query("SELECT o FROM PipelineUserAccess AS o WHERE o.pipeline=:id AND o.user=:user AND o.pipelineUserAccessType=:pipelineUserAccessType")
 	PipelineUserAccess findByPipelineAndUserAndAccess(@Param("id") Pipeline id, @Param("user") User user,
 			@Param("pipelineUserAccessType") PipelineUserAccessType pipelineUserAccessType);
-	
-	@Query("SELECT o FROM PipelineUserAccess AS o WHERE o.user=:user")
-	List<PipelineUserAccess> findByUser(@Param("user") User user);
 
 }

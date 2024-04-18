@@ -1,4 +1,4 @@
-FROM onesaitplatform/baseimage:latest-17
+FROM onesaitplatform/baseimage:latest
 
 # Metadata
 LABEL platform.image.name="apimanager"
@@ -6,31 +6,22 @@ LABEL platform.image.name="apimanager"
 ADD *-exec.jar app.jar
 
 # Timezone
-RUN apk add --no-cache tzdata \
-    bash
+RUN apk add --no-cache tzdata
 
 # logs folder
 RUN mkdir -p /var/log/platform-logs && \
-	mkdir /application && \
-	mkdir /application/plugins
+	mkdir ./target
 
 # create onesait user/group
 RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait
 
-WORKDIR /application
-#RUN unzip /app.jar &&\
-#	rm /app.jar
-
 RUN chown -R onesait:onesait /usr/local && \
     chown -R onesait:onesait /var/log/platform-logs && \
-    chown -R onesait:onesait /application && \
-    chmod -R 777 /application && \
+    chown -R onesait:onesait ./target && \
+    chown onesait:onesait app.jar && \
+    chmod -R 777 ./target && \
     chmod -R 777 /var/log && \
     chmod -R 777 /usr/local
- 
-# distribute tracing with opentelemetry agent
-RUN  cd /usr/local \
-    && wget https://repo1.maven.org/maven2/io/opentelemetry/javaagent/opentelemetry-javaagent/1.27.0/opentelemetry-javaagent-1.27.0.jar
 
 VOLUME ["/tmp", "/var/log/platform-logs"]
 
@@ -40,8 +31,7 @@ EXPOSE 19100
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
 
-ENV JAVA_OPTS="$JAVA_OPTS -javaagent:/usr/local/opentelemetry-javaagent-1.27.0.jar" \
-    SERVER_NAME=localhost \
+ENV SERVER_NAME=localhost \
     REALTIMEDBSERVERS=realtimedb:27017 \
 	CONFIGDBMASTERURL="jdbc:mysql://configdb:3306/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true" \
 	CONFIGDBURL="jdbc:mysql://configdb:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \
@@ -49,14 +39,12 @@ ENV JAVA_OPTS="$JAVA_OPTS -javaagent:/usr/local/opentelemetry-javaagent-1.27.0.j
 	CONFIGDBUSER=root \
 	CONFIGDBPASS=changeIt! \
     CONFIGDB_MAX_ACTIVE=2 \
-    CONFIGDB_MAX_IDLE=2 \
-	CONFIGDB_DRIVER=com.mysql.cj.jdbc.Driver \
-	CONFIGDB_DIALECT=org.hibernate.dialect.MySQL5InnoDBDialect \
+    CONFIGDB_MAX_IDLE=2 \    
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
     ELASTICDBHOST=elasticdb \
     ELASTICDBPORT=9200 \
-    AUDITGLOBALNOTIFY=true \
+    AUDITGLOBALNOTIFY=false \
     QUASARHOST=quasar \
     QUASARPORT=10800 \
     HZ_SERVICE_DISCOVERY_STRATEGY=service \
@@ -65,20 +53,6 @@ ENV JAVA_OPTS="$JAVA_OPTS -javaagent:/usr/local/opentelemetry-javaagent-1.27.0.j
     OP_LOG_LEVEL=INFO \
     CONFIGDB_ACL_ENABLED=false \
     CONFIGDB_ACL_LIST=administrator,analytics,dataviewer,demo_developer,demo_user,developer,operations,partner,sysadmin,user \
-    ENABLE_METRICS=true \
-    GRAYLOG_ENABLED=false \
-    GRAYLOG_HOST=log-centralizer \
-    GRAYLOG_PORT=12201 \
-    USE_KEYCLOAK=false \
-    SBA_USERNAME=operations \
-	SBA_SECRET=ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv) \
-	MAX_HTTP_HEADER_SIZE=20000 \
-	HTTP_LOG_LEVEL=INFO \
-    CORS_ALLOWED_URLS="*" \
-    OTEL_JAVAAGENT_ENABLED=false \
-	OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-service:4317 \
-	OTEL_SERVICE_NAME=api-manager \
-	OTEL_METRICS_EXPORTER=none
+    ENABLE_METRICS=true
 
-COPY docker-entrypoint.sh /usr/local/bin/
-ENTRYPOINT ["docker-entrypoint.sh"]
+ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Dspring.profiles.active=docker -jar /app.jar

@@ -6,8 +6,7 @@ server: ## Config Web Server
     #  key-store-password: Changed!
    #   key-store: classpath:keystore.jks
     #  key-alias: tomcat
-   #session.cookie.name : APPSESSIONID
-   max-http-header-size: 20000
+   session.cookie.name : APPSESSIONID
    port: 18100
    servlet.contextPath: /monitoring
    tomcat:
@@ -27,13 +26,8 @@ master:
         connection-timeout: 10000
      
 onesaitplatform: #Config onesait Platform specific
-   encryption:
-      key: ENC(VYVseIUh5xiRd8ws0prbEAg6bGq7vmbfi3gkM65HECy+YPbjz4f49w==)
-      iteration-count: 5
    environment.name: local
    authentication:
-      oauth:
-        osp-keycloak: false
       provider: configdb
       configdb:
         acl:
@@ -44,19 +38,9 @@ onesaitplatform: #Config onesait Platform specific
       eachInMs: 300000
       enabled: false
       statuses: DOWN,OFFLINE
-   secure:
-      cookie: false
-   graylog:
-      enabled: false
-      host: 127.0.0.1
-      port: 12201
 
 ## Config Reference      
-spring: ## General Config
-   mvc.hiddenmethod.filter.enabled: true
-   main:
-      allow-circular-references: true
-      allow-bean-definition-overriding: true
+spring: ## General Config  
    application.name: onesaitplatform-monitoring-ui
    boot.admin: #Spring Boot Admin Config    
       routes.endpoints: env,metrics,trace,dump,jolokia,info,configprops,logfile,refresh,loggers
@@ -70,9 +54,6 @@ spring: ## General Config
       notify.mail.text: "ENV:#{onesaitplatform.environment.name} App:#{application.name} (#{application.id}) is #{to.status}"
       ui.title: Monitoring UI
       ui.brand: "<img src='assets/img/icon-spring-boot-admin.svg'><span>Monitoring UI</span>"
-      hazelcast.enabled: false
-      instance-auth.default-user-name: operations
-      instance-auth.default-password: changeIt2019! 
       #Not autoregister as Spring Boot Admin client
       # username: operations
       # password: changeIt!
@@ -107,23 +88,20 @@ security:
     enabled: false
   oauth2:
     client:
-      useCurrentUri: false
-      preEstablishedRedirectUri: http://localhost:18100/${server.servlet.contextPath}/login/oauth
       clientId: onesaitplatform
       clientSecret: onesaitplatform
       accessTokenUri: http://localhost:21000/oauth-server/oauth/token
       userAuthorizationUri: http://localhost:21000/oauth-server/oauth/authorize
     resource:
       userInfoUri: http://localhost:21000/oauth-server/user
-      checkTokenEndpoint: http://localhost:21000/oauth-server/oauth/check_token
           
 
 ## LOGGING CONF
 logging:
-   file.path: ./target/ 
-   file.name: ${spring.application.name}
+   path: ./target/ 
+   file: ${spring.application.name}
    level:
       com.minsait: INFO 
       org.springframework: ERROR
-      de.codecentric: WARN
-      root: INFO
+      de.codecentric: ERROR
+      root: ERROR

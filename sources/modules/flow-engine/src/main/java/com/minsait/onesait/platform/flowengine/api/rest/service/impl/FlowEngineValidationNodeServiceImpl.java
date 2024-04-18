@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ import com.minsait.onesait.platform.flowengine.api.rest.service.FlowEngineValida
 import com.minsait.onesait.platform.flowengine.exception.NotAuthorizedException;
 import com.minsait.onesait.platform.flowengine.exception.ResourceNotFoundException;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
-import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
-import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,9 +42,6 @@ public class FlowEngineValidationNodeServiceImpl implements FlowEngineValidation
 
 	@Autowired
 	private UserService userService;
-	
-	@Autowired
-	private MasterUserRepository masterUserRepository;
 
 	@Autowired
 	private FlowDomainService domainService;
@@ -66,7 +61,7 @@ public class FlowEngineValidationNodeServiceImpl implements FlowEngineValidation
 				throw new ResourceNotFoundException(USER_NOT_EXIST);
 			}
 			if (!sofia2User.getPassword().equals(credentials)) {
-				log.error("Credentials for user {} does not match.", userId);
+				log.error("Credentials for user " + userId + " does not match.");
 				throw new NotAuthorizedException("Credentials for user " + userId + " does not match.");
 			}
 		} catch (final Exception e) {
@@ -121,11 +116,8 @@ public class FlowEngineValidationNodeServiceImpl implements FlowEngineValidation
 	public DecodedAuthentication decodeAuth(String authentication) {
 		try {
 			final DecodedAuthentication decodedAuth = new DecodedAuthentication(authentication);
-			final MasterUser user = masterUserRepository.findByUserId(decodedAuth.getUserId());
-			MultitenancyContextHolder.setTenantName(user.getTenant().getName());
-			if (decodedAuth.getVerticalSchema() != null) {
+			if (decodedAuth.getVerticalSchema() != null)
 				MultitenancyContextHolder.setVerticalSchema(decodedAuth.getVerticalSchema());
-			}
 			return decodedAuth;
 		} catch (final Exception e) {
 			throw new IllegalArgumentException("Authentication is null or cannot be decoded.");

@@ -1,56 +1,38 @@
-master:
+master: 
    datasource:
-      hikari:
+      hikari: 
         jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
         username: root
-        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph)
+        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
         driver-class-name: com.mysql.cj.jdbc.Driver
-#        jdbc-url: jdbc:postgresql://localhost:5432/onesaitplatform_master_config
-#        username: postgres
-#        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph)
-#        driver-class-name: org.postgresql.Driver
         pool-name: master-hikari-pool
         minimum-idle: 1
         maximum-pool-size: 2
         connection-timeout: 10000
+    
+     
+        
       removeAbandoned: true
-server:
-   port: 21001
+server: 
+   port: 21001    
    servlet:
       contextPath: /systemconfig-init
 
 
 onesaitplatform: #Config Sofia2 specific
    ontologies:
-         schema:
+         schema: 
              ignore-case-properties: true
    init:
-      metrics.indexes: false
       configdb: true
       mongodb: true
-      samples: true
       elasticdb: false
-      opensearchdb: false
       mailconfig: true
       multitenant.update-mode: true
-      multitenant.adminToken: 
-      graylog: false
-      flowEngineMonitor: false
    database.mongodb:
       database: onesaitplatform_rtdb
-      servers: localhost:27017
-      digitaltwin.database: digital_twin
-      execution-timeout: 10000
-      queries-limit: 2000
-      socket-timeout: 5000
-      connection-timeout: 30000
-      wait-time: 5000
-      pool-size: 100
-      writeConcern: UNACKNOWLEDGED
-      sslEnabled: false
-      useQuasar: false
+      digitaltwin.database: digital_twin  
    database.elasticsearch:
-      enabled: false
       database: onesaitplatform_rtdb_es
       sql.maxHttpConnections: 10
       sql.maxHttpConnectionsPerRoute: 10
@@ -58,28 +40,6 @@ onesaitplatform: #Config Sofia2 specific
       sql.connector.http.endpoint: http://localhost:9200
       url: localhost
       port: 9300
-   database.opensearch:
-      enabled: false
-      database: onesaitplatform_rtdb_es
-      sql.maxHttpConnections: 10
-      sql.maxHttpConnectionsPerRoute: 10
-      sql.connectionTimeout.millis: 10000
-      sql.connector.http.endpoint: http://localhost:9200
-      url: localhost
-      port: 9300
-      default:
-        replicas: 0
-        shards: 1
-        ttlPatternField: formatedTimeStamp
-        ttlPatternFunction: YEAR_MONTH
-        ttlRetentionPeriod: 30d
-        ttlPriority: 10
-   database.timescaledb:
-      enabled: false
-      url: jdbc:postgresql://localhost:5432/?currentSchema=public
-      user: ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot)
-      password: ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c)
-      connectionName: op_timeseriesdb
    iotbroker.plugable.gateway.kafka.enable: true
    kafka.ksql.enable: false
    webproject:
@@ -87,39 +47,23 @@ onesaitplatform: #Config Sofia2 specific
       baseurl: http://localhost:8087/web/
    controlpanel:
          url: http://localhost:18000/controlpanel
-   graylog:
-         user: admin
-         password: ENC(WOukGj28rhRwzEa3HDCnH2p4vX3Iur8V)
-         enabled: false
-         host: 127.0.0.1
-         port: 12201
-         externalUri: http://127.0.0.1:9000
-         plugin.auth.path.token: http://localhost:21000/oauth-server/oauth/token
-         plugin.auth.path.userinfo: http://localhost:21000/oauth-server/oidc/userinfo
-   dataflow.create.vertical.instance: false
+ 
 spring:
    ## GENERAL CONFIG
    application.name: systemconfig-init
-   main.allow-bean-definition-overriding: true   
-   
    ## JPA Config
    datasource:
      hikari:
       jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
       username: root
-      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph)
-      driver-class-name: com.mysql.cj.jdbc.Driver
-#      jdbc-url: jdbc:postgresql://localhost:5432/onesaitplatform_config
-#      username: postgres
-#      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph)
-#      driver-class-name: org.postgresql.Driver
+      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
       connection-timeout: 10000
+      driver-class-name: com.mysql.cj.jdbc.Driver
       minimum-idle: 5
       maximum-pool-size: 10
-
+      
 
    jpa:
-      generate-ddl: true
       ## Hibernate Properties
       # Hibernate ddl auto (create, create-drop, validate, update)
       hibernate.ddl-auto: update
@@ -127,23 +71,20 @@ spring:
         hibernate:
           format_sql: false
           show_sql: false
-#          physical_naming_strategy: com.minsait.onesait.platform.config.converters.CustomPhysicalNamingStrategy
 
-
+          
+      
       # The SQL dialect makes Hibernate generate better SQL for the chosen database
       properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
-#      properties.hibernate.dialect: org.hibernate.dialect.PostgreSQL95Dialect
 
+      
 ## LOGGING CONF
 logging:
-   file.path: ./target/
-   file.name: ${spring.application.name}
+   path: ./target/ 
+   file: ${spring.application.name}
    level:
       org.springframework: INFO
       com.example.boot.thymeleaf: INFO
       com.minsait: INFO
-      org.hibernate: INFO
+      org.hibernate: WARN
       org.apache.kafka: ERROR
-
-opendata:
-   load-ontologies: false

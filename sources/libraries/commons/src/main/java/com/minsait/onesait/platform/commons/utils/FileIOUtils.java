@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,13 +42,6 @@ public class FileIOUtils {
 
 	public File createDirs(String path) {
 		final File f = new File(path);
-		if (f.exists()) {
-			try {
-				FileUtils.cleanDirectory(f);
-			} catch (final IOException e) {
-				log.error("Could not clean directory");
-			}
-		}
 		f.mkdirs();
 		return f;
 	}
@@ -142,9 +135,7 @@ public class FileIOUtils {
 	}
 
 	private void zipFile(File fileToZip, String fileName, ZipOutputStream zipOut) throws IOException {
-		if (log.isDebugEnabled()) {
-			log.debug("zipping file  {}", fileToZip.getAbsolutePath());
-		}
+		log.debug("zipping file  {}", fileToZip.getAbsolutePath());
 		try {
 			if (fileToZip.isDirectory()) {
 				if (fileName.endsWith("/")) {

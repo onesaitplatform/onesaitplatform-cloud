@@ -1,7 +1,0 @@
-/app/logs/*.log {
-  rotate 24
-  daily
-  missingok
-  nocompress
-  copytruncate
-}

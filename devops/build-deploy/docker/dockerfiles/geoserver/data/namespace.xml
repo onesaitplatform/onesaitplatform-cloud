@@ -1,0 +1,6 @@
+<namespace>
+  <id>NamespaceInfoImpl-615a44f5:170ece56dad:-7ff2</id>
+  <prefix>${GEOSERVER_WORKSPACE}</prefix>
+  <uri>${GEOSERVER_NAMESPACE}</uri>
+  <isolated>false</isolated>
+</namespace>

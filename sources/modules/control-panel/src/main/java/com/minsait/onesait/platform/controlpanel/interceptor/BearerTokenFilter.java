@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,15 +30,14 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.filter.OAuth2AuthenticationFailureEvent;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.authentication.TokenExtractor;
-import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
 import com.minsait.onesait.platform.business.services.interceptor.InterceptorCommon;
 import com.minsait.onesait.platform.multitenant.util.BeanUtil;
-import com.minsait.onesait.platform.security.PlugableOauthAuthenticator;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,22 +45,11 @@ import lombok.extern.slf4j.Slf4j;
 public class BearerTokenFilter implements Filter {
 
 	private final TokenExtractor tokenExtractor = new BearerTokenExtractorPlatform();
-	private DefaultTokenServices tokenServices = null;
-	private PlugableOauthAuthenticator plugableOauthAuthenticator;
+	private final TokenStore tokenStore;
 
 	public BearerTokenFilter() {
-		try {
-			plugableOauthAuthenticator = BeanUtil.getBean(PlugableOauthAuthenticator.class);
-		} catch (final Exception e) {
-			// NO-OP
-		}
+		tokenStore = BeanUtil.getBean(TokenStore.class);
 
-		try {
-
-			tokenServices = BeanUtil.getBean(DefaultTokenServices.class);
-		} catch (final Exception e) {
-			// NO-OP
-		}
 	}
 
 	private void publish(ApplicationEvent event) {
@@ -85,65 +73,37 @@ public class BearerTokenFilter implements Filter {
 		final HttpServletRequest req = (HttpServletRequest) request;
 		final HttpServletResponse resp = (HttpServletResponse) response;
 		final Authentication auth = tokenExtractor.extract(req);
-		boolean hasSession = false;
-	
 		if (auth instanceof PreAuthenticatedAuthenticationToken) {
 			try {
 				// save previous auth
-				hasSession = req.getSession(false) != null;
-				if (hasSession) {
-					InterceptorCommon.setPreviousAuthenticationOnSession(req.getSession(false));
-				}
-				log.trace("Principal token JWT {}", auth.getPrincipal());
+				InterceptorCommon.setPreviousAuthenticationOnSession(req.getSession());
 				log.debug("Detected Bearer token in request, loading autenthication");
-				final Authentication oauth = loadAuthentication(auth);
+				final OAuth2Authentication oauth = tokenStore.readAuthentication((String) auth.getPrincipal());
 				if (oauth == null) {
-					log.error("Could not load oauth authentication, sending redirect with 401 code");
 					resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 					resp.setContentType("application/json;charset=UTF-8");
 					resp.getWriter().write("{\"error\": \"Incorrect or Expired Authorization Header\"}");
 					resp.getWriter().flush();
 					resp.getWriter().close();
-				} else {
-					InterceptorCommon.setContexts(oauth);
-					if (log.isDebugEnabled()) {
-						log.debug("Loaded authentication for user {}", oauth.getName());
-					}
-					publish(new AuthenticationSuccessEvent(oauth));
-					chain.doFilter(request, response);
 				}
+				InterceptorCommon.setContexts(oauth);
+				log.debug("Loaded authentication for user {}", oauth.getName());
+				publish(new AuthenticationSuccessEvent(auth));
 
+				chain.doFilter(request, response);
 			} catch (final Exception e) {
-				log.error("Error", e);
+				log.error(e.getMessage());
 				final BadCredentialsException bad = new BadCredentialsException("Could not obtain access token", e);
 				publish(new OAuth2AuthenticationFailureEvent(bad));
-				resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-				resp.setContentType("application/json;charset=UTF-8");
-				resp.getWriter().write("{\"error\": \"Incorrect or Expired Authorization Header\"}");
-				resp.getWriter().flush();
-				resp.getWriter().close();
 			} finally {
 				log.debug("Clearing authentication contexts");
-				if (hasSession) {
-					InterceptorCommon.clearContexts(req.getSession(false));
-				} else {
-					if (req.getSession(false) != null) {
-						req.getSession(false).invalidate();
-					}
-				}
+				InterceptorCommon.clearContexts(
+						(Authentication) req.getSession().getAttribute(InterceptorCommon.SESSION_ATTR_PREVIOUS_AUTH),
+						req.getSession());
 			}
 
 		} else {
 			chain.doFilter(request, response);
-		}
-
-	}
-
-	private Authentication loadAuthentication(Authentication auth) {
-		if (plugableOauthAuthenticator != null) {
-			return plugableOauthAuthenticator.loadFullAuthentication((String) auth.getPrincipal());
-		} else {
-			return tokenServices.loadAuthentication((String) auth.getPrincipal());
 		}
 
 	}

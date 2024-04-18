@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,6 @@ import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.OperationType;
 import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
-import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyCommitTransactionMessage;
-import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyEmptyMessage;
-import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyEmptySessionMandatoryMessage;
 import com.minsait.onesait.platform.comms.protocol.body.parent.SSAPBodyMessage;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
 import com.minsait.onesait.platform.iotbroker.audit.aop.MessageAuditProcessor;
@@ -51,26 +48,16 @@ public class TransactionAuditProcessor implements MessageAuditProcessor {
 
 		switch (message.getMessageType()) {
 		case START_TRANSACTION:
-			final SSAPBodyEmptySessionMandatoryMessage startMessage = (SSAPBodyEmptySessionMandatoryMessage) message
-					.getBody();
-			event = IotBrokerAuditEventFactory.builder().build().createIotBrokerAuditEvent(
-					OperationType.START_TRANSACTION,
-					"Start transaction message by sessionkey: " + message.getSessionKey(), session, info,
-					startMessage.getTags());
+			event = IotBrokerAuditEventFactory.builder().build()
+					.createIotBrokerAuditEvent(OperationType.START_TRANSACTION, "", session, info);
 			break;
 		case COMMIT_TRANSACTION:
-			final SSAPBodyCommitTransactionMessage commitMessage = (SSAPBodyCommitTransactionMessage) message.getBody();
-			event = IotBrokerAuditEventFactory.builder().build().createIotBrokerAuditEvent(
-					OperationType.COMMIT_TRANSACTION,
-					"Commit transaction message by sessionkey: " + message.getSessionKey(), session, info,
-					commitMessage.getTags());
+			event = IotBrokerAuditEventFactory.builder().build()
+					.createIotBrokerAuditEvent(OperationType.COMMIT_TRANSACTION, "", session, info);
 			break;
 		case ROLLBACK_TRANSACTION:
-			final SSAPBodyEmptyMessage rollbackMessage = (SSAPBodyEmptyMessage) message.getBody();
-			event = IotBrokerAuditEventFactory.builder().build().createIotBrokerAuditEvent(
-					OperationType.ROLLBACK_TRANSACTION,
-					"Rollback transaction message by sessionkey: " + message.getSessionKey(), session, info,
-					rollbackMessage.getTags());
+			event = IotBrokerAuditEventFactory.builder().build()
+					.createIotBrokerAuditEvent(OperationType.ROLLBACK_TRANSACTION, "", session, info);
 			break;
 		}
 

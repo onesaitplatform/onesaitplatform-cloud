@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.security.jwt.ri;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeSet;
@@ -38,7 +37,7 @@ public class EnhancedAuthenticationKeyGenerator extends DefaultAuthenticationKey
 	private static final String USERNAME = "username";
 
 	@Override
-	public String extractKey(OAuth2Authentication authentication) {
+	public synchronized String extractKey(OAuth2Authentication authentication) {
 		final Map<String, String> values = new LinkedHashMap<>();
 		final OAuth2Request authorizationRequest = authentication.getOAuth2Request();
 
@@ -55,20 +54,5 @@ public class EnhancedAuthenticationKeyGenerator extends DefaultAuthenticationKey
 		}
 		return generateKey(values);
 	}
-
-	@SuppressWarnings("unchecked")
-	public String extractKeyFromMap(Map<String, Object> parameters) {
-		final Map<String, String> values = new LinkedHashMap<>();
-		values.put(USERNAME, (String)parameters.get("name"));
-		values.put(CLIENT_ID, (String) parameters.get(CLIENT_ID));
-		if(parameters.containsKey(VERTICAL)) {
-			values.put(VERTICAL, (String) parameters.get(VERTICAL));
-		}
-		if(parameters.containsKey(SCOPE)) {
-			values.put(SCOPE, OAuth2Utils.formatParameterList((ArrayList<String>)parameters.get(SCOPE)));
-		}
-		return generateKey(values);
-	}
-
 
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,16 +69,9 @@ public class XOpAPIKeyFilter implements Filter {
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
 		final HttpServletRequest req = (HttpServletRequest) request;
-		boolean hasSession = false;
 		if (req.getHeader(X_OP_APIKEY) != null) {
-			if (log.isDebugEnabled()) {
-				log.debug("Detected header {} in request, loading autenthication", X_OP_APIKEY);
-			}
-			hasSession = req.getSession(false) != null;
-			if (hasSession) {
-				InterceptorCommon.setPreviousAuthenticationOnSession(req.getSession(false));
-			}
-
+			log.debug("Detected header {} in request, loading autenthication", X_OP_APIKEY);
+			InterceptorCommon.setPreviousAuthenticationOnSession(req.getSession());
 			final String token = req.getHeader(X_OP_APIKEY);
 			try {
 				final UserDetails details = detailsService.loadUserByUserToken(token);
@@ -86,9 +79,7 @@ public class XOpAPIKeyFilter implements Filter {
 					final Authentication auth = new UsernamePasswordAuthenticationToken(details, details.getPassword(),
 							details.getAuthorities());
 					InterceptorCommon.setContexts(auth);
-					if (log.isDebugEnabled()) {
-						log.debug("Loaded authentication for user {}", auth.getName());
-					}
+					log.debug("Loaded authentication for user {}", auth.getName());
 					publish(new AuthenticationSuccessEvent(auth));
 				}
 
@@ -98,14 +89,9 @@ public class XOpAPIKeyFilter implements Filter {
 
 			} finally {
 				log.debug("Clearing authentication contexts");
-
-				if (hasSession) {
-					InterceptorCommon.clearContexts(req.getSession(false));
-				} else {
-					if (req.getSession(false) != null) {
-						req.getSession(false).invalidate();
-					}
-				}
+				InterceptorCommon.clearContexts(
+						(Authentication) req.getSession().getAttribute(InterceptorCommon.SESSION_ATTR_PREVIOUS_AUTH),
+						req.getSession());
 			}
 		} else {
 			chain.doFilter(request, response);

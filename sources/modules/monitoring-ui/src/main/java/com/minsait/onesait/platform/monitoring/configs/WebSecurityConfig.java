@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,16 +24,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -52,47 +49,39 @@ import org.springframework.security.oauth2.client.token.grant.code.Authorization
 import org.springframework.security.oauth2.client.token.grant.implicit.ImplicitAccessTokenProvider;
 import org.springframework.security.oauth2.client.token.grant.password.ResourceOwnerPasswordAccessTokenProvider;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
-import org.springframework.security.oauth2.provider.token.RemoteTokenServices;
-import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
-import com.minsait.onesait.platform.monitoring.filter.OperationsLoginFilter;
-import com.minsait.onesait.platform.security.PlugableOauthAuthenticator;
 
 @Configuration
 // @EnableOAuth2Sso
 @EnableOAuth2Client
 // @Order(5)
-//@EnableSpringHttpSession
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
 	private AuthenticationProvider customProvider;
 	@Autowired
 	private OAuth2ClientContext oauth2ClientContext;
-	@Autowired(required = false)
-	private PlugableOauthAuthenticator plugableOauthAuthenticator;
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.formLogin().loginPage("/login.html").loginProcessingUrl("/login").successHandler(new SecurityHandler())
-		.permitAll();
+				.permitAll();
 		http.csrf().disable();
 		http.logout();
 		http.authorizeRequests()
-		.antMatchers("/login**", "/**/*.js", "/**/*.css", "/img/**", "/third-party/**", "/assets/**")
-		.permitAll();
+				.antMatchers("/login**", "/**/*.js", "/**/*.css", "/img/**", "/third-party/**", "/assets/**")
+				.permitAll();
 
 		http.authorizeRequests().antMatchers("/**").authenticated();
-		//		http.authorizeHttpRequests().anyRequest().permitAll();
 		http.httpBasic();
 		http.headers().frameOptions().disable();
+		http.addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);
 
-		http.addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class).addFilterBefore(
-				new OperationsLoginFilter(tokenServices(), plugableOauthAuthenticator),
-				AnonymousAuthenticationFilter.class);
+		// if (!profileDetector.getActiveProfile().equalsIgnoreCase(DEFAULT_PROFILE))
+		// http.requiresChannel().antMatchers("/login*").requiresSecure();
 	}
 
 	@Override
@@ -121,7 +110,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		oauthFilter.setRestTemplate(oauthTemplate);
 		userInfoTokenServices.setRestTemplate(oauthTemplate);
 		oauthFilter.setTokenServices(userInfoTokenServices);
-		oauthFilter.setAuthenticationSuccessHandler(new SecurityHandler());
 		return oauthFilter;
 	}
 
@@ -146,7 +134,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	public ResourceServerProperties getResource() {
 		return new ResourceServerProperties();
 	}
-
+	
 	@ConditionalOnMissingBean(UserInfoTokenServices.class)
 	@Bean
 	public UserInfoTokenServices userInfoTokenServices() {
@@ -162,47 +150,4 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 		}
 	}
-
-	@Bean
-	public ServletContextInitializer servletContextInitializer(
-			@Value("${onesaitplatform.secure.cookie}") boolean secure) {
-		return servletContext -> {
-			servletContext.getSessionCookieConfig().setSecure(secure);
-			servletContext.getSessionCookieConfig().setHttpOnly(true);
-		};
-	}
-
-	//	@Bean
-	//	public MapSessionRepository sessionRepository() {
-	//		return new MapSessionRepository(new ConcurrentHashMap<>());
-	//	}
-	//
-	//	@Bean
-	//	public CookieSerializer cookieSerializer(@Value("${onesaitplatform.secure.cookie}") boolean secure) {
-	//		final DefaultCookieSerializer serializer = new DefaultCookieSerializer();
-	//		if (secure) {
-	//			serializer.setSameSite("None");
-	//		}
-	//		serializer.setUseHttpOnlyCookie(true);
-	//		serializer.setUseSecureCookie(secure);
-	//		return serializer;
-	//	}
-
-	@Value("${security.oauth2.resource.checkTokenEndpoint}")
-	String checkTokenEndpoint;
-	@Value("${security.oauth2.client.clientId}")
-	String clientId;
-	@Value("${security.oauth2.client.clientSecret}")
-	String clientSecret;
-
-	@Primary
-	@Bean
-	public RemoteTokenServices tokenServices() {
-		final RemoteTokenServices tokenService = new RemoteTokenServices();
-		tokenService.setCheckTokenEndpointUrl(checkTokenEndpoint);
-		tokenService.setClientId(clientId);
-		tokenService.setClientSecret(clientSecret);
-		return tokenService;
-	}
-
 }

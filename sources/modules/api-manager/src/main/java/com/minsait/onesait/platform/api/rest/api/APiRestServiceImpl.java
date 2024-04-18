@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,42 +25,34 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import com.minsait.onesait.platform.api.cache.ApiCacheService;
 import com.minsait.onesait.platform.api.rest.api.fiql.ApiFIQL;
 import com.minsait.onesait.platform.api.service.api.ApiSecurityService;
 import com.minsait.onesait.platform.api.service.api.ApiServiceRest;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Api.ApiStates;
-import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.apimanager.dto.ApiDTO;
-import com.minsait.onesait.platform.config.services.user.UserService;
-
-import lombok.extern.slf4j.Slf4j;
+import com.minsait.onesait.platform.config.model.User;
 
 @Component("apiRestServiceImpl")
-@Slf4j
 public class APiRestServiceImpl implements ApiRestService {
 
 	Locale locale = LocaleContextHolder.getLocale();
 
 	@Autowired
 	private ApiServiceRest apiService;
-	@Autowired
-	UserService userService;
+
 	@Autowired
 	private ApiFIQL apiFIQL;
 	@Autowired
 	private ApiSecurityService apiSecurityService;
-	@Autowired
-	private ApiCacheService apiCacheService;
 
 	@Override
-	public Response getApi(String identification, String tokenUsuario) throws GenericOPException {
+	public Response getApi(String identificacion, String tokenUsuario) throws GenericOPException {
 		final User user = apiSecurityService.getUserByApiToken(tokenUsuario);
 		if (user == null)
 			return Response.status(Status.UNAUTHORIZED).build();
-		final Api api = apiService.findApi(identification, tokenUsuario);
+		final Api api = apiService.findApi(identificacion, tokenUsuario);
 		if (api != null)
 			return Response.ok(apiFIQL.toApiDTO(api)).build();
 		else
@@ -68,12 +60,12 @@ public class APiRestServiceImpl implements ApiRestService {
 	}
 
 	@Override
-	public Response getApiFilter(String identification, String estado, String usuario, String tokenUsuario)
+	public Response getApiFilter(String identificacion, String estado, String usuario, String tokenUsuario)
 			throws GenericOPException {
 		final User user = apiSecurityService.getUserByApiToken(tokenUsuario);
 		if (user == null)
 			return Response.status(Status.UNAUTHORIZED).build();
-		final List<Api> apis = apiService.findApis(identification, tokenUsuario);
+		final List<Api> apis = apiService.findApis(identificacion, tokenUsuario);
 		if (!CollectionUtils.isEmpty(apis))
 			return Response.ok(apiFIQL.toApiDTO(apis)).build();
 		else
@@ -111,13 +103,13 @@ public class APiRestServiceImpl implements ApiRestService {
 	}
 
 	@Override
-	public Response deleteByIdentificationNumversion(String identification, String numversion, String tokenUsuario)
+	public Response deleteByIdentificacionNumversion(String identificacion, String numversion, String tokenUsuario)
 			throws GenericOPException {
 		final User user = apiSecurityService.getUserByApiToken(tokenUsuario);
 		if (user == null)
 			return Response.status(Status.UNAUTHORIZED).build();
-		apiService.removeApiByIdentificationNumversion(identification, numversion, tokenUsuario);
-		final Object params[] = { identification, numversion };
+		apiService.removeApiByIdentificacionNumversion(identificacion, numversion, tokenUsuario);
+		final Object params[] = { identificacion, numversion };
 		return Response.ok(params).build();
 	}
 
@@ -162,43 +154,4 @@ public class APiRestServiceImpl implements ApiRestService {
 
 	}
 
-	@Override
-	public Response cleanCache(String tokenOauth) throws GenericOPException {
-		try {
-			User user = apiSecurityService.getUserOauth(tokenOauth);
-			if (user == null) {
-				user = apiSecurityService.getUserByApiToken(tokenOauth);
-			}
-			if (user == null || !user.isAdmin()) {
-				log.info("Clean API Manager Global cache: User Unauthorized");
-				return Response.status(Status.UNAUTHORIZED).build();
-			}
-			apiCacheService.cleanCache();
-			log.info("Clean API Manager Global cache: OK");
-			return Response.ok(Status.OK).build();
-		} catch (Exception e) {
-			return Response.serverError().build();
-		}
-	}
-
-	@Override
-	public Response cleanApiCache(String identification, String numversion, String tokenOauth)
-			throws GenericOPException {
-		try {
-			User user = apiSecurityService.getUserOauth(tokenOauth);
-			if (user == null) {
-				user = apiSecurityService.getUserByApiToken(tokenOauth);
-			}
-			Api api = apiService.getApiByIdentificationAndVersion(identification, numversion);
-			if (user == null || (!user.isAdmin() && (!user.getUserId().equals(api.getUser().getUserId())))) {
-				log.info("Clean API cache: {}V{} : User Unauthorized", identification, numversion);
-				return Response.status(Status.UNAUTHORIZED).build();
-			}
-			apiCacheService.cleanAPICache(api.getId());
-			log.info("Clean API cache: {}V{} : OK", identification, numversion);
-			return Response.ok(Status.OK).build();
-		} catch (Exception e) {
-			return Response.serverError().build();
-		}
-	}
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,31 +71,44 @@ public interface IoTSessionRepository extends JpaRepository<IoTSession, String> 
 
 	@Cacheable(cacheNames = SESSIONS_REPOSITORY, unless = "#result == null", key = "#p0")
 	IoTSession findBySessionKey(String sessionKey);
-
-	// the method calling this one must deal with the cache updated
-	// for example, a method that returns the session can use this annotation:
-	// @CachePut(cacheNames = IoTSessionRepository.SESSIONS_REPOSITORY, key =
-	// "#p0.sessionKey", unless = "#result == null")
-	// where the key is the sessionkey of the session passed as parameter.
-	@Transactional
-	@Modifying
-	@Query("UPDATE IoTSession i SET " + "i.sessionKey = :sessionKey, " + "i.clientPlatform = :clientPlatform, "
-			+ "i.clientPlatformID = :clientPlatformID, " + "i.device = :device, " + "i.token = :token, "
-			+ "i.userID = :userID, " + "i.userName = :userName, " + "i.expiration = :expiration, "
-			+ "i.lastAccess = :lastAccess," + "i.updatedAt = :updatedAt "
-			+ "WHERE i.id = :id AND i.updatedAt < :updatedAt")
-	public int updateSession(@Param("id") String id, @Param("sessionKey") String sessionkey,
-			@Param("clientPlatform") String clientPlatform, @Param("clientPlatformID") String clientPlatformID,
-			@Param("device") String device, @Param("token") MasterDeviceToken token, @Param("userID") String userID,
-			@Param("userName") String userName, @Param("expiration") long expiration,
-			@Param("lastAccess") ZonedDateTime lastAccess, @Param("updatedAt") Date updatedAt);
-
-	List<IoTSession> findByClientPlatform(String clientPlatform);
 	
-	List<IoTSession> findByClientPlatformID(String clientPlatformID);
+	List<IoTSession> findByClientPlatform(String clientPlatform);
 
 	@Override
 	@CacheEvict(cacheNames = SESSIONS_REPOSITORY, allEntries = true)
 	void deleteAll(Iterable<? extends IoTSession> entities);
+
+	
+	
+	//the method calling this one must deal with the cache updated
+		//for example, a method that returns the session can use this annotation: @CachePut(cacheNames = IoTSessionRepository.SESSIONS_REPOSITORY, key = "#p0.sessionKey", unless = "#result == null")
+		//where the key is the sessionkey of the session passed as parameter.
+	@Transactional
+	@Modifying
+	@Query("UPDATE IoTSession i SET "
+			+ "i.sessionKey = :sessionKey, "
+			+ "i.clientPlatform = :clientPlatform, "
+			+ "i.clientPlatformID = :clientPlatformID, "
+			+ "i.device = :device, "
+			+ "i.token = :token, "
+			+ "i.userID = :userID, "
+			+ "i.userName = :userName, "
+			+ "i.expiration = :expiration, "
+			+ "i.lastAccess = :lastAccess,"
+			+ "i.updatedAt = :updatedAt "
+		+  "WHERE i.id = :id AND i.updatedAt < :updatedAt" )
+	public int updateSession(
+			@Param("id") String id, 
+			@Param("sessionKey") String sessionkey, 
+			@Param("clientPlatform") String clientPlatform, 
+			@Param("clientPlatformID") String clientPlatformID, 
+			@Param("device") String device, 
+			@Param("token") MasterDeviceToken token, 
+			@Param("userID") String userID, 
+			@Param("userName") String userName, 
+			@Param("expiration") long expiration, 
+			@Param("lastAccess") ZonedDateTime lastAccess, 
+			@Param("updatedAt") Date updatedAt);
+	
 
 }

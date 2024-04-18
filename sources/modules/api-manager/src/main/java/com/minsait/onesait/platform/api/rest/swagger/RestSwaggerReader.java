@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.springframework.util.StringUtils;
 
 import com.minsait.onesait.platform.api.service.Constants;
+import com.minsait.onesait.platform.config.model.ApiQueryParameter;
 import com.minsait.onesait.platform.config.services.apimanager.dto.ApiDTO;
 import com.minsait.onesait.platform.config.services.apimanager.dto.ApiQueryParameterDTO;
 import com.minsait.onesait.platform.config.services.apimanager.dto.OperacionDTO;
@@ -57,17 +58,17 @@ public class RestSwaggerReader {
 	private static final String LICENSE_URL = "http://www.apache.org/licenses/LICENSE-2.0.html";
 
 	private static final String CONTACT_NAME = "Platform Team";
-	private static final String CONTACT_URL = "https://dev.onesaitplatform.com";
-	private static final String CONTACT_EMAIL = "support@onesaitplatform.com";
+	private static final String CONTACT_URL = "https://sofia2.com";
+	private static final String CONTACT_EMAIL = "supportsofia2@indra.es";
 
 	private static final String DATA_TYPE_VALUE_SEPARATOR = "|";
 
 	private static final String XSOFIAEXTENSION = "x-sofia2-extension";
 
 	private static List<String> produces = new ArrayList<>(Arrays.asList(MediaType.APPLICATION_JSON,
-			MediaType.APPLICATION_ATOM_XML, MediaType.TEXT_PLAIN, "text/csv", "application/ld+json"));
+			MediaType.APPLICATION_ATOM_XML, MediaType.TEXT_PLAIN, "text/csv"));
 	private static List<String> consumes = new ArrayList<>(
-			Arrays.asList(MediaType.APPLICATION_JSON, MediaType.APPLICATION_ATOM_XML, "application/ld+json"));
+			Arrays.asList(MediaType.APPLICATION_JSON, MediaType.APPLICATION_ATOM_XML));
 
 	private static Map<String, Response> responses = new HashMap<>();
 	private static List<Scheme> schemes = new ArrayList<>();
@@ -134,9 +135,8 @@ public class RestSwaggerReader {
 		final String identification = apiDto.getIdentification();
 
 		info.setDescription(INFO_DESCRIPTION + " - " + identification + " - " + vVersion);
-		if (StringUtils.hasText(config.getHost())) {
+		if (!StringUtils.isEmpty(config.getHost()))
 			swagger.setHost(config.getHost());
-		}
 		swagger.setBasePath(config.getBasePath());
 
 		swagger.setSchemes(schemes);
@@ -154,6 +154,7 @@ public class RestSwaggerReader {
 		for (final OperacionDTO operacionDTO : operations) {
 			parse(swagger, operacionDTO);
 		}
+
 		return swagger;
 	}
 
@@ -179,9 +180,8 @@ public class RestSwaggerReader {
 		final String description = operacionDTO.getDescription();
 		final String operation = operacionDTO.getOperation().name();
 		String path = operacionDTO.getPath();
-		if (!path.startsWith("/")) {
+		if (!path.startsWith("/"))
 			path = "/" + path;
-		}
 		final List<ApiQueryParameterDTO> queryParams = operacionDTO.getQueryParams().stream()
 				.filter(p -> !excludeParms.contains(p.getName())).collect(Collectors.toList());
 
@@ -195,10 +195,10 @@ public class RestSwaggerReader {
 		op.operationId(description.replaceAll(" ", "_"));
 
 		final String method = operation.toLowerCase(Locale.US);
-		// DONT NEED THIS ANYMORE, OPENAPI 3 SEC DEFINITIONS INSTEAD
-//		createPARAMETER(swagger, op, Constants.AUTHENTICATION_HEADER, Constants.AUTHENTICATION_HEADER,
-//				ApiQueryParameter.HeaderType.HEADER.name(), ApiQueryParameter.DataType.STRING.name().toLowerCase(),
-//				null);
+
+		createPARAMETER(swagger, op, Constants.AUTHENTICATION_HEADER, Constants.AUTHENTICATION_HEADER,
+				ApiQueryParameter.HeaderType.HEADER.name(), ApiQueryParameter.DataType.STRING.name().toLowerCase(),
+				null);
 
 		swaggerPath = swaggerPath.set(method, op);
 
@@ -219,16 +219,13 @@ public class RestSwaggerReader {
 		op.setConsumes(consumes);
 		op.setProduces(produces);
 		op.setResponses(responses);
-		op.addSecurity(Constants.AUTHENTICATION_HEADER, null);
-		op.addSecurity(Constants.JWT, null);
 
 	}
 
 	private static List<String> splitStringValue(String value) {
 		final List<String> enumValue = new ArrayList<>();
-		if (value == null) {
+		if (value == null)
 			return Collections.emptyList();
-		}
 
 		if (value.contains(RestSwaggerReader.DATA_TYPE_VALUE_SEPARATOR)) {
 			enumValue.add(value);

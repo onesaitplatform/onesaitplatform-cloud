@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@ package com.minsait.onesait.platform.controlpanel.controller.simulation;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,6 +36,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulation;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.services.client.ClientPlatformService;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
 import com.minsait.onesait.platform.config.services.exceptions.SimulationServiceException;
@@ -72,19 +71,13 @@ public class DeviceSimulatorController {
 	private EntityDeletionService entityDeletionService;
 	@Autowired
 	private ResourcesInUseService resourcesInUseService;
-	@Autowired 
-	private HttpSession httpSession;
-	
+
 	private static final String SIMULATORS_STR = "simulators";
 	private static final String ERROR_403 = "error/403";
-	private static final String APP_ID = "appId";
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping("list")
 	public String list(Model model) {
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
 		model.addAttribute(SIMULATORS_STR, data());
 		return "simulator/list";
 	}
@@ -93,7 +86,7 @@ public class DeviceSimulatorController {
 	@GetMapping("data")
 	public @ResponseBody List<DeviceSimulationDTO> data() {
 		List<ClientPlatformInstanceSimulation> simulations = null;
-		if (utils.isAdministrator()) {
+		if (utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
 			simulations = deviceSimulationService.getAllSimulations();
 		} else {
 			simulations = deviceSimulationService.getSimulationsForUser(utils.getUserId());
@@ -126,7 +119,8 @@ public class DeviceSimulatorController {
 
 		final ClientPlatformInstanceSimulation simulation = deviceSimulationService.getSimulationById(id);
 
-		if (!utils.isAdministrator() && !simulation.getUser().getUserId().equals(utils.getUserId())) {
+		if (!utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name())
+				&& !simulation.getUser().getUserId().equals(utils.getUserId())) {
 			return ERROR_403;
 		}
 
@@ -196,7 +190,8 @@ public class DeviceSimulatorController {
 	public String startStop(Model model, @RequestParam String id) {
 		final ClientPlatformInstanceSimulation simulation = deviceSimulationService.getSimulationById(id);
 
-		if (!utils.isAdministrator() && !simulation.getUser().getUserId().equals(utils.getUserId())) {
+		if (!utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name())
+				&& !simulation.getUser().getUserId().equals(utils.getUserId())) {
 			return ERROR_403;
 		}
 
@@ -208,7 +203,7 @@ public class DeviceSimulatorController {
 				simulationService.scheduleSimulation(simulation);
 			}
 		}
-		if (utils.isAdministrator()) {
+		if (utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
 			simulations = deviceSimulationService.getAllSimulations();
 		} else {
 			simulations = deviceSimulationService.getSimulationsForUser(utils.getUserId());
@@ -227,7 +222,8 @@ public class DeviceSimulatorController {
 
 		final ClientPlatformInstanceSimulation simulation = deviceSimulationService.getSimulationById(id);
 
-		if (!utils.isAdministrator() && !simulation.getUser().getUserId().equals(utils.getUserId())) {
+		if (!utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name())
+				&& !simulation.getUser().getUserId().equals(utils.getUserId())) {
 			return ERROR_403;
 		}
 
@@ -258,7 +254,8 @@ public class DeviceSimulatorController {
 	public @ResponseBody String delete(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 		final ClientPlatformInstanceSimulation simulation = deviceSimulationService.getSimulationById(id);
 
-		if (!utils.isAdministrator() && !simulation.getUser().getUserId().equals(utils.getUserId())) {
+		if (!utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name())
+				&& !simulation.getUser().getUserId().equals(utils.getUserId())) {
 			return ERROR_403;
 		}
 

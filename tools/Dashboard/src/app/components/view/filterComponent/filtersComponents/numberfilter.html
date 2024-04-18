@@ -1,7 +1,0 @@
-    <ods-form v-model="dynamicValidateForm"  v-on:submit.prevent="noop">
-            <form v-on:submit.prevent="noop">
-        <ods-form-item :label="dynamicValidateForm.inputName" > 
-            <ods-input  type="number"  placeholder="Please input" v-model="dynamicValidateForm.inputValue" @change="valueChange"></ods-input>
-        </ods-form-item>
-    </form>
-    </ods-form>

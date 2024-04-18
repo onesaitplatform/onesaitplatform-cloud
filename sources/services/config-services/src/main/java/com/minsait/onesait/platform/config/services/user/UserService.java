@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,8 +47,6 @@ public interface UserService {
 
 	User getUser(String userId);
 
-	User getUserNoCache(String userId);
-
 	List<Role> getAllRoles();
 
 	List<UserToken> getUserToken(User userId);
@@ -59,11 +57,6 @@ public interface UserService {
 
 	List<UserAmplified> getAllUsersByCriteriaList(String userId, String fullName, String email, String roleType,
 			Boolean active);
-
-	List<UserAmplified> getAllUsersActiveByUsernameLike(String usernameLike);
-	
-	List<UserAmplified> getAllUsersActiveByFullNameLike(String fullNameLike);
-	
 
 	List<User> getAllUsersByCriteria(String userId, String fullName, String email, String roleType, Boolean active);
 
@@ -112,13 +105,5 @@ public interface UserService {
 	public void registerRoleAdministrator(User user);
 
 	public boolean deactivateUser(String userId);
-	
-	public void deactivateClientPlatformsTokens(User user);
-
-	void evictFromCache(User user);
-
-	List<UserAmplified> getAllActiveUsersListPageable(Integer page, Integer size, String filter);
-
-	long countUsers();
 
 }

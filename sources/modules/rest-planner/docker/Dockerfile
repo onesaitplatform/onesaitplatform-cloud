@@ -1,4 +1,4 @@
-FROM onesaitplatform/baseimage:latest-17
+FROM onesaitplatform/baseimage:latest
 
 # Metadata
 LABEL platform.image.name="rest-planner"
@@ -36,29 +36,17 @@ ENV SERVER_NAME=localhost \
 	SCHEDULERDBBURL="jdbc:mysql://configdb:3306/onesaitplatform_scheduler?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true" \	
     CONFIGDBUSER=root \
     CONFIGDBPASS=changeIt! \
-	SCHEDULERDBBUSER=root \
-	SCHEDULERDBBPASS=changeIt! \
     CONFIGDB_MAX_ACTIVE=2 \
     CONFIGDB_MAX_IDLE=2 \
-	CONFIGDB_DRIVER=com.mysql.cj.jdbc.Driver \
-	CONFIGDB_DIALECT=org.hibernate.dialect.MySQL5InnoDBDialect \
-	SCHEDULERDBBDRIVER=com.mysql.cj.jdbc.Driver \
-	SCHEDULERDBBDIALECT=org.hibernate.dialect.MySQL5Dialect \
     SCHEDULERDBSERVERS=schedulerdb:3306 \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
-    AUDITGLOBALNOTIFY=true \
+    AUDITGLOBALNOTIFY=false \
     QUASARHOST=quasar \
     QUASARPORT=10800 \
     HZ_SERVICE_DISCOVERY_STRATEGY=service \
     HZ_ZOOKEEPER_URL=zookeeper:2181 \
     RESTPLANNER_CHECKSSL=false \
-    REALTIMEDBNAME=onesaitplatform_rtdb \
-    GRAYLOG_ENABLED=false \
-    GRAYLOG_HOST=log-centralizer \
-    GRAYLOG_PORT=12201 \
-    SBA_USERNAME=operations \
-	QUARTZ_DRIVER=org.quartz.impl.jdbcjobstore.StdJDBCDelegate \
-	SBA_SECRET=changeIt2019!
+    REALTIMEDBNAME=onesaitplatform_rtdb
 
 ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Dspring.profiles.active=docker -jar /app.jar

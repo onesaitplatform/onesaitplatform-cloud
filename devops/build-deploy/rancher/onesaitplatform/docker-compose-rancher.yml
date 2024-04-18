@@ -1,0 +1,18 @@
+version: "2.1"
+services:
+ rancherinstance:
+  image: rancher/server:latest
+  container_name: rancherserver
+  ports:
+  - "8080:8080"
+  volumes:
+  - ${HOST_VOLUME_PERSIST}:/var/lib/mysql:rw
+  privileged: true
+  networks:
+  - datanetwork
+networks:
+  datanetwork:
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.28.0.0/16

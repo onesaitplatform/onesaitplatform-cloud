@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
 package com.minsait.onesait.platform.api.service;
 
 public final class Constants {
-
-	private Constants() {
-	}
+	
+	private Constants() {}
 
 	public static final String API_AUT_BASICO = "BASIC";
 	public static final String API_AUT_HEADER = "HEADER";
@@ -30,7 +29,6 @@ public final class Constants {
 	public static final String AUTHENTICATION_HEADER = "X-OP-APIKey";
 	public static final String AUTHENTICATION_HEADER_OLD = "X-SOFIA2-APIKey";
 	public static final String JWT_TOKEN = "JWT_TOKEN";
-	public static final String JWT = "JWT";
 	public static final String CACHEABLE = "Cacheable";
 
 	public static final String WEB_SERVICE_API = "webservice";
@@ -71,9 +69,5 @@ public final class Constants {
 	public static final String REQUEST = "REQUEST";
 
 	public static final String CONTEXT_USER = "$context.userId";
-
-	public static final String HTTP_RESPONSE_HEADERS = "RESPONSE_HEADERS";
-
-	public static final String IS_CUSTOM_SQL = "IS_CUSTOM_SQL";
 
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,76 +78,33 @@ public class ExpirationUsersPassJob {
 			if (masterUser.isActive()) {
 				// check inactive days
 				log.debug("----------------------------------");
-				if (log.isDebugEnabled()) {
-					log.debug("maxInactiveDays :{}", maxInactiveDays);
-					log.debug("timeLifePass :{}", timeLifePass);
-					log.debug("noticesDaysBefore :{}", noticesDaysBefore);
-	
-					log.debug("inactiveLimitDate :{}", inactiveLimitDate);
-					log.debug("timeLifeDate :{}", timeLifeDate);
-					log.debug("noticesDateBeforeDate :{}", noticesDateBeforeDate);
-	
-					log.debug("USER :{}", masterUser.getUserId());
-					log.debug("masterUser.getLastLogin() :{}", masterUser.getLastLogin());
-					log.debug("masterUser.getLastPswdUpdate() :{}", masterUser.getLastPswdUpdate());
-				}
-				
+				log.debug("maxInactiveDays :" + maxInactiveDays);
+				log.debug("timeLifePass :" + timeLifePass);
+				log.debug("noticesDaysBefore :" + noticesDaysBefore);
 
-				if (masterUser.getLastLogin() != null && masterUser.getLastLogin().before(inactiveLimitDate)
-						&& maxInactiveDays >= 0) {
+				log.debug("inactiveLimitDate :" + inactiveLimitDate);
+				log.debug("timeLifeDate :" + timeLifeDate);
+				log.debug("noticesDateBeforeDate :" + noticesDateBeforeDate);
 
-					if (log.isDebugEnabled()) {
-						log.debug("masterUser.getLastLogin().before(inactiveLimitDate)): {}"
-							, masterUser.getLastLogin().before(inactiveLimitDate));
-						// block User and send mail
-	
-						log.info("----------------------------------");
-						log.info("CAUSE :" + "disabled user due to inactivity");
-						log.info("USER :{}", masterUser.getUserId());
-						log.info("now :{}", now);
-						log.info("maxInactiveDays :{}", maxInactiveDays);
-						log.info("timeLifePass :{}", timeLifePass);
-						log.info("noticesDaysBefore :{}", noticesDaysBefore);
-	
-						log.info("inactiveLimitDate :{}", inactiveLimitDate);
-						log.info("timeLifeDate :{}", timeLifeDate);
-						log.info("noticesDateBeforeDate :{}", noticesDateBeforeDate);
-	
-						log.info("masterUser.getLastLogin() :{}", masterUser.getLastLogin());
-						log.info("masterUser.getLastPswdUpdate() :{}", masterUser.getLastPswdUpdate());
-					}
-					
-					log.info("----------------------------------");
+				log.debug("USER :" + masterUser.getUserId());
+				log.debug("masterUser.getLastLogin() :" + masterUser.getLastLogin());
+				log.debug("masterUser.getLastPswdUpdate() :" + masterUser.getLastPswdUpdate());
 
+				if (masterUser.getLastLogin() != null && masterUser.getLastLogin().before(inactiveLimitDate)) {
+					log.debug("masterUser.getLastLogin().before(inactiveLimitDate)): "
+							+ masterUser.getLastLogin().before(inactiveLimitDate));
+					// block User and send mail
 					userService.deactivateUser(masterUser.getUserId());
 					sendInactivityEmail(masterUser);
-				} else if (masterUser.getLastPswdUpdate() != null && masterUser.getLastPswdUpdate().before(timeLifeDate)
-						&& timeLifePass >= 0) {
+				} else if (masterUser.getLastPswdUpdate() != null
+						&& masterUser.getLastPswdUpdate().before(timeLifeDate)) {
 					log.debug(" masterUser.getLastPswdUpdate().before(timeLifeDate)): "
 							+ masterUser.getLastPswdUpdate().before(timeLifeDate));
 					// block User and send mail
-
-					log.info("----------------------------------");
-					log.info("CAUSE :" + "expired password");
-					log.info("USER :" + masterUser.getUserId());
-					log.info("now :" + now);
-					log.info("maxInactiveDays :" + maxInactiveDays);
-					log.info("timeLifePass :" + timeLifePass);
-					log.info("noticesDaysBefore :" + noticesDaysBefore);
-
-					log.info("inactiveLimitDate :" + inactiveLimitDate);
-					log.info("timeLifeDate :" + timeLifeDate);
-					log.info("noticesDateBeforeDate :" + noticesDateBeforeDate);
-
-					log.info("masterUser.getLastLogin() :" + masterUser.getLastLogin());
-					log.info("masterUser.getLastPswdUpdate() :" + masterUser.getLastPswdUpdate());
-					log.info("----------------------------------");
-
 					userService.deactivateUser(masterUser.getUserId());
 					sendPasswordExpiredEmail(masterUser);
 				} else if (masterUser.getLastPswdUpdate() != null
-						&& masterUser.getLastPswdUpdate().before(noticesDateBeforeDate) && timeLifePass >= 0
-						&& noticesDaysBefore >= 0) {
+						&& masterUser.getLastPswdUpdate().before(noticesDateBeforeDate)) {
 					log.debug("masterUser.getLastPswdUpdate().before(noticesDateBeforeDate): "
 							+ masterUser.getLastPswdUpdate().before(noticesDateBeforeDate));
 					// send mail
@@ -155,6 +112,7 @@ public class ExpirationUsersPassJob {
 							getDiffDates(noticesDateBeforeDate, masterUser.getLastPswdUpdate()));
 				}
 				log.debug("----------------------------------");
+
 			}
 		});
 	}
@@ -207,7 +165,7 @@ public class ExpirationUsersPassJob {
 		final String emailTitle = getMessage("user.expiration.inactivity.notice.title", defaultTitle);
 		String emailBody = getMessage("user.expiration.pass.expired.body", defaultMessage);
 
-		log.info("Send email to {} in order to report password has expired due to inactivity", masterUser.getEmail());
+		log.info("Send email to {} in order to report next password expiration", masterUser.getEmail());
 		mailService.sendMail(masterUser.getEmail(), emailTitle, emailBody);
 	}
 
@@ -215,9 +173,7 @@ public class ExpirationUsersPassJob {
 		try {
 			return messageSource.getMessage(key, null, LocaleContextHolder.getLocale());
 		} catch (final Exception e) {
-			if (log.isDebugEnabled()) {
-				log.debug("Key:{} not found. Returns:", key, valueDefault);
-			}			
+			log.debug("Key:" + key + " not found. Returns:" + valueDefault);
 			return valueDefault;
 		}
 	}

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,12 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
@@ -63,18 +60,7 @@ public class OntologyVirtual extends AuditableEntityWithUUID {
 	@Getter
 	@Setter
 	private String datasourceTableName;
-	
-	@Column(name = "DATASOURCE_DATABASE", length = 128, nullable = true)
-	@Getter
-	@Setter
-	private String datasourceDatabase;
 
-	@Column(name = "DATASOURCE_SCHEMA", nullable = true)
-	@NotNull
-	@Getter
-	@Setter
-	private String datasourceSchema;
-	
 	@Column(name = "OBJECT_ID", length = 50, nullable = true)
 	@Getter
 	@Setter

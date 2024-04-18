@@ -102,7 +102,7 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G" \
     KAFKAPASSWORD=54986d1088d24dd48605a93e85665e1c\
     CONFIGDBSERVERS=configdb:3306 \
     JDBCPROTOCOL="jdbc:mysql:" \
-    AUDITGLOBALNOTIFY=true \    
+    AUDITGLOBALNOTIFY=false \    
     DBADDPROPS="" \
     LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib64:/usr/local/opencv/lib \
     HZ_SERVICE_DISCOVERY_STRATEGY=service \
@@ -111,17 +111,12 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G" \
     CONFIGDBPASS=changeIt! \
     CONFIGDB_MAX_ACTIVE=2 \
     CONFIGDB_MAX_IDLE=2 \
-	CONFIGDB_DRIVER=com.mysql.cj.jdbc.Driver \
-	CONFIGDB_DIALECT=org.hibernate.dialect.MySQL5InnoDBDialect \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
-    AUDITGLOBALNOTIFY=true \
+    AUDITGLOBALNOTIFY=false \
     MAXCONN=100 \
     MAXCONNROUTE=100 \
-    OP_LOG_LEVEL=INFO  \
-    GRAYLOG_ENABLED=false \
-    GRAYLOG_HOST=log-centralizer \
-    GRAYLOG_PORT=12201
+    OP_LOG_LEVEL=INFO 
 
     
 ENTRYPOINT java $JAVA_OPTS -Djava.library.path=/usr/local/opencv/lib -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=docker -jar /app.jar

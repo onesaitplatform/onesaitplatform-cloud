@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,31 +99,16 @@ public class TransactionProcessor implements MessageTypeProcessor {
 
 			model.setLockTransaction(((SSAPBodyCommitTransactionMessage) message.getBody()).isLockOntologies());
 			transactionResult = routerService.commitTransaction(model);
-			try {
-				bodyReturn.setData(
-						objectMapper.readTree(String.format("{\"result\": \"%s\"}", transactionResult.getResult())));
-			} catch (JsonProcessingException e) {
-				log.error("Error processing JSON in COMMIT_TRANSACTION. {}", e);
-			} catch (IOException e) {
-				log.error("Error writing data in COMMIT_TRANSACTION. {}", e);
-			}
+
 			break;
 		case ROLLBACK_TRANSACTION:
 			model.setType(TransactionModel.OperationType.ROLLBACK_TRANSACTION);
 
 			transactionResult = routerService.rollbackTransaction(model);
-			try {
-				bodyReturn.setData(
-						objectMapper.readTree(String.format("{\"result\": \"%s\"}", transactionResult.getResult())));
-			} catch (JsonProcessingException e) {
-				log.error("Error processing JSON in ROLLBACK_TRANSACTION. {}", e);
-			} catch (IOException e) {
-				log.error("Error writing data in ROLLBACK_TRANSACTION. {}", e);
-			}
+
 			break;
 		}
 		bodyReturn.setOk(transactionResult.isStatus());
-
 		if (!transactionResult.isStatus()) {
 			bodyReturn.setError(transactionResult.getMessage());
 			bodyReturn.setErrorCode(SSAPErrorCode.AUTHORIZATION);
@@ -167,7 +152,7 @@ public class TransactionProcessor implements MessageTypeProcessor {
 
 	private boolean validateTransactionIdExists(SSAPMessage<SSAPBodyEmptySessionMandatoryMessage> message)
 			throws SSAPProcessorException {
-		if (!StringUtils.hasText(message.getTransactionId())) {
+		if (StringUtils.isEmpty(message.getTransactionId())) {
 			throw new SSAPProcessorException(String.format(MessageException.ERR_FIELD_IS_MANDATORY, "transactionId",
 					message.getMessageType().name()));
 		}

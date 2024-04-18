@@ -40,8 +40,9 @@ var InternationalizationCreateController = function() {
 		// no Id no fun!
 		if (!internationalizationId) {
 			$.alert({
-				title : 'Error',
-				theme : 'light',
+				title : 'ERROR!',
+				type : 'red',
+				theme : 'dark',
 				content : 'NO INTERNATIONALIZATION-FORM SELECTED!'
 			});
 			return false;
@@ -62,19 +63,26 @@ var InternationalizationCreateController = function() {
 	var handleValidation = function() {
 		logControl ? console.log('handleValidation() -> ') : '';
 
-		var form1 = $('#internationalization_create_form');		
+		var form1 = $('#internationalization_create_form');
+		var error1 = $('.alert-danger');
+		var success1 = $('.alert-success');
 
 		form1
 				.validate({
-				  errorElement: 'span', //default input error message container
-	            errorClass: 'help-block help-block-error', // default input error message class
-	            focusInvalid: false, // do not focus the last invalid input
-	            ignore: ":hidden:not('.selectpicker, .hidden-validation')", // validate all fields including form hidden input but not selectpicker
-				lang: currentLanguage,
+					errorElement : 'span', // default input error message
+					// container
+					errorClass : 'help-block help-block-error', // default input
+					// error message class
+					focusInvalid : false, // do not focus the last invalid
+					// input
+					ignore : ":hidden:not('.selectpicker, .hidden-validation')", // validate
+					// all fields including form hidden input but not
+					// selectpicker
+					lang : currentLanguage,
 					// validation rules
 					rules : {
 						identification : {
-							minlength : 5,							
+							minlength : 5,
 							required : true
 						},
 						description : {
@@ -84,12 +92,26 @@ var InternationalizationCreateController = function() {
 					},
 					invalidHandler : function(event, validator) { // display
 						// error alert on form submit
-						toastr.error(messagesForms.validation.genFormError,'');
+						success1.hide();
+						error1.show();
+						App.scrollTo(error1, -200);
 					},
 					errorPlacement : function(error, element) {
-						if 		( element.is(':checkbox'))	{ error.insertAfter(element.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline")); }
-						else if ( element.is(':radio'))		{ error.insertAfter(element.closest(".md-radio-list, .md-radio-inline, .radio-list,.radio-inline")); }
-						else 								{ error.insertAfter(element); }
+						if (element.is(':checkbox')) {
+							error
+									.insertAfter(element
+											.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline"));
+						} else if (element.is(':radio')) {
+							error
+									.insertAfter(element
+											.closest(".md-radio-list, .md-radio-inline, .radio-list,.radio-inline"));
+						} else if (element.is(':hidden')) {
+							if ($('#datamodelid').val() === '') {
+								$('#datamodelError').removeClass('hide');
+							}
+						} else {
+							error.insertAfter(element);
+						}
 					},
 					highlight : function(element) { // hightlight error inputs
 						$(element).closest('.form-group').addClass('has-error');
@@ -113,8 +135,8 @@ var InternationalizationCreateController = function() {
 						saveJson();
 						$('#jsoni18n_aux').val(JSON.stringify(myJson));							
 						
-						formAux.attr("action", "?" + csrfParameter + "=" + csrfValue) 
-						toastr.success(messagesForms.validation.genFormSuccess,'');
+						success1.show();
+						error1.hide();
 						formAux.submit();
 					}
 				});
@@ -122,7 +144,6 @@ var InternationalizationCreateController = function() {
 
 	var saveJson = function(){
 		var tab = $("#langTabsUL li.active span").text();
-		
 		if(tab != null && tab != ""){
 			var textAreaFile= myJsonLanguageEditor.getValue();
 			myJson['languages'][tab]=JSON.parse(textAreaFile);
@@ -143,7 +164,6 @@ var InternationalizationCreateController = function() {
 		// Put the language name in text input
 		var lang = document.getElementById("languageTabCode");
 		lang.value = $("#languageCode option").filter(function(a){return this.value==tabName})[0].text;	
-		$('#file2').val(null);
 	}
 
 	var printJson = function(text) {
@@ -170,16 +190,16 @@ var InternationalizationCreateController = function() {
 				element.click();
 				document.body.removeChild(element);
 			} else {
-				toastr.error(messagesForms.operations.genOpError, i18nJson.validations.file_empty_error);
+				alert("The file is empty.");
 			}
 		} else {
-			toastr.error(messagesForms.operations.genOpError, i18nJson.validations.languaje_selection_error);
+			alert("Please, select a language!");
 		}
 	}
 	
 	var loadJsonFromDoc = function(files) {
 		if(files == null){
-			toastr.error(messagesForms.operations.genOpError, i18nJson.validations.file_selection_error);
+			alert("Please, select a file!");
 		} else {
 			var reader = new FileReader();
 			var size = files[0].size;
@@ -189,8 +209,7 @@ var InternationalizationCreateController = function() {
 			var bytes = 0;
 			var selectedTab = $("#langTabsUL li.active span").text();
 			if(selectedTab == ""){
-				toastr.error(messagesForms.operations.genOpError, i18nJson.validations.languaje_selection_error);
-			
+				alert("Please, select a language!");
 			} else {
 				if (files[0].type == "application/json") {
 		
@@ -243,7 +262,6 @@ var InternationalizationCreateController = function() {
 				$('#progressBarModal').modal("show");
 			}
 		}	
-			
 	};
 
 	var progressBarFileUpload = function(offset, maxSize) {
@@ -290,25 +308,24 @@ var InternationalizationCreateController = function() {
     var showAddLangDialog = function(){
 		hideLanguageOptions();
 		$.confirm({
-			title: addLanguageTitle,
+			icon: 'fas fa-chart-pie',
+			title: 'Select new language to add',
 			theme: 'light',
 			columnClass: 'medium',
 			content: '<select id="popuplangselector" >' + $("#languageCode").html() + '</select>',
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
+			closeIcon: true,
 			buttons: {
 				close: {
-					text: cancelBtn,
-					btnClass: 'btn btn-outline blue dialog',
-					action: function (){
-						hideSelectOptions();
-					} // GENERIC CLOSE.
-					
+					text: "Cancel",
+					btnClass: 'btn btn-sm btn-outline btn-circle blue',
+					action: function (){} // GENERIC CLOSE.
 				},
 				Ok: {
-					text: confirmBtn,
-					btnClass: 'btn btn-primary',
+					text: "Ok",
+					btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
 					action: function() {
 						if($("#popuplangselector").val()=="" || !$("#popuplangselector").val()){
 							console.log("language empty");
@@ -346,7 +363,7 @@ var InternationalizationCreateController = function() {
     		return this.textContent}).get();
     	
     	var str='[value!=""]';
-        for(i=0;i<tabs.length - 2 ;i++){
+        for(i=0;i<tabs.length;i++){
             str += '[value!='+tabs[i]+']';
         }
         $('#languageCode option'+ str).hide();
@@ -386,7 +403,6 @@ var InternationalizationCreateController = function() {
 			} else {
 				$("#languageCode").val("");
 				hideSelectOptions();
-				
 			}
 			
 		} else {
@@ -401,44 +417,31 @@ var InternationalizationCreateController = function() {
 	
 	var deleteTab = function() {
 		$.confirm({
-			title: removeLanguageTitle,
+			icon: 'fas fa-chart-pie',
+			title: 'Select new language to add',
 			theme: 'light',
 			columnClass: 'medium',
-			content: removeLanguageConfirm,
+			content: 'Are you sure you want to delete this language?',
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
+			closeIcon: true,
 			buttons: {
 				close: {
-					text: cancelBtn,
-					btnClass: 'btn btn-outline blue dialog',
-					action: function (){
-						hideSelectOptions();
-					} // GENERIC CLOSE.
+					text: "Cancel",
+					btnClass: 'btn btn-sm btn-outline btn-circle blue',
+					action: function (){} // GENERIC CLOSE.
 				},
 				Ok: {
-					text: deleteBtn,
-					btnClass: 'btn btn-primary',
+					text: "Ok",
+					btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
 					action: function() {
 						var selectedTab = $("#langTabsUL li.active span").text();
 						if(selectedTab == ""){
-							toastr.error(messagesForms.operations.genOpError, i18nJson.validations.languaje_selection_error);
+							alert("Please, select a language!");
 						} else{
 							delete myJson['languages'][selectedTab];
 							$("#langTabsUL li.active").remove();
-						
-							var defaultLang = $("#languageCode").val();
-							
-							if(defaultLang != "") {
-								if(defaultLang != selectedTab) {
-									$("#languageCode").val(defaultLang);
-								} else {
-									$("#languageCode").val("");
-								}
-								var lang = document.getElementById("languageTabCode");
-								lang.value = "";	
-								hideSelectOptions();
-							}
 						}
 					}											
 				}						
@@ -459,22 +462,11 @@ var InternationalizationCreateController = function() {
 		myJsonLanguageEditor.updateOptions({ readOnly: false});
 	}
 
-
-	var initTemplateElements = function(){
-			
-		$('input').filter('[required]').bind('blur', function (ev) { // fires on every blur				
-				$('#internationalization_create_form').validate().element('#' + event.target.id);                // checks form for validity
-		});
-	}
-
-
-
 	// CONTROLLER PUBLIC FUNCTIONS
 	return {
 		// LOAD() JSON LOAD FROM TEMPLATE TO CONTROLLER
 		load: function(Data) { 
 			logControl ? console.log(LIB_TITLE + ': load()') : '';
-			return internacionalizationCreateReg = Data;
 		},
 		getCodeMirror : function() {
 			return myCodeMirror;
@@ -495,7 +487,6 @@ var InternationalizationCreateController = function() {
 				$("#dimensionsPanel").hide();
 			}
 			handleValidation();
-			initTemplateElements();
 		},
 
 		// REDIRECT
@@ -535,8 +526,8 @@ var InternationalizationCreateController = function() {
 }();
 
 // AUTO INIT CONTROLLER WHEN READY
-$(window).on("load",function() {	
-	InternationalizationCreateController.load(i18nJson);
+$(window).load(function() {	
+	
 	// AUTO INIT CONTROLLER.
 	InternationalizationCreateController.init();
 });

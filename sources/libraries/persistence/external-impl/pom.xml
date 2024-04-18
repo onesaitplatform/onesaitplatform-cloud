@@ -1,139 +1,131 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-		<version>${revision}</version>
+		<version>2.1.0-ce</version>
 		<relativePath>../../..</relativePath>
 	</parent>
 	<artifactId>onesaitplatform-persistence-external</artifactId>
 	<packaging>jar</packaging>
 
 	<properties>
-		<license.dir>${project.parent.basedir}</license.dir>
+    	<license.dir>${project.parent.basedir}</license.dir>
 	</properties>
-
-	<dependencies>
+	
+	<dependencies>		
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-persistence-interfaces</artifactId>
-			<version>${project.version}</version>
+			<version>${onesaitplatform.version}</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-commons</artifactId>
-			<version>${project.version}</version>
+			<version>${onesaitplatform.version}</version>
 		</dependency>
-
-		<dependency>
+			
+	    <dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-comms-protocol</artifactId>
-		</dependency>
-
+        </dependency>
+		
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-config-model</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<dependency>
+			<version>${onesaitplatform.version}</version>
+        </dependency>
+        
+        <dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-config-services</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
+			<version>${onesaitplatform.version}</version>
+        </dependency>
+		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/javax.persistence/persistence-api -->
-		<dependency> <!--si ponemos javax-persistence-1.0.2 no funciona en ejecución -->
-			<groupId>org.hibernate.javax.persistence</groupId>
-			<artifactId>hibernate-jpa-2.1-api</artifactId>
-			<version>1.0.0.Final</version>
+		<dependency> <!--si ponemos javax-persistence-1.0.2 no funciona en ejecución-->
+		  <groupId>org.hibernate.javax.persistence</groupId>
+		  <artifactId>hibernate-jpa-2.1-api</artifactId>
+		  <version>1.0.0.Final</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
+		
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
+		  <groupId>joda-time</groupId>
+		  <artifactId>joda-time</artifactId>
 		</dependency>
-
-		<dependency>
-			<groupId>joda-time</groupId>
-			<artifactId>joda-time</artifactId>
-			<version>${joda.version}</version>
-		</dependency>
-
+	
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
-
+		
 		<!-- Apache HTTP client dependencies -->
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>${httpclient.version}</version>
-		</dependency>
-
-		<!--JSQLParser to parse sql queries -->
-		<dependency>
-			<groupId>com.github.jsqlparser</groupId>
-			<artifactId>jsqlparser</artifactId>
-			<version>${jsqlparser.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.jayway.jsonpath</groupId>
-			<artifactId>json-path</artifactId>
-			<version>2.4.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.oracle</groupId>
-			<artifactId>ojdbc6</artifactId>
-			<version>11.2.0.4</version>
-		</dependency>
-
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>${httpclient.version}</version>
+        </dependency>
+        
+        <!--JSQLParser to parse sql queries-->
+        <dependency>
+        	<groupId>com.github.jsqlparser</groupId>
+        	<artifactId>jsqlparser</artifactId>
+        	<version>${jsqlparser.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.jayway.jsonpath</groupId>
+            <artifactId>json-path</artifactId>
+            <version>2.4.0</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.oracle</groupId>
+            <artifactId>ojdbc6</artifactId>
+            <version>11.2.0.4</version>
+        </dependency>
+        
+        <dependency>
+		    <groupId>mysql</groupId>
+		    <artifactId>mysql-connector-java</artifactId>
 			<version>${mysql.driver.version}</version>
 		</dependency>
-
+		
 		<dependency>
-			<groupId>org.mariadb.jdbc</groupId>
-			<artifactId>mariadb-java-client</artifactId>
+		    <groupId>org.mariadb.jdbc</groupId>
+		    <artifactId>mariadb-java-client</artifactId>
 		</dependency>
-
+		
 		<dependency>
-			<groupId>com.microsoft.sqlserver</groupId>
-			<artifactId>mssql-jdbc</artifactId>
+		    <groupId>com.microsoft.sqlserver</groupId>
+		    <artifactId>mssql-jdbc</artifactId>
 			<exclusions>
 				<exclusion>
-					<artifactId>jersey-client</artifactId>
-					<groupId>com.sun.jersey</groupId>
-				</exclusion>
+                    <artifactId>jersey-client</artifactId>
+                    <groupId>com.sun.jersey</groupId>
+                </exclusion>
 				<exclusion>
 					<artifactId>jersey-json</artifactId>
 					<groupId>com.sun.jersey</groupId>
 				</exclusion>
-			</exclusions>
+		    </exclusions>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-client</artifactId>
@@ -151,62 +143,125 @@
 			<artifactId>jersey-json</artifactId>
 			<version>1.19.4</version>
 		</dependency>
+		
+		<dependency>
+		    <groupId>org.postgresql</groupId>
+		    <artifactId>postgresql</artifactId>
+		</dependency>
+		
+		<dependency>
+        	<groupId>org.apache.hive</groupId>
+			<artifactId>hive-jdbc</artifactId>
+			<version>1.1.0-cdh5.14.2</version>
+        	<exclusions>
+        	   <exclusion>
+        	   		 <groupId>com.sun.jersey</groupId>
+        	   		 <artifactId>jersey-servlet</artifactId>
+        	   </exclusion>
+        	   <exclusion>
+                   <artifactId>slf4j-log4j12</artifactId>
+                   <groupId>org.slf4j</groupId>
+               </exclusion>
+        	
+        		<exclusion>
+			    	<groupId>org.eclipse.jetty</groupId>
+				    <artifactId>jetty-util</artifactId>
+				</exclusion>
+				<exclusion>
+			    	<groupId>org.eclipse.jetty.aggregate</groupId>
+				    <artifactId>jetty-all</artifactId>
+				</exclusion>
+        		<exclusion>
+        			<groupId>tomcat</groupId>
+        			<artifactId>jasper-compiler</artifactId>
+        		</exclusion>
+        		<exclusion>
+        			<groupId>tomcat</groupId>
+        			<artifactId>jasper-runtime</artifactId>
+        		</exclusion>
+        		<exclusion>
+        			<groupId>org.apache.thrift</groupId>
+        			<artifactId>libfb303</artifactId>
+        		</exclusion>
+        		<exclusion>
+        			<groupId>org.apache.hadoop</groupId>
+        			<artifactId>hadoop-yarn-api</artifactId>
+        		</exclusion>
+        		<exclusion>
+        			<groupId>org.apache.hadoop</groupId>
+        			<artifactId>hadoop-yarn-server</artifactId>
+        		</exclusion>
+        		<exclusion>
+        			<groupId>org.apache.hadoop</groupId>
+        			<artifactId>hadoop-yarn-server-resourcemanager</artifactId>
+        		</exclusion>
+        		<exclusion>
+        			<groupId>org.apache.zookeeper</groupId>
+        			<artifactId>zookeeper</artifactId>
+        		</exclusion>
+        		<exclusion>
+        			<groupId>org.apache.httpcomponents</groupId>
+            		<artifactId>httpclient</artifactId>
+        		</exclusion>
+        	</exclusions>
+        </dependency>
+
 
 		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
+		    <groupId>org.apache.calcite.avatica</groupId>
+		    <artifactId>avatica</artifactId>
+		    <version>1.16.0</version>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.calcite.avatica</groupId>
-			<artifactId>avatica</artifactId>
-			<version>1.16.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-		</dependency>
- 		<dependency>
-		    <groupId>commons-dbcp</groupId>
-		    <artifactId>commons-dbcp</artifactId>
-		    <version>1.4</version>
-		</dependency>
+        
 	</dependencies>
 	<repositories>
 		<repository>
-			<id>onesait</id>
-			<url>https://nexus.onesaitplatform.com/nexus/repository/thirdparty/</url>
-		</repository>
-		<repository>
-			<id>cloudera</id>
-			<url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+            <id>onesait</id>
+            <url>https://nexus.onesaitplatform.com/nexus/content/repositories/thirdparty/</url>
+        </repository>
+        <repository>
+		   <id>cloudera</id>
+		   <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
 		</repository>
 	</repositories>
-
+	
 	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-install-plugin</artifactId>
-				<version>${maven.install}</version>
-				<!-- <executions> TODO Now installs the file after compiling, fails first 
-					time <execution> <id>install-ojdbc</id> <phase>compile</phase> <goals> <goal>install-file</goal> 
-					</goals> <configuration> <file>lib/ojdbc6-11.2.0.4.jar</file> <groupId>com.oracle</groupId> 
-					<artifactId>ojdbc6</artifactId> <version>11.2.0.4</version> <packaging>jar</packaging> 
-					</configuration> </execution> </executions> -->
-			</plugin>
-
-			<!-- skip deployment -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-deploy-plugin</artifactId>
-				<version>2.7</version>
-				<configuration>
-					<skip>true</skip>
-				</configuration>
-			</plugin>
-
-		</plugins>
-	</build>
-
+    	<plugins>
+     		<plugin>
+        		<groupId>org.apache.maven.plugins</groupId>
+        		<artifactId>maven-install-plugin</artifactId>
+        		<version>${maven.install}</version>
+        		<!-- <executions>
+        			TODO Now installs the file after compiling, fails first time
+          			<execution>
+            			<id>install-ojdbc</id>
+            			<phase>compile</phase>
+            			<goals>
+              				<goal>install-file</goal>
+            			</goals>
+            			<configuration>
+              				<file>lib/ojdbc6-11.2.0.4.jar</file>
+              				<groupId>com.oracle</groupId>
+              				<artifactId>ojdbc6</artifactId>
+              				<version>11.2.0.4</version>
+              				<packaging>jar</packaging>
+            			</configuration>
+          			</execution>
+        		</executions> -->
+      		</plugin>
+	
+		    <!-- skip deployment -->	
+		    <plugin>
+		      <groupId>org.apache.maven.plugins</groupId>
+		      <artifactId>maven-deploy-plugin</artifactId>
+		      <version>2.7</version>
+		      <configuration>
+		          <skip>true</skip>
+		      </configuration>
+		    </plugin>			
+      		
+  		</plugins>
+  </build>
+	
 
 </project>

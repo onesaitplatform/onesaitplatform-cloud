@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,13 +34,10 @@ public class KsqlRelationFIQL {
 		resourceDTO.setKsqlType(ksqlRelation.getKsqlResource().getKsqlType());
 		resourceDTO.setResourceType(ksqlRelation.getKsqlResource().getResourceType());
 		resourceDTO.setStatementText(ksqlRelation.getKsqlResource().getStatementText());
-		OntologyJsonSchemaDto ontology = null;
-		if (ksqlRelation.getKsqlResource().getOntology() != null) {
-			ontology = new OntologyJsonSchemaDto();
-			ontology.setAllowsCreateTopic(ksqlRelation.getKsqlResource().getOntology().isAllowsCreateTopic());
-			ontology.setIdentification(ksqlRelation.getKsqlResource().getOntology().getIdentification());
-			ontology.setJsonSchema(ksqlRelation.getKsqlResource().getOntology().getJsonSchema());
-		}
+		OntologyJsonSchemaDto ontology = new OntologyJsonSchemaDto();
+		ontology.setAllowsCreateTopic(ksqlRelation.getKsqlResource().getOntology().isAllowsCreateTopic());
+		ontology.setIdentification(ksqlRelation.getKsqlResource().getOntology().getIdentification());
+		ontology.setJsonSchema(ksqlRelation.getKsqlResource().getOntology().getJsonSchema());
 		resourceDTO.setOntology(ontology);
 		dto.setKsqlResource(resourceDTO);
 		return dto;

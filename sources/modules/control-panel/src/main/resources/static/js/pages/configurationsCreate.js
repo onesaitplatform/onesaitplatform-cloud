@@ -34,8 +34,13 @@ var ConfigurationsCreateController = function() {
 			$(this).selectpicker('deselectAll').selectpicker('refresh');
 		});
 		
-		editor.setValue("");
+		// CLEAN ALERT MSG
+		$('.alert-danger').hide();
+		
+		
 	}
+	
+	
 	
 	
 	// FORM VALIDATION
@@ -45,6 +50,8 @@ var ConfigurationsCreateController = function() {
         // http://docs.jquery.com/Plugins/Validation
 		
         var form1 = $('#configurations_create_form');
+        var error1 = $('.alert-danger');
+        var success1 = $('.alert-success');
 		
 		// set current language
 		currentLanguage = userCreateReg.language || LANGUAGE;
@@ -60,13 +67,14 @@ var ConfigurationsCreateController = function() {
             rules: {
 				userId:					{ minlength: 5, required: true },             
 				configurationTypes:		{ required: true },
-				identification:			{ required: true },
 				ymlConfig:   			{required:true},
 				createdAt:				{ date: true, required: true },
 
             },
             invalidHandler: function(event, validator) { //display error alert on form submit              
-            	toastr.error(messagesForms.validation.genFormError,'');
+                success1.hide();
+                error1.show();
+                App.scrollTo(error1, -200);
             },
             errorPlacement: function(error, element) {
                 if 		( element.is(':checkbox'))	{ error.insertAfter(element.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline")); }
@@ -84,8 +92,9 @@ var ConfigurationsCreateController = function() {
             },
 			// ALL OK, THEN SUBMIT.
             submitHandler: function(form) {
-            	toastr.success(messagesForms.validation.genFormSuccess,'');
             	$('#ymlConfig').val(editor.getValue());
+                success1.show();
+                error1.hide();
 				form.submit();
             }
         });
@@ -99,39 +108,7 @@ var ConfigurationsCreateController = function() {
 		// Reset form
 		$('#resetBtn').on('click',function(){ 
 			cleanFields('configurations_create_form');
-		});
-		
-		// Fields OnBlur validation
-		
-		$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
-			$('.form').validate().element('#' + event.target.id);                // checks form for validity
-		});		
-		
-		$('.selectpicker').filter('[required]').parent().on('blur', 'div', function(event) {
-			if (event.currentTarget.getElementsByTagName('select')[0]){
-				$('.form').validate().element('#' + event.currentTarget.getElementsByTagName('select')[0].getAttribute('id'));
-			}
-		})
-			
-		$('.tagsinput').filter('[required]').parent().on('blur', 'input', function(event) {
-			if ($(event.target).parent().next().val() !== ''){
-				$(event.target).parent().next().nextAll('span:first').addClass('hide');
-				$(event.target).parent().removeClass('tagsinput-has-error');
-			} else {
-				$(event.target).parent().next().nextAll('span:first').removeClass('hide');
-				$(event.target).parent().addClass('tagsinput-has-error');
-			}   
-		})
-		
-		$('.editor').filter('[required]').parent().on('blur', 'div', function(event) {
-			if (event.currentTarget.closest('.CodeMirror').CodeMirror.getValue() !== ''){ 
-				$(event.currentTarget.closest('.CodeMirror')).nextAll('span:first').addClass('hide');
-				$(event.currentTarget.closest('.CodeMirror')).removeClass('editor-has-error');
-			} else {
-				$(event.currentTarget.closest('.CodeMirror')).nextAll('span:first').removeClass('hide');
-				$(event.currentTarget.closest('.CodeMirror')).addClass('editor-has-error');
-			}
-		})
+		});	
 	}
 	
 	// INIT CODEMIRROR
@@ -140,7 +117,7 @@ var ConfigurationsCreateController = function() {
 		
         
         editor = ace.edit("ymlConfigAce");
-        editor.setTheme("ace/theme/monokai");
+        editor.setTheme("ace/theme/xcode");
         editor.session.setMode("ace/mode/yaml");
         editor.setValue($('#ymlConfig').val());
         editor.gotoLine(1);

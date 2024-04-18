@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,6 @@ import java.util.List;
 import javax.transaction.Transactional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserToken;
@@ -58,8 +55,5 @@ public interface UserTokenRepository extends JpaRepository<UserToken, String> {
 	UserToken findByUserAndToken(User user, String token);
 
 	@Transactional
-	@Modifying
-	@Query("DELETE FROM UserToken u WHERE u.user.userId= :userId")
-	void deleteByUser(@Param("userId") String userId);
-
+	void deleteByUser(User user);
 }

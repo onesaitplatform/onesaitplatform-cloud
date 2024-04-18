@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
 import com.minsait.onesait.platform.config.model.BaseLayer;
 import com.minsait.onesait.platform.config.model.Layer;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.Viewer;
 import com.minsait.onesait.platform.config.repository.BaseLayerRepository;
@@ -65,7 +66,7 @@ public class ViewerServiceImpl implements ViewerService {
 		List<Viewer> viewers;
 		final User sessionUser = userService.getUser(userId);
 
-		if (sessionUser.isAdmin()) {
+		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 			viewers = viewerRepository.findAll();
 		} else {
 			viewers = viewerRepository.findByIsPublicTrueOrUser(sessionUser);
@@ -114,7 +115,7 @@ public class ViewerServiceImpl implements ViewerService {
 			return true;
 		} else if (userId.equals(ANONYMOUSUSER) || user == null) {
 			return viewer.isPublic();
-		} else if (user.isAdmin()) {
+		} else if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 			return true;
 		} else {
 			return viewer.getUser().getUserId().equals(userId);
@@ -126,7 +127,8 @@ public class ViewerServiceImpl implements ViewerService {
 		final User sessionUser = userService.getUser(userId);
 		final Viewer viewer = viewerRepository.findById(id).orElse(null);
 
-		if (sessionUser.isAdmin() || viewer.getUser().equals(sessionUser) || viewer.isPublic()) {
+		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
+				|| viewer.getUser().equals(sessionUser) || viewer.isPublic()) {
 			return viewer;
 		} else {
 			throw new ViewerServiceException("The user is not authorized");
@@ -142,7 +144,8 @@ public class ViewerServiceImpl implements ViewerService {
 	public void deleteViewer(Viewer viewer, String userId) {
 		final User sessionUser = userService.getUser(userId);
 
-		if (sessionUser.isAdmin() || viewer.getUser().equals(sessionUser) || viewer.isPublic()) {
+		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
+				|| viewer.getUser().equals(sessionUser) || viewer.isPublic()) {
 
 			for (final Layer layer : viewer.getLayers()) {
 				layer.getViewers().remove(viewer);
@@ -163,21 +166,21 @@ public class ViewerServiceImpl implements ViewerService {
 		if (identification != null && description != null) {
 			allViewers = viewerRepository.findByIdentificationContainingAndDescriptionContaining(identification,
 					description);
-			if (sessionUser.isAdmin()) {
+			if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 				return allViewers;
 			} else {
 				return getViewersWithPermission(allViewers, userId);
 			}
 		} else if (identification != null) {
 			allViewers = viewerRepository.findByIdentificationContaining(identification);
-			if (sessionUser.isAdmin()) {
+			if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 				return allViewers;
 			} else {
 				return getViewersWithPermission(allViewers, userId);
 			}
 		} else {
 			allViewers = viewerRepository.findByDescriptionContaining(description);
-			if (sessionUser.isAdmin()) {
+			if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 				return allViewers;
 			} else {
 				return getViewersWithPermission(allViewers, userId);
@@ -199,14 +202,6 @@ public class ViewerServiceImpl implements ViewerService {
 		if (null != metricsManager) {
 			metricsManager.logControlPanelGisViewersCreation(userId, result);
 		}
-	}
-
-	@Override
-	public Viewer getViewerByIdentification(String identification) {
-		final List<Viewer> viewerList = viewerRepository.findByIdentification(identification);
-		if (viewerList != null && !viewerList.isEmpty())
-			return viewerList.get(0);
-		return null;
 	}
 
 }

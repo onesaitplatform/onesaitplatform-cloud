@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -76,6 +76,7 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM-->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/promotion/execute}"> <span th:text="#{promotiontool.breadcrumb}">Environment promotion tool </span></a></li>
 					</ul>						
 				</div>
@@ -85,158 +86,171 @@
 				<h1 class="page-title hide "><span th:text="#{name.app}"> </span></h1>
 				<!-- END PAGE TITLE-->			
 				
-				<form role="form" id="promotion_tool_form" th:object="${promotiontoolparams}" th:method="post" class="form">
-					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-					<!-- FORM ACTIONS FOR INSERT-->
-					<input type="hidden" name="action" th:value="@{/promotiontool/execute}"/>
+				<!-- MAIN ROW -->
+				<div class="row">
 					
-					<div id="header">
-						<div class="row pageCreateHeader">
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="margin-top-4">
-									<span th:text="#{promotiontool.breadcrumb}">Environment promotion tool </span>
-								</div>
-							</div>
-							
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="pull-right">
-									<!-- CANCEL -->
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:attr="onclick='javascript:navigateUrl(\'' + @{/} + '\');'" th:value="#{gen.cancelBtn}" ><span th:text="#{gen.cancelBtn}"> Cancel</span></button>
-
-									<!-- EXECUTE -->
-									<button id="executeBtn" type="submit" class="btn btn-primary btn-primary-save" name="create" th:value="#{promotiontool.execute}" disabled="disabled" ><span th:text="#{promotiontool.execute}"> Launch</span></button>
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<!-- MAIN ROW -->
-					<div class="mainPanel">
-						<div class="row main">																										
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="form-group">
-									<div class="mt-checkbox-list"> 
-										<label class="mt-checkbox popovers font-sm col-md-3 col-sm-3 col-xs-6" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{promotiontool.exportorigin.help},data-title=#{promotiontool.exportorigin}">
-                                            <div class="inline font-xs" th:text="#{promotiontool.exportorigin}">Export on origin</div>
-											<input  id="exportOrigin" class="form-control no-remove"  name="public" type="checkbox" th:field="*{exportOnOrigin}" onchange="toggleExport()"/>
-											<span></span><!-- necesario por estilos. -->
-										</label>
-									</div>
-								</div>
-							</div>	
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="form-group">
-									<div class="mt-checkbox-list"> 
-										<label class="mt-checkbox popovers font-sm col-md-3 col-sm-3 col-xs-6" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{promotiontool.importtarget.help},data-title=#{promotiontool.importtarget}">
-                                            <div class="inline font-xs" th:text="#{promotiontool.importtarget}">Import on target</div>
-											<input  id="importTarget" class="form-control no-remove"  name="public" type="checkbox" th:field="*{importOnTarget}" onchange="toggleImport()"/>
-											<span></span><!-- necesario por estilos. -->
-										</label>
-									</div>
-								</div>
-							</div>															
-						</div>
-						<div class="row main">	
-							<div class="col-md-11 col-sm-12 col-xs-12">
-								<div class="form-group" id="originTenantsGroup">
-									<label class="" th:text="#{promotiontool.tenants}">Tenants origin</label>
-									<select id="originTenants" class="selectpicker form-control" data-live-search="true" data-width="100%" disabled="disabled">
-										<option value="" th:text="#{promotiontool.tenants}" selected="selected" style="display:none;"> Select Tenant...</option>	
-										<option th:each="tenant :${originTenants}" th:value="${tenant}" th:id="${tenant}" th:text="${tenant}" ></option>										
-									</select>
-								</div>
-							</div>
-							<div class="col-lg-1 col-md-1 col-xs-12">
-								<div class="form-group pull-left" style="margin-top: 26px">															
-									<button type="button" class="btn btn-sm btn-circle btn-outline blue " id="button_addTenantOrigin" disabled="disabled" onclick="addTenantOrigin()" style="padding: 0;margin-top: 0px;margin-left: -30px;"><span th:text="#{ontology.rest.add}">Add</span></button>															
-								</div>
-								<div class="col-sm-12 col-md-12">
-									<div class="form-group" style="height: auto !important;">
-										<input type="hidden"
-											id="tenant_origin_names"
-											th:field="*{tenants}" />
-									</div>																		
-								</div>
-							</div>	
-						</div>
+					<form role="form" id="promotion_tool_form" th:object="${promotiontoolparams}" th:method="post" class="form">
+					<div class="col-md-12">
+						<div class="portlet light ">
+							<div class="portlet-body" style="display: block; height: auto;">
+								<div class="tab-content">
+									<div class="tab-pane active" id="tab_1">
+									<!-- ONTOLOGY FORM -->
+										<div class="row">
+											<div class="col-md-12">
+											<!-- AUXILIAR FORM TO DELETE ONTOLOGY -->											
+													<!-- FORM ACTIONS FOR INSERT-->
+													<input type="hidden" name="action" th:value="@{/promotiontool/execute}"/>
 						
-						<div class="row main">
-							<div class="col-lg-12 col-md-12 col-xs-12">
-								<div id="template_schema" class="margin-bottom-20 ">
-									<table class="table table-light table-hover table-striped" id="tenant_origin_table"	data-loaded="false">
-										<tbody>
-										</tbody>
-										<tfoot>
-											<tr>
-												<td colspan="4"></td>
-											</tr>
-										</tfoot>
-									</table>
-								</div>
+													<div class="form-body">
+														<!-- user, name and email -->
+														<div class="row">																										
+															<div class="col-md-6 col-sm-6 col-xs-12">
+																<div class="form-group">
+																	<label class="" th:text="#{promotiontool.exportorigin}">Export on origin</label>
+																	<div class="mt-checkbox-list"> 
+																		<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{promotiontool.exportorigin.help},data-title=#{promotiontool.exportorigin}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{promotiontool.exportorigin} + '?'">Export on origin?</div>
+																			<input  id="exportOrigin" class="form-control no-remove"  name="public" type="checkbox" th:field="*{exportOnOrigin}" onchange="toggleExport()"/>
+																			<span></span><!-- necesario por estilos. -->
+																		</label>
+																	</div>
+																</div>
+															</div>	
+															<div class="col-md-6 col-sm-6 col-xs-12">
+																<div class="form-group">
+																	<label class="" th:text="#{promotiontool.importtarget}">Import on target</label>
+																	<div class="mt-checkbox-list"> 
+																		<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{promotiontool.importtarget.help},data-title=#{promotiontool.importtarget}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{promotiontool.importtarget} + '?'">Import on target?</div>
+																			<input  id="importTarget" class="form-control no-remove"  name="public" type="checkbox" th:field="*{importOnTarget}" onchange="toggleImport()"/>
+																			<span></span><!-- necesario por estilos. -->
+																		</label>
+																	</div>
+																</div>
+															</div>															
+														</div>
+														<div class="row">	
+															<div class="col-md-11 col-sm-12 col-xs-12">
+																<div class="form-group" id="originTenantsGroup">
+																	<label class="" th:text="#{promotiontool.tenants}">Tenants origin</label>
+																	<select id="originTenants" class="selectpicker form-control" data-live-search="true" data-width="100%" disabled="disabled">
+																		<option value="" th:text="#{promotiontool.tenants}" selected="selected" style="display:none;"> Select Tenant...</option>	
+																		<option th:each="tenant :${originTenants}" th:value="${tenant}" th:id="${tenant}" th:text="${tenant}" ></option>										
+																	</select>
+																</div>
+															</div>
+															<div class="col-lg-1 col-md-1 col-xs-12">
+																<div class="form-group pull-left" style="margin-top: 26px">															
+																	<button type="button" class="btn btn-sm btn-circle btn-outline blue " id="button_addTenantOrigin" disabled="disabled" onclick="addTenantOrigin()" style="padding: 0;margin-top: 0px;margin-left: -30px;"><span th:text="#{ontology.rest.add}">Add</span></button>															
+																</div>
+																<div class="col-sm-12 col-md-12">
+																		<div class="form-group" style="height: auto !important;">
+																			<input type="hidden"
+																				id="tenant_origin_names"
+																				th:field="*{tenants}" />
+																		</div>																		
+																</div>
+															</div>	
+														</div>
+														
+														<div class="row">
+															<div class="col-lg-12 col-md-12 col-xs-12">
+																<div id="template_schema" class="margin-bottom-20 ">
+																	<table class="table table-light table-hover table-striped" id="tenant_origin_table"
+																		data-loaded="false">
+																		<tbody>
+																		</tbody>
+																		<tfoot>
+																			<tr>
+																				<td colspan="4"></td>
+																			</tr>
+																		</tfoot>
+																	</table>
+																</div>
+															</div>
+														</div>
+																				
+														
+														<div class="row">	
+															<div class="col-md-6 col-sm-6 col-xs-12">
+																<div class="form-group">
+																	<label class="" th:text="#{promotiontool.rtdb} + ' ' + #{promotiontool.origin}">RTDB origin</label>
+																	<input id="originRtdb" type="text" maxlength="50" th:field="*{rtdbOriginHost}" class="form-control " th:placeholder="#{promotiontool.ip}" disabled="disabled" th:required="required"/>																</div>
+															</div>
+															<div class="col-md-6 col-sm-6 col-xs-12">
+																<div class="form-group">
+																	<label class="" th:text="#{promotiontool.rtdb} + ' ' + #{promotiontool.target}">RTDB target</label>
+																	<input id="targetRtdb" type="text" maxlength="50" th:field="*{rtdbTargetHost}" class="form-control " th:placeholder="#{promotiontool.ip}" disabled="disabled" th:required="required"/>
+																</div>
+															</div>		
+														</div>
+														<div class="row">	
+															<div class="col-md-6 col-sm-6 col-xs-12">
+																<div class="form-group">
+																	<label class="" th:text="#{promotiontool.configdb} + ' ' + #{promotiontool.origin}">ConfigDB origin</label>
+																	<input id="originConfigdb" type="text" maxlength="50" th:field="*{configdbOriginHost}" class="form-control " th:placeholder="#{promotiontool.ip}" disabled="disabled" th:required="required"/>																</div>
+															</div>
+															<div class="col-md-6 col-sm-6 col-xs-12">
+																<div class="form-group">
+																	<label class="" th:text="#{promotiontool.configdb} + ' ' + #{promotiontool.target}">ConfigDB target</label>
+																	<input id="targetConfigdb" type="text" maxlength="50" th:field="*{configdbTargetHost}" class="form-control " th:placeholder="#{promotiontool.ip}" disabled="disabled" th:required="required"/>																</div>
+															</div>	
+														</div>
+														<div class="row">	
+															<div class="col-md-6 col-sm-6 col-xs-12">
+																<div class="form-group">
+																	<label class="" th:text="#{promotiontool.flowengine} + ' ' + #{promotiontool.origin}">Flowengine origin</label>
+																	<input id="originFlowengine" type="text" maxlength="50" th:field="*{flowEngineOriginHost}" class="form-control " th:placeholder="#{promotiontool.ip}" disabled="disabled" th:required="required"/>																</div>
+															</div>
+															<div class="col-md-6 col-sm-6 col-xs-12">
+																<div class="form-group">
+																	<label class="" th:text="#{promotiontool.flowengine} + ' ' + #{promotiontool.target}">Flowengine target</label>
+																	<input id="targetFlowengine" type="text" maxlength="50" th:field="*{flowEngineTargetHost}" class="form-control " th:placeholder="#{promotiontool.ip}" disabled="disabled" th:required="required"/>
+																</div>
+															</div>	
+														</div>
+														<div class="row">	
+															<div class="col-md-6 col-sm-6 col-xs-12">
+																<div class="form-group">
+																	<label class="" th:text="#{promotiontool.notebooks} + ' ' + #{promotiontool.origin}">Notebooks origin</label>
+																	<input id="originNotebooks" type="text" maxlength="50" th:field="*{notebooksOriginHost}" class="form-control " th:placeholder="#{promotiontool.ip}" disabled="disabled" th:required="required"/>
+																</div>
+															</div>
+															<div class="col-md-6 col-sm-6 col-xs-12">
+																<div class="form-group">
+																	<label class="" th:text="#{promotiontool.notebooks} + ' ' + #{promotiontool.target}">Notebooks target</label>
+																	<input id="targetNotebooks" type="text" maxlength="50" th:field="*{notebooksTargetHost}" class="form-control " th:placeholder="#{promotiontool.ip}" disabled="disabled" th:required="required"/>
+																</div>
+															</div>		
+														</div>
+														<div id="pulse" class="col-md-12 hide">
+															<div class="pulsating-circle"></div>										
+														</div>
+													</div>
+													
+													<!-- FORM BUTTONS -->
+													<div class="form-actions">
+														<div class="pull-left">
+															<!-- CANCEL TO-DO: authentication and control -->
+															<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+														</div>
+														<div class="pull-right">
+															<button id="executeBtn" type="submit" class="btn btn-circle btn-outline btn-primary" name="create"  th:value="#{promotiontool.execute}" disabled="disabled"><span th:text="#{promotiontool.execute}" > Launch</span></button>
+														</div>
+													</div>
+												
+												
+											</div>
+										</div>
+									</div>
+									
+								</div>							
 							</div>
-						</div>
-
-						<div class="row main">	
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="form-group">
-									<label class="" th:text="#{promotiontool.rtdb} + ' ' + #{promotiontool.origin}">RTDB origin</label>
-									<input id="originRtdb" type="text" maxlength="50" th:field="*{rtdbOriginHost}" class="form-control " th:placeholder="#{promotiontool.ip}" disabled="disabled" th:required="required"/>
-								</div>
-							</div>
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="form-group">
-									<label class="" th:text="#{promotiontool.rtdb} + ' ' + #{promotiontool.target}">RTDB target</label>
-									<input id="targetRtdb" type="text" maxlength="50" th:field="*{rtdbTargetHost}" class="form-control " th:placeholder="#{promotiontool.ip}" disabled="disabled" th:required="required"/>
-								</div>
-							</div>		
-						</div>
-						<div class="row main">	
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="form-group">
-									<label class="" th:text="#{promotiontool.configdb} + ' ' + #{promotiontool.origin}">ConfigDB origin</label>
-									<input id="originConfigdb" type="text" maxlength="50" th:field="*{configdbOriginHost}" class="form-control " th:placeholder="#{promotiontool.ip}" disabled="disabled" th:required="required"/>
-								</div>
-							</div>
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="form-group">
-									<label class="" th:text="#{promotiontool.configdb} + ' ' + #{promotiontool.target}">ConfigDB target</label>
-									<input id="targetConfigdb" type="text" maxlength="50" th:field="*{configdbTargetHost}" class="form-control " th:placeholder="#{promotiontool.ip}" disabled="disabled" th:required="required"/>
-								</div>
-							</div>	
-						</div>
-						<div class="row main">	
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="form-group">
-									<label class="" th:text="#{promotiontool.flowengine} + ' ' + #{promotiontool.origin}">Flowengine origin</label>
-									<input id="originFlowengine" type="text" maxlength="50" th:field="*{flowEngineOriginHost}" class="form-control " th:placeholder="#{promotiontool.ip}" disabled="disabled" th:required="required"/>
-								</div>
-							</div>
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="form-group">
-									<label class="" th:text="#{promotiontool.flowengine} + ' ' + #{promotiontool.target}">Flowengine target</label>
-									<input id="targetFlowengine" type="text" maxlength="50" th:field="*{flowEngineTargetHost}" class="form-control " th:placeholder="#{promotiontool.ip}" disabled="disabled" th:required="required"/>
-								</div>
-							</div>	
-						</div>
-						<div class="row main">	
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="form-group">
-									<label class="" th:text="#{promotiontool.notebooks} + ' ' + #{promotiontool.origin}">Notebooks origin</label>
-									<input id="originNotebooks" type="text" maxlength="50" th:field="*{notebooksOriginHost}" class="form-control " th:placeholder="#{promotiontool.ip}" disabled="disabled" th:required="required"/>
-								</div>
-							</div>
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="form-group">
-									<label class="" th:text="#{promotiontool.notebooks} + ' ' + #{promotiontool.target}">Notebooks target</label>
-									<input id="targetNotebooks" type="text" maxlength="50" th:field="*{notebooksTargetHost}" class="form-control " th:placeholder="#{promotiontool.ip}" disabled="disabled" th:required="required"/>
-								</div>
-							</div>		
-						</div>
-						<div id="pulse" class="col-md-12 hide">
-							<div class="pulsating-circle"></div>										
-						</div>
-					</div>
-				</form>
+						</div><!-- END PORTLET BASIC  -->
+							
+					</div><!-- END COL-12 -->
+				<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+			</div><!-- END MAIN ROW -->
+			
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->
 	</div>
@@ -307,6 +321,8 @@
 	var handleValidation = function() {
 
         var form1 = $('#promotion_tool_form');
+        var error1 = $('.alert-danger');
+        var success1 = $('.alert-success');
 
         form1.validate({
             errorElement: 'span', // default input error message container
@@ -318,7 +334,8 @@
             invalidHandler: function(event, validator) { // display error
 															// alert on form
 															// submit
-            	toastr.error(messagesForms.validation.genFormError,'');
+                success1.hide();
+                error1.show();
             },
             highlight: function(element) { // hightlight error inputs
                 $(element).closest('.form-group').addClass('has-error');
@@ -332,33 +349,48 @@
             },
 			// ALL OK, THEN SUBMIT.
             submitHandler: function(form) {
+
+                error1.hide();
 				if(checkTenants())
 				{
 					$('#tenant_origin_names').val(tenantsOriginList);
 					if (valIPs()) {
 					    $('#pulse').attr('class', 'col-md-12');
-						form1.ajaxSubmit({type: 'post', 
-							success : function(data){
+						form1.ajaxSubmit({type: 'post', success : function(data){
 								var id = data.cause.split(':')[1];
 								var i=0;
-								while(!isFinished(id)){
+								while(!isFinished(id))
+								{
 									i++;
 								}
-								toastr.success(messagesForms.operations.genOpSuccess,'');
-							}, 
-							error: function(data){
+								
+							}, error: function(data){
 							    $('#pulse').attr('class', 'col-md-12 hide');
-								toastr.error(messagesForms.operations.genOpError, [[#{promotiontool.errorcall}]]);
+								$.alert({title: 'ERROR', type : 'red', theme: 'light', content: [[#{promotiontool.errorcall}]] });
 							}
 						});
 						
-					} else {
-						toastr.error(messagesForms.operations.genOpError,[[#{promotiontool.errorip}]]);
+					}
+					else
+					{
+						$.alert({
+							title : 'ERROR!',
+							type : 'red',
+							theme : 'light',
+							content : [[#{promotiontool.errorip}]]
+						});
 						return false;
 					}
-				} else {
-					toastr.error(messagesForms.operations.genOpError,[[#{promotiontool.notenant}]]);
-					return false;
+				}
+				else
+				{
+					$.alert({
+							title : 'ERROR!',
+							type : 'red',
+							theme : 'light',
+							content : [[#{promotiontool.notenant}]]
+						});
+						return false;
 				}
 
 			}
@@ -390,21 +422,28 @@
 		
 		remoteData = JSON.parse(remoteData);
 		
-		if(remoteData.status=="SUCCESS") {
-			$('#pulse').attr('class', 'col-md-12 hide');
-			toastr.success(messagesForms.operations.genOpSuccess, [[#{promotiontool.success}]]);
+		if(remoteData.status=="SUCCESS")
+		{
+			$('#pulse').attr('class', 'col-md-12 hide');		
+			$.alert({title: 'INFO',  type : 'green', theme: 'light', content: [[#{promotiontool.success}]] });
 			return true;
-		} else if(remoteData.status=="FAILURE") {
+		}
+		else if(remoteData.status=="FAILURE")
+		{
 			$('#pulse').attr('class', 'col-md-12 hide');
-			toastr.error(messagesForms.operations.genOpError,[[#{promotiontool.failure}]]);
+			$.alert({title: 'ERROR', type : 'red', theme: 'light', content: [[#{promotiontool.failure}]] });
 			return true;
-		} else if (remoteData.status=="NO"){
+		}	
+	    else if (remoteData.status=="NO"){
 	    	return false;
-	    } else {
+	    }
+	    else
+	    {
 	    	$('#pulse').attr('class', 'col-md-12 hide');
-	    	toastr.error(messagesForms.operations.genOpError,[[#{promotiontool.errorcall}]]);
+	        $.alert({title: 'ERROR',  type : 'red', theme: 'light', content: [[#{promotiontool.errorcall}]] });
 	    	return true;
 	    }
+	
 		
 	}
 	
@@ -522,7 +561,7 @@
 					.append(
 							'<tr class="tenantOriginRow"><td id="tenantSelected">'
 									+ tenantSelected
-									+ '</td><td class="text-center"><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="removeOriginRow(this)"><i class="icon-delete"></i></button></td></tr>');
+									+ '</td><td class="text-center"><button type="button" data-property="" class="btn btn-sm btn-circle btn-outline blue" onclick="removeOriginRow(this)" th:text="#{device.ontology.remove}"><span th:text="#{gen.deleteBtn}"> Delete </span></button></td></tr>');
 			$('#originTenants').val( '' );
 			$('#originTenants').selectpicker('deselectAll').selectpicker('refresh');	
 		}

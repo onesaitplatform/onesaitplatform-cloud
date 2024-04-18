@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ public class ConfigDBCurrentTenantResolver implements CurrentTenantIdentifierRes
 	@Override
 	public String resolveCurrentTenantIdentifier() {
 		final String tenant = MultitenancyContextHolder.getVerticalSchema();
-		return StringUtils.hasText(tenant) ? tenant : Tenant2SchemaMapper.DEFAULT_SCHEMA;
+		return !StringUtils.isEmpty(tenant) ? tenant : Tenant2SchemaMapper.DEFAULT_SCHEMA;
 	}
 
 	@Override

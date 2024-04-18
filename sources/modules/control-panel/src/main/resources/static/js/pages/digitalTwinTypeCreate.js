@@ -19,25 +19,21 @@ var DigitalTwinCreateController = function() {
 	var mountablePropModel = $('#properties').find('tr.mountable-model')[0].outerHTML; // save html-model for when select new datamodel, is remove current and create a new one.
 	var mountableActModel = $('#actions').find('tr.mountable-model')[0].outerHTML; // save html-model for when select new datamodel, is remove current and create a new one.
 	var mountableEventModel = $('#events').find('tr.mountable-model')[0].outerHTML; // save html-model for when select new datamodel, is remove current and create a new one. 
-	var myCodeMirror;
 	// CONTROLLER PRIVATE FUNCTIONS	--------------------------------------------------------------------------------
 
 	var propertyTypeOntologyIndex=-1;
 	
 	var generateSchema=false
 	$("#createBtn").on('click',function(){
-		var validateIdentification = validate($("#identification"));
-		var validateDescription = validate($("#description"));
-		if (!validateIdentification || !validateDescription){
-			toastr.error(digitalTwinCreateJson.validations.fields);
-		}
-		if (generateSchema) {
-			toastr.success(digitalTwinCreateJson.validations.validationOK);
+		if(generateSchema && $("#identification").val()!='' && $("#identification").val()!=undefined && $("#type").val()!='' && $("#type").val()!=undefined && $("#description").val()!='' && $("#description").val()!=undefined){
+			$("#createBtn").val('Please wait ...')
+		      .attr('disabled','disabled');	
 			DigitalTwinCreateController.submitform();
-		} else {
-			toastr.error(digitalTwinCreateJson.validations.schema);
+		}else{
+			$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: digitalTwinCreateJson.validations.schema});
 			return false;
-		}		
+		}
+		
 	});
 	
 	$("#updateBtn").on('click',function(event){
@@ -56,7 +52,7 @@ var DigitalTwinCreateController = function() {
 					mimeType: 'text/plain',
 					success : function(data) {
 						if(data>0){
-							toastr.error(messagesForms.operations.genOpError,digitalTwinCreateJson.validations.update);
+							$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: digitalTwinCreateJson.validations.update});
 						}else{
 							if($("#identification").val()!='' && $("#identification").val()!=undefined && $("#type").val()!='' && $("#type").val()!=undefined && $("#description").val()!='' && $("#description").val()!=undefined){
 								$("#createBtn").val('Please wait ...')
@@ -65,13 +61,13 @@ var DigitalTwinCreateController = function() {
 							}
 						}
 					},
-					error : function(data, status, er) { 
-						toastr.error(messagesForms.operations.genOpError,er);
+					error : function(data, status, er) {
+						$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er}); 
 					}
 				});
 			
 		}else{
-			toastr.error(messagesForms.operations.genOpError,digitalTwinCreateJson.validations.schema);
+			$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: digitalTwinCreateJson.validations.schema});
 			return false;
 		}
 		
@@ -93,41 +89,11 @@ var DigitalTwinCreateController = function() {
 			generateSchema=true;
 			updateSchema(); 
 		}else{
-			toastr.error(messagesForms.operations.genOpError,digitalTwinCreateJson.validations.fields);
+			$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: digitalTwinCreateJson.validations.fields});
 			return false;
 		}
 		
 	});
-	
-	// Reset form
-	$('#resetBtn').on('click',function(){ 
-		cleanFields('digitaltwintype_create_form');
-	});	
-	
-	// CLEAN FIELDS FORM
-	var cleanFields = function (formId) {
-		
-		//CLEAR OUT THE VALIDATION ERRORS
-		$('#'+formId).validate().resetForm(); 
-		$('#'+formId).find('input:text, input:password, input:file, textarea').each(function(){
-			// CLEAN ALL EXCEPTS cssClass "no-remove" persistent fields
-			if(!$(this).hasClass("no-remove")){$(this).val('');}
-		});
-		
-		$('#properties tbody tr').remove();
-		props=[];
-		$('#actions tbody tr').remove();
-		actions=[];
-		$('#events tbody tr').remove();
-		events=[];
-
-		// CLEANING CODEMIRROR
-		if ($('.CodeMirror')[0].CodeMirror){
-			var editor = $('.CodeMirror')[0].CodeMirror;
-			editor.setValue("var digitalTwinApi = Java.type('com.minsait.onesait.platform.digitaltwin.logic.api.DigitalTwinApi').getInstance();\nfunction init(){}\nfunction main(){}");
-		}
-		editor.setText(JSON.stringify({}));
-	}	
 	
 	var updateSchema = function(){
 		props=[];
@@ -138,7 +104,6 @@ var DigitalTwinCreateController = function() {
 		updateSchemaProperties();
 		updateSchemaActions();
 		updateSchemaEvents();
-		toastr.success(messagesForms.operations.genOpSuccess,'');
 	}
 	
 	var resetSchemaEditor = function(){
@@ -164,7 +129,7 @@ var DigitalTwinCreateController = function() {
 		logControl ? console.log('|--- CURRENT: ' + updateProperties + ' types: ' + updateTypes + ' units: ' + updateUnits + ' direction: ' + updateDirection + ' description: ' + updateDescription): '';
 		
 		checkUnique = updateProperties.unique();
-		if (updateProperties.length !== checkUnique.length)  {toastr.error(messagesForms.operations.genOpError,digitaltwintype.validations.duplicates); return false; } 
+		if (updateProperties.length !== checkUnique.length)  { $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: digitaltwintype.validations.duplicates}); return false; } 
 		
 		// UPDATE SCHEMA		
 		// UPDATE ALL PROPERTIES EACH TIME.
@@ -225,7 +190,7 @@ var DigitalTwinCreateController = function() {
 		logControl ? console.log('|--- CURRENT: ' + updateActions + ' description: ' + updateDescription): '';
 		
 		checkUnique = updateActions.unique();
-		if (updateActions.length !== checkUnique.length)  { toastr.error(messagesForms.operations.genOpError,digitaltwintype.validations.duplicates); return false; } 
+		if (updateActions.length !== checkUnique.length)  { $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: digitaltwintype.validations.duplicates}); return false; } 
 		
 		// UPDATE SCHEMA		
 		// UPDATE ALL ACTIONS EACH TIME.
@@ -282,7 +247,7 @@ var DigitalTwinCreateController = function() {
 		var schemaObj = {};
 		
 		checkUnique = updateEvent.unique();
-		if (updateEvent.length !== checkUnique.length)  { toastr.error(messagesForms.operations.genOpError,digitaltwintype.validations.duplicates); return false; } 
+		if (updateEvent.length !== checkUnique.length)  { $.alert({title: 'ERROR!', theme: 'light', type: 'red', content: digitaltwintype.validations.duplicates}); return false; } 
 		
 		// UPDATE SCHEMA		
 		// UPDATE ALL ACTIONS EACH TIME.
@@ -347,7 +312,7 @@ var DigitalTwinCreateController = function() {
 		console.log('deleteDigitalTwinTypeConfirmation() -> formId: '+ digitalTwinTypeId);
 		
 		// no Id no fun!
-		if ( !digitalTwinTypeId ) {toastr.error(messagesForms.validation.genFormError,digitalTwinCreateJson.validations.validform); return false; }
+		if ( !digitalTwinTypeId ) {$.alert({title: 'ERROR!', type: 'red' , theme: 'light', content: digitalTwinCreateJson.validations.validform}); return false; }
 		
 		logControl ? console.log('deleteDigitalTwinTypeConfirmation() -> formAction: ' + $('.delete-digital').attr('action') + ' ID: ' + $('#delete-digitaltwintypeId').attr('digitaltwintypeId')) : '';
 		
@@ -365,30 +330,17 @@ var DigitalTwinCreateController = function() {
 		logControl ? console.log('handleCodeMirror() on -> logicEditor') : '';	
 		
         var myTextArea = document.getElementById('logicEditor');
-        myCodeMirror = CodeMirror.fromTextArea(myTextArea, {
+        var myCodeMirror = CodeMirror.fromTextArea(myTextArea, {
         	mode: "text/javascript",
             lineNumbers: false,
             foldGutter: true,
             matchBrackets: true,
             styleActiveLine: true,
-            theme:"material",         
+            theme:"elegant",         
 
         });
 		myCodeMirror.setSize("100%", 350);
-
     }
-	
-	var validate = function (obj){
-		if (obj.val() === '') { 
-			obj.parent().addClass('has-error');
-			obj.nextAll('span:first').removeClass('hide').addClass('help-block-error font-red');
-			return false;
-		} else { 
-			obj.parent().removeClass('has-error');
-			obj.nextAll('span:first').addClass('hide');
-			return true;
-		}
-	}
 	
 	// CONTROLLER PUBLIC FUNCTIONS 
 	return{
@@ -474,8 +426,6 @@ var DigitalTwinCreateController = function() {
 						editor.set(jsonFromEditor);
 					}			
 				}		
-			}).on('blur', function(){
-				validate($(this));
 			});
 			
 			$('#description').on('change', function(){
@@ -488,8 +438,7 @@ var DigitalTwinCreateController = function() {
 						editor.set(jsonFromEditor);
 					}			
 				}	
-			}).on('blur', function(){
-				validate($(this));
+				
 			});
 			
 			$('#type').on('change', function(){
@@ -502,6 +451,7 @@ var DigitalTwinCreateController = function() {
 						editor.set(jsonFromEditor);
 					}			
 				}	
+				
 			});
 			
 			createEditor();
@@ -715,7 +665,7 @@ var DigitalTwinCreateController = function() {
 			var allProperties = $("input[name='property\\[\\]']").map(function(){return $(this).val();}).get();		
 			areUnique = allProperties.unique();
 			if (allProperties.length !== areUnique.length)  { 
-				toastr.error(messagesForms.operations.genOpError,digitalTwinCreateJson.validations.duplicates);
+				$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: digitalTwinCreateJson.validations.duplicates});
 				$(obj).val(''); return false;
 			} 
 			else {
@@ -728,7 +678,7 @@ var DigitalTwinCreateController = function() {
 			var allActions = $("input[name='action\\[\\]']").map(function(){return $(this).val();}).get();		
 			areUnique = allActions.unique();
 			if (allActions.length !== areUnique.length)  { 
-				toastr.error(messagesForms.operations.genOpError,digitalTwinCreateJson.validations.duplicates);
+				$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: digitalTwinCreateJson.validations.duplicates});
 				$(obj).val(''); return false;
 			} 
 			else {
@@ -742,7 +692,7 @@ var DigitalTwinCreateController = function() {
 			var allEvents = $("input[name='event\\[\\]']").map(function(){return $(this).val();}).get();		
 			areUnique = allEvents.unique();
 			if (allEvents.length !== areUnique.length)  { 
-				toastr.error(messagesForms.operations.genOpError,digitalTwinCreateJson.validations.duplicates);
+				$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: digitalTwinCreateJson.validations.duplicates});
 				$(obj).val(''); return false;
 			} 
 			else {
@@ -814,11 +764,6 @@ var DigitalTwinCreateController = function() {
 		    });
 			
 			$('#dialog-selectOntology').modal('hide');
-		},
-		refreshLogic:function(){
-	        setTimeout(function() {
-	        	myCodeMirror.refresh();
-	    	},100);
 		}
 	}
 }();

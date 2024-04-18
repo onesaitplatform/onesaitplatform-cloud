@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -72,9 +72,11 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM-->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home </a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/categories/list}"> <span th:text="#{category.breadcrumb.list}">Categories </span></a><i class="fa fa-angle-right"></i></li>
 						<li>
-							<span th:text="#{category.breadcrumb.show}">Show Category</span>
+							<span th:if="${category?.id} == null" th:text="#{category.breadcrumb.create}">Show Category</span>
+							<span th:if="${category?.id} != null" th:text="#{category.breadcrumb.update}">Update Category</span>
 						</li>
 					</ul>
 				</div>
@@ -84,144 +86,162 @@
 				<h1 class="page-title hide "><span th:text="#{name.app}"> Onesait Platform Control Panel</span></h1>
 				<!-- END PAGE TITLE-->
 
-				<!-- AUXILIAR FORM TO DELETE DATAMODEL -->
-				<form id="delete_category_form" class="delete-category hide"  th:action="@{'/categories/'+${category.id}}"  method="post">
-					<input type="hidden" name="_method" value="DELETE"/>
-					<input id="delete-categoryId" type="hidden" name="categoryId" th:value="${category.id}"/>
-					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-				</form>
-				<!-- AUXILIAR FORM TO DELETE SUBCATEGORY -->
-				<form id="delete_subcategory_form" class="delete-subcategory hide" action="" method="post">
-					<input type="hidden" name="_method" value="DELETE"/>
-					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-				</form>
+				<!-- MAIN ROW -->
+				<div class="row">
+					<form id="delete_category_form" class="delete-category hide"  th:action="@{'/categories/'+${category.id}}"  method="post">
+						<input type="hidden" name="_method" value="DELETE"/>
+						<input id="delete-categoryId" type="hidden" name="categoryId" th:value="${category.id}"/>
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+					<form role="form" id="category_create_form" th:object="${category}" method="post" class="form">
+					<div class="col-md-12">
+						<div class="portlet light container">
+							<div class="portlet-title tabbable-line">
+								<div class="caption">
 
-				<form role="form" id="category_create_form" th:object="${category}" method="post" class="form">
-					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-					<!-- FORM ACTIONS FOR INSERT-->
-					<input th:if="${category.id} == null" type="hidden" name="action" th:value="@{/categories/create}"/>
-
-					<!-- FORM ACTIONS FOR UPDATE -->
-					<input th:if="${category?.id} != null" type="hidden" name="action" th:value="@{'/categories/update/'+${category.id}}"/>
-					<input th:if="${category?.id} != null" type="hidden" name="_method" value="PUT"/>
-					
-					<div id="header">
-						<div class="row pageCreateHeader">
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="margin-top-4">
-									<span th:text="${category.identification}">Show Category</span>
 								</div>
+								<div class="tools hidden">
+									<a href="" class="collapse" data-original-title="" title=""> </a>
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>
+								</div>
+
+								<!-- CATEGORY TABS SECTIONS -->
+								<ul class="nav nav-tabs pull-left">
+									<li id="tab-datos" class="active">
+										<a href="#tab_1" data-toggle="tab" aria-expanded="false">											
+											<!-- FORM TITLE -->
+											<span class="caption-subject " th:text="#{category.template.show}"> Show Category</span>
+											
+										</a>
+									</li>
+								</ul>
+
 							</div>
-							
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="pull-right">
-									<!-- DELETE -->
-									<button sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete" th:attr="onclick='deleteCategory(\'' + ${category.id} + '\');'" value="Remove" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>	
-		
-									<span class="sep" ></span>
+							<div class="portlet-body" style="display: block; height: auto;">
+								<div class="tab-content">
+									<div class="tab-pane active" id="tab_1">
+									<!-- ONTOLOGY FORM -->
+										<div class="row">
+											<div class="col-md-12">
+											<!-- AUXILIAR FORM TO DELETE CATEGORY -->
+
+													<!-- FORM ACTIONS FOR INSERT-->
+													<input th:if="${category.id} == null" type="hidden" name="action" th:value="@{/categories/create}"/>
+
+													<!-- FORM ACTIONS FOR UPDATE -->
+													<input th:if="${category?.id} != null" type="hidden" name="action" th:value="@{'/categories/update/'+${category.id}}"/>
+													<input th:if="${category?.id} != null" type="hidden" name="_method" value="PUT"/>
+
+													<div class="form-body">
+														<!-- user, name and email -->
+														<div class="row">
+																<div class="col-md-3 col-sm-6 col-xs-12">
+																	<div class="form-group">
+																		<div class="input-icon ">
+																			<label class="control-label" th:text="#{gen.identification} + ':'">Identification</label>
+																			<p class="form-control-static-block " th:text="*{identification}"> Category Name </p>
+																		</div>
+																	</div>
+																</div>
+															<div class="col-md-9 col-sm-12 col-xs-12">
+																<div class="form-group">
+																	<label class="control-label" th:text="#{gen.description} + ':'">Description</label>
+																	<p class="form-control-static-block " th:text="*{description}"> Description Category </p>
+																</div>
+															</div>
 															
-									<!-- CANCEL -->
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/categories/list} + '\');'" th:value="#{gen.cancelBtn}" ><span th:text="#{gen.cancelBtn}"> Cancel</span></button>
+															<!-- SUBCATEGORIES LIST -->
+															<div class="col-md-12">																	
+																<div class="row">	
+																	<label class="control-label" style="margin-bottom: -10px;" th:text="#{subcategory.breadcrumb.list}">Subcategories:</label>																
+																	<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
+																		<div>
+																			<!-- DATATABLE DANDELION CONF.  -->												
+																			<table id="subcategories" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
+																				<thead>
+																					<tr class="cabecera-tabla">
+																						<th class="titulo-columnas" th:text="#{gen.identification}">Identification</th>
+																						<th class="titulo-columnas" th:text="#{gen.description}">Description</th>
+																						<th class="titulo-columnas" th:text="#{category.template.show}">Category</th>
+																						<th class="titulo-columnas text-center" ><span th:text="#{ontology.createdAt}"> Created At </span></th>
+																						<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
+																					</tr>
+																				</thead>
+																				<tbody th:remove="all-but-first">
+																					<tr th:each="subcategory : ${subcategories}" pages:paginate="10">
+																						<!-- IDENTIFICATION/NAME -->
+																						<td class="text-left no-wrap " th:text="${subcategory.identification}"></td>
+																						<!-- DESCRIPTION -->
+																						<td class="text-left text-truncate-xxs" th:title="${subcategory.description}" th:text="${subcategory.description}"></td>
+																						<!-- CATEGORY -->
+																						<td class="text-left no-wrap " th:text="${subcategory.category.identification}"></td>
+																						<!-- DATE -->
+																						<td class="text-center" th:if="${subcategory.createdAt!=null}" th:text="${#dates.format(subcategory.createdAt,'dd/MM/YYYY')}"></td>
+																						<td class="text-center" th:if="${subcategory.createdAt==null}" th:text="${subcategory.createdAt}"></td>
+																						<!-- OPTIONS -->
+																						<td class="icon text-center" style="white-space: nowrap">
+																							<div class="grupo-iconos">
+																								<!-- VIEW -->															
+																								<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/subcategories/show/${subcategory.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
+																																																										
+																								<!-- EDIT -->
+																								<span  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/subcategories/update/${subcategory.id}/|} + '\');'"><i class="la la-edit font-hg"></i></span>
+																								
+																								<!-- INDEXES -->
+																								<!-- <span th:title="#{plantillas_listado_button_crear_indice}" class="btn grey-mint btn-xs btn-outline sbold tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{plantillas_listado_button_crear_indice}" th:onclick="'javascript:navigateUrl(\'' + @{|/indices/${ontology.id}/|} + '\');'"><i class="fa fa-database"></i></span> -->
+																							</div>
+																						</td>
+																					</tr>
+																				</tbody>
+																			</table>
 
-									<!-- UPDATE -->
-									<button sec:authorize="!hasAuthority('ROLE_PARTNER')" id="updateBtn" type="button" class="btn btn-primary btn-primary-save" name="update" th:attr="onclick='javascript:navigateUrl(\'' + @{|/categories/update/${category.id}/|} + '\');'"  th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
-								</div>
-							</div>
-						</div>
-					</div>
+																			<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
+																				<!-- add subcategory button. -->
+																				<button type="button" class="btn btn-circle btn-outline blue" th:onclick="'javascript:navigateUrl(\'' + @{'/categories/addSubcategory/'+${category.id}+'/'} + '\');'" ><span th:text="#{category.add.subcategory}">New </span></button>
+																			</div>
+																		</div>
+																	</div>	
+																</div>
+															</div>
+														</div>
+													</div>
+											</div>
+										</div>
+									</div>
+									<!-- FORM BUTTONS -->
+									<div class="form-actions">
+									
+										<div class="pull-left">
+											<!-- CANCEL TO-DO: authentication and control -->
+											<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue " style="border: none !important"  name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/categories/list} + '\');'"><i class="la la-arrow-left"></i> <span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+										</div>
+									
+										<div class="pull-right">
+											<!-- REMOVE -->
+											<button  id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'deleteCategory(\'' + ${category.id} + '\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
 
-					<!-- MAIN ROW -->
-					<div class="row equal flex-container">
-						<div class="tabContainer flex-tabs-left">
-							<div id="tab-general-information" class="option active">
-								<a href="#tab_1" data-toggle="tab" aria-expanded="false">											
-									<!-- FORM TITLE -->
-									<span class="caption-subject " th:text="#{gen.generalInformation}"> General Information</span>
-								</a>
-							</div>
-							<div id="tab-subcategories" class="option">
-								<a href="#tab_2" data-toggle="tab" aria-expanded="true">
-									<span class="caption-subject " th:text="#{subcategory.subcategories}"> Subcategories</span>
-								</a>
-							</div>
-						</div>
-						<div class="tab-content flex-content-right">
-							<div class="tab-pane active" id="tab_1">
-								<div class="row main">
-									<div class="col-md-12 col-sm-12 col-xs-12 panelHeader">
-										<span th:text="#{gen.generalInformation}">General Information</span>
-									</div>
-								</div>
-		
-								<div class="row main">
-									<div class="col-md-3 col-sm-6 col-xs-12">
-										<div class="form-group">
-											<div class="input-icon ">
-												<label class="control-label" th:text="#{gen.identification}">Identification</label>
-												<p class="form-control-static-block " th:text="*{identification}"> Category Name </p>
-											</div>
-										</div>
-									</div>
-								</div>
-								<div class="row main">
-									<div class="col-md-3 col-sm-6 col-xs-12">
-										<div class="form-group">
-											<div class="input-icon ">
-												<label class="control-label" th:text="#{gen.type}">Type</label>
-												<p class="form-control-static-block " th:text="*{type}"> Type </p>
-											</div>
-										</div>
-									</div>
-								</div>
-								<div class="row main">
-									<div class="col-md-9 col-sm-12 col-xs-12">
-										<div class="form-group">
-											<label class="control-label" th:text="#{gen.description}">Description</label>
-											<p class="form-control-static-block " th:text="*{description}"> Description Category </p>
+											<span class="sep no-border">&nbsp;</span>
+											
+											
+											<!-- MODIFY TO-DO: == and != has the same onClick? check! -->
+											<button id="editBtn" type="button" class="btn btn-circle btn-outline blue" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/categories/update/${category.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
+
+											
+											<span class="sep">&nbsp;</span>
+											
+											<!-- CREATE -->
+											<button id="createBtn" type="button" class="btn btn-circle btn-outline btn-primary" name="create"  value="Create" th:onclick="'javascript:navigateUrl(\'' + @{/categories/} + 'create' + '\');'" ><span th:text="#{gen.createBtn}"> New</span></button>
+											
+							
 										</div>
 									</div>
 								</div>
 							</div>
-							<div class="tab-pane" id="tab_2">
-								<!-- SUBCATEGORIES -->
-								<div class="row main">
-									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
-										<span th:text="#{subcategory.breadcrumb.list}">Subcategories</span>
-									</div>
-								</div>
-								<div class="row main">
-									<div class="col-md-12">											
-										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
-											<div>
-												<!-- DATATABLE DANDELION CONF. -->												
-												<table id="authorizations" class="table table-hover" dt:table="true" dt:paginationtype="full">
-													<thead class="table-header-background">
-														<tr class="cabecera-tabla">
-															<th class="titulo-columnas " th:text="#{gen.identification}">Identification</th>
-															<th class="titulo-columnas " th:text="#{gen.description}">Description</th>
-														</tr>
-													</thead>
-													<tbody style="border-bottom: 1px solid #ddd;" th:remove="all-but-first">
-														<tr th:each="subcategory : ${subcategories}" pages:paginate="10" style="height:32px;">
-															<!-- IDENTIFICATION/NAME -->
-															<td class="text-left no-wrap" th:text="${subcategory.identification}"></td>
-															<!-- DESCRIPTION  -->
-															<td class="text-left text-truncate-xxs" th:text="${subcategory.description}"></td>																
-														</tr>
-													</tbody>
-												</table>												
-											</div>
-											<div id="imageNoElementsOnTable" hide>
-												<div id="headerImg" style="width: 72px; height:113px; display: block;   margin-top:27px;  margin-left: auto;margin-right:auto;" ></div>
-												<label style=" display: block;   margin: 0 auto; font-style: italic;font-weight: normal;font-size: 17px;line-height: 24px;text-align: center;color:#505D66;" th:text="#{category.list.nosubcategories}"></label>
-											</div>
-										</div>											
-									</div>
-								</div>
-							</div>		
-						</div>							
-					</div><!-- END MAIN ROW -->
-				</form>
+						</div><!-- END PORTLET BASIC  -->
+
+					</div><!-- END COL-12 -->
+					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+				</div><!-- END MAIN ROW -->
+
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->
 	</div>
@@ -297,29 +317,12 @@
 	}
 	
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){ 
-
-		$("#contenedor-tabla-outside").removeClass("hidden");
+	$(window).load(function(){  
 		
-		$(".option a[href='#tab_1']").on("click", function(e) {
-	        $('.tabContainer').find('.option').removeClass('active');
-	        $('#tab-general-information').addClass('active');
-	    });
-	    
-		$(".option a[href='#tab_2']").on("click", function(e) {
-	        $('.tabContainer').find('.option').removeClass('active');
-	        $('#tab-subcategories').addClass('active');
-	    });
+		// SHOW/HIDE DATATABLES COLUMN ADD SUBCATEGORY BUTTON.		
+		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		$('#dataTable-vis-toggle').removeClass('hide');
 		
-		if(typeof $('#subcategories > tbody > tr').length =='undefined' || $('#authorizations > tbody > tr').length == 0){
-			$('#imageNoElementsOnTable').show();
-		}else{
-			$('#imageNoElementsOnTable').hide();
-		}
-		
-	});
-	
-	$( document ).ready(function() {
 	});
 	
 	// LOAD DATA TO USE IN CREATE WIZARD CONTROLLER

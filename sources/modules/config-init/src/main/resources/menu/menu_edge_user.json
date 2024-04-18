@@ -3,86 +3,85 @@
     "rol": "ROLE_EDGE_USER",
     "noSession": "/console/login",
     "navigation": [
-       
-         {
+        {
             "title": {
-                "EN": "LANDSCAPE",
-                "ES": "LANDSCAPE",
-				"FR": "LANDSCAPE"
+                "EN": "",
+                "ES": ""
             },
-            "icon": "icon-broadcast",
+            "icon": "flaticon-more-v3",
+            "url": "",
+            "submenu": []
+        },
+        {
+            "title": {
+                "EN": "EDGE MANAGEMENT",
+                "ES": "ADMINITRACIÓN EDGE"
+            },
+            "icon": "flaticon-analytics",
             "url": "",
             "submenu": [
                 {
                     "title": {
-                        "EN": "Edge Devices",
-                        "ES": "Dispositivos Edge",
-						"FR": "Gestion des périphériques Edge"
+                        "EN": "Devices Management",
+                        "ES": "Gestión de Dispositivos"
                     },
                     "icon": "",
-                    "url": "/controlpanel/edge/landscape/devices"
+                    "url": "/controlpanel/edge/devices"
                 },
                 {
                     "title": {
-                        "EN": "Field Devices",
-                        "ES": "Gestión de campos",
-						"FR": "Gestion des appareils de terrain"
+                        "EN": "Clusters Management",
+                        "ES": "Gestión de Clusters"
                     },
                     "icon": "",
-                    "url": "/controlpanel/edge/landscape/field"
+                    "url": "/controlpanel/edge/bastions"
                 },
                 {
                     "title": {
-                        "EN": "Cloud to Cloud",
-                        "ES": "Cloud to Cloud",
-						"FR": "Cloud à Cloud"
+                        "EN": "Landscape Management",
+                        "ES": "Gestión de Landscape"
                     },
                     "icon": "",
-                    "url": "/controlpanel/edge/landscape/cloud2cloud"
+                    "url": ""
+                },
+                {
+                    "title": {
+                        "EN": "Repositories Management",
+                        "ES": "Gestión de Repositorios"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/edge/organizations"
                 }
             ]
         },
         {
             "title": {
                 "EN": "DEVELOPMENT",
-                "ES": "DESARROLLO",
-				"FR": "DÉVELOPPEMENT"
+                "ES": "DESARROLLO"
             },
-            "icon": "icon-development",
+            "icon": "flaticon-network",
             "url": "",
             "submenu": [
                 {
                     "title": {
-                        "EN": "My Applications",
-                        "ES": "Mis Aplicaciones",
-						"FR": "Mes Applications"
+                        "EN": "My Projects",
+                        "ES": "Mis Proyectos"
                     },
                     "icon": "",
                     "url": "/controlpanel/projects/list"
                 },
                 {
                     "title": {
-                        "EN": "My Entities",
-                        "ES": "Mis Entidades",
-						"FR": "Mes Entités"
+                        "EN": "My Ontologies",
+                        "ES": "Mis Ontologías"
                     },
                     "icon": "",
                     "url": "/controlpanel/ontologies/list"
                 },
-				{
-					"title": {
-						"EN": "User Tokens Management",
-						"ES": "Gestión de Tokens de Usuario",
-						"FR": "Gestion des jetons utilisateur"
-					},
-					"icon": "",
-					"url": "/controlpanel/apimanager/token/list?access=MENU"
-				},
                 {
                     "title": {
-                        "EN": "My REST APIs",
-                        "ES": "Mis APIs REST",
-						"FR": "Mes APIs REST"
+                        "EN": "My APIs",
+                        "ES": "Mis APIs"
                     },
                     "icon": "",
                     "url": "/controlpanel/apimanager/list"
@@ -92,17 +91,15 @@
         {
             "title": {
                 "EN": "VISUALIZATION & GIS",
-                "ES": "VISUALIZATION & GIS",
-				"FR": "VISUALISATION & SIG"
+                "ES": "VISUALIZATION & GIS"
             },
-            "icon": "icon-visualization",
+            "icon": "flaticon-graph",
             "url": "",
             "submenu": [
                 {
                     "title": {
                         "EN": "My Dashboards",
-                        "ES": "Mis Dashboards",
-						"FR": "Mes Tableaux de Bord"
+                        "ES": "Mis Dashboards"
                     },
                     "icon": "",
                     "url": "/controlpanel/dashboards/list"
@@ -112,17 +109,15 @@
         {
             "title": {
                 "EN": "DEV TOOLS",
-                "ES": "HERR. DESARROLLO",
-				"FR": "OUTILS DE DÉVELOPPEMENT"
+                "ES": "HERR. DESARROLLO"
             },
-            "icon": "icon-dev-tools",
+            "icon": "flaticon-open-box",
             "url": "",
             "submenu": [
                 {
                     "title": {
                         "EN": "My Files",
-                        "ES": "Mis Ficheros",
-						"FR": "Mes fichiers"
+                        "ES": "Mis Ficheros"
                     },
                     "icon": "",
                     "url": "/controlpanel/files/list"
@@ -132,17 +127,15 @@
         {
             "title": {
                 "EN": "TOOLS",
-                "ES": "HERRAMIENTAS",
-				"FR": "OUTILS"
+                "ES": "HERRAMIENTAS"
             },
-            "icon": "icon-tools",
+            "icon": "flaticon-refresh",
             "url": "",
             "submenu": [
                 {
                     "title": {
                         "EN": "Query Tool",
-                        "ES": "Herramienta de Consultas",
-						"FR": "Éditeur de Requêtes"
+                        "ES": "Herramienta Consultas"
                     },
                     "icon": "",
                     "url": "/controlpanel/querytool/show"
@@ -150,21 +143,19 @@
                 {
                     "title": {
                         "EN": "My Audit",
-                        "ES": "Mi Auditoría",
-						"FR": "Mon Audit"
+                        "ES": "Mi Auditoría"
                     },
                     "icon": "",
                     "url": "/controlpanel/audit/show"
                 },
-				{
-					"title": {
-						"EN": "Assets Market",
-						"ES": "Market de Assets",
-						"FR": "Marché des Actifs"
-					},
-					"icon": "",
-					"url": "/controlpanel/bundlerepository/list"
-				}
+                {
+                    "title": {
+                        "EN": "My Market",
+                        "ES": "Mi Market"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/marketasset/list"
+                }
             ]
         }
     ]

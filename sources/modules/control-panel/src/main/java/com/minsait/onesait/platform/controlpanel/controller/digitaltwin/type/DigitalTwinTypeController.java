@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +38,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.minsait.onesait.platform.config.model.DigitalTwinType;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.digitaltwin.device.DigitalTwinDeviceService;
 import com.minsait.onesait.platform.config.services.digitaltwin.type.DigitalTwinTypeService;
@@ -65,15 +65,11 @@ public class DigitalTwinTypeController {
 
 	@Autowired
 	private DigitalTwinDeviceService digitalTwinDeviceService;
-	
-	@Autowired 
-	private HttpSession httpSession;
 
 	private static final String DIG_TWIN_TYPE_VAL_ERROR = "digitaltwintype.validation.error";
 	private static final String REDIRECT_DIG_TWIN_TYPE_CREATE = "redirect:/digitaltwintypes/create";
 	private static final String REDIRECT_DIG_TWIN_TYPE_LIST = "redirect:/digitaltwintypes/list";
 	private static final String ERROR_403 = "error/403";
-	private static final String APP_ID = "appId";
 
 	@Autowired
 	@Qualifier("MongoManageDBRepository")
@@ -95,11 +91,11 @@ public class DigitalTwinTypeController {
 	@GetMapping(value = "/update/{id}", produces = "text/html")
 	public String update(Model model, @PathVariable("id") String id) {
 		DigitalTwinType type = digitalTwinTypeService.getDigitalTwinTypeById(id);
-
-		if (!utils.isAdministrator() && !type.getUser().getUserId().equals(utils.getUserId())) {
+		
+		if (!utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name()) && !type.getUser().getUserId().equals(utils.getUserId())) {
 			return ERROR_403;
 		}
-
+		
 		digitalTwinTypeService.getDigitalTwinToUpdate(model, id, utils.getUserId());
 		return "digitaltwintypes/create";
 	}
@@ -137,10 +133,9 @@ public class DigitalTwinTypeController {
 
 			if (!tables.contains(("TwinActions" + digitalTwinType.getIdentification().substring(0, 1).toUpperCase()
 					+ digitalTwinType.getIdentification().substring(1)).toUpperCase())) {
-				mongoManageRepo.createTable4Ontology(
-						"TwinActions" + digitalTwinType.getIdentification().substring(0, 1).toUpperCase()
-								+ digitalTwinType.getIdentification().substring(1),
-						"{}", null);
+				mongoManageRepo
+						.createTable4Ontology("TwinActions" + digitalTwinType.getIdentification().substring(0, 1).toUpperCase()
+								+ digitalTwinType.getIdentification().substring(1), "{}",null);
 			}
 		} catch (DigitalTwinServiceException e) {
 			log.error("Cannot create digital twin type because of:" + e.getMessage());
@@ -154,23 +149,20 @@ public class DigitalTwinTypeController {
 	@GetMapping(value = "/list")
 	public String list(Model model, HttpServletRequest request,
 			@RequestParam(required = false, name = "identification") String identification) {
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
 		
 		// Scaping "" string values for parameters
 		if (identification != null && identification.equals("")) {
-			identification = null;
+		   identification = null;
 		}
-
-		List<DigitalTwinType> digitaltwinstypes = new ArrayList<>();
-
-		if (identification == null) {
+		
+        List<DigitalTwinType> digitaltwinstypes = new ArrayList<>();
+		
+		if(identification == null) {
 			digitaltwinstypes = digitalTwinTypeService.getDigitalTwinTypesByUserId(utils.getUserId());
-		} else {
-			digitaltwinstypes = digitalTwinTypeService.getDigitalTwinTypesByUserIdAndIdentification(utils.getUserId(),
-					identification);
+		}else {
+			digitaltwinstypes = digitalTwinTypeService.getDigitalTwinTypesByUserIdAndIdentification(utils.getUserId(), identification);
 		}
-
+		
 		model.addAttribute("digitalTwinTypes", digitaltwinstypes);
 		return "digitaltwintypes/list";
 	}
@@ -179,11 +171,11 @@ public class DigitalTwinTypeController {
 	@GetMapping(value = "/show/{id}", produces = "text/html")
 	public String show(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 		DigitalTwinType type = digitalTwinTypeService.getDigitalTwinTypeById(id);
-
-		if (!utils.isAdministrator() && !type.getUser().getUserId().equals(utils.getUserId())) {
+		
+		if (!utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name()) && !type.getUser().getUserId().equals(utils.getUserId())) {
 			return ERROR_403;
 		}
-
+		
 		if (type != null) {
 			model.addAttribute("digitaltwintype", type);
 			model.addAttribute("dproperties", digitalTwinTypeService.getPropertiesByDigitalId(id));
@@ -209,10 +201,10 @@ public class DigitalTwinTypeController {
 			utils.addRedirectMessage(DIG_TWIN_TYPE_VAL_ERROR, redirect);
 			return "redirect:/digitaltwintypes/update/" + id;
 		}
-
+		
 		DigitalTwinType type = digitalTwinTypeService.getDigitalTwinTypeById(id);
-
-		if (!utils.isAdministrator() && !type.getUser().getUserId().equals(utils.getUserId())) {
+		
+		if (!utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name()) && !type.getUser().getUserId().equals(utils.getUserId())) {
 			return ERROR_403;
 		}
 
@@ -234,11 +226,11 @@ public class DigitalTwinTypeController {
 	public String delete(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 
 		DigitalTwinType digitalTwinType = digitalTwinTypeService.getDigitalTwinTypeById(id);
-
-		if (!utils.isAdministrator() && !digitalTwinType.getUser().getUserId().equals(utils.getUserId())) {
+		
+		if (!utils.getRole().equals(Role.Type.ROLE_ADMINISTRATOR.name()) && !digitalTwinType.getUser().getUserId().equals(utils.getUserId())) {
 			return ERROR_403;
 		}
-
+		
 		if (digitalTwinType != null) {
 			try {
 				this.digitalTwinTypeService.deleteDigitalTwinType(digitalTwinType);

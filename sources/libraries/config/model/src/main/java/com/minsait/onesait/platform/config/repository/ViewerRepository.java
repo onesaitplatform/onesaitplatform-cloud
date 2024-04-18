@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,9 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
-import java.util.Collection;
 import java.util.List;
 
-import javax.transaction.Transactional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.Viewer;
@@ -48,21 +42,4 @@ public interface ViewerRepository extends JpaRepository<Viewer, String> {
 	List<Viewer> findByIsPublicTrueOrUser(User user);
 
 	List<Viewer> findByUserOrderByIdentificationAsc(User user);
-
-	@Modifying
-	@Transactional
-	@Query("DELETE FROM Viewer AS p WHERE p.id NOT IN :ids")
-	void deleteByIdNotInCustom(@Param("ids") Collection<String> ids);
-
-	@Modifying
-	@Transactional
-	@Query(value = "DELETE FROM LAYER_VIEWER", nativeQuery = true)
-	void deleteLayerViewer();
-
-	@Modifying
-	@Transactional
-	default void deleteByIdNotIn(Collection<String> ids) {
-		deleteLayerViewer();
-		deleteByIdNotInCustom(ids);
-	}
 }

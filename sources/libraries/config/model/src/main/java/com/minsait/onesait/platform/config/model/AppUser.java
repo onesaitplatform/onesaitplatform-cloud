@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,6 @@ import javax.persistence.Table;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.util.StringUtils;
-
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSetter;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -52,7 +47,6 @@ public class AppUser extends AppUserParent {
 	@JoinColumn(name = "ROLE", referencedColumnName = "ID", nullable = false)
 	@Getter
 	@Setter
-	@JsonIgnore
 	private AppRole role;
 
 	@ManyToOne
@@ -61,18 +55,5 @@ public class AppUser extends AppUserParent {
 	@Getter
 	@Setter
 	private User user;
-
-	@JsonSetter("user")
-	public void setUserJson(String userId) {
-		if (StringUtils.hasText(userId)) {
-			final User u = new User();
-			u.setUserId(userId);
-			user = u;
-		}
-	}
-	@JsonGetter("user")
-	public String getUserJson() {
-		return user == null ? null : user.getUserId();
-	}
 
 }

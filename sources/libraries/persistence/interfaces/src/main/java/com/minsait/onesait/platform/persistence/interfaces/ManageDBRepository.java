@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@ package com.minsait.onesait.platform.persistence.interfaces;
 
 import java.util.List;
 import java.util.Map;
-
-import org.json.JSONArray;
 
 import com.minsait.onesait.platform.commons.model.DescribeColumnData;
 import com.minsait.onesait.platform.commons.rtdbmaintainer.dto.ExportData;
@@ -43,9 +41,9 @@ public interface ManageDBRepository {
 
 	public void createIndex(String sentence);
 
-	public void createTTLIndex(String ontology, String attribute, Long seconds);
-
 	public void dropIndex(String ontology, String indexName);
+
+	public List<String> getListIndexes(String ontology);
 
 	public String getIndexes(String ontology);
 
@@ -60,19 +58,4 @@ public interface ManageDBRepository {
 	public Map<String, String> getAdditionalDBConfig(String ontology);
 
 	public String updateTable4Ontology(String identification, String jsonSchema, Map<String, String> config);
-
-	Map<String, List<String>> getListIndexes(String datatableName, String ontology);
-
-	List<String> getListIndexes(String ontology);
-
-	void dropIndex(String ontology, String ontologyVirtual, String indexName);
-
-	String getIndexesOptions(String ontology);
-
-	void createIndexWithParameter(String ontologyName, String typeIndex, String indexName, boolean unique, boolean background,
-			boolean sparse, boolean ttl, String timesecondsTTL, Object checkboxValuesArray);
-
-
-	
-
 }

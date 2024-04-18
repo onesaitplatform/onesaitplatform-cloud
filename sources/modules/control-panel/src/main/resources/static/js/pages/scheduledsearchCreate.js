@@ -291,13 +291,14 @@ var ScheduledSearchController= function()
 
 		if (dateTo != ""){
 			if (dateFrom > dateTo){
-				$.confirm({title: 'CONFIRM:', theme: 'light',
+				$.confirm({icon: 'fa fa-warning', title: 'CONFIRM:', theme: 'dark',
 					content: scheduledSearchCreateReg.validation_dates,
 					draggable: true,
 					dragWindowGap: 100,
 					backgroundDismiss: true,
+					closeIcon: true,
 					buttons: {        
-						close: { text: scheduledSearchCreateReg.cancel, btnClass: 'btn btn-outline blue dialog', action: function (){} //GENERIC CLOSE.    
+						close: { text: scheduledSearchCreateReg.Close, btnClass: 'btn btn-sm btn-default btn-outline', action: function (){} //GENERIC CLOSE.    
 						}
 					}
 				});

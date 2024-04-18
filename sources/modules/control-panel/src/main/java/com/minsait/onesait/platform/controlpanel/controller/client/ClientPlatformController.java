@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.json.JSONException;
@@ -57,8 +56,6 @@ import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyUserAccessType;
 import com.minsait.onesait.platform.config.model.Token;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
-import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.repository.OntologyUserAccessRepository;
 import com.minsait.onesait.platform.config.repository.OntologyUserAccessTypeRepository;
 import com.minsait.onesait.platform.config.services.client.ClientPlatformService;
@@ -120,31 +117,23 @@ public class ClientPlatformController {
 	private MultitenancyService multitenancyService;
 	@Autowired
 	private SimulationService simulationService;
-	@Autowired 
-	private HttpSession httpSession;
 
 	private static final String LOG_ONTOLOGY_PREFIX = "LOG_";
 	private static final String ONTOLOGIES_STR = "ontologies";
 	private static final String ACCESS_LEVEL_STR = "accessLevel";
 	private static final String DEVICE_STR = "device";
-	private static final String APP_USER_ACCESS = "app_user_access";
 	private static final String REDIRECT_DEV_CREATE = "redirect:/devices/create";
 	private static final String REDIRECT_DEV_LIST = "redirect:/devices/list";
 	private static final String REDIRECT_UPDATE = "redirect:/devices/update/";
 	private static final String ERROR_403 = "/error/403";
 	private static final String TOKEN_STR = "token";
 	private static final String ACTIVE_STR = "active";
-	private static final String APP_ID = "appId";
-	private static final String REDIRECT_PROJECT_SHOW = "redirect:/projects/update/";
 
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, @RequestParam(required = false) String identification,
 			@RequestParam(required = false) String[] ontologies) {
-		
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
+
 		if (identification != null && identification.equals("")) {
 			identification = null;
 		}
@@ -152,7 +141,8 @@ public class ClientPlatformController {
 		if (ontologies != null && ontologies.length == 0) {
 			ontologies = null;
 		}
-		populateClientList(model, clientPlatformService.getAllClientPlatformByCriteria(utils.getUserId(), identification, ontologies));
+		populateClientList(model,
+				clientPlatformService.getAllClientPlatformByCriteria(utils.getUserId(), identification, ontologies));
 
 		return "devices/list";
 
@@ -227,18 +217,13 @@ public class ClientPlatformController {
 	@GetMapping(value = "/create")
 	public String create(Model model) {
 		final DeviceCreateDTO deviceDTO = new DeviceCreateDTO();
-		
+
 		createInitalTokenToJson(deviceDTO);
 		model.addAttribute(DEVICE_STR, deviceDTO);
 		final List<OntologyDTO> ontologies = ontologyService
 				.getAllOntologiesForListWithProjectsAccess(utils.getUserId());
 		model.addAttribute(ONTOLOGIES_STR, ontologies);
 
-		final Object projectId = httpSession.getAttribute(APP_ID);
-		if (projectId!=null) {
-			model.addAttribute(APP_ID, projectId.toString());
-		}
-		
 		return "devices/create";
 	}
 
@@ -286,6 +271,7 @@ public class ClientPlatformController {
 			final Ontology onto = clientPlatformService.createDeviceLogOntology(ndevice);
 			ontologyBusinessService.createOntology(onto, userId, null);
 			clientPlatformService.createOntologyRelation(onto, ndevice);
+
 		} catch (final ClientPlatformServiceException | JSONException e) {
 			log.error("Cannot create clientPlatform", e);
 			utils.addRedirectException(e, redirect);
@@ -299,15 +285,6 @@ public class ClientPlatformController {
 			utils.addRedirectException(e, redirect);
 			return REDIRECT_DEV_CREATE;
 		}
-
-		final Object projectId = httpSession.getAttribute(APP_ID);
-		if (projectId!=null) {
-			httpSession.setAttribute("resourceTypeAdded", OPResource.Resources.CLIENTPLATFORM.toString());
-			httpSession.setAttribute("resourceIdentificationAdded", device.getIdentification());
-			httpSession.removeAttribute(APP_ID);
-			return REDIRECT_PROJECT_SHOW + projectId.toString();
-		}
-		
 		return REDIRECT_DEV_LIST;
 	}
 
@@ -330,10 +307,7 @@ public class ClientPlatformController {
 			mapTokensToJson(device, deviceDTO);
 			model.addAttribute(DEVICE_STR, deviceDTO);
 			model.addAttribute(ACCESS_LEVEL_STR, clientPlatformService.getClientPlatformOntologyAccessLevel());
-			
-			ResourceAccessType resourceAccess = resourceService.getResourceAccess(utils.getUserId(),device.getId());
-			model.addAttribute(APP_USER_ACCESS, resourceAccess);
-			
+
 			model.addAttribute(ResourcesInUseService.RESOURCEINUSE,
 					resourcesInUseService.isInUse(id, utils.getUserId()));
 			resourcesInUseService.put(id, utils.getUserId());
@@ -434,7 +408,7 @@ public class ClientPlatformController {
 		} catch (final ClientPlatformServiceException | JSONException e) {
 			log.debug("Cannot update device");
 			utils.addRedirectMessage("device.update.error", redirect);
-			return REDIRECT_UPDATE + id;
+			return REDIRECT_DEV_CREATE;
 		} catch (final KafkaExectionException e) {
 			log.debug("Cannot update Kafka topics ACL.");
 			utils.addRedirectMessage("device.update.error", redirect);
@@ -454,9 +428,6 @@ public class ClientPlatformController {
 			if (!clientPlatformService.hasUserViewAccess(id, utils.getUserId())) {
 				return ERROR_403;
 			}
-			
-			ResourceAccessType resourceAccess = resourceService.getResourceAccess(utils.getUserId(),device.getId());
-			
 			final DeviceCreateDTO deviceDTO = new DeviceCreateDTO();
 			deviceDTO.setId(device.getId());
 			deviceDTO.setDescription(device.getDescription());
@@ -465,8 +436,6 @@ public class ClientPlatformController {
 			deviceDTO.setUserId(device.getUser().getUserId());
 			mapOntologiesToJson(model, device, deviceDTO);
 			mapTokensToJson(device, deviceDTO);
-			
-			model.addAttribute(APP_USER_ACCESS, resourceAccess);
 			model.addAttribute(DEVICE_STR, deviceDTO);
 			model.addAttribute(ACCESS_LEVEL_STR, clientPlatformService.getClientPlatformOntologyAccessLevel());
 			return "devices/show";
@@ -517,6 +486,7 @@ public class ClientPlatformController {
 	@PostMapping(value = "/generateToken")
 	public @ResponseBody GenerateTokensResponse generateTokens(@RequestBody TokensRequest request,
 			@RequestParam(value = "tenant", required = false) String tenant) {
+
 		if (!StringUtils.isEmpty(tenant)) {
 			multitenancyService.getTenant(tenant).ifPresent(t -> MultitenancyContextHolder.setTenantName(t.getName()));
 		}

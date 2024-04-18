@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.minsait.onesait.platform.config.model.CategoryRelation;
-import com.minsait.onesait.platform.config.model.Category.Type;
+import com.minsait.onesait.platform.config.model.CategoryRelation.Type;
 
 public interface CategoryRelationRepository extends JpaRepository<CategoryRelation, Long> {
 
@@ -34,6 +34,4 @@ public interface CategoryRelationRepository extends JpaRepository<CategoryRelati
 	CategoryRelation findByTypeId(String typeId);
 
 	CategoryRelation findByTypeIdAndType(String typeId, Type type);
-	
-	List<CategoryRelation> findBySubcategory(String subcategory);
 }

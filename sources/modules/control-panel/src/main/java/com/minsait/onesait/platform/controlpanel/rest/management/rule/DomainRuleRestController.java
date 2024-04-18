@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
-import com.hazelcast.topic.ITopic;
+import com.hazelcast.core.ITopic;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.config.model.DroolsRule;
 import com.minsait.onesait.platform.config.model.DroolsRuleDomain;
@@ -47,23 +47,17 @@ import com.minsait.onesait.platform.controlpanel.controller.rules.RuleDTO;
 import com.minsait.onesait.platform.controlpanel.services.rules.BusinessRuleService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-
-
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("api/rules")
-@Tag(name = "Rules")
-@ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
-		@ApiResponse(responseCode = "500", description = "Internal server error"), @ApiResponse(responseCode = "403", description = "Forbidden") })
+@Api(value = "Rules", tags = { "Rules API" })
+@ApiResponses({ @ApiResponse(code = 400, message = "Bad request"),
+		@ApiResponse(code = 500, message = "Internal server error"), @ApiResponse(code = 403, message = "Forbidden") })
 @Slf4j
 public class DomainRuleRestController {
 
@@ -84,14 +78,14 @@ public class DomainRuleRestController {
 	private BusinessRuleService businessRuleService;
 
 	@GetMapping
-	@Operation(summary = "List rules")
+	@ApiOperation(value = "List rules")
 	public ResponseEntity<List<RuleDTO>> listRules() {
 		final List<DroolsRule> rules = droolsRuleService.getAllRules(utils.getUserId());
 		return ResponseEntity.ok().body(rules.stream().map(RuleDTO::convert).collect(Collectors.toList()));
 	}
 
 	@GetMapping("/rule/{identification}")
-	@Operation(summary = "Find rule")
+	@ApiOperation(value = "Find rule")
 	public ResponseEntity<RuleDTO> rule(@PathVariable("identification") String identification) {
 		if (!droolsRuleService.hasUserEditPermission(identification, utils.getUserId()))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -102,7 +96,7 @@ public class DomainRuleRestController {
 	}
 
 	@PutMapping("/rule/{identification}")
-	@Operation(summary = "Edit Rule")
+	@ApiOperation(value = "Edit Rule")
 	public ResponseEntity<String> editRule(@PathVariable("identification") String identification,
 			@RequestBody RuleDTO rule) {
 		if (!droolsRuleService.hasUserEditPermission(identification, utils.getUserId()))
@@ -120,7 +114,7 @@ public class DomainRuleRestController {
 	}
 
 	@PostMapping("/rule")
-	@Operation(summary = "Create rule")
+	@ApiOperation(value = "Create rule")
 	public ResponseEntity<String> createRule(@RequestBody RuleDTO rule) {
 		try {
 			if (!rule.getIdentification().matches(AppWebUtils.IDENTIFICATION_PATERN)) {
@@ -140,7 +134,7 @@ public class DomainRuleRestController {
 	}
 
 	@PostMapping("domains/self/start")
-	@Operation(summary = "Starts the domain of the current user")
+	@ApiOperation(value = "Starts the domain of the current user")
 	public ResponseEntity<String> startDomain() {
 
 		businessRuleService.changeDomainState(utils.getUserId(), true);
@@ -149,7 +143,7 @@ public class DomainRuleRestController {
 	}
 
 	@PostMapping("domains/self/stop")
-	@Operation(summary = "Stops the domain of the current user")
+	@ApiOperation(value = "Stops the domain of the current user")
 	public ResponseEntity<String> stopDomain() {
 		businessRuleService.changeDomainState(utils.getUserId(), false);
 		return new ResponseEntity<>(HttpStatus.OK);
@@ -157,7 +151,7 @@ public class DomainRuleRestController {
 
 	@PostMapping("domains/stop")
 	@PreAuthorize("hasRole('ADMINISTRATOR')")
-	@Operation(summary = "Stops the domain of the current user")
+	@ApiOperation(value = "Stops the domain of the current user")
 	public ResponseEntity<String> stopDomains() {
 		businessRuleService.changeDomainStates(false);
 		return new ResponseEntity<>(HttpStatus.OK);
@@ -165,14 +159,14 @@ public class DomainRuleRestController {
 
 	@PostMapping("domains/start")
 	@PreAuthorize("hasRole('ADMINISTRATOR')")
-	@Operation(summary = "Stops the domain of the current user")
+	@ApiOperation(value = "Stops the domain of the current user")
 	public ResponseEntity<String> startDomains() {
 		businessRuleService.changeDomainStates(true);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@PatchMapping("rule/{identification}/drl")
-	@Operation(summary = "Changes the DRL of a rule")
+	@ApiOperation(value = "Changes the DRL of a rule")
 	public ResponseEntity<String> updateRuleDRL(@PathVariable("identification") String identification,
 			@RequestBody String newDRL) {
 		if (droolsRuleService.hasUserEditPermission(identification, utils.getUserId())) {
@@ -188,7 +182,7 @@ public class DomainRuleRestController {
 	}
 
 	@PutMapping("rule/{identification}/active/{active}")
-	@Operation(summary = "Makes a rule either active or inactive")
+	@ApiOperation(value = "Makes a rule either active or inactive")
 	public ResponseEntity<String> updateRule(@PathVariable("identification") String identification,
 			@PathVariable("active") Boolean active) {
 		if (droolsRuleService.hasUserEditPermission(identification, utils.getUserId())) {
@@ -204,7 +198,7 @@ public class DomainRuleRestController {
 	}
 
 	@DeleteMapping("rule/{identification}")
-	@Operation(summary = "Deletes a rule")
+	@ApiOperation(value = "Deletes a rule")
 	public ResponseEntity<String> deleteRule(@PathVariable("identification") String identification) {
 		if (droolsRuleService.hasUserEditPermission(identification, utils.getUserId())) {
 			try {
@@ -219,7 +213,7 @@ public class DomainRuleRestController {
 	}
 
 	@PostMapping("rule/{identification}/test")
-	@Operation(summary = "Test a rule by providing a valid JSON input")
+	@ApiOperation(value = "Test a rule by providing a valid JSON input")
 	public ResponseEntity<String> test(@PathVariable("identification") String identification,
 			@RequestBody String input) {
 		try {

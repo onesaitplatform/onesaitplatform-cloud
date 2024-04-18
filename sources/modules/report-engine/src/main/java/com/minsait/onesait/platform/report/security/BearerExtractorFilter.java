@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,15 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.authentication.BearerTokenExtractor;
 import org.springframework.security.oauth2.provider.authentication.TokenExtractor;
 import org.springframework.security.oauth2.provider.token.TokenStore;
@@ -34,27 +40,19 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 
 import com.minsait.onesait.platform.config.model.security.UserPrincipal;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
-import com.minsait.onesait.platform.multitenant.util.BeanUtil;
-import com.minsait.onesait.platform.security.PlugableOauthAuthenticator;
 
 import lombok.extern.slf4j.Slf4j;
 
+@Configuration
+@Order(Ordered.HIGHEST_PRECEDENCE)
 @Slf4j
 public class BearerExtractorFilter implements Filter {
 
-	private PlugableOauthAuthenticator authenticationSuccessProcessor;
-	private final TokenStore tokenStore;
+	private static final String SPRING_SECURITY_CONTEXT = "SPRING_SECURITY_CONTEXT";
+	@Autowired
+	private TokenStore tokenstore;
 
 	private final TokenExtractor tokenExtractor = new BearerTokenExtractor();
-
-	public BearerExtractorFilter() {
-		tokenStore = BeanUtil.getBean(TokenStore.class);
-		try {
-			authenticationSuccessProcessor = BeanUtil.getBean(PlugableOauthAuthenticator.class);
-		} catch (final Exception e) {
-			// NO-OP
-		}
-	}
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -63,32 +61,23 @@ public class BearerExtractorFilter implements Filter {
 		if (((HttpServletRequest) request).getHeader(HttpHeaders.AUTHORIZATION) != null) {
 			final Authentication auth = tokenExtractor.extract((HttpServletRequest) request);
 			if (auth instanceof PreAuthenticatedAuthenticationToken) {
-				final Authentication oauth = loadAuthentication(auth);
-				setContexts(oauth);
+				final OAuth2Authentication oauth = tokenstore.readAuthentication((String) auth.getPrincipal());
+
+				final SecurityContext securityContext = SecurityContextHolder.getContext();
+				securityContext.setAuthentication(oauth);
 				if (oauth != null) {
 					MultitenancyContextHolder
 							.setVerticalSchema(((UserPrincipal) oauth.getPrincipal()).getVerticalSchema());
 					MultitenancyContextHolder.setTenantName(((UserPrincipal) oauth.getPrincipal()).getTenant());
 				}
-
+				((HttpServletRequest) request).getSession(true).setAttribute(SPRING_SECURITY_CONTEXT, securityContext);
 				chain.doFilter(request, response);
-				clearContexts();
-
-			} else {
-				chain.doFilter(request, response);
+				MultitenancyContextHolder.clear();
+				((HttpServletRequest) request).getSession().removeAttribute(SPRING_SECURITY_CONTEXT);
 			}
 		} else {
 			chain.doFilter(request, response);
 		}
-	}
-
-	private Authentication loadAuthentication(Authentication auth) {
-		if (authenticationSuccessProcessor != null) {
-			return authenticationSuccessProcessor.loadFullAuthentication((String) auth.getPrincipal());
-		} else {
-			return tokenStore.readAuthentication((String) auth.getPrincipal());
-		}
-
 	}
 
 	@Override
@@ -101,23 +90,4 @@ public class BearerExtractorFilter implements Filter {
 		log.debug("Destroying Bearer extractor filter");
 	}
 
-	private void setContexts(Authentication auth) {
-		SecurityContextHolder.getContext().setAuthentication(auth);
-		setMultitenantContext(auth);
-	}
-
-	private void clearContexts() {
-		clearMultitenantContext();
-//		SecurityContextHolder.getContext().setAuthentication(null);
-		SecurityContextHolder.clearContext();
-	}
-
-	private void setMultitenantContext(Authentication auth) {
-		MultitenancyContextHolder.setVerticalSchema(((UserPrincipal) auth.getPrincipal()).getVerticalSchema());
-		MultitenancyContextHolder.setTenantName(((UserPrincipal) auth.getPrincipal()).getTenant());
-	}
-
-	private void clearMultitenantContext() {
-		MultitenancyContextHolder.clear();
-	}
 }

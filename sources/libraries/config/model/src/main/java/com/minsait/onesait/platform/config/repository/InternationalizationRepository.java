@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,12 @@
 package com.minsait.onesait.platform.config.repository;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.minsait.onesait.platform.config.model.Internationalization;
-import com.minsait.onesait.platform.config.model.Report;
 import com.minsait.onesait.platform.config.model.User;
 
 public interface InternationalizationRepository extends JpaRepository<Internationalization, String> {
@@ -75,14 +73,5 @@ public interface InternationalizationRepository extends JpaRepository<Internatio
 			String description, User user);
 
 	public List<Internationalization> findByIdentificationAndDescription(String identification, String description);
-	
-	public Optional<?> findByIdentificationAndUser(String identification, User user);
-	
-	public Internationalization findByIdentificationOrId(String identification, String id);
-	
-	@Query("SELECT i FROM Internationalization i " +
-    		"WHERE i.id IN (SELECT ii.i18n.id from I18nResources ii WHERE ii.opResource.id=:resourceId) " +
-    		"ORDER BY i.identification ASC")
-	public List<Internationalization> findByOPResourceId(@Param ("resourceId") String resrouceId);
 
 }

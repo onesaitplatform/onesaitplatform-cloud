@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@ package com.minsait.onesait.platform.config.dto.report;
 public enum ReportType {
 
 	PDF("application/pdf", "pdf"), JRXML("application/jrxml", "jrxml"), XML("application/xml", "xml"), HTML("text/html",
-			"html"), XLSX("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx"), CSV("text/csv",
-					"csv"), DOCX("application/vnd.openxmlformats-officedocument.wordprocessingml.document", "docx");
+			"html"), XLSX("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "xlsx"), CSV("text/csv","csv");
 
 	private ReportType(String contentType, String extension) {
 		this.contentType = contentType;

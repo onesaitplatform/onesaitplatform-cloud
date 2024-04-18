@@ -1,4 +1,4 @@
-FROM onesaitplatform/baseimage:latest-17
+FROM onesaitplatform/baseimage:latest
 
 # metadata
 LABEL platform.image.name="onesaitplatform-report-engine"
@@ -6,37 +6,23 @@ LABEL platform.image.name="onesaitplatform-report-engine"
 ADD *-exec.jar app.jar
 
 # Timezone
-RUN apk add --no-cache tzdata \
-    bash 
-    
-#Fonts
-RUN apk --no-cache add msttcorefonts-installer fontconfig && \
-    update-ms-fonts && \
-    fc-cache -f
+RUN apk add --no-cache tzdata
 
 # web projects folder & logs folder
 RUN mkdir -p /var/log/platform-logs && \
-	mkdir /application
+	mkdir ./target
 
 # create onesait user/group
 RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait
 
-WORKDIR /application
-RUN unzip /app.jar &&\
-	rm /app.jar
-	
 RUN chown -R onesait:onesait /usr/local && \
     chown -R onesait:onesait /var/log/platform-logs && \
-    chown -R onesait:onesait /application && \
-    chmod -R 777 /application && \
+    chown -R onesait:onesait ./target && \
+    chown onesait:onesait app.jar && \
+    chmod -R 777 ./target && \
     chmod -R 777 /var/log && \
     chmod -R 777 /usr/local && \
     chmod -R 777 /etc/ssl/certs/java
-
-# distribute tracing with opentelemetry agent
-RUN cd /usr/local \
-    && wget https://repo1.maven.org/maven2/io/opentelemetry/javaagent/opentelemetry-javaagent/1.27.0/opentelemetry-javaagent-1.27.0.jar
-
 
 
 RUN apk add --no-cache \
@@ -44,7 +30,6 @@ RUN apk add --no-cache \
         libc6-compat \
         libstdc++ \
         nss \
-        openjdk17-jre \
         fontconfig \
         ttf-dejavu
 
@@ -68,8 +53,6 @@ ENV SERVER_NAME=localhost \
     CONFIGDBPASS=changeIt! \
     CONFIGDB_MAX_ACTIVE=2 \
     CONFIGDB_MAX_IDLE=2 \
-	CONFIGDB_DRIVER=com.mysql.cj.jdbc.Driver \
-	CONFIGDB_DIALECT=org.hibernate.dialect.MySQL5InnoDBDialect \
     JDBCPROTOCOL="jdbc:mysql:" \
     DBADDPROPS="" \
     REALTIMEDBNAME=onesaitplatform_rtdb \
@@ -89,25 +72,7 @@ ENV SERVER_NAME=localhost \
     DS_REMOVE_ABANDONED=true \
     DS_REMOVE_ABANDONED_TIMEOUT=60 \
     HZ_SERVICE_DISCOVERY_STRATEGY=service \
-    HZ_ZOOKEEPER_URL=zookeeper:2181  \
-    GRAYLOG_ENABLED=false \
-    GRAYLOG_HOST=log-centralizer \
-    GRAYLOG_PORT=12201 \
-    USE_KEYCLOAK=false \
-    REPORT_LOCALE_LANG=es \
-    REPORT_LOCALE_COUNTRY=ES \
-    SBA_USERNAME=operations \
-	SBA_SECRET=changeIt2019! \
-	MAX_HTTP_HEADER_SIZE=20000 \
-	HTTP_LOG_LEVEL=INFO \
-    JAVA_HOME=/usr/lib/jvm/java-17-openjdk/jre \
-    OTEL_JAVAAGENT_ENABLED=false \
-	OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-service:4317 \
-	OTEL_SERVICE_NAME=report-engine \
-	OTEL_METRICS_EXPORTER=none
-
-ENV JAVA_OPTS="$JAVA_OPTS -Duser.language=$REPORT_LOCALE_LANG -Duser.country=$REPORT_LOCALE_COUNTRY -Djava.awt.headless=true -javaagent:/usr/local/opentelemetry-javaagent-1.27.0.jar"
+    HZ_ZOOKEEPER_URL=zookeeper:2181 
 
 
-COPY docker-entrypoint.sh /usr/local/bin/
-ENTRYPOINT ["docker-entrypoint.sh"]
+ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=docker -jar /app.jar

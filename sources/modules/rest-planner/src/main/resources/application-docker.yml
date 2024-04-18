@@ -5,7 +5,8 @@ master:
       username: ${CONFIGDBUSER}
       password: ${CONFIGDBPASS}
       maximum-pool-size: ${CONFIGDB_MAX_ACTIVE}
-      driver-class-name: ${CONFIGDB_DRIVER}
+    
+
 onesaitplatform:
    router.alternativeURL: http://routerservice:20000/router/router/
    audit.global.notify: ${AUDITGLOBALNOTIFY}
@@ -13,10 +14,6 @@ onesaitplatform:
    hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
    restPlanner:
       checkSSL: ${RESTPLANNER_CHECKSSL}
-   graylog:
-      enabled: ${GRAYLOG_ENABLED}
-      host: ${GRAYLOG_HOST}
-      port: ${GRAYLOG_PORT}
 spring:
    datasource:
      hikari:
@@ -26,24 +23,14 @@ spring:
       connection-timeout: ${DS_MAX_WAIT_MILLIS}
       maximum-pool-size: ${DS_MAX_ACTIVE}
       minimum-idle: ${DS_MIN_IDLE}
-      driver-class-name: ${CONFIGDB_DRIVER}
    boot.admin: #Spring Boot Admin Config
       client.url: http://monitoringuiservice:18100/monitoring
       client.instance.service-url: http://rest-planner:${server.port}${server.servlet.contextPath}/
-      client.username: ${SBA_USERNAME}
-      client.password: ${SBA_SECRET}
-   jpa:
-      properties.hibernate.dialect: ${CONFIGDB_DIALECT}
 quartz:
     datasource:
-      hikari:
-        jdbc-url: ${SCHEDULERDBBURL}${DBADDPROPS}
-        username: ${SCHEDULERDBBUSER}
-        password: ${SCHEDULERDBBPASS}
-        driver-class-name: ${SCHEDULERDBBDRIVER}
-    jpa:
-      properties.hibernate.dialect: ${SCHEDULERDBBDIALECT}
-    driverDelegateClass: ${QUARTZ_DRIVER}
+      hikari.jdbc-url: ${SCHEDULERDBBURL}${DBADDPROPS}
+
+
 ## LOGGING CONF
 logging:
-   file.path: /var/log/platform-logs
+   path: /var/log/platform-logs

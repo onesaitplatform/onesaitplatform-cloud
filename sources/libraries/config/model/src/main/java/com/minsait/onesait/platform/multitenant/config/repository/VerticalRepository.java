@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,51 +24,45 @@ import org.springframework.transaction.annotation.Transactional;
 import com.minsait.onesait.platform.multitenant.config.model.Vertical;
 
 public interface VerticalRepository extends JpaRepository<Vertical, String> {
-
+	
 	public static final String VERTICAL_REPOSITORY_SCHEMA = "VerticalRepositorySchema";
-	public static final String VERTICAL_REPOSITORY = "VerticalRepository";
 
-	@Cacheable(cacheNames = VERTICAL_REPOSITORY, unless = "#result == null")
 	Vertical findByName(String name);
 
 	@Query("SELECT c FROM Vertical c WHERE c.name=:value OR c.schema=:value")
-	@Cacheable(cacheNames = VERTICAL_REPOSITORY, unless = "#result == null")
 	Vertical findByNameOrSchema(@Param("value") String value);
 
-	@Cacheable(cacheNames = VERTICAL_REPOSITORY, unless = "#result == null")
 	Vertical findBySchema(String schema);
-
+	
 	@Override
-	@CacheEvict(cacheNames = { VERTICAL_REPOSITORY_SCHEMA, VERTICAL_REPOSITORY }, allEntries = true)
+	@CacheEvict(cacheNames = VERTICAL_REPOSITORY_SCHEMA, allEntries = true)
 	@Transactional
 	void deleteById(String id);
-
+	
 	@Override
-	@CacheEvict(cacheNames = { VERTICAL_REPOSITORY_SCHEMA, VERTICAL_REPOSITORY }, allEntries = true)
+	@CacheEvict(cacheNames = VERTICAL_REPOSITORY_SCHEMA, allEntries = true)
 	@Transactional
 	void delete(Vertical vertical);
-
+	
 	@Override
-	@CacheEvict(cacheNames = { VERTICAL_REPOSITORY_SCHEMA, VERTICAL_REPOSITORY }, allEntries = true)
+	@CacheEvict(cacheNames = VERTICAL_REPOSITORY_SCHEMA, allEntries = true)
 	void flush();
 
 	@Override
-	@CacheEvict(cacheNames = { VERTICAL_REPOSITORY_SCHEMA, VERTICAL_REPOSITORY }, allEntries = true)
+	@CacheEvict(cacheNames = VERTICAL_REPOSITORY_SCHEMA, allEntries = true)
 	<S extends Vertical> S saveAndFlush(S entity);
 
 	@Override
-	@CacheEvict(cacheNames = { VERTICAL_REPOSITORY_SCHEMA, VERTICAL_REPOSITORY,
-			MasterUserRepository.MASTER_USER_REPOSITORY, MasterUserRepositoryLazy.MASTER_USER_REPOSITORY_LAZY,
-			TenantRepositoryLazy.TENANT_LAZY_REPOSITORY , TenantRepository.TENANT_REPOSITORY}, allEntries = true)
+	@CacheEvict(cacheNames = VERTICAL_REPOSITORY_SCHEMA, allEntries = true)
 	<S extends Vertical> S save(S entity);
-
+	
 	@Override
-	@CacheEvict(cacheNames = { VERTICAL_REPOSITORY_SCHEMA, VERTICAL_REPOSITORY }, allEntries = true)
+	@CacheEvict(cacheNames = VERTICAL_REPOSITORY_SCHEMA, allEntries = true)
 	@Transactional
 	void deleteAll();
-
+	
 	@Query("SELECT c.schema FROM Vertical c WHERE c.name=:value OR c.schema=:value")
-	@Cacheable(cacheNames = VERTICAL_REPOSITORY_SCHEMA, unless = "#result == null")
+	@Cacheable(cacheNames = VERTICAL_REPOSITORY_SCHEMA, unless = "#result == null", key = "#p0")
 	String findSchemaByNameOrSchema(@Param("value") String value);
 
 }

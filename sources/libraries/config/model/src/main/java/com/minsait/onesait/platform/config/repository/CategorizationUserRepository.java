@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,9 +41,9 @@ public interface CategorizationUserRepository extends JpaRepository<Categorizati
 
 	@Query("SELECT o FROM CategorizationUser AS o WHERE o.user=:user AND o.active=TRUE")
 	List<CategorizationUser> findByUserAndActive(@Param("user") User user);
-	
-	@Query("SELECT cu FROM CategorizationUser AS cu WHERE ((cu.user=:user) OR ((cu.user!=:user) AND cu.authorizationType='OWNER' AND cu.categorization NOT IN (SELECT cuadm.categorization FROM CategorizationUser AS cuadm WHERE (cuadm.user=:user))))")
-	List<CategorizationUser> findAllOwnerAndAuth(@Param("user") User user);
+
+	@Query("SELECT o FROM CategorizationUser AS o WHERE o.authorizationType='OWNER'")
+	List<CategorizationUser> findAllOwner();
 
 	@SuppressWarnings("unchecked")
 	@Override

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,28 +27,11 @@ public class HazelcastCacheManagerOP extends HazelcastCacheManager {
 
 	private static final String SESSIONS_REPOSITORY = "IoTSessionRepository";
 	private static final String VERTICAL_REPOSITORY_SCHEMA = "VerticalRepositorySchema";
-	private static final String VERTICAL_REPOSITORY = "VerticalRepository";
-	private static final String TENANT_REPOSITORY = "TenantRepository";
-	private static final String TENANT_LAZY_REPOSITORY = "TenantLazyRepository";
-	private static final String MASTER_USER_REPOSITORY = "MasterUserRepository";
-	private static final String MASTER_USER_REPOSITORY_LAZY = "MasterUserRepositoryLazy";
-	private static final String OAUTH_ACCESS_TOKEN_REPOSITORY = "OauthAccessTokenRepository";
-	private static final String OAUTH_REFRESH_TOKEN_REPOSITORY = "OauthRefreshTokenRepository";
-	private static final String CACHE_RESET_PWD = "cacheResetPasswordUsers";
-
+	
 	private static final Set<String> globalCaches = new HashSet<>();
 	static {
 		globalCaches.add(SESSIONS_REPOSITORY);
 		globalCaches.add(VERTICAL_REPOSITORY_SCHEMA);
-		globalCaches.add(TENANT_REPOSITORY);
-		globalCaches.add(VERTICAL_REPOSITORY);
-		globalCaches.add(TENANT_LAZY_REPOSITORY);
-		globalCaches.add(MASTER_USER_REPOSITORY);
-		globalCaches.add(MASTER_USER_REPOSITORY_LAZY);
-		globalCaches.add(OAUTH_ACCESS_TOKEN_REPOSITORY);
-		globalCaches.add(OAUTH_REFRESH_TOKEN_REPOSITORY);
-		globalCaches.add(CACHE_RESET_PWD);
-
 	}
 
 	public HazelcastCacheManagerOP(HazelcastInstance hazelcastInstance) {

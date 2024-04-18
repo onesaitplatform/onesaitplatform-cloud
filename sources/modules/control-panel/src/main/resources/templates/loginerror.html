@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,15 +21,15 @@
 	<meta charset="UTF-8"/>
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	<meta http-equiv="Content-Language" th:content="${lang}"/>
-	<link href='/controlpanel/static/vendor/google/poppins.css' rel='stylesheet' type='text/css'/>
+	<link href='https://fonts.googleapis.com/css?family=Poppins:400,700' rel='stylesheet' type='text/css'/>
 	<link rel="stylesheet" th:href="@{/static/css/reset.css}"/> <!-- CSS reset -->
 	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
 	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
 	<link rel="stylesheet" th:href="@{/static/webjars/sofia2_theme/css/login.css}"/> <!-- sofia2_theme login style -->
 	<link rel="stylesheet" th:href="@{/static/css/newLogin.css}"/>
 	<script th:src="@{/static/vendor/jquery/jquery.min.js}"></script>
-	<script src="/controlpanel/static/vendor/bootstrap/bootstrap.min.js"></script>  		
-	<script src='/controlpanel/static/vendor/google/recaptcha/api.js'></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>  	
+	<script src='https://www.google.com/recaptcha/api.js'></script>
 	<title th:text="#{login.title}">Control Panel Login</title>
 </head>
 <body th:style="${backgroundColor} ? 'background-color: '+@{${backgroundColor}}+';'">
@@ -65,7 +65,7 @@
       <div id="msgError" class="ods-mb-5 ">
         <div role="alert" class="ods-alert ods-alert--error text-center" style="max-width: 100%; top: 80px;">
           <div class="ods-alert__content">
-            <span class="ods-alert__title" th:text="#{login.error}">Invalid username or password.</span>
+            <span class="ods-alert__title" th:text="#{login.error}">Invalid username and password.</span>
             <i class="ods-alert__closebtn ods-icon-close" style="display: none;"></i>
           </div>
         </div>

@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -32,15 +32,21 @@
 <meta name="author" content="Indra Sistemas, S.A." />
 
 <!-- STYLE SHEETS -->
-<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}" />
-<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}" />
-<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}" />
-<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/bootstrap.min.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/components.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/plugins.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/layout.css}" />
 <!-- THEME -->
-<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
 
 <!-- PLUGINS STYLE SHEETS -->
-<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/vendor/datatable/datatables.bootstrap.css}" />
 <!-- JSON EDITOR -->
 <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}"/>
 <link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/lib/codemirror.css}"/>
@@ -81,6 +87,7 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/consolemenu/list}"> <span
 								th:text="#{consolemenu.name}">Console Menu</span></a><i
 							class="fa fa-angle-right"></i></li>
@@ -92,39 +99,35 @@
 				</div>
 				<!-- END PAGE BAR -->
 
-				<div id="header">
-					<div class="row pageCreateHeader">
-						<div class="col-md-6 col-sm-6 col-xs-12">
-							<div class="margin-top-4">
-								<span th:text="${role}">Show JDBC Connection</span>
-							</div>
-						</div>
-						
-						<div class="col-md-6 col-sm-6 col-xs-12">
-							<div class="pull-right">
-								<!-- CANCEL -->
-								<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/consolemenu/list} + '\');'" th:value="#{gen.cancelBtn}" ><span th:text="#{gen.cancelBtn}"> Cancel</span></button>
-								<!-- UPDATE -->
-								<button th:if="${option == 'edit'}" id="editBtn" type="button" class="btn btn-primary btn-primary-save" th:attr="onclick='editMenu(\'' + ${idCm} + '\');'"><span th:text="#{gen.edit}">Edit</span></button>
-								<button th:if="${option == 'show'}" id="editBtn" type="button" class="btn btn-primary btn-primary-save" th:attr="onclick='javascript:navigateUrl(\'' + @{|/consolemenu/edit/${id}/|} + '\');'"><span th:text="#{gen.edit}">Edit</span></button>
-							</div>
-						</div>
-					</div>
-				</div>
-
 				<!-- MAIN ROW -->
-				<div class="mainPanel">
-					<div class="row main">
-						<div class="col-md-12 col-sm-12 col-xs-12 panelHeader">
-							<span th:text="#{gen.generalInformation}">General Information</span>
+				<div class="row">
+					<div class="col-md-12">
+
+						<div class="portlet light ">
+							<div class="portlet-title">
+								<div class="caption">
+									<span class="caption-subject" th:text="#{consolemenu.name}"> Console Menu </span>
+								</div>
+								
+								<div class="tab-pane" id="tab_4">								
+									<div class="pull-right margin-right-10 margin-top-30 margin-bottom-30"></div>
+									<div class="clearfix"></div>
+								</div>
+								<div class="row"></div>
+								<div class="pull-left">
+									<!-- CANCEL -->
+									<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/consolemenu/list} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+								</div>
+								<div class="pull-right">
+									<!-- EDIT -->
+									<button th:if="${option == 'edit'}" id="editBtn" type="button" class="btn btn-outline btn-circle btn-primary" th:onclick="'editMenu(\'' + ${idCm} + '\');'"><span th:text="#{gen.edit}">Edit</span></button>
+									<button th:if="${option == 'show'}" id="editBtn" type="button" class="btn btn-circle btn-outline blue" th:onclick="'javascript:navigateUrl(\'' + @{|/consolemenu/edit/${id}/|} + '\');'"><span th:text="#{gen.edit}">Edit</span></button>
+								</div>
+							</div>							
 						</div>
+						<!-- END PORTLET BASIC LIGHT -->
 					</div>
-					<div class="row main">
-						<div class="col-md-12 col-sm-12 col-xs-12">
-							<div class="tab-pane" id="tab_4">								
-							</div>				
-						</div>
-					</div>
+					<!-- END COL-12 -->
 				</div>
 				<!-- END MAIN ROW -->
 			</div>
@@ -191,7 +194,7 @@
 			theme: 'bootstrap3',			
 			modes: modes, // allowed modes
 			error: function (err) {
-				$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: err.toString()});
+				$.alert({title: 'ERROR!', theme: 'dark', style: 'red', content: err.toString()});
 				return false;
 			}
 		};
@@ -211,22 +214,21 @@
 		var csrf_value = $("meta[name='_csrf']").attr("content");
 		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
 		
-		$.ajax({
-				url:editURL,
-				headers: {
-					[csrf_header]: csrf_value
-			    },
-				type:"POST",
-				async: true,
-				data: {"menuId": menuId, "menuJson": editor.getText()},
-				dataType:"json",
-				success: function(response,status){
-					toastr.success(messagesForms.validation.genFormSuccess,'');
-					window.location.pathname = "/controlpanel/consolemenu/list";
-				}
-			}).fail(function() {
-				toastr.error(messagesForms.operations.genOpError,'');
-				;});
+	$.ajax({
+			url:editURL,
+			headers: {
+				[csrf_header]: csrf_value
+		    },
+			type:"POST",
+			async: true,
+			data: {"menuId": menuId, "menuJson": editor.getText()},
+			dataType:"json",
+			success: function(response,status){
+				window.location.pathname = "/controlpanel/consolemenu/list";
+			}
+		})
+		.fail(function() {$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: [[#{consolemenu.errorJson}]]});});
+		
 	};	
 	
 	//]]>

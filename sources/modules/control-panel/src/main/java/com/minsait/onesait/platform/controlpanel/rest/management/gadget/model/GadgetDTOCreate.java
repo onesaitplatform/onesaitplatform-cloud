@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,48 +23,37 @@ import lombok.Getter;
 import lombok.Setter;
 
 public class GadgetDTOCreate {
-
+	
+	
 	@Getter
 	@Setter
-	@ApiModelProperty(required = true)
+	@ApiModelProperty(required = true) 
 	private String identification;
-
+	
 	@Getter
 	@Setter
-	@ApiModelProperty(required = true)
+	@ApiModelProperty(required = true) 
 	private String description;
-
+	
 	@Getter
 	@Setter
-	@ApiModelProperty(required = true)
+	@ApiModelProperty(required = true) 
 	private GadgetDatasourceDTO datasource;
-
+	
 	@Lob
 	@Getter
 	@Setter
-	@ApiModelProperty(required = true)
+	@ApiModelProperty(required = true) 
 	private String config;
-
+	
 	@Lob
 	@Getter
 	@Setter
 	private List<String> gadgetMeasures;
-
-	@Getter
-	@Setter
-	@ApiModelProperty(required = true)
-	private String type;
-
-	@Getter
-	@Setter
-	private Boolean instance;
 	
-    @Getter
-    @Setter
-    private String category;
-
-    @Getter
-    @Setter
-    private String subcategory;
+	@Getter
+	@Setter
+	@ApiModelProperty(required = true) 
+	private String type;
 
 }

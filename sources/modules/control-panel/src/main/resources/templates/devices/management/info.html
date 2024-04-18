@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -74,6 +74,7 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM-->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/devices/management/list}"> <span th:text="#{device.management.breadcrumb.list}">Devices </span></a><i class="fa fa-angle-right"></i></li>
 						<li>
 							<span th:text="#{device.management.breadcrumb.show}">Show Device</span>							
@@ -86,233 +87,248 @@
 				<h1 class="page-title hide "><span th:text="#{name.app}"> onesait platform Control Panel</span></h1>
 				<!-- END PAGE TITLE-->			
 				
-				<form role="form" id="device_view_form" th:object="${device}" th:action="@{/devices/management}" method="post" class="form">
-					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-					<!-- FORM ACTIONS FOR UPDATE(PATCH) -->							
-					<input	type="hidden" name="_method" value="PATCH" />											
-					<input type="hidden" name="id" th:value="*{id}"/>	
-				
-					<div id="header">
-						<div class="row pageCreateHeader">
-							<div class="col-md-8 col-sm-8 col-xs-12">
-								<div class="margin-top-4">
-									<span th:text="${device.identification}"> Client Platform Instance</span>
+				<!-- MAIN ROW -->
+				<div class="row">
+					<div class="col-md-12">						
+						<div class="portlet light container">
+							<div class="portlet-title tabbable-line">
+								<div class="caption">
+									
+								</div>									
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""> </a>																			
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>										
 								</div>
-							</div>
+								
+								<!-- SECCIONES DE LA ONTOLOGIA TABS -->
+								<ul class="nav nav-tabs pull-left">
+									<li id="tab-basic-info" class="active"><a href="#tab_1" data-toggle="tab" aria-expanded="false">	<span class=" " th:text="#{device.management.template.basicinfo}"> Basic Info</span></a></li>
+									<li id="tab-log" class=""><a href="#tab_2" data-toggle="tab" aria-expanded="true"><span th:text="#{device.management.template.logs}" class="" >Logs </span></a></li>
+									<!-- <li id="tab-status" class=""><a href="#tab_3" data-toggle="tab" aria-expanded="true"><i class="font-grey-gallery"></i> <span class="uppercase font-md" th:text="#{device.management.template.status}" >Status</span></a></li>-->
+									<li id="tab-commands" class=""><a href="#tab_4" data-toggle="tab" aria-expanded="true"> <span class="" th:text="#{device.management.template.commands}" >Commands</span></a></li>
 							
-							<div class="col-md-4 col-sm-4 col-xs-12">
-								<div class="pull-right">										
-									<!-- CANCEL -->											
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/devices/management/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-									<span class="sep no-border"></span>
-										
-									<!-- UPDATE -->
-									<button id="submitBtn" type="submit" class="btn btn-primary btn-primary-save" th:value="#{gen.editBtn}"><span th:text="#{gen.editBtn}"> Edit</span></button>
-								</div>
+								</ul>
+								
 							</div>
-						</div>
-					</div>
-				
-					<div class="row equal flex-container">
-						<div class="tabContainer flex-tabs-left">
-							<!-- SECCIONES DEL USUARIO TABS -->
-							<div id="tab-basic-info" class="option active">
-								<a href="#tab_1" data-toggle="tab" aria-expanded="true">
-									<span class="caption-subject" th:text="#{gen.generalInformation}"> Basic Info</span>
-								</a>
-							</div>
-							
-							<div id="tab-log" class="option" >
-								<a href="#tab_2" data-toggle="tab" aria-expanded="false">											
-									<span th:text="#{device.management.template.logs}" class="caption-subject" >Logs </span>
-								</a>
-							</div>
-
-							<div id="tab-commands" class="option">
-								<a href="#tab_4" data-toggle="tab" aria-expanded="false"> 
-									<span class="" th:text="#{device.management.template.commands}" >Commands</span>
-								</a> 
-							</div>
-						</div>						
-					
-						<div class="tab-content flex-content-right">
-							<div class="tab-pane fade in active" id="tab_1"><!--Begin tab1 -->		
-							<!-- VIEW -->
-								<div class="row main">	
-									<div class="col-md-8 col-sm-9 col-xs-9 panelHeader">
-										<span th:text="#{gen.generalInformation}">General Information</span>
-									</div>
-									<div class="col-md-4 col-sm-3 col-xs-3">
-										<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
-									</div>
-								</div>
-								<div class="row main">												
-									<div class="col-md-3 col-sm-6 col-xs-12">
-										<div class="form-group">
-											<label class="control-label" th:text="#{device.id}">Identification</label>
-											<p class="form-control-static-block" th:text="*{identification}"> Device Name </p>
-										</div>
-									</div>
-								</div>
-								<div class="row main">
-									<div class="col-md-3 col-sm-6 col-xs-12">
-										<div class="form-group">
-											<label class="control-label" th:text="#{device.clientplatform}">Platform client</label>
-											<p class="form-control-static-block" th:text="*{clientPlatform.identification}"></p>
-										</div>
-									</div>
-								</div>
-								<div class="row main">
-									<div class="col-md-3 col-sm-6 col-xs-12">
-										<div class="form-group">
-											<label class="control-label" th:text="#{device.protocol}">Protocol</label>
-											<p class="form-control-static-block" th:text="*{protocol}"></p>
-										</div>
-									</div>
-								</div>
-								<div class="row main">
-									<div class="col-md-3 col-sm-6 col-xs-12">
-										<div class="form-group">
-											<label class="control-label" th:text="#{device.lasstatus}">Last Status</label>
-											<p class="form-control-static-block" th:text="*{status}"></p>
-										</div>
-									</div>
-								</div>
-								<div class="row main">
-									<div class="col-md-3 col-sm-6 col-xs-12">
-										<div class="form-group">
-											<div class="mt-checkbox-list margin-top-20">
-												<label class="mt-checkbox font-md popovers" ><div class="inline font-xs" th:text="#{device.connected}">Connected</div>
-													<input id="checkboxconnected" name="connected" type="checkbox" class="form-control" th:field="*{connected}" checked="checked"/>
-													<span></span><!-- needed by styles -->
-												</label>																													
-											</div>
-										</div>
-									</div>
-								</div>
-
-								<div class="row main">	
-									<div class="col-md-3 col-sm-12 col-xs-12">
-										<div class="form-group">
-												<label class="control-label"><span th:text="#{device.tags}">Tags</span></label>
-												<input  data-msg="Tags for the device" th:tabindex="2" id="tags" name="tags" data-role="tagsinput" class="form-control tagsinput" type="text" th:field="*{tags}" data-minlength="2" pattern=".{2,}"></input>
-										</div>
-									</div>
-								</div>	
-							</div>
-							<div class="tab-pane fade in" id="tab_2">
-								<div class="row main">
-									<div class="col-md-8 col-sm-9 col-xs-9 panelHeader">
-										<span th:text="#{device.management.template.logs}">Logs</span>
-									</div>
-								</div>
-								<div class="row main">
-									<div class="col-md-12 col-sm-12 col-xs-12">
-										<table id="logTable" class="table table-hover table-striped" dt:table="true" dt:filterPlaceholder="none" dt:sortable="false">
-											<thead>
-												<tr class="cabecera-tabla">
-													<th class="titulo-columnas" > <span th:text="#{device.management.message}" >Message</span></th>
-													<th class="titulo-columnas" ><span th:text="#{device.management.status}" >Status</span></th>
-													<th class="titulo-columnas" > <span th:text="#{device.management.level}" >Level</span></th>
-													<th class="titulo-columnas" > <span th:text="#{device.management.timestamp}" >Timestamp</span></th>
-													<th class="titulo-columnas"> <span th:text="#{device.management.location}"> Location</span></th>
-												</tr>
-											</thead>
-												<tbody th:remove="all-but-first">
-													<tr th:each="logInstance : ${logs}" pages:paginate="10">
-														<!-- Message -->
-														<td class="text-left no-wrap bold" th:text="${logInstance.message}"></td>
-														<!-- Status -->
-														<td class="text-left no-wrap bold" th:text="${logInstance.status}"></td>
-														<!-- Level -->													
-														<td class="text-left no-wrap bold" th:text="${logInstance.level}"></td>
-														<!-- Timestamp -->
-														<td class="text-left no-wrap bold" th:text="${logInstance.timestamp}"></td>
-														<!-- Location -->
-														<td class="text-left no-wrap bold" th:if="${logInstance.location != null}" th:text="${'['+logInstance.location.x +',' +logInstance.location.y +']'}"></td>
-														
-													</tr>
-												</tbody>
-												
-										</table>
-									</div>
-								</div>
-								<div class="row main">
-									<div class="col-md-12 col-sm-12 col-xs-12">
-										<div class="form-actions">
+							<div class="portlet-body" style="display: block; height: auto;">
+								<form role="form" id="device_view_form" th:object="${device}" th:action="@{/devices/management}" method="post" class="form">
+									<div class="tab-content">
+										<div class="tab-pane active" id="tab_1">
+										<!-- VIEW -->
 											<div class="row">
-												<b th:text="#{device.management.queryinfo1}">For complete log go to </b> <a th:href="@{/querytool/show}">Query Tool</a>
-												<b th:text="#{device.management.queryinfo2}">and execute query </b> <i th:text="${query}"></i>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-							<!-- ONTOLOGY ADVANCED SETTINGS -->
-							<div class="tab-pane fade in" id="tab_3">
-								<div class="row main">
-								</div>	
-							</div>
-							<div class="tab-pane fade in" id="tab_4">
-								<div class="row main">
-									<div class="col-md-8 col-sm-9 col-xs-9 panelHeader">
-										<span th:text="#{device.management.template.commands}">Commands</span>
-									</div>
-								</div>
-								<div class="row main" style="min-height: 80px">
-									<div class="col-md-12 col-sm-12 col-xs-12">
-										<div th:each="command : ${commands}" class="row">													
-											<div class="col-md-3 col-sm-6 col-xs-12">
-												<div class="form-group">
-													<label class="control-label bold" th:text="${command}"></label>
-													<select th:id="'combo'+${command}" class="selectpicker form-control no-remove" data-live-search="true" data-width="100%"  th:attr="onclick='updateCodeMirror(\''+ ${command}+'\',this);'">
-																														
-													</select>		
-													<br/>
-													<textarea th:id="${command}" th:required="true"  class="form-control" rows="5" data-min-rows='5'></textarea>
-													<div class="pull-right">
-														<button th:attr="onclick='executeCommand(\''+ ${command}+'\');'"   type="button" class="btn btn-square btn-primary" th:value="#{device.management.execute}" ><span th:text="#{device.management.execute}"> Execute</span></button>
-													</div>														
+												<div class="col-md-12 alert-zone"><!-- ALERTS ZONE -->																
 												</div>
+												<div class="col-md-12">										
+												
+													<!-- FORM ACTIONS FOR UPDATE(PATCH) -->							
+													<input	type="hidden" name="_method"
+														value="PATCH" />											
+													<input type="hidden" name="id" th:value="*{id}"/>		
+														
+														<div class="form-body">
+															<!-- identification -->
+															<div class="row">													
+																<div class="col-md-3 col-sm-6 col-xs-12">
+																	<div class="form-group">
+																		<label class="control-label" th:text="#{device.id} + ':'">Identification</label>
+																		<p class="form-control-static-block bold" th:text="*{identification}"> Device Name </p>
+																	</div>
+																</div>
+																<div class="col-md-3 col-sm-6 col-xs-12">
+																	<div class="form-group">
+																		<label class="control-label" th:text="#{device.clientplatform} + ':'">Platform client</label>
+																		<p class="form-control-static-block bold" th:text="*{clientPlatform.identification}"></p>
+																	</div>
+																</div>
+																</div>
+																<div class="row">
+																	<div class="col-md-3 col-sm-6 col-xs-12">
+																		<div class="form-group">
+																			<label class="control-label" th:text="#{device.protocol} + ':'">Protocol</label>
+																			<p class="form-control-static-block bold" th:text="*{protocol}"></p>
+																		</div>
+																	</div>
+																	<div class="col-md-3 col-sm-6 col-xs-12">
+																		<div class="form-group">
+																			<label class="control-label" th:text="#{device.lasstatus} + ':'">Last Status</label>
+																			<p class="form-control-static-block bold" th:text="*{status}"></p>
+																		</div>
+																	</div>
+																	<div class="col-md-3 col-sm-6 col-xs-12">
+																		<div class="form-group">
+																			<label class="control-label" th:text="#{device.connected}">Connected</label>
+																			<p class="form-control-static-block form-control-static-no-border bold">
+																				<span th:if="*{connected}"  class="label label-sm label-success"><i class="fa fa-check"></i></span>
+																				<span th:if="!*{connected}" class="label label-sm label-danger" title="NO"><i class="fa fa-warning"></i></span>
+																			</p>
+																		</div>
+																	</div>
+																</div>
+																
+																
+																<div class="row">	
+																<div class="col-md-3 col-sm-12 col-xs-12">
+																	<div class="form-group">
+																		<div class="bootstrap-tagsinput">
+																			<label class="control-label"><i class="la la-tags"></i> <span th:text="#{device.tags} + ':'">Tags</span></label>
+																			<input  data-msg="Tags for the device" th:tabindex="2" id="tags" name="tags" data-role="tagsinput" class="form-control tagsinput" type="text" th:field="*{tags}" data-minlength="2" pattern=".{2,}"></input>
+																		</div>			
+																	</div>
+																	
+																</div>	
+													
+																</div>												
+															
+															</div>
+															
+													
+																			
+											</div>
 											</div>
 										</div>
-									</div>																		
-								</div>
-								<div class="row main">
-									<div class="col-md-8 col-sm-9 col-xs-9 panelHeader">
-										<span th:text="#{device.management.commandlogs}">Command Logs</span>
+										<div class="tab-pane " id="tab_2">
+													<table id="logTable" class="table table-hover table-striped" dt:table="true"
+														dt:filterPlaceholder="none" dt:sortable="false"
+														>
+														<thead>
+															<tr class="cabecera-tabla">
+																<th class="titulo-columnas" > <span th:text="#{device.management.message}" >Message</span></th>
+																<th class="titulo-columnas" ><span th:text="#{device.management.status}" >Status</span></th>
+																<th class="titulo-columnas" > <span th:text="#{device.management.level}" >Level</span></th>
+																<th class="titulo-columnas" > <span th:text="#{device.management.timestamp}" >Timestamp</span></th>
+																<th class="titulo-columnas"> <span th:text="#{device.management.location}"> Location</span></th>
+															</tr>
+														</thead>
+															<tbody th:remove="all-but-first">
+																<tr th:each="logInstance : ${logs}" pages:paginate="10">
+																	<!-- Message -->
+																	<td class="text-left no-wrap bold" th:text="${logInstance.message}"></td>
+																	<!-- Status -->
+																	<td class="text-left no-wrap bold" th:text="${logInstance.status}"></td>
+																	<!-- Level -->													
+																	<td class="text-left no-wrap bold" th:text="${logInstance.level}"></td>
+																	<!-- Timestamp -->
+																	<td class="text-left no-wrap bold" th:text="${logInstance.timestamp}"></td>
+																	<!-- Location -->
+																	<td class="text-left no-wrap bold" th:if="${logInstance.location != null}" th:text="${'['+logInstance.location.x +',' +logInstance.location.y +']'}"></td>
+																	
+																</tr>
+															</tbody>
+															
+													</table>
+													<br/>
+													<div class="col-md-12 col-sm-12 col-xs-12">
+														<div class="form-actions">
+															<div class="row">
+																<b th:text="#{device.management.queryinfo1}">For complete log go to </b> <a th:href="@{/querytool/show}">Query Tool</a>
+																<b th:text="#{device.management.queryinfo2}">and execute query </b> <i th:text="${query}"></i>
+															</div>
+														</div>
+													</div>
+													<hr/>
+													<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+													
+													<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
+														<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
+															 <span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
+														</a>
+														<div id="column_toggler" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+															<label class="toggle-vis" data-column="0" th:text="#{device.management.message}" > Message</label>
+															<label class="toggle-vis" data-column="1" th:text="#{device.management.status}"> Status</label>
+															<label class="toggle-vis" data-column="2" th:text="#{device.management.level}">Level</label>
+															<label class="toggle-vis" data-column="3" th:text="#{device.management.timestamp}">Timestamp</label>
+															<label class="toggle-vis" data-column="4" th:text="#{device.management.location}"> Location</label>
+														</div>
+													</div>	
+													
+													
+											
+										</div>
+										<!-- ONTOLOGY ADVANCED SETTINGS -->
+										<div class="tab-pane " id="tab_3">
+											<div class="row">
+																		
+											</div>	
+										</div>
+										<div class="tab-pane " id="tab_4">
+											<div class="row">
+												<div class="col-md-12">
+													<div th:each="command : ${commands}" class="row">													
+																<div class="col-md-3 col-sm-6 col-xs-12">
+																<div class="form-group">
+																			<label class="control-label bold" th:text="${command}"></label>
+																			<select th:id="'combo'+${command}" class="selectpicker form-control no-remove" data-live-search="true" data-width="100%"  th:onclick="'updateCodeMirror(\''+ ${command}+'\',this);'">
+																																				
+																			</select>		
+																			<br/>
+																			<textarea th:id="${command}" th:required="true"  class="form-control" rows="5" data-min-rows='5'></textarea>
+																			<div class="pull-right">
+																				<button th:onclick="'executeCommand(\''+ ${command}+'\');'"   type="button" class="btn btn-square btn-primary" th:value="#{device.management.execute}" ><span th:text="#{device.management.execute}"> Execute</span></button>
+																			</div>														
+																		</div>
+																</div>
+													</div>
+												</div>																		
+											</div>	
+											<hr/>
+											<label class="control-label bold" th:text="#{device.management.commandlogs}"></label>
+											<hr/>
+											<table id="commandLogTable" class="table table-hover table-striped" dt:table="true"
+														dt:filterPlaceholder="none" dt:sortable="false"
+														>
+														<thead>											
+															<tr class="cabecera-tabla">
+																<th class="titulo-columnas" ><span th:text="#{device.management.message}" >Message</span></th>
+																
+																<th class="titulo-columnas" > <span th:text="#{device.management.status}" >Status</span></th>
+																
+																<th class="titulo-columnas" ><span th:text="#{device.management.timestamp}" >Timestamp</span></th>
+																<th class="titulo-columnas" > <span th:text="#{device.management.commandid}" >Command ID</span></th>
+															
+															</tr>
+														</thead>
+															<tbody th:remove="all-but-first">
+																<tr th:each="logInstance : ${logs}"  th:if="${logInstance.commandId != null}" pages:paginate="10">
+																	<!-- Message -->
+																	<td class="text-left no-wrap bold" th:text="${logInstance.message}"></td>
+																	<!-- Status -->
+																	<td class="text-left no-wrap bold" th:text="${logInstance.status}"></td>												
+																	<!-- Timestamp -->
+																	<td class="text-left no-wrap bold" th:text="${logInstance.timestamp}"></td>							
+																	<!-- CommandID -->
+																	<td class="text-left no-wrap bold" th:text="${logInstance.commandId}"></td>			
+																	
+																</tr>
+															</tbody>
+															
+													</table>
+											
+											
+										</div>
 									</div>
-								</div>
-								<div class="row main">
-									<div class="col-md-12 col-sm-12 col-xs-12">
-										<table id="commandLogTable" class="table table-hover table-striped" dt:table="true"	dt:filterPlaceholder="none" dt:sortable="false">
-											<thead>											
-												<tr class="cabecera-tabla">
-													<th class="titulo-columnas" ><span th:text="#{device.management.message}" >Message</span></th>
-													<th class="titulo-columnas" > <span th:text="#{device.management.status}" >Status</span></th>
-													<th class="titulo-columnas" ><span th:text="#{device.management.timestamp}" >Timestamp</span></th>
-													<th class="titulo-columnas" > <span th:text="#{device.management.commandid}" >Command ID</span></th>
-												</tr>
-											</thead>
-											<tbody th:remove="all-but-first">
-												<tr th:each="logInstance : ${logs}"  th:if="${logInstance.commandId != null}" pages:paginate="10">
-													<!-- Message -->
-													<td class="text-left no-wrap bold" th:text="${logInstance.message}"></td>
-													<!-- Status -->
-													<td class="text-left no-wrap bold" th:text="${logInstance.status}"></td>												
-													<!-- Timestamp -->
-													<td class="text-left no-wrap bold" th:text="${logInstance.timestamp}"></td>							
-													<!-- CommandID -->
-													<td class="text-left no-wrap bold" th:text="${logInstance.commandId}"></td>			
-												</tr>
-											</tbody>
-										</table>
-									</div>
-								</div>
+									<div class="form-actions">
+										<div class="pull-left">
+													<!-- CANCEL  -->
+											<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/devices/management/list} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+										</div>
+										<div class="pull-right">
+											<button id="submitBtn"
+												type="submit" class="btn btn-circle btn-outline blue "
+												 th:value="#{gen.editBtn}">
+												<span
+													th:text="#{gen.editBtn}"> New</span>
+											</button>	
+											
+															
+										
+										</div>
+									</div>																	
+								<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+							
 							</div>
-						</div>
-					</div>
-				</form>
+						</div><!-- END PORTLET BASIC  -->						
+					</div><!-- END COL-12 -->						
+				</div><!-- END MAIN ROW -->
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
 	</div>
@@ -374,16 +390,12 @@
 			$(this).toggleClass('text-muted line-through');			
 		});	
 		
-		// tab control 
-		$(".option").on("click", function(e) {
-			$('.tabContainer').find('.option').removeClass('active');
-	        $(this).closest("div").addClass('active');
-		});	
+
 		
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
+	$(window).load(function(){  
 		// init on load.		
 		showLog ? console.log('SHOW ontology load()...') : '';
 		
@@ -451,7 +463,7 @@
 		    data: codeMirrorActionsMap.get(command).getValue(),
 		    headers: {
 		    	'Content-Type' : 'application/json',
-		    	'Authorization': [[${sessionkey}]]
+		    	'Authorization': [[${device.sessionKey}]]
 		    },
 		    dataType: 'json',
 		    success: function (data) {

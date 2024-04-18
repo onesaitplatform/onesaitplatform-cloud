@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -68,6 +68,7 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM-->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
 						<li><span  th:text="#{json2ont.breadcrumb.show}">JSON to Ontology Tool </span></li>
 					</ul>						
 				</div>
@@ -93,240 +94,204 @@
 						</div>
 					</div>
 					</div>
-				</div>
-
-				<form role="form" id="json2ont_form" method="post" class="form">
-					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />		
-					<input type="hidden" th:if="${appId}" name="appId" id="appId" th:value="${appId}" />
-					<div id="header">
-						<div class="row pageCreateHeader">
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="margin-top-4">
-									<span class="caption-subject"  th:text="#{json2ont.tool.title}"> JSON to Ontology Tool</span>
-								</div>
-							</div>
-					
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="pull-right">
-									<!-- CANCEL -->											
-									<button th:if="(${appId} == null)" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/main} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-									<button th:if="(${appId} != null)" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/projects/update/} + ${appId} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-		
-									<!-- RESET -->
-									<button id="resetBtn" type="button" class="btn btn-primary-cancel" name="reset"  th:value="#{gen.resetBtn}" onclick="location.href='../jsontool/tools'"><span th:text="#{gen.resetBtn}"> Reset</span></button>
-										
-									<span class="sep no-border"></span>
-										
-									<!-- CREATE -->
-									<button id="createOnt" type="button" class="btn btn-outline btn-circle btn-primary" disabled="disabled" data-dismiss="modal" onclick="JsonToolController.processSubmit()"><span th:text="#{gen.createBtn}"> New</span></button>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="mainPanel">
-						<div class="row main">
-							<div class="col-md-12">
-								<h4 for="file" th:text="#{json2ont.tool.info}" style="font-family: Soho;font-weight: 400;font-size: 14px;font-stretch: normal;letter-spacing: normal;line-height: 24px;">File input</h4>
-							</div>
-						</div>
-						<div class="row main">
-							<div class="col-md-3 col-sm-6 col-xs-12">
-								<div class="form-group">
-									<label class="control-label" th:text="#{binaryfiles.select}">Select File to Upload</label><span class="required"> *</span>
-									<br/>
-								    <button id="upload" type="button" class="btn btn-primary btn-primary-save" onclick="$('#file2').click();" value=""><span th:text="#{gen.clicktouploadBtn}"></span></button>
-								    <input id="file2" type="file" class="form-control-file hide" onclick="resetFile()" onchange="JsonToolController.loadJsonFromDoc(this.files)" accept=".xml,.json,.csv"/>
-								 </div>
-							</div>
-							<div class="col-md-2 col-sm-6 col-xs-12">
-								<label class="control-label"  th:text="#{gen.options}">Options</label>
-								<!-- ONTOLOGY CREATION -->									
-								<div class="mt-checkbox-list">
-									<input id="check-new-ontology" class="margin-right-10" name="active" type="checkbox" onchange="if($('#newOntologyDiv').hasClass('hide')){$('#newOntologyDiv').removeClass('hide')}else{$('#newOntologyDiv').addClass('hide')}" th:checked="checked"/>
-									<label class="control-label popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{json2ont.newontology.help},data-title=#{json2ont.newontology.title}" th:text="#{json2ont.newontology.title}">New Ontology</label>
-								</div>
-								<!-- IMPORT DATA -->
-								<div class="mt-checkbox-list">
-									<input id="check-import" class="margin-right-10" name="active" type="checkbox" th:checked="checked"/>
-									<label class="control-label popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{json2ont.importdata.help},data-title=#{json2ont.importdata.title}" th:text="#{json2ont.importdata.title}">Import rtdb</label>
-								</div>
-								<!-- CONTEXT DATA -->
-								<div class="mt-checkbox-list">
-									<input id="check-contextdata" class="margin-right-10" name="active" type="checkbox"/>
-									<label class="control-label popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{json2ont.contextdata.help},data-title=#{json2ont.contextdata.title}" th:text="#{json2ont.contextdata.title}">ContextData</label>
-								</div>
-							</div>
-							<div id="newOntologyDiv" class="col-md-3 col-sm-6 col-xs-12 hide">
-								<div class="form-group">
-									<label class="control-label" th:text="#{json2ont.selectont}">Ontologies</label>
-									<select id="ontology" class="selectpicker form-control no-remove margin-top-10" data-live-search="true" data-width="100%" th:title="#{json2ont.selectont}" onchange="JsonToolController.getParentNode()">
-										<option th:each="ontology :${ontologies}" th:value="${ontology.identification}" th:text="${ontology.identification}" ></option>																
-									</select>													
-								</div>
-							</div>	
-						</div>
-						<div class="row main">
-							<div class="col-md-6 col-sm-12 col-xs-12 padding-left-30">
-								<div class="row main panelHeader">
-									<div class="col-md-5 col-sm-5 col-xs-12 pageCreateBackground">
-										<span th:text="#{json2ont.json}">JSON</span>
-										<i class="la la-info-circle popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{json2ont.importJSON.warning},data-title=#{json2ont.json.modify}"></i>
-									</div>
-									<div class="col-md-6 col-sm-6 col-xs-12 no-padding-right pageCreateBackground">
-										<div class="pull-right">
-											<button onclick="JsonToolController.beautifyJson()" id="beautify" type="button" class="btn btn-primary-cancel" th:value="#{json2ont.beautify}" ><span th:text="#{json2ont.beautify}"> Beautify</span></button>
-											<span class="sep no-border"></span>
-											<button onclick="JsonToolController.generateSchema()" id="schemagen" type="button" class="btn btn-primary-cancel" th:value="#{json2ont.schemagen}" ><span th:text="#{json2ont.schemagen}" > Generate Schema</span></button>
-										</div>
-									</div>
-								</div>
-								<div class="row main">
-									<div class="col-md-11 col-sm-11 col-xs-12 no-padding-left no-padding-right">
-										<div style="height:400px" id="jsonTextArea"></div>
-									</div>
-								</div>
-							</div>	
-							<div class="col-md-6 col-sm-12 col-xs-12">
-								<div class="row main panelHeader">
-									<div class="col-md-11 col-sm-11 col-xs-12 pageCreateBackground">
-										<span th:text="#{json2ont.jsonschema}">JSON Schema</span>
-									</div>
-								</div>
-								<div class="row main">
-									<div class="col-md-11 col-sm-11 col-xs-12 no-padding-left no-padding-right">
-										<div style="height:400px; resize: vertical; overflow: auto;" id="schemaTextArea"></div>
-									</div>
-								</div>
-							</div>																				
-						</div>
-						<!-- Modal -->
-						<div id="ontologyData" class="modal fade" role="dialog">
-							<div class="modal-dialog modal-sm">
-							    <!-- Modal content-->
-								<div class="modal-content">
-									<div class="modal-header">
-							        	<h4 class="modal-title" th:text="#{json2ont.newontology.title}">New Entity</h4>
-							        	<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
-							      	</div>		
-									<div class="modal-body margin-both-20">
-										<div class="row main">
-											<div class="form-group" >
-												<label class="control-label" th:text="#{ontology.name}">Name</label><span class="required"> *</span>
-												<input class="form-control no-remove" type="text" id="ontologyIdentification" pattern="[^\S*$]" placeholder="Ontology Identification"/>
-												<span id="ontologyIdentificationerror" class="help-block font-red hide" th:text="#{ontology.name.errorminfive}"></span>
-											</div>
-										</div>
-										<div class="row main">
-											<div class="form-group" >
-												<label class="control-label" th:text="#{ontology.description}">Comments </label><span class="required"> *</span>
-												<input class="form-control no-remove" type="text" id="ontologyDescription" placeholder="Ontology Description"/>
-												<span id="ontologyDescriptionerror" class="help-block font-red hide" th:text="#{ontology.description.min}"></span>
-											</div>
-										</div>
-										<div class="row main">
-											<div class="form-group" >
-												<label class="control-label" th:text="#{ontology.storage}">Storage mode</label>
-												<input class="form-control no-remove" type="text" readonly="true" value="MONGO" id="datasource" placeholder="Ontology Datasource"/>
-											</div>
-										</div>
-									</div>								      
-									<div class="modal-footer">
-										<button type="button" class="btn btn-primary-cancel" onclick="$('#ontologyData').modal('hide')"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-										<button type="button" class="btn btn-outline btn-circle btn-primary" onclick="JsonToolController.createOntology()"><span th:text="#{gen.createBtn}"> New</span></button>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</form>
-			</div>
-		</div><!-- END PORTLET BASIC  -->			
-	</div><!-- END COL-12 -->
-	<!-- Modal -->
-	<div id="progressBarModal" class="modal fade" role="dialog">
-		<div class="modal-dialog modal-sm">
-			<!-- Modal content-->
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal"></button>
-					<h4 class="modal-title">Progress</h4>
-				</div>
-				<div class="modal-body">
-					<div class="progress">
-						<div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="1000" style="width:0%;" id="importProgress">
-						</div>
-					</div>
-					<div id="progressResult">
-					
-					</div>
-				</div>										      
-				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				</div>
-			</div>	
-		</div>
-	</div>
-	<!-- Modal -->
-	<div id="returnAction" class="modal fade" role="dialog">
-		<div class="modal-dialog modal-sm">
-			<!-- Modal content-->
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal"></button>
-					<h4 class="modal-title" ></h4>
 				</div>	
-				<div class="modal-body" style="text-align: center; width:50%">
-					<label class="modal-title" id="response"></label>
-				</div>										      
-				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				</div>
-			</div>
-		</div>
-	</div>
-	<!-- Modal -->
-	<div id="ErrorOntSelect" class="modal fade" role="dialog">
-		<div class="modal-dialog modal-sm">
-			<!-- Modal content-->
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal"></button>
-					<h4 class="modal-title" id="errorSelect"></h4>
-				</div>											      
-				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				</div>
-			</div>
-		</div>
+				<!-- MAIN ROW -->
+				<div class="row">
+					<div class="col-md-12">						
+						<div class="portlet light ">
+							<div class="portlet-title">
+								<div class="caption">								
+									<!-- FORM TITLE -->
+									<span class="caption-subject" th:text="#{json2ont.tool.title}"> JSON to Ontology Tool</span>
+								</div>									
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""> </a>																			
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>										
+								</div>															
+							</div>
+							<div class="portlet-body">
+								
+								<div class="row">
+									<div class="col-md-12 alert-zone"><!-- ALERTS ZONE -->
+										<div class="alert alert-danger display-hide">
+											<button class="close" data-close="alert"></button> <span th:text="#{gen.form.error}">You have some form errors. Please check below.</span>
+										</div>
+                                        <div class="alert alert-success display-hide">
+											<button class="close" data-close="alert"></button> <span th:text="#{gen.form.success}">Your form validation is successful!</span>
+										</div>								
+									</div>
+									<div class="col-md-12">										
+										<form role="form" id="json2ont_form" method="post" class="form">											
+											
+											<div class="form-body">
+											<div class="row">
+											<div class="col-md-12 col-sm-12 col-xs-12">
+												<div class="form-group">
+												    <h4 for="file" th:text="#{json2ont.tool.info}" style="font-family: Soho, sans-serif;font-weight: 400;font-size: 16px;font-stretch: normal;letter-spacing: normal;line-height: 24px;">File input</h4>
+												    <br/>
+
+												    <button id="upload" type="button" class="btn btn-outline btn-circle blue pull-left" onclick="$('#file2').click();" value=""> <i class="fa fa-file-archive-o" style="padding-right:4px;"></i><span th:text="#{binaryfiles.select}"></span></button>
+												    <label  class="mt-checkbox font-md popovers pull-right" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{json2ont.importdata.help},data-title=#{json2ont.importdata.title}"><i class="fa fa-cloud-upload"></i> <div class="inline font-l" th:text="#{json2ont.importdata.title} + '?'">Import rtdb?</div>
+														<input id="check-import" name="active" type="checkbox" class="form-control no-remove"  th:checked="checked"/>
+														<span></span><!-- needed by styles -->
+													</label>
+													<label style="padding-right: 25px;" class="mt-checkbox font-md popovers pull-right" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{json2ont.newontology.help},data-title=#{json2ont.newontology.title}"><i class="fa fa-plus-square"></i> <div class="inline font-l" th:text="#{json2ont.newontology.title} + '?'">New Ontology?</div>
+														<input id="check-new-ontology" name="active" type="checkbox" class="form-control no-remove" onchange="if($('#newOntologyDiv').hasClass('hide')){$('#newOntologyDiv').removeClass('hide')}else{$('#newOntologyDiv').addClass('hide')}" th:checked="checked"/>
+														<span></span><!-- needed by styles -->
+													</label>
+													<div style="clear:both;" id="newOntologyDiv" class="col-md-4 col-sm-6 col-xs-12 pull-right hide">
+														<div class="form-group">
+															<label class="control-label" th:text="#{json2ont.selectont} + ':'">Ontologies</label>
+															<select id="ontology" class="selectpicker form-control no-remove" data-live-search="true" data-width="100%" th:title="#{json2ont.selectont}" onchange="JsonToolController.getParentNode()">
+																<option th:each="ontology :${ontologies}" th:value="${ontology.identification}" th:text="${ontology.identification}" ></option>																
+															</select>													
+														</div>
+													</div>	
+
+												 
+												    <br/>
+												    
+												    <input id="file2" type="file" class="form-control-file hide" onclick="resetFile()" onchange="JsonToolController.loadJsonFromDoc(this.files)" accept=".xml,.json,.csv"/>
+												
+												 	<br/>
+												 </div>
+											</div>
+											</div>
+											<!-- Json-->
+												<div class="row">
+													<div class="col-md-6 col-sm-12 col-xs-12">
+														<div class="form-group">
+															<label th:text="#{json2ont.json}">JSON</label>														
+															<div style="height:400px" id="jsonTextArea"></div>
+															<div class="pull-right margin-top-40">
+																<button  onclick="JsonToolController.beautifyJson()" id="beautify" type="button" class="btn btn-outline btn-circle blue" th:value="#{json2ont.beautify}" ><span th:text="#{json2ont.beautify}"> Beautify</span></button>
+																<span class="sep no-border"></span>
+																<button onclick="JsonToolController.generateSchema()" id="schemagen" type="button" class="btn btn-outline btn-circle btn-primary" th:value="#{json2ont.schemagen}" ><span th:text="#{json2ont.schemagen}" > Generate Schema</span></button>
+															</div>
+														</div>
+														<div class="clearfix"></div>
+													</div>	
+													<div class="col-md-6 col-sm-12 col-xs-12">
+														<div class="form-group">
+															<label th:text="#{json2ont.jsonschema}">JSON Schema</label>														
+															<div style="height:400px" id="schemaTextArea"></div>
+															<div class="pull-right  margin-top-40">
+																<button  onclick="JsonToolController.processSubmit()" id="createOnt" type="button" class="btn btn-outline btn-circle btn-primary" th:value="#{json2ont.createont}" ><span th:text="#{gen.submit}"> Create ontology</span></button>
+															</div>
+														</div>
+														<div class="clearfix"></div>
+													</div>																				
+												</div>
+											</div>
+											<!-- Modal -->
+											<div id="ontologyData" class="modal fade" role="dialog">
+											  <div class="modal-dialog modal-sm">
+											
+											    <!-- Modal content-->
+											    <div class="modal-content">
+											      <div class="modal-header">
+											        <button type="button" class="close" data-dismiss="modal"></button>
+											        <h4 class="modal-title">New Ontology</h4>
+											      </div>		
+											      <div class="modal-body" style="text-align: center; width:50%">
+											      <div class="form-group" id="form-new-ontology">
+												      <input class="form-control no-remove" type="text" id="ontologyIdentification" pattern="[^\S*$]" placeholder="Ontology Identification"/>
+												      <br/>
+												      <input class="form-control no-remove" type="text" id="ontologyDescription" placeholder="Ontology Description"/>
+												      <br/>
+												      <input class="form-control no-remove" type="text" readonly="true" value="MONGO" id="datasource" placeholder="Ontology Datasource"/>
+													  <!--  <select id="datasource" class="selectpicker form-control no-remove" data-live-search="true" data-width="100%" th:title="#{json2ont.rtdbdatasource}">
+														<option th:each="datasource :${datasources}" th:value="${datasource}" th:text="${datasource}" class="form-control" ></option>												
+													  </select>
+													  -->
+													<br/>
+												  </div>
+											      </div>									      
+											      <div class="modal-footer">
+											        <button type="button" class="btn btn-outline btn-circle btn-primary" data-dismiss="modal" onclick="JsonToolController.createOntology()">Submit</button>
+											      </div>
+											    </div>
+											
+											  </div>
+											</div>
+											
+																				
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+										
+									</div>									
+								</div>
+							</div>
+						</div><!-- END PORTLET BASIC  -->			
+					</div><!-- END COL-12 -->
+					<!-- Modal -->
+					<div id="progressBarModal" class="modal fade" role="dialog">
+					 <div class="modal-dialog modal-sm">
+					 	<!-- Modal content-->
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal"></button>
+									<h4 class="modal-title">Progress</h4>
+								</div>
+								<div class="modal-body">
+								<div class="progress">
+									  <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0"
+									  aria-valuemin="0" aria-valuemax="1000" style="width:0%;" id="importProgress">
+									  
+									    
+									  </div>
+								</div>
+								<div id="progressResult">
+								
+								</div>
+								</div>										      
+								<div class="modal-footer">
+									<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+								</div>
+							</div>	
+						</div>
+					</div>
+					<!-- Modal -->
+					<div id="returnAction" class="modal fade" role="dialog">
+					  <div class="modal-dialog modal-sm">
+					
+					    <!-- Modal content-->
+					    <div class="modal-content">
+					      <div class="modal-header">
+					        <button type="button" class="close" data-dismiss="modal"></button>
+					        <h4 class="modal-title" ></h4>
+					      </div>	
+					        <div class="modal-body" style="text-align: center; width:50%">
+					         <label class="modal-title" id="response"></label>
+					       </div>										      
+					      <div class="modal-footer">
+					        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					      </div>
+					    </div>
+					
+					  </div>
+					</div>
+					<!-- Modal -->
+					<div id="ErrorOntSelect" class="modal fade" role="dialog">
+					  <div class="modal-dialog modal-sm">
+					
+					    <!-- Modal content-->
+					    <div class="modal-content">
+					      <div class="modal-header">
+					        <button type="button" class="close" data-dismiss="modal"></button>
+					        <h4 class="modal-title" id="errorSelect"></h4>
+					      </div>											      
+					      <div class="modal-footer">
+					        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					      </div>
+					    </div>
+					
+					  </div>
+					</div>
+				</div><!-- END MAIN ROW -->
+			</div><!-- END CONTENT BODY -->
+		</div><!-- END CONTENT page-content-wrapper -->		
 	</div>
 	<!-- END MAIN PAGE WRAPPER -->
-	<!-- MODAL LD -->
-				<div th:include="fragments/ontology-create-ld-modal">
-				</div>
-				<!-- Modal -->
-				<div id="modal-created" data-backdrop="static" class="modal fade" role="dialog">
-					<div class="modal-dialog modal-sm">
-						<!-- Modal content-->
-						<div class="modal-content">
-							<div class="modal-header">
-								<button type="button" class="close" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} +'\');'" data-dismiss="modal"></button>
-								<h4 class="modal-title" th:text="#{json2ont.ontcreated}"></h4>
-							</div>
-							<div class="modal-body">
-						      	<h4 ><a target="_blank" th:text="#{ontology.after.create.api}" th:attr="onclick='javascript:navigateUrl(\'' + @{/apimanager/create} +'?id=\'+$(\'#identification\').val()'+');'">Create API</a></h4>
-						      	<h4 ><a target="_blank" th:text="#{ontology.after.create.device}" th:attr="onclick='javascript:navigateUrl(\'' + @{/devices/create} +'?id=\'+$(\'#identification\').val()'+');'">Create Device</a></h4>
-					      		<h4 ><a target="_blank" th:text="#{ontology.after.create.dashboard}" th:attr="onclick='javascript:navigateUrl(\'' + @{/dashboards/create} +'?id=\'+$(\'#identification\').val()'+');'">Create Dashboard</a></h4>
-					      		<h4 ><a target="_blank" th:text="#{ontology.after.create.gadget}" th:attr="onclick='javascript:navigateUrl(\'' + @{/gadgets/create} +'?id=\'+$(\'#identification\').val()'+');'">Create Gadget</a></h4>
-
-					      	</div>
-							<div class="modal-footer">
-								<button type="button" class="btn btn-default" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'" data-dismiss="modal">Close</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div><!-- END COL-12 -->
-
 	
 	<!-- FOOTER INCLUDE -->
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
@@ -374,9 +339,7 @@
 		var invalidSchema = [[#{json2ont.invalidschema}]];
 		var ontologyHasParentNode = [[#{json2ont.hasparentnode}]];
 		var invalidOnto = [[#{json2ont.invalidont}]];
-		var invaliddescr = [[#{json2ont.invaliddescr}]];
 		var emptyParam = [[#{user.create.error.empty}]];
-		var selectoperation = [[#{json2ont.required}]];
 	
 		function resetFile(){
 			var input = $("#file2");

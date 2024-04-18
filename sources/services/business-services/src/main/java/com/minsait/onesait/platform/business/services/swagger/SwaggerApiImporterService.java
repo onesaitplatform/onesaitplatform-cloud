@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ public class SwaggerApiImporterService {
 	public String getApiDefinition(String url) {
 		String apiDoc = null;
 		final RestTemplate restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
-
 		final ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
 		apiDoc = response.getBody();
 		return apiDoc;

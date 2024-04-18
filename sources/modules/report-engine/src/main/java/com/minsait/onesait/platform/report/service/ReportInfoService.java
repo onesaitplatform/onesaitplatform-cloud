@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package com.minsait.onesait.platform.report.service;
 
 import java.io.InputStream;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -28,9 +27,8 @@ import com.minsait.onesait.platform.config.model.Report.ReportExtension;
 public interface ReportInfoService {
 
 	ReportInfoDto extract(InputStream is, ReportExtension reportExtension);
-	
+
 	byte[] generate(Report entity, ReportType pdf, Map<String, Object> parameters);
 
 	void updateResource(Report report, String fileId, MultipartFile file) throws Exception;
-
 }

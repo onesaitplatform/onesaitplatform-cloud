@@ -11,10 +11,6 @@ master:
         username: root
         password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
         driver-class-name: com.mysql.cj.jdbc.Driver
-#        jdbc-url: jdbc:postgresql://localhost:5432/onesaitplatform_master_config
-#        username: postgres
-#        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph)
-#        driver-class-name: org.postgresql.Driver
         pool-name: master-hikari-pool
         minimum-idle: 1
         maximum-pool-size: 2
@@ -24,16 +20,13 @@ management.endpoints.web.exposure.include: "*"
 management.endpoint.health.show-details: always
 
 spring:
-   main:
-      allow-circular-references: true
-      allow-bean-definition-overriding: true
    application.name: onesaitplatform-device-simulator
    boot.admin: #Spring Boot Admin Config   
       client.url: http://localhost:18100/monitoring
       client.username: operations
       client.password: changeIt2019!
-      client.instance.metadata.user.name: ${spring.boot.admin.client.username}
-      client.instance.metadata.user.password: ${spring.boot.admin.client.password}
+      client.metadata.user.name: ${spring.boot.admin.username}
+      client.metadata.user.password: ${spring.boot.admin.password}
    data.mongodb:
       database: onesaitplatform_rtdb # Database name.
   
@@ -45,17 +38,12 @@ spring:
       password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
       connection-timeout: 10000
       driver-class-name: com.mysql.cj.jdbc.Driver
-#      jdbc-url: jdbc:postgresql://localhost:5432/onesaitplatform_config
-#      username: postgres
-#      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph)
-#      driver-class-name: org.postgresql.Driver
       minimum-idle: 5
       maximum-pool-size: 10
       
    jpa:
       # The SQL dialect makes Hibernate generate better SQL for the chosen database
       properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
-#      properties.hibernate.dialect: org.hibernate.dialect.PostgreSQL95Dialect
 quartz:      
    datasource:
      hikari: 
@@ -63,10 +51,6 @@ quartz:
         username: root
         password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
         driver-class-name: com.mysql.cj.jdbc.Driver
-#        jdbc-url: jdbc:postgresql://localhost:5432/onesaitplatform_scheduler
-#        username: postgres
-#        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph)
-#        driver-class-name: org.postgresql.Driver
         connection-timeout: 10000
         minimum-idle: 3
         maximum-pool-size: 10
@@ -74,14 +58,12 @@ quartz:
       ## Hibernate Properties
       # The SQL dialect makes Hibernate generate better SQL for the chosen database
       properties.hibernate.dialect: org.hibernate.dialect.MySQL5Dialect
-#      properties.hibernate.dialect: org.hibernate.dialect.PostgreSQL95Dialect
       # Hibernate ddl auto (create, create-drop, validate, update)
-#      properties.hibernate.hbm2ddl.auto: validate
-#      properties.hibernate.hbm2ddl.import_files: /quartz-schema.sql
+      properties.hibernate.hbm2ddl.auto: validate
+      properties.hibernate.hbm2ddl.import_files: /quartz-schema.sql
    autoStartupSchedulers:
       - simulationScheduler
-#   driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate    
-   driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+    
 onesaitplatform: #Config Sofia2 specific
    audit.global.notify: true
    iotbroker:
@@ -94,14 +76,10 @@ onesaitplatform: #Config Sofia2 specific
       sql.connector.http.endpoint: http://localhost:9200
       url: localhost
       port: 9300
-   graylog:
-      enabled: false
-      host: 127.0.0.1
-      port: 12201
             
 ## LOGGING CONF
 logging:
-   file.path: ./target/ 
-   file.name: ${spring.application.name}
+   path: ./target/ 
+   file: ${spring.application.name}
    level:
       com.minsait: INFO 

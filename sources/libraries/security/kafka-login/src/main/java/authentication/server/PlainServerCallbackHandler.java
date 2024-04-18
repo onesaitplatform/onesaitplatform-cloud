@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
-import org.apache.log4j.Logger;
+import java.util.logging.Logger;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.NameCallback;
@@ -105,7 +105,7 @@ public class PlainServerCallbackHandler implements AuthenticateCallbackHandler {
 						ret = true;
 					}
 				} catch (Exception e) {
-					log.warn(e.getMessage());
+					log.warning(e.getMessage());
 				}
 			}
 			log.info("RETURN GET OPERATION " + username + ":" + new String(pass) + " RET " + ret);

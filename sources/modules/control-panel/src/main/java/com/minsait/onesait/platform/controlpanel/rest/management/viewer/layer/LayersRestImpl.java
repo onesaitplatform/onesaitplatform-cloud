@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,9 +122,11 @@ public class LayersRestImpl implements LayersRest {
 
 	@PostConstruct
 	private void postConstruct() {
+		boolean quasarActive = ((Boolean) resourcesService.getGlobalConfiguration().getEnv().getDatabase()
+				.get("mongodb-use-quasar")).booleanValue();
 
 		defaultQuery = "select * from ";
-		if (useQuasar())
+		if (quasarActive)
 			defaultQuery = "select _id,c from ";
 	}
 
@@ -392,14 +394,14 @@ public class LayersRestImpl implements LayersRest {
 							try {
 								final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 								df.parse(value);
-								value = "'" + value + "'";
+								value = "\"" + value + "\"";
 							} catch (final Exception e) {
 								throw new BadRequestException(
 										"com.indra.sofia2.api.service.wrongparametertype " + param);
 							}
 						} else if (type.equals(STRING)) {
 							try {
-								value = "'" + value + "'";
+								value = "\"" + value + "\"";
 							} catch (final Exception e) {
 								throw new BadRequestException(WRONG_PARAMETER_TYPE + param);
 							}
@@ -681,13 +683,8 @@ public class LayersRestImpl implements LayersRest {
 			}
 			String queryResult = null;
 			if (query == null) {
-				if (useQuasar()) {
-					queryResult = queryToolService.querySQLAsJson(userId, ontologyIdentification,
-							defaultQuery + ontologyIdentification + " as c", 0);
-				} else {
-					queryResult = queryToolService.querySQLAsJson(userId, ontologyIdentification,
-							defaultQuery + ontologyIdentification, 0);
-				}
+				queryResult = queryToolService.querySQLAsJson(userId, ontologyIdentification,
+						defaultQuery + ontologyIdentification + " as c", 0);
 			} else {
 				queryResult = queryToolService.querySQLAsJson(userId, ontologyIdentification, query, 0);
 			}
@@ -697,15 +694,6 @@ public class LayersRestImpl implements LayersRest {
 		} else {
 			return utils.getMessage("querytool.ontology.access.denied.json",
 					"You don't have permissions for this ontology");
-		}
-	}
-
-	private boolean useQuasar() {
-		try {
-			return ((Boolean) resourcesService.getGlobalConfiguration().getEnv().getDatabase()
-					.get("mongodb-use-quasar")).booleanValue();
-		} catch (final RuntimeException e) {
-			return true;
 		}
 	}
 

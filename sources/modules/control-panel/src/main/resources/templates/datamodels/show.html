@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -70,6 +70,7 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM-->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/datamodels/list}"> <span th:text="#{datamodel.breadcrumb.list}">Data Models</span></a><i class="fa fa-angle-right"></i></li>
 						<li>
 							<span th:text="#{datamodel.breadcrumb.show}">Show Data Model</span>	
@@ -82,86 +83,108 @@
 				<h1 class="page-title hide "><span th:text="#{name.app}"> Onesaitplatform Control Panel</span></h1>
 				<!-- END PAGE TITLE-->			
 				
-				<!-- AUXILIAR FORM TO DELETE DATAMODEL -->
-				<form id="delete_dataModel_form" class="delete-dataModel hide"  action=""  method="post">
-					<input type="hidden" name="_method" value="DELETE"/>
-					<input type="hidden" name="id" th:value="${datamodel?.id}"/>
-					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-				</form>
-				
-				<form role="form" id="datamodel_view_form" action="show.html" th:object="${dataModel}"   method="post" class="form">
-					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-					<div id="header">
-						<div class="row pageCreateHeader">
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="margin-top-4">
-									<span th:text="${dataModel.identification}">Show JDBC Connection</span>
+				<!-- MAIN ROW -->
+				<div class="row">
+					<div class="col-md-12">						
+						<div class="portlet light container">
+							<div class="portlet-title">
+								<div class="caption">
+									<span class="caption-subject" th:object="${dataModel}" th:text="#{datamodel.template.show} + ' ' + ${dataModel.identification}"> Data Model Name</span>
+								</div>									
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""> </a>																			
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>										
+								</div>									
+							</div>
+							<div class="portlet-body" style="display: block; height: auto;">
+							<!-- VIEW -->
+								<div class="row">
+									<div class="col-md-12 alert-zone"><!-- ALERTS ZONE -->																
+									</div>
+									<div class="col-md-12">										
+										<form role="form" id="datamodel_view_form" action="show.html" th:object="${dataModel}"   method="post" class="form">
+											<div class="form-body">
+												<!-- dataModel, name, labels-->
+												<div class="row">													
+													<div class="col-md-6 col-sm-6 col-xs-12">
+														<div class="form-group">
+															<label class="control-label" th:text="#{datamodel.name} + ':'">Name</label>
+															<p id="viewName" name="viewName" class="form-control-static-block " th:text="*{identification}"> Data Model Name </p>
+														</div>
+													</div>
+													<div class="col-md-6 col-sm-12 col-xs-12" >
+														<div class="form-group">
+															<label class="control-label" th:text="#{datamodel.description} + ':'">Description</label>
+															<p id="viewDescription" name="viewDescription" class="form-control-static-block " th:text="*{description}"> description </p>
+														</div>
+													</div>
+												</div>
+												<div class="row">
+													<div class="col-md-6 col-sm-6 col-xs-12">
+														<div class="form-group">
+															<label class="control-label"><span th:text="#{datamodel.labels} + ':'">Labels</span></label>
+															<p class="form-control-static-block " th:text="*{labels}"> meta </p>
+														</div>
+													</div>		
+													<div class="col-md-6 col-sm-6 col-xs-12">
+														<div class="form-group">
+															<label class="control-label" th:text="#{datamodel.type} + ':'">Data Model Type</label>
+															<p id="viewType" name="viewType" class="form-control-static-block " th:text="*{type} "> Data Model type </p>
+														</div>
+													</div>
+												</div>
+												<div class="row">
+													<div class="col-md-12 col-sm-12 col-xs-12">
+														<div class="form-group">
+															<label class="control-label"><span th:text="#{datamodel.jsonschema}+ ':'">Data Model Schema</span></label>														
+															<textarea readonly="true" id="ymlDataModel" name="ymlDataModel"  th:required="true" th:field="*{jsonSchema}" class="form-control-static-block bold autoExpand" rows="6" data-min-rows='5' ></textarea>
+														</div>
+														<div class="clearfix"></div>
+													</div>
+												</div>
+											</div>
+											<!-- FORM BUTTONS -->
+											
+											<div class="form-actions">
+												
+												<div class="pull-left">
+													<!-- CANCEL TO-DO: authentication and control -->
+													<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-circle btn-outline no-border blue " name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/datamodels/list} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+													<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-circle btn-outline no-border blue " name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+												</div>
+												<div class="pull-right">
+													
+													<!-- MODIFY TO-DO: == and != has the same onClick? check! -->
+													<button th:if="${dataModel.identification} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')" id="editBtn" type="button" class="btn btn-circle btn-outline blue" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/datamodels/update/${dataModel.id}/|} + '\');'" > <span th:text="#{gen.editBtn}"> Edit </span></button>
+													<button sec:authorize="!hasAuthority('ROLE_PARTNER')"  th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="editBtn" type="button" class="btn btn-circle btn-outline blue" name="edit"  value="Edit" th:onclick="'javascript:navigateUrl(\'' + @{|/datamodels/update/${dataModel.id}/|} +'\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
+													
+													<span class="sep no-border">&nbsp;</span>
+													
+													<!-- REMOVE TO-DO: caducado -->
+													<button th:if="${dataModel.identification} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'deleteDataModelConfirmation(\'' + ${dataModel.id} + '\');'" > <span th:text="#{gen.deleteBtn}"> Delete </span></button>
+													
+													<span class="sep">&nbsp;</span>
+													
+													<!-- CREATE -->
+													<button sec:authorize="!hasAuthority('ROLE_PARTNER')" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="createBtn" type="button" class="btn btn-circle btn-outline btn-primary" name="create"  value="Create" th:onclick="'javascript:navigateUrl(\'' + @{/datamodels/} + 'create' + '\');'" > <span th:text="#{gen.createBtn}"> New</span></button>
+													
+													
+													
+												</div>
+											</div>										
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+										<!-- AUXILIAR FORM TO DELETE DATAMODEL -->										
+										<form id="delete_dataModel_form" class="delete-dataModel hide"  action=""  method="post">
+											<input type="hidden" name="_method" value="DELETE"/>
+											<input type="hidden" name="id" th:value="${datamodel?.id}"/>
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+									</div>									
 								</div>
 							</div>
-							
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="pull-right">
-									<!-- DELETE -->
-									<button th:if="${dataModel.identification} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete" th:attr="onclick='deleteDataModelConfirmation(\'' + ${dataModel.id} + '\');'" value="Remove" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>	
-		
-									<span th:if="${dataModel.identification} != null" class="sep" ></span>
-															
-									<!-- CANCEL -->
-									<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/datamodels/list} + '\');'" th:value="#{gen.cancelBtn}" ><span th:text="#{gen.cancelBtn}"> Cancel</span></button>
-
-									<!-- UPDATE -->
-									<button th:if="${dataModel.identification} != null" sec:authorize="!hasAuthority('ROLE_PARTNER')" id="updateBtn" type="button" class="btn btn-primary btn-primary-save" name="update" th:attr="onclick='javascript:navigateUrl(\'' + @{|/datamodels/update/${dataModel.id}/|} + '\');'"  th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
-								</div>
-							</div>
-						</div>
-					</div>
-				
-					<!-- MAIN ROW -->
-					<div class="mainPanel">
-						<div class="row main">
-							<div class="col-md-12 col-sm-12 col-xs-12 panelHeader">
-								<span th:text="#{gen.generalInformation}">General Information</span>
-							</div>
-						</div>
-						<div class="row main">
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="form-group">
-									<label class="control-label" th:text="#{datamodel.name} + ':'">Name</label>
-									<p id="viewName" name="viewName" class="form-control-static-block " th:text="*{identification}"> Data Model Name </p>
-								</div>
-							</div>
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="form-group">
-									<label class="control-label" th:text="#{datamodel.type} + ':'">Data Model Type</label>
-									<p id="viewType" name="viewType" class="form-control-static-block " th:text="*{type} "> Data Model type </p>
-								</div>
-							</div>								
-						</div>
-						<div class="row main">
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="form-group">
-									<label class="control-label"><span th:text="#{datamodel.labels} + ':'">Labels</span></label>
-									<p class="form-control-static-block " th:text="*{labels}"> meta </p>
-								</div>
-							</div>							
-							<div class="col-md-6 col-sm-12 col-xs-12" >
-								<div class="form-group">
-									<label class="control-label" th:text="#{datamodel.description} + ':'">Description</label>
-									<p id="viewDescription" name="viewDescription" class="form-control-static-block " th:text="*{description}"> description </p>
-								</div>
-							</div>						
-						</div>
-						<div class="row main">
-							<div class="col-md-12 col-sm-12 col-xs-12">
-								<div class="form-group">
-									<label class="control-label"><span th:text="#{datamodel.jsonschema}+ ':'">Data Model Schema</span></label>														
-									<textarea readonly="true" id="ymlDataModel" name="ymlDataModel"  th:required="true" th:field="*{jsonSchema}" class="form-control-static-block bold autoExpand" rows="6" data-min-rows='5' ></textarea>
-								</div>
-							</div>
-						</div>
-					</div>
-				</form>
-			</div><!-- END MAIN ROW -->
+						</div><!-- END PORTLET BASIC  -->						
+					</div><!-- END COL-12 -->						
+				</div><!-- END MAIN ROW -->
+			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
 	</div>
 	<!-- END MAIN PAGE WRAPPER -->
@@ -213,7 +236,7 @@
 		console.log('deleteUserConfirmation() -> formAction: ' + $('.delete-dataModel').attr('action') + ' ID: ' + $('.delete-dataModel').attr('id'));
 		
 		// call Data Model Confirm at header.
-		HeaderController.showDataModelConfirmDialog(dataModelId);	
+		HeaderController.showConfirmDialog(dataModelId);	
 	}	
 	
 	// MAIN WHEN READY
@@ -234,7 +257,7 @@
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
+	$(window).load(function(){  
 		// init on load.		
 		showLog ? console.log('SHOW Data Model load()...') : '';		
 	});

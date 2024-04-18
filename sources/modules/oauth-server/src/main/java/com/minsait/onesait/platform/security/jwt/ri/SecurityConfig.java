@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.minsait.onesait.platform.security.jwt.ri;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,12 +30,9 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
-import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
-
-import com.minsait.onesait.platform.security.jwt.custom.BearerExtractorFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -48,11 +44,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http.csrf().disable();
 		http.authorizeRequests().antMatchers("/oauth/**").permitAll().and().authorizeRequests()
-		.antMatchers("/login", "/oauth/authorize", "/logout", "/actuator/**").permitAll().and().formLogin().loginPage("/login")
-		.permitAll().and().logout().logoutUrl("/logout").and().authorizeRequests().anyRequest().permitAll();
-
+				.antMatchers("/login", "/oauth/authorize", "/logout").permitAll().and().formLogin().loginPage("/login")
+				.permitAll().and().logout().logoutUrl("/logout").and().authorizeRequests().anyRequest().authenticated();
 		http.headers().frameOptions().disable();
-		http.addFilterBefore(new BearerExtractorFilter(), AnonymousAuthenticationFilter.class);
 
 	}
 
@@ -78,11 +72,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	}
 
 	@Bean
-	public FilterRegistrationBean corsFilterOauth(@Value("${onesaitplatform.secure.cors:*}") String allowedURLs) {
+	public FilterRegistrationBean corsFilterOauth() {
 		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		final CorsConfiguration config = new CorsConfiguration();
 		config.setAllowCredentials(true);
-		config.setAllowedOriginPatterns(Arrays.asList(allowedURLs.split(",")));
+		config.addAllowedOrigin("*");
 		config.addAllowedHeader("*");
 		config.addAllowedMethod("*");
 		source.registerCorsConfiguration("/**", config);

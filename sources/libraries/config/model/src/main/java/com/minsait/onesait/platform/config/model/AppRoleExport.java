@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,13 +58,13 @@ public class AppRoleExport extends AppRoleParent {
 	@ManyToMany(fetch = FetchType.EAGER)
 	@Getter
 	@Setter
-	private Set<AppRoleExport> childRoles = new HashSet<>();
+	private Set<AppRoleChildExport> childRoles = new HashSet<>();
 
 	@OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@Getter
 	@Setter
 	@JsonIgnore
-	private Set<AppUser> appUsers = new HashSet<>();
+	private Set<AppUserExport> appUsers = new HashSet<>();
 
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,9 +32,7 @@ public interface InternationalizationService {
 	void saveInternationalization(String id, Internationalization internationalization, String userId);
 
 	Internationalization getInternationalizationById(String id, String userId);
-	
-	Internationalization findByIdentificationOrId(String id);
-	
+
 	String createNewInternationalization(Internationalization internationalizationCreate, String userId, boolean restApi);
 
 	boolean hasUserPermission(String id, String userId);
@@ -58,8 +56,5 @@ public interface InternationalizationService {
     boolean hasUserViewPermission(String id, String userId);
 
 	void deleteInternationalizationByIdentification(String internationalizationId, String userId);
-	
-	List<Internationalization> getInternationalizationsByResourceId(String resourceId);
 
-	String clone(String id, String newname, String userId, boolean restapi);
 }

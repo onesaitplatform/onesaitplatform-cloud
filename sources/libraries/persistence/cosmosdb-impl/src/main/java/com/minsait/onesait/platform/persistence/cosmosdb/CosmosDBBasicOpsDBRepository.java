@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -235,12 +234,7 @@ public class CosmosDBBasicOpsDBRepository implements BasicOpsDBRepository {
 
 	@Override
 	public String querySQLAsJson(String ontology, String query, int offset) {
-		return querySQLAsJson(ontology, preparedQuery(query, offset, -1));
-	}
-
-	@Override
-	public String querySQLAsJson(String ontology, String query, int offset, int limit) {
-		return querySQLAsJson(ontology, preparedQuery(query, offset, limit));
+		return querySQLAsJson(ontology, preparedQuery(query, offset));
 	}
 
 	@Override
@@ -381,7 +375,7 @@ public class CosmosDBBasicOpsDBRepository implements BasicOpsDBRepository {
 		throw new DBPersistenceException(NOT_IMPLEMENTED);
 	}
 
-	public String preparedQuery(String query, int offset, int limit) {
+	public String preparedQuery(String query, int offset) {
 		final Pattern pattern = Pattern.compile(".*(limit|LIMIT \\d+)");
 		final Matcher matcher = pattern.matcher(query);
 		boolean changed = false;
@@ -393,8 +387,7 @@ public class CosmosDBBasicOpsDBRepository implements BasicOpsDBRepository {
 			changed = true;
 		}
 		if (!changed) {
-			limit = limit > 0 ? limit : getMaxRegisters();
-			return query + OFFSET + offset + LIMIT + limit;
+			return query + OFFSET + offset + LIMIT + getMaxRegisters();
 		} else {
 			return query;
 		}
@@ -408,10 +401,4 @@ public class CosmosDBBasicOpsDBRepository implements BasicOpsDBRepository {
 				"Inserted {} documents for ontology {} on CosmosDb with a total RU consumed of {}. Total time taken {} milliseconds with avg {} imports/millisecond",
 				inserted, ontology, response.getTotalRequestUnitsConsumed(), timeTakenMillis, importsPerMillisecond);
 	}
-
-	@Override
-	public ComplexWriteResult updateBulk(String collection, String queries, boolean includeIds) {
-		throw new DBPersistenceException(NOT_IMPLEMENTED);
-	}
-
 }

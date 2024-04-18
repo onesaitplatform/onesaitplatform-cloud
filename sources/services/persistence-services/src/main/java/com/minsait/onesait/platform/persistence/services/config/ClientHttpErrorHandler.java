@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.nio.charset.Charset;
 
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.DefaultResponseErrorHandler;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.ResponseErrorHandler;
 
 import com.google.common.io.ByteStreams;
@@ -36,10 +35,9 @@ public class ClientHttpErrorHandler implements ResponseErrorHandler {
 
 			if (response.getBody() != null) {
 				final String json = new String(ByteStreams.toByteArray(response.getBody()), Charset.forName("UTF-8"));
-				throw new DBPersistenceException(json, new ResourceAccessException(json));
-			} else {
+				throw new DBPersistenceException(json);
+			} else
 				errorHandler.handleError(response);
-			}
 
 		} finally {
 			response.close();

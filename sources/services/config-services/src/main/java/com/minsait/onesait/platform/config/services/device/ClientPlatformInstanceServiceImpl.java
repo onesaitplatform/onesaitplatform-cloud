@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,8 +39,6 @@ import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.ClientPlatformInstance;
 import com.minsait.onesait.platform.config.repository.ClientPlatformInstanceRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
-import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
-import com.minsait.onesait.platform.multitenant.config.repository.IoTSessionRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -54,20 +51,16 @@ public class ClientPlatformInstanceServiceImpl implements ClientPlatformInstance
 	@Autowired
 	ClientPlatformRepository cpRepository;
 	@Autowired
-	IoTSessionRepository iotsessionRepository;
-	@Autowired
 	ObjectMapper mapper;
 
 	@Value("${onesaitplatform.iotbroker.devices.perclient.max:20}")
 	private int maxvalue;
-
+	
 	@Autowired(required = false)
 	ClientPlatformInstanceScheduledUpdater deviceScheuduledUpdater;
 
-	@Value("${spring.datasource.hikari.jdbc-url:mysql}")
-	private String datasource;
-
-
+	
+	
 	@Override
 	public List<ClientPlatformInstance> getAll() {
 		return cpiRepository.findAll();
@@ -87,8 +80,8 @@ public class ClientPlatformInstanceServiceImpl implements ClientPlatformInstance
 		Date date = new Date();
 		clientPlatformInstance.setUpdatedAt(date);
 		clientPlatformInstance.setCreatedAt(date);
-
-
+		
+		
 		ClientPlatform cp = clientPlatformInstance.getClientPlatform();
 		ClientPlatformSimplifiedDTO cpDTO;
 		if ( cp == null) {
@@ -96,34 +89,23 @@ public class ClientPlatformInstanceServiceImpl implements ClientPlatformInstance
 		} else {
 			cpDTO = new ClientPlatformSimplifiedDTO(cp.getId(), cp.getIdentification());
 		}
-		int inserted = 0;
-		int	 updated = 0;
-		clientPlatformInstance.setId(UUID.randomUUID().toString());
-		int getClientPlatformInstance = cpiRepository.getClientPlatformInstance(clientPlatformInstance, cpDTO.getClientPlatformId());
 		
-		if(getClientPlatformInstance == 0) {
-
-			inserted = cpiRepository.createClientPlatformInstance(clientPlatformInstance, cpDTO.getClientPlatformId());
-				
-		} else {
-			
-			updated = cpiRepository.updateClientPlatformInstance(clientPlatformInstance, cpDTO.getClientPlatformId());
-		}
+		int inserted = cpiRepository.createOrUpdateClientPlatformInstance(clientPlatformInstance, cpDTO.getClientPlatformId(), maxvalue);
 		
-		if (inserted > 0 || updated > 0) {
+		if (inserted > 0) {		
 			if (log.isDebugEnabled()) {
-				log.debug("Created or modified device. Identification: {}, clientPlatformId: {}",
-						clientPlatformInstance.getIdentification(),
+				log.debug("Created or modified device. Identification: {}, clientPlatformId: {}", 
+						clientPlatformInstance.getIdentification(), 
 						cpDTO.getClientPlatformId());
 			}
 		} else {
 			if (log.isWarnEnabled()) {
-				log.warn("Fail creating or updating ClientPlatformInstance. Identification: {}, clientPlatformId: {}",
-						clientPlatformInstance.getIdentification(),
+				log.warn("Fail creating or updating ClientPlatformInstance. Identification: {}, clientPlatformId: {}", 
+						clientPlatformInstance.getIdentification(), 
 						cpDTO.getClientPlatformId());
 			}
 		}
-
+		
 		return inserted;
 	}
 
@@ -144,7 +126,7 @@ public class ClientPlatformInstanceServiceImpl implements ClientPlatformInstance
 			String identification) {
 		return cpiRepository.findByClientPlatformAndIdentification(clientPlatform, identification);
 	}
-
+	
 	@Override
 	public ClientPlatformInstance getByClientPlatformIdAndIdentification(String clienttPlatformIdentification, String identification) {
 		return cpiRepository.findByClientPlatformAndIdentification(clienttPlatformIdentification, identification);
@@ -183,7 +165,7 @@ public class ClientPlatformInstanceServiceImpl implements ClientPlatformInstance
 	@Override
 	public List<String> getClientPlatformInstanceCommands(ClientPlatformInstance clientPlatformInstance) {
 		final List<String> commandActions = new ArrayList<>();
-		if (StringUtils.hasText(clientPlatformInstance.getJsonActions())) {
+		if (!StringUtils.isEmpty(clientPlatformInstance.getJsonActions())) {
 			try {
 				final JsonNode commands = mapper.readTree(clientPlatformInstance.getJsonActions());
 				addCommandsFromJson(commandActions, commands);
@@ -213,11 +195,6 @@ public class ClientPlatformInstanceServiceImpl implements ClientPlatformInstance
 	@Override
 	public void deleteClientPlatformInstance(ClientPlatformInstance clientPlatformInstance) {
 		cpiRepository.deleteById(clientPlatformInstance);
-	}
-
-	@Override
-	public List<IoTSession> getSessionKeys(ClientPlatformInstance clientPlatformInstance) {
-		return iotsessionRepository.findByClientPlatformID(clientPlatformInstance.getId());
 	}
 
 }

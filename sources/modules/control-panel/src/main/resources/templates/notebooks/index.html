@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@
 		<link sec:authorize="isAuthenticated()" rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}"/>
 		
 		<!-- JQUERY, only for embedded mode with no header -->
-		<script sec:authorize="!isAuthenticated()" th:src="@{/static/vendor/jquery/jquery.min.js}"></script>
+		<script sec:authorize="!isAuthenticated()" th:src="@{/static/vendor/jquery/jquery.min.js}"/>
 		
 	</head>	
 	
@@ -81,8 +81,183 @@
 				<!-- MAIN ROW -->
 				<div class="row mainrow">
 					<div id="angularAPP"></div>
-					<script th:src="@{/static/notebooks/notebookoverride.js}" charset="utf-8"></script>
-					<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/notebooks/notebookoverride.css}"></link>
+					<script>
+						var urlChanged=false;
+						var bearer = null;
+						if (window.location.href.split("?").length>1){
+							if(window.location.href.split("?")[1].split("=").length>1 ){
+								bearer = decodeURI(window.location.href.split("?")[1].split("=")[1])
+							}
+						}
+						if(bearer!=null){
+							const date = new Date()
+							date.setMinutes(date.getMinutes() + 1);
+							document.cookie = "platformbearer=" + bearer + '; expires=' + date.toUTCString();
+						}
+						$(document).ready(function(){
+							$.get("/controlpanel/static/notebooks/startapp.html").done(function(data){
+								var readyhash = '/controlpanel/notebooks/app/' + location.hash
+								history.pushState(null, null, readyhash);
+								var contentAndHook = data.replace("html ","div ");
+								$("#angularAPP").html(contentAndHook);
+								$(".navbar-inverse").parent().remove();
+								jQuery.fn.size = function() {//compatibility with controlpanel jquery version and menu
+								    return this.length;
+								};
+								var observer = new MutationObserver(fnHandler),
+										elTarget = document.querySelector("#angularAPP"),
+										objConfig = {
+											childList: true,
+											subtree : true,
+											attributes: false, 
+											characterData : false
+										};
+		
+								//then actually do some observing
+								observer.observe(elTarget, objConfig);
+								
+								var loadname = true;
+								var loadnameresponse;
+								
+								function fnHandler () {
+									$(".dropdown-toggle:not(#close-session)").dropdown();
+
+									$(".dropdown.navbar-right").dropdown();
+
+									$(".dropdown.navbar-right").on("click",function(){
+										$(this).addClass("open");
+									})
+									
+									if(angular ){
+										if(!urlChanged){
+											var elem = angular.element(document.querySelector('[ng-controller]'));
+		
+											//get the injector.
+											var injector = elem.injector();
+		
+											//get the service.
+											var urlService = injector.get('baseUrlSrv');
+											
+											urlService.getPort=function(){return portGlobal;};
+											urlService.getWebsocketUrl=function(){return (portGlobal===443?"wss":"ws") + "://" + hostnameGlobal + ":" + portGlobal + "/ws"};
+											urlService.getRestApiBase=function(){return "api"};
+											
+											//apply the changes to the scope.
+											elem.scope().$apply();
+											urlChanged=true;
+										}
+									}
+									
+									if($( ".labelBtn button .icon-trash" ).length==1){
+										$( ".labelBtn button .icon-trash" ).parent().remove(); // trash icon
+									}
+									
+									if($( ".labelBtn button .fa-users" ).length==1){
+										$( ".labelBtn button .fa-users" ).parent().remove(); //user icon
+									}
+									
+									if($( ".labelBtn button .fa-copy" ).length==1){
+										$( ".labelBtn button .fa-copy" ).parent().remove(); //clone icon
+									}
+									
+									if($(".setting-btn .fa-lock").length==1){
+										$(".setting-btn .fa-lock").parent().remove()
+									}
+
+									if($(".labelBtn button .fa-download").length==1){
+										$(".labelBtn button .fa-download").parent().remove()
+									}
+
+									if($("headroom span.btn-group:last").length==1){
+										$("headroom span.btn-group:last").css("display","none")
+									}
+
+									if($(".ui-resizable-handle.ui-resizable-se.ui-icon.ui-icon-gripsmall-diagonal-se").length>0){
+										$(".ui-resizable-handle.ui-resizable-se.ui-icon.ui-icon-gripsmall-diagonal-se").remove();
+									}
+
+									if($(".navbar-inverse").length==1){
+										$(".navbar-inverse").parent().remove();
+									}
+									
+									$(".noteAction h3 div p").off();
+									
+									$(".noteAction h3 div p").html("");
+									
+									/*Notebook editor view*/
+									if(location.hash.indexOf("#/notebook")!==-1){
+										/*iFrame view*/
+										if(location.hash.substring(location.hash.length-8)==="asIframe" || bearer!=null){
+											$(".page-content").css("cssText","margin: 0px !important;padding-top:0px !important");
+											$("body").css("background-color","transparent");
+											$(".notebookContent").css("padding-top","0px");
+											$(".row").css("margin","0px");
+											$(".mainrow").css("margin-top","-55px");
+											$("#main").css("margin-top", "50px").css("height","initial");
+											$(".noteAction.headroom--top").css("top","10px","!important");
+											$(".noteAction.headroom--pinned").css("top","10px","!important");
+										}
+										/*Notebook view*/
+										else{
+											$(".page-header,footer,.page-sidebar-wrapper,.page-bar").css("display","block");
+											$("body").css("color","#000");
+											$(".noteAction").css("width", "calc(100% - 70px)","important");	
+											$(".noteAction").css("margin-left", "60px","important");
+											$(".row").css("margin","initial");
+											$("#main").css("margin-top", "initial").css("height","100%").css("width","100%");	
+										}
+										
+										if(location.hash.substring(location.hash.length-8)!=="asIframe"){
+											notebookId = location.hash.substring(location.hash.indexOf("#/notebook/")+11).split(/[\s,?]+/)[0]
+											if(loadname){
+												loadname = false;
+												$.get(
+													{
+														url:"../app/nameByIdZep/"+notebookId,
+														dataType:"text"
+												}).done(function(data){
+													loadnameresponse = '<b class="form-control-static2 ellipsis">' + data + '</b>';		
+												}).fail(function(e){
+													console.log("Error in name note, message detail: " + e.responseText);
+												})
+											}
+											
+											if(loadnameresponse){ 
+												if($(".noteAction h3 div p").length>0){
+													$(".noteAction h3 div").first().html(loadnameresponse);
+													loadnameresponse = null;
+												}
+											}
+										}
+										$(".ui-grid-cell-contents").css("height","auto","important");
+										$(".ui-grid-header-cell-wrapper").css("height","auto","important");
+										$(".ace_line").css("white-space","inherit")
+									}
+									/*No notebook view, configurations, interpreters,...*/
+									else{
+										$(".page-header,footer,.page-sidebar-wrapper,.page-bar").css("display","block");
+										$("#main").css("width","calc(100% - 70px)","important").css("height","initial");;
+									}
+									
+								}
+								
+							});
+						})
+					</script>
+					<style>
+						.noteAction.headroom--top{
+							top: 100px
+						}
+						.noteAction.headroom--pinned{
+							top: 75px
+						}
+						.noteAction{
+							z-index: 1 !important
+						}
+						.job .control {
+							margin-right: 55px;
+						}
+					</style>			
 				</div><!-- END MAIN ROW -->
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
@@ -93,17 +268,17 @@
 	<footer sec:authorize="isAuthenticated()" th:include="fragments/footer::#footerFragment" class="page-footer" style="display:none"> </footer>
 	
 	<!-- CORE JS CONTROLLERS -->
-	<script sec:authorize="isAuthenticated()" th:src="@{/static/js/app.js}"></script>
-	<script sec:authorize="isAuthenticated()" th:src="@{/static/js/layout.js}"></script>
+	<script sec:authorize="isAuthenticated()" th:src="@{/static/js/app.js}"/>
+	<script sec:authorize="isAuthenticated()" th:src="@{/static/js/layout.js}"/>
 
 	<!-- PLUGINS -->
 	
 	<!-- JSON EDITOR -->	
-	<script sec:authorize="isAuthenticated()" th:src="@{/static/vendor/json/jsoneditor.js}"></script>
+	<script sec:authorize="isAuthenticated()" th:src="@{/static/vendor/json/jsoneditor.js}"/>
 	
-	<script sec:authorize="isAuthenticated()" th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
-	<script sec:authorize="isAuthenticated()" th:src="@{/static/vendor/ace/mode-json.js}"></script>
-	<script sec:authorize="isAuthenticated()" th:src="@{/static/vendor/ace/theme-textmate.js}"></script>
+	<script sec:authorize="isAuthenticated()" th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"/>
+	<script sec:authorize="isAuthenticated()" th:src="@{/static/vendor/ace/mode-json.js}"/>
+	<script sec:authorize="isAuthenticated()" th:src="@{/static/vendor/ace/theme-textmate.js}"/>
 	
 	<!-- TEMPLATE CONTROLLER  -->	
 		
@@ -125,7 +300,7 @@
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
+	$(window).load(function(){  
 		// init on load.		
 		showLog ? console.log('Notebook load()...') : '';
 			

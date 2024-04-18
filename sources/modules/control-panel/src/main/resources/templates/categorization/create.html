@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@
 	          <h4 class="modal-title" th:text="#{categorization.editNode}"><b>Edit</b></h4>
 	        </div>
 	        <div class="modal-body">
-	        	<label class="" th:text="#{gen.type}">Type</label>
+	        	<label class="" th:text="#{gen.type} + ':'">Type</label>
 				<select id="typeNode" class="selectpicker form-control onto" data-live-search="true" data-size="10" data-width="100%" onchange="getElements(this.value)">
 					<option value="" text="" selected="selected"  style="display:none;"></option>
 					<option th:text="#{categorization.ontology}" value="ontology"></option>
@@ -66,7 +66,7 @@
 					<option th:text="#{categorization.reports}" value="reports"></option>
 				</select>
 				<div  class="row"></div>
-				<label class="" th:text="#{categorization.element}">Element</label>
+				<label class="" th:text="#{categorization.element} + ':'">Element</label>
 				<select id="selectElements" class="selectpicker form-control onto" data-live-search="true" data-size="10" data-width="100%">
 					<option value="" text="" selected="selected"  style="display:none;"></option>
 				</select>
@@ -106,89 +106,71 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li><a th:href="@{/categorization/list}"> <span th:text="#{categorization.name}">Categorization list</span></a><i class="fa fa-angle-right"></i></li>						
-						<li th:if="!${categorization.Id}"><a> <span th:text="#{categorization.new}">Create</span></a></li>
-						<li th:if="${categorization.Id} AND !${show}" ><a> <span th:text="#{categorization.edit}">Edit</span></a></li>
-						<li th:if="${categorization.Id} AND ${show}" ><a> <span th:text="#{categorization.show}">Show</span></a></li>
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/categorization/list}"> <span th:text="#{categorization.list}">Categorization list</span></a><i class="fa fa-angle-right"></i></li>						
+						<li th:if="!${categorization.Id}"><a> <span th:text="#{gen.create}">Create</span></a></li>
+						<li th:if="${categorization.Id} AND !${show}" ><a> <span th:text="#{gen.editBtn}">Edit</span></a></li>
+						<li th:if="${categorization.Id} AND ${show}" ><a> <span th:text="#{gen.showBtn}">Show</span></a></li>
 					</ul>						
 				</div>
 				<!-- END PAGE BAR -->			
 				
-				<div id="header">
-					<div class="row pageCreateHeader">
-						<div class="col-md-6 col-sm-6 col-xs-12">
-							<div class="margin-top-4">
-								<span th:if="${categorization?.id} == null" th:text="#{categorization.new}">New Categorization Tree</span>
-								<span th:if="${categorization?.id} != null" th:text="${categorization.identification}">Update Categorization Tree</span>
-							</div>
-						</div>
-						
-						<div class="col-md-6 col-sm-6 col-xs-12">
-							<div class="pull-right">								
-								<!-- CANCEL -->											
-								<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{|/categorization/list/|} + '\');'" ><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-								
-								<!-- RESET -->
-								<button th:if="!${categorization.Id}" id="resetBtn" type="button" class="btn btn-primary-cancel" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
-								<button th:if="${categorization.Id}" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" disabled="true" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
-									
-								<span class="sep no-border" th:if="(${categorization.Id} != null)"></span>
-								
-								<!-- CREATE -->
-								<button th:if="!${categorization.Id}" id="createBtn" class="btn btn-primary btn-primary-save" name="create"  th:value="#{gen.createBtn}" th:attr="onclick='javascript:create();'" ><span th:text="#{gen.createBtn}"> New</span></button>
-								<!-- UPDATE -->
-								<button th:if="${categorization.Id} AND !${show}" id="updateBtn" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" th:attr="onclick='javascript:edit(\'' + ${categorization.Id} + '\');'"><span th:text="#{gen.changes}"> Save Changes</span></button>
-								<button th:if="${categorization.Id} AND ${show} AND (${#authentication.name} == ${categorization.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')" id="updateBtn" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/categorization/edit/${categorization.Id}/|} + '\');'" ><span th:text="#{gen.changes}"> Save Changes</span></button>
-							</div>
-						</div>
-					</div>
-				</div>	
-				
 				<!-- MAIN ROW -->
-				<div class="mainPanel">
-					<div class="row main">
-						<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
-							<span th:text="#{gen.generalInformation}">General Information</span>
-						</div>
-						<div class="col-md-3 col-sm-3 col-xs-3">
-							<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
-						</div>
-					</div>
-					<div class="col-md-12 col-sm-6 col-xs-16" >
-						<div class="alert alert-info alert-dismissable">
-							<button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
-							<i class="fa fa-info-circle"></i>
-							<span th:text="#{gen.message.info}"></span>
-						</div>	
-					</div>
-					<div class="row main">
-						<div class="col-md-2 col-sm-2 col-xs-6">
-							<div class="form-group no-margin-bottom">
-								<label class="control-label" th:text="#{gen.name}">Tree name</label><span class="required"> *</span>
-								<input id="identification" type="text" class="form-control "  th:placeholder="#{gen.name}" th:value="${categorization.identification} ? ${categorization.identification}" th:readonly="${categorization.identification}"/>
-								<span id="identificationerror" class="hide" th:text="#{gen.requiredField}"><i class="la la-warning"></i> Required field</span>
+				<div class="row">
+					<div class="col-md-12">
+						<div class="portlet light ">
+							<div class="portlet-title">
+								<div class="caption">									
+									<span th:if="!${categorization.Id}" class="caption-subject " th:text="#{categorization.create}">Create Tree</span>									
+									<span th:if="${categorization.Id} AND !${show}" class="caption-subject " th:text="#{categorization.edit}">Edit Tree</span>
+									<span th:if="${categorization.Id} AND ${show}" class="caption-subject " th:text="#{categorization.show}">Show Tree</span>
+								</div>
 							</div>
-						</div>
-					</div>
-					<div class="row main">
-						<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 margin-bottom-10" style="border-radius: 4px; background-color: #FFFFFF;	box-shadow: 0 2px 10px 0 rgba(0,0,0,0.05) !important;">
-							<div id="treeField">
+							
+							<div class="col-md-3 col-sm-6 col-xs-12">
+								<div class="form-group">
+									<label class="" th:text="#{gen.name} + ':'">Tree name</label><span class="required"> (*)</span>
+									<input id="identification" type="text" class="form-control "  th:placeholder="#{gen.name}"
+									th:value="${categorization.identification} ? ${categorization.identification}" th:readonly="${categorization.identification}"/>
+								</div>
 							</div>
-						</div>
-					</div><!-- END MAIN ROW -->	
-				</div><!-- END CONTENT BODY -->
-			</div><!-- END CONTENT page-content-wrapper -->		
-		</div><!-- END MAIN PAGE WRAPPER -->
+							
+							<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 margin-bottom-10" style="border-radius: 4px; background-color: #FFFFFF;	box-shadow: 0 2px 10px 0 rgba(0,0,0,0.05) !important;">
+								<div id="treeField"></div>
+							</div>
+							
+							<!-- FORM BUTTONS -->
+							<div class="row">
+								<div class="pull-left">
+									<button id="cancelBtn" type="button" class="btn btn-circle btn-outline no-border blue"  name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{|/categorization/list/|} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+								</div>								
+								<div class="pull-right">
+									<button th:if="!${categorization.Id}" class="btn btn-outline btn-circle btn-primary" th:onclick="'javascript:create();'"><span th:text="#{gen.createBtn}">New</span></button>
+									<button th:if="${categorization.Id} AND !${show}" class="btn btn-outline btn-circle btn-primary" th:onclick="'javascript:edit(\'' + ${categorization.Id} + '\');'"><span th:text="#{gen.editBtn}">Edit</span></button>
+									<button th:if="${categorization.Id} AND ${show}" class="btn btn-circle btn-outline blue" th:onclick="'javascript:navigateUrl(\'' + @{|/categorization/edit/${categorization.Id}/|} + '\');'"><span th:text="#{gen.editBtn}">Edit</span></button>
+								</div>
+							</div>								
+							<!-- form end -->	
+						</div><!-- END PORTLET BASIC LIGHT -->							
+					</div><!-- END COL-12 -->						
+				</div><!-- END MAIN ROW -->	
+			</div><!-- END CONTENT BODY -->
+		</div><!-- END CONTENT page-content-wrapper -->		
 	</div>
+	<!-- END MAIN PAGE WRAPPER -->
+	
 	<!-- FOOTER-INCLUDE -->
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
 	<script th:src="@{/static/js/app.js}"></script>
 	<script th:src="@{/static/js/layout.js}"></script>
+	
 
 	<!-- INPUTMASK -->
 	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
+	<script th:src="@{/static/js/pages/categorization.js}"></script>
+
 	
 	<!-- PLUGINS -->
 	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
@@ -197,38 +179,15 @@
 	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
 	<script th:src="@{/static/vendor/jstree/dist/jstree.min.js}"></script>
 	
-	<!-- TEMPLATE CONTROLLER  -->
-	<script th:src="@{/static/js/pages/categorization.js}"></script>	
 	
 	<script th:inline="javascript">
 
-    var form1 = $('#datasource_create_form');
 	var noName = [[#{categorization.noName}]];
 	var errorMsg = [[#{categorization.errorMsg}]];
-	var requestSent = [[#{gen.op.requestSent}]];
-	var validationOk = [[#{gen.form.success}]];
 	var node = "";
 	
 	// INPUT MASK FOR ontology identification allow only letters, numbers and -_
 	$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
-	
-	$("#identification").bind('blur', function (ev) { 			// fires on every blur
-		if ($("#identification").val()==''){
-			$("#identification").closest('.form-group').addClass('has-error'); 
-			$('#identificationerror').removeClass('hide');
-		} else {
-			$("#identification").closest('.form-group').removeClass('has-error');
-			$('#identificationerror').addClass('hide');
-		}
-	});
-	
-	// Reset form
-	$('#resetBtn').on('click',function(){ 
-		$("#identification").val("");
-		$("#identification").closest('.form-group').removeClass('has-error');
-		$('#identificationerror').addClass('hide');
-		$('#treeField').jstree(true).refresh();
-	});	
 	
 	$(document).ready(function(){
 		var json = {};
@@ -270,7 +229,7 @@
 								type : "POST",
 								data : { "id" : [[${categorization.Id}]]},
 								headers: {[csrf_header]: csrf_value}
-						}).done(function(response){
+						}).success(function(response){
 							return cb(response);
 							}
 						).fail(function(response, data){
@@ -293,8 +252,6 @@
 	 }
 		});		
     });
-	
-	
 	
 	// DATATABLES LANGUAJE FROM PROPERTIES.	
 	datatable_lang = [[#{datatables_lang}]];

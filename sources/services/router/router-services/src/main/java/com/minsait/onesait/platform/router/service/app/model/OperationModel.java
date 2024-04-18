@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ public class OperationModel implements Serializable {
 
 	public enum Source {
 		IOTBROKER, APIMANAGER, KAFKA, FLOWENGINE, INTERNAL_ROUTER, STREAMING_TWITTER, AUDIT, DIGITALTWINBROKER, KSQL,
-		RULES_ENGINE, DATAFLOW, NOTEBOOK, JAVACLIENT, DASHBOARD_ENGINE, CONTROLPANEL, QUERY_TOOL;
+		RULES_ENGINE;
 	}
 
 	// Mandatory attributes

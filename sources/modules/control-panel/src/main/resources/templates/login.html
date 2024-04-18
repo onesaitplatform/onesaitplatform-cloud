@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -33,27 +33,27 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	<meta http-equiv="Content-Language" th:content="${lang}"/>
 	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/jquery-confirm/jquery-confirm.css}"/>
-	<link href='/controlpanel/static/vendor/google/poppins.css' rel='stylesheet' type='text/css'/>
+	<link href='https://fonts.googleapis.com/css?family=Poppins:400,700' rel='stylesheet' type='text/css'/>
 	<link rel="stylesheet" th:href="@{/static/css/reset.css}"/> <!-- CSS reset -->
 	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}"/>
 	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}"/>
 	<link rel="stylesheet" th:href="@{/static/webjars/sofia2_theme/css/login.css}"/> <!-- sofia2_theme login style -->
 	<link rel="stylesheet" th:href="@{/static/css/newLogin.css}"/>
 	<script th:src="@{/static/vendor/jquery/jquery.min.js}"></script>
-	<script src="/controlpanel/static/vendor/bootstrap/bootstrap.min.js"></script>  	
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>  	
 	<script th:src="@{/static/vendor/jquery-confirm/jquery-confirm.js}"></script>
-	<script th:if="${@environment.getProperty('captcha.enable') == 'true'}" src='/controlpanel/static/vendor/google/recaptcha/api.js'></script>
+	<script th:if="${@environment.getProperty('captcha.enable') == 'true'}" src='https://www.google.com/recaptcha/api.js'></script>
 	<!-- Microsoft Teams JavaScript API (via CDN) -->
-	<script src="/controlpanel/static/vendor/microsoft/v1.6.0/MicrosoftTeams.min.js"></script>
+	<script src="https://statics.teams.cdn.office.net/sdk/v1.6.0/js/MicrosoftTeams.min.js" integrity="sha384-mhp2E+BLMiZLe7rDIzj19WjgXJeI32NkPvrvvZBrMi5IvWup/1NUfS5xuYN5S3VT" crossorigin="anonymous"></script>
+	
 	<title th:text="#{login.title}">Control Panel Login</title>
-  <style id="headerStyle"></style>
 </head>
 <body th:style="${backgroundColor} ? 'background-color: '+@{${backgroundColor}}+';'">
 
         <!-- Modal -->
 		  <div class="modal fade" id="myModal" role="dialog" tabindex="-1" aria-labelledby="...">
 		    <div class="modal-dialog" role="document">
-
+		    
 		      <!-- Modal content-->
 		      <div class="modal-content">
 		        <div class="modal-header">
@@ -87,51 +87,51 @@
 		          <button type="button" class="btn btn-default" data-dismiss="modal"><span th:text="#{gen.closeBtn}">Close</span></button>
 		        </div>
 		      </div>
-
+		      
 		    </div>
 		  </div>
-
+		  
 		    <div class="modal fade" id="splash" role="dialog" tabindex="-1" aria-labelledby="...">
 		    <div class="modal-dialog" role="document">
-
+		    
 		      <!-- Modal content-->
 		      <div class="modal-content">
-
-		        <div class="modal-body">
+		       
+		        <div class="modal-body">		        
 		         <div class="ods-logo">
-				<img  th:if="!${image} or ${image} == ''" th:src="@{/images/onesait-controlpanel.png}" xmlns="http://www.w3.org/2000/svg"   height="84"/>
+				<img  th:if="!${image} or ${image} == ''" th:src="@{/images/onesait-controlpanel.png}" xmlns="http://www.w3.org/2000/svg"   height="84"/> 				    
 				<img  th:if="${image} and ${image} != ''" th:src="@{'data:image/jpeg;base64,'+${image}}" xmlns="http://www.w3.org/2000/svg" width="184" height="84" viewBox="0 0 184 84"/>
     		</div>
     		<br></br><br></br>
 		        <h4 id="OpenSource-Findusongithub" th:text="#{login.follow}" >Follow us on twitter and gitHub and become a collaborator :)</h4>
 		         <br></br>
 		        <p th:text="#{login.follow.description}" >Onesait Platform Community edition is a free, open-source Digital Platform that anyone can download and use to build a complete solution over it</p>
-		         <br></br>
-
+		         <br></br>		        
+		      
 				<h3><a href="https://twitter.com/onesaitplatform" target="_blank" title="@onesaitplatform" >
 				<svg viewBox="0 0 24 24" class="" width="32" height="32"><g><path d="M23.643 4.937c-.835.37-1.732.62-2.675.733.962-.576 1.7-1.49 2.048-2.578-.9.534-1.897.922-2.958 1.13-.85-.904-2.06-1.47-3.4-1.47-2.572 0-4.658 2.086-4.658 4.66 0 .364.042.718.12 1.06-3.873-.195-7.304-2.05-9.602-4.868-.4.69-.63 1.49-.63 2.342 0 1.616.823 3.043 2.072 3.878-.764-.025-1.482-.234-2.11-.583v.06c0 2.257 1.605 4.14 3.737 4.568-.392.106-.803.162-1.227.162-.3 0-.593-.028-.877-.082.593 1.85 2.313 3.198 4.352 3.234-1.595 1.25-3.604 1.995-5.786 1.995-.376 0-.747-.022-1.112-.065 2.062 1.323 4.51 2.093 7.14 2.093 8.57 0 13.255-7.098 13.255-13.254 0-.2-.005-.402-.014-.602.91-.658 1.7-1.477 2.323-2.41z"></path></g></svg>
-
+				
 				Twitter</a></h3>
 		        <br></br>
 		        <h3><a href="https://github.com/onesaitplatform/" target="_blank" title="https://github.com/onesaitplatform/" >
 		        <svg height="32" class="octicon octicon-mark-github text-white" viewBox="0 0 16 16" version="1.1" width="32" aria-hidden="true"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
-
+		        
 		        GitHub</a></h3>
 		        </div>
 		        <div class="modal-footer">
 		          <button type="button" class="btn btn-default" data-dismiss="modal"><span th:text="#{gen.closeBtn}">Close</span></button>
 		        </div>
 		      </div>
-
+		      
 		    </div>
 		  </div>
-
-
-
+		  
+		  
+		  
 	<header>
     <div class="ods-logo">
-         <img  th:if="!${image} or ${image} == ''" th:src="@{/images/onesait-controlpanel.png}" xmlns="http://www.w3.org/2000/svg"   height="84"/>
-
+         <img  th:if="!${image} or ${image} == ''" th:src="@{/images/onesait-controlpanel.png}" xmlns="http://www.w3.org/2000/svg"   height="84"/> 
+				 
 		<img  th:if="${image} and ${image} != ''" th:src="@{'data:image/jpeg;base64,'+${image}}" xmlns="http://www.w3.org/2000/svg" width="184" height="84" viewBox="0 0 184 84"/>
     </div>
 	</header>
@@ -145,7 +145,7 @@
       <div id="msgError" class="ods-mb-5 hide">
         <div role="alert" class="ods-alert ods-alert--error" style="max-width: 100%;">
           <div class="ods-alert__content">
-            <span class="ods-alert__title" th:text="#{login.error}">Invalid username or password.</span>
+            <span class="ods-alert__title" th:text="#{login.error}">Invalid username and password.</span>
             <i class="ods-alert__closebtn ods-icon-close" style="display: none;"></i>
           </div>
         </div>
@@ -157,11 +157,11 @@
             <i class="ods-alert__closebtn ods-icon-close" style="display: none;"></i>
           </div>
         </div>
-      </div>
+      </div> 
        <!-- BEGIN LANGUAGE -->
 	 <ul class="nav navbar-nav pull-right">
 				<li class="dropdown dropdown-idioma">
-					<a href="javascript:;" class="dropdown-toggle tooltips" data-container="body" data-placement="bottom" th:attr="data-original-title=#{head.lang} + ': ' + ${lang}" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" style="padding-right:8px !important;">
+					<a href="javascript:;" class="dropdown-toggle tooltips" data-container="body" data-placement="bottom" th:attr="data-original-title=#{head.lang} + ': ' + ${lang}" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" style="padding-right:8px !important;">								
 						<span th:text="#{head.lang}" class="username username-hide-on-mobile"> Language </span>
 						<i class="fa fa-angle-down"></i>
 					</a>
@@ -173,17 +173,13 @@
 						<li>
 							<spring:message code="global_language_switch" arguments="Espanol" var="lang_label" htmlEscape="false" />
 							<a th:text="#{head.lang.es}" href='?lang=es'><span>ES</span></a>
-						</li>
-						<li>
-							<spring:message code="global_language_switch" arguments="Français" var="lang_label" htmlEscape="false" />
-							<a th:text="#{head.lang.fr}" href='?lang=fr'><span>FR</span></a>
-						</li>
+						</li>									
 					</ul>
 				</li>
 				</ul>
 				<!-- END LANGUAGE -->
-
-
+      
+      
       <div class="ods-form-item">
         <label for="user" class="ods-form-item__label" th:text="#{login.login.username}">Username</label>
         <input class="ods-input__inner" id="username" name="username" type="text" th:placeholder="#{login.data.user}"/>
@@ -200,11 +196,11 @@
       <div class="ods-button--text">
         <span class="btn-resetPass" onclick="formResetPass()" th:text="#{login.forgot.password}"></span>
       </div>
-
+		
 	  <br th:if="${captchaEnable}" /><br th:if="${captchaEnable}" />
 	  <div th:if="${captchaEnable}" class="g-recaptcha" th:attr="data-sitekey=${captchaToken}" data-callback="enableBtnMain"></div>
 	  <br th:if="${captchaEnable}"/>
-
+	  
       <div class="login-form__action">
         <div class="login-fom__checkbox">
           <input type="checkbox" id="remember-me" checked="checked" />
@@ -216,10 +212,9 @@
       <div class="toggleSignLogin">
         <button type="button" class="btn-formSign"  th:text="#{login.signup}">Sign up</button>
       </div>
-    </form>
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
 
     <form class="ods-forn resetPass-form__form hide" th:action="@{/users/reset-password}" method="post" autocomplete="off">
-      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
       <h3 class="login__main__title" th:text="#{login.login.resetPassword}">Reset password</h3>
       <div class="ods-form-item">
         <label class="ods-form-item__label" for="resetEmail" th:text="#{login.data.email}">E-mail</label>
@@ -230,11 +225,10 @@
       <div class="toggleSignLogin">
         <button id="btnToLogin" class="btn-formLogin">Login</button>
       </div>
-    </form>
-
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+    
     <!-- <a href="#0" class="cd-close-form">Close</a> -->
     <form class="ods-form signup-form__form hide" th:action="@{/users/register}" th:object= "${users}"  method="post" onSubmit="return validateSign()" autocomplete="off">
-      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
       <h1 class="login__main__title" th:text="#{login.new}"></h1>
       <div id="msgErrorSignUp" class="ods-mb-5 hide">
         <div role="alert" class="ods-alert ods-alert--error" style="max-width: 100%;">
@@ -244,9 +238,25 @@
           </div>
         </div>
       </div>
+      <div id="msgErrorPass" class="ods-mb-5 hide">
+        <div role="alert" class="ods-alert ods-alert--error" style="max-width: 100%;">
+          <div class="ods-alert__content">
+            <span class="ods-alert__title" th:text="#{login.error.password.repeat}">Passwords don't match.</span>
+            <i class="ods-alert__closebtn ods-icon-close" style="display: none;"></i>
+          </div>
+        </div>
+      </div>
       <div class="ods-form-item">
         <label for="user" class="ods-form-item__label" th:text="#{login.login.username}">Username</label>
-        <input class="ods-input__inner" id="usernameup" name="usernameup" th:field="*{userId}" type="text" minlength="4" pattern="[a-zA-Z0-9_@.-]{4,}" th:title="#{user.errorpattern}"/>
+        <input class="ods-input__inner" id="usernameup" name="usernameup" th:field="*{userId}" type="text" minlength="4" pattern="[a-zA-Z0-9_@.]{4,}" th:title="#{user.errorpattern}"/>
+      </div>
+      <div class="ods-form-item">
+        <label for="password" class="ods-form-item__label" th:text="#{login.data.password}">Password</label>
+        <input type="password" autocomplete="off" class="ods-input__inner" id="passwordup" name="passwordup" th:field="*{password}" th:title="#{login.pattern.password}" th:pattern="${passwordPattern}" />
+      </div>
+      <div class="ods-form-item">
+        <label for="repeatPassword" class="ods-form-item__label" th:text="#{login.data.password.repeat}">Repeat password</label>
+        <input type="password" autocomplete="off" class="ods-input__inner" id="repeatpasswordup" name="repeatpasswordup" th:title="#{login.pattern.password}" th:pattern="${passwordPattern}" />
       </div>
       <div class="ods-form-item">
         <label for="name" class="ods-form-item__label" th:text="#{login.data.name}">Name</label>
@@ -279,24 +289,24 @@
       <div class="toggleSignLogin">
         <button type="button" id="btnSignToLogin" class="btn-formLogin">Login</button>
       </div>
-    </form>
-  </div> <!-- cd-login -->
-
-	<script type="text/javascript" th:inline="javascript">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+  </div> <!-- cd-login -->	
+	
+	<script type="text/javascript" th:inline="javascript"> 
 	// <![CDATA[
 	 function enableBtn(){
 		    document.getElementById("submitAccount").disabled = false;
 	 }
-
+	 
 	 function enableBtnMain(){
 		    document.getElementById("loginBut").disabled = false;
 	 }
-
+	 
     function validateLogin() {
       let userInput = document.querySelector('#username');
       let passInput = document.querySelector('#password');
       let msgErr = document.querySelector('#msgError');
-
+	
       if ( userInput.value == "" || passInput.value == "") {
         msgErr.classList.remove('hide');
         return false
@@ -321,12 +331,12 @@
       let btnToLogin = document.querySelector('#btnSignToLogin');
       let formResetPass = document.querySelector('.resetPass-form__form');
       let btnToLoginFromReset = document.querySelector('#btnToLogin');
-
+      
       let msgErr = document.querySelector('#msgErrorSignUp');
 
       btnToSign.addEventListener('click', (e) => {
         e.preventDefault();
-
+        
         formSign.classList.remove('hide');
         formLogin.classList.add('hide');
       });
@@ -368,18 +378,31 @@
       })
     }
 
+    const passRepeatSign = document.querySelector('#repeatpasswordup');
     const nameSign = document.querySelector('#signup-name');
 
     function validateSign () {
       const userSign = document.querySelector('#usernameup');
+      const passSign = document.querySelector('#passwordup');
       const emailSign = document.querySelector('#signup-email');
       const msgErrSign = document.querySelector('#msgErrorSignUp');
-      
-      if (userSign.value == '' || nameSign.value == '' || emailSign.value == '') {
+      const msgErrPass = document.querySelector('#msgErrorPass');
+
+      if (userSign.value == '' || passSign.value == '' || passRepeatSign.value == '' || nameSign.value == '' || emailSign.value == '') {
         msgErrSign.classList.remove('hide');
         window.scrollTo(0, 0);
         return false
-      } else return true;
+      } else {
+        if (passSign.value === passRepeatSign.value) {
+          msgErrorPass.classList.add('hide');
+          msgErrorSign.classList.add('hide');
+          return true
+        } else {
+          msgErrPass.classList.remove('hide');
+          window.scrollTo(0, 0);
+          return false
+        }
+      }
     }
 
     function formResetPass() {
@@ -393,17 +416,17 @@
     $(document).ready(function(){
         $("#myBtn").click(function(){
             $("#myModal").modal();
-        });
-      showSplash();
+        });      
+      showSplash(); 
     });
-
+    
     window.onload = function() {
       validateUserPass();
       toggleSignLogin();
       toggleRadioSign();
       initializeTeams();
-    }
-
+    }	
+    
     initializeTeams = () =>{
     	microsoftTeams.initialize();
     	microsoftTeams.authentication.getAuthToken({
@@ -414,10 +437,10 @@
                alert(reason)
             }
         });
-
+    	
     }
     var mainPage = [[@{/main}]];
-
+    
     _loginWithTeamsToken = (token) =>{
     	fetch(mainPage,
 	      {
@@ -433,25 +456,25 @@
 	          return res.json().then(e => {throw e;})
 	      })
 	      .then(r =>{
-
+	        
 	      })
 	      .catch(e => {
 	        alert(e);
 	      })
     }
-
+    
     function showSplash(){
-
+    	
     	var splashEnable = [[${splashEnable}]];
     	var everyXHours = [[${everyXHours}]];
-
+    	
     	if(typeof splashEnable !== 'undefined' && splashEnable!== null && splashEnable){
-	    		if (storageAvailable('localStorage')) {
+	    		if (storageAvailable('localStorage')) {    		  
 		    		if(!localStorage.getItem('onesaitploginsplash')) {
 		    			 saveSplashDate();
 		    			 $("#splash").modal();
 		    		} else {
-			    			var jsplash = loadSplashDate();
+			    			var jsplash = loadSplashDate();	    			
 			    			if(checkLastSplashDate(jsplash,everyXHours)){
 			    				saveSplashDate();
 				    			$("#splash").modal();
@@ -460,27 +483,27 @@
 	    		} else {
 	    			$("#splash").modal();
 	    		}
-	    }
+	    }    	
     }
     //true if now is after last splashdate plus everyXHours
-    function checkLastSplashDate(datetime,everyXHours){
-    	  datetime.setHours(datetime.getHours() + everyXHours);
-    	  var now = new Date();
+    function checkLastSplashDate(datetime,everyXHours){    	
+    	  datetime.setHours(datetime.getHours() + everyXHours);    	  
+    	  var now = new Date();    	 	  
     	  return now > datetime;
     }
-
-    function saveSplashDate(){
+    
+    function saveSplashDate(){    	
   	  var now = new Date();
   	  var save = {datetime:now.toISOString()};
-  	  localStorage.setItem('onesaitploginsplash',JSON.stringify(save));
+  	  localStorage.setItem('onesaitploginsplash',JSON.stringify(save));  	  
     }
-
+    
     function loadSplashDate(){
     	var  jsplash = JSON.parse(localStorage.getItem('onesaitploginsplash'));
     	return new Date(jsplash.datetime);
     }
-
-
+    
+    
     function storageAvailable(type) {
         var storage;
         try {
@@ -504,22 +527,7 @@
                 // acknowledge QuotaExceededError only if there's something already stored
                 (storage && storage.length !== 0);
         }
-    }
-    var jseval=this;
-    function theme(){
-    
-        var js = [[${js}]];
-        var css = [[${css}]];
-        if(js!=null && js!="" && js.trim().length>0){
-          jseval.eval(js);
-        }
-        if(css!=null && css!="" && css.trim().length>0){
-          $('#headerStyle').append(css);
-        }
-        
-    }
-    theme();
-
+    }     
     // ]]>
 	</script>
 

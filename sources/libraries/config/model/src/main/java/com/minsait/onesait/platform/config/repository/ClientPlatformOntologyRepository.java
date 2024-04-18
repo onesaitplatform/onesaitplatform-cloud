@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import org.springframework.data.repository.query.Param;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
 import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.model.User;
 
 public interface ClientPlatformOntologyRepository extends JpaRepository<ClientPlatformOntology, String> {
 
@@ -47,14 +46,6 @@ public interface ClientPlatformOntologyRepository extends JpaRepository<ClientPl
 	List<ClientPlatformOntology> findByClientPlatformAndInsertAccess(
 			@Param("clientPlatformId") String clientPlatformId);
 
-	@Query("SELECT o " + "FROM ClientPlatformOntology AS o " + "WHERE o.access != 'QUERY' AND "
-			+ "o.ontology = :ontologyId")
-	List<ClientPlatformOntology> findByOntologyAndInsertAccess(@Param("ontologyId") Ontology ontologyId);
-
-	@Query("SELECT o " + "FROM ClientPlatformOntology AS o " + "WHERE o.access != 'INSERT' AND "
-			+ "o.ontology = :ontologyId")
-	List<ClientPlatformOntology> findByOntologyAndQueryAccess(@Param("ontologyId") Ontology ontologyId);
-
 	@Cacheable(cacheNames = "ClientPlatformOntologyRepository", unless = "#result==null or #result.size()==0", key = "#p0.id")
 	List<ClientPlatformOntology> findAllById(String id);
 
@@ -64,7 +55,7 @@ public interface ClientPlatformOntologyRepository extends JpaRepository<ClientPl
 	@Transactional
 	@CacheEvict(cacheNames = { "ClientPlatformOntologyRepository",
 			"ClientPlatformOntologyRepositoryByOntologyAndClientPlatform",
-	"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
+			"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
 	@Modifying
 	void deleteByOntology(Ontology ontology);
 
@@ -72,20 +63,20 @@ public interface ClientPlatformOntologyRepository extends JpaRepository<ClientPl
 	@Transactional
 	@CacheEvict(cacheNames = { "ClientPlatformOntologyRepository",
 			"ClientPlatformOntologyRepositoryByOntologyAndClientPlatform",
-	"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
+			"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
 	@Modifying
 	void deleteById(String id);
 
 	@Override
 	@CacheEvict(cacheNames = { "ClientPlatformOntologyRepository",
 			"ClientPlatformOntologyRepositoryByOntologyAndClientPlatform",
-	"ClientPlatformOntologyRepositoryByOntology","ClientPlatformOntologyRepositoryByClientPlatformAndInsertAccess" }, allEntries = true)
+			"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
 	ClientPlatformOntology save(ClientPlatformOntology entity);
 
 	@Override
 	@CacheEvict(cacheNames = { "ClientPlatformOntologyRepository",
 			"ClientPlatformOntologyRepositoryByOntologyAndClientPlatform",
-	"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
+			"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
 	@Modifying
 	@Transactional
 	void delete(ClientPlatformOntology entity);
@@ -93,10 +84,7 @@ public interface ClientPlatformOntologyRepository extends JpaRepository<ClientPl
 	@Override
 	@CacheEvict(cacheNames = { "ClientPlatformOntologyRepository",
 			"ClientPlatformOntologyRepositoryByOntologyAndClientPlatform",
-	"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
+			"ClientPlatformOntologyRepositoryByOntology" }, allEntries = true)
 	void flush();
 
-	default List<ClientPlatformOntology> findByUser(User user){
-		return findAll();
-	}
 }

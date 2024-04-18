@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,12 +63,10 @@ import com.minsait.onesait.platform.resources.service.IntegrationResourcesServic
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -106,7 +104,7 @@ public class ModelsRestControllerImpl implements ModelsRestController {
 
 	@Autowired
 	private ParameterModelService parameterModelService;
-
+	
 	@Autowired
 	private IntegrationResourcesService resourcesService;
 
@@ -132,359 +130,359 @@ public class ModelsRestControllerImpl implements ModelsRestController {
 	private String generateOutputUrl(Model model) {
 		String modelUrl = "";
 		if (model.getDashboard() != null) {
-
-			modelUrl = dashboardUrl + model.getDashboard().getId();
+			
+			modelUrl = dashboardUrl + model.getDashboard().getId(); 
 		} else if (model.getNotebook() != null){
 			modelUrl = notebookUrl + NOTEBOOK_STR + model.getNotebook().getIdzep() + PARAGRAPH_STR
-					+ model.getOutputParagraphId() + ASLFRAME_STR;
+							+ model.getOutputParagraphId() + ASLFRAME_STR;
 		}
 		return modelUrl;
 	}
-
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ModelDTO[].class))))
-	@Operation(summary = "Get Models")
+	
+	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = ModelDTO[].class))
+	@ApiOperation(value = "Get Models")
 	@GetMapping(value = "/")
 	public ResponseEntity<?> list() {
-
+		
 		ResponseEntity<?> response;
-		final String loggedUser = utils.getUserId();
-		final List<ModelDTO> modelsResult = new ArrayList<>();
-
+		String loggedUser = utils.getUserId();
+		List<ModelDTO> modelsResult = new ArrayList<>();
+		
 		try {
-			final List<Model> models = modelService.findAllModelsByUser(loggedUser);
+			List<Model> models = modelService.findAllModelsByUser(loggedUser);
 
 			if (models.isEmpty() ) {
 				response = new ResponseEntity<>(modelsResult, HttpStatus.NO_CONTENT);
 			}
 			else {
-				for (final Model model: models) {
-					final ModelServiceDTO modelServiceDTO = modelService.modelToModelServiceDTO(model);
+				for (Model model: models) {
+					ModelServiceDTO modelServiceDTO = modelService.modelToModelServiceDTO(model);
 					modelServiceDTO.setOutputURL(generateOutputUrl(model));
 					modelsResult.add(new ModelDTO(modelServiceDTO));
 				}
 				response = new ResponseEntity<>(modelsResult, HttpStatus.OK);
 			}
 		} catch (final ModelServiceException e) {
-			final ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e, e.getMessage());
+			ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e, e.getMessage());
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
 			log.error("Error in list: {}, {}", e.getError().name(), e.getMessage());
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			log.error(e.getMessage());
-			final ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e.getMessage());
+			ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e.getMessage());
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
 		}
 		return response;
 	}
-
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ModelDTO[].class))))
-	@Operation(summary = "Get Models by category and subcategory")
+	
+	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = ModelDTO[].class))
+	@ApiOperation(value = "Get Models by category and subcategory")
 	@GetMapping(value = "/category/{category}/subcategory/{subcategory}")
 	public ResponseEntity<?> getModelsByCategoryAndSubcategory(
-			@Parameter(description= "Model category", required = true) @PathVariable("category") String category,
-			@Parameter(description= "Model subcategory", required = true) @PathVariable("subcategory") String subcategory) {
-
+		@ApiParam(value = "Model category", required = true) @PathVariable("category") String category, 
+		@ApiParam(value = "Model subcategory", required = true) @PathVariable("subcategory") String subcategory) {
+		
 		ResponseEntity<?> response;
-
-		final String loggedUser = utils.getUserId();
-		final List<ModelDTO> modelsResult = new ArrayList<>();
-
+		
+		String loggedUser = utils.getUserId();
+		List<ModelDTO> modelsResult = new ArrayList<>();
+		
 		try {
-			final List<ModelServiceDTO> models = modelService.getModelsByCategoryAndSubcategory(
+			List<ModelServiceDTO> models = modelService.getModelsByCategoryAndSubcategory(
 					category, subcategory, dashboardUrl, notebookUrl, loggedUser);
-
+			
 			if (models.isEmpty() ) {
 				response = new ResponseEntity<>(modelsResult, HttpStatus.NO_CONTENT);
 			}
 			else {
-				for (final ModelServiceDTO model: models) {
+				for (ModelServiceDTO model: models) {
 					modelsResult.add(new ModelDTO(model));
 				}
 				response = new ResponseEntity<>(modelsResult, HttpStatus.OK);
 			}
-		} catch (final ModelServiceException e) {
-			final ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e, e.getMessage());
+		} catch (ModelServiceException e) {
+			ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e, e.getMessage());
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
 			log.error("Error in getModelsByCategoryAndSubcategory: {}, {}", e.getError().name(), e.getMessage());
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			log.error(e.getMessage());
-			final ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e.getMessage());
+			ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e.getMessage());
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
 		}
-
+		
 		return response;
-
+		
 	}
-
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ModelDTO.class))))
-	@Operation(summary = "Get Model by user and name of the model")
+	
+	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = ModelDTO.class))
+	@ApiOperation(value = "Get Model by user and name of the model")
 	@GetMapping(value = "/model/{modelIdentification}/user/{userId}")
 	public ResponseEntity<?> getModelByUserAndModelId(
-			@Parameter(description= "Model identification or id", required = true) @PathVariable("modelIdentification") String modelIdentification,
-			@Parameter(description= "User identification", required = true) @PathVariable("userId") String userId) {
-
+			@ApiParam(value = "Model identification or id", required = true) @PathVariable("modelIdentification") String modelIdentification, 
+			@ApiParam(value = "User identification", required = true) @PathVariable("userId") String userId) {
+		
 		ResponseEntity<?> response;
-		final String loggedUser = utils.getUserId();
+		String loggedUser = utils.getUserId();
 		final User user = userService.getUser(loggedUser);
-
+		
 		try {
-
+			
 			if (!(user.getUserId().equals(userId) || utils.isAdministrator())) {
 				throw new ModelServiceException(ModelServiceException.Error.PERMISSION_DENIED, NOT_ALLOWED);
 			}
-
-			final Model model = modelService.getModelByIdentificationAndUser(modelIdentification, userId);
-
+			
+			Model model = modelService.getModelByIdentificationAndUser(modelIdentification, userId);
+			
 			if (model == null) {
 				response = new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			}
 			else {
-				final ModelServiceDTO modelServiceDTO = modelService.modelToModelServiceDTO(model);
+				ModelServiceDTO modelServiceDTO = modelService.modelToModelServiceDTO(model);
 				modelServiceDTO.setOutputURL(generateOutputUrl(model));
 				response = new ResponseEntity<>(new ModelDTO(modelServiceDTO), HttpStatus.OK);
 			}
 		} catch (final ModelServiceException e) {
-			final ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e, e.getMessage());
+			ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e, e.getMessage());
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
 			log.error("Error in getModelByUserAndModelId: {}, {}", e.getError().name(), e.getMessage());
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			log.error(e.getMessage());
-			final ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e.getMessage());
+			ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e.getMessage());
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
 		}
 		return response;
-
+		
 	}
-
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ModelDTO.class))))
-	@Operation(summary = "Get Model by name of the model")
+	
+	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = ModelDTO.class))
+	@ApiOperation(value = "Get Model by name of the model")
 	@GetMapping(value = "/{modelIdentification}")
 	public ResponseEntity<?> getModelByUserAndModelIdentification(
-			@Parameter(description= "Model identification or id", required = true) @PathVariable("modelIdentification") String modelIdentification) {
-
+			@ApiParam(value = "Model identification or id", required = true) @PathVariable("modelIdentification") String modelIdentification) {
+		
 		ResponseEntity<?> response;
-		final String loggedUser = utils.getUserId();
-
+		String loggedUser = utils.getUserId();
+		
 		try {
-
-			final Model model = modelService.getModelByIdentificationAndUser(modelIdentification, loggedUser);
-
+			
+			Model model = modelService.getModelByIdentificationAndUser(modelIdentification, loggedUser);
+			
 			if (model == null) {
 				response = new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			}
 			else {
-				final ModelServiceDTO modelServiceDTO = modelService.modelToModelServiceDTO(model);
+				ModelServiceDTO modelServiceDTO = modelService.modelToModelServiceDTO(model);
 				modelServiceDTO.setOutputURL(generateOutputUrl(model));
 				response = new ResponseEntity<>(new ModelDTO(modelServiceDTO), HttpStatus.OK);
 			}
 		} catch (final ModelServiceException e) {
-			final ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e, e.getMessage());
+			ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e, e.getMessage());
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
 			log.error("Error in getModelByUserAndModelIdentification: {}, {}", e.getError().name(), e.getMessage());
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			log.error(e.getMessage());
-			final ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e.getMessage());
+			ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e.getMessage());
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
 		}
 		return response;
-
+		
 	}
-
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ModelDTO[].class))))
-	@Operation(summary = "Get Models by user,  category and subcategory")
+	
+	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = ModelDTO[].class))
+	@ApiOperation(value = "Get Models by user,  category and subcategory")
 	@GetMapping(value = "/category/{category}/subcategory/{subcategory}/user/{userId}")
 	public ResponseEntity<?> getModelsByUserIdAndCategoryAndSubcaegory(
-			@Parameter(description= "User identification", required = true) @PathVariable("userId") String userId,
-			@Parameter(description= "Category", required = true) @PathVariable("category") String category,
-			@Parameter(description= "Subcategory", required = true) @PathVariable("subcategory") String subcategory) {
-
+			@ApiParam(value = "User identification", required = true) @PathVariable("userId") String userId,
+			@ApiParam(value = "Category", required = true) @PathVariable("category") String category,
+			@ApiParam(value = "Subcategory", required = true) @PathVariable("subcategory") String subcategory) {
+		
 		ResponseEntity<?> response;
-		final List<ModelDTO> modelsResult = new ArrayList<>();
-		final String loggedUser = utils.getUserId();
+		List<ModelDTO> modelsResult = new ArrayList<>();
+		String loggedUser = utils.getUserId();
 		final User user = userService.getUser(loggedUser);
-
+		
 		try {
-
+			
 			if (!(user.getUserId().equals(userId) || utils.isAdministrator())) {
 				throw new ModelServiceException(ModelServiceException.Error.PERMISSION_DENIED, NOT_ALLOWED);
 			}
-
-			final List<ModelServiceDTO> models = modelService.getModelsByCategoryAndSubcategory(category, subcategory,
+			
+			List<ModelServiceDTO> models = modelService.getModelsByCategoryAndSubcategory(category, subcategory, 
 					dashboardUrl, notebookUrl, userId);
-
+			
 			if (models.isEmpty() ) {
 				response = new ResponseEntity<>(modelsResult, HttpStatus.NO_CONTENT);
 			}
 			else {
-				for (final ModelServiceDTO model: models) {
+				for (ModelServiceDTO model: models) {
 					modelsResult.add(new ModelDTO(model));
 				}
 				response = new ResponseEntity<>(modelsResult, HttpStatus.OK);
 			}
 		} catch (final ModelServiceException e) {
-			final ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e, e.getMessage());
+			ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e, e.getMessage());
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
 			log.error("Error in getByUserIdAndCategoryAndSubcaegory: {}, {}", e.getError().name(), e.getMessage());
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			log.error(e.getMessage());
-			final ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e.getMessage());
+			ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e.getMessage());
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
 		}
 		return response;
 	}
-
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=String.class))))
-	@Operation(summary = "Execute model")
+		
+	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = String.class))
+	@ApiOperation(value = "Execute model")
 	@PostMapping(value = "/execute/{modelIdentification}")
 	public ResponseEntity<?> execute (
-			@Parameter(description= "Model identification or id", required = true) @PathVariable("modelIdentification") String modelIdentification,
-			@Parameter(description= "User identification (optional, if not passed use logged user)", required = false) @RequestParam(name = "userId", required = false, defaultValue = "") String userId,
-			@Parameter(description= "Return output data in response") @RequestParam(required = false, defaultValue = "true") boolean returnData,
-			@Parameter(description= "Parameters needed to execute the model ({\"param\":\"value\", ...})") @RequestBody(required = true) String params) {
-
+			@ApiParam(value = "Model identification or id", required = true) @PathVariable("modelIdentification") String modelIdentification,
+			@ApiParam(value = "User identification (optional, if not passed use logged user)", required = false) @RequestParam(name = "userId", required = false, defaultValue = "") String userId,
+			@ApiParam(value = "Return output data in response") @RequestParam(required = false, defaultValue = "true") boolean returnData,
+			@ApiParam(value = "Parameters needed to execute the model ({\"param\":\"value\", ...})") @RequestBody(required = true) String params) {
+		
 		ResponseEntity<?> response;
-
+		
 		try {
-
+			
 			final String loggedUser = utils.getUserId();
 			final User user = userService.getUser(loggedUser);
-
+			
 			if (userId.equals("")) { // empy string is default
 				userId = loggedUser;
 			}
-
+			
 			if (!(user.getUserId().equals(userId) || utils.isAdministrator())) {
 				throw new ModelServiceException(ModelServiceException.Error.PERMISSION_DENIED, NOT_ALLOWED);
 			}
 
-			final Model model = modelService.getModelByIdentificationAndUser(modelIdentification, userId);
-
+			Model model = modelService.getModelByIdentificationAndUser(modelIdentification, userId);
+			
 			if (model == null) {
 				throw new ModelServiceException(ModelServiceException.Error.NOT_FOUND, MODEL_NOT_FOUND);
 			}
-
-			final ModelServiceDTO modelServiceDTO = modelService.modelToModelServiceDTO(model);
+			
+			ModelServiceDTO modelServiceDTO = modelService.modelToModelServiceDTO(model);
 			modelService.raiseExceptionIfIncorrect(modelServiceDTO.getParameters(), params);
 
 			final String result = modelService.executeModel(modelServiceDTO.getId(), params,  dashboardUrl, notebookUrl, userId, returnData);
 			response = new ResponseEntity<>(result, HttpStatus.OK);
 
 		} catch (final ModelServiceException e) {
-			final ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e, e.getMessage());
+			ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e, e.getMessage());
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
 			log.error("Error in execute: {}, {}", e.getError().name(), e.getMessage());
 		} catch (final Exception e) {
 			log.error(e.getMessage());
-			final ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(ERROR_EXECUTE_MODEL + ": " + e.getMessage());
+			ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(ERROR_EXECUTE_MODEL + ": " + e.getMessage());
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
 		}
-
+		
 		return response;
 	}
-
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ExecutionDTO.class))))
-	@Operation(summary = "Show an execution of model")
+	
+	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = ExecutionDTO.class))
+	@ApiOperation(value = "Show an execution of model")
 	@GetMapping(value = "/executions/{executionId}")
 	public ResponseEntity<?> getExecutionByIdEjec(
-			@Parameter(description= "Execution ID", required = true) @PathVariable("executionId")  String executionId) {
-
+			@ApiParam(value = "Execution ID", required = true) @PathVariable("executionId")  String executionId) {
+		
 		ResponseEntity<?> response;
-
+		
 		try {
 
-			final ModelExecution modelExecution = modelExecutionService.findModelExecutionByExecutionId(executionId);
-
+			ModelExecution modelExecution = modelExecutionService.findModelExecutionByExecutionId(executionId);
+			
 			if (modelExecution == null) {
 				throw new ModelServiceException(ModelServiceException.Error.NOT_FOUND, MODEL_EXECUTION_NOT_FOUND);
 			}
 			if (!(utils.isAdministrator() || utils.getUserId().equals(modelExecution.getUser().getUserId()))) {
 				throw new ModelServiceException(ModelServiceException.Error.PERMISSION_DENIED, NOT_ALLOWED);
 			}
-
-			final ModelServiceDTO modelServiceDTO = modelService.modelToModelServiceDTO(modelExecution.getModel());
-			final Category category = categoryService.getCategoryById(modelServiceDTO.getCategorymodel());
-			final Subcategory subcategory = subcategoryService.getSubcategoryById(modelServiceDTO.getSubcategorymodel());
-
-			final ExecutionDTO executionDTO = new ExecutionDTO(modelExecution, category, subcategory);
+			
+			ModelServiceDTO modelServiceDTO = modelService.modelToModelServiceDTO(modelExecution.getModel());
+			Category category = categoryService.getCategoryById(modelServiceDTO.getCategorymodel());
+			Subcategory subcategory = subcategoryService.getSubcategoryById(modelServiceDTO.getSubcategorymodel());
+			
+			ExecutionDTO executionDTO = new ExecutionDTO(modelExecution, category, subcategory);
 			response = new ResponseEntity<>(executionDTO, HttpStatus.OK);
-
+					
 		} catch (final ModelServiceException e) {
-			final ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e, e.getMessage());
+			ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e, e.getMessage());
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
 			log.error("Error in getExecutionByIdEjec: {}, {}", e.getError().name(), e.getMessage());
 		} catch (final Exception e) {
 			log.error(e.getMessage());
-			final ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO("There was an error executing the model: " + e.getMessage());
+			ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO("There was an error executing the model: " + e.getMessage());
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
 		}
-
-		return response;
+		
+		return response;	
 
 	}
-
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ExecutionDTO.class))))
-	@Operation(summary = "Show an execution of model")
+	
+	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = ExecutionDTO.class))
+	@ApiOperation(value = "Show an execution of model")
 	@GetMapping(value = "/executions/identification/{executionIdentification}/user/{userId}")
 	public ResponseEntity<?> getExecutionByExecutionIdAndUser(
-			@Parameter(description= "Execution identification", required = true) @PathVariable("executionIdentification")  String executionIdentification,
-			@Parameter(description= "User identification", required = true) @PathVariable("userId")  String userId) {
-
+			@ApiParam(value = "Execution identification", required = true) @PathVariable("executionIdentification")  String executionIdentification,
+			@ApiParam(value = "User identification", required = true) @PathVariable("userId")  String userId) {
+		
 		ResponseEntity<?> response;
-
+		
 		try {
 
-			final ModelExecution modelExecution = modelExecutionService.findModelExecutionByIdentificationAndUserId(executionIdentification, userId);
-
+			ModelExecution modelExecution = modelExecutionService.findModelExecutionByIdentificationAndUserId(executionIdentification, userId);
+			
 			if (modelExecution == null) {
 				throw new ModelServiceException(ModelServiceException.Error.NOT_FOUND, MODEL_EXECUTION_NOT_FOUND);
 			}
 			if (!(utils.isAdministrator() || utils.getUserId().equals(modelExecution.getUser().getUserId()))) {
 				throw new ModelServiceException(ModelServiceException.Error.PERMISSION_DENIED, NOT_ALLOWED);
 			}
-
-			final ModelServiceDTO modelServiceDTO = modelService.modelToModelServiceDTO(modelExecution.getModel());
-			final Category category = categoryService.getCategoryById(modelServiceDTO.getCategorymodel());
-			final Subcategory subcategory = subcategoryService.getSubcategoryById(modelServiceDTO.getSubcategorymodel());
-
-			final ExecutionDTO executionDTO = new ExecutionDTO(modelExecution, category, subcategory);
+			
+			ModelServiceDTO modelServiceDTO = modelService.modelToModelServiceDTO(modelExecution.getModel());
+			Category category = categoryService.getCategoryById(modelServiceDTO.getCategorymodel());
+			Subcategory subcategory = subcategoryService.getSubcategoryById(modelServiceDTO.getSubcategorymodel());
+			
+			ExecutionDTO executionDTO = new ExecutionDTO(modelExecution, category, subcategory);
 			response = new ResponseEntity<>(executionDTO, HttpStatus.OK);
-
+					
 		} catch (final ModelServiceException e) {
-			final ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e, e.getMessage());
+			ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e, e.getMessage());
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
 			log.error("Error in getExecutionByExecutionIdAndUser: {}, {}", e.getError().name(), e.getMessage());
 		} catch (final Exception e) {
 			log.error(e.getMessage());
-			final ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO("There was an error executing the model: " + e.getMessage());
+			ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO("There was an error executing the model: " + e.getMessage());
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
 		}
-
-		return response;
+		
+		return response;	
 
 	}
-
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ExecutionDTO[].class))))
-	@Operation(summary = "Get List of executions of models")
+	
+	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = ExecutionDTO[].class))
+	@ApiOperation(value = "Get List of executions of models")
 	@GetMapping(value = "/executions")
 	public ResponseEntity<?> getAllExecutions(
-			@Parameter(description= "User identification (optional, if not passed use logged user)", required = false) @RequestParam(name = "userId", required = false, defaultValue = "") String userId) {
-
+		@ApiParam(value = "User identification (optional, if not passed use logged user)", required = false) @RequestParam(name = "userId", required = false, defaultValue = "") String userId) {
+		
 		ResponseEntity<?> response;
-		final List<ModelExecution> executions= new ArrayList<>();
+		List<ModelExecution> executions= new ArrayList<>();
 		final List<ExecutionDTO> executionsDto = new ArrayList<>();
-
+		
 		try {
-
+			
 			final String loggedUser = utils.getUserId();
 			final User user = userService.getUser(loggedUser);
-
+			
 			if (userId.equals("")) { // empty string is default
 				userId = loggedUser;
 			}
-
+			
 			if (!(user.getUserId().equals(userId) || utils.isAdministrator())) {
 				throw new ModelServiceException(ModelServiceException.Error.PERMISSION_DENIED, NOT_ALLOWED);
 			}
-
+			
 			if (utils.isAdministrator() && userId.equals(ADMINISTRATOR_STR)) {
 				executions.addAll(modelExecutionService.findAllExecutionModels());
 			}
@@ -496,109 +494,109 @@ public class ModelsRestControllerImpl implements ModelsRestController {
 				final List<Model> models = modelService.findAllModelsByUserHasPermission(requestUser);
 				models.forEach(m -> executions.addAll(modelExecutionService.findExecutionModelsByModel(m)));
 			}
-
+			
 			for (final ModelExecution execution : executions) {
 
 				final CategoryRelation categoryRelation = categoryRelationService
-						.getByTypeIdAndType(execution.getModel().getId(), Category.Type.MODEL);
+						.getByTypeIdAndType(execution.getModel().getId(), CategoryRelation.Type.MODEL);
 				if (categoryRelation != null) {
 
 					final Category category = categoryService.getCategoryById(categoryRelation.getCategory());
 					final Subcategory subcategory = subcategoryService.getSubcategoryById(categoryRelation.getSubcategory());
 					executionsDto.add(new ExecutionDTO(execution, category, subcategory));
-				}
+					}
 			}
-
+			
 			if (executionsDto.isEmpty()) {
 				response = new ResponseEntity<>(executionsDto, HttpStatus.NO_CONTENT);
 			}
 			else {
 				response = new ResponseEntity<>(executionsDto, HttpStatus.OK);
 			}
-
-
+			
+			
 		} catch (final ModelServiceException e) {
-			final ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e, e.getMessage());
+			ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e, e.getMessage());
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
 			log.error("Error in getAllExecutions: {}, {}", e.getError().name(), e.getMessage());
 		} catch (final Exception e) {
 			log.error(e.getMessage());
-			final ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO("Error getting executions: " + e.getMessage());
+			ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO("Error getting executions: " + e.getMessage());
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
 		}
-
+		
 		return response;
 	}
-
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ExecutionDTO.class))))
-	@Operation(summary = "Create the execution of the model")
+	
+	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = ExecutionDTO.class))
+	@ApiOperation(value = "Create the execution of the model")
 	@PostMapping(value = "/execution")
 	public ResponseEntity<?> createModelExecution(
-			@Parameter(description= "Model execution data") @RequestBody(required = true) @Valid ExecutionDTO execution
+			@ApiParam(value = "Model execution data") @RequestBody(required = true) @Valid ExecutionDTO execution
 			) {
-
+		
 		ResponseEntity<?> response;
-
+		
 		try {
-
+			
 			String userId = execution.getUser();
-			final String modelIdentification = execution.getModel();
-			final String executionId = execution.getIdEject();
-			final String executionName = execution.getIdentification();
-			final String executionDescription = execution.getDescription();
-			final String params = execution.getParams();
-
-
-
+			String modelIdentification = execution.getModel();
+			String executionId = execution.getIdEject();
+			String executionName = execution.getIdentification();
+			String executionDescription = execution.getDescription();
+			String params = execution.getParams();
+			
+			
+			
 			final String loggedUser = utils.getUserId();
 			final User user = userService.getUser(loggedUser);
-
+			
 			if (userId.equals("")) { // empy string is default
 				userId = loggedUser;
 			}
-
+			
 			if (!(user.getUserId().equals(userId) || utils.isAdministrator())) {
 				throw new ModelServiceException(ModelServiceException.Error.PERMISSION_DENIED, NOT_ALLOWED);
 			}
-
+			
 			if (modelExecutionService.findModelExecutionByExecutionId(executionId) != null) {
 				throw new ModelServiceException(ModelServiceException.Error.DUPLICATED_ID, DUPLICATED_ID);
 			}
-
-			final Model model = modelService.getModelByIdentificationAndUser(modelIdentification, userId);
-
+		
+			Model model = modelService.getModelByIdentificationAndUser(modelIdentification, userId);
+			
 			if (model == null) {
 				throw new ModelServiceException(ModelServiceException.Error.NOT_FOUND, MODEL_NOT_FOUND);
 			}
-
-			final ModelServiceDTO modelServiceDTO = modelService.modelToModelServiceDTO(model);
+			
+			ModelServiceDTO modelServiceDTO = modelService.modelToModelServiceDTO(model);
 			modelService.raiseExceptionIfIncorrect(modelServiceDTO.getParameters(), params);
-
+			
 			if (modelExecutionService.cloneNotebookAndSave(model, executionId, executionName, executionDescription, params, userId) == null) {
 				throw new ModelServiceException(ModelServiceException.Error.GENERIC_ERROR, ERROR_SAVE_MODEL_EXECUTION);
 			}
-
-			final ExecutionDTO executionDTO = new ExecutionDTO(
+			
+			ExecutionDTO executionDTO = new ExecutionDTO(
 					executionId, modelServiceDTO.getCategorymodel(), modelServiceDTO.getSubcategorymodel(), executionName, executionDescription, modelServiceDTO.getIdentification(),
 					modelServiceDTO.getUserId(), modelServiceDTO.getCreatedAt(), execution.getParams());
 			response = new ResponseEntity<>(executionDTO, HttpStatus.OK);
-
+			
 		} catch (final ModelServiceException e) {
-			final ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e, e.getMessage());
+			ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e, e.getMessage());
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
 			log.error("Error in saveModelExecution: {}, {}", e.getError().name(), e.getMessage());
 		} catch (final Exception e) {
 			log.error(e.getMessage());
-			final ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO("There was an error executing the model: " + e.getMessage());
+			ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO("There was an error executing the model: " + e.getMessage());
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
 		}
-
+		
 		return response;
-
+		
 	}
-
+	
 	// ------------------------------------- deprecation area -------------------------------------
-
+	
 	@Deprecated
 	private ResponseEntity<?> tryExecuteModel(Model model, String params, String dashboardUrl, String notebookUrl, String userId, boolean returnData) {
 		ResponseEntity<?> response;
@@ -606,27 +604,27 @@ public class ModelsRestControllerImpl implements ModelsRestController {
 			final String result = modelService.executeModel(model.getId(), params,  dashboardUrl, notebookUrl, userId, returnData);
 			response = new ResponseEntity<>(result, HttpStatus.OK);
 		} catch (final ModelServiceException e) {
-			final ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e, e.getMessage());
+			ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO(e, e.getMessage());
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
 			log.error("Error in tryExecuteModel: {}, {}", e.getError().name(), e.getMessage());
 		} catch (final Exception e) {
 			log.error(e.getMessage());
-			final ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO("There was an error executing the model: " + e.getMessage());
+			ModelsResponseErrorDTO errorDTO = new ModelsResponseErrorDTO("There was an error executing the model: " + e.getMessage());
 			response = new ResponseEntity<>(errorDTO, errorDTO.defaultHttpStatus());
 		}
 		return response;
 	}
-
+	
 	@Override
 	@Deprecated
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=String.class))))
-	@Operation(summary = "Execute model")
+	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = String.class))
+	@ApiOperation(value = "Execute model")
 	@PostMapping(value = "/executeModel")
 	public ResponseEntity<?> executeModel(
-			@Parameter(description= "User identification (optional)", required = false) @RequestParam(name = "userId", required = false, defaultValue = "") String userId,
-			@Parameter(description= "A JSON with parameters needed to execute the model") @RequestParam(required = false, defaultValue = "{}") String params,
-			@Parameter(description= "Model name", required = true) @RequestParam(name = "modelName") String modelName,
-			@Parameter(description= "Return output data in response") @RequestParam(required = false, defaultValue = "false") boolean returnData) {
+			@ApiParam(value = "User identification (optional)", required = false) @RequestParam(name = "userId", required = false, defaultValue = "") String userId,
+			@ApiParam(value = "A JSON with parameters needed to execute the model") @RequestParam(required = false, defaultValue = "{}") String params,
+			@ApiParam(value = "Model name", required = true) @RequestParam(name = "modelName") String modelName, 
+			@ApiParam(value = "Return output data in response") @RequestParam(required = false, defaultValue = "false") boolean returnData) {
 		try {
 
 			userId = utils.getUserId(); // deprecated - useless
@@ -634,7 +632,7 @@ public class ModelsRestControllerImpl implements ModelsRestController {
 			if (user == null) {
 				return new ResponseEntity<>(USER_NOT_FOUND, HttpStatus.NOT_FOUND);
 			}
-
+				
 			Model model = null;
 
 			final Optional<Model> modelOptional = modelService.findAllModelsByUserHasPermission(user).stream()
@@ -644,7 +642,7 @@ public class ModelsRestControllerImpl implements ModelsRestController {
 			if (modelOptional.isPresent()) {
 				model = modelOptional.get();
 			}
-
+			
 			if (model != null) {
 				final JSONObject jsonParams = new JSONObject(params);
 				final List<ParameterModel> parameters = parameterModelService.findAllParameterModelsByModel(model);
@@ -655,7 +653,7 @@ public class ModelsRestControllerImpl implements ModelsRestController {
 						return new ResponseEntity<>("There are params missing.", HttpStatus.BAD_REQUEST);
 					}
 				}
-
+				
 				return tryExecuteModel(model, params, dashboardUrl, notebookUrl, userId, returnData);
 
 			} else {
@@ -668,17 +666,17 @@ public class ModelsRestControllerImpl implements ModelsRestController {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-
+	
 	@Override
 	@Deprecated
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ModelDTO[].class))))
-	@Operation(summary = "Get Models category and subcategory, using header token to identify the user")
+	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = ModelDTO[].class))
+	@ApiOperation(value = "Get Models category and subcategory, using header token to identify the user")
 	@PostMapping(value = "/getByCategoryAndSubcategory")
 	public ResponseEntity<?> getByCategoryAndSubcategory(
-			@Parameter(description= "Model category", required = true) @RequestParam(name = "category", required = true, defaultValue = "") String category,
-			@Parameter(description= "Model subcategory", required = true) @RequestParam(name = "subcategory", required = true, defaultValue = "") String subcategory) {
+			@ApiParam(value = "Model category", required = true) @RequestParam(name = "category", required = true, defaultValue = "") String category,
+			@ApiParam(value = "Model subcategory", required = true) @RequestParam(name = "subcategory", required = true, defaultValue = "") String subcategory) {
 
-		final String loggedUser = utils.getUserId();
+		String loggedUser = utils.getUserId();
 
 		if (loggedUser == null) {
 			return new ResponseEntity<>(USER_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -706,26 +704,26 @@ public class ModelsRestControllerImpl implements ModelsRestController {
 
 	@Override
 	@Deprecated
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ModelDTO[].class))))
-	@Operation(summary = "Get Model and name of the model, using header token to identify the user")
+	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = ModelDTO[].class))
+	@ApiOperation(value = "Get Model and name of the model, using header token to identify the user")
 	@PostMapping(value = "/getByModelId")
 	public ResponseEntity<?> getByUserHeaderAndModelId(
-			@Parameter(description= "Model identification", required = true) @RequestParam(value = "modelName", required = true) String modelName) {
+			@ApiParam(value = "Model identification", required = true) @RequestParam(value = "modelName", required = true) String modelName) {
 
-		final String loggedUser = utils.getUserId();
+		String loggedUser = utils.getUserId();
 
 		return getByUserAndModelId(loggedUser, modelName);
 	}
 
 	@Override
 	@Deprecated
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ModelDTO[].class))))
-	@Operation(summary = "Get Models by user, category and subcategory.")
+	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = ModelDTO[].class))
+	@ApiOperation(value = "Get Models by user, category and subcategory.")
 	@PostMapping(value = "/getByUserAndCategoryAndSubcategory")
 	public ResponseEntity<?> getByUserAndCategoryAndSubcaegory(
-			@Parameter(description= "User identification", required = true) @RequestParam(name = "userId", required = true) String userId,
-			@Parameter(description= "Category", required = true) @RequestParam(name = "category", required = true) String category,
-			@Parameter(description= "Subcategory", required = true) @RequestParam(name = "subcategory", required = true) String subcategory) {
+			@ApiParam(value = "User identification", required = true) @RequestParam(name = "userId", required = true) String userId,
+			@ApiParam(value = "Category", required = true) @RequestParam(name = "category", required = true) String category,
+			@ApiParam(value = "Subcategory", required = true) @RequestParam(name = "subcategory", required = true) String subcategory) {
 		try {
 
 			final String loggedUser = utils.getUserId();
@@ -761,15 +759,15 @@ public class ModelsRestControllerImpl implements ModelsRestController {
 
 	@Override
 	@Deprecated
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ModelDTO[].class))))
-	@Operation(summary = "Get Model by user and name of the model")
+	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = ModelDTO[].class))
+	@ApiOperation(value = "Get Model by user and name of the model")
 	@PostMapping(value = "/getByUserAndModelId")
 	public ResponseEntity<?> getByUserAndModelId(
-			@Parameter(description= "User identification", required = true) @RequestParam(name = "userId", required = true) String userId,
-			@Parameter(description= "Model identification", required = true) @RequestParam(name = "modelName", required = true) String modelName) {
+			@ApiParam(value = "User identification", required = true) @RequestParam(name = "userId", required = true) String userId,
+			@ApiParam(value = "Model identification", required = true) @RequestParam(name = "modelName", required = true) String modelName) {
 		try {
 
-			final String loggedUser = utils.getUserId();
+			String loggedUser = utils.getUserId();
 			if (loggedUser == null) {
 				return new ResponseEntity<>(USER_NOT_FOUND, HttpStatus.NOT_FOUND);
 			}
@@ -790,11 +788,11 @@ public class ModelsRestControllerImpl implements ModelsRestController {
 					if (modelOptional.isPresent()) {
 						m = modelOptional.get();
 					}
-
+					
 					final List<ModelDTO> modelsResult = new ArrayList<>();
 					if (m != null) {
 						final CategoryRelation categoryRelation = categoryRelationService
-								.getByTypeIdAndType(m.getId(), Category.Type.MODEL);
+								.getByTypeIdAndType(m.getId(), CategoryRelation.Type.MODEL);
 						if (categoryRelation != null) {
 
 							final Category c = categoryService.getCategoryById(categoryRelation.getCategory());
@@ -804,8 +802,8 @@ public class ModelsRestControllerImpl implements ModelsRestController {
 							final List<ParameterModel> parameters = parameterModelService.findAllParameterModelsByModel(m);
 							for (final ParameterModel param : parameters) {
 								parameterModelDTOs
-								.add(new ParameterModelDTO(param.getIdentification(), param.getType().name(),
-										param.getRangeFrom(), param.getRangeFrom(), param.getEnumerators()));
+										.add(new ParameterModelDTO(param.getIdentification(), param.getType().name(),
+												param.getRangeFrom(), param.getRangeFrom(), param.getEnumerators()));
 							}
 
 							if (m.getDashboard() != null) {
@@ -819,7 +817,7 @@ public class ModelsRestControllerImpl implements ModelsRestController {
 										m.getNotebook().getIdentification(), null, c.getIdentification(),
 										subc.getIdentification(), m.getOutputParagraphId(), m.getInputParagraphId(),
 										notebookUrl + NOTEBOOK_STR + m.getNotebook().getIdzep() + PARAGRAPH_STR
-										+ m.getOutputParagraphId() + ASLFRAME_STR,
+												+ m.getOutputParagraphId() + ASLFRAME_STR,
 										parameterModelDTOs, m.getCreatedAt().toString()));
 							}
 
@@ -845,20 +843,20 @@ public class ModelsRestControllerImpl implements ModelsRestController {
 
 	@Override
 	@Deprecated
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=String.class))))
-	@Operation(summary = "Save the execution of the model")
+	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = String.class))
+	@ApiOperation(value = "Save the execution of the model")
 	@PostMapping(value = "/saveExecution")
 	public ResponseEntity<?> saveExecution(
-			@Parameter(description= "User identification", required = true) @RequestParam(name = "userId", required = true) String userId,
-			@Parameter(description= "A JSON with parameters needed yo execute the model", required = true) @RequestParam(name = "params", required = true) String params,
-			@Parameter(description= "Model identification", required = true) @RequestParam(name = "modelName", required = true) String modelName,
-			@Parameter(description= "Name of the execution", required = true) @RequestParam(name = "executionName", required = true) String executionName,
-			@Parameter(description= "Description of the execution", required = true) @RequestParam(name = "executionDescription", required = true) String executionDescription,
-			@Parameter(description= "Execution ID", required = true) @RequestParam(name = "executionId", required = true) String executionId) {
-
+			@ApiParam(value = "User identification", required = true) @RequestParam(name = "userId", required = true) String userId,
+			@ApiParam(value = "A JSON with parameters needed yo execute the model", required = true) @RequestParam(name = "params", required = true) String params, 
+			@ApiParam(value = "Model identification", required = true) @RequestParam(name = "modelName", required = true) String modelName, 
+			@ApiParam(value = "Name of the execution", required = true) @RequestParam(name = "executionName", required = true) String executionName, 
+			@ApiParam(value = "Description of the execution", required = true) @RequestParam(name = "executionDescription", required = true) String executionDescription, 
+			@ApiParam(value = "Execution ID", required = true) @RequestParam(name = "executionId", required = true) String executionId) {
+		
 		try {
 
-			final String loggedUser = utils.getUserId();
+			String loggedUser = utils.getUserId();
 			if (loggedUser.trim().equals("")) {
 				return new ResponseEntity<>(USER_NOT_FOUND, HttpStatus.NOT_FOUND);
 			}
@@ -881,7 +879,7 @@ public class ModelsRestControllerImpl implements ModelsRestController {
 					if (modelOptional.isPresent()) {
 						model = modelOptional.get();
 					}
-
+					
 					if (model != null) {
 						final List<String> listParams = new ArrayList<>();
 						final List<ParameterModel> parameters = parameterModelService.findAllParameterModelsByModel(model);
@@ -932,15 +930,15 @@ public class ModelsRestControllerImpl implements ModelsRestController {
 
 	@Override
 	@Deprecated
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ExecutionDTO[].class))))
-	@Operation(summary = "Get List of executions of models")
+	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = ExecutionDTO[].class))
+	@ApiOperation(value = "Get List of executions of models")
 	@PostMapping(value = "/getExecutions")
 	public ResponseEntity<?> getExecutions(
-			@Parameter(description= "User identification", required = true) @RequestParam(name = "userId", required = true) String userId) {
-
+			@ApiParam(value = "User identification", required = true) @RequestParam(name = "userId", required = true) String userId) {
+		
 		try {
 
-			final String loggedUser = utils.getUserId();
+			String loggedUser = utils.getUserId();
 			if (loggedUser.trim().equals("")) {
 				return new ResponseEntity<>(USER_NOT_FOUND, HttpStatus.NOT_FOUND);
 			}
@@ -969,16 +967,16 @@ public class ModelsRestControllerImpl implements ModelsRestController {
 					for (final ModelExecution execution : executions) {
 
 						final CategoryRelation categoryRelation = categoryRelationService
-								.getByTypeIdAndType(execution.getModel().getId(), Category.Type.MODEL);
+								.getByTypeIdAndType(execution.getModel().getId(), CategoryRelation.Type.MODEL);
 						if (categoryRelation != null) {
 
 							final Category c = categoryService.getCategoryById(categoryRelation.getCategory());
 							final Subcategory subc = subcategoryService.getSubcategoryById(categoryRelation.getSubcategory());
 
-
+							
 							final ExecutionDTO executionDto = new ExecutionDTO(execution.getIdEject(), c.getIdentification(),
 									subc.getIdentification(), execution.getIdentification(), execution.getDescription(),
-									execution.getModel().getIdentification(), execution.getUser().getUserId(),
+									execution.getModel().getIdentification(), execution.getUser().getUserId(), 
 									execution.getCreatedAt().toString(), execution.getParameters());
 
 							executionsDto.add(executionDto);
@@ -1004,15 +1002,15 @@ public class ModelsRestControllerImpl implements ModelsRestController {
 
 	@Override
 	@Deprecated
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=String.class))))
-	@Operation(summary = "Show an execution of model")
+	@ApiResponses(@ApiResponse(code = 200, message = "OK", response = String.class))
+	@ApiOperation(value = "Show an execution of model")
 	@PostMapping(value = "/showExecution")
 	public ResponseEntity<?> showExecution(
-			@Parameter(description= "User identification", required = true) @RequestParam(name = "userId", required = true) String userId,
-			@Parameter(description= "Name of the execution", required = true) @RequestParam(name = "executionName", required = true) String executionName) {
+			@ApiParam(value = "User identification", required = true) @RequestParam(name = "userId", required = true) String userId,
+			 @ApiParam(value = "Name of the execution", required = true) @RequestParam(name = "executionName", required = true) String executionName) {
 		try {
 
-			final String loggedUser = utils.getUserId();
+			String loggedUser = utils.getUserId();
 			if (loggedUser.trim().equals("")) {
 				return new ResponseEntity<>(USER_NOT_FOUND, HttpStatus.NOT_FOUND);
 			}
@@ -1040,9 +1038,9 @@ public class ModelsRestControllerImpl implements ModelsRestController {
 
 						if (modelOptional.isPresent()) {
 							execution = candidateExecution;
-						}
+						}							
 					}
-
+					
 					if (execution != null) {
 						String url = null;
 						if (execution.getModel().getDashboard() != null) {
@@ -1083,7 +1081,7 @@ public class ModelsRestControllerImpl implements ModelsRestController {
 		final List<ModelDTO> modelsResult = new ArrayList<>();
 		for (final Model m : models) {
 			final CategoryRelation categoryRelation = categoryRelationService
-					.getByTypeIdAndType(m.getId(), Category.Type.MODEL);
+					.getByTypeIdAndType(m.getId(), CategoryRelation.Type.MODEL);
 			if (categoryRelation != null) {
 
 				final Category c = categoryService.getCategoryById(categoryRelation.getCategory());
@@ -1109,7 +1107,7 @@ public class ModelsRestControllerImpl implements ModelsRestController {
 								m.getNotebook().getIdentification(), null, c.getIdentification(),
 								subc.getIdentification(), m.getOutputParagraphId(), m.getInputParagraphId(),
 								notebookUrl + NOTEBOOK_STR + m.getNotebook().getIdzep() + PARAGRAPH_STR
-								+ m.getOutputParagraphId() + ASLFRAME_STR,
+										+ m.getOutputParagraphId() + ASLFRAME_STR,
 								parameterModelDTOs, m.getCreatedAt().toString()));
 					}
 

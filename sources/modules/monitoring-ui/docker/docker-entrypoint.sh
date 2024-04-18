@@ -1,23 +1,9 @@
-#!/bin/bash
+#!/bin/sh
 
-echo "Finding Plugins"
-	
-if [ -z "$PLUGIN_URI" ]
-then
-      echo "No plugins specified"
-else
-     
-      echo "Downloading Plugins..."
-	  IFS=';' read -ra plugins <<< "$PLUGIN_URI"
-	  for plugin in "${plugins[@]}"
-	  do
-		  echo "Plugin found on '$plugin'"
-	      wget -P /application/BOOT-INF/lib/ $plugin
-	    	
-	  done
-      
-fi		
+echo "Executing keytool..."
+keytool -noprompt -import -v -trustcacerts -alias openshiftserver -file /usr/local/ocpserver.crt -keystore /usr/lib/jvm/java-1.8-openjdk/jre/lib/security/cacerts -keypass changeit -storepass changeit
 
-java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Dspring.profiles.active=docker org.springframework.boot.loader.JarLauncher
-
+echo "Arrancando Tomcat..."	
+java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Dspring.profiles.active=docker -jar /app.jar
+sleep 2m
 exit 0

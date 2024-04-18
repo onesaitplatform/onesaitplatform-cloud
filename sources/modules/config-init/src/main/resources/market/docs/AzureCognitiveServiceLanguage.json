@@ -1,0 +1,1014 @@
+[
+    {
+        "id": "f793a866.5c5ec8",
+        "type": "subflow",
+        "name": "removePreviousHeaders",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 40,
+                "y": 40,
+                "wires": [
+                    {
+                        "id": "24c35f17.18f28"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 420,
+                "y": 40,
+                "wires": [
+                    {
+                        "id": "24c35f17.18f28",
+                        "port": 0
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "24c35f17.18f28",
+        "type": "function",
+        "z": "f793a866.5c5ec8",
+        "name": "removePreviousHeaders",
+        "func": "\nmsg.req.headers = {}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 230,
+        "y": 40,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f1bbd78e.439d98",
+        "type": "subflow",
+        "name": "parseAzureResponse",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 40,
+                "y": 40,
+                "wires": [
+                    {
+                        "id": "d38e9609.0a5678"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 400,
+                "y": 40,
+                "wires": [
+                    {
+                        "id": "d38e9609.0a5678",
+                        "port": 0
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "d38e9609.0a5678",
+        "type": "function",
+        "z": "f1bbd78e.439d98",
+        "name": "parseAzureResponse",
+        "func": "\nif (msg.statusCode == 401) {\n    msg.payload = {\n         \"statusCode\": 500,\n         \"message\": \"External service 401: Unauthorized. Access token is missing, invalid, audience is incorrect (check external service configuration), or have expired.\"\n    }\n}\n\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 220,
+        "y": 40,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1b7c4b6f.d4ce35",
+        "type": "subflow",
+        "name": "Azure Language Token",
+        "info": "Flow used to set Azure Cognitive Laguages Access Token",
+        "category": "",
+        "in": [
+            {
+                "x": 60,
+                "y": 40,
+                "wires": [
+                    {
+                        "id": "310ce6aa.49392a"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 440,
+                "y": 40,
+                "wires": [
+                    {
+                        "id": "310ce6aa.49392a",
+                        "port": 0
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "310ce6aa.49392a",
+        "type": "function",
+        "z": "1b7c4b6f.d4ce35",
+        "name": "setAzureLanguageToken",
+        "func": "\n// ------- Insert Azure Token -------\nvar ACCESS_TOKEN = \"<AZURE_TOKEN>\";\n// ----------------------------------\n\nmsg.headers = {};\nif (msg.headers !== undefined) {\n    msg.headers = {};\n}\nmsg.headers[\"Ocp-Apim-Subscription-Key\"] = ACCESS_TOKEN;\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 230,
+        "y": 40,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "df234ace.19cf28",
+        "type": "tab",
+        "label": "Azure Cognitive Service Language",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "edeef8cc.f3dd78",
+        "type": "function",
+        "z": "df234ace.19cf28",
+        "name": "languageProcessingInfo",
+        "func": "var languageProcessingInfo = {\n    \"info\": \"API REST for text processing\",\n    \"options\": [\n        \"/languages\", \"/languages/sample\",\n        \"/sentiment\", \"/sentiment/sample\",\n        \"/keys\", \"/keys/sample\",\n        \"/entities\", \"/entities/sample\"\n        ]\n};\n\nmsg.payload = JSON.stringify(languageProcessingInfo);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 490,
+        "y": 80,
+        "wires": [
+            [
+                "26cda1f5.38d60e",
+                "82fba459.5a2848"
+            ]
+        ]
+    },
+    {
+        "id": "26cda1f5.38d60e",
+        "type": "debug",
+        "z": "df234ace.19cf28",
+        "name": "languageProcessingDebug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "x": 900,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "65a7175d.a2b0d8",
+        "type": "function",
+        "z": "df234ace.19cf28",
+        "name": "languagesInfo",
+        "func": "var detectionInfo = {\n    \"info\": \"REST API for language detection\",\n    \"example\":{\n        \"documents\": [\n            { \"id\": \"1\", \"text\": \"This is a document written in English.\"},\n            { \"id\": \"2\", \"text\": \"Este es un document escrito en Español.\"},\n            { \"id\": \"3\", \"text\": \"Questo documento è scritto en Italiano\"}]\n    }\n};\n\nmsg.payload = JSON.stringify(detectionInfo);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 620,
+        "y": 200,
+        "wires": [
+            [
+                "9b8ce96.9afa518",
+                "73892313.7d4f0c"
+            ]
+        ]
+    },
+    {
+        "id": "9b8ce96.9afa518",
+        "type": "debug",
+        "z": "df234ace.19cf28",
+        "name": "languagesInfoDebug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "x": 820,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "f7dcb537.8ed928",
+        "type": "http request",
+        "z": "df234ace.19cf28",
+        "name": "languagesCognitiveService",
+        "method": "POST",
+        "ret": "txt",
+        "url": "",
+        "tls": "",
+        "timeoutMillis": "10000",
+        "x": 720,
+        "y": 380,
+        "wires": [
+            [
+                "7a4a68d8.d688e8"
+            ]
+        ]
+    },
+    {
+        "id": "f0293a1c.aa5428",
+        "type": "debug",
+        "z": "df234ace.19cf28",
+        "name": "languagesDebug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "x": 1290,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "4b35349a.363bac",
+        "type": "http request",
+        "z": "df234ace.19cf28",
+        "name": "sentimentCognitiveService",
+        "method": "POST",
+        "ret": "txt",
+        "url": "",
+        "tls": "",
+        "timeoutMillis": "10000",
+        "x": 720,
+        "y": 720,
+        "wires": [
+            [
+                "85f49394.13dfa"
+            ]
+        ]
+    },
+    {
+        "id": "230c7530.fd3fda",
+        "type": "debug",
+        "z": "df234ace.19cf28",
+        "name": "sentimentDebug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "x": 1300,
+        "y": 760,
+        "wires": []
+    },
+    {
+        "id": "700fca30.fd6f44",
+        "type": "function",
+        "z": "df234ace.19cf28",
+        "name": "sentimentInfo",
+        "func": "var sentimentInfo = {\n    \"info\": \"REST API for sentiment detection\",\n    \"example\":{\n        \"documents\": [\n            {\"id\": \"1\", \"language\": \"en\", \"text\": \"I had a wonderful experience! The rooms were wonderful and the staff was helpful.\"},\n            {\"id\": \"2\", \"language\": \"en\", \"text\": \"I had a terrible time at the hotel. The staff was rude and the food was awful.\"},  \n            {\"id\": \"3\", \"language\": \"es\", \"text\": \"Los caminos que llevan hasta Monte Rainier son espectaculares y hermosos.\"},  \n            {\"id\": \"4\", \"language\": \"es\", \"text\": \"La carretera estaba atascada. Había mucho tráfico el día de ayer.\"}]\n    }\n};\n\nmsg.payload = JSON.stringify(sentimentInfo);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 620,
+        "y": 540,
+        "wires": [
+            [
+                "dc43511e.a54bb",
+                "e8af38c7.5b46f8"
+            ]
+        ]
+    },
+    {
+        "id": "dc43511e.a54bb",
+        "type": "debug",
+        "z": "df234ace.19cf28",
+        "name": "sentimentInfoDebug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "headers",
+        "x": 820,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "d66610f4.7f558",
+        "type": "http request",
+        "z": "df234ace.19cf28",
+        "name": "keysCognitiveService",
+        "method": "POST",
+        "ret": "txt",
+        "url": "",
+        "tls": "",
+        "timeoutMillis": "10000",
+        "x": 700,
+        "y": 1060,
+        "wires": [
+            [
+                "3190ec49.7d2fe4"
+            ]
+        ]
+    },
+    {
+        "id": "fa08afe0.61cda",
+        "type": "debug",
+        "z": "df234ace.19cf28",
+        "name": "keysDebug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "x": 1310,
+        "y": 1100,
+        "wires": []
+    },
+    {
+        "id": "94a3cd72.0625",
+        "type": "function",
+        "z": "df234ace.19cf28",
+        "name": "keysInfo",
+        "func": "var keysInfo = {\n    \"info\": \"REST API for keys phrase extraction\",\n    \"example\":{'documents': [\n        {'id': '1', 'language': 'en', 'text': 'I had a wonderful experience! The rooms were wonderful and the staff was helpful.'},\n        {'id': '2', 'language': 'en', 'text': 'I had a terrible time at the hotel. The staff was rude and the food was awful.'},  \n        {'id': '3', 'language': 'es', 'text': 'Los caminos que llevan hasta Monte Rainier son espectaculares y hermosos.'},  \n        {'id': '4', 'language': 'es', 'text': 'La carretera estaba atascada. Había mucho tráfico el día de ayer.'}]\n    }\n};\n\nmsg.payload = JSON.stringify(keysInfo);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 600,
+        "y": 880,
+        "wires": [
+            [
+                "c18bdb5e.7f9198",
+                "40a24221.2f707c"
+            ]
+        ]
+    },
+    {
+        "id": "c18bdb5e.7f9198",
+        "type": "debug",
+        "z": "df234ace.19cf28",
+        "name": "keysDebug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "x": 850,
+        "y": 900,
+        "wires": []
+    },
+    {
+        "id": "b8534fdb.3e935",
+        "type": "http request",
+        "z": "df234ace.19cf28",
+        "name": "entitiesCognitiveService",
+        "method": "POST",
+        "ret": "txt",
+        "url": "",
+        "tls": "",
+        "timeoutMillis": "10000",
+        "x": 710,
+        "y": 1400,
+        "wires": [
+            [
+                "df26257c.023028"
+            ]
+        ]
+    },
+    {
+        "id": "8ec4edee.a9c66",
+        "type": "debug",
+        "z": "df234ace.19cf28",
+        "name": "entitiesDebug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "x": 1320,
+        "y": 1440,
+        "wires": []
+    },
+    {
+        "id": "ae95c530.566308",
+        "type": "function",
+        "z": "df234ace.19cf28",
+        "name": "entitiesInfo",
+        "func": "var entitiesInfo = {\n    \"info\": \"REST API for entities extraction\",\n    \"example\":{'documents': [\n        {\"id\": \"1\", \"text\": \"Jeff bought three dozen eggs because there was a 50% discount.\"},\n\t\t{\"id\": \"2\", \"text\": \"The Great Depression began in 1929. By 1933, the GDP in America fell by 25%.\"}]\n    }\n};\n\nmsg.payload = JSON.stringify(entitiesInfo);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 610,
+        "y": 1220,
+        "wires": [
+            [
+                "5f4a0efe.d7223",
+                "fe0de8ac.037ec8"
+            ]
+        ]
+    },
+    {
+        "id": "5f4a0efe.d7223",
+        "type": "debug",
+        "z": "df234ace.19cf28",
+        "name": "entitiesDebug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "x": 840,
+        "y": 1240,
+        "wires": []
+    },
+    {
+        "id": "65dbb528.a2307c",
+        "type": "comment",
+        "z": "df234ace.19cf28",
+        "name": "Language",
+        "info": "Language Azure Services\n\n/language  para obtener información general de los servicios\n\n\nOpciones:\n    /languagesInfo  info de languages\n    /languages      detección del idioma\n    \n    /sentimentInfo  info de sentiment\n    /sentiment      detección del sentimiento\n    \n    /keysInfo       info de keys\n    /keys           extracción de entidades clave\n    \n    /entitiesInfo   info de entities\n    /entities       extracción de entidades\n    \n    /translateInfo  info de translate\n    /translate      traducción de texto",
+        "x": 80,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "c62441f9.a5aab",
+        "type": "subflow:1b7c4b6f.d4ce35",
+        "z": "df234ace.19cf28",
+        "name": "setAzureLanguageToken",
+        "x": 590,
+        "y": 600,
+        "wires": [
+            [
+                "56cfa444.0f410c"
+            ]
+        ]
+    },
+    {
+        "id": "649e4b8f.5f3ed4",
+        "type": "subflow:1b7c4b6f.d4ce35",
+        "z": "df234ace.19cf28",
+        "name": "setAzureLanguageToken",
+        "x": 590,
+        "y": 940,
+        "wires": [
+            [
+                "d7db2c78.59706"
+            ]
+        ]
+    },
+    {
+        "id": "419746.f75748bc",
+        "type": "subflow:1b7c4b6f.d4ce35",
+        "z": "df234ace.19cf28",
+        "name": "setAzureLanguageToken",
+        "x": 590,
+        "y": 1280,
+        "wires": [
+            [
+                "9dddb530.5da3b8"
+            ]
+        ]
+    },
+    {
+        "id": "ab50579f.742218",
+        "type": "subflow:1b7c4b6f.d4ce35",
+        "z": "df234ace.19cf28",
+        "name": "setAzureLanguageToken",
+        "x": 590,
+        "y": 260,
+        "wires": [
+            [
+                "20ca7b0d.079e54"
+            ]
+        ]
+    },
+    {
+        "id": "d69ff4fb.462308",
+        "type": "onesaitplatform api rest",
+        "z": "df234ace.19cf28",
+        "name": "Language",
+        "description": "Language Services",
+        "public": true,
+        "category": "TOOLS",
+        "authentication": "YWRtaW5pc3RyYXRvcjp6MmtCNmFObTJkOTVuRWNVVTZxS1ppMUFKVGdQaVpKcnZSWTJ1WmNNV3hBPQ==",
+        "x": 80,
+        "y": 80,
+        "wires": [
+            [
+                "780a960c.120cd8",
+                "333bdd85.5f08f2",
+                "b8355bf1.56d508",
+                "d936becf.595f9",
+                "8f77ed51.09d94",
+                "be425f4d.caf2f",
+                "fa325544.9e82c8",
+                "11221e1a.79bea2",
+                "26cb28d1.b23e88"
+            ]
+        ]
+    },
+    {
+        "id": "780a960c.120cd8",
+        "type": "onesaitplatform api rest operation",
+        "z": "df234ace.19cf28",
+        "name": "Language",
+        "description": "Language Services Information",
+        "url": "/780a960c120cd8/",
+        "apiUrl": "/",
+        "method": "get",
+        "upload": false,
+        "queryParams": "",
+        "swaggerDoc": "",
+        "x": 280,
+        "y": 80,
+        "wires": [
+            [
+                "edeef8cc.f3dd78"
+            ]
+        ]
+    },
+    {
+        "id": "82fba459.5a2848",
+        "type": "onesaitplatform api rest operation response",
+        "z": "df234ace.19cf28",
+        "name": "infoResult",
+        "statusCode": "",
+        "headers": {},
+        "x": 700,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "73892313.7d4f0c",
+        "type": "onesaitplatform api rest operation response",
+        "z": "df234ace.19cf28",
+        "name": "languagesInfoResult",
+        "statusCode": "",
+        "headers": {},
+        "x": 840,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "333bdd85.5f08f2",
+        "type": "onesaitplatform api rest operation",
+        "z": "df234ace.19cf28",
+        "name": "languagesSample",
+        "description": "Languages Detection Information",
+        "url": "/333bdd855f08f2/languages/sample",
+        "apiUrl": "/languages/sample",
+        "method": "get",
+        "upload": false,
+        "queryParams": "",
+        "swaggerDoc": "",
+        "x": 370,
+        "y": 200,
+        "wires": [
+            [
+                "65a7175d.a2b0d8"
+            ]
+        ]
+    },
+    {
+        "id": "b8355bf1.56d508",
+        "type": "onesaitplatform api rest operation",
+        "z": "df234ace.19cf28",
+        "name": "sentimentInfoSample",
+        "description": "Sentiment Information",
+        "url": "/b8355bf156d508/sentiment/sample",
+        "apiUrl": "/sentiment/sample",
+        "method": "get",
+        "upload": false,
+        "queryParams": "",
+        "swaggerDoc": "",
+        "x": 380,
+        "y": 540,
+        "wires": [
+            [
+                "700fca30.fd6f44"
+            ]
+        ]
+    },
+    {
+        "id": "e8af38c7.5b46f8",
+        "type": "onesaitplatform api rest operation response",
+        "z": "df234ace.19cf28",
+        "name": "sentimentInfoResults",
+        "statusCode": "",
+        "headers": {},
+        "x": 840,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "40a24221.2f707c",
+        "type": "onesaitplatform api rest operation response",
+        "z": "df234ace.19cf28",
+        "name": "keysInfoResult",
+        "statusCode": "",
+        "headers": {},
+        "x": 860,
+        "y": 860,
+        "wires": []
+    },
+    {
+        "id": "fe0de8ac.037ec8",
+        "type": "onesaitplatform api rest operation response",
+        "z": "df234ace.19cf28",
+        "name": "entitiesInfoResult",
+        "statusCode": "",
+        "headers": {},
+        "x": 850,
+        "y": 1200,
+        "wires": []
+    },
+    {
+        "id": "d936becf.595f9",
+        "type": "onesaitplatform api rest operation",
+        "z": "df234ace.19cf28",
+        "name": "keysSample",
+        "description": "Keys Information",
+        "url": "/d936becf595f9/keys/sample",
+        "apiUrl": "/keys/sample",
+        "method": "get",
+        "upload": false,
+        "queryParams": "",
+        "swaggerDoc": "",
+        "x": 350,
+        "y": 880,
+        "wires": [
+            [
+                "94a3cd72.0625"
+            ]
+        ]
+    },
+    {
+        "id": "8f77ed51.09d94",
+        "type": "onesaitplatform api rest operation",
+        "z": "df234ace.19cf28",
+        "name": "entitiesSample",
+        "description": "Entities Information",
+        "url": "/8f77ed5109d94/entities/sample",
+        "apiUrl": "/entities/sample",
+        "method": "get",
+        "upload": false,
+        "queryParams": "",
+        "swaggerDoc": "",
+        "x": 360,
+        "y": 1220,
+        "wires": [
+            [
+                "ae95c530.566308"
+            ]
+        ]
+    },
+    {
+        "id": "be425f4d.caf2f",
+        "type": "onesaitplatform api rest operation",
+        "z": "df234ace.19cf28",
+        "name": "languages",
+        "description": "Languages Detection Service",
+        "url": "/be425f4dcaf2f/languages",
+        "apiUrl": "/languages",
+        "method": "post",
+        "upload": false,
+        "queryParams": "{\"showStats\":\"String\"}",
+        "swaggerDoc": "",
+        "x": 350,
+        "y": 260,
+        "wires": [
+            [
+                "ab50579f.742218"
+            ]
+        ]
+    },
+    {
+        "id": "e63c7c9d.77b7f",
+        "type": "onesaitplatform api rest operation response",
+        "z": "df234ace.19cf28",
+        "name": "languagesResult",
+        "statusCode": "",
+        "headers": {},
+        "x": 1310,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "fa325544.9e82c8",
+        "type": "onesaitplatform api rest operation",
+        "z": "df234ace.19cf28",
+        "name": "sentiment",
+        "description": "Sentiment Analysis Service",
+        "url": "/fa3255449e82c8/sentiment",
+        "apiUrl": "/sentiment",
+        "method": "post",
+        "upload": false,
+        "queryParams": "{\"showStats\":\"String\"}",
+        "swaggerDoc": "",
+        "x": 340,
+        "y": 600,
+        "wires": [
+            [
+                "c62441f9.a5aab"
+            ]
+        ]
+    },
+    {
+        "id": "e7d535f7.ce4ee8",
+        "type": "onesaitplatform api rest operation response",
+        "z": "df234ace.19cf28",
+        "name": "sentimentResults",
+        "statusCode": "",
+        "headers": {},
+        "x": 1310,
+        "y": 720,
+        "wires": []
+    },
+    {
+        "id": "11221e1a.79bea2",
+        "type": "onesaitplatform api rest operation",
+        "z": "df234ace.19cf28",
+        "name": "keys",
+        "description": "Keys Extraction Service",
+        "url": "/11221e1a79bea2/keys",
+        "apiUrl": "/keys",
+        "method": "post",
+        "upload": false,
+        "queryParams": "{\"showStats\":\"String\"}",
+        "swaggerDoc": "",
+        "x": 330,
+        "y": 940,
+        "wires": [
+            [
+                "649e4b8f.5f3ed4"
+            ]
+        ]
+    },
+    {
+        "id": "5f859553.8605ec",
+        "type": "onesaitplatform api rest operation response",
+        "z": "df234ace.19cf28",
+        "name": "keysResult",
+        "statusCode": "",
+        "headers": {},
+        "x": 1330,
+        "y": 1060,
+        "wires": []
+    },
+    {
+        "id": "26cb28d1.b23e88",
+        "type": "onesaitplatform api rest operation",
+        "z": "df234ace.19cf28",
+        "name": "entities",
+        "description": "Entities Extraction Service",
+        "url": "/26cb28d1b23e88/entities",
+        "apiUrl": "/entities",
+        "method": "post",
+        "upload": false,
+        "queryParams": "{\"showStats\":\"String\"}",
+        "swaggerDoc": "",
+        "x": 340,
+        "y": 1280,
+        "wires": [
+            [
+                "419746.f75748bc"
+            ]
+        ]
+    },
+    {
+        "id": "75a3ee1a.653a7",
+        "type": "onesaitplatform api rest operation response",
+        "z": "df234ace.19cf28",
+        "name": "entitiesResult",
+        "statusCode": "",
+        "headers": {},
+        "x": 1340,
+        "y": 1400,
+        "wires": []
+    },
+    {
+        "id": "20ca7b0d.079e54",
+        "type": "function",
+        "z": "df234ace.19cf28",
+        "name": "parseLanguages",
+        "func": "msg.url = \"https://northeurope.api.cognitive.microsoft.com/text/analytics/v2.0/languages\";\n\nvar params = \"\"\nif (Object.keys(msg.req.query).length > 0){\n       params = \"?\"\n       for (var p in msg.req.query) {\n            params += \"&\";\n            params += p;\n            params += \"=\";\n            params += msg.req.query[p];\n       }\n       \n       msg.url += params;\n}\n       \nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 610,
+        "y": 300,
+        "wires": [
+            [
+                "da815307.d7e42"
+            ]
+        ]
+    },
+    {
+        "id": "56cfa444.0f410c",
+        "type": "function",
+        "z": "df234ace.19cf28",
+        "name": "parseSentiment",
+        "func": "msg.url = \"https://northeurope.api.cognitive.microsoft.com/text/analytics/v2.0/sentiment\";\n\nvar params = \"\"\nif (Object.keys(msg.req.query).length > 0){\n       params = \"?\"\n       for (var p in msg.req.query) {\n            params += \"&\";\n            params += p;\n            params += \"=\";\n            params += msg.req.query[p];\n       }\n       \n       msg.url += params;\n}\n       \nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 600,
+        "y": 640,
+        "wires": [
+            [
+                "d144bcdc.eaa2a"
+            ]
+        ]
+    },
+    {
+        "id": "d7db2c78.59706",
+        "type": "function",
+        "z": "df234ace.19cf28",
+        "name": "parseKeys",
+        "func": "msg.url = \"https://northeurope.api.cognitive.microsoft.com/text/analytics/v2.0/keyPhrases\";\n\nvar params = \"\"\nif (Object.keys(msg.req.query).length > 0){\n       params = \"?\"\n       for (var p in msg.req.query) {\n            params += \"&\";\n            params += p;\n            params += \"=\";\n            params += msg.req.query[p];\n       }\n       \n       msg.url += params;\n}\n       \nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 590,
+        "y": 980,
+        "wires": [
+            [
+                "d1df7879.8f1e98"
+            ]
+        ]
+    },
+    {
+        "id": "9dddb530.5da3b8",
+        "type": "function",
+        "z": "df234ace.19cf28",
+        "name": "parseEntities",
+        "func": "msg.url = \"https://northeurope.api.cognitive.microsoft.com/text/analytics/v2.0/entities\";\n\nvar params = \"\"\nif (Object.keys(msg.req.query).length > 0){\n       params = \"?\"\n       for (var p in msg.req.query) {\n            params += \"&\";\n            params += p;\n            params += \"=\";\n            params += msg.req.query[p];\n       }\n       \n       msg.url += params;\n}\n       \nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 590,
+        "y": 1320,
+        "wires": [
+            [
+                "e4f494a7.9a8ad8"
+            ]
+        ]
+    },
+    {
+        "id": "3190ec49.7d2fe4",
+        "type": "subflow:f1bbd78e.439d98",
+        "z": "df234ace.19cf28",
+        "name": "",
+        "x": 740,
+        "y": 1100,
+        "wires": [
+            [
+                "d8d2526a.74514"
+            ]
+        ]
+    },
+    {
+        "id": "85f49394.13dfa",
+        "type": "subflow:f1bbd78e.439d98",
+        "z": "df234ace.19cf28",
+        "name": "",
+        "x": 740,
+        "y": 760,
+        "wires": [
+            [
+                "3c2bcd12.b2a502"
+            ]
+        ]
+    },
+    {
+        "id": "df26257c.023028",
+        "type": "subflow:f1bbd78e.439d98",
+        "z": "df234ace.19cf28",
+        "name": "",
+        "x": 740,
+        "y": 1440,
+        "wires": [
+            [
+                "6f9922cd.b87fac"
+            ]
+        ]
+    },
+    {
+        "id": "7a4a68d8.d688e8",
+        "type": "subflow:f1bbd78e.439d98",
+        "z": "df234ace.19cf28",
+        "name": "",
+        "x": 740,
+        "y": 420,
+        "wires": [
+            [
+                "659843fe.b60c8c"
+            ]
+        ]
+    },
+    {
+        "id": "da815307.d7e42",
+        "type": "subflow:f793a866.5c5ec8",
+        "z": "df234ace.19cf28",
+        "name": "",
+        "x": 670,
+        "y": 340,
+        "wires": [
+            [
+                "f7dcb537.8ed928"
+            ]
+        ]
+    },
+    {
+        "id": "659843fe.b60c8c",
+        "type": "subflow:f793a866.5c5ec8",
+        "z": "df234ace.19cf28",
+        "name": "",
+        "x": 1030,
+        "y": 420,
+        "wires": [
+            [
+                "e63c7c9d.77b7f",
+                "f0293a1c.aa5428"
+            ]
+        ]
+    },
+    {
+        "id": "d144bcdc.eaa2a",
+        "type": "subflow:f793a866.5c5ec8",
+        "z": "df234ace.19cf28",
+        "name": "",
+        "x": 670,
+        "y": 680,
+        "wires": [
+            [
+                "4b35349a.363bac"
+            ]
+        ]
+    },
+    {
+        "id": "3c2bcd12.b2a502",
+        "type": "subflow:f793a866.5c5ec8",
+        "z": "df234ace.19cf28",
+        "name": "",
+        "x": 1030,
+        "y": 760,
+        "wires": [
+            [
+                "e7d535f7.ce4ee8",
+                "230c7530.fd3fda"
+            ]
+        ]
+    },
+    {
+        "id": "d1df7879.8f1e98",
+        "type": "subflow:f793a866.5c5ec8",
+        "z": "df234ace.19cf28",
+        "name": "",
+        "x": 670,
+        "y": 1020,
+        "wires": [
+            [
+                "d66610f4.7f558"
+            ]
+        ]
+    },
+    {
+        "id": "d8d2526a.74514",
+        "type": "subflow:f793a866.5c5ec8",
+        "z": "df234ace.19cf28",
+        "name": "",
+        "x": 1030,
+        "y": 1100,
+        "wires": [
+            [
+                "5f859553.8605ec",
+                "fa08afe0.61cda"
+            ]
+        ]
+    },
+    {
+        "id": "6f9922cd.b87fac",
+        "type": "subflow:f793a866.5c5ec8",
+        "z": "df234ace.19cf28",
+        "name": "",
+        "x": 1030,
+        "y": 1440,
+        "wires": [
+            [
+                "75a3ee1a.653a7",
+                "8ec4edee.a9c66"
+            ]
+        ]
+    },
+    {
+        "id": "e4f494a7.9a8ad8",
+        "type": "subflow:f793a866.5c5ec8",
+        "z": "df234ace.19cf28",
+        "name": "",
+        "x": 670,
+        "y": 1360,
+        "wires": [
+            [
+                "b8534fdb.3e935"
+            ]
+        ]
+    }
+]

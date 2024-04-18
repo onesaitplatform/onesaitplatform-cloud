@@ -145,7 +145,7 @@ var LayerCreateController = function() {
 		var csrf_value = $("meta[name='_csrf']").attr("content");
 		var csrf_header = $("meta[name='_csrf_header']").attr("content");
 		// no Id no fun!
-		if ( !layerId ) {toastr.error(ontologyCreateReg.validations.validform,''); return false; }
+		if ( !layerId ) {$.alert({title: 'ERROR!',  theme: 'light', content: ontologyCreateReg.validations.validform}); return false; }
 		
 		$.ajax({
 			url : "/controlpanel/layers/isLayerInUse/" + layerId,
@@ -165,14 +165,12 @@ var LayerCreateController = function() {
 					// call ontology Confirm at header.
 					HeaderController.showConfirmDialogLayer('delete_layer_form');
 				}else{
-					
-					toastr.error(layerCreateJson.deleteError,'');
+					$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: layerCreateJson.deleteError});
 				}
 				
 			},
 			error : function(data, status, er) {
-				 
-				toastr.error(er,'');
+				$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: er}); 
 			}
 		});
 
@@ -191,7 +189,8 @@ var LayerCreateController = function() {
         // http://docs.jquery.com/Plugins/Validation
 
         var form1 = $('#layer_create_form');
-         
+        var error1 = $('.alert-danger');
+        var success1 = $('.alert-success');
 
 
         form1.validate({
@@ -222,11 +221,13 @@ var LayerCreateController = function() {
 				description:	{ minlength: 5, required: true },
 				fields:		{ required: true },
 				types:		{ required: true },
-				geometryType:	{ required: true },
-				geometryTypeVirtual: 	{ required: true }
             },
-            invalidHandler: function(event, validator) { // display error alert on form submit
-            	toastr.error(messagesForms.validation.genFormError,'');
+            invalidHandler: function(event, validator) { // display error
+															// alert on form
+															// submit
+                success1.hide();
+                error1.show();
+                App.scrollTo(error1, -200);
             },
             errorPlacement: function(error, element) {
             	if 		( element.is(':checkbox'))	{ error.insertAfter(element.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline")); }
@@ -248,12 +249,13 @@ var LayerCreateController = function() {
             },
 			// ALL OK, THEN SUBMIT.
             submitHandler: function(form) {
+            	
+                error1.hide();
                 
                 var geometryField = $("#fields").val();
                 
                 if(geometryField == null || geometryField==undefined || geometryField=="select"){
-                	
-					toastr.error(layerCreateJson.validations.geometry,'');
+                	$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: layerCreateJson.validations.geometry});
                 	return;
                 }
                 
@@ -312,14 +314,15 @@ var LayerCreateController = function() {
 	   			
 				// form.submit();
 				form1.ajaxSubmit({type: 'post', success : function(data){
-					toastr.success(messagesForms.validation.genFormSuccess,'');
+					
 					navigateUrl(data.redirect);
 					
 					}, error: function(data){
-						toastr.error(data.responseJSON.cause);
-						//HeaderController.showErrorDialog(data.responseJSON.cause)
+						HeaderController.showErrorDialog(data.responseJSON.cause)
 					}
 				})
+				
+
 			}
         });
     }
@@ -354,7 +357,7 @@ var LayerCreateController = function() {
 				[csrf_header]: csrf_value
 		    },
 			type:"POST",
-			async: false,
+			async: true,
 			data: { 'query': query, 'ontology': $("#ontology").val()},
 			dataType:"json",
 			success: function(response,status){
@@ -552,7 +555,7 @@ var LayerCreateController = function() {
 				logControl ? console.log('|---> Action-mode: INSERT') : '';
 				$('.formcolorpicker').each(function () {
 				    $(this).colorpicker({
-			            color: '#9f60cd'
+			            color: null
 			        });
 				});
 				
@@ -627,47 +630,51 @@ var LayerCreateController = function() {
 				
 				spinnerEachFrom = $("#inner_thinckness").TouchSpin({
 					min: 0,
-					max: 999999,
+					max: 999.0,
 					stepinterval: 0.2,
+					maxboostedstep: 999.0,
 					verticalbuttons: true,
 					postfix: 'px'
 				});			
 				
 				($("#inner_thinckness").val() == "") ? $("#inner_thinckness").val(0.0) : null;		
-//				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 				
 				spinnerEachFrom = $("#outer_thinckness").TouchSpin({
 					min: 0.0,
-					max: 999999,
+					max: 999.0,
 					stepinterval: 0.2,
+					maxboostedstep: 999,
 					verticalbuttons: true,
 					postfix: 'px'
 				});			
 				
-				($("#outer_thinckness").val() == "") ? $("#outer_thinckness").val(1.0) : null;		
-//				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+				($("#outer_thinckness").val() == "") ? $("#outer_thinckness").val(0.0) : null;		
+				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 				
 				spinnerEachFrom = $("#size").TouchSpin({
 					min: 0.0,
-					max: 999999,
+					max: 999.0,
 					stepinterval: 0.2,
+					maxboostedstep: 999,
 					verticalbuttons: true,
 					postfix: 'px'
 				});			
 				
-				($("#size").val() == "") ? $("#size").val(15.0) : null;		
-//				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); })
+				($("#size").val() == "") ? $("#size").val(0.0) : null;		
+				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); })
 				
 				spinnerEachFrom = $("#refresh").TouchSpin({
 					min: 0,
-					max: 999999,
+					max: 999,
 					stepinterval: 1,
+					maxboostedstep: 999,
 					verticalbuttons: true,
 					postfix: 's'
 				});			
 				
-				($("#refresh").val() == "") ? $("#refresh").val(10) : null;		
-//				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+				($("#refresh").val() == "") ? $("#refresh").val(0) : null;		
+				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 				$("#refresh").TouchSpin({
 					initval: layerCreateJson.refreshTime
 				});
@@ -689,7 +696,7 @@ var LayerCreateController = function() {
 					$("#query").val(layerCreateJson.query);
 					$("#isQuery").attr("checked", "checked");
 					$("#query_def").show();
-					//$("#filter_div").hide();
+					$("#filter_div").hide();
 					
 					LayerCreateController.loadParamsQuery(layerCreateJson.query);
 					
@@ -713,34 +720,37 @@ var LayerCreateController = function() {
 					$("#isHeatMap").attr("checked", "checked");
 					spinnerEachFrom = $("#min").TouchSpin({
 						min: 0,
-						max: 999999,
+						max: 999.0,
 						stepinterval: 0.2,
+						maxboostedstep: 999.0,
 						verticalbuttons: true
 					});			
 					
 					($("#min").val() == "") ? $("#min").val(parseInt(layerCreateJson.heatMapMin)) : null;		
-//					spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+					spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 					
 					spinnerEachFrom = $("#max").TouchSpin({
 						min: 0.0,
-						max: 999999,
+						max: 999.0,
 						stepinterval: 0.2,
+						maxboostedstep: 999,
 						verticalbuttons: true
 					});			
 					
 					($("#max").val() == "") ? $("#max").val(parseInt(layerCreateJson.heatMapMax)) : null;		
-//					spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+					spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 					
 					spinnerEachFrom = $("#radius").TouchSpin({
 						min: 0.0,
-						max: 9999,
+						max: 9999.0,
 						stepinterval: 0.2,
+						maxboostedstep: 9999,
 						verticalbuttons: true,
 						postfix: 'px'
 					});			
 					
 					($("#radius").val() == "") ? $("#radius").val(parseInt(layerCreateJson.heatMapRadius)) : null;		
-//					spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+					spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 					
 					
 					$("#weightField").empty();
@@ -807,29 +817,6 @@ var LayerCreateController = function() {
 			$('#resetBtn').on('click', function() {
 				cleanFields('layer_create_form');
 			});
-			
-			// Fields OnBlur validation
-			
-			$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
-				$('.form').validate().element('#' + event.target.id);                // checks form for validity
-			});		
-			
-			$('.selectpicker').filter('[required]').parent().on('blur', 'div', function(event) {
-				if (event.currentTarget.getElementsByTagName('select')[0]){
-					$('.form').validate().element('#' + event.currentTarget.getElementsByTagName('select')[0].getAttribute('id'));
-				}
-			})
-			
-				
-			$('.tagsinput').filter('[required]').parent().on('blur', 'input', function(event) {
-				if ($(event.target).parent().next().val() !== ''){
-					$(event.target).parent().next().nextAll('span:first').addClass('hide');
-					$(event.target).parent().removeClass('tagsinput-has-error');
-				} else {
-					$(event.target).parent().next().nextAll('span:first').removeClass('hide');
-					$(event.target).parent().addClass('tagsinput-has-error');
-				}   
-			})
 		},
 		
 		// REDIRECT
@@ -1001,7 +988,7 @@ var LayerCreateController = function() {
 			    '<label>' + layerCreateJson.field + '</label> <select id="fields_pop" class="form-control" data-width="100%">'+
 				'</select>'+
 				'<label>' + layerCreateJson.operator + '</label> <select id="operator" class="form-control" data-width="100%">'+
-				'<option value="==">==</option>'+
+				'<option value="===">===</option>'+
 				'<option value=">">></option>'+
 				'<option value="<"><</option>'+
 				'<option value="!=">!=</option>'+
@@ -1055,10 +1042,10 @@ var LayerCreateController = function() {
 					var fields = ontologyFields;
 					$("#fields_pop").append('<option id="'+field+'" name="'+type+'" value="select">'+layerCreateJson.layerselect+'</option>');
 					for (var key in fields){
-				        var fieldAux = key;
+				        var field = key;
 				        var type = fields[key];
 				        
-				        $("#fields_pop").append('<option id="'+fieldAux+'" name="'+type+'" value="'+ fieldAux +'">' + fieldAux +'</option>');
+				        $("#fields_pop").append('<option id="'+field+'" name="'+type+'" value="'+ field +'">' + field +'</option>');
 				    }
 					
 					$("#fields_pop").val(field);
@@ -1084,26 +1071,19 @@ var LayerCreateController = function() {
 					[csrf_header]: csrf_value
 			    },
 			    success: function(response, status){
-			    	
 			    	if(response=='virtual'){
 			    		isVirtual=true;
+			    	}else{
+			    		LayerCreateController.changeOntology();
 			    	}
-			    	if (response != 'false'){
+			    /*	if (response != 'false'){
 			    		LayerCreateController.changeOntology();
 			    	} else {
 			    		$("#fields").empty();
 			    		$("#geometryTypes").attr("style","visibility:hidden");
-			    		toastr.error(layerCreateJson.validations.root,'');
-			    	}
+			    		$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: layerCreateJson.validations.root});
+			    	}*/
 				}
-//
-//			    	if(response=='virtual'){
-//			    		isVirtual=true;
-//			    	}else{
-//			    		LayerCreateController.changeOntology();
-//			    	}
-//			    
-//				}
 			});
 			
 		},
@@ -1116,47 +1096,51 @@ var LayerCreateController = function() {
 			
 			spinnerEachFrom = $("#inner_thinckness").TouchSpin({
 				min: 0,
-				max: 999999,
+				max: 999.0,
 				stepinterval: 0.2,
+				maxboostedstep: 999.0,
 				verticalbuttons: true,
 				postfix: 'px'
 			});			
 			
 			($("#inner_thinckness").val() == "") ? $("#inner_thinckness").val(0.0) : null;		
-//			spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+			spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 			
 			spinnerEachFrom = $("#outer_thinckness").TouchSpin({
 				min: 0.0,
-				max: 999999,
+				max: 999.0,
 				stepinterval: 0.2,
+				maxboostedstep: 999,
 				verticalbuttons: true,
 				postfix: 'px'
 			});			
 			
-			($("#outer_thinckness").val() == "") ? $("#outer_thinckness").val(1.0) : null;		
-//			spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+			($("#outer_thinckness").val() == "") ? $("#outer_thinckness").val(0.0) : null;		
+			spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 			
 			spinnerEachFrom = $("#size").TouchSpin({
 				min: 0.0,
-				max: 999999,
+				max: 999.0,
 				stepinterval: 0.2,
+				maxboostedstep: 999,
 				verticalbuttons: true,
 				postfix: 'px'
 			});			
 			
-			($("#size").val() == "") ? $("#size").val(15.0) : null;		
-//			spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+			($("#size").val() == "") ? $("#size").val(0.0) : null;		
+			spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 			
 			spinnerEachFrom = $("#refresh").TouchSpin({
 				min: 0,
-				max: 999999,
+				max: 999,
 				stepinterval: 1,
+				maxboostedstep: 999,
 				verticalbuttons: true,
 				postfix: 's'
 			});			
 			
-			($("#refresh").val() == "") ? $("#refresh").val(10) : null;		
-//			spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+			($("#refresh").val() == "") ? $("#refresh").val(0) : null;		
+			spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 			
 			$("#refresh").TouchSpin({
 				initval: 0
@@ -1174,8 +1158,7 @@ var LayerCreateController = function() {
 				success: function(response,status){
 					
 					if(Object.entries(response).length === 0 && response.constructor === Object){
-						
-						toastr.error(layerCreateJson.validations.ontology,'');
+						$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: layerCreateJson.validations.ontology});
 	                	return;
 					}
 					$("#fields").empty();
@@ -1225,20 +1208,25 @@ var LayerCreateController = function() {
 		checkAttribute: function (attribute, field){
 			areUniqueAttribute = attributesArray.unique();
 			areUniqueField = fieldsArray.unique();
-			if (attributesArray.length !== areUniqueAttribute.length || fieldsArray.length !== areUniqueField.length)  { 
-				var indexAttribute = attributesArray.indexOf(attribute);
-	    		if (indexAttribute > -1) {
-	    			attributesArray.splice(indexAttribute, 1);
+			if (attributesArray.length !== areUniqueAttribute.length)  { 
+				var index = attributesArray.indexOf(attribute);
+	    		if (index > -1) {
+	    			attributesArray.splice(index, 1);
 	    		}
-	    		var indexField = fieldsArray.indexOf(field);
-	    		if (indexField > -1) {
-	    			fieldsArray.splice(indexField, 1);
-	    		}
+				$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: layerCreateJson.validations.duplicates});
 				
-				toastr.error(layerCreateJson.validations.duplicates,'');
 				return;
 			}
-			var add= "<tr id='"+attribute+"'><td class='text-left no-wrap field'>"+field+"</td><td class='text-left no-wrap attribute'>"+attribute+"</td><td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border icon-on-table color-blue tooltips' onclick='LayerCreateController.editAttribute(this)' data-container='body' data-placement='bottom' id='edit_"+ attribute +" th:text='#{gen.edit}'><i class='icon-edit'></i></span><span class='btn btn-xs btn-no-border icon-on-table color-red tooltips' onclick='LayerCreateController.deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='icon-delete'></i></span></div></div></div></td></tr>";
+			if (fieldsArray.length !== areUniqueField.length)  { 
+				var index = fieldsArray.indexOf(field);
+	    		if (index > -1) {
+	    			fieldsArray.splice(index, 1);
+	    		}
+				$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: layerCreateJson.validations.duplicates});
+				
+				return;
+			}
+			var add= "<tr id='"+attribute+"'><td class='text-left no-wrap field'>"+field+"</td><td class='text-left no-wrap attribute'>"+attribute+"</td><td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='LayerCreateController.editAttribute(this)' data-container='body' data-placement='bottom' id='edit_"+ attribute +" th:text='#{gen.edit}'><i class='la la-edit font-hg'></i></span><span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='LayerCreateController.deleteAttribute(this)' th:text='#{gen.deleteBtn}'><i class='la la-trash font-hg'></i></span></div></div></div></td></tr>";
 	    	$("#attributes tbody").append(add);
 			return true;
 		},
@@ -1250,15 +1238,14 @@ var LayerCreateController = function() {
 	    		if (index > -1) {
 	    			operationsArray.splice(index, 1);
 	    		}
-				
-				toastr.error(layerCreateJson.validations.duplicates,'');
+				$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: layerCreateJson.validations.duplicates});
 				
 				return;
 			}
 			var id= uuidv4();
         	mapOperations.push({id : operation});
         	
-			var add= "<tr id='"+id+"'><td class='text-left no-wrap operation'>"+operation+"</td><td class='text-left no-wrap color'>"+color+"</td><td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border icon-on-table color-blue tooltips' onclick='LayerCreateController.editFilter(this)' data-container='body' data-placement='bottom' id='edit_"+ id +" th:text='#{gen.edit}'><i class='icon-edit'></i></span><span class='btn btn-xs btn-no-border icon-on-table color-red tooltips' onclick='LayerCreateController.deleteFilter(this)' th:text='#{gen.deleteBtn}'><i class='icon-delete'></i></span></div></div></div></td></tr>";
+			var add= "<tr id='"+id+"'><td class='text-left no-wrap operation'>"+operation+"</td><td class='text-left no-wrap color'>"+color+"</td><td class='icon text-center' style='white-space: nowrap'><div class='grupo-iconos'><span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='LayerCreateController.editFilter(this)' data-container='body' data-placement='bottom' id='edit_"+ id +" th:text='#{gen.edit}'><i class='la la-edit font-hg'></i></span><span class='btn btn-xs btn-no-border btn-circle btn-outline blue tooltips' onclick='LayerCreateController.deleteFilter(this)' th:text='#{gen.deleteBtn}'><i class='la la-trash font-hg'></i></span></div></div></div></td></tr>";
 	    	$("#filtersAttribute tbody").append(add);
 			return true;
 		},
@@ -1284,34 +1271,37 @@ var LayerCreateController = function() {
 				$("#checkHeatMap").show();
 				spinnerEachFrom = $("#min").TouchSpin({
 					min: 0,
-					max: 999999,
+					max: 999.0,
 					stepinterval: 0.2,
+					maxboostedstep: 999.0,
 					verticalbuttons: true
 				});			
 				
 				($("#min").val() == "") ? $("#min").val(0.0) : null;		
-//				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 				
 				spinnerEachFrom = $("#max").TouchSpin({
 					min: 0.0,
-					max: 999999,
+					max: 999.0,
 					stepinterval: 0.2,
+					maxboostedstep: 999,
 					verticalbuttons: true
 				});			
 				
 				($("#max").val() == "") ? $("#max").val(0.0) : null;		
-//				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 				
 				spinnerEachFrom = $("#radius").TouchSpin({
 					min: 0.0,
-					max: 9999,
+					max: 9999.0,
 					stepinterval: 0.2,
+					maxboostedstep: 9999,
 					verticalbuttons: true,
 					postfix: 'px'
 				});			
 				
 				($("#radius").val() == "") ? $("#radius").val(0.0) : null;		
-//				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 			}else if(type=="null"){
 				LayerCreateController.changeFieldAux();
 			}else{
@@ -1323,34 +1313,37 @@ var LayerCreateController = function() {
 				$("#checkHeatMap").show();
 				spinnerEachFrom = $("#min").TouchSpin({
 					min: 0,
-					max: 999999,
+					max: 999.0,
 					stepinterval: 0.2,
+					maxboostedstep: 999.0,
 					verticalbuttons: true
 				});			
 				
 				($("#min").val() == "") ? $("#min").val(0.0) : null;		
-//				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 				
 				spinnerEachFrom = $("#max").TouchSpin({
 					min: 0.0,
-					max: 999999,
+					max: 999.0,
 					stepinterval: 0.2,
+					maxboostedstep: 999,
 					verticalbuttons: true
 				});			
 				
 				($("#max").val() == "") ? $("#max").val(0.0) : null;		
-//				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 				
 				spinnerEachFrom = $("#radius").TouchSpin({
 					min: 0.0,
-					max: 999999,
+					max: 9999.0,
 					stepinterval: 0.2,
+					maxboostedstep: 9999,
 					verticalbuttons: true,
 					postfix: 'px'
 				});			
 				
 				($("#radius").val() == "") ? $("#radius").val(0.0) : null;		
-//				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
+				spinnerEachFrom.bind("keydown", function (event) { event.preventDefault(); });
 			}else{
 				$("#checkHeatMap").hide();
 			}
@@ -1456,7 +1449,6 @@ var LayerCreateController = function() {
 			        });
 				    $("#fields_pop").empty();
 				    if($("#isQuery").is(":checked")){
-				    	LayerCreateController.loadParamsQuery($("#query").val());
 				    	fields = queryFields;
 				    	 $("#fields_pop").append('<option id="select_field" name="select_field" value="select">'+layerCreateJson.layerselect+'</option>');
 							$.each(fields, function (k,v){
