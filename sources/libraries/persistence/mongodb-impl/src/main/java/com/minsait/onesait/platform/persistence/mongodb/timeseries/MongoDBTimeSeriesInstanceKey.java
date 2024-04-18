@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
 package com.minsait.onesait.platform.persistence.mongodb.timeseries;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
+
+import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -81,19 +81,5 @@ public class MongoDBTimeSeriesInstanceKey implements Serializable{
 		result = prime * result + ((window == null) ? 0 : window.hashCode());
 		result = prime * result + ((timestamp == null) ? 0 : timestamp.hashCode());
 		return result;*/
-	} 
-	public String printkeys() {
-		StringBuffer response = new StringBuffer(); 
-		response.append(ontology).append("--")
-			.append(signal).append("--");
-		for (String tag :tags) {
-			response.append(tag).append(",");
-		}
-		SimpleDateFormat sdf;
-		sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXXZ");
-		sdf.setTimeZone(TimeZone.getTimeZone("ZULU"));
-		response.append("--").append(window).append("--")
-			.append(sdf.format(timestamp));
-		return response.toString();
 	}
 }

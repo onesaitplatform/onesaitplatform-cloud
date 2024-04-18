@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -129,21 +129,6 @@
 													</div>
 												</a>
 												<!-- end Creation from a external relational database -->	
-												
-												<!-- Creation Entity Bulk -->
-												<a sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" onclick="location.href='../ontologies/bulkcreation'" class="col-md-3 col-sm-6 col-xs-12 grid__item grid__item--c1 no-margin-right" style="text-decoration: none">
-													<div>
-														<div class="icon-cards"><i class="icon-database"></i></div>
-													<h3 class="grid__item-title" style="margin-left:1em;" th:text="#{ontology.fromexternaldb.bulk}">Creation from a relational database Entity Bulk</h3>			
-													</div>													
-													<div class="col-md-12 column column--right">
-														<span class="column__text"  style="margin-right:5px;" th:text="#{ontology.fromexternaldb.bulk.desc}">Creation from a external relational database</span>
-													</div>
-													<div>
-														<div class="icon-arrow-cards"><i class="icon-go-to"></i></div>	
-													</div>
-												</a>
-												<!-- end Creation Entity Bulk -->
 												<!-- Creation KPI -->
 												<a sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" onclick="location.href='../ontologies/createkpi'" class="col-md-3 col-sm-6 col-xs-12 grid__item grid__item--c1 no-margin-right" style="text-decoration: none">
 													<div>

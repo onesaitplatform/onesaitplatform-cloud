@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -189,7 +189,6 @@
 										$('#input-name-form').removeClass("has-error");
 										$('#input-name-form').addClass("has-error");
 										$('#import-name-error').show();
-										$.alert('Please enter at least 5 characters.'); 
 										fieldsEmtpy = true;
 								}else{
 									$('#input-name-form').removeClass("has-error");
@@ -258,7 +257,6 @@
 									$('#clone-form').removeClass("has-error");
 									$('#clone-form').addClass("has-error");
 									$('#create-error').show();
-									$.alert('Please enter at least 5 characters.');
 									return false;
 								}else{
 									$('#clone-form').removeClass("has-error");
@@ -315,7 +313,6 @@
 									$('#rename-form').removeClass("has-error");
 									$('#rename-form').addClass("has-error");
 									$('#create-error').show();
-									$.alert('Please enter at least 5 characters.');
 									return false
 								}else{
 									$('#rename-form').removeClass("has-error");
@@ -429,7 +426,6 @@
 
 			function importNotebook(name,data,extension){
 				if($("#jsonInputData").val()==="" || $("#newImportNotebook").val()==="" || $("#newImportNotebook").val().length < 5){
-					$.alert('Please enter at least 5 characters.');
 					return;//Required params
 				}
 
@@ -653,7 +649,7 @@
 																			<span th:if="${notebook.public} AND (${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{notebook.private}" th:attr="onclick='javascript:makePublic(\''+${notebook.id}+'\')'"><i class="icon-close"></i><span class="span-title-three-dots-icons" th:text="#{notebook.private}" >Private</span></span>
 																		</li>
 																		<li>
-																			<span th:if="${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'}" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{notebook.deploy}" th:attr="onclick='javascript:createMicroService(\''+${notebook.identification}+'\')'"><i class="la la-rocket font-lg"></i><span class="span-title-three-dots-icons" th:text="#{notebook.deploy}" >Deploy</span></span>
+																			<span th:if="${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'}" class="btn btn-xs btn-no-border btn-circle btn-outline" th:alt="#{notebook.deploy}" th:attr="onclick='javascript:createMicroService(\''+${notebook.identification}+'\')'"><i class="la la-rocket font-hg"></i><span class="span-title-three-dots-icons" th:text="#{notebook.deploy}" >Deploy</span></span>
 																		</li>
 																		<li>
 																			<span th:if="(${notebook.user.userId==user} OR ${userRole=='ROLE_ADMINISTRATOR'})" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" th:alt="#{gen.deleteBtn}" th:attr="onclick='javascript:showRemoveNotebookDialog(\'' + ${notebook.identification} + '\',\'' + ${notebook.idzep} + '\');'">
@@ -748,7 +744,11 @@
 	//<![CDATA[
 	function navigateUrl(url){  window.location.href = url;	}
 	function navigateUrlBlank(url){ window.open(url, '_blank');};
-
+	
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 
@@ -812,8 +812,6 @@
 		if ([[${appId}]]!=null){
 			showCreateNotebookDialog();
 		}
-		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 	});
 
 	//]]>

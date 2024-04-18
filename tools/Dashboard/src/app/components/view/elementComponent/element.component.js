@@ -58,12 +58,7 @@
   
       inicializeIncomingsEvents(); 
       //Added config filters to interactionService hashmap      
-      interactionService.registerGadgetFilters(vm.element.id,vm.config);
-      
-      if (!vm.element.toolsopts) {
-        vm.element.toolsopts = {}
-      }
-        
+      interactionService.registerGadgetFilters(vm.element.id,vm.config);      
     }
 
 
@@ -386,17 +381,10 @@ vm.elemntbadgesclass = function(){
       $scope.element = element;
 
       $scope.saveAsPrebuildGadget = function() {
-
-        var config = JSON.parse(JSON.stringify(utilsService.deepMerge(element.tparams,element.params)))
-
-        if (config.datasource && config.datasource.transforms) {
-          delete config.datasource.transforms
-        }
-
         var gadget = {
           "identification": $scope.identification,
           "description": $scope.description,               
-          "config": JSON.stringify(config),
+          "config": JSON.stringify(utilsService.deepMerge(element.tparams,element.params)),
           "gadgetMeasures": [],
           "type": element.tempId,
           "instance":true
@@ -1670,11 +1658,6 @@ $scope.hideFields = function(type){
         data.config = JSON.stringify(config);
         return data;
     }
-
-     //Method to download data as xlsx
-     vm.downloadData = function () {
-      vm.sendSelectEvent("downloadData_"+vm.element.id, {})
-     }
 
     vm.addFavoriteDialog = function (ev) {
       if(vm.eventedit){

@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
     limitations under the License.
 
 -->
-<div class="col-md-12 col-xs-12 margin-both-10" >	
+<div class="col-md-12 col-xs-12 no-padding-both" >	
 	<div th:if="!${#lists.isEmpty(tagNames)}" class="form-group" style="overflow-y: scroll; height: 90%">
 		<table id="resource-access-list" class="table" data-loaded="false">
 			<thead class="table-header-background" >
@@ -43,53 +43,55 @@
 								<input type="text" name="identifications[]" readonly="readonly" class="margin-top-4 no-border"  th:value="${resource.name}" th:title="${resource.name}"/>
 								<input type="hidden" name="ids[]" th:value="${tag.id}"/>
 							</td>
-							<td  class="no-wrap text-center">											
+							<td th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="no-wrap text-center">											
+								<button  type="button" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" th:attr="onclick='javascript:TagCreateController.removeResourceTag(\''+|${resource.id}|+'\', \''+|${tag.id}|+'\')'"><i class="icon-delete"></i></button>
+							</td>
+							<td th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'"  class="no-wrap text-center">								
 								<span th:if="${#strings.toUpperCase(resource.type)} == 'DASHBOARD' 
 										  OR ${#strings.toUpperCase(resource.type)} == 'GADGET' 
 										  OR ${#strings.toUpperCase(resource.type)} == 'GADGETTEMPLATE'
 										  OR ${#strings.toUpperCase(resource.type)} == 'GADGETDATASOURCE'"									  
 									  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" 
-									  data-container="body" data-placement="bottom" th:title="#{tag.url}" data-original-title="URL Dashboard" 
+									  data-container="body" data-placement="bottom" title="#{tag.url}" data-original-title="URL Dashboard" 
 									  th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/dashboards/view/${resource.id}} + '\');'">
 									<i class="la la-link font-hg"></i>
 								</span>
 								<span th:if="${#strings.toUpperCase(resource.type)} == 'API'"   
 									  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" 
-									  data-container="body" data-placement="bottom" th:title="#{tag.url}" data-original-title="#{tag.url}" 
+									  data-container="body" data-placement="bottom" title="#{tag.url}" data-original-title="#{tag.url}" 
 									  th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/apimanager/invoke/${resource.id}/|} + '\');'">
 									<i class="la la-link font-hg"></i>
 								</span>
 								<span th:if="${#strings.toUpperCase(resource.type)} == 'ONTOLOGY'"   
 									  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" 
-									  data-container="body" data-placement="bottom" th:title="#{tag.url}" data-original-title="#{tag.url}" 
+									  data-container="body" data-placement="bottom" title="#{tag.url}" data-original-title="#{tag.url}" 
 									  th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/ontologies/show/${resource.id}/|} + '\');'">
 									<i class="la la-link font-hg"></i>
 								</span>
 								<span th:if="${#strings.toUpperCase(resource.type)} == 'FLOWDOMAIN'"   
 									  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" 
-									  data-container="body" data-placement="bottom" th:title="#{tag.url}" data-original-title="#{tag.url}" 
+									  data-container="body" data-placement="bottom" title="#{tag.url}" data-original-title="#{tag.url}" 
 									  th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/flowDomain/show/${resource.id}/|} + '\');'">
 									<i class="la la-link font-hg"></i>
 								</span>
 								<span th:if="${#strings.toUpperCase(resource.type)} == 'REPORT'"   
 									  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" 
-									  data-container="body" data-placement="bottom" th:title="#{tag.url}" data-original-title="#{tag.url}" 
+									  data-container="body" data-placement="bottom" title="#{tag.url}" data-original-title="#{tag.url}" 
 									  th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/reports/edit/${resource.id}/|} + '\');'">
 									<i class="la la-link font-hg"></i>
 								</span>
 								<span th:if="${#strings.toUpperCase(resource.type)} == 'NOTEBOOK'"   
 									  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" 
-									  data-container="body" data-placement="bottom" th:title="#{tag.url}" data-original-title="#{tag.url}" 
+									  data-container="body" data-placement="bottom" title="#{tag.url}" data-original-title="#{tag.url}" 
 									  th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/notebooks/app/#/notebook/${resource.id}/|} + '\');'">
 									<i class="la la-link font-hg"></i>
 								</span>
 								<span th:if="${#strings.toUpperCase(resource.type)} == 'PIPELINE'"   
 									  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" 
-									  data-container="body" data-placement="bottom" th:title="#{tag.url}" data-original-title="#{tag.url}" 
+									  data-container="body" data-placement="bottom" title="#{tag.url}" data-original-title="#{tag.url}" 
 									  th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/dataflow/app/collector/pipeline/${resource.id}/|} + '\');'">
 									<i class="la la-link font-hg"></i>
 								</span>
-								<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'"  type="button" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" th:title="#{tag.resource.delete.button}" style="background-color:transparent;" th:attr="onclick='javascript:TagCreateController.removeResourceTag(\''+|${resource.id}|+'\', \''+|${tag.id}|+'\')'"><i class="icon-delete"></i></button>
 							</td>			
 						</tr>
 					</th:block>

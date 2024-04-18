@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -335,12 +335,6 @@
 	var datamodelid = [[${param.dataModelId}]] || '';
 	var name = [[${param.name}]] || '';
 	var description = [[${param.description}]] || '';
-	var messageNotDeleteDataModel = [[#{datamodel.not.delete}]];
-	var messageNotExistDataModel =  [[#{datamodel.delete.not.exist}]];
-	var messageDeletedSuccessfully =  [[#{datamodel.success.deleted}]];
-					
-						
-			
 	
 	//GET SEARCH DATA
 	datamodelid ? $('#dataModelId').val(datamodelid) : datamodelid = '';
@@ -423,10 +417,10 @@
 		HeaderController.showDataModelConfirmDialog(dataModelId);	
 	}	
 	
-	//$(window).on('pageshow', function(event) {
- 	//	 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  	//	 $.each([ 0,3,6 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-	//});
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([ 0,3,6 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});
 	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
@@ -486,13 +480,13 @@
 			}			
 		});
 		
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
+		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
 		
 		//DATATABLE 
 		var oTable = $('#datamodels').DataTable({
 	      "bAutoWidth": false
 	      });
-		$.each([ 0,3,6 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		
 		// SHOW/HIDE DATATABLES COLUMN INIT 
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));
 		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
@@ -531,7 +525,7 @@
 		//$.each([ 0,3,6 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 				
 		 yadcf.init(oTable, [	 			
-			    {column_number : 4,   filter_type: "select",filter_container_id:"typefilter",filter_default_label: "[[#{datamodel.type}]]"}				 
+			    {column_number : 3,   filter_type: "select",filter_container_id:"typefilter",filter_default_label: "[[#{datamodel.type}]]"}				 
 			  ]);
 		 
 		 var filtersResets = $('.yadcf-filter-reset-button');

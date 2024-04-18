@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,9 +49,8 @@ public class OntologyLogicService {
 
 		try {
 			if (!ontology.getRtdbDatasource().equals(Ontology.RtdbDatasource.API_REST)) {
-				if (log.isDebugEnabled()) {
-					log.debug("create ontology in db {}", ontology.getRtdbDatasource());
-				}
+
+				log.debug("create ontology in db " + ontology.getRtdbDatasource());
 
 				String jsonschema = ontology.getJsonSchema();
 				JSONObject json = new JSONObject(jsonschema);
@@ -85,9 +84,7 @@ public class OntologyLogicService {
 	}
 
 	public Map<String, String> getAdditionalDBConfig(Ontology ontology) {
-		if (log.isDebugEnabled()) {
-			log.debug("Get internal config in ontology {}", ontology.getRtdbDatasource());
-		}
+		log.debug("Get internal config in ontology " + ontology.getRtdbDatasource());
 		try {
 			return this.getInstance(ontology.getRtdbDatasource()).getAdditionalDBConfig(ontology.getIdentification());
 		} catch (final Exception e) {
@@ -98,9 +95,8 @@ public class OntologyLogicService {
 
 	public void updateOntology(Ontology ontology, HashMap<String, String> config) {
 		try {
-			if (log.isDebugEnabled()) {
-				log.debug("update ontology in db {}", ontology.getRtdbDatasource());
-			}
+
+			log.debug("update ontology in db " + ontology.getRtdbDatasource());
 			this.getInstance(ontology.getRtdbDatasource()).updateTable4Ontology(ontology.getIdentification(),
 					ontology.getJsonSchema(), config);
 
@@ -140,9 +136,8 @@ public class OntologyLogicService {
 	public void removeOntology(Ontology ontology) {
 
 		try {
-			if (log.isDebugEnabled()) {
-				log.debug("remove ontology in db {}", ontology.getRtdbDatasource());
-			}
+
+			log.debug("remove ontology in db " + ontology.getRtdbDatasource());
 			this.getInstance(ontology.getRtdbDatasource()).removeTable4Ontology(ontology.getIdentification());
 
 		} catch (final Exception e) {
@@ -155,9 +150,8 @@ public class OntologyLogicService {
 
 	public List<String> getListOfTables4Ontology(Ontology ontology) {
 		try {
-			if (log.isDebugEnabled()) {
-				log.debug("list tables for ontology in db {}", ontology.getRtdbDatasource());
-			}
+
+			log.debug("list tables for ontology in db " + ontology.getRtdbDatasource());
 			return this.getInstance(ontology.getRtdbDatasource())
 					.getListOfTables4Ontology(ontology.getIdentification());
 

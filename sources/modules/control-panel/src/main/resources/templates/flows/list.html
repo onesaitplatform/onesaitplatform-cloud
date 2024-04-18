@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -285,14 +285,14 @@
 																	<span class="dropdown" > 																
 																	<span   class="btn btn-xs btn-no-border color-blue icon-on-table" style="margin-right: 0px" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
 																		<ul class="dropdown-menu dropdown-menu-table download-menu">																			
-																			<li style="margin-top: 5px;">
-																				<span th:attr="onclick='javascript:navigateUrl(\'' + @{|/flows/update/${domain.domain}|} + '\');'" ><span th:attr="data-id=${domain.domain}" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom"  th:data-original-title="#{gen.edit}"><i class="icon-edit"></i><span class="span-title-three-dots-icons" th:text="#{gen.edit}" >EDIT</span></span></span>
-																			</li>																			
 																			<li>
-																				<span th:if="${session.versioningEnabled}" class="btn btn-xs btn-no-border btn-circle btn-outline color-blue" style="margin-right: 0px" th:data-original-title="#{versioning.commit.changes}" th:onclick="'javascript:commitChanges(\''+@{|${domain.domain}|}+ '\', \'FlowDomain\');'"><i class="la la-git font-lg"></i> <span class="span-title-three-dots-icons" style=" vertical-align: top; " th:text="#{versioning.commit.changes}" >COMMIT CHANGES</span></span>
+																				<span th:attr="onclick='javascript:navigateUrl(\'' + @{|/flows/update/${domain.domain}|} + '\');'" ><span th:attr="data-id=${domain.domain}" class="btn btn-xs btn-no-border btn-circle btn-outline" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{gen.edit}"><i class="icon-edit"></i><span class="span-title-three-dots-icons" th:text="#{gen.edit}" >EDIT</span></span></span>																	
 																			</li>
 																			<li>
-																				<span sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" th:if="${#authentication.name} == ${domain.user} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'"  th:attr="onclick='javascript:deleteFlowDomainConfirmation(\''+${domain.domain}+ '\');',data-id=${domain.domain}" data-container="body" data-placement="bottom" class="btn btn-xs btn-no-border btn-circle btn-outline color-red"><i class="icon-delete"></i>  <span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >DELETE</span></span>	
+																				<span sec:authorize="hasAuthority('ROLE_ADMINISTRATOR') or hasAuthority('ROLE_DEVELOPER') or hasAuthority('ROLE_DATASCIENTIST')" th:if="${#authentication.name} == ${domain.user} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'"  th:attr="onclick='javascript:deleteFlowDomainConfirmation(\''+${domain.domain}+ '\');',data-id=${domain.domain}" class="btn btn-xs btn-no-border btn-circle btn-outline color-red" style="margin-top: 10px;" data-container="body" data-placement="bottom" ><i class="icon-delete"></i>  <span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >DELETE</span></span>																	
+																			</li>
+																			<li>
+																			<span th:if="${session.versioningEnabled}" class="btn btn-xs btn-no-border btn-circle btn-outline color-blue" style="margin-right: 0px" data-container="body" data-placement="bottom" th:data-original-title="#{versioning.commit.changes}" th:onclick="'javascript:commitChanges(\''+@{|${domain.domain}|}+ '\', \'FlowDomain\');'"><i class="la la-git font-hg"></i>  <span class="span-title-three-dots-icons" th:text="#{versioning.commit.changes}" >COMMIT CHANGES</span></span>
 																			</li>
 																		</ul>
 																	</span>
@@ -430,10 +430,10 @@
 	var headersObj;
 	
 	
-	//	$(window).on('pageshow', function(event) {
-	//		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-	// 		 $.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-	//	});
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		var csrfToken = $("meta[name='_csrf']").attr("content");
@@ -465,10 +465,9 @@
 			$('#domains').DataTable().column(1).search( $('#domain-name').val()).draw();
 		});	
 
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 		var dTable = $('#domains').DataTable();
 		dTable.page.len(10);
-		$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		$('#domains').on('draw.dt', function () {
 			initCompleteCallback();
 		} );

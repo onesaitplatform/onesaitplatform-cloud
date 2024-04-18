@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,10 +95,10 @@ import lombok.extern.slf4j.Slf4j;
 public class AppRestController {
 
 	private static final String USER_STR = "User \"";
-	private static final String NOT_EXIST = "\" does not exist";
-	private static final String NOT_EXIST_IN_REALM = "\" does not exist in realm";
+	private static final String NOT_EXIST = "\" does not exist in realm";
 	private static final String REALM_STR = "Realm \"";
 	private static final String NOT_AUTH = "\" not authorized";
+	private static final String IN_REALM_STR = "\" in Realm \"";
 
 	private static final String NOT_FOUND = "\" not found";
 	private static final String ROLE_STR = "Role";
@@ -149,11 +149,11 @@ public class AppRestController {
 			// user not administrator and not owner is not allowed to get
 			if (!utils.isAdministrator()
 					&& (null == realm.getUser() || !realm.getUser().getUserId().equals(utils.getUserId()))) {
-				return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.FORBIDDEN);
+				return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 			}
 			return new ResponseEntity<>(realm, HttpStatus.OK);
 		} else {
-			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.BAD_REQUEST);
 		}
 	}
 
@@ -170,7 +170,7 @@ public class AppRestController {
 			// user not administrator and not owner is not allowed to get
 			if (!utils.isAdministrator()
 					&& (null == realm.getUser() || !realm.getUser().getUserId().equals(utils.getUserId()))) {
-				return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.FORBIDDEN);
+				return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 			}
 
 			if (!StringUtils.hasText(realm.getUserExtraFields())) {
@@ -181,7 +181,7 @@ public class AppRestController {
 						HttpStatus.OK);
 			}
 		} else {
-			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.BAD_REQUEST);
 		}
 	}
 
@@ -202,7 +202,7 @@ public class AppRestController {
 		// user not administrator and not owner is not allowed to get Realm's users
 		if (!utils.isAdministrator() && !appDb.getUser().getUserId().equals(utils.getUserId())
 				&& !appService.isUserInApp(utils.getUserId(), appDb.getIdentification())) {
-			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.FORBIDDEN);
+			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 		}
 		final List<RealmUser> users = new ArrayList<>();
 		List<RealmUser> filteredUsers = new ArrayList<>();
@@ -217,9 +217,7 @@ public class AppRestController {
 					final Matcher m = p.matcher(String.valueOf(v));
 					return m.matches();
 				} catch (final Exception e) {
-					if (log.isDebugEnabled()) {
-						log.debug("Error while reading extra_fields for user {}", u.getUser().getUserId());
-					}
+					log.debug("Error while reading extra_fields for user {}", u.getUser().getUserId(), e);
 					return false;
 				}
 
@@ -256,7 +254,7 @@ public class AppRestController {
 		// user not administrator and not owner is not allowed to get Realm's users
 		if (!utils.isAdministrator() && !appDb.getUser().getUserId().equals(utils.getUserId())
 				&& !appService.isUserInApp(utils.getUserId(), appDb.getIdentification())) {
-			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.FORBIDDEN);
+			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 		}
 		final List<RealmUser> users = new ArrayList<>();
 		List<RealmUser> filteredUsers = new ArrayList<>();
@@ -268,9 +266,7 @@ public class AppRestController {
 					final List<Map<String, Object>> results = JsonPath.parse(u.getUser().getExtraFields()).read(jsonPathExpression);
 					return !results.isEmpty();
 				} catch (final Exception e) {
-					if (log.isDebugEnabled()) {
-						log.debug("Error while reading extra_fields for user {}", u.getUser().getUserId());
-					}
+					log.debug("Error while reading extra_fields for user {}", u.getUser().getUserId(), e);
 					return false;
 				}
 
@@ -304,7 +300,7 @@ public class AppRestController {
 			// user not administrator and not owner is not allowed to update
 			if (!utils.isAdministrator()
 					&& (null == realm.getUser() || !realm.getUser().getUserId().equals(utils.getUserId()))) {
-				return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.FORBIDDEN);
+				return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 			}
 
 			try {
@@ -316,7 +312,7 @@ public class AppRestController {
 			appService.updateApp(realm);
 			return new ResponseEntity<>(HttpStatus.OK);
 		} else {
-			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.BAD_REQUEST);
 		}
 	}
 
@@ -372,12 +368,7 @@ public class AppRestController {
 		} catch (final AppServiceException e) {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
-		try {
-			appService.createApp(app);
-		} catch (AppServiceException e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
-		}
-		
+		appService.createApp(app);
 		if (keycloakNotificator != null) {
 			keycloakNotificator.notifyRealmToKeycloak(app.getIdentification(), Type.CREATE);
 		}
@@ -413,13 +404,13 @@ public class AppRestController {
 			final AppList appDb = appService.getAppListByIdentification(identification);
 
 			if (appDb == null) {
-				return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.NOT_FOUND);
+				return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.BAD_REQUEST);
 			}
 
 			// user not administrator and not owner is not allowed to update
 			if (!utils.isAdministrator()
 					&& (null == appDb.getUser() || !appDb.getUser().getUserId().equals(utils.getUserId()))) {
-				return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.FORBIDDEN);
+				return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 			}
 
 			if (null != realm.getDescription()) {
@@ -453,13 +444,13 @@ public class AppRestController {
 		final App appDb = appService.getAppByIdentification(identification);
 
 		if (appDb == null) {
-			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.BAD_REQUEST);
 		}
 
 		// user not administrator and not owner is not allowed to delete
 		if (!utils.isAdministrator()
 				&& (null == appDb.getUser() || !appDb.getUser().getUserId().equals(utils.getUserId()))) {
-			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.FORBIDDEN);
+			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 		}
 
 		try {
@@ -484,7 +475,7 @@ public class AppRestController {
 		}
 		if (!utils.isAdministrator() && !appDb.getUser().getUserId().equals(utils.getUserId())
 				&& !appService.isUserInApp(utils.getUserId(), appDb.getIdentification())) {
-			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.FORBIDDEN);
+			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 		}
 		final List<UserAppCreateDTO> authorizations = appHelper.getAuthorizations(identification, filter);
 
@@ -498,10 +489,8 @@ public class AppRestController {
 	public ResponseEntity<?> createAuthorization(
 			@Parameter(description= "Realm Authorization", required = true) @Valid @RequestBody RealmUserAuth authorization,
 			Errors errors) {
-		if (log.isDebugEnabled()) {
-			log.debug("New realm authorization with user: {} and realm: {}", authorization.getUserId(),
+		log.debug("New realm authorization with user: {} and realm: {}", authorization.getUserId(),
 				authorization.getRealmId());
-		}
 		if (errors.hasErrors()) {
 			return ErrorValidationResponse.generateValidationErrorResponse(errors);
 		}
@@ -515,13 +504,13 @@ public class AppRestController {
 		// user not administrator and not owner is not allowed to authorize
 		if (!utils.isAdministrator()
 				&& (null == appDb.getUser() || !appDb.getUser().getUserId().equals(utils.getUserId()))) {
-			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.FORBIDDEN);
+			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 		}
 		final User user = userService.getUserByIdentification(authorization.getUserId());
 
 		if (user == null) {
 			log.warn("End realm authorization user does not exist");
-			return new ResponseEntity<>(USER_STR + authorization.getUserId() + NOT_EXIST_IN_REALM, HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(USER_STR + authorization.getUserId() + NOT_EXIST, HttpStatus.BAD_REQUEST);
 		}
 		try {
 			final AppRoleListOauth role = appService.getByRoleNameAndAppListOauth(authorization.getRoleName(), appDb);
@@ -532,7 +521,7 @@ public class AppRestController {
 			final List<AppUserListOauth> authList = appService.getAppUsersByUserIdAndRoleAndApp(authorization.getUserId(),
 					role.getName(), appDb.getIdentification());
 			if (!authList.isEmpty()) {
-				return new ResponseEntity<>("This association already exists.", HttpStatus.CONFLICT);
+				return new ResponseEntity<>("This association already exists.", HttpStatus.BAD_REQUEST);
 			}
 			appService.createUserAccess(appDb.getId(), authorization.getUserId(), role.getId());
 			log.debug("End realm authorization successfully");
@@ -559,13 +548,13 @@ public class AppRestController {
 
 			if (appDb == null) {
 				log.warn("The realm does not exist");
-				return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.NOT_FOUND);
+				return new ResponseEntity<>("The specified realms does not exist", HttpStatus.BAD_REQUEST);
 			}
 
 			// user not administrator and not owner is not allowed to authorize
 			if (!utils.isAdministrator()
 					&& (null == appDb.getUser() || !appDb.getUser().getUserId().equals(utils.getUserId()))) {
-				return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.FORBIDDEN);
+				return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 			}
 			
 			final JsonArray jsonResponse = new JsonArray();
@@ -598,9 +587,9 @@ public class AppRestController {
 			final User user = userService.getUserByIdentification(userId);
 
 			if (user == null) {
-				msg = USER_STR + userId + NOT_EXIST_IN_REALM;
+				msg = USER_STR + userId + NOT_EXIST;
 				status = ERROR_STR;
-				log.warn(USER_STR + userId + NOT_EXIST_IN_REALM);
+				log.warn(USER_STR + userId + NOT_EXIST);
 			}
 			try {
 				final AppRoleListOauth role = appService.getByRoleNameAndAppListOauth(roleName, appDb);
@@ -615,12 +604,10 @@ public class AppRestController {
 					status = ERROR_STR;
 					log.warn("This association already exists.");
 				}
-				if (!status.equals(ERROR_STR)) {
-					appService.createUserAccess(appDb.getId(), userId, role.getId());
-					msg = "New realm authorization with user: " + userId + " : Role : " + roleName + " : Realm : " + realmId;
-					status = OK_STR;
-					log.debug("End realm authorization successfully");
-				}
+				appService.createUserAccess(appDb.getId(), userId, role.getId());
+				msg = "New realm authorization with user: " + userId + " : Role : " + roleName + " : Realm : " + realmId;
+				status = OK_STR;
+				log.debug("End realm authorization successfully");
 			} catch (final AppServiceException e) {
 				msg = e.getMessage();
 				status = ERROR_STR;
@@ -671,50 +658,46 @@ public class AppRestController {
 			final String realmId = authorizationDTOJson.get("realmId").getAsString();
 			final String roleName = authorizationDTOJson.get("roleName").getAsString();
 			final String userId = authorizationDTOJson.get("userId").getAsString();
-
-			try {
 			
-				final AppList appDb = appService.getAppListByIdentification(realmId);
-	
-				if (appDb == null) {
-					msg = "The specified realms does not exist";
+			final AppList appDb = appService.getAppListByIdentification(realmId);
+
+			if (appDb == null) {
+				msg = "The specified realms does not exist";
+				status = ERROR_STR;
+				log.warn("The realm does not exist");
+			}
+
+			// user not administrator and not owner is not allowed to authorize
+			if (!utils.isAdministrator()
+					&& (null == appDb.getUser() || !appDb.getUser().getUserId().equals(utils.getUserId()))) {
+				msg = USER_STR + utils.getUserId() + NOT_AUTH;
+				status = ERROR_STR;
+				log.warn(USER_STR + utils.getUserId() + NOT_AUTH);
+			}
+			final User user = userService.getUserByIdentification(userId);
+
+			if (user == null) {
+				msg = USER_STR + userId + NOT_EXIST;
+				status = ERROR_STR;
+				log.warn(USER_STR + userId + NOT_EXIST);
+			}
+			try {
+				final AppRoleListOauth role = appService.getByRoleNameAndAppListOauth(roleName, appDb);
+				if (role == null) {
+					msg = "Role \"" + roleName + "\" does not exist in Realm ";
 					status = ERROR_STR;
-					log.warn("The realm does not exist");
-				} else {
-					// user not administrator and not owner is not allowed to authorize
-					if (!utils.isAdministrator()
-							&& (null == appDb.getUser() || !appDb.getUser().getUserId().equals(utils.getUserId()))) {
-						msg = USER_STR + utils.getUserId() + NOT_AUTH;
-						status = ERROR_STR;
-						log.warn(USER_STR + utils.getUserId() + NOT_AUTH);
-					} else {
-						final User user = userService.getUserByIdentification(userId);
-						if (user == null) {
-							msg = USER_STR + userId + NOT_EXIST_IN_REALM;
-							status = ERROR_STR;
-							log.warn(USER_STR + userId + NOT_EXIST_IN_REALM);
-						} else {	
-							final AppRoleListOauth role = appService.getByRoleNameAndAppListOauth(roleName, appDb);
-							if (role == null) {
-								msg = "Role \"" + roleName + "\" does not exist in Realm ";
-								status = ERROR_STR;
-								log.warn("Role \"" + roleName + "\" does not exist in Realm ");
-							} else {
-								final List<AppUserListOauth> authList = appService.getAppUsersByUserIdAndRoleAndApp(userId,	roleName, realmId);
-								if (!authList.isEmpty()) {
-									msg = "This association already exists.";
-									status = ERROR_STR;
-									log.warn("This association already exists.");
-								} else {
-									appService.createUserAccess(appDb.getId(), userId, role.getId());
-									msg = "New realm authorization with user: " + userId + " : Role : " + roleName + " : Realm : " + realmId;
-									status = OK_STR;
-									log.debug("End realm authorization successfully");
-								}
-							}
-						}
-					}
+					log.warn("Role \"" + roleName + "\" does not exist in Realm ");
 				}
+				final List<AppUserListOauth> authList = appService.getAppUsersByUserIdAndRoleAndApp(userId,	roleName, realmId);
+				if (!authList.isEmpty()) {
+					msg = "This association already exists.";
+					status = ERROR_STR;
+					log.warn("This association already exists.");
+				}
+				appService.createUserAccess(appDb.getId(), userId, role.getId());
+				msg = "New realm authorization with user: " + userId + " : Role : " + roleName + " : Realm : " + realmId;
+				status = OK_STR;
+				log.debug("End realm authorization successfully");
 			} catch (final AppServiceException e) {
 				msg = e.getMessage();
 				status = ERROR_STR;
@@ -730,19 +713,17 @@ public class AppRestController {
 	public ResponseEntity<?> deleteAuthorization(
 			@Parameter(description= "Realm identification", required = true) @PathVariable("identification") String identification,
 			@Parameter(description= "User id", required = true) @PathVariable("userId") String userId) {
-		if (log.isDebugEnabled()) {
-			log.debug("Removing realm authorization for user: {} and realm: {}", userId, identification);
-		}
+		log.debug("Removing realm authorization for user: {} and realm: {}", userId, identification);
 		final AppList appDb = appService.getAppListByIdentification(identification);
 
 		if (appDb == null) {
-			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.BAD_REQUEST);
 		}
 
 		// user not administrator and not owner is not allowed to unauthorize
 		if (!utils.isAdministrator()
 				&& (null == appDb.getUser() || !appDb.getUser().getUserId().equals(utils.getUserId()))) {
-			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.FORBIDDEN);
+			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 		}
 
 		try {
@@ -764,13 +745,13 @@ public class AppRestController {
 		final AppList appDb = appService.getAppListByIdentification(identification);
 
 		if (appDb == null) {
-			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.BAD_REQUEST);
 		}
 
 		// user not administrator and not owner is not allowed to unauthorize
 		if (!utils.isAdministrator()
 				&& (null == appDb.getUser() || !appDb.getUser().getUserId().equals(utils.getUserId()))) {
-			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.FORBIDDEN);
+			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 		}
 		
 		try {
@@ -801,9 +782,9 @@ public class AppRestController {
 			final User user = userService.getUserByIdentification(userId);
 
 			if (user == null) {
-				msg = USER_STR + userId + NOT_EXIST_IN_REALM;
+				msg = USER_STR + userId + NOT_EXIST;
 				status = ERROR_STR;
-				log.warn(USER_STR + userId + NOT_EXIST_IN_REALM);
+				log.warn(USER_STR + userId + NOT_EXIST);
 			}
 			try {
 				appService.removeAuthorizations(userId, appDb.getIdentification());
@@ -832,19 +813,19 @@ public class AppRestController {
 		final App appDbParent = appService.getAppByIdentification(association.getParentRealmId());
 
 		if (appDbChild == null || appDbParent == null) {
-			return new ResponseEntity<>("Any of the specified realms does not exist", HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>("Any of the specified realms does not exist", HttpStatus.BAD_REQUEST);
 		}
 
 		// user not administrator and not owner is not allowed to associate this realms
 		if (!utils.isAdministrator() && (null == appDbChild.getUser()
 				|| !appDbChild.getUser().getUserId().equals(utils.getUserId()) || null == appDbParent.getUser()
 				|| !appDbParent.getUser().getUserId().equals(utils.getUserId()))) {
-			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.FORBIDDEN);
+			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 		}
 
 		if (null == appService.getByRoleNameAndApp(association.getParentRoleName(), appDbParent)
 				|| null == appService.getByRoleNameAndApp(association.getChildRoleName(), appDbChild)) {
-			return new ResponseEntity<>("Any Role does not exists.", HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>("Any Role does not exists.", HttpStatus.BAD_REQUEST);
 		}
 
 		try {
@@ -926,11 +907,9 @@ public class AppRestController {
 					status = ERROR_STR;
 					log.warn("Any Role does not exists");
 				} else {
-					if (status!=ERROR_STR) {
-						appService.createAssociation(parentRoleName, childRoleName,	parentRealmId, childRealmId);
-						msg = "Association: " + parentRealmId + ":" + parentRoleName + "-" + childRealmId + ":" + childRoleName +" successfully created";
-						status = OK_STR;
-					}
+					appService.createAssociation(parentRoleName, childRoleName,	parentRealmId, childRealmId);
+					msg = "Association: " + parentRealmId + ":" + parentRoleName + "-" + childRealmId + ":" + childRoleName +" successfully created";
+					status = OK_STR;
 				}
 			} catch (final AppServiceException e) {
 				msg = e.getMessage();
@@ -954,7 +933,7 @@ public class AppRestController {
 		final App appDbParent = appService.getAppByIdentification(parentRealmId);
 
 		if (appDbChild == null || appDbParent == null) {
-			return new ResponseEntity<>("Any of the specified realms does not exist", HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>("Any of the specified realms does not exist", HttpStatus.BAD_REQUEST);
 		}
 
 		// user not administrator and not owner is not allowed to delete an association
@@ -962,12 +941,12 @@ public class AppRestController {
 		if (!utils.isAdministrator() && (null == appDbChild.getUser()
 				|| !appDbChild.getUser().getUserId().equals(utils.getUserId()) || null == appDbParent.getUser()
 				|| !appDbParent.getUser().getUserId().equals(utils.getUserId()))) {
-			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.FORBIDDEN);
+			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 		}
 
 		if (null == appService.getByRoleNameAndApp(parentRole, appDbParent)
 				|| null == appService.getByRoleNameAndApp(childRole, appDbChild)) {
-			return new ResponseEntity<>("Any Role does not exists.", HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>("Any Role does not exists.", HttpStatus.BAD_REQUEST);
 		}
 
 		try {
@@ -989,13 +968,13 @@ public class AppRestController {
 		final AppList appDb = appService.getAppListByIdentification(identification);
 
 		if (appDb == null) {
-			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.BAD_REQUEST);
 		}
 
 		// user not administrator and not owner is not allowed to get Roles
 		if (!utils.isAdministrator()
 				&& (null == appDb.getUser() || !appDb.getUser().getUserId().equals(utils.getUserId()))) {
-			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.FORBIDDEN);
+			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 		}
 
 		final List<RealmRole> roles = appService.getAppRolesListOauth(identification).stream()
@@ -1012,17 +991,16 @@ public class AppRestController {
 		final App appDb = appService.getAppByIdentification(identification);
 
 		if (appDb == null) {
-			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.BAD_REQUEST);
 		}
-		
+		if (appDb.getAppRoles().stream().anyMatch(r -> r.getName().equalsIgnoreCase(role.getName()))) {
+			return new ResponseEntity<>("Role already exists wiht name " + role.getName(), HttpStatus.BAD_REQUEST);
+		}
+
 		// user not administrator and not owner is not allowed to get Roles
 		if (!utils.isAdministrator()
 				&& (null == appDb.getUser() || !appDb.getUser().getUserId().equals(utils.getUserId()))) {
-			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.FORBIDDEN);
-		}
-		
-		if (appDb.getAppRoles().stream().anyMatch(r -> r.getName().equalsIgnoreCase(role.getName()))) {
-			return new ResponseEntity<>("Role already exists wiht name " + role.getName(), HttpStatus.CONFLICT);
+			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 		}
 
 		final AppRole newRole = new AppRole();
@@ -1047,13 +1025,13 @@ public class AppRestController {
 		final App appDb = appService.getAppByIdentification(identification);
 
 		if (appDb == null) {
-			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.BAD_REQUEST);
 		}
 		
 		// user not administrator and not owner is not allowed to get Roles
 		if (!utils.isAdministrator()
 				&& (null == appDb.getUser() || !appDb.getUser().getUserId().equals(utils.getUserId()))) {
-			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.FORBIDDEN);
+			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 		}
 		
 		try {
@@ -1129,19 +1107,19 @@ public class AppRestController {
 		final App appDb = appService.getAppByIdentification(identification);
 
 		if (appDb == null) {
-			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.BAD_REQUEST);
 		}
 
 		// user not administrator and not owner is not allowed to get Roles
 		if (!utils.isAdministrator()
 				&& (null == appDb.getUser() || !appDb.getUser().getUserId().equals(utils.getUserId()))) {
-			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.FORBIDDEN);
+			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 		}
 
 		final AppRole role = appService.getByRoleNameAndApp(roleName, appDb);
 		if (role == null) {
 			return new ResponseEntity<>("Role \"" + roleName + "\" does not exist in realm \"" + identification + "\"",
-					HttpStatus.NOT_FOUND);
+					HttpStatus.BAD_REQUEST);
 		}
 		appDb.getAppRoles().removeIf(ar -> ar.getName().equals(roleName));
 		appService.updateApp(appDb);
@@ -1161,13 +1139,14 @@ public class AppRestController {
 		final AppList appDb = appService.getAppListByIdentification(identification);
 
 		if (appDb == null) {
-			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.BAD_REQUEST);
 		}
 
 		// user not administrator and not owner is not allowed to get Realm's users
-		if (!utils.isAdministrator() && !appDb.getUser().getUserId().equals(utils.getUserId())) {
+		if (!utils.isAdministrator() && !appDb.getUser().getUserId().equals(utils.getUserId())
+				&& !appService.isUserInApp(utils.getUserId(), appDb.getIdentification())) {
 
-			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.FORBIDDEN);
+			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 		}
 
 		final List<RealmUser> users = new ArrayList<>();
@@ -1191,7 +1170,7 @@ public class AppRestController {
 
 	}
 
-	@Operation(summary = "Gets a user in a Realm")
+	@Operation(summary = "Gets a user in  a Realm")
 	@GetMapping("/{identification}/users/{userId}")
 	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=RealmUser.class)), responseCode = "200", description = "OK"))
 	// @Transactional
@@ -1202,14 +1181,15 @@ public class AppRestController {
 		final AppList appDb = appService.getAppListByIdentification(identification);
 
 		if (appDb == null) {
-			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.BAD_REQUEST);
 		}
 
 		// user not administrator and not owner is not allowed to get Realm's user
-		if (!utils.isAdministrator() && !appDb.getUser().getUserId().equals(utils.getUserId()) 
-				&& (appService.isUserInApp(utils.getUserId(), appDb.getIdentification()) && !utils.getUserId().equals(userId))) {
+		if (!utils.isAdministrator()
+				&& (null == appDb.getUser() || !appDb.getUser().getUserId().equals(utils.getUserId()))
+				&& !utils.getUserId().equals(userId)) {
 
-			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.FORBIDDEN);
+			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 		}
 
 		if (!appService.isUserInApp(userId, identification)) {
@@ -1244,19 +1224,17 @@ public class AppRestController {
 			@Parameter(description= "Realm Identification", required = true) @PathVariable("identification") String identification,
 			@Parameter(description= "User id", required = true) @PathVariable("userId") String userId,
 			@Parameter(description= "Rol id", required = true) @PathVariable("rolId") String rolId) {
-		if (log.isDebugEnabled()) {
-			log.debug("Removing realm authorization for user: {} and realm: {}", userId, identification);
-		}
+		log.debug("Removing realm authorization for user: {} and realm: {}", userId, identification);
 		final AppList appDb = appService.getAppListByIdentification(identification);
 
 		if (appDb == null) {
-			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.BAD_REQUEST);
 		}
 
 		// user not administrator and not owner is not allowed to unauthorize
 		if (!utils.isAdministrator()
 				&& (null == appDb.getUser() || !appDb.getUser().getUserId().equals(utils.getUserId()))) {
-			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.FORBIDDEN);
+			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 		}
 
 		try {
@@ -1279,13 +1257,13 @@ public class AppRestController {
 
 		if (appDb == null) {
 			log.info(REALM_STR + identification + NOT_EXIST);
-			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(REALM_STR + identification + NOT_EXIST, HttpStatus.BAD_REQUEST);
 		}
 
 		if (!utils.isAdministrator()
 				&& (null == appDb.getUser() || !appDb.getUser().getUserId().equals(utils.getUserId()))) {
 			log.info(USER_STR + utils.getUserId() + NOT_AUTH);
-			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.FORBIDDEN);
+			return new ResponseEntity<>(USER_STR + utils.getUserId() + NOT_AUTH, HttpStatus.UNAUTHORIZED);
 		}
 
 		try {

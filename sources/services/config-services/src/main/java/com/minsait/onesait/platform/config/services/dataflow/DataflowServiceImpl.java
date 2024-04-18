@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -244,9 +244,7 @@ public class DataflowServiceImpl implements DataflowService {
 		final HttpEntity<Object> request = new HttpEntity<>(body, headers);
 		try {
 			final URI uri = new URI(instance.getUrl() + url.substring(url.toLowerCase().indexOf("/rest")));
-			if (log.isDebugEnabled()) {
-				log.debug("[DATAFLOW] Execute method {} to path '{}'", httpMethod.toString(), uri.getPath());
-			}
+			log.debug("[DATAFLOW] Execute method {} to path '{}'", httpMethod.toString(), uri.getPath());
 			return restTemplate.exchange(uri, httpMethod, request, String.class);
 		} catch (final URISyntaxException e) {
 			log.error(e.getMessage());
@@ -361,9 +359,7 @@ public class DataflowServiceImpl implements DataflowService {
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
 
 		final HttpEntity<String> request = new HttpEntity<>(body, headers);
-		if (log.isDebugEnabled()) {
-			log.debug("Sending method {} Dataflow", httpMethod.toString());
-		}
+		log.debug("Sending method {} Dataflow", httpMethod.toString());
 
 		final ResponseEntity<byte[]> response;
 		try {
@@ -373,9 +369,8 @@ public class DataflowServiceImpl implements DataflowService {
 			log.error(e.getMessage());
 			throw new BadRequestException(e.getMessage());
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("Execute method {} '{}' Dataflow", httpMethod.toString(), url);
-		}
+
+		log.debug("Execute method {} '{}' Dataflow", httpMethod.toString(), url);
 		final HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.set("Content-Type", response.getHeaders().getContentType().toString());
 
@@ -400,21 +395,6 @@ public class DataflowServiceImpl implements DataflowService {
 		} else {
 			final Pipeline pipeline = pipelineRepository.findByIdentification(identification);
 			return checkPipeline(pipeline);
-		}
-	}
-	
-	@Override
-	public ResponseEntity<Object> getPipelineByIdentificationOrId(String identification, String userId) {
-		if (identification == null || identification.trim().isEmpty()) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-		} else {
-			final Pipeline pipeline = pipelineRepository.findByIdentificationOrId(identification);
-			if (hasUserViewPermission(pipeline, userId)) {
-				return ResponseEntity.ok(pipeline);
-			} else {
-				return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
-			}
-			
 		}
 	}
 
@@ -630,12 +610,12 @@ public class DataflowServiceImpl implements DataflowService {
 	}
 
 	@Override
-	public void deleteHardPipeline(final String pipelineId, final String userId) {
+	public void removePipeline(final String pipelineId, final String userId) {
 		deletePipeline(pipelineId, userId, true);
 	}
 
 	@Override
-	public void deletePipeline(final String pipelineId, final String userId) {
+	public void removeHardPipeline(final String pipelineId, final String userId) {
 		deletePipeline(pipelineId, userId, false);
 	}
 
@@ -1085,15 +1065,7 @@ public class DataflowServiceImpl implements DataflowService {
 				throw new NotFoundException("Pipeline not found");
 			} else {
 				checkUserIsOwner(userAccess.getPipeline(), user);
-				Pipeline pipeline = userAccess.getPipeline();
-				for (Iterator iterator = pipeline.getPipelineAccesses().iterator(); iterator.hasNext();) {
-					PipelineUserAccess userAccessAux = (PipelineUserAccess) iterator.next(); 
-					if(userAccessAux.getId().equals(pipelineUserAccessId)) {
-						pipeline.getPipelineAccesses().remove(userAccessAux);
-						break;
-					}	
-				}
-				pipelineRepository.save(pipeline);
+				pipelineUserAccessRepository.deleteById(pipelineUserAccessId);
 			}
 		} else {
 			throw new NotFoundException("User access not found");

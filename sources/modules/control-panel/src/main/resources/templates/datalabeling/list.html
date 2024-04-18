@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -117,29 +117,29 @@
 											<table id="dashboards" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
 												<thead>
 													<tr class="cabecera-tabla">
-														<th class="titulo-columnas" ><span > ID </span></th>
-														<th class="titulo-columnas" th:text="#{gen.name}">Name</th>		
+														<th class="titulo-columnas" th:text="#{gen.name}">Name</th>
+																		
 														<th class="titulo-columnas text-center" ><span th:text="#{datalabeling.tasknumber}">  Task Number </span></th>	
 														<th class="titulo-columnas text-center" ><span th:text="#{datalabeling.totalAnnotationsNumber}"> Total Annotations Number </span></th>	
 														<th class="titulo-columnas text-center" ><span th:text="#{datalabeling.totalPredictionsNumber}"> Total Predictions Number </span></th>														
-														
+														<th class="titulo-columnas text-center" ><span > ID </span></th>
 														<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
 													    <th class="titulo-columnas text-center" dt:sortable="false" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
 													</tr>
 												</thead>
 												<tbody th:remove="all-but-first">
 													<tr th:each="project : ${projects}" pages:paginate="10">
-														<!-- ID --> 												
-														<td class="text-center " th:text="${project.identification}"></td>
 														<!-- IDENTIFICATION/NAME -->
-														<td class="text-left" th:text="${project.title}"></td>																									 
+														<td class="text-left" th:text="${project.title}"></td>															
+													 
 														<!-- TASK NUMBER --> 
 														<td class="text-left" th:text="${project.taskNumber}"></td>	
 														<!-- TOTAL ANNOTATIONS NUMBER --> 
 														<td class="text-left" th:text="${project.totalAnnotationsNumber}"></td>	
 														<!-- TOTAL PREDICTIONS NUMBER --> 
 														<td class="text-left" th:text="${project.totalPredictionsNumber}"></td>		
-														
+														<!-- ID --> 												
+														<td class="text-center " th:text="${project.identification}"></td>
 														
 														
 														<!-- DATE --> 
@@ -183,27 +183,26 @@
 												<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
 												<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
 													<span class="checkbox-column">
-														<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="0" checked/>
-														<label > ID</label>
-													</span>
-														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
 														<label th:text="#{gen.name}"> Name </label>
 													</span>
 													
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
 														<label th:text="#{datalabeling.tasknumber}"> Task Number</label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
 														<label th:text="#{datalabeling.totalAnnotationsNumber}"> Total Annotations Number</label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
 														<label th:text="#{datalabeling.totalPredictionsNumber}"> Total Predictions Number</label>
 													</span>
-													
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+														<label > ID</label>
+													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 														<label th:text="#{gen.created}"> Created at</label>
@@ -245,7 +244,6 @@
 	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
 	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
 	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
 	
 	<!-- INPUTMASK -->
 	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
@@ -293,7 +291,7 @@
 	
 	$(window).on('pageshow', function(event) {
  		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([0],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+  		 $.each([4],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 	});
 	// MAIN WHEN READY
 	$( document ).ready(function() {
@@ -318,20 +316,7 @@
 		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 		
 		var oTable = $('#dashboards').dataTable({
-		      "bAutoWidth": false,
-		    columnDefs: [
-            {
-				//Ordenation colum date
-                targets: 5, 
-                type: 'date-euro', 
-                render: function(data, type, row) {
-                    if (type === 'sort') {
-                        return moment(data, 'DD/MM/YYYY').toDate();
-                    }
-                    return data;
-                }
-            }
-        ]
+		      "bAutoWidth": false
 		      });
 		
 		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		

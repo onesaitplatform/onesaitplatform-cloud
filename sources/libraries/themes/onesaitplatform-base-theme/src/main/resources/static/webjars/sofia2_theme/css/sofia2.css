@@ -2197,27 +2197,3 @@ table.dataTable, table.dataTable th.select-checkbox:before {
 table.dataTable th.select-checkbox.selected::after {
     margin-top: -8px !important;
 }
-.ailogobutton {
-    position: absolute;
-    right: 20px;
-    top: 10px;
-    z-index: 1000;
-    background: #5f9ea0a6;
-    margin: 3px;
-    border-radius: 30px;
-    padding: 5px;
-    cursor: hand;
-    animation: aifade 5s forwards;
-    animation-iteration-count: infinite;
-}
-.ailogobutton:hover {
-    animation: none;
-}
-@keyframes aifade {
-    0% {background-color:rgba(95, 158, 160, 0.65);}
-    50% {background-color:rgba(95, 158, 160, 0.05);}
-    100% {background-color:rgba(95, 158, 160, 0.65);}
-}
-.nav-link-tab {
-  display: block;
-}

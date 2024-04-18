@@ -71,8 +71,6 @@
         data: function () {
           return {
             filterText: '',
-            filterCreate: '',
-            filterTextCreate: '',
             filterTextPrebuild: '',
             filterTextFavorite: '',
             activeName: 'first',
@@ -89,10 +87,8 @@
           }
         },
         watch: {
-          filterTextCreate: function (val){
-            filterText = this.filterTextCreate.toUpperCase();
-            return this.section.children.filter(function (elem) {
-              elem.label.toUpperCase().includes(filterText)})
+          filterText: function (val) {
+            this.$refs.tree.filter(val);
           },
           filterTextPrebuild: function (val) {
             this.$refs.treePrebuild.filter(val);

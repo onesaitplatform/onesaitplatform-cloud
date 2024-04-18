@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,9 +62,7 @@ import net.sf.jsqlparser.util.SelectUtils;
 public class SQLHelperImpl implements SQLHelper {
 
 	private static final String LIST_VALIDATE_QUERY = "SELECT 1";
-	private static final String LIST_TABLE_INFORMATION_QUERY = "SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = '%s'";
 	private static final String LIST_TABLES_QUERY = "SHOW TABLES";
-	private static final String GET_TABLE_INFORMATION_QUERY = "SELECT COLUMN_NAME, TABLE_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = '%s' AND INDEX_NAME = 'PRIMARY'";
 	private static final String GET_CURRENT_DATABASE_QUERY = "SELECT DATABASE()";
 	private static final String LIST_DATABASES_QUERY = "SHOW DATABASES";
 	private static final String LIST_TABLES_IN_DATABASE_QUERY = "SHOW TABLES IN %s";
@@ -119,16 +117,6 @@ public class SQLHelperImpl implements SQLHelper {
 	public String getSchemasStatement(String database) {
 		// default no schema
 		return null;
-	}
-
-	@Override
-	public String getTableInformationStatement(String database, String schema) {
-		return String.format(LIST_TABLE_INFORMATION_QUERY, database);
-	}
-
-	@Override
-	public String getTableIndexes(String database, String schema) {
-		return String.format(GET_TABLE_INFORMATION_QUERY, database);
 	}
 
 	@Override
@@ -207,20 +195,20 @@ public class SQLHelperImpl implements SQLHelper {
 			return Optional.empty();
 		}
 	}
-
+	
 	private PlainSelect getPlainSelectFromSelect(SelectBody selectBody) {
 		if (SetOperationList.class.isInstance(selectBody)) { // union
-			final PlainSelect plainSelect = new PlainSelect();
+			PlainSelect plainSelect = new PlainSelect();
 
-			final List<SelectItem> ls = new LinkedList<>();
+			List<SelectItem> ls = new LinkedList<>();
 			ls.add(new AllColumns());
 			plainSelect.setSelectItems(ls);
-
-			final SubSelect subSelect = new SubSelect();
+			
+			SubSelect subSelect = new SubSelect();
 			subSelect.setSelectBody(selectBody);
 			subSelect.setAlias(new Alias("U"));
 			plainSelect.setFromItem(subSelect);
-
+						
 			return plainSelect;
 		} else {
 			return (PlainSelect) selectBody;
@@ -384,10 +372,9 @@ public class SQLHelperImpl implements SQLHelper {
 		final String jsonSchema = o.getJsonSchema();
 		final JSONObject obj = new JSONObject(jsonSchema);
 		final JSONObject columns = obj.getJSONObject("properties");
-		// Comentado porque no se pueden pedir las columnas fk: user_id, api_id...
-//		if (query.contains("_id,")) {
-//			query = query.replace("_id,", "");
-//		}
+		if (query.contains("_id,")) {
+			query = query.replace("_id,", "");
+		}
 
 		if (virtual.getObjectGeometry() != null && !virtual.getObjectGeometry().trim().equals("")) {
 			final Select selectStatement = (Select) CCJSqlParserUtil.parse(query);

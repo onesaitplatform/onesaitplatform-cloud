@@ -61,14 +61,14 @@
 
 <el-card class="box-card" shadow="always" style="width: 100%;height: 99.5%;">
   <div slot="header" class="clearfix" style="background-color: #F0F1F2;padding-top: 2px;padding-bottom: 2px;">
-    <span style="line-height: 40px;   font-size: 14px;      font-weight: 500;   padding-left: 8px;   color: #303133;">
-      {{element.template || config.template}} {{inline?" (Inline)":" (Prebuild)"}}
-    </span>
+    <span
+      style="line-height: 40px;   font-size: 14px;      font-weight: 500;   padding-left: 8px;   color: #303133;">{{inline?"Inline ":""}}
+      {{element.template || config.template}}</span>
 
     <el-button ng-click="close()" style="float: right; font-size: 16px;    padding-top: 10px;  padding-right: 8px;"
       type="text"><i class="el-icon-close apply-icons-grey"></i></el-button>
-    <button ng-if="create || !inline" id="createBtn" ng-click="save()" class="btn btn-primary btn-primary-save"
-      style="float: right!important;      min-width: 50px!important;      min-height: 25px!important;      margin-top: 5px!important;      margin-right: 10px!important;"><span>Save</span></button>
+    <button id="createBtn" ng-click="save()" class="btn btn-primary btn-primary-save"
+      style="float: right!important;      min-width: 50px!important;      min-height: 25px!important;      margin-top: 5px!important;      margin-right: 10px!important;"><span>OK</span></button>
   </div>
   <form ng-cloak style="height: 91vh;  overflow-y: auto;">
     <div ng-if="create && !inline" class="el-input el-input--mini "
@@ -86,10 +86,12 @@
       <div class="el-divider el-divider--horizontal"> </div>
     </div>
 
-    <div flex="">      
-      <div id="gform">
-        <gform-drawer :elements="list2" v-model="gformvalue"></gform-drawer>
-      </div>
+    <div flex="">
+      <md-content>
+        <div id="gform">
+          <gform-drawer :elements="list2" v-model="gformvalue"></gform-drawer>
+        </div>
+      </md-content>
     </div>
 
   </form>

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -173,7 +173,7 @@ public class SwaggerConfig {
 		return GroupedOpenApi.builder().group("Ontologies").pathsToMatch("/api/ontologies", "/api/ontologies/**")
 				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
 	}
-
+	
 	@Bean
 	public GroupedOpenApi reportsApi() {
 		return GroupedOpenApi.builder().group("Reports").pathsToMatch("/api/reports", "/api/reports/**")
@@ -203,12 +203,6 @@ public class SwaggerConfig {
 	@Bean
 	public GroupedOpenApi projectAPI() {
 		return GroupedOpenApi.builder().group("Projects").pathsToMatch("/api/projects", "/api/projects/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-	}
-	
-	@Bean
-	public GroupedOpenApi kubernetes() {
-		return GroupedOpenApi.builder().group("Kubernetes").pathsToMatch("/api/kubernetes", "/api/kubernetes/**")
 				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
 	}
 
@@ -399,44 +393,4 @@ public class SwaggerConfig {
 
 	}
 
-	@Bean
-	public GroupedOpenApi aiAPI() {
-		return GroupedOpenApi.builder().group("AI").pathsToMatch("/api/ai", "/api/ai/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-
-	}
-
-	@Bean
-	public GroupedOpenApi formsAPI() {
-		return GroupedOpenApi.builder().group("Forms").pathsToMatch("/api/forms", "/api/forms/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-
-	}
-
-	@Bean
-	public GroupedOpenApi bpmAPI() {
-		return GroupedOpenApi.builder().group("BPM").pathsToMatch("/api/bpm", "/api/bpm/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-
-	}
-
-	@Bean
-	public GroupedOpenApi codeprojectApi() {
-		return GroupedOpenApi.builder().group("Codeproject").pathsToMatch("/api/codeproject", "/api/codeproject/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-	}
-
-	@Bean
-	public GroupedOpenApi themesAPI() {
-		return GroupedOpenApi.builder().group("Themes").pathsToMatch("/api/themes", "/api/themes/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-
-	}
-	
-	@Bean
-	public GroupedOpenApi virtualDatasourcesAPI() {
-		return GroupedOpenApi.builder().group("External Database Conections").pathsToMatch("/api/externaldatabaseconnections", "/api/externaldatabaseconnections/**")
-				.addOperationCustomizer(new GlobalHeaderOperationCustomizer()).build();
-
-	}
 }

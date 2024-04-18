@@ -65,7 +65,7 @@ else
 	fi
 fi
 
-cp -rf /tmp/streamsets-libs /opt/streamsets-datacollector-3.23.1
+cp -rf /tmp/streamsets-libs /opt/streamsets-datacollector-3.23.0
 
 # note the sigle quotes: it writes the variable as the value
 sed -i 's/-Xmx1024m/-Xmx${OP_STREAMSETS_XMX}/g' "${SDC_DIST}/libexec/sdc-env.sh"

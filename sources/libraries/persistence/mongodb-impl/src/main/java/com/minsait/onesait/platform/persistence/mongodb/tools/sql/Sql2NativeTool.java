@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,9 +99,7 @@ public class Sql2NativeTool {
 	// }
 
 	public static String translateSql(String query) {
-		if (log.isDebugEnabled()) {
-			log.debug("Query to be translated {}", query);
-		}		
+		log.debug("Query to be translated {}", query);
 		String result = null;
 		try {
 			if (query.trim().toLowerCase().startsWith(UPDATE)) {
@@ -146,14 +144,14 @@ public class Sql2NativeTool {
 			log.error("Error executing query", e);
 
 			throw new DBPersistenceException(
-					"{\"error\": \"Syntax Error. try the following Syntax-> SELECT * FROM table_name WHERE condition;\" }",e);
+					"{\"error\": \"Syntax Error. try the following Syntax-> SELECT * FROM table_name WHERE condition;\" }");
 
 		} catch (final DBPersistenceException e) {
 			log.error("Error executing query", e);
 			throw e;
 		} catch (final Exception e) {
 			log.error("Error executing query", e);
-			throw new DBPersistenceException("Invalid SQL Syntax", e);
+			throw new DBPersistenceException("Invalid SQL Syntax");
 		}
 
 		return result;
@@ -174,7 +172,7 @@ public class Sql2NativeTool {
 			}
 			return translatedQueries;
 		} catch (final JSQLParserException | ParseException e) {
-			throw new DBPersistenceException("Invalid SQL syntax", e);
+			throw new DBPersistenceException("Invalid SQL syntax");
 		}
 	}
 

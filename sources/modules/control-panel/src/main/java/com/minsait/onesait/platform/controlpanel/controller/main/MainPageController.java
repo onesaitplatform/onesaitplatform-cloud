@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.controlpanel.controller.main;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,12 +29,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.minsait.onesait.platform.config.dto.DeploymentDTO;
-import com.minsait.onesait.platform.config.dto.NodeDTO;
 import com.minsait.onesait.platform.config.model.CategorizationUser;
 import com.minsait.onesait.platform.business.services.prometheus.PrometheusService;
 import com.minsait.onesait.platform.config.model.Role;
@@ -45,21 +40,12 @@ import com.minsait.onesait.platform.config.repository.ApiRepository;
 import com.minsait.onesait.platform.config.repository.CategorizationUserRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
 import com.minsait.onesait.platform.config.repository.DashboardRepository;
-import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardDTO;
-import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardTablePaginationDTO;
 import com.minsait.onesait.platform.config.services.main.MainService;
 import com.minsait.onesait.platform.config.services.menu.MenuService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
-import com.minsait.onesait.platform.config.services.project.ProjectService;
-import com.minsait.onesait.platform.config.services.project.ProjectTableDTO;
-import com.minsait.onesait.platform.config.services.project.ProjectTablePaginationDTO;
 import com.minsait.onesait.platform.config.services.simulation.DeviceSimulationService;
 import com.minsait.onesait.platform.config.services.user.UserService;
-import com.minsait.onesait.platform.controlpanel.controller.environments.dto.EnvironmentDTO;
-import com.minsait.onesait.platform.controlpanel.helper.environment.EnvironmentHelper;
-import com.minsait.onesait.platform.controlpanel.service.kubernetes.KubernetesManagerService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -89,8 +75,6 @@ public class MainPageController {
 	@Autowired
 	private OntologyService ontologyService;
 	@Autowired
-	private ProjectService projectService;
-	@Autowired
 	private ClientPlatformRepository clientPlatformRepository;
 	@Autowired
 	private ApiRepository apiRepository;
@@ -98,10 +82,6 @@ public class MainPageController {
 	private MainService mainService;
 	@Autowired
 	private PrometheusService prometheusService;
-    @Autowired
-    private EnvironmentHelper environmentHelper;
-	@Autowired
-	KubernetesManagerService kubernetesClient;
 	@Autowired 
 	private HttpSession httpSession;
 
@@ -109,12 +89,7 @@ public class MainPageController {
 	@GetMapping("/main")
 	public String main(Model model, HttpServletRequest request) {
 		final User user = userService.getUser(utils.getUserId());
-		final String viewModel = mainService.getviewPanelUser(user);
-		final String userRole = utils.getRoleOrParent();
-		model.addAttribute("userRole", userRole);
-		final String userlogin = utils.getUserId();
-		model.addAttribute("userlogin", userlogin);
-		model.addAttribute("viewModel", viewModel);
+	
 		if(model.asMap().containsKey(MESSAGE)) {
 			model.addAttribute(MESSAGE, model.asMap().get(MESSAGE));
 		}
@@ -131,9 +106,6 @@ public class MainPageController {
 		final Boolean prometheusEnabled = prometheusEnabled();
 
 		if (utils.isAdministrator()) {
-			
-			model.addAttribute("projects", projectService.getProjectsForUser(utils.getUserId()));
-
 			final List<CategorizationUser> activeCategorizations = categorizationUserRepository.findByUserAndActive(user);
 			model.addAttribute("hasCategorizationTreeActive", !activeCategorizations.isEmpty());
 		
@@ -141,32 +113,12 @@ public class MainPageController {
 				model.addAttribute("kpis", mainService.createKPIsNew());
 			} else {
 				model.addAttribute("kpis", mainService.createKPIs());
-				
-		    	try {
-		    		List<NodeDTO> nodeMetrics  = kubernetesClient.getNodeMetrics();
-		    		List<DeploymentDTO> deploymentList = kubernetesClient.getModulesByNamespace();
-		    		
-		    		EnvironmentDTO environmentDTO = environmentHelper.setConfiguration();
-		    		environmentDTO = environmentHelper.setGlobalMetrics(nodeMetrics, environmentDTO);
-		    		environmentDTO = environmentHelper.setEnvironmentData(deploymentList, environmentDTO);
-			        
-			        model.addAttribute("environment", environmentDTO);
-				} catch (IOException e) {
-					e.printStackTrace();
-					model.addAttribute("environment", new EnvironmentDTO());
-				} catch (RuntimeException e) {
-					e.printStackTrace();
-					model.addAttribute("environment", new EnvironmentDTO());
-				}
 			}
-
 			model.addAttribute("groupModules", mainService.getGroupModules());
 			model.addAttribute("groupServices", mainService.getGroupServices());
 			model.addAttribute("prometheusEnabled", prometheusEnabled);
-			
 			return "main";
 		} else if (utils.isDeveloper()) {
-			model.addAttribute("projects", projectService.getProjectsForUser(utils.getUserId()));
 			// FLOW
 			model.addAttribute("hasOntology", ontologyService.getOntologiesByUserId(utils.getUserId()).isEmpty() ? false : true);
 			model.addAttribute("hasDevice",	clientPlatformRepository.findByUser(user).isEmpty() ? false : true);
@@ -199,9 +151,7 @@ public class MainPageController {
 			prometheusService.getCpuStats("onesait-platform");
 			return true;
 		} catch (final RuntimeException e) {
-			if (log.isDebugEnabled()) {
-				log.debug("Error getting prometheus metrics: {}", e);
-			}
+			log.debug("Error getting prometheus metrics: " + e);
 			return false;
 		}
 	}
@@ -227,59 +177,6 @@ public class MainPageController {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 	}
-	
-	@PostMapping(value = "/main/listprojectspageable")
-	public @ResponseBody ProjectTablePaginationDTO listprojectspageable (HttpServletRequest request, 
-			@RequestParam(required = false, name = "name") String identification) {
-		
-		Integer page = Integer.valueOf( request.getParameter("start"));
-		Integer	limit = Integer.valueOf( request.getParameter("length"));
-		Integer	draw = Integer.valueOf( request.getParameter("draw"));
-		String filter = request.getParameter("search[value]");
-	
-		
-		String columnIndex = request.getParameter("order[0][column]");
-		String columName = request.getParameter("columns[" + columnIndex + "][name]");
-		String order = request.getParameter("order[0][dir]");
-		
-		if(columName == null) {
-			columName = "identification";
-		}
-		if(order == null) {
-			order = "ASC";
-		}
-		final List<ProjectTableDTO> projectsList  = projectService.findProjectIdentification(filter, columName, order, utils.getUserId(), page, limit);
-		final Integer countProjects  = projectService.countProjectIdentification(filter, utils.getUserId());
-		
-		
-			
-		ProjectTablePaginationDTO projectTable = new ProjectTablePaginationDTO();
-				
-		projectTable.setITotalRecords(countProjects);		
-		projectTable.setITotalDisplayRecords(countProjects);
-		projectTable.setDraw(draw);
-		projectTable.setAaData(projectsList);
-						
-		return projectTable;
-			
-			
-	}
-	
-	
-	@PostMapping(value = "/main/updateview")
-	public @ResponseBody ResponseEntity<String>  updateview (HttpServletRequest request) {
-		try {
-			String view =request.getParameter("view");
-			final User user = userService.getUser(utils.getUserId());
-			mainService.updateviewPanelUser(user, view);
-			final String viewModel = mainService.getviewPanelUser(user);
-			return new ResponseEntity<>(viewModel, HttpStatus.OK);
-		} catch (Exception e) {
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
-		
-	}
-		
 	
 	private Map<String, String> getUrlsMap() {
 		final Map<String, String> urls = new HashMap<>();

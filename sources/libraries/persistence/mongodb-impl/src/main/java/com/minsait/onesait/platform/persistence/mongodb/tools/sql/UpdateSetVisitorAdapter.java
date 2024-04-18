@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.NullValue;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.schema.Column;
 
 @AllArgsConstructor
 public class UpdateSetVisitorAdapter extends ExpressionVisitorAdapter {
@@ -62,13 +61,7 @@ public class UpdateSetVisitorAdapter extends ExpressionVisitorAdapter {
 			builder.append(stringValue);
 
 	}
-	
-	
-	@Override
-	public void visit(Column column) {
-		builder.append(column.getColumnName());
-	}
-	
+
 	@Override
 	public void visit(LongValue longValue) {
 		builder.append(longValue.getStringValue());

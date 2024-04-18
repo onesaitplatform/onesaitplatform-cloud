@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,6 @@ import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.services.exceptions.OntologyServiceException;
 import com.minsait.onesait.platform.config.services.exceptions.VirtualDatasourceServiceException;
-import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.encryptor.config.JasyptConfig;
@@ -69,9 +68,6 @@ public class VirtualDatasourceController {
 
 	@Autowired
 	private VirtualDatasourceService virtualDatasourceService;
-	
-	@Autowired
-	private OPResourceService resourceService;
 
 	@Autowired
 	private AppWebUtils utils;
@@ -85,7 +81,6 @@ public class VirtualDatasourceController {
 	private static final String REDIRECT_VIRT_DS_CREATE = "redirect:/virtualdatasources/create";
 	private static final String APP_ID = "appId";
 	private static final String REDIRECT_PROJECT_SHOW = "redirect:/projects/update/";
-	private static final String APP_USER_ACCESS = "app_user_access";
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@GetMapping(value = "/list", produces = "text/html")
@@ -132,10 +127,7 @@ public class VirtualDatasourceController {
 					.getDatasourceByIdAndUserIdOrIsPublic(id, utils.getUserId(), ResourceAccessType.VIEW);
 
 			if (datasource != null) {
-				ResourceAccessType resourceAccess = resourceService.getResourceAccess(utils.getUserId(),datasource.getId());
-				
 				model.addAttribute(DATASOURCE_STR, datasource);
-				model.addAttribute(APP_USER_ACCESS, resourceAccess);
 				return "virtualdatasources/show";
 
 			} else {
@@ -154,10 +146,8 @@ public class VirtualDatasourceController {
 			final OntologyVirtualDatasource datasource = virtualDatasourceService
 					.getDatasourceByIdAndUserIdOrIsPublic(id, utils.getUserId(), ResourceAccessType.MANAGE);
 			if (datasource != null) {
-				ResourceAccessType resourceAccess = resourceService.getResourceAccess(utils.getUserId(),datasource.getId());
 				model.addAttribute("fieldDisabled", "disabled");
 				model.addAttribute(DATASOURCE_STR, datasource);
-				model.addAttribute(APP_USER_ACCESS, resourceAccess);
 				model.addAttribute("oldCredentials", datasource.getCredentials());
 				model.addAttribute("rdbs",
 						Arrays.stream(VirtualDatasourceType.values()).filter(

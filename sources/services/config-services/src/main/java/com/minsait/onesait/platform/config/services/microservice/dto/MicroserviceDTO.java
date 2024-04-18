@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.minsait.onesait.platform.config.components.CaasConfiguration;
 import com.minsait.onesait.platform.config.components.JenkinsConfiguration;
 import com.minsait.onesait.platform.config.components.RancherConfiguration;
+import com.minsait.onesait.platform.config.model.Microservice.TemplateType;
 import com.minsait.onesait.platform.git.GitlabConfiguration;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -58,7 +59,6 @@ public class MicroserviceDTO {
 	@NotNull
 	@Schema(required = true)
 	private String contextPath;
-	private boolean stripRoutePrefix;
 	@NotNull
 	@Schema(required = true)
 	private int port;

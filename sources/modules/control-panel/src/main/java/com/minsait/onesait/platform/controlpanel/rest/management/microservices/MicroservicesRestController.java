@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -149,7 +149,7 @@ public class MicroservicesRestController {
 		}
 
 		try {
-			final Map<String, Object> parameters = jenkinsService.getParametersFromJob(pipeline.getJenkinsUrl(),
+			final Map<String, String> parameters = jenkinsService.getParametersFromJob(pipeline.getJenkinsUrl(),
 					pipeline.getUsername(), pipeline.getToken(), pipeline.getJobName());
 			return new ResponseEntity<>(parameters, HttpStatus.OK);
 		} catch (final JenkinsException e) {
@@ -287,7 +287,7 @@ public class MicroservicesRestController {
 
 	}
 
-	@Operation(summary = "Start microservice")
+	@Operation(summary = "Restart microservice")
 	@PostMapping("/{identification}/start")
 	public ResponseEntity<?> start(@PathVariable("identification") String identification) {
 		final Microservice m = service.getByIdentification(identification);
@@ -303,7 +303,7 @@ public class MicroservicesRestController {
 
 	}
 
-	@Operation(summary = "Stop microservice")
+	@Operation(summary = "Restart microservice")
 	@PostMapping("/{identification}/stop")
 	public ResponseEntity<?> stop(@PathVariable("identification") String identification) {
 		final Microservice m = service.getByIdentification(identification);

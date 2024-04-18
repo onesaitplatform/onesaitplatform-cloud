@@ -10,6 +10,6 @@ import com.minsait.onesait.platform.comms.protocol.enums.SSAPQueryType;
 @IoTBrokerRepository("${ONTOLOGY}")
 public interface ${ONTOLOGY_CAP}Repository {
 
-	@IoTBrokerQuery(value = "SELECT * FROM ${ONTOLOGY} as r", queryType = SSAPQueryType.SQL)
+	@IoTBrokerQuery(value = "SELECT r FROM ${ONTOLOGY} as r", queryType = SSAPQueryType.SQL)
 	List<${WRAPPER_CLASS}> findAll();
 }

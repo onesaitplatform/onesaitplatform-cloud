@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -168,7 +168,40 @@
 </style>
 	</div>
 	<!-- End modal -->
-			
+	
+	<!-- Confluence search -->
+	<div id="confluenceSearch" class="modal fade" role="dialog">
+		<div class="modal-dialog">
+
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title" th:text="#{menu.modal.search}">Confluence search</h4>
+				</div>
+				<div class="modal-body">
+					<div id="contenido"
+						class="dropdown dropdown-user-toggler">
+							<input class="form-control search" style="width:50%; display:inline" type="text" th:placeholder="#{menu.search.placeholder}" name="querySearchConfluence" id="querySearchConfluence" value="" incremental="true" maxlength="255" onkeypress="return enterSearch(event)"></input>
+							<a id="search-confluence" class="dropdown-toggle" style="padding-left:8px !important" onclick="gotoSearch();" ><i class="icon-magnifier" ></i></a>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal" th:text="#{gen.closeBtn}">Close</button>
+				</div>
+			</div>
+		</div>
+		<style>
+		.modal-dialog {
+			width: 50% !important;
+			display: block;
+			margin-left: 25%;
+			margin-rigth: 25%;
+		}
+		</style>
+	</div>
+	<!-- End confluence search -->
+		
 	<script type="text/javascript" th:inline="javascript"> 
 		
 	//AUTO INIT CONTROLLER WHEN READY
@@ -182,6 +215,31 @@
 	 	appFooter=appFooter+' '+new Date().getFullYear(); 
 	 	document.getElementById("footer-app").innerHTML = appFooter;
 	 }
+		
+	/* 
+	$( document ).ready(function()  {
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+		$.ajax({
+			url : "/controlpanel/themes/getThemeJson",
+			type : "GET",
+			async : true,
+			headers: {
+				[csrf_header]: csrf_value
+		    },
+			success : function(response){
+				var text = response.FOOTER_TEXT;
+				var text_es = response.FOOTER_TEXT_ES;
+				console.log(text+" "+text_es);
+				if (text != ""){
+					$('#footerText_original').attr('class', 'hide');
+					$('#footerText').append("<span>"+text+"</span>");
+				}
+			}
+		    
+		})
+	}) */
+	
 	
 	$('#oauthTokenCopy').on('click', function() {
 		var element = "#oauthToken";

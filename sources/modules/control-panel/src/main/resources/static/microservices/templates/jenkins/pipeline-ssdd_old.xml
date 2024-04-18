@@ -6,6 +6,7 @@
       <triggers/>
       <parameters>
         <string>DOCKER_MODULETAGVALUE</string>
+        <string>DOCKER_USERNAMEVALUE</string>
         <string>DOCKER_PUSHREGISTRY_PRIVATE</string>
         <string>GIT_URL</string>
         <string>GIT_BRANCHNAME</string>
@@ -66,7 +67,7 @@
         <hudson.model.StringParameterDefinition>
           <name>PRIVATE_REGISTRY</name>
           <description>URL to the docker registry</description>
-          <defaultValue>europe-docker.pkg.dev/dcme-npro-onst-prd-devops-00/production-registry</defaultValue>
+          <defaultValue>dcme-npro-onst-prd-devops-00/production-registry</defaultValue>
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
@@ -148,7 +149,7 @@
               defaultValue: &apos;true&apos;, 
               description: &apos;Push image to private registry&apos;)
        string(name: &apos;PRIVATE_REGISTRY&apos;, 
-              defaultValue: &apos;europe-docker.pkg.dev/dcme-npro-onst-prd-devops-00/production-registry&apos;, 
+              defaultValue: &apos;dcme-npro-onst-prd-devops-00/production-registry&apos;, 
               description: &apos;URL to the docker registry&apos;)
    }     
      

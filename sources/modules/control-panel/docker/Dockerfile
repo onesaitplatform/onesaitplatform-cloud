@@ -15,9 +15,6 @@ RUN apk add curl &&\
     install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \
 		apk del curl
 
-# install node and npm
-RUN apk add nodejs npm
-
 # web projects folder & logs folder
 RUN mkdir -p /usr/local/webprojects && \
 	mkdir -p /usr/local/dataflows && \
@@ -25,13 +22,12 @@ RUN mkdir -p /usr/local/webprojects && \
 	mkdir -p /usr/local/themes && \
     mkdir -p /usr/local/files && \
 	mkdir -p /var/log/platform-logs && \
-	mkdir /application && \
-	mkdir /application/plugins
+	mkdir /application
 
 
 WORKDIR /application
-#RUN unzip /app.jar &&\
-#	rm /app.jar
+RUN unzip /app.jar &&\
+	rm /app.jar
 
 # create sofia user/group
 RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait
@@ -260,13 +256,11 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+ExitOnOutOfMemoryError -XX:+HeapDum
     DATALABELING_PASS=12345678 \
     QUERY_METRICS_ENABLED=false \
     HTTP_LOG_LEVEL=INFO \
-    MAX_USERS_APP_ASSIGN_TABLE=100 \
-    MAX_USERS_COMBO=50 \
+    MAX_USERS_APP_ASSIGN_TABLE=0 \
+    MAX_USERS_COMBO=0 \
     BINARYFILESLIMIT=200 \
     BINARYFILESSHOWAUDITFILES=false \
-    GITLAB_MANAGER_URL=https://${SERVER_NAME}/gitlab/api/v1 \
-    GITLAB_MANAGER_INTERNAL_URL=http://gitlabmanagerservice:10050/gitlab/api/v1 \
-    GITLAB_LIMIT_NPM_COMPILE_TIME_SECONDS=120 \
+    GITLAB_MANAGER_URL=https://${SERVER_NAME}/gitlab \
     OPEN_COLLECTOR=... \
     REMEDY_MS_ENABLED=false \
     REMEDY_MS_URL=https://integrationhub.ptmindra.net/v1/webhook/OpsDigitales/devops/PROD \
@@ -274,11 +268,7 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+ExitOnOutOfMemoryError -XX:+HeapDum
     OTEL_JAVAAGENT_ENABLED=false \
 	OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-service:4317 \
 	OTEL_SERVICE_NAME=controlpanel \
-	OTEL_METRICS_EXPORTER=none \
-	GRAVITEE_MIGRATE=false \
-    GRAVITEE_VERSION=3.3 \
-	WEBPROJECT_MAXSIZE=60000000 \
-	STATIC_RESOURCES_CACHE_MINUTES=60
+	OTEL_METRICS_EXPORTER=none
 
 
 COPY docker-entrypoint.sh /usr/local/bin/

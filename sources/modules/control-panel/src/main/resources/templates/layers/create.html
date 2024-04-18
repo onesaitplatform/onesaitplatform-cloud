@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -81,57 +81,62 @@
 								<button id="cancelBtn" type="button" name="cancel" class="btn btn-outline blue btn-no-border" onclick="location.href='../layers/list'" th:value="#{gen.cancelBtn}" value="cancel"> <span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 							</div>							
 					</div>
-					<div class="portlet light no-top-pad">
-						<!--<div class="portlet-title hide">
-							<div class="caption ">								
-								<span  th:text="#{layer.wizard}" class="caption-subject"> Layer Wizard </span>										
-							</div>									
-							<div class="tools hide">
-								<a href="" class="collapse" data-original-title="" title=""> </a>
-								<a href="#portlet-config" data-toggle="modal" class="config" data-original-title="" title=""> </a>										
-								<a href="" class="fullscreen" data-original-title="" title=""> </a>										
+					<div class="col-md-12">
+					
+						<div class="portlet light no-top-pad-layer-create">
+							<!--<div class="portlet-title hide">
+								<div class="caption ">								
+									<span  th:text="#{layer.wizard}" class="caption-subject"> Layer Wizard </span>										
+								</div>									
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""> </a>
+									<a href="#portlet-config" data-toggle="modal" class="config" data-original-title="" title=""> </a>										
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>										
+								</div>
+							</div>-->
+							<div class="portlet-body" style="display: block; height: auto;">
+								
+								<div class="row main">
+									
+									<!-- CONTENEDORES DE CREACION DE ONTOLOGIAS -->	
+									<div class="col-md-12 col-sm-12 col-xs-12">											
+										<div class="row">
+											<div class="col-md-4 col-sm-12 grid grid--effect-vega">																										
+												<!-- Creation IoT -->
+												<a sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" onclick="location.href='../layers/createiot'" class="col-md-4 col-sm-6 col-xs-12 grid__item grid__item--c1" style="text-decoration: none">
+													<div>
+														<div class="icon-cards"><i class="icon-step-by-step" ></i></div>
+														<h3 class="grid__item-title" style="margin-left:1em;" th:text="#{layer.create.iot}" >Creation IoT Layer</h3>	
+													</div>
+													<div class="col-md-12 column column--right">
+														<span class="column__text" th:text="#{layer.create.iot.desc}" >Creation Creation IoT Description</span>
+													</div>
+													<div>
+														<div class="icon-arrow-cards"><i class="icon-go-to"></i></div>	
+													</div>
+												</a>
+												<!-- end Creation IoT -->		
+												<!-- Creation from External URL -->
+												<a sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" onclick="location.href='../layers/createexternal'" class="col-md-4 col-sm-6 col-xs-12 grid__item grid__item--c1" style="text-decoration: none">
+													<div>
+														<div class="icon-cards"><i class="icon-url"></i></div>
+													<h3 class="grid__item-title" th:text="#{layer.create.external}" >Creation from URL</h3>	
+													</div>													
+													<div class="col-md-12 column column--right">
+														<span class="column__text" th:text="#{layer.create.external.desc}" >Creation from URL Description</span>
+													</div>
+													<div>
+														<div class="icon-arrow-cards"><i class="icon-go-to"></i></div>	
+													</div>
+												</a>
+												<!-- end creation from External URL -->																					
+											</div>
+										</div>												
+									</div><!-- END CONTENEDORES -->																	
+								</div>
 							</div>
-						</div>-->
-						<div class="portlet-body" style="display: block; height: auto;">
-							<div class="row main">
-								<!-- CONTENEDORES DE CREACION DE ONTOLOGIAS -->	
-								<div class="col-md-12 col-sm-12 col-xs-12">											
-									<div class="row">
-										<div class="col-md-12 col-sm-12 col-xs-12 grid grid--effect-vega no-padding-both">																										
-											<!-- Creation IoT -->
-											<a sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" onclick="location.href='../layers/createiot'" class="col-md-4 col-sm-6 col-xs-12 grid__item grid__item--c1" style="text-decoration: none">
-												<div>
-													<div class="icon-cards"><i class="icon-step-by-step" ></i></div>
-													<h3 class="grid__item-title" style="margin-left:1em;" th:text="#{layer.create.iot}" >Creation IoT Layer</h3>	
-												</div>
-												<div class="col-md-12 column column--right">
-													<span class="column__text" th:text="#{layer.create.iot.desc}" >Creation Creation IoT Description</span>
-												</div>
-												<div>
-													<div class="icon-arrow-cards"><i class="icon-go-to"></i></div>	
-												</div>
-											</a>
-											<!-- end Creation IoT -->		
-											<!-- Creation from External URL -->
-											<a sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" onclick="location.href='../layers/createexternal'" class="col-md-4 col-sm-6 col-xs-12 grid__item grid__item--c1" style="text-decoration: none">
-												<div>
-													<div class="icon-cards"><i class="icon-url"></i></div>
-												<h3 class="grid__item-title" th:text="#{layer.create.external}" >Creation from URL</h3>	
-												</div>													
-												<div class="col-md-12 column column--right">
-													<span class="column__text" th:text="#{layer.create.external.desc}" >Creation from URL Description</span>
-												</div>
-												<div>
-													<div class="icon-arrow-cards"><i class="icon-go-to"></i></div>	
-												</div>
-											</a>
-											<!-- end creation from External URL -->																					
-										</div>
-									</div>												
-								</div><!-- END CONTENEDORES -->																	
-							</div>
-						</div>
-					</div><!-- END PORTLET BASIC LIGHT -->							
+						</div><!-- END PORTLET BASIC LIGHT -->							
+					</div><!-- END COL-12 -->						
 				</div><!-- END MAIN ROW -->				
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->	

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,25 +49,11 @@ public class WebProject extends OPResource implements Versionable<WebProject> {
 	@Setter
 	private String description;
 
-	@Column(name = "MAIN_FILE", length = 100, nullable = true)
+	@Column(name = "MAIN_FILE", length = 100, nullable = false)
+	@NotNull
 	@Getter
 	@Setter
 	private String mainFile;
-	
-	@Column(name = "NPM", length = 100, nullable = true)
-	@Getter
-	@Setter
-	private Boolean npm;
-	
-	@Column(name = "runCommand", length = 100, nullable = true)
-	@Getter
-	@Setter
-	private String runCommand;
-	
-	@Column(name = "targetDirectory", length = 100, nullable = true)
-	@Getter
-	@Setter
-	private String targetDirectory;
 
 	@Override
 	public String fileName() {

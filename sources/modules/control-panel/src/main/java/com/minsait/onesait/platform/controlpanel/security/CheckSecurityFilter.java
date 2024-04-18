@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,23 +35,20 @@ public class CheckSecurityFilter extends HandlerInterceptorAdapter {
 
 	private static final String PREFIX = "/api/";
 	private static final String PREFIX_EXCEPTION = "/api/login";
-	private static final String PREFIX_THEMES_EXCEPTION = "/api/themes/";
+	private static final String BINARY_REPOSITORY="/binary-repository";
 
-	private static final String BINARY_REPOSITORY = "/binary-repository";
 
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
 		if (request.getServletPath().startsWith(PREFIX) && !request.getServletPath().startsWith(PREFIX_EXCEPTION)
-				&& !request.getServletPath().startsWith(PREFIX_THEMES_EXCEPTION)
 				&& (SecurityContextHolder.getContext().getAuthentication() == null || SecurityContextHolder.getContext()
-						.getAuthentication() instanceof AnonymousAuthenticationToken)) {
+				.getAuthentication() instanceof AnonymousAuthenticationToken)) {
 			return unauthorized(response);
 
 		}
-		if (request.getServletPath().startsWith(BINARY_REPOSITORY) && request.getMethod().equalsIgnoreCase("POST")
-				&& (SecurityContextHolder.getContext().getAuthentication() == null || SecurityContextHolder.getContext()
-						.getAuthentication() instanceof AnonymousAuthenticationToken)) {
+		if(request.getServletPath().startsWith(BINARY_REPOSITORY) && request.getMethod().equalsIgnoreCase("POST") && (SecurityContextHolder.getContext().getAuthentication() == null || SecurityContextHolder.getContext()
+				.getAuthentication() instanceof AnonymousAuthenticationToken)) {
 			return unauthorized(response);
 		}
 		return super.preHandle(request, response, handler);

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.camunda.bpm.engine.IdentityService;
 import org.camunda.bpm.engine.ProcessEngine;
-import org.camunda.bpm.engine.identity.Tenant;
 import org.camunda.bpm.engine.rest.security.auth.AuthenticationResult;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -31,6 +29,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 
 import com.minsait.onesait.platform.bpm.security.camunda.ContainerBasedAuthenticationProvider;
 import com.minsait.onesait.platform.bpm.util.RoleConverterUtil;
+import com.minsait.onesait.platform.config.services.bpm.BPMTenantService;
 import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepository;
 import com.minsait.onesait.platform.multitenant.util.VerticalResolver;
 
@@ -43,16 +42,17 @@ import lombok.extern.slf4j.Slf4j;
 public class SpringSecurityAuthenticationProvider extends ContainerBasedAuthenticationProvider {
 
 	@Setter
+	private BPMTenantService bpmTenantService;
+	@Setter
 	private UserDetailsService userDetailsService;
 	@Setter
 	private VerticalResolver tenantDBResolver;
 	@Setter
 	private MasterUserRepository masterUserRepository;
-	@Setter
-	private IdentityService identityService;
 
-	public SpringSecurityAuthenticationProvider(UserDetailsService userDetailsService,
-			MasterUserRepository masterUserRepository) {
+	public SpringSecurityAuthenticationProvider(BPMTenantService bpmTenantService,
+			UserDetailsService userDetailsService, MasterUserRepository masterUserRepository) {
+		this.bpmTenantService = bpmTenantService;
 		this.userDetailsService = userDetailsService;
 		this.masterUserRepository = masterUserRepository;
 	}
@@ -72,13 +72,10 @@ public class SpringSecurityAuthenticationProvider extends ContainerBasedAuthenti
 		final AuthenticationResult authenticationResult = new AuthenticationResult(name, true);
 		authenticationResult.setGroups(getUserGroups(authentication));
 
-		authenticationResult.setTenants(
-				identityService.createTenantQuery().userMember(name).list().stream().map(Tenant::getId).toList());
-		if (log.isDebugEnabled()) {
-			log.debug("Authentication success webapp ROLE: {}, TENANTS: {}",
+		authenticationResult.setTenants(bpmTenantService.getTenantNamesForUser(name));
+		log.info("Authentication success webapp ROLE: {}, TENANTS: {}",
 				String.join(",", authenticationResult.getGroups()),
 				String.join(",", authenticationResult.getTenants()));
-		}
 		return authenticationResult;
 	}
 

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,8 @@ import org.springframework.stereotype.Component;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
-import com.minsait.onesait.platform.config.model.Microservice.TemplateType;
 import com.minsait.onesait.platform.config.model.MicroserviceTemplate;
+import com.minsait.onesait.platform.config.model.Microservice.TemplateType;
 import com.minsait.onesait.platform.config.model.MicroserviceTemplate.Language;
 import com.minsait.onesait.platform.config.services.microservice.dto.MSConfig;
 import com.minsait.onesait.platform.config.services.microservice.dto.MicroserviceDTO;
@@ -82,20 +82,20 @@ public class MicroserviceJenkinsTemplateUtil {
 
 	@Value("classpath:static/microservices/templates/jenkins/pipeline-graalvm.xml")
 	private Resource pipelineGraalVm;
-
+	
 	@Value("classpath:static/microservices/templates/jenkins/pipeline-ssdd-java17.xml")
 	private Resource pipelineSSDDJava17;
-
+	
 	@Value("classpath:static/microservices/templates/jenkins/pipeline-ssdd.xml")
 	private Resource pipelinePython;
-
+	
 	@Value("classpath:static/microservices/templates/jenkins/pipeline-ml-ssdd_old.xml")
 	private Resource mlPipelineSSDDold;
 	@Value("classpath:static/microservices/templates/jenkins/pipeline-nb-ssdd_old.xml")
 	private Resource notebookPipelineSSDDold;
 	@Value("classpath:static/microservices/templates/jenkins/pipeline-ssdd_old.xml")
 	private Resource pipelineSSDDold;
-
+	
 	@Autowired
 	private IntegrationResourcesService integrationResourcesService;
 	@Autowired
@@ -110,16 +110,15 @@ public class MicroserviceJenkinsTemplateUtil {
 	private static final String JENKINS_SSDD_URL = "jenkins-ssdd";
 	private static final String JENKINS_SSDD_URL_2 = "jenkins.devops";
 	private static final String MAVEN_IMG_VERSION = "MAVEN_IMG_VERSION";
-	private static final String MAVEN_VERSION = "MAVEN_VERSION";
+	private static final String MAVEN_VERSION="MAVEN_VERSION";
 
-	public String compileXMLTemplate(MSConfig config, MicroserviceDTO microservice, String sourcesPath,
-			String dockerPath) throws IOException {
+	public String compileXMLTemplate(MSConfig config, MicroserviceDTO microservice) throws IOException {
+
 		String xml;
 		final String jenkinsUrl = microservice.getJenkinsConfiguration().getJenkinsUrl();
 		final boolean isSSDDJenkins = jenkinsUrl.contains(JENKINS_SSDD_URL) || jenkinsUrl.contains(JENKINS_SSDD_URL_2);
-		final MicroserviceTemplate mstemplate = mstemplateService
-				.getMsTemplateByIdentification(microservice.getTemplate(), microservice.getOwner());
-
+		MicroserviceTemplate mstemplate = mstemplateService.getMsTemplateByIdentification(microservice.getTemplate(), microservice.getOwner());
+		
 		switch (microservice.getTemplate()) {
 		case "ML_MODEL_ARCHETYPE":
 			xml = isSSDDJenkins ? IOUtils.toString(mlPipelineSSDDold.getInputStream())
@@ -141,26 +140,25 @@ public class MicroserviceJenkinsTemplateUtil {
 			break;
 
 		case "DIGITAL_TWIN":
-		case "IOT_CLIENT_ARCHETYPE":
+		case "IOT_CLIENT_ARCHETYPE":			
 		default:
-			if (mstemplate != null) {
-				@NotNull
-				final Language language = mstemplate.getLanguage();
-				if (Language.Java17.equals(language)) {
-					if (mstemplate.isGraalvm()) {
-						xml = IOUtils.toString(pipelineGraalVm.getInputStream());
+			if(mstemplate != null) {
+				@NotNull Language language = mstemplate.getLanguage();
+				if( Language.Java17.equals(language)){
+					if(mstemplate.isGraalvm()) {
+						xml =  IOUtils.toString(pipelineGraalVm.getInputStream());
 					} else {
 						xml = IOUtils.toString(pipelineSSDDJava17.getInputStream());
 					}
-				} else if (Language.Java8.equals(language)) {
+				} else if(Language.Java8.equals(language)) {
 					xml = IOUtils.toString(pipelineSSDDJava17.getInputStream());
-				} else if (Language.Python.equals(language)) {
-					// pipelineSSDD Para python???? ------ TODO:
-					xml = IOUtils.toString(pipelinePython.getInputStream());
-				} else if (Language.ML_MODEL_ARCHETYPE.equals(language)) {
-					xml = IOUtils.toString(mlPipelineSSDD.getInputStream());
-				} else if (Language.NOTEBOOK_ARCHETYPE.equals(language)) {
-					xml = IOUtils.toString(notebookPipelineSSDD.getInputStream());
+				}else if(Language.Python.equals(language)) {
+					//pipelineSSDD Para python???? ------ TODO:
+					xml =  IOUtils.toString(pipelinePython.getInputStream());
+				} else if(Language.ML_MODEL_ARCHETYPE.equals(language)) {
+					xml =  IOUtils.toString(mlPipelineSSDD.getInputStream());
+				} else if(Language.NOTEBOOK_ARCHETYPE.equals(language)) {
+					xml =  IOUtils.toString(notebookPipelineSSDD.getInputStream());
 				} else {
 					xml = IOUtils.toString(pipelineSSDD.getInputStream());
 				}
@@ -175,37 +173,32 @@ public class MicroserviceJenkinsTemplateUtil {
 		final String gitlabRepo = microservice.getGitlab();
 
 		final HashMap<String, Object> scopes = new HashMap<>();
-		if (sourcesPath == null) {
-			sourcesPath = config.getSources();
-		}
-		if (dockerPath == null) {
-			dockerPath = config.getDocker();
-		}
-		if (sourcesPath.equals(".")) {
+		String sourcesPath = config.getSources();
+		if(sourcesPath.equals(".")) {
 			sourcesPath = "./";
 		}
 //		if (microservice.getTemplate().equals(TemplateType.NOTEBOOK_ARCHETYPE.toString())) {
 //			scopes.put(MICROSERVICE_NAME, microserviceName.toLowerCase());
 //			scopes.put(SOURCES_PATH, "zeppelin-spark");
 //			scopes.put(GIT_REPOSITORY, gitlabRepo);
-//		}else
-		if (microservice.getTemplate().equals(TemplateType.MLFLOW_MODEL.toString())) {
+//		}else 
+		if(microservice.getTemplate().equals(TemplateType.MLFLOW_MODEL.toString())){
 			scopes.put(MICROSERVICE_NAME, microserviceName.toLowerCase());
 			scopes.put(MODEL_RUN_ID, microservice.getConfig().getModelRunId());
 			final String baseURL = integrationResourcesService.getUrl(Module.DOMAIN, ServiceUrl.BASE);
-			scopes.put(MLFLOW_TRACKING_URI, baseURL.endsWith("/") ? baseURL : baseURL + "/");
+			scopes.put(MLFLOW_TRACKING_URI, baseURL.endsWith("/") ? baseURL: baseURL+"/");
 		} else {
 			scopes.put(MICROSERVICE_NAME, microserviceName.toLowerCase());
 			scopes.put(SOURCES_PATH, sourcesPath);
-			scopes.put(DOCKER_PATH, dockerPath);
+			scopes.put(DOCKER_PATH, config.getDocker());
 			scopes.put(GIT_REPOSITORY, gitlabRepo);
 		}
 
-		if (mstemplate != null) {
-			if (Language.Java17.equals(mstemplate.getLanguage())) {
+		if(mstemplate!=null) {
+			if(Language.Java17.equals(mstemplate.getLanguage())) {
 				scopes.put(MAVEN_IMG_VERSION, "maven:3.8.5-openjdk-17-slim");
 				scopes.put(MAVEN_VERSION, "3.8.5");
-			} else if (Language.Java8.equals(mstemplate.getLanguage())) {
+			} else if(Language.Java8.equals(mstemplate.getLanguage())) {
 				scopes.put(MAVEN_IMG_VERSION, "maven:3.6.0-jdk-8-slim");
 				scopes.put(MAVEN_VERSION, "3.6.0");
 			}
@@ -218,10 +211,6 @@ public class MicroserviceJenkinsTemplateUtil {
 
 		return writer.toString();
 
-	}
-
-	public String compileXMLTemplate(MSConfig config, MicroserviceDTO microservice) throws IOException {
-		return compileXMLTemplate(config, microservice, null, null);
 	}
 
 }

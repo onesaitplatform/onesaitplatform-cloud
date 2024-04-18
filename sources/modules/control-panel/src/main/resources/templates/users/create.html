@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -181,13 +181,13 @@
 									<div class="col-md-4 col-sm-6 col-xs-12">
 										<div class="form-group">
 											<label class="control-label" th:text="#{user.name}">Name</label><span class="required"> *</span>
-											<input id="fullName" type="text" th:readonly="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" th:required="true"  maxlength="50" th:field="*{fullName}" class="form-control " th:placeholder="#{user.name}"/>
+											<input id="fullName" type="text"  th:required="true"  maxlength="50" th:field="*{fullName}" class="form-control " th:placeholder="#{user.name}"/>
 										</div>
 									</div>
 									<div class="col-md-4 col-sm-6 col-xs-12">
 										<div class="form-group">
 											<label class="control-label"> <span th:text="#{user.email}">eMail</span></label><span class="required"> *</span>
-											<input id="email" type="text" th:readonly="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" th:required="true"  maxlength="50" th:field="*{email}" class="form-control " th:placeholder="#{user.email}"/>
+											<input id="email" type="text"  th:required="true"  maxlength="50" th:field="*{email}" class="form-control " th:placeholder="#{user.email}"/>
 										</div>
 									</div>													
 								</div>
@@ -210,14 +210,14 @@
 									<div class="col-md-2 col-sm-6 col-xs-12">
 										<div class="form-group">
 											<label class="control-label"> <span th:text="#{user.dateDeleted}">Deleted At</span></label>
-											<input id="datedeleted" th:field="*{dateDeleted}" th:disabled="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" type="text" maxlength="50" class="form-control datetime"  />
+											<input id="datedeleted" th:field="*{dateDeleted}" type="text" maxlength="50" class="form-control datetime"  />
 										</div>
 									</div>
 									<div class="col-md-1 col-sm-1 col-xs-12" sec:authorize="!@securityService.hasAnyRole('ROLE_PARTNER')">
 										<div class="form-group">
 											<div class="mt-checkbox-list margin-top-20">
 												<label class="mt-checkbox font-md popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{user.active.help},data-title=#{user.active}"><div class="inline font-xs" th:text="#{user.active}">User Active?</div>
-													<input id="checkboxactive" name="active" type="checkbox" th:disabled="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" class="form-control" th:field="*{active}" th:checked="checked"/>
+													<input id="checkboxactive" name="active" type="checkbox" class="form-control" th:field="*{active}" th:checked="checked"/>
 													<span></span><!-- needed by styles -->
 												</label>																													
 											</div>
@@ -244,17 +244,15 @@
 								<div class="row main">
 									<div th:if="${user.userId} != null AND ${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" class="col-md-3 col-sm-5 col-xs-12">
 										<div  class="form-group">
-											<label class="popovers" data-trigger="hover" data-placement="bottom" data-container="body"><span th:text="#{user.current.password}" >Password</span></label><span class="required"> *</span>
-											<i class="la la-info-circle popovers" style="color: #1168A6;" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{user.password.help},data-title=#{user.password}"></i>
+											<label class="popovers" data-trigger="hover" data-placement="bottom" data-container="body" th:attr="data-content=#{user.password.help},data-title=#{user.password}"><span th:text="#{user.current.password}" >Password</span></label><span class="required"> *</span>
 											<input id="passwordbox" name="passwordbox" type="password" th:required="true" maxlength="128" class="form-control" placeholder="Password"  th:pattern="${passwordPattern}" />   
 										</div>
 									</div>
 								</div>
 								<div class="row main">	
 									<div class="col-md-3 col-sm-5 col-xs-12">
-										<div class="form-group">
-											<label class="popovers" data-trigger="hover" data-placement="bottom" data-container="body"><span th:text="#{user.new.password}" >Password</span></label><span class="required"> *</span>
-											<i class="la la-info-circle popovers" style="color: #1168A6;" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{user.password.help},data-title=#{user.password}"></i>
+									<div class="form-group">
+											<label class="popovers" data-trigger="hover" data-placement="bottom" data-container="body" th:attr="data-content=#{user.password.help},data-title=#{user.password}"><span th:text="#{user.new.password}" >Password</span></label><span class="required"> *</span>
 											<input id="newpasswordbox" name="newpasswordbox" type="password" th:required="true" maxlength="128" class="form-control" placeholder="Password"  th:pattern="${passwordPattern}" />   
 										</div>
 									</div>
@@ -262,7 +260,7 @@
 								<div class="row main">
 									<div class="col-md-3 col-sm-5 col-xs-12">
 										<div class="form-group">
-											<label class="popovers" data-trigger="hover" data-placement="bottom" data-container="body"><span th:text="#{user.repeat.password}" >Password</span></label><span class="required"> *</span>
+											<label class="popovers" data-trigger="hover" data-placement="bottom" data-container="body" th:attr="data-content=#{user.password.help},data-title=#{user.password}"><span th:text="#{user.repeat.password}" >Password</span></label><span class="required"> *</span>
 											<input id="repeatpasswordbox" name="repeatpasswordbox" type="password" th:required="true" maxlength="128" class="form-control" placeholder="Password" data-rule-equalTo="#newpasswordbox"  th:pattern="${passwordPattern}" /> 
 										</div>
 									</div>
@@ -594,6 +592,8 @@
 	search[0] ? $('#identification').val(search[0]) : search[0] = '';
 	description ? $('#description').val(description) : description = '';
 
+
+
 	console.log('SEARCHING ... [ Identification: ' + search[0] + ' Description: ' + description + ']');
 	if (( search[0] != '') || (description != '')) { $('#search-toggle').trigger('click'); }
 	
@@ -826,16 +826,7 @@
 				
 		});
 		
-		$('input[name="newpasswordbox"]').rules('add', {
-		    messages: {
-		        pattern: userCreateJson.passwordmsg
-		    }
-		})
-		$('input[name="repeatpasswordbox"]').rules('add', {
-		    messages: {
-		        pattern: userCreateJson.passwordmsg
-		    }
-		})
+
 	});
 	 
 
@@ -875,6 +866,7 @@
 		
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
 		$.each([ 2,6,7 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		
 		
 	});
 	

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.jline.utils.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +49,7 @@ import org.springframework.util.Assert;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
 import com.minsait.onesait.platform.commons.model.ComplexWriteResult;
 import com.minsait.onesait.platform.commons.model.ComplexWriteResultType;
@@ -54,17 +58,21 @@ import com.minsait.onesait.platform.commons.model.MultiDocumentOperationResult;
 import com.minsait.onesait.platform.config.components.OntologyVirtualSchemaFieldType;
 import com.minsait.onesait.platform.config.model.OntologyPresto;
 import com.minsait.onesait.platform.config.repository.OntologyPrestoRepository;
+import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
 import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
+import com.minsait.onesait.platform.persistence.external.generator.SQLGenerator;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.PreparedStatement;
 import com.minsait.onesait.platform.persistence.models.ErrorResult;
-import com.minsait.onesait.platform.persistence.presto.generator.PrestoSQLGenerator;
 import com.minsait.onesait.platform.persistence.presto.generator.PrestoSQLHelper;
 import com.minsait.onesait.platform.persistence.presto.generator.PrestoSQLTableReplacer;
+import com.minsait.onesait.platform.persistence.presto.generator.model.common.ColumnPresto;
 import com.minsait.onesait.platform.persistence.presto.generator.model.statements.PrestoCreateStatement;
-import com.minsait.onesait.platform.persistence.presto.generator.model.statements.PrestoPreparedStatement;
 import com.minsait.onesait.platform.persistence.presto.parser.JSONResultsetExtractor;
 
 import lombok.extern.slf4j.Slf4j;
+import net.sf.jsqlparser.statement.create.table.ColDataType;
 
 @Component("PrestoOntologyBasicOpsDBRepository")
 @Lazy
@@ -92,7 +100,7 @@ public class PrestoOntologyBasicOpsDBRepository implements PrestoOntologyOpsDBRe
 	private PrestoDatasourceManager prestoDatasourceManager;
 
 	@Autowired
-	private PrestoSQLGenerator sqlGenerator;
+	private SQLGenerator sqlGenerator;
 
 	@Autowired
 	private PrestoSQLHelper prestoSQLHelper;
@@ -146,7 +154,7 @@ public class PrestoOntologyBasicOpsDBRepository implements PrestoOntologyOpsDBRe
 					prestoDatasourceManager.getDatasource(op.getDatasourceCatalog(), op.getDatasourceSchema()));
 
 			final int affected;
-			final PrestoPreparedStatement sql = sqlGenerator.buildInsert().setOntology(ontology)
+			final PreparedStatement sql = sqlGenerator.buildInsert().setOntology(ontology)
 					.setValuesAndColumnsForInstances(instances).generate(true);
 
 			sql.setStatement(PrestoSQLTableReplacer.replaceTableNameInInsert(sql.getStatement(),
@@ -167,10 +175,10 @@ public class PrestoOntologyBasicOpsDBRepository implements PrestoOntologyOpsDBRe
 	@Override
 	public MultiDocumentOperationResult insertNative(final String ontology, final String insertStmt,
 			final boolean includeIds) {
-		return insertNative(ontology, new PrestoPreparedStatement(insertStmt.replaceAll(";", "")), includeIds);
+		return insertNative(ontology, new PreparedStatement(insertStmt.replaceAll(";", "")), includeIds);
 	}
 
-	private MultiDocumentOperationResult insertNative(final String ontology, final PrestoPreparedStatement ps,
+	private MultiDocumentOperationResult insertNative(final String ontology, final PreparedStatement ps,
 			final boolean includeIds) {
 		try {
 			Assert.hasLength(ontology, ONTOLOGY_NOTNULLEMPTY);
@@ -204,10 +212,10 @@ public class PrestoOntologyBasicOpsDBRepository implements PrestoOntologyOpsDBRe
 	@Override
 	public MultiDocumentOperationResult deleteNative(final String ontology, final String query,
 			final boolean includeIds) {
-		return deleteNative(ontology, new PrestoPreparedStatement(query.replaceAll(";", "")), includeIds);
+		return deleteNative(ontology, new PreparedStatement(query.replaceAll(";", "")), includeIds);
 	}
 
-	private MultiDocumentOperationResult deleteNative(final String ontology, final PrestoPreparedStatement ps,
+	private MultiDocumentOperationResult deleteNative(final String ontology, final PreparedStatement ps,
 			final boolean includeIds) {
 		try {
 			Assert.hasLength(ontology, ONTOLOGY_NOTNULLEMPTY);
@@ -235,10 +243,10 @@ public class PrestoOntologyBasicOpsDBRepository implements PrestoOntologyOpsDBRe
 
 	@Override
 	public List<String> queryNative(final String ontology, String query, final int offset, final int limit) {
-		return queryNative(ontology, new PrestoPreparedStatement(query.replaceAll(";", "")), offset, limit);
+		return queryNative(ontology, new PreparedStatement(query.replaceAll(";", "")), offset, limit);
 	}
 
-	private List<String> queryNative(final String ontology, PrestoPreparedStatement ps, final int offset, final int limit) {
+	private List<String> queryNative(final String ontology, PreparedStatement ps, final int offset, final int limit) {
 		try {
 			Assert.hasLength(ontology, ONTOLOGY_NOTNULLEMPTY);
 			Assert.hasLength(ps.getStatement(), QUERY_NOTNULLEMPTY);
@@ -262,20 +270,20 @@ public class PrestoOntologyBasicOpsDBRepository implements PrestoOntologyOpsDBRe
 
 	@Override
 	public String queryNativeAsJson(final String ontology, final String query) {
-		return queryNativeAsJson(ontology, new PrestoPreparedStatement(query));
+		return queryNativeAsJson(ontology, new PreparedStatement(query));
 	}
 
-	private String queryNativeAsJson(final String ontology, final PrestoPreparedStatement ps) {
+	private String queryNativeAsJson(final String ontology, final PreparedStatement ps) {
 		return queryNativeAsJson(ontology, ps, 0, prestoDatasourceManager.getQueryLimit());
 	}
 
 	@Override
 	public String queryNativeAsJson(final String ontology, final String originalQuery, final int offset,
 			final int limit) {
-		return queryNativeAsJson(ontology, new PrestoPreparedStatement(originalQuery), offset, limit);
+		return queryNativeAsJson(ontology, new PreparedStatement(originalQuery), offset, limit);
 	}
 
-	private String queryNativeAsJson(final String ontology, final PrestoPreparedStatement ps, final int offset,
+	private String queryNativeAsJson(final String ontology, final PreparedStatement ps, final int offset,
 			final int limit) {
 		final List<String> result = this.queryNative(ontology, ps, offset, limit);
 		final JSONArray jsonResult = new JSONArray();
@@ -379,10 +387,10 @@ public class PrestoOntologyBasicOpsDBRepository implements PrestoOntologyOpsDBRe
 	@Override
 	public List<String> getInstanceFromTable(final String datasource, final String query) {
 		final String finalQuery = getStatementFromJson(query);
-		return getInstanceFromTable(datasource, new PrestoPreparedStatement(finalQuery.replaceAll(";", "")));
+		return getInstanceFromTable(datasource, new PreparedStatement(finalQuery.replaceAll(";", "")));
 	}
 
-	private List<String> getInstanceFromTable(final String datasource, final PrestoPreparedStatement ps) {
+	private List<String> getInstanceFromTable(final String datasource, final PreparedStatement ps) {
 		try {
 			Assert.hasLength(datasource, "Datasource can't be null or empty");
 			Assert.hasLength(ps.getStatement(), QUERY_NOTNULLEMPTY);
@@ -471,14 +479,22 @@ public class PrestoOntologyBasicOpsDBRepository implements PrestoOntologyOpsDBRe
 
 	@Override
 	public String getSqlTableDefinitionFromSchema(final String ontology, final String schema) {
-		return sqlGenerator.getSqlTableDefinitionFromSchema(ontology, schema);
+		if (schema == null) {
+			throw new IllegalArgumentException("Ontology schema not found in ontology");
+		}
+		final List<ColumnPresto> cols = generateColumns(schema);
+		final CreateStatement cs = sqlGenerator.buildCreate().setOntology(ontology);
+		final PrestoCreateStatement createStatement = new PrestoCreateStatement(cs);
+		createStatement.setColumnsPresto(cols);
+
+		return this.getSQLCreateStatment(createStatement);
 	}
 
 	@Override
 	public String getSQLCreateStatment(PrestoCreateStatement createStatement) {
 		createStatement = prestoSQLHelper.parseCreateStatementColumns(createStatement);
 		createStatement = prestoSQLHelper.parseHistoricalOptionsStatement(createStatement);
-		return new PrestoPreparedStatement(createStatement.toString()).getStatement();
+		return new PreparedStatement(createStatement.toString()).getStatement();
 	}
 
 	@Override
@@ -627,8 +643,8 @@ public class PrestoOntologyBasicOpsDBRepository implements PrestoOntologyOpsDBRe
 					.queryForList(prestoSQLHelper.getDatabasesStatement(), String.class);
 			return catalogs.stream().filter(c -> !c.equals(SYSTEM_CATALOG)).collect(Collectors.toList());
 		} catch (final Exception e) {
-			log.error("Error listing databases from user in database", e);
-			throw new DBPersistenceException("Error listing databases from user in database", e);
+			log.error("Error listing databases from user in external database", e);
+			throw new DBPersistenceException("Error listing databases from user in external database", e);
 		}
 	}
 
@@ -655,12 +671,51 @@ public class PrestoOntologyBasicOpsDBRepository implements PrestoOntologyOpsDBRe
 			return new JdbcTemplate(prestoDatasourceManager.getDatasource(catalog, schema))
 					.queryForList(prestoSQLHelper.getAllTablesStatement(catalog, schema), String.class);
 		} catch (final Exception e) {
-			log.error("Error listing databases from user in database", e);
-			throw new DBPersistenceException("Error listing databases from user in database", e);
+			log.error("Error listing databases from user in external database", e);
+			throw new DBPersistenceException("Error listing databases from user in external database", e);
 		}
 	}
 
+	private List<ColumnPresto> generateColumns(final String ontologyJsonSchema) {
+		final List<ColumnPresto> cols = new ArrayList<>();
+		try {
+			final JsonParser parser = new JsonParser();
+			final JsonElement jsonTree = parser.parse(ontologyJsonSchema);
+			if (jsonTree.isJsonObject()) {
+				final JsonObject jsonObject = jsonTree.getAsJsonObject();
+				extractAllFieldsFromJson(cols, jsonObject);
+			} else {
+				throw new OPResourceServiceException(
+						"Invalid schema to be converted to SQL schema: " + ontologyJsonSchema);
+			}
 
+		} catch (final Exception e) {
+			Log.warn("Not possible to convert schema to SQL schema: ", e.getMessage());
+			throw new OPResourceServiceException("Not possible to convert schema to SQL schema: " + e.getMessage());
+		}
+		return cols;
+	}
 
+	private void extractAllFieldsFromJson(List<ColumnPresto> cols, JsonObject datosJson) {
+		if (datosJson.has("properties")) {
+			final JsonObject propertiesJson = datosJson.get("properties").getAsJsonObject();
+			final Set<Entry<String, JsonElement>> keyValues = propertiesJson.entrySet();
+			for (final Entry<String, JsonElement> entry : keyValues) {
+				final String fieldName = entry.getKey();
+				final JsonObject fieldSpec = entry.getValue().getAsJsonObject();
+				final boolean fieldIsRequired = fieldSpec.get("required").getAsBoolean();
+				final String fieldDescription = fieldSpec.get("id").getAsString();
+				final String fieldType = fieldSpec.get("type").getAsString();
 
+				final ColumnPresto col = new ColumnPresto();
+				final ColDataType colDT = new ColDataType();
+				colDT.setDataType(fieldType);
+				col.setColDataType(colDT);
+				col.setColumnName(fieldName);
+				col.setNotNull(fieldIsRequired);
+				col.setColComment(fieldDescription);
+				cols.add(col);
+			}
+		}
+	}
 }

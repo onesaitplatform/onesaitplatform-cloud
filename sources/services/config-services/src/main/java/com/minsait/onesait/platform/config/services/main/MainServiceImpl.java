@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.minsait.onesait.platform.config.model.Configuration;
 import com.minsait.onesait.platform.config.model.Configuration.Type;
-import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.model.UserControlPanelConfig;
 import com.minsait.onesait.platform.config.model.adminpanel.AdminPanelConfiguration;
 import com.minsait.onesait.platform.config.model.adminpanel.ModuleService;
 import com.minsait.onesait.platform.config.repository.ApiRepository;
@@ -40,7 +38,6 @@ import com.minsait.onesait.platform.config.repository.NotebookRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.repository.PipelineRepository;
 import com.minsait.onesait.platform.config.repository.ProjectRepository;
-import com.minsait.onesait.platform.config.repository.UserControlPanelConfigRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 import com.minsait.onesait.platform.config.services.main.dto.GroupModulesDTO;
@@ -59,9 +56,6 @@ public class MainServiceImpl implements MainService {
     @Autowired
     private OntologyRepository ontologyRepository;
 
-    @Autowired
-    private UserControlPanelConfigRepository userControlPanelConfigRepository;
-    
     @Autowired
     private ClientPlatformRepository deviceRepository;
 
@@ -324,34 +318,4 @@ public class MainServiceImpl implements MainService {
         return groupServices;
     }
 
-
-
-	public String getviewPanelUser( User user) {
-		String model;
-		UserControlPanelConfig userControlPanelConfig = userControlPanelConfigRepository.findByUser(user);
-		if(userControlPanelConfig != null) {
-			model = userControlPanelConfig.getType().toString();
-		}else {
-			model = UserControlPanelConfig.ModeType.CLASSICAL_VIEW.toString();
-		}
-		   
-		return model;	
-	}
-	
-	public void  updateviewPanelUser(User user, String view) {
-	
-		UserControlPanelConfig userControlPanelConfig = userControlPanelConfigRepository.findByUser(user);
-		if(userControlPanelConfig != null) {
-			userControlPanelConfig.setType(UserControlPanelConfig.ModeType.valueOf(view));	
-			userControlPanelConfigRepository.save(userControlPanelConfig);
-		}else {
-			userControlPanelConfig = new UserControlPanelConfig();
-			userControlPanelConfig.setUser(user);
-			userControlPanelConfig.setType(UserControlPanelConfig.ModeType.valueOf(view));
-			userControlPanelConfigRepository.save(userControlPanelConfig);
-		}
-		 	 
-		
-			
-	}
 }

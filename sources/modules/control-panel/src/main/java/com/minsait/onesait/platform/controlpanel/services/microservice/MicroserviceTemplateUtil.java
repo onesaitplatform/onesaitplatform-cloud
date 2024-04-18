@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
@@ -51,6 +50,7 @@ import com.minsait.onesait.platform.commons.git.GitOperations;
 import com.minsait.onesait.platform.commons.git.GitOperationsImpl;
 import com.minsait.onesait.platform.commons.git.GitSyncException;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
+import com.minsait.onesait.platform.config.model.Microservice.TemplateType;
 import com.minsait.onesait.platform.config.model.MicroserviceTemplate;
 import com.minsait.onesait.platform.config.model.Token;
 import com.minsait.onesait.platform.config.repository.ClientPlatformOntologyRepository;
@@ -211,9 +211,10 @@ public class MicroserviceTemplateUtil {
 		}
 //		To test in windows, user directoryScaffoldingTEST
 		try {
-			copyClonedToPushDirectory(mainConfig, projectInfo.get(GIT_REPO_URL_NODE).asText(), sourcesPath, dockerPath);
-
-		} catch (final Exception e) {
+			gitOperations.push(projectInfo.get(GIT_REPO_URL_NODE).asText(), mainConfig.getUser(),
+					mainConfig.getPassword() == null ? mainConfig.getPrivateToken() : mainConfig.getPassword(),
+					DEFAULT_BRANCH_PUSH, directoryScaffolding + File.separator + GitOperationsImpl.CLONED_FOLDER, true);
+		} catch (final GitSyncException e) {
 			// NO-OP doesnt apply here
 		}
 
@@ -221,29 +222,6 @@ public class MicroserviceTemplateUtil {
 //		gitOperations.deleteDirectoryTEST(directoryScaffoldingTEST);
 		gitOperations.deleteDirectory(directoryScaffolding);
 
-	}
-
-	private void copyClonedToPushDirectory(GitlabConfiguration mainConfig, String projectURL, String sourcesPath,
-			String dockerPath) throws Exception {
-		final String randomDir = directoryScaffolding + File.separator + UUID.randomUUID().toString().substring(0, 4);
-		Files.createDirectories(new File(randomDir).toPath());
-		org.apache.commons.io.FileUtils.copyDirectory(new File(
-				directoryScaffolding + File.separator + GitOperationsImpl.CLONED_FOLDER + File.separator + sourcesPath),
-				new File(randomDir));
-		if (!new File(randomDir + File.separator + "docker").exists()) {
-			new File(randomDir + File.separator + "docker").mkdir();
-		}
-		org.apache.commons.io.FileUtils.copyDirectory(new File(
-				directoryScaffolding + File.separator + GitOperationsImpl.CLONED_FOLDER + File.separator + dockerPath),
-				new File(randomDir + File.separator + "docker"));
-		gitOperations.configureGitAndInit(mainConfig.getUser(), mainConfig.getEmail(), randomDir);
-		gitOperations.addOrigin(projectURL, randomDir, false);
-		gitOperations.addAll(randomDir);
-		gitOperations.commit("First Commit", randomDir);
-		gitOperations.createBranch("master", randomDir);
-		gitOperations.push(projectURL, mainConfig.getUser(),
-				mainConfig.getPassword() == null ? mainConfig.getPrivateToken() : mainConfig.getPassword(),
-				DEFAULT_BRANCH_PUSH, randomDir, false);
 	}
 
 	public void cloneProcessMLAndPush(JsonNode projectInfo, GitlabConfiguration mainConfig,
@@ -261,7 +239,7 @@ public class MicroserviceTemplateUtil {
 		} catch (final IOException e1) {
 			// NO-OP
 		}
-
+		
 		final String dockerPath = mstemplate.getDockerRelativePath();
 		String sourcesPath = mstemplate.getRelativePath();
 		try {
@@ -319,8 +297,8 @@ public class MicroserviceTemplateUtil {
 	}
 
 	public void cloneProcessIOTAndPush(JsonNode projectInfo, GitlabConfiguration mainConfig,
-			MicroserviceTemplate mstemplate, boolean checkProjectStructure, int port, String contextPath,
-			String ontology) throws GitlabException {
+			MicroserviceTemplate mstemplate, boolean checkProjectStructure, int port, String contextPath, String ontology)
+			throws GitlabException {
 		log.info("INIT scafolding project generation");
 		gitOperations.createDirectory(directoryScaffolding);
 //		gitOperations.createDirectoryTEST(directoryScaffoldingTEST);
@@ -337,9 +315,10 @@ public class MicroserviceTemplateUtil {
 		final String dockerPath = mstemplate.getDockerRelativePath();
 		String sourcesPath = mstemplate.getRelativePath();
 		try {
-			generatePOJOs(ontology, directoryScaffolding + File.separator + GitOperationsImpl.CLONED_FOLDER);
-			processTemplatesIOTTemplate(ontology, projectInfo.path(GIT_NAME_NODE).asText(), contextPath, port,
-					dockerPath, sourcesPath);
+			generatePOJOs(ontology,
+					directoryScaffolding + File.separator + GitOperationsImpl.CLONED_FOLDER);
+			processTemplatesIOTTemplate(ontology, projectInfo.path(GIT_NAME_NODE).asText(), contextPath,
+					port, dockerPath, sourcesPath);
 		} catch (final Exception e) {
 			log.error("Something went wrong while generating scaffolding ", e);
 			throw new GitlabException(e.getMessage());
@@ -572,7 +551,7 @@ public class MicroserviceTemplateUtil {
 		map.put("NAME", StringUtils.isEmpty(name) ? "microservice" : name);
 		map.put("CONTEXT_PATH", contextPath);
 		map.put("PORT", String.valueOf(port));
-
+		
 		try {
 			File f = new File(directoryScaffolding + File.separator + GitOperationsImpl.CLONED_FOLDER + File.separator
 					+ sourcesPath + File.separator + MAIN_JAVA + File.separator + REPOSITORY_PACKAGE.replace(".", "/"));

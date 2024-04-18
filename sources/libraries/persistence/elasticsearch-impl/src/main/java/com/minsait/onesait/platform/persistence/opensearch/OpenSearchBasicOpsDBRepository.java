@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,10 +100,8 @@ public class OpenSearchBasicOpsDBRepository implements BasicOpsDBRepository {
 
 			final Ontology dbOntology = ontologyRepository.findByIdentification(ontology);
 			final OntologyElastic elasticOntology = ontologyElasticRepository.findByOntologyId(dbOntology);
-			if (log.isDebugEnabled()) {
-				log.debug("ElasticSearchBasicOpsDBRepository : Loading content: {} into elasticsearch  {}", instance,
+			log.debug("ElasticSearchBasicOpsDBRepository : Loading content: {} into elasticsearch  {}", instance,
 					ontology);
-			}			
 			List<? extends DBResult> output = null;
 			final List<String> instances = Arrays.asList(instance);
 			output = eSInsertService.bulkInsert(elasticOntology, instances).getData();
@@ -566,4 +564,5 @@ public class OpenSearchBasicOpsDBRepository implements BasicOpsDBRepository {
 		// TODO Auto-generated method stub
 		throw new DBPersistenceException(NOT_IMPLEMENTED, new NotImplementedException(NOT_IMPLEMENTED));
 	}
+
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,8 +88,8 @@ public class GadgetDatasourceBusinessServiceImpl implements GadgetDatasourceBusi
 					sampleQuery = this.gadgetDatasourceService.getSampleQueryForFilterGadgetDatasourceById(datasourceId,
 							ontology, user, limit);
 				} else {
-					sampleQuery = this.gadgetDatasourceService.getSampleQueryGadgetDatasourceById(datasourceId,
-							ontology, user, limit);
+					sampleQuery = this.gadgetDatasourceService.getSampleQueryGadgetDatasourceById(datasourceId, ontology,
+							user, limit);
 				}
 			} else {
 				sampleQuery = query;
@@ -117,7 +117,7 @@ public class GadgetDatasourceBusinessServiceImpl implements GadgetDatasourceBusi
 		Map<String, Object>[] jsonMap = objectMapper.readValue(resultstr, Map[].class);
 		if (jsonMap.length == 0) {
 			throw new GadgetDatasourceBusinessServiceException(
-					GadgetDatasourceBusinessServiceException.ErrorType.NOT_DATA, "Not data");
+					GadgetDatasourceBusinessServiceException.ErrorType.NOT_DATA, "Non data");
 		} else {
 			findKeys("", jsonMap[0], result);
 			return result;

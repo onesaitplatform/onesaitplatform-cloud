@@ -59,7 +59,43 @@ var TagCreateController = function() {
 		$('#resetBtn').on('click', function() {
 			cleanFields('project_create_form');
 		});
-
+		
+		// authorization tab control 
+		$(".option a[href='#tab_1']").on("click", function(e) {
+			$('.tabContainer').find('.option').removeClass('active');
+	        $(this).closest("div").addClass('active');
+		});
+		
+		$(".option a[href='#tab_2']").on("click", function(e) {
+		  if ($(this).hasClass("disabled")) {
+			e.preventDefault();
+			return false;
+		  } else {
+	        $('.tabContainer').find('.option').removeClass('active');
+	        $(this).closest("div").addClass('active');
+		  }
+		});
+		
+		$(".option a[href='#tab_3']").on("click", function(e) {
+		  if ($(this).hasClass("disabled")) {
+			e.preventDefault();
+			return false;
+		  } else {
+	        $('.tabContainer').find('.option').removeClass('active');
+	        $(this).closest("div").addClass('active');
+		  }
+		});
+		
+		$(".option a[href='#tab_4']").on("click", function(e) {
+		  if ($(this).hasClass("disabled")) {
+			e.preventDefault();
+			return false;
+		  } else {
+	        $('.tabContainer').find('.option').removeClass('active');
+	        $(this).closest("div").addClass('active');
+		  }
+		});
+		
 		$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
 			$('.form').validate().element('#' + event.target.id);                // checks form for validity
 		});
@@ -261,6 +297,127 @@ var TagCreateController = function() {
 		$('#parameter_users').val('');
 		$('#parameter_associations').val('');
 	}
+	
+	var addWebProject = function() {
+		var webProject = $('#webprojects').val();
+
+		if (webProject != '') {
+			$("#webprojects-tab-fragment").load(
+					'/controlpanel/projects/addwebproject', {
+						'webProject' : webProject,
+						'project' : tagCreateJson.projectId
+					}, function() {
+						refreshSelectpickers();
+						toastr.success(messagesForms.operations.genOpSuccess,'');
+					});
+		} else {
+			toastr.error(messagesForms.operations.genOpError,'');
+		}
+
+	}
+
+	var removeWebProject = function() {
+
+		$("#webprojects-tab-fragment").load(
+				'/controlpanel/projects/removewebproject', {
+					'project' : tagCreateJson.projectId
+				}, function() {
+					refreshSelectpickers();
+					toastr.success(messagesForms.operations.genOpSuccess,'');
+				});
+
+	}
+
+	var addPlatformUser = function() {
+		var user = $('#users').val();
+		if (user != '') {
+			App.blockUI({boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Adding user..."});
+			$("#users-tab-fragment").load('/controlpanel/projects/adduser', {
+				'user' : user,
+				'project' : tagCreateJson.projectId
+			}, function() {
+				App.blockUI({boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Adding user..."});
+				refreshSelectpickers();
+				toastr.success(messagesForms.operations.genOpSuccess,'');
+				App.unblockUI();
+			});
+		} else {
+			toastr.info(tagCreateJson.validations.selectUser,'');
+		}
+		
+	}
+
+	var removePlatformUser = function(user) {
+		if (user != '') {
+			App.blockUI({boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Removing user..."});
+			$("#users-tab-fragment").load('/controlpanel/projects/removeuser',
+					{
+						'user' : user,
+						'project' : tagCreateJson.projectId
+					}, function() {
+						refreshSelectpickers();
+						toastr.success(messagesForms.operations.genOpSuccess,'');
+						App.unblockUI();
+					});
+		} else {
+			toastr.info(tagCreateJson.validations.selectUser,'');
+		}
+	}
+
+	var unsetRealm = function() {
+		var realm = realmLinked;
+		if (realm != null && realm != '') {
+			$.confirm({
+				title : tagCreateJson.confirm.unlinkRealmTitle,
+				theme : 'light',
+				columnClass : 'medium',
+				content : tagCreateJson.confirm.unlinkRealm,
+				draggable : true,
+				dragWindowGap : 100,
+				backgroundDismiss : true,
+				buttons : {
+					close : {
+						text : headerReg.btnCancelar,
+						btnClass : 'btn btn-outline blue dialog',
+						action : function() {
+						} // GENERIC CLOSE.
+					},
+					remove : {
+						text : headerReg.btnEliminar,
+						btnClass : 'btn btn-primary',
+						action : function() {
+							$("#users-tab-fragment").load(
+									'/controlpanel/projects/unsetrealm', {
+										'realm' : realm,
+										'project' : tagCreateJson.projectId
+									}, function() {
+										refreshSelectpickers();
+										refreshResourcesFragment();
+										toastr.success(messagesForms.operations.genOpSuccess,'');
+									});
+						}
+					}
+				}
+			});
+
+		}
+	}
+
+	var setRealm = function() {
+		var realm = $("#realms").val();
+		if (realm != '') {
+			$("#users-tab-fragment").load('/controlpanel/projects/setrealm', {
+				'realm' : realm,
+				'project' : tagCreateJson.projectId
+			},function(){
+				refreshResourcesFragment();
+				toastr.success(messagesForms.operations.genOpSuccess,'');
+			});
+
+		} else {
+			toastr.info(tagCreateJson.validations.selectRealm,'');
+		}
+	}
 
 	var refreshSelectpickers = function() {
 		$('#realms').selectpicker();
@@ -334,6 +491,91 @@ var TagCreateController = function() {
 	var showGenericError = function(){
 		toastr.error(messagesForms.operations.genOpError,'');
 	}
+	
+	var insertElementsAssociated = function (){
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+		var authorizations = [];
+		var authorizing = parentAuthorization["authorizing"];
+		var project = tagCreateJson.projectId;
+		authorizations.push(parentAuthorization);
+
+		$('#tableBody').each(function(){
+		    $(this).find('tr').each(function(){
+				var authorization = {};
+		    	var accesstype = $(this).closest('tr').find('select.accesstypes :selected').val();
+				var resource = $(this).closest('tr').find("input[name='ids\\[\\]']").val();
+				var project = tagCreateJson.projectId;
+				var type = $('#resource-type-filter').val();
+				authorization["project"] = project;
+				authorization["resource"] = resource;
+				authorization["authorizing"] = authorizing;
+				authorization["access"] = accesstype;
+				authorization["resourceType"] = type;
+				authorizations.push(authorization);
+		    })
+		})
+		$.ajax({
+			url : '/controlpanel/projects/authorizationsAssociated',
+			headers: {
+				[csrf_header]: csrf_value
+		    },
+			type : 'POST',
+			data : JSON.stringify(authorizations),
+			contentType : "application/json",
+			dataType : "html",
+		}).done(updateResourcesFragment);
+		$('#associated-modal').modal('hide');
+	}
+	
+	var removeAllAuthorizationsConfirm =function(id){
+        //i18 labels
+        var Close = headerReg.btnCancelar;
+        var Remove = headerReg.btnEliminar;
+        var Content = tagCreateJson.confirm.deleteAllSelected;
+        var Title = tagCreateJson.confirm.deleteAllSelectedTitle;
+
+        // jquery-confirm DIALOG SYSTEM.
+        $.confirm({
+            title: Title,
+            theme: 'light',
+            columnClass: 'medium',
+            content: Content,
+            draggable: true,
+            dragWindowGap: 100,
+            backgroundDismiss: true,
+            buttons: {
+                close: {
+                    text: Close,
+                    btnClass: 'btn btn-outline blue dialog',
+                    action: function (){} //GENERIC CLOSE.      
+                },
+                remove: {
+                    text: Remove,
+                    btnClass: 'btn btn-primary',
+                    action: function(){
+                    	var deleteIds = "";
+                    	$('.resource-row').not('.invisible').each(function() {
+                    		if ($( this ).find(':checkbox').prop('checked')){
+                    			if (deleteIds!=""){
+                    				deleteIds = deleteIds + ",";
+                    			}
+                    			deleteIds = deleteIds + $( this ).find(':checkbox').attr('id').split("_")[2];
+                    		}
+                		})
+                    	
+                		var payload = {
+            				'id' : id,
+            				'idsArray' : deleteIds
+            			};
+            			App.blockUI({boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Removing..."});
+            			handleAuth(payload, 'DELETE_ALL').done(updateResourcesFragment).fail();
+            			App.unblockUI();
+                    }                                           
+                }               
+            }
+        });
+	}
 
 	var removeResourceTag = function(resourceId, tagId) {
 		var csrf_value = $("meta[name='_csrf']").attr("content");
@@ -350,6 +592,23 @@ var TagCreateController = function() {
 		}).done(updateResourcesFragment).fail();;
 		App.unblockUI();
 	}
+	
+	var unlinkTag = function(tagId) {
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+		App.blockUI({boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Removing..."});
+		$.ajax({
+				url : tagsEndpoint+"/unlink?tagId="+tagId,
+				headers: {
+					[csrf_header]: csrf_value
+			    },
+				type : "DELETE",				
+				contentType : "application/json",
+				dataType : "html",
+		}).done(updateResourcesFragment).fail();;
+		App.unblockUI();
+	}
+	
 	
 	var handleAuth = function(payload, methodType) {
 		var csrf_value = $("meta[name='_csrf']").attr("content");
@@ -496,7 +755,13 @@ var TagCreateController = function() {
 		$(".resource-combo").closest("li").removeClass("invisible");
 		
 	}
-
+	/*
+	function toggleAllVisible(){
+		$('.resource-row').not('.invisible').each(function() {
+			$( this ).find(':checkbox').prop('checked', $( "#checkbox_delete_all").prop("checked"));
+		})
+	}
+	*/
 	function createTagName(){
 		$.confirm({
 			title: tagCreateJson.tagCreateNew,
@@ -538,47 +803,46 @@ var TagCreateController = function() {
 	}
 	
 	function deleteTag(name){
-		HeaderController.deleteStandardActionConfirmationDialog(
-			name, 
-			headerReg.btnCancelar, 
-			headerReg.btnEliminar, 
-			tagCreateJson.confirm.deleteTagConfirmation, 
-			tagCreateJson.confirm.deleteTag,
-			"",
-			function(){
-         		var csrf_value = $("meta[name='_csrf']").attr("content");
-				var csrf_header = $("meta[name='_csrf_header']").attr("content");
-				fetch(tagsEndpoint + '?name=' + name,{
-					headers: {
-						[csrf_header]: csrf_value
-				    },
-				    method: 'DELETE'
-				}).then(r => window.location.reload())
-			}
-		)
+		 var Close = headerReg.btnCancelar;
+        var Remove = headerReg.btnEliminar;
+        var Content = tagCreateJson.confirm.deleteTagConfirmation;
+        var Title = tagCreateJson.confirm.deleteTag;
+
+        // jquery-confirm DIALOG SYSTEM.
+        $.confirm({
+            title: Title + " " + name,
+            theme: 'light',
+            columnClass: 'medium',
+            content: Content,
+            draggable: true,
+            dragWindowGap: 100,
+            backgroundDismiss: true,
+            buttons: {
+                close: {
+                    text: Close,
+                    btnClass: 'btn btn-outline blue dialog',
+                    action: function (){} //GENERIC CLOSE.      
+                },
+                remove: {
+                    text: Remove,
+                    btnClass: 'btn btn-primary',
+                    action: function(){
+            			//App.blockUI({boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Removing..."});
+            			//handleAuth(name, 'DELETE').done(updateResourcesFragment).fail();
+            			//App.unblockUI();
+            			var csrf_value = $("meta[name='_csrf']").attr("content");
+						var csrf_header = $("meta[name='_csrf_header']").attr("content");
+						fetch(tagsEndpoint + '?name=' + name,{
+							headers: {
+								[csrf_header]: csrf_value
+						    },
+						    method: 'DELETE'
+						}).then(r => window.location.reload())
+                    }                                           
+                }               
+            }
+        });
 	}
-	
-	function unlinkTag(name){
-		HeaderController.deleteStandardActionConfirmationDialog(
-			name, 
-			headerReg.btnCancelar, 
-			headerReg.btnEliminar, 
-			tagCreateJson.confirm.unlinkTagConfirmation, 
-			tagCreateJson.confirm.unlinkTag,
-			"",
-			function(){
-         		var csrf_value = $("meta[name='_csrf']").attr("content");
-				var csrf_header = $("meta[name='_csrf_header']").attr("content");
-				fetch(tagsEndpoint+"/unlink?tagId="+name, {
-					headers: {
-						[csrf_header]: csrf_value
-				    },
-				    method: 'DELETE'
-				}).then(r => window.location.reload())
-			}
-		)
-	}
-	
 	
 	return {
 		createTagName : function (){
@@ -586,6 +850,9 @@ var TagCreateController = function() {
 		},
 		removeResourceTag : function(resourcesId, tagId) {
 			removeResourceTag(resourcesId, tagId);
+		},
+		removeAllAuthorizationsConfirm : function(id) {
+			removeAllAuthorizationsConfirm(id);
 		},
 		insertAuthorization : function(obj) {
 			App.blockUI({boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Adding..."});
@@ -597,6 +864,24 @@ var TagCreateController = function() {
 		},
 		getResourcesFiltered : function() {
 			getResourcesFiltered();
+		},
+		addWebProject : function() {
+			addWebProject();
+		},
+		removeWebProject : function() {
+			removeWebProject();
+		},
+		removePlatformUser : function(user) {
+			removePlatformUser(user);
+		},
+		addPlatformUser : function() {
+			addPlatformUser();
+		},
+		unsetRealm : function() {
+			unsetRealm();
+		},
+		setRealm : function() {
+			setRealm();
 		},
 		sortHTML : function(id, sel, sortvalue){
 			sortHTML(id, sel, sortvalue);

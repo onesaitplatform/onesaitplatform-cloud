@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -115,11 +115,11 @@
 								<span th:text="#{versioning.snapshot.selection}">Selection of resources</span>
 								<div class="pull-right" style="margin-right: 10%;">
 	                                 <!-- UNCHECK  -->
-	                                 <button th:attr="onclick='$(\'#versionablesJsTree\').jstree().uncheck_all(true);'" id="btn-uncheck" name="btn-cancel" type="button" class="btn btn-circle btn-outline blue no-border" value="cancel"><span th:text="#{versioning.uncheck.all}"> Uncheck all </span>
+	                                 <button th:attr="onclick='$(\'#versionablesJsTree\').jstree().uncheck_all(true);'" id="btn-cancel" name="btn-cancel" type="button" class="btn btn-circle btn-outline blue no-border" value="cancel"><span th:text="#{versioning.uncheck.all}"> Uncheck all </span>
 	                                 </button>
 	                              
 	                                 <!-- CHECK-->
-	                                 <button th:attr="onclick='$(\'#versionablesJsTree\').jstree().check_all(true);'" id="btn-check" type="button" class="btn btn-circle btn-outline btn-primary">
+	                                 <button th:attr="onclick='$(\'#versionablesJsTree\').jstree().check_all(true);'" id="btn-save" type="button" class="btn btn-circle btn-outline btn-primary">
 	                                     <span th:text="#{versioning.check.all}"> Check </span>
 	                                 </button>         
                             	 </div>
@@ -255,8 +255,6 @@
 				}else{
 					if(Object.keys(unchecked).length > 0){
 						toastr.info(messagesForms.operations.genOpError, fillTagName);
-					}else{
-						$('#form-git-config').submit()
 					}
 				}
 			})

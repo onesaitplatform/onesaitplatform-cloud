@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -251,9 +251,7 @@ public class FlowEngineDeploymentProcessorService {
 				if (record.getDomain() != null && deployedAPisInfo.getDomain() != null) {
 					domainService.deleteFlowDomainFlows(record.getDomain(), deployedAPisInfo.getDomain().getUser());
 				} else {
-					if (log.isDebugEnabled()) {
-						log.debug("Deployment record = {}", record.toString());
-					}					
+					log.debug("Deployment record = {}", record.toString());
 					processSingleDeployRecor(record, deployedAPisInfo);
 				}
 			}

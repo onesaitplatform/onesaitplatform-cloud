@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -313,7 +313,7 @@
 							
 							</div>		
 							<div class="pull-right btn-group" style="margin-top: 10px;" >																			
-								<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn dropdown-togglebtn button-dropdown-table-columns  margin-right-10" onclick="javascript:showImportSynopticsDialog()"><a><i class="icon-upload"></i></a></button>												
+								<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn dropdown-togglebtn button-dropdown-table-columns  margin-right-10" onclick="javascript:showImportDashboardDialog()"><a><i class="icon-upload"></i></a></button>												
 								<div class="pull-right btn-group" id="divcreate_Synoptics" >
 									<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-primary button-plus-create" id="createDashboardButton" onclick="location.href='/controlpanel/dashboards/createsynoptic'"><a><i class="icon-new" style="color:white;"></i></a></button>
 																			
@@ -458,7 +458,7 @@
 	
 
 	// TEMPLATE SEARCH FORM.
-	
+
 	var sname = [[${param.name}]] || '';
 	var stype = [[${param.type}]] || '';
 	var cloneTitle = [[#{dashboards.cloneText}]];
@@ -475,25 +475,12 @@
 	var Private = [[#{gen.private}]];
 	var DashboardId = [[${dashboard}]];
 	var EditDashboardJSON = [[#{dashboards.edit.model.json.tooltip}]];
-	var messageErrorName =[[#{ontology.index.nameError}]];
 	var CloneFail = [[#{dashboards.cloneFail}]];
 	var MinLen = [[#{dashboards.minLen}]];
 	var Import = [[#{dashboards.import}]];
-	var ImportSynoptics = [[#{dashboards.import}]];
 	var Clone = [[#{dashboards.clone}]];
 	var ExportPDF = [[#{dashboards.export.pdf}]];
-	var errorTypeSynoptics = [[#{dashboards.wrongimportsynoptics}]];
-	var errorTypeDashoards = [[#{dashboards.wrongimportdashboard}]];
 	var ExportImage = [[#{dashboards.export.image}]];
-	var name = [[#{gen.name}]];
-	var file = [[#{gen.file}]];
-	var impportSuccessfully = [[#{dashboards.import.successfully}]]
-	var typeDashboard;
-	var textCreated =  [[#{dashboards.ontologies.must.be.created}]];
-	var textOverwrite = [[#{dashboards.overwrite}]];
-	var textimportAuth = [[#{dashboards.importAuthorizations}]];
-	var errorFile = [[#{dashboards.jsonfileempty}]]
-	var errorFileName = [[#{dashboards.namejsonfileempty}]];
 	var Title = [[#{dashboards.auth.title}]];
 	var currentTab = [[${currentTab}]];
 	var userRole = [[${userRole}]];
@@ -517,34 +504,16 @@
 	<script type="text/javascript"  th:inline="javascript">	
 	//<![CDATA[
 	var optionName = 'DASHBOARDS';
-
 	
 	var cloneDashboardDialog = function(dashboardId, identification){
 		$.confirm({
 			title: cloneTitle,
 			theme: 'light',
 			columnClass: 'medium',
-			content: "<div class='form-group'><input class='col-md-12 form-control' type='text' id='cloneIdentification' placeholder='" + MinLen + "'></input>  <spam id='nameError' class='help-block'><i> " + messageErrorName + " </i></spam></div>",
+			content: "<input class='col-md-12 form-control' type=text id='cloneIdentification' placeholder='"+MinLen+"'"+"></input>",
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
-			onContentReady: function () {
-        	
-		       $('#cloneIdentification').on('input', function () {
-					var clone = $('#cloneIdentification').val();
-					var error1 = $('.alert-danger');
-			        if(typeof clone === 'undefined' || clone.trim().length < 5 || clone == '' ){
-								error1.show();
-								$('#nameError').removeClass('hide').addClass(' font-red');
-								$('#cloneIdentification').closest('.form-group').addClass('has-error')
-								return false;
-							}else{
-								$('#nameError').addClass('hide');
-								$('#cloneIdentification').closest('.form-group').removeClass('has-error')
-								return true;
-							}
-			        });
-        	},
 			buttons: {
 				close: {
 					text: Cancel,
@@ -557,13 +526,12 @@
 					action: function(){ 
 						if($("#cloneIdentification").val()=="" || !$("#cloneIdentification").val() ||
 							$("#cloneIdentification").val().length < 5){
-			               toastr.error("Error: "+messageErrorName);
+			                cloneFail();
 						}
 						else {$.post(
 								"/controlpanel/dashboards/clone", 
 								{dashboardId : dashboardId, identification : $("#cloneIdentification").val()}
 							).done(function(){
-								
 								navigateUrl("/controlpanel/dashboards/list")
 								}
 							).fail(
@@ -1062,19 +1030,16 @@ var showExportImageDialog = function(id){
 	function navigateNewTab(url){ window.open(url, '_blank');  	}
 	
 	var  deleteDashboardConfirmation = function (id){
+	
+		showConfirmDeleteDialog(id);	
+	} 
+	
+	var deleteUrl =  [[@{/dashboards}]];
+	var showConfirmDeleteDialog = function(id){	
 		$('#delete_dashboard_form').attr('action', deleteUrl + '/' + id);
 		$('#delete-id').val(id);
 		HeaderController.showConfirmDialogDashboard('delete_dashboard_form');	
-	} 
-	
-	var  deleteSynopticsConfirmation = function (id){
-	
-		$('#delete_dashboard_form').attr('action', deleteUrl + '/' + id);
-		$('#delete-id').val(id);
-		HeaderController.showConfirmDialogSynoptics('delete_dashboard_form');		
-	} 
-	var deleteUrl =  [[@{/dashboards}]];
-	
+	}
 	
 	var copyURL = function(url){
 			var $temp = $("<input />");
@@ -1144,9 +1109,6 @@ var showExportImageDialog = function(id){
 		  $('#div_Table_synoptics').removeClass('hide');
 		  $('#div_Card_synoptics').addClass('hide');
 		  $(".background").removeClass("bg-inverse no-shadow");
-		  $('#dataTable-vis-toggle-synoptics').removeClass('hide');
-		  $('#dataTable-vis-toggle').removeClass('hide');
-		  
 		
 	});
 	
@@ -1163,8 +1125,6 @@ var showExportImageDialog = function(id){
 		   	$(".tab-button-cards").addClass("tab-button-active");
 		   	$(".tab-button-table").addClass("tab-button-active");
 		   	$(".background").addClass("bg-inverse no-shadow");
-		   	$('#dataTable-vis-toggle-synoptics').addClass('hide');
-		   	$('#dataTable-vis-toggle').addClass('hide');
 			
 	  
 	});
@@ -1230,7 +1190,6 @@ var showExportImageDialog = function(id){
                  $('#' + currentTab).click();
              },200);
          }
-         
 		 
 		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
 		$('#column_toggler_synoptics').find("input[type='checkbox']").prop('checked', true);
@@ -1366,7 +1325,7 @@ var showExportImageDialog = function(id){
 								if((userRole == "ROLE_ADMINISTRATOR") || ((row.userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){	
 																	// <!-- DELETE --><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
 								DashboardsTable = DashboardsTable +	'<li>'+
-																	'<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" style="margin-top: 3px" data-container="body" data-placement="bottom" onclick="deleteDashboardConfirmation(\''+row.id+'\');"><i class="icon-delete"></i><span style="margin-left: 3px" class="span-title-three-dots-icons" text="'+Delete+'" >Delete</span></span>'+
+																	'<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" onclick="deleteDashboardConfirmation(\''+row.id+'\');"><i class="icon-delete"></i><span class="span-title-three-dots-icons" text="'+Delete+'" >Delete</span></span>'+
 																	 '</li>';
 								}																						
 																															
@@ -1466,7 +1425,7 @@ var showExportImageDialog = function(id){
 								if((userRole == "ROLE_ADMINISTRATOR") || ((row.userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){
 																	//<!-- EDIT ACCESS--><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"	
 								SynopticsTable = SynopticsTable + 	'<li>'+
-																		'<span class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:navigateUrl(\'' + EditDashboardConfUrl + row.id+ '\');" ><i class="la la-cog font-hg"></i><span class="span-title-three-dots-icons" th:text="'+Title+'" >Synoptic Conf</span></span>'+
+																		'<span class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:navigateUrl(\'' + EditDashboardConfUrl + row.id+ '\');" ><i class="la la-cog font-hg"></i><span class="span-title-three-dots-icons" th:text="'+Title+'" >Dashboard Conf</span></span>'+
 																	'</li>';
 								}
 								if((userRole == "ROLE_ADMINISTRATOR") || ((row.userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){								
@@ -1477,7 +1436,7 @@ var showExportImageDialog = function(id){
 								}									
 																	//<!-- URL -->
 								SynopticsTable = SynopticsTable +	'<li>'+
-																		'<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:showDashboardURLDialog(\'' + UrlDashboard + row.id + '\');"><i class="la la-link font-hg"></i><span class="span-title-three-dots-icons">URL Synoptic</span></span>'+
+																		'<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:showDashboardURLDialog(\'' + UrlDashboard + row.id + '\');"><i class="la la-link font-hg"></i><span class="span-title-three-dots-icons">URL Dashboard</span></span>'+
 																	'</li>';
 																	
 																	
@@ -1500,7 +1459,7 @@ var showExportImageDialog = function(id){
 								if((userRole == "ROLE_ADMINISTRATOR") || ((row.userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){	
 																	//<!-- IMPORT --><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
 								SynopticsTable = SynopticsTable +	'<li>'+
-																	'<span class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:showImportSynopticsTableDialog(\'' + row.identification + '\');"><i class="la la-upload font-hg"></i><span class="span-title-three-dots-icons" text="'+Import+'" >Import</span></span>'+
+																	'<span class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:showImportDashboardTableDialog(\'' + row.identification + '\');"><i class="la la-upload font-hg"></i><span class="span-title-three-dots-icons" text="'+Import+'" >Import</span></span>'+
 																	'</li>';	
 								}
 																																		    
@@ -1513,7 +1472,7 @@ var showExportImageDialog = function(id){
 								if((userRole == "ROLE_ADMINISTRATOR") || ((row.userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){	
 																	// <!-- DELETE --><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
 								SynopticsTable = SynopticsTable +	'<li>'+
-																	'<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" style="margin-top: 3px" data-placement="bottom" onclick="deleteSynopticsConfirmation(\''+row.id+'\');"><i class="icon-delete"></i><span style="margin-left: 3px" class="span-title-three-dots-icons" text="'+Delete+'" >Delete</span></span>'+
+																	'<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" onclick="deleteDashboardConfirmation(\''+row.id+'\');"><i class="icon-delete"></i><span class="span-title-three-dots-icons" text="'+Delete+'" >Delete</span></span>'+
 																	 '</li>';
 								}																						
 																															
@@ -1549,6 +1508,7 @@ var showExportImageDialog = function(id){
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));	
+		$('#dataTable-vis-toggle').removeClass('hide');
 
 		//TABLE STYLES
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));
@@ -1589,7 +1549,12 @@ var showExportImageDialog = function(id){
 		//$.each([4],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 
 		$('.dataTables_filter').append($('#dataTable-vis-toggle-synoptics'));
+
+
 		$('#divcreate_Synoptics').prepend($('#dataTable-vis-toggle-synoptics'));
+		$('#dataTable-vis-toggle-synoptics').removeClass('hide');
+
+
 
 		$('#search-on-title-synoptics').append($('.dataTables_filter > label > input')[0]);
 		$('#search-on-title-synoptics > input').removeClass('input-xsmall');
@@ -1617,21 +1582,29 @@ var showExportImageDialog = function(id){
 	   
 	    
 	    //FILTER SYNOPTICS CARDS
-	    var searchTimerSynoptics;
+	    var isEventSynopticsRunning = false; 
 		
-		$("input[type=search][aria-controls=synoptics]").on('input', function() {
-		    clearTimeout(searchTimerSynoptics);  
-		    searchTimerSynoptics = setTimeout(filterSynopticCards, 300);  
-		});
+	function filterSynopticCards() {
+		    if (isEventSynopticsRunning) {
+		      return; 
+		    }
 		
-		function filterSynopticCards() {
-		    $('.project-container-synoptics').remove();
-		   var filterSynoptics = $( "input[type=search][aria-controls=synoptics]" ).val();     	
-			numpagSynoptics = 0;
-			PaginateSynopticsCards(filterSynoptics);
-		}
-		
-	
+		    	isEventSynopticsRunning = true; 
+			     	$('.project-container-synoptics').remove();
+			     	var filterSynoptics = $( "input[type=search][aria-controls=synoptics]" ).val();
+			     	
+					numpagSynoptics = 0;
+					PaginateSynopticsCards(filterSynoptics);
+		   
+		   		isEventSynopticsRunning = false; 
+		      	console.log("Evento finalizado Synoptics");  
+		  
+		  }
+
+		  // Asignar el evento a un elemento específico
+	 $("input[type=search][aria-controls=synoptics]").on('input', function() {
+		    filterSynopticCards();
+	 });
 
  	$("#load-synoptics").on('click', function (e) {
 		e.preventDefault();  
@@ -1658,20 +1631,30 @@ var showExportImageDialog = function(id){
 	    
 	  //FILTER DASHBOARD CARDS  
 
-	var searchTimerDashboard;
+	var isEventRunning = false; 
 		
-		$("input[type=search][aria-controls=dashboards]").on('input', function() {
-		    clearTimeout(searchTimerDashboard);  
-		    searchTimerDashboard = setTimeout(filterDashboardCards, 300);  
-		});
+	function filterDashboardCards() {
+		    if (isEventRunning) {
+		      return; 
+		    }
 		
-		function filterDashboardCards() {
-		  $('.project-container-dashboards').remove();
-		  var searchDashboards = $( "input[type=search][aria-controls=dashboards]" ).val();
-		  numpagDashboard = 0;
-		  PaginateDashboardCards(searchDashboards);
-		}
-	
+		    	isEventRunning = true; 
+			     	$('.project-container-dashbords').remove();
+			     	var searchDashboards = $( "input[type=search][aria-controls=dashboards]" ).val();
+			     	
+					numpagDashboard = 0;
+					PaginateDashboardCards(searchDashboards);
+		   
+		   		isEventRunning = false; 
+		      	console.log("Evento finalizado");  
+		  
+		  }
+
+		  // Asignar el evento a un elemento específico
+	 $("input[type=search][aria-controls=dashboards]").on('input', function() {
+		    filterDashboardCards();
+		    
+	 });
 
  	$("#load-dashboards").on('click', function (e) {
 		e.preventDefault();  
@@ -1688,12 +1671,18 @@ var showExportImageDialog = function(id){
    	
   });
 	   
+	   
+	   
+
+	   
+	   
+	   
 	   //DASHBOARDS CARDS
 	   
 		var searchDashboards;
 		var numpagDashboard = 0;
 		var limitDashboard = 10;
-		var dataCardsDashboards = document.getElementsByClassName("project-container-dashboards");
+		var dataCardsDashboards = document.getElementsByClassName("project-container-dashbords");
 	
 	 
  $("#load-dashboards").on('click', function (e) {
@@ -1704,8 +1693,6 @@ var showExportImageDialog = function(id){
 	function PaginateDashboardCards(searchDashboards){
 			var  Rute = [[@{/dashboards/}]];
 			var image = [[@{/img/wireframe.svg}]];
-			var textNoData = [[#{dashboards.no.element.data}]];
-			var imageNoData =[[@{/images/emptyTemplate.svg}]];
 			
 		
 		$.ajax({
@@ -1728,17 +1715,17 @@ var showExportImageDialog = function(id){
 			    for(i=0; i<data.aaData.length; i++){ 
 					
 					var cardPanel="";
-					cardPanel='<div class="project-container project-container-dashboards col-md-2 col-sm-6 col-xs-12 no-padding-all" style="box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px; margin: 20px; ">'+
+					cardPanel='<div class="project-container project-container-dashbords col-md-2 col-sm-6 col-xs-12 no-padding-all" style="box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px; margin: 20px; ">'+
 											'<div class="panel panel-white ">'+
 												'<div class="panel panel-white card" style=" margin-bottom: -20px">';
 													
-						if(data.aaData[i].image != null && data.aaData[i].image.length > 10 ){
-						cardPanel= cardPanel + '<img src="'+Rute+ data.aaData[i].id+'/getImage" class="img-responsive " data-trigger="hover" data-placement="bottom" data-container="body" style=" width: 100%; height: 100px;  border-bottom:1px solid #D7DADC; object-fit: contain; display: block; margin: auto; "/>';
+					if(data.aaData[i].image != null && data.aaData[i].image.length > 10 ){
+						cardPanel= cardPanel + '<img src="'+Rute+ data.aaData[i].id+'/getImage" class="img-responsive " data-trigger="hover" data-placement="bottom" data-container="body" style=" width: 100%; height: 15%; border-bottom: 1px solid #D7DADC; "/>';
 					} else if(data.aaData[i].image != null && data.aaData[i].image.length < 10) {
-						cardPanel= cardPanel + '<img  src="'+image+'"  class="img-responsive " style="  height: 100px; width: 100%; padding: 30px;  background-color: #ecf4fa  ; border-bottom: 1px solid #D7DADC;"/>';
+						cardPanel= cardPanel + '<img  src="'+image+'"  class="img-responsive " style=" height: 15%;  width: 100%; padding: 30px; background-color: #ecf4fa  ; border-bottom: 1px solid #D7DADC;"/>';
 					}else {
-						cardPanel= cardPanel + '<img src="'+image+'" class="img-responsive " style=" height: 100px;  width: 100%; padding: 30px;  background-color:  #ecf4fa  ;  border-bottom: 1px solid #D7DADC;"/>';
-					}				
+						cardPanel= cardPanel + '<img src="'+image+'" class="img-responsive " style=" height: 15%;  width: 100%; padding: 30px; background-color:  #ecf4fa  ; border-bottom: 1px solid #D7DADC;"/>';
+					}					
 					
 					cardPanel = cardPanel + '<span class="dropdown" style="float: right;  padding: 10px 10px 0px 10px;">';
 					
@@ -1808,7 +1795,7 @@ var showExportImageDialog = function(id){
 					if((userRole == "ROLE_ADMINISTRATOR") || ((data.aaData[i].userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){
 														// <!-- DELETE --><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
 					cardPanel = cardPanel +	'<li>'+
-														'<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" style="margin-top: 3px" data-container="body" data-placement="bottom" onclick="deleteDashboardConfirmation(\''+data.aaData[i].id+'\');"><i class="icon-delete"></i><span  style="margin-left: 3px" class="span-title-three-dots-icons" text="'+Delete+'" >Delete</span></span>'+
+														'<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" onclick="deleteDashboardConfirmation(\''+data.aaData[i].id+'\');"><i class="icon-delete"></i><span class="span-title-three-dots-icons" text="'+Delete+'" >Delete</span></span>'+
 														 '</li>';
 					}																						
 																												
@@ -1837,13 +1824,6 @@ var showExportImageDialog = function(id){
 					panelCardsViewDashboard.append(cardPanel);
 					
 					
-				}
-					if(data.aaData.length === 0 && searchDashboards === undefined){
-					cardPanel = '<div id="imageNoElementData">' ;
-					cardPanel = cardPanel + '<img id="headerImg" alt="logo" style=" height:50px; display: block;   margin-top:120px;  margin-left: auto; margin-right:auto;"  src="'+ imageNoData + '">';
-					cardPanel = cardPanel + '<label style=" display: block;   margin: 0 auto; font-style: italic;font-weight: normal;font-size: 14px;line-height: 24px;text-align: center;color:#505D66;" > '+ textNoData +'</label>';
-					cardPanel= cardPanel +  '</div>';
-					panelCardsViewDashboard.append(cardPanel);
 				}
 			 }).fail(function(data) {
 			    alert( "error" );
@@ -1886,8 +1866,7 @@ var showExportImageDialog = function(id){
 	function PaginateSynopticsCards(filterSynoptics){
 			var  Rute = [[@{/dashboards/}]];
 			var image = [[@{/img/wireframe.svg}]];
-			var textNoData = [[#{synoptics.no.element.data}]];
-			var imageNoData =[[@{/images/emptyTemplate.svg}]];
+			
 		
 		
 		$.ajax({
@@ -1910,18 +1889,19 @@ var showExportImageDialog = function(id){
 			   
 			    for(i=0; i<data.aaData.length; i++){ 
 				
-				var panelCardsSynoptics="";
+					var panelCardsSynoptics="";
 					panelCardsSynoptics='<div class="project-container project-container-synoptics col-md-2 col-sm-6 col-xs-12 no-padding-all" style="box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px; margin: 20px; ">'+
 											'<div class="panel panel-white ">'+
 												'<div class="panel panel-white card" style=" margin-bottom: -20px">';
 													
-						if(data.aaData[i].image != null && data.aaData[i].image.length > 10 ){
-						panelCardsSynoptics= panelCardsSynoptics + '<img src="'+Rute+ data.aaData[i].id+'/getImage" class="img-responsive " data-trigger="hover" data-placement="bottom" data-container="body" style=" width: 100%; height: 100px;  border-bottom:1px solid #D7DADC; object-fit: contain; display: block; margin: auto; "/>';
+					if(data.aaData[i].image != null && data.aaData[i].image.length > 10 ){
+						panelCardsSynoptics= panelCardsSynoptics + '<img src="'+Rute+ data.aaData[i].id+'/getImage" class="img-responsive " data-trigger="hover" data-placement="bottom" data-container="body" style=" width: 100%; height: 15%; border-bottom: 1px solid #D7DADC; "/>';
 					} else if(data.aaData[i].image != null && data.aaData[i].image.length < 10) {
-						panelCardsSynoptics= panelCardsSynoptics + '<img  src="'+image+'"  class="img-responsive " style="  height: 100px; width: 100%; padding: 30px;  background-color: #ecf4fa  ; border-bottom: 1px solid #D7DADC;"/>';
+						panelCardsSynoptics= panelCardsSynoptics + '<img  src="'+image+'"  class="img-responsive " style=" height: 15%;  width: 100%; padding: 30px; background-color: #ecf4fa  ; border-bottom: 1px solid #D7DADC;"/>';
 					}else {
-						panelCardsSynoptics= panelCardsSynoptics + '<img src="'+image+'" class="img-responsive " style=" height: 100px;  width: 100%; padding: 30px;  background-color:  #ecf4fa  ;  border-bottom: 1px solid #D7DADC;"/>';
-					}			
+						panelCardsSynoptics= panelCardsSynoptics + '<img src="'+image+'" class="img-responsive " style=" height: 15%;  width: 100%; padding: 30px; background-color:  #ecf4fa  ; border-bottom: 1px solid #D7DADC;"/>';
+					}					
+					
 					panelCardsSynoptics = panelCardsSynoptics + '<span class="dropdown" style="float: right;  padding: 10px 10px 0px 10px;">';
 					
 						//<!-- VIEW -->	
@@ -1943,7 +1923,7 @@ var showExportImageDialog = function(id){
 					if((userRole == "ROLE_ADMINISTRATOR") || ((data.aaData[i].userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){
 														//<!-- EDIT ACCESS--><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"	
 					panelCardsSynoptics = panelCardsSynoptics + 	'<li>'+
-															'<span class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:navigateUrl(\'' + EditDashboardConfUrl + data.aaData[i].id+ '\');" ><i class="la la-cog font-hg"></i><span class="span-title-three-dots-icons" th:text="'+Title+'" >Synoptic Conf</span></span>'+
+															'<span class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:navigateUrl(\'' + EditDashboardConfUrl + data.aaData[i].id+ '\');" ><i class="la la-cog font-hg"></i><span class="span-title-three-dots-icons" th:text="'+Title+'" >Dashboard Conf</span></span>'+
 														'</li>';
 					}
 					if((userRole == "ROLE_ADMINISTRATOR") || ((data.aaData[i].userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){							
@@ -1954,7 +1934,7 @@ var showExportImageDialog = function(id){
 					}									
 														//<!-- URL -->
 					panelCardsSynoptics = panelCardsSynoptics +	'<li>'+
-															'<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:showDashboardURLDialog(\'' + UrlDashboard + data.aaData[i].id + '\');"><i class="la la-link font-hg"></i><span class="span-title-three-dots-icons">URL Synoptics</span></span>'+
+															'<span  class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:showDashboardURLDialog(\'' + UrlDashboard + data.aaData[i].id + '\');"><i class="la la-link font-hg"></i><span class="span-title-three-dots-icons">URL Dashboard</span></span>'+
 														'</li>';
 														
 														
@@ -1977,7 +1957,7 @@ var showExportImageDialog = function(id){
 					if((userRole == "ROLE_ADMINISTRATOR") || ((data.aaData[i].userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){
 														//<!-- IMPORT --><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
 					panelCardsSynoptics = panelCardsSynoptics +	'<li>'+
-														'<span class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:showImportSynopticsTableDialog(\'' + data.aaData[i].identification + '\');"><i class="la la-upload font-hg"></i><span class="span-title-three-dots-icons" text="'+Import+'" >Import</span></span>'+
+														'<span class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" onclick="javascript:showImportDashboardTableDialog(\'' + data.aaData[i].identification + '\');"><i class="la la-upload font-hg"></i><span class="span-title-three-dots-icons" text="'+Import+'" >Import</span></span>'+
 														'</li>';	
 					}
 																															    
@@ -1990,7 +1970,7 @@ var showExportImageDialog = function(id){
 					if((userRole == "ROLE_ADMINISTRATOR") || ((data.aaData[i].userAccessType == "EDIT") && ( userRole == "ROLE_DEVELOPER" || userRole == "ROLE_DATASCIENTIST"))){
 														// <!-- DELETE --><span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:if="${dashboard.userAccessType=='EDIT'}"
 					panelCardsSynoptics = panelCardsSynoptics +	'<li>'+
-														'<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" style="margin-top: 3px" data-placement="bottom" onclick="deleteSynopticsConfirmation(\''+data.aaData[i].id+'\');"><i class="icon-delete"></i><span style="margin-left: 3px" class="span-title-three-dots-icons" text="'+Delete+'" >Delete</span></span>'+
+														'<span class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" onclick="deleteDashboardConfirmation(\''+data.aaData[i].id+'\');"><i class="icon-delete"></i><span class="span-title-three-dots-icons" text="'+Delete+'" >Delete</span></span>'+
 														 '</li>';
 					}																						
 																												
@@ -2015,16 +1995,7 @@ var showExportImageDialog = function(id){
 													
 					
 					panelCardsSynoptics= panelCardsSynoptics +  '</div>'+ '</div>'+ '</div>'+ '</div>'
-					panelViewCardsSynoptics.append(panelCardsSynoptics);
 					
-					
-				}
-					
-					if(data.aaData.length === 0 && filterSynoptics === undefined){
-					panelCardsSynoptics = '<div id="imageNoElementData">' ;
-					panelCardsSynoptics = panelCardsSynoptics + '<img id="headerImg" alt="logo" style=" height:50px; display: block;   margin-top:120px;  margin-left: auto; margin-right:auto;"  src="'+ imageNoData + '">';
-					panelCardsSynoptics = panelCardsSynoptics + '<label style=" display: block;   margin: 0 auto; font-style: italic;font-weight: normal;font-size: 14px;line-height: 24px;text-align: center;color:#505D66;" > '+ textNoData +'</label>';
-					panelCardsSynoptics= panelCardsSynoptics +  '</div>';
 					panelViewCardsSynoptics.append(panelCardsSynoptics);
 					
 					
@@ -2036,32 +2007,20 @@ var showExportImageDialog = function(id){
    }							
 	
 	var showImportDashboardDialog = function(){
+		var textCreated =  [[#{dashboards.ontologies.must.be.created}]];
+		var textOverwrite = [[#{dashboards.overwrite}]];
+		var textimportAuth = [[#{dashboards.importAuthorizations}]];
 		$.confirm({
-			title: [[#{dashboards.importnewdashboard}]],
+			title: [[#{dashboards.importdashboard}]],
 			theme: 'light',
 			columnClass: 'medium',
-			content: "<div class='alert alert-info ' role='alert'><i class='fa fa-info-circle'></i><span >&nbsp" + textCreated + " </span> </div><div class='form-group'><label id='name' class='control-label'>"+name+"</label><span class='required' style='color:#A73535'> *</span><input class='element text form-control' type='text' id='newImportDashboard' placeholder=''/><spam id='nameError' class='help-block'><i> " + messageErrorName + " </i></spam></div><label id='patternAlert' class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_ ]+</label><input type='hidden' id='dataJSONImport' /><label id='file' class='control-label'>"+file+"</label><span class='required' style='color:#A73535'> *</span><input class='element text form-control' type='file' accept='.json' id='jsonInputData' onchange='fileImportChange(this.files[0])' /><div class='form-group'><div class='mt-checkbox-list'> <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs' >"+textOverwrite+"</div>        <input id='overwritecheck' name='overwritecheck' type='checkbox' class='no-remove' checked='checked'/>        <span></span><!-- needed by styles -->    </label>     <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs'>"+textimportAuth+"</div>        <input id='importAuthcheck' name='importAuthcheck' type='checkbox' class='no-remove'  checked='checked'/>        <span></span><!-- needed by styles -->    </label></div></div>",
+			content: "<div class='alert alert-info' role='alert'><i class='fa fa-info-circle'></i><span >&nbsp" + textCreated + " </span> </div><input class='element text form-control' type='text' id='newImportDashboard' placeholder=''/><br/><label id='patternAlert' class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_ ]+</label><br/><input type='hidden' id='dataJSONImport' /><input class='element text form-control' type='file' accept='.json' id='jsonInputData' onchange='fileImportChange(this.files[0])' /><div class='form-group'><div class='mt-checkbox-list'> <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs' >"+textOverwrite+"</div>        <input id='overwritecheck' name='overwritecheck' type='checkbox' class='no-remove' checked='checked'/>        <span></span><!-- needed by styles -->    </label>     <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs'>"+textimportAuth+"</div>        <input id='importAuthcheck' name='importAuthcheck' type='checkbox' class='no-remove'  checked='checked'/>        <span></span><!-- needed by styles -->    </label></div></div>",
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
 			onContentReady: function () {
 				// INPUT MASK FOR identification allow only letters, numbers and -_
 					$("#newImportDashboard").inputmask({ regex: "[a-zA-Z 0-9_-]*", greedy: false });
-					
-					$('#newImportDashboard').on('input', function () {
-					var clone = $('#newImportDashboard').val();
-					var error1 = $('.alert-danger');
-			        if(typeof clone === 'undefined' || clone.trim().length < 5 || clone == '' ){
-								error1.show();
-								$('#nameError').removeClass('hide').addClass(' font-red');
-								$('#newImportDashboard').closest('.form-group').addClass('has-error')
-								return false;
-							}else{
-								$('#nameError').addClass('hide');
-								$('#newImportDashboard').closest('.form-group').removeClass('has-error')
-								return true;
-							}
-			        });
 				},
 			buttons: {
 				close: {
@@ -2076,94 +2035,12 @@ var showExportImageDialog = function(id){
 						
 						if($("#newImportDashboard").val()=="" || !$("#jsonInputData").val() || $("#jsonInputData").val()=="" || !$("#newImportDashboard").val()){
 							console.log("dashboard name or json file empty");
-							toastr.error("Error: "+errorFileName);
-							return;
-						}
-						
-						if($("#newImportDashboard").val().length < 5){
-							console.log("dashboard name or json file empty");
-							toastr.error("Error: "+ messageErrorName);
-							return;
-						}
-						if(typeDashboard != null && typeDashboard != "DASHBOARD"){
-							toastr.error(errorTypeDashoards+" "+typeDashboard);
 							return;
 						}
 						var dashboardName = $("#newImportDashboard").val().trim();
 						var dashboardExtension = $("#jsonInputData").val().split('.').pop();
-						if(/^[a-zA-Z0-9_ ]+$/.test(dashboardName) && $("#jsonInputData").val() && (typeDashboard == null || typeDashboard == "DASHBOARD")){
+						if(/^[a-zA-Z0-9_ ]+$/.test(dashboardName)){
 							importDashboard(dashboardName,$("#dataJSONImport").val(), dashboardExtension,$("#overwritecheck").is(":checked"),$("#importAuthcheck").is(":checked"));
-							toastr.success(impportSuccessfully);
-						}else{
-							$("#patternAlert").removeClass("hidden");
-							return false;
-						}
-					}									
-				}
-			}
-		});
-	}
-	
-	var showImportSynopticsDialog = function(){
-		$.confirm({
-			title: [[#{dashboards.importnewsinoptics}]],
-			theme: 'light',
-			columnClass: 'medium',
-			content: "<div class='alert alert-info ' role='alert'><i class='fa fa-info-circle'></i><span >&nbsp" + textCreated + " </span> </div><div class='form-group'><label id='name' class='control-label'>"+name+"</label><span class='required' style='color:#A73535'> *</span><input class='element text form-control' type='text' id='newImportSynoptics' placeholder=''/><spam id='nameError' class='help-block'><i> " + messageErrorName + " </i></spam></div><label id='patternAlert' class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_ ]+</label><input type='hidden' id='dataJSONImport' /><label id='file' class='control-label'>"+file+"</label><span class='required' style='color:#A73535'> *</span><input class='element text form-control' type='file' accept='.json' id='jsonInputData' onchange='fileImportChange(this.files[0])' /><div class='form-group'><div class='mt-checkbox-list'> <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs' >"+textOverwrite+"</div>        <input id='overwritecheck' name='overwritecheck' type='checkbox' class='no-remove' checked='checked'/>        <span></span><!-- needed by styles -->    </label>     <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs'>"+textimportAuth+"</div>        <input id='importAuthcheck' name='importAuthcheck' type='checkbox' class='no-remove'  checked='checked'/>        <span></span><!-- needed by styles -->    </label></div></div>",
-			draggable: true,
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			onContentReady: function () {
-				// INPUT MASK FOR identification allow only letters, numbers and -_
-					$("#newImportSynoptics").inputmask({ regex: "[a-zA-Z 0-9_-]*", greedy: false });
-					
-					$('#newImportSynoptics').on('input', function () {
-					var clone = $('#newImportSynoptics').val();
-					var error1 = $('.alert-danger');
-			        if(typeof clone === 'undefined' || clone.trim().length < 5 || clone == '' ){
-								error1.show();
-								$('#nameError').removeClass('hide').addClass(' font-red');
-								$('#newImportSynoptics').closest('.form-group').addClass('has-error')
-								return false;
-							}else{
-								$('#nameError').addClass('hide');
-								$('#newImportSynoptics').closest('.form-group').removeClass('has-error')
-								return true;
-							}
-			        });
-					
-					
-				},
-			buttons: {
-				close: {
-					text: Cancel,
-					btnClass: 'btn btn-outline blue dialog',
-					action: function (){} //GENERIC CLOSE.		
-				},
-				Ok: {
-					text: Confirm,
-					btnClass: 'btn btn-primary',
-					action: function() {
-						
-						if($("#newImportSynoptics").val()=="" || !$("#jsonInputData").val() || $("#jsonInputData").val()=="" || !$("#newImportSynoptics").val()){
-							console.log("dashboard name or json file empty");
-							toastr.error("Error: "+errorFileName);
-							return;
-						}
-						if($("#newImportSynoptics").val().length < 5){
-							console.log("dashboard name or json file empty");
-							toastr.error("Error: "+ messageErrorName);
-							return;
-						}
-						if(typeDashboard != "SYNOPTIC"){
-							toastr.error(errorTypeSynoptics+" "+typeDashboard);
-							return;
-						}
-						var dashboardName = $("#newImportSynoptics").val().trim();
-						var dashboardExtension = $("#jsonInputData").val().split('.').pop();
-						if(/^[a-zA-Z0-9_ ]+$/.test(dashboardName)  && $("#jsonInputData").val() && typeDashboard == "SYNOPTIC" ){
-							importDashboard(dashboardName,$("#dataJSONImport").val(), dashboardExtension,$("#overwritecheck").is(":checked"),$("#importAuthcheck").is(":checked"));
-							toastr.success(impportSuccessfully);
 						}
 						else{
 							$("#patternAlert").removeClass("hidden");
@@ -2176,45 +2053,15 @@ var showExportImageDialog = function(id){
 	}
 
 	var showImportDashboardTableDialog = function(identifier){
+		
+		var textCreated =  [[#{dashboards.ontologies.must.be.created}]];
+		var textOverwrite = [[#{dashboards.overwrite}]];
+		var textimportAuth = [[#{dashboards.importAuthorizations}]];
 		$.confirm({
 			title: [[#{dashboards.importdashboard}]],
 			theme: 'light',
 			columnClass: 'medium',
-			content: "</br><div class='alert alert-info' role='alert'><i class='fa fa-info-circle'></i><span >&nbsp" + textCreated + " </span> </div><label id='file' class='control-label'>"+file+"</label><span class='required' style='color:#A73535'> *</span><input type='hidden' id='dataJSONImport' /><input class='element text form-control' type='file' accept='.json' id='jsonInputData' onchange='fileImportChange(this.files[0])' /><div class='form-group'><div class='mt-checkbox-list'> <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' >  </label>     <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs'>"+textimportAuth+"</div>        <input id='importAuthcheck' name='importAuthcheck' type='checkbox' class='no-remove'  checked='checked'/>        <span></span><!-- needed by styles -->    </label></div></div>",
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			buttons: {
-				close: {
-					text: Cancel,
-					btnClass: 'btn btn-outline blue dialog',
-					action: function (){} //GENERIC CLOSE.		
-				},
-				Ok: {
-					text: Confirm,
-					btnClass: 'btn btn-primary',
-					action: function() {
-						if(identifier =="" || !$("#jsonInputData").val() || $("#jsonInputData").val()=="" || ! identifier){
-							console.log("json file empty");
-							toastr.error("Error: "+errorFile);
-						}
-						if(typeDashboard == null || typeDashboard == "DASHBOARD"){
-						var dashboardExtension = $("#jsonInputData").val().split('.').pop();
-						importDashboard(identifier,$("#dataJSONImport").val(), dashboardExtension,true,$("#importAuthcheck").is(":checked"));						
-						} else{
-							toastr.error(errorTypeDashoards+" "+typeDashboard);
-						}
-					}									
-				}
-			}
-		});
-	}
-	var showImportSynopticsTableDialog = function(identifier){
-		
-		$.confirm({
-			title: [[#{dashboards.importsinoptics}]],
-			theme: 'light',
-			columnClass: 'medium',
-			content: "</br><div class='alert alert-info' role='alert'><i class='fa fa-info-circle'></i><span >&nbsp" + textCreated + " </span> </div><label id='file' class='control-label'>"+file+"</label><span class='required' style='color:#A73535'> *</span><input type='hidden' id='dataJSONImport' /><input class='element text form-control' type='file' accept='.json' id='jsonInputData' onchange='fileImportChange(this.files[0])' /><div class='form-group'><div class='mt-checkbox-list'> <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' >  </label>     <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs'>"+textimportAuth+"</div>        <input id='importAuthcheck' name='importAuthcheck' type='checkbox' class='no-remove'  checked='checked'/>        <span></span><!-- needed by styles -->    </label></div></div>",
+			content: "<div class='alert alert-info' role='alert'><i class='fa fa-info-circle'></i><span >&nbsp" + textCreated + " </span> </div><input type='hidden' id='dataJSONImport' /><input class='element text form-control' type='file' accept='.json' id='jsonInputData' onchange='fileImportChange(this.files[0])' /><div class='form-group'><div class='mt-checkbox-list'> <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs' >"+textOverwrite+"</div>        <input id='overwritecheck' name='overwritecheck' type='checkbox' class='no-remove' checked='checked'/>        <span></span><!-- needed by styles -->    </label>     <label class='mt-checkbox font-md popovers' data-trigger='hover' data-placement='top' data-container='body' ><i class='la la-lightbulb-o'></i> <div class='inline font-xs'>"+textimportAuth+"</div>        <input id='importAuthcheck' name='importAuthcheck' type='checkbox' class='no-remove'  checked='checked'/>        <span></span><!-- needed by styles -->    </label></div></div>",
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
@@ -2230,15 +2077,12 @@ var showExportImageDialog = function(id){
 					action: function() {
 						if(identifier =="" || !$("#jsonInputData").val() || $("#jsonInputData").val()=="" || ! identifier){
 							console.log("json file empty");
-							toastr.error("Error: "+errorFile);
+							return;
+						}
 						
-						}
-						if(typeDashboard == "SYNOPTIC" ){
 						var dashboardExtension = $("#jsonInputData").val().split('.').pop();
-						importDashboard(identifier,$("#dataJSONImport").val(), dashboardExtension,true,$("#importAuthcheck").is(":checked"));						
-						} else{
-							toastr.error(errorTypeSynoptics+" "+typeDashboard);
-						}
+						importDashboard(identifier,$("#dataJSONImport").val(), dashboardExtension,$("#overwritecheck").is(":checked"),$("#importAuthcheck").is(":checked"));						
+						
 					}									
 				}
 			}
@@ -2282,30 +2126,8 @@ var showExportImageDialog = function(id){
 			    contentType: 'application/json',
 			    data: data,
 			    dataType: 'json',
-			    success: function(data){
-					var messageInf = [[#{dashboards.errorontologydatasource}]] + "<br>";	
-					if(data.status == "INTERNAL_SERVER_ERROR"){
-						for(var i = 0; i< data.datasources.length; i++ ){
-							messageInf += "<br> Datasource: <strong>"+data.datasources[i]+ "</strong><br> Ontology: <strong>"+data.ontologyDatasource[i]+"</strong><br>"
-						}
-						$.alert({
-						  title : [[#{device.state.warning}]],
-						  type : 'orange',
-						  content: messageInf,
-						  theme: 'light',
-						  buttons: {
-						    ok: {
-						      text: 'OK',
-						      action: function () {
-						       navigateUrl("/controlpanel/dashboards/list/",true);
-						      }
-						    }
-						  }
-});
-					}else {
-					navigateUrl("/controlpanel/dashboards/list/",true);
-					}		    	
-			    	
+			    success: function(data){			    	
+			    	navigateUrl("/controlpanel/dashboards/list/",true);
 			    },
 			    error: function(e){			    	
 			    	if(e.statusCode().status==409){
@@ -2333,14 +2155,8 @@ var showExportImageDialog = function(id){
 		reader.readAsText(jsonFile);
 		var nameDashboard;
 		reader.onload = function(data) {		
-			nameDashboard = JSON.parse(data.target.result).identification;
-			typeDashboard = JSON.parse(data.target.result).type;
-			if(typeDashboard == "SYNOPTIC" ){
-				$('#newImportSynoptics').val(nameDashboard);
-			}else{
-				$('#newImportDashboard').val(nameDashboard);	
-			}
-			//$('#newImportDashboard').val(nameDashboard);
+			nameDashboard = JSON.parse(data.target.result).name;
+			$('#newImportDashboard').val(nameDashboard);
 			$('#dataJSONImport').val(data.target.result);
 			
 		};

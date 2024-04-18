@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,4 @@ public interface MicroserviceService {
 	Microservice update(MicroserviceDTO service);
 
 	List<String> getAllIdentificationsByUser(String userId);
-
-	Microservice getByIdentificationOrId(String identification);
 }

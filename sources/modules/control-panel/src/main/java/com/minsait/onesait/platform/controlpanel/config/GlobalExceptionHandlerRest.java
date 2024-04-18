@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,22 +36,22 @@ public class GlobalExceptionHandlerRest extends ExceptionHandlerExceptionResolve
 
 	@ExceptionHandler(AccessDeniedException.class)
 	public ResponseEntity<Void> handleAccessDeniedException(HttpServletRequest req, Exception e) {
-		log.error("Handling access denied exception", e);
-		log.debug(e.getMessage(), e);
+		log.error("Handling access denied exception");
+		log.debug(e.getMessage());
 		return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 	}
 
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<String> defaultErrorHandler(HttpServletRequest req, Exception e) {
-		log.error("Handling REST exception not handled", e);
+		log.error("Handling REST exception not handled");
 		try {
 			InputStream requestInputStream = req.getInputStream();
-			log.error("REQUEST DATA: " + IOUtils.toString(requestInputStream, StandardCharsets.UTF_8), e);
+			log.error("REQUEST DATA: " + IOUtils.toString(requestInputStream, StandardCharsets.UTF_8));
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
-			log.error(e1.getMessage(), e);
+			log.error(e1.getMessage());
 		}
-		log.error(e.getMessage(), e);
+		log.error(e.getMessage());
 		return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 

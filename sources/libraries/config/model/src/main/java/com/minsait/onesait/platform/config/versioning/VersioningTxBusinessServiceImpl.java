@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,17 +107,13 @@ public class VersioningTxBusinessServiceImpl implements VersioningTxBusinessServ
 				gitOperations.checkout(TAG_BRANCH_PREFIX + tagName, VersioningIOService.DIR, true);
 			}
 			final long temp1 = System.currentTimeMillis();
-			if (log.isDebugEnabled()) {
-				log.debug("Retrieving db versionables took: {} ms", temp1 - start);
-			}
+			log.debug("Retrieving db versionables took: {} ms", temp1 - start);
 			report.setVersionablesInRepository(dbVersionables.size());
 			FileSystemUtils.deleteRecursively(new File(VersioningIOService.DIR + Tenant2SchemaMapper
 					.extractVerticalNameFromSchema(MultitenancyContextHolder.getVerticalSchema())));
 			dbVersionables.forEach(versioningManager::serialize);
 			final long temp2 = System.currentTimeMillis();
-			if (log.isDebugEnabled()) {
-				log.debug("Serializing db versionables took: {} ms", temp2 - temp1);
-			}			
+			log.debug("Serializing db versionables took: {} ms", temp2 - temp1);
 			gitOperations.addAll(VersioningIOService.DIR);
 			gitOperations.commit("SNAPSHOT " + new DateTime().toString(), VersioningIOService.DIR);
 			try {
@@ -163,9 +159,7 @@ public class VersioningTxBusinessServiceImpl implements VersioningTxBusinessServ
 			gitOperations.checkout(configuration.getBranch(), directory, true);
 
 			final long temp1 = System.currentTimeMillis();
-			if (log.isDebugEnabled()) {
-				log.debug("Retrieving db versionables took: {} ms", temp1 - start);
-			}			
+			log.debug("Retrieving db versionables took: {} ms", temp1 - start);
 			report.setVersionablesInRepository(dbVersionables.size());
 
 			if (Files.exists(Paths.get(directory + "/" + bundle.getFolderName()))) {
@@ -175,9 +169,7 @@ public class VersioningTxBusinessServiceImpl implements VersioningTxBusinessServ
 			dbVersionables.forEach(v -> versioningManager.serialize(v, directory + "/" + bundle.getFolderName()));
 
 			final long temp2 = System.currentTimeMillis();
-			if (log.isDebugEnabled()) {
-				log.debug("Serializing db versionables took: {} ms", temp2 - temp1);
-			}			
+			log.debug("Serializing db versionables took: {} ms", temp2 - temp1);
 			final BundleMetaInf metaInf = BundleMetaInf.builder().version(bundle.getVersion())
 					.shortdescription(bundle.getShortDesc()).title(bundle.getTitle())
 					.createdAt(new SimpleDateFormat("yyyy-MM-dd").format(new Date())).build();
@@ -215,9 +207,7 @@ public class VersioningTxBusinessServiceImpl implements VersioningTxBusinessServ
 			log.info("Finished inclusions, current size: {}", dbVersionables.size());
 
 			final long temp1 = System.currentTimeMillis();
-			if (log.isDebugEnabled()) {
-				log.debug("Retrieving db versionables took: {} ms", temp1 - start);
-			}			
+			log.debug("Retrieving db versionables took: {} ms", temp1 - start);
 			report.setVersionablesInRepository(dbVersionables.size());
 
 			if (Files.exists(Paths.get(directory + "/" + bundle.getFolderName()))) {
@@ -227,9 +217,7 @@ public class VersioningTxBusinessServiceImpl implements VersioningTxBusinessServ
 			dbVersionables.forEach(v -> versioningManager.serialize(v, directory + "/" + bundle.getFolderName()));
 
 			final long temp2 = System.currentTimeMillis();
-			if (log.isDebugEnabled()) {
-				log.debug("Serializing db versionables took: {} ms", temp2 - temp1);
-			}			
+			log.debug("Serializing db versionables took: {} ms", temp2 - temp1);
 
 			final BundleMetaInf metaInf = BundleMetaInf.builder().version(bundle.getVersion())
 					.shortdescription(bundle.getShortDesc()).title(bundle.getTitle())
@@ -317,22 +305,16 @@ public class VersioningTxBusinessServiceImpl implements VersioningTxBusinessServ
 		final long start = System.currentTimeMillis();
 		final List<Versionable<?>> versionables = versioningIOService.readAllVersionables();
 		final long temp1 = System.currentTimeMillis();
-		if (log.isDebugEnabled()) {
-			log.debug("Deserializing versionables took: {} ms", temp1 - start);
-		}		
+		log.debug("Deserializing versionables took: {} ms", temp1 - start);
 		report.setVersionablesInRepository(versionables.size());
 		VersioningCommitContextHolder.setProcessPostAllEvents(false);
 		processVersionablesToDelete(versionables, report, versionableClasses);
 		final long temp2 = System.currentTimeMillis();
-		if (log.isDebugEnabled()) {
-			log.debug("Deleting versionables took: {} ms", temp2 - temp1);
-		}		
+		log.debug("Deleting versionables took: {} ms", temp2 - temp1);
 		prioritizeList(versionables, false);
 		processVersionablesToRestore(versionables, report);
 		final long temp3 = System.currentTimeMillis();
-		if (log.isDebugEnabled()) {
-			log.debug("Restoring versionables took: {} ms", temp3 - temp2);
-		}		
+		log.debug("Restoring versionables took: {} ms", temp3 - temp2);
 	}
 
 	/**
@@ -349,9 +331,7 @@ public class VersioningTxBusinessServiceImpl implements VersioningTxBusinessServ
 		final long start = System.currentTimeMillis();
 		final List<Versionable<?>> versionables = versioningIOService.readAllVersionables(directory);
 		final long temp1 = System.currentTimeMillis();
-		if (log.isDebugEnabled()) {
-			log.debug("Deserializing versionables took: {} ms", temp1 - start);
-		}		
+		log.debug("Deserializing versionables took: {} ms", temp1 - start);
 		report.setVersionablesInRepository(versionables.size());
 		if (userId != null) {
 			versionables.forEach(v -> v.setOwnerUserId(userId));
@@ -360,9 +340,7 @@ public class VersioningTxBusinessServiceImpl implements VersioningTxBusinessServ
 		prioritizeList(versionables, false);
 		processVersionablesToRestore(versionables, report);
 		final long temp3 = System.currentTimeMillis();
-		if (log.isDebugEnabled()) {
-			log.debug("Restoring versionables took: {} ms", temp3 - temp1);
-		}		
+		log.debug("Restoring versionables took: {} ms", temp3 - temp1);
 	}
 
 	private void processVersionablesToRestore(List<Versionable<?>> versionables, RestoreReport report) {
@@ -566,13 +544,9 @@ public class VersioningTxBusinessServiceImpl implements VersioningTxBusinessServ
 	}
 
 	private void invalidateUserTokens(String userId) {
-		if (log.isDebugEnabled()) {
-			log.debug("Deleteing user token x-op-apikey for user {}", userId);
-		}		
+		log.debug("Deleteing user token x-op-apikey for user {}", userId);
 		userTokenRepository.deleteByUser(userId);
-		if (log.isDebugEnabled()) {
-			log.debug("Revoking Oauth2 access tokens for user{}", userId);
-		}		
+		log.debug("Revoking Oauth2 access tokens for user{}", userId);
 		final Collection<OAuthAccessToken> tokens = oauthAccessTokenRepository.findByUserName(userId);
 		tokens.forEach(t -> {
 			oauthRefreshTokenRepository.deleteById(t.getRefreshToken());

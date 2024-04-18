@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -142,13 +142,11 @@ public class NoderedAuthenticationServiceImpl implements NoderedAuthenticationSe
 					new HttpEntity<>(headers), String.class);
 			return responseEntity.getStatusCode() == HttpStatus.OK;
 		} catch (HttpClientErrorException e) {
-			if (log.isDebugEnabled()) {
-				log.debug("Token for domain {} is not valid.", domain);
-			}
+			log.debug("Token for domain " + domain + " is not valid.");
 			return false;
 		}
 	}
-
+	
 	private String getProxyUrl() {
 		return resourcesService.getUrl(Module.FLOWENGINE, ServiceUrl.ADVICE);
 	}

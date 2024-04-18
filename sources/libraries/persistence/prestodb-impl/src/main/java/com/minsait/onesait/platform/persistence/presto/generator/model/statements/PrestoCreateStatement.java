@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-import com.minsait.onesait.platform.persistence.presto.generator.PrestoSQLGenerator;
+import com.minsait.onesait.platform.persistence.external.generator.SQLGenerator;
+import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
 import com.minsait.onesait.platform.persistence.presto.generator.model.common.ColumnPresto;
 import com.minsait.onesait.platform.persistence.presto.generator.model.common.HistoricalOptions;
 
@@ -53,10 +54,14 @@ public class PrestoCreateStatement extends CreateTable {
 	@NotNull
 	@Getter
 	@Setter
-	private PrestoSQLGenerator sqlGenerator;
+	private SQLGenerator sqlGenerator;
 
-	public PrestoCreateStatement(final PrestoSQLGenerator sqlGenerator) {
+	public PrestoCreateStatement(final SQLGenerator sqlGenerator) {
 		this.sqlGenerator = sqlGenerator;
+	}
+
+	public PrestoCreateStatement(CreateStatement stmt) {
+		this.sqlGenerator = stmt.getSqlGenerator();
 	}
 
 	public PrestoCreateStatement setOntology(String ontology) {

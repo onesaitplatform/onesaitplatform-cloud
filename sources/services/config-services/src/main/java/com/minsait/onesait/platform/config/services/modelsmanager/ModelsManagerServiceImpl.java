@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,9 +66,7 @@ public class ModelsManagerServiceImpl implements ModelsManagerService {
 		// headers.add("Authorization", encryptRestUserpass());
 		final org.springframework.http.HttpEntity<String> request = new org.springframework.http.HttpEntity<>(body,
 				headers);
-		if (log.isDebugEnabled()) {
-			log.debug("Sending method {} Models Manager", httpMethod.toString());
-		}
+		log.debug("Sending method " + httpMethod.toString() + " Models Manager");
 		ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.ACCEPTED);
 		try {
 			response = restTemplate.exchange(
@@ -78,9 +76,7 @@ public class ModelsManagerServiceImpl implements ModelsManagerService {
 			log.error(e.getMessage());
 			return new ResponseEntity<>(e.getMessage(), null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("Execute method {} '{}' Models Manager", httpMethod.toString(), url);
-		}
+		log.debug("Execute method " + httpMethod.toString() + " '" + url + "' Models Manager");
 		final HttpHeaders responseHeaders = new HttpHeaders();
 		if (response.getHeaders().getContentType() != null) {
 			responseHeaders.set("Content-Type", response.getHeaders().getContentType().toString());

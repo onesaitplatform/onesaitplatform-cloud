@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -162,27 +162,19 @@
 						</div>
 						<div class="portlet-body" style="display: block; height: auto;">
 
-							<div class="row main tablelist">
-								
-								<div class="row main" id="pulsepanel" style="display:flex; height: 50%;">
-									<div id="pulse" class="col-md-12">
-										<div class="pulsating-circle"></div>
-									</div>
-								</div>
-								
+							<div class="row main">
 								<!-- ONTOLOGY LIST -->
 								<div  class="col-md-12">
 									<div id="contenedor-tabla-outside" class="contiene hidden">
 										<div>
 											<!-- DATATABLE DANDELION CONF.  -->
-											<table id="ontologies" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
+											<table id="ontologies" class="table table-hover table-striped"   dt:table="true" dt:paginationtype="full">
 												<thead>
 													<tr class="cabecera-tabla">
 														<th class="titulo-columnas text-left" th:text="#{gen.id}">Id</th>
 														<th class="titulo-columnas text-left" th:text="#{ontology.identification}">Identification</th>
 														<th class="titulo-columnas text-left"> <span th:text="#{ontology.userId}">Owner</span></th>
 														<th class="titulo-columnas text-left" th:text="#{ontology.description}">Description</th>
-														<th class="titulo-columnas text-left" th:text="#{gen.type}">Type</th>
 														<th class="titulo-columnas text-left" th:text="#{ontology.rtdbinstance}">Database Instance</th>
 														<th class="titulo-columnas text-left" th:text="#{ontology.active}">Active</th>
 														<th class="titulo-columnas text-left" th:text="#{ontology.public}">Public</th>
@@ -204,11 +196,7 @@
 														<!-- DESCRIPTION -->
 														<td class="text-left text-truncate-xxs" th:title="${ontology.description}" th:text="${ontology.description}"></td>
 														<!-- TYPE -->
-													    <td class="text-left" th:text="${ontology.type} != null ? ${ontology.type} : ${ontology.rtdbDatasource}"></td>
-													    
-													    <!-- DATABASE INSTANCE -->
-													    <td class="text-left" th:text="${ontology.rtdbDatasourceType} ? (${ontology.connection} != null ? ${ontology.connection} + ' ( ' + ${ontology.rtdbDatasourceType} + ' )') : (${ontology.type} != null ? ${ontology.rtdbDatasource} : '')"></td>
-					
+														<td class="text-left" th:text="${ontology.rtdbDatasourceType}? ${ontology.rtdbDatasource} + ' - ' + ${ontology.rtdbDatasourceType} : ${ontology.rtdbDatasource}"></td>
 														<!-- ACTIVE -->
 														<td class="text-left" th:if="${ontology.active}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span th:text="' '+#{gen.active}" style="color: #2E6B33;"></span></td>
 														<td class="text-left" th:if="${!ontology.active}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.inactive}" style="color: #A73535;"></span></td>
@@ -266,7 +254,7 @@
 
 																	<ul  th:if="(${ontology.isAuthorizationsPermissions} == 'ALL')" class="dropdown-menu dropdown-menu-table download-menu">
 																		<!-- BEGIN APIS -->
-																			
+
 																		<li>
 																			<!-- CLONE -->
 																			<span th:if="(${ontology.isAuthorizationsPermissions} == 'ALL')" class="btn btn-xs btn-no-border btn-circle btn-outline" data-container="body" data-placement="bottom" ><i class="icon-clone" th:attr="onclick='javascript:cloneOntology(\''+${ontology.id}+'\',false)'"></i><span class="span-title-three-dots-icons" th:text="#{gen.clone}" th:attr="onclick='javascript:cloneOntology(\''+${ontology.id}+'\',false)'">CLONE</span></span>
@@ -283,7 +271,6 @@
 																			</th:block>
 																		</li>
 																		<li>
-																		
 																			<!-- START/STOP/EXECUTE -->
 																			<span  th:if="${ontology.ontologyKPI} !=null  AND ${ontology.ontologyKPI.active}" class="btn btn-xs btn-circle btn-outline no-border" data-container="body" data-placement="bottom"  th:attr="onclick='javascript:startStopKPI(\'' + ${ontology.id} + '\');'"><i class="icon-stop"></i> <span class="span-title-three-dots-icons" th:text="#{gen.stop}" >STOP</span></span>
 																			<span  th:if="${ontology.ontologyKPI} !=null  AND !${ontology.ontologyKPI.active}" class="btn btn-xs btn-circle btn-outline no-border" data-container="body" data-placement="bottom"  th:attr="onclick='javascript:startStopKPI(\'' + ${ontology.id} + '\');'"><i class="icon-play"></i> <span class="span-title-three-dots-icons" th:text="#{gen.play}" >PLAY</span></span>
@@ -295,8 +282,7 @@
 																			<span class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" ><i class="icon-url" th:attr="onclick='javascript:navigateUrl(\'' + @{|/ontologies/statistics/${ontology.identification}/|} + '\');'"></i><span class="span-title-three-dots-icons" th:text="#{ontology.statistics}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/ontologies/statistics/${ontology.identification}/|} + '\');'" >Statistics</span></span>
 																		</li>
 																		<li>
-																		
-																		<!-- DELETE -->
+																			<!-- DELETE -->
 																		    <span th:if="${#authentication.name} == ${ontology.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border btn-circle btn-outline color-red"  data-container="body" data-placement="bottom"  th:attr="onclick='deleteOntology(\'' + ${ontology.id} + '\');'"><i class="icon-delete"></i>  <span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >DELETE</span></span>
 																		</li>
 																	</ul>
@@ -331,34 +317,30 @@
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-														<label th:text="#{gen.type}"> Type</label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 														<label th:text="#{ontology.rtdbinstance}"> Database Instance</label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="6" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 														<label th:text="#{ontology.active}"> Active</label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="7" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="6" checked/>
 														<label th:text="#{ontology.public}"> Public</label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="8" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="7" checked/>
 														<label th:text="#{ontology.authorizations}"> Authorizations</label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="9" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="8" checked/>
 														<label th:text="#{ontology.datamodel}"> Datamodel</label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="10" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="9" checked/>
 														<label th:text="#{ontology.createdAt}"> Created At</label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="11" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="10" checked/>
 														<label th:text="#{ontology.updatedAt}"> Updated At</label>
 													</span>
 												</div>
@@ -441,12 +423,15 @@
 		HeaderController.showConfirmDialogOntologia('delete_ontology_form', ontologyId);
 	}
 
-
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([ 0, 8 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});
 	// MAIN WHEN READY
 	$( document ).ready(function() {
-	
 		var csrf_value = $("meta[name='_csrf']").attr("content");
 		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+		
 
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
 		$('input.toggle-vis').on( 'change', function (e) {
@@ -469,9 +454,14 @@
 		// SEARCH FORM
 		$('#search_ontology').on('click',function(){ $('#form_ontology')[0].submit(); });
 		
+	
+	//	$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 		var oTable = $('#ontologies').dataTable({
 	      "bAutoWidth": false
 	      });
+		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)
+		//$.each([ 2,6,7 ],
+	//	$.each([ 0, 8 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 
 		// SHOW/HIDE DATATABLES COLUMN INIT
 
@@ -504,11 +494,9 @@
 	         $(this).append($(this).data("myDropdownMenu"));
 	         $(this).data("myDropdownMenu").removeAttr('style');
 	     });
-	     
-	     $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([ 0, 9 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 
-		HeaderController.unblockListTable("contenedor-tabla-outside");
+		$("#contenedor-tabla-outside").removeClass("hidden");
+		
 	});
 
 	function startStopKPI(id) {
@@ -529,7 +517,7 @@
 	function cloneOntology(id, isKpi) {
 		var csrf_value = $("meta[name='_csrf']").attr("content");
 		var csrf_header = $("meta[name='_csrf_header']").attr("content");
-		var identification_text = [[#{ontology.name.prefix}]];
+		var identification_text = [[#{ontology.name}]];
 
 		$.confirm({
 			title: [[#{ontology.clone}]],
@@ -554,7 +542,7 @@
 					btnClass: 'btn btn-primary',
 					action: function() {
 						if($("#cloneIdentification").val()=="" || !$("#cloneIdentification").val()
-								|| $("#cloneIdentification").val().length < 2 || $('#cloneIdentification').val().match(/^[0-9]/)){
+								|| $("#cloneIdentification").val().length < 5 || $('#cloneIdentification').val().match(/^[0-9]/)){
 							console.log("identification empty");
 							$("#patternAlert").removeClass("hidden");
 							return false;

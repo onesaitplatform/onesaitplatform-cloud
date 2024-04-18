@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package com.minsait.onesait.platform.controlpanel.controller.user;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
@@ -28,7 +27,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
-import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,6 +59,7 @@ import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyUserAccess;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserToken;
+import com.minsait.onesait.platform.config.model.Role.Type;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionServiceImpl;
@@ -71,7 +70,6 @@ import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.libraries.mail.MailService;
 import com.minsait.onesait.platform.libraries.mail.util.HtmlFileAttachment;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
-import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
@@ -227,9 +225,7 @@ public class UserController {
 				return Collections.singletonMap("url", USERS_UPDATE_STR + data.getUserId() + TRUE_STR);
 			}
 			for (final String ontToDelete : data.getOntologies()) {
-				if (log.isDebugEnabled()) {
-					log.debug("remove: {} \n", ontToDelete);
-				}
+				log.debug("remove: " + ontToDelete + " \n");
 				entityDeleteService.deleteOntology(ontToDelete, data.getUserId(), false);
 			}
 
@@ -254,12 +250,10 @@ public class UserController {
 				return Collections.singletonMap("url", USERS_UPDATE_STR + data.getUserId() + TRUE_STR);
 			}
 			for (final String ontToRevoke : data.getOntologies()) {
-				if (log.isDebugEnabled()) {
-					log.debug("revoke: {} \n", ontToRevoke);
-				}
+				log.debug("revoke: " + ontToRevoke + " \n");
 
 				ont = ontologyService.getOntologyById(ontToRevoke, data.getUserId());
-				for (final OntologyUserAccess access : ont.getOntologyUserAccesses()) {
+				for (OntologyUserAccess access : ont.getOntologyUserAccesses()) {
 					ontologyService.deleteOntologyUserAccess(access.getId(), data.getUserId());
 				}
 			}
@@ -425,38 +419,22 @@ public class UserController {
 		// CLEANING APP_ID FROM SESSION
 		httpSession.removeAttribute(APP_ID);
 
-		Boolean filtered = false;
-		
-		if (userId == null || userId.equals("")) {
-			userId = "%%";
-		} else if (userId != "") {
-			userId = "%" + userId + "%";
-			filtered = true;
+		if (userId != null && userId.equals("")) {
+			userId = null;
 		}
-		
-		if (fullName == null || fullName.equals("")) {
-			fullName = "%%";
-		} else if (fullName != "") {
-			fullName = "%" + fullName + "%";
-			filtered = true;
+		if (fullName != null && fullName.equals("")) {
+			fullName = null;
 		}
-		
-		if (email == null || email.equals("")) {
-			email = "%%";
-		} else if (email != "") {
-			email = "%" + email + "%";
-			filtered = true;
+		if (email != null && email.equals("")) {
+			email = null;
 		}
-		
-		if (roleType == null || roleType.equals("")) {
-			roleType = "%%";
-		} else if (roleType != "") {
-			filtered = true;
+		if (roleType != null && roleType.equals("")) {
+			roleType = null;
 		}
 
 		model.addAttribute("roleTypes", userService.getAllRoles());
 
-		if (!filtered && active == null) {
+		if (userId == null && email == null && fullName == null && active == null && roleType == null) {
 			log.debug("No params for filtering, loading all users");
 			if (userService.countUsers() < 200L) {
 				model.addAttribute("users", userService.getAllUsersList());
@@ -467,7 +445,6 @@ public class UserController {
 			model.addAttribute("users",
 					userService.getAllUsersByCriteriaList(userId, fullName, email, roleType, active));
 		}
-
 
 		return "users/list";
 
@@ -493,9 +470,7 @@ public class UserController {
 		try {
 			userToken = userService.getUserToken(user).get(0);
 		} catch (final Exception e) {
-			if (log.isDebugEnabled()) {
-				log.debug("No token found for user: {}", user);
-			}
+			log.debug("No token found for user: " + user);
 		}
 
 		model.addAttribute("userToken", userToken);
@@ -572,24 +547,22 @@ public class UserController {
 						final String defaultMessage = "To complete your registry in Onesait Plaform, click in the link|Register User|In case of not being redirected, please copy and paste this url in your browser|If after 10 minutes you don't activate your user, it will be deleted";
 
 						final String emailTitle = utils.getMessage("user.create.mail.title", defaultTitle);
-						final String emailMessage = utils.getMessage("user.create.mail.body", defaultMessage);
+						String emailMessage = utils.getMessage("user.create.mail.body", defaultMessage);
 
-						final String[] emailParts = emailMessage.split("\\|");
+						String[] emailParts = emailMessage.split("\\|");
 
-						final String validationUrl = validationUrlNewUser.concat(temporalUuid);
+						String validationUrl = validationUrlNewUser.concat(temporalUuid);
 
-						final String htmlText = "<html><body>"
+						String htmlText = "<html><body>"
 								+ "<div><img src='cid:onesaitplatformimg' style='height:230px;' /></div>" + "<div>"
 								+ emailParts[0] + "</div>" + "<br/>" + "<div>" + "<a href='" + validationUrl + "'>"
 								+ emailParts[1] + "</a></div>" + "<br/>" + "<div>" + emailParts[2] + ":</div>"
 								+ "<div><strong>" + validationUrl + "</strong></div>" + "<br/>" + "<div>"
 								+ emailParts[3] + "</div>" + "</body></html>";
 
-						InputStream imgOnesaitPlatformIS = new ClassPathResource("static/img/onesaitplatform.jpeg").getInputStream();
-						File imgOnesaitPlatform = File.createTempFile("onesaitplatform", ".jpeg");
-						FileUtils.copyInputStreamToFile(imgOnesaitPlatformIS, imgOnesaitPlatform);
+						File imgOnesaitPlatform = new ClassPathResource("static/img/onesaitplatform.jpeg").getFile();
 
-						final HtmlFileAttachment demoImg = new HtmlFileAttachment();
+						HtmlFileAttachment demoImg = new HtmlFileAttachment();
 						demoImg.setFile(imgOnesaitPlatform);
 						demoImg.setFileKey("onesaitplatformimg");
 
@@ -603,9 +576,7 @@ public class UserController {
 						return REDIRECT_LOGIN;
 
 					} else {// There is a previous request in flight
-						if (log.isDebugEnabled()) {
-							log.debug("There is a previous request to create a user using email: {}", user.getEmail());
-						}
+						log.debug("There is a previous request to create a user using email: {}", user.getEmail());
 						utils.addRedirectMessage("user.create.mail.inflight", redirectAttributes);
 						return REDIRECT_LOGIN;
 					}
@@ -767,7 +738,7 @@ public class UserController {
 
 			boolean inFlight = false;
 			for (final String cachedUserIdentifier : cacheResetPasswordUsers.values()) {
-				final MasterUser currentUser = multitenancyService.getUser(cachedUserIdentifier);
+				User currentUser = userService.getUserByIdentification(cachedUserIdentifier);
 
 				if (currentUser != null && currentUser.getEmail().equals(user.getEmail())) {
 					inFlight = true;
@@ -783,30 +754,28 @@ public class UserController {
 				final String defaultMessage = "To reset your password in Onesait Plaform, click in the link|Reset Password|In case of not being redirected, please copy and paste this url in your browser|If of you have not requested this operation, please ignore this message. This link will be available 10 minutes.";
 
 				final String emailTitle = utils.getMessage("user.reset.mail.title", defaultTitle);
-				final String emailMessage = utils.getMessage("user.reset.mail.body", defaultMessage);
+				String emailMessage = utils.getMessage("user.reset.mail.body", defaultMessage);
 
-				final String[] emailParts = emailMessage.split("\\|");
+				String[] emailParts = emailMessage.split("\\|");
 
-				final String validationResetPasswordUrl = resetPasswordUrl.concat(resetIdentifier);
+				String validationResetPasswordUrl = resetPasswordUrl.concat(resetIdentifier);
 
-				final String htmlText = "<html><body>"
+				String htmlText = "<html><body>"
 						+ "<div><img src='cid:onesaitplatformimg' style='height:230px;' /></div>" + "<div>"
 						+ emailParts[0] + "</div>" + "<br/>" + "<div>" + "<a href='" + validationResetPasswordUrl + "'>"
 						+ emailParts[1] + "</a></div>" + "<br/>" + "<div>" + emailParts[2] + ":</div>" + "<div><strong>"
 						+ validationResetPasswordUrl + "</strong></div>" + "<br/>" + "<div>" + emailParts[3] + "</div>"
 						+ "</body></html>";
 
-				final HtmlFileAttachment demoImg = new HtmlFileAttachment();
+				HtmlFileAttachment demoImg = new HtmlFileAttachment();
 
 				try {
-					InputStream imgOnesaitPlatformIS = new ClassPathResource("static/img/onesaitplatform.jpeg").getInputStream();
-					File imgOnesaitPlatform = File.createTempFile("onesaitplatform", ".jpeg");
-					FileUtils.copyInputStreamToFile(imgOnesaitPlatformIS, imgOnesaitPlatform);
+					File imgOnesaitPlatform = new ClassPathResource("static/img/onesaitplatform.jpeg").getFile();
 
 					demoImg.setFile(imgOnesaitPlatform);
 					demoImg.setFileKey("onesaitplatformimg");
 
-				} catch (final IOException e) {
+				} catch (IOException e) {
 					log.warn("Image could not be attached to mail", e);
 				}
 
@@ -817,7 +786,7 @@ public class UserController {
 					cacheResetPasswordUsers.put(resetIdentifier, user.getUserId());
 					utils.addRedirectMessage("user.reset.mail.sended", redirectAttributes);
 
-				} catch (final Exception e) {
+				} catch (Exception e) {
 					log.error("Error sending message", e);
 					utils.addRedirectMessage("login.error.email.fail", redirectAttributes);
 				}
@@ -865,7 +834,7 @@ public class UserController {
 			return REDIRECT_LOGIN;
 		}
 
-		final MasterUser userToResetPassword = multitenancyService.getUser(userPendingResetPassword);
+		final User userToResetPassword = userService.getUserByIdentification(userPendingResetPassword);
 
 		if (userToResetPassword == null) {
 			log.debug("Mail invalid");
@@ -901,7 +870,8 @@ public class UserController {
 				return "redirect:/users/validateResetPassword/" + uuid;
 
 			} else {
-				multitenancyService.updateMasterUserPassword(userPendingResetPassword, user.getPassword());
+				userToResetPassword.setPassword(user.getPassword());
+				userService.updatePassword(userToResetPassword);
 				utils.addRedirectMessage("user.reset.success", redirectAttributes);
 				log.debug("Pass reset");
 
@@ -932,7 +902,7 @@ public class UserController {
 
 			try {
 				this.sendShowCredentialsMail(user.getEmail(), newPassword, true);
-			} catch (final Exception e) {
+			} catch (Exception e) {
 				return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 
@@ -951,42 +921,40 @@ public class UserController {
 		final String defaultMessage = "An administrator of Onesait Plaform modified your password, click in the link to get your new password|Get Password|In case of not being redirected, please copy and paste this url in your browser|This link will be available 2 hours";
 
 		final String emailTitle = utils.getMessage("user.reset.mail.title", defaultTitle);
-		final String emailMessage = utils.getMessage("user.reset.administrator.mail.body", defaultMessage);
+		String emailMessage = utils.getMessage("user.reset.administrator.mail.body", defaultMessage);
 
-		final String[] emailParts = emailMessage.split("\\|");
+		String[] emailParts = emailMessage.split("\\|");
 
-		final String validationResetPasswordUrl = passworGeneratedByAdministratordUrl.concat(showIdentifier);
+		String validationResetPasswordUrl = passworGeneratedByAdministratordUrl.concat(showIdentifier);
 
-		final String htmlText = "<html><body>" + "<div><img src='cid:onesaitplatformimg' style='height:230px;' /></div>"
+		String htmlText = "<html><body>" + "<div><img src='cid:onesaitplatformimg' style='height:230px;' /></div>"
 				+ "<div>" + emailParts[0] + "</div>" + "<br/>" + "<div>" + "<a href='" + validationResetPasswordUrl
 				+ "'>" + emailParts[1] + "</a></div>" + "<br/>" + "<div>" + emailParts[2] + ":</div>" + "<div><strong>"
 				+ validationResetPasswordUrl + "</strong></div>" + "<br/>" + "<div>" + emailParts[3] + "</div>"
 				+ "</body></html>";
 
-		final HtmlFileAttachment demoImg = new HtmlFileAttachment();
+		HtmlFileAttachment demoImg = new HtmlFileAttachment();
 
 		try {
-			InputStream imgOnesaitPlatformIS = new ClassPathResource("static/img/onesaitplatform.jpeg").getInputStream();
-			File imgOnesaitPlatform = File.createTempFile("onesaitplatform", ".jpeg");
-			FileUtils.copyInputStreamToFile(imgOnesaitPlatformIS, imgOnesaitPlatform);
+			File imgOnesaitPlatform = new ClassPathResource("static/img/onesaitplatform.jpeg").getFile();
 
 			demoImg.setFile(imgOnesaitPlatform);
 			demoImg.setFileKey("onesaitplatformimg");
 
-		} catch (final IOException e) {
+		} catch (IOException e) {
 			log.warn("Image could not be attached to mail", e);
 		}
 
 		try {
 			mailService.sendConfirmationMailMessage(email, emailTitle, htmlText, demoImg);
 
-			final UserPendingShowPassword userPendingShowPassword = new UserPendingShowPassword();
+			UserPendingShowPassword userPendingShowPassword = new UserPendingShowPassword();
 			userPendingShowPassword.setCredentials(newPassword);
 			userPendingShowPassword.setCredentialsExpires(expiresPassword);
 
 			this.cachePasswordChangedByAdministrator.put(showIdentifier, userPendingShowPassword);
 
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			log.error("Error sending message", e);
 			throw e;
 		}
@@ -1015,7 +983,7 @@ public class UserController {
 						.fromYaml(configuration.getYmlConfig()).get("ResetUserPass");
 				final int hours = ((Integer) ymlExpirationUsersPassConfig.get("hours")).intValue();
 
-				final StringBuilder message = new StringBuilder();
+				StringBuilder message = new StringBuilder();
 				message.append(utils.getMessage("user.new.pass.for.user.time.for.update.1", " You have "));
 				message.append(" ");
 				message.append(hours);

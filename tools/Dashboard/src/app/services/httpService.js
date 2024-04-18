@@ -7,11 +7,6 @@
   /** @ngInject */
   function HttpService($window,$http, $log, __env, $rootScope,localStorageService) {
       var vm = this;
-
-      if (sessionStorage.getItem("dashboardEngineOauthtoken") == null && sessionStorage.getItem("sessionToken") != null) {
-        sessionStorage.setItem("dashboardEngineOauthtoken", sessionStorage.getItem("sessionToken"))
-      }
-
       $http.defaults.headers.common['Authorization'] = 'Bearer '+sessionStorage.getItem("dashboardEngineOauthtoken");
 
       vm.modelurl = __env.dashboardEngineBungleMode?'/dashboards/bunglemodel/':'/dashboards/model/';
@@ -158,6 +153,7 @@
       vm.updateGadgetConf = function (id,config){
         return $http.post(__env.endpointControlPanel + '/gadgets/updateconfig/'+id , config,{'headers': { 'Authorization':sessionStorage.getItem("dashboardEngineOauthtoken") }});
       }
+
       //CRUD dashboardengine services
       vm.getEntityCrudInfo = function(identification){
         return $http.get(__env.endpointDashboardEngine + '/api/getEntityCrudInfo/' + identification);
@@ -168,9 +164,7 @@
       vm.getEntities = function(){
         return $http.get(__env.endpointDashboardEngine + '/api/getEntities');
       }
-      vm.getEntitiesQueryPermission = function(){
-        return $http.get(__env.endpointDashboardEngine + '/api/getEntitiesQueryPermission');
-      }     
+     
       vm.queryParams = function (selectStatement){        
         return $http.post(__env.endpointDashboardEngine + '/api/queryParams' ,JSON.stringify(selectStatement));
       }

@@ -3,8 +3,8 @@ var ProjectCreateController = function() {
 	var parentAuthorization = {};
 	var LIB_TITLE = 'Menu Controller';
 	var logControl = 1;
+	var form1 = $('#project_create_form');
 	var oTable;
-	$('#hasImage').val(true);
 	
 	var initTemplateElements = function() {
 		var csrf_header = headerReg.csrfHeaderName;
@@ -224,9 +224,6 @@ var ProjectCreateController = function() {
 	var handleValidation = function() {
 		
 		logControl ? console.log('handleValidation() -> ') : '';
-		
-		var form1 = $('#project_create_form');
-		$("#project_create_form").attr("action", "?" + csrfParameter + "=" + csrfValue);
         // for more info visit the official plugin documentation: 
         // http://docs.jquery.com/Plugins/Validation
 		
@@ -265,11 +262,11 @@ var ProjectCreateController = function() {
             },
 			// ALL OK, THEN SUBMIT.
             submitHandler: function(form) {
-        		form.submit();
+            	toastr.success(messagesForms.validation.genFormSuccess,'');
+            	form.submit();
             }
         });
     }
-    
 
 	// CLEAN FIELDS FORM
 	var cleanFields = function(formId) {
@@ -478,10 +475,15 @@ var ProjectCreateController = function() {
 	}
 
 	var insertAuthorization = function(obj) {
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
 		var type = $("#resource-type-filter").val();
-		var resource = $(obj).closest('tr').find("input[name='ids\\[\\]']").val();
-		var accesstype = $(obj).closest('tr').find('select.accesstypes :selected').val();
-		var authorizing = $(obj).closest('tr').find('select.authorizing :selected').val();
+		var resource = $(obj).closest('tr').find("input[name='ids\\[\\]']")
+				.val();
+		var accesstype = $(obj).closest('tr').find(
+				'select.accesstypes :selected').val();
+		var authorizing = $(obj).closest('tr').find(
+				'select.authorizing :selected').val();
 		if (accesstype == '' || authorizing == '') {
 			toastr.info(projectCreateJson.validations.selectAccessAndUser,'');
 		} else {
@@ -492,113 +494,53 @@ var ProjectCreateController = function() {
 				'access' : accesstype,
 				'resourceType': type
 			}
-			
-			if (authorization.authorizing == "ALL"){
-				insertAuthorizationALL(authorization, resource, type);
+			parentAuthorization = authorization;
+			if (type == 'GADGET' || type == 'DASHBOARD'||
+					type == 'GADGETDATASOURCE' || type == 'ONTOLOGY') {
+				$('#associated-modal-fragment').load(
+						'/controlpanel/projects/associated?resourceId='
+								+ resource + '&project='
+								+ projectCreateJson.projectId + '&type=' + type,
+						function(response) {
+							if (associatedElements.length > 0){
+								$.confirm({
+									title: "Info",
+									theme: 'light',
+									columnClass: 'medium',
+									content: projectCreateJson.otologiesAssociated,
+									draggable: true,
+									dragWindowGap: 100,
+									backgroundDismiss: true,
+									buttons: {
+										close: {
+											text: projectCreateJson.close,
+											btnClass: 'btn btn-outline blue dialog',
+											action: function (){} //GENERIC CLOSE.		
+										},
+										Ok: {
+											text: headerReg.btnConfirmar,
+											btnClass: 'btn btn-primary',
+											action: function(){
+												$('#associated-modal').modal('show');
+											}										
+										},
+									}
+								});	
+								
+							}
+							else {
+								handleAuth(authorization, 'POST').done(updateResourcesFragment)
+								.fail(showGenericError);
+							}
+							App.unblockUI();
+						});
 			} else {
-				insertAuthorizationIndividual(authorization, resource, type)				
+				handleAuth(authorization, 'POST').done(updateResourcesFragment)
+				.fail(showGenericError);
+				
 			}
 		}
 	}
-	var insertAuthorizationALL = function(authorization, resource, type){
-		$.confirm({
-			title: "Info",
-			theme: 'light',
-			columnClass: 'medium',
-			content: projectCreateJson.addALLInfo,
-			draggable: true,
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			buttons: {
-				close: {
-					text: projectCreateJson.close,
-					btnClass: 'btn btn-outline blue dialog',
-					action: function (){} //GENERIC CLOSE.		
-				},
-				Ok: {
-					text: headerReg.btnConfirmar,
-					btnClass: 'btn btn-primary',
-					action: function(){
-						insertAuthorizationIndividual(authorization, resource, type);
-					}										
-				}
-			}
-		});
-	}
-	
-	
-	var insertAuthorizationIndividual = function(authorization, resource, type){
-		var csrf_value = $("meta[name='_csrf']").attr("content");
-		var csrf_header = $("meta[name='_csrf_header']").attr("content");
-		$.ajax({
-			url: authorizationEndpoint + "/ALL",
-            headers: {
-            	[csrf_header]: csrf_value
-		    },
-			type:"POST",
-			data: JSON.stringify(authorization),			 
-			contentType : "application/json",
-			success: function(data) {
-				if (data == null || data == ""){
-					parentAuthorization = authorization;
-					if (type == 'GADGET' || type == 'DASHBOARD'||
-							type == 'GADGETDATASOURCE' || type == 'ONTOLOGY') {
-						$('#associated-modal-fragment').load(
-								'/controlpanel/projects/associated?resourceId='
-										+ resource + '&project='
-										+ projectCreateJson.projectId + '&type=' + type,
-								function(response) {
-									if (associatedElements.length > 0){
-										var contentText = projectCreateJson.ontologiesAssociated;
-										if (parentAuthorization.authorizing == "ALL"){
-											contentText = projectCreateJson.ontologiesAssociatedALL
-										}
-										$.confirm({
-											title: "Info",
-											theme: 'light',
-											columnClass: 'medium',
-											content: contentText,
-											draggable: true,
-											dragWindowGap: 100,
-											backgroundDismiss: true,
-											buttons: {
-												close: {
-													text: projectCreateJson.close,
-													btnClass: 'btn btn-outline blue dialog',
-													action: function (){} //GENERIC CLOSE.		
-												},
-												Ok: {
-													text: headerReg.btnConfirmar,
-													btnClass: 'btn btn-primary',
-													action: function(){
-														$('#associated-modal').modal('show');
-													}										
-												}
-											}
-										});	
-										
-									}
-									else {
-										handleAuth(authorization, 'POST').done(updateResourcesFragment)
-										.fail(showGenericError);
-									}
-									App.unblockUI();
-								});
-					} else {
-						handleAuth(authorization, 'POST').done(updateResourcesFragment)
-						.fail(showGenericError);
-						
-					}
-				} else {
-					toastr.warning(messagesForms.operations.genOpError,projectCreateJson.validations.accessALL);
-				}
-			},
-            error: function(data, status, error) {
-				 toastr.error(messagesForms.operations.genOpError,"");
-            }
-		});	
-	}
-	
 	
 	var showGenericError = function(){
 		toastr.error(messagesForms.operations.genOpError,'');
@@ -769,8 +711,8 @@ var ProjectCreateController = function() {
 		        for (ii = 0; ii < (b.length - 1); ii++) {
 		          bytt = 0;
 		          if (sortvalue) {
-		            v1 = b[ii].querySelector(sortvalue).getElementsByTagName('input')[0].value;
-		            v2 = b[ii + 1].querySelector(sortvalue).getElementsByTagName('input')[0].value;
+		            v1 = b[ii].querySelector(sortvalue).children[1].value;
+		            v2 = b[ii + 1].querySelector(sortvalue).children[1].value;
 		          } else {
 		            v1 = b[ii].innerText;
 		            v2 = b[ii + 1].innerText;
@@ -812,43 +754,6 @@ var ProjectCreateController = function() {
 			});
 		}
 	}
-	var showGenericErrorDialog= function(dialogTitle, dialogContent){		
-		logControl ? console.log('showErrorDialog()...') : '';
-		var Close = headerReg.btnCancelar;
-
-		// jquery-confirm DIALOG SYSTEM.
-		$.confirm({
-			title: dialogTitle,
-			theme: 'light',
-			content: dialogContent,
-			draggable: true,
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			buttons: {				
-				close: {
-					text: Close,
-					btnClass: 'btn btn-outline blue dialog',
-					action: function (){} //GENERIC CLOSE.		
-				}
-			}
-		});			
-	}
-	var reader = new FileReader();
-	reader.onload = function (e) {
-        $('#showedImgPreview').attr('src', e.target.result);
-       
-    }
-	 function validateImgSize() {
-	        if ($('#image').prop('files') && $('#image').prop('files')[0].size>60*1024){
-	        	showGenericErrorDialog('Error', projectCreateJson.project_image_error);
-	        	$("#image").val(null);
-	        	$('#showedImg').val("");
-	        	$('#hasImage').val(false);
-				$('#showedImgPreview').attr('src','/controlpanel/img/DASHBOARD.png');
-	         } else if ($('#image').prop('files')) {
-	        	 reader.readAsDataURL($("#image").prop('files')[0]);	        	 
-	         }
-	    }
 	
 	function filterTable(type){
 		if (type == "ALL"){
@@ -944,12 +849,7 @@ var ProjectCreateController = function() {
 		go : function(url) {
 			logControl ? console.log(LIB_TITLE + ': go()') : '';
 			navigateUrl(url);
-		},
-		// VALIDATE IMAGE SIZE
-		validateImageSize: function() {
-			logControl ? console.log(LIB_TITLE + ': validateImgSize()') : '';
-			validateImgSize();
-		},
+		}
 	}
 
 }();

@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -684,6 +684,11 @@
 		});
 	}
 
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([1],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});
+
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
@@ -696,14 +701,13 @@
 
 		// SEARCH FORM RESET
 		$('#reset_dataflow').on('click',function(){
-			$('#form_dataflow')[0].reset();
-			$('#form_dataflow')[0].submit();
+			$('#dataflow-name').val('');
+			$('#pipelines').DataTable().column(1).search('').draw();
 		});
 
 		// SEARCH FORM
 		$('#search_dataflow').on('click',function(){
-			$('#pipelines').DataTable().column(2).search( $('#dataflow-name').val()).draw();
-			
+			$('#pipelines').DataTable().column(1).search( $('#dataflow-name').val()).draw();
 		});
 		
 		var oTable = $('#pipelines').DataTable({
@@ -811,8 +815,6 @@
 		if ([[${appId}]]!=null){
 			showCreatePipelineDialog();
 		}
-		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([1],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 	});
 

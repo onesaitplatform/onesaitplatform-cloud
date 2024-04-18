@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -42,14 +39,8 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.Assert;
 
 import com.google.gson.JsonArray;
@@ -61,7 +52,6 @@ import com.minsait.onesait.platform.commons.model.ComplexWriteResultType;
 import com.minsait.onesait.platform.commons.model.DBResult;
 import com.minsait.onesait.platform.commons.model.MultiDocumentOperationResult;
 import com.minsait.onesait.platform.config.components.OntologyVirtualSchemaFieldType;
-import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.repository.OntologyVirtualRepository;
@@ -69,29 +59,16 @@ import com.minsait.onesait.platform.config.services.ontology.dto.VirtualDatasour
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.external.exception.NotSupportedOperationException;
 import com.minsait.onesait.platform.persistence.external.generator.SQLGenerator;
-import com.minsait.onesait.platform.persistence.external.generator.helper.ExpandFnHelper;
 import com.minsait.onesait.platform.persistence.external.generator.helper.SQLHelper;
 import com.minsait.onesait.platform.persistence.external.generator.helper.SQLTableReplacer;
 import com.minsait.onesait.platform.persistence.external.generator.model.common.Constraint.ConstraintType;
-import com.minsait.onesait.platform.persistence.external.generator.model.common.ExpandReplacement;
-import com.minsait.onesait.platform.persistence.external.generator.model.common.RelatedEntityValues;
 import com.minsait.onesait.platform.persistence.external.generator.model.common.WhereStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
-import com.minsait.onesait.platform.persistence.external.generator.model.statements.InsertStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.PreparedStatement;
-import com.minsait.onesait.platform.persistence.external.generator.model.statements.UpdateStatement;
-import com.minsait.onesait.platform.persistence.external.generator.model.statements.UpsertStatement;
-import com.minsait.onesait.platform.persistence.external.virtual.constraints.TableKeysHolder;
-import com.minsait.onesait.platform.persistence.external.virtual.constraints.TableKeysHolder.SupportedDatabase;
-import com.minsait.onesait.platform.persistence.external.virtual.parser.DatabaseEntityKeysParser;
 import com.minsait.onesait.platform.persistence.external.virtual.parser.JSONResultsetExtractor;
 import com.minsait.onesait.platform.persistence.models.ErrorResult;
 
 import lombok.extern.slf4j.Slf4j;
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.schema.Table;
-import net.sf.jsqlparser.statement.create.table.CreateTable;
 
 @Component("VirtualRelationalOntologyOpsDBRepository")
 @Lazy
@@ -150,17 +127,6 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 	}
 
 	@Override
-	public List<Map<String, Object>> getTablePKInformation(String datasourceName, String database, String schema) {
-
-		final VirtualDataSourceDescriptor dataSource = virtualDatasourcesManager
-				.getDataSourceDescriptor(datasourceName);
-		final SQLHelper helper = virtualDatasourcesManager.getOntologyHelper(dataSource.getVirtualDatasourceType());
-
-		return new JdbcTemplate(dataSource.getDatasource()).queryForList(helper.getTableIndexes(database, schema));
-	}
-
-	@Override
-	@Transactional
 	public String insert(final String ontology, final String instance) {
 		final List<DBResult> result = insertOperation(ontology, Collections.singletonList(instance));
 		if (result.isEmpty()) {
@@ -171,7 +137,6 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 	}
 
 	@Override
-	@Transactional
 	public ComplexWriteResult insertBulk(final String ontology, final List<String> instances, final boolean order,
 			final boolean includeIds) {
 		final List<DBResult> result = insertOperation(ontology, instances);
@@ -182,133 +147,84 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 		try {
 			Assert.hasLength(ontology, ONTOLOGY_NOTNULLEMPTY);
 			Assert.notEmpty(instances, "Instances can't be null or empty");
-			final List<DBResult> resultsDb = new ArrayList<>();
+
 			final OntologyVirtualDatasource ontologyVirtualDatasource = virtualDatasourcesManager
 					.getDatasourceForOntology(ontology);
 			final String dataSourceName = ontologyVirtualDatasource.getIdentification();
 			final VirtualDataSourceDescriptor dataSource = virtualDatasourcesManager
 					.getDataSourceDescriptor(dataSourceName);
-			// START TRANSACTION DEFINITION
-			final DataSourceTransactionManager tm = new DataSourceTransactionManager(dataSource.getDatasource());
-			final TransactionTemplate tt = new TransactionTemplate(tm);
-			tt.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-			// END TRANSACTION DEFINITION
-			final NamedParameterJdbcTemplate jdbcTemplate = new NamedParameterJdbcTemplate(tm.getDataSource());
+			final NamedParameterJdbcTemplate jdbcTemplate = new NamedParameterJdbcTemplate(dataSource.getDatasource());
 
-			final InsertStatement insertStatement = sqlGenerator.buildInsert().setOntology(ontology)
-					.setValuesAndColumnsForInstances(instances);
-			final Map<String, InsertStatement> statements = new LinkedHashMap<>();
-			// ORDEN DE INSERCCION LINKEDMAP
-			statements.put(ontology, insertStatement);
-			if (!insertStatement.getRelatedValues().isEmpty()) {
-				insertStatement.getRelatedValues().keySet().forEach(o -> {
-					final InsertStatement i = sqlGenerator.buildInsert().setOntology(o);
-					i.setColumns(insertStatement.getRelatedColumns().get(o));
-					i.setValues(insertStatement.getRelatedValues().get(o));
-					statements.put(o, i);
-				});
+			final int affected;
+			final List<Map<String, Object>> keyList;
+			final PreparedStatement sql = sqlGenerator.buildInsert().setOntology(ontology)
+					.setValuesAndColumnsForInstances(instances).generate(true);
+
+			String statement = null;
+//			if (ontologyVirtualDatasource.getSgdb()
+//					.equals(OntologyVirtualDatasource.VirtualDatasourceType.POSTGRESQL)) {
+//				String[] split = sql.getStatement().split("VALUES");
+//				if (split.length > 0) {
+//					String values = split[1].trim().replace("'", "");
+//					statement = sql.getStatement().replace(split[1], values);
+//				}
+//			}
+
+			sql.setStatement(
+					SQLTableReplacer.replaceTableNameInInsert(statement != null ? statement : sql.getStatement(),
+							ontologyVirtualRepository.findOntologyVirtualByOntologyIdentification(ontology)));
+
+			if (ontologyVirtualDatasource.getSgdb().equals(OntologyVirtualDatasource.VirtualDatasourceType.ORACLE)
+					|| ontologyVirtualDatasource.getSgdb()
+							.equals(OntologyVirtualDatasource.VirtualDatasourceType.ORACLE11)) {
+				// ORACLE ON JDBC DOES NOT SUPPORT INSERT BULK WITH RETURN ID, PRODUCES
+				// ORA-00933: SQL command not properly ended
+				affected = jdbcTemplate.update(sql.getStatement(), sql.getParams());
+				keyList = new ArrayList<>();
+			} else {
+				final GeneratedKeyHolder holder = new GeneratedKeyHolder();
+				affected = jdbcTemplate.update(sql.getStatement(), new MapSqlParameterSource(sql.getParams()), holder);
+				keyList = holder.getKeyList();
 			}
-			final StringBuilder errors = new StringBuilder();
-			// SE USA JDBCTEMPLATE Y PARAMETROS DE LA CONEXION PRINCIPAL, SE ASUME LA MISMA
-			tt.execute(new TransactionCallbackWithoutResult() {
-				@Override
-				protected void doInTransactionWithoutResult(TransactionStatus status) {
-					doInsertWithRollback(status, statements, jdbcTemplate, ontologyVirtualDatasource, resultsDb,
-							errors);
 
+			if (keyList != null && !keyList.isEmpty()) {
+				switch (ontologyVirtualDatasource.getSgdb()) {
+				case MYSQL:
+				case MARIADB:
+					return IntStream.range(0, affected)
+							.mapToObj(index -> String.valueOf(keyList.get(index).get("insert_id")))
+							.map(id -> new DBResult().setId(id).setOk(true)).collect(Collectors.toList());
+				case SQLSERVER:
+					// Only last inserted id recoverable
+					// https://github.com/microsoft/mssql-jdbc/issues/245
+					final List<DBResult> resultsDb = IntStream.range(0, affected - 1)
+							.mapToObj(index -> new DBResult().setOk(true)).collect(Collectors.toList());
+					resultsDb.add(
+							new DBResult().setId(String.valueOf(keyList.get(0).get("GENERATED_KEYS"))).setOk(true));
+					return resultsDb;
+				case POSTGRESQL:
+					final String objId = ontologyVirtualRepository
+							.findOntologyVirtualObjectIdByOntologyIdentification(ontology);
+					if (objId != null) {
+						return IntStream.range(0, affected)
+								.mapToObj(index -> String.valueOf(keyList.get(index).get(objId)))
+								.map(id -> new DBResult().setId(id).setOk(true)).collect(Collectors.toList());
+					}
+					// else fallback
+				case ORACLE:
+				case ORACLE11:
+				default:
+					return IntStream.range(0, affected).mapToObj(index -> new DBResult().setOk(true))
+							.collect(Collectors.toList());
 				}
-			});
-			if (!errors.isEmpty()) {
-				throw new RuntimeException(errors.toString());
+			} else {
+				return IntStream.range(0, affected).mapToObj(index -> new DBResult().setOk(true))
+						.collect(Collectors.toList());
 			}
-			return resultsDb;
 		} catch (final Exception e) {
 			log.error("Error inserting bulk data", e);
 			throw new DBPersistenceException(e, new ErrorResult(ErrorResult.PersistenceType.VIRTUAL, e.getMessage()),
 					"Error inserting bulk data on virtual ontology");
-		}
-
-	}
-
-	public void doInsertWithRollback(TransactionStatus status, Map<String, InsertStatement> statements,
-			NamedParameterJdbcTemplate jdbcTemplate, OntologyVirtualDatasource ontologyVirtualDatasource,
-			List<DBResult> resultsDb, StringBuilder errors) {
-		try {
-			final List<Map<String, Object>> keyList = new ArrayList<>();
-			for (final java.util.Map.Entry<String, InsertStatement> e : statements.entrySet()) {
-				int affected;
-				final PreparedStatement sql = e.getValue().generate(true);
-				final String statement = null;
-//    				if (ontologyVirtualDatasource.getSgdb()
-//    						.equals(OntologyVirtualDatasource.VirtualDatasourceType.POSTGRESQL)) {
-//    					String[] split = sql.getStatement().split("VALUES");
-//    					if (split.length > 0) {
-//    						String values = split[1].trim().replace("'", "");
-//    						statement = sql.getStatement().replace(split[1], values);
-//    					}
-//    				}
-
-				sql.setStatement(
-						SQLTableReplacer.replaceTableNameInInsert(statement != null ? statement : sql.getStatement(),
-								ontologyVirtualRepository.findOntologyVirtualByOntologyIdentification(e.getKey())));
-
-				if (ontologyVirtualDatasource.getSgdb().equals(OntologyVirtualDatasource.VirtualDatasourceType.ORACLE)
-						|| ontologyVirtualDatasource.getSgdb()
-								.equals(OntologyVirtualDatasource.VirtualDatasourceType.ORACLE11)) {
-					// ORACLE ON JDBC DOES NOT SUPPORT INSERT BULK WITH RETURN ID, PRODUCES
-					// ORA-00933: SQL command not properly ended
-					affected = jdbcTemplate.update(sql.getStatement(), sql.getParams());
-//    					keyList = new ArrayList<>();
-				} else {
-					final GeneratedKeyHolder holder = new GeneratedKeyHolder();
-					affected = jdbcTemplate.update(sql.getStatement(), new MapSqlParameterSource(sql.getParams()),
-							holder);
-					keyList.clear();
-					keyList.addAll(holder.getKeyList());
-				}
-
-				if (keyList != null && !keyList.isEmpty()) {
-					switch (ontologyVirtualDatasource.getSgdb()) {
-					case MYSQL:
-					case MARIADB:
-						resultsDb.addAll(IntStream.range(0, affected)
-								.mapToObj(index -> String.valueOf(keyList.get(index).get("GENERATED_KEY")))
-								.map(id -> new DBResult().setId(id).setOk(true)).collect(Collectors.toList()));
-						break;
-					case SQLSERVER:
-						// Only last inserted id recoverable
-						// https://github.com/microsoft/mssql-jdbc/issues/245
-						IntStream.range(0, affected - 1).mapToObj(index -> new DBResult().setOk(true))
-								.collect(Collectors.toList());
-						resultsDb.add(
-								new DBResult().setId(String.valueOf(keyList.get(0).get("GENERATED_KEYS"))).setOk(true));
-						break;
-					case POSTGRESQL:
-						final String objId = ontologyVirtualRepository
-								.findOntologyVirtualObjectIdByOntologyIdentification(e.getKey());
-						if (objId != null) {
-							resultsDb.addAll(IntStream.range(0, affected)
-									.mapToObj(index -> String.valueOf(keyList.get(index).get(objId)))
-									.map(id -> new DBResult().setId(id).setOk(true)).collect(Collectors.toList()));
-							break;
-						}
-						// else fallback
-					case ORACLE:
-					case ORACLE11:
-					default:
-						resultsDb.addAll(IntStream.range(0, affected).mapToObj(index -> new DBResult().setOk(true))
-								.collect(Collectors.toList()));
-						break;
-					}
-				} else {
-					resultsDb.addAll(IntStream.range(0, affected).mapToObj(index -> new DBResult().setOk(true))
-							.collect(Collectors.toList()));
-				}
-			}
-		} catch (final Exception e) {
-			errors.append(e.getMessage());
-			log.error("Error inside transaction, rolling back", e);
-			status.setRollbackOnly();
 		}
 	}
 
@@ -407,57 +323,14 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 
 	private List<String> queryNative(final String ontology, PreparedStatement ps, final int offset, final int limit) {
 		try {
-			
 			Assert.hasLength(ontology, ONTOLOGY_NOTNULLEMPTY);
 			Assert.hasLength(ps.getStatement(), QUERY_NOTNULLEMPTY);
 			Assert.isTrue(offset >= 0, OFFSET_GREATERTHANZERO);
 			Assert.isTrue(limit >= 1, "Limit must be greater or equals to 1");
 
-			if (!SQLHelper.hasExpand(ps.getStatement())) {
-				final String originalStatement = ps.getStatement();
-
-				final OntologyVirtualDatasource dataSource = virtualDatasourcesManager
-						.getDatasourceForOntology(ontology);
-
-				ps.setStatement(SQLTableReplacer.replaceTableNameInSelect(ps.getStatement(), ontologyVirtualRepository,
-						excludeParse));
-
-				final SQLHelper helper = virtualDatasourcesManager.getOntologyHelper(dataSource.getSgdb());
-				ps.setStatement(helper.parseGeometryFields(ps.getStatement(), ontology));
-
-				ps.setStatement(
-						helper.addLimit(ps.getStatement(), Math.min(limit, dataSource.getQueryLimit()), offset));
-
-				final NamedParameterJdbcTemplate jdbcTemplate = getJdbTemplate(ontology);
-				log.info("Invoke SGDB with jdbcTemplate");
-				List<String> result = jdbcTemplate.query(ps.getStatement(), ps.getParams(),
-						new JSONResultsetExtractor(ps.getStatement(), originalStatement));
-				log.info("Receive result from SGDB with jdbcTemplate");
-				
-				return result;
-			} else {
-				return queryNativeExpand(ontology, ps, offset, limit);
-			}
-		} catch (final Exception e) {
-			log.error("Error querying data", e);
-			throw new DBPersistenceException(e, new ErrorResult(ErrorResult.PersistenceType.VIRTUAL, e.getMessage()),
-					"Error querying data on virtual ontology");
-		}
-	}
-
-	private List<String> queryNativeExpand(final String ontology, PreparedStatement ps, final int offset,
-			final int limit) {
-		try {
-
-			final ExpandReplacement expandReplacement = SQLHelper.replaceExpandInStatement(ps.getStatement());
-
-			final String originalStatement = expandReplacement.getStatement();
-
-			final String expandStatement = ps.getStatement();
-
 			final OntologyVirtualDatasource dataSource = virtualDatasourcesManager.getDatasourceForOntology(ontology);
 
-			ps.setStatement(SQLTableReplacer.replaceTableNameInSelect(originalStatement, ontologyVirtualRepository,
+			ps.setStatement(SQLTableReplacer.replaceTableNameInSelect(ps.getStatement(), ontologyVirtualRepository,
 					excludeParse));
 
 			final SQLHelper helper = virtualDatasourcesManager.getOntologyHelper(dataSource.getSgdb());
@@ -466,10 +339,7 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 			ps.setStatement(helper.addLimit(ps.getStatement(), Math.min(limit, dataSource.getQueryLimit()), offset));
 
 			final NamedParameterJdbcTemplate jdbcTemplate = getJdbTemplate(ontology);
-			final List<JSONObject> objs = new ExpandFnHelper(ontology, expandStatement, originalStatement, jdbcTemplate,
-					excludeParse, expandReplacement).query(ps);
-
-			return objs.stream().map(o -> o.toString()).toList();
+			return jdbcTemplate.query(ps.getStatement(), ps.getParams(), new JSONResultsetExtractor(ps.getStatement()));
 		} catch (final Exception e) {
 			log.error("Error querying data", e);
 			throw new DBPersistenceException(e, new ErrorResult(ErrorResult.PersistenceType.VIRTUAL, e.getMessage()),
@@ -495,9 +365,7 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 
 	private String queryNativeAsJson(final String ontology, final PreparedStatement ps, final int offset,
 			final int limit) {
-		log.info("Send Query Native to SGDB");
 		final List<String> result = this.queryNative(ontology, ps, offset, limit);
-		log.info("Receive ressult ofD Query Native to SGDB");
 		final JSONArray jsonResult = new JSONArray();
 		for (final String instance : result) {
 			final JSONObject obj = new JSONObject(instance);
@@ -606,6 +474,29 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 	}
 
 	@Override
+	public MultiDocumentOperationResult updateNativeByObjectIdAndBodyData(final String ontology, final String uniqueId,
+			final String body) {
+		final String objId;
+		final PreparedStatement ps;
+		try {
+			Assert.hasLength(ontology, "Ontology name can't be null or empty");
+			Assert.hasLength(uniqueId, "Unique ID can't be null or empty");
+			Assert.hasLength(body, "Body can't be null or empty");
+			objId = ontologyVirtualRepository.findOntologyVirtualObjectIdByOntologyIdentification(ontology);
+			Assert.hasLength(objId, NO_UNIQUE_ID);
+
+			ps = sqlGenerator.buildUpdate().setOntology(ontology)
+					.setWhere(Collections.singletonList(new WhereStatement(objId, "=", uniqueId)))
+					.setValuesForJson(body).generate(true);
+		} catch (final Exception e) {
+			log.error("Error updating data", e);
+			throw new DBPersistenceException(e, new ErrorResult(ErrorResult.PersistenceType.VIRTUAL, e.getMessage()),
+					"Error updating data on virtual ontology");
+		}
+		return this.updateNative(ontology, ps, false);
+	}
+
+	@Override
 	public List<String> getInstanceFromTable(final String datasource, final String query) {
 		final String finalQuery = getStatementFromJson(query);
 		return getInstanceFromTable(datasource, new PreparedStatement(finalQuery.replaceAll(";", "")));
@@ -616,7 +507,6 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 			Assert.hasLength(datasource, "Datasource can't be null or empty");
 			Assert.hasLength(ps.getStatement(), QUERY_NOTNULLEMPTY);
 
-			final String originalStatement = ps.getStatement();
 			final VirtualDataSourceDescriptor sourceDescriptor = virtualDatasourcesManager
 					.getDataSourceDescriptor(datasource);
 
@@ -629,8 +519,7 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 			final NamedParameterJdbcTemplate jdbcTemplate = new NamedParameterJdbcTemplate(
 					sourceDescriptor.getDatasource());
 
-			return jdbcTemplate.query(ps.getStatement(), ps.getParams(),
-					new JSONResultsetExtractor(ps.getStatement(), originalStatement));
+			return jdbcTemplate.query(ps.getStatement(), ps.getParams(), new JSONResultsetExtractor(ps.getStatement()));
 		} catch (final Exception e) {
 			throw new DBPersistenceException(e, new ErrorResult(ErrorResult.PersistenceType.VIRTUAL, e.getMessage()),
 					"Error getting instance data on virtual ontology");
@@ -772,6 +661,7 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 		case Types.BOOLEAN:
 		case Types.BIT:
 		case Types.TINYINT:
+
 			return Boolean.TRUE;
 		case Types.INTEGER:
 		case Types.SMALLINT:
@@ -784,17 +674,15 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 		case Types.FLOAT:
 		case Types.REAL:
 			return 1.1;
-		case Types.TIMESTAMP:
-			return "datetime";
-		case Types.DATE:
-			return "date";
 		case Types.CHAR:
 		case Types.VARCHAR:
 		case Types.LONGVARCHAR:
 		case Types.NCHAR:
 		case Types.NVARCHAR:
 		case Types.LONGNVARCHAR:
+		case Types.TIMESTAMP:
 		case Types.TIMESTAMP_WITH_TIMEZONE:
+		case Types.DATE:
 		case Types.TIME:
 		case Types.TIME_WITH_TIMEZONE:
 		case Types.SQLXML:
@@ -899,19 +787,19 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 			final VirtualDataSourceDescriptor dataSource = virtualDatasourcesManager
 					.getDataSourceDescriptor(datasourceName);
 			final SQLHelper helper = virtualDatasourcesManager.getOntologyHelper(dataSource.getVirtualDatasourceType());
-			final VirtualDatasourceInfoDTO vDTO = new VirtualDatasourceInfoDTO();
+			VirtualDatasourceInfoDTO vDTO = new VirtualDatasourceInfoDTO();
 			vDTO.setHasSchema(helper.hasSchema());
 			vDTO.setHasDatabase(helper.hasDatabase());
 			vDTO.setHasCrossDatabase(helper.hasCrossDatabase());
 			if (helper.hasDatabase()) {
-				final List<String> ldb = new JdbcTemplate(dataSource.getDatasource())
+				List<String> ldb = new JdbcTemplate(dataSource.getDatasource())
 						.queryForList(helper.getDatabaseStatement(), String.class);
 				if (!ldb.isEmpty()) {
 					vDTO.setCurrentDatabase(ldb.get(0));
 				}
 			}
 			if (helper.hasSchema()) {
-				final List<String> lsc = new JdbcTemplate(dataSource.getDatasource())
+				List<String> lsc = new JdbcTemplate(dataSource.getDatasource())
 						.queryForList(helper.getSchemaStatement(), String.class);
 				if (!lsc.isEmpty()) {
 					vDTO.setCurrentSchema(lsc.get(0));
@@ -936,11 +824,11 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 				return new JdbcTemplate(dataSource.getDatasource()).queryForList(helper.getDatabasesStatement(),
 						String.class);
 			} catch (final org.springframework.jdbc.IncorrectResultSetColumnCountException e) {
-				final List<Map<String, Object>> listMap = new JdbcTemplate(dataSource.getDatasource())
+				List<Map<String, Object>> listMap = new JdbcTemplate(dataSource.getDatasource())
 						.queryForList(helper.getDatabasesStatement());
 
-				final List<String> result = new ArrayList<String>();
-				for (final Map<String, Object> map : listMap) {
+				List<String> result = new ArrayList<String>();
+				for (Map<String, Object> map : listMap) {
 					result.add(map.get("name").toString());
 				}
 				return result;
@@ -969,23 +857,6 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 	}
 
 	@Override
-	public List<Map<String, Object>> getTableInformation(String datasource, String database, String schema) {
-		try {
-			Assert.hasLength(datasource, "Datasource name can't be null or empty");
-
-			final VirtualDataSourceDescriptor dataSource = virtualDatasourcesManager
-					.getDataSourceDescriptor(datasource);
-			final SQLHelper helper = virtualDatasourcesManager.getOntologyHelper(dataSource.getVirtualDatasourceType());
-
-			return new JdbcTemplate(dataSource.getDatasource())
-					.queryForList(helper.getTableInformationStatement(database, schema));
-		} catch (final Exception e) {
-			log.error("Error listing databases from user in external database", e);
-			throw new DBPersistenceException("Error listing databases from user in external database", e);
-		}
-	}
-
-	@Override
 	public List<String> getTables(String datasource, String database, String schema) {
 		try {
 			Assert.hasLength(datasource, "Datasource name can't be null or empty");
@@ -998,273 +869,6 @@ public class VirtualRelationalOntologyOpsDBRepository implements VirtualOntology
 		} catch (final Exception e) {
 			log.error("Error listing databases from user in external database", e);
 			throw new DBPersistenceException("Error listing databases from user in external database", e);
-		}
-	}
-
-	@Override
-	public TableKeysHolder getTableKeysHolder(Ontology ontology, String table) {
-		final String dataSourceName = virtualDatasourcesManager.getDatasourceForOntology(ontology.getIdentification())
-				.getIdentification();
-		final VirtualDataSourceDescriptor dataSource = virtualDatasourcesManager
-				.getDataSourceDescriptor(dataSourceName);
-		;
-		try {
-			final DatabaseMetaData dm = new NamedParameterJdbcTemplate(dataSource.getDatasource()).getJdbcTemplate()
-					.getDataSource().getConnection().getMetaData();
-			final DatabaseEntityKeysParser parser = new DatabaseEntityKeysParser(dm, table,
-					dataSource.getVirtualDatasourceType());
-			final TableKeysHolder tkh = parser.getKeysHolder();
-			return tkh;
-
-		} catch (final SQLException e1) {
-			log.error("Error while retrieving metadata for ontology {}, table {}", ontology.getIdentification(), table);
-			throw new DBPersistenceException(
-					"Error while retrieving metadata for ontology " + ontology.getIdentification());
-		}
-
-	}
-
-	@Override
-	public void cloneTableNoData(String ontology, String sourceTable, String targetTable,
-			SupportedDatabase databaseType) {
-		String statement;
-		final NamedParameterJdbcTemplate jdbcTemplate = getJdbTemplate(ontology);
-		switch (databaseType) {
-		case POSTGRES:
-			statement = "CREATE TABLE " + targetTable + " AS (SELECT * FROM " + sourceTable + ") WITH NO DATA";
-			log.info("Executing statement {}", statement);
-			try {
-				jdbcTemplate.getJdbcTemplate().getDataSource().getConnection().createStatement()
-						.executeUpdate(statement);
-			} catch (final SQLException e) {
-				throw new RuntimeException(e);
-			}
-			break;
-		case MARIADB:
-			statement = "SHOW CREATE TABLE " + sourceTable;
-			getJdbTemplate(ontology).query(statement, rs -> {
-				final String c = rs.getMetaData().getColumnLabel(2);
-				final String result = rs.getString(c);
-				try {
-					final CreateTable ct = (CreateTable) CCJSqlParserUtil.parse(result);
-					ct.setIndexes(new ArrayList<>());
-					ct.setTable(new Table(targetTable));
-					jdbcTemplate.getJdbcTemplate().getDataSource().getConnection().createStatement()
-							.executeUpdate(ct.toString());
-				} catch (final JSQLParserException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			});
-			break;
-		default:
-			throw new IllegalArgumentException("Unsupported database value: " + databaseType);
-		}
-
-	}
-
-	@Override
-	public void cloneUKeys(String ontology, String targetTable, TableKeysHolder tkh) {
-		// REPLACE TABLES ON TKH BY PREFIX
-		final String queries = tkh.generateUKs(targetTable);
-		for (final String statement : queries.split(";")) {
-			log.info("Executing statement {}", statement);
-			try {
-				getJdbTemplate(ontology).getJdbcTemplate().getDataSource().getConnection().createStatement()
-						.executeUpdate(statement);
-			} catch (final SQLException e) {
-				if (e.getMessage() != null && e.getMessage().contains("already exists")) {
-					log.warn("CloneUKeys error: ", e.getMessage());
-				} else {
-					throw new RuntimeException(e);
-				}
-			}
-		}
-
-	}
-
-	@Override
-	public void cloneFKeys(String ontology, String targetTable, TableKeysHolder tkh) {
-		// REPLACE TABLES ON TKH BY PREFIX
-		final String queries = tkh.generateFKs(targetTable);
-		for (final String statement : queries.split(";")) {
-			log.info("Executing statement {}", statement);
-			try {
-				getJdbTemplate(ontology).getJdbcTemplate().getDataSource().getConnection().createStatement()
-						.executeUpdate(statement);
-			} catch (final SQLException e) {
-				if (e.getMessage() != null && e.getMessage().contains("already exists")) {
-					log.warn("CloneFKeys error: ", e.getMessage());
-				} else {
-					throw new RuntimeException(e);
-				}
-			}
-		}
-
-	}
-
-	private String getDeleteNonPresentTuples(Set<String> ids, String entity, String oid, String fk, String fkValue) {
-		final StringBuilder builder = new StringBuilder();
-		builder.append("DELETE FROM ");
-		builder.append(entity);
-		builder.append(" WHERE ");
-		builder.append(oid);
-		builder.append(" NOT IN (");
-
-		if (ids.isEmpty()) {
-			builder.append("''");
-		} else {
-			for (final String id : ids) {
-				if (!builder.toString().endsWith("(")) {
-					builder.append(",");
-				}
-				builder.append("'" + id + "'");
-			}
-		}
-
-		builder.append(") AND ");
-		builder.append(fk);
-		builder.append("='");
-		builder.append(fkValue);
-		builder.append("'");
-
-		String finalStatement = null;
-		try {
-			finalStatement = SQLTableReplacer.replaceTableNameInDelete(builder.toString(),
-					ontologyVirtualRepository.findOntologyVirtualByOntologyIdentification(entity));
-//			getJdbTemplate(entity).getJdbcTemplate().getDataSource().getConnection().createStatement()
-//					.executeUpdate(finalStatement);
-		} catch (final Exception e) {
-			log.error("Could not run delete children {}", finalStatement, e);
-		}
-		return finalStatement;
-
-	}
-
-	@Override
-	public MultiDocumentOperationResult updateNativeByObjectIdAndBodyData(final String ontology, final String uniqueId,
-			final String body) {
-		final String objId;
-		try {
-			Assert.hasLength(ontology, "Ontology name can't be null or empty");
-			Assert.hasLength(uniqueId, "Unique ID can't be null or empty");
-			Assert.hasLength(body, "Body can't be null or empty");
-			objId = ontologyVirtualRepository.findOntologyVirtualObjectIdByOntologyIdentification(ontology);
-			Assert.hasLength(objId, NO_UNIQUE_ID);
-
-			final UpdateStatement mainUpdateSt = sqlGenerator.buildUpdate().setOntology(ontology)
-					.setWhere(Collections.singletonList(new WhereStatement(objId, "=", uniqueId)))
-					.setValuesForJson(body);
-			// Iterate children entities to create the statements
-			if (!mainUpdateSt.getRelatedValues().isEmpty()) {
-				return upsertRelationalEntities(mainUpdateSt, ontology);
-			} else {
-				return this.updateNative(ontology, mainUpdateSt.generate(true), false);
-			}
-		} catch (final Exception e) {
-			log.error("Error updating data", e);
-			throw new DBPersistenceException(e, new ErrorResult(ErrorResult.PersistenceType.VIRTUAL, e.getMessage()),
-					"Error updating data on virtual ontology");
-		}
-
-	}
-
-	private MultiDocumentOperationResult upsertRelationalEntities(UpdateStatement mainUpdateSt, String ontology) {
-		// Statements of children entities
-		final Map<String, List<UpsertStatement>> statements = new HashMap<>();
-		final Map<String, String> deleteStatements = new HashMap<>();
-		mainUpdateSt.getRelatedValues().entrySet().forEach(e -> {
-			final String oid = ontologyVirtualRepository
-					.findOntologyVirtualObjectIdByOntologyIdentification(e.getKey());
-			// Store uniqueIds to perform delete later
-			final Set<String> uniqueIDValues = new HashSet<>();
-			final RelatedEntityValues rv = e.getValue();
-			// IF X-TO-MANY multiple instanes
-			rv.getColumnsAndValues().forEach(instance -> {
-				final UpsertStatement ust = sqlGenerator.buildUpsert().withOntology(e.getKey()).withValues(instance)
-						.setUniqueIDWithValue(oid);
-				if (!statements.containsKey(e.getKey())) {
-					statements.put(e.getKey(), new ArrayList<>());
-				}
-				statements.get(e.getKey()).add(ust);
-				uniqueIDValues.add(ust.getUniqueIDValue());
-			});
-			final String deleteStt = getDeleteNonPresentTuples(uniqueIDValues, e.getKey(), oid, rv.getForeignKey(),
-					rv.getForeignKeyValue());
-			deleteStatements.put(e.getKey(), deleteStt);
-		});
-		// TO-DO in transaction
-		final OntologyVirtualDatasource ontologyVirtualDatasource = virtualDatasourcesManager
-				.getDatasourceForOntology(ontology);
-		final String dataSourceName = ontologyVirtualDatasource.getIdentification();
-		final VirtualDataSourceDescriptor dataSource = virtualDatasourcesManager
-				.getDataSourceDescriptor(dataSourceName);
-		// START TRANSACTION DEFINITION
-		final DataSourceTransactionManager tm = new DataSourceTransactionManager(dataSource.getDatasource());
-		final TransactionTemplate tt = new TransactionTemplate(tm);
-		tt.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-		// END TRANSACTION DEFINITION
-		final NamedParameterJdbcTemplate jdbcTemplate = new NamedParameterJdbcTemplate(tm.getDataSource());
-
-		final StringBuilder errors = new StringBuilder();
-		// SE USA JDBCTEMPLATE Y PARAMETROS DE LA CONEXION PRINCIPAL, SE ASUME LA MISMA
-		final MultiDocumentOperationResult mdor = tt.execute(status -> doUpsertWithRollback(statements,
-				deleteStatements, ontologyVirtualDatasource, ontology, mainUpdateSt, status, jdbcTemplate, errors));
-		if (!errors.isEmpty()) {
-			throw new RuntimeException(errors.toString());
-		}
-		return mdor;
-
-//		final MultiDocumentOperationResult mdor = this.updateNative(ontology, mainUpdateSt.generate(true), false);
-//		statements.entrySet().forEach(es -> {
-//			es.getValue().forEach(st -> {
-//				try {
-//					final PreparedStatement ps = st.generate(true);
-//					ps.setStatement(SQLTableReplacer.replaceTableNameInInsert(ps.getStatement(),
-//							ontologyVirtualRepository.findOntologyVirtualByOntologyIdentification(es.getKey())));
-//					getJdbTemplate(es.getKey()).update(ps.getStatement(), ps.getParams());
-//				} catch (final Exception e) {
-//					log.error("Could not execute insert", e);
-//				}
-//			});
-//
-//		});
-		// return only main entity changes
-//		return mdor;
-	}
-
-	public MultiDocumentOperationResult doUpsertWithRollback(Map<String, List<UpsertStatement>> upsertStatements,
-			Map<String, String> deleteStatements, OntologyVirtualDatasource ontologyVirtualDatasource,
-			String mainEntity, UpdateStatement mainUpdateSt, TransactionStatus status,
-			NamedParameterJdbcTemplate jdbcTemplate, StringBuilder errors) {
-		try {
-			// RUN UPSERTS
-			for (final java.util.Map.Entry<String, List<UpsertStatement>> es : upsertStatements.entrySet()) {
-				for (final UpsertStatement st : es.getValue()) {
-					final PreparedStatement ps = st.generate(true);
-					ps.setStatement(SQLTableReplacer.replaceTableNameInInsert(ps.getStatement(),
-							ontologyVirtualRepository.findOntologyVirtualByOntologyIdentification(es.getKey())));
-					log.debug("Running statement {}", ps.getStatement());
-					getJdbTemplate(es.getKey()).update(ps.getStatement(), ps.getParams());
-				}
-			}
-			// RUN DELETES
-			for (final java.util.Map.Entry<String, String> e : deleteStatements.entrySet()) {
-				log.debug("Running statement {}", e.getValue());
-				getJdbTemplate(e.getKey()).getJdbcTemplate().getDataSource().getConnection().createStatement()
-						.executeUpdate(e.getValue());
-			}
-
-			// RUN MAIN UPDATE
-			final PreparedStatement ps = mainUpdateSt.generate(true);
-			log.debug("Running statement {}", ps.getStatement());
-			final MultiDocumentOperationResult mdor = this.updateNative(mainEntity, ps, false);
-			return mdor;
-		} catch (final Exception e) {
-			errors.append(e.getMessage());
-			log.error("Error inside transaction, rolling back", e);
-			status.setRollbackOnly();
-			return null;
 		}
 	}
 

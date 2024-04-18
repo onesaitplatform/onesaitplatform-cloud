@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.representer.Representer;
 
-import com.minsait.onesait.platform.config.components.AIConfiguration;
 import com.minsait.onesait.platform.config.components.AllConfiguration;
 import com.minsait.onesait.platform.config.components.BundleConfiguration;
 import com.minsait.onesait.platform.config.components.CaasConfiguration;
@@ -467,17 +466,6 @@ public class ConfigurationServiceImpl implements ConfigurationService {
 			constructor.addTypeDescription(configDesc);
 			final Yaml yaml = new Yaml(constructor);
 			return yaml.loadAs(configs.iterator().next().getYmlConfig(), BundleConfiguration.class);
-		}
-		return null;
-	}
-	
-	@Override
-	public AIConfiguration getAIConfiguration() {
-		final List<Configuration> configs = configurationRepository.findByType(Type.AI);
-		if (!CollectionUtils.isEmpty(configs)) {
-			final Constructor constructor = new Constructor(AIConfiguration.class);
-			final Yaml yaml = new Yaml(constructor);
-			return yaml.loadAs(configs.iterator().next().getYmlConfig(), AIConfiguration.class);
 		}
 		return null;
 	}

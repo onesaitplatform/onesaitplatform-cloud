@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -247,8 +247,6 @@
 																																																			
 																	<!-- EDIT -->
 																	<span  class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/configurations/update/${configuration.id}/|} + '\');'"><i class="icon-edit"></i></span>
-																	<!-- DELETE -->
-																	<span th:if="${#authentication.name} == ${configuration.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="btn btn-xs btn-no-border icon-on-table  tooltips color-red" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn}" th:data-original-title="#{gen.deleteBtn}" th:attr="onclick='deleteConfigurationConfirmation(\'' + ${configuration.id} + '\');'"><i class="icon-delete"></i></span>
 																</div>
 															</td>
 														</tr>
@@ -403,63 +401,6 @@
 		
 		$("#contenedor-tabla-outside").removeClass("hidden");
 	});
-	
-	var deleteConfigurationConfirmation = function(id) {
-		
-		var Close = headerReg.btnCancelar;
-		var Remove = headerReg.btnEliminar;
-		var Content = headerReg.configurationConfirm;
-		var Title = headerReg.configurationDelete;
-
-		var csrf_value = $("meta[name='_csrf']").attr("content");
-		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-		// jquery-confirm DIALOG SYSTEM.
-		$.confirm({
-			title : Title,
-			theme : 'light',
-			columnClass : 'medium',
-			content : Content,
-			draggable : true,
-			dragWindowGap : 100,
-			backgroundDismiss : true,
-			buttons : {
-				close : {
-					text : Close,
-					btnClass : 'btn btn-outline blue dialog',
-					action : function() {
-					} // GENERIC CLOSE.
-				},
-				remove : {
-					text : Remove,
-					btnClass : 'btn btn-primary',
-					action : function() {
-						console.log(id);
-						$.ajax({
-							url : '/controlpanel/configurations/' + id,
-							headers: {
-								[csrf_header]: csrf_value
-						    },
-							type : 'DELETE',
-							success : function(result) {
-								console.log(result.responseText);
-								navigateUrl('/controlpanel/configurations/list');
-							},
-						    error: function(result){
-						    	console.log(result.responseText);
-						    	$.alert({
-									title : 'Error',
-									theme : 'light',
-									content : result.responseText
-								});
-						    }
-						});
-					}
-				}
-				
-			}
-		});
-		
-	}
 	
 	//]]>
 	</script>

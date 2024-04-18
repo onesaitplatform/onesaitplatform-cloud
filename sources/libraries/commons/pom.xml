@@ -9,9 +9,11 @@
 	</parent>
 	<artifactId>onesaitplatform-commons</artifactId>
 	<packaging>jar</packaging>
+
 	<properties>
 		<license.dir>${project.parent.basedir}</license.dir>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -56,30 +58,37 @@
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-logging</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>com.fasterxml.jackson.jaxrs</groupId>
 			<artifactId>jackson-jaxrs-json-provider</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-yaml</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.kafka</groupId>
 			<artifactId>spring-kafka</artifactId>
@@ -90,23 +99,26 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.kafka</groupId>
 			<artifactId>kafka-clients</artifactId>
 			<version>3.4.0</version>
 		</dependency>
+
+		
 		<!-- KSQL Client -->
 		<dependency>
-			<groupId>io.confluent.ksql</groupId>
-			<artifactId>ksqldb-api-client</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-reload4j</artifactId>
-				</exclusion>
-			</exclusions>
-			<version>7.4.0</version>
-		</dependency>
+          <groupId>io.confluent.ksql</groupId>
+          <artifactId>ksqldb-api-client</artifactId>
+          <exclusions>
+			  <exclusion>
+				  <groupId>org.slf4j</groupId>
+				  <artifactId>slf4j-reload4j</artifactId>
+			  </exclusion>
+		  </exclusions>
+          <version>7.4.0</version>
+        </dependency>
 		<dependency>
 			<groupId>org.jline</groupId>
 			<artifactId>jline</artifactId>
@@ -137,11 +149,14 @@
 			<artifactId>guava</artifactId>
 			<version>29.0-jre</version>
 		</dependency>
+
+
 		<!-- Persistence Model dependencies -->
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
@@ -152,11 +167,8 @@
 			<artifactId>bcprov-jdk15on</artifactId>
 			<version>1.67</version>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-loader</artifactId>
-		</dependency>
 	</dependencies>
+
 	<profiles>
 		<profile>
 			<id>releases</id>
@@ -170,6 +182,7 @@
 				</repository>
 			</distributionManagement>
 		</profile>
+
 		<profile>
 			<id>snapshots</id>
 			<activation>
@@ -183,6 +196,7 @@
 			</distributionManagement>
 		</profile>
 	</profiles>
+
 	<repositories>
 		<repository>
 			<id>confluent</id>
@@ -193,4 +207,5 @@
 			<url>https://nexus.onesaitplatform.com/nexus/repository/snapshots/</url>
 		</repository>
 	</repositories>
+
 </project>

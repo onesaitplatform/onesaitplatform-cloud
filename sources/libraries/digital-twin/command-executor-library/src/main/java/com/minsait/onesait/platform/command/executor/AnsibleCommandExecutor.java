@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,16 +54,12 @@ public class AnsibleCommandExecutor implements CommandExecutor {
 			while ((line = reader.readLine()) != null) {
 				output.append(line);
 				output.append(System.getProperty("line.separator"));
-				if (log.isDebugEnabled()) {
-					log.debug("output: {}", line);
-				}				
+				log.debug("output: {}", line);
 			}
 			log.debug("waitfor");
 			p.waitFor();
 			result.setResult(output.toString());
-			if (log.isDebugEnabled()) {
-				log.debug("Ansible command executed, output.toString(): {}", output.toString());
-			}			
+			log.debug("Ansible command executed, output.toString(): {}", output.toString());
 			return result;
 
 		} catch (Exception e) {
@@ -77,9 +73,7 @@ public class AnsibleCommandExecutor implements CommandExecutor {
 	private String writeHostFile(String ip, String user) throws IOException {
 		File file = new File("/etc/ansible/host_" + UUID.randomUUID());
 		Files.write(file.toPath(), (ip + " ansible_user=" + user).getBytes());
-		if (log.isDebugEnabled()) {
-			log.debug("hostPath: {}", file.getAbsolutePath());
-		}		
+		log.debug("hostPath: {}", file.getAbsolutePath());
 		return file.getAbsolutePath();
 	}
 

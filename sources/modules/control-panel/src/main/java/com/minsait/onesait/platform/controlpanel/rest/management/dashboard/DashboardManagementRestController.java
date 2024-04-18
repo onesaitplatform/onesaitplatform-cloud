@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package com.minsait.onesait.platform.controlpanel.rest.management.dashboard;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -391,23 +390,8 @@ public class DashboardManagementRestController {
 		final DashboardImportResponsetDTO dashboardResutl = dashboardService.importDashboard(dashboardimportDTO,
 				utils.getUserId(), overwrite, importAuthorizations);
 		dashboardResutl.setIdentification(dashboardimportDTO.getIdentification());
-		if(dashboardResutl.getErrorOntologies().size() != 0) {
-		 List<HashMap<String, String>> newArray = new ArrayList<>();
-	        for (HashMap<String, String> objeto : dashboardResutl.getErrorOntologies()) {
-	        	HashMap<String, String> newObject = new HashMap<>();
-	            for (HashMap.Entry<String, String> entry : objeto.entrySet()) {
-	   
-	            	newObject.put("Datasource", entry.getKey());
-	            	newObject.put("Ontology", entry.getValue());
-	            }
-	            newArray.add(newObject);
-	        }
-	        dashboardResutl.setErrorOntologies(newArray);
-		}
-	      
 		if (dashboardResutl.getId() != null) {
 			dashboardService.generateDashboardImage(dashboardResutl.getId(), utils.getCurrentUserOauthToken());
-			
 			return new ResponseEntity<>(dashboardResutl, HttpStatus.OK);
 		} else {
 			return new ResponseEntity<>(dashboardResutl, HttpStatus.FORBIDDEN);

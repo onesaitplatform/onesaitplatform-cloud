@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -140,9 +140,7 @@ public class ProcessTraceServiceImpl implements ProcessTraceService {
 	@Override
 	public void checkProcessExecution(String processId)
 			throws JsonGenerationException, JsonMappingException, IOException {
-		if (log.isDebugEnabled()) {
-			log.debug("Checking Process Execution with id: {}", processId);
-		}
+		log.debug("Checking Process Execution with id: {}", processId);
 		ProcessTrace process = getById(processId);
 		if (process.getIsActive()) {
 			Integer numOpSuccess = 0;
@@ -182,10 +180,8 @@ public class ProcessTraceServiceImpl implements ProcessTraceService {
 						ObjectNode obj = mapper.createObjectNode();
 						try {
 							OperationStatus exOp = executedOpsList.get(i);
-							if (log.isDebugEnabled()) {
-								log.debug("Check Operation: {} --- Status: {} --- Message: {}", op.getId(), exOp.getIsOk(),
-										exOp.getMessage());
-							}
+							log.debug("Check Operation: {} --- Status: {} --- Message: {}", op.getId(), exOp.getIsOk(),
+									exOp.getMessage());
 							if (!exOp.getOperationId().equals(op.getId())) {
 								log.debug("Operation KO");
 								success = false;
@@ -288,9 +284,8 @@ public class ProcessTraceServiceImpl implements ProcessTraceService {
 			auditEvent.setExtraData(extraData);
 			eventRouter.notify(new ObjectMapper().writeValueAsString(auditEvent));
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("Clear hazelcast map for process: {}", processId);
-		}
+
+		log.debug("Clear hazelcast map for process: {}", processId);
 		processExecutionMap.put(processId, new LinkedHashSet<OperationStatus>());
 
 	}

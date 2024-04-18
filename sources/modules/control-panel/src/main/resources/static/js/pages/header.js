@@ -190,7 +190,6 @@ var HeaderController = function() {
 		var Close = headerReg.btnCancelar;
 		var	Content = headerReg.dataModelConfirm;
 		var Title = headerReg.dataModelDelete;
-		
 
 		// datamodel-confirm DIALOG SYSTEM.
 		$.confirm({
@@ -211,44 +210,7 @@ var HeaderController = function() {
 					text: Remove,
 					btnClass: 'btn btn-primary',
 					action: function(){ 
-					//	if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
-					var csrf = {};
-					csrf[headerJson.csrfHeaderName] = headerJson.csrfToken;
-					
-					var messageExistOntologiesDataModel = headerJson.messageErrorDeleteDatamodelExistOntology;	
-					
-					$.ajax({
-							url : "/controlpanel/datamodels/delete/"+formId,
-							type : "DELETE",
-							headers: csrf,
-							success : function(response){				
-    								toastr.success(window[response]);
-    								setTimeout(function() {
-								        navigateUrl("/controlpanel/datamodels/list");
-								    }, 2000); 
-							},
-						    error :  function (dataError) {	 
-								console.log(dataError.responseText);
-												    
-								if (dataError.status != 400) {
-    								toastr.error(window[dataError.responseText]);
-    								
-								} else{
-									var ontologies = dataError.responseText.split(';');
-									var messageContent = messageExistOntologiesDataModel + "<br/>";
-									for (let i = 0; i < ontologies.length; i++) {
-					     			const item = ontologies[i];			
-					      			messageContent = messageContent.concat("<br/><b>" + item +"</b>");
-					    			}
-								    $.alert({
-										title : 'ERROR!',
-										type : 'red',
-										theme : 'light',
-										content :  messageContent
-									});
-								}															   
-						    }
-						})
+						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
 					}
 				}
 			}
@@ -1217,40 +1179,7 @@ var HeaderController = function() {
 		});
 	}
 	
-	// DASHBOARDS-CONFIRM-DIALOG
-	var showConfirmDialogSynoptics = function(formId){	
-
-		//i18 labels
-		var Close = headerReg.btnCancelar;
-		var Remove = headerReg.btnEliminar;
-		var Content = headerReg.synopticsConfirm; 
-		var Title = headerReg.synopticsDelete;
-
-		// jquery-confirm DIALOG SYSTEM.
-		$.confirm({
-			title: Title,
-			theme: 'light',
-			columnClass: 'medium',
-			content: Content,
-			draggable: true,
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			buttons: {
-				close: {
-					text: Close,
-					btnClass: 'btn btn-outline blue dialog',
-					action: function (){} //GENERIC CLOSE.		
-				},
-				remove: {
-					text: Remove,
-					btnClass: 'btn btn-primary',
-					action: function(){ 
-						if ( document.forms[formId] ) { document.forms[formId].submit(); } else { $.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'}); }
-					}											
-				}
-			}
-		});
-	}
+	
 	
 	// DASHBOARDS-CONFIRM-DIALOG
 	var showConfirmDialogDashboard = function(formId){	
@@ -1805,51 +1734,7 @@ var HeaderController = function() {
 			toastr.info(messagesForms.operations.notification,headerReg.informacion);	
 		}
 		else { logControl ? console.log('|---> information() -> NO ERROR INFO.') : ''; }		
-	}
-	
-	// DELETE WITH CONFIRMATION DIALOG
-	var deleteStandardActionConfirmationDialog= function (id, closeButtonText, deleteButtonText, contentText, tittleText, customCloseAction, customDeleteAction){
-		if (customCloseAction==""){
-			customCloseAction= function (){}; //GENERIC CLOSE.
-		}
-		if (customDeleteAction==""){
-			customDeleteAction= function(){ 
-						if ( document.forms[id] ) {
-							document.forms[id].submit(); 
-						} else { 
-							$.alert({title: 'ERROR!', theme: 'light', content: 'NO FORM SELECTED!'});
-						}
-					};
-		}
-        // jquery-confirm DIALOG SYSTEM.
-        $.confirm({
-            title: tittleText,
-            theme: 'light',
-            columnClass: 'medium',
-            content: contentText,
-            draggable: true,
-            dragWindowGap: 100,
-            backgroundDismiss: true,
-            buttons: {
-                close: {
-                    text: closeButtonText,
-                    btnClass: 'btn btn-outline blue dialog',
-                    action: customCloseAction 
-                },
-                remove: {
-                    text: deleteButtonText,
-                    btnClass: 'btn btn-primary',
-                    action: customDeleteAction
-                }               
-            }
-        });
-	}
-		
-	// UNBLOCK LIST SHOW
-	var unblocklisttable = function(id){
-		$('#pulsepanel').addClass('hide');
-		$("#" + id).removeClass("hidden");
-	}
+	}	
 
 
 	// CONTROLLER PUBLIC FUNCTIONS 
@@ -1952,6 +1837,8 @@ var HeaderController = function() {
 			logControl ? console.log('showConfirmDialogSub()...') : '';
 			showConfirmDialogSub(formId,subcategoryId);
 		},
+		
+		
 		// ONTOLOGY-CONFIRM-DIALOG
 		showConfirmDialogModel : function(formId){		
 			logControl ? console.log('showConfirmDialogModel()...') : '';
@@ -2030,12 +1917,6 @@ var HeaderController = function() {
 		showConfirmDialogDashboard : function(formId){		
 			logControl ? console.log('showConfirmDialogDashboard()...') : '';
 			showConfirmDialogDashboard(formId);
-		},
-		
-		// DASHBOARD-CONFIRM-DIALOG
-		showConfirmDialogSynoptics : function(formId){		
-			logControl ? console.log('showConfirmDialogSynoptics()...') : '';
-			showConfirmDialogSynoptics(formId);
 		},
 		
 		// GADGET-CONFIRM-DIALOG
@@ -2127,17 +2008,7 @@ var HeaderController = function() {
 		showConfirmDialogMapsProject : function(formId,deleteUrl,id){		
 			logControl ? console.log('showConfirmDialogMapsProject()...') : '';
 			showConfirmDialogMapsProject(formId,deleteUrl,id);
-		},
-		//STANDARD-DELETE-CONFIRM-DIALOG
-		deleteStandardActionConfirmationDialog : function(id, closeButtonText, deleteButtonText, contentText, tittleText, customCloseAction, customDeleteAction){		
-			logControl ? console.log('deleteStandardActionConfirmationDialog()...') : '';
-			deleteStandardActionConfirmationDialog(id, closeButtonText, deleteButtonText, contentText, tittleText, customCloseAction, customDeleteAction);
-		},
-		//UNBLOCK-LIST-TABLE
-		unblockListTable : function(id){		
-			logControl ? console.log('unblockListTable()...') : '';
-			unblocklisttable(id);
-		},
+		}
 	};
 }();
 var jseval=this;

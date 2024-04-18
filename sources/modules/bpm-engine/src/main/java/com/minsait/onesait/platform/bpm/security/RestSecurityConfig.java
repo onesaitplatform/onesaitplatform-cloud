@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.bpm.security;
 
-import org.camunda.bpm.engine.ProcessEngine;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +23,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
+import com.minsait.onesait.platform.config.services.bpm.BPMTenantService;
+
 @Configuration
 @Order(SecurityProperties.BASIC_AUTH_ORDER - 20)
 public class RestSecurityConfig extends WebSecurityConfigurerAdapter {
@@ -31,14 +32,14 @@ public class RestSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.csrf().disable().antMatcher("/engine-rest/**").authorizeRequests().anyRequest().authenticated().and()
-				.addFilterBefore(new BearerAuthenticationFilter(), BasicAuthenticationFilter.class);
+		.addFilterBefore(new BearerAuthenticationFilter(), BasicAuthenticationFilter.class);
 
 	}
 
 	@Bean
-	public FilterRegistrationBean statelessUserAuthenticationFilter(ProcessEngine processEngine) {
+	public FilterRegistrationBean statelessUserAuthenticationFilter(BPMTenantService bpmnTenantService) {
 		final FilterRegistrationBean filterRegistration = new FilterRegistrationBean();
-		filterRegistration.setFilter(new StatelessUserAuthenticationFilter(processEngine.getIdentityService()));
+		filterRegistration.setFilter(new StatelessUserAuthenticationFilter(bpmnTenantService));
 		filterRegistration.setOrder(102);
 		filterRegistration.addUrlPatterns("/engine-rest/**");
 		return filterRegistration;

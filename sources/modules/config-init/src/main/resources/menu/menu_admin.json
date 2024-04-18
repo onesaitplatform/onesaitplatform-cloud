@@ -14,30 +14,12 @@
 			"submenu": [
 				{
 					"title": {
-						"EN": "Environment Management",
-						"ES": "Gestión Entorno",
-						"FR": "Gestion de l'environnement"
-					},
-					"icon": "",
-					"url": "/controlpanel/environments/list"
-				},
-				{
-					"title": {
 						"EN": "Tenants Management",
 						"ES": "Gestión de Tenants",
 						"FR": "Utilisateurs locataires"
 					},
 					"icon": "",
 					"url": "/controlpanel/multitenancy/tenants"
-				},
-				{
-					"title": {
-						"EN": "Plugins Management",
-						"ES": "Gestión de Plugins",
-						"FR": "Gestion des plugins"
-					},
-					"icon": "",
-					"url": "/controlpanel/plugins/list"
 				},
 				{
 					"title": {
@@ -59,9 +41,9 @@
 				},
 				{
 					"title": {
-						"EN": "Assets Market",
-						"ES": "Market de Assets",
-						"FR": "Marché des Actifs"
+						"EN": "Bundle Repository",
+						"ES": "Repositorio de Bundles",
+						"FR": "Référentiel du groupées groupé"
 					},
 					"icon": "",
 					"url": "/controlpanel/bundlerepository/list"
@@ -160,15 +142,6 @@
 				},
 				{
 					"title": {
-						"EN": "User Tokens Management",
-						"ES": "Gestión de Tokens de Usuario",
-						"FR": "Gestion des jetons utilisateur"
-					},
-					"icon": "",
-					"url": "/controlpanel/apimanager/token/list?access=MENU"
-				},
-				{
-					"title": {
 						"EN": "REST APIs Management",
 						"ES": "Gestión de APIs REST",
 						"FR": "Gestion des REST API"
@@ -214,16 +187,6 @@
 				},
 				{
 					"title": {
-						"EN": "My Git Projects",
-						"ES": "Mis Proyectos Git", 
-						"FR": "Mes Projets Git"
-
-					},
-					"icon": "",
-					"url": "/controlpanel/codeproject/list"
-				},
-				{
-					"title": {
 						"EN": "Serverless Applications Management",
 						"ES": "Gestión de aplicaciones serverless",
 						"FR": "Gestion des applications serverless"
@@ -260,15 +223,6 @@
 			"icon": "icon-visualization",
 			"url": "",
 			"submenu": [
-				 {
-                    "title": {
-                        "EN": "Forms Management",
-                        "ES": "Gestión de Formularios",
-                        "FR": "Gestion des Formes"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/forms/list"
-                } ,
 				{
 					"title": {
 						"EN": "Dashboards Management",
@@ -670,9 +624,9 @@
 				},
 				{
 					"title": {
-						"EN": "WebApps Management",
-						"ES": "Gestión de WebApps",
-						"FR": "Gestion de WebApps"
+						"EN": "Web Projects Management",
+						"ES": "Gestión de Proyectos Web",
+						"FR": "Gestion de Projets Web"
 					},
 					"icon": "",
 					"url": "/controlpanel/webprojects/list"

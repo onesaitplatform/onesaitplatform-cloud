@@ -13,7 +13,8 @@
 
 	<properties>
 
-		<revision>5.3.0-ce</revision>
+
+		<revision>5.1.0-ce</revision>
 		<docker.image.username>onesaitplatform</docker.image.username>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -27,7 +28,7 @@
 
 		<commons-io.version>2.4</commons-io.version>
 		<javafaker.version>0.14</javafaker.version>
-		<spring-boot.version>2.7.15</spring-boot.version>
+		<spring-boot.version>2.7.11</spring-boot.version>
 		<aspectj.version>1.9.8</aspectj.version>
 		
 		<spring-boot-admin-server.version>2.6.2</spring-boot-admin-server.version>
@@ -73,13 +74,10 @@
 		<spring.security.oauth.version>2.5.2.RELEASE</spring.security.oauth.version>
 		<spring.security.oauth-autoconfigure.version>2.6.7</spring.security.oauth-autoconfigure.version>
 		<minio.version>7.1.4</minio.version> <!-- Versiones 8+ son incompatibles con la version actual de Hazelcast -->
-		<json-ld.version>1.3.3</json-ld.version>
+		<json-ld.version>1.2.0-java8</json-ld.version>
 		<snakeyaml.version>1.30</snakeyaml.version>
 		<thymeleaf-extras-springsecurity4.version>3.0.4.RELEASE</thymeleaf-extras-springsecurity4.version>
 		<nashorn.version>15.4</nashorn.version>
-        <h2.version>2.2.224</h2.version>		
-		<dependency.check.version>8.4.0</dependency.check.version>
-		<properties.maven.version>1.0.0</properties.maven.version>
 	</properties>
 
 	<dependencyManagement>
@@ -333,14 +331,6 @@
     			<artifactId>nashorn-core</artifactId>
     			<version>${nashorn.version}</version>
 			</dependency>
-            
-            <!-- H2 dependency check internal database -->
-            <dependency>
-                <groupId>com.h2database</groupId>
-                <artifactId>h2</artifactId>
-                <version>${h2.version}</version>
-            </dependency>
-
 
 		</dependencies>
 	</dependencyManagement>
@@ -354,10 +344,6 @@
 			<id>onesait platform snapshots</id>
 			<url>https://nexus.onesaitplatform.com/nexus/repository/snapshots/</url>
 		</repository>
-		<repository>
-            <id>mavencentral</id>
-            <url>https://repo.spring.io/milestone</url>
-        </repository>
 		<repository>
 			<id>central Maven</id>
 			<url>https://repo1.maven.org</url>
@@ -466,7 +452,6 @@
 		<module>modules/report-engine</module>
 		<module>modules/serverless-manager</module>
 		<module>modules/analytics-engine-launcher-manager</module>
-		<module>modules/plugin-manager</module>
 
 
 		<!--<module>modules/scripting-engine</module -->
@@ -731,7 +716,6 @@
 					</execution>
 				</executions>
 			</plugin>
-    
 		</plugins>
 		
 		<pluginManagement> 
@@ -860,95 +844,15 @@
 			</properties>
 		</profile>
 		<!-- En Dashboard Compile Section -->
-
-		<!-- BEGIN: Dependency Check plugin execution control -->
-		<profile>
-			<id>vulscan</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
-
-            <!-- Dependency Check plugin -->
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>properties-maven-plugin</artifactId>
-						<version>${properties.maven.version}</version>
-						<executions>
-						<execution>
-							<phase>initialize</phase>
-								<goals>
-									<goal>read-project-properties</goal>
-								</goals>
-						</execution>
-						</executions>
-						<configuration>
-						<files>
-							<file>/usr/share/maven/conf/h2.properties</file>
-						</files>
-						</configuration>
-					</plugin>				
-					<plugin>
-						<groupId>org.owasp</groupId>
-						<artifactId>dependency-check-maven</artifactId>
-						<version>${dependency.check.version}</version>
-						<dependencies>
-							<dependency>
-								<groupId>com.h2database</groupId>
-								<artifactId>h2</artifactId>
-								<version>${h2.version}</version>
-							</dependency>
-						</dependencies>
-						<configuration>
-							<databaseDriverName>org.h2.Driver</databaseDriverName>
-							<connectionString>jdbc:h2:~/test</connectionString>
-							<databaseUser>${h2database.user}</databaseUser>
-							<databasePassword>${h2database.pass}</databasePassword>
-							<formats>
-								<format>HTML</format>
-								<format>CSV</format>
-								<format>JSON</format>
-							</formats>
-							<prettyPrint>true</prettyPrint>							
-						</configuration>
-						<executions>
-							<execution>
-								<goals>
-									<goal>aggregate</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-            <!-- Dependency plugin -->	
-
-			<reporting>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-surefire-report-plugin</artifactId>
-						<version>2.21.0</version>
-					</plugin>
-					<plugin>
-						<groupId>org.owasp</groupId>
-						<artifactId>dependency-check-maven</artifactId>
-						<version>8.4.0</version>
-						<reportSets>
-							<reportSet>
-								<reports>
-									<report>aggregate</report>
-								</reports>
-							</reportSet>
-						</reportSets>
-					</plugin>
-				</plugins>
-			</reporting>					
-
-		</profile>	
-
-		<!-- END: Dependency Check plugin execution control -->
 	</profiles>
-    
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-report-plugin</artifactId>
+				<version>2.21.0</version>
+			</plugin>
+		</plugins>
+	</reporting>
 </project>

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -151,11 +151,9 @@ public class FlowEngineApiService {
 					HttpStatus.BAD_REQUEST);
 		}
 		final long executionTime = System.currentTimeMillis() - start;
-		if (log.isDebugEnabled()) {
-			log.debug("invokeRestApiOperation for API {}, executed in {} ms",
-			invokeRequest.getApiName() + '-' + invokeRequest.getApiVersion(), executionTime);
-		}
-				return result;
+		log.debug("invokeRestApiOperation for API {}, executed in {} ms",
+				invokeRequest.getApiName() + '-' + invokeRequest.getApiVersion(), executionTime);
+		return result;
 	}
 
 	private RestApiInvocationParams getInvocaionParametersForInternalOrFlowEngineApi(
@@ -195,13 +193,10 @@ public class FlowEngineApiService {
 
 	private void addDefaultHeaders(RestApiInvocationParams restInvocationParams, User platformUser) {
 		restInvocationParams.getHeaders().add("X-OP-APIKey", userTokenService.getToken(platformUser).getToken());
-		if (!restInvocationParams.getHeaders().containsKey(HttpHeaders.ACCEPT)) {
-			restInvocationParams.getHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_UTF8_VALUE);
-		}
-		if (!restInvocationParams.isMultipart()
-				&& !restInvocationParams.getHeaders().containsKey(HttpHeaders.CONTENT_TYPE)) {
+		restInvocationParams.getHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_UTF8_VALUE);
+		if (!restInvocationParams.isMultipart()) {
 			restInvocationParams.getHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE);
-		} else if (!restInvocationParams.getHeaders().containsKey(HttpHeaders.CONTENT_TYPE)) {
+		} else {
 			restInvocationParams.getHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.MULTIPART_FORM_DATA.toString());
 		}
 	}
@@ -267,7 +262,7 @@ public class FlowEngineApiService {
 			}
 
 		}
-		final StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder();
 		sb.append(resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.API)).append("/v")
 				.append(String.valueOf(operation.getApi().getNumversion())).append("/")
 				.append(operation.getApi().getIdentification());

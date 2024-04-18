@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,9 +135,7 @@ public class FnServiceImpl implements FnService {
 				headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE);
 				final ResponseEntity<FnFunction> response = restTemplate.exchange(baseURL + APPS_REST + "/" + appId,
 						HttpMethod.PUT, new HttpEntity<>(fnApp, headers), FnFunction.class);
-				if (log.isDebugEnabled()) {
-					log.debug("Updated app {} with result body: {}", appId, mapper.writeValueAsString(response.getBody()));
-				}				
+				log.debug("Updated app {} with result body: {}", appId, mapper.writeValueAsString(response.getBody()));
 			}
 		} catch (final HttpClientErrorException e) {
 			log.error("Error while updating application for appId {}, errorCode {} , message {}", appId,
@@ -271,9 +269,7 @@ public class FnServiceImpl implements FnService {
 
 	@Override
 	public FnFunction deploy(Application app, Function function, String basePath) {
-		if (log.isDebugEnabled()) {
-			log.debug("Deploying app {}, function {}", app.getName(), function.getName());
-		}		
+		log.debug("Deploying app {}, function {}", app.getName(), function.getName());
 		final StringBuilder builder = new StringBuilder();
 		final ProcessBuilder pb = new ProcessBuilder(FN_CMD, VERBOSE, "deploy", "--app", app.getName());
 		pb.redirectErrorStream(true);
@@ -289,9 +285,7 @@ public class FnServiceImpl implements FnService {
 				builder.append(line);
 				builder.append(System.getProperty(LINE_SEPARATOR));
 			}
-			if (log.isDebugEnabled()) {
-				log.debug("Result of deploy: {}", builder.toString());
-			}			
+			log.debug("Result of deploy: {}", builder.toString());
 			if (builder.toString().toLowerCase().contains("could not find function file")) {
 				log.error(EXECUTED_COMMAND_WITH_RESULT, pb.command(), builder.toString());
 				throw new FnException("Yaml file not found for function", Code.BAD_REQUEST);

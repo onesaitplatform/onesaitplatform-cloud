@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@
 			<div class="page-content">
 				<!-- SEARCH FORM -->
 				<div id="searchFilter"  class="row" >
-					<form id="form_applications" class="" role="form" method="get">
+					<form id="form_microservice" class="" role="form" method="get">
 						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 						<div class="col-md-3 col-sm-4 col-xs-12">														
 							<div class="input-icon">
@@ -271,17 +271,6 @@
 			}
 			// toggle Text
 			//$(this).toggleClass('text-muted line-through');			
-		});
-		
-		// SEARCH FORM RESET
-		$('#reset_serverless').on('click',function(){
-			$('#form_applications')[0].reset();
-			$('#form_applications')[0].submit();
-		});
-
-		// SEARCH FORM
-		$('#search_serverless').on('click',function(){
-			$('#applications').DataTable().column(0).search($('#serverless-name').val()).draw();
 		});
 	
 		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);

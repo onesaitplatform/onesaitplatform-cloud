@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -265,13 +265,11 @@ public class VersioningController {
 			final Map<String, Set<String>> exclusions = new ObjectMapper().readValue(exclusionsString,
 					new TypeReference<HashMap<String, Set<String>>>() {
 					});
-			if (!exclusions.isEmpty()) {
-				if (!StringUtils.hasText(tagName)) {
-					ra.addFlashAttribute(RESTORE_RESULT_ERROR, "Please send tag-name parameter");
-					return "redirect:/versioning/snapshot/platform";
-				}
-				report.setExcludeResources(exclusions);
+			if (!StringUtils.hasText(tagName)) {
+				ra.addFlashAttribute(RESTORE_RESULT_ERROR, "Please send tag-name parameter");
+				return "redirect:/versioning/snapshot/platform";
 			}
+			report.setExcludeResources(exclusions);
 		}
 		report.setExecutionId(UUID.randomUUID().toString());
 		versioningBusinessService.generateSnapShot(tagName, report);

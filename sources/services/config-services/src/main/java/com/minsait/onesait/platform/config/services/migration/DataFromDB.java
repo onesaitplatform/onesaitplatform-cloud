@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -129,18 +129,12 @@ public class DataFromDB {
 
 		Set<Class<?>> types = config.getTypes();
 		for (Class<?> type : types) {
-			if (log.isDebugEnabled()) {
-				log.debug("*********** DBEXPORT:         {}", type.getCanonicalName());
-			}
-			
+			log.debug("*********** DBEXPORT:         " + type.getCanonicalName());
 			Set<Serializable> ids = config.get(type);
 			if (ids != null) {
 
 				for (Serializable id : ids) {
-					if (log.isDebugEnabled()) {
-						log.debug("*********** DBEXPORT:ID       {}", id);
-					}
-					
+					log.debug("*********** DBEXPORT:ID       " + id);
 					Object entity = em.find(type, id);
 					Instance instanceToExport = new Instance(type, id, null, null);
 					if (entity == null || MigrationUtils.getId(entity) == null) {
@@ -188,17 +182,12 @@ public class DataFromDB {
 
 		Set<Class<?>> types = config.getTypes();
 		for (Class<?> type : types) {
-			if (log.isDebugEnabled()) {
-				log.debug("*********** DBEXPORT:         {}", type.getCanonicalName());
-			}
-			
+			log.debug("*********** DBEXPORT:         " + type.getCanonicalName());
 			Set<Serializable> ids = config.get(type);
 			if (ids != null) {
 
 				for (Serializable id : ids) {
-					if (log.isDebugEnabled()) {
-						log.debug("*********** DBEXPORT:ID       {}", id);
-					}					
+					log.debug("*********** DBEXPORT:ID       " + id);
 
 					Object entity = em.find(type, id);
 

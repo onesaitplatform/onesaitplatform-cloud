@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package com.minsait.onesait.platform.persistence.control;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
@@ -257,4 +256,5 @@ public class NoPersistenceBasicOpsDBRepository implements BasicOpsDBRepository {
 		final List<DBResult> results = new ArrayList<>();
 		return ComplexWriteResult.builder().type(ComplexWriteResultType.BULK).data(results).build();
 	}
+
 }

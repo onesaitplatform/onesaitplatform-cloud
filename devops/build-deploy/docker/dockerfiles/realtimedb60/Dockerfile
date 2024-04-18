@@ -1,8 +1,8 @@
-FROM mongo:6.0.13
+FROM mongo:6.0.7
 
 # Metadata
 LABEL module.maintainer="onesaitplatform@indra.es" \
-	  module.name="realtimedb MongoDB 6.0.13 based"	
+	  module.name="realtimedb MongoDB 6.0.7 based"	
 
 # MongoDB environment
 ENV MONGO_INITDB_DATABASE=onesaitplatform_rtdb \

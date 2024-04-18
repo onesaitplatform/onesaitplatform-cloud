@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -336,9 +336,7 @@ public class DatasetController {
 						redirect);
 				return "redirect:/opendata/datasets/list";
 			} catch (final Exception e) {
-				if (log.isDebugEnabled()) {
-					log.debug("Cannot update dataset {}", e.getMessage());
-				}				
+				log.debug("Cannot update dataset " + e.getMessage());
 				utils.addRedirectMessage("datasets.error.updated", redirect);
 				return "redirect:/opendata/datasets/list";
 			}
@@ -366,9 +364,7 @@ public class DatasetController {
 				}
 				datasetService.deleteDataset(userToken, id);
 			} catch (final EmptyResultDataAccessException e) {
-				if (log.isDebugEnabled()) {
-					log.debug("The resource does not exist in ConfigDB: {}", e.getMessage());
-				}
+				log.debug("The resource does not exist in ConfigDB: " + e.getMessage());
 				datasetService.deleteDataset(userToken, id);
 			} catch (final Exception e) {
 				log.error("Could not delete the Dataset");

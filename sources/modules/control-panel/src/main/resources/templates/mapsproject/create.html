@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -116,7 +116,7 @@
 					<!-- FORM ACTIONS FOR INSERT-->
 					<input th:if="${element.id} == null" type="hidden" name="action"
 						th:value="@{/mapsproject/create}" />
-					
+					<th:block th:include="versioning/fragments/form-commit"></th:block>
 					<!-- FORM ACTIONS FOR UPDATE -->
 					<input th:if="${element.id} != null" type="hidden" name="action"
 						th:value="@{/mapsproject/update}" /> <input
@@ -214,7 +214,7 @@
 
 									<!-- UPDATE -->
 									<button th:if="${element.id} != null" id="updateBtn"
-										type="button" class="btn btn-primary btn-primary-save"
+										type="submit" class="btn btn-primary btn-primary-save"
 										name="update" th:value="#{gen.editBtn}">
 										<span th:text="#{gen.changes}"> Save Changes</span>
 									</button>
@@ -2794,14 +2794,14 @@
 	 var addProjectionRow = function(elem) {
 	 
 	 
-		var projection = {'prjName':$('#prjName').val(), 'prjData':{'name':$('#prjDataname').val(),'prjData':$('#prjDataprjData').val()}};
+		var projection = {'prjName':$('#prjName').val(), 'prjData':{'prjName':$('#prjDataname').val(),'prjData':$('#prjDataprjData').val()}};
 		if(elem!=null){
 		 projection = elem;
 		}  
 		if (projection.prjName === "" || typeof projection.prjName =='undefined' || projection.prjName == null ) {			
 			return false;
 		}
-		if (projection.prjData.name === "" || typeof projection.prjData.name =='undefined' || projection.prjData.name == null ) {			
+		if (projection.prjData.prjName === "" || typeof projection.prjData.prjName =='undefined' || projection.prjData.prjName == null ) {			
 			return false;
 		}
 		if (projection.prjData.prjData === "" || typeof projection.prjData.prjData =='undefined' || projection.prjData.prjData == null ) {			
@@ -2814,7 +2814,7 @@
 					.append(
 							'<tr class="tagProjectionsRow"><td>'
 									+ projection.prjName
-									+ '</td><td>'+projection.prjData.name+'</td><td>'+projection.prjData.prjData+'</td><td class="text-center"><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="removeprojectionRow(this)"><i class="icon-delete"></i></button></td></tr>');
+									+ '</td><td>'+projection.prjData.prjName+'</td><td>'+projection.prjData.prjData+'</td><td class="text-center"><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="removeprojectionRow(this)"><i class="icon-delete"></i></button></td></tr>');
 			  
 		} else {
 			

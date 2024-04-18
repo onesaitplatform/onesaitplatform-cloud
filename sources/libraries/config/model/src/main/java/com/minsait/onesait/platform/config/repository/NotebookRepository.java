@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,11 +68,7 @@ public interface NotebookRepository extends JpaRepository<Notebook, String> {
 	List<OPResourceDTO> findDtoByUserAndPermissions(@Param("user") User user,
 			@Param("identification") String identification);
 
-	@Query("SELECT o FROM Notebook AS o WHERE o.identification=:identification OR o.id=:identification")
-	Notebook findByIdentificationOrId(@Param("identification") String identification);
-	
 	@Modifying
 	@Transactional
 	void deleteByIdNotIn(Collection<String> ids);
-
 }

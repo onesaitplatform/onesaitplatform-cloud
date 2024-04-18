@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,6 +60,7 @@ import com.minsait.onesait.platform.config.repository.NotebookRepository;
 import com.minsait.onesait.platform.config.repository.NotebookUserAccessRepository;
 import com.minsait.onesait.platform.config.repository.NotebookUserAccessTypeRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
+import com.minsait.onesait.platform.config.services.entity.cast.EntitiesCast;
 import com.minsait.onesait.platform.config.services.exceptions.NotebookServiceException;
 import com.minsait.onesait.platform.config.services.exceptions.NotebookServiceException.Error;
 import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
@@ -369,6 +370,11 @@ public class NotebookServiceImpl implements NotebookService {
 	}
 
 	@Override
+	public Notebook importNotebookFromJupyter(String name, String data, String userId) {
+		return importNotebookFromJupyter(name, data, userId, false, false);
+	}
+
+	@Override
 	public Notebook importNotebookFromJupyter(String name, String data, String userId, boolean overwrite,
 			boolean importAuthorizations) {
 		String formatedData;
@@ -635,9 +641,7 @@ public class NotebookServiceImpl implements NotebookService {
 		headers.add("Authorization", encryptRestUserpass());
 		final org.springframework.http.HttpEntity<String> request = new org.springframework.http.HttpEntity<>(body,
 				headers);
-		if (log.isDebugEnabled()) {
-			log.debug("Sending method {} Notebook", httpMethod.toString());
-		}
+		log.debug("Sending method " + httpMethod.toString() + " Notebook");
 		ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.ACCEPTED);
 		try {
 			response = restTemplate.exchange(
@@ -654,9 +658,7 @@ public class NotebookServiceImpl implements NotebookService {
 		} catch (final Exception e) {
 			log.error(e.getMessage());
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("Execute method {} '{}' Notebook", httpMethod.toString(), url);
-		}
+		log.debug("Execute method " + httpMethod.toString() + " '" + url + "' Notebook");
 		final HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.set("Content-Type", response.getHeaders().getContentType().toString());
 		return new ResponseEntity<>(response.getBody(), responseHeaders,
@@ -666,16 +668,6 @@ public class NotebookServiceImpl implements NotebookService {
 	@Override
 	public Notebook getNotebook(String identification, String userId) {
 		final Notebook nt = notebookRepository.findByIdentification(identification);
-		if (hasUserPermissionInNotebook(nt, userId)) {
-			return nt;
-		} else {
-			return null;
-		}
-	}
-	
-	@Override
-	public Notebook getNotebookByIdentificationOrId(String identification, String userId) {
-		final Notebook nt = notebookRepository.findByIdentificationOrId(identification);
 		if (hasUserPermissionInNotebook(nt, userId)) {
 			return nt;
 		} else {

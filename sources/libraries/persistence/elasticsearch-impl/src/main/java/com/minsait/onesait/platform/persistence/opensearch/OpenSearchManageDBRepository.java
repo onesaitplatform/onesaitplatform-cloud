@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -313,29 +313,6 @@ public class OpenSearchManageDBRepository implements ManageDBRepository {
 	public void createTTLIndex(String ontology, String attribute, Long seconds) {
 		throw new DBPersistenceException(NOT_IMPLEMENTED_ALREADY);
 
-	}
-
-	@Override
-	public Map<String, List<String>> getListIndexes(String datatableName, String ontology) {
-		throw new DBPersistenceException(NOT_IMPLEMENTED_ALREADY);
-	}
-
-	@Override
-	public void dropIndex(String ontology, String ontologyVirtual, String indexName) {
-		throw new DBPersistenceException(NOT_IMPLEMENTED_ALREADY);
-		
-	}
-
-	@Override
-	public String getIndexesOptions(String ontology) {
-		throw new DBPersistenceException(NOT_IMPLEMENTED_ALREADY);
-	}
-
-	@Override
-	public void createIndexWithParameter(String ontologyName, String typeIndex, String indexName, boolean unique,
-			boolean background, boolean sparse, boolean ttl, String timesecondsTTL, Object checkboxValuesArray) {
-		throw new DBPersistenceException(NOT_IMPLEMENTED_ALREADY);
-		
 	}
 
 }

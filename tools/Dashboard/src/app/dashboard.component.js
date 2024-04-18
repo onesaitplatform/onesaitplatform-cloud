@@ -1047,8 +1047,8 @@
           //animation: panelAnimation,
           
           templateUrl: 'app/partials/edit/addGadgetTemplateParameterDialog.html',
-          clickOutsideToClose: true,
-          escapeToClose: true,
+          clickOutsideToClose: false,
+          escapeToClose: false,
           focusOnOpen: true,
           locals: {
             type: type,

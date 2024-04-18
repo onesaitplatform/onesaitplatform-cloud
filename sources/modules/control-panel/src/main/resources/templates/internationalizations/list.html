@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -351,7 +351,10 @@
 			$temp.remove();	
 	}		
 
-	
+	$(window).on('pageshow', function(event) {
+ 		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		$.each([3],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		
@@ -422,13 +425,13 @@
 		$('#search_internationalization').on('click',function(){ $('#form_internationalization')[0].submit(); });
 		
 		
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 		var oTable = $('#internationalizations').dataTable({
 	      "bAutoWidth": false
 	      });  
 		
 		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-		$.each([3],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		//$.each([3],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));		

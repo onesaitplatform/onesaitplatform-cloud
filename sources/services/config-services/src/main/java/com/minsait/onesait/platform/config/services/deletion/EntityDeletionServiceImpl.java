@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -686,13 +686,9 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 
 	@Override
 	public void invalidateUserTokens(String userId) {
-		if (log.isDebugEnabled()) {
-			log.debug("Deleteing user token x-op-apikey for user {}", userId);
-		}
+		log.debug("Deleteing user token x-op-apikey for user {}", userId);
 		userTokenRepository.deleteByUser(userId);
-		if (log.isDebugEnabled()) {
-			log.debug("Revoking Oauth2 access tokens for user{}", userId);
-		}
+		log.debug("Revoking Oauth2 access tokens for user{}", userId);
 		final Collection<OAuthAccessToken> tokens = oauthAccessTokenRepository.findByUserName(userId);
 		tokens.forEach(t -> {
 			oauthRefreshTokenRepository.deleteById(t.getRefreshToken());

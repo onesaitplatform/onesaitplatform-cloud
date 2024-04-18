@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -91,20 +91,20 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${configuration.user.userId}) AND ${configuration?.id} != null"  id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='ConfigurationsCreateController.deleteConfiguration(\'' + ${configuration?.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>
-
-									<span th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${configuration.user.userId}) AND ${configuration?.id} != null" class="sep"></span>
-
+									<button sec:authorize="!hasAuthority('ROLE_PARTNER')" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='deleteConfigurationConfirmation(\'' + ${configuration?.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+									<span class="sep no-border">&nbsp;</span>
+										
 									<!-- CANCEL -->											
 									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/configurations/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:navigateUrl(\'' + @{/} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 
-									<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" class="sep">&nbsp;</span>
-									<span sec:authorize="!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:if="(${#authentication.name} == ${configuration.user.userId} OR ${app_user_access.name()} =='MANAGE')" class="sep">&nbsp;</span>
-																		
+									<span class="sep">&nbsp;</span>
+										
 									<!-- UPDATE -->
-									<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:attr="onclick='javascript:navigateUrl(\'' + @{|/configurations/update/${configuration.id}/|} + '\');'" > <span th:text="#{gen.editBtn}"> Edit </span></button>
-									<button sec:authorize="!@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" th:if="(${#authentication.name} == ${configuration.user.userId} OR ${app_user_access.name()} =='MANAGE')" id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:attr="onclick='javascript:navigateUrl(\'' + @{|/configurations/update/${configuration.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
+									<!-- MODIFY TO-DO: == and != has the same onClick? check! -->
+									<button sec:authorize="!hasAuthority('ROLE_PARTNER')" th:if="${#authentication.name} != ${configuration.user.userId}" id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:attr="onclick='javascript:navigateUrl(\'' + @{|/configurations/update/${configuration.id}/|} + '\');'" > <span th:text="#{gen.editBtn}"> Edit </span></button>
+									<button sec:authorize="!hasAuthority('ROLE_PARTNER')" th:if="${#authentication.name} == ${configuration.user.userId}" id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"  value="Edit" th:attr="onclick='javascript:navigateUrl(\'' + @{|/configurations/update/${configuration.id}/|} + '\');'" ><span th:text="#{gen.editBtn}"> Edit </span></button>
+									
 								</div>
 							</div>
 						</div>
@@ -180,7 +180,6 @@
 	<script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" ></script>
 	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" ></script>
 	<!-- TEMPLATE CONTROLLER  -->	
-	<script th:src="@{/static/js/pages/configurationsCreate.js}"></script>	
 		
 	<!-- MAIN INIT -->
 	<script  th:inline="javascript">
@@ -188,15 +187,6 @@
     //<![CDATA[ 
 	// REDIRECT
 	function navigateUrl(url){  window.location.href = url;	}
-	
-		var configurationsCreateJson = { 
-		"close" : [[#{gen.closeBtn}]],		
-		"language" : currentLanguage,
-		"messages" : {
-			"validationOK":[[#{gen.form.success}]],
-			"validationKO":[[#{gen.form.error}]]
-		}
-	};
 	
 	// DELETE Configuration 
 	function deleteConfigurationConfirmation(configurationId){

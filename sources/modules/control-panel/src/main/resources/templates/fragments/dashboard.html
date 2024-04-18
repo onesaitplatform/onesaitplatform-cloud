@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -25,17 +25,15 @@
 	 
 	<!-- BEGIN DASHBOARD INNER -->
 	<div class="row" style="margin-top: -32px;margin-bottom: 0px;">
-
-		<div th:if="${environment.namespace!=null}" id="home-environment-kpis" th:include="fragments/home-environment-kpis"></div>
-
-		<div style="padding-left: 60;" th:class="${environment.namespace!=null} ? col-md-8 : col-md-12">
+		<div class="col-md-12 " style="padding-left: 60;">
 			<div class="portlet light" style="padding: 0px 0px 0px 0px">
-				<div class="portlet-title">
-					<div class="caption">
-						<span class="caption-subject" th:text="#{versioning.bundle.platformElements}"> </span>
-					</div>
-				</div>
 				<div class="portlet-body" style="display: block; height: auto; padding-top: 0px; ">
+					<!-- RECOMMENDED COL SYSTEM : -->
+					<!-- 6 GADGETS: col-md-2 col-md-6 col-xs-12 -->
+					<!-- 4 GADGETS: col-md-3 col-md-6 col-xs-12 -->
+					<!-- 3 GADGETS: col-md-4 col-md-6 col-xs-12 -->
+					<!-- 2 GADGETS: col-md-6 col-md-6 col-xs-12 -->
+					
 					<div class="widget-row">
 						<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12" style="margin-top: 20px;">
 							<a class="nav-link nav-toggle nav-hover" href="/controlpanel/ontologies/list">
@@ -46,7 +44,7 @@
 												<i class="flaticon-network"></i>
 											</div>
 											<h3 class="font-blue-sharp">
-												<span data-counter="counterup" class="counter">[[${kpis[0].value}]]</span>
+												<span data-counter="counterup" class="counter"  >[[${kpis[0].value}]]</span>
 											</h3>
 											<small  th:text="#{kpis.ontology}" >Entidades</small>
 										</div>
@@ -189,7 +187,7 @@
 											<h3 class="font-blue-sharp">
 												<span data-counter="counterup" class="counter" th:attr="data-value=${kpis[8].value},data-counter='counterup'">[[${kpis[8].value}]]</span>
 											</h3>
-											<small th:text="#{app.projects}">APPLICATIONS</small>
+											<small th:text="#{kpis.projects}">PROJECTS</small>
 										</div>
 									</div>
 								</div>
@@ -255,10 +253,7 @@
 	
 			
 	<!-- DASHBOARD DATA TO SEND TO DASHBOARD CONTROLLER  --> 
-	<script type="text/javascript" th:inline="javascript">
-		var apiPath = [[@{/environments}]];
-		var namespace = [[${environment.namespace}]];
-		var timeInterval;
+	<script type="text/javascript" th:inline="javascript"> 
 		var currentLanguage = [[${lang}]];		
 		var dashboardJson = {
 			"info": ''
@@ -268,25 +263,23 @@
 		
 
 
-		const counterUp = window.counterUp.default;
-	
-		$( document ).ready(function() {
-			const counters = $( '.counter' )
-			console.log(counters)
-			for(let i=0;i<counters.length;i++){
-				counterUp(counters[i], {
-			    	duration: 200,
-			    	delay: 2
-				})
-			}
-			if (namespace!=null){
-				timeInterval = setInterval(reloadFragment, 10000);
-			}
-	   });
-	   
-	   	function reloadFragment () {
-			$('#home-environment-kpis').load(apiPath + "/gethomekpis");
-		}
+ const counterUp = window.counterUp.default
+
+$( document ).ready(function() {
+   const counters = $( '.counter' )
+   console.log(counters)
+   for(let i=0;i<counters.length;i++){
+   	counterUp( counters[i], {
+    duration: 200,
+    delay: 2
+} )
+   }
+   
+    
+});
+
+
+
 
 	</script>
 </div>

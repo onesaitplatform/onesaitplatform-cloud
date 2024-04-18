@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,10 +93,8 @@ public class CloudGatewayServiceImpl implements CloudGatewayService {
 			}
 			final ObjectNode route = generateJsonRoute(microservice.getIdentification(), microservice.getContextPath(),
 					redirectToHost,
-					microservice.isStripRoutePrefix()
-							|| templatetype.equals(MicroserviceTemplate.Language.NOTEBOOK_ARCHETYPE.toString())
-							|| microservice.getTemplateType()
-									.equals(Microservice.TemplateType.MLFLOW_MODEL.toString()));
+					templatetype.equals(MicroserviceTemplate.Language.NOTEBOOK_ARCHETYPE.toString()) || microservice
+							.getTemplateType().equals(Microservice.TemplateType.MLFLOW_MODEL.toString()));
 			final HttpEntity<ObjectNode> request = this.getRequestEntity(route);
 			this.executeRequest(gatewayUrl.concat(ROUTES_PATH).concat("/").concat(microservice.getIdentification()),
 					HttpMethod.POST, request, String.class);

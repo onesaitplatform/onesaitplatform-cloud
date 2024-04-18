@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -166,10 +167,11 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 		return apis;
 	}
 
-	private Integer calculateNumVersionbyIdentification(String identification) {
+	@Override
+	public Integer calculateNumVersion(String identification, ApiType apiType) {
 		List<Api> apis = null;
 		Integer version = 0;
-		apis = apiRepository.findByIdentificationIgnoreCase(identification);
+		apis = apiRepository.findByIdentificationAndApiType(identification, apiType);
 		for (final Api api : apis) {
 			if (api.getNumversion() > version) {
 				version = api.getNumversion();
@@ -188,8 +190,13 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 			obj = new ObjectMapper().readValue(numversionData, new TypeReference<Map<String, String>>() {
 			});
 			identification = obj.get("identification");
+			apiType = ApiType.valueOf(obj.get("apiType"));
 
-			version = calculateNumVersionbyIdentification(identification);
+			if (StringUtils.isEmpty(apiType)) {
+				apiType = null;
+			}
+
+			version = calculateNumVersion(identification, apiType);
 
 		} catch (final IOException e) {
 			log.warn(e.getClass().getName() + ":" + e.getMessage());
@@ -863,14 +870,19 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 		return apiRepository.findById(id).orElse(null);
 	}
 
-	@Override
-	public List<Api> getByIdentification(String identification) {
-		List<Api> apis = apiRepository.findByIdentification(identification);
-		if(apis.isEmpty()) {
-			return null;
-		} else {
-			return apis;
+	private Api getApiByIdentificationAndVersion(String apiId, String version) {
+		Api api = null;
+		int versionInt = 0;
+		try {
+			if (version.toLowerCase().startsWith("v")) {
+				version = version.substring(1);
+			}
+			versionInt = Integer.valueOf(version);
+			api = apiRepository.findByIdentificationAndNumversion(apiId, versionInt);
+		} catch (final NumberFormatException e) {
+			log.info("Not possible to convert version str {} to int", version);
 		}
+		return api;
 	}
 
 	@Override
@@ -885,23 +897,7 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 		}
 		return api;
 	}
-	
-	@Override
-	public Api getApiByIdentificationAndVersion(String apiId, String version) {
-		Api api = null;
-		int versionInt = 0;
-		try {
-			if (version.toLowerCase().startsWith("v")) {
-				version = version.substring(1);
-			}
-			versionInt = Integer.valueOf(version);
-			api = apiRepository.findByIdentificationAndNumversion(apiId, versionInt);
-		} catch (final NumberFormatException e) {
-			log.info("Not possible to convert version str {} to int", version);
-		}
-		return api;
-	}
-	
+
 	@Override
 	public List<Api> getAllApis(User user) {
 		List<Api> apis = new ArrayList<>();
@@ -971,7 +967,7 @@ public class ApiManagerServiceImpl implements ApiManagerService {
 			}
 
 			if (forcedNumVersion <= 0) {
-				api.setNumversion(calculateNumVersion(api.getIdentification()));
+				api.setNumversion(calculateNumVersion(api.getIdentification(), api.getApiType()));
 			} else {
 				api.setNumversion(forcedNumVersion);
 			}

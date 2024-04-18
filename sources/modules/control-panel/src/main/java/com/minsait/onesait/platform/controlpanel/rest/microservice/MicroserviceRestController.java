@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,23 +96,6 @@ public class MicroserviceRestController {
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
-	@Operation(summary = "Get microservice by Identification or Id")
-	@GetMapping("/{id}")
-	public ResponseEntity<?> getByIdentificationOrId(@PathVariable("id") String identification) {
-		final Microservice m = microserviceService.getByIdentificationOrId(identification);
-		if (m == null) {
-			return ResponseEntity.notFound().build();
-		}
-		if (!utils.isAdministrator() && !utils.getUserId().equals(m.getUser().getUserId())) {
-			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-		}
-		
-		MicroserviceDTO mDTO= MicroserviceDTO.builder().id(m.getId()).name(m.getJobName()).owner(m.getUser().getUserId()).contextPath(m.getContextPath()).template(m.getTemplateType()).port(m.getPort()).build();
-		
-		return ResponseEntity.ok().body(mDTO);
-
-	}
-	
 	@Operation(summary = "Update a Microservice")
 	@PutMapping
 	public ResponseEntity<String> update(

@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -127,7 +127,6 @@
                                     <div class="form-group">
                                         <label th:text="#{predictor.name}"></label><span class="required"> *</span>
                                         <input id="identification" type="text" name="identification" th:required="true" maxlength="100" th:field="*{name}" class="form-control " th:placeholder="#{gen.name}"/>
-                                        <span id="identificationerror" class="help-block" style="margin-left: 5px;" th:text="#{ontology.description.min}"><i class="la la-warning"></i></span>
                                     </div>
                                 </div>
 		                        <div class="col-md-3 col-sm-3 col-xs-12" >							
@@ -305,7 +304,6 @@
     		var inputfieldsLabel = [[#{predictor.inputfields}]]
     		var targetfieldsLabel = [[#{predictor.targetfields}]]
     		var validationPrediction = [[#{predictor.validation.select}]]
-    		var validateIdentifiation =  [[#{ontology.index.nameError}]]
     		
     		$(window).on("load",function(){
     			var htmlelement = document.getElementById('id_query_op_customsql');
@@ -321,9 +319,6 @@
     		})
     		
     		$( document ).ready(function() {
-				$('#identification').bind('blur', function (ev) { // fires on every blur
-			validateName();             // checks form for validity
-		})
     			$('#ontologies-select').off().on('change', function(){
     				let ontology = $('#ontologies-select').val();
     				$('#field-wizard').removeClass('hide');
@@ -365,31 +360,14 @@
     				}
     			}
     		}
-	    	var validateName = function(){		
-				var identification = $('#identification').val();
-				var error1 = $('.alert-danger');
-				if(typeof identification === 'undefined' || identification.trim().length < 5 || identification == '' ){
-					error1.show();
-					$('#identificationerror').removeClass('hide').addClass(' font-red');
-					$('#identification').closest('.form-group').addClass('has-error')
-					return false;
-				}else{
-					$('#identificationerror').addClass('hide');
-					$('#identification').closest('.form-group').removeClass('has-error')
-					return true;
-				}
-			}
     		
     		function validateAndSubmit(){
-				validateName();
     			let inputFields = $('#checkselect-input').val();
     			let targetFields = $('#checkselect-target').val();
     			let ontology = $("#ontologies-select").val();
-    			let identification = $("#identification").val();
     			if(ontology === null || targetFields === null){
     				toastr.info(messagesForms.operations.genOpError,`${validationPrediction}`);
-    			}else if(identification == "" || identification.length < 5){
-					toastr.error(messagesForms.operations.genOpError,`${validateIdentifiation}`);	
+    				
     			}else{
     				$('#ontology').val(ontology);
     				if(inputFields === null){

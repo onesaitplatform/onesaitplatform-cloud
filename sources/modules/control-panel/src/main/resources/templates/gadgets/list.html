@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -235,7 +235,7 @@
                                                                     <ul class="dropdown-menu dropdown-menu-table download-menu">
                                                                         <!-- CLONE-->
                                                                         <li>
-                                                                            <span th:title="#{gadgets.clone}" class="btn btn-xs btn-no-border btn-circle btn-outline" style="margin-left: -3px;" th:attr="onclick='cloneGadgetDialog(\''+${gadget.id}+'\',\'${gadget.identification}\')'"><i class="la la-clone font-hg"></i><span class="span-title-three-dots-icons" th:text="#{gadgets.clone}" >Clone Gadget</span></span>
+                                                                            <span th:title="#{gadgets.clone}" class="btn btn-xs btn-no-border btn-circle btn-outline" th:attr="onclick='cloneGadgetDialog(\''+${gadget.id}+'\',\'${gadget.identification}\')'"><i class="la la-clone font-hg"></i><span class="span-title-three-dots-icons" th:text="#{gadgets.clone}" >Clone Gadget</span></span>
                                                                         </li> 
                                                                         <!-- DELETE -->
                                                                         <li>
@@ -379,12 +379,12 @@
 																		<ul class="dropdown-menu dropdown-menu-table download-menu">
 																			<!-- CREATE CUSTOM GADGET-->
 																			<li>
-																				<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')"  class="btn btn-xs btn-no-border btn-circle btn-outline " style="margin-left: -3px;" data-container="body" data-placement="bottom" th:attr="onclick='javascript:navigateUrl(\'' + @{|/gadgets/createcustomgadget/${gadgettemp.id}/|(form)} + '=' + '\');'"><i class="la la-edit font-hg"></i><span class="span-title-three-dots-icons" th:text="#{gadgets.new.custom}" >New Custom Gadget</span></span>
+																				<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')"  class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" th:attr="onclick='javascript:navigateUrl(\'' + @{|/gadgets/createcustomgadget/${gadgettemp.id}/|(form)} + '=' + '\');'"><i class="la la-edit font-hg"></i><span class="span-title-three-dots-icons" th:text="#{gadgets.new.custom}" >New Custom Gadget</span></span>
 
 																			</li>
                                                                             <!-- CLONE-->
                                                                             <li>
-                                                                                <span th:title="#{gadgettemplates.clone}" class="btn btn-xs btn-no-border btn-circle btn-outline" style="margin-left: -3px;" th:attr="onclick='cloneGadgetTemplateDialog(\''+${gadgettemp.id}+'\',\'${gadgettemp.identification}\')'"><i class="la la-clone font-hg"></i><span class="span-title-three-dots-icons" style="vertical-align: text-top;" th:text="#{gadgettemplates.clone}" >Clone</span></span>
+                                                                                <span th:title="#{gadgettemplates.clone}" class="btn btn-xs btn-no-border btn-circle btn-outline" th:attr="onclick='cloneGadgetTemplateDialog(\''+${gadgettemp.id}+'\',\'${gadgettemp.identification}\')'"><i class="la la-clone font-hg"></i><span class="span-title-three-dots-icons" th:text="#{gadgettemplates.clone}" >Clone</span></span>
                                                                             </li> 
 																		    <!-- DELETE -->
 																		    <li>
@@ -636,6 +636,13 @@
 			})
 	}
 
+
+	$(window).on('pageshow', function(event) {	
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+		$('#column_toggler_template').find("input[type='checkbox']").prop('checked', true);
+  		$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});
+
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		var csrf_value = $("meta[name='_csrf']").attr("content");
@@ -805,9 +812,7 @@
 	        }
 	    });
 
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-		$('#column_toggler_template').find("input[type='checkbox']").prop('checked', true);
-  		$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+
 
 	});
 

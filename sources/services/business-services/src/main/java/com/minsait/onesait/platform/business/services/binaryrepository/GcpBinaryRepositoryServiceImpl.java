@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,10 +41,9 @@ import com.minsait.onesait.platform.binaryrepository.model.BinaryFileData;
 import com.minsait.onesait.platform.config.model.BinaryFile;
 import com.minsait.onesait.platform.config.model.BinaryFile.RepositoryType;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.model.security.UserPrincipal;
 import com.minsait.onesait.platform.config.services.binaryfile.BinaryFileService;
 import com.minsait.onesait.platform.config.services.user.UserService;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
-import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
@@ -138,11 +137,11 @@ public class GcpBinaryRepositoryServiceImpl implements BinaryRepositoryLogicServ
 	public void updateBinary(String fileId, MultipartFile file, String metadata)
 			throws BinaryRepositoryException, IOException {
 		User user = userService.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
-		BinaryFile bf = binaryFileService.getFile(fileId);
+		BinaryFile bf = binaryFileService.getFile(fileId); 
 		String fileName;
-		String filePath = bf.getPath();
-		if (!filePath.isEmpty() && filePath != null) {
-			fileName = user.getUserId() + SLASH + (filePath.startsWith(SLASH) ? filePath.substring(1) : filePath)
+		String filePath = bf.getPath(); 
+		if(!filePath.isEmpty() && filePath != null) {
+			fileName =  user.getUserId() + SLASH + (filePath.startsWith(SLASH) ? filePath.substring(1) : filePath) 
 					+ (file.getOriginalFilename().startsWith(SLASH) ? file.getOriginalFilename()
 							: SLASH + file.getOriginalFilename());
 		} else {
@@ -172,7 +171,8 @@ public class GcpBinaryRepositoryServiceImpl implements BinaryRepositoryLogicServ
 			}
 		} catch (Exception e) {
 			log.error("Error updating file to GCP bucket {}.", bucketId, e);
-			throw new BinaryRepositoryException("Error updating file. " + e.getMessage());
+			throw new BinaryRepositoryException(
+					"Error updating file. " + e.getMessage());
 		}
 
 	}
@@ -211,22 +211,24 @@ public class GcpBinaryRepositoryServiceImpl implements BinaryRepositoryLogicServ
 	public BinaryFileData getBinaryFile(String fileId) throws IOException, BinaryRepositoryException {
 		User user = userService.getUser(SecurityContextHolder.getContext().getAuthentication().getName());
 		String bucketId = getBucketId(user);
-		final BinaryFile file = binaryFileService.getFile(fileId);
-		if (!binaryFileService.hasUserPermissionRead(fileId, user)) {
-			log.error("User {} does not have permission to get the file {} from GCP bucket {}",
-					SecurityContextHolder.getContext().getAuthentication().getName(), fileId, bucketId);
-			throw new BinaryRepositoryException(
-					"User " + SecurityContextHolder.getContext().getAuthentication().getName()
-							+ " does not have permission to get the file " + fileId + " from bucket " + bucketId);
+		if (!binaryFileService.hasUserPermissionWrite(fileId, user)) {
+			log.error("User {} does not have permission to get the file {} from GCP bucket {}", user.getUserId(),
+					fileId, bucketId);
+			throw new BinaryRepositoryException("User " + user.getUserId()
+					+ " does not have permission to get the file " + fileId + " from GCP bucket " + bucketId);
 		}
 		try {
+			final BinaryFile file = binaryFileService.getFile(fileId);
+
 			BlobId blobId = BlobId.of(bucketId, file.getFileName());
 			byte[] content = storage.readAllBytes(blobId);
 			InputStream inputStream = new ByteArrayInputStream(content);
 			OutputStream outputStream = new ByteArrayOutputStream();
 			IOUtils.copy(inputStream, outputStream);
 			outputStream.close();
+
 			BinaryFileData dataFile = BinaryFileData.builder().data(outputStream).build();
+
 			dataFile.setContentType(file.getMime());
 			dataFile.setFileName(file.getFileName());
 			dataFile.setMetadata(file.getMetadata());
@@ -240,11 +242,12 @@ public class GcpBinaryRepositoryServiceImpl implements BinaryRepositoryLogicServ
 	}
 
 	private String getBucketId(User user) {
-		final String currentTenat = MultitenancyContextHolder.getTenantName();
-		final String currentVertical = MultitenancyContextHolder.getVerticalSchema();
-		final String vertical = Tenant2SchemaMapper.extractVerticalNameFromSchema(currentVertical);
+		final UserPrincipal principal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication()
+				.getPrincipal();
+		final String currentTenat = principal.getTenant();
+		final String currentVertical = principal.getVertical();
 		String bucketId = resourcesService.getGlobalConfiguration().getEnv().getFiles()
-				.get(BUCKET_ID + vertical + "-" + currentTenat).toString();
+				.get(BUCKET_ID + currentVertical + "-" + currentTenat).toString();
 		return bucketId;
 	}
 

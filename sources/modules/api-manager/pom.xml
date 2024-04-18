@@ -403,9 +403,6 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<mainClass>com.minsait.onesait.platform.ApiManagerBootstrapApplication</mainClass>
-				</configuration>
 				<executions>
 					<execution>
 						<goals>
@@ -413,7 +410,6 @@
 						</goals>
 						<configuration>
 							<classifier>exec</classifier>
-							<layout>JAR</layout> <!-- to use PropertiesLaunchar -->
 						</configuration>
 					</execution>
 				</executions>

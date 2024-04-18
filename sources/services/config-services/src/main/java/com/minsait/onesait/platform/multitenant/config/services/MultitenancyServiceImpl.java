@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -569,16 +569,6 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 		} else {
 			return (masterUserRepository.findAllLazy());
 		}
-	}
-
-	@Override
-	public MasterUser getUserByMail(String email) {
-		return masterUserRepository.findByEmail(email);
-	}
-
-	@Override
-	public void updateMasterUserPassword(String userId, String password) {
-		masterUserRepository.updatePasswordFromReset(userId, password);
 	}
 
 }

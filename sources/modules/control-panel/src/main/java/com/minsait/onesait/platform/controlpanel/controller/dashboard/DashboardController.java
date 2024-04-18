@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +27,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
-import org.elasticsearch.core.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +59,6 @@ import com.minsait.onesait.platform.config.model.Category;
 import com.minsait.onesait.platform.config.model.CategoryRelation;
 import com.minsait.onesait.platform.config.model.Dashboard;
 import com.minsait.onesait.platform.config.model.Dashboard.DashboardType;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.DashboardUserAccess;
 import com.minsait.onesait.platform.config.model.I18nResources;
 import com.minsait.onesait.platform.config.model.Subcategory;
@@ -71,7 +68,6 @@ import com.minsait.onesait.platform.config.repository.CategoryRepository;
 import com.minsait.onesait.platform.config.repository.DashboardConfRepository;
 import com.minsait.onesait.platform.config.repository.DashboardRepository;
 import com.minsait.onesait.platform.config.repository.I18nResourcesRepository;
-import com.minsait.onesait.platform.config.repository.ProjectResourceAccessRepository;
 import com.minsait.onesait.platform.config.repository.SubcategoryRepository;
 import com.minsait.onesait.platform.config.services.category.CategoryService;
 import com.minsait.onesait.platform.config.services.dashboard.DashboardService;
@@ -79,12 +75,10 @@ import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardAcces
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardCreateDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardExportDTO;
-import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardImportResponsetDTO;
 import com.minsait.onesait.platform.config.services.dashboard.dto.DashboardTablePaginationDTO;
 import com.minsait.onesait.platform.config.services.exceptions.DashboardServiceException;
 import com.minsait.onesait.platform.config.services.internationalization.InternationalizationService;
 import com.minsait.onesait.platform.config.services.oauth.JWTService;
-import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.controller.dashboard.dto.EditorDTO;
 import com.minsait.onesait.platform.controlpanel.controller.dashboard.dto.UserDTO;
@@ -135,9 +129,6 @@ public class DashboardController {
 	@Autowired
 	private HttpSession httpSession;
 
-	@Autowired
-	private OPResourceService resourceService;
-	
 	@Autowired()
 	private ResourcesInUseService resourcesInUseService;
 
@@ -170,8 +161,6 @@ public class DashboardController {
 	private static final String EDITFULLIFRAME = "editfulliframe";
 	private static final String EDITFULL = "editfull";
 	private static final String APP_ID = "appId";
-	private static final String APP_USER_ACCESS = "app_user_access";
-	private static final String OWNER_USER = "owner";
 
 	@Value("${onesaitplatform.urls.iotbroker}")
 	private String IOTRBROKERSERVER;
@@ -349,7 +338,7 @@ public class DashboardController {
 		return DASHB_CREATE;
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/edit/{id}", produces = "text/html")
 	public String edit(Model model, @PathVariable("id") String id) {
 		model.addAttribute(DASHBOARD_STR, dashboardService.getDashboardEditById(id, utils.getUserId()));
@@ -357,7 +346,7 @@ public class DashboardController {
 
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PutMapping(value = "/edit/{id}", produces = "text/html")
 	public String updateEditDashboardModel(Model model, @PathVariable("id") String id, @Valid Dashboard dashboard,
 			BindingResult bindingResult, RedirectAttributes redirect) {
@@ -539,12 +528,8 @@ public class DashboardController {
 					dashBDTO.setSubcategory(subcategory.getIdentification());
 				}
 			}
-			
-			ResourceAccessType resourceAccess = resourceService.getResourceAccess(utils.getUserId(),dashboard.getId());
 
 			model.addAttribute(DASHBOARD_STR, dashBDTO);
-			model.addAttribute(OWNER_USER, dashboard.getUser().getUserId());
-			model.addAttribute(APP_USER_ACCESS, resourceAccess);
 
 			String currentUser = utils.getUserId();
 
@@ -891,32 +876,12 @@ public class DashboardController {
 			@RequestParam(required = false, defaultValue = "true") boolean overwrite,
 			@RequestParam(required = false, defaultValue = "true") boolean importAuthorizations) {
 		try {
-			
 			final JSONObject response = new JSONObject();
-			final DashboardImportResponsetDTO dashboardImport = dashboardService.importDashboard(dashboardimportDTO, utils.getUserId(), overwrite, importAuthorizations);
-			final String identification = dashboardService.importDashboard(dashboardimportDTO, utils.getUserId(), overwrite, importAuthorizations).getIdentification();
-			
-			if(dashboardImport.getErrorOntologies().size() == 0) {
-				response.put("status", HttpStatus.OK);
-				response.put("message", identification);
-			} else {
-				List<String> messageontologies = new ArrayList<>();	
-				List<String> messagedatasources = new ArrayList<>();	
-				
-				List<HashMap<String, String>> list = dashboardImport.getErrorOntologies();
-				for(HashMap<String, String> hashmap : list) {
-					for(String clave : hashmap.keySet()) {
-						String valor = hashmap.get(clave);
-						messagedatasources.add(clave);
-						messageontologies.add(valor);
-					}
-				}
-				response.put("status", HttpStatus.INTERNAL_SERVER_ERROR);
-				response.put("datasources", messagedatasources);
-				response.put("ontologyDatasource", messageontologies);
-			}
-					
-			
+			final String identification = dashboardService
+					.importDashboard(dashboardimportDTO, utils.getUserId(), overwrite, importAuthorizations)
+					.getIdentification();
+			response.put("status", HttpStatus.OK);
+			response.put("message", identification);
 			return response.toString();
 
 		} catch (final DashboardServiceException e) {

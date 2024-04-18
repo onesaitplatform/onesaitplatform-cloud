@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -157,7 +157,7 @@
 															<th dt:property="id" class="titulo-columnas" th:text="#{gen.identification}">Identification</th>
 															<th dt:property="name" class="titulo-columnas" th:text="#{gen.name}">Name</th>
 															<th dt:property="owner" class="titulo-columnas" th:text="#{gen.owner}">Owner</th>
-															<th dt:property="gitlab"  dt:renderFunction="Microservice.List.dtRenderLinks" class="titulo-columnas">Git URL</th>
+															<th dt:property="gitlab"  dt:renderFunction="Microservice.List.dtRenderLinks" class="titulo-columnas">Gitlab URL</th>
 															<th dt:property="jenkins"  dt:renderFunction="Microservice.List.dtRenderLinksJenkins" class="titulo-columnas">Jenkins URL</th>
 															<!-- <th dt:property="lastBuild"  class="titulo-columnas" th:text="#{microservice.last.build}">Last Successful Build</th> -->
 															<th dt:property="caasUrl"  dt:renderFunction="Microservice.List.dtRenderLinks" class="titulo-columnas">Caas URL</th>	
@@ -184,7 +184,7 @@
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
-															<label> Git URL</label>
+															<label> Gitlab URL</label>
 															</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
@@ -194,17 +194,13 @@
 															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 															<label>Caas URL</label>
 														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
-															<label>CI/CD</label>
-														</span>
 													</div>
 												</div>
 											</div>
 										</div>											
 									</div>
 									<!-- Modal Parameters Jenkins-->
-									<div id="parametersModal" class="modal fade hidden" role="dialog" style="display: table;padding-right: 7px;width: 80%">
+									<div id="parametersModal" class="modal fade" role="dialog" style="display: table;padding-right: 7px;width: 80%">
 									  <div class="modal-dialog modal-xl">
 									    <!-- Modal content-->
 									    <div class="modal-content">
@@ -235,7 +231,7 @@
 																		<td>
 																			<input type="text" name="name[]" readonly="readonly"   class="form-control"/>
 																		</td>																
-																		<td><input type="text" name="value[]" class="form-control"/></td>
+																		<td><input type="text" name="value[]" class="form-control"/></td>			
 																	</tr>
 																</tbody>														
 															</table>
@@ -345,7 +341,15 @@
 		genView:  [[#{gen.view}]],
 		genUrl:  [[#{gen.url}]]
 		
-	};	
+	};
+	
+	
+	
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});	
+	
 	
 	$(document).ready(function() {
 		
@@ -366,23 +370,23 @@
 
 		// SEARCH FORM RESET
 		$('#reset_microservice').on('click',function(){
-			$('#form_microservice')[0].reset();
-			$('#form_microservice')[0].submit();
+			$('#microservice-name').val('');
+			$('#microservices').DataTable().column(0).search('').draw();
 		});
 
 		// SEARCH FORM
 		$('#search_microservice').on('click',function(){
-			$('#microservices').DataTable().column(1).search($('#microservice-name').val()).draw();
+			$('#microservices').DataTable().column(0).search( $('#microservice-name').val()).draw();
 		});
 		
 	
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 		var oTable = $('#microservices').DataTable({
 	      "bAutoWidth": false
 	      });
 		oTable.page.len(10);
 		// HIDE COLUMNS		
-		$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		//$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		$('#microservices').on('draw.dt', function () {
 			Microservice.List.initCompleteCallback();

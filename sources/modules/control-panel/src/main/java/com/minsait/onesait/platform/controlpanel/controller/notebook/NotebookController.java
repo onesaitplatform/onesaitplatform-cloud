@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -199,7 +199,7 @@ public class NotebookController {
 			@RequestParam("data") String data) {
 		try {
 			return new ResponseEntity<>(
-					notebookService.importNotebookFromJupyter(name, data, utils.getUserId(), false, false).getIdzep(), HttpStatus.OK);
+					notebookService.importNotebookFromJupyter(name, data, utils.getUserId()).getIdzep(), HttpStatus.OK);
 		} catch (final NotebookServiceException e) {
 			switch (e.getError()) {
 			case DUPLICATE_NOTEBOOK_NAME:

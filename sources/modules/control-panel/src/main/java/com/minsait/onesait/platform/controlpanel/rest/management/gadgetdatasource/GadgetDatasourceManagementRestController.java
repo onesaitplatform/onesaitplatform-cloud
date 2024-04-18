@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,6 +86,7 @@ public class GadgetDatasourceManagementRestController {
 	private static final int MAXVALUES = 100;
 	private static final String CONFIG = "";
 
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
 	@Operation(summary = "Get datasources")
 	@GetMapping
@@ -103,6 +104,7 @@ public class GadgetDatasourceManagementRestController {
 		}
 	}
 
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
 	@Operation(summary = "Get datasource by identification or id")
 	@GetMapping("/{identification}")
@@ -232,6 +234,7 @@ public class GadgetDatasourceManagementRestController {
 		return new ResponseEntity<>(String.format("The datasource %s has been deleted", identification), HttpStatus.OK);
 	}
 
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
 	@Operation(summary = "Get sample of datasource by identification or id")
 	@GetMapping("/getSample/{identification}")
@@ -270,6 +273,7 @@ public class GadgetDatasourceManagementRestController {
 		}
 	}
 
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
 	@Operation(summary = "Get fields of datasource by identification or id")
 	@GetMapping("/getFields/{identification}")
@@ -292,9 +296,6 @@ public class GadgetDatasourceManagementRestController {
 				case NOT_FOUND:
 					log.error("Datasource " + datasourceId + " not found ", datasourceBusinessServiceException);
 					return new ResponseEntity<>("The datasource does not exist.", HttpStatus.NOT_FOUND);
-				case NOT_DATA:
-					log.error("Datasource " + datasourceId + " not data ", datasourceBusinessServiceException);
-					return new ResponseEntity<>("the datasource has no data.", HttpStatus.NO_CONTENT);
 				case UNAUTHORIZED:
 					log.error("Datasource " + datasourceId + " unauthorized", datasourceBusinessServiceException);
 					return new ResponseEntity<>("The datasource is unanthorized.", HttpStatus.UNAUTHORIZED);
@@ -310,6 +311,7 @@ public class GadgetDatasourceManagementRestController {
 		}
 	}
 
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK"))
 	@Operation(summary = "Get filter fields of datasource by identification or id")
 	@GetMapping("/getFilterFields/{identification}")

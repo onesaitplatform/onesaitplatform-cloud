@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -321,7 +321,6 @@
 	var Copy = [[#{gen.copyBtn}]];
 	var CloneFail = [[#{mapsproject.cloneFail}]];
 	var MinLen = [[#{mapsproject.minLen}]];
-	var CloneFailIdInUse = [[#{gen.identifier.exist}]]
 	
 	sname ? $('#name').val(sname) : sname = '';
 	stype ? $('#type').val(stype) : stype = '';
@@ -374,14 +373,9 @@
 								navigateUrl("/controlpanel/mapsproject/list")
 								}
 							).fail(
-								function(e){debugger									
+								function(e){									
 									console.log("Error cloning mapsproject, message detail: " + e.responseText);
-									if(e.responseText=='idinuse'){
-										cloneFailIdInUse();
-									}else{
-										cloneFail();
-									}
-									
+									cloneFail();
 								}
 							)}
 					}											
@@ -389,20 +383,7 @@
 			}
 		});
 	}	
-	var cloneFailIdInUse = function (){
-		$.alert({
-			title : "Error",
-			theme : 'light',
-			content : CloneFailIdInUse,
-			buttons: {
-				Ok: {
-					text: Close,
-					btnClass: 'btn btn-primary',
-					action: function (){}		
-					}
-				},
-			})
-	}
+	
 	var cloneFail = function (){
 		$.alert({
 			title : "Error",
@@ -524,6 +505,10 @@ var cloneUsersDashboardDialog = function(mapsprojectId, identification){
 			$temp.remove();
 			
 	}
+	$(window).on('pageshow', function(event) {
+ 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+  		 $.each([4],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+	});		
 
 	// MAIN WHEN READY
 	$( document ).ready(function() {
@@ -598,9 +583,6 @@ var cloneUsersDashboardDialog = function(mapsprojectId, identification){
 		
 		
 		$("#contenedor-tabla-outside").removeClass("hidden");
-		
-		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([4],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 	});	
 	
 	var showImportMapsProjectDialog = function(){
@@ -631,7 +613,7 @@ var cloneUsersDashboardDialog = function(mapsprojectId, identification){
 					text: Confirm,
 					btnClass: 'btn btn-blue', 
 					action: function() {
-						if($("#newImport").val()=="" || !$("#jsonInputData").val() || $("#jsonInputData").val()=="" || !$("#newImport").val() || $("#newImport").val().length < 5){
+						if($("#newImport").val()=="" || !$("#jsonInputData").val() || $("#jsonInputData").val()=="" || !$("#newImport").val()){
 							if($("#newImport").val().length < 5) {
 							console.log("empty file or identity fields");
 							$('#newImport').closest('.form-group').addClass('has-error');

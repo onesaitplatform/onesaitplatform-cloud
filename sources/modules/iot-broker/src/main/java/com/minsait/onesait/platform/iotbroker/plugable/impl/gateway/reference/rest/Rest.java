@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -211,9 +211,7 @@ public class Rest implements WebMvcConfigurer {
 			@Parameter(description = "OPTIONS: NATIVE or SQL", required = true) @RequestParam(name = "queryType") SSAPQueryType queryType,
 			@Parameter(description = "Key-value optional tags.", example = "{\"source\":\"IOTBROKER\", \"key\": \"value\"}", required = false) @RequestParam(name = "tags", required = false) String tags) {
 
-		if (log.isDebugEnabled()) {
-			log.debug("Request with ontology {} and query {} type {}", ontology, query, queryType);
-		}		
+		log.debug("Request with ontology {} and query {} type {}", ontology, query, queryType);
 
 		final SSAPMessage<SSAPBodyQueryMessage> request = new SSAPMessage<>();
 		request.setBody(new SSAPBodyQueryMessage());

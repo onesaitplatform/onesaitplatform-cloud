@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,10 +103,8 @@ public class ReportConverter {
 	}
 
 	public ReportDto convert(Report report) {
-		if (log.isDebugEnabled()) {
-			log.debug("INI. Convert entity Report: {}", report);
-		}
-		
+		log.debug("INI. Convert entity Report: {}", report);
+
 		final ReportDto reportDto = ReportDto.builder().id(report.getId()).identification(report.getIdentification())
 				.description(report.getDescription()).owner(report.getUser().getUserId()).created(report.getCreatedAt())
 				.fileName(report.getIdentification() + "." + report.getExtension().toString().toLowerCase())
@@ -115,9 +113,7 @@ public class ReportConverter {
 						.collect(Collectors.toList()))
 				.isPublic(report.getIsPublic()).dataSourceUrl(report.getDataSourceUrl()).build();
 
-		if (log.isDebugEnabled()) {
-			log.debug("END. Converted ReportDto: {}", reportDto);
-		}
+		log.debug("END. Converted ReportDto: {}", reportDto);
 
 		return reportDto;
 	}

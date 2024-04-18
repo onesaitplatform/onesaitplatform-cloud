@@ -32,15 +32,6 @@
 				},
 				{
 					"title": {
-						"EN": "User Tokens Management",
-						"ES": "Gestión de Tokens de Usuario",
-						"FR": "Gestion des jetons utilisateur"
-					},
-					"icon": "",
-					"url": "/controlpanel/apimanager/token/list?access=MENU"
-				},
-				{
-					"title": {
 						"EN": "My REST APIs",
 						"ES": "Mis APIs REST",
 						"FR": "Mes APIs REST"
@@ -83,15 +74,6 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/microservices/list"
-				},
-				{
-					"title": {
-						"EN": "My Git Projects",
-						"ES": "Mis Proyectos Git", 
-						"FR": "Mes Projets Git"
-					},
-					"icon": "",
-					"url": "/controlpanel/codeproject/list"
 				},
 				{
 					"title": {
@@ -140,15 +122,6 @@
 			"icon": "icon-visualization",
 			"url": "",
 			"submenu": [
-				 {
-                    "title": {
-                        "EN": "My Forms",
-                        "ES": "Mis Formularios",
-                        "FR": "Mes Formes"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/forms/list"
-                } ,
 				{
 					"title": {
 						"EN": "My Dashboards",
@@ -458,9 +431,9 @@
 				},
 				{
 					"title": {
-						"EN": "My WebApps",
-						"ES": "Mis WebApps",
-						"FR": "Mes WebApps"
+						"EN": "My Web Projects",
+						"ES": "Mis Proyectos Web",
+						"FR": "Mes Projets Web"
 					},
 					"icon": "",
 					"url": "/controlpanel/webprojects/list"
@@ -559,9 +532,9 @@
 				},
 				{
 					"title": {
-						"EN": "Assets Market",
-						"ES": "Market de Assets",
-						"FR": "Marché des Actifs"
+						"EN": "Bundle Repository",
+						"ES": "Repositorio de Bundles",
+						"FR": "Référentiel du groupées groupé"
 					},
 					"icon": "",
 					"url": "/controlpanel/bundlerepository/list"

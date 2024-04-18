@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,9 +113,8 @@ public class SecurityServiceImpl implements SecurityService {
 		final Map<String, String> elemAccessMap = new HashMap<>();
 		final Class<?> entityUserAccessClass = getEntityClass(String.format(ENTITY_USER_ACCESS, type));
 		if (entityUserAccessClass == null) {// Not entity UserAccess Found for element security so we skip this
-			if (log.isDebugEnabled()) {
-				log.debug("Not entity UserAccess found: {}, skipping this security control", String.format(ENTITY_USER_ACCESS, type));
-			}			
+			log.debug("Not entity UserAccess found: " + String.format(ENTITY_USER_ACCESS, type)
+					+ ", skipping this security control");
 		} else {
 			final Repositories repositories = new Repositories(listableBeanFactory);
 			Object repositoryUserAccessBean;

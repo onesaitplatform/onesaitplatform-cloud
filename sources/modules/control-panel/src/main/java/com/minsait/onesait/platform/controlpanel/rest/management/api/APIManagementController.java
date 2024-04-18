@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,17 +42,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.minsait.onesait.platform.business.services.api.APIBusinessService;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
-import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Api.ApiStates;
 import com.minsait.onesait.platform.config.model.Api.ApiType;
 import com.minsait.onesait.platform.config.model.Api.ClientJS;
-import com.minsait.onesait.platform.config.model.ApiOperation;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserApi;
 import com.minsait.onesait.platform.config.model.UserToken;
@@ -123,11 +121,11 @@ public class APIManagementController {
 	private static final String ERROR_API_INVALID_STATE = "Api state not valid";
 	private static final String EMPTY_RESPONSE_APIS = "{\"apis\" : \"\"}";
 
-	@Operation(summary = "Get users access to api by identification or id")
+	@Operation(summary= "Get users access to api by identification or id")
 	@GetMapping(value = "/{apiId}/authorizations")
 	public ResponseEntity<?> getAuthorizations(
-			@Parameter(description = "Api identification or id") @PathVariable(value = "apiId") String apiId,
-			@Parameter(description = "Version required if use identification", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
+			@Parameter(description= "Api identification or id") @PathVariable(value = "apiId") String apiId,
+			@Parameter(description= "Version required if use identification", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
 
 		ResponseEntity<?> response;
 		try {
@@ -148,11 +146,11 @@ public class APIManagementController {
 		return response;
 	}
 
-	@Operation(summary = "Create users access to api by identification or id")
+	@Operation(summary= "Create users access to api by identification or id")
 	@PostMapping(value = "/{apiId}/authorizations")
 	public ResponseEntity<?> createAuthorizations(
-			@Parameter(description = "Api identification or id") @PathVariable(value = "apiId") String apiId,
-			@Parameter(description = "Version required if use identification", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion,
+			@Parameter(description= "Api identification or id") @PathVariable(value = "apiId") String apiId,
+			@Parameter(description= "Version required if use identification", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion,
 			@Valid @RequestBody List<UserApiSimplifiedInputDTO> userApiAccesses) {
 
 		ResponseEntity<?> response;
@@ -180,11 +178,11 @@ public class APIManagementController {
 		return response;
 	}
 
-	@Operation(summary = "Remove users access to api by identification or id")
+	@Operation(summary= "Remove users access to api by identification or id")
 	@DeleteMapping(value = "/{apiId}/authorizations")
 	public ResponseEntity<?> removeAuthorizations(
-			@Parameter(description = "Api identification or id") @PathVariable(value = "apiId") String apiId,
-			@Parameter(description = "Version required if use identification", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion,
+			@Parameter(description= "Api identification or id") @PathVariable(value = "apiId") String apiId,
+			@Parameter(description= "Version required if use identification", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion,
 			@Valid @RequestBody List<UserApiSimplifiedInputDTO> userApiAccesses) {
 
 		ResponseEntity<?> response;
@@ -212,12 +210,12 @@ public class APIManagementController {
 		return response;
 	}
 
-	@Operation(summary = "Authorize user for api by identification or id")
+	@Operation(summary= "Authorize user for api by identification or id")
 	@PostMapping(value = "/authorize/api/{apiId}/user/{userId}")
 	public ResponseEntity<?> authorize(
-			@Parameter(description = "Api identification or id", required = true) @PathVariable("apiId") String apiId,
-			@Parameter(description = "User", required = true) @PathVariable(name = "userId") String userId,
-			@Parameter(description = "Version required if use identification (if not present it applies to all versions)", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
+			@Parameter(description= "Api identification or id", required = true) @PathVariable("apiId") String apiId,
+			@Parameter(description= "User", required = true) @PathVariable(name = "userId") String userId,
+			@Parameter(description= "Version required if use identification (if not present it applies to all versions)", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
 
 		ResponseEntity<?> response;
 		final List<UserApiSimplifiedResponseDTO> usersapiDto = new ArrayList<>();
@@ -226,7 +224,8 @@ public class APIManagementController {
 		final User loggedUser = userService.getUser(loggedUserId);
 
 		try {
-			final Api api = apiManagerService.getApiByIdentificationVersionOrId(apiId, apiVersion);
+			final com.minsait.onesait.platform.config.model.Api api = apiManagerService
+					.getApiByIdentificationVersionOrId(apiId, apiVersion);
 
 			if (api != null) {
 				if (!apiManagerService.hasUserEditAccess(api, loggedUser)) {
@@ -236,7 +235,8 @@ public class APIManagementController {
 				final UserApi userapi = apiManagerService.updateAuthorization(api.getId(), userId);
 				usersapiDto.add(new UserApiSimplifiedResponseDTO(userapi));
 			} else {
-				final List<Api> apiAllVersions = apiManagerService.getApisOfOwnerAndIdentification(loggedUser, apiId);
+				final List<com.minsait.onesait.platform.config.model.Api> apiAllVersions = apiManagerService
+						.getApisOfOwnerAndIdentification(loggedUser, apiId);
 				if (apiAllVersions.isEmpty()) {
 					throw new ApiManagerServiceException(ApiManagerServiceException.Error.NOT_FOUND,
 							ERROR_API_NOT_FOUND);
@@ -270,12 +270,13 @@ public class APIManagementController {
 
 	}
 
-	@Operation(summary = "Deauthorize user for api by identification or id")
+	@Operation(summary= "Deauthorize user for api by identification or id")
 	@PostMapping(value = "/deauthorize/api/{apiId}/user/{userId}")
 	public ResponseEntity<?> deauthorize(
-			@Parameter(description = "Api identification or id", required = true) @PathVariable("apiId") String apiId,
-			@Parameter(description = "User", required = true) @PathVariable(name = "userId") String userId,
-			@Parameter(description = "Version required if use identification (if not present it applies to all versions)", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
+			@Parameter(description= "Api identification or id", required = true) @PathVariable("apiId") String apiId,
+			@Parameter(description= "User", required = true) @PathVariable(name = "userId") String userId,
+			@Parameter(description= "Version required if use identification (if not present it applies to all versions)", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion,
+			@RequestHeader("Authorization") String authorization) {
 
 		ResponseEntity<?> response;
 
@@ -283,7 +284,8 @@ public class APIManagementController {
 		final User loggedUser = userService.getUser(loggedUserId);
 
 		try {
-			final Api api = apiManagerService.getApiByIdentificationVersionOrId(apiId, apiVersion);
+			final com.minsait.onesait.platform.config.model.Api api = apiManagerService
+					.getApiByIdentificationVersionOrId(apiId, apiVersion);
 
 			if (api != null) {
 				if (!apiManagerService.hasUserEditAccess(api, loggedUser)) {
@@ -317,7 +319,7 @@ public class APIManagementController {
 		return response;
 	}
 
-	@Operation(summary = "Get user token for api")
+	@Operation(summary= "Get user token for api")
 	@GetMapping(value = "/api/token")
 	public ResponseEntity<String> getApiToken() {
 		final List<UserToken> tokens = userService.getUserToken(userService.getUser(utils.getUserId()));
@@ -329,10 +331,10 @@ public class APIManagementController {
 		}
 	}
 
-	@Operation(summary = "Get username for api by user token")
+	@Operation(summary= "Get username for api by user token")
 	@GetMapping(value = "/api/username/{token}")
 	public ResponseEntity<String> getApiUsernameByToken(
-			@Parameter(description = "Token Id ", required = true) @PathVariable("token") String token) {
+			@Parameter(description= "Token Id ", required = true) @PathVariable("token") String token) {
 		String username = null;
 		try {
 			username = userService.getUserByToken(token).getUserId();
@@ -343,7 +345,7 @@ public class APIManagementController {
 		return new ResponseEntity<>("{\"username\" : \"" + username + "\"}", HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get user tokens for api")
+	@Operation(summary= "Get user tokens for api")
 	@GetMapping(value = "/api/tokens")
 	public ResponseEntity<?> getApiTokens() {
 
@@ -363,7 +365,7 @@ public class APIManagementController {
 
 	}
 
-	@Operation(summary = "Generate new user token for api")
+	@Operation(summary= "Generate new user token for api")
 	@PostMapping(value = "/api/token")
 	public ResponseEntity<String> generateApiToken() {
 		try {
@@ -375,10 +377,10 @@ public class APIManagementController {
 
 	}
 
-	@Operation(summary = "Delete user token for api")
+	@Operation(summary= "Delete user token for api")
 	@DeleteMapping(value = "/api/token/{token}")
 	public ResponseEntity<String> deleteApiToken(
-			@Parameter(description = "Token Id ", required = true) @PathVariable("token") String token) {
+			@Parameter(description= "Token Id ", required = true) @PathVariable("token") String token) {
 		final UserToken tokenOj = userTokenService.getTokenByUserAndToken(userService.getUser(utils.getUserId()),
 				token);
 
@@ -394,14 +396,15 @@ public class APIManagementController {
 
 	}
 
-	@Operation(summary = "Get list of user apis and public apis")
+	@Operation(summary= "Get list of user apis and public apis")
 	@GetMapping
 	public ResponseEntity<?> getApiList() {
 		final User user = userService.getUser(utils.getUserId());
-		final List<Api> apis = apiManagerService.loadAPISByFilter("", "", "", utils.getUserId());
+		final List<com.minsait.onesait.platform.config.model.Api> apis = apiManagerService.loadAPISByFilter("", "", "",
+				utils.getUserId());
 		if (!apis.isEmpty()) {
 			final ArrayList<ApiRestDTO> apisdto = new ArrayList<>();
-			for (final Api api : apis) {
+			for (final com.minsait.onesait.platform.config.model.Api api : apis) {
 				final ApiRestDTO apidto = apiDTOWithOperationsAndAuthorizations(api, user, true);
 				apisdto.add(apidto);
 			}
@@ -412,76 +415,13 @@ public class APIManagementController {
 
 	}
 
-	@Operation(summary = "Get api by identification or id")
+	@Operation(summary= "Get api by identification or id")
 	@GetMapping(value = "/{id}")
-	public ResponseEntity<?> getApiByIdentificationOrId(
-			@Parameter(description = "Api identification", required = true) @PathVariable("id") String apiId,
-			@Parameter(description = "Version required", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
-		Api api = null;
-		if (apiVersion == null || apiVersion.equals("")) {
-			api = apiManagerService.getById(apiId);
-		} else {
-			api = apiManagerService.getApiByIdentificationAndVersion(apiId, apiVersion);
-		}
-		if (api != null) {
-			if (apiManagerService.hasUserAccess(api.getId(), utils.getUserId())) {
-				final User user = userService.getUser(utils.getUserId());
-				final ApiRestDTO apidto = apiDTOWithOperationsAndAuthorizations(api, user, true);
-				return new ResponseEntity<>(apidto, HttpStatus.OK);
-			} else {
-				return new ResponseEntity<>(ERROR_USER_NOT_ALLOWED, HttpStatus.UNAUTHORIZED);
-			}
-		} else {
-			return new ResponseEntity<>(EMPTY_RESPONSE_APIS, HttpStatus.NOT_FOUND);
-		}
-	}
-
-	@Operation(summary = "Get api by identification")
-	@GetMapping(value = "/identification/{identification}")
 	public ResponseEntity<?> getApiByIdentification(
-			@Parameter(description = "Api identification", required = true) @PathVariable("identification") String apiId,
-			@Parameter(description = "Version required", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
-
-		// get by identification, version
-		if (apiVersion != null && !apiVersion.equals("")) {
-			final Api api = apiManagerService.getApiByIdentificationAndVersion(apiId, apiVersion);
-			if (api != null) {
-				if (apiManagerService.hasUserAccess(api.getId(), utils.getUserId())) {
-					final User user = userService.getUser(utils.getUserId());
-					final ApiRestDTO apidto = apiDTOWithOperationsAndAuthorizations(api, user, true);
-					return new ResponseEntity<>(apidto, HttpStatus.OK);
-				} else {
-					return new ResponseEntity<>(ERROR_USER_NOT_ALLOWED, HttpStatus.UNAUTHORIZED);
-				}
-			} else {
-				return new ResponseEntity<>(EMPTY_RESPONSE_APIS, HttpStatus.NOT_FOUND);
-			}
-		} else {
-			// get by id (retrocomp)
-			final List<Api> apis = apiManagerService.getByIdentification(apiId);
-			if (apis != null && !apis.isEmpty()) {
-				final List<ApiRestDTO> res = new ArrayList<>();
-				for (final Api api : apis) {
-					if (apiManagerService.hasUserAccess(api.getId(), utils.getUserId())) {
-						final User user = userService.getUser(utils.getUserId());
-						final ApiRestDTO apidto = apiDTOWithOperationsAndAuthorizations(api, user, true);
-						res.add(apidto);
-					} else {
-						return new ResponseEntity<>(ERROR_USER_NOT_ALLOWED, HttpStatus.UNAUTHORIZED);
-					}
-				}
-				return new ResponseEntity<>(res, HttpStatus.OK);
-			} else {
-				return new ResponseEntity<>(EMPTY_RESPONSE_APIS, HttpStatus.NOT_FOUND);
-			}
-		}
-	}
-
-	@Operation(summary = "Get api by id")
-	@GetMapping(value = "/id/{id}")
-	public ResponseEntity<?> getApiById(
-			@Parameter(description = "Api id", required = true) @PathVariable("id") String apiId) {
-		final Api api = apiManagerService.getById(apiId);
+			@Parameter(description= "Api identification or id", required = true) @PathVariable("id") String apiId,
+			@Parameter(description= "Version required if use identification", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
+		final com.minsait.onesait.platform.config.model.Api api = apiManagerService
+				.getApiByIdentificationVersionOrId(apiId, apiVersion);
 		if (api != null) {
 			if (apiManagerService.hasUserAccess(api.getId(), utils.getUserId())) {
 				final User user = userService.getUser(utils.getUserId());
@@ -495,13 +435,14 @@ public class APIManagementController {
 		}
 	}
 
-	@Operation(summary = "Delete api by identification or id")
+	@Operation(summary= "Delete api by identification or id")
 	@DeleteMapping("/{id}")
 	public ResponseEntity<?> deleteApi(
-			@Parameter(description = "Api identification or id", required = true) @PathVariable("id") String apiId,
-			@Parameter(description = "Version required if use identification", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
+			@Parameter(description= "Api identification or id", required = true) @PathVariable("id") String apiId,
+			@Parameter(description= "Version required if use identification", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
 		try {
-			final Api api = apiManagerService.getApiByIdentificationVersionOrId(apiId, apiVersion);
+			final com.minsait.onesait.platform.config.model.Api api = apiManagerService
+					.getApiByIdentificationVersionOrId(apiId, apiVersion);
 			if (api == null) {
 				return new ResponseEntity<>("Api \"" + apiId + "\" does not exist", HttpStatus.NOT_FOUND);
 			}
@@ -510,21 +451,18 @@ public class APIManagementController {
 				return new ResponseEntity<>(ERROR_USER_NOT_ALLOWED, HttpStatus.UNAUTHORIZED);
 			}
 			apiManagerService.removeAPI(api.getId());
-			if (StringUtils.hasText(api.getGraviteeId()) && graviteeService != null) {
-				graviteeService.deleteApi(api.getGraviteeId());
-			}
 		} catch (final Exception exception) {
 			return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 		return new ResponseEntity<>("Api deleted successfully", HttpStatus.OK);
 	}
 
-	@Operation(summary = "Create new API")
+	@Operation(summary= "Create new API")
 	@PostMapping
 	public ResponseEntity<?> createApi(
-			@Parameter(description = "APIBody", required = true) @Valid @RequestBody ApiRestDTO apiBody) {
-		Api createdApi = null;
-		List<Api> existingApisWithIdentificationAndUser;
+			@Parameter(description= "APIBody", required = true) @Valid @RequestBody ApiRestDTO apiBody) {
+		com.minsait.onesait.platform.config.model.Api createdApi = null;
+		List<com.minsait.onesait.platform.config.model.Api> existingApisWithIdentificationAndUser;
 
 		final User user = userService.getUser(utils.getUserId());
 
@@ -550,14 +488,14 @@ public class APIManagementController {
 						ERROR_API_IDENTIFICATION_FORMAT);
 			}
 
-			final Api api = apiDTOConverter.toAPI(apiBody, user, state);
+			final com.minsait.onesait.platform.config.model.Api api = apiDTOConverter.toAPI(apiBody, user, state);
 
-			List<ApiOperation> operations;
+			List<com.minsait.onesait.platform.config.model.ApiOperation> operations;
 			if (apiBody.getOperations() == null) {
 				operations = null;
 			} else {
-				operations = apiDTOConverter.toAPIOperations(apiBody.getOperations(), new ArrayList<ApiOperation>(),
-						api);
+				operations = apiDTOConverter.toAPIOperations(apiBody.getOperations(),
+						new ArrayList<com.minsait.onesait.platform.config.model.ApiOperation>(), api);
 			}
 			final List<UserApi> auths = apiDTOConverter.toUserApi(apiBody.getAuthentications(),
 					new ArrayList<UserApi>(), api);
@@ -573,7 +511,7 @@ public class APIManagementController {
 				createdApi = apiManagerService.versionateApiRest(api, operations, auths, user);
 			}
 			if (graviteeService != null && apiBody.getPublishInGravitee() != null && apiBody.getPublishInGravitee()) {
-				publish2Gravitee(createdApi.getId(), apiBody.getGraviteeJWTPlan(), apiBody.getJwtClientId());
+				publish2Gravitee(createdApi.getId());
 			}
 
 		} catch (final ApiManagerServiceException e) {
@@ -586,18 +524,18 @@ public class APIManagementController {
 		return new ResponseEntity<>(new ApiSimplifiedResponseDTO(createdApi), HttpStatus.OK);
 	}
 
-	@Operation(summary = "Update API")
+	@Operation(summary= "Update API")
 	@PutMapping
 	public ResponseEntity<?> updateApi(
-			@Parameter(description = "APIBody", required = true) @Valid @RequestBody ApiRestDTO apiBody) {
+			@Parameter(description= "APIBody", required = true) @Valid @RequestBody ApiRestDTO apiBody) {
 		final User user = userService.getUser(utils.getUserId());
 
 		if (!userService.isUserAdministrator(user) && !userService.isUserDeveloper(user)) {
 			return new ResponseEntity<>(ERROR_USER_NOT_ALLOWED, HttpStatus.UNAUTHORIZED);
 		}
 
-		final Api apimemory = apiManagerService.getApiByIdentificationVersionOrId(apiBody.getIdentification(),
-				String.valueOf(apiBody.getVersion()));
+		final com.minsait.onesait.platform.config.model.Api apimemory = apiManagerService
+				.getApiByIdentificationVersionOrId(apiBody.getIdentification(), String.valueOf(apiBody.getVersion()));
 
 		if (apimemory == null) {
 			return new ResponseEntity<>(
@@ -611,7 +549,8 @@ public class APIManagementController {
 
 		try {
 
-			final Api api = apiDTOConverter.toAPI(apiBody, user, ApiStates.valueOf(apiBody.getStatus()));
+			final com.minsait.onesait.platform.config.model.Api api = apiDTOConverter.toAPI(apiBody, user,
+					ApiStates.valueOf(apiBody.getStatus()));
 
 			if (api.getOntology() == null && api.getApiType().equals(ApiType.INTERNAL_ONTOLOGY)) {
 				return new ResponseEntity<>(ERROR_MISSING_ONTOLOGY, HttpStatus.BAD_REQUEST);
@@ -623,8 +562,9 @@ public class APIManagementController {
 			if (apiBody.getOperations() == null) {
 				return new ResponseEntity<>(ERROR_MISSING_OPERATIONS, HttpStatus.BAD_REQUEST);
 			}
-			final List<ApiOperation> operations = apiDTOConverter.toAPIOperations(apiBody.getOperations(),
-					new ArrayList<ApiOperation>(), apimemory);
+			final List<com.minsait.onesait.platform.config.model.ApiOperation> operations = apiDTOConverter
+					.toAPIOperations(apiBody.getOperations(),
+							new ArrayList<com.minsait.onesait.platform.config.model.ApiOperation>(), apimemory);
 
 			final List<UserApi> auths = apiDTOConverter.toUserApi(apiBody.getAuthentications(),
 					new ArrayList<UserApi>(), apimemory);
@@ -633,13 +573,7 @@ public class APIManagementController {
 			api.setId(apiId); // to print in result update (retrocomp)
 
 			if (graviteeService != null && apiBody.getPublishInGravitee() != null && apiBody.getPublishInGravitee()) {
-				publish2Gravitee(apiId, apiBody.getGraviteeJWTPlan(), apiBody.getJwtClientId());
-			}
-			if (graviteeService != null && StringUtils.hasText(apimemory.getGraviteeId())) {
-				graviteeService.updateApiFromSwagger(apimemory);
-			}
-			if (graviteeService != null && !apiBody.getPublishInGravitee() && apiBody.getGraviteeJWTPlan()) {
-				graviteeService.createOauthPlan(api.getGraviteeId(), apiBody.getJwtClientId());
+				publish2Gravitee(apiId);
 			}
 
 			return new ResponseEntity<>(new ApiSimplifiedResponseDTO(api), HttpStatus.OK);
@@ -649,13 +583,14 @@ public class APIManagementController {
 		}
 	}
 
-	@Operation(summary = "Change api state by identification or id")
+	@Operation(summary= "Change api state by identification or id")
 	@PostMapping(value = "/changestate/{id}/{state}")
 	public ResponseEntity<?> changeStateByIdentification(
-			@Parameter(description = "Api identification or id", required = true) @PathVariable("id") String apiId,
-			@Parameter(description = "Api state", required = true) @PathVariable("state") String state,
-			@Parameter(description = "Version required if use identification", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
-		final Api api = apiManagerService.getApiByIdentificationVersionOrId(apiId, apiVersion);
+			@Parameter(description= "Api identification or id", required = true) @PathVariable("id") String apiId,
+			@Parameter(description= "Api state", required = true) @PathVariable("state") String state,
+			@Parameter(description= "Version required if use identification", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
+		final com.minsait.onesait.platform.config.model.Api api = apiManagerService
+				.getApiByIdentificationVersionOrId(apiId, apiVersion);
 		if (api != null) {
 			if (apiManagerService.hasUserAccess(api.getId(), utils.getUserId())) {
 				final User user = userService.getUser(utils.getUserId());
@@ -670,7 +605,7 @@ public class APIManagementController {
 				return new ResponseEntity<>(ERROR_USER_NOT_ALLOWED, HttpStatus.FORBIDDEN);
 			}
 		} else {
-			return new ResponseEntity<>(ERROR_API_NOT_FOUND, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>("", HttpStatus.NOT_FOUND);
 		}
 
 	}
@@ -681,8 +616,10 @@ public class APIManagementController {
 		return headers;
 	}
 
-	private ApiRestDTO apiDTOWithOperationsAndAuthorizations(Api api, User user, boolean allowEditUsers) {
-		final List<ApiOperation> apiops = apiManagerService.getOperations(api);
+	private ApiRestDTO apiDTOWithOperationsAndAuthorizations(com.minsait.onesait.platform.config.model.Api api,
+			User user, boolean allowEditUsers) {
+		final List<com.minsait.onesait.platform.config.model.ApiOperation> apiops = apiManagerService
+				.getOperations(api);
 
 		List<UserApi> usersapi = new ArrayList<>();
 		if (apiManagerService.isUserOwnerOrAdmin(user, api)
@@ -697,14 +634,15 @@ public class APIManagementController {
 		}
 	}
 
-	@Operation(summary = "Export api by identification or id")
+	@Operation(summary= "Export api by identification or id")
 	@GetMapping(value = "export/{id}")
 	public ResponseEntity<?> exportApiByIdentification(
-			@Parameter(description = "Api identification or id", required = true) @PathVariable("id") String apiId,
-			@Parameter(description = "Version required if use identification (if not present it applies to all versions)", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
+			@Parameter(description= "Api identification or id", required = true) @PathVariable("id") String apiId,
+			@Parameter(description= "Version required if use identification (if not present it applies to all versions)", required = false) @RequestParam(value = "version", required = false, defaultValue = "") String apiVersion) {
 
 		final User user = userService.getUser(utils.getUserId());
-		final Api api = apiManagerService.getApiByIdentificationVersionOrId(apiId, apiVersion);
+		final com.minsait.onesait.platform.config.model.Api api = apiManagerService
+				.getApiByIdentificationVersionOrId(apiId, apiVersion);
 		if (api != null) {
 			if (apiManagerService.hasUserAccess(api.getId(), utils.getUserId())) {
 				final ApiRestDTO apidto = apiDTOWithOperationsAndAuthorizations(api, user, false);
@@ -719,14 +657,15 @@ public class APIManagementController {
 				return new ResponseEntity<>(ERROR_API_NOT_FOUND, HttpStatus.NOT_FOUND);
 			}
 
-			final List<Api> apiAllVersions = apiManagerService.getApisOfOwnerAndIdentification(user, apiId);
+			final List<com.minsait.onesait.platform.config.model.Api> apiAllVersions = apiManagerService
+					.getApisOfOwnerAndIdentification(user, apiId);
 
 			if (apiAllVersions.isEmpty()) {
 				return new ResponseEntity<>(EMPTY_RESPONSE_APIS, HttpStatus.NOT_FOUND);
 			}
 
 			final List<ApiRestDTO> allVersionsDTO = new ArrayList<>();
-			for (final Api apiVers : apiAllVersions) {
+			for (final com.minsait.onesait.platform.config.model.Api apiVers : apiAllVersions) {
 				if (apiManagerService.hasUserAccess(apiVers, user)) {
 					final ApiRestDTO apidtoVersion = apiDTOWithOperationsAndAuthorizations(apiVers, user, false);
 					allVersionsDTO.add(apidtoVersion);
@@ -739,12 +678,12 @@ public class APIManagementController {
 
 	}
 
-	@Operation(summary = "Export all apis")
+	@Operation(summary= "Export all apis")
 	@GetMapping(value = "export/")
 	public ResponseEntity<?> exportAllApis() {
 		final List<ApiRestDTO> apisDTO = new ArrayList<>();
 		final User user = userService.getUser(utils.getUserId());
-		List<Api> apis;
+		List<com.minsait.onesait.platform.config.model.Api> apis;
 		if (userService.isUserAdministrator(user)) {
 			apis = apiManagerService.getAllApis(user);
 		} else {
@@ -752,7 +691,7 @@ public class APIManagementController {
 		}
 
 		if (!apis.isEmpty()) {
-			for (final Api api : apis) {
+			for (final com.minsait.onesait.platform.config.model.Api api : apis) {
 				final ApiRestDTO apidto = apiDTOWithOperationsAndAuthorizations(api, user, false);
 				apisDTO.add(apidto);
 			}
@@ -774,30 +713,30 @@ public class APIManagementController {
 		return importingUser;
 	}
 
-	@Operation(summary = "Import API")
+	@Operation(summary= "Import API")
 	@PostMapping(value = "import")
 	public ResponseEntity<?> importApi(
-			@Parameter(description = "Overwrite api if exists") @RequestParam(required = false, defaultValue = "false") boolean overwrite,
-			@Parameter(description = "Import authorizations if exist") @RequestParam(required = false, defaultValue = "false") boolean importAuthorizations,
-			@Parameter(description = "APIBody", required = true) @Valid @RequestBody ApiRestDTO apiBody) {
+			@Parameter(description= "Overwrite api if exists") @RequestParam(required = false, defaultValue = "false") boolean overwrite,
+			@Parameter(description= "Import authorizations if exist") @RequestParam(required = false, defaultValue = "false") boolean importAuthorizations,
+			@Parameter(description= "APIBody", required = true) @Valid @RequestBody ApiRestDTO apiBody) {
 
 		// ------ Importing rules --------
 		// version ---------------------OK (import any version allowed to not change
 		// endpoints in migration)
 
 		final User user = userService.getUser(utils.getUserId());
-		Api createdApi = null;
+		com.minsait.onesait.platform.config.model.Api createdApi = null;
 
 		try {
-			final Api api = apiDTOConverter.toAPI(apiBody, getImportingUser(apiBody, user),
-					ApiStates.valueOf(ApiStates.class, apiBody.getStatus()));
+			final com.minsait.onesait.platform.config.model.Api api = apiDTOConverter.toAPI(apiBody,
+					getImportingUser(apiBody, user), ApiStates.valueOf(ApiStates.class, apiBody.getStatus()));
 
-			List<ApiOperation> operations;
+			List<com.minsait.onesait.platform.config.model.ApiOperation> operations;
 			if (apiBody.getOperations() == null) {
 				operations = null;
 			} else {
-				operations = apiDTOConverter.toAPIOperations(apiBody.getOperations(), new ArrayList<ApiOperation>(),
-						api);
+				operations = apiDTOConverter.toAPIOperations(apiBody.getOperations(),
+						new ArrayList<com.minsait.onesait.platform.config.model.ApiOperation>(), api);
 			}
 			List<UserApi> auths = new ArrayList<>();
 			if (importAuthorizations) {
@@ -814,12 +753,12 @@ public class APIManagementController {
 		return new ResponseEntity<>(new ApiSimplifiedResponseDTO(createdApi), HttpStatus.OK);
 	}
 
-	@Operation(summary = "Import several APIs")
+	@Operation(summary= "Import several APIs")
 	@PostMapping(value = "import/apis/")
 	public ResponseEntity<?> importSeveralApis(
-			@Parameter(description = "Overwrite api if exists") @RequestParam(required = false, defaultValue = "false") boolean overwrite,
-			@Parameter(description = "Import authorizations if exist") @RequestParam(required = false, defaultValue = "false") boolean importAuthorizations,
-			@Parameter(description = "APIBodies", required = true) @Valid @RequestBody List<ApiRestDTO> apiBodies) {
+			@Parameter(description= "Overwrite api if exists") @RequestParam(required = false, defaultValue = "false") boolean overwrite,
+			@Parameter(description= "Import authorizations if exist") @RequestParam(required = false, defaultValue = "false") boolean importAuthorizations,
+			@Parameter(description= "APIBodies", required = true) @Valid @RequestBody List<ApiRestDTO> apiBodies) {
 
 		// ------ Importing rules --------
 		// version ---------------------OK (import any version allowed to not change
@@ -829,17 +768,17 @@ public class APIManagementController {
 
 		final List<ApiSimplifiedResponseDTO> importedAPIsResponse = new ArrayList<>();
 		for (final ApiRestDTO apiBody : apiBodies) {
-			final Api api = apiDTOConverter.toAPI(apiBody, getImportingUser(apiBody, user),
-					ApiStates.valueOf(ApiStates.class, apiBody.getStatus()));
+			final com.minsait.onesait.platform.config.model.Api api = apiDTOConverter.toAPI(apiBody,
+					getImportingUser(apiBody, user), ApiStates.valueOf(ApiStates.class, apiBody.getStatus()));
 
 			try {
-				Api createdApi = null;
-				List<ApiOperation> operations;
+				com.minsait.onesait.platform.config.model.Api createdApi = null;
+				List<com.minsait.onesait.platform.config.model.ApiOperation> operations;
 				if (apiBody.getOperations() == null) {
 					operations = null;
 				} else {
-					operations = apiDTOConverter.toAPIOperations(apiBody.getOperations(), new ArrayList<ApiOperation>(),
-							api);
+					operations = apiDTOConverter.toAPIOperations(apiBody.getOperations(),
+							new ArrayList<com.minsait.onesait.platform.config.model.ApiOperation>(), api);
 				}
 				List<UserApi> auths = new ArrayList<>();
 				if (importAuthorizations) {
@@ -864,11 +803,11 @@ public class APIManagementController {
 	@Autowired
 	private APIBusinessService apiBusinessService;
 
-	@Operation(summary = "Client")
+	@Operation(summary= "Client")
 	@PostMapping("client-js")
 	public ResponseEntity<ByteArrayResource> generateClientJS(
-			@Parameter(description = "Target JS framework") @RequestParam("framework") ClientJS framework,
-			@Parameter(description = "List of API ids") @RequestBody List<String> ids) throws IOException {
+			@Parameter(description= "Target JS framework") @RequestParam("framework") ClientJS framework,
+			@Parameter(description= "List of API ids") @RequestBody List<String> ids) throws IOException {
 		try {
 			final File file = apiBusinessService.generateJSClient(framework, ids, utils.getUserId());
 			final Path path = Paths.get(file.getAbsolutePath());
@@ -888,8 +827,7 @@ public class APIManagementController {
 	}
 
 	@PostMapping(value = "/gravitee/update/swagger", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<String> updateGraviteeSwagger(@RequestParam(name = "apiId") String apiId,
-			@RequestParam(required = false, name = "content") String content) {
+	public ResponseEntity<String> updateGraviteeSwagger(@RequestParam(name="apiId") String apiId, @RequestParam(required=false, name="content") String content) {
 		try {
 			if (!apiManagerService.hasUserEditAccess(apiId, utils.getUserId())) {
 				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -897,114 +835,26 @@ public class APIManagementController {
 			updateGraviteeSwaggerDoc(apiId, content);
 
 			return new ResponseEntity<>(HttpStatus.OK);
-		} catch (final RuntimeException | GenericOPException e) {
+		} catch (final RuntimeException | GenericOPException  e) {
 			log.error("Error updating Gravitee Swagger documentation : {}", e);
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 
 	}
 
-	@PostMapping(value = "/{apiId}/gravitee/subscribe")
-	public ResponseEntity<Object> subscribeToAPI(@PathVariable(name = "apiId") String apiId,
-			@RequestParam(name = "application") String application) {
-		try {
-			if (!apiManagerService.hasUserEditAccess(apiId, utils.getUserId())) {
-				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-			}
-			final Api api = apiManagerService.getById(apiId);
-			if (graviteeService != null) {
-				graviteeService.subscribeToAPI(api.getGraviteeId(), application);
-
-			} else {
-				return new ResponseEntity<>("{\"error\":\"Gravitee not active\"}", HttpStatus.BAD_REQUEST);
-			}
-			return new ResponseEntity<>(graviteeService.getApplicationsSubscribedToAPI(api.getGraviteeId()),
-					HttpStatus.OK);
-		} catch (final RuntimeException e) {
-			log.error("Error subscribing to API : {}", e);
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-		}
-	}
-
-	@PostMapping(value = "/{apiId}/gravitee/unsubscribe")
-	public ResponseEntity<Object> unsubscribeToAPI(@PathVariable(name = "apiId") String apiId,
-			@RequestParam(name = "application") String application) {
-		try {
-			if (!apiManagerService.hasUserEditAccess(apiId, utils.getUserId())) {
-				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-			}
-			final Api api = apiManagerService.getById(apiId);
-			if (graviteeService != null) {
-				graviteeService.unsubscribeToAPI(api.getGraviteeId(), application);
-
-			} else {
-				return new ResponseEntity<>("{\"error\":\"Gravitee not active\"}", HttpStatus.BAD_REQUEST);
-			}
-			return new ResponseEntity<>(graviteeService.getApplicationsSubscribedToAPI(api.getGraviteeId()),
-					HttpStatus.OK);
-		} catch (final RuntimeException e) {
-			log.error("Error unsubscribing to API : {}", e);
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-		}
-	}
-
-	@Operation(summary = "Clone API api by database id")
-	@PostMapping(value = "clone/{id}")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
-	public ResponseEntity<String> cloneApi(
-			@Parameter(description = "Api id", required = true) @PathVariable("id") String id,
-			@Parameter(description = "New API identification", required = true) @RequestParam(name = "identification") String identification) {
-		try {
-
-			final String apiId = apiManagerService.cloneApi(id, identification, utils.getUserId());
-			if (graviteeService != null && apiManagerService.isGraviteeApi(id)) {
-				// TO-DO Clone gravitee api
-				publish2Gravitee(apiId, false, null);
-			}
-
-			return new ResponseEntity<>(apiId, HttpStatus.OK);
-		} catch (final Exception e) {
-			log.error("Error clonning API", e);
-			return new ResponseEntity<>("Error cloning API", HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
-
-	@Operation(summary = "Sync changes and deploy API in Gravitee")
-	@PostMapping(value = "{apiId}/gravitee/deploy")
-	public ResponseEntity<String> deployGraviteeAPI(
-			@Parameter(description = "Api id", required = true) @PathVariable("apiId") String apiId) {
-		try {
-
-			if (!apiManagerService.hasUserEditAccess(apiId, utils.getUserId())) {
-				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-			}
-			final Api api = apiManagerService.getById(apiId);
-
-			if (graviteeService != null && api.getGraviteeId() != null) {
-				// TO-DO Clone gravitee api
-				graviteeService.deployApi(api.getGraviteeId());
-			}
-
-			return new ResponseEntity<>(HttpStatus.OK);
-		} catch (final Exception e) {
-			log.error("Error clonning API", e);
-			return new ResponseEntity<>("Error cloning API", HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
-
 	private ApiPageResponse updateGraviteeSwaggerDoc(String apiId, String content) throws GenericOPException {
-		final Api apiDb = apiManagerService.getById(apiId);
+		final com.minsait.onesait.platform.config.model.Api apiDb = apiManagerService.getById(apiId);
 		if (graviteeService != null && apiManagerService.isGraviteeApi(apiId)) {
-			return graviteeService.processUpdateAPIDocs(apiDb,
-					!StringUtils.hasText(content) ? apiDb.getSwaggerJson() : content);
+			return graviteeService.processUpdateAPIDocs(apiDb, !StringUtils.hasText(content) ? apiDb.getSwaggerJson() : content);
 		}
 		return new ApiPageResponse();
 	}
 
-	private void publish2Gravitee(String apiId, boolean jwtPlan, String clientId) throws GenericOPException {
+
+	private void publish2Gravitee(String apiId) throws GenericOPException {
 		final com.minsait.onesait.platform.config.model.Api apiDb = apiManagerService.getById(apiId);
 		try {
-			final GraviteeApi graviteeApi = graviteeService.processApi(apiDb, jwtPlan, clientId);
+			final GraviteeApi graviteeApi = graviteeService.processApi(apiDb);
 			apiDb.setGraviteeId(graviteeApi.getApiId());
 			apiManagerService.updateApi(apiDb);
 		} catch (final GraviteeException e) {

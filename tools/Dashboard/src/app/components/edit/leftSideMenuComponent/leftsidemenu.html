@@ -130,13 +130,10 @@
     <template>
       <el-tabs v-model="activeName" @tab-click="handleClick">
         <el-tab-pane  label="Create" name="first">
-          <el-input size="small" placeholder="Search" prefix-icon="el-icon-search" v-model="filterTextCreate">
-          </el-input>
           <el-collapse :value="['Predefined']">
             <el-collapse-item :title="section.label" v-for="section in data" :name="section.label">
               <el-row :gutter="10">
-                <el-col :span="8" class="gtype" v-for="elem in section.children" v-if="elem.label.toUpperCase().includes(filterTextCreate.toUpperCase())">
-                  <!--elem.label.toUpperCase().indexOf(filterTextCreate.toUpperCase())-->
+                <el-col :span="8" class="gtype" v-for="elem in section.children">
                   <el-card>
                     <el-popover :open-delay="opendelay" placement="right" trigger="hover">
                       <el-card :body-style="{ padding: '14px' }">

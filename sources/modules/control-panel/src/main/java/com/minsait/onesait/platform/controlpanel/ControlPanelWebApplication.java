@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +36,6 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.Ordered;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.http.CacheControl;
 //import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -93,9 +91,6 @@ public class ControlPanelWebApplication implements WebMvcConfigurer {
 
 	@Value("${onesaitplatform.analytics.dataflow.version:3.10.0}")
 	private String streamsetsVersion;
-	
-	@Value("${onesaitplatform.web.staticresurces.cache.minutes:0}")
-	private int timeCacheStaticResources;
 
 
 	@Autowired
@@ -149,11 +144,7 @@ public class ControlPanelWebApplication implements WebMvcConfigurer {
 
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
-		if(timeCacheStaticResources > 0) {
-			registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/").setCacheControl(CacheControl.maxAge(timeCacheStaticResources, TimeUnit.MINUTES));
-		}else {
-			registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
-		}
+		registry.addResourceHandler("/static/**").addResourceLocations("classpath:/static/");
 		registry.addResourceHandler("/notebooks/app/**").addResourceLocations("classpath:/static/notebooks/");
 		registry.addResourceHandler("/dataflow/{instance}/app/**")
 		.addResourceLocations("classpath:/static/dataflow/" + streamsetsVersion + "/")
@@ -162,7 +153,6 @@ public class ControlPanelWebApplication implements WebMvcConfigurer {
 		registry.addResourceHandler("/dataflow/app/**")
 		.addResourceLocations("classpath:/static/dataflow/" + streamsetsVersion + "/");
 		registry.addResourceHandler("/gitlab/**").addResourceLocations("classpath:/static/gitlab/");
-		
 	}
 
 	/**

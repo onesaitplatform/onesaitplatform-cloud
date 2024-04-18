@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -443,8 +443,7 @@ var messaOrder = [[#{querytool.select.orderby}]];
 var $elementSelected;
 var $dataSetMapped; 
 var $query;
-var oTable;
-var ids = []
+
 
 
 	// MAIN WHEN READY
@@ -463,7 +462,7 @@ var ids = []
 	// MAIN WHEN LOAD
 	$(window).on("load",function(){
 
-		oTable = $('#records').dataTable({
+		var oTable = $('#records').dataTable({
 	      	"bAutoWidth": false,
 	    });	
 
@@ -584,7 +583,7 @@ var ids = []
 				
 				$dataSetMapped = map_IdFromDataSet(dataSet);
 				for(var i =0; i<$dataSetMapped.length;i++){
-					var espacio = '<div class="check"><input type="checkbox" onchange="checkBoxOnClick(this)" id="multiCheck" name="multibox" data-placement="bottom" data-container="body"></div>';
+					var espacio = '<div class="check"><input type="checkbox" id="multiCheck" name="multibox" data-placement="bottom" data-container="body"></div>';
 					var buttons = '<div class="grupo-iconos">'+
 					'<span  class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" onclick="editRecord(\''+$dataSetMapped[i].id+'\')" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" ><i class="icon-edit"></i></span>'+
 					'<span  class="btn btn-xs btn-no-border icon-on-table color-red tooltips" data-container="body" onclick="deleteRecord(\''+$dataSetMapped[i].id+'\')" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn}" ><i class="icon-delete"></i></span>'+
@@ -647,6 +646,8 @@ var ids = []
 
 	//Delete de varios registros
 	function deleteMultiple(){
+		var checkboxes = document.getElementsByName("multibox");
+		var ids = []
 
 		var params = createParametersMap();
 		if(params!==undefined && params.where !== undefined && params.where.length>0 ){
@@ -672,9 +673,15 @@ var ids = []
 			data: JSON.stringify(params),
 			success: function(dataSet) {
 				$dataSetMapped = map_IdFromDataSet(dataSet);
-				showConfirmMultipleDeleteDialog(ids);
+			
+				for(var i=0, n=checkboxes.length;i<n;i++) {
+					if ( checkboxes[i].checked==true){
+						ids.push($dataSetMapped[i].id)
+					}
+				}
 			}
 		})
+		showConfirmMultipleDeleteDialog(ids);
 	}
 
 	function recursiveTitle(data,stack){
@@ -756,8 +763,6 @@ var ids = []
 	var showConfirmMultipleDeleteDialog = function(ids){
 		var close = headerReg.btnCancelar;
 		var remove = headerReg.btnEliminar;
-
-		
 		var content = 'You are going to delete '+ ids.length +' records.' +'<br><br>'+  [[#{crud.confirm.delete.sure}]];
 		var title = headerReg.crudDelete;
 
@@ -1455,17 +1460,6 @@ function map_IdFromDataSet(dataSet){
 		$('#orderby').empty();
 		$('#orderby').selectpicker('refresh');		
 		findElements();
-	}
-	
-	function checkBoxOnClick(checkbox){
-		
-		if (checkbox.checked){
-			ids.push(checkbox.parentNode.parentNode.nextElementSibling.firstChild.data)
-		} else {
-			ids = ids.filter(function(element) {
-			    return element !== checkbox.parentNode.parentNode.nextElementSibling.firstChild.data;
-			});
-		}
 	}
 	
 	//]]>

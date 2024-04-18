@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -327,7 +327,7 @@
 									</div>
 									<div th:if="${historical == false}" class="col-md-3 col-sm-3 col-xs-6" id ="selectTable">							
 										<div class="form-group">		
-											<label class="control-label" th:text="#{ontology.virtual.select.collection}">Select one collection</label><span class="required"> *</span>							
+											<label class="control-label" th:text="#{ontology.virtual.select.collection}">Select one collection</label>							
 											<select th:disabled="disabled"  th:if="${ontology?.id} == null" class="selectpicker select show-tick form-control no-remove" onchange="OntologyCreateController.changeCollection(1)" id="collections" data-live-search="true" data-width="100%" th:title="#{ontology.virtual.collection}">
 												<option th:each="collection : ${collectionNames}" th:id="${collection}" data-type="general" th:value="${collection}" th:text="${collection}"  ></option>
 											</select>
@@ -675,10 +675,6 @@
 									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
 										<span th:text="#{ontology.virtual.schema}">Generated schema</span>
 									</div>
-									<div class="col-md-3" th:if="${ontology?.id} != null">
-										<button type="button" class="btn btn-outline blue dialog btn-no-border pull-right" id="btn-ld" th:text="#{ontology.ld}" data-toggle="tooltip" data-placement="top" th:title="#{ontology.ld.tooltip}">Linked Data</button>
-									</div>
-									
 									<!-- SQL EDITOR: Update schema button -->
 									<div class="col-md-3" th:if="${ontology?.id} == null">
 										<button id="saveSqlCode" type="button" class="btn btn-primary btn-primary-save pull-right" name="saveSqlCode"  onclick="OntologyCreateController.saveSQLCodeFromServer()" th:value="Save" ><span th:text="#{ontology.virtual.generate.schema}">UpdateSchema</span></button>
@@ -793,7 +789,9 @@
 							
 					</div><!-- END COL-12 -->
 				</form>
-				
+				<!-- MODAL LD -->
+				<div th:include="fragments/ontology-create-ld-modal">
+				</div>
 				<!-- Modal -->
 				<div id="modal-created" data-backdrop="static" class="modal fade" role="dialog">
 					<div class="modal-dialog modal-sm">
@@ -817,9 +815,7 @@
 					</div>
 				</div>
 			</div><!-- END COL-12 -->
-				<!-- MODAL LD -->
-					<div th:include="fragments/ontology-create-ld-modal">
-					</div>
+				
 				<!-- Modal -->
 				<div th:if="${historical == true}" id="modal-file" class="modal fade" role="dialog" data-backdrop="static" data-keyboard="false" >
 					<div class="modal-dialog modal-sm">
@@ -957,7 +953,6 @@
 		"collection"  : [[${tableName}]],
 		"authorities" : [[${#strings.arrayJoin(#authentication.authorities,'')}]],
 		"historical": [[${historical}]],
-		"timeseriesdb": [[${timeseriesdb}]],
 		"validations" : {
 			"duplicates": [[#{ontology.valid.duplicates}]],
 			"tplschema": [[#{ontology.valid.tplschema}]],

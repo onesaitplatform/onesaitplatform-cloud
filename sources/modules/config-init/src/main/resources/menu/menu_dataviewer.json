@@ -59,9 +59,9 @@
 			"submenu": [
 				{
 					"title": {
-						"EN": "Assets Market",
-						"ES": "Market de Assets",
-						"FR": "Marché des Actifs"
+						"EN": "Bundle Repository",
+						"ES": "Repositorio de Bundles",
+						"FR": "Référentiel du groupées groupé"
 					},
 					"icon": "",
 					"url": "/controlpanel/bundlerepository/list"

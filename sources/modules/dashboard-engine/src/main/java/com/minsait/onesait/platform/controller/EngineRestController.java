@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -164,21 +164,6 @@ public class EngineRestController {
 				if (!ontologyDTO.getIsAuthorizationsPermissions().equals("ALL")) {
 					iterator.remove();
 				}
-
-			}
-			ontologiesResult = mapOntolotyDTO(ontologies);
-		}
-		return new ResponseEntity<>(ontologiesResult, HttpStatus.OK);
-	}
-
-	@GetMapping(value = "/getEntitiesQueryPermission")
-	public @ResponseBody ResponseEntity<List<com.minsait.onesait.platform.bean.OntologyDTO>> getEntitiesQueryPermission() {
-		final List<OntologyDTO> ontologies = ontologyConfigService.getAllOntologiesForList(utils.getUserId(), "", "",
-				"", "");
-		List<com.minsait.onesait.platform.bean.OntologyDTO> ontologiesResult = new ArrayList<com.minsait.onesait.platform.bean.OntologyDTO>();
-		if (ontologies != null && ontologies.size() > 0) {
-			for (Iterator iterator = ontologies.iterator(); iterator.hasNext();) {
-				OntologyDTO ontologyDTO = (OntologyDTO) iterator.next();
 
 			}
 			ontologiesResult = mapOntolotyDTO(ontologies);

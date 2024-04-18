@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import com.minsait.onesait.platform.config.dto.ApiForList;
 import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Api.ApiStates;
+import com.minsait.onesait.platform.config.model.Api.ApiType;
 import com.minsait.onesait.platform.config.model.ApiOperation;
 import com.minsait.onesait.platform.config.model.ApiOperation.Type;
 import com.minsait.onesait.platform.config.model.User;
@@ -34,6 +35,8 @@ public interface ApiManagerService {
 	public String createApi(Api api, String objetoOperaciones, String objetoAutenticacion);
 
 	public Integer calculateNumVersion(String numversionData);
+
+	public Integer calculateNumVersion(String identification, ApiType apiType);
 
 	public void updateApi(Api apiMultipartMap, String deprecateApis, String operationsObject,
 			String authenticationObject);
@@ -118,7 +121,7 @@ public interface ApiManagerService {
 	public boolean validateState(ApiStates oldState, String newState);
 
 	public Api getApiByIdentificationVersionOrId(String apiId, String version);
-	
+
 	public List<UserApi> getAuthorizations(String apiId, String apiVersion, User user);
 
 	public List<String> updateAuthorizations(String apiId, String version, List<String> usersId, User user);
@@ -144,9 +147,4 @@ public interface ApiManagerService {
 	public List<ApiForList> loadAPISByFilterForList(String apiId, String state, String userId, String loggeduser);
 
 	void deleteUserApiForAUser(String userAccessId);
-
-	public List<Api> getByIdentification(String identification);
-
-	Api getApiByIdentificationAndVersion(String apiId, String version);
-
 }
