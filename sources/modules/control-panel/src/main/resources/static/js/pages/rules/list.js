@@ -7,20 +7,19 @@ RuleDomain.List = (function() {
 	var headersObj = {};
 	headersObj[csrfHeader] = csrfToken;
 	var init = function() {
-		initTableEvents();
-		setTimeout(reloadTooltips, 100);
+	
 	};
 	
 	var dtRenderOptions = function (data, type, row) {
 		var html ='<div class="grupo-iconos text-center">';
 		if(row.active){
-			html+= '<span data-id="' + row.id + '" class="btn btn-show btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genView+'"><i class="la la-eye font-hg"></i></span>'
-			html+= '<span data-id="' + row.id + '" class="btn btn-stop btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.stop+'"><i class="icon-stop"></i></span>'
+			html+= '<span data-id="' + row.id + '" class="btn btn-show btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genView+'"><i class="la la-eye font-hg"></i></span>'
+			html+= '<span data-id="' + row.id + '" class="btn btn-stop btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.stop+'"><i class="la la-stop font-hg"></i></span>'
 			
 		}else{
-			html+= '<span data-id="' + row.id + '" class="btn btn-start btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.start+'"><i class="icon-play"></i></span>'
+			html+= '<span data-id="' + row.id + '" class="btn btn-start btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.start+'"><i class="la la-play font-hg"></i></span>'
 		}
-		html+= '<span data-id="' + row.id + '" class="btn btn-xs btn-no-border icon-ruledomain-trash icon-on-table color-red tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genDelete+'"><i class="icon-delete"></i></span>'																											
+		html+= '<span data-id="' + row.id + '" class="icon-ruledomain-trash btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genDelete+'"><i class="la la-trash font-hg"></i></span>'																											
 		html+= '</div>';
 		return html;
 	};
@@ -41,10 +40,6 @@ RuleDomain.List = (function() {
 		initTableEvents();
 	
 	}
-	function reloadTooltips(){
-		$('.tooltips').tooltip('destroy');
-		$('.tooltips').tooltip();
-	}
 	
 	
 	
@@ -60,11 +55,12 @@ RuleDomain.List = (function() {
 			RuleDomain.List.initCompleteCallback()
 		}, true);
 		
-		$('.tooltips').tooltip('destroy');
+		$('.tooltip').tooltip('destroy');
 		$('.tooltips').tooltip();
 	}
 	
-	function initTableEvents() {		
+	function initTableEvents() {
+		$('.tooltips').tooltip();
 		
 		$('.btn-show').off().on('click', function(){
 			var id = $(this).data('id');
@@ -81,13 +77,13 @@ RuleDomain.List = (function() {
 		       	 	headers: headersObj,
 		            type : 'POST'
 		        }).done(function(data) {
-		        	/*$.alert({
+		        	$.alert({
 						title : 'INFO',
 						type : 'blue',
 						theme : 'light',
-						content : 'Domain '+ message
-					});*/
-		        	location.reload()
+						content : 'Domain ' + message
+					});
+		        	reloadRuleDomainTable();
 		        }).fail(function(error) {
 		        	$.alert({
 						title : 'ERROR',
@@ -113,22 +109,24 @@ RuleDomain.List = (function() {
 	
 	var deleteRuleDomainDialog = function(id) {
 		$.confirm({
-			title: headerJson.microserviceDelete,
+			icon: 'fa fa-warning',
+			title: headerJson.btnEliminar,
 			theme: 'light',
 			columnClass: 'medium',
 			content: constants.deleteContent,
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
+			closeIcon: true,
 			buttons: {
 				close: {
 					text: headerJson.btnClose,
-					btnClass: 'btn btn-outline blue dialog',
+					btnClass: 'btn btn-sm btn-circle btn-outline blue',
 					action: function (){} // GENERIC CLOSE.
 				},
 				Ok: {
 					text: headerJson.btnEliminar,
-					btnClass: 'btn btn-primary',
+					btnClass: 'btn btn-sm btn-circle btn-outline btn-blue',
 					action: function() { 
 						$.ajax({ 
 						    url : id,
@@ -144,7 +142,6 @@ RuleDomain.List = (function() {
 			}
 		});
 	}
-	
 	
 	// Public API
 	return {

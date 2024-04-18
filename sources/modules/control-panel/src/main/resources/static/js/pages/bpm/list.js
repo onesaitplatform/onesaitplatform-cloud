@@ -3,28 +3,25 @@ var Bpm = Bpm || {};
 Bpm.List = (function() {
 	"use-strict";
 	var authsUrl = '/controlpanel/bpm/authorizations';
-	var uploadUrl = '/controlpanel/bpm/upload?'+ csrfParameter + "=" + csrfValue;
-	var useTenantHelp = "";
+	var uploadUrl = '/controlpanel/bpm/upload';
+	
 	var authorizationsArr 		= []; // add authorizations
 	var authorizationObj 		= {}; // object to receive authorizations responses.
-	//var mountableModel2 = $('#tenant_authorizations').find('tr.authorization-model')[0].outerHTML;
+	var mountableModel2 = $('#tenant_authorizations').find('tr.authorization-model')[0].outerHTML;
 	var csrfHeader = headerJson.csrfHeaderName;
 	var csrfToken = headerJson.csrfToken;
 	var headersObj = {};
 	headersObj[csrfHeader] = csrfToken;
 	var init = function() {
-		initTableEvents();
-		useTenantHelp = $('#useTenantHelp').text();
+				
 	};
 	
 	var dtRenderOptions = function (data, type, row) {
 		return '<div class="grupo-iconos text-center">'
-		+ '<a target="_blank" href="'+constants.camundaWebapp+'"><span data-id="' + row.id + '" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genView+'"><i class="la la-eye font-hg"></i></span></a>'
-		+ '<span data-id="' + row.name + '" class="btn-auths btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.authorizations+'"><i class="icon-lock"></i></span>'
-		+ '<span class="dropdown"> <span class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span><ul class="dropdown-menu dropdown-menu-table download-menu">'
-		+ '<li> <span data-id="' + row.name + '" class="upload-btn btn btn-xs btn-no-border btn-circle btn-outline tooltips" data-container="body" data-placement="bottom" th:data-original-title="'+constants.upload+'"><i class="icon-upload"></i><span class="span-title-three-dots-icons" th:text="'+constants.upload+'">Upload</span></span></li>'
-		+ '<li> <span data-id="' + row.name + '" class="btn-delete btn btn-xs btn-no-border btn-circle btn-outline tooltips color-red" data-container="body" data-placement="bottom" th:data-original-title="'+constants.genDelete+'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="'+constants.genDelete+'">Delete</span></span></li>'
-		+ '</ul> </span>'
+		+ '<a target="_blank" href="'+constants.camundaWebapp+'"><span data-id="' + row.id + '" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genView+'"><i class="la la-eye font-hg"></i></span></a>'
+		+ '<span data-id="' + row.name + '" class="btn-auths btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.authorizations+'"><i class="la la-lock font-hg"></i></span>'
+		+ '<span data-id="' + row.name + '" class="btn-delete btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genDelete+'"><i class="la la-trash font-hg"></i></span>'
+		+'<span data-id="' + row.name + '" class="upload-btn btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.upload+'"><i class="la la-upload font-hg"></i></span>'
 		+ '</div>';
 	};
 	
@@ -215,8 +212,6 @@ Bpm.List = (function() {
 		$('.upload-btn').each(function() {
 			$(this).off().on('click', function (e) {
 				e.preventDefault(); 
-				$('#useTenantHelp').text(useTenantHelp + ': ' +  $(this).data('id') )
-				$('#tenantId').val($(this).data('id'));
 				$('#uploadModal').modal('show');
 			});
 		});

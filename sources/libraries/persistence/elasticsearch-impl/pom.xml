@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.minsait.onesait.platform</groupId>
 		<artifactId>onesaitplatform-parent</artifactId>
-		<version>${revision}</version>
+		<version>1.1.0-ce</version>
 		<relativePath>../../..</relativePath>
 	</parent>
 	<artifactId>onesaitplatform-persistence-elasticsearch</artifactId>
@@ -16,42 +16,22 @@
 	</properties>
 
 	<dependencies>
-		<!-- To overwrite MySQL version-->
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>${mysql.driver.version}</version>
-		</dependency>
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-persistence-interfaces</artifactId>
-			<version>${project.version}</version>
+			<version>${onesaitplatform.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.minsait.onesait.platform</groupId>
 			<artifactId>onesaitplatform-config-resources</artifactId>
-			<version>${project.version}</version>
+			<version>${onesaitplatform.version}</version>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>	
-
-    <!-- Apache HTTP client dependencies -->
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>${httpclient.version}</version>
-		</dependency>
-    <!-- Apache HTTP client dependencies -->
 
 		<!-- JSON -->
 		<dependency>
@@ -74,51 +54,62 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>29.0-jre</version>
+			<version>24.1-jre</version>
 		</dependency>
 
 		<dependency>
-	      <groupId>org.elasticsearch.client</groupId>
-	      <artifactId>elasticsearch-rest-high-level-client</artifactId>
-	    </dependency>
-	    
-		<dependency>
-		    <groupId>org.opensearch.client</groupId>
-		    <artifactId>opensearch-rest-high-level-client</artifactId>
-		    <version>1.2.2</version>
-		</dependency>
-		
-		<dependency>
-		  <groupId>org.opensearch.client</groupId>
-		  <artifactId>opensearch-java</artifactId>
-		  <version>2.4.0</version>
-		</dependency>
-		
-		 <!-- https://mvnrepository.com/artifact/jakarta.json/jakarta.json-api -->
-		 <dependency>
-	      <groupId>jakarta.json.bind</groupId>
-	      <artifactId>jakarta.json.bind-api</artifactId>
-	      <version>3.0.0</version>
-	    </dependency>
-		<dependency>
-		    <groupId>jakarta.json</groupId>
-		    <artifactId>jakarta.json-api</artifactId>
-		    <version>2.1.0</version>
+			<groupId>org.elasticsearch</groupId>
+			<artifactId>elasticsearch</artifactId>
+			<version>${elasticsearch.version}</version>
 		</dependency>
 
+
+		<dependency>
+			<groupId>org.elasticsearch.client</groupId>
+			<artifactId>transport</artifactId>
+			<version>${elasticsearch.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.searchbox</groupId>
+			<artifactId>jest</artifactId>
+			<version>5.3.2</version>
+		</dependency>
 		
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>${mockito.version}</version> <!-- To use MockitoJUnitRunner -->
-      <scope>test</scope>
-    </dependency>
+		<!--
+		<dependency>
+			<groupId>org.nlpcn</groupId>
+			<artifactId>elasticsearch-sql</artifactId>
+			<version>6.2.4.0</version>
+		</dependency>
+		-->
+
 
 	</dependencies>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.elasticsearch</groupId>
+				<artifactId>elasticsearch</artifactId>
+				<version>${elasticsearch.version}</version>
+
+			</dependency>
+
+			<dependency>
+				<groupId>org.elasticsearch.client</groupId>
+				<artifactId>transport</artifactId>
+				<version>${elasticsearch.version}</version>
+
+			</dependency>
+
+		</dependencies>
+
+	</dependencyManagement>
+
 	<build>
 		<plugins>
-		  <!-- skip deployment -->
+		  <!-- skip deployment -->	
 		  <plugin>
 		    <groupId>org.apache.maven.plugins</groupId>
 		    <artifactId>maven-deploy-plugin</artifactId>
@@ -126,8 +117,8 @@
 		    <configuration>
 		        <skip>true</skip>
 		    </configuration>
-		  </plugin>
-		</plugins>
+		  </plugin>	
+		</plugins>	
 	</build>
 
 </project>

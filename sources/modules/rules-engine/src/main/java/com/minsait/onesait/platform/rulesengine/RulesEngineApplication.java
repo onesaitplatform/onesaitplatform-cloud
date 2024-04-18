@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,33 +14,19 @@
  */
 package com.minsait.onesait.platform.rulesengine;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import com.minsait.onesait.platform.business.services.interceptor.MultitenancyInterceptor;
 
 @SpringBootApplication
 @EnableAutoConfiguration
-@ComponentScan("com.minsait.onesait.platform")
+@EnableCaching
 @EnableAsync
-public class RulesEngineApplication implements WebMvcConfigurer {
+public class RulesEngineApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(RulesEngineApplication.class, args);
 	}
-
-	@Autowired
-	private MultitenancyInterceptor multitenancyInterceptor;
-
-	@Override
-	public void addInterceptors(InterceptorRegistry registry) {
-		registry.addInterceptor(multitenancyInterceptor);
-	}
-
 }

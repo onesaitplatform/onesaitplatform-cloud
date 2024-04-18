@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,11 @@
 package com.minsait.onesait.platform.config.services.client;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -29,20 +27,18 @@ import java.util.stream.Collectors;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
-import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.AccessType;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbCleanLapse;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.Token;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.ClientPlatformOntologyRepository;
@@ -51,15 +47,11 @@ import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.repository.TokenRepository;
 import com.minsait.onesait.platform.config.services.client.dto.DeviceCreateDTO;
 import com.minsait.onesait.platform.config.services.datamodel.DataModelService;
-import com.minsait.onesait.platform.config.services.device.dto.ClientPlatformDTO;
-import com.minsait.onesait.platform.config.services.device.dto.TokenDTO;
 import com.minsait.onesait.platform.config.services.exceptions.ClientPlatformServiceException;
-import com.minsait.onesait.platform.config.services.kafka.KafkaAuthorizationService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.token.TokenService;
 import com.minsait.onesait.platform.config.services.user.UserService;
-import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -83,17 +75,9 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 	@Autowired
 	private TokenRepository tokenRepository;
 	@Autowired
-	@Lazy
 	private OPResourceService resourceService;
 	@Autowired(required = false)
 	private MetricsManager metricsManager;
-	@Autowired
-	private KafkaAuthorizationService kafkaAuthorizationService;
-	@Autowired
-	@Lazy
-	private MultitenancyService multitenancyService;
-	@Value("${onesaitplatform.multitenancy.enabled:false}")
-	private boolean isMultitenancyEnabled;
 
 	private static final String LOG_ONTOLOGY_PREFIX = "LOG_";
 	private static final String LOG_DEVICE_DATA_MODEL = "DeviceLog";
@@ -117,14 +101,13 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 				if (clientPlatformOntologyRepository.findByOntologyAndClientPlatform(ontology.getIdentification(),
 						clientPlatform.getIdentification()) == null) {
 					clientPlatformOntologyRepository.save(relation);
-					kafkaAuthorizationService.addAclToOntologyClient(relation);
 				}
 			}
 
-			metricsManagerLogControlPanelClientsPlatformCreation(clientPlatform.getUser().getUserId(), "OK");
+			this.metricsManagerLogControlPanelClientsPlatformCreation(clientPlatform.getUser().getUserId(), "OK");
 			return tokenService.generateTokenForClient(clientPlatform);
 		} else {
-			metricsManagerLogControlPanelClientsPlatformCreation(clientPlatform.getUser().getUserId(), "KO");
+			this.metricsManagerLogControlPanelClientsPlatformCreation(clientPlatform.getUser().getUserId(), "KO");
 			throw new ClientPlatformServiceException("Platform Client already exists");
 		}
 	}
@@ -132,10 +115,6 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 	@Override
 	public ClientPlatform getByIdentification(String identification) {
 		return clientPlatformRepository.findByIdentification(identification);
-	}
-	
-	public ClientPlatform getIdByIdentification(String identification) {
-		return clientPlatformRepository.getIdByIdentification(identification);
 	}
 
 	@Override
@@ -148,36 +127,24 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 		return clientPlatformRepository.findByUser(user);
 	}
 
-	@Override
-	public List<String> getclientPlatformsIdentificationByUser(String userId) {
-		User user = userService.getUser(userId);
-		if (user.isAdmin()) {
-			return clientPlatformRepository.findAllIdentifications();
-		} else {
-			return clientPlatformRepository.findIdentificationsByUser(user);
-		}
-
-	}
-
 	private List<ClientPlatform> getClientPlatform(String userId, String identification) {
 
 		final User user = userService.getUser(userId);
 		List<ClientPlatform> clients = new ArrayList<>();
 
-		if (userService.isUserAdministrator(user)) {
+		if (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 			if (identification != null) {
-				final List<ClientPlatform> cli = clientPlatformRepository.findByIdentificationLike(identification);
-				if (cli != null) {
-					clients.addAll(cli);
-				}
+				ClientPlatform cli = clientPlatformRepository.findByIdentification(identification);
+				if (cli != null)
+					clients.add(cli);
 			} else {
 				clients = clientPlatformRepository.findAll();
 			}
 		} else {
 			if (identification != null) {
-				final List<ClientPlatform> cliUs = clientPlatformRepository.findByUserAndIdentificationLike(user, identification);
+				ClientPlatform cliUs = clientPlatformRepository.findByUserAndIdentification(user, identification);
 				if (cliUs != null) {
-					clients.addAll(cliUs);
+					clients.add(cliUs);
 				}
 			} else {
 				clients = clientPlatformRepository.findByUser(user);
@@ -188,8 +155,8 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 	}
 
 	private void checkClientPlatform(List<ClientPlatform> clientPlatforms, String[] ontologies, ClientPlatform client) {
-		for (final String ontologie : ontologies) {
-			final Ontology o = ontologyRepository.findByIdentification(ontologie);
+		for (int i = 0; i < ontologies.length; i++) {
+			final Ontology o = ontologyRepository.findByIdentification(ontologies[i]);
 			if (o != null) {
 				final ClientPlatformOntology clpo = clientPlatformOntologyRepository
 						.findByOntologyAndClientPlatform(o.getIdentification(), client.getIdentification());
@@ -231,7 +198,7 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 	public ClientPlatform createClientPlatform(DeviceCreateDTO device, String userId, Boolean isUpdate) {
 
 		if (clientPlatformRepository.findByIdentification(device.getIdentification()) != null) {
-			metricsManagerLogControlPanelClientsPlatformCreation(userId, "KO");
+			this.metricsManagerLogControlPanelClientsPlatformCreation(userId, "KO");
 			throw new ClientPlatformServiceException(
 					"Device with identification:" + device.getIdentification() + " exists");
 		}
@@ -251,7 +218,7 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 				final AccessType accessType = AccessType.valueOf(ontology.getString(ACCESS_STR));
 				if (!ontologyService.hasUserPermission(userService.getUser(userId), accessType, ontologyDB)) {
 					log.error(USER_HAS_NOT_CORRECT_ACCESS, userId, ontology.getString("id"));
-					metricsManagerLogControlPanelClientsPlatformCreation(userId, "KO");
+					this.metricsManagerLogControlPanelClientsPlatformCreation(userId, "KO");
 					throw new ClientPlatformServiceException(NOT_ACCESS);
 				}
 				final ClientPlatformOntology clientPlatformOntology = new ClientPlatformOntology();
@@ -270,7 +237,6 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 			final ClientPlatform cli = clientPlatformRepository.save(ndevice);
 
 			final JSONArray tokensArray = new JSONArray(device.getTokens());
-			final Set<Token> tokens = new HashSet<>();
 			for (int i = 0; i < tokensArray.length(); i++) {
 				final JSONObject token = tokensArray.getJSONObject(i);
 				final Token tokn = new Token();
@@ -278,20 +244,19 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 				tokn.setTokenName(token.getString("token"));
 				tokn.setActive(token.getBoolean("active"));
 				tokenRepository.save(tokn);
-				tokens.add(tokn);
+
 			}
 
 			for (final ClientPlatformOntology cpoNew : clientsPlatformOntologies) {
 				cpoNew.setClientPlatform(cli);
 				clientPlatformOntologyRepository.save(cpoNew);
-				kafkaAuthorizationService.addAclToOntologyOnClientCreation(cpoNew, tokens);
 			}
 
-			metricsManagerLogControlPanelClientsPlatformCreation(userId, "OK");
+			this.metricsManagerLogControlPanelClientsPlatformCreation(userId, "OK");
 
 			return ndevice;
-		} catch (final Exception e) {
-			metricsManagerLogControlPanelClientsPlatformCreation(userId, "KO");
+		} catch (Exception e) {
+			this.metricsManagerLogControlPanelClientsPlatformCreation(userId, "KO");
 			throw e;
 		}
 
@@ -305,14 +270,14 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 			final AccessType accessType = AccessType.valueOf(ontology.getString(ACCESS_STR));
 
 			if (ontology.getString("id").equals(clientPlatformOntology.getOntology().getIdentification())) {
-				if (!ontologyService.hasUserPermission(userService.getUser(userId), accessType,	clientPlatformOntology.getOntology())) {
+				if (!ontologyService.hasUserPermission(userService.getUser(userId), accessType,
+						clientPlatformOntology.getOntology())) {
 					log.error(USER_HAS_NOT_CORRECT_ACCESS, userId, ontology.getString("id"));
 					throw new ClientPlatformServiceException(NOT_ACCESS);
 				}
 
 				clientPlatformOntology.setAccess(AccessType.valueOf(ontology.getString(ACCESS_STR)));
 				clientPlatformOntologyRepository.save(clientPlatformOntology);
-				kafkaAuthorizationService.addAclToOntologyClient(clientPlatformOntology);
 
 				return true;
 			}
@@ -339,7 +304,6 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 		if (clientPlatformOntologyRepository.findByOntologyAndClientPlatform(ontology.getString("id"),
 				ndevice.getIdentification()) == null) {
 			clientPlatformOntologyRepository.save(clientPlatformOntology);
-			kafkaAuthorizationService.addAclToOntologyClient(clientPlatformOntology);
 		}
 	}
 
@@ -347,7 +311,6 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 	@Transactional
 	public void updateDevice(DeviceCreateDTO device, String userId) {
 		final ClientPlatform ndevice = clientPlatformRepository.findByIdentification(device.getIdentification());
-		final List<Token> tokens = tokenRepository.findByClientPlatform(ndevice);
 		ndevice.setMetadata(device.getMetadata());
 		ndevice.setDescription(device.getDescription());
 		JSONArray ontologies = new JSONArray();
@@ -360,7 +323,6 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 			final boolean find = updateAccessForOntology(ontologies, clientPlatformOntology, userId);
 
 			if (!find) {
-				kafkaAuthorizationService.removeAclToOntologyClient(clientPlatformOntology);
 				clientPlatformOntologyRepository.delete(clientPlatformOntology);
 				iterator.remove();
 			}
@@ -368,7 +330,9 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 		for (int i = 0; i < ontologies.length(); i++) {
 			final JSONObject ontology = ontologies.getJSONObject(i);
 			boolean find = false;
-			for (final ClientPlatformOntology clientPlatformOntology : ndevice.getClientPlatformOntologies()) {
+			for (final Iterator<ClientPlatformOntology> iterator = ndevice.getClientPlatformOntologies()
+					.iterator(); iterator.hasNext();) {
+				final ClientPlatformOntology clientPlatformOntology = iterator.next();
 				if (ontology.getString("id").equals(clientPlatformOntology.getOntology().getIdentification())) {
 					find = true;
 					break;
@@ -378,10 +342,9 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 				createAccessForOntology(ontology, ndevice, userId);
 			}
 		}
-		ndevice.getTokens().clear();
-		ndevice.getTokens().addAll(tokens);
+
 		clientPlatformRepository.save(ndevice);
-		log.debug("stop");
+
 	}
 
 	@Override
@@ -395,7 +358,6 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 		if (clientPlatformOntologyRepository.findByOntologyAndClientPlatform(ontology.getIdentification(),
 				clientPlatform.getIdentification()) == null) {
 			clientPlatformOntologyRepository.save(relation);
-			kafkaAuthorizationService.addAclToOntologyClient(relation);
 		}
 
 	}
@@ -409,13 +371,8 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 
 	@Override
 	public List<Token> getTokensByClientPlatformId(String clientPlatformId) {
-		final Optional<ClientPlatform> clientPlatform = clientPlatformRepository.findById(clientPlatformId);
-		if (clientPlatform.isPresent()) {
-			return tokenService.getTokens(clientPlatform.get());
-		} else {
-			return new ArrayList<>();
-		}
-
+		final ClientPlatform clientPlatform = clientPlatformRepository.findById(clientPlatformId);
+		return tokenService.getTokens(clientPlatform);
 	}
 
 	@Override
@@ -430,22 +387,18 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 
 	@Override
 	public ClientPlatform getById(String id) {
-		return clientPlatformRepository.findById(id).orElse(null);
+		return clientPlatformRepository.findOne(id);
 	}
 
 	@Override
 	public boolean hasUserManageAccess(String id, String userId) {
 		final User user = userService.getUser(userId);
-		final Optional<ClientPlatform> opt = clientPlatformRepository.findById(id);
-		if (opt.isPresent()) {
-			final ClientPlatform clientPlatform = opt.get();
-			if (user.equals(clientPlatform.getUser()) || userService.isUserAdministrator(user)) {
-				return true;
-			} else {
-				return resourceService.hasAccess(userId, id, ResourceAccessType.MANAGE);
-			}
-		} else {
-			return false;
+		final ClientPlatform clientPlatform = clientPlatformRepository.findById(id);
+		if (user.equals(clientPlatform.getUser())
+				|| user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString()))
+			return true;
+		else {
+			return resourceService.hasAccess(userId, id, ResourceAccessType.MANAGE);
 		}
 
 	}
@@ -453,16 +406,12 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 	@Override
 	public boolean hasUserViewAccess(String id, String userId) {
 		final User user = userService.getUser(userId);
-		final Optional<ClientPlatform> opt = clientPlatformRepository.findById(id);
-		if (opt.isPresent()) {
-			final ClientPlatform clientPlatform = opt.get();
-			if (user.equals(clientPlatform.getUser()) || userService.isUserAdministrator(user)) {
-				return true;
-			} else {
-				return resourceService.hasAccess(userId, id, ResourceAccessType.VIEW);
-			}
-		} else {
-			return false;
+		final ClientPlatform clientPlatform = clientPlatformRepository.findById(id);
+		if (user.equals(clientPlatform.getUser())
+				|| user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString()))
+			return true;
+		else {
+			return resourceService.hasAccess(userId, id, ResourceAccessType.VIEW);
 		}
 
 	}
@@ -483,7 +432,6 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 				if (clientPlatformOntologyRepository.findByOntologyAndClientPlatform(
 						ontology.getKey().getIdentification(), clientPlatform.getIdentification()) == null) {
 					clientPlatformOntologyRepository.save(relation);
-					kafkaAuthorizationService.addAclToOntologyClient(relation);
 				}
 			}
 
@@ -494,8 +442,8 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 	}
 
 	private void metricsManagerLogControlPanelClientsPlatformCreation(String userId, String result) {
-		if (null != metricsManager) {
-			metricsManager.logControlPanelClientsPlatformCreation(userId, result);
+		if (null != this.metricsManager) {
+			this.metricsManager.logControlPanelClientsPlatformCreation(userId, result);
 		}
 	}
 
@@ -514,46 +462,6 @@ public class ClientPlatformServiceImpl implements ClientPlatformService {
 		logOntology.setRtdbDatasource(RtdbDatasource.MONGO);
 		logOntology.setRtdbCleanLapse(RtdbCleanLapse.SIX_MONTHS);
 		return logOntology;
-	}
-
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	@Override
-	public ClientPlatformDTO parseClientPlatform(ClientPlatform clientPlatform) {
-
-		final Map<String, AccessType> ontologies = new HashMap<>();
-		for (final ClientPlatformOntology ontology : clientPlatform.getClientPlatformOntologies()) {
-			ontologies.put(ontology.getOntology().getIdentification(), ontology.getAccess());
-		}
-		final List tokens = new ArrayList();
-		if (isMultitenancyEnabled) {
-			for (final Token token : clientPlatform.getTokens()) {
-				tokens.add(TokenDTO.builder().token(token.getTokenName()).active(token.isActive())
-						.tenant(multitenancyService.getMasterDeviceToken(token.getTokenName()).getTenant()).build());
-			}
-		} else {
-			for (final Token token : clientPlatform.getTokens()) {
-				tokens.add(token.getTokenName());
-			}
-		}
-
-		return ClientPlatformDTO.builder().user(clientPlatform.getUser().getUserId())
-				.description(clientPlatform.getDescription()).identification(clientPlatform.getIdentification())
-				.metadata(clientPlatform.getMetadata()).ontologies(ontologies).tokens(tokens).build();
-	}
-
-	@Override
-	public ClientPlatform update(ClientPlatform clientPlatform) {
-		return clientPlatformRepository.save(clientPlatform);
-	}
-
-	@Override
-	public List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification, String description) {
-		User user = userService.getUser(userId);
-		if (user.isAdmin()) {
-			return clientPlatformRepository.findAllDto(identification, description);
-		} else {
-			return clientPlatformRepository.findDtoByUserAndPermissions(user, identification, description);
-		}
 	}
 
 }

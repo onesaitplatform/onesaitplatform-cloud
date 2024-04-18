@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('AllStageBatchTimerChartController', ["$rootScope", "$scope", "api", "pipelineConstant", function($rootScope, $scope, api, pipelineConstant) {
+  .controller('AllStageBatchTimerChartController', function($rootScope, $scope, api, pipelineConstant) {
     var baseQuery = "select mean,metric from timers where (pipeline='" + $scope.pipelineConfig.info.pipelineId + "') and ";
 
     angular.extend($scope, {
@@ -224,4 +224,4 @@ angular
       refreshTimeSeriesData();
     }
 
-  }]);
+  });

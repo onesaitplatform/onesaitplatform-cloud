@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,13 +40,12 @@ public interface DigitalTwinDeviceRepository extends JpaRepository<DigitalTwinDe
 
 	List<DigitalTwinDevice> findByIdentificationContaining(String identification);
 
-	@Override
+	DigitalTwinDevice findById(String id);
+
 	@Transactional
 	void deleteById(String id);
 
 	List<DigitalTwinDevice> findByUser(User user);
-	
-	List<DigitalTwinDevice> findByUserAndIdentificationLike(User user, String identification);
 
 	List<DigitalTwinDevice> findByTypeId(DigitalTwinType typeId);
 

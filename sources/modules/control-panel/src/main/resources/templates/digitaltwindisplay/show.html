@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -214,62 +214,7 @@
 			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
-				<!-- CREACIÓN DE CONSULTA -->
-					<div id="query-panel" class="row main"  >									
-						<div class="panel panel-white no-shadow"style="    margin-bottom: 0px;">															
-							<div class="panel-body no-space">	
-								<div class="panel-tools">	
-									<!-- OPCIONES DE CONSULTA -->
-									<div class="col-md-12 col-sm-11  ">
-										<div class="col-sm-2">
-											<label class="" th:text="#{digitaltwindisplay.type} + ':'">Type</label>											
-											<select class="form-control" id="types" name="types" onChange="changeType();">
-												<option name="all" value="all" id="all"> ALL (*) </option>
-												<option th:each="type : ${types}" th:id="${type.user.userId}" th:data-description="${type.description}" data-type="general" th:value="${type.identification}" th:text="${type.identification}"  ></option>
-											</select>
-										</div>
-										<div class="col-md-3">
-											<label class="" th:text="#{digitaltwindisplay.device} + ':'">Device</label>									
-											<select  class="form-control" id="devices" name="devices" disabled="disabled">
-												<option name="all" value="all" id="all"> ALL (*) </option>
-											</select>
-										</div>
-										<div class="col-md-2">
-											<label class="" th:text="#{digitaltwindisplay.operation} + ':'">Operation</label>									
-											<select  class="form-control" id="operation" name="operation" onChange="changeOperation();">
-												<option name="shadow" value="shadow"> SHADOW </option>
-												<option name="shadow" value="register"> REGISTER </option>
-												<option name="shadow" value="ping"> PING </option>
-												<option name="log" value="log"> LOG </option>
-												<option name="action" value="action"> ACTION </option>
-												<option name="notebook" value="notebook"> NOTEBOOK </option>
-												<option name="rule" value="rule"> RULE </option>
-												<option name="flow" value="flow"> FLOW </option>
-												<option name="pipeline" value="pipeline"> PIPELINE </option>
-												<option name="custom" value="custom"> OTHER </option>
-											</select>
-										</div>
-										<div class="col-md-2" id="event" style="display:none;">
-											<label class="" th:text="#{digitaltwindisplay.custom.eventname} + ':'">Custom Event Name</label>									
-											<input  class="form-control" id="eventName" name="eventName" disabled="disabled" th:placeholder="#{digitaltwindisplay.custom.eventname}"/>
-										</div>
-										<div class="col-md-2" id="action" style="display:none;">
-											<label class="" th:text="#{digitaltwindisplay.action.actionname} + ':'">Action Name</label>									
-											<input  class="form-control" id="actionName" name="actionName" disabled="disabled" th:placeholder="#{digitaltwindisplay.action.actionname}"/>
-										</div>
-										<div id="fieldset_offset" class="col-md-3">
-											<label class="" th:text="#{digitaltwindisplay.offset} + ':'">Offset</label>																
-											<input class="form-control" name="offset" id="offset"/>															
-										</div>
-									</div>
-									<div class="btn-group" style="padding-top: 26px; padding-right: 26px;">
-										<button type="button" class="btn btn-circle btn-outline btn-primary" onclick="getQueryExecuted()" id="executeQuery"><span th:text="#{database.execQuery}">Ejecutar Query</span> </button>
-									</div>	
-								</div>
-								<div class="clearfix"></div>
-							</div>
-						</div>								
-					</div>
+				
 				<!-- BEGIN PAGE BAR AND BREADCRUM-->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
@@ -284,14 +229,13 @@
 				<!-- END PAGE TITLE-->			
 				
 				<!-- MAIN ROW -->
-				<div class="row main">
-								
+				<div class="row">
+					<div class="col-md-12">						
 						<div class="portlet light ">
-						
 							<div class="portlet-title">
 								<div class="caption">
 									<!-- FORM TITLE -->
-									<span  class="caption-subject " th:text="#{digitaltwindisplay.breadcrumb.show}  "> </span>
+									<span  class="caption-subject " th:text="#{digitaltwindisplay.template.show} + ':'"> </span>
 									
 								</div>									
 								<div class="tools hide">
@@ -301,17 +245,73 @@
 							</div>
 							<div class="portlet-body" style="display: block; height: auto;">
 								
-								<div class="row main">
-									
+								<div class="row">
+									<!-- CREACIÓN DE CONSULTA -->
+									<div id="query-panel" class="col-md-12">									
+										<div class="panel panel-white no-shadow">											
+											<div class="panel-body no-space">	
+												<div class="panel-tools">	
+													<!-- OPCIONES DE CONSULTA -->
+													<div class="col-md-12 col-sm-11  margin-top-10 margin-bottom-10">
+														<div class="col-sm-2">
+															<label class="" th:text="#{digitaltwindisplay.type} + ':'">Type</label>											
+															<select class="form-control" id="types" name="types" onChange="changeType();">
+																<option name="all" value="all" id="all"> ALL (*) </option>
+																<option th:each="type : ${types}" th:id="${type.user.userId}" th:data-description="${type.description}" data-type="general" th:value="${type.identification}" th:text="${type.identification}"  ></option>
+															</select>
+														</div>
+														<div class="col-md-3">
+															<label class="" th:text="#{digitaltwindisplay.device} + ':'">Device</label>									
+															<select  class="form-control" id="devices" name="devices" disabled="disabled">
+																<option name="all" value="all" id="all"> ALL (*) </option>
+															</select>
+														</div>
+														<div class="col-md-2">
+															<label class="" th:text="#{digitaltwindisplay.operation} + ':'">Operation</label>									
+															<select  class="form-control" id="operation" name="operation" onChange="changeOperation();">
+																<option name="shadow" value="shadow"> SHADOW </option>
+																<option name="shadow" value="register"> REGISTER </option>
+																<option name="shadow" value="ping"> PING </option>
+																<option name="log" value="log"> LOG </option>
+																<option name="action" value="action"> ACTION </option>
+																<option name="notebook" value="notebook"> NOTEBOOK </option>
+																<option name="rule" value="rule"> RULE </option>
+																<option name="flow" value="flow"> FLOW </option>
+																<option name="pipeline" value="pipeline"> PIPELINE </option>
+																<option name="custom" value="custom"> OTHER </option>
+															</select>
+														</div>
+														<div class="col-md-2" id="event" style="display:none;">
+															<label class="" th:text="#{digitaltwindisplay.custom.eventname} + ':'">Custom Event Name</label>									
+															<input  class="form-control" id="eventName" name="eventName" disabled="disabled" th:placeholder="#{digitaltwindisplay.custom.eventname}"/>
+														</div>
+														<div class="col-md-2" id="action" style="display:none;">
+															<label class="" th:text="#{digitaltwindisplay.action.actionname} + ':'">Action Name</label>									
+															<input  class="form-control" id="actionName" name="actionName" disabled="disabled" th:placeholder="#{digitaltwindisplay.action.actionname}"/>
+														</div>
+														<div id="fieldset_offset" class="col-md-3">
+															<label class="" th:text="#{digitaltwindisplay.offset} + ':'">Offset</label>																
+															<input class="form-control" name="offset" id="offset"/>															
+														</div>
+													</div>
+													<div class="btn-group" style="padding-top: 26px; padding-right: 26px;">
+														<button type="button" class="btn btn-circle btn-outline btn-primary" onclick="getQueryExecuted()" id="executeQuery"><span th:text="#{database.execQuery}">Ejecutar Query</span> </button>
+													</div>	
+												</div>
+												<div class="clearfix"></div>
+											</div>
+										</div>								
+									</div>
 									
 									<!-- RESULTADOS DE CONSULTA -->
-									<div id="result-panel" class=" hide">
+									<div id="result-panel" class="col-md-12 hide">
 									
 										<!-- PANEL DE RESULTADOS -->
 										<div class="panel panel-white no-shadow">
-											<div class="panel-heading panel-sofia2" style="padding: 0px 16px 0px 24px !important; ">
+											<div class="panel-heading panel-sofia2">
 												<h3 class="panel-title uppercase font-grey-mint">
-												<span th:text="#{database.result.data}">Result data </span> 												
+												<span th:text="#{database.results}">Resultados sobre </span> 
+												<span id="query-ontologia-result" class="bold uppercase">DEVICE</span>
 												<span class="pull-right" style="margin-top: -6px;"><button class="btn btn-circle btn-outline btn-table-toggle btn-primary"><span th:text="#{gen.tableViewToggle}">Table Viewer Toggle</span></button></span>
 												</h3>											
 											</div>
@@ -323,7 +323,7 @@
 													<div class="hide" id="Canvasrespuesta">
 														<div id="theQueryResponse" th:fragment="query" th:text="${queryResult}"></div>														
 													</div>
-													<div id="jsoneditor" style="height: 61%;" data-loaded="false"></div>
+													<div id="jsoneditor" data-loaded="false"></div>
 													<div class="table-viewer" style="display: none;" data-loaded="false"></div>
 													<div class="clearfix"></div>
 												</div>
@@ -337,7 +337,7 @@
 								</div>
 							</div>
 						</div><!-- END PORTLET BASIC  -->						
-					 					
+					</div><!-- END COL-12 -->						
 				</div><!-- END MAIN ROW -->
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
@@ -388,19 +388,19 @@
 	
 	
 	<!-- CORE JS CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"></script>
-	<script th:src="@{/static/js/layout.js}"></script>
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>
 	
 	<!-- DATABASE PLUGINS TO-DO: pendiente de ubicación -->
 
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>	
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
-	<script th:src="@{/static/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js}"></script>
-	<script th:src="@{/static/vendor/json/jsonToTable.js}"></script>
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"/>	
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js}"/>
+	<script th:src="@{/static/vendor/json/jsonToTable.js}"/>
 
 	<script th:inline="javascript"> 
 	//<![CDATA[
@@ -540,7 +540,7 @@
 				required_by_default: true,
 				modes: ['text', 'tree', 'view'], // allowed modes
 				error: function (err) {
-					$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: err.toString()});
+					$.alert({title: 'ERROR!', theme: 'dark', style: 'red', content: err.toString()});
 					return false;
 				},
 				onChange: function(){
@@ -559,10 +559,10 @@
 	
 	
 	<!-- JSON EDITOR -->	
-	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>	
-	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
-	<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
-	<script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>
+	<script th:src="@{/static/vendor/json/jsoneditor.js}"/>	
+	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"/>
+	<script th:src="@{/static/vendor/ace/mode-json.js}"/>
+	<script th:src="@{/static/vendor/ace/theme-textmate.js}"/>
 
 	<!-- MAIN INIT -->
 	<script  th:inline="javascript">

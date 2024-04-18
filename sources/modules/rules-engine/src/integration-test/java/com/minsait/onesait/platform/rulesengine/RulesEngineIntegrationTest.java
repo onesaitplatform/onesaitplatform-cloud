@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -188,7 +188,7 @@ public class RulesEngineIntegrationTest {
 
 	@Test
 	public void When_TemperatureIsHigherThan80_Then_AlarmIsTriggered_Async() throws GenericOPException {
-		rulesEngineService.executeRulesAsync(SENSOR_TAG, JSON_HIGH_TEMP, null, null);
+		rulesEngineService.executeRulesAsync(SENSOR_TAG, JSON_HIGH_TEMP);
 
 	}
 
@@ -201,7 +201,7 @@ public class RulesEngineIntegrationTest {
 
 	@Test
 	public void When_TemperatureIsLessThan80_Then_AlarmIsNotTriggered_Async() throws GenericOPException {
-		rulesEngineService.executeRulesAsync(SENSOR_TAG, JSON_LOW_TEMP, null, null);
+		rulesEngineService.executeRulesAsync(SENSOR_TAG, JSON_LOW_TEMP);
 	}
 
 	@Transactional
@@ -226,7 +226,7 @@ public class RulesEngineIntegrationTest {
 		sensorAlarm.setPublic(false);
 		sensorAlarm.setDescription("Sensor alarm");
 
-		ontologyRepository.saveAll(Arrays.asList(sensorTag, sensorAlarm));
+		ontologyRepository.save(Arrays.asList(sensorTag, sensorAlarm));
 
 	}
 

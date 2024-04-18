@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('DeleteModalInstanceController', ["$scope", "$modalInstance", "pipelineInfo", "api", function ($scope, $modalInstance, pipelineInfo, api) {
+  .controller('DeleteModalInstanceController', function ($scope, $modalInstance, pipelineInfo, api) {
     angular.extend($scope, {
       common: {
         errors: []
@@ -55,4 +55,4 @@ angular
         $modalInstance.dismiss('cancel');
       }
     });
-  }]);
+  });

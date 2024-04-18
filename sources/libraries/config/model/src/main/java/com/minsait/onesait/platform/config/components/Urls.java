@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,13 +43,13 @@ public class Urls {
 	private RouterStandAlone routerStandAlone;
 
 	private ApiManager apiManager;
-
+	
 	private Notebook notebook;
 
 	private Controlpanel controlpanel;
 
 	private DigitalTwinBroker digitalTwinBroker;
-
+	
 	private DashboardEngine dashboardEngine;
 
 	private Domain domain;
@@ -61,37 +61,5 @@ public class Urls {
 	private RulesEngine rulesEngine;
 
 	private BPMEngine bpmEngine;
-
-	private GISViewer gisViewer;
-
-	private ReportEngine reportEngine;
-
-	private OpenData openData;
-
-	private DataCleanerUI dataCleanerUI;
-
-	private LogCentralizer logCentralizer;
-
-	private KeycloakManager keycloakManager;
-
-	private Edge edge;
-
-	private Prometheus prometheus;
-
-	private MinIO minio;
-
-	private Presto presto;
-
-	private Serverless serverless;
-
-	private Modeljsonld modeljsonld;
-
-	private Datalabeling datalabeling;
-
-	private Nebula nebula;
-
-	private Spark spark;
-
-	private TracingUI tracingUI;
 
 }

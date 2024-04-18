@@ -24,7 +24,7 @@ angular.module('dataCollectorApp.common')
     manager: 'manager',
     guest: 'guest'
   })
-  .service('authService', ["$rootScope", "$q", "$cookies", "api", "configuration", function($rootScope, $q, $cookies, api, configuration) {
+  .service('authService', function($rootScope, $q, $cookies, api, configuration) {
     var self = this;
 
     this.initializeDefer = undefined;
@@ -154,4 +154,4 @@ angular.module('dataCollectorApp.common')
     this.isUserAdmin = function() {
       return self.userInfo && self.userInfo.roles && self.userInfo.roles.indexOf('admin') !== -1;
     };
-  }]);
+  });

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import javax.persistence.Converter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.minsait.onesait.platform.git.GitlabConfiguration;
+import com.minsait.onesait.platform.config.components.GitlabConfiguration;
 
 @Converter(autoApply = true)
 public class GitlabConfigurationConverter implements AttributeConverter<GitlabConfiguration, String> {

@@ -18,9 +18,9 @@
  */
 angular
   .module('dataCollectorApp.home')
-  .controller('ErrorConfigurationController', ["$scope", function ($scope) {
+  .controller('ErrorConfigurationController', function ($scope) {
     $scope.detailPaneConfig = $scope.errorStageConfig;
     $scope.$watch('errorStageConfig', function() {
       $scope.detailPaneConfig = $scope.errorStageConfig;
     });
-  }]);
+  });

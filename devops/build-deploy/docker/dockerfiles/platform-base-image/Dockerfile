@@ -10,10 +10,10 @@ LABEL platform.image.license="Apache Software License 2"
 ENV JVM_INITIAL_JAVA_HEAP=1g
 ENV JVM_MAX_JAVA_HEAP=3g
 
-# Young generation represents
+# Young generation represents 
 # all the objects which have a short life of time
-# Oracle recommends that you keep the
-# size for the young generation between
+# Oracle recommends that you keep the 
+# size for the young generation between 
 # a half and a quarter of the overall heap size
 ENV JVM_YOUNG_GENERATION=1g
 
@@ -35,11 +35,9 @@ ENV DS_TIME_BETWEEN_EVICTION_RUNS_MILLIS=10000 \
 ENV JAVA_OPTS="$JAVA_OPTS -Xms${JVM_INITIAL_JAVA_HEAP} \
                           -Xmx${JVM_MAX_JAVA_HEAP} \
                           -Xmn${JVM_YOUNG_GENERATION} \
-                          -XX:-TieredCompilation \
-                          -XX:ReservedCodeCacheSize=240m \
+                          -XX:-TieredCompilation \ 
+                          -XX:ReservedCodeCacheSize=240m \                         
                           -XX:+UnlockExperimentalVMOptions \
                           -XX:+UseCGroupMemoryLimitForHeap \
-                          -XX:+ExitOnOutOfMemoryError \
-                          -XX:+HeapDumpOnOutOfMemoryError \
                           -Djava.security.egd=file:/dev/./urandom \
-                          -Dfile.encoding=UTF-8"
+                          -Dfile.encoding=UTF-8"                                              

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,37 @@
 package com.minsait.onesait.platform;
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.actuate.autoconfigure.CacheStatisticsAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.EndpointAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.EndpointMBeanExportAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.EndpointWebMvcAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.EndpointWebMvcManagementContextConfiguration;
+import org.springframework.boot.actuate.autoconfigure.HealthIndicatorAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.JolokiaAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.MetricExportAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.MetricFilterAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.PublicMetricsAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.TraceWebFilterAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.EmbeddedServletContainerAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.ServerPropertiesAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+
+import de.codecentric.boot.admin.client.config.SpringBootAdminClientAutoConfiguration;
 
 @SpringBootApplication
 @Configuration
-//@Import({ AopAutoConfiguration.class, SpringBootAdminClientAutoConfiguration.class })
-@ComponentScan(basePackages = "com.minsait.onesait.platform")
+@Import({ AopAutoConfiguration.class, CacheStatisticsAutoConfiguration.class,
+		EmbeddedServletContainerAutoConfiguration.class, EndpointAutoConfiguration.class,
+		EndpointMBeanExportAutoConfiguration.class, EndpointWebMvcAutoConfiguration.class,
+		EndpointWebMvcManagementContextConfiguration.class, HealthIndicatorAutoConfiguration.class,
+		JolokiaAutoConfiguration.class, MetricExportAutoConfiguration.class, MetricFilterAutoConfiguration.class,
+		PublicMetricsAutoConfiguration.class, ServerPropertiesAutoConfiguration.class,
+		SpringBootAdminClientAutoConfiguration.class, TraceWebFilterAutoConfiguration.class })
+@ComponentScan(basePackages = "com.minsait.onesait.platform.cacheserver.config")
 public class CacheServerApplication {
 
 	public static void main(String[] args) {

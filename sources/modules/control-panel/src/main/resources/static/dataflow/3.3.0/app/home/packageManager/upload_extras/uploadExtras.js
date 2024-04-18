@@ -20,7 +20,7 @@
 angular
   .module('dataCollectorApp.home')
   .controller('UploadExtrasModalInstanceController',
-    ["$scope", "$rootScope", "$modalInstance", "installedLibraries", "api", function ($scope, $rootScope, $modalInstance, installedLibraries, api) {
+    function ($scope, $rootScope, $modalInstance, installedLibraries, api) {
       angular.extend($scope, {
         common: {
           errors: []
@@ -75,4 +75,4 @@ angular
         })
         .sortBy('label')
         .value();
-    }]);
+    });

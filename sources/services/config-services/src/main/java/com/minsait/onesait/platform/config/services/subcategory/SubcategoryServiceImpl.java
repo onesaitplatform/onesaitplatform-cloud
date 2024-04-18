@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,13 @@ package com.minsait.onesait.platform.config.services.subcategory;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.transaction.Transactional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.config.model.Category;
-import com.minsait.onesait.platform.config.model.CategoryRelation;
 import com.minsait.onesait.platform.config.model.Subcategory;
-import com.minsait.onesait.platform.config.repository.CategoryRelationRepository;
 import com.minsait.onesait.platform.config.repository.CategoryRepository;
 import com.minsait.onesait.platform.config.repository.SubcategoryRepository;
-import com.minsait.onesait.platform.config.services.exceptions.CategoryServiceException;
 
 @Service
 public class SubcategoryServiceImpl implements SubcategoryService {
@@ -38,9 +33,6 @@ public class SubcategoryServiceImpl implements SubcategoryService {
 
 	@Autowired
 	private CategoryRepository categoryRepository;
-
-	@Autowired
-	private CategoryRelationRepository categoryRelationRepository;
 
 	@Override
 	public List<Subcategory> getCategoriesByIdentificationAndDescription(String identification, String description) {
@@ -67,10 +59,6 @@ public class SubcategoryServiceImpl implements SubcategoryService {
 	@Override
 	public void createSubcategory(Subcategory subcategory, String categoryId) {
 		Category category = categoryRepository.findById(categoryId);
-		Subcategory subcategories = subcategoryRepository.findByIdentificationAndCategory(subcategory.getIdentification(), category);
-		if (subcategories!=null) {
-			throw new CategoryServiceException("Subcategory identification already exists");
-		}
 		subcategory.setCategory(category);
 		subcategoryRepository.save(subcategory);
 	}
@@ -98,16 +86,10 @@ public class SubcategoryServiceImpl implements SubcategoryService {
 		return subcategoryRepository.findAll();
 	}
 
-	@Transactional
 	@Override
 	public void deleteSubcategory(String id) {
 		Subcategory category = subcategoryRepository.findById(id);
 		if (category != null) {
-			List<CategoryRelation> categoryRelations = categoryRelationRepository.findBySubcategory(id);
-			categoryRelations.forEach(cr -> { 
-				cr.setSubcategory(null); 
-				categoryRelationRepository.save(cr);
-				});
 			subcategoryRepository.delete(category);
 		}
 	}

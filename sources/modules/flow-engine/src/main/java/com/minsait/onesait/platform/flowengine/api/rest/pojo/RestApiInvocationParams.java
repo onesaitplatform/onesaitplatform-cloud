@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.http.HttpHeaders;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 import com.minsait.onesait.platform.config.model.ApiOperation.Type;
 
@@ -31,9 +29,6 @@ public class RestApiInvocationParams {
 	@Getter
 	@Setter
 	private String body;
-	@Getter
-	@Setter
-	private MultiValueMap<String, Object> multipartData;
 	@Getter
 	@Setter
 	private Map<String, String> queryParams;
@@ -49,9 +44,6 @@ public class RestApiInvocationParams {
 	@Getter
 	@Setter
 	private HttpHeaders headers;
-	@Getter
-	@Setter
-	private boolean isMultipart;
 	
 	public RestApiInvocationParams (){
 		this.body = "";
@@ -60,7 +52,5 @@ public class RestApiInvocationParams {
 		this.method = null;
 		this.url = "";
 		this.headers = new HttpHeaders();
-		multipartData = new LinkedMultiValueMap<>();
-		isMultipart = false;
 	}
 }

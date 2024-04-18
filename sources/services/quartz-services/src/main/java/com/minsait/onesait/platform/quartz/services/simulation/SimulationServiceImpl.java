@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +27,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulation;
-import com.minsait.onesait.platform.config.repository.ClientPlatformInstanceSimulationRepository;
-import com.minsait.onesait.platform.config.services.exceptions.SimulationServiceException;
 import com.minsait.onesait.platform.config.services.simulation.DeviceSimulationService;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
-import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 import com.minsait.onesait.platform.scheduler.SchedulerType;
 import com.minsait.onesait.platform.scheduler.scheduler.bean.TaskInfo;
 import com.minsait.onesait.platform.scheduler.scheduler.bean.TaskOperation;
@@ -46,8 +42,6 @@ public class SimulationServiceImpl implements SimulationService {
 	private DeviceSimulationService deviceSimulationService;
 	@Autowired
 	private TaskService taskService;
-	@Autowired
-	private ClientPlatformInstanceSimulationRepository clientPlatformInstanceSimulationRepository;
 
 	@Override
 	public String getDeviceSimulationJson(String identification, String clientPlatform, String token, String ontology,
@@ -63,11 +57,11 @@ public class SimulationServiceImpl implements SimulationService {
 		((ObjectNode) rootNode).put("token", token);
 		((ObjectNode) rootNode).put("ontology", ontology);
 
-		if (StringUtils.hasText(jsonInstances)) {
+		if (!StringUtils.isEmpty(jsonInstances)) {
 			((ObjectNode) rootNode).set("instances", mapper.readTree(jsonInstances));
 			((ObjectNode) rootNode).put("instancesMode", instancesMode);
 		}
-		if (StringUtils.hasText(jsonMap))
+		if (!StringUtils.isEmpty(jsonMap))
 			((ObjectNode) rootNode).set("fields", mapper.readTree(jsonMap));
 		return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
 	}
@@ -75,12 +69,8 @@ public class SimulationServiceImpl implements SimulationService {
 	@Override
 	public void createSimulation(String identification, int interval, String userId, String json) throws IOException {
 
-		if (clientPlatformInstanceSimulationRepository.findByIdentification(identification) != null) {
-			throw new SimulationServiceException("Simulation with identification: " + identification + " exists");
-		}
-		final ClientPlatformInstanceSimulation simulation = deviceSimulationService.createSimulation(identification,
-				interval, userId, json);
-
+		final ClientPlatformInstanceSimulation simulation = deviceSimulationService.createSimulation(identification, interval, userId,
+				json);
 		scheduleSimulation(simulation);
 	}
 
@@ -109,9 +99,6 @@ public class SimulationServiceImpl implements SimulationService {
 			jobContext.put("id", deviceSimulation.getId());
 			jobContext.put("json", deviceSimulation.getJson());
 			jobContext.put("userId", deviceSimulation.getUser().getUserId());
-			jobContext.put(Tenant2SchemaMapper.VERTICAL_SCHEMA_KEY_STRING,
-					MultitenancyContextHolder.getVerticalSchema());
-			jobContext.put(Tenant2SchemaMapper.TENANT_KEY_STRING, MultitenancyContextHolder.getTenantName());
 			task.setJobName("Device Simulation");
 			task.setData(jobContext);
 			task.setSingleton(false);
@@ -127,8 +114,8 @@ public class SimulationServiceImpl implements SimulationService {
 	}
 
 	@Override
-	public void updateSimulation(String identification, int interval, String json,
-			ClientPlatformInstanceSimulation simulation) throws IOException {
+	public void updateSimulation(String identification, int interval, String json, ClientPlatformInstanceSimulation simulation)
+			throws IOException {
 		deviceSimulationService.updateSimulation(identification, interval, json, simulation);
 
 	}

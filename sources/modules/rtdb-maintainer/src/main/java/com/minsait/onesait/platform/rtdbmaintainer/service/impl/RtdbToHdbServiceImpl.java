@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,11 +59,8 @@ public class RtdbToHdbServiceImpl implements RtdbToHdbService {
 				binaryFile.setFileExtension(FilenameUtils.getExtension(file.getName()));
 				binaryFile.setUser(ontology.getUser());
 				binaryFileService.createBinaryFile(binaryFile);
-				final boolean delete = file.delete();
-				if (log.isDebugEnabled()) {
-					log.debug("delete:{}", delete);
-				}
-				
+				boolean delete = file.delete();
+				log.debug("delete:" + delete);
 			} catch (FileNotFoundException | BinaryRepositoryException e) {
 				log.error("Could not store file {} on Binary Repository: {}", file.getName(), e.getMessage());
 			}
@@ -74,7 +71,6 @@ public class RtdbToHdbServiceImpl implements RtdbToHdbService {
 			binaryFile.setRepository(RepositoryType.FILE);
 			binaryFile.setPath(exportData.getPath());
 			binaryFile.setId(UUID.randomUUID().toString());
-			binaryFile.setIdentification(file.getName());
 			binaryFile.setMetadata(null);
 			final String mime = FilenameUtils.getExtension(file.getName()).toLowerCase().contains("json")
 					? "application/json"
@@ -90,11 +86,8 @@ public class RtdbToHdbServiceImpl implements RtdbToHdbService {
 	public void deleteTmpFile(ExportData exportData) {
 		final File file = new File(exportData.getPath());
 		if (file.exists()) {
-			final boolean delete = file.delete();
-			if (log.isDebugEnabled()) {
-				log.debug("delete:{}", delete);
-			}
-			
+			boolean delete = file.delete();
+			log.debug("delete:" + delete);
 		}
 	}
 }

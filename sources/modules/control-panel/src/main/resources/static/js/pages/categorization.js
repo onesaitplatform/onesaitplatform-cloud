@@ -9,10 +9,10 @@ var setActiveTree = function (id) {
 		headers: {
 			[csrf_header]: csrf_value
 	    }
-	}).done(function(response){
+	}).success(function(response){
 		navigateUrl("/controlpanel/categorization/list");}
 	).fail(function(response, data){
-		toastr.error(messagesForms.operations.genOpError,errorMsg);
+		$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: errorMsg});
 		console.log("Error: ", response);}		
 	) 
 
@@ -20,23 +20,23 @@ var setActiveTree = function (id) {
 
 var deleteTree = function (id) {
 	$.confirm({
-		title: deleteTitle,
+		title: deleteBtn,
 		theme: 'light',
 		columnClass: 'medium',
 		content: deleteDialog,
 		draggable: true,
 		dragWindowGap: 100,
 		backgroundDismiss: true,
-		style: 'red',
+		closeIcon: true,
 		buttons: {
 			close: {
 				text: closeBtn,
-				btnClass: 'btn btn-outline blue dialog',
+				btnClass: 'btn btn-sm btn-outline btn-circle blue',
 				action: function (){} //GENERIC CLOSE.		
 			},
 			Ok: {
-				text: deleteBtn,
-				btnClass: 'btn btn-primary',
+				text: "Ok",
+				btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
 				action: function(){	
 					$.ajax({url : "/controlpanel/categorization/delete",
 						data : {"id" : id},
@@ -44,11 +44,10 @@ var deleteTree = function (id) {
 						headers: {
 							[csrf_header]: csrf_value
 					    }
-					}).done(function(response){
-						toastr.success(messagesForms.operations.genOpSuccess,'');
+					}).success(function(response){
 						navigateUrl("/controlpanel/categorization/list");}
 					).fail(function(response, data){
-						toastr.error(messagesForms.operations.genOpError,errorMsg);
+						$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: errorMsg});
 						console.log("Error: ", response);}		
 					)
 				}											
@@ -66,11 +65,11 @@ var deactivateTree = function (id) {
 		headers: {
 			[csrf_header]: csrf_value
 	    }
-	}).done(function(response){
+	}).success(function(response){
 		console.log("success"+response);
 		navigateUrl("/controlpanel/categorization/list");}
 	).fail(function(response, data){
-		toastr.error(messagesForms.operations.genOpError,errorMsg);
+		$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: errorMsg});
 		console.log("Error: ", response);}		
 	) 
 
@@ -88,7 +87,7 @@ var publicTree = function (id) {
 		console.log("success"+response);
 		navigateUrl("/controlpanel/categorization/list");}
 	).fail(function(response, data){
-		toastr.error(messagesForms.operations.genOpError,errorMsg);
+		$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: errorMsg});
 		console.log("Error: ", response);}		
 	) 
 
@@ -106,7 +105,7 @@ var privateTree = function (id) {
 		console.log("success"+response);
 		navigateUrl("/controlpanel/categorization/list");}
 	).fail(function(response, data){
-		toastr.error(messagesForms.operations.genOpError,errorMsg);
+		$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: errorMsg});
 		console.log("Error: ", response);}		
 	) 
 
@@ -124,19 +123,16 @@ var create = function() {
 			headers: {
 				[csrf_header]: csrf_value
 		    }
-		}).done(function(response, data){
-			toastr.success(messagesForms.validation.genFormSuccess,'');
+		}).success(function(response, data){
 			navigateUrl("/controlpanel/categorization/list/");
 			}
 		).fail(function(response, data){
-			toastr.error(messagesForms.validation.genFormError,response.responseText);
+			$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: errorMsg});
+			console.log("Error: ", response);
 			}		
 		)
 	} else {
-		$('#identification').closest('.form-group').addClass('has-error');
-		$('#identificationerror').removeClass('hide');
-		$('#identificationerror').addClass('help-block help-block-error');
-		toastr.error(messagesForms.validation.genFormError,noName);
+		$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: noName});
 	}
 }
 
@@ -148,11 +144,11 @@ var edit = function(id) {
 		headers: {
 			[csrf_header]: csrf_value
 	    }
-	}).done(function(response, data){
+	}).success(function(response, data){
 		navigateUrl("/controlpanel/categorization/list/");
 		}
 	).fail(function(response, data){
-		toastr.error(messagesForms.validation.genFormError,errorMsg);
+		$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: errorMsg});
 		console.log("Error: ", response);
 		}		
 	)
@@ -192,7 +188,7 @@ var getElements = function(type){
 			headers: {
 				[csrf_header]: csrf_value
 		    }
-		}).done(function(response){
+		}).success(function(response){
 			var options = [];
 			$('#selectElements').empty();
 			options.push('<option value="'+response+'">'+response+'</option>');
@@ -213,8 +209,8 @@ var insertData = function(url) {
 		type : "GET",
 		headers: {
 			[csrf_header]: csrf_value
-	    },
-		success : function(response){
+	    }
+	}).success(function(response){
 		elementos = response;
 		var options = [];
 		$('#selectElements').empty();
@@ -224,8 +220,8 @@ var insertData = function(url) {
 		$('#selectElements').html(options);
 		$('#selectElements').selectpicker('refresh'); 
 		}
-	}).fail(function(response, data){
-		toastr.error(messagesForms.operations.genOpError,errorMsg);
+	).fail(function(response, data){
+		$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: errorMsg});
 		console.log("Error: ", response);}		
 	)
 }
@@ -239,17 +235,17 @@ var addElement = function() {
 		$("#treeField").jstree(true).get_node(node).a_attr.href = "/controlpanel/ontologies/show/"+elementos[$("#selectElements").val()];
 		break;
 	case "flows":
-		$("#treeField").jstree(true).set_icon(node, "flaticon-analytics");
+		$("#treeField").jstree(true).set_icon(node, "flaticon-network");
 		$("#treeField").jstree(true).get_node(node).a_attr.elementId = $("#selectElements").val();
 		$("#treeField").jstree(true).get_node(node).a_attr.href = "/controlpanel/flows/show/"+$("#selectElements").val();
 		break;
 	case "apis":
-		$("#treeField").jstree(true).set_icon(node, "flaticon-multimedia");
+		$("#treeField").jstree(true).set_icon(node, "flaticon-network");
 		$("#treeField").jstree(true).get_node(node).a_attr.elementId = elementos[$("#selectElements").val()];
 		$("#treeField").jstree(true).get_node(node).a_attr.href = "/controlpanel/apimanager/show/"+elementos[$("#selectElements").val()];
 		break;
 	case "devices":
-		$("#treeField").jstree(true).set_icon(node, "flaticon-truck");
+		$("#treeField").jstree(true).set_icon(node, "flaticon-share");
 		$("#treeField").jstree(true).get_node(node).a_attr.elementId = elementos[$("#selectElements").val()];
 		$("#treeField").jstree(true).get_node(node).a_attr.href = "/controlpanel/devices/show/"+elementos[$("#selectElements").val()];
 		break;
@@ -259,12 +255,12 @@ var addElement = function() {
 		$("#treeField").jstree(true).get_node(node).a_attr.href = "/controlpanel/dashboards/view/"+elementos[$("#selectElements").val()];
 		break;
 	case "notebooks":
-		$("#treeField").jstree(true).set_icon(node, "flaticon-interface-5");
+		$("#treeField").jstree(true).set_icon(node, "flaticon-analytics");
 		$("#treeField").jstree(true).get_node(node).a_attr.elementId = elementos[$("#selectElements").val()];
 		$("#treeField").jstree(true).get_node(node).a_attr.href = "/controlpanel/notebooks/show/"+elementos[$("#selectElements").val()];
 		break;
 	case "dataflows":
-		$("#treeField").jstree(true).set_icon(node, "flaticon-technology");
+		$("#treeField").jstree(true).set_icon(node, "flaticon-analytics");
 		$("#treeField").jstree(true).get_node(node).a_attr.elementId = elementos[$("#selectElements").val()];
 		$("#treeField").jstree(true).get_node(node).a_attr.href = "/controlpanel/dataflow/show/"+elementos[$("#selectElements").val()];
 		break;
@@ -274,7 +270,7 @@ var addElement = function() {
 		$("#treeField").jstree(true).get_node(node).a_attr.href = "/controlpanel/viewers/view/"+elementos[$("#selectElements").val()];
 		break;
 	case "reports":
-		$("#treeField").jstree(true).set_icon(node, "la-folder-open");
+		$("#treeField").jstree(true).set_icon(node, "flaticon-graph");
 		$("#treeField").jstree(true).get_node(node).a_attr.elementId = elementos[$("#selectElements").val()];
 		$("#treeField").jstree(true).get_node(node).a_attr.href = "/controlpanel/reports/runReport/"+elementos[$("#selectElements").val()];
 		break;

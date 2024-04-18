@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,8 +38,8 @@ public class UserTokenServiceImpl implements UserTokenService {
 		if (user.getUserId() != null) {
 			userToken.setUser(user);
 			userToken.setToken(UUID.randomUUID().toString().replaceAll("-", ""));
-			if (userTokenRepository.findByToken(userToken.getToken()) == null) {
-				userToken = userTokenRepository.save(userToken);
+			if (this.userTokenRepository.findByToken(userToken.getToken()) == null) {
+				userToken = this.userTokenRepository.save(userToken);
 			} else {
 				throw new GenericOPException("Token with value " + userToken.getToken() + " already exists");
 			}
@@ -49,14 +49,14 @@ public class UserTokenServiceImpl implements UserTokenService {
 
 	@Override
 	public UserToken getToken(User user) {
-		return userTokenRepository.findByUser(user).get(0);
+		return this.userTokenRepository.findByUser(user).get(0);
 	}
 
 	@Override
 	public UserToken getTokenByToken(String token) {
-		return userTokenRepository.findByToken(token);
+		return this.userTokenRepository.findByToken(token);
 	}
-
+	
 	@Override
 	public UserToken getTokenByUserAndToken(User user, String token) {
 		return userTokenRepository.findByUserAndToken(user, token);
@@ -64,25 +64,25 @@ public class UserTokenServiceImpl implements UserTokenService {
 
 	@Override
 	public void deactivateToken(UserToken userToken, boolean active) {
-		userTokenRepository.save(userToken);
+		this.userTokenRepository.save(userToken);
 
 	}
 
 	@Override
 	public UserToken getTokenByID(String id) {
-		return userTokenRepository.findById(id).orElse(null);
+		return this.userTokenRepository.findById(id);
 	}
 
 	@Override
 	public List<UserToken> getTokens(User user) {
-		return userTokenRepository.findByUser(user);
+		return this.userTokenRepository.findByUser(user);
 	}
 
 	@Override
 	public void removeToken(User user, String token) {
-		final UserToken userToken = userTokenRepository.findByUserAndToken(user, token);
+		UserToken userToken = this.userTokenRepository.findByUserAndToken(user, token);
 		if (userToken != null) {
-			userTokenRepository.delete(userToken);
+			this.userTokenRepository.delete(userToken);
 		}
 	}
 

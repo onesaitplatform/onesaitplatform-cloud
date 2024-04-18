@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,11 +44,12 @@ import com.minsait.onesait.platform.business.services.cache.CacheBusinessService
 import com.minsait.onesait.platform.business.services.cache.CacheBusinessServiceException;
 import com.minsait.onesait.platform.config.model.Cache;
 import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.repository.CacheRepository;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.rest.management.cache.CacheDTO;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 
 @Controller
@@ -61,12 +61,12 @@ public class CacheController {
 
 	@Autowired
 	private UserService userService;
-	
-	@Autowired 
-	private HttpSession httpSession;
 
 	@Autowired
 	private AppWebUtils utils;
+
+	@Autowired
+	private CacheRepository cacheRepository;
 
 	private static final String CACHE_CREATE = "caches/create";
 	private static final String REDIRECT_CACHE_CREATE = "redirect:/caches/create";
@@ -74,31 +74,28 @@ public class CacheController {
 
 	private static final String CACHE = "cache";
 	private static final String CANNOT_UPDATE_CACHE = "Cannot update cache";
-	private static final String APP_ID = "appId";
 
 	@GetMapping(value = "/list", produces = "text/html")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
 	public String list(Model model, HttpServletRequest request, String identification) {
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
-		model.addAttribute("caches", cacheBS.getByIdentificationLikeOrderByIdentification(identification));
+
+		final List<Cache> caches = cacheRepository.findAll();
+		model.addAttribute("caches", caches);
 		return "caches/list";
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
 	@PostMapping("/getNamesForAutocomplete")
 	public @ResponseBody List<String> getNamesForAutocomplete() {
 		return cacheBS.getCachesIdentifications(utils.getUserId());
 	}
 
 	@GetMapping(value = "/create", produces = "text/html")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
 	public String create(Model model, @Valid Cache cache, BindingResult bindingResult) {
 
-		if (bindingResult.hasErrors()) {
+		if (bindingResult.hasErrors())
 			model.addAttribute(CACHE, new Cache());
-		}
 
 		model.addAttribute("cacheTypes", Cache.Type.values());
 		model.addAttribute("cacheMaxSizePolicies", Cache.MaxSizePolicy.values());
@@ -106,7 +103,7 @@ public class CacheController {
 		return CACHE_CREATE;
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
 	@PostMapping(value = "/create")
 	public String createCache(Model model, @Valid CacheDTO cacheDTO, BindingResult bindingResult,
 			RedirectAttributes redirect, String identification) throws JsonProcessingException {
@@ -118,12 +115,10 @@ public class CacheController {
 
 		if (!cacheBS.cacheExists(identification)) {
 			try {
-				if (log.isDebugEnabled()) {
-					log.debug("Recieved request to create a new cached map {}", identification);
-				}
-				final User user = userService.getUserByIdentification(utils.getUserId());
+				log.debug("Recieved request to create a new cached map {}", identification);
+				User user = userService.getUserByIdentification(utils.getUserId());
 
-				final Cache cache = new Cache();
+				Cache cache = new Cache();
 				cache.setUser(user);
 				cache.setIdentification(identification);
 				cache.setType(cacheDTO.getType());
@@ -148,7 +143,7 @@ public class CacheController {
 	}
 
 	@GetMapping(value = "/update/{identification}", produces = "text/html")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
 	public String update(Model model, @PathVariable("identification") String identification) {
 		final Cache cache = cacheBS.getCacheWithId(identification);
 		model.addAttribute("cacheTypes", Cache.Type.values());
@@ -163,31 +158,30 @@ public class CacheController {
 		}
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
 	@PutMapping(value = "/update/{identification}", produces = "text/html")
 	public String updateCache(Model model, @PathVariable("identification") String identification, @Valid Cache cache,
-			BindingResult bindingResult, RedirectAttributes redirect) throws JsonProcessingException, CacheBusinessServiceException {
+			BindingResult bindingResult, RedirectAttributes redirect) throws JsonProcessingException {
 		if (bindingResult.hasErrors()) {
 			log.debug("Some cache properties missing");
 			utils.addRedirectMessage("cache.validation.error", redirect);
 			return "redirect:/caches/update/" + identification;
 		}
-		User user = userService.getUser(utils.getUserId());
-		cacheBS.updateCache(identification, cache, user);
+		cacheBS.updateCache(identification, cache);
 
-		//        if (cacheBS.cacheExists(identification)) {
-		//               cacheBS.updateCache(identification);
-		//        } else {
-		//            log.error("Cannot update cache");
-		//            utils.addRedirectMessage("cache.update.error", redirect);
-		//            return "redirect:/caches/update/" + identification;
-		//        }
+//        if (cacheBS.cacheExists(identification)) {
+//               cacheBS.updateCache(identification);
+//        } else {
+//            log.error("Cannot update cache");
+//            utils.addRedirectMessage("cache.update.error", redirect);
+//            return "redirect:/caches/update/" + identification;
+//        }
 
 		return REDIRECT_CACHE_LIST;
 	}
 
 	@GetMapping(value = "/delete/{identification}")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
 	public String deleteCache(Model model, @PathVariable("identification") String identification,
 			RedirectAttributes redirect) {
 
@@ -200,19 +194,17 @@ public class CacheController {
 		return REDIRECT_CACHE_LIST;
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
 	@DeleteMapping(value = "/maps/{identification}/", produces = "text/html")
 	public String deleteMap(Model model, @PathVariable("identification") String identification,
 			RedirectAttributes redirect) {
-		if (log.isDebugEnabled()) {
-			log.debug("Recieved request to delete a cached map {}", identification);
-		}
+		log.debug("Recieved request to delete a cached map {}", identification);
 
-		final User user = userService.getUserByIdentification(utils.getUserId());
+		User user = userService.getUserByIdentification(utils.getUserId());
 
 		try {
 			cacheBS.deleteMap(identification, user);
-		} catch (final CacheBusinessServiceException e) {
+		} catch (CacheBusinessServiceException e) {
 			log.error(CANNOT_UPDATE_CACHE, e);
 			utils.addRedirectMessage("cache.delete.error", redirect);
 			return REDIRECT_CACHE_LIST;
@@ -221,20 +213,19 @@ public class CacheController {
 		return REDIRECT_CACHE_LIST;
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
 	@PostMapping(value = "/maps/{identification}/put/{key}/", produces = "text/html")
 	public String putIntoMap(Model model, @PathVariable("identification") String identification, String key,
 			String value, RedirectAttributes redirect) {
-		if (log.isDebugEnabled()) {
-			log.debug("Recieved request to put data into cached map {} with key {} and value {}", identification, key,
-				value);
-		}
 
-		final User user = userService.getUser(utils.getUserId());
+		log.debug("Recieved request to put data into cached map {} with key {} and value {}", identification, key,
+				value);
+
+		User user = userService.getUser(utils.getUserId());
 
 		try {
 			cacheBS.putIntoMap(identification, key, value, user);
-		} catch (final CacheBusinessServiceException e) {
+		} catch (CacheBusinessServiceException e) {
 			log.error(CANNOT_UPDATE_CACHE, e);
 			utils.addRedirectMessage("cache.update.error", redirect);
 			return REDIRECT_CACHE_LIST;
@@ -243,10 +234,10 @@ public class CacheController {
 		return REDIRECT_CACHE_LIST;
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/show/{identification}", produces = "text/html")
 	public String show(Model model, @PathVariable("identification") String id) {
-		final Cache cache = cacheBS.getCacheWithId(id);
+		Cache cache = cacheBS.getCacheWithId(id);
 		if (cache != null) {
 			model.addAttribute(CACHE, cache);
 			return "caches/show";
@@ -255,19 +246,18 @@ public class CacheController {
 		}
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
 	@PostMapping(value = "/maps/{identification}/putMany/", produces = "text/html")
 	public String putManyIntoMap(Model model, @PathVariable("identification") String identification,
 			Map<String, String> values, RedirectAttributes redirect) throws IOException {
-		if (log.isDebugEnabled()) {
-			log.debug("Recieved request to put several data into cached map {}", identification);
-		}
-		
-		final User user = userService.getUser(utils.getUserId());
+
+		log.debug("Recieved request to put several data into cached map {}", identification);
+
+		User user = userService.getUser(utils.getUserId());
 
 		try {
 			cacheBS.putAllIntoMap(identification, values, user);
-		} catch (final CacheBusinessServiceException e) {
+		} catch (CacheBusinessServiceException e) {
 			log.error(CANNOT_UPDATE_CACHE, e);
 			utils.addRedirectMessage("cache.update.error", redirect);
 			return REDIRECT_CACHE_LIST;
@@ -276,60 +266,54 @@ public class CacheController {
 		return REDIRECT_CACHE_LIST;
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/maps/{identification}/get/{key}/", produces = "text/html")
 	public ResponseEntity<String> getFromMap(
-			@Parameter(description = "Identification of the map to get data", required = true) @PathVariable("identification") String identification,
-			@Parameter(description = "Key to search the data", required = true) @PathVariable("key") String key) {
-		if (log.isDebugEnabled()) {
-			log.debug("Recieved request to get data from cached map {} with key {}", identification, key);
-		}
-		
-		final User user = userService.getUser(utils.getUserId());
+			@ApiParam(value = "Identification of the map to get data", required = true) @PathVariable("identification") String identification,
+			@ApiParam(value = "Key to search the data", required = true) @PathVariable("key") String key) {
+		log.debug("Recieved request to get data from cached map {} with key {}", identification, key);
+
+		User user = userService.getUser(utils.getUserId());
 
 		try {
-			final String value = cacheBS.getFromMap(identification, user, key);
+			String value = cacheBS.getFromMap(identification, user, key);
 			return ResponseEntity.ok().body(value);
-		} catch (final CacheBusinessServiceException e) {
+		} catch (CacheBusinessServiceException e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
 		}
 
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/maps/{identification}/getAll/", produces = "text/html")
 	public ResponseEntity<Map<String, String>> getAllFromMap(
-			@Parameter(description = "Identification of the map to get data", required = true) @PathVariable("identification") String identification) {
-		if (log.isDebugEnabled()) {
-			log.debug("Recieved request to get all data from cached map {}", identification);
-		}
-		
-		final User user = userService.getUser(utils.getUserId());
+			@ApiParam(value = "Identification of the map to get data", required = true) @PathVariable("identification") String identification) {
+		log.debug("Recieved request to get all data from cached map {}", identification);
+
+		User user = userService.getUser(utils.getUserId());
 
 		try {
-			final Map<String, String> values = cacheBS.getAllFromMap(identification, user);
+			Map<String, String> values = cacheBS.getAllFromMap(identification, user);
 			return ResponseEntity.ok().body(values);
-		} catch (final CacheBusinessServiceException e) {
+		} catch (CacheBusinessServiceException e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 		}
 
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping(value = "/maps/{identification}/getMany/", produces = "text/html")
 	public ResponseEntity<Map<String, String>> getManyFromMap(
-			@Parameter(description = "Identification of the map to get data", required = true) @PathVariable("identification") String identification,
+			@ApiParam(value = "Identification of the map to get data", required = true) @PathVariable("identification") String identification,
 			@RequestBody(required = true) Set<String> keys) {
-		if (log.isDebugEnabled()) {
-			log.debug("Recieved request to get several data from cached map {}", identification);
-		}
+		log.debug("Recieved request to get several data from cached map {}", identification);
 
-		final User user = userService.getUser(utils.getUserId());
+		User user = userService.getUser(utils.getUserId());
 
 		try {
-			final Map<String, String> values = cacheBS.getManyFromMap(identification, user, keys);
+			Map<String, String> values = cacheBS.getManyFromMap(identification, user, keys);
 			return ResponseEntity.ok().body(values);
-		} catch (final CacheBusinessServiceException e) {
+		} catch (CacheBusinessServiceException e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 		}
 

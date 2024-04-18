@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('ClearHistoryModalInstanceController', ["$scope", "$modalInstance", "pipelineInfo", "api", function ($scope, $modalInstance, pipelineInfo, api) {
+  .controller('ClearHistoryModalInstanceController', function ($scope, $modalInstance, pipelineInfo, api) {
     angular.extend($scope, {
       issues: [],
       pipelineInfo: pipelineInfo,
@@ -37,4 +37,4 @@ angular
         $modalInstance.dismiss('cancel');
       }
     });
-  }]);
+  });

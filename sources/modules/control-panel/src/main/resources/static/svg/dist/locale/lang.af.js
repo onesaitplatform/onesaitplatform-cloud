@@ -23,7 +23,7 @@ var svgEditorLang_af = (function () {
       toggle_stroke_tools: 'Show/hide more stroke tools',
       palette_info: 'Klik om te verander vul kleur, verskuiwing klik om &#39;n beroerte kleur verander',
       zoom_level: 'Change zoom vlak',
-      panel_drag: 'Click to show hide',
+      panel_drag: 'Drag left/right to resize side panel',
       quality: 'Quality:',
       pathNodeTooltip: 'Drag node to move it. Double-click node to change segment type',
       pathCtrlPtTooltip: 'Drag control point to adjust curve properties',

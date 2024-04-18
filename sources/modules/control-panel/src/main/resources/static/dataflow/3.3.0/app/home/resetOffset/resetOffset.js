@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('ResetOffsetModalInstanceController', ["$scope", "$modalInstance", "pipelineInfo", "originStageDef", "$translate", "api", function ($scope, $modalInstance, pipelineInfo, originStageDef,
+  .controller('ResetOffsetModalInstanceController', function ($scope, $modalInstance, pipelineInfo, originStageDef,
                                                               $translate, api) {
     angular.extend($scope, {
       showLoading: false,
@@ -81,4 +81,4 @@ angular
         $modalInstance.close(pipelineInfo);
       }
     });
-  }]);
+  });

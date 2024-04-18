@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,58 +14,75 @@
     limitations under the License.
 
 -->
-<html xmlns:th="http://www.thymeleaf.org" xmlns:dt="http://www.thymeleaf.org/dandelion/datatables" th:with="lang=${#locale.language}" th:lang="${lang}">
-
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:dt="http://www.thymeleaf.org/dandelion/datatables"
+	th:with="lang=${#locale.language}" th:lang="${lang}">
 <head>
-	<meta name="_csrf" th:content="${_csrf.token}" />
-	<meta name="_csrf_header" th:content="${_csrf.headerName}" />
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-	<meta http-equiv="Content-Language" th:content="${lang}" />
-	<title th:text="#{name.app}" />
+<meta name="_csrf" th:content="${_csrf.token}"/>
+<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+<meta http-equiv="Content-Language" th:content="${lang}" />
+<title th:text="#{name.app}" />
 
-	<!-- STYLE SHEETS -->
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}" />
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}" />
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}" />
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}" />
-	<!-- THEME -->
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
 
-	<!-- PLUGINS -->
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}" />
-	<link rel="stylesheet" type="text/css" media="all"
-		th:href="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.css}" />
-	<!-- JSON EDITOR -->
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/lib/codemirror.css}" />
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/neat.css}" />
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/ambiance.css}" />
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/material.css}" />
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/neo.css}" />
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/vis/vis.min.css}" />
-	<script type="text/javascript" th:src="@{/static/vendor/vis/vis.min.js}"></script>
+<!-- STYLE SHEETS -->
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/bootstrap.min.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/components.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/plugins.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/layout.css}" />
+<!-- THEME -->
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
+
+<!-- PLUGINS -->
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/vendor/datatable/datatables.bootstrap.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.css}" />
+<!-- JSON EDITOR -->
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/vendor/codemirror/lib/codemirror.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/vendor/codemirror/theme/neat.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/vendor/codemirror/theme/ambiance.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/vendor/codemirror/theme/material.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/vendor/codemirror/theme/neo.css}" />
+
 </head>
 
 <!-- page-sidebar-closed to START WITH MENU COLLAPSED. -->
+<body class="page-header-fixed  page-content-white page-sidebar-closed">
 
-<body class="page-header-fixed page-content-white page-sidebar-closed">
 	<!-- MAIN PAGE WRAPPER -->
 	<div class="page-wrapper">
+
 		<!-- BEGIN HEADER INCLUDE -->
-		<div th:include="fragments/header::#headerFragment" class="page-header navbar navbar-fixed-top"></div>
+		<div th:include="fragments/header::#headerFragment"
+			class="page-header navbar navbar-fixed-top"></div>
 		<!-- END HEADER -->
 
 		<!-- HEADER AND CONTENT DIVIDER -->
 		<div class="clearfix"></div>
 
 		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
-		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
+		<div th:include="fragments/menu::#menuFragment"
+			class="page-sidebar-wrapper"></div>
 		<!-- END SIDEBAR -->
 
 		<!-- BEGIN CONTENT -->
 		<div class="page-content-wrapper">
+
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
+
 				<div class="alert alert-success display-hide">
 					<span th:text="${globalMessage}"></span>
 				</div>
@@ -73,641 +90,350 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM-->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<li>
-							<a th:href="@{/projects/list}">
-								<span th:text="#{projects.my}">My Projects</span></a><i class="fa fa-angle-right"></i>
-						</li>
-						<li>
-							<span th:text="#{project.breadcrumb.show}">My Projects</span>
-						</li>
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/projects/list}"> <span
+								th:text="#{projects.my}">My Projects</span></a><i
+							class="fa fa-angle-right"></i></li>
+						<li><span th:text="${projectObj.identification}">My Projects</span></li>
 					</ul>
 				</div>
 				<!-- END PAGE BAR -->
 
 				<!-- BEGIN PAGE TITLE-->
-				<h1 class="page-title hide">
+				<h1 class="page-title hide ">
 					<span th:text="#{name.app}"> onesait platform Control Panel</span>
 				</h1>
 				<!-- END PAGE TITLE-->
 
-				<div id="header">
-					<div class="row pageCreateHeader">
-						<div class="col-md-6 col-sm-6 col-xs-12">
-							<div class="margin-top-4">
-								<span class="caption-subject" th:text="${projectObj.identification}">
-									Update App</span>
-							</div>
-						</div>
-
-						<div class="col-md-6 col-sm-6 col-xs-12">
-							<div class="pull-right">
-								<!-- DELETE -->
-								<button
-									th:if="(${#authentication.name} == ${projectObj.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')"
-									id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete"
-									name="delete" value="Remove"
-									th:attr="onclick='deleteConfirmation(\''+${projectObj.id}+'\');'">
-									<i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text">
-										Delete
-									</span>
-								</button>
-
-								<span
-									th:if="(${#authentication.name} == ${projectObj.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')"
-									class="sep"></span>
-
-								<!-- CANCEL -->
-								<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"
-									th:value="#{gen.cancelBtn}" value="cancel"
-									th:attr="onclick='javascript:navigateUrl(\'' + @{/projects/list} + '\');'">
-									<span th:text="#{gen.cancelBtn}"> Cancel </span>
-								</button>
-
-								<span class="sep"
-									th:if="(${#authentication.name} == ${projectObj.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')"></span>
-
-								<!-- UPDATE -->
-								<button
-									th:if="(${#authentication.name} == ${projectObj.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')"
-									id="editBtn" type="button" class="btn btn-primary btn-primary-save" name="edit"
-									value="Edit"
-									th:attr="onclick='javascript:navigateUrl(\'' + @{|/projects/update/${projectObj.id}/|} + '\');'">
-									<span th:text="#{gen.editBtn}"> Edit </span>
-								</button>
-							</div>
-						</div>
-					</div>
-				</div>
-
 				<!-- MAIN ROW -->
-				<div class="row equal flex-container">
-					<div class="tabContainer flex-tabs-left">
-						<div id="tab-basic-info" class="option active">
-							<a href="#tab_1" data-toggle="tab" aria-expanded="false">
-								<span class="" th:text="#{project.environment}">Project env</span>
-							</a>
-						</div>
-						<div id="tab-log" class="option" data-toggle="collapse" data-target="#resourcelist">
-							<a href="#tab_2" data-toggle="tab" aria-expanded="true">
-								<span class="" th:text="#{project.resources}">Resources</span>
-							</a>
-						</div>
-						<div id="resourcelist" class="collapse margin-left-10 padding-left-5" style="height: 0px"
-							aria-expanded="false">
-							<div id="div_ALL">
-								<input id="checkbox_ALL" class="no-remove" type="checkbox" checked onclick="filterTable(($(this).attr('id')).split('_')[1])" />
-								<label class="control-label margin-left-5 small" th:text="#{project.users.all}">all</label>
-								<span th:id="count_ALL" class="pull-right badge badge-success"></span>
-							</div>
-							<th:block th:each="type :${resourceTypes}">
-								<div th:id="'div_' + ${type}">
-									<input th:id="'checkbox_' + ${type}" class="no-remove checkbox-filter" type="checkbox" onclick="filterTable(($(this).attr('id')).split('_')[1])" />
-									<label th:if="${#strings.toUpperCase(type)} == 'ONTOLOGY'" class="control-label margin-left-5 small" th:text="${#strings.toUpperCase('__#{gen.ontology}__')}">Type</label>
-									<label th:if="${#strings.toUpperCase(type)} == 'ONTOLOGYVIRTUALDATASOURCE'" class="control-label margin-left-5 small" th:text="${#strings.toUpperCase('__#{datasource.breadcrumb.list}__')}">Type</label>
-									<label th:if="${#strings.toUpperCase(type)} != 'ONTOLOGY' AND ${#strings.toUpperCase(type)} != 'ONTOLOGYVIRTUALDATASOURCE'"class="control-label margin-left-5 small" th:text="${type}">Type</label>
-									<span th:id="'count_' + ${type}" class="pull-right badge badge-success"></span>
-								</div>
-							</th:block>
-						</div>
-						<div id="tab-web" class="option" style="pointer-events: none"
-							th:if="${projectObj.webProject == null}">
-							<a href="#tab_3" data-toggle="tab" aria-expanded="true" style=" pointer-events: none; color: gray; text-decoration: none;">
-								<span th:text="#{project.webproject.list}">Web Projects</span>
-							</a>
-						</div>
-						<div id="tab-web" class="option" th:if="${projectObj.webProject != null}">
-							<a href="#tab_3" data-toggle="tab" aria-expanded="true">
-								<span th:text="#{project.webproject.list}">Web Projects</span>
-							</a>
-						</div>
-						<div id="tab-form-graph" class="option">
-							<a href="#tab_4" data-toggle="tab" aria-expanded="true">
-								<span class="" th:text="#{project.forms.title}">Form graph</span>
-							</a>
-						</div>
-					</div>
-					<div class="tab-content flex-content-right" id="contentPanel">
-						<div class="tab-pane fade in active" id="tab_1">
-							<!-- VIEW -->
-							<div class="row">
-								<div class="col-md-12 alert-zone">
-									<!-- ALERTS ZONE -->
-								</div>
-								<div class="col-md-12">
-									<!-- BEGIN GRAPH INCLUDE -->
-									<div id="graphInclude" th:include="project/fragments/graph::#graphFragment"
-										class="margin-bottom-10"></div>
-									<!-- END GRAPH -->
-								</div>
-							</div>
-						</div>
-						<div class="tab-pane" id="tab_2">
-							<div class="row main padding-top-4">
-								<div class="panelHeader padding-left-15" style="display: inline">
-									<span th:text="#{project.resources}">Project Resources</span>
-								</div>
-								<div class="caption" style="display: inline; float: none; padding-left: 5px">
-									<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon"><i
-											class="icon-search margin-left-10"></i></a>
-								</div>
-								<div id="search-on-title" class="hide input-icon search-icon"
-									style="display: inline; float: none">
-									<a class="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i
-											class="icon-search" style="display: inline"></i></a>
-								</div>
+				<div class="row">
+					<div class="col-md-12">
+						<div class="portlet light container">
+							<div class="portlet-title tabbable-line">
+								<div class="caption"></div>
 								<div class="tools hide">
-									<a href="" class="collapse" data-original-title="" title=""></a>
-									<a href="" class="fullscreen" data-original-title="" title=""></a>
+									<a href="" class="collapse" data-original-title="" title="">
+									</a> <a href="" class="fullscreen" data-original-title="" title="">
+									</a>
 								</div>
-							</div>
-							<table id="resource-access-list" class="table table-hover table-striped" dt:table="true" dt:filterPlaceholder="none">
-								<thead>
-									<tr class="cabecera-tabla">
-										<th class="titulo-columnas" dt:sortType="natural">
-											<span th:text="#{project.resource.type}">Type</span>
-										</th>
-										<th class="titulo-columnas" dt:sortInitDirection="asc">
-											<span th:text="#{project.resource.identification}">Identification</span>
-										</th>
-										<th class="titulo-columnas" dt:sortInitDirection="asc">
-											<span th:text="#{gen.description}">Description</span>
-										</th>
-										<th class="titulo-columnas" style="width: 50px;" dt:sortInitDirection="asc">
-											<span th:text="#{binaryfiles.auth.accesstypes}">Access Type</span>
-										</th>
-										<th class="titulo-columnas text-right" dt:sortable="false" style="width: 50px;"> <span th:text="#{gen.options}"> Options</span></th>
-									</tr>
-								</thead>
-								<tbody th:remove="all-but-first" style="border-bottom: 1px solid #ddd">
-									<th:block th:each="access : ${objResources}">
-										<th:block th:if="(${userRole != 'ROLE_DEVELOPER'}) OR (${access.resource.class.simpleName != 'Notebook'} AND ${access.resource.class.simpleName != 'Pipeline'})">
-											<th:block th:if="(${access.resource.class.simpleName != 'Api'} OR (${access.resource.state.name()!='CREATED'} OR ${access.access.name() == 'MANAGE'} OR ${#authentication.name} == ${access.resource.user.userId} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'))">
-											<!-- Status -->
-											<tr pages:paginate="10" class="table-model resource-row"
-												th:classappend="${#strings.toUpperCase(access.resource.class.simpleName)}">
-												<td class="text-left">
-													<i th:if="${access.resource.class.simpleName == 'Form'}" class="la la-wpforms font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${access.resource.class.simpleName}" th:data-original-title="${access.resource.class.simpleName}"></i>
-													<i th:if="${access.resource.class.simpleName == 'Ontology'}" class="fa flaticon-network font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${access.resource.class.simpleName}" th:data-original-title="${access.resource.class.simpleName}"></i>
-													<i th:if="${access.resource.class.simpleName == 'Api'}"	class="fa flaticon-multimedia font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${access.resource.class.simpleName}" th:data-original-title="${access.resource.class.simpleName}"></i>
-													<i th:if="${access.resource.class.simpleName == 'DigitalTwinDevice'}" class="fa flaticon-medical font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${access.resource.class.simpleName}" th:data-original-title="${access.resource.class.simpleName}"></i>
-													<i th:if="${access.resource.class.simpleName == 'ClientPlatform'}" class="fa flaticon-truck font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${access.resource.class.simpleName}" th:data-original-title="${access.resource.class.simpleName}"></i>
-													<i th:if="${access.resource.class.simpleName == 'Notebook'}" class="fa flaticon-interface-5 font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${access.resource.class.simpleName}" th:data-original-title="${access.resource.class.simpleName}"></i>
-													<i th:if="${access.resource.class.simpleName == 'FlowDomain'}" class="fa flaticon-analytics font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${access.resource.class.simpleName}" th:data-original-title="${access.resource.class.simpleName}"></i>
-													<i th:if="${access.resource.class.simpleName == 'Gadget'}" class="fa flaticon-app font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${access.resource.class.simpleName}" th:data-original-title="${access.resource.class.simpleName}"></i>
-													<i th:if="${access.resource.class.simpleName == 'Dashboard'}" class="fa flaticon-graph font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${access.resource.class.simpleName}" th:data-original-title="${access.resource.class.simpleName}"></i>
-													<i th:if="${access.resource.class.simpleName == 'Pipeline'}" class="fa flaticon-technology font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="Dataflow" th:data-original-title="Dataflow"></i>
-													<i th:if="${access.resource.class.simpleName == 'GadgetDatasource'}" class="la la-database font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="Datasource" th:data-original-title="Datasource"></i>
-													<i th:if="${access.resource.class.simpleName == 'WebProject'}" class="la la-database font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${access.resource.class.simpleName}" th:data-original-title="${access.resource.class.simpleName}"></i>
-													<i th:if="${access.resource.class.simpleName == 'OntologyVirtualDatasource'}" class="la la-database font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="Datasource" th:data-original-title="Datasource"></i>
-													<i th:if="${access.resource.class.simpleName == 'Configuration'}" class="fa flaticon-technology font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${access.resource.class.simpleName}" th:data-original-title="${access.resource.class.simpleName}"></i>
-													<i th:if="${access.resource.class.simpleName == 'Report'}" class="la la-folder-open font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${access.resource.class.simpleName}" th:data-original-title="${access.resource.class.simpleName}"></i>
-													<i th:if="${access.resource.class.simpleName == 'BinaryFile'}" class="la la-file font-hg font-blue-hoki tooltips" data-container="body" data-placement="right" th:title="${access.resource.class.simpleName}" th:data-original-title="${access.resource.class.simpleName}"></i>
-													<i th:if="${access.resource.class.simpleName == 'GadgetTemplate'}" class="fa flaticon-app font-hg font-blue-hoki tooltips"	data-container="body" data-placement="right" th:title="${access.resource.class.simpleName}" th:data-original-title="${access.resource.class.simpleName}"></i>
-													
-													<span class="margin-top-4 margin-left-10 no-border"	style="vertical-align: super" th:if="${access.resource.class.simpleName != 'Pipeline'} AND ${access.resource.class.simpleName != 'Ontology'} AND ${access.resource.class.simpleName != 'OntologyVirtualDatasource'}" type="text" readonly="readonly" th:text="${access.resource.class.simpleName}"></span>
-													<span class="margin-top-4 margin-left-10 no-border"	style="vertical-align: super" th:if="${access.resource.class.simpleName == 'Ontology'}" type="text" readonly="readonly" th:text="#{gen.ontology}"></span>
-													<span class="margin-top-4 margin-left-10 no-border"	style="vertical-align: super" th:if="${access.resource.class.simpleName == 'OntologyVirtualDatasource'}" type="text" readonly="readonly" th:text="#{datasource.breadcrumb.list}"></span></span>
-													<span class="margin-top-4 margin-left-10 no-border"	style="vertical-align: super" th:if="${access.resource.class.simpleName == 'Pipeline'}" type="text" readonly="readonly" th:text="Dataflow"></span>
 
-												</td>
-												<!-- Message -->
-												<td class="text-left no-wrap"
-													th:if="${access.resource.class.simpleName == 'Api'}"
-													th:text="${access.resource.identification} +' - V' + ${access.resource.numversion}">
-												</td>
-												<td class="text-left no-wrap"
-													th:if="${access.resource.class.simpleName != 'Api'}"
-													th:text="${access.resource.identification}">
-												</td>
-												<td class="text-left no-wrap"  style="width: 50px;"	th:if="${access.resource.class.simpleName != 'OntologyVirtualDatasource' AND access.resource.class.simpleName != 'Report' AND access.resource.class.simpleName != 'Form' AND access.resource.class.simpleName != 'BinaryFile' AND access.resource.class.simpleName != 'Notebook' AND access.resource.class.simpleName != 'FlowDomain' AND access.resource.class.simpleName != 'Pipeline' AND access.resource.class.simpleName != 'DigitalTwinDevice'}"
-													th:text="${access.resource.description}">
-												</td>
-												<td class="text-left no-wrap"  style="width: 50px;"	th:unless="${access.resource.class.simpleName != 'OntologyVirtualDatasource' AND access.resource.class.simpleName != 'Report' AND access.resource.class.simpleName != 'Form' AND access.resource.class.simpleName != 'BinaryFile' AND access.resource.class.simpleName != 'Notebook' AND access.resource.class.simpleName != 'FlowDomain' AND access.resource.class.simpleName != 'Pipeline' AND access.resource.class.simpleName != 'DigitalTwinDevice'}">
-												</td>
-												<td class="text-left no-wrap" style="width: 50px;" 
-													th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${access.resource.user.userId}">MANAGE</td>
-												<td class="text-left no-wrap" style="width: 50px;" 
-													th:unless="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${access.resource.user.userId}"
-													th:text="${access.access}"></td>													
-												<!-- OPTIONS -->
-												<td class="icon" style="white-space: nowrap; width: 50px; ">
-													<div style="text-align: end;" class="grupo-iconos">
-														<!-- DigitalTwinDevice, ClientPlatform, Gadget , !Notebook-->
-														<span
-															th:if="${access.resource.class.simpleName != 'Report' AND access.resource.class.simpleName != 'Form' AND access.resource.class.simpleName != 'BinaryFile' AND access.resource.class.simpleName != 'Notebook' AND access.resource.class.simpleName != 'FlowDomain' AND access.resource.class.simpleName != 'Pipeline'}"
-															class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-															data-container="body" data-placement="bottom"
-															th:title="#{gen.view}" th:data-original-title="#{gen.view}"
-															th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/${urlsMap.get(#strings.toUpperCase(access.resource.class.simpleName))}/${(access.resource.class.simpleName == 'Dashboard' || access.resource.class.simpleName == 'Gadget' || access.resource.class.simpleName == 'GadgetTemplate') ? 'view' : 'show'}/${access.resource.id}/|} + '\');'">
-															<i class="la la-eye font-hg"></i>
-														</span>
-														<span
-															th:if="(${access.access.name()} == 'MANAGE' OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${access.resource.user.userId}) AND ${access.resource.class.simpleName != 'Form' AND access.resource.class.simpleName != 'Report' AND access.resource.class.simpleName != 'BinaryFile' AND access.resource.class.simpleName != 'FlowDomain' AND access.resource.class.simpleName != 'Notebook' AND access.resource.class.simpleName != 'Pipeline'}"
-															class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-															data-container="body" data-placement="bottom"
-															th:title="#{gen.edit}" th:data-original-title="#{gen.edit}"
-															th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/${urlsMap.get(#strings.toUpperCase(access.resource.class.simpleName))}/${access.resource.class.simpleName == 'Dashboard' ? 'editfull' : 'update'}/${access.resource.id}/|} + '\');'">
-															<i class="la la-edit font-hg"></i>
-														</span>
-														<!-- Ontology Specific -->
-														<th:block
-															th:if="${access.access.name() == 'MANAGE' AND access.resource.class.simpleName != 'Form' AND access.resource.class.simpleName == 'Ontology' AND !#lists.isEmpty(access.resource.ontologyUserAccesses)}">
-															<span
-																th:each="ontologyAccess: ${access.resource.ontologyUserAccesses}"
-																th:if="${ontologyAccess.ontologyUserAccessType.name == 'ALL' OR ontologyAccess.ontologyUserAccessType.name == 'INSERT'}"
-																class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																data-container="body" data-placement="bottom"
-																th:title="#{crud.crud}"
-																th:data-original-title="#{crud.crud}"
-																th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/crud/admin/${access.resource.id}|} + @{/} + '\');'">
-																<i class="la la-database font-hg"></i>
-															</span>
-														</th:block>
-														<!-- FlowDomain Specific-->
-														<th:block
-															th:if="${access.resource.class.simpleName == 'FlowDomain'}">
-															<span
-																class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																data-container="body" data-placement="bottom"
-																th:title="#{gen.view}"
-																th:data-original-title="#{gen.view}"
-																th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/${urlsMap.get(#strings.toUpperCase(access.resource.class.simpleName))}/show/${access.resource.identification}/|} + '\');'">
-																<i class="la la-eye font-hg"></i>
-															</span>
-															<span
-																th:if="${access.access.name() == 'MANAGE' AND access.resource.state == 'STOP'}"
-																th:title="#{domain.start}"
-																class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																data-container="body" data-placement="bottom"
-																th:data-original-title="#{domain.start}"
-																th:attr="onclick='javascript:startStopDomain(\'' + ${access.resource.id} + '\', this);'">
-																<i class="la la-play-circle font-hg"></i>
-															</span>
-															<span
-																th:if="${access.access.name() == 'MANAGE' AND access.resource.state == 'START'}"
-																th:title="#{domain.stop}"
-																class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																data-container="body" data-placement="bottom"
-																th:data-original-title="#{domain.stop}"
-																th:attr="onclick='javascript:startStopDomain(\'' + ${access.resource.id} + '\', this);'">
-																<i class="la la-stop font-hg"></i>
-															</span>
-														</th:block>
-														<!-- Api Specific -->
-														<th:block th:if="${access.resource.class.simpleName == 'Api'}">
-															<!-- SWAGGER UI -->
-															<span th:if="(${access.resource.state.name() != 'DELETED'})"
-																title="SWAGGER"
-																class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																data-container="body" data-placement="bottom"
-																data-original-title="SWAGGER"
-																th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/apimanager/invoke/${access.resource.id}/|} + '\');'">
-																<i class="la la-code font-hg"></i>
-															</span>
-															<span th:if="(${access.access.name() == 'MANAGE'} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${access.resource.user.userId}) AND ${access.resource.state.name() == 'CREATED'}"
-																class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																data-container="body" data-placement="bottom"
-																th:title="#{apimanager.state.action.DEVELOPMENT}"
-																th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/apimanager/updateState/${access.resource.id}/DEVELOPMENT|} + '\');'">
-																<i class="la la-laptop font-hg"></i>
-															</span>
-															<span
-																th:if="(${access.access.name() == 'MANAGE'} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${access.resource.user.userId}) AND (${access.resource.state.name() == 'CREATED'} OR ${access.resource.state.name() == 'DEVELOPMENT'})"
-																class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																data-container="body" data-placement="bottom"
-																th:title="#{apimanager.state.action.PUBLISH}"
-																th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/apimanager/updateState/${access.resource.id}/PUBLISHED|} + '\');'">
-																<i class="la la-upload font-hg"></i>
-															</span>
-															<span th:if="(${access.access.name() == 'MANAGE'} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${access.resource.user.userId}) AND ${access.resource.state.name() == 'PUBLISHED'}"
-																class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																data-container="body" data-placement="bottom"
-																th:title="#{apimanager.state.action.DEPRECATE}"
-																th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/apimanager/updateState/${access.resource.id}/DEPRECATED|} + '\');'">
-																<span
-																	th:text="#{apimanager.state.action.DEPRECATE}">DEPRECATED</span>
-															</span>
-															<span
-																th:if="(${access.access.name() == 'MANAGE'} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${access.resource.user.userId}) AND ${access.resource.state.name() == 'DEPRECATED'}"
-																class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																data-container="body" data-placement="bottom"
-																th:title="#{apimanager.state.action.DELETE}"
-																th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/apimanager/updateState/${access.resource.id}/DELETED|} + '\');'">
-																<i class="la la-trash font-hg"></i>
-															</span>
-														</th:block>
-														<!-- Notebook specific -->
-														<th:block
-															th:if="${access.resource.class.simpleName == 'Notebook'}">
-															<span th:if="${access.access.name() != 'MANAGE'}"
-																th:title="#{gen.view}"
-																class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																th:alt="#{gen.view}"
-																th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/notebooks/app/#/notebook/${access.resource.idzep}/|} + '\');'">
-																<i class="la la-eye font-hg"></i>
-															</span>
-															<span th:if="${access.access.name() == 'MANAGE'}"
-																th:title="#{gen.edit}"
-																class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																th:alt="#{gen.edit}"
-																th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/notebooks/app/#/notebook/${access.resource.idzep}/|} + '\');'">
-																<i class="la la-pencil font-hg"></i>
-															</span>
-															<span th:title="#{notebook.clone}"
-																class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																th:alt="#{notebook.clone}"
-																th:attr="onclick='javascript:showCloneNotebookDialog(\'' + @{|${access.resource.idzep}|}+ '\');'">
-																<i class="la la-clone font-hg"></i>
-															</span>
-															<a th:title="#{notebook.download}"
-																class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																th:alt="#{notebook.download}" target="_blank"
-																th:href="'/controlpanel/notebooks/exportNotebook/' +  ${access.resource.idzep}">
-																<i class="la la-download font-hg"></i>
-															</a>
-														</th:block>
-														<!-- Form Specific -->
-														<th:block th:if="${access.resource.class.simpleName == 'Form'}">
-															<span th:title="#{gen.view}"
-																class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																th:alt="#{gen.view}"
-																th:attr="onclick='getFormInfo(\'' + @{|${access.resource.id}|}+ '\', \'show\');'">
-																<i class="la la-eye font-hg"></i>
-															</span>
-															<span th:if="${access.access.name() == 'MANAGE'} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${access.resource.user.userId}"
-																th:title="#{gen.edit}"
-																class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																th:alt="#{gen.edit}"
-																th:data-original-title="#{gen.edit}"
-																th:attr="onclick='getFormInfo(\'' + @{|${access.resource.id}|}+ '\', \'update\');'">
-																<i class="la la-edit font-hg"></i>
-															</span>
-														</th:block>
-														<!-- Dashboard Specific -->
-														<th:block
-															th:if="${access.resource.class.simpleName == 'Dashboard'} AND (${access.access.name() == 'MANAGE'} OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${access.resource.user.userId})">
-															<span th:if="${access.access.name() == 'MANAGE'}"
-																class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																data-container="body" data-placement="bottom"
-																th:title="#{gen.edit}"
-																th:data-original-title="#{gen.edit}"
-																th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/${urlsMap.get(#strings.toUpperCase(access.resource.class.simpleName))}/dashboardconf/${access.resource.id}/|} + '\');'">
-																<i class="la la-cog font-hg"></i>
-															</span>
-															<!-- URL -->
-															<span
-																class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																data-container="body" data-placement="bottom"
-																title="URL Dashboard"
-																data-original-title="URL Dashboard"
-																th:attr="onclick='javascript:showDashboardURLDialog(\'' + @{|/dashboards/view/${access.resource.id}} + '\');'">
-																<i class="la la-link font-hg"></i>
-															</span>
-														</th:block>
-														<!-- Dataflow Specific -->
-														<th:block
-															th:if="${access.resource.class.simpleName == 'Pipeline' AND access.access.name() == 'VIEW'}">
-															<span
-																class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																data-container="body" data-placement="bottom"
-																th:title="#{gen.view}"
-																th:data-original-title="#{gen.view}"
-																th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/dataflow/app/collector/pipeline/${access.resource.idstreamsets}/|} + '\');'">
-																<i class="la la-eye font-hg"></i>
-															</span>
-														</th:block>
-														<th:block
-															th:if="${access.resource.class.simpleName == 'Pipeline' AND access.access.name() == 'MANAGE'}">
-															<span
-																class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																data-container="body" data-placement="bottom"
-																th:title="#{gen.edit}"
-																th:data-original-title="#{gen.edit}"
-																th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/dataflow/app/collector/pipeline/${access.resource.idstreamsets}/|} + '\');'">
-																<i class="la la-edit font-hg"></i>
-															</span>
-														</th:block>
-														<!-- REPORT SPECIFIC -->
-														<th:block
-															th:if="${access.resource.class.simpleName == 'Report'}">
-															<span th:if="${access.access.name() == 'MANAGE'}"
-																class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																data-container="body" data-placement="bottom"
-																th:title="#{gen.edit}"
-																th:data-original-title="#{gen.edit}"
-																th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/reports/edit/${access.resource.id}/|} + '\');'">
-																<i class="la la-edit font-hg"></i>
-															</span>
-															<span th:data-id="${access.resource.id}"
-																class="icon-report-download btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																data-container="body" data-placement="bottom"
-																data-original-title="Download"
-																th:attr="onclick='javascript:navigateUrlBlank(\'' + @{|/reports/download/report-design/${access.resource.id}/|} + '\');'">
-																<i class="la la-download font-hg"></i>
-															</span>
-															<span th:data-id="${access.resource.id}"
-																class="icon-report-play btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																data-container="body" data-placement="bottom"
-																data-original-title="Download"
-																th:attr="onclick='javascript:getParameters(\'' + ${access.resource.id} + '\');'">
-																<i class="la la-play font-hg"></i>
-															</span>
-														</th:block>
-														<!-- BINARYFILE SPECIFIC -->
-														<th:block
-															th:if="${access.resource.class.simpleName == 'BinaryFile'}">
-															<span
-																class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																data-container="body" data-placement="bottom"
-																th:title="#{binaryfiles.download}"
-																th:data-original-title="#{binaryfiles.download}"
-																th:attr="onclick='javascript:navigateUrlBlank(\''+|@{/files/gridfs/}|+${access.resource.id}+ '?vertical=' + ${#strings.toLowerCase(#authentication.getPrincipal().getVertical())}+ '\')'">
-																<i class="la la-download font-hg"></i>
-															</span>
-															<span
-																class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
-																data-container="body" data-placement="bottom"
-																th:title="#{binaryfiles.copy}"
-																th:data-original-title="#{binaryfiles.copy}"
-																th:attr="onclick='javascript:copyUrl(\''+|@{/files/gridfs/}|+${access.resource.id}+ '?vertical=' + ${#strings.toLowerCase(#authentication.getPrincipal().getVertical())}+ '\')'">
-																<i class="la la-copy font-hg"></i>
-															</span>
-														</th:block>
-													</div>
-												</td>
-											</tr>
-											</th:block>
-										</th:block>
-									</th:block>
-								</tbody>
-							</table>
-						</div>
-						<div th:if="${projectObj.webProject != null}" class="tab-pane" id="tab_3">
-							<div class="row main">
-								<div class="col-md-8 col-sm-9 col-xs-9 panelHeader">
-									<span th:text="#{gen.webproject}">Web Project</span>
-								</div>
+								<!-- SECCIONES DE LA ONTOLOGIA TABS -->
+								<ul class="nav nav-tabs pull-left">
+									<li id="tab-basic-info" class="active"><a href="#tab_1"
+										data-toggle="tab" aria-expanded="false"> <span class=" "
+											th:text="#{project.environment}"> Project env</span></a></li>
+									<li id="tab-log" class=""><a href="#tab_2"
+										data-toggle="tab" aria-expanded="true"><span
+											th:text="#{project.resources}" class="">Resources </span></a></li>
+								</ul>
+
 							</div>
-							<table id="web-project-list" class="table table-hover table-striped" dt:table="true">
-								<thead>
-									<tr class="cabecera-tabla" role="row">
-										<th class="titulo-columnas" th:text="#{project.resource.identification}">
-											Identification
-										</th>
-										<th class="titulo-columnas" th:text="#{gen.description}">
-											Description
-										</th>
-										<th class="titulo-columnas" th:text="#{gen.url}">Url</th>
-										<th class="titulo-columnas"></th>
-									</tr>
-								</thead>
-								<tbody style="border-bottom: 1px solid #ddd">
-									<tr>
-										<td class="no-wrap" style="width: 300px" th:text="${projectObj.webProject.identification}"></td>
-										<td class="no-wrap" style="width: 400px" th:text="${projectObj.webProject.description}"></td>
-										<td class="text-primary" th:text="${rootWWW} + ${projectObj.webProject.identification} + '/' + ${projectObj.webProject.mainFile}"></td>
-										<td class="icon text-center" style="white-space: nowrap; width: 100px">
-											<div class="grupo-iconos text-center">
-												<!-- ACCESS -->
-												<span th:title="#{gen.view}"
-													class="btn btn-xs btn-no-border icon-on-table color-blue tooltips"
-													data-container="body" data-placement="bottom"
-													th:data-original-title="#{gen.view}"
-													th:attr="onclick='javascript:window.open(\'' + ${rootWWW} + ${projectObj.webProject.identification} + '/' + ${projectObj.webProject.mainFile} + '\');'">
-													<i class="la la-link font-hg"></i>
-												</span>
-												<!-- EDIT -->
-												<span th:if="(${#authentication.name} == ${projectObj.user.userId} AND ${#authentication.name} == ${projectObj.webProject.user.userId}) OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" 
-													th:title="#{gen.edit}"
-													class="btn btn-xs btn-no-border icon-on-table color-blue tooltips"
-													data-container="body" data-placement="bottom"
-													th:data-original-title="#{gen.edit}"
-													th:attr="onclick='javascript:navigateUrl(\'' + @{|/webprojects/update/${projectObj.webProject.id}/|} + '\');'">
-													<i class="icon-edit"></i>
-												</span>
-												<!-- DOWNLOAD -->
-												<span th:if="(${#authentication.name} == ${projectObj.user.userId} AND ${#authentication.name} == ${projectObj.webProject.user.userId}) OR ${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" 
-													th:title="#{gen.download}"
-													class="btn btn-xs btn-no-border icon-on-table color-blue tooltips"
-													data-container="body" data-placement="bottom"
-													th:data-original-title="#{gen.download}"
-													th:attr="onclick='downloadZip(\'' + @{|/webprojects/downloadZip/${projectObj.webProject.id}/|} + '\');'">
-													<i class="icon-download"></i>
-												</span>												
+							<div class="portlet-body" style="display: block; height: auto;">
+								<div class="tab-content">
+									<div class="tab-pane active" id="tab_1">
+										<!-- VIEW -->
+										<div class="row">
+											<div class="col-md-12 alert-zone">
+												<!-- ALERTS ZONE -->
 											</div>
-										</td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
-						<div class="tab-pane fade in" id="tab_4">
-							<!-- VIEW -->
-							<div class="row">
-								<div class="col-md-12 alert-zone">
-									<!-- ALERTS ZONE -->
-								</div>
-								<div class="col-md-12">
-									<!-- BEGIN GRAPH INCLUDE -->
-									<div id="formGraphInclude"
-										th:include="project/fragments/formGraph::#formGraphFragment"
-										class="margin-bottom-10"></div>
-									<!-- END GRAPH -->
-								</div>
-							</div>
-						</div>
-					</div>
-					<!-- Modal Parameters-->
-					<div id="parametersModal" class="modal fade" role="dialog">
-						<div class="modal-dialog modal-xl">
-							<!-- Modal content-->
-							<div class="modal-content" style="height: 1112px; width: 1102px">
-								<div class="modal-header">
-									<button type="button" class="close" data-dismiss="modal"></button>
-									<h4 class="modal-title" th:text="#{reports.parametrize}">
-										Parametría
-									</h4>
-								</div>
-								<div class="modal-body">
-									<!-- PARAMETERS -->
-									<div class="row">
-										<input type="hidden" id="authFileId" />
-										<div class="col-md-12 col-sm-6 col-xs-12">
-											<div class="col-md-4 col-sm-6 col-xs-12">
-												<!-- USER SELECTION -->
-												<div class="form-group">
-													<label class="control-label" th:text="#{reports.extension}">Export
-														extension</label>
-													<select id="export-type" class="selectpicker form-control"
-														data-live-search="true" data-width="100%">
-														<option value="" th:text="#{reports.extension.select}">
-															Select extension for output report...
-														</option>
-														<option th:each="type :${reportTypes}" th:value="${type.name()}"
-															th:text="${type.name()}"></option>
-													</select>
-												</div>
-											</div>
-										</div>
-										<div class="col-md-12 col-sm-6 col-xs-12">
-											<!-- Fill parameters -->
-											<div class="form-group">
-												<label class="control-label"
-													th:text="#{reports.parameters} + ':'">Parameters</label>
-												<input type="hidden" id="current-report" />
-												<div id="parameters" class="margin-bottom-20 hide">
-													<table class="table" id="table_parameters" data-loaded="false">
-														<thead>
-															<tr class="cabecera-tabla" role="row">
-																<th class="titulo-columnas"
-																	th:text="#{reports.parameter.send}">
-																	Send parameter
-																</th>
-																<th class="titulo-columnas"
-																	th:text="#{reports.parameter.name}">
-																	Parameter name
-																</th>
-																<th class="titulo-columnas"
-																	th:text="#{reports.parameter.name.value}">
-																	Parameter value
-																</th>
-																<!-- <th class="titulo-columnas text-center" th:text="#{gen.options}">Options</th> -->
-															</tr>
-														</thead>
-														<tbody id="table-body">
-															<tr class="parameters-model">
-																<td>
-																	<input class="form-control no-remove"
-																		name="checkparameter[]" type="checkbox" />
-																</td>
-																<td>
-																	<input type="text" name="type[]" readonly="readonly"
-																		class="form-control hide" />
-																	<input type="text" name="name[]" readonly="readonly"
-																		class="form-control" />
-																</td>
-																<td>
-																	<input type="text" name="value[]"
-																		class="form-control" />
-																</td>
-															</tr>
-														</tbody>
-													</table>
-												</div>
+											<div class="col-md-12">
+												<!-- BEGIN GRAPH INCLUDE -->
+												<div id="graphInclude"
+													th:include="project/fragments/graph::#graphFragment"
+													class="margin-bottom-10"></div>
+												<!-- END GRAPH -->
+
 											</div>
 										</div>
 									</div>
+									<div class="tab-pane " id="tab_2">
+										<table id="resources-table"
+											class="table table-hover table-striped" dt:table="true"
+											dt:filterPlaceholder="none">
+											<thead>
+												<tr class="cabecera-tabla">
+													<th class="titulo-columnas" dt:sortType="natural"><span
+														th:text="#{project.resource.type}">Type</span></th>
+													<th class="titulo-columnas" dt:sortInitDirection="asc">
+														<span th:text="#{project.resource.identification}">Identification</span>
+													</th>
+													<th class="titulo-columnas"><span
+														th:text="#{gen.options}">Options</span></th>
+												</tr>
+											</thead>
+											<tbody th:remove="all-but-first" >
+												<th:block th:each="access : ${objResources}">
+													<th:block th:if="${userRole != 'ROLE_DEVELOPER'} OR (${access.resource.class.simpleName != 'Notebook'} AND ${access.resource.class.simpleName != 'Pipeline'})">
+														<!-- Status -->
+													<tr pages:paginate="10">
+														<td class="text-left"><i
+															th:if="${access.resource.class.simpleName == 'Ontology'}"
+															class="fa flaticon-network font-hg font-blue-hoki tooltips"
+															data-container="body" data-placement="right"
+															th:title="${access.resource.class.simpleName}"
+															th:data-original-title="${access.resource.class.simpleName}"></i>
+															<i th:if="${access.resource.class.simpleName == 'Api'}"
+															class="fa flaticon-multimedia font-hg font-blue-hoki tooltips"
+															data-container="body" data-placement="right"
+															th:title="${access.resource.class.simpleName}"
+															th:data-original-title="${access.resource.class.simpleName}"></i>
+															<i
+															th:if="${access.resource.class.simpleName == 'DigitalTwinDevice'}"
+															class="fa flaticon-medical font-hg font-blue-hoki tooltips"
+															data-container="body" data-placement="right"
+															th:title="${access.resource.class.simpleName}"
+															th:data-original-title="${access.resource.class.simpleName}"></i>
+															<i
+															th:if="${access.resource.class.simpleName == 'ClientPlatform'}"
+															class="fa flaticon-truck font-hg font-blue-hoki tooltips"
+															data-container="body" data-placement="right"
+															th:title="${access.resource.class.simpleName}"
+															th:data-original-title="${access.resource.class.simpleName}"></i>
+															<i
+															th:if="${access.resource.class.simpleName == 'Notebook'}"
+															class="fa flaticon-interface-5 font-hg font-blue-hoki tooltips"
+															data-container="body" data-placement="right"
+															th:title="${access.resource.class.simpleName}"
+															th:data-original-title="${access.resource.class.simpleName}"></i>
+															<i
+															th:if="${access.resource.class.simpleName == 'FlowDomain'}"
+															class="fa flaticon-analytics font-hg font-blue-hoki tooltips"
+															data-container="body" data-placement="right"
+															th:title="${access.resource.class.simpleName}"
+															th:data-original-title="${access.resource.class.simpleName}"></i>
+															<i th:if="${access.resource.class.simpleName == 'Gadget'}"
+															class="fa flaticon-app font-hg font-blue-hoki tooltips"
+															data-container="body" data-placement="right"
+															th:title="${access.resource.class.simpleName}"
+															th:data-original-title="${access.resource.class.simpleName}"></i>
+															<i
+															th:if="${access.resource.class.simpleName == 'Dashboard'}"
+															class="fa flaticon-graph font-hg font-blue-hoki tooltips"
+															data-container="body" data-placement="right"
+															th:title="${access.resource.class.simpleName}"
+															th:data-original-title="${access.resource.class.simpleName}"></i>
+															<i
+															th:if="${access.resource.class.simpleName == 'Pipeline'}"
+															class="fa flaticon-technology font-hg font-blue-hoki tooltips"
+															data-container="body" data-placement="right"
+															th:title="Dataflow" th:data-original-title="Dataflow"></i>
+															<i
+															th:if="${access.resource.class.simpleName == 'GadgetDatasource'}"
+															class="la la-database font-hg font-blue-hoki tooltips"
+															data-container="body" data-placement="right"
+															th:title="Datasource" th:data-original-title="Datasource"></i>
+														</td>
+														<!-- Message -->
+														<td class="text-left no-wrap bold"
+															th:if="${access.resource.class.simpleName == 'Api'}"
+															th:text="${access.resource.identification} +' - V' + ${access.resource.numversion}">
+														</td>
+														<td class="text-left no-wrap bold"
+															th:if="${access.resource.class.simpleName != 'Api'}"
+															th:text="${access.resource.identification}">
+														</td>
+														<!-- OPTIONS -->
+														<td class="icon" style="white-space: nowrap" >
+															<div class="grupo-iconos">
+	
+																<!-- DigitalTwinDevice, ClientPlatform, Gadget , !Notebook-->
+																<span
+																	th:if="${access.resource.class.simpleName != 'Notebook' AND access.resource.class.simpleName != 'FlowDomain' AND access.resource.class.simpleName != 'Pipeline'}"
+																	class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																	data-container="body" data-placement="bottom"
+																	th:title="#{gen.view}"
+																	th:data-original-title="#{gen.view}"
+																	th:onclick="'javascript:navigateUrlBlank(\'' + @{|/${urlsMap.get(#strings.toUpperCase(access.resource.class.simpleName))}/${(access.resource.class.simpleName == 'Dashboard' || access.resource.class.simpleName == 'Gadget') ? 'view' : 'show'}/${access.resource.id}/|} + '\');'"><i
+																	class="la la-eye font-hg"></i></span> 
+																<span
+																	th:if="${access.access.name() == 'MANAGE' AND access.resource.class.simpleName != 'FlowDomain' AND access.resource.class.simpleName != 'Notebook' AND access.resource.class.simpleName != 'Pipeline'}"
+																	class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																	data-container="body" data-placement="bottom"
+																	th:title="#{gen.edit}"
+																	th:data-original-title="#{gen.edit}"
+																	th:onclick="'javascript:navigateUrlBlank(\'' + @{|/${urlsMap.get(#strings.toUpperCase(access.resource.class.simpleName))}/${access.resource.class.simpleName == 'Dashboard' ? 'editfull' : 'update'}/${access.resource.id}/|} + '\');'"><i
+																	class="la la-edit font-hg"></i></span>
+																<!-- Ontology Specific -->
+																<th:block
+																	th:if="${access.access.name() == 'MANAGE' AND access.resource.class.simpleName == 'Ontology' AND !#lists.isEmpty(access.resource.ontologyUserAccesses)}">
+																	<span
+																		th:each="ontologyAccess: ${access.resource.ontologyUserAccesses}"
+																		th:if="${ontologyAccess.ontologyUserAccessType.name == 'ALL' OR ontologyAccess.ontologyUserAccessType.name == 'INSERT'}"
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{crud.crud}"
+																		th:data-original-title="#{crud.crud}"
+																		th:onclick="'javascript:navigateUrlBlank(\'' + @{|/crud/admin/${access.resource.id}|} + @{/} + '\');'"><i
+																		class="la la-database font-hg"></i></span>
+	
+																</th:block>
+																<!-- FlowDomain Specific-->
+	
+																<th:block
+																	th:if="${access.resource.class.simpleName == 'FlowDomain'}">
+																	<span
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{gen.view}"
+																		th:data-original-title="#{gen.view}"
+																		th:onclick="'javascript:navigateUrlBlank(\'' + @{|/${urlsMap.get(#strings.toUpperCase(access.resource.class.simpleName))}/show/${access.resource.identification}/|} + '\');'"><i
+																		class="la la-eye font-hg"></i></span>
+
+																	<span
+																		th:if="${access.access.name() == 'MANAGE' AND access.resource.state == 'STOP'}"
+																		th:title="#{domain.start}"
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:data-original-title="#{domain.start}"
+																		th:onclick="'javascript:startStopDomain(\'' + ${access.resource.id} + '\', this);'"><i
+																		class="la la-play-circle font-hg"></i></span>
+	
+	
+																	<span
+																		th:if="${access.access.name() == 'MANAGE' AND access.resource.state == 'START'}"
+																		th:title="#{domain.stop}"
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:data-original-title="#{domain.stop}"
+																		th:onclick="'javascript:startStopDomain(\'' + ${access.resource.id} + '\', this);'"><i
+																		class="la la-stop font-hg"></i></span>
+																</th:block>
+	
+																<!-- Api Specific -->
+																<th:block
+																	th:if="${access.resource.class.simpleName == 'Api'}">
+																	<!-- SWAGGER UI -->
+																	<span
+																		th:if="(${access.resource.state.name() != 'DELETED'})"
+																		title="SWAGGER"
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		data-original-title="SWAGGER"
+																		th:onclick="'javascript:navigateUrlBlank(\'' + @{|/apimanager/invoke/${access.resource.id}/|} + '\');'"><i
+																		class="la la-code font-hg"></i></span>
+																	<span
+																		th:if="${access.resource.state.name() == 'CREATED'}"
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{apimanager.state.action.DEVELOPMENT}"
+																		th:onclick="'javascript:navigateUrlBlank(\'' + @{|/apimanager/updateState/${access.resource.id}/DEVELOPMENT|} + '\');'"><i
+																		class="la la-laptop font-hg"></i></span>
+	
+																	<span
+																		th:if="(${access.resource.state.name() == 'CREATED'} OR ${access.resource.state.name() == 'DEVELOPMENT'})"
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{apimanager.state.action.PUBLISH}"
+																		th:onclick="'javascript:navigateUrlBlank(\'' + @{|/apimanager/updateState/${access.resource.id}/PUBLISHED|} + '\');'"><i
+																		class="la la-upload font-hg"></i></span>
+																	<span
+																		th:if="${access.resource.state.name() == 'PUBLISHED'}"
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{apimanager.state.action.DEPRECATE}"
+																		th:onclick="'javascript:navigateUrlBlank(\'' + @{|/apimanager/updateState/${access.resource.id}/DEPRECATED|} + '\');'">
+																		<span th:text="#{apimanager.state.action.DEPRECATE}">DEPRECATED</span>
+																	</span>
+																	<span
+																		th:if="${access.resource.state.name() == 'DEPRECATED'}"
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{apimanager.state.action.DELETE}"
+																		th:onclick="'javascript:navigateUrlBlank(\'' + @{|/apimanager/updateState/${access.resource.id}/DELETED|} + '\');'">
+																		<i class="la la-trash font-hg"></i>
+																	</span>
+																</th:block>
+																<!-- Notebook specific -->
+																<th:block
+																	th:if="${access.resource.class.simpleName == 'Notebook'}">
+																	<span th:if="${access.access.name() == 'MANAGE'}"
+																		th:title="#{gen.edit}"
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		th:alt="#{gen.edit}"
+																		th:onclick="'javascript:navigateUrlBlank(\'' + @{|/notebooks/app/#/notebook/${access.resource.idzep}/|} + '\');'"><i
+																		class="la la-pencil font-hg"></i></span>
+	
+																	<span th:title="#{notebook.clone}"
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		th:alt="#{notebook.clone}"
+																		th:onclick="'javascript:showCloneNotebookDialog(\'' + @{|${access.resource.idzep}|}+ '\');'"><i
+																		class="la la-clone font-hg"></i></span>
+	
+																	<a th:title="#{notebook.download}"
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		th:alt="#{notebook.download}" target="_blank"
+																		th:href="'/controlpanel/notebooks/exportNotebook/' +  ${access.resource.idzep}"><i
+																		class="la la-download font-hg"></i></a>
+																</th:block>
+																<!-- Dashboard Specific -->
+																<th:block
+																	th:if="${access.resource.class.simpleName == 'Dashboard'}">
+																	<span th:if="${access.access.name() == 'MANAGE'}"
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{gen.edit}"
+																		th:data-original-title="#{gen.edit}"
+																		th:onclick="'javascript:navigateUrlBlank(\'' + @{|/${urlsMap.get(#strings.toUpperCase(access.resource.class.simpleName))}/dashboardconf/${access.resource.id}/|} + '\');'"><i
+																		class="la la-cog font-hg"></i></span>
+																	<!-- URL -->
+																	<span
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		title="URL Dashboard"
+																		data-original-title="URL Dashboard"
+																		th:onclick="'javascript:showDashboardURLDialog(\'' + @{|/dashboards/view/${access.resource.id}} + '\');'"><i
+																		class="la la-link font-hg"></i></span>
+																</th:block>
+																<!-- Dataflow Specific -->
+																<th:block
+																	th:if="${access.resource.class.simpleName == 'Pipeline' AND access.access.name() == 'VIEW'}">
+																	<span
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{gen.view}"
+																		th:data-original-title="#{gen.view}"
+																		th:onclick="'javascript:navigateUrlBlank(\'' + @{|/dataflow/app/collector/pipeline/${access.resource.idstreamsets}/|} + '\');'"><i
+																		class="la la-eye font-hg"></i></span>
+	
+																</th:block>
+																<th:block
+																	th:if="${access.resource.class.simpleName == 'Pipeline' AND access.access.name() == 'MANAGE'}">
+																	<span
+																		class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips"
+																		data-container="body" data-placement="bottom"
+																		th:title="#{gen.edit}"
+																		th:data-original-title="#{gen.edit}"
+																		th:onclick="'javascript:navigateUrlBlank(\'' + @{|/dataflow/app/collector/pipeline/${access.resource.idstreamsets}/|} + '\');'"><i
+																		class="la la-edit font-hg"></i></span>
+	
+																</th:block>		
+																									
+															</div>
+														</td>
+														</tr>
+													</th:block>
+												</th:block>
+											</tbody>
+
+										</table>
+									</div>
+
+
 								</div>
-								<div class="modal-footer">
-									<button id="submit-params" type="button" disabled="disabled"
-										class="btn btn-circle btn-outline btn-primary" data-dismiss="modal"
-										th:text="#{reports.run}" onclick="runReportWithParameters()">
-										Close
-									</button>
-									<button type="button" class="btn btn-circle btn-outline btn-primary"
-										data-dismiss="modal" th:text="#{binaryfiles.close}">
-										Close
-									</button>
+								<div class="form-actions">
+									<div class="pull-left">
+										<!-- CANCEL  -->
+										<button id="cancelBtn" type="button"
+											class="btn btn-circle btn-outline blue no-border"
+											name="cancel" th:value="#{gen.cancelBtn}" value="cancel"
+											th:onclick="'javascript:navigateUrl(\'' + @{/projects/list} + '\');'">
+											<i class="la la-arrow-left"></i><span
+												th:text="#{gen.cancelBtn}"> Cancel </span>
+										</button>
+									</div>
 								</div>
+
+
 							</div>
 						</div>
 						<!-- END PORTLET BASIC  -->
@@ -723,591 +449,145 @@
 	<!-- END MAIN PAGE WRAPPER -->
 
 	<!-- FOOTER INCLUDE -->
-	<footer th:include="fragments/footer::#footerFragment" class="page-footer"></footer>
+	<footer th:include="fragments/footer::#footerFragment"
+		class="page-footer"> </footer>
 
 	<!-- CORE JS CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"></script>
-	<script th:src="@{/static/js/layout.js}"></script>
+	<script th:src="@{/static/js/app.js}" />
+	<script th:src="@{/static/js/layout.js}" />
 
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
-	<script th:src="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js}" type="text/javascript"></script>
-	<script th:src="@{/static/vendor/codemirror/lib/codemirror.js}"></script>
-	<script th:src="@{/static/vendor/codemirror/mode/javascript/javascript.js}"></script>
-	<script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}"></script>
-	<script th:src="@{/static/vendor/codemirror/addon/edit/closebrackets.js}"></script>
-	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}"></script>
-	<script th:src="@{/static/vendor/codemirror/addon/comment/comment.js}"></script>
-	<script th:src="@{/static/vendor/codemirror/addon/comment/continuecomment.js}"></script>
-	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}" />
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}" />
+	<script
+		th:src="@{/static/vendor/bootstrap-tagsinput/bootstrap-tagsinput.min.js}"
+		type="text/javascript"></script>
+	<script th:src="@{/static/vendor/codemirror/lib/codemirror.js}" />
+	<script
+		th:src="@{/static/vendor/codemirror/mode/javascript/javascript.js}" />
+	<script
+		th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" />
+	<script
+		th:src="@{/static/vendor/codemirror/addon/edit/closebrackets.js}" />
+	<script
+		th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" />
+	<script th:src="@{/static/vendor/codemirror/addon/comment/comment.js}" />
+	<script
+		th:src="@{/static/vendor/codemirror/addon/comment/continuecomment.js}" />
 
-	<!-- BLOCKUI -->
-	<script th:src="@{/static/vendor/blockUI.js}"></script>
+	<!-- TEMPLATE CONTROLLER  -->
 
 	<!-- MAIN INIT -->
 	<script th:inline="javascript">
-		const projectId = [[${projectObj.id}]]
-		let dataForForm = []
-		var showLog = 1; // console.log toggle
-		//<![CDATA[
-		var flowdomainEndpoint = [[@{/ flows / startstop}]];
-		var start = [[#{domain.start}]];
-		var stop = [[#{domain.stop}]];
-		var accessType = [[#{project.resource.accesstype}]];
-		// DATATABLES LANGUAJE FROM PROPERTIES.
-		datatable_lang = [[#{datatables_lang}]];
-		var languageJson = JSON.parse(datatable_lang);
-		if (languageJson) {$.extend(true, $.fn.dataTable.defaults, {language: languageJson});}
+	var showLog = 1; // console.log toggle
+    //<![CDATA[ 
+	var flowdomainEndpoint = [[@{/flows/startstop}]];
+	var start = [[#{domain.start}]];
+	var stop = [[#{domain.stop}]];
+	// DATATABLES LANGUAJE FROM PROPERTIES.	
+	datatable_lang = [[#{datatables_lang}]];	
+	var languageJson = JSON.parse(datatable_lang);
+	if ( languageJson ){ $.extend( true, $.fn.dataTable.defaults, { language: languageJson }); }
 
-		// REDIRECT
-		function navigateUrl(url) {window.location.href = url;}
-		function navigateUrlBlank(url) {window.open(url, '_blank');};
-		var showDashboardURLDialog = function (url) {
-			$.confirm({
-				icon: 'fas fa-chart-pie',
-				title: "URL Dashboard",
-				theme: 'light',
-				columnClass: 'medium',
-				content: '<input class="col-md-12 form-control" readonly="readonly" value="' + window.location.origin + url + '" type="text"/>',
-				draggable: true,
-				dragWindowGap: 100,
-				backgroundDismiss: true,
-				closeIcon: true,
-				buttons: {
-					Ok: {
-						text: "Ok",
-						btnClass: 'btn btn-sm btn-circle btn-outline btn-primary',
-						action: function () {
-						}
-					}
+	
+	
+
+	// REDIRECT
+	function navigateUrl(url){  window.location.href = url;	}
+	function navigateUrlBlank(url){ window.open(url, '_blank');};
+	var showDashboardURLDialog = function(url){
+		$.confirm({
+			icon: 'fas fa-chart-pie',
+			title: "URL Dashboard",
+			theme: 'light',
+			columnClass: 'medium',
+			content: '<input class="col-md-12 form-control" readonly="readonly" value="' + window.location.origin + url + '" type="text"/>',
+			draggable: true,
+			dragWindowGap: 100,
+			backgroundDismiss: true,
+			closeIcon: true,
+			buttons: {
+				Ok: {
+					text: "Ok",
+					btnClass: 'btn btn-sm btn-circle btn-outline btn-primary',
+					action: function(){ 
+					}											
 				}
-			});
-		};
-
-		var startStopDomain = function (domainId, obj) {
-			startStopAJAX(domainId).done(updateStateSuccess(obj)).fail(updateStateFail);
-		}
-		var updateStateSuccess = function (obj) {
-
-			var span = $(obj).closest('span')
-			var iTag = span.find('i');
-			if (iTag.attr('class') == 'la la-stop font-hg') {
-				iTag.attr('class', 'la la-play-circle font-hg');
-				span.attr('data-original-title', start);
-			} else {
-				iTag.attr('class', 'la la-stop font-hg');
-				span.attr('data-original-title', stop);
 			}
-			//$('.tooltips').tooltip();
-		}
-		var updateStateFail = function (result) {
-			$.alert({
-				title: 'ERROR!',
-				type: 'red',
-				theme: 'light',
-				content: result.responseText
-			});
-		}
-		var startStopAJAX = function (domainId) {
-			var csrf_value = $("meta[name='_csrf']").attr("content");
-			var csrf_header = $("meta[name='_csrf_header']").attr("content");
-
-			return $.ajax({
-				url: flowdomainEndpoint + '/' + domainId,
-				headers: {
-					[csrf_header]: csrf_value
-				},
-				type: 'POST'
-			});
-		}
-
-		var showCloneNotebookDialog = function (initNotebook) {
-			$.confirm({
-				icon: 'fas fa-chart-pie',
-				title: [[#{notebook.newnotebook.popup}]],
-				theme: 'light',
-				columnClass: 'medium',
-				content: "<input class='col-md-12 form-control' type=text id='newNotebook' minlength='5'></input><br/><label id='patternAlert'  class='hidden col-md-12 alert alert-warning'>Pattern [a-zA-Z0-9_ ]+</label>",
-				draggable: true,
-				dragWindowGap: 100,
-				backgroundDismiss: true,
-				closeIcon: true,
-				buttons: {
-					close: {
-						text: "Cancel",
-						btnClass: 'btn btn-sm btn-outline btn-circle blue',
-						action: function () { } //GENERIC CLOSE.
-					},
-					Ok: {
-						text: "Ok",
-						btnClass: 'btn btn-sm btn-outline btn-circle btn-primary',
-						action: function () {
-							if ($("#newNotebook").val() == "" || !$("#newNotebook").val()) {
-								console.log("notebook empty");
-								return;
-							}
-
-							var notebookName = $("#newNotebook").val().trim()
-							if (/^[a-zA-Z0-9_ ]+$/.test(notebookName)) {
-								cloneNotebook(notebookName, initNotebook);
-							}
-							else {
-								$("#patternAlert").removeClass("hidden");
-								return false;
-							}
-						}
-					}
-				}
-			});
-		}
-		function cloneNotebook(name, initId) {
-			$.post(
-				"/controlpanel/notebooks/cloneNotebook",
-				{
-					name: name,
-					idzep: initId
-				}
-			).done(function (data) {
-				localStorage.setItem("reload", "true");//Created notebook, reload forced
-				navigateUrl("/controlpanel/notebooks/app/#/notebook/" + data)
-			}
-			).fail(
-				function (e) {
-					if (e.status == 409) {
-						$.alert({
-							title: 'ERROR!', theme: 'light', content: /*[[#{notebook.error.duplicate}]]*/ 'Error'
-						}
-						)
-					}
-					console.log("Error clone note, message detail, " + " error: " + e.error + ", " + e.responseText);
-				}
-			)
-		}
-
-		// MAIN WHEN READY
-		$(document).ready(function () {
-			const resources = [[${objResources}]];
-
-			// checkeo si tiene forms
-			const hasForm = checkForm(resources);
-
-			const tabFormGraphLink = $('#tab-form-graph a');
-			const tabFormGraphLinkDiv = $('#tab-form-graph');
-			if (!hasForm) {
-				tabFormGraphLink.css({
-					'pointer-events': 'none',
-					'color': 'gray',
-					'text-decoration': 'none'
-				});
-				tabFormGraphLinkDiv.css({
-					'pointer-events': 'none',
-
-				});
-			} else {
-				tabFormGraphLink.css({
-					'pointer-events': 'auto',
-					'color': '',
-					'text-decoration': ''
-				});
-				tabFormGraphLinkDiv.css({
-					'pointer-events': 'auto',
-
-				});
-			}
-
-			// init when Document is ready
-			//SHOW/HIDE DATATABLE COLUMNS HANDLER
-			$('a[data-toggle="tab"][href="#tab_4"]').on('shown.bs.tab', function () {
-
-				const resources = [[${objResources}]];
-				const projectId = [[${projectObj.id}]];
+		});
+	};
+	
+	var startStopDomain = function(domainId, obj){
+		startStopAJAX(domainId).done(updateStateSuccess(obj)).fail(updateStateFail);
+	}
+	var updateStateSuccess = function(obj){
 		
-				const formIds = extractFormIds(resources);
-				const csrf_value = $("meta[name='_csrf']").attr("content");
-				const csrf_header = $("meta[name='_csrf_header']").attr("content");
-				$.ajax({
-					url: '/controlpanel/api/projects/' + projectId + '/forms',
-					method: 'POST',
-					headers: {
-						[csrf_header]: csrf_value
-					},
-					contentType: 'application/json',
-					data: JSON.stringify(formIds),
-					success: function (data) {
-						dataForForm = data
-						fillFormGraph(JSON.parse(data))
-					},
-					error: function (error) {
-						console.error('Error al realizar la llamada:', error);
-					}
-				});
-			});
-
-
-
-			$('label.toggle-vis').on('click', function (e) {
-				e.preventDefault();
-				// Get the column API object
-				var column = $('#resources-table').DataTable().column($(this).attr('data-column'));
-				// Toggle the visibility
-				column.visible(!column.visible());
-				// toggle Text
-				$(this).toggleClass('text-muted line-through');
-			});
-
-			// tab control
-			$(".option").on("click", function (e) {
-				$('.tabContainer').find('.option').removeClass('active');
-				$(this).closest("div").addClass('active');
-			});
-
-			initTable();
-			calculateTotals();
+		var span = $(obj).closest('span')
+		var iTag = span.find('i');
+		if(iTag.attr('class') == 'la la-stop font-hg'){
+			iTag.attr('class', 'la la-play-circle font-hg');
+			span.attr('data-original-title',start);
+		}else{
+			iTag.attr('class', 'la la-stop font-hg');
+			span.attr('data-original-title',stop);
+		}
+		//$('.tooltips').tooltip();
+	}
+	var updateStateFail = function (result){
+		$.alert({
+			title : 'ERROR!',
+			type : 'red',
+			theme : 'light',
+			content : result.responseText
 		});
-
-		// MAIN WHEN LOAD
-		$(window).on("load", function () {
-			// init on load.
-			showLog ? console.log('SHOW ontology load()...') : '';
-
-			// SHOW/HIDE DATATABLES COLUMN INIT
-			$('.dataTables_filter').append($('#dataTable-vis-toggle'));
-			$('#dataTable-vis-toggle').removeClass('hide');
-
-
-
-
+	}
+	var startStopAJAX = function(domainId){
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
+		
+		return $.ajax({
+			url : flowdomainEndpoint + '/' + domainId,
+			headers: {
+				[csrf_header]: csrf_value
+		    },
+			type : 'POST'
 		});
+	}
+	
+	// MAIN WHEN READY
+	$( document ).ready(function() {
+		// init when Document is ready
+		//SHOW/HIDE DATATABLE COLUMNS HANDLER
+		$('label.toggle-vis').on( 'click', function (e) {
+			e.preventDefault(); 
+			// Get the column API object
+			var column = $('#resources-table').DataTable().column( $(this).attr('data-column') ); 
+			// Toggle the visibility
+			column.visible( ! column.visible() );			
+			// toggle Text
+			$(this).toggleClass('text-muted line-through');			
+		});	
+		
 
-		function getFormInfo(id, mode) {
-			const resources = [[${objResources}]];
-			const projectId = [[${projectObj.id}]];
+		
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).load(function(){  
+		// init on load.		
+		showLog ? console.log('SHOW ontology load()...') : '';
+		
+		// SHOW/HIDE DATATABLES COLUMN INIT 		
+		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		$('#dataTable-vis-toggle').removeClass('hide');
+		
+
 			
-			const formIds = extractFormIds(id);
-			const csrf_value = $("meta[name='_csrf']").attr("content");
-			const csrf_header = $("meta[name='_csrf_header']").attr("content");
-			$.ajax({
-				url: '/controlpanel/api/forms/getFormById/' + id,
-				method: 'GET',
-				headers: {
-					[csrf_header]: csrf_value
-				},
+	
+	});
+	
 
-				success: function (data) {
-
-					let changedUrl = ''
-
-					changedUrl = '/controlpanel/forms/' + mode + '/' + data.code;
-
-
-					window.open(changedUrl, '_blank');
-				},
-				error: function (error) {
-					console.error('Error al realizar la llamada:', error);
-				}
-			});
-		}
-
-		function extractFormIds(resources) {
-			const formIds = [];
-
-			if (Array.isArray(resources) && resources.length > 0) {
-				resources.forEach(resource => {
-
-					if (resource.resource && resource.resource.endsWith('@Form')) {
-
-						const formId = resource.resource.replace('@Form', '');
-						formIds.push(formId);
-					}
-				});
-			}
-			return formIds;
-		}
-
-		function checkForm(data) {
-			for (let i = 0; i < data.length; i++) {
-				const resourceType = data[i].resource.split('@')[1];
-				if (resourceType === 'Form') {
-					return true;
-				}
-			}
-			return false;
-		}
-
-		var copyUrl = function (url) {
-			var context = window.location.href.split(window.location.pathname)[0];
-			var $temp = $("<input />");
-			$("body").append($temp);
-			$temp.val(context + url).select();
-			document.execCommand("copy");
-			$temp.remove();
-
-		}
-
-		var getParameters = function (id) {
-			$('#export-type').on('change', function () {
-				var val = $('#export-type').val();
-				if (val == '')
-					$('#submit-params').prop("disabled", true);
-				else
-					$('#submit-params').removeAttr("disabled");
-
-			});
-			$.ajax({
-				url: '/controlpanel/reports/' + id + '/parameters',
-				type: 'GET'
-			}).done(function (data) {
-				var parameters = data;
-
-				if (parameters == null || parameters.length == 0) {
-
-					$('#table_parameters > tbody').html("");
-
-				} else {
-					if ($('#parameters').attr('data-loaded') === 'true') {
-						$('#table_parameters > tbody').html("");
-						$('#table_parameters > tbody').append(mountableModel);
-					}
-
-					$('#table_parameters').mounTable(parameters, {
-						model: '.parameters-model',
-						noDebug: false
-					});
-					$('#parameters').removeClass('hide');
-					$('#parameters').attr('data-loaded', true);
-				}
-				$('#parametersModal').modal('show');
-				$('#current-report').val(id);
-			}).fail(function (error) {
-				$.alert({
-					title: 'ERROR!',
-					type: 'red',
-					theme: 'light',
-					content: 'Could not get report parameters: ' + error.responseText
-				});
-			});
-		}
-
-		var runReportWithParameters = function () {
-			var id = $('#current-report').val();
-			var elements = $('#table-body').find('tr');
-			var parametersArray = [];
-			elements.each(function () {
-				var check = $(this).find("input[name='checkparameter\\[\\]']");
-				if (check.is(':checked')) {
-					var name = $(this).find("input[name='name\\[\\]']").val();
-					var value = $(this).find("input[name='value\\[\\]']").val();
-					var type = $(this).find("input[name='type\\[\\]']").val();
-					var parameter = {"name": name, "type": type, "value": value, "description": ""};
-					parametersArray.push(parameter);
-				}
-
-			});
-			var extension = $('#export-type').val();
-			if (extension == null || extension == '')
-				extension = PDF;
-			ajaxDownload('/controlpanel/reports/download/report/' + id, 'POST', parametersArray, extension);
-		}
-
-		var ajaxDownload = function (url, httpMethod, payload, extension) {
-			var http = new XMLHttpRequest();
-			var params = "parameters=" + JSON.stringify(payload) + "&extension="
-				+ extension;
-			http.open(httpMethod, url, true);
-			http.setRequestHeader('Content-type',
-				'application/x-www-form-urlencoded');
-			http.setRequestHeader(headerReg.csrfHeaderName,
-				headerReg.csrfToken);
-			http.responseType = 'blob';
-
-			http.onload = function () {
-				if (http.status === 200) {
-					var filename = http.getResponseHeader('content-disposition')
-						.split('=')[1];
-					var contentType = http.getResponseHeader('content-type');
-					var blob = new Blob([http.response], {
-						type: contentType
-					});
-					var link = document.createElement('a');
-					link.href = window.URL.createObjectURL(blob);
-					link.download = filename;
-
-					document.body.appendChild(link);
-
-					link.click();
-
-					document.body.removeChild(link);
-				} else {
-					$.alert({
-						title: 'ERROR!',
-						type: 'red',
-						theme: 'light',
-						content: 'Problem executing your Report' + http.getResponseHeader('X-Download-Error')
-					});
-				}
-			}
-			http.send(params);
-		}
-		
-		var downloadZip = function(path){
-			var csrf_value = $("meta[name='_csrf']").attr("content");
-			var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-			App.blockUI({target:"div#contentPanel",boxed: true, overlayColor:"#5789ad",type:"loader",state:"warning",message:"Downloading Web Project..."});
-			$.ajax({url: path, headers: {[csrf_header]: csrf_value}, type: 'GET',
-			    success: function(){
-			    	var a = document.createElement('A');
-			    	a.href = path;
-			    	a.download = path;
-			    	document.body.appendChild(a);
-			    	a.click();
-			    	document.body.removeChild(a);
-			    },
-			    error: function(xhr){
-	            	$.alert({title: 'ERROR!', theme: 'light', type: 'red', content: xhr.responseText});
-	    			return false;
-	            },
-				complete: function(){					
-					App.unblockUI("div#contentPanel");				
-				}
-			});		
-		}
-
-		var deleteConfirmation = function (id) {
-			showConfirmDeleteDialog(id);
-		}
-
-
-		var showConfirmDeleteDialog = function (id) {
-
-			//i18 labels
-			var Close = headerReg.btnCancelar;
-			var Remove = headerReg.btnEliminar;
-			var Content = [[#{project.del.confirm}]];
-			var Title = [[#{project.delete.confirm.title}]];
-
-			// jquery-confirm DIALOG SYSTEM.
-			$.confirm({
-				title: Title,
-				theme: 'light',
-				columnClass: 'medium',
-				content: Content,
-				draggable: true,
-				dragWindowGap: 100,
-				backgroundDismiss: true,
-				buttons: {
-					close: {
-						text: Close,
-						btnClass: 'btn btn-outline blue dialog',
-						action: function () { } //GENERIC CLOSE.
-					},
-					remove: {
-						text: Remove,
-						btnClass: 'btn btn-primary',
-						action: function () {
-						
-							var csrf_value = $("meta[name='_csrf']").attr("content");
-							var csrf_header = $("meta[name='_csrf_header']").attr("content");
-
-							$.ajax({
-								url: '/controlpanel/projects/' + id,
-								headers: {
-									[csrf_header]: csrf_value
-								},
-								type: 'DELETE',
-								success: function (result) {
-
-
-									navigateUrl('/controlpanel/projects/list');
-								}
-							});
-						}
-					}
-				}
-			});
-		}
-
-		var initTable = function () {
-			oTable = $('#resource-access-list').DataTable({
-				paging: false,
-				columnDefs: [
-					{
-						targets: [0, 1],
-						type: 'string',
-						render: function (data, type, full, meta) {
-							if (type === 'filter' || type === 'sort') {
-								var api = new $.fn.dataTable.Api(meta.settings);
-								var td = api.cell({row: meta.row, column: meta.col}).node();
-								data = $('select, input[type="text"]', td).val();
-								if (!data) {
-									if (td.val) {
-										data = td.val;
-									} else {
-										data = td.innerHTML;
-									}
-								}
-							}
-							return data;
-						}
-					}
-				]
-			});
-
-			$('#resource-access-list_wrapper div.dataTables_filter').addClass('hide');
-			$('#resource-access-list_wrapper > div.row').addClass('hide');
-
-			$('#search-on-title').append($('#resource-access-list_wrapper div.dataTables_filter > label > input'));
-			$('#search-on-title > input').removeClass('input-xsmall')
-
-			if ($("#search-on-title").children().length > 2) {
-				$("#search-on-title").find('input:first').remove();
-			}
-		}
-
-		var calculateTotals = function () {
-			var total = 0;
-			$(".checkbox-filter").each(function () {
-				var countclass = "." + $(this).attr('id').split("_")[1];
-				total = total + $(".resource-row" + countclass).length;
-				$('#count_' + $(this).attr('id').split("_")[1]).text($(".resource-row" + countclass).length);
-			})
-			$('#count_ALL').text(total);
-		}
-
-		function filterTable(type) {
-			if (type == "ALL") {
-				$('.checkbox-filter').attr('checked', false);
-				if ($("#checkbox_ALL").prop("checked")) {
-					$(".resource-row").removeClass("invisible");
-				} else {
-					$(".resource-row").addClass("invisible");
-				}
-			} else {
-				if ($("#checkbox_ALL").prop("checked")) {
-					$("#checkbox_ALL").prop("checked", false);
-					$(".resource-row").addClass("invisible");
-				}
-				if ($("#checkbox_" + type).prop("checked")) {
-					$("." + type).removeClass("invisible");
-				} else {
-					$("." + type).addClass("invisible");
-				}
-			}
-
-		}
-
-		var calculateTotals = function () {
-			var total = 0;
-			$(".checkbox-filter").each(function () {
-				var countclass = "." + $(this).attr('id').split("_")[1];
-				total = total + $(".resource-row" + countclass).length;
-				$('#count_' + $(this).attr('id').split("_")[1]).text($(".resource-row" + countclass).length);
-			})
-			$('#count_ALL').text(total);
-		}
-
-      //]]>
+	//]]>
 	</script>
 </body>
-
 </html>

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,15 +60,15 @@ public class BaseAspect {
 		}
 
 		if (elapsedTime > methodWarningThreshold) {
-			log.warn("method warning: Class : {} Method: {}(), cnt = {}, lastTime = {}, maxTime = {}", className,
-					methodName, stats.count, elapsedTime, stats.maxTime);
+			log.warn("method warning: Class : " + className + " Method: " + methodName + "(), cnt = " + stats.count
+					+ ", lastTime = " + elapsedTime + ", maxTime = " + stats.maxTime);
 		}
 
 		if (stats.count % statLogFrequency == 0) {
 			long avgTime = stats.totalTime / stats.count;
 			long runningAvg = (stats.totalTime - stats.lastTotalTime) / statLogFrequency;
-			log.info(" Class: {}, Method: {} cnt: {}, lastTime: {}, avgTime: {}, runningAvg: {}, maxTime: {} ",
-					className, stats.count, elapsedTime, avgTime, runningAvg, stats.maxTime);
+			log.info(" Class: {}, Method: {} cnt: {}, lastTime: {}, avgTime: {}, runningAvg: {}, maxTime: {} "
+				,className,stats.count,elapsedTime,avgTime,runningAvg, stats.maxTime);
 
 			// reset the last total time
 			stats.lastTotalTime = stats.totalTime;

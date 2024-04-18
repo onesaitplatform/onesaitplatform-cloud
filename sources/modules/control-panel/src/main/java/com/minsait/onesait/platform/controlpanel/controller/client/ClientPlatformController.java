@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,11 @@
 package com.minsait.onesait.platform.controlpanel.controller.client;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.json.JSONException;
@@ -50,15 +48,11 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessService;
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessServiceException;
-import com.minsait.onesait.platform.commons.kafka.KafkaExectionException;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
-import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulation;
 import com.minsait.onesait.platform.config.model.ClientPlatformOntology;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyUserAccessType;
 import com.minsait.onesait.platform.config.model.Token;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
-import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.repository.OntologyUserAccessRepository;
 import com.minsait.onesait.platform.config.repository.OntologyUserAccessTypeRepository;
 import com.minsait.onesait.platform.config.services.client.ClientPlatformService;
@@ -70,20 +64,15 @@ import com.minsait.onesait.platform.config.services.client.dto.TokenActivationRe
 import com.minsait.onesait.platform.config.services.client.dto.TokenSelectedRequest;
 import com.minsait.onesait.platform.config.services.client.dto.TokensRequest;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
-import com.minsait.onesait.platform.config.services.device.dto.TokenDTO;
 import com.minsait.onesait.platform.config.services.exceptions.ClientPlatformServiceException;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO;
 import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
+import com.minsait.onesait.platform.config.services.project.ProjectService;
 import com.minsait.onesait.platform.config.services.token.TokenService;
 import com.minsait.onesait.platform.config.services.user.UserService;
-import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
-import com.minsait.onesait.platform.multitenant.config.model.Tenant;
-import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 import com.minsait.onesait.platform.persistence.services.ManageDBPersistenceServiceFacade;
-import com.minsait.onesait.platform.quartz.services.simulation.SimulationService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -115,36 +104,23 @@ public class ClientPlatformController {
 	@Autowired
 	private OntologyUserAccessTypeRepository ontologyUserAccessTypeRepository;
 	@Autowired
-	private ResourcesInUseService resourcesInUseService;
-	@Autowired
-	private MultitenancyService multitenancyService;
-	@Autowired
-	private SimulationService simulationService;
-	@Autowired 
-	private HttpSession httpSession;
+	private ProjectService projectService;
 
 	private static final String LOG_ONTOLOGY_PREFIX = "LOG_";
 	private static final String ONTOLOGIES_STR = "ontologies";
 	private static final String ACCESS_LEVEL_STR = "accessLevel";
 	private static final String DEVICE_STR = "device";
-	private static final String APP_USER_ACCESS = "app_user_access";
 	private static final String REDIRECT_DEV_CREATE = "redirect:/devices/create";
 	private static final String REDIRECT_DEV_LIST = "redirect:/devices/list";
-	private static final String REDIRECT_UPDATE = "redirect:/devices/update/";
 	private static final String ERROR_403 = "/error/403";
 	private static final String TOKEN_STR = "token";
 	private static final String ACTIVE_STR = "active";
-	private static final String APP_ID = "appId";
-	private static final String REDIRECT_PROJECT_SHOW = "redirect:/projects/update/";
 
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	@PreAuthorize("!hasRole('ROLE_USER')")
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model, @RequestParam(required = false) String identification,
 			@RequestParam(required = false) String[] ontologies) {
-		
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
+
 		if (identification != null && identification.equals("")) {
 			identification = null;
 		}
@@ -152,7 +128,8 @@ public class ClientPlatformController {
 		if (ontologies != null && ontologies.length == 0) {
 			ontologies = null;
 		}
-		populateClientList(model, clientPlatformService.getAllClientPlatformByCriteria(utils.getUserId(), identification, ontologies));
+		populateClientList(model,
+				clientPlatformService.getAllClientPlatformByCriteria(utils.getUserId(), identification, ontologies));
 
 		return "devices/list";
 
@@ -190,7 +167,7 @@ public class ClientPlatformController {
 		model.addAttribute(ACCESS_LEVEL_STR, clientPlatformService.getClientPlatformOntologyAccessLevel());
 	}
 
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	@PreAuthorize("!hasRole('ROLE_USER')")
 	@DeleteMapping("/{id}")
 	public ResponseEntity<String> delete(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 
@@ -200,11 +177,10 @@ public class ClientPlatformController {
 				return new ResponseEntity<>(utils.getMessage("device.delete.error.forbidden", "forbidden"),
 						HttpStatus.FORBIDDEN);
 			}
-			if (resourceService.isResourceSharedInAnyProject(device)) {
+			if (resourceService.isResourceSharedInAnyProject(device))
 				return new ResponseEntity<>(
 						"This digital client is shared within a Project, revoke access from project prior to deleting",
 						HttpStatus.PRECONDITION_FAILED);
-			}
 			removeTable(device.getIdentification());
 			entityDeletionService.deleteClient(id);
 		} catch (final Exception e) {
@@ -223,22 +199,17 @@ public class ClientPlatformController {
 		}
 	}
 
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	@PreAuthorize("!hasRole('ROLE_USER')")
 	@GetMapping(value = "/create")
 	public String create(Model model) {
 		final DeviceCreateDTO deviceDTO = new DeviceCreateDTO();
-		
+
 		createInitalTokenToJson(deviceDTO);
 		model.addAttribute(DEVICE_STR, deviceDTO);
 		final List<OntologyDTO> ontologies = ontologyService
 				.getAllOntologiesForListWithProjectsAccess(utils.getUserId());
 		model.addAttribute(ONTOLOGIES_STR, ontologies);
 
-		final Object projectId = httpSession.getAttribute(APP_ID);
-		if (projectId!=null) {
-			model.addAttribute(APP_ID, projectId.toString());
-		}
-		
 		return "devices/create";
 	}
 
@@ -275,7 +246,7 @@ public class ClientPlatformController {
 		return new ResponseEntity<>(accessList, HttpStatus.OK);
 	}
 
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	@PreAuthorize("!hasRole('ROLE_USER')")
 	@PostMapping(value = { "/create" })
 	public String createDevice(Model model, @Valid DeviceCreateDTO device, BindingResult bindingResult,
 			RedirectAttributes redirect) {
@@ -286,6 +257,7 @@ public class ClientPlatformController {
 			final Ontology onto = clientPlatformService.createDeviceLogOntology(ndevice);
 			ontologyBusinessService.createOntology(onto, userId, null);
 			clientPlatformService.createOntologyRelation(onto, ndevice);
+
 		} catch (final ClientPlatformServiceException | JSONException e) {
 			log.error("Cannot create clientPlatform", e);
 			utils.addRedirectException(e, redirect);
@@ -299,19 +271,10 @@ public class ClientPlatformController {
 			utils.addRedirectException(e, redirect);
 			return REDIRECT_DEV_CREATE;
 		}
-
-		final Object projectId = httpSession.getAttribute(APP_ID);
-		if (projectId!=null) {
-			httpSession.setAttribute("resourceTypeAdded", OPResource.Resources.CLIENTPLATFORM.toString());
-			httpSession.setAttribute("resourceIdentificationAdded", device.getIdentification());
-			httpSession.removeAttribute(APP_ID);
-			return REDIRECT_PROJECT_SHOW + projectId.toString();
-		}
-		
 		return REDIRECT_DEV_LIST;
 	}
 
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	@PreAuthorize("!hasRole('ROLE_USER')")
 	@GetMapping(value = "/update/{id}", produces = "text/html")
 	public String update(Model model, @PathVariable("id") String id) {
 		final ClientPlatform device = clientPlatformService.getById(id);
@@ -330,20 +293,6 @@ public class ClientPlatformController {
 			mapTokensToJson(device, deviceDTO);
 			model.addAttribute(DEVICE_STR, deviceDTO);
 			model.addAttribute(ACCESS_LEVEL_STR, clientPlatformService.getClientPlatformOntologyAccessLevel());
-			
-			ResourceAccessType resourceAccess = resourceService.getResourceAccess(utils.getUserId(),device.getId());
-			model.addAttribute(APP_USER_ACCESS, resourceAccess);
-			
-			model.addAttribute(ResourcesInUseService.RESOURCEINUSE,
-					resourcesInUseService.isInUse(id, utils.getUserId()));
-			resourcesInUseService.put(id, utils.getUserId());
-			if (utils.isAdministrator()) {
-				model.addAttribute("tenants", multitenancyService.getTenantsForCurrentVertical());
-			} else {
-				model.addAttribute("tenants", Collections.singletonList(
-						multitenancyService.getTenant(MultitenancyContextHolder.getTenantName()).orElse(new Tenant())));
-			}
-
 			return "devices/create";
 		} else {
 			return REDIRECT_DEV_LIST;
@@ -387,7 +336,6 @@ public class ClientPlatformController {
 			on.put("id", token.getId());
 			on.put(TOKEN_STR, token.getTokenName());
 			on.put(ACTIVE_STR, token.isActive());
-			on.put("tenant", multitenancyService.getMasterDeviceToken(token.getTokenName()).getTenant());
 			arrayNode.add(on);
 		}
 
@@ -415,7 +363,7 @@ public class ClientPlatformController {
 		}
 	}
 
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	@PreAuthorize("!hasRole('ROLE_USER')")
 	@PutMapping(value = "/update/{id}", produces = "text/html")
 	public String updateDevice(Model model, @PathVariable("id") String id, @Valid DeviceCreateDTO uDevice,
 			BindingResult bindingResult, RedirectAttributes redirect) {
@@ -423,7 +371,7 @@ public class ClientPlatformController {
 		if (bindingResult.hasErrors()) {
 			log.debug("Some device properties missing");
 			utils.addRedirectMessage("device.validation.error", redirect);
-			return REDIRECT_UPDATE + id;
+			return "redirect:/devices/update/" + id;
 		}
 
 		if (!clientPlatformService.hasUserManageAccess(id, utils.getUserId())) {
@@ -434,17 +382,13 @@ public class ClientPlatformController {
 		} catch (final ClientPlatformServiceException | JSONException e) {
 			log.debug("Cannot update device");
 			utils.addRedirectMessage("device.update.error", redirect);
-			return REDIRECT_UPDATE + id;
-		} catch (final KafkaExectionException e) {
-			log.debug("Cannot update Kafka topics ACL.");
-			utils.addRedirectMessage("device.update.error", redirect);
-			return REDIRECT_UPDATE + id;
+			return REDIRECT_DEV_CREATE;
 		}
-		resourcesInUseService.removeByUser(id, utils.getUserId());
+
 		return REDIRECT_DEV_LIST;
 	}
 
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	@PreAuthorize("!hasRole('ROLE_USER')")
 	@GetMapping("/show/{id}")
 	public String show(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 
@@ -454,9 +398,6 @@ public class ClientPlatformController {
 			if (!clientPlatformService.hasUserViewAccess(id, utils.getUserId())) {
 				return ERROR_403;
 			}
-			
-			ResourceAccessType resourceAccess = resourceService.getResourceAccess(utils.getUserId(),device.getId());
-			
 			final DeviceCreateDTO deviceDTO = new DeviceCreateDTO();
 			deviceDTO.setId(device.getId());
 			deviceDTO.setDescription(device.getDescription());
@@ -465,8 +406,6 @@ public class ClientPlatformController {
 			deviceDTO.setUserId(device.getUser().getUserId());
 			mapOntologiesToJson(model, device, deviceDTO);
 			mapTokensToJson(device, deviceDTO);
-			
-			model.addAttribute(APP_USER_ACCESS, resourceAccess);
 			model.addAttribute(DEVICE_STR, deviceDTO);
 			model.addAttribute(ACCESS_LEVEL_STR, clientPlatformService.getClientPlatformOntologyAccessLevel());
 			return "devices/show";
@@ -476,7 +415,7 @@ public class ClientPlatformController {
 
 	}
 
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	@PreAuthorize("!hasRole('ROLE_USER')")
 	@PostMapping(value = "/desactivateToken")
 	public @ResponseBody TokenActivationResponse desactivateToken(@RequestBody TokenActivationRequest request) {
 		final TokenActivationResponse response = new TokenActivationResponse();
@@ -492,7 +431,7 @@ public class ClientPlatformController {
 		return response;
 	}
 
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	@PreAuthorize("!hasRole('ROLE_USER')")
 	@PostMapping(value = "/deleteToken")
 	public @ResponseBody TokenActivationResponse deleteToken(@RequestBody TokenSelectedRequest request) {
 		final TokenActivationResponse response = new TokenActivationResponse();
@@ -502,8 +441,6 @@ public class ClientPlatformController {
 			if (!clientPlatformService.hasUserManageAccess(token.getClientPlatform().getId(), utils.getUserId())) {
 				response.setOk(false);
 			} else {
-				final List<ClientPlatformInstanceSimulation> simulations = tokenService.getSimulations(token);
-				simulations.forEach(simulationService::unscheduleSimulation);
 				entityDeletionService.deleteToken(token);
 				response.setOk(true);
 			}
@@ -513,13 +450,9 @@ public class ClientPlatformController {
 		return response;
 	}
 
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	@PreAuthorize("!hasRole('ROLE_USER')")
 	@PostMapping(value = "/generateToken")
-	public @ResponseBody GenerateTokensResponse generateTokens(@RequestBody TokensRequest request,
-			@RequestParam(value = "tenant", required = false) String tenant) {
-		if (!StringUtils.isEmpty(tenant)) {
-			multitenancyService.getTenant(tenant).ifPresent(t -> MultitenancyContextHolder.setTenantName(t.getName()));
-		}
+	public @ResponseBody GenerateTokensResponse generateTokens(@RequestBody TokensRequest request) {
 
 		final GenerateTokensResponse response = new GenerateTokensResponse();
 		final boolean check = request == null || request.getDeviceIdentification() == null
@@ -532,32 +465,37 @@ public class ClientPlatformController {
 		return response;
 	}
 
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	@PreAuthorize("!hasRole('ROLE_USER')")
 	@PostMapping(value = "/loadDeviceTokens")
-	public ResponseEntity<List<TokenDTO>> loadDeviceTokens(@RequestBody TokensRequest request) {
+	public @ResponseBody String loadDeviceTokens(@RequestBody TokensRequest request) {
 
 		final ClientPlatform clientPlatform = clientPlatformService
 				.getByIdentification(request.getDeviceIdentification());
 		if (!clientPlatformService.hasUserManageAccess(clientPlatform.getId(), utils.getUserId())) {
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			return ERROR_403;
 		} else {
 			final List<Token> tokens = tokenService.getTokens(clientPlatform);
 			if (tokens != null && !tokens.isEmpty()) {
-				return ResponseEntity.ok().body(tokens.stream()
-						.map(t -> TokenDTO.builder().id(t.getId()).token(t.getTokenName()).active(t.isActive())
-								.tenant(multitenancyService.getMasterDeviceToken(t.getTokenName()).getTenant()).build())
-						.collect(Collectors.toList()));
+				final ObjectMapper mapper = new ObjectMapper();
+				final ArrayNode arrayNode = mapper.createArrayNode();
 
+				for (final Token token : tokens) {
+					final ObjectNode on = mapper.createObjectNode();
+					on.put("id", token.getId());
+					on.put(TOKEN_STR, token.getTokenName());
+					on.put(ACTIVE_STR, token.isActive());
+					arrayNode.add(on);
+				}
+
+				try {
+					return mapper.writer().writeValueAsString(arrayNode);
+				} catch (final JsonProcessingException e) {
+					return ERROR_403;
+				}
 			}
-			return ResponseEntity.ok().body(new ArrayList<>());
+			return "[]";
 		}
 
-	}
-
-	@GetMapping(value = "/freeResource/{id}")
-	public @ResponseBody void freeResource(@PathVariable("id") String id) {
-		resourcesInUseService.removeByUser(id, utils.getUserId());
-		log.info("free dashboard resource ", id);
 	}
 
 }

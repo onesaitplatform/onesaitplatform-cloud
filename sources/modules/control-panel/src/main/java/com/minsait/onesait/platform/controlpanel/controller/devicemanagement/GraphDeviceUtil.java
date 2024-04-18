@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@ import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.config.model.ClientPlatform;
 import com.minsait.onesait.platform.config.model.ClientPlatformInstance;
-import com.minsait.onesait.platform.config.repository.ClientPlatformInstanceRepository;
 import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
+import com.minsait.onesait.platform.config.repository.ClientPlatformInstanceRepository;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
@@ -81,7 +81,7 @@ public class GraphDeviceUtil {
 		String name = utils.getMessage("name.clients", "PLATFORM CLIENTS");
 
 		arrayLinks.add(new GraphDeviceDTO(genericUserName, name, null, null, genericUserName, name, utils.getUserId(),
-				name, "suit", this.urlImages + IMAGE_CLIENT_PLATFORMS, null, null, null));
+				name, "suit", this.urlImages + IMAGE_CLIENT_PLATFORMS, null, null, null, null));
 
 		List<ClientPlatform> clientPlatforms = null;
 		if (utils.isAdministrator()) {
@@ -107,7 +107,7 @@ public class GraphDeviceUtil {
 			}
 
 			arrayLinks.add(new GraphDeviceDTO(name, clientPlatform.getId(), null, null, name, CLIENT_PLATFORM_STR, name,
-					clientPlatform.getIdentification(), "licensing", this.urlImages + clientImage, null, null,
+					clientPlatform.getIdentification(), "licensing", this.urlImages + clientImage, null, null, null,
 					null));
 
 			if (listDevice != null && !listDevice.isEmpty()) {
@@ -134,7 +134,7 @@ public class GraphDeviceUtil {
 					arrayLinks.add(new GraphDeviceDTO(clientPlatform.getId(), device.getId(), device.getProtocol(),
 							device.getJsonActions(), CLIENT_PLATFORM_STR, CLIENT_PLATFORM_STR,
 							clientPlatform.getIdentification(), device.getIdentification(), state,
-							this.urlImages + image, device.getStatus(), state,
+							this.urlImages + image, device.getStatus(), state, device.getSessionKey(),
 							device.getUpdatedAt()));
 				}
 

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class ApiFIQL {
 
 	@Autowired
 	private ApiOperationRepository operationRepository;
-
+	
 	@Autowired
 	private IntegrationResourcesService resourcesService;
 
@@ -86,15 +86,13 @@ public class ApiFIQL {
 		if (api.getOntology() != null) {
 			apiDTO.setOntologyId(api.getOntology().getId());
 		}
-
-		if (api.getGraviteeId() == null) {
-			apiDTO.setEndpoint(resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE).concat("server/api/v")
-					.concat(api.getNumversion() + "/").concat(api.getIdentification()));
+		
+		if (api.getGraviteeId()==null) {
+			apiDTO.setEndpoint(resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE).concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
 		} else {
-			apiDTO.setEndpoint(resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.GATEWAY).concat("/")
-					.concat(api.getIdentification()).concat("/v").concat(String.valueOf(api.getNumversion())));
+			apiDTO.setEndpoint(resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.GATEWAY).concat("/").concat(api.getIdentification()).concat("/v").concat(String.valueOf(api.getNumversion())));
 		}
-
+		
 		apiDTO.setEndpointExt(api.getEndpointExt());
 		apiDTO.setDescription(api.getDescription());
 		apiDTO.setMetainf(api.getMetaInf());
@@ -148,7 +146,7 @@ public class ApiFIQL {
 		api.setCategory(Api.ApiCategories.valueOf(apiDTO.getCategory()));
 
 		if (apiDTO.getOntologyId() != null && !apiDTO.getOntologyId().equals("")) {
-			final Ontology ont = ontologyService.getOntologyById(apiDTO.getOntologyId(), user.getUserId());
+			final Ontology ont = ontologyService.getOntologyByIdentification(apiDTO.getOntologyId(), user.getUserId());
 
 			if (ont == null) {
 				throw new IllegalArgumentException("com.indra.sofia2.web.api.services.wrongOntology");

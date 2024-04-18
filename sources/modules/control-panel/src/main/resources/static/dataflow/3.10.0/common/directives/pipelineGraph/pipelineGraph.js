@@ -24,8 +24,8 @@ angular.module('pipelineGraphDirectives', [])
       templateUrl: 'common/directives/pipelineGraph/pipelineGraph.tpl.html'
     };
   })
-  .controller('PipelineGraphController', ["$scope", "$rootScope", "$element", "_", "$filter", "$location", "$modal", "pipelineConstant", "$translate", "$window", "pipelineService", function(
-    $scope, $rootScope, $element, _, $filter, $location, $modal, pipelineConstant, $translate, $window, pipelineService
+  .controller('PipelineGraphController', ["$scope", "$rootScope", "$element", "_", "$filter", "$location", "$modal", "pipelineConstant", "$translate", "pipelineService", function(
+    $scope, $rootScope, $element, _, $filter, $location, $modal, pipelineConstant, $translate, pipelineService
   ) {
 
     var showTransition = false;
@@ -784,14 +784,6 @@ angular.module('pipelineGraphDirectives', [])
         thisGraph.insertTitleLinebreaks(stageNode, d.uiInfo.label);
       });
 
-      // OnesaitPlatform needs pipelineId
-      var loc = $window.location;
-      var paramDataflow = "";
-      if(loc.pathname.indexOf("/pipeline/") != -1) {
-        var dataflowId = loc.pathname.split("/")[loc.pathname.split("/").length-1] == '' ? loc.pathname.split("/")[loc.pathname.split("/").length-2] : loc.pathname.split("/")[loc.pathname.split("/").length-1]; 
-        paramDataflow = '?pipelineId='+dataflowId;
-      }
-
       //Add Stage icons
       newGs.append('svg:image')
         .attr('class', 'node-icon')
@@ -800,7 +792,7 @@ angular.module('pipelineGraphDirectives', [])
         .attr('width', 48)
         .attr('height', 48)
         .attr('xlink:href', function(d) {
-          return 'rest/v1/definitions/stages/' + d.library + '/' + d.stageName + '/icon'+paramDataflow;
+          return 'rest/v1/definitions/stages/' + d.library + '/' + d.stageName + '/icon';
         });
 
       //Add Error icons

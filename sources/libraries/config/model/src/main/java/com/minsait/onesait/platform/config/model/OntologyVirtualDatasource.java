@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,24 @@
  */
 package com.minsait.onesait.platform.config.model;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.minsait.onesait.platform.config.model.base.OPResource;
+import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -32,25 +39,35 @@ import lombok.Setter;
 @Configurable
 @Entity
 @Table(name = "ONTOLOGY_VIRTUAL_DATASOURCE")
-public class OntologyVirtualDatasource extends OPResource {
+public class OntologyVirtualDatasource extends AuditableEntityWithUUID {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * Se guarda por índice en la tabla ontology_virtual_datasource así que no se
-	 * puede cambiar orden
-	 **/
 	public enum VirtualDatasourceType {
-		ORACLE, ORACLE11, MYSQL, MARIADB, SQLSERVER, POSTGRESQL, OP_QUERYDATAHUB, PRESTO
+		ORACLE,ORACLE11,MYSQL,MARIADB,SQLSERVER,POSTGRESQL,IMPALA,HIVE
 	}
 
-	@Column(name = "DATASOURCE_DOMAIN", length = 128, nullable = true)
+	@ManyToOne
+	@OnDelete(action = OnDeleteAction.NO_ACTION)
+	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = false)
 	@Getter
 	@Setter
-	private String datasourceDomain;
+	private User userId;
+
+	@OneToMany(mappedBy = "datasourceId", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@OnDelete(action = OnDeleteAction.NO_ACTION)
+	@Getter
+	@Setter
+	private Set<OntologyVirtual> ontologyVirtuals = new HashSet<>();
+
+	@Column(name = "DATASOURCE_NAME", length = 128, nullable = false, unique = true)
+	@NotNull
+	@Getter
+	@Setter
+	private String datasourceName;
 
 	@Column(name = "SGDB", length = 50, nullable = false)
 	@NotNull
@@ -64,10 +81,11 @@ public class OntologyVirtualDatasource extends OPResource {
 	@Setter
 	private String connectionString;
 
-	@Column(name = "USER", length = 128, nullable = true)
+	@Column(name = "USER", length = 128, nullable = false)
+	@NotNull
 	@Getter
 	@Setter
-	private String userId;
+	private String user;
 
 	@Column(name = "CREDENTIALS", length = 128, nullable = true)
 	@Getter
@@ -86,46 +104,10 @@ public class OntologyVirtualDatasource extends OPResource {
 	@Setter
 	private String poolSize;
 
-	@Column(name = "PUBLIC", nullable = false)
-	@Type(type = "org.hibernate.type.BooleanType")
-	@ColumnDefault("false")
+	@Column(name = "PUBLIC", nullable = false, columnDefinition = "BIT default 0")
 	@NotNull
 	@Getter
 	@Setter
 	private boolean isPublic;
-
-	@Transient
-	public String getValidationQuery() {
-		switch (sgdb) {
-		case ORACLE:
-		case ORACLE11:
-			return "select 1 from dual";
-		case MYSQL:
-		case MARIADB:
-		case SQLSERVER:
-		case POSTGRESQL:
-		default:
-			return "select 1";
-		}
-	}
-
-	@Column(name = "VALIDATION_QUERY_TIMEOUT", columnDefinition = "integer default 5")
-	@Getter
-	@Setter
-	private Integer validationQueryTimeout;
-
-	@Column(name = "TEST_ON_BORROW")
-	@Type(type = "org.hibernate.type.BooleanType")
-	@ColumnDefault("true")
-	@Getter
-	@Setter
-	private Boolean testOnBorrow;
-
-	@Column(name = "TEST_WHILE_IDLE")
-	@Type(type = "org.hibernate.type.BooleanType")
-	@ColumnDefault("true")
-	@Getter
-	@Setter
-	private Boolean testWhileIdle;
 
 }

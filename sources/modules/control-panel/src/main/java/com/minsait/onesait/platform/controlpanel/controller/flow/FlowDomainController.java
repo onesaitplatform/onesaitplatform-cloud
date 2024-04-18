@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
-import javax.servlet.http.HttpSession;
+import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +35,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -52,22 +51,26 @@ import com.minsait.onesait.platform.config.services.flowdomain.FlowDomainService
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.libraries.flow.engine.FlowEngineService;
-import com.minsait.onesait.platform.libraries.nodered.auth.NoderedAuthenticationServiceImpl;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
+import com.minsait.onesait.platform.libraries.flow.engine.FlowEngineServiceFactory;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
+import com.minsait.onesait.platform.libraries.nodered.auth.NoderedAuthenticationServiceImpl;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @RequestMapping("/flows")
-@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 @Slf4j
 public class FlowDomainController {
 
 	@Value("${onesaitplatform.flowengine.services.request.timeout.ms:5000}")
 	private int restRequestTimeout;
+
+	private String baseUrl;
+
+	private String proxyUrl;
 
 	@Value("${onesaitplatform.controlpanel.avoidsslverification:false}")
 	private boolean avoidSSLVerification;
@@ -77,7 +80,7 @@ public class FlowDomainController {
 
 	@Autowired
 	private UserService userService;
-
+	
 	@Autowired
 	private IntegrationResourcesService resourcesService;
 
@@ -87,10 +90,6 @@ public class FlowDomainController {
 	@Autowired
 	private NoderedAuthenticationServiceImpl noderedAuthService;
 
-	@Autowired
-	private HttpSession httpSession;
-
-	@Autowired
 	private FlowEngineService flowEngineService;
 
 	private static final String DOMAINS_STR = "domains";
@@ -99,77 +98,24 @@ public class FlowDomainController {
 	private static final String MESSAGE_STR = "message";
 	private static final String MESSAGE_ALERT_TYPE_STR = "messageAlertType";
 	private static final String REDIRECT_FLOWS_CREATE = "redirect:/flows/create";
-	private static final String FLOWS_CREATE = "flows/create";
 	private static final String REDIRECT_FLOWS_LIST = "redirect:/flows/list";
-	private static final String APP_ID = "appId";
 
-	
-	private String getFlowEngineProxyUrl() {
-		return resourcesService.getUrl(Module.FLOWENGINE, ServiceUrl.PROXYURL);
+	@PostConstruct
+	public void init() {
+		proxyUrl = resourcesService.getUrl(Module.FLOWENGINE, ServiceUrl.PROXYURL);
+		baseUrl = resourcesService.getUrl(Module.FLOWENGINE, ServiceUrl.BASE); // <host>/flowengine/admin
+		flowEngineService = FlowEngineServiceFactory.getFlowEngineService(baseUrl, restRequestTimeout,
+				avoidSSLVerification);
+		
 	}
 
 	@GetMapping(value = "/list", produces = "text/html")
 	public String list(Model model) {
-		// CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
 
 		final List<FlowEngineDomainStatus> domainStatusList = getUserDomains(model);
 		model.addAttribute(DOMAINS_STR, domainStatusList);
 		model.addAttribute("userRole", utils.getRole());
 		return "flows/list";
-	}
-
-	@GetMapping(value = "/update/{id}", produces = "text/html")
-	public String edit(Model model, @PathVariable("id") String id) {
-		try {
-			final FlowDomain domain = domainService.getFlowDomainByIdentification(id);
-			if (!domainService.hasUserManageAccess(domain.getId(), utils.getUserId())) {
-				log.debug("Flow domain not found.");
-				// utils.addRedirectMessage("domain.delete.error", redirect);
-				return ERROR_403;
-			}
-			model.addAttribute("domain", domain);
-			model.addAttribute("userRole", utils.getRole());
-		} catch (final Exception e) {
-			log.error("Cannot find flow domain.");
-			return ERROR_403;
-		}
-		return FLOWS_CREATE;
-	}
-
-	@PutMapping(value = "/update/{id}")
-	public String update(@Valid FlowDomainDTO domainDTO, @PathVariable("id") String id, BindingResult bindingResult,
-			RedirectAttributes redirect) {
-
-		final User user = userService.getUser(utils.getUserId());
-		if (domainDTO.getIdentification() == null || domainDTO.getIdentification().isEmpty()) {
-			log.error("Domain identifier is missing");
-			utils.addRedirectMessage("domain.create.error", redirect);
-			return REDIRECT_FLOWS_LIST;
-		}
-		final List<FlowDomain> domains = domainService.getFlowDomainByUser(user);
-
-		if (domains == null || domains.isEmpty()) {
-			// TODO: Set error, no domain found for user
-			return REDIRECT_FLOWS_LIST;
-		}
-		final Optional<FlowDomain> optDomain = domains.stream()
-				.filter(d -> d.getIdentification().equals(domainDTO.getIdentification())).findFirst();
-
-		if (!optDomain.isPresent()) {
-			// TODO: Set error, no domain found for user
-			return REDIRECT_FLOWS_LIST;
-		}
-		optDomain.get().setAutorecover(domainDTO.getAutorecover());
-		optDomain.get().setThresholds(domainDTO.getThresholds());
-		try {
-			domainService.updateDomain(optDomain.get());
-		} catch (final Exception e) {
-			log.error("Cannot update flow domain.");
-			utils.addRedirectMessage("domain.update.error", redirect);
-			return REDIRECT_FLOWS_CREATE;
-		}
-		return REDIRECT_FLOWS_LIST;
 	}
 
 	@GetMapping(value = "/data")
@@ -195,7 +141,7 @@ public class FlowDomainController {
 			domainService.createFlowDomain(domain.getIdentification(), userService.getUser(utils.getUserId()));
 		} catch (final Exception e) {
 			log.error("Cannot create flow domain.");
-			utils.addRedirectException(e, redirect);
+			utils.addRedirectMessage("domain.create.error", redirect);
 			return REDIRECT_FLOWS_CREATE;
 		}
 		return REDIRECT_FLOWS_LIST;
@@ -205,7 +151,7 @@ public class FlowDomainController {
 	public String createForm(Model model) {
 		final FlowDomain domain = new FlowDomain();
 		model.addAttribute("domain", domain);
-		return FLOWS_CREATE;
+		return "flows/create";
 
 	}
 
@@ -231,19 +177,16 @@ public class FlowDomainController {
 	public ResponseEntity<String> startStop(@PathVariable("id") String id) {
 		try {
 			final FlowDomain domain = domainService.getFlowDomainById(id);
-			if (!domainService.hasUserManageAccess(domain.getId(), utils.getUserId())) {
+			if (!domainService.hasUserManageAccess(domain.getId(), utils.getUserId()))
 				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-			}
 			final FlowEngineDomain engineDom = FlowEngineDomain.builder().domain(domain.getIdentification())
-					.port(domain.getPort()).home(domain.getHome()).servicePort(domain.getServicePort())
-					.vertical(MultitenancyContextHolder.getVerticalSchema()).build();
+					.port(domain.getPort()).home(domain.getHome()).servicePort(domain.getServicePort()).build();
 			if (State.STOP.name().equals(domain.getState())) {
 				flowEngineService.startFlowEngineDomain(engineDom);
 				domain.setState(State.START.name());
 			} else if (State.START.name().equals(domain.getState())) {
 				flowEngineService.stopFlowEngineDomain(domain.getIdentification());
 				domain.setState(State.STOP.name());
-				domain.setAutorecover(false);
 			}
 			domainService.updateDomain(domain);
 
@@ -260,13 +203,11 @@ public class FlowDomainController {
 		try {
 			final FlowDomain domain = domainService.getFlowDomainByIdentification(domainStatus.getDomain());
 			final ResponseEntity<?> re = startStop(domain.getId());
-			if (!re.getStatusCode().equals(HttpStatus.OK)) {
-				if (re.getStatusCode().equals(HttpStatus.FORBIDDEN)) {
+			if (!re.getStatusCode().equals(HttpStatus.OK))
+				if (re.getStatusCode().equals(HttpStatus.FORBIDDEN))
 					return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-				} else {
+				else
 					throw new GenericOPException();
-				}
-			}
 			domainStatus.setState(State.START.name());
 			model.addAttribute(FLOW_ENGINE_ACTIVE_STR, true);
 		} catch (final GenericOPException e) {
@@ -284,13 +225,11 @@ public class FlowDomainController {
 		try {
 			final FlowDomain domain = domainService.getFlowDomainByIdentification(domainStatus.getDomain());
 			final ResponseEntity<?> re = startStop(domain.getId());
-			if (!re.getStatusCode().equals(HttpStatus.OK)) {
-				if (re.getStatusCode().equals(HttpStatus.FORBIDDEN)) {
+			if (!re.getStatusCode().equals(HttpStatus.OK))
+				if (re.getStatusCode().equals(HttpStatus.FORBIDDEN))
 					return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-				} else {
+				else
 					throw new GenericOPException();
-				}
-			}
 			// Clean status not executing
 			domainStatus.setState(State.STOP.name());
 			domainStatus.setCpu("--");
@@ -306,29 +245,20 @@ public class FlowDomainController {
 
 	@GetMapping(value = "/show/{domainId}", produces = "text/html")
 	public String showNodeRedPanelForm(Model model, @PathVariable(value = "domainId") String domainId,
-			@RequestParam(value = "flow", required = false) String flowId, RedirectAttributes ra) {
+			@RequestParam(value = "flow", required = false) String flowId) {
 		final FlowDomain domain = domainService.getFlowDomainByIdentification(domainId);
 		if (domainService.hasUserViewAccess(domain.getId(), utils.getUserId())) {
-			try {
-
-				final String password = domain.getUser().getPassword();
-				final String auth = domain.getUser().getUserId() + ":" + password + ":"
-						+ MultitenancyContextHolder.getVerticalSchema();
-				final String authBase64 = Base64.getEncoder().encodeToString(auth.getBytes());
-				final String accessToken = noderedAuthService.getNoderedAuthAccessToken(domain.getUser().getUserId(),
-						domainId);
-				String proxyUrlAndDomain = getFlowEngineProxyUrl() + domainId + "/?authentication=" + authBase64 + "&access_token="
-						+ accessToken;
-				if (flowId != null) {
-					proxyUrlAndDomain += "#flow/" + flowId;
-				}
-
-				model.addAttribute("proxy", proxyUrlAndDomain);
-				return "flows/show";
-			} catch (final Exception e) {
-				utils.addRedirectException(e, ra);
-				return REDIRECT_FLOWS_LIST;
+			final String password = domain.getUser().getPassword();
+			final String auth = domain.getUser() + ":" + password;
+			final String authBase64 = Base64.getEncoder().encodeToString(auth.getBytes());
+			String accessToken = noderedAuthService.getNoderedAuthAccessToken(domain.getUser().getUserId(), domainId);
+			String proxyUrlAndDomain = proxyUrl + domainId + "/?authentication=" + authBase64 + "&access_token="
+					+ accessToken;
+			if (flowId != null) {
+				proxyUrlAndDomain += "#flow/" + flowId;
 			}
+			model.addAttribute("proxy", proxyUrlAndDomain);
+			return "flows/show";
 		} else {
 			return ERROR_403;
 		}
@@ -343,7 +273,7 @@ public class FlowDomainController {
 	@GetMapping(value = "/check/amount/{domainId}")
 	public @ResponseBody boolean checkDomainAmountByUser(@PathVariable(value = "domainId") String domainId) {
 		final User user = userService.getUser(utils.getUserId());
-		return checkDomainsOwnedByUser(user) <= 0;
+		return (checkDomainsOwnedByUser(user) <= 0);
 	}
 
 	private List<FlowEngineDomainStatus> getUserDomains(Model model) {
@@ -385,25 +315,21 @@ public class FlowDomainController {
 		final List<FlowEngineDomainStatus> filteredDomainStatusList = new ArrayList<>();
 		for (final FlowDomain domain : domainList) {
 			final FlowEngineDomainStatus domainStatus = new FlowEngineDomainStatus();
-			domainStatus.setId(domain.getId());
 			domainStatus.setDomain(domain.getIdentification());
 			domainStatus.setPort(domain.getPort());
 			domainStatus.setHome(domain.getHome());
 			domainStatus.setServicePort(domain.getServicePort());
-
+			
 			domainStatus.setRuntimeState("--");
 			domainStatus.setCpu("--");
 			domainStatus.setMemory("--");
 			domainStatus.setUser(domain.getUser().getUserId());
-			domainStatus.setAutorecover(domain.getAutorecover());
-			domainStatus.setCreatedAt(domain.getCreatedAt());
-			domainStatus.setUpdatedAt(domain.getUpdatedAt());
 
 			final Optional<FlowEngineDomainStatus> status = domainStatusList.stream()
 					.filter(domStatus -> domStatus.getDomain().equals(domain.getIdentification())).findAny();
 			if (status.isPresent()) {
 				domainStatus.setState(status.get().getState());
-				if (status.get().getState().equals("STOP") && !status.get().getState().equals(domain.getState())) {
+				if (status.get().getState().equals("STOP") && !status.get().getState().equals(domain.getState())){
 					domain.setState(status.get().getState());
 					domainService.updateDomain(domain);
 				}

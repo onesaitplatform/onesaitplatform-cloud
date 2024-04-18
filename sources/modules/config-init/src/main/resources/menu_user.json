@@ -1,0 +1,53 @@
+{
+	"menu": "onesait Platform",
+	"rol": "ROLE_USER",
+	"noSession": "/console/login",
+	"navigation": [
+		{
+			"title": {
+				"EN": "SHARE & USE",
+				"ES": "COMPARTE Y USA"
+			},
+			"icon": "flaticon-cart",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "My Market",
+						"ES": "Mi Market"
+					},
+					"icon": "",
+					"url": "/controlpanel/marketasset/list"
+				}
+			]
+		},
+		{
+			"title": {
+				"EN": "",
+				"ES": ""
+			},
+			"icon": "flaticon-more-v3",
+			"url": "",
+			"submenu": [
+			]
+		},
+		{
+			"title": {
+				"EN": "TOOLS",
+				"ES": "HERRAMIENTAS"
+			},
+			"icon": "flaticon-open-box",
+			"url": "",
+			"submenu": [
+				{
+					"title": {
+						"EN": "My Audit",
+						"ES": "Mi Auditoría"
+					},
+					"icon": "",
+					"url": "/controlpanel/audit/show"
+				}
+			]
+		}
+	]
+}

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,8 @@ public interface KsqlResourceRepository extends JpaRepository<KsqlResource, Stri
 
 	KsqlResource findByIdentificationAndIdNot(String identification, String id);
 
+	KsqlResource findById(String identification);
+
 	List<KsqlResource> findByKafkaTopic(String kafkaTopic);
 
 	List<KsqlResource> findByResourceType(FlowResourceType resourceType);
@@ -52,7 +54,7 @@ public interface KsqlResourceRepository extends JpaRepository<KsqlResource, Stri
 	@CacheEvict(cacheNames = "KsqlResourceRepositoryByOntology_IdentificationAndResourceType", allEntries = true)
 	@Modifying
 	@Transactional
-	void deleteById(String id);
+	void delete(String id);
 
 	@Override
 	@CacheEvict(cacheNames = "KsqlResourceRepositoryByOntology_IdentificationAndResourceType", allEntries = true)

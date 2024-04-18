@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
 package com.minsait.onesait.platform.controlpanel.controller.jsontool;
 
 import java.io.IOException;
-
-import javax.servlet.http.HttpSession;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,12 +31,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonObject;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessService;
 import com.minsait.onesait.platform.commons.model.InsertResult;
 import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.model.base.OPResource;
+import com.minsait.onesait.platform.config.services.datamodel.DataModelService;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
+import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.router.service.app.model.NotificationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel;
@@ -59,75 +58,56 @@ public class JsonToolController {
 	private OntologyService ontologyService;
 	@Autowired
 	private OntologyBusinessService ontologyBusinessService;
-
+	@Autowired
+	private DataModelService dataModelService;
 	@Autowired
 	private AppWebUtils utils;
-
+	@Autowired
+	private UserService userService;
 	@Autowired
 	private RouterService routerService;
 
-	@Autowired
-	private JsonToolUtils jsonToolUtils;
-	
-	@Autowired 
-	private HttpSession httpSession;
-
 	private final ObjectMapper mapper = new ObjectMapper();
 
-	private static final String APP_ID = "appId";
+	private static final String DATAMODEL_DEFAULT_NAME = "EmptyBase";
+	private static final String SCHEMA_DRAFT_VERSION = "http://json-schema.org/draft-04/schema#";
 	private static final String PATH_PROPERTIES = "properties";
+	private static final String DEFAULT_META_INF = "imported,json";
 
 	@GetMapping("tools")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	public String show(Model model) {
 		model.addAttribute("datasources", ontologyService.getDatasources());
 		model.addAttribute("ontologies", ontologyService.getOntologiesByUserId(utils.getUserId()));
-		
-		final Object projectId = httpSession.getAttribute(APP_ID);
-		if (projectId!=null) {
-			model.addAttribute(APP_ID, projectId.toString());
-			httpSession.removeAttribute(APP_ID);
-		}
-		
 		return "json2ontologytool/import";
 	}
 
 	@PostMapping("createontology")
 	public @ResponseBody String createOntology(Model model, @RequestParam String ontologyIdentification,
-			@RequestParam String ontologyDescription, @RequestParam String schema, @RequestParam String datasource, @RequestParam boolean contextdata, @RequestParam(value = "appId", required = false) String appId)
+			@RequestParam String ontologyDescription, @RequestParam String schema, @RequestParam String datasource)
 			throws IOException {
 
-		final Ontology ontology = jsonToolUtils.createOntology(ontologyIdentification, ontologyDescription,
-				Ontology.RtdbDatasource.valueOf(datasource), schema, contextdata);
-
+		final Ontology ontology = new Ontology();
+		ontology.setJsonSchema(completeSchema(schema, ontologyIdentification, ontologyDescription).toString());
+		ontology.setIdentification(ontologyIdentification);
+		ontology.setActive(true);
+		ontology.setDataModel(dataModelService.getDataModelByName(DATAMODEL_DEFAULT_NAME));
+		ontology.setDescription(ontologyDescription);
+		ontology.setUser(userService.getUser(utils.getUserId()));
+		ontology.setMetainf(DEFAULT_META_INF);
+		ontology.setRtdbDatasource(Ontology.RtdbDatasource.valueOf(datasource));
 		try {
 			ontologyBusinessService.createOntology(ontology, ontology.getUser().getUserId(), null);
 		} catch (final Exception e) {
-			if (e.getCause() instanceof com.minsait.onesait.platform.config.services.ontologydata.OntologyDataJsonProblemException) {
-				final JsonObject responseBody = new JsonObject();
-				responseBody.addProperty("result", "ko");
-				responseBody.addProperty("cause", e.getCause().getMessage());
-				return responseBody.toString();
-			} else {
-				final JsonObject responseBody = new JsonObject();
-				responseBody.addProperty("result", "ko");
-				responseBody.addProperty("cause", e.getMessage().replaceAll("\"", "'"));
-				return responseBody.toString();
-			}
+			return "{\"result\":\"ko\", \"cause\" :\"" + e.getMessage().replaceAll("\"", "'") + "\"}";
 		}
 		final Ontology oDb = ontologyService.getOntologyByIdentification(ontology.getIdentification(),
 				utils.getUserId());
-		
-		if (appId!=null) {
-			httpSession.setAttribute("resourceTypeAdded", OPResource.Resources.ONTOLOGY.toString());
-			httpSession.setAttribute("resourceIdentificationAdded", oDb.getIdentification());
-		}
-		
 		return "{\"result\":\"ok\", \"id\":\"" + oDb.getId() + "\"}";
 	}
 
 	@PostMapping("importbulkdata")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	public @ResponseBody String importBulkData(Model model, @RequestBody JsonInsertDTO insertDTO) {
 		final ObjectMapper objMapper = new ObjectMapper();
 		try {
@@ -153,42 +133,31 @@ public class JsonToolController {
 						}
 
 						Integer.parseInt(objMapper.readTree(output).path("count").asText());
-						final JsonObject responseBody = new JsonObject();
-						responseBody.addProperty("result", "ok");
-						responseBody.addProperty("inserted", objMapper.readTree(output).path("count").asText());
-						return responseBody.toString();
+						return "{\"result\":\"ok\", \"inserted\" :" + objMapper.readTree(output).path("count").asText()
+								+ "}";
+
 					} catch (final NumberFormatException | JSONException ne) {
-						final JsonObject responseBody = new JsonObject();
-						responseBody.addProperty("result", "ok");
-						responseBody.addProperty("inserted", "");
-						return responseBody.toString();
+						return "{\"result\":\"ok\", \"inserted\" :\"\"}";
 					}
 
 				} else {
 					log.error("Error insert BULK data:" + response.getMessage());
-					final JsonObject responseBody = new JsonObject();
-					responseBody.addProperty("result", "ERROR");
-					responseBody.addProperty("cause", response.getMessage().replaceAll("\"", "'"));
-					return responseBody.toString();
+					return "{\"result\":\"ERROR\", \"cause\" :\"Error " + response.getMessage() + "\"}";
 				}
 			} catch (final Exception e) {
-				final JsonObject responseBody = new JsonObject();
-				responseBody.addProperty("result", "ERROR");
-				responseBody.addProperty("cause", "Error insert BULK data. " + e.getMessage().replaceAll("\"", "'"));
-				return responseBody.toString();
+				return "{\"result\":\"ERROR\", \"cause\" :\"Error insert BULK data. "
+						+ e.getMessage().replaceAll("\"", "'") + "\"}";
 			}
 
 		} catch (final IOException e) {
-			final JsonObject responseBody = new JsonObject();
-			responseBody.addProperty("result", "ko");
-			responseBody.addProperty("cause", "Error parsing JSON. " + e.getMessage().replaceAll("\"", "'"));
-			return responseBody.toString();
+			return "{\"result\":\"ko\", \"cause\" :\"Error parsing JSON. " + e.getMessage().replaceAll("\"", "'")
+					+ "\"}";
 		}
 
 	}
 
 	@PostMapping("/getParentNodeOfSchema")
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	public @ResponseBody String parentNode(@RequestParam String id) throws IOException {
 		final Ontology ontology = ontologyService.getOntologyByIdentification(id, utils.getUserId());
 		if (ontology != null) {
@@ -202,4 +171,15 @@ public class JsonToolController {
 		return "";
 	}
 
+	public JsonNode completeSchema(String schema, String identification, String description) throws IOException {
+		final JsonNode schemaSubTree = mapper.readTree(schema);
+		((ObjectNode) schemaSubTree).put("type", "object");
+		((ObjectNode) schemaSubTree).put("description", "Info " + identification);
+
+		((ObjectNode) schemaSubTree).put("$schema", SCHEMA_DRAFT_VERSION);
+		((ObjectNode) schemaSubTree).put("title", identification);
+
+		((ObjectNode) schemaSubTree).put("additionalProperties", true);
+		return schemaSubTree;
+	}
 }

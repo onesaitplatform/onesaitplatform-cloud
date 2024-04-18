@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
-import java.util.List;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,7 +21,6 @@ import org.springframework.data.repository.query.Param;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
-import com.minsait.onesait.platform.config.model.User;
 
 public interface OntologyVirtualRepository extends JpaRepository<OntologyVirtual, String> {
 
@@ -34,23 +31,5 @@ public interface OntologyVirtualRepository extends JpaRepository<OntologyVirtual
 	@Query("SELECT ov.objectId FROM OntologyVirtual AS ov WHERE ov.ontologyId.identification=:ontologyId")
 	String findOntologyVirtualObjectIdByOntologyIdentification(@Param("ontologyId") String ontologyId);
 
-	@Query("SELECT ov FROM OntologyVirtual AS ov  WHERE ov.datasourceId.id=:datasourcesId")
-	List<OntologyVirtual> findByDatasourcesId(@Param("datasourcesId") String datasourcesId);
-
-	@Query("SELECT ov FROM OntologyVirtual AS ov WHERE ov.ontologyId.identification=:ontologyId")
-	OntologyVirtual findOntologyVirtualByOntologyIdentification(@Param("ontologyId") String ontologyId);
-
 	OntologyVirtual findByOntologyId(Ontology ontology);
-
-	@Query("SELECT ov.ontologyId FROM OntologyVirtual AS ov WHERE ov.ontologyId.identification=:ontologyId")
-	Ontology findOntology(@Param("ontologyId") String ontologyId);
-
-	@Override
-	List<OntologyVirtual> findAll();
-
-	@Query("SELECT ov FROM OntologyVirtual AS ov WHERE ov.ontologyId.user=:user")
-	List<OntologyVirtual> findByUser(@Param("user") User user);
-
-	List<OntologyVirtual> findByDatasourceTableName(String datasourceTableName);
-
 }

@@ -1,14 +1,11 @@
 onesaitplatform:
    hazelcast.service.discovery.strategy: ${HZ_SERVICE_DISCOVERY_STRATEGY}
    hazelcast.service.discovery.zookeeper.url: ${HZ_ZOOKEEPER_URL}
-   graylog:
-      enabled: ${GRAYLOG_ENABLED}
-      host: ${GRAYLOG_HOST}
-      port: ${GRAYLOG_PORT}
+
 spring:
    boot.admin: #Spring Boot Admin Config    
-      client.url: http://monitoringuiservice:18100/monitoring    
-      client.instance.service-url: http://cacheservice:${server.port}${server.servlet.contextPath}/ 
+      url: http://monitoringuiservice:18100/monitoring    
+      client.service-url: http://cacheservice:${server.port}${server.contextPath}/ 
 
 logging:
-   file.path: /var/log/platform-logs
+   path: /var/log/platform-logs

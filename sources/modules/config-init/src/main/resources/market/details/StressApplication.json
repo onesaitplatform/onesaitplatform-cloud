@@ -1,0 +1,9 @@
+{
+	"title":"Stress Application",
+	"technologies":"Java",
+	"description":"A Java Application for stress the plattform.",	
+	"functionality":"",
+	"id_endpoint":"https://rancher.sofia4cities.com/scalability",
+	"detailedDescription":"# Java Application for stress the plattform.\n\n\nThis application allows to configure and execute data virtual devices that inject data into the platform.\n\nWith is application is possible to see and analyze the load capabilities of the platform.\n\nThe virtual devices are automatically disabled after 10 minutes of execution.\n\n"
+}
+

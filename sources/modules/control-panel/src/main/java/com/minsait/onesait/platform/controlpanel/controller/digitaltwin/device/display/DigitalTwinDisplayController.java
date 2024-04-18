@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ public class DigitalTwinDisplayController {
 	private static final String SORT_TIMESTAMP = "'}).sort({timestamp: -1}).limit(";
 	ObjectMapper mapper = new ObjectMapper();
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@GetMapping("show")
 	public String show(Model model) {
 		List<DigitalTwinType> types = this.typeService.getDigitalTwinTypesByUserId(utils.getUserId());
@@ -78,7 +78,7 @@ public class DigitalTwinDisplayController {
 		return "digitaltwindisplay/show";
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@GetMapping(value = "/getDevices/{typeId}")
 	public @ResponseBody List<String> getDevices(Model model, @PathVariable("typeId") String typeId) {
 		try {
@@ -89,7 +89,7 @@ public class DigitalTwinDisplayController {
 		}
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR','ROLE_DATASCIENTIST','ROLE_DEVELOPER')")
 	@PostMapping("executeQuery")
 	public String executeQuery(Model model, @RequestParam String type, @RequestParam String device,
 			@RequestParam String offset, @RequestParam String operation, @RequestParam String eventName,

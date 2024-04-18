@@ -29,78 +29,93 @@ function tryParseJSON(jsonString) {
 }
 
 function buildSwaggerJSON(data) {
-	var enumTypes = ["Point", "LineString", "Polygon", "MultiPoint", "MultiLineString", "MultiPolygon"];
     var keys = Object.keys(data)
     var op = {
        // required: keys,
         properties: {}
     };
     keys.forEach(function (x) {
-    	if(x == "type" && (enumTypes.indexOf(data[x]) > -1 || data[x] == "FeatureCollection")){
-    		//Se trata de un geometry
-    		op.properties[x] = {
-                    "type": "string",
-                    "enum": [
-                    	data[x]
-                    ]
-    		}
-    	}else{
-    		var typeData = typeOf(data[x]);
-            if (["array", "object", "null", "string"].indexOf(typeData) === -1)
-                op.properties[x] = {
-                    "type": typeData
-                };
-            else {
-                switch (typeData) {
-                    case "array":
-                    	 op.properties[x] = {
+        var typeData = typeOf(data[x]);
+        if (["array", "object", "null", "string"].indexOf(typeData) === -1)
+            op.properties[x] = {
+                "type": typeData
+            };
+        else {
+            switch (typeData) {
+                case "array":
+                	 op.properties[x] = {
+                        "type": "array",
+                        "items": []
+                    };
+                	 
+                	data[x].forEach(function(o,i){
+                		if(typeOf(o) == "object"){
+                			op.properties[x]["items"].push(buildSwaggerJSON(o));
+                			op.properties[x]["items"][i]["type"] = typeOf(o);
+                			
+                		}else{
+                			op.properties[x]["items"].push({"type" : typeOf(o)});
+                		}
+                		
+                		
+                		
+                		
+                	});
+                	/*
+                    typeData = typeOf(data[x][0]);
+                    if (typeData === "array") {
+                        op.properties[x] = { "type": "array", "items": { type: typeData } };
+                        //throw new Error("Complex object (array of array etc...)", data[x][0]);
+                    }
+                    if (typeData === "object") {
+                        op.properties[x] = {
                             "type": "array",
-                            "items": []
+                            "items": {
+                                type: typeData,
+                                properties: buildSwaggerJSON(data[x][0]).properties
+                            }
                         };
-                    	 
-                    	data[x].forEach(function(o,i){
-                    		if(typeOf(o) == "object"){
-                    			op.properties[x]["items"].push(buildSwaggerJSON(o));
-                    			op.properties[x]["items"][i]["type"] = typeOf(o);
-                    			
-                    		}else{
-                    			op.properties[x]["items"].push({"type" : typeOf(o)});
-                    		}
-                    		
-                    		
-                    		
-                    		
-                    	});
+                        break;
+                    }*/
+                   
 
-                        break;
-                    case "object":
-             
-                        op.properties[x] = buildSwaggerJSON((data[x]));
-                        op.properties[x].type = "object";
-                        
-                        break;
-                    case "null":
-                    	break;
-                    case "string":
-                    	try{
-                    		asDateTime(data[x]);
-                    		op.properties[x] = {
-                                    "type": typeData,
-                                    "format":"date-time"
-                    		};
-                    	}catch(e){
-    	            		op.properties[x] = {
-    	                            "type": typeData
-    	                    };
-                    	}
-                		break;
-              
-                    default:
-                        console.warn("skipping ", typeData);
-                        break;
-                }
+                    break;
+                case "object":
+         
+                    op.properties[x] = buildSwaggerJSON((data[x]));
+                    op.properties[x].type = "object";
+                    
+                    break;
+                case "null":
+//                	op.properties[x] ={
+//                		"type" : ["string", "number", "null"]
+//                	};
+                	/*for(var i= op.required.length-1; i>=0; i--){
+                		if(op.required[i] == x){
+                			op.required.splice(i,1);
+                			break;
+                		}
+                	}*/
+                	break;
+                case "string":
+                	try{
+                		asDateTime(data[x]);
+                		op.properties[x] = {
+                                "type": typeData,
+                                "format":"date-time"
+                		};
+                	}catch(e){
+	            		op.properties[x] = {
+	                            "type": typeData
+	                    };
+                	}
+            		break;
+          
+                default:
+                    console.warn("skipping ", typeData);
+                    break;
             }
-    	}
+        }
     });
     return op;
 }

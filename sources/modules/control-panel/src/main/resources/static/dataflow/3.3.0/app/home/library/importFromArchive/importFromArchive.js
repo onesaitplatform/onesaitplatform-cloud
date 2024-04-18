@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('ImportFromArchiveModalInstanceController', ["$scope", "$modalInstance", "api", "$translate", function ($scope, $modalInstance, api, $translate) {
+  .controller('ImportFromArchiveModalInstanceController', function ($scope, $modalInstance, api, $translate) {
     var errorMsg = 'Not a valid Pipeline Configuration file.';
 
     angular.extend($scope, {
@@ -69,4 +69,4 @@ angular
       }
     });
 
-  }]);
+  });

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.jeasy.rules.api.Facts;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.api.rule.DefaultRuleBase;
@@ -32,9 +31,8 @@ import com.minsait.onesait.platform.api.rule.RuleManager;
 import com.minsait.onesait.platform.api.service.ApiServiceInterface;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Api.ApiType;
-import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
-import com.mongodb.BasicDBObject;
-
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 
 @Component
 @Rule
@@ -50,7 +48,7 @@ public class ValidBodyRule extends DefaultRuleBase {
 		final Map<String, Object> data = facts.get(RuleManager.FACTS);
 		final Object body = data.get(ApiServiceInterface.BODY);
 		final Api api = (Api) data.get(ApiServiceInterface.API);
-		return body != null && canExecuteRule(facts) && api.getApiType().equals(ApiType.INTERNAL_ONTOLOGY) && !api.getOntology().getRtdbDatasource().equals(RtdbDatasource.NEBULA_GRAPH);
+		return (body != null && api.getApiType().equals(ApiType.INTERNAL_ONTOLOGY));
 	}
 
 	@Action
@@ -63,12 +61,17 @@ public class ValidBodyRule extends DefaultRuleBase {
 
 		if (!"".equals(body)) {
 			final boolean valid = isValidJSON(body);
+			final boolean validMongo = isValidJSONtoMongo(body);
 
-			if(!valid){
-				stopAllNextRules(facts, "BODY IS NOT JSON PARSEABLE ", DefaultRuleBase.ReasonType.GENERAL,
-						HttpStatus.BAD_REQUEST);
+			if (valid && validMongo) {
+
+				final String bodyDepured = depureJSON(body);
+				if (bodyDepured != null)
+					data.put(ApiServiceInterface.BODY, bodyDepured.getBytes());
 			}
 
+			else
+				stopAllNextRules(facts, "BODY IS NOT JSON PARSEABLE ", DefaultRuleBase.ReasonType.GENERAL);
 		}
 
 	}
@@ -77,7 +80,7 @@ public class ValidBodyRule extends DefaultRuleBase {
 		final JSONObject jsonObj = toJSONObject(toTestStr);
 		final JSONArray jsonArray = toJSONArray(toTestStr);
 
-		return jsonObj != null || jsonArray != null;
+		return (jsonObj != null || jsonArray != null);
 	}
 
 	private JSONObject toJSONObject(String input) {
@@ -102,7 +105,7 @@ public class ValidBodyRule extends DefaultRuleBase {
 
 	public boolean isValidJSONtoMongo(String body) {
 		try {
-			final BasicDBObject dbObject = BasicDBObject.parse(body);
+			final DBObject dbObject = (DBObject) JSON.parse(body);
 
 			return dbObject != null;
 		} catch (final Exception e) {
@@ -111,12 +114,12 @@ public class ValidBodyRule extends DefaultRuleBase {
 	}
 
 	public String depureJSON(String body) {
-		BasicDBObject dbObject = null;
+		DBObject dbObject = null;
 		try {
-			dbObject = BasicDBObject.parse(body);
-			if (dbObject == null) {
+			dbObject = (DBObject) JSON.parse(body);
+			if (dbObject == null)
 				return null;
-			} else {
+			else {
 				return dbObject.toString();
 			}
 		} catch (final Exception e) {

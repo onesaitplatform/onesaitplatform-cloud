@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,9 +115,7 @@ public class MongoDbToolsAdapterImpl extends MongoDbToolsAdapter {
 	}
 
 	private String runCommand(String commandToExecute) throws CommandExecutionException {
-		if (log.isDebugEnabled()) {
-			log.debug("Executing command. Command = {}.", commandToExecute);
-		}		
+		log.debug("Executing command. Command = {}.", commandToExecute);
 		String result = null;
 		if (useSequentialOps) {
 			synchronized (this) {

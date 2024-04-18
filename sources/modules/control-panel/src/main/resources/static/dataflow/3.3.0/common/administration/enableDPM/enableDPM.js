@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp')
-  .controller('EnableDPMModalInstanceController', ["$rootScope", "$scope", "$modalInstance", "$modalStack", "$modal", "api", "authService", "configuration", "pipelineService", function (
+  .controller('EnableDPMModalInstanceController', function (
     $rootScope, $scope, $modalInstance, $modalStack, $modal, api, authService, configuration, pipelineService
   ) {
     angular.extend($scope, {
@@ -109,4 +109,4 @@ angular
 
     $scope.isStatsLibraryInstalled = pipelineService.isDPMStatisticsLibraryInstalled();
 
-  }]);
+  });

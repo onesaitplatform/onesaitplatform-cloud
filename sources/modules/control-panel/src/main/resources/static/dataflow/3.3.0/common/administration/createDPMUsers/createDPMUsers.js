@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp')
-  .controller('CreateDPMUsersModalInstanceController', ["$rootScope", "$scope", "$modalInstance", "$modalStack", "$modal", "api", "authService", "configuration", "pipelineService", "dpmInfoModel", function (
+  .controller('CreateDPMUsersModalInstanceController', function (
     $rootScope, $scope, $modalInstance, $modalStack, $modal, api, authService, configuration, pipelineService,
     dpmInfoModel
   ) {
@@ -168,4 +168,4 @@ angular
     getUsers();
 
 
-  }]);
+  });

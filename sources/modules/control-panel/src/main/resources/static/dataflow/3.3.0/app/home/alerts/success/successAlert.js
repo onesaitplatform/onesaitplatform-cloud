@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('SuccessAlertController', ["$scope", "$timeout", function ($scope, $timeout) {
+  .controller('SuccessAlertController', function ($scope, $timeout) {
 
     angular.extend($scope, {
       /**
@@ -50,4 +50,4 @@ angular
         alertList.splice(index, 1);
       }
     });
-  }]);
+  });

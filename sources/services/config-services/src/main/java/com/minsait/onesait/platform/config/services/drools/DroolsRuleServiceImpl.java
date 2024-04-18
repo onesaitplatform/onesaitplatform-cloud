@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,10 @@ import org.springframework.stereotype.Service;
 
 import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
 import com.minsait.onesait.platform.config.model.DroolsRule;
-import com.minsait.onesait.platform.config.model.DroolsRule.TableExtension;
 import com.minsait.onesait.platform.config.model.DroolsRule.Type;
 import com.minsait.onesait.platform.config.model.DroolsRuleDomain;
 import com.minsait.onesait.platform.config.model.Ontology;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.DroolsRuleDomainRepository;
 import com.minsait.onesait.platform.config.repository.DroolsRuleRepository;
@@ -56,7 +56,7 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 
 	@Override
 	public List<DroolsRule> getRulesForOntology(String ontology) {
-		return droolsRuleRepository.findBySourceOntologyIdentificationAndActiveTrue(ontology);
+		return getRulesForOntology(ontologyRepository.findByIdentification(ontology));
 	}
 
 	@Override
@@ -82,7 +82,7 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 	@Override
 	public List<DroolsRuleDomain> getAllDomains(String user) {
 
-		if (userService.getUser(user).isAdmin()) {
+		if (userService.getUser(user).getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name())) {
 			return droolsRuleDomainRepository.findAll();
 		} else {
 			return new ArrayList<>(Arrays.asList(this.getUserDomain(user)));
@@ -105,7 +105,9 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 
 		final List<DroolsRule> rules = new ArrayList<>();
 
-		activeDomains.forEach(d -> rules.addAll(droolsRuleRepository.findByUser(d.getUser())));
+		activeDomains.forEach(d -> {
+			rules.addAll(droolsRuleRepository.findByUser(d.getUser()));
+		});
 
 		return rules;
 
@@ -127,7 +129,7 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 
 	@Override
 	public DroolsRuleDomain getDomain(String id) {
-		return droolsRuleDomainRepository.findById(id).orElse(null);
+		return droolsRuleDomainRepository.findOne(id);
 	}
 
 	@Override
@@ -148,7 +150,10 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 	public DroolsRuleDomain changeDomainState(String id) {
 		final DroolsRuleDomain domain = getDomain(id);
 		if (domain != null) {
-			domain.setActive(!domain.isActive());
+			if (domain.isActive())
+				domain.setActive(false);
+			else
+				domain.setActive(true);
 			return droolsRuleDomainRepository.save(domain);
 		}
 		return null;
@@ -157,11 +162,6 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 	@Override
 	public void updateDRL(String identification, String drl) {
 		droolsRuleRepository.updateDRLByIdentification(drl, identification);
-	}
-
-	@Override
-	public void updateDecisionTable(String identification, byte[] decisionTable, TableExtension extension) {
-		droolsRuleRepository.updateDecisionTableByIdentification(decisionTable, extension, identification);
 	}
 
 	@Override
@@ -178,13 +178,6 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 	}
 
 	@Override
-	@Transactional
-	public void updateActive(String identification, boolean active) {
-		droolsRuleRepository.updateActiveByIdentification(active, identification);
-
-	}
-
-	@Override
 	public DroolsRule create(DroolsRule rule, String userId) {
 		if (rule.getType().equals(Type.ONTOLOGY)) {
 
@@ -192,7 +185,8 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 					ontologyRepository.findByIdentification(rule.getSourceOntology().getIdentification()));
 			rule.setTargetOntology(
 					ontologyRepository.findByIdentification(rule.getTargetOntology().getIdentification()));
-			if (!droolsRuleRepository.findBySourceOntologyAndUser(rule.getSourceOntology().getIdentification(), userId)
+			if (!droolsRuleRepository
+					.findBySourceOntologyAndUserAndActiveTrue(rule.getSourceOntology(), userService.getUser(userId))
 					.isEmpty())
 				throw new GenericRuntimeOPException(
 						"Only one Rule entity is allowed per user for the SAME source ontology. Add rules for this ontology to the main .drl file instead.");
@@ -213,19 +207,11 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 		final DroolsRule ruleDb = droolsRuleRepository.findByIdentification(identification);
 		rule.setType(ruleDb.getType());
 		ruleDb.setDRL(rule.getDRL());
-		ruleDb.setDecisionTable(rule.getDecisionTable());
 		if (ruleDb.getType().equals(Type.ONTOLOGY)) {
-			final String previousSource = ruleDb.getSourceOntology().getIdentification();
-			if (!previousSource.equals(rule.getSourceOntology().getIdentification())
-					&& !droolsRuleRepository.findBySourceOntologyAndUser(rule.getSourceOntology().getIdentification(),
-							ruleDb.getUser().getUserId()).isEmpty())
-				throw new GenericRuntimeOPException(
-						"Only one Rule entity is allowed per user for the SAME source ontology. Add rules for this ontology to the main .drl file instead.");
 			ruleDb.setSourceOntology(
 					ontologyRepository.findByIdentification(rule.getSourceOntology().getIdentification()));
 			ruleDb.setTargetOntology(
 					ontologyRepository.findByIdentification(rule.getTargetOntology().getIdentification()));
-
 		}
 		return droolsRuleRepository.save(ruleDb);
 	}
@@ -234,24 +220,13 @@ public class DroolsRuleServiceImpl implements DroolsRuleService {
 	public boolean hasUserEditPermission(String identification, String userId) {
 		final DroolsRule ruleDb = droolsRuleRepository.findByIdentification(identification);
 		final User user = userService.getUser(userId);
-		return (userService.isUserAdministrator(user) || user.equals(ruleDb.getUser()));
+		return (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()) || user.equals(ruleDb.getUser()));
 	}
 
 	@Override
 	public boolean hasUserPermissionOnDomain(String id, String userId) {
 		final DroolsRuleDomain domain = getDomain(id);
 		final User user = userService.getUser(userId);
-		return (userService.isUserAdministrator(user) || user.equals(domain.getUser()));
-	}
-
-	@Override
-	public List<DroolsRuleDomain> getAllDomains() {
-		return droolsRuleDomainRepository.findAll();
-	}
-
-	@Override
-	@Transactional
-	public void changeDomainState(String userId, boolean active) {
-		droolsRuleDomainRepository.updateActiveByUserId(active, userId);
+		return (user.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.name()) || user.equals(domain.getUser()));
 	}
 }

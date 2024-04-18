@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@
 		    window.__env.endpointDashboardEngine = '/dashboardengine';
 		    window.__env.dashboardEngineUsername = '';
 			window.__env.dashboardEnginePassword = '';
-			sessionStorage.setItem("dashboardEngineOauthtoken",document.getElementById("oauthtoken").value);
+			window.__env.dashboardEngineOauthtoken = document.getElementById("oauthtoken").value;
 		    window.__env.dashboardEngineLoginRest = '/loginRest';
 		    window.__env.enableDebug = false;
 		</script>
@@ -97,112 +97,69 @@
 				<!-- BEGIN PAGE TITLE-->
 				<h1 class="page-title hide "><span th:text="#{gadgettemplates.show}">Show Gadget Template</span></h1>
 				<!-- END PAGE TITLE-->			
-				<div id="header">
-					<div class="row pageCreateHeader">
-						<div class="col-md-6 col-sm-6 col-xs-12">
-							<div class="margin-top-4">
-								<span class="caption-subject " th:text="${gadgetTemplate.identification}"> Show Gadget Template</span>
-							</div>
-						</div>
-						
-						<div class="col-md-6 col-sm-6 col-xs-12">
-							<div class="pull-right">
-								<!-- DELETE -->
-								<button th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${gadgetTemplate.user.userId}) AND ${gadgetTemplate.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='GadgetsTemplateCreateController.deleteGadgetTemplate(\'' + ${gadgetTemplate.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
-								
-								<span class="sep" th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${gadgetTemplate.user.userId}) AND ${gadgetTemplate.id} != null"></span>
-								
-								<!-- CANCEL -->											
-								<button	id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:GadgetsTemplateCreateController.go(\'' + @{/gadgets/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-
-								<span class="sep no-border"  ></span>
-									
-								<!-- UPDATE -->
-								<button th:if="${gadgetTemplate.id} != null AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${gadgetTemplate.user.userId} OR ${app_user_access.name()} =='MANAGE')"  id="goEdit" type="button" class="btn btn-primary btn-primary-save" name="edit"  th:value="#{gen.editBtn}" th:attr="onclick='javascript:GadgetsTemplateCreateController.go(\'' + @{/gadgettemplates/update/} + ${gadgetTemplate.id} + '\');'" ><span th:text="#{gen.editBtn}"> Edit</span></button>								
-							</div>
-							
-						</div>
-					</div>
-				</div>
-					
+				
 				<!-- MAIN ROW -->
-				<div class="mainPanel">
-						<div class="row main">
-										<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
-											<span th:text="#{gen.generalInformation}">General Information</span>
-									</div>
-										<div class="col-md-3 col-sm-3 col-xs-3">
-											<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
-										</div>
-									</div>
-								<div class="row main">	
-																		
-									<form role="form" id="gadget_create_form" th:object="${gadgetTemplate}" method="post" class="form">
-								  		<!-- FORM ACTIONS FOR INSERT-->
-										<input th:if="${gadgetTemplate.id} == null" type="hidden" name="action" th:value="@{/gadgettemplates/create}"/>
-										<!-- FORM ACTIONS FOR UPDATE -->											
-										<input th:if="${gadgetTemplate.id} != null" type="hidden" name="action" th:value="@{/gadgettemplates/update}"/>
-										<input th:if="${gadgetTemplate.id} != null" type="hidden" name="_method" value="PUT"/>								 			
-							 			<input type="hidden" id="user" th:field="*{user}"/>
-							 			<input type="hidden" id="id" th:field="*{id}"/>
-							 			<div class="form-body">
-								 			<div class="row">											
-												<div class="col-md-4 col-sm-12 col-xs-12">
-													<div class="form-group">
-														<label class="control-label"  th:text="#{gadgettemplates.identification} ">Identification</label><span class="required"> *</span>
-														<input id="identification" type="text" name="identification"  th:required="true"   maxlength="50" th:field="*{identification}" class="form-control " th:readonly="*{identification}" th:placeholder="#{gadgettemplates.identification}" />
-													</div>
-												</div>
-												<div class="col-md-3 col-sm-12 col-xs-12">
-													<div class="form-group">
-														<label class="control-label">Type</label>
-														<input id="type" type="text" name="identification"  th:required="true"   maxlength="50" th:field="*{type}" class="form-control " th:readonly="*{type}" />
-													</div>
-												</div>
-												<div class="col-md-2 col-sm-12 col-xs-12">
-													<div class="form-group">
-													<label class="">&nbsp;</label>
-														<div class="mt-checkbox-list">
-															<input id="public" class="margin-right-10" name="public" type="checkbox" checked="checked" th:field="*{public}" disabled="disabled" />
-															<label class="control-label margin-right-5" th:text="#{gadgettemplates.public}">Public</label>
+				<div class="row">
+					<div class="col-md-12">
+					
+						<div class="portlet light container">
+							<div class="portlet-title">
+								<div class="caption">
+									
+									<span  class="caption-subject" th:text="#{gadgettemplates.show}" > Show Gadget Template </span>
+									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
+								</div>									
+								<div class="tools hide">
+									<!--  <a href="" class="collapse" data-original-title="" title=""> </a>-->
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>
+								</div>
+								<div class="actions hide">
+									<!-- ACTION INDICATORs -->
+									<span th:if="${gadgetTemplate.id} == null"
+										class="label label-success label-sm uppercase"><i
+										class="fa fa-plus"></i> <span th:text="#{gen.mode.insert}">Insert</span></span>
+									<span th:if="${gadgetTemplate.id} != null"
+										class="label label-warning label-sm uppercase bold "><i
+										class="fa fa-edit"></i> <span th:text="#{gen.mode.update}">Update</span></span>
+								</div>
+								
+								
+							</div>
+							<div class="portlet-body" style="display: block; height: auto;">
+								
+								<div class="row">	
+									<div class="col-md-12 margin-bottom-20">									
+										<form role="form" id="gadget_create_form" th:object="${gadgetTemplate}" method="post" class="form">
+									  		<!-- FORM ACTIONS FOR INSERT-->
+											<input th:if="${gadgetTemplate.id} == null" type="hidden" name="action" th:value="@{/gadgettemplates/create}"/>
+											<!-- FORM ACTIONS FOR UPDATE -->											
+											<input th:if="${gadgetTemplate.id} != null" type="hidden" name="action" th:value="@{/gadgettemplates/update}"/>
+											<input th:if="${gadgetTemplate.id} != null" type="hidden" name="_method" value="PUT"/>								 			
+								 			<input type="hidden" id="user" th:field="*{user}"/>
+								 			<input type="hidden" id="id" th:field="*{id}"/>
+								 			<div class="form-body">
+									 			<div class="row">											
+													<div class="col-md-4 col-sm-12">
+														<div class="form-group">
+															 <label class="control-label"  th:text="#{gadgettemplates.identification} + ':'">Identification</label><span class="required"> (*)</span>
+															<div class="input-icon ">
+																<i class="fa fa-credit-card"></i>
+																<input id="identification" type="text" name="identification"  th:required="true"   maxlength="50" th:field="*{identification}" class="form-control " th:readonly="*{identification}" th:placeholder="#{gadgettemplates.identification}" />
+															</div>
 														</div>
-													</div>
-												</div>
-												<div class="col-md-6 col-sm-12 col-xs-12">
-													<div class="form-group">
-														<label class="control-label"  th:text="#{gadgettemplates.description} ">Description</label><span class="required"> *</span>													
-														<input id="description" type="text" name="description"  th:required="true"   maxlength="50" th:field="*{description}" th:readonly="*{description}" class="form-control " th:placeholder="#{gadgettemplates.description}" />
-													</div>
-												</div>		
-												<div class="col-md-3 col-sm-12 col-xs-12">
-													<div class="form-group">
-														<label th:text="#{category.template.show}">Category</label>
-														<input id="category" type="text" name="category" maxlength="50" th:field="*{category}" class="form-control " readonly="readonly"  th:placeholder="#{category.template.show}" />
-													</div>
-												</div>
-												<div class="col-md-3 col-sm-12 col-xs-12">
-													<div class="form-group">
-														<label th:text="#{subcategory.template.show}">Subcategory</label>
-														<input id="subcategory" type="text" name="subcategory" maxlength="50" th:field="*{subcategory}" class="form-control " readonly="readonly" th:placeholder="#{subcategory.template.show}" />
-													</div>
-												</div>
-												<div class="clearfix"></div>													
-											</div>
-
-											<div class="portlet light no-pad no-shadow">
-												<div class="portlet-title">
-													<div class="tools hide">
-														<a href="javascript:;" class="collapse" data-original-title="" title=""> </a>
-														<a href="" class="fullscreen" data-original-title="" title=""> </a>
-													</div>
-													<label data-toggle="collapse" href="#headerlibscodeWrapper"><a>Header Libs</a></label>
-												</div>
-												<div id="headerlibscodeWrapper" class="portlet-body" style="margin-top: -30px;">
-													<textarea id="headerlibsCode" name="headerlibs" th:field="*{headerlibs}" th:required="true"  class="hidden"></textarea>
-													<div style="height:200px" id="hlcode" role="tabpanel"></div>
-												</div>
-											</div>
-
+													</div>	
+													<div class="col-md-8 col-sm-12">														
+														<div class="form-group">
+															<label class="control-label"  th:text="#{gadgettemplates.description} + ':'">Description</label><span class="required"> (*)</span>
+																														
+																<input id="description" type="text" name="description"  th:required="true"   maxlength="50" th:field="*{description}" th:readonly="*{description}" class="form-control " th:placeholder="#{gadgettemplates.description}" />
+															
+														</div>
+													</div>		
+													<div class="clearfix"></div>													
+												</div>											
+															
+											
 											<!-- Json-->
 											<div class="row">
 												<div class="col-md-6 col-sm-6 col-xs-6">
@@ -233,11 +190,10 @@
 												</div>
 												<div class="portlet-body" style="margin-top: -30px;">
 													<div class="row">
-														<input type="hidden" id="config" th:field="*{config}"/>
-														<div id="gform" class="col-md-12">
-															<el-row :gutter="15">
-																<gform-drawer :elements="list2" v-model="gformvalue"></gform-drawer>
-															</el-row>
+														<div class="col-md-12 col-sm-12 col-xs-12">			
+															<ul id="parameters-form" class="list-group">
+																  <li class="list-group-item bg-blue-hoki font-grey-carrara" th:text="#{gadgettemplates.template.parameters.selected}">These are the parametric components of the template</li>
+															</ul>
 														</div>			
 													</div>
 													<div style="margin-top:20px" class="form-actions">
@@ -252,16 +208,25 @@
 											<label th:text="#{gadgettemplates.template.result}">Previsualization</label>	
 											
 											<!-- VIEWER -->
-											<div style="height:400px;width:100%;border:none" id="icontent"></div>
+											<iframe style="height:400px;width:100%;border:none" src="/controlpanel/gadgettemplates/gadgetViewer" id="icontent"></iframe>
 											
-										
+											<div class="clearfix"></div>
+											<div style="margin-top:20px" class="form-actions">
+												<div class="pull-left">
+													<!-- CANCEL  -->
+													<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:GadgetsTemplateCreateController.go(\'' + @{/gadgets/list} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+												</div>
+											
+											</div>
 											
 											
 										</div>
 									</form>																					
-								 
+								</div>
 							</div>
-									
+						</div>
+					</div>  <!-- END PORTLET BASIC LIGHT -->							
+				</div><!-- END COL-12 -->						
 			</div><!-- END MAIN ROW -->				
 		</div><!-- END CONTENT BODY -->
 	</div><!-- END CONTENT page-content-wrapper -->		
@@ -275,14 +240,11 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"></script>
-	<script th:src="@{/static/js/layout.js}"></script>
-
-	<!-- INPUTMASK -->
-	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
-
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>
+	
 	<!-- TEMPLATE CONTROLLER  -->	
-	<script th:src="@{/static/js/pages/gadgetTemplatesCreate.js}"></script>
+	<script th:src="@{/static/js/pages/gadgetTemplatesCreate.js}"/>
 	
 	<script
 		th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}"
@@ -293,25 +255,7 @@
 		<script th:if="${lang} == 'es'"
 		th:src="@{/static/vendor/jquery-validation/localization/messages_es.min.js}"
 		type="text/javascript"></script>
-	
-	<script type="text/javascript" th:src="@{/static/vendor/onesait-ds/lib/vue.min.js}"></script>
-	<!-- CDNJS :: Sortable (https://cdnjs.com/) -->
-	<script th:src="@{/static/vendor/sortable/Sortable.min.js}"></script>
-	<!-- CDNJS :: Vue.Draggable (https://cdnjs.com/) -->
-	<script th:src="@{/static/vendor/vuedraggable/vuedraggable.umd.min.js}"></script>
-	<!-- import CSS -->
-	<link rel="stylesheet" th:href="@{/static/vendor/element-ui/theme-chalk/index.css}">
-	<!-- import JavaScript -->
-	<script th:src="@{/static/vendor/element-ui/index.js}"></script>
-	<script th:src="@{/static/vendor/element-ui/locale/en.min.js}"></script>
-	<script th:src="@{/static/vendor/element-ui/locale/es.min.js}"></script>
-	<script th:src="@{/static/vendor/element-ui/locale/fr.min.js}"></script>
-	
-	<script th:src="@{/static/dashboards/utils/gadget-form-creator.js}"></script>
-	<script th:src="@{/static/dashboards/utils/gadget-form-creator-app.js}"></script>
-	<link rel="stylesheet" th:href="@{/static/dashboards/utils/gadget-form-creator.css}">
-		
-	<script>var require = { paths: { 'vs': '/controlpanel/static/vendor/vs' } };</script>
+	<script>var require = { paths: { 'vs': '../../../static/vendor/vs' } };</script>
 	<script th:src="@{/static/vendor/vs/loader.js}"></script>
 	<script th:src="@{/static/vendor/vs/editor/editor.main.nls.js}"></script>
 	<script th:src="@{/static/vendor/vs/editor/editor.main.js}"></script>
@@ -321,8 +265,6 @@
 	 $("#createBtn,#updateBtn").on("click", function() {	
       //  $("#gadget_create_form").get(0).submit();
      });
-	 
-	 var gadget = [[${gadget}]];
 	 
 	var gadgetTemplateCreateJson = { 		
 			"parameterTextLabel" : [[#{gadgettemplates.template.parameters.text.label}]],

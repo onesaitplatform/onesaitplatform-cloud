@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,15 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
 @RequestMapping(path = "/sensehat")
 @CrossOrigin(origins = "*")
-@Tag(name= "sensehat", description = "Onesaitplatform SenseHat Digital Twins")
+@Api(value = "sensehat", description = "Onesaitplatform SenseHat Digital Twins")
 public interface SenseHatDevices {
 
-	@Operation(summary = "Get SenseHat Digital Twins")
+	@ApiOperation(value = "Get SenseHat Digital Twins")
 	@RequestMapping(value = "/getSensehatDevices", method = RequestMethod.GET)
 	public ResponseEntity<?> getSensehatDevices();
 

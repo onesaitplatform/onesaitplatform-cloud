@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 public class APIRestClientImpl implements APIRestClient {
 
 	private final int timeout = (int) TimeUnit.SECONDS.toMillis(10);
-
+	
 	private static final String CONTENT_TYPE = "content-type";
 
 	private RestTemplate restTemplate;

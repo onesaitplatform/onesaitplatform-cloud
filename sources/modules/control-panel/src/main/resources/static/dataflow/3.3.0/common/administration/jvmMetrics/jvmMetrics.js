@@ -25,9 +25,9 @@ angular
         templateUrl: 'common/administration/jvmMetrics/jvmMetrics.tpl.html',
         controller: 'JVMMetricsController',
         resolve: {
-          myVar: ["authService", function(authService) {
+          myVar: function(authService) {
             return authService.init();
-          }]
+          }
         },
         data: {
           authorizedRoles: ['admin']
@@ -35,7 +35,7 @@ angular
       }
     );
   }])
-  .controller('JVMMetricsController', ["$scope", "$rootScope", "$timeout", "api", "configuration", "Analytics", "visibilityBroadcaster", "$modal", function (
+  .controller('JVMMetricsController', function (
     $scope, $rootScope, $timeout, api, configuration, Analytics, visibilityBroadcaster, $modal
   ) {
     var jvmMetricsTimer,
@@ -796,4 +796,4 @@ angular
       }
     });
 
-  }]);
+  });

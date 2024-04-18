@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('CustomMeterController', ["$scope", "$rootScope", "pipelineConstant", function($scope, $rootScope, pipelineConstant) {
+  .controller('CustomMeterController', function($scope, $rootScope, pipelineConstant) {
 
     var yAxisLabel = '( events / sec )';
 
@@ -104,4 +104,4 @@ angular
     });
 
     updateChartData();
-  }]);
+  });

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package com.minsait.onesait.platform.config.repository;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -47,7 +46,7 @@ public class UserIntegrationTest {
 
 	@Before
 	public void setUp() {
-		final List<User> types = repository.findAll();
+		List<User> types = this.repository.findAll();
 		if (types.isEmpty()) {
 			// log.info("No types en tabla.Adding...");
 			throw new RuntimeException("No types en Users...");
@@ -57,37 +56,36 @@ public class UserIntegrationTest {
 	@Test
 	@Transactional
 	public void given_SomeUsersExist_When_TheyAreCounted_Then_TheCorrectNumberIsObtained() {
-		Assert.assertTrue(repository.count() > 6);
+		Assert.assertTrue(this.repository.count() > 6);
 	}
 
 	@Test
 	@Transactional
 	public void given_SomeUsersExist_When_TheyAreSearchedByUsersThatAreNotAdministrator_Then_TheCorrectUsersAreReturned() {
-		Assert.assertTrue(repository.findUsersNoAdmin().size() > 5);
+		Assert.assertTrue(this.repository.findUsersNoAdmin().size() > 5);
 	}
 
 	@Test
 	@Transactional
 	public void given_SomeUsersExist_When_TheyAreSearchedByEmail_Then_TheCorrectUsersAreReturned() {
-		Assert.assertTrue(repository.findByEmail("administrator@onesaitplatform.com").size() == 1);
+		Assert.assertTrue(this.repository.findByEmail("administrator@onesaitplatform.com").size() == 1);
 	}
 
 	@Test
 	@Transactional
 	public void given_ANumberOfUsers_When_OneUserIsCreatedAndThenDeleted_Then_TheNumberOfUsersIsTheSame() {
-		final long count = repository.count();
-		final User type = new User();
+		long count = this.repository.count();
+		User type = new User();
 		type.setUserId("lmgracia1");
 		type.setPassword("changeIt!");
 		type.setFullName("Luis Miguel Gracia");
 		type.setEmail("lmgracia@onesaitplatform.com");
 		type.setActive(true);
-		final Optional<Role> role = roleRepository.findById(Role.Type.ROLE_DEVELOPER.toString());
-		role.ifPresent(r -> type.setRole(r));
+		type.setRole(this.roleRepository.findById(Role.Type.ROLE_DEVELOPER.toString()));
 		repository.save(type);
-		Assert.assertTrue(repository.count() == count + 1);
+		Assert.assertTrue(this.repository.count() == count + 1);
 		repository.delete(type);
-		Assert.assertTrue(repository.count() == count);
+		Assert.assertTrue(this.repository.count() == count);
 
 	}
 

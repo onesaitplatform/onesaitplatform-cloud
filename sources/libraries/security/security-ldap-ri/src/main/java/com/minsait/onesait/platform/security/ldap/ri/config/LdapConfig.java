@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,9 +38,6 @@ public class LdapConfig {
 	@Value("${ldap.password}")
 	private String ldapPrincipalPassword;
 
-	@Value("${ldap.ignorepartialresult:false}")
-	private boolean ignorePartialResult;
-
 	public static final String LDAP_TEMPLATE_NO_BASE = "ldapTemplateNoBase";
 	public static final String LDAP_TEMPLATE_BASE = "ldapTemplateBase";
 
@@ -59,9 +56,7 @@ public class LdapConfig {
 	@Bean
 	@Qualifier(LDAP_TEMPLATE_BASE)
 	public LdapTemplate ldapTemplate() {
-		LdapTemplate result = new LdapTemplate(contextSource());
-		result.setIgnorePartialResultException(ignorePartialResult);
-		return result;
+		return new LdapTemplate(contextSource());
 	}
 
 	@Bean
@@ -78,8 +73,6 @@ public class LdapConfig {
 	@Bean
 	@Qualifier(LDAP_TEMPLATE_NO_BASE)
 	public LdapTemplate ldapTemplateNoBase() {
-		LdapTemplate result = new LdapTemplate(contextSourceNoBase());
-		result.setIgnorePartialResultException(ignorePartialResult);
-		return result;
+		return new LdapTemplate(contextSourceNoBase());
 	}
 }

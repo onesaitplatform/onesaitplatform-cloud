@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.minsait.onesait.platform.flowengine.api.rest.pojo.DataflowDTO;
-import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineAuditRequest;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineInsertRequest;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineInvokeRestApiOperationRequest;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineQueryRequest;
@@ -112,20 +110,15 @@ public class FlowEngineNodeServicesController {
 	@PostMapping(value = "/user/query", produces = { "application/javascript", "application/json" })
 	public @ResponseBody String submitQuery(@RequestBody FlowEngineQueryRequest queryRequest)
 			throws JsonProcessingException, NotFoundException {
-		return flowEngineNodeService.submitQuery(queryRequest);
+		return flowEngineNodeService.submitQuery(queryRequest.getOntology(), queryRequest.getQueryType(),
+				queryRequest.getQuery(), queryRequest.getAuthentication());
 	}
 
 	@PostMapping(value = "/user/insert", produces = { "application/javascript", "application/json" })
 	public @ResponseBody String submitInsert(@RequestBody FlowEngineInsertRequest insertRequest)
 			throws JsonProcessingException, NotFoundException {
-		return flowEngineNodeService.submitInsert(insertRequest);
-	}
-	
-	@PostMapping(value = "/user/audit", produces = { "application/javascript", "application/json" })
-	public @ResponseBody String submitAudit(@RequestBody FlowEngineAuditRequest auditRequest)
-			throws JsonProcessingException, NotFoundException {
-            flowEngineNodeService.submitAudit( auditRequest.getData(),auditRequest.getDomainName());
-            return "{\"result\":\"OK\"}";
+		return flowEngineNodeService.submitInsert(insertRequest.getOntology(), insertRequest.getData(),
+				insertRequest.getAuthentication());
 	}
 
 	@GetMapping(value = "/user/digital_twin_ypes", produces = { "application/javascript", "application/json" })
@@ -147,14 +140,22 @@ public class FlowEngineNodeServicesController {
 		return null;
 	}
 
-	@GetMapping(value = "/user/notebooks", produces = { "application/javascript", "application/json" })
+	@PostMapping(value = "/sendSimpleMail", produces = { "application/javascript", "application/json" })
+	public @ResponseBody String sendsimpleMail(@RequestBody MailRestDTO mailData) {
+		flowEngineNodeService.sendSimpleMail(mailData);
+		return null;
+	}
+
+	@GetMapping(value = "/user/notebooks", produces = { "application/javascript",
+			"application/json" })
 	public @ResponseBody String getNotebooksByUser(@RequestParam String authentication,
 			@RequestParam("callback") String callbackName) throws JsonProcessingException {
 		String response = mapper.writeValueAsString(flowEngineNodeService.getNotebooksByUser(authentication));
 		return callbackName + "(" + response + ")";
 	}
 
-	@GetMapping(value = "/user/notebooks/paragraphs", produces = { "application/javascript", "application/json" })
+	@GetMapping(value = "/user/notebooks/paragraphs", produces = {
+			"application/javascript", "application/json" })
 	public @ResponseBody String getNotebookParagraphByUser(@RequestParam String authentication,
 			@RequestParam String notebookZeId, @RequestParam("callback") String callbackName)
 			throws JsonProcessingException {
@@ -168,48 +169,4 @@ public class FlowEngineNodeServicesController {
 		return flowEngineNodeService.invokeNotebook(notebookInvocationData);
 	}
 
-	@GetMapping(value = "/user/dataflows", produces = { "application/javascript", "application/json" })
-	public @ResponseBody String getDataflowsByUser(@RequestParam String authentication,
-			@RequestParam("callback") String callbackName) throws JsonProcessingException {
-		String response = mapper.writeValueAsString(flowEngineNodeService.getPipelinesByUser(authentication));
-		return callbackName + "(" + response + ")";
-	}
-
-	@PostMapping(value = "/user/dataflow/status", produces = { "application/javascript", "application/json" })
-	public @ResponseBody ResponseEntity<String> getDataflowStatus(@RequestBody DataflowDTO dataflowData) {
-		return flowEngineNodeService.getPipelineStatus(dataflowData);
-	}
-
-	@PostMapping(value = "/user/dataflow/start", produces = { "application/javascript", "application/json" })
-	public @ResponseBody ResponseEntity<String> startDataflow(@RequestBody DataflowDTO dataflowData) {
-		return flowEngineNodeService.startDataflow(dataflowData);
-	}
-
-	@PostMapping(value = "/user/dataflow/stop", produces = { "application/javascript", "application/json" })
-	public @ResponseBody ResponseEntity<String> stopDataflow(@RequestBody DataflowDTO dataflowData) {
-		return flowEngineNodeService.stopDataflow(dataflowData);
-	}
-
-	@GetMapping(value = "/user/management/api/rest", produces = { "application/javascript", "application/json" })
-	public @ResponseBody String getControlpanelApis(@RequestParam String authentication,
-			@RequestParam("callback") String callbackName) throws JsonProcessingException {
-		String response = mapper.writeValueAsString(flowEngineNodeService.getControlpanelApis(authentication));
-		return callbackName + "(" + response + ")";
-	}
-
-	@GetMapping(value = "/user/management/api/rest/operations", produces = { "application/javascript",
-			"application/json" })
-	public @ResponseBody String getControlpanelApiOperations(@RequestParam("apiName") String apiName,
-			@RequestParam String authentication, @RequestParam("callback") String callbackName)
-			throws JsonProcessingException {
-		String response = mapper
-				.writeValueAsString(flowEngineNodeService.getControlpanelApiOperations(apiName, authentication));
-		return callbackName + "(" + response + ")";
-	}
-	
-	@PostMapping(value = "/user/management/invoke_rest_api_operation", produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public @ResponseBody ResponseEntity<String> invokeManagementRestApiOperation(
-			@RequestBody FlowEngineInvokeRestApiOperationRequest invokeRequest) {
-		return flowEngineNodeService.invokeManagementRestApiOperation(invokeRequest);
-	}
 }

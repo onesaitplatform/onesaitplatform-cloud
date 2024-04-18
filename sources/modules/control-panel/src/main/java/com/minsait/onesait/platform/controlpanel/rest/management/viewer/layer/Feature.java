@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,27 +18,25 @@ import java.util.Map;
 
 import com.minsait.onesait.platform.controlpanel.rest.management.viewer.layer.geometry.Geometry;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
-@NoArgsConstructor
 public class Feature {
 
-	private String type = "Feature";
+	@Getter
+	@Setter
+	private String type;
 
+	@Getter
+	@Setter
 	private String oid;
 
+	@Getter
+	@Setter
 	private Geometry geometry;
 
+	@Getter
+	@Setter
 	private Map<String, String> properties;
-
-	public Feature(String oid, Geometry geometry, Map<String, String> properties) {
-		super();
-		this.type = "Feature";
-		this.oid = oid;
-		this.geometry = geometry;
-		this.properties = properties;
-	}
 
 }

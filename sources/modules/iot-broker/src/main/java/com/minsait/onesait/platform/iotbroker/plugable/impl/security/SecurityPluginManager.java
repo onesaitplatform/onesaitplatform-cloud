@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
+import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.security.SecurityPlugin;
-import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,7 +38,7 @@ public class SecurityPluginManager implements SecurityPlugin {
 	public Optional<IoTSession> authenticate(String token, String clientPlatform, String clientPlatformInstance,
 			String sessionKey) {
 		final List<IoTSession> sessions = new ArrayList<>();
-		
+
 		for (final SecurityPlugin p : plugins) {
 			p.authenticate(token, clientPlatform, clientPlatformInstance, sessionKey).ifPresent(sessions::add);
 		}
@@ -63,20 +63,20 @@ public class SecurityPluginManager implements SecurityPlugin {
 	}
 
 	@Override
-	public boolean checkSessionKeyActive(Optional<IoTSession> session) {
+	public boolean checkSessionKeyActive(String sessionKey) {
 		boolean ret = false;
 		for (final SecurityPlugin p : plugins) {
-			ret |= p.checkSessionKeyActive(session);
+			ret |= p.checkSessionKeyActive(sessionKey);
 		}
 		return ret;
 
 	}
 
 	@Override
-	public boolean checkAuthorization(SSAPMessageTypes messageType, String ontology, Optional<IoTSession> session) {
+	public boolean checkAuthorization(SSAPMessageTypes messageType, String ontology, String sessionKey) {
 		boolean ret = false;
 		for (final SecurityPlugin p : plugins) {
-			ret |= p.checkAuthorization(messageType, ontology, session);
+			ret |= p.checkAuthorization(messageType, ontology, sessionKey);
 		}
 		return ret;
 

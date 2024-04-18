@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,7 @@ public class ClientMqttWrapper implements Client {
 		this.clientPlatform = clientPlatform;
 		this.clientPlatformInstance = clientPlatformInstance;
 		this.avoidSSLValidation = avoidSSLValidation;
-		client.connect(token, clientPlatform, clientPlatformInstance, 10);
+		client.connect(token, clientPlatform, clientPlatformInstance);
 		client.setTimeout(10);
 	}
 

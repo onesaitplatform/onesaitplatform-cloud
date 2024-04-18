@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,6 @@
  */
 package com.minsait.onesait.platform.config;
 
-import java.util.Arrays;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,26 +25,16 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import org.springframework.session.MapSessionRepository;
-import org.springframework.session.config.annotation.web.http.EnableSpringHttpSession;
-import org.springframework.session.web.http.CookieSerializer;
-import org.springframework.session.web.http.DefaultCookieSerializer;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.minsait.onesait.platform.filter.CustomFilter;
-import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 import com.minsait.onesait.platform.security.CustomBasicAuthenticationEntryPoint;
 
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 @EnableWebSecurity
-@EnableSpringHttpSession
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Value("${onesaitplatform.dashboardengine.auth.token.endpoint:'http://localhost:18000/controlpanel/api/login/info'}")
@@ -55,17 +42,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
 	private CustomBasicAuthenticationEntryPoint authenticationEntryPoint;
-
+	
 	@Autowired
 	@Qualifier("configDBAuthenticationProvider")
 	AuthenticationProvider configDBAuthenticationProvider;
-
-	@Autowired
-	MultitenancyService multitenancyService;
-
-	@Autowired
-	private UserDetailsService detailsService;
-
 	/**
 	 * Authentication beans
 	 */
@@ -75,58 +55,29 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		return new BCryptPasswordEncoder();
 	}
 
-	/*
-	 * @Bean public ConfigDBAuthenticationProvider
-	 * authenticationProviderOnesaitPlatform() { final
-	 * ConfigDBAuthenticationProvider bean = new ConfigDBAuthenticationProvider();
-	 * return bean; }
-	 */
+	/*@Bean
+	public ConfigDBAuthenticationProvider authenticationProviderOnesaitPlatform() {
+		final ConfigDBAuthenticationProvider bean = new ConfigDBAuthenticationProvider();
+		return bean;
+	}*/
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.cors().and().authorizeRequests().antMatchers("/actuator/**").permitAll().and().authorizeRequests()
-		.antMatchers("/**").authenticated().and().httpBasic().authenticationEntryPoint(authenticationEntryPoint)
-		.and().authenticationProvider(configDBAuthenticationProvider);
+		http.cors().and().authorizeRequests().antMatchers("/**").authenticated().and().httpBasic()
+				.authenticationEntryPoint(authenticationEntryPoint).and()
+				.authenticationProvider(configDBAuthenticationProvider);
 
 		http.csrf().disable();
 
 		http.headers().frameOptions().disable();
 
-		http.addFilterAfter(new CustomFilter(onesaitPlatformTokenAuth, detailsService, multitenancyService),
-				BasicAuthenticationFilter.class);
+		http.addFilterAfter(new CustomFilter(onesaitPlatformTokenAuth), BasicAuthenticationFilter.class);
 
-	}
-
-	@Bean
-	public CorsConfigurationSource corsConfigurationSource() {
-		final CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOriginPatterns(Arrays.asList("*"));
-		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
-		configuration.setAllowCredentials(true);
-		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", configuration);
-		return source;
 	}
 
 	@Override
 	public void configure(WebSecurity web) throws Exception {
 		web.ignoring().antMatchers("/resources/**");
-	}
-
-	@Bean
-	public MapSessionRepository sessionRepository() {
-		return new MapSessionRepository(new ConcurrentHashMap<>());
-	}
-
-	@Bean
-	public CookieSerializer cookieSerializer(@Value("${onesaitplatform.secure.cookie}") boolean secure) {
-		final DefaultCookieSerializer serializer = new DefaultCookieSerializer();
-		if (secure) {
-			serializer.setSameSite("None");
-		}
-		serializer.setUseHttpOnlyCookie(true);
-		serializer.setUseSecureCookie(secure);
-		return serializer;
 	}
 
 }

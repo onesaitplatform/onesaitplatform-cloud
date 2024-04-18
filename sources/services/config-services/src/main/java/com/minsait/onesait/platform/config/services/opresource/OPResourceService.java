@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,19 +19,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
-import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessList;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.model.base.OPResource.Resources;
-import com.minsait.onesait.platform.config.model.interfaces.Versionable;
-import com.minsait.onesait.platform.config.services.project.ProjectResourceAccessDTO;
 
 public interface OPResourceService {
 
@@ -46,9 +39,8 @@ public interface OPResourceService {
 	public boolean hasAccess(String userId, String resourceId, ResourceAccessType access);
 
 	public ResourceAccessType getResourceAccess(String userId, String resourceId);
-
-	public Map<String, ResourceAccessType> getResourcesAccessMapByUserAndResourceIdList(User user,
-			List<String> resourceIdList);
+	
+	public Map<String,ResourceAccessType> getResourcesAccessMapByUserAndResourceIdList(User user, List<String> resourceIdList);
 
 	public void insertAuthorizations(Set<ProjectResourceAccess> accesses);
 
@@ -66,7 +58,7 @@ public interface OPResourceService {
 	List<String> deleteAuthorizations(String projectName, List<String> userIds, List<String> resources,
 			List<String> versions, List<String> resourceTypes, List<String> resourceAccessTypes, String currentUser);
 
-	void deleteUserAccess(ProjectResourceAccess projectUserAcc, Project project);
+	void deleteUserAccess(ProjectResourceAccess projectUserAcc);
 
 	void deleteUserAccess(String projectResourceAccessId);
 
@@ -79,19 +71,4 @@ public interface OPResourceService {
 			String currentUser);
 
 	public Collection<OPResource> getResourcesByType(String userId, String type);
-
-	public Collection<Versionable<?>> getResourcesVersionablesForUserAndType(User user, Class<?> type);
-
-	public Collection<Versionable<?>> getResourcesVersionablesByType(User user, Class<?> type);
-
-	public Collection<OPResource> getAllResourcesVersionablesVOs();
-
-	OPResource getResourceByIdentification(String identification);
-
-	List<ProjectResourceAccess> getProjectsByResource(OPResource resource);
-
-	public void insertAuthorization(Project project, @Valid ProjectResourceAccessDTO authorization);
-
-	public ProjectResourceAccessList getAutorizationALL(@NotNull String resource, @NotNull String project);
-
 }

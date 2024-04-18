@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('RecordCountBarChartController', ["$scope", "$rootScope", "pipelineConstant", "api", "$filter", function($scope, $rootScope, pipelineConstant, api, $filter) {
+  .controller('RecordCountBarChartController', function($scope, $rootScope, pipelineConstant, api, $filter) {
     var color = $scope.recordsColor,
       baseQuery = "select count,metric from meters where (pipeline='" + $scope.pipelineConfig.info.pipelineId + "') and ";
 
@@ -293,4 +293,4 @@ angular
       refreshTimeSeriesData();
     }
 
-  }]);
+  });

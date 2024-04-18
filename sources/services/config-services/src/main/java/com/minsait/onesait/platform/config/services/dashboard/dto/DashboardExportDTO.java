@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.minsait.onesait.platform.config.model.Dashboard.DashboardType;
-import com.minsait.onesait.platform.config.services.dashboardapi.dto.GadgetTemplateDTO;
 import com.minsait.onesait.platform.config.services.gadget.dto.GadgetDTO;
 import com.minsait.onesait.platform.config.services.gadget.dto.GadgetDatasourceDTO;
 import com.minsait.onesait.platform.config.services.gadget.dto.GadgetMeasureDTO;
@@ -40,8 +39,6 @@ public class DashboardExportDTO implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private String id;
-
 	private String identification;
 
 	private String user;
@@ -60,8 +57,6 @@ public class DashboardExportDTO implements Serializable {
 
 	private String headerlibs;
 
-	private List<String> i18n;
-
 	private String description;
 
 	private boolean isPublic;
@@ -77,11 +72,4 @@ public class DashboardExportDTO implements Serializable {
 	private List<GadgetDatasourceDTO> gadgetDatasources;
 
 	private List<GadgetMeasureDTO> gadgetMeasures;
-
-	private List<GadgetTemplateDTO> gadgetTemplates;
-	
-	private byte[] image;
-
-	private boolean generateImage;
-
 }

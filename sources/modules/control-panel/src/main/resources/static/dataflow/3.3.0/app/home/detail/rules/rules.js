@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('RulesController', ["$scope", "pipelineService", "$timeout", function ($scope, pipelineService, $timeout) {
+  .controller('RulesController', function ($scope, pipelineService, $timeout) {
     angular.extend($scope, {
       onTabSelect: function() {
         refreshCodemirrorWidget();
@@ -38,4 +38,4 @@ angular
       }, 100);
     };
 
-  }]);
+  });

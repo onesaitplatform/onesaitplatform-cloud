@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,7 @@
  */
 package com.minsait.onesait.platform.config.services.gis.viewer;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,20 +22,18 @@ import org.springframework.stereotype.Service;
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
 import com.minsait.onesait.platform.config.model.BaseLayer;
 import com.minsait.onesait.platform.config.model.Layer;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.Viewer;
 import com.minsait.onesait.platform.config.repository.BaseLayerRepository;
 import com.minsait.onesait.platform.config.repository.LayerRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
-import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.repository.ViewerRepository;
 import com.minsait.onesait.platform.config.services.exceptions.ViewerServiceException;
 import com.minsait.onesait.platform.config.services.user.UserService;
 
 @Service
 public class ViewerServiceImpl implements ViewerService {
-
-	private static final String ANONYMOUSUSER = "anonymousUser";
 
 	@Autowired
 	private UserService userService;
@@ -54,9 +50,6 @@ public class ViewerServiceImpl implements ViewerService {
 	@Autowired
 	BaseLayerRepository baseLayerRepository;
 
-	@Autowired
-	private UserRepository userRepository;
-
 	@Autowired(required = false)
 	private MetricsManager metricsManager;
 
@@ -65,7 +58,7 @@ public class ViewerServiceImpl implements ViewerService {
 		List<Viewer> viewers;
 		final User sessionUser = userService.getUser(userId);
 
-		if (sessionUser.isAdmin()) {
+		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 			viewers = viewerRepository.findAll();
 		} else {
 			viewers = viewerRepository.findByIsPublicTrueOrUser(sessionUser);
@@ -87,46 +80,36 @@ public class ViewerServiceImpl implements ViewerService {
 	@Override
 	public Viewer create(Viewer viewer, String baseMap) {
 
-		final BaseLayer baseLayer = baseLayerRepository.findByIdentification(baseMap).get(0);
+		BaseLayer baseLayer = baseLayerRepository.findByIdentification(baseMap).get(0);
 		viewer.setBaseLayer(baseLayer);
 
-		metricsManagerLogControlPanelGisViewersCreation(viewer.getUser().getUserId(), "OK");
+		this.metricsManagerLogControlPanelGisViewersCreation(viewer.getUser().getUserId(), "OK");
 		return viewerRepository.save(viewer);
 	}
 
 	@Override
-	public Boolean checkExist(Viewer viewer) {
+	public Boolean hasUserViewPermission(String id, String userId, String userIdToken) {
+		final User sessionUser = userService.getUser(userId);
+		Viewer viewer = viewerRepository.findById(id);
+		boolean isViewerPublic = viewer.isPublic();
+		boolean isSessionUserAdmin = sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString());
+		boolean hasUserViewPerm;
 
-		if (!viewerRepository.findByIdentification(viewer.getIdentification()).isEmpty()) {
-			return true;
-		}
-		return false;
-	}
-
-	@Override
-	public Boolean hasUserViewPermission(String id, String userId) {
-		final User user = userRepository.findByUserId(userId);
-		final Optional<Viewer> opt = viewerRepository.findById(id);
-		if (!opt.isPresent())
-			return false;
-		final Viewer viewer = opt.get();
-		if (viewer.isPublic()) {
-			return true;
-		} else if (userId.equals(ANONYMOUSUSER) || user == null) {
-			return viewer.isPublic();
-		} else if (user.isAdmin()) {
-			return true;
+		if (userIdToken != null) {
+			hasUserViewPerm = isViewerPublic || isSessionUserAdmin || userIdToken.equals(viewer.getUser().getUserId());
 		} else {
-			return viewer.getUser().getUserId().equals(userId);
+			hasUserViewPerm = isViewerPublic || isSessionUserAdmin || viewer.getUser().equals(sessionUser);
 		}
+		return hasUserViewPerm;
 	}
 
 	@Override
 	public Viewer getViewerById(String id, String userId) {
 		final User sessionUser = userService.getUser(userId);
-		final Viewer viewer = viewerRepository.findById(id).orElse(null);
+		Viewer viewer = viewerRepository.findById(id);
 
-		if (sessionUser.isAdmin() || viewer.getUser().equals(sessionUser) || viewer.isPublic()) {
+		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
+				|| viewer.getUser().equals(sessionUser) || viewer.isPublic()) {
 			return viewer;
 		} else {
 			throw new ViewerServiceException("The user is not authorized");
@@ -134,17 +117,13 @@ public class ViewerServiceImpl implements ViewerService {
 	}
 
 	@Override
-	public Viewer getViewerPublicById(String id) {
-		return viewerRepository.findById(id).orElse(null);
-	}
-
-	@Override
 	public void deleteViewer(Viewer viewer, String userId) {
 		final User sessionUser = userService.getUser(userId);
 
-		if (sessionUser.isAdmin() || viewer.getUser().equals(sessionUser) || viewer.isPublic()) {
+		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())
+				|| viewer.getUser().equals(sessionUser) || viewer.isPublic()) {
 
-			for (final Layer layer : viewer.getLayers()) {
+			for (Layer layer : viewer.getLayers()) {
 				layer.getViewers().remove(viewer);
 				layerRepository.save(layer);
 			}
@@ -155,58 +134,10 @@ public class ViewerServiceImpl implements ViewerService {
 		}
 	}
 
-	@Override
-	public List<Viewer> checkAllViewerByCriteria(String userId, String identification, String description) {
-		List<Viewer> allViewers = new ArrayList<>();
-		final User sessionUser = userService.getUser(userId);
-
-		if (identification != null && description != null) {
-			allViewers = viewerRepository.findByIdentificationContainingAndDescriptionContaining(identification,
-					description);
-			if (sessionUser.isAdmin()) {
-				return allViewers;
-			} else {
-				return getViewersWithPermission(allViewers, userId);
-			}
-		} else if (identification != null) {
-			allViewers = viewerRepository.findByIdentificationContaining(identification);
-			if (sessionUser.isAdmin()) {
-				return allViewers;
-			} else {
-				return getViewersWithPermission(allViewers, userId);
-			}
-		} else {
-			allViewers = viewerRepository.findByDescriptionContaining(description);
-			if (sessionUser.isAdmin()) {
-				return allViewers;
-			} else {
-				return getViewersWithPermission(allViewers, userId);
-			}
-		}
-	}
-
-	private List<Viewer> getViewersWithPermission(List<Viewer> allViewers, String userId) {
-		final List<Viewer> viewers = new ArrayList<>();
-		for (final Viewer viewer : allViewers) {
-			if (hasUserViewPermission(viewer.getId(), userId)) {
-				viewers.add(viewer);
-			}
-		}
-		return viewers;
-	}
-
 	private void metricsManagerLogControlPanelGisViewersCreation(String userId, String result) {
-		if (null != metricsManager) {
-			metricsManager.logControlPanelGisViewersCreation(userId, result);
+		if (null != this.metricsManager) {
+			this.metricsManager.logControlPanelGisViewersCreation(userId, result);
 		}
-	}
-
-	@Override
-	public Viewer getViewerByIdentification(String identification) {
-		final List<Viewer> viewerList = viewerRepository.findByIdentification(identification);
-		if (viewerList != null && !viewerList.isEmpty())
-			return viewerList.get(0);
-		return null;
 	}
 
 }

@@ -25,9 +25,9 @@ angular
         templateUrl: 'common/administration/logs/logs.tpl.html',
         controller: 'LogsController',
         resolve: {
-          myVar: ["authService", function(authService) {
+          myVar: function(authService) {
             return authService.init();
-          }]
+          }
         },
         data: {
           authorizedRoles: ['admin', 'creator', 'manager']
@@ -37,16 +37,16 @@ angular
         templateUrl: 'common/administration/logs/logs.tpl.html',
         controller: 'LogsController',
         resolve: {
-          myVar: ["authService", function(authService) {
+          myVar: function(authService) {
             return authService.init();
-          }]
+          }
         },
         data: {
           authorizedRoles: ['admin', 'creator', 'manager']
         }
       });
   }])
-  .controller('LogsController', ["$rootScope", "$scope", "$routeParams", "$interval", "api", "configuration", "Analytics", "$timeout", "$modal", function (
+  .controller('LogsController', function (
     $rootScope, $scope, $routeParams, $interval, api, configuration, Analytics, $timeout, $modal
   ) {
     var pipelineNameParam = $routeParams.pipelineName;
@@ -268,4 +268,4 @@ angular
         logWebSocket.close();
       }
     });
-  }]);
+  });

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ import com.minsait.onesait.platform.config.model.User;
 
 public interface TwitterListeningRepository extends JpaRepository<TwitterListening, String> {
 
+	TwitterListening findById(String id);
+
 	List<TwitterListening> findByUser(User user);
 
 	List<TwitterListening> findByOntology(Ontology ontology);
@@ -32,7 +34,6 @@ public interface TwitterListeningRepository extends JpaRepository<TwitterListeni
 
 	void deleteByOntology(Ontology ontology);
 
-	@Override
 	void deleteById(String id);
 
 	TwitterListening findByJobName(String jobName);

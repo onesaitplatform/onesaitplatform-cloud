@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,8 +48,6 @@ public class NotebookServiceConfiguration {
 	private String restPass;
 	@Value("${onesaitplatform.analytics.notebook.zeppelinGlobalTimeout:#{120000}}")
 	private String globalTimeout;
-	@Value("${onesaitplatform.analytics.notebook.restTimeout.millis:10000}")
-	private Long restTimeout;
 	private String baseURL;
 
 	@PostConstruct

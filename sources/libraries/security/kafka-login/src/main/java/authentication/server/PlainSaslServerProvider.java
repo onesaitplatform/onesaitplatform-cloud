@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ package authentication.server;
 
 import java.security.Provider;
 import java.security.Security;
-import org.apache.log4j.Logger;
+import java.util.logging.Logger;
 
 import authentication.server.PlainSaslServer.PlainSaslServerFactory;
 

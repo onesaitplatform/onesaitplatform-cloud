@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,29 +14,22 @@
  */
 package com.minsait.onesait.platform.controlpanel.controller.reports;
 
+import static com.minsait.onesait.platform.controlpanel.services.report.ReportInfoServiceImpl.JSON_DATA_SOURCE_ATT_NAME;
+
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
-import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.derby.iapi.services.io.ArrayInputStream;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -52,9 +45,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -63,35 +53,23 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.net.HttpHeaders;
-import com.minsait.onesait.platform.binaryrepository.exception.BinaryRepositoryException;
-import com.minsait.onesait.platform.business.services.binaryrepository.factory.BinaryRepositoryServiceFactory;
-import com.minsait.onesait.platform.business.services.report.ReportBusinessService;
-import com.minsait.onesait.platform.business.services.report.ReportConverter;
-import com.minsait.onesait.platform.commons.ssl.SSLUtil;
-import com.minsait.onesait.platform.config.dto.report.ReportDto;
-import com.minsait.onesait.platform.config.dto.report.ReportInfoMSTemplateDTO;
-import com.minsait.onesait.platform.config.dto.report.ReportParameter;
-import com.minsait.onesait.platform.config.dto.report.ReportResourceDTO;
-import com.minsait.onesait.platform.config.dto.report.ReportType;
-import com.minsait.onesait.platform.config.model.BinaryFile;
-import com.minsait.onesait.platform.config.model.BinaryFile.RepositoryType;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.Report;
+import com.minsait.onesait.platform.config.model.Report.ReportExtension;
 import com.minsait.onesait.platform.config.model.Role.Type;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.services.reports.ReportService;
-import com.minsait.onesait.platform.config.services.templates.poi.PoiTemplatesUtil;
 import com.minsait.onesait.platform.config.services.user.UserService;
+import com.minsait.onesait.platform.controlpanel.controller.reports.model.ParameterMapConverter;
+import com.minsait.onesait.platform.controlpanel.controller.reports.model.ReportDto;
+import com.minsait.onesait.platform.controlpanel.controller.reports.model.ReportInfoDto;
+import com.minsait.onesait.platform.controlpanel.controller.reports.model.ReportParameter;
+import com.minsait.onesait.platform.controlpanel.controller.reports.model.ReportParameterType;
+import com.minsait.onesait.platform.controlpanel.controller.reports.model.ReportType;
+import com.minsait.onesait.platform.controlpanel.services.report.ReportInfoException;
+import com.minsait.onesait.platform.controlpanel.services.report.ReportInfoService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
-import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
-import fr.opensagres.xdocreport.converter.XDocConverterException;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jasperreports.engine.JRException;
 
@@ -107,55 +85,21 @@ public class ReportController {
 	private ReportService reportService;
 
 	@Autowired
-	private ReportBusinessService reportBusinessService;
-
-	@Autowired
-	private BinaryRepositoryServiceFactory binaryFactory;
-
-	@Autowired
 	private ReportConverter reportConverter;
+
+	@Autowired
+	private ParameterMapConverter parameterMapConverter;
+
+	@Autowired
+	private ReportInfoService reportInfoService;
 
 	@Autowired
 	private AppWebUtils utils;
 
-	@Autowired
-	private IntegrationResourcesService resourcesService;
-
-	@Autowired
-	private HttpSession httpSession;
-
-	@Autowired
-	private PoiTemplatesUtil poiTemplatesUtil;
-
-	private static final String REPORT_API_PATH = "/api/reports";
-	private static final String APP_ID = "appId";
-	private static final String REDIRECT_PROJECT_SHOW = "redirect:/projects/update/";
-
-	private RestTemplate restTemplate;
-
-	@PostConstruct
-	void setup() {
-		restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
-
-		restTemplate.getInterceptors().add((request, body, execution) -> {
-
-			request.getHeaders().add(HttpHeaders.AUTHORIZATION, "Bearer " + utils.getCurrentUserOauthToken());
-			try {
-				request.getHeaders().add(Tenant2SchemaMapper.VERTICAL_HTTP_HEADER,
-						MultitenancyContextHolder.getVerticalSchema());
-				request.getHeaders().add(Tenant2SchemaMapper.TENANT_HTTP_HEADER,
-						MultitenancyContextHolder.getTenantName());
-			} catch (final Exception e) {
-				log.error("No authentication found, could not add tenant/vertical headers to HTTP request");
-			}
-			return execution.execute(request, body);
-		});
-	}
-
 	private static final String REPORT = "report";
 
 	@GetMapping(value = "/list/data", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	@PreAuthorize("!hasRole('ROLE_USER')")
 	@Transactional
 	public ResponseEntity<List<ReportDto>> listData() {
 
@@ -167,13 +111,9 @@ public class ReportController {
 	}
 
 	@GetMapping(value = "/list", produces = MediaType.TEXT_HTML_VALUE)
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	@PreAuthorize("!hasRole('ROLE_USER')")
 	@Transactional
 	public String list(Model model) {
-
-		// CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-
 		model.addAttribute("owners",
 				userService.getAllActiveUsers().stream()
 						.filter(user -> !Type.ROLE_ADMINISTRATOR.toString().equals(user.getRole().getId())
@@ -190,7 +130,7 @@ public class ReportController {
 	}
 
 	@GetMapping(value = "/runReport/{id}", produces = MediaType.TEXT_HTML_VALUE)
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	@PreAuthorize("!hasRole('ROLE_USER')")
 	@Transactional
 	public String runReport(@PathVariable("id") String id, Model model) {
 		model.addAttribute("owners",
@@ -210,48 +150,36 @@ public class ReportController {
 	}
 
 	@GetMapping(value = "/create", produces = MediaType.TEXT_HTML_VALUE)
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	@PreAuthorize("!hasRole('ROLE_USER')")
 	public ModelAndView create(Model model) {
 
 		ReportDto report = ReportDto.builder().isPublic(Boolean.FALSE).build();
 
-		if (model.asMap().get(REPORT) != null) {
+		if (model.asMap().get(REPORT) != null)
 			report = (ReportDto) model.asMap().get(REPORT);
-		}
 
-		ModelAndView newModel = new ModelAndView("reports/create", REPORT, report);
-		final Object projectId = httpSession.getAttribute(APP_ID);
-		if (projectId != null) {
-			newModel.addObject(APP_ID, projectId.toString());
-		}
-
-		return newModel;
+		return new ModelAndView("reports/create", REPORT, report);
 	}
 
 	@GetMapping(value = "/edit/{id}", produces = MediaType.TEXT_HTML_VALUE)
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	@PreAuthorize("!hasRole('ROLE_USER')")
 	@Transactional
-	public String edit(@PathVariable("id") String id, Model model) throws UnsupportedEncodingException {
+	public String edit(@PathVariable("id") String id, Model model) {
 
 		final Report entity = reportService.findById(id);
-		if (entity == null) {
+		if (entity == null)
 			return "redirect:/404";
-		}
-		if (!reportService.hasUserPermission(utils.getUserId(), entity, ResourceAccessType.MANAGE)) {
+		if (!reportService.hasUserPermission(utils.getUserId(), entity, ResourceAccessType.MANAGE))
 			return "redirect:/403";
-		}
 		final ReportDto report = reportConverter.convert(entity);
 		if (StringUtils.isEmpty(entity.getDataSourceUrl())) {
-			final String requestURL = resourcesService.getUrl(Module.REPORT_ENGINE, ServiceUrl.BASE) + REPORT_API_PATH
-					+ "/" + URLEncoder.encode(id, StandardCharsets.UTF_8.name()) + "/datasource";
 			try {
-				final ResponseEntity<String> response = restTemplate.exchange(requestURL, HttpMethod.GET, null,
-						String.class);
-				if (!StringUtils.isEmpty(response.getBody())) {
-					model.addAttribute("dataSource", response.getBody());
-				}
-			} catch (final Exception e) {
-				log.error("Could not extract datasource from report, leaving empty");
+				final String dataSource = reportInfoService
+						.extract(new ArrayInputStream(entity.getFile()), entity.getExtension()).getDataSource();
+				if (!StringUtils.isEmpty(dataSource))
+					model.addAttribute("dataSource", dataSource);
+			} catch (final ReportInfoException e) {
+				log.error("Jasper template error", e);
 			}
 		}
 
@@ -260,38 +188,8 @@ public class ReportController {
 		return "reports/create";
 	}
 
-	@PostMapping(value = "/edit/{id}/resources/fragment", produces = MediaType.TEXT_HTML_VALUE)
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
-	@Transactional
-	public String resourcesFragment(@PathVariable("id") String id, Model model) throws UnsupportedEncodingException {
-
-		final Report entity = reportService.findById(id);
-		if (entity == null) {
-			return "redirect:/404";
-		}
-		if (!reportService.hasUserPermission(utils.getUserId(), entity, ResourceAccessType.MANAGE)) {
-			return "redirect:/403";
-		}
-		final ReportDto report = reportConverter.convert(entity);
-		if (StringUtils.isEmpty(entity.getDataSourceUrl())) {
-			final String requestURL = resourcesService.getUrl(Module.REPORT_ENGINE, ServiceUrl.BASE) + REPORT_API_PATH
-					+ "/" + URLEncoder.encode(id, StandardCharsets.UTF_8.name()) + "/datasource";
-			try {
-				final ResponseEntity<String> response = restTemplate.exchange(requestURL, HttpMethod.GET, null,
-						String.class);
-				if (!StringUtils.isEmpty(response.getBody())) {
-					model.addAttribute("dataSource", response.getBody());
-				}
-			} catch (final Exception e) {
-				log.error("Could not extract datasource from report, leaving empty");
-			}
-		}
-		model.addAttribute(REPORT, report);
-		return "/fragments/report-edit";
-	}
-
 	@PostMapping(value = "/save", produces = MediaType.TEXT_HTML_VALUE)
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	@PreAuthorize("!hasRole('ROLE_USER')")
 	@Transactional
 	public String save(@Valid @ModelAttribute("report") ReportDto report, RedirectAttributes ra) {
 		try {
@@ -302,14 +200,6 @@ public class ReportController {
 				return "redirect:/reports/create";
 			}
 			reportService.saveOrUpdate(entity);
-
-			final Object projectId = httpSession.getAttribute(APP_ID);
-			if (projectId != null) {
-				httpSession.setAttribute("resourceTypeAdded", OPResource.Resources.REPORT.toString());
-				httpSession.setAttribute("resourceIdentificationAdded", entity.getIdentification());
-				httpSession.removeAttribute(APP_ID);
-				return REDIRECT_PROJECT_SHOW + projectId.toString();
-			}
 
 			return "redirect:/reports/list";
 		} catch (final Exception e) {
@@ -322,17 +212,15 @@ public class ReportController {
 	}
 
 	@PostMapping(value = "/update", produces = MediaType.TEXT_HTML_VALUE)
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	@PreAuthorize("!hasRole('ROLE_USER')")
 	@Transactional
 	public String update(@Valid @ModelAttribute("report") ReportDto report, RedirectAttributes ra) {
 
 		final Report target = reportService.findById(report.getId());
-		if (target == null) {
+		if (target == null)
 			return "redirect:/404";
-		}
-		if (!reportService.hasUserPermission(utils.getUserId(), target, ResourceAccessType.MANAGE)) {
+		if (!reportService.hasUserPermission(utils.getUserId(), target, ResourceAccessType.MANAGE))
 			return "redirect:/403";
-		}
 		try {
 			final Report entity = reportConverter.merge(target, report);
 
@@ -348,7 +236,7 @@ public class ReportController {
 	}
 
 	@PostMapping(value = "/download/report/{id}", produces = { MediaType.APPLICATION_PDF_VALUE })
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	@PreAuthorize("!hasRole('ROLE_USER')")
 	@Transactional
 	public ResponseEntity<?> downloadReport(@PathVariable("id") String id, @RequestParam("parameters") String params,
 			@RequestParam("extension") ReportType extension) throws JRException, IOException {
@@ -358,34 +246,36 @@ public class ReportController {
 		if (entity == null || entity.getFile() == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
-		if (!reportService.hasUserPermission(utils.getUserId(), entity, ResourceAccessType.VIEW)) {
+		if (!reportService.hasUserPermission(utils.getUserId(), entity, ResourceAccessType.VIEW))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		}
-		final ObjectMapper mapper = new ObjectMapper();
-		mapper.enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE);
-		final List<ReportParameter> parameters = mapper.readValue(params, new TypeReference<List<ReportParameter>>() {
-		});
-		final String requestURL = resourcesService.getUrl(Module.REPORT_ENGINE, ServiceUrl.BASE) + REPORT_API_PATH + "/"
-				+ URLEncoder.encode(id, StandardCharsets.UTF_8.name()) + "/"
-				+ URLEncoder.encode(extension.name(), StandardCharsets.UTF_8.name());
 		try {
-			final ResponseEntity<byte[]> response = restTemplate.exchange(requestURL, HttpMethod.POST,
-					new HttpEntity<>(parameters), byte[].class);
 
-			return generateAttachmentResponse(response.getBody(), extension.contentType(),
+			final ObjectMapper mapper = new ObjectMapper();
+			mapper.enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE);
+			final List<ReportParameter> parameters = mapper.readValue(params,
+					new TypeReference<List<ReportParameter>>() {
+					});
+			if (!StringUtils.isEmpty(entity.getDataSourceUrl()))
+				parameters.add(ReportParameter.builder().name(JSON_DATA_SOURCE_ATT_NAME)
+						.type(ReportParameterType.STRING).value(entity.getDataSourceUrl()).build());
+
+			final Map<String, Object> map = parameters == null ? new HashMap<>()
+					: parameterMapConverter.convert(parameters);
+
+			final byte[] content = reportInfoService.generate(entity, extension, map);
+
+			return generateAttachmentResponse(content, extension.contentType(),
 					entity.getIdentification() + "." + extension.extension());
-		} catch (final HttpClientErrorException | HttpServerErrorException e) {
-			log.error("Error: code {}, {}", e.getStatusCode(), e.getResponseBodyAsString());
-			final org.springframework.http.HttpHeaders responseHeaders = new org.springframework.http.HttpHeaders();
-			responseHeaders.add("X-Download-Error",
-					e.getResponseBodyAsString().replaceAll("\n", " ").replace("\r", " "));
-			return new ResponseEntity<>(e.getResponseBodyAsString(), responseHeaders, e.getStatusCode());
+		} catch (final Exception e) {
+			log.error("Could not generate report {}", e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).header("X-Download-Error", e.getMessage())
+					.build();
 		}
 
 	}
 
 	@GetMapping(value = "/download/report-design/{id}", produces = { MediaType.APPLICATION_PDF_VALUE })
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	@PreAuthorize("!hasRole('ROLE_USER')")
 	@Transactional
 	public ResponseEntity<?> downloadTemplate(@PathVariable("id") String id) {
 
@@ -394,168 +284,65 @@ public class ReportController {
 		if (entity == null || entity.getFile() == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
-		if (!reportService.hasUserPermission(utils.getUserId(), entity, ResourceAccessType.VIEW)) {
+		if (!reportService.hasUserPermission(utils.getUserId(), entity, ResourceAccessType.VIEW))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		}
 
-		if (entity.getExtension().toString().equals("DOCX")) {
-			return generateAttachmentResponse(entity.getFile(), ReportType.DOCX.contentType(),
-					entity.getIdentification() + "." + ReportType.DOCX.extension());
+		return generateAttachmentResponse(entity.getFile(), ReportType.JRXML.contentType(),
+				entity.getIdentification() + "." + ReportType.JRXML.extension());
 
-		} else {
-
-			return generateAttachmentResponse(entity.getFile(), ReportType.JRXML.contentType(),
-					entity.getIdentification() + "." + ReportType.JRXML.extension());
-		}
 	}
 
 	@DeleteMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	@PreAuthorize("!hasRole('ROLE_USER')")
 	@Transactional
 	public ResponseEntity<Boolean> delete(@PathVariable("id") String id) {
 		final Report entity = reportService.findById(id);
-
 		if (entity == null || entity.getFile() == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
-		if (!reportService.hasUserPermission(utils.getUserId(), entity, ResourceAccessType.MANAGE)) {
+		if (!reportService.hasUserPermission(utils.getUserId(), entity, ResourceAccessType.MANAGE))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		}
-		final List<String> resourceIds = entity.getResources().stream().map(BinaryFile::getId)
-				.collect(Collectors.toList());
 		reportService.delete(id);
-		resourceIds.forEach(r -> {
-			if (reportService.countAssociatedReportsToResource(r) == 0) {
-				try {
-					binaryFactory.getInstance(RepositoryType.MONGO_GRIDFS).removeBinary(r);
-				} catch (final BinaryRepositoryException e) {
-					log.error("Could not delete resource from binary repository");
-				}
-			}
-		});
 
 		return new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK);
 	}
 
-	@GetMapping(value = "/{id}/parameters", produces = MediaType.APPLICATION_JSON_VALUE)
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	@PostMapping(value = "/info", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("!hasRole('ROLE_USER')")
 	@Transactional
-	public ResponseEntity<?> parameters(@PathVariable("id") String id) throws UnsupportedEncodingException {
+	public ResponseEntity<ReportInfoDto> reportInfo(@RequestParam("file") MultipartFile multipartFile)
+			throws IOException {
 
-		List<String> parameters = new ArrayList<String>();
+		final ReportInfoDto reportInfoDto = reportInfoService.extract(multipartFile.getInputStream(),
+				ReportExtension.valueOf(FilenameUtils.getExtension(multipartFile.getOriginalFilename()).toUpperCase()));
+
+		return new ResponseEntity<>(reportInfoDto, HttpStatus.OK);
+	}
+
+	@GetMapping(value = "/{id}/parameters", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("!hasRole('ROLE_USER')")
+	@Transactional
+	public ResponseEntity<?> parameters(@PathVariable("id") String id) {
 
 		final Report report = reportService.findById(id);
 		if (report == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
-		if (!reportService.hasUserPermission(utils.getUserId(), report, ResourceAccessType.VIEW)) {
+		if (!reportService.hasUserPermission(utils.getUserId(), report, ResourceAccessType.VIEW))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		}
-
-		if (report.getExtension().name().equals("DOCX")) {
-
-			try {
-				parameters = poiTemplatesUtil.extractFromDocx(new ByteArrayInputStream(report.getFile()));
-			} catch (IOException | OpenXML4JException e) {
-				return new ResponseEntity<>("Error extracting parameters", HttpStatus.INTERNAL_SERVER_ERROR);
-			} 
-
-			ReportInfoMSTemplateDTO reportInfoMSTemplateDTO = new ReportInfoMSTemplateDTO();
-			reportInfoMSTemplateDTO.setFormType(poiTemplatesUtil.formType(parameters));
-
-			reportInfoMSTemplateDTO.setJsonParameters(
-					poiTemplatesUtil.generateJSONObject(parameters, reportInfoMSTemplateDTO.getFormType()));
-
-			return new ResponseEntity<>(reportInfoMSTemplateDTO, HttpStatus.OK);
-
-		} else if (report.getExtension().name().equals("JASPER") || report.getExtension().name().equals("JRXML")) {
-
-			final String requestURL = resourcesService.getUrl(Module.REPORT_ENGINE, ServiceUrl.BASE) + REPORT_API_PATH
-					+ "/" + URLEncoder.encode(id, StandardCharsets.UTF_8.name()) + "/parameters";
-			try {
-				final ResponseEntity<List<ReportParameter>> response = restTemplate.exchange(requestURL, HttpMethod.GET,
-						null, new ParameterizedTypeReference<List<ReportParameter>>() {
-						});
-
-				return new ResponseEntity<>(response.getBody(), HttpStatus.OK);
-			} catch (final HttpClientErrorException | HttpServerErrorException e) {
-				log.error("Error: code {}, {}", e.getStatusCode(), e.getResponseBodyAsString());
-				return new ResponseEntity<>(e.getResponseBodyAsString(), e.getStatusCode());
-			}
-
-		}else {
-			return new ResponseEntity<>("File type not supported", HttpStatus.FORBIDDEN);
-
-		}
-
-	}
-
-	@PostMapping(value = "/download/MSTemplate/report/{id}", produces = { MediaType.APPLICATION_JSON_VALUE })
-	@ApiOperation(value = "Generate and Download Report")
-	@Transactional
-	public ResponseEntity<?> generateAndDownloadReport(@PathVariable("id") String id,
-			@RequestParam("parameters") String params, @RequestParam("extension") ReportType extension) {
-
-		Report report = reportService.findById(id);
-		String wordPath;
-		InputStream docxstream = null;
 		try {
-			wordPath = poiTemplatesUtil.generateReport(params, report.getFile());
+			final ReportInfoDto reportInfoDto = reportInfoService.extract(new ByteArrayInputStream(report.getFile()),
+					report.getExtension());
 
-			if (extension.name().equals("DOCX")) {
-				docxstream = new FileInputStream(wordPath);
-
-				ResponseEntity<?> response = generateAttachmentResponse(docxstream.readAllBytes(),
-						ReportType.DOCX.contentType(), report.getIdentification() + "." + extension.extension());
-
-				File file = new File(wordPath);
-				file.delete();
-
-				return response;
-
-			} else if (extension.name().equals("PDF")) {
-
-				String pdfFilePath;
-				try {
-					pdfFilePath = poiTemplatesUtil.convertToPdf(wordPath);
-				} catch (XDocConverterException e) {
-					return new ResponseEntity<>("Error converting to pdf", HttpStatus.INTERNAL_SERVER_ERROR);
-
-				}
-				InputStream pdfstream = new FileInputStream(pdfFilePath);
-
-				ResponseEntity<?> response = generateAttachmentResponse(pdfstream.readAllBytes(),
-						ReportType.PDF.contentType(), report.getIdentification() + "." + extension.extension());
-				pdfstream.close();
-				File file = new File(wordPath);
-				file.delete();
-
-				File filePdf = new File(pdfFilePath);
-				filePdf.delete();
-
-				return response;
-
-			} else {
-				return new ResponseEntity<>("Error, File type not supported", HttpStatus.FORBIDDEN);
-
-			}
-		} catch (IOException e) {
-			
-			return new ResponseEntity<>("Error processing the template", HttpStatus.INTERNAL_SERVER_ERROR);
-			
-		}finally {
-			if(docxstream != null)
-				try {
-					docxstream.close();
-				} catch (IOException e) {
-					
-				}
+			return new ResponseEntity<>(reportInfoDto.getParameters(), HttpStatus.OK);
+		} catch (final Exception e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 	}
 
 	@DeleteMapping("report/{report}/resource/{resource}")
-	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	@PreAuthorize("!hasRole('ROLE_USER')")
 	@Transactional
 	public ResponseEntity<String> removeResource(@PathVariable("report") String reportId,
 			@PathVariable("resource") String resource) {
@@ -563,23 +350,15 @@ public class ReportController {
 		if (report == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
-		if (!reportService.hasUserPermission(utils.getUserId(), report, ResourceAccessType.VIEW)) {
+		if (!reportService.hasUserPermission(utils.getUserId(), report, ResourceAccessType.VIEW))
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		}
 
-		reportService.deleteResource(report, resource);
-		if (reportService.countAssociatedReportsToResource(resource) == 0) {
-			try {
-				binaryFactory.getInstance(RepositoryType.MONGO_GRIDFS).removeBinary(resource);
-			} catch (final BinaryRepositoryException e) {
-				log.error("Could not delete binary file ", e);
-				return new ResponseEntity<>("Could not delete binary file ", HttpStatus.INTERNAL_SERVER_ERROR);
-			}
-		}
+		report.getResources().removeIf(r -> r.getId().equals(resource));
+		reportService.saveOrUpdate(report);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@PostMapping("report/{report}/resource/{resource}")
+	@PutMapping("report/{report}/resource/{resource}")
 	@Transactional
 	public String updateResource(@PathVariable("report") String reportId, @PathVariable("resource") String resource,
 			@RequestParam("file") MultipartFile file, RedirectAttributes ra) {
@@ -587,11 +366,10 @@ public class ReportController {
 		if (report == null) {
 			return "error/404";
 		}
-		if (!reportService.hasUserPermission(utils.getUserId(), report, ResourceAccessType.VIEW)) {
+		if (!reportService.hasUserPermission(utils.getUserId(), report, ResourceAccessType.VIEW))
 			return "error/403";
-		}
 		try {
-			reportBusinessService.updateResource(report, resource, file);
+			reportInfoService.updateResource(report, resource, file);
 		} catch (final Exception e) {
 			log.error("Could not update resource for report {}", report, e);
 			utils.addRedirectException(e, ra);
@@ -599,43 +377,6 @@ public class ReportController {
 		}
 
 		return "redirect:/reports/edit/" + reportId;
-	}
-
-	@PutMapping("report/resources")
-	@Transactional
-	public ResponseEntity<String> updateResource(@RequestParam("resourceId") String resourceId,
-			@RequestParam("reportId") String reportId) {
-		final Report report = reportService.findById(reportId);
-		if (report == null) {
-			return ResponseEntity.notFound().build();
-		}
-		if (!reportService.hasUserPermission(utils.getUserId(), report, ResourceAccessType.MANAGE)) {
-			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-		}
-		try {
-			reportService.addBinaryFileToResource(report, resourceId);
-		} catch (final Exception e) {
-			log.error("Could not add resource to report {}", report, e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-		}
-
-		return ResponseEntity.ok().build();
-	}
-
-	@GetMapping("/resources")
-	@Transactional
-	public ResponseEntity<List<ReportResourceDTO>> resources(@RequestParam("currentReportId") String currentReportId) {
-		try {
-			final List<ReportResourceDTO> resources = reportService
-					.findResourcesAvailableExcludingSelf(utils.getUserId(), currentReportId).stream()
-					.map(r -> ReportResourceDTO.builder().fileName(r.getFileName()).id(r.getId())
-							.userId(r.getUser().getUserId()).build())
-					.collect(Collectors.toList());
-			return ResponseEntity.ok().body(resources);
-		} catch (final Exception e) {
-			log.error("Error while fetching available resources for report {}", currentReportId, e);
-			return ResponseEntity.badRequest().build();
-		}
 	}
 
 	private ResponseEntity<?> generateAttachmentResponse(byte[] byteArray, String contentType, String fileName) {

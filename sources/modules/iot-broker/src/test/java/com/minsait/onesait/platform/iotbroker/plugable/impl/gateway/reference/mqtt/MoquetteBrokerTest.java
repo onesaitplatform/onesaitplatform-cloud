@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,14 +50,16 @@ import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyIndicationMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyJoinMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyReturnMessage;
+import com.minsait.onesait.platform.comms.protocol.body.SSAPBodySubscribeMessage;
+import com.minsait.onesait.platform.comms.protocol.enums.SSAPQueryType;
 import com.minsait.onesait.platform.comms.protocol.json.SSAPJsonParser;
+import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.iotbroker.mock.pojo.Person;
 import com.minsait.onesait.platform.iotbroker.mock.pojo.PojoGenerator;
 import com.minsait.onesait.platform.iotbroker.mock.router.RouterServiceGenerator;
 import com.minsait.onesait.platform.iotbroker.mock.ssap.SSAPMessageGenerator;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
 import com.minsait.onesait.platform.iotbroker.processor.DeviceManager;
-import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 import com.minsait.onesait.platform.router.service.app.model.NotificationCompositeModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationResultModel;
 
@@ -108,7 +110,7 @@ public class MoquetteBrokerTest {
 		when(deviceManager.registerActivity(any(), any(), any(), any())).thenReturn(true);
 		when(securityPluginManager.authenticate(any(), any(), any(), any())).thenReturn(Optional.of(session));
 		when(securityPluginManager.getSession(anyString())).thenReturn(Optional.of(session));
-		when(securityPluginManager.checkSessionKeyActive(any())).thenReturn(true);
+		when(securityPluginManager.checkSessionKeyActive(anyString())).thenReturn(true);
 		when(securityPluginManager.checkAuthorization(any(), any(), any())).thenReturn(true);
 	}
 
@@ -218,14 +220,14 @@ public class MoquetteBrokerTest {
 		SSAPMessage<SSAPBodyReturnMessage> response = SSAPJsonParser.getInstance().deserialize(responseStr);
 		Assert.assertNotNull(response);
 
-//		// Send subscription message
-//		completableFutureMessage = new CompletableFuture<>();
-//		final SSAPMessage<SSAPBodySubscribeMessage> subscription = SSAPMessageGenerator.generateSubscriptionMessage(
-//				Person.class.getSimpleName(), session.getSessionKey(), SSAPQueryType.SQL, "SELECT * FROM Person");
-//		final String subscriptionStr = SSAPJsonParser.getInstance().serialize(subscription);
-//		message = new MqttMessage(subscriptionStr.getBytes());
-//		message.setQos(qos);
-//		client.publish(topic, message);
+		// Send subscription message
+		completableFutureMessage = new CompletableFuture<>();
+		final SSAPMessage<SSAPBodySubscribeMessage> subscription = SSAPMessageGenerator.generateSubscriptionMessage(
+				Person.class.getSimpleName(), session.getSessionKey(), SSAPQueryType.SQL, "SELECT * FROM Person");
+		final String subscriptionStr = SSAPJsonParser.getInstance().serialize(subscription);
+		message = new MqttMessage(subscriptionStr.getBytes());
+		message.setQos(qos);
+		client.publish(topic, message);
 
 		// Get subscription message response
 		responseStr = completableFutureMessage.get(5, TimeUnit.SECONDS);

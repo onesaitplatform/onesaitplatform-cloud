@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package com.minsait.onesait.platform.config.services.app.dto;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.validation.constraints.NotNull;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.minsait.onesait.platform.config.model.App;
 import com.minsait.onesait.platform.config.model.User;
@@ -32,15 +34,11 @@ public class RealmCreate {
 
 	@Getter
 	@Setter
+	@NotNull
 	protected String identification;
 	@Getter
 	@Setter
-	protected String realmId;
-	@Getter
-	@Setter
-	protected String name;
-	@Getter
-	@Setter
+	@NotNull
 	protected String description;
 	@Getter
 	@Setter
@@ -55,17 +53,10 @@ public class RealmCreate {
 	@Setter
 	@JsonIgnore
 	protected User user;
-	@Getter
-	@Setter
-	private boolean publicClient;
 
 	public RealmCreate(App app) {
 
 		identification = app.getIdentification();
-
-		realmId = app.getIdentification();
-
-		name = app.getIdentification();
 
 		if (null != app.getSecret()) {
 			secret = app.getSecret();

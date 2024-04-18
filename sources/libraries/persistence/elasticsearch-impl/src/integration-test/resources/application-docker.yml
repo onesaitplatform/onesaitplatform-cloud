@@ -1,26 +1,13 @@
-onesaitplatform: #Config Sofia2 specific
+sofia2: #Config Sofia2 specific
    database.elasticsearch:
-      sql.connector.http.endpoint: http://${ELASTICDBHOST}:${ELASTICDBPORT}
-      url: ${ELASTICDBHOST}
-      port: ${ELASTICDBPORT}
-      
-master:
-   datasource:  
-      url: ${JDBCPROTOCOL}//${CONFIGDBSERVERS}/onesaitplatform_master_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
- 
+      sql.connector.http.endpoint: http://elasticdb:9200
+      url: elasticdb
+      port: 9300
+
 spring:
-  datasource: ## JPA Config
-      url: ${JDBCPROTOCOL}//${CONFIGDBSERVERS}/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
-      time-between-eviction-runs-millis: ${DS_TIME_BETWEEN_EVICTION_RUNS_MILLIS}
-      min-evictable-idle-time-millis: ${DS_MIN_EVICTABLE_IDLE_TIME_MILLIS}
-      max-wait-millis: ${DS_MAX_WAIT_MILLIS}
-      max-wait: ${DS_MAX_WAIT}
-      initial-size: ${DS_INITIAL_SIZE}
-      max-active: ${DS_MAX_ACTIVE}
-      max-idle: ${DS_MAX_IDLE}
-      min-idle: ${DS_MIN_IDLE}
-      removeAbandoned: ${DS_REMOVE_ABANDONED}
-      removeAbandonedTimeout: ${DS_REMOVE_ABANDONED_TIMEOUT}
-
-
- 
+   elasticsearch.jest:
+      uris: http://elasticdb:9200
+   datasource:
+      url: jdbc:mysql://configdb:3306/onesaitplatform_config?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false
+      username: root
+      password: changeIt!

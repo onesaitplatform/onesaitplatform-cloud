@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,10 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.minsait.onesait.platform.config.dto.ClientPlatformTokenDTO;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
-import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulation;
 import com.minsait.onesait.platform.config.model.Token;
-import com.minsait.onesait.platform.config.repository.ClientPlatformInstanceSimulationRepository;
 import com.minsait.onesait.platform.config.repository.TokenRepository;
 import com.minsait.onesait.platform.config.services.exceptions.TokenServiceException;
-import com.minsait.onesait.platform.config.services.kafka.KafkaAuthorizationService;
 
 @Service
 
@@ -35,22 +31,16 @@ public class TokenServiceImpl implements TokenService {
 
 	@Autowired
 	private TokenRepository tokenRepository;
-	@Autowired
-	private ClientPlatformInstanceSimulationRepository simulationRepository;
-	@Autowired
-	private KafkaAuthorizationService kafkaAuthService;
 
 	@Override
 	public Token generateTokenForClient(ClientPlatform clientPlatform) {
 		Token token = new Token();
 		if (clientPlatform.getId() != null) {
 			token.setClientPlatform(clientPlatform);
-			token.setTokenName(UUID.randomUUID().toString().replace("-", ""));
+			token.setTokenName(UUID.randomUUID().toString().replaceAll("-", ""));
 			token.setActive(true);
-			if (tokenRepository.findByTokenName(token.getTokenName()) == null) {
-				token = tokenRepository.save(token);
-				// Add ACLs for client/topic
-				kafkaAuthService.addAclToClientForNewToken(token);
+			if (this.tokenRepository.findByTokenName(token.getTokenName()) == null) {
+				token = this.tokenRepository.save(token);
 			} else {
 				throw new TokenServiceException("Token with value " + token.getTokenName() + " already exists");
 			}
@@ -60,38 +50,29 @@ public class TokenServiceImpl implements TokenService {
 
 	@Override
 	public Token getToken(ClientPlatform clientPlatform) {
-		return tokenRepository.findByClientPlatform(clientPlatform).get(0);
+		return this.tokenRepository.findByClientPlatform(clientPlatform).get(0);
 	}
 
 	@Override
 	public Token getTokenByToken(String token) {
-		return tokenRepository.findByTokenName(token);
+		return this.tokenRepository.findByTokenName(token);
 	}
 
 	@Override
 	public void deactivateToken(Token token, boolean active) {
 		token.setActive(active);
-		tokenRepository.save(token);
-		kafkaAuthService.deactivateToken(token, active);
+		this.tokenRepository.save(token);
+
 	}
 
 	@Override
 	public Token getTokenByID(String id) {
-		return tokenRepository.findById(id).orElse(null);
+		return this.tokenRepository.findById(id);
 	}
 
 	@Override
 	public List<Token> getTokens(ClientPlatform clientPlatform) {
-		return tokenRepository.findByClientPlatform(clientPlatform);
+		return this.tokenRepository.findByClientPlatform(clientPlatform);
 	}
 
-	@Override
-	public List<ClientPlatformInstanceSimulation> getSimulations(Token token) {
-		return simulationRepository.findByClientPlatform(token.getClientPlatform());
-	}
-	
-	@Override
-	public ClientPlatformTokenDTO getClientPlatformIdByTokenName(String tokenName) {
-		return this.tokenRepository.findClientPlatformIdByTokenName(tokenName);
-	}
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,11 +80,15 @@ public class GraphDeviceDTO implements Serializable {
 
 	@Getter
 	@Setter
+	private String sessionKey;
+
+	@Getter
+	@Setter
 	private Date updateAt;
 
 	public GraphDeviceDTO(String source, String target, String linkSource, String linkTarget, String classSource,
 			String classTarget, String nameSource, String nameTarget, String type, String image, String status,
-			String connected, Date updateAt) {
+			String connected, String sessionKey, Date updateAt) {
 		this.source = source;
 		this.target = target;
 		this.linkSource = linkSource;
@@ -97,12 +101,13 @@ public class GraphDeviceDTO implements Serializable {
 		this.image = image;
 		this.status = status;
 		this.connected = connected;
+		this.sessionKey = sessionKey;
 		this.updateAt = updateAt;
 	}
 
 	public GraphDeviceDTO(String source, String target, String linkSource, String linkTarget, String classSource,
 			String classTarget, String nameSource, String nameTarget, String type, String title, String linkCreate,
-			String image, String status, String connected, Date updateAt) {
+			String image, String status, String connected, String sessionKey, Date updateAt) {
 		super();
 		this.source = source;
 		this.target = target;
@@ -118,20 +123,21 @@ public class GraphDeviceDTO implements Serializable {
 		this.image = image;
 		this.status = status;
 		this.connected = connected;
+		this.sessionKey = sessionKey;
 		this.updateAt = updateAt;
 	}
 
 	public static GraphDeviceDTO constructSingleNode(String source, String linkSource, String classSource,
 			String nameSource, String image, String status, String connected) {
 		return new GraphDeviceDTO(source, source, linkSource, linkSource, classSource, classSource, nameSource,
-				nameSource, null, null, null, null, null);
+				nameSource, null, null, null, null, null, null);
 	}
 
 	public static GraphDeviceDTO constructSingleNodeWithTitleAndCreateLink(String source, String linkSource,
 			String classSource, String nameSource, String title, String linkCreate, String image, String status,
 			String connected) {
 		return new GraphDeviceDTO(source, source, linkSource, linkSource, classSource, classSource, nameSource,
-				nameSource, null, title, linkCreate, null, null, null, null);
+				nameSource, null, title, linkCreate, null, null, null, null, null);
 	}
 
 	@Override

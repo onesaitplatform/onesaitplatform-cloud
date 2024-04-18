@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,22 @@ package com.minsait.onesait.platform.rulesengine.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.support.NoOpCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.topic.ITopic;
+import com.hazelcast.core.ITopic;
+import com.hazelcast.spring.cache.HazelcastCacheManager;
 import com.minsait.onesait.platform.commons.model.HazelcastRuleDomainObject;
 import com.minsait.onesait.platform.commons.model.HazelcastRuleObject;
 import com.minsait.onesait.platform.rulesengine.service.RulesManagerService;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Configuration
+@Slf4j
 public class HazelcastCacheConfig {
 
 	@Autowired
@@ -68,4 +74,14 @@ public class HazelcastCacheConfig {
 
 	}
 
+	@Bean
+	CacheManager cacheManager() {
+		if (hazelcastInstance != null) {
+			final CacheManager manager = new HazelcastCacheManager(hazelcastInstance);
+			log.info("Configured Local Cache Manager: Name : {} ", manager.toString());
+			return manager;
+		} else {
+			return new NoOpCacheManager();
+		}
+	}
 }

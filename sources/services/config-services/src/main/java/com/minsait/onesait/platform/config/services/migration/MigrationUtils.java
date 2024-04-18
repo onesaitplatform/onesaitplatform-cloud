@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,39 +27,31 @@ import java.util.Properties;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
-import org.springframework.boot.context.properties.bind.Bindable;
-import org.springframework.boot.context.properties.bind.Binder;
-import org.springframework.boot.context.properties.source.ConfigurationPropertySources;
+import org.springframework.boot.bind.PropertiesConfigurationFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.jpa.repository.JpaRepository;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.validation.BindException;
 
 public class MigrationUtils {
 
-	private static final String PROPERTIES_PREFIX = "onesaitplatform.migrationconfig";
-
 	static Serializable getId(Object o) throws IllegalAccessException {
-		final Class<?> clazz = o.getClass();
+		Class<?> clazz = o.getClass();
 
-		final Map<String, Field> fields = new HashMap<>();
+		Map<String, Field> fields = new HashMap<>();
 		MigrationUtils.getAllFields(fields, clazz);
-		for (final Field field : fields.values()) {
-			final Annotation[] annotations = field.getDeclaredAnnotations();
-			for (final Annotation annotation : annotations) {
+		for (Field field : fields.values()) {
+			Annotation[] annotations = field.getDeclaredAnnotations();
+			for (Annotation annotation : annotations) {
 				if (annotation.annotationType().equals(Id.class)) {
-					final boolean accessible = field.isAccessible();
+					boolean accessible = field.isAccessible();
 					field.setAccessible(true);
 					// returns the id value if it has @id annotation
-					final Serializable id = (Serializable) field.get(o);
+					Serializable id = (Serializable) field.get(o);
 					field.setAccessible(accessible);
 					return id;
 				}
@@ -71,38 +63,13 @@ public class MigrationUtils {
 
 	}
 
-	static String getIdentificationField(Object o) throws IllegalAccessException {
-		if (o != null) {
-			final Class<?> clazz = o.getClass();
-
-			final Map<String, Field> fields = new HashMap<>();
-			MigrationUtils.getAllFields(fields, clazz);
-			for (final Field field : fields.values()) {
-				if (field.getName().equalsIgnoreCase("identification")) {
-					final ObjectMapper mapper = new ObjectMapper();
-					JSONObject json;
-					try {
-						json = new JSONObject(mapper.writeValueAsString(o));
-					} catch (JSONException | JsonProcessingException e) {
-						return null;
-					}
-					if (json.has("identification")) {
-						return json.getString("identification");
-					}
-				}
-			}
-		}
-		return null;
-
-	}
-
 	static Map<String, Field> getAllFields(Class<?> type) {
 		return getAllFields(new HashMap<>(), type);
 	}
 
 	static Map<String, Field> getAllFields(Map<String, Field> fields, Class<?> type) {
-		final Field[] ownFields = type.getDeclaredFields();
-		for (final Field f : ownFields) {
+		Field[] ownFields = type.getDeclaredFields();
+		for (Field f : ownFields) {
 			if (!f.getType().getName().startsWith("org.aspectj") && !fields.containsKey(f.getName())) {
 				fields.put(f.getName(), f);
 			}
@@ -125,15 +92,15 @@ public class MigrationUtils {
 	}
 
 	static <T> Class<? extends Serializable> getIdType(Class<T> clazz) {
-		final Map<String, Field> fields = new HashMap<>();
+		Map<String, Field> fields = new HashMap<>();
 		MigrationUtils.getAllFields(fields, clazz);
-		for (final Field field : fields.values()) {
-			final Annotation[] annotations = field.getDeclaredAnnotations();
-			for (final Annotation annotation : annotations) {
+		for (Field field : fields.values()) {
+			Annotation[] annotations = field.getDeclaredAnnotations();
+			for (Annotation annotation : annotations) {
 				if (annotation.annotationType().equals(Id.class)) {
 					// JPA ids are serializables
 					@SuppressWarnings("unchecked")
-					final Class<? extends Serializable> type = (Class<? extends Serializable>) field.getType();
+					Class<? extends Serializable> type = (Class<? extends Serializable>) field.getType();
 					return type;
 				}
 			}
@@ -142,15 +109,15 @@ public class MigrationUtils {
 	}
 
 	static <T, K extends Serializable> JpaRepository<T, K> getRepository(Class<T> clazz, ApplicationContext ctx) {
-		final Class<? extends Serializable> idType = MigrationUtils.getIdType(clazz);
-		final String[] beanNamesForType = ctx
+		Class<? extends Serializable> idType = MigrationUtils.getIdType(clazz);
+		String[] beanNamesForType = ctx
 				.getBeanNamesForType(ResolvableType.forClassWithGenerics(JpaRepository.class, clazz, idType));
 
 		// If several beans are expected then extract the correct one.
 		// At the moment there is only one repository per entity.
 		if (beanNamesForType.length > 0) {
 			@SuppressWarnings("unchecked")
-			final JpaRepository<T, K> repository = (JpaRepository<T, K>) ctx.getBean(beanNamesForType[0]);
+			JpaRepository<T, K> repository = (JpaRepository<T, K>) ctx.getBean(beanNamesForType[0]);
 			return repository;
 		} else {
 			return null;
@@ -160,7 +127,7 @@ public class MigrationUtils {
 	static boolean isManagedEntity(EntityManager em, Class<?> clazz) {
 		try {
 			em.getMetamodel().managedType(clazz);
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			return false;
 		}
 		return true;
@@ -172,24 +139,33 @@ public class MigrationUtils {
 	// It uses the ImportExportClasses class as if it was done with spring
 	// @Autowire.
 	static ImportExportClasses blacklist() {
+		try {
+			ClassPathResource resource = new ClassPathResource("/migration.blacklist.yml");
 
-		final ClassPathResource resource = new ClassPathResource("/migration.blacklist.yml");
+			YamlPropertiesFactoryBean factoryBean = new YamlPropertiesFactoryBean();
+			factoryBean.setSingleton(true);
+			factoryBean.setResources(resource);
 
-		final YamlPropertiesFactoryBean factoryBean = new YamlPropertiesFactoryBean();
-		factoryBean.setSingleton(true);
-		factoryBean.setResources(resource);
+			Properties properties = factoryBean.getObject();
 
-		final Properties properties = factoryBean.getObject();
+			MutablePropertySources propertySources = new MutablePropertySources();
+			propertySources.addLast(new PropertiesPropertySource("classes", properties));
 
-		final MutablePropertySources propertySources = new MutablePropertySources();
-		propertySources.addLast(new PropertiesPropertySource("classes", properties));
+			ImportExportClasses classes = new ImportExportClasses();
 
-		final ImportExportClasses classes = new ImportExportClasses();
+			PropertiesConfigurationFactory<ImportExportClasses> configurationFactory = new PropertiesConfigurationFactory<>(
+					classes);
+			configurationFactory.setPropertySources(propertySources);
+			configurationFactory.setTargetName("onesaitplatform.migrationconfig"); // it's the same prefix as the one
+																					// defined in the
+																					// @ConfigurationProperties
+			configurationFactory.bindPropertiesToTarget();
+			return classes;
 
-		final Binder binder = new Binder(ConfigurationPropertySources.from(propertySources));
-		binder.bind(PROPERTIES_PREFIX, Bindable.ofInstance(classes));
-		return classes;
+		} catch (BindException e) {
+			throw new IllegalArgumentException(e);
 
+		}
 	}
 
 	// to load properties from application.yml without spring context.
@@ -198,24 +174,33 @@ public class MigrationUtils {
 	// It uses the ImportExportClasses class as if it was done with spring
 	// @Autowire.
 	static ImportExportClasses whitelist() {
+		try {
+			ClassPathResource resource = new ClassPathResource("/migrationbyuser.whitelist.yml");
 
-		final ClassPathResource resource = new ClassPathResource("/migrationbyuser.whitelist.yml");
+			YamlPropertiesFactoryBean factoryBean = new YamlPropertiesFactoryBean();
+			factoryBean.setSingleton(true);
+			factoryBean.setResources(resource);
 
-		final YamlPropertiesFactoryBean factoryBean = new YamlPropertiesFactoryBean();
-		factoryBean.setSingleton(true);
-		factoryBean.setResources(resource);
+			Properties properties = factoryBean.getObject();
 
-		final Properties properties = factoryBean.getObject();
+			MutablePropertySources propertySources = new MutablePropertySources();
+			propertySources.addLast(new PropertiesPropertySource("classes", properties));
 
-		final MutablePropertySources propertySources = new MutablePropertySources();
-		propertySources.addLast(new PropertiesPropertySource("classes", properties));
+			ImportExportClasses classes = new ImportExportClasses();
 
-		final ImportExportClasses classes = new ImportExportClasses();
+			PropertiesConfigurationFactory<ImportExportClasses> configurationFactory = new PropertiesConfigurationFactory<>(
+					classes);
+			configurationFactory.setPropertySources(propertySources);
+			configurationFactory.setTargetName("onesaitplatform.migrationconfig"); // it's the same prefix as the one
+																					// defined in the
+																					// @ConfigurationProperties
+			configurationFactory.bindPropertiesToTarget();
+			return classes;
 
-		final Binder binder = new Binder(ConfigurationPropertySources.from(propertySources));
-		binder.bind(PROPERTIES_PREFIX, Bindable.ofInstance(classes));
-		return classes;
+		} catch (BindException e) {
+			throw new IllegalArgumentException(e);
 
+		}
 	}
 
 	// to load properties from application.yml without spring context.
@@ -224,24 +209,33 @@ public class MigrationUtils {
 	// It uses the ImportExportClasses class as if it was done with spring
 	// @Autowire.
 	static ImportExportClasses trimlist() {
+		try {
+			ClassPathResource resource = new ClassPathResource("/migrationbyuser.trimlist.yml");
 
-		final ClassPathResource resource = new ClassPathResource("/migrationbyuser.trimlist.yml");
+			YamlPropertiesFactoryBean factoryBean = new YamlPropertiesFactoryBean();
+			factoryBean.setSingleton(true);
+			factoryBean.setResources(resource);
 
-		final YamlPropertiesFactoryBean factoryBean = new YamlPropertiesFactoryBean();
-		factoryBean.setSingleton(true);
-		factoryBean.setResources(resource);
+			Properties properties = factoryBean.getObject();
 
-		final Properties properties = factoryBean.getObject();
+			MutablePropertySources propertySources = new MutablePropertySources();
+			propertySources.addLast(new PropertiesPropertySource("classes", properties));
 
-		final MutablePropertySources propertySources = new MutablePropertySources();
-		propertySources.addLast(new PropertiesPropertySource("classes", properties));
+			ImportExportClasses classes = new ImportExportClasses();
 
-		final ImportExportClasses classes = new ImportExportClasses();
-		final Binder binder = new Binder(ConfigurationPropertySources.from(propertySources));
-		binder.bind(PROPERTIES_PREFIX, Bindable.ofInstance(classes));
+			PropertiesConfigurationFactory<ImportExportClasses> configurationFactory = new PropertiesConfigurationFactory<>(
+					classes);
+			configurationFactory.setPropertySources(propertySources);
+			configurationFactory.setTargetName("onesaitplatform.migrationconfig"); // it's the same prefix as the one
+																					// defined in the
+																					// @ConfigurationProperties
+			configurationFactory.bindPropertiesToTarget();
+			return classes;
 
-		return classes;
+		} catch (BindException e) {
+			throw new IllegalArgumentException(e);
 
+		}
 	}
 
 	// to load properties from application.yml without spring context.
@@ -250,33 +244,32 @@ public class MigrationUtils {
 	// It uses the ImportExportClasses class as if it was done with spring
 	// @Autowire.
 	static ImportExportClasses blackProjectlist() {
+		try {
+			ClassPathResource resource = new ClassPathResource("/migration.blacklist.project.yml");
 
-		final ClassPathResource resource = new ClassPathResource("/migration.blacklist.project.yml");
+			YamlPropertiesFactoryBean factoryBean = new YamlPropertiesFactoryBean();
+			factoryBean.setSingleton(true);
+			factoryBean.setResources(resource);
 
-		final YamlPropertiesFactoryBean factoryBean = new YamlPropertiesFactoryBean();
-		factoryBean.setSingleton(true);
-		factoryBean.setResources(resource);
+			Properties properties = factoryBean.getObject();
 
-		final Properties properties = factoryBean.getObject();
+			MutablePropertySources propertySources = new MutablePropertySources();
+			propertySources.addLast(new PropertiesPropertySource("classes", properties));
 
-		final MutablePropertySources propertySources = new MutablePropertySources();
-		propertySources.addLast(new PropertiesPropertySource("classes", properties));
+			ImportExportClasses classes = new ImportExportClasses();
 
-		final ImportExportClasses classes = new ImportExportClasses();
-		final Binder binder = new Binder(ConfigurationPropertySources.from(propertySources));
-		binder.bind(PROPERTIES_PREFIX, Bindable.ofInstance(classes));
-		// TO-DO Review Bind changes SB 2
-		// PropertiesConfigurationFactory<ImportExportClasses> configurationFactory =
-		// new PropertiesConfigurationFactory<>(
-		// classes);
-		// configurationFactory.setPropertySources(propertySources);
-		// configurationFactory.setTargetName(PROPERTIES_PREFIX); //
-		// it's the same prefix as the one
-		// // defined in the
-		// // @ConfigurationProperties
-		// configurationFactory.bindPropertiesToTarget();
+			PropertiesConfigurationFactory<ImportExportClasses> configurationFactory = new PropertiesConfigurationFactory<>(
+					classes);
+			configurationFactory.setPropertySources(propertySources);
+			configurationFactory.setTargetName("onesaitplatform.migrationconfig"); // it's the same prefix as the one
+																					// defined in the
+																					// @ConfigurationProperties
+			configurationFactory.bindPropertiesToTarget();
+			return classes;
 
-		return classes;
+		} catch (BindException e) {
+			throw new IllegalArgumentException(e);
 
+		}
 	}
 }

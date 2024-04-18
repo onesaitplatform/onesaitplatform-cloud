@@ -19,7 +19,7 @@
 
 angular
     .module('dataCollectorApp.home')
-    .controller('AddLabelConfirmationModalInstanceController', ["$scope", "$modalInstance", "pipelineInfoList", "api", function ($scope, $modalInstance, pipelineInfoList, api) {
+    .controller('AddLabelConfirmationModalInstanceController', function ($scope, $modalInstance, pipelineInfoList, api) {
       angular.extend($scope, {
         pipelineInfoList: pipelineInfoList,
         data: {
@@ -48,4 +48,4 @@ angular
           $modalInstance.dismiss('cancel');
         }
       });
-    }]);
+    });

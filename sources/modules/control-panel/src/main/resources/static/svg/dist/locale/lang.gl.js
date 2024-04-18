@@ -23,7 +23,7 @@ var svgEditorLang_gl = (function () {
       toggle_stroke_tools: 'Show/hide more stroke tools',
       palette_info: 'Preme aquí para cambiar a cor de recheo, Shift-clic para cambiar a cor do curso',
       zoom_level: 'Cambiar o nivel de zoom',
-      panel_drag: 'Click to show hide',
+      panel_drag: 'Drag left/right to resize side panel',
       quality: 'Quality:',
       pathNodeTooltip: 'Drag node to move it. Double-click node to change segment type',
       pathCtrlPtTooltip: 'Drag control point to adjust curve properties',

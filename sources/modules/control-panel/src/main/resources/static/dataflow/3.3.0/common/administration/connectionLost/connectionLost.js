@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp')
-  .controller('ConnectionLostModalInstanceController', ["$scope", "$rootScope", "$modalInstance", "$modalStack", "$timeout", "api", function (
+  .controller('ConnectionLostModalInstanceController', function (
     $scope,
     $rootScope,
     $modalInstance,
@@ -90,4 +90,4 @@ angular
     };
 
     retryToConnect();
-  }]);
+  });

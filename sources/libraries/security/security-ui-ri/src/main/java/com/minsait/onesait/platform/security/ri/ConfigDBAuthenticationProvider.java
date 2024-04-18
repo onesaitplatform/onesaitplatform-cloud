@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@ package com.minsait.onesait.platform.security.ri;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,16 +34,13 @@ import org.springframework.security.authentication.event.AuthenticationSuccessEv
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.commons.security.PasswordEncoder;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.multitenant.config.model.MasterUserLazy;
-import com.minsait.onesait.platform.multitenant.config.model.MasterUserParent;
-import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepositoryLazy;
+import com.minsait.onesait.platform.config.repository.UserRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -57,10 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ConfigDBAuthenticationProvider implements AuthenticationProvider {
 
 	@Autowired
-	private MasterUserRepositoryLazy masterUserRepository;
-
-	@Autowired
-	private ConfigDBDetailsService userDetails;
+	private UserRepository userRepository;
 
 	@Autowired
 	private ApplicationEventPublisher applicationEventPublisher;
@@ -81,8 +73,7 @@ public class ConfigDBAuthenticationProvider implements AuthenticationProvider {
 
 	@Override
 	public Authentication authenticate(Authentication authentication) {
-		final long start = System.currentTimeMillis();
-		log.debug("Starting configDB authentication");
+
 		final String name = authentication.getName();
 		final Object credentials = authentication.getCredentials();
 		log.trace("credentials class: " + credentials.getClass());
@@ -92,21 +83,19 @@ public class ConfigDBAuthenticationProvider implements AuthenticationProvider {
 		final String password = credentials.toString();
 
 		if (aclEnabled && !acl.contains(name)) {
-			log.warn("authenticate: User is not allowed to make login: {}", name);
+			log.info("authenticate: User is not allowed to make login: {}", name);
 			throw new BadCredentialsException("Authentication failed. User is not in the ACL: " + name);
 		}
-		MasterUserLazy user;
-		synchronized (this) {
-			user = masterUserRepository.findByUserId(name);
-		}
+
+		final User user = userRepository.findByUserId(name);
 
 		if (user == null) {
-			log.warn("authenticate: User not exist: {}", name);
+			log.info("authenticate: User not exist: {}", name);
 			throw new BadCredentialsException("Authentication failed. User not exists: " + name);
 		}
 
 		if (!user.isActive()) {
-			log.warn("authenticate: User not active: {}", name);
+			log.info("authenticate: User not active: {}", name);
 			throw new BadCredentialsException("Authentication failed. User deactivated: " + name);
 		}
 		String hashPassword = null;
@@ -117,27 +106,22 @@ public class ConfigDBAuthenticationProvider implements AuthenticationProvider {
 			throw new BadCredentialsException("Authentication failed. Error authenticating.");
 		}
 		if (!hashPassword.equals(user.getPassword())) {
-			log.warn("Authentication failed. Password incorrect for {} ", name);
+			log.info("authenticate: Password incorrect: {} ", name);
 			publishFailureCredentials(user, authentication);
 			throw new BadCredentialsException("Authentication failed. Password incorrect for " + name);
 		}
-		final UserDetails details = userDetails.loadUserByUsername(user);
-		Collection<? extends GrantedAuthority> grantedAuthorities = details.getAuthorities();
-		if (tfaEnabled
-				&& grantedAuthorities.iterator().next().getAuthority().equals(Role.Type.ROLE_ADMINISTRATOR.name())
-				&& authentication.getDetails() != null
-				&& authentication.getDetails() instanceof WebAuthenticationDetails) {
-			grantedAuthorities = Arrays
-					.asList(new SimpleGrantedAuthority(Role.Type.ROLE_PREVERIFIED_ADMINISTRATOR.name()));
-		}
+		String role = user.getRole().getId();
+		if (tfaEnabled && role.equals(Role.Type.ROLE_ADMINISTRATOR.name()) && authentication.getDetails() != null
+				&& authentication.getDetails() instanceof WebAuthenticationDetails)
+			role = Role.Type.ROLE_PREVERIFIED_ADMINISTRATOR.name();
+		final List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
 
-		final Authentication auth = new UsernamePasswordAuthenticationToken(details, details.getPassword(),
+		grantedAuthorities.add(new SimpleGrantedAuthority(role));
+
+		final Authentication auth = new UsernamePasswordAuthenticationToken(user.getUserId(), password,
 				grantedAuthorities);
-		resetFailedAttemp(user);
+
 		publishSuccess(auth);
-		if (log.isDebugEnabled()) {
-			log.debug("End configDB authentication, time: {}", System.currentTimeMillis() - start);
-		}		
 		return auth;
 	}
 
@@ -157,26 +141,6 @@ public class ConfigDBAuthenticationProvider implements AuthenticationProvider {
 
 		applicationEventPublisher.publishEvent(new AuthenticationFailureBadCredentialsEvent(auth,
 				new BadCredentialsException("Authentication failed. Password incorrect for " + user.getUserId())));
-	}
-
-	@Async
-	private void publishFailureCredentials(MasterUserParent user, Authentication authentication) {
-		final Authentication auth = new UsernamePasswordAuthenticationToken(user.getUserId(), "", new ArrayList<>());
-
-		applicationEventPublisher.publishEvent(new AuthenticationFailureBadCredentialsEvent(auth,
-				new BadCredentialsException("Authentication failed. Password incorrect for " + user.getUserId())));
-	}
-
-
-	private MasterUserParent resetFailedAttemp(MasterUserLazy masterUser) {
-
-		if (masterUser != null && masterUser.getFailedAtemps() != null && masterUser.getFailedAtemps() > 0) {
-			masterUser.setFailedAtemps(0);
-			masterUser.setLastLogin(new Date());
-			masterUserRepository.save(masterUser);
-		}
-		return masterUser;
-
 	}
 
 }

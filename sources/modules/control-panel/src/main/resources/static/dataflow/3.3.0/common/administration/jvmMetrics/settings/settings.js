@@ -19,7 +19,7 @@
 
 angular
   .module('commonUI.jvmMetrics')
-  .controller('JVMMetricsSettingsModalInstanceController', ["$scope", "$modalInstance", "availableCharts", "selectedCharts", function ($scope, $modalInstance, availableCharts, selectedCharts) {
+  .controller('JVMMetricsSettingsModalInstanceController', function ($scope, $modalInstance, availableCharts, selectedCharts) {
     angular.extend($scope, {
       showLoading: false,
       common: {
@@ -39,4 +39,4 @@ angular
     });
 
     $scope.$broadcast('show-errors-check-validity');
-  }]);
+  });

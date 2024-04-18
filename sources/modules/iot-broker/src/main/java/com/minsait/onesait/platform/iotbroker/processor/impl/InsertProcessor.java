@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.minsait.onesait.platform.commons.model.ComplexWriteResultType;
+import com.minsait.onesait.platform.commons.model.InsertResult;
 import com.minsait.onesait.platform.commons.model.MultiDocumentOperationResult;
 import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyInsertMessage;
@@ -33,12 +35,12 @@ import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyReturnMessage;
 import com.minsait.onesait.platform.comms.protocol.body.parent.SSAPBodyMessage;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageDirection;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
+import com.minsait.onesait.platform.config.model.IoTSession;
 import com.minsait.onesait.platform.iotbroker.common.MessageException;
-import com.minsait.onesait.platform.iotbroker.common.exception.AuthorizationException;
 import com.minsait.onesait.platform.iotbroker.common.exception.SSAPProcessorException;
-import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
+import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
 import com.minsait.onesait.platform.iotbroker.processor.MessageTypeProcessor;
-import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
+import com.minsait.onesait.platform.persistence.external.exception.NotSupportedOperationException;
 import com.minsait.onesait.platform.router.service.app.model.NotificationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationModel.OperationType;
@@ -53,19 +55,21 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class InsertProcessor implements MessageTypeProcessor {
 
-	private static final String SOURCE = "source";
-
 	@Autowired
 	private RouterService routerService;
 
 	@Autowired
 	ObjectMapper objectMapper;
+	@Autowired
+	SecurityPluginManager securityPluginManager;
 
 	@Override
-	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info,
-			Optional<IoTSession> session) {
+	public SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message) {
 		@SuppressWarnings("unchecked")
 		final SSAPMessage<SSAPBodyInsertMessage> insertMessage = (SSAPMessage<SSAPBodyInsertMessage>) message;
+		final SSAPMessage<SSAPBodyReturnMessage> responseMessage = new SSAPMessage<>();
+
+		final Optional<IoTSession> session = securityPluginManager.getSession(insertMessage.getSessionKey());
 
 		String user = null;
 		String deviceTemplate = null;
@@ -77,7 +81,7 @@ public class InsertProcessor implements MessageTypeProcessor {
 		}
 
 		final OperationModel model = OperationModel
-				.builder(insertMessage.getBody().getOntology(), OperationType.INSERT, user, getSource(message))
+				.builder(insertMessage.getBody().getOntology(), OperationType.POST, user, Source.IOTBROKER)
 				.body(insertMessage.getBody().getData().toString()).queryType(QueryType.NATIVE)
 				.deviceTemplate(deviceTemplate).device(device).clientSession(insertMessage.getSessionKey())
 				.clientConnection("").build();
@@ -85,17 +89,26 @@ public class InsertProcessor implements MessageTypeProcessor {
 		final NotificationModel modelNotification = new NotificationModel();
 		modelNotification.setOperationModel(model);
 
-		SSAPMessage<SSAPBodyReturnMessage> responseMessage = new SSAPMessage<>();
+		String repositoryResponse = "";
 		try {
-			if (message.getTransactionId() == null) {
-				responseMessage = this.processNoTransactionalInsert(modelNotification, insertMessage);
+			final OperationResultModel result = routerService.insert(modelNotification);
+			if (!result.getResult().equals("ERROR")) {
+				repositoryResponse = result.getResult();
+
+				responseMessage.setDirection(SSAPMessageDirection.RESPONSE);
+				responseMessage.setMessageId(insertMessage.getMessageId());
+				responseMessage.setMessageType(insertMessage.getMessageType());
+				// responseMessage.setOntology(insertMessage.getOntology());
+				responseMessage.setSessionKey(insertMessage.getSessionKey());
+				responseMessage.setBody(new SSAPBodyReturnMessage());
+				responseMessage.getBody().setOk(true);
+
+				responseMessage.getBody().setData(this.buildBrokerResponse(repositoryResponse));
+
 			} else {
-				modelNotification.getOperationModel().setTransactionId(message.getTransactionId());
-				responseMessage = this.processTransactionalInsert(modelNotification, insertMessage);
+				log.error("Error processing");
+				throw new SSAPProcessorException(result.getMessage());
 			}
-		} catch (final AuthorizationException e1) {
-			log.error("Error processing Insert", e1);
-			throw e1;
 
 		} catch (final Exception e1) {
 			log.error("Error processing Insert", e1);
@@ -123,83 +136,37 @@ public class InsertProcessor implements MessageTypeProcessor {
 		return true;
 	}
 
-	private Source getSource(SSAPMessage<? extends SSAPBodyMessage> message) {
-		SSAPBodyInsertMessage insertMessage = (SSAPBodyInsertMessage) message.getBody();
-		if (insertMessage.getTags() != null) {
-			try {
-				JsonNode json = new ObjectMapper().readTree(insertMessage.getTags());
-				if (!json.has(SOURCE)) {
-					return Source.IOTBROKER;
-				} else {
-					return Source.valueOf(json.get(SOURCE).asText().toUpperCase());
-				}
-			} catch (Exception e) {
-				return Source.IOTBROKER;
-			}
-		}
-		return Source.IOTBROKER;
-	}
+	private JsonNode buildBrokerResponse(String routerResponse) throws IOException {
 
-	private SSAPMessage<SSAPBodyReturnMessage> processNoTransactionalInsert(NotificationModel modelNotification,
-			SSAPMessage<SSAPBodyInsertMessage> insertMessage) throws Exception {
-		final SSAPMessage<SSAPBodyReturnMessage> responseMessage = new SSAPMessage<>();
+		final JSONObject obj = new JSONObject(routerResponse);
 
-		final OperationResultModel result = routerService.insert(modelNotification);
-		if (!result.getResult().equals("ERROR")) {
+		final ComplexWriteResultType type = ComplexWriteResultType.valueOf(obj.getString(InsertResult.TYPE_PROPERTY));
 
-			String repositoryResponse = result.getResult();
-
-			responseMessage.setDirection(SSAPMessageDirection.RESPONSE);
-			responseMessage.setMessageId(insertMessage.getMessageId());
-			responseMessage.setMessageType(insertMessage.getMessageType());
-			responseMessage.setSessionKey(insertMessage.getSessionKey());
-			responseMessage.setBody(new SSAPBodyReturnMessage());
-			responseMessage.getBody().setOk(true);
-
+		if (type == ComplexWriteResultType.BULK) {
 			final MultiDocumentOperationResult multidocument = MultiDocumentOperationResult
-					.fromString(repositoryResponse);
-			final long multidocumentCount = multidocument.getCount();
-			final JSONObject jsonObject = new JSONObject();
-			if (multidocumentCount == 1) {
-				if (multidocument.getIds().isEmpty()) {
-					jsonObject.put("nInserted", multidocumentCount);
-				} else {
-					jsonObject.put("id", multidocument.getIds().get(0));
-				}
-			} else if (multidocumentCount > 1) {
-				jsonObject.put("nInserted", multidocumentCount);
-				if (!multidocument.getIds().isEmpty()) {
-					jsonObject.put("inserted", new JSONArray(multidocument.getIds()));
-				}
+					.fromJSONObject(obj.getJSONObject(InsertResult.DATA_PROPERTY));
+
+			final long totalInserted = multidocument.getCount();
+			if (totalInserted == 1) {
+				return objectMapper.readTree("{\"id\":\"" + multidocument.getIds().get(0) + "\"}");
+
+			} else if (totalInserted > 1) {
+				final String bulkResponse = String.format("{\"nInserted\":%s, \"inserted\":%s}",
+						multidocument.getCount(), multidocument.getStrIds());
+
+				return objectMapper.readTree(bulkResponse);
+			} else {
+				return null;
 			}
-			responseMessage.getBody().setData(objectMapper.readTree(jsonObject.toString()));
+
+		} else if (type == ComplexWriteResultType.TIME_SERIES) {
+			JSONArray array = obj.getJSONArray(InsertResult.DATA_PROPERTY);
+
+			return objectMapper.readTree(array.toString());
 		} else {
-			throw new SSAPProcessorException(result.getMessage());
-		}
-		return responseMessage;
-	}
-
-	private SSAPMessage<SSAPBodyReturnMessage> processTransactionalInsert(NotificationModel modelNotification,
-			SSAPMessage<SSAPBodyInsertMessage> insertMessage) throws Exception {
-		final SSAPMessage<SSAPBodyReturnMessage> responseMessage = new SSAPMessage<>();
-
-		final OperationResultModel result = routerService.insert(modelNotification);
-
-		if (result.isStatus()) {
-			String sequenceNumber = result.getResult();
-
-			responseMessage.setDirection(SSAPMessageDirection.RESPONSE);
-			responseMessage.setMessageId(insertMessage.getMessageId());
-			responseMessage.setMessageType(insertMessage.getMessageType());
-			responseMessage.setSessionKey(insertMessage.getSessionKey());
-			responseMessage.setBody(new SSAPBodyReturnMessage());
-			responseMessage.getBody().setOk(true);
-			responseMessage.getBody().setData(objectMapper.readTree("{\"id\":\"" + sequenceNumber + "\"}"));
-		} else {
-			throw new SSAPProcessorException(result.getMessage());
+			log.error("Error in buildBrokerResponse");
+			throw new NotSupportedOperationException("Type " + type.name() + " is not supported ");
 		}
 
-		return responseMessage;
 	}
-
 }

@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -38,9 +38,7 @@
 	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}"/>
 
 	<!-- PLUGINS STYLE SHEETS -->
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}"/>		
 	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>
-	<link rel="stylesheet" type="text/css" th:href="@{/static/vendor/datatable/select.dataTables.min.css}">
 
 	<style>
 		#editor_holder h3 > span{
@@ -91,88 +89,14 @@
 
 		<!-- BEGIN CONTENT BODY -->
 		<div class="page-content">
-						
-			<div id="header">
-						<div class="row pageCreateHeader">
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="margin-top-4">
-									<span class="caption-subject caption-title" th:text="${ontology.identification}"> Ontology </span>
-								</div>
-							</div>
-							
-							<div class="col-md-6 col-sm-6 col-xs-12">
-								<div class="pull-right">
-									
-										
-									<!-- CANCEL -->											
-									<button	id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" onclick="location.href='/controlpanel/ontologies/list'" ><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-
-									
-								</div>
-							</div>
-						</div>
-			</div>
-			
-			<div class="row main" id="searchFilter" style="border-top: solid 1px #D7DADC !important;margin-top: 15px;">
-				<div class="col-md-6 col-xs-12" >
-						<div class="form-group col-xs-6" style="padding-left:0px;padding-right:0px;">
-							<div class="form-group col-xs-10" style="padding:0px">
-								<label class="control-label" th:text="#{crud.where}" > Where </label>
-								<div class="input-icon">
-								<i class="icon-search font-grey-mint"></i>	
-								<select  class="selectpicker  select show-tick form-control" multiple="multiple" th:attr="data-deselect-all-text=#{querytool.deselect.all},data-select-all-text=#{querytool.select.all}"  data-actions-box="true" data-live-search="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%" onchange="createQuery();"   id="where" name="where" >
-									
-								</select>
-								</div>
-							</div>
-							<div class="form-group col-xs-2" style="padding:0px; padding-left:5px" >
-								<button type="button" onclick="addCondition()" class="btn btn-primary button-plus-create" style=" margin-top: 26px;" ><a><i class="icon-new" style="color:white;"></i></a></button>
-							</div>
-						</div>
-						<div class="form-group col-xs-6" style="padding-left:0px;padding-right:0px;">
-							<div class="form-group col-xs-10" style="padding:0px">																	
-								<label class="control-label" th:text="#{crud.orderby}" > Order by </label>
-								<div class="input-icon">
-								<i class="icon-search font-grey-mint"></i>	
-								<select  class="selectpicker  select show-tick form-control" multiple="multiple" data-actions-box="true" th:attr="data-deselect-all-text=#{querytool.deselect.all},data-select-all-text=#{querytool.select.all}"  data-live-search="true" data-icon-Base="fa" data-tick-Icon="fa-check" data-size="15" data-width="100%" onchange="createQuery();"  id="orderby" name="orderby" >																		
-								</select>	
-								</div>																
-							</div>
-							<div class="form-group col-xs-2" style="padding:0px; padding-left:5px">
-								<button type="button" onclick="addOrderBy()"  class="btn btn-primary button-plus-create" style=" margin-top: 26px;" ><a><i class="icon-new" style="color:white;"></i></a></button>																
-							</div>
-						</div>
-				</div>
-				<div class="col-md-4 col-sm-2 col-xs-12">
-					<div style="display:inline-block;margin-right: 20px;">
-						<label class="control-label"><!--<i class="la la-list-ol"></i>--> <span class="crud-filter-title" th:text="#{datasources.maxvalue}">Max register</span></label>
-						<input  id="maxvalues" type="number" min="1" max="5000" name="maxvalues" th:required="true"  value="100"  class="form-control text-right" th:placeholder="#{datasources.maxvalue}" style="width:100px;display:block" />
-					</div>
-					<div style="display:inline-block;">
-						<label class="control-label"><!--<i class="la la-list-ol"></i>--> <span class="crud-filter-title" th:text="#{crud.offset}">Offset</span></label>
-						<input  id="offset" type="number" min="1" max="5000" name="offset" th:required="true"  value="0"  class="form-control text-right" th:placeholder="#{crud.offset}" style="width:100px;display:block" />
-					</div>
-				</div>
-				<!--<div class="col-md-2 col-sm-2 col-xs-12">					
-				</div>-->
-				<div class="col-md-2 col-xs-12 pull-right" >
-					<div class="pull-right" style="margin-top:20px">
-						<button type="button" id="reset_ontology" name="reset_ontology" value="Reset" class="btn btn-primary-cancel" title="Reset" th:text="#{gen.resetBtn}" onclick="refreshFilters();">Reset</button>
-						<button type="button" id="search_ontology" name="search_ontology" th:title="#{gen.search}" class="btn btn-primary" th:text="#{gen.search}" onclick="findElements();">Search</button>
-					</div>
-				</div>
-			</div>
 
 			<!-- BEGIN PAGE HEADER-->
 
 			<!-- BEGIN PAGE BAR AND BREADCRUM -->
 			<div class="page-bar margin-bottom-20">
 				<ul class="page-breadcrumb">
-					<!--<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>-->
-					<li><a th:href="@{/ontologies/list}" >
-						<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'"  th:text="#{ontology.template.list}">Manage Ontologies</span>
-						<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'"  th:text="#{ontology.breadcrumb.list}">My Ontologies</span> 
-					</a><i class="fa fa-angle-right"></i></li>
+					<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+					<li><a th:href="@{/ontologies/list}" > <span th:text="#{ontology.breadcrumb.list}">Ontologies</span></a><i class="fa fa-angle-right"></i></li>
 					<li><span th:text="#{crud.crud}">CRUD</span></li>
 				</ul>
 			</div>
@@ -181,28 +105,42 @@
 			<!-- BEGIN PAGE TITLE-->
 			<h1 class="page-title hide "><span th:text="#{crud.crud}">CRUD</span></h1>
 			<!-- END PAGE TITLE-->
-<div class="mainPanel"  >	
-			<!-- MAIN ROW -->
-			<div class="">
-				<div class="col-md-12 alert-zone">
-					<!-- ALERT ZONE -->
-					<div id="alertInsert" style="display:none;" class="alert alert-warning alert-dismissible">
-						<a href="#" class="close" onclick="$('#alertInsert').hide();" aria-label="close">&times;</a>
-						<label id="alertInsertlabel"></label>
-					</div>
-				</div>
 
-				<div class="row main">
-					
+			<!-- MAIN ROW -->
+			<div class="row">
+				<div class="row">
+					<div class="col-md-12 alert-zone">
+						<!-- ALERT ZONE -->
+						<div id="alertInsert" style="display:none;" class="alert alert-warning alert-dismissible">
+							<a href="#" class="close" onclick="$('#alertInsert').hide();" aria-label="close">&times;</a>
+							<label id="alertInsertlabel"></label>
+						</div>
+					</div>
+
+				</div>
+				<div class="row">
+					<div class="col-md-12">
 						<div class="portlet light">
-							
-							<div class="portlet-body" style="display: block; height: auto;">
-							<ul id="mytabs" class="nav nav-tabs pull-left hide">
+							<div class="portlet-title tabbable-line">
+								<div class="caption"></div>
+
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""> </a>
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>
+								</div>
+
+								<ul id="mytabs" class="nav nav-tabs pull-left">
 									<li id="tab-table"  class="active"><a href="#tab_table" data-toggle="tab" aria-expanded="true" th:text="#{gen.search}" >SEARCH </a></li>
 									<li id="tab-form" class=""><a href="#tab_form" data-toggle="tab" aria-expanded="true" th:text="#{crud.record}" >RECORD </a></li>
 								</ul>
 								<div id="crear-query">
-									
+									<div class="col-md-5 col-xs-12 pull-right" >
+										<div class="btn-group pull-right" >
+											<button type="button" id="search_ontology" name="search_ontology" th:title="#{gen.search}" class="btn btn-circle btn-outline blue button_admin" onclick="toggleFindElements();"><span th:text="#{gen.search}">Search</span></button>
+											<button type="button" id="createBtn"  class="btn btn-circle btn-outline blue button_admin" onclick="cleanJSONEditor();" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>
+											<button	class="btn btn-circle btn-outline blue button_admin" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+										</div>
+									</div>
 									<div class="col-sm-12 col-md-12" style="display:none">
 										<!-- TABLA dt:table="true" dt:paginate="false" dt:sort="false" -->
 										<table id="camposConsultaSuscripcion" >
@@ -217,50 +155,82 @@
 										<!-- FINAL TABLA -->
 									</div>
 								</div>
+							</div>
+							<div class="portlet-body" style="display: block; height: auto;">
 								<div class="tab-content">
 									<div class="tab-pane active" id="tab_table">
-									
-								<div class="row main">
-								<div id="alert-authorizations" class="alert alert-info">
-												<i class="fa fa-info-circle"></i> <span th:text="#{crud.message.limit.query1}+' '+${querylimitdefined}+' '+#{crud.message.limit.query2}"> If the record does not appear, a more precise search is necessary.</span>
+										<div class="row" id="create_query" style="display:none;">
+											<div class="col-md-6 col-xs-12">
+												<div  style="margin-top: 23px;">
+													<ul id="tree_menu">
+														<!-- WHERE PANEL -->
+														<li type="none" class="columnMine" style ="max-width: 50%;min-width: 50%;">
+															<ul id="where_ul" class="list-group "  style="height: 100px;">
+																<!-- LI principal , agrega elementos de condición al where, tiene la clase panel-sofia para no ser borrado al cambiar de consulta. -->
+																<li class="list-group-item panel-sofia2 bold uppercase" ><i class="fa fa-filter"></i> WHERE<span onclick="addCondition()" class="btn bg-grey-steel font-grey-mint btn-xs pull-right tooltips btn_filters" data-container="body" data-placement="top" th:data-original-title="#{crud.aggregate.fields.where}"><i class="fa fa-plus"></i></span></li>
+															</ul>
+														</li>
+														<!-- END WHERE PANEL -->
+
+
+														<!-- ORDERBY PANEL -->
+														<li type="none" class="columnMine" style ="max-width: 50%;min-width: 50%;">
+															<ul id="orderby_ul" class="list-group list-orderby"  style="height: 100px;">
+																<!-- LI principal , agrega orderby, tiene la clase panel-sofia para no ser borrado al cambiar de consulta. -->
+																<li class="list-group-item panel-sofia2 bold uppercase"><i class="fa fa-sort"></i> ORDER BY<span onclick="addOrderBy()" class="btn bg-grey-steel font-grey-mint btn-xs pull-right tooltips btn_filters" data-container="body" data-placement="top" th:data-original-title="#{crud.aggregate.fields.order}"><i class="fa fa-plus"></i></span></li>
+															</ul>
+														</li>
+														<!-- END ORDERBY PANEL -->
+													</ul>
+												</div>
 											</div>
-									<div class="col-md-12">
-										
-										<div class="input-icon search-icon" style=" display: inline-block;   min-height: 32px;    padding-top: 18px;  padding-bottom: 13px;    height: 45px;" >
-											<span class="caption-subject "   th:text="#{crud.record}"> Record </span> <a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" ><i style="    padding-left: 10px;" class="icon-search"></i></a>
+											<div class="col-md-2 col-sm-2 col-xs-12">
+												<div class="form-group">
+													<label class="control-label"><i class="la la-list-ol"></i> <span th:text="#{datasources.maxvalue} + ':'">Max register</span></label>
+													<input  id="maxvalues" type="number" min="1" max="5000" name="maxvalues" th:required="true"  value="100"  class="form-control " th:placeholder="#{datasources.maxvalue}"  />
+												</div>
+											</div>
+											<div class="col-md-2 col-sm-2 col-xs-12">
+												<div class="form-group">
+													<label class="control-label"><i class="la la-list-ol"></i> <span th:text="#{crud.offset} + ':'">Offset</span></label>
+													<input  id="offset" type="number" min="1" max="5000" name="offset" th:required="true"  value="0"  class="form-control " th:placeholder="#{crud.offset}"  />
+												</div>
+											</div>
+											<div class="col-md-2 col-xs-12 pull-right" >
+												<div class="btn-group pull-right" style="margin-top: 23px;" >
+													<button type="button" id="search_ontology" name="search_ontology" th:title="#{gen.search}" class="btn grey-mint  btn-outline sbold button_admin" onclick="findElements();"><i class="fa fa-search"></i> <span th:text="#{gen.search}">Search</span></button>
+													<button type="button" id="reset_ontology" name="reset_ontology" value="Reset" class="btn purple-plum btn-outline sbold button_admin" title="Reset" onclick="refreshFilters();"><i class="fa fa-refresh"></i>&nbsp;</button>
+												</div>
+											</div>
 										</div>
-										<div id="search-on-title" class=" hide input-icon search-icon">
-											<span class="caption-subject" th:text="#{crud.record}"> Record </span> <a class ="input-icon"  onclick="$('.search-icon').toggleClass('hide')"><i style="top: -7;" class="icon-search"></i></a>
-										</div>
-										<div class="tools hide">
-											<a href="" class="collapse" data-original-title="" title=""> </a>
-											<a href="" class="fullscreen" data-original-title="" title=""> </a>
-										</div>
-										<div class="pull-right btn-group btn-title-group" id="divcreate" >
-											<button id="deleteAllBtn" type="button" class="btn btn-primary btn-primary-delete" onclick="deleteMultiple()" name="delete" style="margin-right: 10px;" value="Remove" aria-invalid="false"><i class="icon-delete"></i><span class="delete-btn-text">Delete</span></button>
-											<button id="createBtn" type="button" class="btn btn-primary button-plus-create"   onclick="cleanJSONEditor();" ><a><i class="icon-new" style="color:white;"></i></a></button>		
-										</div>
-									</div>
-								</div>
-										<div class="row main">
-										
+										<div class="row">
 											<div class="col-md-12">
-												<div id="contenedor-tabla-outside" class="contiene hidden">
+												<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">
 													<div>
 														<!-- DATATABLE DANDELION CONF.  -->
-														<table id="records" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
+														<table id="records" class="table table-hover table-striped table-condensed " dt:table="true" dt:paginationtype="full_numbers">
 															<thead>
 															<tr class="cabecera-tabla">
-																<th><input type="checkbox" id="checkAll" name="checkAll" onclick="selectCheckboxAll()"></th>
-																<th class="titulo-columnas" th:text="#{ontology.identification}">Identification</th>
+																<th class="titulo-columnas" style="width:180px" th:text="#{ontology.identification}">Identification</th>
+																<th class="titulo-columnas" style="width:73px" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
 																<th class="titulo-columnas" th:text="#{crud.record}">record</th>
-																<th class="titulo-columnas text-center" style="width:85px" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
 															</tr>
 															</thead>
 															<tbody th:remove="all-but-first">
 
 															</tbody>
 														</table>
+														<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+														<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
+															<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
+																<span th:text="#{gen.columns}">Columns</span> <i class="fa fa-angle-down"></i>
+															</a>
+															<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+																<label class="toggle-vis" data-column="0" th:text="#{ontology.identification}"> identification </label>
+																<label class="toggle-vis" data-column="1" th:text="#{gen.options}" > Options</label>
+																<label class="toggle-vis" data-column="2" th:text="#{crud.record}"> record </label>
+															</div>
+														</div>
 													</div>
 												</div>
 											</div>
@@ -269,57 +239,55 @@
 									<!-- tab editor -->
 									<div class="tab-pane" id="tab_form">
 										<div class="row">
-										    <div id="alert-authorizations" class="alert alert-info">
-												<i class="fa fa-info-circle"></i> <span th:text="#{crud.virtual.info}"> If it is a virtual ontology, it is necessary that you have an ID assigned to be able to modify, edit and delete elements.</span>
-											</div>
-											<div class="alert alert-info">
-												<i class="fa fa-info-circle"></i> <span th:text="#{crud.virtual.postgis.info}"> If it is a Virtual Entity created on Postgis, the geospatial fields have to follow the following nomenclature: POINT (0 0), LINESTRING (0 0, 1 1, 2 1, 2 2) ...</span>
-											</div>
 											<div id="editor_holder" class=" col-md-8 col-sm-8 col-xs-12"></div>
 
 											<div class=" col-md-4 col-sm-4 col-xs-12"    style="margin-top: 20px;">
-												<div class="row main">
-													<div class="col-md-4 col-sm-4 col-xs-12 ">
+												<div class="row">
+													<div class="col-md-6 col-sm-6 col-xs-12 ">
 														<!-- cleanJson -->
 
 														<div class="form-group">
-															<label class="">&nbsp;</label>
+															<label class="" th:text="#{crud.objectLayout} + ':'">Show like grid</label>
 															<div class="mt-checkbox-list">
-																<input id="objectLayout" class="margin-right-10"   name="objectLayout"  type="checkbox" checked="checked" onchange="changeObjectLayout()"  />
-																<label class="control-label margin-right-5" th:text="#{crud.grid} ">Grid</label>
-																<i class="la la-info-circle popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{crud.objectLayout.info},data-title=#{crud.objectLayout}"></i>
+																<label class="mt-checkbox popovers font-sm" data-trigger="hover" data-placement="top" data-container="body"  th:attr="data-content=#{crud.objectLayout.info},data-title=#{crud.objectLayout}"><i class="la la-lightbulb-o font-md"></i> <div class="inline font-xs" th:text="#{crud.grid} +'?'">Grid?</div>
+																	<input  id="objectLayout" class="form-control no-remove"  name="objectLayout" type="checkbox"  checked="checked" onchange="changeObjectLayout()" />
+																	<span></span>
+																</label>
 
 															</div>
 														</div>
 													</div>
-													<div class="col-md-8 col-sm-8 col-xs-12" style="padding-right: 0px;	">
-														<!-- CREATE RECORD-->
-														<button  id="createBtn" type="button" class="btn btn-primary btn-primary-save pull-right" style="margin-left: 10px;" name="create"  onclick="insert();" th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>	
-														<!-- UPDATE RECORD-->
-														<button  id="updateBtn" type="button" class="btn btn-primary btn-primary-save pull-right" name="update"  style="margin-left: 10px;"  disabled="true" onclick="update();" th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>
-														<!-- RESET RECORD-->
-														<button id="cleanJson" class="btn btn-circle btn-outline blue  pull-right" name="create"  style="margin-left: 10px;"   th:value="#{gen.createBtn}" onclick="cleanJSONEditor();" ><span th:text="#{crud.clean.json}"> clean registry</span></button>
+													<div class="col-md-6 col-sm-6 col-xs-12">
+														<button id="cleanJson" class="btn btn-circle btn-outline blue pull-right" name="create"  th:value="#{gen.createBtn}" onclick="cleanJSONEditor();" ><span th:text="#{crud.clean.json}"> clean registry</span></button>
 													</div>
 												</div>
-                                                <div class="mt-checkbox-list">
-                                                    <input id="updateprop" class="margin-right-10"   name="updateprop"  type="checkbox" checked="checked" onchange="updateProperties()"  />
-                                                    <label class="control-label margin-right-5" th:text="#{crud.updateprop} ">Update properties</label>
-                                                    <i class="la la-info-circle popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{crud.updateprop.info},data-title=#{crud.updateprop}"></i>
-                                                </div>
 												<div class="row">
 													<label class="uppercase font-md">Output </label>
 													<textarea  id="output" name="output" class="element textarea extra-small form-control" style="width: 100%; height: 400px;"></textarea>
 												</div>
 											</div>
 										</div>
-										
+										<div class="row">
+											<hr></hr>
+											<div class="form-actions">
+												<div class="pull-left">
+													<!-- CANCEL TO-DO: authentication and control -->
+													<button id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border"  name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'"><i class="la la-arrow-left"></i> <span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+												</div>
+												<div class="pull-right">
+													<button id="createBtn" type="button" class="btn btn-circle btn-outline blue " onclick="insert();" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>
+													<span class="sep"></span>
+													<button id="updateBtn" type="button" class="btn btn-circle btn-outline btn-primary " disabled="true" onclick="update();" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.editBtn}"> Edit</span></button>
+												</div>
+											</div>
+										</div>
 									</div>
 								</div>
 							</div>
 						</div>
-					 
+					</div>
 				</div>
-			</div>
+
 			</div>
 		</div> <!-- END CONTENT BODY -->
 	</div><!-- END CONTENT page-content-wrapper -->
@@ -413,15 +381,14 @@
 
 
 <!-- CORE CONTROLLERS -->
-<script th:src="@{/static/js/app.js}"></script>
-<script th:src="@{/static/js/layout.js}"></script>
+<script th:src="@{/static/js/app.js}"/>
+<script th:src="@{/static/js/layout.js}"/>
 
 <!-- PLUGINS -->
-<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>	
-<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>
-<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
-<script th:src="@{/static/vendor/jsoneditor/jsoneditor.js}"></script>
+<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
+<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>
+<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+<script th:src="@{/static/vendor/jsoneditor/jsoneditor.js}"/>
 
 <script th:inline="javascript">
 	
@@ -438,51 +405,47 @@ var $schema =[[${ontology.jsonSchema}]];
 var $editor = document.getElementById('editor_holder');
 var $ontology = [[${ontology}]];
 var $uniqueId = [[${uniqueId}]];
-var $quasar = [[${quasar}]];
-var messaOrder = [[#{querytool.select.orderby}]];
 var $elementSelected;
 var $dataSetMapped; 
 var $query;
-var oTable;
-var ids = []
 
+var $conditions = 	{};
+var $ordersBy 	=	{};
+
+function addWhereExpression(index, column, operator, value){
+	$conditions[index] = {column:column,operator:operator,value:value,condition:'AND'};
+}
+
+function addOrderByExpression(index, column, order){
+	$ordersBy[index] = {column:column, order:order};
+}
+
+function removeExpression(index){
+	if(index in $conditions) delete $conditions[index];
+	if(index in $ordersBy) delete $ordersBy[index];
+}
 
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 
 		//reloadJSONEditor();
 		changeObjectLayout();
-		updateProperties();
+
+		$('#output').on('change',function() {
+	        reloadJSONEditor(false,JSON.parse($output.value,null,2));
+	    });
+
 		findElements();
 		getOntologyFields();
 
-		//$.each([ 3 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-		$.fn.dataTable.ext.errMode = 'none';
+		$.each([ 3 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+
 	});
 
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){
-
-		oTable = $('#records').dataTable({
-	      	"bAutoWidth": false,
-	    });	
-
-		$('.dataTables_info').addClass('col-md-6 col-sm-6');
-		$('.dataTables_length').addClass('col-md-6 col-sm-6');
-		$('#records_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
-		$('#records_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
-
-		$('#search-on-title').append($('.dataTables_filter > label > input'));
-		$('#search-on-title > input').removeClass('input-xsmall')
-		$('#records_wrapper > div:nth-child(1)').hide();
-
-		$('.dataTables_paginate').attr('style', 'float:right !important');
+	$(window).load(function(){
 
 		$('#objectLayout').trigger('click');
-
-		document.getElementById("updateprop").checked = true;
-
-		$("#contenedor-tabla-outside").removeClass("hidden");
 
 	});
 
@@ -496,17 +459,7 @@ var ids = []
 		reloadJSONEditor(true);
 	}
 
-	function updateProperties(){
-		
-		if(document.getElementById("updateprop").checked == true) {
-			$('#output').on('change',function() {
-    	        reloadJSONEditor(false,JSON.parse($output.value,null,2));
-    	    });
-		} else {
-			$('#output').off('change');			
-    	}
-		
-	}
+
 	function cleanJSONEditor(){
 		$elementSelected=null;
 		$("#updateBtn").prop('disabled', true);
@@ -519,7 +472,6 @@ var ids = []
 		window.startval = undefined;
 
     if(jsoneditor) jsoneditor.destroy();
-    
     jsoneditor = new JSONEditor($editor,{
         schema: JSON.parse($schema),
         startval: startval,
@@ -541,28 +493,19 @@ var ids = []
     	  jsoneditor.setValue(new_value);
     	 // jsoneditor.validate();
     }
+
 };
 
-	/*function toggleFindElements(){
-		$('#searchFilter').toggle();
+	function toggleFindElements(){
+		$('#create_query').toggle();
 		$('#mytabs a[href="#tab_table"]').tab('show');
-	}*/
+	}
 
 	function findElements(){
-	
 		createQuery();
 
 		var params = createParametersMap();
-		if(params!==undefined && params.where !== undefined && params.where.length>0 ){
-			for(var i=0;i<params.where.length;i++){
-				if(params.where[i].operator==="&#60;"){
-					params.where[i].operator="<";
-				}else if(params.where[i].operator==="&#60;="){
-					params.where[i].operator="<=";
-				}
-			}
-		}
-		
+
 		var csrf_value = $("meta[name='_csrf']").attr("content");
 		var csrf_header = $("meta[name='_csrf_header']").attr("content");
 
@@ -575,19 +518,17 @@ var ids = []
 			contentType: "application/json",
 			data: JSON.stringify(params),
 			success: function(dataSet) {
-				
+
 				console.log("success findElements");
 				//hide create query
 
 				var t = $('#records').DataTable();
 				t.clear();
-				
 				$dataSetMapped = map_IdFromDataSet(dataSet);
 				for(var i =0; i<$dataSetMapped.length;i++){
-					var espacio = '<div class="check"><input type="checkbox" onchange="checkBoxOnClick(this)" id="multiCheck" name="multibox" data-placement="bottom" data-container="body"></div>';
 					var buttons = '<div class="grupo-iconos">'+
-					'<span  class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" onclick="editRecord(\''+$dataSetMapped[i].id+'\')" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" ><i class="icon-edit"></i></span>'+
-					'<span  class="btn btn-xs btn-no-border icon-on-table color-red tooltips" data-container="body" onclick="deleteRecord(\''+$dataSetMapped[i].id+'\')" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn}" ><i class="icon-delete"></i></span>'+
+					'<span   class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" onclick="editRecord(\''+$dataSetMapped[i].id+'\')" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" ><i class="la la-book font-hg"></i></span>'+
+					'<span  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" onclick="deleteRecord(\''+$dataSetMapped[i].id+'\')" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn}" ><i class="la la-trash font-hg"></i></span>'+
 					'</div>';
 					var text = JSON.stringify($dataSetMapped[i].data);
 					var title = JSON.stringify($dataSetMapped[i].data).replace(/"/g, "\'");
@@ -597,10 +538,9 @@ var ids = []
 
 					var recordText = createTableFromJson($dataSetMapped[i].data);
 
-					t.row.add( [espacio,$dataSetMapped[i].id,recordText,buttons ]);
+					t.row.add( [$dataSetMapped[i].id,buttons ,recordText ]);
 
 				}
-				t.order([]);
 				t.draw();
 				$('[data-toggle="tooltip"]').tooltip();
 				$('#mytabs a[href="#tab_table"]').tab('show');
@@ -609,16 +549,15 @@ var ids = []
 		});
 	}
 	//show all titles and values
-	function createTableFromJson(data){		
+	function createTableFromJson(data){
 		delete data.contextData;
 		delete data.id;
-		delete data._id;
 		var resultTitle = recursiveTitle(data,"");
 		var resultValue = recursiveValue(data,"");
 		var theadContent = "";
 		var tbodyContent = "";
 		for(var i=0;i<resultTitle.length;i++){
-			theadContent=theadContent+"<th style='color:#888A91;font-weight:400;'>"+resultTitle[i]+"</th>";
+			theadContent=theadContent+"<th>"+resultTitle[i]+"</th>";
 			if (resultValue[i].length>140){
 				tbodyContent=tbodyContent+"<td>"+resultValue[i].substring(0, 140)+"..."+"</td>";
 			}else{
@@ -629,52 +568,6 @@ var ids = []
 		var thead = "<tr>"+theadContent+"</tr>";
 		var table = "<table class='table table-condensed' style='margin-bottom:0px' >"+thead+tbody+"</table>";
 		return table;
-	}
-
-	//Select all checkbox
-	function selectCheckboxAll(){	
-		var checkboxes = document.getElementsByName("multibox");
-		if (document.getElementById("checkAll").checked==true){
-			for(var i=0, n=checkboxes.length;i<n;i++) {
-    			checkboxes[i].checked = true;
-  			}
-		}else{
-			for(var i=0, n=checkboxes.length;i<n;i++) {
-    			checkboxes[i].checked = false;
-  			}
-		}
-	}
-
-	//Delete de varios registros
-	function deleteMultiple(){
-
-		var params = createParametersMap();
-		if(params!==undefined && params.where !== undefined && params.where.length>0 ){
-			for(var i=0;i<params.where.length;i++){
-				if(params.where[i].operator==="&#60;"){
-					params.where[i].operator="<";
-				}else if(params.where[i].operator==="&#60;="){
-					params.where[i].operator="<=";
-				}
-			}
-		}
-		
-		var csrf_value = $("meta[name='_csrf']").attr("content");
-		var csrf_header = $("meta[name='_csrf_header']").attr("content");
-
-		$.ajax({
-			url: '/controlpanel/crud/queryParams',
-			headers: {
-				[csrf_header]: csrf_value
-		    },
-			type: 'POST',
-			contentType: "application/json",
-			data: JSON.stringify(params),
-			success: function(dataSet) {
-				$dataSetMapped = map_IdFromDataSet(dataSet);
-				showConfirmMultipleDeleteDialog(ids);
-			}
-		})
 	}
 
 	function recursiveTitle(data,stack){
@@ -740,8 +633,6 @@ var ids = []
 		  success: function(dataSet) {
 				console.log("success findElementForId "+ id);
 				delete dataSet[0].contextData;
-				delete dataSet[0]._id;
-
 				reloadJSONEditor(false,dataSet[0]);
 		  },
 		  error: function(data,status,er) {
@@ -749,45 +640,7 @@ var ids = []
 	});
 	}
 
-	function deleteMultileRecord(ids){
-		showConfirmMultipleDeleteDialog(ids);
-	}
 
-	var showConfirmMultipleDeleteDialog = function(ids){
-		var close = headerReg.btnCancelar;
-		var remove = headerReg.btnEliminar;
-
-		
-		var content = 'You are going to delete '+ ids.length +' records.' +'<br><br>'+  [[#{crud.confirm.delete.sure}]];
-		var title = headerReg.crudDelete;
-
-		$.confirm({
-			title: title,
-			theme: 'light',
-			columnClass: 'medium',
-			content: content,
-			draggable: true,
-			dragWindowGap: 100,
-			backgroundDismiss: true,
-			buttons: {
-				close: {
-					text: close,
-					btnClass: 'btn btn-outline blue dialog',
-					action: function (){} //GENERIC CLOSE.
-				},
-				remove: {
-					text: remove,
-					btnClass: 'btn btn-primary',
-					action: function(){
-						ids.forEach(id => {
-							deleteForId(id);
-						});
-					}
-				}
-
-			}
-		});
-	}
 
 	function deleteRecord(id){
 		showConfirmDeleteDialog(id);
@@ -799,10 +652,11 @@ var ids = []
 		var close = headerReg.btnCancelar;
 		var remove = headerReg.btnEliminar;
 		var content = [[#{crud.confirm.delete}]]+'<br>'+id+'<br>'+ [[#{crud.confirm.delete.sure}]];
-		var title = headerReg.crudDelete;
+		var title = headerReg.titleConfirm + ':';
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
+			icon: 'fa fa-warning',
 			title: title,
 			theme: 'light',
 			columnClass: 'medium',
@@ -810,15 +664,16 @@ var ids = []
 			draggable: true,
 			dragWindowGap: 100,
 			backgroundDismiss: true,
+			closeIcon: true,
 			buttons: {
 				close: {
 					text: close,
-					btnClass: 'btn btn-outline blue dialog',
+					btnClass: 'btn btn-sm btn-circle btn-outline blue',
 					action: function (){} //GENERIC CLOSE.
 				},
 				remove: {
 					text: remove,
-					btnClass: 'btn btn-primary',
+					btnClass: 'btn btn-sm btn-circle btn-outline btn-primary',
 					action: function(){
 						deleteForId(id);
 					}
@@ -1034,30 +889,17 @@ function editRecord(id){
 	 $('#mytabs a[href="#tab_form"]').tab('show');
 }
 
-function accessRecMap(jsonAccess,dotkey){
-	var keys = dotkey.split("\.");
-	var jsonAccessAux = jsonAccess;
-	for(var i=0;i<keys.length;i++){
-		jsonAccessAux = jsonAccessAux[keys[i]];
-		if(typeof jsonAccessAux === 'undefined'){
-			return jsonAccessAux; 
-		}
-	}
-	return jsonAccessAux;
-}
-
 function map_IdFromDataSet(dataSet){
-	
 	var newDataSet = [];
 	if(typeof dataSet!= "undefined" && dataSet.length>0){
 		for(var i =0; i<dataSet.length;i++){
 			newDataSet[i]={};
-			if($uniqueId !== null && $uniqueId !=="") {
+			if($uniqueId !== null) {
 				
-				if(typeof accessRecMap(dataSet[i],$uniqueId) !=='undefined'){
-					newDataSet[i].id = accessRecMap(dataSet[i],$uniqueId);
-				}else if (typeof accessRecMap(dataSet[i].value,$uniqueId) !=='undefined'){
-					newDataSet[i].id = accessRecMap(dataSet[i].value,$uniqueId);
+				if(typeof dataSet[i][$uniqueId] !=='undefined'){
+					newDataSet[i].id = dataSet[i][$uniqueId];
+				}else if (typeof dataSet[i].value[$uniqueId] !=='undefined'){
+					newDataSet[i].id = dataSet[i].value[$uniqueId];
 				}else{
 					newDataSet[i].id = undefined;
 				}			
@@ -1090,30 +932,18 @@ function map_IdFromDataSet(dataSet){
 		var comboCondition=$('#select_operator').html();
 		/*[+
 		$.confirm({
-	    title: [[#{crud.where}]],
+	    title: [[#{querytool.select.where}]],
 	    content: '' +
 	    '<form action="" class="form_condition" id="form_condition">' +
 	    '<div class="form-group">' +
-	    '<label class="select-fields">Select Fields</label> <select id="conditionFields" class="form-control querySelect" data-width="100%" style="margin-bottom:10px">'+ comboFields +
-	    '</select>' +
-		'<label class="select-fields">Operator</label>' +
-	    '<select class="element select small form-control" id="conditionOperator" name="typeCondicion"  style="margin-bottom:10px">'+comboCondition+'</select>' + 
-	    '<label class="select-fields">Condition</label>' +
-	    '<input type="text" id="condition" class="form-control" placeholder="Write here"></input></div>' +
+	    '<label>Select fields</label> <select id="conditionFields" class="form-control querySelect" data-width="100%">'+ comboFields +
+	    '</select> <select class="element select small form-control" id="conditionOperator" name="typeCondicion" >'+comboCondition+'</select><label class=""></label><input type="text" id="condition">Condition</input></div>' +
 	    '<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>',
 	    buttons: {
-	    	cancel: {
-				text: [[#{gen.cancelBtn}]],
-	            btnClass: 'btn btn-outline blue dialog',
-	            action: function () {
-	            	// close
-	            	}
-	    	},
 	        formSubmit: {
-	            text: [[#{gen.confirmBtn}]],
-	            btnClass: 'btn btn-primary',
+	            text: 'OK',
+	            btnClass: 'btn-blue',
 	            action: function () {
-	            
 	            	var field = $("#conditionFields").val();
 	            	var fieldType = $("#conditionFields option:selected").attr("type")
 					var operator = $("#conditionOperator option:selected").text();
@@ -1130,29 +960,23 @@ function map_IdFromDataSet(dataSet){
 					}else{
 						tempCondition = condition = null;
 					}
-					//if field is an array add elemAtt function
-					if(!$quasar){
-						var arraysplited = field.split('.');					
-						var isNumber = Number.isInteger(parseFloat(arraysplited[arraysplited.length - 1]));
-						if(isNumber){
-							var subSt= field.substring(0,field.lastIndexOf(".") );
-							field = "elemAt("+subSt+","+arraysplited[arraysplited.length - 1]+")";						
-						}
-					}
-					
 
 					if( operator == " < "){ operator=" &#60; "; }else if( operator == "<="){operator=" &#60;= "; }
 					queryCondition = field + operator + condition;
 					var add = validateCondition(queryCondition);
 					if( add ){
-						var newOptionWhere ='<option id="condicion'+indexCondition+'"condition="'+queryCondition+'" selected >'+queryCondition+'</option>';
-								
-								$('#where').append(newOptionWhere);
-								$('#where').selectpicker('refresh')
+						addWhereExpression('condition'+indexCondition, $.trim(field), $.trim(operator), tempCondition);
+
+		                where = '<li id="condition'+indexCondition+'" class="queryValues" ><div class="input-group"> <input type="text"   style="font-size: smaller; border-right: none;" condition="'+queryCondition+'"  class="form-control bold " value="'+ queryCondition +'"/> <span class="input-group-btn"> <button class="btn btn-default" style="padding-top: 9px; padding-bottom: 9px; border-left: none;border-right: 1px;border-top: 1px;border-bottom: 1px;" onclick="deleteCondition(\'condition'+indexCondition+'\')" type="button"> <i class="fa fa-trash-o" style="font-size: 14px;"></i></button></span></div></li>';
+		                indexCondition++;
+						$("#where_ul").append(where);
 						createQuery();
 					}
 	            }
-	        }
+	        },
+	        cancel: function () {
+	            //close
+	        },
 	    },
 	    onContentReady: function () {
 	        // bind to events
@@ -1175,54 +999,37 @@ function map_IdFromDataSet(dataSet){
 		var comboOrders=$('#form_order').html();
 		/*[+
 		$.confirm({
-	    title: [[#{crud.orderby}]],
+	    title: [[#{querytool.select.orderby}]],
 	    content: '' +
 	    '<form action="" class="form_order" id="form_order">' +
 	    '<div class="form-group">' +
-	    '<label class="select-fields">Select Fields</label> <select id="orderFields" class="form-control querySelect" data-width="100%" style="margin-bottom:10px">'+ comboFields +
-	    '</select>' +
-	    '<label class="select-fields">Order Type</label>' +
-	    '<select class="element select small form-control" id="orderType" name="orderType">'+comboOrders+'</select></div>' +
+	    '<label>Select fields</label> <select id="orderFields" class="form-control querySelect" data-width="100%">'+ comboFields +
+	    '</select> <select class="element select small form-control" id="orderType" name="orderType">'+comboOrders+'</select></div>' +
 	    '<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>',
 	    buttons: {
-	        cancel: {
-	            text: [[#{gen.cancelBtn}]],
-	            btnClass: 'btn btn-outline blue dialog',
-	            action: function () {
-	            	// close
-	            	}
-	        },
 	        formSubmit: {
-	            text: [[#{gen.confirmBtn}]],
-	            btnClass: 'btn btn-primary',
+	            text: 'OK',
+	            btnClass: 'btn-blue',
 	            action: function () {
-	       			  var campo = $("#orderFields").val();
-					  var orden = $("#orderType").val();
-					  var orderCondition = campo +' '+ orden;
-					  
-					  //if field is an array add elemAtt function
-					if(!$quasar){
-						var arraysplited = campo.split('.');					
-						var isNumber = Number.isInteger(parseFloat(arraysplited[arraysplited.length - 1]));
-						if(isNumber){
-							var subSt= campo.substring(0,campo.lastIndexOf(".") );
-							campo = "elemAt("+subSt+","+arraysplited[arraysplited.length - 1]+")";						
-						}		
-					}						
-					if ( campo !== $("#orderby").find("option[id='selectFields']").val() && orden){					
-							var add = validateOrderby(orderCondition);
-							if( add ){
-								    var newOrderby ='<option id="orderby'+indexCondition+'" name="'+campo+' '+orden+'"  selected >'+ campo +' '+ orden +'</option>';
-									$('#orderby').append(newOrderby);
-									$('#orderby').selectpicker('refresh');
-									createQuery();
-							}
-							indexOrderby++;
-							} else {
-								toastr.error(messaOrder,'');
-							}
+	            	var field = $("#orderFields").val();
+					var order = $("#orderType").val();
+
+
+
+					var add = validateOrderBy(field);
+					if(add){
+						addOrderByExpression('orderby'+indexOrderby, $.trim(field), $.trim(order));
+
+						var	orderby = '<li id="orderby'+indexOrderby+'" class="queryValues" ><div class="input-group"> <input type="text" readonly  style="font-size: smaller; border-right: none;" condition="'+field+' '+order+'"  class="form-control bold " value="'+field+' '+order+'"/> <span class="input-group-btn"> <button class="btn btn-default" style="padding-top: 9px; padding-bottom: 9px; border-left: none;border-right: 1px;border-top: 1px;border-bottom: 1px;" onclick="deleteCondition(\'orderby'+indexOrderby+'\')" type="button"> <i class="fa fa-trash-o" style="font-size: 14px;"></i></button></span></div></li>';
+						$("#orderby_ul").append(orderby);
+						createQuery();
+					}
+					indexOrderby++;
 	            }
-	        }
+	        },
+	        cancel: function () {
+	            //close
+	        },
 	    },
 	    onContentReady: function () {
 	        // bind to events
@@ -1239,9 +1046,10 @@ function map_IdFromDataSet(dataSet){
 
 	function addCondition()	{ showDialogCondition(); }
 	function addOrderBy()	{
-		
+		var orderby 	= $('#orderby_ul li input:not(".panel-sofia2")');
+		if( orderby.length < 1){
 			showDialogOrderBy();
-		
+		}
 	}
 
 	function getOntologyFields() {
@@ -1254,7 +1062,7 @@ function map_IdFromDataSet(dataSet){
 			$.ajaxSetup({'headers': {
 				[csrf_header]: csrf_value
 		    }});
-			
+
 			$("#fields").load('/controlpanel/querytool/ontologyfields', { 'ontologyIdentification': ontologyIdentification}, function() {$('#fields #all').remove();$('#fields #selectFields').remove();});
 		}
 		catch(err) {
@@ -1266,12 +1074,12 @@ function map_IdFromDataSet(dataSet){
 
 	// validate conditions before create query
 	function validateCondition(queryCondicion){
-		var conditions = $('#where option');;
+		var conditions = document.getElementById('where_ul').getElementsByTagName("li");
 		var add=true;
 
 		if(conditions.length > 0){
 			for( var i=0; i < conditions.length; i++){
-				if( conditions[i].getAttribute("condition") == queryCondicion ){
+				if( conditions[i].getAttribute("name") == queryCondicion ){
 					add = false;
 				}
 			}
@@ -1280,8 +1088,8 @@ function map_IdFromDataSet(dataSet){
 	}
 
 	// validate orderby  before create query
-	function validateOrderby(queryOrderby){
-	var orders = $('#orderby option');	
+	function validateOrderBy(queryOrderby){
+		var orders = $('#orderby_ul li input:not(".panel-sofia2")');
 		var add = true;
 
 		if( orders.length > 0){
@@ -1294,113 +1102,49 @@ function map_IdFromDataSet(dataSet){
 		return add;
 	}
 
+	function deleteCondition(id){
+		removeExpression(id);
+
+		$('#'+ id +'').remove();
+		createQuery();
+	}
 
 	function createQuery(){
 		$query = createQuerySql();
 		console.log(createParametersMap());
 	}
 
-	function createParametersMap(){	
+	function createParametersMap(){
 		var data 			= 	{};
 		data.ontology 		= 	$ontology.identification;
 		data.limit 			= 	parseInt($('#maxvalues').val());
 		data.offset 		= 	parseInt($('#offset').val());
-		data.where 			= 	createParameterConditions();
-		data.orderBy 		=	createParameterOrderby();
+		data.where 			= 	Object.keys($conditions).map(k => $conditions[k])
+		data.orderBy 		=	Object.keys($ordersBy).map(k => $ordersBy[k])
 		return data;
 	}
-	
-	
-	function createParameterConditions(){
-	var condRes =[];
-	var conditions = $('#where option:selected');	
-	
-	if( conditions.length == 1){
-		var conAux = conditions.attr('condition');
-		conAux = obtainCondition(conAux);
-		conAux = conAux.replace(/'/g,"");		
-		conAux = conAux.split(" ");	
-		var cond = {};
-		cond['column']=conAux[0];
-		cond['operator']= conAux[1];
-		cond['condition']='AND';
-		conAux = conAux.splice(2, conAux.length);
-		conAux = conAux.join(" ");
-		cond['value']=conAux;		
-		condRes.push(cond);
 
-	}
-	else if( conditions.length > 0){
-		conditions.each(function(index){
-			var conAux = obtainCondition($(this).attr('condition'));
-			conAux = conAux.replace(/'/g,"");				
-			conAux = conAux.split(" ");		
-			var cond = {};
-			cond['column']=conAux[0];
-			cond['operator']= conAux[1];
-			cond['condition']='AND';
-			conAux = conAux.splice(2, conAux.length);
-			conAux = conAux.join(" ");
-			cond['value']=conAux;		
-			condRes.push(cond);
-			});   
-
-		}
-		return   condRes;     
-	}		
-	
-	 
-	
-	function createParameterOrderby(){
-		var orderRes =[];
-		var orderby 	= $('#orderby option:selected');
-		if( orderby.length > 0){
-			for(var i=0; i < orderby.length; i++){
-				var orderAux = orderby[i].getAttribute("name");
-				orderAux = orderAux.split(" ");
-				orderRes.push( {column:orderAux[0], order:orderAux[1]});
-			}
-		}
-		return orderRes;
-	}
-	
-	if( orderby.length == 1){ 
-				hasOrderBy = true;
-				queryOrderBy = orderby[0].getAttribute("name");				
-			} else if( orderby.length > 1) {
-				hasOrderBy = true;
-				for( i=0; i < orderby.length; i++){
-					(i < orderby.length - 1) ?  queryOrderBy += orderby[i].getAttribute("name") + ',' : queryOrderBy += orderby[i].getAttribute("name");
-				}
-			}
-		
-	
-	
-
-	
-	
 	function createQuerySql(){
 		
-		// query elements initialization 
+		// query elements initialization       
+		
 		var query 		= "select ";
 		var queryFields = " c._id as id,c ";
-		if($ontology.datasource == 'COSMOS_DB')
-			queryFields = " c.id as id,c ";
 		var ontology 	= $ontology.identification
-		var conditions = $('#where option:selected');		
-		var orderby 	= $('#orderby option:selected');
+		var conditions = $('#where_ul li input:not(".panel-sofia2")');		
+		var orderby 	= $('#orderby_ul li input:not(".panel-sofia2")');
 		var fields 		= $('#select_ul li:not(".panel-sofia2")');
 		var condition,  queryOrderBy = "";
 		var limit = 	$('#maxvalues').val();
 		var offset = 	$('#offset').val();
 		hasCondition 	= false;	
 		hasOrderBy 		= false;
-	
+		
 		
 		//  WHERE
 		if( conditions.length == 1){
 			hasCondition = true;			
-			condition = conditions.attr('condition');
+			condition=conditions[0].value;
 			condition = obtainCondition(condition);
 			condition = condition.replace(/'/g,"\"");
 			condition= "c." + condition;
@@ -1408,22 +1152,15 @@ function map_IdFromDataSet(dataSet){
 		else if( conditions.length > 0){
 			hasCondition = true;
 			conditions.each(function(index){
-				var conditionAux = obtainCondition($(this).attr('condition'));
+				var conditionAux = obtainCondition($(this)[0].value);
 				conditionAux = conditionAux.replace(/'/g,"\"");				
 				if( index == 0){ condition = "c." + conditionAux; } else {  condition = condition + " AND " + conditionAux; }			
 			});           
 		}		
 
 		// ORDERBY 
-		if( orderby.length == 1){ 
-				hasOrderBy = true;
-				queryOrderBy = orderby[0].getAttribute("name");				
-			} else if( orderby.length > 1) {
-				hasOrderBy = true;
-				for( i=0; i < orderby.length; i++){
-					(i < orderby.length - 1) ?  queryOrderBy += orderby[i].getAttribute("name") + ',' : queryOrderBy += orderby[i].getAttribute("name");
-				}
-			}
+		if( orderby.length == 1){ hasOrderBy = true; queryOrderBy = orderby[0].value; }
+		
 		
 		// MONTAJE DE CONSULTA
       
@@ -1447,25 +1184,10 @@ function map_IdFromDataSet(dataSet){
 	}
 	
 	function refreshFilters(){
-		 
+		$('.queryValues').remove();
 		$('#maxvalues').val(100);
 		$('#offset').val(0);
-		$('#where').empty();
-		$('#where').selectpicker('refresh');
-		$('#orderby').empty();
-		$('#orderby').selectpicker('refresh');		
 		findElements();
-	}
-	
-	function checkBoxOnClick(checkbox){
-		
-		if (checkbox.checked){
-			ids.push(checkbox.parentNode.parentNode.nextElementSibling.firstChild.data)
-		} else {
-			ids = ids.filter(function(element) {
-			    return element !== checkbox.parentNode.parentNode.nextElementSibling.firstChild.data;
-			});
-		}
 	}
 	
 	//]]>

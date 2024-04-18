@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @Controller
 @Slf4j
 public class DigitalTwinWebsocketAPIImpl implements DigitalTwinWebsocketAPI {
-
+	
 	private static final String NOTIFING_ERROR = "Error notifing message";
 	private static final String NOTIFY_SHADOW_MESSAGE = "DigitalTwinWebsocketAPIImpl -- notifyShadowMessage -- URL:  ";
 
@@ -49,50 +49,50 @@ public class DigitalTwinWebsocketAPIImpl implements DigitalTwinWebsocketAPI {
 	public void sendAction(String message, MessageHeaders messageHeaders) {
 		try {
 
-			final String apiKey = ((List) (((Map) messageHeaders.get("nativeHeaders")).get("Authorization"))).get(0)
+			String apiKey = ((List) (((Map) messageHeaders.get("nativeHeaders")).get("Authorization"))).get(0)
 					.toString();
-			final JSONObject objMessage = new JSONObject(message);
+			JSONObject objMessage = new JSONObject(message);
 			actionProcessor.action(apiKey, objMessage);
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			log.error("Error", e);
 		}
 	}
 
 	@Override
-	public void notifyShadowMessage(String apiKey, JSONObject message) {
+	public void notifyShadowMessage(JSONObject message) {
 		try {
 			log.info("DigitalTwinWebsocketAPIImpl -- notifyShadowMessage: " + message);
-			final String sourceTwin = message.get("id").toString();
+			String sourceTwin = message.get("id").toString();
 			log.info(NOTIFY_SHADOW_MESSAGE + "/api/shadow/" + sourceTwin);
 			messagingTemplate.convertAndSend("/api/shadow/" + sourceTwin, message.toString());
 			log.info("Notify Shadow send.");
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			log.error(NOTIFING_ERROR, e);
 		}
 	}
 
 	@Override
-	public void notifyCustomMessage(String apiKey, JSONObject message) {
+	public void notifyCustomMessage(JSONObject message) {
 		try {
 			log.info("DigitalTwinWebsocketAPIImpl -- notifyCustomMessage: " + message);
-			final String sourceTwin = message.get("id").toString();
+			String sourceTwin = message.get("id").toString();
 			log.info(NOTIFY_SHADOW_MESSAGE + "/api/custom/" + sourceTwin);
 			messagingTemplate.convertAndSend("/api/custom/" + sourceTwin, message.toString());
 			log.info("Notify custom send.");
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			log.error(NOTIFING_ERROR, e);
 		}
 	}
 
 	@Override
-	public void notifyActionMessage(String apiKey, JSONObject message) {
+	public void notifyActionMessage(JSONObject message) {
 		try {
 			log.info("DigitalTwinWebsocketAPIImpl -- notifyActionMessage: " + message);
-			final String sourceTwin = message.get("id").toString();
+			String sourceTwin = message.get("id").toString();
 			log.info(NOTIFY_SHADOW_MESSAGE + "/api/action/" + sourceTwin);
 			messagingTemplate.convertAndSend("/api/action/" + sourceTwin, message.toString());
 			log.info("Notify action send.");
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			log.error(NOTIFING_ERROR, e);
 		}
 	}

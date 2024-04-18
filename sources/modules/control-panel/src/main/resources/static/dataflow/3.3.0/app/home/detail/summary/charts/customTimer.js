@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('CustomTimerController', ["$scope", "$rootScope", "pipelineConstant", function($scope, $rootScope, pipelineConstant) {
+  .controller('CustomTimerController', function($scope, $rootScope, pipelineConstant) {
     angular.extend($scope, {
       chartOptions: {
         chart: {
@@ -98,4 +98,4 @@ angular
     });
 
     updateChartData();
-  }]);
+  });

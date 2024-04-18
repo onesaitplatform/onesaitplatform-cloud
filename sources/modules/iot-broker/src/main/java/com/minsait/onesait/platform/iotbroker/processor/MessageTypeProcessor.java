@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,19 @@ package com.minsait.onesait.platform.iotbroker.processor;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 
 import com.minsait.onesait.platform.business.services.ontology.OntologyBusinessServiceException;
 import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyReturnMessage;
 import com.minsait.onesait.platform.comms.protocol.body.parent.SSAPBodyMessage;
 import com.minsait.onesait.platform.comms.protocol.enums.SSAPMessageTypes;
-import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
-import com.minsait.onesait.platform.multitenant.config.model.IoTSession;
 
 public interface MessageTypeProcessor {
+	SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message)
+			throws OntologyBusinessServiceException, IOException;
 
 	List<SSAPMessageTypes> getMessageTypes();
 
 	boolean validateMessage(SSAPMessage<? extends SSAPBodyMessage> message);
-	
-	SSAPMessage<SSAPBodyReturnMessage> process(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info, Optional<IoTSession> session) 
-			throws OntologyBusinessServiceException, IOException;
+
 }

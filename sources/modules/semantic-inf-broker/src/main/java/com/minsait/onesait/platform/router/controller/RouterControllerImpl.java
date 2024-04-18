@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent;
@@ -33,13 +31,13 @@ import com.minsait.onesait.platform.router.service.app.model.DigitalTwinComposit
 import com.minsait.onesait.platform.router.service.app.model.NotificationCompositeModel;
 import com.minsait.onesait.platform.router.service.app.model.NotificationModel;
 import com.minsait.onesait.platform.router.service.app.model.OperationResultModel;
-import com.minsait.onesait.platform.router.service.app.model.SubscriptionModel;
-import com.minsait.onesait.platform.router.service.app.model.TransactionModel;
+import com.minsait.onesait.platform.router.service.app.model.SuscriptionModel;
 import com.minsait.onesait.platform.router.service.app.service.AdviceService;
 import com.minsait.onesait.platform.router.service.app.service.RouterDigitalTwinService;
 import com.minsait.onesait.platform.router.service.app.service.RouterService;
-import com.minsait.onesait.platform.router.service.app.service.RouterSubscriptionService;
+import com.minsait.onesait.platform.router.service.app.service.RouterSuscriptionService;
 
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -48,7 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("router")
 @Slf4j
 public class RouterControllerImpl
-		implements RouterService, RouterSubscriptionService, AdviceService, RouterDigitalTwinService {
+		implements RouterService, RouterSuscriptionService, AdviceService, RouterDigitalTwinService {
 
 	@Autowired
 	@Qualifier("routerServiceImpl")
@@ -56,7 +54,7 @@ public class RouterControllerImpl
 
 	@Autowired
 	@Qualifier("routerServiceImpl")
-	private RouterSubscriptionService routerSuscriptionService;
+	private RouterSuscriptionService routerSuscriptionService;
 
 	@Autowired
 	@Qualifier("routerDigitalTwinServiceImpl")
@@ -68,272 +66,202 @@ public class RouterControllerImpl
 	@Autowired
 	private EventProducer eventProducer;
 
-	@Override
-	@PostMapping(value = "/insert")
-
+	@RequestMapping(value = "/insert", method = RequestMethod.POST)
+	@ApiOperation(value = "insert")
 	public OperationResultModel insert(@RequestBody NotificationModel model) {
 		final long dStart = System.currentTimeMillis();
 		log.debug("Insert:");
 		try {
 			return routerService.insert(model);
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			log.error("Error in insert", e);
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Insert operation in {}", dEnd - dStart);
+			log.info("Processed Insert operation in {}",(dEnd - dStart));
 		}
 
 	}
 
-	@Override
-	@PutMapping(value = "/update")
-
+	@RequestMapping(value = "/update", method = RequestMethod.PUT)
+	@ApiOperation(value = "update")
 	public OperationResultModel update(@RequestBody NotificationModel model) {
 		final long dStart = System.currentTimeMillis();
 		log.debug("Update:");
 		try {
 			return routerService.update(model);
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			log.error("Error in update", e);
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Update operation in: {} ", dEnd - dStart);
+			log.info("Processed Update operation in: {} ", (dEnd - dStart));
 		}
 	}
 
-	@Override
-	@DeleteMapping(value = "/delete")
-
+	@RequestMapping(value = "/delete", method = RequestMethod.DELETE)
+	@ApiOperation(value = "delete")
 	public OperationResultModel delete(@RequestBody NotificationModel model) {
 		final long dStart = System.currentTimeMillis();
 		log.debug("Delete:");
 		try {
 			return routerService.delete(model);
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			log.error("Error in delete", e);
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Delete operation in: {}", dEnd - dStart);
+			log.info("Processed Delete operation in: {}",(dEnd - dStart));
 		}
 	}
 
-	@Override
-	@PostMapping(value = "/query")
-
+	@RequestMapping(value = "/query", method = RequestMethod.POST)
+	@ApiOperation(value = "query")
 	public OperationResultModel query(@RequestBody NotificationModel model) {
 		final long dStart = System.currentTimeMillis();
-		if (log.isDebugEnabled()) {
-			log.debug("Query: {} Ontology: {} Type {}", model.getOperationModel().getBody(),
-				model.getOperationModel().getOntologyName(), model.getOperationModel().getQueryType());
-		}		
+		log.debug("Query:");
 		try {
 			return routerService.query(model);
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			log.error("Error in query", e);
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Query operation in: {} ", dEnd - dStart);
+			log.info("Processed Query operation in: {} ",(dEnd - dStart));
 		}
 	}
 
-	@Override
-	@PostMapping(value = "/subscribe")
-
-	public OperationResultModel subscribe(@RequestBody SubscriptionModel model) {
+	@RequestMapping(value = "/suscribe", method = RequestMethod.POST)
+	@ApiOperation(value = "subscribe")
+	public OperationResultModel suscribe(@RequestBody SuscriptionModel model) {
 		final long dStart = System.currentTimeMillis();
-		log.debug("Subscribe:");
+		log.debug("Suscribe:");
 		try {
-			return routerSuscriptionService.subscribe(model);
-		} catch (final Exception e) {
-			log.error("Error in subscribe", e);
+			return routerSuscriptionService.suscribe(model);
+		} catch (Exception e) {
+			log.error("Error in suscribe", e);
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Subscribe operation in: {} ", dEnd - dStart);
+			log.info("Processed Subscribe operation in: {} ",(dEnd - dStart));
 		}
 	}
 
-	@Override
-	@PostMapping(value = "/unsubscribe")
-
-	public OperationResultModel unsubscribe(@RequestBody SubscriptionModel model) {
+	@RequestMapping(value = "/unsuscribe", method = RequestMethod.POST)
+	@ApiOperation(value = "unsuscribe")
+	public OperationResultModel unSuscribe(@RequestBody SuscriptionModel model) {
 		final long dStart = System.currentTimeMillis();
 		log.debug("unSuscribe:");
 		try {
-			return routerSuscriptionService.unsubscribe(model);
-		} catch (final Exception e) {
+			return routerSuscriptionService.unSuscribe(model);
+		} catch (Exception e) {
 			log.error("Error in unSuscribe", e);
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Unsuscribe operation in: {} ", dEnd - dStart);
+			log.info("Processed Unsuscribe operation in: {} ",(dEnd - dStart));
 		}
 	}
 
-	@PostMapping(value = "/advice")
-
+	@RequestMapping(value = "/advice", method = RequestMethod.POST)
+	@ApiOperation(value = "advice")
 	@Override
 	public OperationResultModel advicePostProcessing(@RequestBody NotificationCompositeModel input) {
 		final long dStart = System.currentTimeMillis();
 		log.debug("advicePostProcessing:");
 		try {
-			final OperationResultModel output = new OperationResultModel();
+			OperationResultModel output = new OperationResultModel();
 			output.setErrorCode("NOUS");
 			output.setMessage("ALL IS OK");
 			output.setOperation("ADVICE");
 			output.setResult("OK");
 			return output;
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			log.error("Error in advicePostProcessing", e);
 			throw e;
 		} finally {
 			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Advice operation in: {} ", dEnd - dStart);
+			log.info("Processed Advice operation in: {} ",(dEnd - dStart));
 		}
 	}
 
-	@PostMapping(value = "/token")
-
+	@RequestMapping(value = "/token", method = RequestMethod.POST)
+	@ApiOperation(value = "token")
 	public String tokenPostProcessing(@RequestBody String input) {
 		final long dStart = System.currentTimeMillis();
 		log.debug("tokenPostProcessing:");
-		final String result = jwtService.extractToken(input);
+		String result = jwtService.extractToken(input);
 
 		final long dEnd = System.currentTimeMillis();
-		log.info("Processed Token operation in: {} ", dEnd - dStart);
+		log.info("Processed Token operation in: {} ", (dEnd - dStart));
 		return result;
 	}
 
-	@PostMapping(value = "/event")
-
+	@RequestMapping(value = "/event", method = RequestMethod.POST)
+	@ApiOperation(value = "event")
 	@Auditable
 	public String eventProcessing(@RequestBody String input) {
 		final long dStart = System.currentTimeMillis();
 		log.debug("eventProcessing:");
-		final OPAuditEvent event = new OPAuditEvent();
+		OPAuditEvent event = new OPAuditEvent();
 		event.setMessage(input);
 		eventProducer.publish(event);
 
 		final long dEnd = System.currentTimeMillis();
-		log.info("Processed Event operation in: {} ", dEnd - dStart);
+		log.info("Processed Event operation in: {} ", (dEnd - dStart));
 		return input;
 	}
 
-	@PostMapping(value = "/insertEvent")
-
+	@RequestMapping(value = "/insertEvent", method = RequestMethod.POST)
+	@ApiOperation(value = "insertEvent")
 	@Override
 	public OperationResultModel insertEvent(DigitalTwinCompositeModel compositeModel) {
 		final long dStart = System.currentTimeMillis();
-		final OperationResultModel result = routerDigitalTwinService.insertEvent(compositeModel);
+		OperationResultModel result = routerDigitalTwinService.insertEvent(compositeModel);
 
 		final long dEnd = System.currentTimeMillis();
-		log.info("Processed InsertEvent operation in: {} ", dEnd - dStart);
+		log.info("Processed InsertEvent operation in: {} ", (dEnd - dStart));
 
 		return result;
 	}
 
-	@PostMapping(value = "/insertLog")
-
+	@RequestMapping(value = "/insertLog", method = RequestMethod.POST)
+	@ApiOperation(value = "insertLog")
 	@Override
 	public OperationResultModel insertLog(DigitalTwinCompositeModel compositeModel) {
 		final long dStart = System.currentTimeMillis();
-		final OperationResultModel result = routerDigitalTwinService.insertLog(compositeModel);
+		OperationResultModel result = routerDigitalTwinService.insertLog(compositeModel);
 
 		final long dEnd = System.currentTimeMillis();
-		log.info("Processed InsertLog operation in: {}", dEnd - dStart);
+		log.info("Processed InsertLog operation in: {}", (dEnd - dStart));
 
 		return result;
 	}
 
-	@PostMapping(value = "/updateShadow")
-
+	@RequestMapping(value = "/updateShadow", method = RequestMethod.POST)
+	@ApiOperation(value = "updateShadow")
 	@Override
 	public OperationResultModel updateShadow(DigitalTwinCompositeModel compositeModel) {
 		final long dStart = System.currentTimeMillis();
-		final OperationResultModel result = routerDigitalTwinService.updateShadow(compositeModel);
+		OperationResultModel result = routerDigitalTwinService.updateShadow(compositeModel);
 
 		final long dEnd = System.currentTimeMillis();
-		log.info("Processed UpdateShadow operation in: {}", dEnd - dStart);
+		log.info("Processed UpdateShadow operation in: {}", (dEnd - dStart));
 
 		return result;
 	}
 
 	@Override
-	@PostMapping(value = "/insertAction")
-
+	@RequestMapping(value = "/insertAction", method = RequestMethod.POST)
+	@ApiOperation(value = "insertAction")
 	public OperationResultModel insertAction(DigitalTwinCompositeModel compositeModel) {
 		final long dStart = System.currentTimeMillis();
-		final OperationResultModel result = routerDigitalTwinService.insertAction(compositeModel);
+		OperationResultModel result = routerDigitalTwinService.insertAction(compositeModel);
 
 		final long dEnd = System.currentTimeMillis();
-		log.info("Processed InsertAction operation in: {}", dEnd - dStart);
+		log.info("Processed InsertAction operation in: {}",(dEnd - dStart));
 
 		return result;
-	}
-
-	@Override
-	@PostMapping(value = "/startTransaction")
-
-	public OperationResultModel startTransaction(@RequestBody TransactionModel model) {
-		final long dStart = System.currentTimeMillis();
-		log.info("Start Transaction:");
-		try {
-			final OperationResultModel result = routerService.startTransaction(model);
-			return result;
-		} catch (final Exception e) {
-			log.error("Error in Start Transaction", e);
-			throw e;
-		} finally {
-			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Start Transaction operation in: {}", (dEnd - dStart));
-		}
-	}
-
-	@Override
-	@PostMapping(value = "/commitTransaction")
-
-	public OperationResultModel commitTransaction(@RequestBody TransactionModel model) {
-		final long dStart = System.currentTimeMillis();
-		log.info("Commit Transaction:");
-		try {
-			final OperationResultModel result = routerService.commitTransaction(model);
-			return result;
-		} catch (final Exception e) {
-			log.error("Error in Commit Transaction", e);
-			throw e;
-		} finally {
-			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Commmit Transaction operation in: {}", (dEnd - dStart));
-		}
-	}
-
-	@Override
-	@PostMapping(value = "/rollbackTransaction")
-
-	public OperationResultModel rollbackTransaction(@RequestBody TransactionModel model) {
-		final long dStart = System.currentTimeMillis();
-		log.info("Rollback Transaction:");
-		try {
-			final OperationResultModel result = routerService.rollbackTransaction(model);
-			return result;
-		} catch (final Exception e) {
-			log.error("Error in Rollback Transaction", e);
-			throw e;
-		} finally {
-			final long dEnd = System.currentTimeMillis();
-			log.info("Processed Rollback Transaction operation in: {}", (dEnd - dStart));
-		}
-	}
-
-	@Override
-	@PostMapping(value = "/notifyModules")
-
-	public OperationResultModel notifyModules(@RequestBody NotificationModel model) {
-		return routerService.notifyModules(model);
 	}
 
 }

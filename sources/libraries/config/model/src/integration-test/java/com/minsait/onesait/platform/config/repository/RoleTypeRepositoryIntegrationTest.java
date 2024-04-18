@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public class RoleTypeRepositoryIntegrationTest {
 
 	@Before
 	public void setUp() {
-		final List<Type> types = new ArrayList<>(Arrays.asList(Role.Type.values()));
+		List<Type> types = new ArrayList<Type>(Arrays.asList(Role.Type.values()));
 		if (types.isEmpty()) {
 			// log.info("No types en tabla.Adding...");
 			throw new RuntimeException("No role types in class Role...");
@@ -55,20 +55,20 @@ public class RoleTypeRepositoryIntegrationTest {
 	@Test
 	@Transactional
 	public void given_SomeRoleTypesExist_When_TheyAreCounted_Then_TheCorrectNumberIsObtained() {
-		Assert.assertTrue(repository.findAll().size() == 9);
-		Assert.assertTrue(repository.count() == 9);
+		Assert.assertTrue(this.repository.findAll().size() == 9);
+		Assert.assertTrue(this.repository.count() == 9);
 	}
 
 	@Test
 	@Transactional
 	public void given_SomeRoleTypesExist_When_TheyAreCountedById_Then_OneIsReturned() {
-		Assert.assertTrue(repository.countById("ROLE_ADMINISTRATOR") == 1L);
+		Assert.assertTrue(this.repository.countById("ROLE_ADMINISTRATOR") == 1L);
 	}
 
 	@Test
 	@Transactional
 	public void given_SomeRoleTypesExist_When_ItIsSearchedByName_Then_TheCorrectObjectIsObtained() {
-		Assert.assertTrue(repository.findById("ROLE_ADMINISTRATOR").isPresent());
+		Assert.assertTrue(this.repository.findById("ROLE_ADMINISTRATOR").getName().equals("Administrator"));
 	}
 
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.minsait.onesait.platform.controlpanel.controller.dashboardconf;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +37,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.minsait.onesait.platform.config.model.DashboardConf;
 import com.minsait.onesait.platform.config.services.dashboardconf.DashboardConfService;
 import com.minsait.onesait.platform.config.services.exceptions.DashboardConfServiceException;
-import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 
 import lombok.extern.slf4j.Slf4j;
@@ -50,34 +48,23 @@ public class DashboardConfController {
 
 	private static final String DASHBOARD_CONF = "dashboardconf";
 	private static final String MESSAGE = "message";
-
 	@Autowired
 	private DashboardConfService dashboardConfService;
 
-	@Autowired()
-	private ResourcesInUseService resourcesInUseService;
-
 	@Autowired
 	private AppWebUtils utils;
-	
-	@Autowired 
-	private HttpSession httpSession;
 
 	private static final String REDIRECT_DASHBOARD_CONF_LIST = "redirect:/dashboardconf/list";
-	private static final String APP_ID = "appId";
 
 	@RequestMapping(method = RequestMethod.POST, value = "getNamesForAutocomplete")
 	public @ResponseBody List<String> getNamesForAutocomplete() {
 		return this.dashboardConfService.getAllIdentifications();
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR')")
 	@RequestMapping(value = "/list", produces = "text/html")
 	public String list(Model uiModel, HttpServletRequest request) {
 
-		//CLEANING APP_ID FROM SESSION
-		httpSession.removeAttribute(APP_ID);
-		
 		final List<DashboardConf> dc = this.dashboardConfService.findAllDashboardConf();
 
 		uiModel.addAttribute(DASHBOARD_CONF, dc);
@@ -86,14 +73,14 @@ public class DashboardConfController {
 
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/create", produces = "text/html")
 	public String createDashboardConf(Model model) {
 		model.addAttribute(DASHBOARD_CONF, new DashboardConf());
 		return "dashboardconf/create";
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PostMapping(value = "/create", produces = "text/html")
 	public String saveDashboardConf(@Valid DashboardConf dashboardConf, BindingResult bindingResult, Model model,
 			HttpServletRequest httpServletRequest, RedirectAttributes redirect) {
@@ -127,30 +114,28 @@ public class DashboardConfController {
 
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/update/{id}", produces = "text/html")
 	public String updateDashboardConf(Model model, @PathVariable("id") String id) {
 		model.addAttribute(DASHBOARD_CONF, this.dashboardConfService.getDashboardConfById(id));
-		model.addAttribute(ResourcesInUseService.RESOURCEINUSE, resourcesInUseService.isInUse(id, utils.getUserId()));
-		resourcesInUseService.put(id, utils.getUserId());
 		return "dashboardconf/create";
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping(value = "/view/{id}", produces = "text/html")
 	public String showDashboardConf(Model model, @PathVariable("id") String id) {
 		model.addAttribute(DASHBOARD_CONF, this.dashboardConfService.getDashboardConfById(id));
 		return "dashboardconf/show";
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR')")
 	@DeleteMapping("/{id}")
 	public String delete(Model model, @PathVariable("id") String id) {
 		this.dashboardConfService.deleteDashboardConf(id);
 		return REDIRECT_DASHBOARD_CONF_LIST;
 	}
 
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
+	@PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR')")
 	@PutMapping(value = "/update/{id}", produces = "text/html")
 	public String updateDashboardConf(Model model, @PathVariable("id") String id, @Valid DashboardConf dashboardConf,
 			BindingResult bindingResult, RedirectAttributes redirect) {
@@ -160,14 +145,7 @@ public class DashboardConfController {
 			return "redirect:/dashboardconf/update/" + id;
 		}
 		this.dashboardConfService.saveDashboardConf(dashboardConf);
-		resourcesInUseService.removeByUser(id, utils.getUserId());
 		return REDIRECT_DASHBOARD_CONF_LIST;
-	}
-
-	@GetMapping(value = "/freeResource/{id}")
-	public @ResponseBody void freeResource(@PathVariable("id") String id) {
-		resourcesInUseService.removeByUser(id, utils.getUserId());
-		log.info("free resource", id);
 	}
 
 	/*

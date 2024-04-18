@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -96,7 +96,7 @@
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
 						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
-						<li><a th:href="@{/models/list}"> <span th:text="#{model.breadcrumb.list}">Models</span></a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/executionmodels/list}"> <span th:text="#{executionmodels.breadcrumb.list}">Models</span></a><i class="fa fa-angle-right"></i></li>
 						<li><span th:text="#{executionmodels.compare}">COMPARE</span></li>						
 					</ul>						
 				</div>
@@ -200,18 +200,18 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"></script>
-	<script th:src="@{/static/js/layout.js}"></script>
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
-	<script th:src="@{/static/vendor/jsoneditor/jsoneditor.js}"></script>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/jsoneditor/jsoneditor.js}"/>
 	
-	<script th:src="@{/static/vendor/moment.js}"></script>	
-	<script th:src="@{/static/vendor/bootstrap-datetimepicker/bootstrap-datetimepicker.min.js}"></script>
-	<script th:src="@{/static/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js}"></script>
+	<script th:src="@{/static/vendor/moment.js}"/>	
+	<script th:src="@{/static/vendor/bootstrap-datetimepicker/bootstrap-datetimepicker.min.js}"/>
+	<script th:src="@{/static/vendor/bootstrap-touchspin/jquery.bootstrap-touchspin.min.js}"/>
 	
 	<script th:inline="javascript">	
 	

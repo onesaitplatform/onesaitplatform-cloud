@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ public interface RulesEngineService {
 
 	String executeRules(String ontology, String jsonInput, String user) throws GenericOPException;
 
-	List<Future<String>> executeRulesAsync(String ontology, String jsonInput, String vertical, String tenant) throws GenericOPException;
+	List<Future<String>> executeRulesAsync(String ontology, String jsonInput) throws GenericOPException;
 
 	String executeRestRule(String ruleIdentification, String jsonInput) throws GenericOPException;
 

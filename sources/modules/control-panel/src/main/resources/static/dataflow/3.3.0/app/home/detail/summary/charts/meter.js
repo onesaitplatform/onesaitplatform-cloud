@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('MeterBarChartController', ["$scope", "$rootScope", "pipelineConstant", "$filter", "$translate", "api", function($scope, $rootScope, pipelineConstant, $filter, $translate, api) {
+  .controller('MeterBarChartController', function($scope, $rootScope, pipelineConstant, $filter, $translate, api) {
     var color = $scope.recordsColor;
     var yAxisLabel = '( records / sec )';
 
@@ -327,4 +327,4 @@ angular
 
     refreshChartDataOnSelectionChange();
 
-  }]);
+  });

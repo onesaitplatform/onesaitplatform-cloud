@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,19 +21,19 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 @RequestMapping(path = "/config")
 @CrossOrigin(origins = "*")
-@Tag(name = "config", description = "Onesaitplatform config for digital twins")
+@Api(value = "config", description = "Onesaitplatform config for digital twins")
 public interface ConfigGateway {
 
-	@Operation(summary = "Get WoT of the Digital Twin")
+	@ApiOperation(value = "Get WoT of the Digital Twin")
 	@RequestMapping(value = "/getWot", method = RequestMethod.POST)
 	public ResponseEntity<?> getWot(
-			@Parameter(description= "Digital Twin Key provided from digital twin", required = true) String apiKey,
-			@Parameter(description= "Json data need to execute the event", required = true) JsonNode data);
+			@ApiParam(value = "Digital Twin Key provided from digital twin", required = true) String apiKey,
+			@ApiParam(value = "Json data need to execute the event", required = true) JsonNode data);
 
 }

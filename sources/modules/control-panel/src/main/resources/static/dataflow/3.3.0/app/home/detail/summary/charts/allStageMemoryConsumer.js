@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('AllStageMemoryConsumedChartController', ["$rootScope", "$scope", "api", "pipelineConstant", function($rootScope, $scope, api, pipelineConstant) {
+  .controller('AllStageMemoryConsumedChartController', function($rootScope, $scope, api, pipelineConstant) {
     var baseQuery = "select count,metric from counters where (pipeline='" + $scope.pipelineConfig.info.pipelineId + "') and ",
       sizeFormat = function(d){
         var mbValue = d;
@@ -230,4 +230,4 @@ angular
     if($scope.timeRange !== 'latest') {
       refreshTimeSeriesData();
     }
-  }]);
+  });

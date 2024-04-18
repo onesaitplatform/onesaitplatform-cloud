@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,9 +65,8 @@ public class GatewayNotifierDelegate implements GatewayNotifier {
 	}
 
 	@Override
-	public void notify(String notifierGW, SSAPMessage<SSAPBodyIndicationMessage> indication) {
-		executor.submit(() -> subscriptions.entrySet().stream().filter(x -> x.getKey().equals(notifierGW)).forEach(s -> s.getValue().accept(indication)));
-		//executor.submit(() -> subscriptions.values().stream().forEach(s -> s.accept(indication)));
+	public void notify(SSAPMessage<SSAPBodyIndicationMessage> indication) {
+		executor.submit(() -> subscriptions.values().stream().forEach(s -> s.accept(indication)));
 	}
 
 	@Override

@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('MemoryConsumedLineChartController', ["$scope", "$rootScope", "pipelineConstant", "api", function($scope, $rootScope, pipelineConstant, api) {
+  .controller('MemoryConsumedLineChartController', function($scope, $rootScope, pipelineConstant, api) {
     var color = $scope.recordsColor,
       baseQuery = "select count,metric from counters where (pipeline='" + $scope.pipelineConfig.info.pipelineId + "') and ",
       getColor = function(d) {
@@ -192,4 +192,4 @@ angular
       refreshTimeSeriesData();
     }
 
-  }]);
+  });

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -129,8 +129,8 @@ public class BasicOpsRepositoryTest {
 
 			manageFacade.createTable4Ontology(TEST_INDEX_ONLINE_ELASTIC, "{}", null);
 
-			String idES = basicOpsFacade.insert(TEST_INDEX_ONLINE_ELASTIC, JSON_TEST);
-			String idMongo = basicOpsFacade.insert(TEST_INDEX_ONLINE, JSON_TEST);
+			String idES = basicOpsFacade.insert(TEST_INDEX_ONLINE_ELASTIC, ontology.getJsonSchema(), JSON_TEST);
+			String idMongo = basicOpsFacade.insert(TEST_INDEX_ONLINE, ontology.getJsonSchema(), JSON_TEST);
 			log.info("Returned ES inserted object with id " + idES);
 			log.info("Returned Mongo inserted object with id " + idMongo);
 

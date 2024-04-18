@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,37 +14,37 @@
  */
 package com.minsait.onesait.platform.iotbroker.plugable.impl.gateway.reference.rest;
 
-import org.springdoc.core.GroupedOpenApi;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import io.swagger.v3.oas.models.Components;
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Contact;
-import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.info.License;
-import io.swagger.v3.oas.models.security.SecurityScheme;
+import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.service.ApiInfo;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @ConditionalOnProperty(prefix = "onesaitplatform.iotbroker.plugable.gateway.rest", name = "enable", havingValue = "true")
 @Configuration
+@EnableSwagger2
 public class SwaggerConfig {
 
-	@Bean
-	public GroupedOpenApi api() {
-		return GroupedOpenApi.builder().group("IoT Broker")
-				.packagesToScan("com.minsait.onesait.platform.iotbroker.plugable.impl.gateway.reference.rest").build();
-	}
+	@Value("${onesaitplatform.iotbroker.plugable.gateway.rest.swaggerhost:localhost}")
+	private String host;
 
 	@Bean
-	public OpenAPI springShopOpenAPI() {
-		return new OpenAPI()
-				.info(new Info().contact(new Contact().email("support@onesaitplatform.com"))
-						.title("onesait Platform IoT Rest Gateway").description("onesait Platform IoT Rest Gateway")
-						.version("v1.0.0")
-						.license(new License().name("Apache License 2.0").url("https://github.com/onesaitplatform")))
-				.components(new Components().addSecuritySchemes("session-key",
-						new SecurityScheme().type(SecurityScheme.Type.APIKEY).in(SecurityScheme.In.HEADER)
-						.name("Authorization").description("Session Key")));
+	public Docket api() {
+		return new Docket(DocumentationType.SWAGGER_2).select()
+				.apis(RequestHandlerSelectors
+						.basePackage("com.minsait.onesait.platform.iotbroker.plugable.impl.gateway.reference.rest"))
+				// .apis(RequestHandlerSelectors.basePackage("com.indracompany.sofia2.iotbroker"))
+				.paths(PathSelectors.any()).build().host(host).apiInfo(apiInfo());
+	}
+
+	private ApiInfo apiInfo() {
+		return new ApiInfo("onesait Platform IoT Rest Gateway", "onesait Platform IoT Rest Gateway", "v1.0.0", "",
+				"support@onesaitplatform.com", "Apache License 2.0", "https://github.com/onesaitplatform");
 	}
 }

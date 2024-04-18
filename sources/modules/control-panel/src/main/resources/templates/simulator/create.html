@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -35,15 +35,9 @@
 		<!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND CODEMIRROR  -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-datetimepicker/bootstrap-datetimepicker.min.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}"/>
-		<!-- JSON EDITOR -->
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/json/jsoneditor.css}"/>
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/lib/codemirror.css}"/>
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/neat.css}"/>
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/ambiance.css}"/>
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/material.css}"/>
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/neo.css}"/>
 		<!-- PLUGINS STYLE SHEETS: BOOSTRAP-SELECT AND CODEMIRROR  -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}"/>
+		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/lib/codemirror.css}"/>
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/codemirror/theme/elegant.css}"/>
 
 	</head>	
@@ -59,7 +53,7 @@
 		<!-- END HEADER -->
 		
 		<!-- HEADER AND CONTENT DIVIDER -->
-		<div class="clearfix"></div>
+		<div class="clearfix"> </div>
 			
 		<!-- BEGIN SIDEBAR INCLUDE (MENU) -->
 		<div th:include="fragments/menu::#menuFragment" class="page-sidebar-wrapper"></div>
@@ -74,6 +68,7 @@
 				<!-- BEGIN PAGE BAR AND BREADCRUM-->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/devicesimulation/list}"> <span th:text="#{simulation.breadcrumb.prev}">List</span></a><i class="fa fa-angle-right"></i></li>
 						<li>
 							<span th:if="${simulation.id} == null" th:text="#{simulation.breadcrumb.create}">Create</span>
@@ -84,215 +79,251 @@
 				<!-- END PAGE BAR -->
 				
 				<!-- BEGIN PAGE TITLE-->
+
 				<h1 class="page-title hide "><span th:text="#{name.app}"> onesait platform Control Panel</span></h1>
-				<!-- END PAGE TITLE-->
+
+				<!-- END PAGE TITLE-->			
 				
-				<form role="form" id="simulation_create_form" th:object="${simulation}"  method="post" class="form">
-					<!-- FORM ACTIONS FOR INSERT-->
-					<input th:if="${simulation.id} == null" type="hidden" name="action" th:value="@{/devicesimulation/create}"/>
-					
-					<!-- FORM ACTIONS FOR UPDATE -->											
-					<input th:if="${simulation.id} != null" type="hidden" name="action" th:value="@{/devicesimulation/update/}"/>
-					<input th:if="${simulation.id} != null" type="hidden" name="_method" value="PUT"/>			
-					
-					<!-- VERSIONING -->
-					<th:block th:include="versioning/fragments/form-commit"></th:block>								
-											
-				
-				<div id="header">
-					<div class="row pageCreateHeader">
-						<div class="col-md-6 col-sm-6 col-xs-12">
-							<div class="margin-top-4">
-								<span th:if="${simulation.id} == null" th:text="#{simulation.template.create}"> New</span>
-								<span th:if="${simulation.id} != null" th:text="${simulation.clientPlatform.identification}"> Update</span>
+				<!-- MAIN ROW -->
+				<div class="row">
+					<div class="col-md-12">						
+						<div class="portlet light container">
+							<div class="portlet-title">
+								<div class="caption">								
+									<span th:if="${simulation.id} == null" class="caption-subject " th:text="#{simulation.template.create} + ':'"> New</span>
+									<span th:if="${simulation.id} != null" class="caption-subject " th:text="#{simulation.template.update}"> Update</span>
+								</div>									
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""> </a>																			
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>										
+								</div>
+								<div class="actions hide">
+									<!-- ACTION INDICATORs -->									
+									<span th:if="${simulation?.id} == null" class="label label-success label-sm uppercase"><i class="fa fa-plus"></i> <span th:text="#{gen.mode.insert}">Insert</span></span>
+									<span th:if="${simulation?.id} != null" class="label label-warning label-sm uppercase bold "><i class="fa fa-edit"></i> <span th:text="#{gen.mode.update}">Update</span></span>
+								</div>									
 							</div>
-						</div>
-						
-						<div class="col-md-6 col-sm-6 col-xs-12">
-							<div class="pull-right">
-								<!-- DELETE -->
-								<button sec:authorize="!hasAuthority('ROLE_PARTNER')" th:if="${simulation.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='deleteSimulation(\''+ ${simulation.id}+'\');'"> <i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete</span></button>																																								
-																							
-								<span class="sep" th:if="(${simulation.id} != null)"></span>
+							<div class="portlet-body" style="display: block; height: auto;">
 								
-								<!-- CANCEL -->											
-								<button id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:cancelGo(\''+ ${simulation.id}+'\',\'' + @{/devicesimulation/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
-	
-								<!-- RESET -->
-								<button th:if="${simulation.id} == null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
-								<button th:if="${simulation.id} != null" id="resetBtn" type="button" class="btn btn-outline-search" name="reset"  th:value="#{gen.resetBtn}" disabled="true" ><span th:text="#{gen.resetBtn}"> Reset</span></button>
-									
-								<span class="sep no-border" th:if="(${simulation.id} != null)"></span>
-	
-								<!-- CREATE -->
-								<button th:if="${simulation.id} == null" id="createBtn" type="submit" class="btn btn-primary btn-primary-save" name="create"  th:value="#{gen.createBtn}"><span th:text="#{gen.createBtn}"> New</span></button>
-									
-								<!-- UPDATE -->
-								<button th:if="${simulation.id} != null" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}"><span th:text="#{gen.editBtn}"> Edit</span></button>
-							</div>
-						</div>
-					</div>
-				</div>	
-				
-				<div class="mainPanel">
-					<div class="col-md-4 col-sm-4 col-xs-12  no-padding-top">
-						<div class="row main">
-							<div class="col-md-12 panelHeader">
-								<div class="row main">
-									<span th:text="#{gen.generalInformation}">General Information</span>
-								</div>
-							</div>
-						</div>
-						<div class="row main">
-							<div class="form-group">
-								<div class="col-md-8">
-									<label class="control-label" th:text="#{simulation.identification}">Identification</label><span class="required"> *</span>
-									<input th:required="true" type="text" minlength="10" th:placeholder="#{simulation.identification}" class="form-control" name="identification" id="identification-form" th:value="${simulation.identification}"/>						
-								</div>
-							</div>
-						</div>
-						<div class="row main">						
-							<div class="col-md-8">
-							<!-- USER SELECTION -->
-							<div class="form-group" >
-								<label class="control-label" th:text="#{simulation.clientplatform}">Platform Clients</label><span class="required"> *</span>
-								<input th:if="${simulation.id != null}" type="text" th:name="clientPlatform" id="clientPlatforms" readonly="true" th:required="true" class="form-control" th:value="${simulation.clientPlatform.identification}"/>															
-								<select th:if="${simulation.id == null}" th:disabled="${simulation.id != null}" id="clientPlatforms" name="clientPlatform" class="selectpicker form-control" th:required="true"  data-live-search="true" data-width="100%" onchange="getTokensAndOntologies()" >
-									<option value=""  > </option>
-									<option th:each=" platformClient : ${platformClients}" th:value="${platformClient}" th:text="${platformClient}"/>	
-								</select>
-							</div>
-						</div>
-							
-							
-						</div>	
-						<div class="row main">
-							<div class="form-group">
-								<div class="col-md-8">
-									<label class="control-label" th:text="#{simulation.interval}">Interval</label> <small th:text="#{simulation.interval.seconds}"> </small><span class="required"> *</span>
-									<input th:required="true" type="number" th:placeholder="#{simulation.interval.placeholder}" class="form-control" name="interval"  id="interval" th:value="${simulation.interval} "/>
-									<span id="intervalerror" class="hide" th:text="#{simulation.intervalError}"><i class="la la-warning"></i> Required field</span>
-								</div>
-							</div>
-						</div>
-						<div class="row main">
-							<div  class="col-md-8" id="ontologiesAndTokens"  th:style="${simulation.ontology?.id == null}  ? 'display:none'">
-								<div th:fragment="ontologiesAndTokens" >
-									<div class="">
-										<div class="form-group">
-										<label class="control-label" th:text="#{simulation.select.tokens}">Tokens</label>
-										<th:block th:if="${simulation?.id != null}">
-											<input th:name="token" type="text" id="tokens" readonly="true" th:required="true" class="form-control" th:value="${simulation.token.tokenName}"/>															
-										</th:block>
-										<th:block th:if="${simulation == null}">																
-												<select th:name="token"  id="tokens" th:required="true"  data-width="100%" data-live-search="true" class="select form-control" th:title="#{simulation.tokens}"  >
-												<option th:each="token : ${tokens}" th:value="${token}" th:text="${token}"/>
-												</select>				
-										</th:block>
-										<label class="control-label" th:text="#{simulation.select.ontologies}">Ontologies</label>
-										<th:block th:if="${simulation?.id != null}">
-											<input th:name="ontology" id="ontologies" type="text" readonly="true" th:required="true" class="form-control" th:value="${simulation.ontology.identification}"/>															
-										</th:block>
-										<th:block th:if="${simulation == null}">
-											<select th:required="true" th:name="ontology" th:title="#{simulation.ontologies}" id="ontologies" data-width="100%" data-live-search="true" onchange="getOntologyFields()" class="select form-control" >
-											<option th:each="ontology : ${ontologies}" th:value="${ontology}" th:text="${ontology}"/>
-											</select>									
-										</th:block>														
+								<div class="row">
+									<div class="col-md-12 alert-zone" id="alerts"><!-- ALERTS ZONE -->
+										<div class="alert alert-danger display-hide">
+											<button class="close" data-close="alert"></button> <span th:text="#{gen.form.error}">You have some form errors. Please check below.</span>
 										</div>
+                                        <div class="alert alert-success display-hide">
+											<button class="close" data-close="alert"></button> <span th:text="#{gen.form.success}">Your form validation is successful!</span>
+										</div>		
+										<div class="alert alert-generic display-hide">
+											<button class="close" data-close="alert"></button><span class="alert-exists-text"></span>
+										</div>								
 									</div>
-								</div>
-							</div>
-						</div>
-						<div class="row main">
-							<div id="json_check" class="mt-checkbox-list" th:style="${simulation.ontology?.id == null}  ? 'height: 0px; display:inline-block; padding-left:20px; padding-top: 18px; display:none'">
-								<div class="switch"> 
-									<label>
-										<input id="from-json" th:if="${filterCheck}" class="form-control no-remove" type="checkbox" checked="checked"></input>
-										<input id="from-json" th:if="!${filterCheck}" class="form-control no-remove" type="checkbox"></input>
-										<span class="checkbox-slider round"></span>
-									</label>
-								</div>
-								<div class="inline font-xs" th:text="#{simulation.byjson} + '?'" style="margin-left:7px;color:#505D66;"> Json?</div>
-							</div>
-						</div>
-					</div>
-					<div class="col-md-5 col-sm-5 col-xs-12 border-left padding-left-40 no-padding-top" id="row-panel-info" style="display:none">
-						<div class="row main">
-							<div class="col-md-12 panelHeader">
-								<div id="properties_title" class="row main">
-									<span th:text="#{simulation.byproperties}"> Properties</span>
-								</div>
-								<div id="json_title" class="row main" hidden>
-									<span th:text="#{simulation.byjson}"> Json</span>
-								</div>
-							</div>
-						</div>						
-						<div class="actions hide">
-							<!-- ACTION INDICATORs -->									
-							<span th:if="${simulation?.id} == null" class="label label-success label-sm uppercase"><i class="fa fa-plus"></i> <span th:text="#{gen.mode.insert}">Insert</span></span>
-							<span th:if="${simulation?.id} != null" class="label label-warning label-sm uppercase bold "><i class="fa fa-edit"></i> <span th:text="#{gen.mode.update}">Update</span></span>
-						</div>	
-								
-						<div class="row main">
-							<div id="select-mode" class="form-group hide" style="margin-top:4%" >
-								<label class="font-md popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{simulation.mode.help},data-title=#{simulation.mode}">
-									<div class="inline font-xs"  th:text="#{simulation.mode}">Iterate JSON mode</div>
-								</label>
-								<select id="instances-mode" class="selectpicker form-control" data-live-search="true" data-width="100%" name="instancesMode" >
-									<option value="random" th:text="#{simulation.random}"/>	
-									<option value="sequential" th:text="#{simulation.sequential}"/>													
-								</select>
-							</div>
-							<!-- TABS PROPERTIES/JSON -->
-							<div class="row main" style="box-shadow:0 0 0 0!important" id="tabs">
-								<!-- ONTOLOGY AUTHORIZATION -->
-								<div id="properties_panel" class="col-md-12">
-									<div id="ontologyFields" style="display:none; padding: 8px 12px 8px 12px;">											
-										<div th:fragment="ontologyFields">
-											<script th:inline="javascript">
-												fields = [[${fields}]];
-											</script>
+									<div class="col-md-12">										
+										<form role="form" id="simulation_create_form" th:object="${simulation}"  method="post" class="form" style="margin-top:-30px">
+											<!-- FORM ACTIONS FOR INSERT-->
+											<input th:if="${simulation.id} == null" type="hidden" name="action" th:value="@{/devicesimulation/create}"/>
 											
-											<div th:each="field : ${fields}" class="row main" >
-												<div class="col-md-6 col-sm-6 col-xs-12">
-													<label class="control-label" th:text="${field.key}">fields</label>
-													<select th:id="${#strings.replace(field.key,'.','--')}" th:name="fields" th:title="#{simulation.choose}" data-width="100%" data-live-search="true" class="select form-control" th:attr="onchange='generateSimulatorFunctionDiv(\''+${#strings.replace(field.key,'.','--')}+'\')'" >
-														<option th:text="#{simulation.choose}"/>
-														<option th:each="simulator : ${simulators}"  th:if="${((#strings.toLowerCase(field.value) eq 'string') AND (simulator eq 'NULL' OR #strings.contains(simulator,'STRING')))}" th:value="${simulator}" th:text="${simulator}"/>
-														<option th:each="simulator : ${simulators}"  th:if="${((#strings.toLowerCase(field.value) eq 'number') AND (simulator == 'NULL' OR #strings.contains(simulator,'NUMBER')))}" th:value="${simulator}" th:text="${simulator}"/>
-														<option th:each="simulator : ${simulators}"  th:if="${((#strings.toLowerCase(field.value) eq 'integer' ) AND (simulator == 'NULL' OR #strings.contains(simulator,'INTEGER')))}" th:value="${simulator}" th:text="${simulator}"/>
-														<option th:each="simulator : ${simulators}"  th:if="${((#strings.toLowerCase(field.value) eq 'date') AND (simulator == 'NULL' OR #strings.contains(simulator,'DATE')))}" th:value="${simulator}" th:text="${simulator}"/>
-														<option th:each="simulator : ${simulators}"  th:if="${(#strings.toLowerCase(field.value) eq 'boolean') AND (#strings.contains(simulator,'BOOLEAN')) }" th:value="${simulator}" th:text="${simulator}"/>
-													</select>
-													
-													<input type="hidden" th:value="simulator+${field.key}"/>	
+											<!-- FORM ACTIONS FOR UPDATE -->											
+											<input th:if="${simulation.id} != null" type="hidden" name="action" th:value="@{/devicesimulation/update/}"/>
+											<input th:if="${simulation.id} != null" type="hidden" name="_method" value="PUT"/>											
+											
+											<div class="form-body">
+												
+												<!-- Ontologies,ClientPlatform,Tokens-->
+												<div class="row" id="row-not-new">
+													<div class="col-md-4 col-sm-6 col-xs-12">
+														<div class="form-group">
+															<label class="control-label" th:text="#{simulation.identification} + ':'">Identification</label>
+															<input th:required="true" type="text" minlength="10" th:placeholder="#{simulation.identification}" class="form-control" name="identification" id="identification-form" th:value="${simulation.identification}"/>	
+														</div>
+													</div>													
+
+													<div class="col-md-3 col-sm-6 col-xs-12">
+														<div class="form-group">
+															<label class="control-label" th:text="#{simulation.clientplatform} + ':'">Platform Clients</label>
+															<th:block th:if="${simulation.id != null}">
+																<input type="text" th:name="clientPlatform" id="clientPlatforms" readonly="true" th:required="true" class="form-control" th:value="${simulation.clientPlatform.identification}"/>															
+															</th:block>
+															<th:block th:if="${simulation.id == null}">
+																<select th:required="true"  th:name="clientPlatform" id="clientPlatforms" data-width="100%" class="form-control" th:classappend="${simulation.id != null} ? select:selectpicker" data-live-search="true" onchange="getTokensAndOntologies()" th:title="#{simulation.clients}" >
+																	<option th:each=" platformClient : ${platformClients}" th:value="${platformClient}" th:text="${platformClient}"/>																
+																</select>																											
+															</th:block>										
+															
+														</div>
+													</div>
+
+													<div class="col-md-4 col-sm-6 col-xs-12">
+														<div class="form-group">
+															<label class="control-label" th:text="#{simulation.interval} + ':'">Interval</label>
+															<input th:required="true" type="number" th:placeholder="#{simulation.interval.placeholder}" class="form-control" name="interval"  id="interval" th:value="${simulation.interval} "/>
+														</div>
+													</div>
 												</div>
-												<div th:id="${#strings.replace(field.key,'.','--')}+'Div'" style="display:none">
+												<div class="row">
+													<div  class="col-md-4 col-sm-6 col-xs-12" id="ontologiesAndTokens"  th:style="${simulation.ontology?.id == null}  ? 'display:none'">
+														<div th:fragment="ontologiesAndTokens" >
+															<div class="">
+																<div class="form-group">
+																<label class="control-label" th:text="#{simulation.select.tokens} + ':'">Tokens</label>
+																<th:block th:if="${simulation?.id != null}">
+																	<input th:name="token" type="text" id="tokens" readonly="true" th:required="true" class="form-control" th:value="${simulation.token.tokenName}"/>															
+																</th:block>
+																<th:block th:if="${simulation == null}">																
+																		<select th:name="token"  id="tokens" th:required="true"  data-width="100%" data-live-search="true" class="select form-control" th:title="#{simulation.tokens}"  >
+																		<option th:each="token : ${tokens}" th:value="${token}" th:text="${token}"/>
+																		</select>				
+																</th:block>
+																<label class="control-label" th:text="#{simulation.select.ontologies} + ':'">Ontologies</label>
+																<th:block th:if="${simulation?.id != null}">
+																	<input th:name="ontology" id="ontologies" type="text" readonly="true" th:required="true" class="form-control" th:value="${simulation.ontology.identification}"/>															
+																</th:block>
+																<th:block th:if="${simulation == null}">
+																	<select th:required="true" th:name="ontology" th:title="#{simulation.ontologies}" id="ontologies" data-width="100%" data-live-search="true" onchange="getOntologyFields()" class="select form-control" >
+																	<option th:each="ontology : ${ontologies}" th:value="${ontology}" th:text="${ontology}"/>
+																	</select>									
+																</th:block>														
+																</div>
+															</div>
+														
+														</div>
+													</div>
+												</div>
+												<div class="row">	
+													<div class="col-md-3 col-sm-6 col-xs-12">
+														<div class="form-group">
+															<div class="mt-checkbox-list">
+																<label class="mt-checkbox font-md popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{simulation.fromjson},data-title=#{simulation.by}">
+																 
+																<div class="inline font-xs" th:text="#{simulation.byjson} + '?'">JSON?</div>
+																	<input id="from-json" type="checkbox" class="form-control no-remove" />
+																	<span></span><!-- needed by styles -->
+																</label>
+															</div>
+															<div id="select-mode" class="form-group hide" style="margin-top:4%" >
+																<label class="font-md popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{simulation.mode.help},data-title=#{simulation.mode}">
+																	<div class="inline font-xs"  th:text="#{simulation.mode}">Iterate JSON mode</div>
+																</label>
+																<select id="instances-mode" class="selectpicker form-control" data-live-search="true" data-width="100%" name="instancesMode" >
+																	<option value="random" th:text="#{simulation.random}"/>	
+																	<option value="sequential" th:text="#{simulation.sequential}"/>													
+																</select>
+															</div>
+														</div>
+													</div>
+												</div>
+													
+													
+												<!-- TABS PROPERTIES/JSON -->
+												<div class="portlet light" style="box-shadow:0 0 0 0!important" id="tabs">
+													<div class="portlet-title tabbable-line">									
+														<ul class="nav nav-tabs pull-left">
+															<li id="tab-properties" class="active">
+																<a href="#tab_1" data-toggle="tab" aria-expanded="false">		
+																	<label class="font-md popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{simulation.byproperties.help},data-title=#{simulation.byproperties}">
+																		<i class="fa fa-info"></i> 
+																	</label>
+																	<span class="caption-subject " th:text="#{simulation.byproperties}"> Fields</span>
+																	
+																</a>
+															</li>
+															<li id="tab-json" class="hide">
+																<a href="#tab_2" data-toggle="tab" aria-expanded="true" > 
+																	<label class="font-md popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{simulation.byjson.help},data-title=#{simulation.byjson}">
+																		<i class="fa fa-info"></i> 
+																	</label>
+																	<span th:text="#{simulation.byjson}" >JSON </span>
+													
+																</a>
+															</li>
+															
+														</ul>
+													</div>
+													<div class="portlet-body" style="display: block; height: auto;">
+														<div class="tab-content">
+														<!-- TAB PROPERTIES -->
+															<div class="tab-pane active" id="tab_1">
+															<!-- ONTOLOGY AUTHORIZATION -->
+																<div class="row">
+																	<div id="ontologyFields" style="display:none; padding: 8px 12px 8px 12px;">
+																
+																	<div th:fragment="ontologyFields">
+																			<script th:inline="javascript">
+																				fields = "[[${fields}]]";
+																				fields = JSON.parse(fields.replace(/'/g,"\""));
+																			</script>
+																			<div th:each="field : ${fields}" class="row" >
+																				
+																				<div class="col-md-3 col-sm-6 col-xs-12">
+																					<div class="form-group">
+																						<label class="control-label" th:text="${field.key} + ':'">fields</label>
+																						<select th:id="${#strings.replace(field.key,'.','--')}" th:name="fields" th:title="#{simulation.choose}" data-width="100%" data-live-search="true" class="select form-control" th:onchange="'generateSimulatorFunctionDiv(\''+${#strings.replace(field.key,'.','--')}+'\')'" >
+																							<option th:text="#{simulation.choose}"/>
+																							<option th:each="simulator : ${simulators}"  th:if="${((#strings.toLowerCase(field.value) eq 'string') AND (simulator eq 'NULL' OR #strings.contains(simulator,'STRING')))}" th:value="${simulator}" th:text="${simulator}"/>
+																							<option th:each="simulator : ${simulators}"  th:if="${((#strings.toLowerCase(field.value) eq 'number') AND (simulator == 'NULL' OR #strings.contains(simulator,'NUMBER')))}" th:value="${simulator}" th:text="${simulator}"/>
+																							<option th:each="simulator : ${simulators}"  th:if="${((#strings.toLowerCase(field.value) eq 'integer' ) AND (simulator == 'NULL' OR #strings.contains(simulator,'INTEGER')))}" th:value="${simulator}" th:text="${simulator}"/>
+																							<option th:each="simulator : ${simulators}"  th:if="${((#strings.toLowerCase(field.value) eq 'date') AND (simulator == 'NULL' OR #strings.contains(simulator,'DATE')))}" th:value="${simulator}" th:text="${simulator}"/>
+																							<option th:each="simulator : ${simulators}"  th:if="${(#strings.toLowerCase(field.value) eq 'boolean') AND (#strings.contains(simulator,'BOOLEAN')) }" th:value="${simulator}" th:text="${simulator}"/>
+																						</select>
+																						<input type="hidden" th:value="simulator+${field.key}"/>																	
+																					</div>
+																				</div>
+																				
+																				<div th:id="${#strings.replace(field.key,'.','--')}+'Div'" style="display:none">
+																				</div>
+																			</div>
+																	</div>
+																	</div>
+																</div>
+															</div>
+															<!-- TAB JSON INSTANCES -->
+															<div class="tab-pane " id="tab_2">
+																<div class="row">
+																	<textarea id="jsonTextArea" name="json" class="form-control" rows="5" data-min-rows='5'></textarea>
+																</div>
+															
+															</div>
+														</div>
+													</div>
 												</div>
 											</div>
-										</div>
-									</div>
+											
+											<!-- FORM BUTTONS -->
+											<div class="form-actions">
+												<div class="pull-left">
+													<!-- CANCEL TO-DO: authentication and control -->
+													<button  id="cancelBtn" type="button" class="btn btn-circle btn-outline blue no-border" name="cancel"  th:value="#{gen.cancelBtn}" value="cancel" th:onclick="'javascript:navigateUrl(\'' + @{/devicesimulation/list} + '\');'"><i class="la la-arrow-left"></i><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
+												</div>
+												<div class="pull-right">
+													
+
+													<!-- REMOVE -->
+													<button sec:authorize="!hasAuthority('ROLE_PARTNER')" th:if="${simulation.id != null}" id="deleteBtn" type="button" class="btn btn-circle btn-outline blue" name="delete"  value="Remove" th:onclick="'deleteSimulation(\''+ ${simulation.id}+'\');'" ><span th:text="#{gen.deleteBtn}"> Delete </span></button>
+													
+													<span class="sep" ></span>
+													
+													<!-- CREATE -->
+													<button th:if="${simulation.id} == null" id="createBtn" type="button" class="btn btn-circle btn-outline btn-primary " name="create"  th:value="#{gen.createBtn}" onclick="submitForm('simulation_create_form')"><span th:text="#{gen.createBtn}"> New</span></button>
+													<!-- UPDATE -->
+													<button th:if="${simulation.id} != null" id="updateBtn" type="button" class="btn btn-circle btn-outline btn-primary " name="update"  th:value="#{gen.editBtn}" onclick="submitForm('simulation_create_form')" ><span th:text="#{gen.editBtn}"> Edit</span></button>
+													
+													
+												</div>
+											</div>
+											<input type="hidden" name="jsonMap" id="jsonMap"/>	
+											<input type="hidden" name="jsonInstances" id="jsonInstances"/>											
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+										
+										<!-- AUXILIAR FORM TO DELETE USER -->
+										<form id="delete_twitterListening_form" class="delete-twitterListening hide"  action=""  method="post">
+											<input type="hidden" name="_method" value="DELETE"/>
+											<input type="hidden" name="userId" th:value="*{id}"/>
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
+									</div>									
 								</div>
-								<!-- TAB JSON INSTANCES -->
-								<div class="col-md-12" id="json_panel" hidden>
-									<div id="jsoneditor" style="height: 350px;"></div>
-								</div>
-							</div>								
-						</div>
-							
-									
-					</div><!-- END MAIN ROW -->
-				</div>
-				<input type="hidden" name="jsonMap" id="jsonMap"/>	
-				<input type="hidden" name="jsonInstances" id="jsonInstances"/>											
-				<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>				
-				
-				<!-- AUXILIAR FORM TO DELETE USER -->
-				<form id="delete_twitterListening_form" class="delete-twitterListening hide"  action=""  method="post">
-					<input type="hidden" name="_method" value="DELETE"/>
-					<input type="hidden" name="userId" th:value="*{id}"/>
-				<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>
-				
+							</div>
+						</div><!-- END PORTLET BASIC  -->						
+					</div><!-- END COL-12 -->						
+				</div><!-- END MAIN ROW -->
 				<!-- Modal -->
 				<div id="returnAction" class="modal fade" role="dialog" style="text-align:center">
 					<div class="modal-dialog modal-sm">
@@ -318,11 +349,11 @@
 	<div id="RANDOM_INTEGER" style="display: none">
 		<div class="col-md-3 col-sm-3 col-xs-6" >
 			<div class="form-group">
-				<label class="control-label" th:text="#{simulation.integer.begin}"> Begin</label>
+				<label class="control-label" th:text="#{simulation.integer.begin} + ':'"> Begin</label>
 				<input name="from" id="integerBegin" type="number" maxlength="7" class="form-control no-remove" th:placeholder="#{simulation.integer.begin}"/>		
 			</div>
 			<div class="form-group">
-				<label class="control-label" th:text="#{simulation.integer.end}"> End</label>
+				<label class="control-label" th:text="#{simulation.integer.end} + ':'"> End</label>
 				<input name="to" id="integerEnd" type="number" maxlength="7" class="form-control no-remove" th:placeholder="#{simulation.integer.end}"/>			
 			</div>
 		</div>
@@ -330,15 +361,15 @@
 	<div id="RANDOM_NUMBER" style="display: none">
 		<div class="col-md-3 col-sm-3 col-xs-6" >
 			<div class="form-group">
-				<label class="control-label" th:text="#{simulation.number.begin}"> Begin</label>
+				<label class="control-label" th:text="#{simulation.number.begin} + ':'"> Begin</label>
 				<input name="from" id="numberBegin" type="number" step="any" maxlength="7" class="form-control no-remove" th:placeholder="#{simulation.number.begin}"/>		
 			</div>
 			<div class="form-group">
-				<label class="control-label" th:text="#{simulation.number.end}"> End</label>
+				<label class="control-label" th:text="#{simulation.number.end} + ':'"> End</label>
 				<input name="to" id="numberEnd" type="number" step="any" maxlength="7" class="form-control no-remove" th:placeholder="#{simulation.number.end}"/>			
 			</div>
 			<div class="form-group">
-				<label class="control-label" th:text="#{simulation.number.precision}"> Precision</label>
+				<label class="control-label" th:text="#{simulation.number.precision} + ':'"> Precision</label>
 				<input name="precision" id="numberPrecision" type="number" step="any" maxlength="7" class="form-control no-remove" th:placeholder="#{simulation.number.precision}"/>			
 			</div>
 		</div>
@@ -346,7 +377,7 @@
 	<div id="FIXED_NUMBER" style="display: none">
 		<div class="col-md-3 col-sm-3 col-xs-6" >
 			<div class="form-group">
-				<label class="control-label" th:text="#{simulation.number.fixed}"> Value </label>
+				<label class="control-label" th:text="#{simulation.number.fixed} + ':'"> Value </label>
 				<input name="value" id="numberValue" type="number" step="any" maxlength="7" class="form-control no-remove" th:placeholder="#{simulation.number.fixed}"/>		
 			</div>		
 		</div>
@@ -354,7 +385,7 @@
 	<div id="FIXED_INTEGER" style="display: none">
 		<div class="col-md-3 col-sm-3 col-xs-6" >
 			<div class="form-group">
-				<label class="control-label" th:text="#{simulation.integer.fixed}"> Value </label>
+				<label class="control-label" th:text="#{simulation.integer.fixed} + ':'"> Value </label>
 				<input name="value" id="integerValue" type="number" maxlength="7" class="form-control no-remove" th:placeholder="#{simulation.integer.fixed}"/>		
 			</div>		
 		</div>
@@ -362,25 +393,37 @@
 	<div id="COSINE_NUMBER" style="display: none">
 		<div class="col-md-3 col-sm-3 col-xs-6" >
 			<div class="form-group">
-				<label class="control-label" th:text="#{simulation.cosine.base}"> Base </label>
+				<label class="control-label" th:text="#{simulation.cosine.base} + ':'"> Base </label>
 				<input name="angle" id="cosineAngle" type="number" maxlength="7" step="any" class="form-control no-remove" th:placeholder="#{simulation.cosine.base}"/>		
 			</div>
 			<div class="form-group">
-				<label class="control-label" th:text="#{simulation.cosine.multiplier}"> Multiplier </label>
+				<label class="control-label" th:text="#{simulation.cosine.multiplier} + ':'"> Multiplier </label>
 				<input name="multiplier" id="cosineMultiplier" type="number" step="any" maxlength="7" class="form-control no-remove" th:placeholder="#{simulation.cosine.multiplier}"/>			
 			</div>
+			<!--
+			<div class="form-group">
+				<label class="control-label" th:text="#{simulation.cosine.steps} + ':'"> Steps </label>
+				<input name="steps" id="cosineSteps" type="number" maxlength="7" class="form-control no-remove" th:placeholder="#{simulation.cosine.steps}"/>			
+			</div>
+			-->
 		</div>
 	</div>
 	<div id="SINE_NUMBER" style="display: none">
 		<div class="col-md-3 col-sm-3 col-xs-6" >
 			<div class="form-group">
-				<label class="control-label" th:text="#{simulation.sine.base}"> Base </label>
+				<label class="control-label" th:text="#{simulation.sine.base} + ':'"> Base </label>
 				<input name="angle" id="sineAngle" type="number" step="any" maxlength="7" class="form-control no-remove" th:placeholder="#{simulation.sine.base}"/>		
 			</div>
 			<div class="form-group">
-				<label class="control-label" th:text="#{simulation.sine.multiplier}"> Multiplier </label>
+				<label class="control-label" th:text="#{simulation.sine.multiplier} + ':'"> Multiplier </label>
 				<input name="multiplier" id="sineMultiplier" type="number" step="any" maxlength="7" class="form-control no-remove" th:placeholder="#{simulation.sine.multiplier}"/>			
 			</div>
+			<!--
+			<div class="form-group">
+				<label class="control-label" th:text="#{simulation.sine.steps} + ':'"> Steps </label>
+				<input name="steps" id="sineSteps" type="number" maxlength="7" class="form-control no-remove" th:placeholder="#{simulation.sine.steps}"/>
+			</div>
+			-->
 		</div>
 	</div>
 
@@ -388,7 +431,7 @@
 	<div id="RANDOM_STRING" style="display: none"> 
 		<div  class="col-md-6 col-sm-3 col-xs-6" >	
 			<div class="form-group">
-				<label class="control-label" th:text="#{simulation.string.random}"> Begin</label>
+				<label class="control-label" th:text="#{simulation.string.random} + ':'"> Begin</label>
 				<input name="list" id="stringList" type="text" maxlength="256" class="form-control no-remove" th:placeholder="#{simulation.string.list}"/>		
 			</div>
 		</div>
@@ -396,7 +439,7 @@
 	<div id="FIXED_STRING" style="display: none">
 		<div class="col-md-3 col-sm-3 col-xs-6" >
 			<div class="form-group">
-				<label class="control-label" th:text="#{simulation.string.fixed}"> Begin</label>
+				<label class="control-label" th:text="#{simulation.string.fixed} + ':'"> Begin</label>
 				<input name="value" id="stringValue" type="text" maxlength="256" class="form-control no-remove" th:placeholder="#{simulation.string.fixed}"/>		
 			</div>
 		</div>
@@ -405,11 +448,11 @@
 	<div id="RANDOM_DATE" style="display: none"> 
 		<div  class="col-md-3 col-sm-3 col-xs-6" >	
 			<div class="form-group">
-				<label class="control-label" th:text="#{simulation.date.from}"> Begin</label>
+				<label class="control-label" th:text="#{simulation.date.from} + ':'"> Begin</label>
 				<input name="from" id="dateFrom" type="text" class="form-control datetime  no-remove" th:placeholder="#{simulation.date.from}"/>	
 			</div>
 			<div class="form-group">
-				<label class="control-label" th:text="#{simulation.date.to}"> End</label>
+				<label class="control-label" th:text="#{simulation.date.to} + ':'"> End</label>
 				<input name="to" id="dateTo" type="text" class="form-control datetime no-remove" th:placeholder="#{simulation.date.to}"/>	
 			</div>
 		</div>
@@ -417,7 +460,7 @@
 	<div id="FIXED_DATE" style="display: none">
 		<div class="col-md-3 col-sm-3 col-xs-6" >
 			<div class="form-group">
-				<label class="control-label" th:text="#{simulation.date.fixed}"> Value</label>
+				<label class="control-label" th:text="#{simulation.date.fixed} + ':'"> Value</label>
 				<input id="dateFixed" name="value" type="text" class="form-control datetime  no-remove" th:placeholder="#{simulation.date.fixed}"/>
 			</div>
 		</div>
@@ -425,7 +468,7 @@
 	<div id="FIXED_BOOLEAN" style="display: none">
 		<div class="col-md-3 col-sm-3 col-xs-6" >
 			<div class="form-group">
-				<label class="control-label" th:text="#{simulation.boolean.fixed}"> Value</label>
+				<label class="control-label" th:text="#{simulation.boolean.fixed} + ':'"> Value</label>
 				<input id="booleanFixed" name="value" type="text" class="form-control datetime  no-remove" th:placeholder="#{simulation.boolean.fixed}"/>
 			</div>
 		</div>
@@ -443,42 +486,32 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>
 	
 	<!-- CORE JS CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"></script>
-	<script th:src="@{/static/js/layout.js}"></script>
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
-	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
-	<script th:src="@{/static/vendor/codemirror/lib/codemirror.js}"></script>
-	<script th:src="@{/static/vendor/codemirror/mode/javascript/javascript.js}" ></script>
-	<script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" ></script>
-	<script th:src="@{/static/vendor/codemirror/addon/edit/closebrackets.js}" ></script>
-	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" ></script>
-	<script th:src="@{/static/vendor/codemirror/addon/comment/comment.js}" ></script>
-	<script th:src="@{/static/vendor/codemirror/addon/comment/continuecomment.js}" ></script>
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"/>
+	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"/>
+	<script th:src="@{/static/vendor/codemirror/lib/codemirror.js}"/>
+	<script th:src="@{/static/vendor/codemirror/mode/javascript/javascript.js}" />
+	<script th:src="@{/static/vendor/codemirror/addon/edit/matchbrackets.js}" />
+	<script th:src="@{/static/vendor/codemirror/addon/edit/closebrackets.js}" />
+	<script th:src="@{/static/vendor/codemirror/addon/selection/active-line.js}" />
+	<script th:src="@{/static/vendor/codemirror/addon/comment/comment.js}" />
+	<script th:src="@{/static/vendor/codemirror/addon/comment/continuecomment.js}" />
 	<!-- BEAUTIFIER -->
-	<script src="/controlpanel/static/vendor/beautify/beautify.js"></script>
-	<script src="/controlpanel/static/vendor/beautify/beautify-css.js"></script>
-	<script src="/controlpanel/static/vendor/beautify/beautify-html.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.7.5/beautify.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.7.5/beautify-css.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.7.5/beautify-html.js"></script>
 
 	
-	<script th:src="@{/static/vendor/moment.js}"></script>	
-	<script th:src="@{/static/vendor/bootstrap-datetimepicker/bootstrap-datetimepicker.min.js}"></script>
-	<script th:src="@{/static/vendor/jquery-validation/jquery.validate.js}"></script>
+	<script th:src="@{/static/vendor/moment.js}"/>	
+	<script th:src="@{/static/vendor/bootstrap-datetimepicker/bootstrap-datetimepicker.min.js}"/>
+	
 	<script th:src="@{/static/vendor/jquery-validation/jquery.validate.min.js}" type="text/javascript"></script>
     <script th:src="@{/static/vendor/jquery-validation/additional-methods.min.js}" type="text/javascript"></script>
     <script th:src="@{/static/vendor/jquery-ui/jquery-ui.min.js}" type="text/javascript"></script>
 	
-	<!-- INPUTMASK -->
-	<script th:src="@{/static/vendor/jquery-inputmask/dist/min/jquery.inputmask.bundle.min.js}"></script>
-	
-	<!-- JSON EDITOR -->	
-	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>
-	
-	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
-	<script th:src="@{/static/vendor/ace/mode-json.js}"></script>
-	<script th:src="@{/static/vendor/ace/theme-textmate.js}"></script>	
-		
 		
 	<!-- TEMPLATE CONTROLLER  -->	
 
@@ -489,7 +522,7 @@
 	<script  th:inline="javascript">
 	var simulationJson = JSON.parse([[${simulation.json}]]) ;
 	var currentLanguage = [[${lang}]];	
-	var simulationId = [[${simulation.id}]];
+	
 	
 	var ScheduledSearchCreateJson = { 
 		"close" : [[#{gen.closeBtn}]],		
@@ -503,105 +536,77 @@
 			useCurrent: true
 		});
 	}
-	
-	// INPUT MASK FOR ontology identification allow only letters, numbers and -_
-	$("#identification-form").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
-	
-	var dataModelCreateJson = { 	
-			"language" : currentLanguage,
-			"validform": {
-				"emptyfields": [[#{gen.requiredField}]],
-				"minLength": [[#{simulation.minLength}]]
-			}
-		};
-	
 	var defaultOption=[[#{simulation.choose}]];
 	// LOAD DATA TO USE IN MENUCONTROLLER
 	// MENU CONTROLLER LOAD AND INIT ITSELF
 	$( document ).ready(function() {
 		
-		$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
-			$('.form').validate().element('#' + event.target.id);                // checks form for validity
-		});		
-		
-		
-		 
-		$('#clientPlatforms').parent().focusout (function(){
-				$('#simulation_create_form').validate().element('#clientPlatforms');
-		} );
-		
-		
-		
-		/*$('.selectpicker').filter('[required]').parent().bind('blur',   function(event) {
-			if (event.currentTarget.getElementsByTagName('select')[0]){
-				$('.form').validate().element('#' + event.currentTarget.getElementsByTagName('select')[0].getAttribute('id'));
-			}
-		})*/
-		handleValidation();
-		
-		// Reset form
-		$('#resetBtn').on('click',function(){ 
-			cleanFields('simulation_create_form');
-			$("#row-panel-info").hide();
-			$("#interval").val(0); 
-			$("#ontologiesAndTokens").hide();
-			$("#json_check").hide();
-			$("#tabs").hide();
-			$("#ontologyFields").hide();
-			if ($('#from-json').is(":checked")){
-				$('#from-json').trigger('click');
-			}
-		});
-		
-		var container = document.getElementById('jsoneditor');	
-		var options = {
-			mode: 'text',
-			theme: 'bootstrap3',			
-			modes: ['text'], // allowed modes
-			error: function (err) {
-				$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: err.toString()});
-				return false;
-			}
-		};
-		
-		editor = new jsoneditor.JSONEditor(container, options, "");
-		
-		currentFormat =  'MM/DD/YYYY HH:mm:ss';
-		
-		//show elrow-panel-info when editing
-		if(simulationId != null){$("#row-panel-info").show();}
+		currentFormat =  'MM/DD/YYYY HH:mm:ss';    
+
+		$("#tabs").tabs();
 	    
 		//initialize event handler on checkbox
-		$('#from-json').on('change', function(){
+		$('#from-json').on('click', function(){
 			if($("#from-json").is(':checked')){
 				$('#select-mode').removeClass('hide');
-				$('#properties_title').hide();
-				$('#json_title').show();
-				$('#properties_panel').hide();
-				$('#json_panel').show();
-				$("#row-panel-info").show();
+				$('#tab-json').removeClass('hide');
+				$('#tab-json').addClass('active');
+				$('#tab-properties').addClass('hide');
+				$('#tab-properties').removeClass('active');
+				$("#tabs").tabs("option", "active", 1);
 			}
 			else{
 				$('#select-mode').addClass('hide');
-				$('#json_title').hide();
-				$('#properties_title').show();
-				$('#json_panel').hide();
-				$('#properties_panel').show();
-				$("#row-panel-info").show();
+				$('#tab-json').addClass('hide');
+				$('#tab-json').removeClass('active');
+				$('#tab-properties').removeClass('hide');
+				$('#tab-properties').addClass('active');
+				$("#tabs").tabs("option", "active", 0);
 			}
+				
 		});
+
 		
+		var myTextArea = document.getElementById('jsonTextArea');
+        myCodeMirror = CodeMirror.fromTextArea(myTextArea, {
+        	mode: "application/ld+json",
+        	autoCloseBrackets: true,
+            matchBrackets: true,
+            styleActiveLine: true,
+            theme:"elegant",
+            lineWrapping: true
+
+        });
+        myCodeMirror.setSize("100%", 500);
+		//Refresh code mirror when tab changes
+        $("#tabs").tabs({
+	        activate: function(event, ui) {
+	           myCodeMirror.setValue(js_beautify(myCodeMirror.getValue()));
+	           myCodeMirror.refresh();
+	        }
+	    });
+        
 		if(simulationJson !=null)
-		{				
+		{
+			
 			if(simulationJson.instances != null){
-				editor.set(simulationJson.instances);
+				myCodeMirror.setValue(JSON.stringify(simulationJson.instances));
 				$('#from-json').trigger('click');
 				if(simulationJson.instancesMode != null)
 					$('#instances-mode').val(simulationJson.instancesMode).change()
-			}			
+			}
+		
 			getOntologyFields();
-		}
-
+			
+				
+				
+		}else
+			$('#tabs').hide()
+		
+		
+		
+		
+		
 	});
    
 	</script>	

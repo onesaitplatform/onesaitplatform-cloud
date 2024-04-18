@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,13 +24,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.router.service.app.model.RulesEngineModel;
 import com.minsait.onesait.platform.rulesengine.service.RulesEngineService;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @RestController
 public class RulesEngineController {
 
@@ -39,9 +35,8 @@ public class RulesEngineController {
 
 	@PostMapping("advice")
 	public ResponseEntity<String> adviceNotification(@RequestBody RulesEngineModel model) throws GenericOPException {
-		final String verticalSchema = MultitenancyContextHolder.getVerticalSchema();
-		final String tenant = MultitenancyContextHolder.getTenantName();
-		rulesEngineService.executeRulesAsync(model.getOntology(), model.getJson(), verticalSchema, tenant);
+
+		rulesEngineService.executeRulesAsync(model.getOntology(), model.getJson());
 
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
@@ -55,7 +50,6 @@ public class RulesEngineController {
 				final String output = rulesEngineService.executeRestRule(identification, jsonInput);
 				return new ResponseEntity<>(output, HttpStatus.OK);
 			} catch (final Exception e) {
-				log.error("Error executing Rest Rule", e);
 				return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package com.minsait.onesait.platform.flowengine.audit.aop;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -23,16 +22,12 @@ import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.audit.aop.BaseAspect;
 import com.minsait.onesait.platform.audit.bean.OPAuditError;
 import com.minsait.onesait.platform.audit.bean.OPAuditEvent.OperationType;
 import com.minsait.onesait.platform.commons.flow.engine.dto.FlowEngineDomain;
-import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineInvokeRestApiOperationRequest;
-import com.minsait.onesait.platform.flowengine.api.rest.pojo.MailRestDTO;
-import com.minsait.onesait.platform.flowengine.api.rest.pojo.NotebookInvokeDTO;
 import com.minsait.onesait.platform.flowengine.audit.bean.FlowEngineAuditEvent;
 
 import lombok.extern.slf4j.Slf4j;
@@ -96,86 +91,24 @@ public class FlowEngineAuditableAspect extends BaseAspect {
 
 	}
 
-	@AfterReturning(returning = "retVal", pointcut = "@annotation(auditable) && args(ontologyIdentificator, queryType, query, domainName,..)"
+	@AfterReturning(returning = "retVal", pointcut = "@annotation(auditable) && args(ontologyIdentificator, queryType, query, authentication,..)"
 			+ " && execution (* com.minsait.onesait.platform.flowengine.api.rest.service.impl.FlowEngineNodeServiceImpl.submitQuery(..))")
 	public void processSubmitQuery(JoinPoint joinPoint, FlowEngineAuditable auditable, String ontologyIdentificator,
-			String queryType, String query, String domainName, String retVal) {
+			String queryType, String query, String authentication, String retVal) {
 
 		final FlowEngineAuditEvent event = flowEngineAuditProcessor.getQueryEvent(ontologyIdentificator, query,
-				queryType, retVal, domainName);
+				queryType, retVal, authentication);
 
 		eventProducer.publish(event);
 	}
 
-	@AfterReturning(returning = "retVal", pointcut = "@annotation(auditable) && args(ontology, data, domainName,..)"
+	@AfterReturning(returning = "retVal", pointcut = "@annotation(auditable) && args(ontology, data, authentication,..)"
 			+ " && execution (* com.minsait.onesait.platform.flowengine.api.rest.service.impl.FlowEngineNodeServiceImpl.submitInsert(..))")
 	public void processInsert(JoinPoint joinPoint, FlowEngineAuditable auditable, String ontology, String data,
-			String domainName, String retVal) {
+			String authentication, String retVal) {
 
-		final FlowEngineAuditEvent event = flowEngineAuditProcessor.getInsertEvent(ontology, data, retVal, domainName);
-
-		eventProducer.publish(event);
-	}
-
-	@AfterReturning(returning = "retVal", pointcut = "@annotation(auditable) && args(notebookInvocationData,..)"
-			+ " && execution (* com.minsait.onesait.platform.flowengine.api.rest.service.impl.FlowEngineNodeServiceImpl.invokeNotebook(..))")
-	public void processInvokeNotebook(JoinPoint joinPoint, FlowEngineAuditable auditable,
-			NotebookInvokeDTO notebookInvocationData, ResponseEntity<String> retVal) {
-
-		final FlowEngineAuditEvent event = flowEngineAuditProcessor.processInvokeNotebook(notebookInvocationData,
-				retVal);
-
-		eventProducer.publish(event);
-	}
-
-	@AfterReturning(returning = "retVal", pointcut = "@annotation(auditable) && args(invokeRequest,..)"
-			+ " && execution (* com.minsait.onesait.platform.flowengine.api.rest.service.impl.FlowEngineNodeServiceImpl.invokeRestApiOperation(..))")
-	public void processInvokeAPI(JoinPoint joinPoint, FlowEngineAuditable auditable,
-			FlowEngineInvokeRestApiOperationRequest invokeRequest, ResponseEntity<String> retVal) {
-
-		final FlowEngineAuditEvent event = flowEngineAuditProcessor.processInvokeAPI(invokeRequest, retVal);
-
-		eventProducer.publish(event);
-	}
-
-	@AfterReturning(returning = "retVal", pointcut = "@annotation(auditable) && args(domainName,pipelineIdentification,..)"
-			+ " && execution (* com.minsait.onesait.platform.flowengine.api.rest.service.impl.FlowEngineNodeServiceImpl.getPipelineStatus(..))")
-	public void processCheckDataflowStatus(JoinPoint joinPoint, FlowEngineAuditable auditable, String domainName,
-			String pipelineIdentification, ResponseEntity<String> retVal) {
-
-		final FlowEngineAuditEvent event = flowEngineAuditProcessor.processCheckDataflowStatus(domainName,
-				pipelineIdentification, retVal);
-
-		eventProducer.publish(event);
-	}
-
-	@AfterReturning(returning = "retVal", pointcut = "@annotation(auditable) && args(domainName,pipelineIdentification,..)"
-			+ " && execution (* com.minsait.onesait.platform.flowengine.api.rest.service.impl.FlowEngineNodeServiceImpl.stopDataflow(..))")
-	public void processStopDataflow(JoinPoint joinPoint, FlowEngineAuditable auditable, String domainName,
-			String pipelineIdentification, ResponseEntity<String> retVal) {
-
-		final FlowEngineAuditEvent event = flowEngineAuditProcessor.processStopDataflow(domainName,
-				pipelineIdentification, retVal);
-
-		eventProducer.publish(event);
-	}
-
-	@AfterReturning(returning = "retVal", pointcut = "@annotation(auditable) && args(domainName,pipelineIdentification,..)"
-			+ " && execution (* com.minsait.onesait.platform.flowengine.api.rest.service.impl.FlowEngineNodeServiceImpl.startDataflow(..))")
-	public void processStartDataflow(JoinPoint joinPoint, FlowEngineAuditable auditable, String domainName,
-			String pipelineIdentification, ResponseEntity<String> retVal) {
-
-		final FlowEngineAuditEvent event = flowEngineAuditProcessor.processStartDataflow(domainName,
-				pipelineIdentification, retVal);
-
-		eventProducer.publish(event);
-	}
-
-	@AfterReturning(pointcut = "@annotation(auditable) && args(mail,..)"
-			+ " && execution (* com.minsait.onesait.platform.flowengine.api.rest.service.impl.FlowEngineNodeServiceImpl.sendMail(..))")
-	public void processSendMail(JoinPoint joinPoint, FlowEngineAuditable auditable, MailRestDTO mail) {
-
-		final FlowEngineAuditEvent event = flowEngineAuditProcessor.processSendMail(mail);
+		final FlowEngineAuditEvent event = flowEngineAuditProcessor.getInsertEvent(ontology, data, retVal,
+				authentication);
 
 		eventProducer.publish(event);
 	}
@@ -216,10 +149,10 @@ public class FlowEngineAuditableAspect extends BaseAspect {
 		}
 	}
 
-	@AfterThrowing(pointcut = "@annotation(auditable) && args(ontology,queryType,query,domainName,..)"
+	@AfterThrowing(pointcut = "@annotation(auditable) && args(ontology,queryType,query,authentication,..)"
 			+ " && execution (* com.minsait.onesait.platform.flowengine.nodered.communication.NodeRedAdminClientImpl.submitQuery(..))", throwing = "ex")
 	public void doRecoveryActionsFlowEngineNodeQuery(JoinPoint joinPoint, FlowEngineAuditable auditable, Exception ex,
-			String ontology, String queryType, String query, String domainName) {
+			String ontology, String queryType, String query, String authentication) {
 
 		log.debug(EXECUTE_FLOWENGINE_AUDITABLE);
 
@@ -228,7 +161,7 @@ public class FlowEngineAuditableAspect extends BaseAspect {
 			String message = EXCEPTION_DETECTED + method.getName() + ", " + "operation query on ontology " + ontology
 					+ " with query " + query;
 
-			final OPAuditError event = flowEngineAuditProcessor.getErrorEvent(message, domainName, ex);
+			final OPAuditError event = flowEngineAuditProcessor.getErrorEvent(message, authentication, ex);
 
 			eventProducer.publish(event);
 		} catch (Exception e) {
@@ -236,10 +169,10 @@ public class FlowEngineAuditableAspect extends BaseAspect {
 		}
 	}
 
-	@AfterThrowing(pointcut = "@annotation(auditable) && args(ontology,data,domainName,..)"
+	@AfterThrowing(pointcut = "@annotation(auditable) && args(ontology,data,authentication,..)"
 			+ " && execution (* com.minsait.onesait.platform.flowengine.nodered.communication.NodeRedAdminClientImpl.submitInsert(..))", throwing = "ex")
 	public void doRecoveryActionsFlowEngineNodeInsert(JoinPoint joinPoint, FlowEngineAuditable auditable, Exception ex,
-			String ontology, String data, String domainName) {
+			String ontology, String data, String authentication) {
 		log.debug(EXECUTE_FLOWENGINE_AUDITABLE);
 
 		try {
@@ -247,7 +180,7 @@ public class FlowEngineAuditableAspect extends BaseAspect {
 			String message = EXCEPTION_DETECTED + method.getName() + ", " + "Operation insert on ontology " + ontology
 					+ " with data " + data;
 
-			final OPAuditError event = flowEngineAuditProcessor.getErrorEvent(message, domainName, ex);
+			final OPAuditError event = flowEngineAuditProcessor.getErrorEvent(message, authentication, ex);
 
 			eventProducer.publish(event);
 		} catch (Exception e) {
@@ -255,124 +188,4 @@ public class FlowEngineAuditableAspect extends BaseAspect {
 		}
 	}
 
-	@AfterThrowing(pointcut = "@annotation(auditable) && args(invokeRequest,..)"
-			+ " && execution (* com.minsait.onesait.platform.flowengine.api.rest.service.impl.FlowEngineNodeServiceImpl.invokeRestApiOperation(..))", throwing = "ex")
-	public void doRecoveryActionsFlowEngineNodeInvokeAPI(JoinPoint joinPoint, FlowEngineAuditable auditable,
-			Exception ex, FlowEngineInvokeRestApiOperationRequest invokeRequest) {
-		log.debug(EXECUTE_FLOWENGINE_AUDITABLE);
-
-		try {
-			Method method = getMethod(joinPoint);
-			String message = EXCEPTION_DETECTED + method.getName() + ", " + "Executing invocation on API [v"
-					+ invokeRequest.getApiVersion() + "] - " + invokeRequest.getApiName() + " - Operation: "
-					+ invokeRequest.getOperationName() + "(" + invokeRequest.getOperationMethod() + ")";
-
-			final OPAuditError event = flowEngineAuditProcessor.getErrorEvent(message, invokeRequest.getDomainName(),
-					ex);
-
-			eventProducer.publish(event);
-		} catch (Exception e) {
-			log.error(ERROR_AUDIT_APIMANAGER, e);
-		}
-	}
-
-	@AfterThrowing(pointcut = "@annotation(auditable) && args(notebookInvocationData,..)"
-			+ " && execution (* com.minsait.onesait.platform.flowengine.api.rest.service.impl.FlowEngineNodeServiceImpl.invokeNotebook(..))", throwing = "ex")
-	public void doRecoveryActionsFlowEngineNodeInvokeNotebook(JoinPoint joinPoint, FlowEngineAuditable auditable,
-			Exception ex, NotebookInvokeDTO notebookInvocationData) {
-		log.debug(EXECUTE_FLOWENGINE_AUDITABLE);
-
-		try {
-			Method method = getMethod(joinPoint);
-			StringBuilder message = new StringBuilder().append(EXCEPTION_DETECTED).append(", ").append(method.getName())
-					.append(", ");
-			if (Boolean.TRUE.equals(notebookInvocationData.getExecuteNotebook())) {
-				// full notebook execution
-				message.append("Executed Notebook ").append(notebookInvocationData.getNotebookId());
-			} else {
-				// just paragraph execution
-				message.append("Executed Paragraph ").append(notebookInvocationData.getParagraphId())
-						.append(" from Notebook ").append(notebookInvocationData.getNotebookId());
-			}
-			final OPAuditError event = flowEngineAuditProcessor.getErrorEvent(message.toString(),
-					notebookInvocationData.getDomainName(), ex);
-
-			eventProducer.publish(event);
-		} catch (Exception e) {
-			log.error(ERROR_AUDIT_APIMANAGER, e);
-		}
-	}
-
-	@AfterThrowing(pointcut = "@annotation(auditable) && args(domainName,pipelineIdentification,..)"
-			+ " && execution (* com.minsait.onesait.platform.flowengine.api.rest.service.impl.FlowEngineNodeServiceImpl.getPipelineStatus(..))", throwing = "ex")
-	public void doRecoveryActionsFlowEngineNodeCheclDataflowStatus(JoinPoint joinPoint, FlowEngineAuditable auditable,
-			Exception ex, String domainName, String pipelineIdentification) {
-		log.debug(EXECUTE_FLOWENGINE_AUDITABLE);
-
-		try {
-			Method method = getMethod(joinPoint);
-			String message = EXCEPTION_DETECTED + method.getName() + ", " + "Check Status on Dataflow "
-					+ pipelineIdentification;
-
-			final OPAuditError event = flowEngineAuditProcessor.getErrorEvent(message.toString(), domainName, ex);
-
-			eventProducer.publish(event);
-		} catch (Exception e) {
-			log.error(ERROR_AUDIT_APIMANAGER, e);
-		}
-	}
-
-	@AfterThrowing(pointcut = "@annotation(auditable) && args(domainName,pipelineIdentification,..)"
-			+ " && execution (* com.minsait.onesait.platform.flowengine.api.rest.service.impl.FlowEngineNodeServiceImpl.stopDataflow(..))", throwing = "ex")
-	public void doRecoveryActionsFlowEngineNodeStopDataflow(JoinPoint joinPoint, FlowEngineAuditable auditable,
-			Exception ex, String domainName, String pipelineIdentification) {
-		log.debug(EXECUTE_FLOWENGINE_AUDITABLE);
-
-		try {
-			Method method = getMethod(joinPoint);
-			String message = EXCEPTION_DETECTED + method.getName() + ", " + "Stop Dataflow " + pipelineIdentification;
-
-			final OPAuditError event = flowEngineAuditProcessor.getErrorEvent(message.toString(), domainName, ex);
-
-			eventProducer.publish(event);
-		} catch (Exception e) {
-			log.error(ERROR_AUDIT_APIMANAGER, e);
-		}
-	}
-
-	@AfterThrowing(pointcut = "@annotation(auditable) && args(domainName,pipelineIdentification,..)"
-			+ " && execution (* com.minsait.onesait.platform.flowengine.api.rest.service.impl.FlowEngineNodeServiceImpl.startDataflow(..))", throwing = "ex")
-	public void doRecoveryActionsFlowEngineNodeStartDataflow(JoinPoint joinPoint, FlowEngineAuditable auditable,
-			Exception ex, String domainName, String pipelineIdentification) {
-		log.debug(EXECUTE_FLOWENGINE_AUDITABLE);
-
-		try {
-			Method method = getMethod(joinPoint);
-			String message = EXCEPTION_DETECTED + method.getName() + ", " + "Start Dataflow " + pipelineIdentification;
-
-			final OPAuditError event = flowEngineAuditProcessor.getErrorEvent(message.toString(), domainName, ex);
-
-			eventProducer.publish(event);
-		} catch (Exception e) {
-			log.error(ERROR_AUDIT_APIMANAGER, e);
-		}
-	}
-	
-	@AfterThrowing(pointcut = "@annotation(auditable) && args(mail,..)"
-			+ " && execution (* com.minsait.onesait.platform.flowengine.api.rest.service.impl.FlowEngineNodeServiceImpl.sendMail(..))", throwing = "ex")
-	public void doRecoveryActionsFlowEngineNodeSendMail(JoinPoint joinPoint, FlowEngineAuditable auditable,
-			Exception ex, MailRestDTO mail) {
-		log.debug(EXECUTE_FLOWENGINE_AUDITABLE);
-
-		try {
-			Method method = getMethod(joinPoint);
-			String message = EXCEPTION_DETECTED + method.getName() + ", " + "Send Email. TO:" + Arrays.toString(mail.getTo()) + ", SUBJECT: " + mail.getSubject();
-
-			final OPAuditError event = flowEngineAuditProcessor.getErrorEvent(message, mail.getDomainName(), ex);
-
-			eventProducer.publish(event);
-		} catch (Exception e) {
-			log.error(ERROR_AUDIT_APIMANAGER, e);
-		}
-	}
 }

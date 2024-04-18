@@ -30,13 +30,14 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 public class SwaggerConfig {
 	
-	
+	@Value("${r"${device.broker.rest.swaggerhost}"}")
+	private String host;
 
 	@Bean
 	public Docket api() {
 		return new Docket(DocumentationType.SWAGGER_2).select()
 				.apis(RequestHandlerSelectors.basePackage("com.minsait.onesait.platform.digitaltwin.action.controller"))
-				.paths(PathSelectors.any()).build().apiInfo(apiInfo());
+				.paths(PathSelectors.any()).build().host(host).apiInfo(apiInfo());
 	}
 
 	private ApiInfo apiInfo() {

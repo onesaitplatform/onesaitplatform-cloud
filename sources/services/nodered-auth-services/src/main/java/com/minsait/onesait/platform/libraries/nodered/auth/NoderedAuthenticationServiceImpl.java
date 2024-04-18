@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,8 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class NoderedAuthenticationServiceImpl implements NoderedAuthenticationService {
 
+
+	private String proxyUrl;
 	@Value("${onesaitplatform.flowengine.services.request.timeout.ms:5000}")
 	private int restRequestTimeout;
 	@Value("${onesaitplatform.router.avoidsslverification:false}")
@@ -60,7 +62,7 @@ public class NoderedAuthenticationServiceImpl implements NoderedAuthenticationSe
 	private UserTokenService userTokenService;
 	@Autowired
 	private UserService userService;
-
+	
 	@Autowired
 	private IntegrationResourcesService resourcesService;
 
@@ -69,11 +71,13 @@ public class NoderedAuthenticationServiceImpl implements NoderedAuthenticationSe
 
 	@PostConstruct
 	public void init() {
+		proxyUrl = resourcesService.getUrl(Module.FLOWENGINE, ServiceUrl.ADVICE);
 		if (avoidSSLVerification) {
 			httpRequestFactory = SSLUtil.getHttpRequestFactoryAvoidingSSLVerification();
 		} else {
 			httpRequestFactory = new HttpComponentsClientHttpRequestFactory();
 		}
+		
 		httpRequestFactory.setConnectTimeout(restRequestTimeout);
 	}
 
@@ -105,8 +109,8 @@ public class NoderedAuthenticationServiceImpl implements NoderedAuthenticationSe
 		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 		HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
 
-		String url = getProxyUrl() + domain + LOGIN_URL;
-		try {
+		String url = proxyUrl + domain + LOGIN_URL;
+		try{
 			ResponseEntity<NoderedAuthenticationResult> result = restTemplate.postForEntity(url, request,
 					NoderedAuthenticationResult.class);
 			if (result.getStatusCode() == HttpStatus.OK) {
@@ -114,17 +118,17 @@ public class NoderedAuthenticationServiceImpl implements NoderedAuthenticationSe
 			} else {
 				throwNewLoginError(user, domain, result.getStatusCodeValue());
 			}
-		} catch (HttpClientErrorException e) {
+		} catch (HttpClientErrorException e){
 			throwNewLoginError(user, domain, e.getRawStatusCode());
 		}
-		return null;
+		return null;		
 	}
-
-	private void throwNewLoginError(String user, String domain, int retCode) {
-		log.error("Error while login to NodeRED. Unable to login user {} into domain {}. Return Code: {}", user, domain,
-				retCode);
-		throw new NoderedAuthException("Error while login to NodeRED. Unable to login user " + user + " into domain "
-				+ domain + ". Return Code: " + retCode);
+	
+	private void throwNewLoginError(String user, String domain, int retCode){
+		log.error("Error while login to NodeRED. Unable to login user {} into domain {}. Return Code: {}", user,
+				domain, retCode);
+		throw new NoderedAuthException("Error while login to NodeRED. Unable to login user " + user
+				+ " into domain " + domain + ". Return Code: " + retCode);
 	}
 
 	private boolean checkAccessToken(String domain, String token) {
@@ -132,24 +136,18 @@ public class NoderedAuthenticationServiceImpl implements NoderedAuthenticationSe
 			return false;
 		}
 		RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
-
-		String url = getProxyUrl() + domain + CHECK_URL;
+		String url = proxyUrl + domain + CHECK_URL;
 		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
 		headers.add("Content-Type", "application/json");
 		headers.add("Authorization", "Bearer " + token);
-		try {
-			ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET,
-					new HttpEntity<>(headers), String.class);
+		try{
+			ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers),
+					String.class);
 			return responseEntity.getStatusCode() == HttpStatus.OK;
-		} catch (HttpClientErrorException e) {
-			if (log.isDebugEnabled()) {
-				log.debug("Token for domain {} is not valid.", domain);
-			}
+		}catch(HttpClientErrorException e){
+			log.debug("Token for domain " + domain +" is not valid.");
 			return false;
 		}
 	}
 
-	private String getProxyUrl() {
-		return resourcesService.getUrl(Module.FLOWENGINE, ServiceUrl.ADVICE);
-	}
 }

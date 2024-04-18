@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Project;
 import com.minsait.onesait.platform.config.model.Project.ProjectType;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccess;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
+import com.minsait.onesait.platform.config.model.ProjectResourceAccess.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 
@@ -85,15 +85,14 @@ public class OPResourceRepositoryTest {
 		project.setType(ProjectType.ENGINE);
 		project.setUser(user);
 
-		project.getProjectResourceAccesses()
-				.add(new ProjectResourceAccess(user, ResourceAccessType.MANAGE, resource, project, null, false));
-
+		project.getProjectResourceAccesses().add(ProjectResourceAccess.builder().access(ResourceAccessType.MANAGE)
+				.user(user).project(project).resource(resource).build());
 		project = projectRepository.save(project);
 		Assert.assertTrue(project.getProjectResourceAccesses().size() > 0);
 		project.getProjectResourceAccesses().clear();
 		project = projectRepository.save(project);
 		Assert.assertTrue(project.getProjectResourceAccesses().size() == 0);
-		Assert.assertTrue(resourceRepository.findById(resource.getId()).isPresent());
+		Assert.assertNotNull(resourceRepository.findOne(resource.getId()));
 
 		projectRepository.delete(project);
 		Assert.assertTrue(projectRepository.findByIdentification(project.getIdentification()).size() == 0);
@@ -109,10 +108,8 @@ public class OPResourceRepositoryTest {
 		project.setType(ProjectType.ENGINE);
 		project.setUser(user);
 		final Set<ProjectResourceAccess> accesses = new HashSet<>();
-
-		resourceRepository.findAll().stream().forEach(
-				r -> accesses.add(new ProjectResourceAccess(user, ResourceAccessType.MANAGE, r, project, null, false)));
-
+		resourceRepository.findAll().stream().forEach(r -> accesses.add(ProjectResourceAccess.builder().user(user)
+				.access(ResourceAccessType.MANAGE).resource(r).project(project).build()));
 		project.getProjectResourceAccesses().addAll(accesses);
 		projectRepository.save(project);
 		projectRepository.delete(project);
@@ -130,10 +127,8 @@ public class OPResourceRepositoryTest {
 		project.setType(ProjectType.ENGINE);
 		project.setUser(user);
 		final Set<ProjectResourceAccess> accesses = new HashSet<>();
-
-		resourceRepository.findAll().stream().forEach(
-				r -> accesses.add(new ProjectResourceAccess(user, ResourceAccessType.MANAGE, r, project, null, false)));
-
+		resourceRepository.findAll().stream().forEach(r -> accesses.add(ProjectResourceAccess.builder().user(user)
+				.access(ResourceAccessType.MANAGE).resource(r).project(project).build()));
 		project.getProjectResourceAccesses().addAll(accesses);
 		Project pdb = projectRepository.save(project);
 

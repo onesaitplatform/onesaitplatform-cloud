@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import com.minsait.onesait.platform.config.model.EventsDigitalTwinType;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
 import com.minsait.onesait.platform.config.model.PropertyDigitalTwinType;
+import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.ActionsDigitalTwinTypeRepository;
 import com.minsait.onesait.platform.config.repository.DataModelRepository;
@@ -82,7 +83,7 @@ public class DigitalTwinTypeServiceImpl implements DigitalTwinTypeService {
 
 	@Override
 	public DigitalTwinType getDigitalTwinTypeById(String id) {
-		return digitalTwinTypeRepo.findById(id).orElse(null);
+		return digitalTwinTypeRepo.findById(id);
 	}
 
 	@Override
@@ -90,7 +91,7 @@ public class DigitalTwinTypeServiceImpl implements DigitalTwinTypeService {
 
 		final List<PropertyDigitalTwinTypeDTO> lPropertiesDTO = new ArrayList<>();
 		final List<PropertyDigitalTwinType> lProperties = propDigitalTwinTypeRepo
-				.findByTypeId(digitalTwinTypeRepo.findById(typeId).orElse(new DigitalTwinType()));
+				.findByTypeId(digitalTwinTypeRepo.findById(typeId));
 
 		for (final PropertyDigitalTwinType prop : lProperties) {
 			lPropertiesDTO.add(new PropertyDigitalTwinTypeDTO(prop.getId(), prop.getType(), prop.getName(),
@@ -105,7 +106,7 @@ public class DigitalTwinTypeServiceImpl implements DigitalTwinTypeService {
 
 		final List<ActionsDigitalTwinTypeDTO> lActionsDTO = new ArrayList<>();
 		final List<ActionsDigitalTwinType> lActions = actDigitalTwinTypeRepo
-				.findByTypeId(digitalTwinTypeRepo.findById(typeId).orElse(new DigitalTwinType()));
+				.findByTypeId(digitalTwinTypeRepo.findById(typeId));
 
 		for (final ActionsDigitalTwinType act : lActions) {
 			lActionsDTO.add(new ActionsDigitalTwinTypeDTO(act.getId(), act.getName(), act.getDescription()));
@@ -119,7 +120,7 @@ public class DigitalTwinTypeServiceImpl implements DigitalTwinTypeService {
 
 		final List<EventsDigitalTwinTypeDTO> lEventsDTO = new ArrayList<>();
 		final List<EventsDigitalTwinType> lEvents = evtDigitalTwinTypeRepo
-				.findByTypeId(digitalTwinTypeRepo.findById(typeId).orElse(new DigitalTwinType()));
+				.findByTypeId(digitalTwinTypeRepo.findById(typeId));
 
 		for (final EventsDigitalTwinType event : lEvents) {
 			if (!event.getType().equalsIgnoreCase(EventsDigitalTwinType.Type.PING.name())
@@ -134,7 +135,7 @@ public class DigitalTwinTypeServiceImpl implements DigitalTwinTypeService {
 
 	@Override
 	public String getLogicByDigitalId(String typeId) {
-		final String logic = digitalTwinTypeRepo.findById(typeId).orElse(new DigitalTwinType()).getLogic();
+		final String logic = digitalTwinTypeRepo.findById(typeId).getLogic();
 		if (logic != null) {
 			return logic.replace("\\r", "");
 		}
@@ -143,9 +144,9 @@ public class DigitalTwinTypeServiceImpl implements DigitalTwinTypeService {
 
 	@Override
 	public List<String> getAllIdentifications() {
-		final List<DigitalTwinType> digitalTypes = digitalTwinTypeRepo.findAllByOrderByIdentificationAsc();
-		final List<String> identifications = new ArrayList<>();
-		for (final DigitalTwinType type : digitalTypes) {
+		List<DigitalTwinType> digitalTypes = this.digitalTwinTypeRepo.findAllByOrderByIdentificationAsc();
+		List<String> identifications = new ArrayList<String>();
+		for (DigitalTwinType type : digitalTypes) {
 			identifications.add(type.getIdentification());
 		}
 		return identifications;
@@ -266,7 +267,7 @@ public class DigitalTwinTypeServiceImpl implements DigitalTwinTypeService {
 	@Override
 	public void getDigitalTwinToUpdate(Model model, String id, String sessionUserId) {
 		model.addAttribute("ontologies", ontologyService.getAllOntologies(sessionUserId));
-		final DigitalTwinType digitalTwinType = digitalTwinTypeRepo.findById(id).orElse(null);
+		final DigitalTwinType digitalTwinType = digitalTwinTypeRepo.findById(id);
 		if (digitalTwinType != null) {
 			model.addAttribute("digitaltwintype", digitalTwinType);
 			model.addAttribute(PROP_STR, getPropertiesByDigitalId(id));
@@ -282,7 +283,7 @@ public class DigitalTwinTypeServiceImpl implements DigitalTwinTypeService {
 	public void updateDigitalTwinType(DigitalTwinType digitalTwinType, HttpServletRequest httpServletRequest) {
 
 		// Update DigitalTwinType
-		final DigitalTwinType digitalTwinTypeDb = digitalTwinTypeRepo.findById(digitalTwinType.getId()).orElse(null);
+		final DigitalTwinType digitalTwinTypeDb = digitalTwinTypeRepo.findById(digitalTwinType.getId());
 		if (digitalTwinTypeDb != null) {
 			digitalTwinTypeRepo.delete(digitalTwinTypeDb);
 			createDigitalTwinType(digitalTwinType, httpServletRequest);
@@ -302,20 +303,10 @@ public class DigitalTwinTypeServiceImpl implements DigitalTwinTypeService {
 	@Override
 	public List<DigitalTwinType> getDigitalTwinTypesByUserId(String sessionUserId) {
 		final User sessionUser = userService.getUser(sessionUserId);
-		if (userService.isUserAdministrator(sessionUser)) {
+		if (sessionUser.getRole().getId().equals(Role.Type.ROLE_ADMINISTRATOR.toString())) {
 			return digitalTwinTypeRepo.findAll();
 		} else {
 			return digitalTwinTypeRepo.findByUser(sessionUser);
-		}
-	}
-	
-	@Override
-	public List<DigitalTwinType> getDigitalTwinTypesByUserIdAndIdentification(String sessionUserId, String identification) {
-		final User sessionUser = userService.getUser(sessionUserId);
-		if (userService.isUserAdministrator(sessionUser)) {
-			return digitalTwinTypeRepo.findByIdentificationContaining(identification);
-		} else {
-			return digitalTwinTypeRepo.findByUserAndIdentificationLike(sessionUser, identification);
 		}
 	}
 
@@ -326,8 +317,8 @@ public class DigitalTwinTypeServiceImpl implements DigitalTwinTypeService {
 
 		try {
 			json.put("$schema", "http://json-schema.org/draft-04/schema#");
-			json.put("tittle", TWIN_PROP_STR + type.getIdentification().substring(0, 1).toUpperCase()
-					+ type.getIdentification().substring(1));
+			json.put("tittle",
+					TWIN_PROP_STR + type.getIdentification().substring(0, 1).toUpperCase() + type.getIdentification().substring(1));
 			json.put("type", "object");
 
 			final JSONObject propertiesBis = new JSONObject();
@@ -355,17 +346,17 @@ public class DigitalTwinTypeServiceImpl implements DigitalTwinTypeService {
 			json.put("required", requiredBis);
 			json.put("additionalProperties", true);
 
-			Ontology ontology = ontologyRepo.findByIdentification(TWIN_PROP_STR
-					+ type.getIdentification().substring(0, 1).toUpperCase() + type.getIdentification().substring(1));
-			final OntologyConfiguration config = new OntologyConfiguration(httpServletRequest);
+			Ontology ontology = ontologyRepo.findByIdentification(
+					TWIN_PROP_STR + type.getIdentification().substring(0, 1).toUpperCase() + type.getIdentification().substring(1));
+			OntologyConfiguration config = new OntologyConfiguration(httpServletRequest);
 
 			if (ontology == null) {
 				ontology = new Ontology();
 				ontology.setActive(true);
 				ontology.setDataModel(dataModelRepo.findDatamodelsByIdentification("EmptyBase"));
 				ontology.setDescription("Shadow of the Digital Twin type");
-				ontology.setIdentification(TWIN_PROP_STR + type.getIdentification().substring(0, 1).toUpperCase()
-						+ type.getIdentification().substring(1));
+				ontology.setIdentification(
+						TWIN_PROP_STR + type.getIdentification().substring(0, 1).toUpperCase() + type.getIdentification().substring(1));
 				ontology.setJsonSchema(json.toString());
 				ontology.setPublic(false);
 				ontology.setUser(type.getUser());
@@ -378,9 +369,8 @@ public class DigitalTwinTypeServiceImpl implements DigitalTwinTypeService {
 				ontologyService.updateOntology(ontology, type.getUser().getUserId(), config);
 			}
 
-		} catch (final JSONException e) {
-			log.error("Error creating the ontology for the shadow od the Digital Twin Type " + type.getIdentification(),
-					e);
+		} catch (JSONException e) {
+			log.error("Error creating the ontology for the shadow od the Digital Twin Type " + type.getIdentification(), e);
 		}
 
 	}

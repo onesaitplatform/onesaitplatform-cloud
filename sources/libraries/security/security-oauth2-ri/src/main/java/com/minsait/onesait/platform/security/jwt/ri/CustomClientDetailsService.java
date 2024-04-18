@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,8 @@ package com.minsait.onesait.platform.security.jwt.ri;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,9 +27,9 @@ import org.springframework.security.oauth2.provider.ClientDetails;
 import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.client.BaseClientDetails;
 
-import com.minsait.onesait.platform.config.model.AppList;
+import com.minsait.onesait.platform.config.model.App;
+import com.minsait.onesait.platform.config.model.AppRole;
 import com.minsait.onesait.platform.config.repository.AppRepository;
-import com.minsait.onesait.platform.security.dto.ClientDetailsServiceDTO;
 
 public class CustomClientDetailsService implements ClientDetailsService {
 
@@ -49,36 +45,16 @@ public class CustomClientDetailsService implements ClientDetailsService {
 	@Value("${security.jwt.grant-type}")
 	private String grantType;
 
-	@Value("${security.jwt.expiration-time:44000}")
-	private Integer tokenExpiration;
-
 	@Value("${security.jwt.scopes}")
 	private String scopes;
 
-	private final Map<String, ClientDetailsServiceDTO> localCache = new HashMap<>();
-	private static final Long OBSOLESCENCE_TIME = 60000L;
-
 	@Override
-	@Transactional
-	//TO-DO this is being called too many times per request -> LOCAL CACHE, non-global bcause of changes in related entities App,AppRole,AppUser..
-	public synchronized ClientDetails loadClientByClientId(String clientId) {
-		final long now = System.currentTimeMillis();
-		final ClientDetailsServiceDTO details = localCache.get(clientId);
-		if(details == null || details.getCreatedTime() < now - OBSOLESCENCE_TIME) {
-			final ClientDetails realDetails = getRealClientDetails(clientId);
-			localCache.put(clientId, ClientDetailsServiceDTO.builder().createdTime(now).clientDetails(realDetails).build());
-			return realDetails;
-		}else {
-			return details.getClientDetails();
-		}
+	public ClientDetails loadClientByClientId(String clientId) {
 
-	}
-
-	private ClientDetails getRealClientDetails(String clientId) {
 		final Collection<String> types = Arrays.asList(grantType.split("\\s*,\\s*"));
 		final Collection<String> scopeList = Arrays.asList(scopes.split("\\s*,\\s*"));
 
-		final AppList app = appRepository.findAppListByIdentification(clientId);
+		final App app = appRepository.findByIdentification(clientId);
 		final BaseClientDetails details = new BaseClientDetails();
 		details.setClientId(clientId);
 		details.setClientSecret(clientSecret);
@@ -86,7 +62,7 @@ public class CustomClientDetailsService implements ClientDetailsService {
 		details.setAuthorizedGrantTypes(types);
 		details.setScope(scopeList);
 		if (!clientId.equals(defaultClientId)) {
-			final Set<GrantedAuthority> authorities = appRepository.findRolesListByAppId(app.getId()).stream()
+			final Set<GrantedAuthority> authorities = app.getAppRoles().stream().map(AppRole::getName)
 					.map(SimpleGrantedAuthority::new).collect(Collectors.toSet());
 			details.setAuthorities(authorities);
 
@@ -97,12 +73,7 @@ public class CustomClientDetailsService implements ClientDetailsService {
 			}
 			if (null != app.getTokenValiditySeconds()) {
 				details.setAccessTokenValiditySeconds(app.getTokenValiditySeconds());
-			}else {
-				details.setAccessTokenValiditySeconds(tokenExpiration);
 			}
-
-		}else {
-			details.setAccessTokenValiditySeconds(tokenExpiration);
 		}
 		return details;
 	}

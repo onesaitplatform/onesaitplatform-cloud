@@ -20,7 +20,7 @@
 angular
   .module('dataCollectorApp.home')
   .controller('CustomRepoUrlInstanceController',
-      ["$scope", "customRepoUrl", "$modalInstance", function ($scope, customRepoUrl, $modalInstance) {
+      function ($scope, customRepoUrl, $modalInstance) {
     angular.extend($scope, {
       repoUrl: customRepoUrl,
 
@@ -32,4 +32,4 @@ angular
         $modalInstance.dismiss('cancel');
       }
     });
-  }]);
+  });

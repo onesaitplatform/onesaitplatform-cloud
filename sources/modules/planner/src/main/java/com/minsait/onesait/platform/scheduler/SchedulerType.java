@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,9 @@ import com.minsait.onesait.platform.scheduler.scheduler.instance.SchedulerNames;
 
 public enum SchedulerType {
 
-	TWITTER(SchedulerNames.TWITTER_SCHEDULER_NAME), SCRIPT(SchedulerNames.SCRIPT_SCHEDULER_NAME),
-	SIMULATION(SchedulerNames.SIMULATION_SCHEDULER_NAME), BATCH(SchedulerNames.BATCH_SCHEDULER_NAME),
-	OKPI(SchedulerNames.OKPI_SCHEDULER_NAME), RESTPLANNER(SchedulerNames.REST_PLANNER_SCHEDULER_NAME),
-	EXPIRATIONUSERS(SchedulerNames.EXPIRATION_USERS_NAME),
-	EXPIRATIONRESETUSER(SchedulerNames.EXPIRATION_RESET_USERS_NAME),
-	PROCESSEXECUTION(SchedulerNames.PROCESS_EXECUTION_NAME), BACKUPMINIO(SchedulerNames.BACKUP_MINIO_NAME);
+	TWITTER(SchedulerNames.TWITTER_SCHEDULER_NAME), SCRIPT(SchedulerNames.SCRIPT_SCHEDULER_NAME), SIMULATION(
+			SchedulerNames.SIMULATION_SCHEDULER_NAME), BATCH(
+					SchedulerNames.BATCH_SCHEDULER_NAME), OKPI(SchedulerNames.OKPI_SCHEDULER_NAME);
 
 	private String schedulerName;
 

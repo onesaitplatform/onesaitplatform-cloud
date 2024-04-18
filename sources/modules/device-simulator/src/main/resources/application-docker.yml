@@ -1,47 +1,31 @@
-master:
-   datasource:
-     hikari:
-      jdbc-url: ${CONFIGDBMASTERURL}
-      username: ${CONFIGDBUSER}
-      password: ${CONFIGDBPASS}
-      driver-class-name: ${CONFIGDB_DRIVER}
-
-onesaitplatform:
+onesaitplatform:       
    iotbroker:
-      server: http://iotbrokerservice:19000/iotbroker
+      server: http://iotbrokerservice:19000/iotbroker                  
    router.alternativeURL: http://routerservice:20000/router/router/
    audit.global.notify: ${AUDITGLOBALNOTIFY}
-   graylog:
-      enabled: ${GRAYLOG_ENABLED}
-      host: ${GRAYLOG_HOST}
-      port: ${GRAYLOG_PORT}
 spring:
-   datasource:
-     hikari:
-      jdbc-url: ${CONFIGDBURL}
+   datasource:  
+      url: ${CONFIGDBURL}
       username: ${CONFIGDBUSER}
-      password: ${CONFIGDBPASS}
-      connection-timeout: ${DS_MAX_WAIT_MILLIS}
-      maximum-pool-size: ${DS_MAX_ACTIVE}
-      minimum-idle: ${DS_MIN_IDLE}
-      driver-class-name: ${CONFIGDB_DRIVER}
-   boot.admin: #Spring Boot Admin Config
-      client.url: http://monitoringuiservice:18100/monitoring
-      client.instance.service-url: http://devicesimulator:${server.port}${server.servlet.contextPath}/
-      client.username: ${SBA_USERNAME}
-      client.password: ${SBA_SECRET}
-   jpa:
-      properties.hibernate.dialect: ${CONFIGDB_DIALECT}
+      password: ${CONFIGDBPASS} 
+      time-between-eviction-runs-millis: ${DS_TIME_BETWEEN_EVICTION_RUNS_MILLIS}
+      min-evictable-idle-time-millis: ${DS_MIN_EVICTABLE_IDLE_TIME_MILLIS}
+      max-wait-millis: ${DS_MAX_WAIT_MILLIS}
+      max-wait: ${DS_MAX_WAIT}
+      initial-size: ${DS_INITIAL_SIZE}
+      max-active: ${DS_MAX_ACTIVE}
+      max-idle: ${DS_MAX_IDLE}
+      min-idle: ${DS_MIN_IDLE}
+      removeAbandoned: ${DS_REMOVE_ABANDONED}
+      removeAbandonedTimeout: ${DS_REMOVE_ABANDONED_TIMEOUT}
+   boot.admin: #Spring Boot Admin Config    
+      url: http://monitoringuiservice:18100/monitoring
+      client.service-url: http://devicesimulator:${server.port}${server.contextPath}/      
 quartz:
     datasource:
-      hikari:
-        jdbc-url: ${SCHEDULERDBBURL}${DBADDPROPS}
-        username: ${SCHEDULERDBBUSER}
-        password: ${SCHEDULERDBBPASS}
-        driver-class-name: ${SCHEDULERDBBDRIVER}
-    jpa:
-      properties.hibernate.dialect: ${SCHEDULERDBBDIALECT}
-    driverDelegateClass: ${QUARTZ_DRIVER}
+      url: ${JDBCPROTOCOL}//${SCHEDULERDBSERVERS}/onesaitplatform_scheduler?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true${DBADDPROPS}
+
+              
 ## LOGGING CONF
 logging:
-   file.path: /var/log/platform-logs
+   path: /var/log/platform-logs 

@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('DetailController', ["$scope", "$rootScope", "_", "pipelineConstant", "api", "contextHelpService", "$modal", function ($scope, $rootScope, _, pipelineConstant, api, contextHelpService, $modal) {
+  .controller('DetailController', function ($scope, $rootScope, _, pipelineConstant, api, contextHelpService, $modal) {
     var infoTab = {
       name: 'info',
       template: 'app/home/detail/info/info.tpl.html',
@@ -437,4 +437,4 @@ angular
       }
     });
 
-  }]);
+  });

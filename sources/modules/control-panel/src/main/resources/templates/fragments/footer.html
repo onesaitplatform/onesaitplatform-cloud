@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,34 +14,35 @@
     limitations under the License.
 
 -->
+
 <!-- BEGIN FOOTER -->
 <div th:fragment="footerFragment" id="footerFragment">
 <!-- HEADER CONTROLLER JS -->
-	<script th:src="@{/static/js/pages/footer.js}"></script>
+	<script th:src="@{/static/js/pages/footer.js}"/>
 	<div class="container-fluid"
 		style="border-top: 1px solid #CCC; line-height: 25px; padding: 8px;">
-		<div class="row" style="margin:0px;">
+		<div class="row">
 			<div class="col-md-9 col-sm-12 col-xs-12 ">
 				<div id="footerText">
 				</div>
-				<div id="footerText_original" style=" padding-left: 60px;">
-					<span class="m-link m-link--metal"  id = "footer-app">onesait Platform
-						 © Minsait 2021</span> <span class="sep"></span> <span
+				<div id="footerText_original">
+					<span class="m-link m-link--metal" th:text="#{footer.app}">onesait Platform
+						 © Minsait 2019</span> <span class="sep"></span> <span
 						class="m-link m-link--metal" th:text="'('+#{build.version}+')'">5.2.0</span>
-					<span class="sep"></span> <a href="https://github.com/onesaitplatform" target="_blank" class="m-link m-link--metal"><i
+					<span class="sep"></span> <a target="https://github.com/onesaitplatform" class="m-link m-link--metal"><i
 						class="fa fa-github"></i> <span th:text="#{footer.github}">Project
 							Github</span></a> <span class="sep"></span> <a
 						href="https://choosealicense.com/licenses/apache-2.0/" class="m-link m-link--metal">Legal Conditions</a>
 
 				</div>
 			</div>
-			<div class="col-md-3 col-sm-12 col-xs-12" style="padding-bottom: 0px;"	>
+			<div class="col-md-3 col-sm-12 col-xs-12">
 				<ul class="social-icons social-icons-circle pull-right">
-					<li><a href="https://www.youtube.com/channel/UC0pdRMPBw0RIsWCymt_DVNg" target="_blank" data-original-title="youtube"
+					<li><a href="javascript:;" data-original-title="youtube"
 						class="youtube"> </a></li>
-					<li><a href="https://blog.onesaitplatform.com/" target="_blank" data-original-title="wordpress"
+					<li><a href="javascript:;" data-original-title="wordpress"
 						class="wordpress"> </a></li>
-					<li><a href="https://twitter.com/onesaitplatform" target="_blank" data-original-title="twitter"
+					<li><a href="javascript:;" data-original-title="twitter"
 						class="twitter"> </a></li>
 				</ul>
 			</div>
@@ -76,9 +77,9 @@
 		</div>
 	</div>
 	<!-- END MODAL TERMS AND CONDITIONS -->
-	
-		<div th:if="!${#arrays.contains(#request.getCookies(), 'RELEASE')}"
-		    class="modal fade" id="new-release" role="dialog">
+	<div
+		th:if="!${#arrays.contains(#ctx.httpServletRequest.cookies, 'RELEASE')}"
+		class="modal fade" id="new-release" role="dialog">
 		<div class="modal-dialog modal-lg">
 			<div class="modal-content">
 				<div class="modal-header">
@@ -113,44 +114,38 @@
 					<h4 class="modal-title" th:text="#{menu.modal.api}">Modal
 						Header</h4>
 				</div>
-				<div class="modal-body" style="margin-top: -20px;">
+				<div class="modal-body">
 					<div id="contenido"
 						class="wrappercontenido container-fluid quitapadding">
-						<h4 th:text="#{menu.modal.oauthtoken}">Oauth Token</h4>
-						<a id="oauthTokenCopy"><p id="oauthToken" 
-								th:data-original-title="#{menu.modal.click.copy}"	
+						<h3 th:text="#{menu.modal.oauthtoken}">Oauth Token</h3>
+						<a id="oauthTokenCopy"><p id="oauthToken"
 								th:text="#{menu.modal.bearer}+' '+${session.oauthToken}"
-								class="dont-break-out tooltips"></p></a>
-						<h4 id="userTokenTitle" 
-							th:text="#{menu.modal.usertoken}" hidden>
-							X-OP-APIKey
-						</h4>
-						<p id="userTokenList"></p>
-						<h4 th:text="#{menu.apis}">Apis</h4>
-						<h5>
+								class="dont-break-out"></p></a>
+						<h3 th:text="#{menu.apis}">Apis</h3>
+						<h4>
 							<a target="_blank" th:text="#{menu.modal.controlpanel}"
 								th:href="${session.apis?.controlpanel}">Control panel:
 								oauth, management, notebooks</a>
-						</h5>
-						<h5>
+						</h4>
+						<h4>
 							<a target="_blank" th:text="#{menu.modal.iotbroker}"
 								th:href="${session.apis?.iotbroker}">IoTBroker</a>
-						</h5>
-						<h5>
+						</h4>
+						<h4>
 							<a target="_blank" th:text="#{menu.modal.apimanager}"
 								th:href="${session.apis?.apiManager}">Api Manager</a>
-						</h5>
+						</h4>
 						<!--Not accesible out 
 						<h4>
 							<a target="_blank" th:text="#{menu.modal.router}"
 								th:href="${session.apis?.routerStandAlone}">Semantic Information Broker</a>
 						</h4>
 						-->
-						<h5>
+						<h4>
 							<a target="_blank" th:text="#{menu.modal.digitaltwinbroker}"
 								th:href="${session.apis?.digitalTwinBroker}">Digital Twin
 								broker</a>
-						</h5>
+						</h4>
 					</div>
 				</div>
 				<div class="modal-footer">
@@ -168,20 +163,73 @@
 </style>
 	</div>
 	<!-- End modal -->
-			
-	<script type="text/javascript" th:inline="javascript"> 
+	
+	<!-- Confluence search -->
+	<div id="confluenceSearch" class="modal fade" role="dialog">
+		<div class="modal-dialog">
+
+			<!-- Modal content-->
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title" th:text="#{menu.modal.search}">Confluence search</h4>
+				</div>
+				<div class="modal-body">
+					<div id="contenido"
+						class="dropdown dropdown-user-toggler">
+							<input class="form-control search" style="width:50%; display:inline" type="text" th:placeholder="#{menu.search.placeholder}" name="querySearchConfluence" id="querySearchConfluence" value="" incremental="true" maxlength="255" onkeypress="return enterSearch(event)"></input>
+							<a id="search-confluence" class="dropdown-toggle" style="padding-left:8px !important" onclick="gotoSearch();" ><i class="icon-magnifier" ></i></a>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal" th:text="#{gen.closeBtn}">Close</button>
+				</div>
+			</div>
+		</div>
+		<style>
+		.modal-dialog {
+			width: 50% !important;
+			display: block;
+			margin-left: 25%;
+			margin-rigth: 25%;
+		}
+		</style>
+	</div>
+	<!-- End confluence search -->
 		
+	<script type="text/javascript" th:inline="javascript"> 
+	
 	//AUTO INIT CONTROLLER WHEN READY
 	jQuery(document).ready(function() {
 		var currentLanguage = [[${lang}]];
 		footerTheme(currentLanguage);
 	})
 	
-	 var appFooter = [[#{footer.app}]];
-	 if(typeof appFooter !== 'undefined' && appFooter!=null && appFooter.length>0){
-	 	appFooter=appFooter+' '+new Date().getFullYear(); 
-	 	document.getElementById("footer-app").innerHTML = appFooter;
-	 }
+	
+	/* 
+	$( document ).ready(function()  {
+		var csrf_value = $("meta[name='_csrf']").attr("content");
+		var csrf_header = $("meta[name='_csrf_header']").attr("content");
+		$.ajax({
+			url : "/controlpanel/themes/getThemeJson",
+			type : "GET",
+			async : true,
+			headers: {
+				[csrf_header]: csrf_value
+		    },
+			success : function(response){
+				var text = response.FOOTER_TEXT;
+				var text_es = response.FOOTER_TEXT_ES;
+				console.log(text+" "+text_es);
+				if (text != ""){
+					$('#footerText_original').attr('class', 'hide');
+					$('#footerText').append("<span>"+text+"</span>");
+				}
+			}
+		    
+		})
+	}) */
+	
 	
 	$('#oauthTokenCopy').on('click', function() {
 		var element = "#oauthToken";
@@ -192,36 +240,10 @@
 		$temp.remove();
 	});
 
-	$("#modalApis").on('shown.bs.modal', function(){
-		var csrf_value = $("meta[name='_csrf']").attr("content");
-		var csrf_header = $("meta[name='_csrf_header']").attr("content");
-		$.ajax({
-			url : "/controlpanel/apimanager/token/list",
-			type : "GET",
-			async : true,
-			headers: {
-				[csrf_header]: csrf_value
-		    },
-			success : function(response){
-				if (response != "") {
-					$('#userToken').text(response);	
-				}
-			}
-		    
-		})	
-	});
-	
-	var copyText = function(element) {
-		var $temp = $("<input/>");
-		$("body").append($temp);
-		$temp.val($(element).text()).select();
-		document.execCommand("copy");
-		$temp.remove();
-	};
-	
 	</script>
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery-cookie/cookie.js}" ></script>
+	<script
+		th:src="@{/static/vendor/jquery-cookie/cookie.js}" />
 
 
 </div>

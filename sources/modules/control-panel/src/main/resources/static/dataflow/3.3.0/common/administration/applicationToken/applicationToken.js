@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp')
-  .controller('ApplicationTokenModalInstanceController', ["$scope", "$modalInstance", "api", "authService", function ($scope, $modalInstance, api, authService) {
+  .controller('ApplicationTokenModalInstanceController', function ($scope, $modalInstance, api, authService) {
     angular.extend($scope, {
       issues: [],
       isGeneratingToken: false,
@@ -61,4 +61,4 @@ angular
         $modalInstance.dismiss('cancel');
       }
     });
-  }]);
+  });

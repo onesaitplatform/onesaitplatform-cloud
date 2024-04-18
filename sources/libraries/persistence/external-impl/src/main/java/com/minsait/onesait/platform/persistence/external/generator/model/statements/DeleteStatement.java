@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,9 +72,9 @@ public class DeleteStatement implements SQLStatement {
 	}
 
 	@Override
-	public PreparedStatement generate(boolean withParams) {
+	public String generate() {
 		if(sqlGenerator != null) {
-			return sqlGenerator.generate(this, withParams);
+			return sqlGenerator.generate(this);
 		} else {
 			throw new IllegalStateException("SQL Generator service is not set, use SQLGenerator instance to generate or build the statement instead");
 		}

@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('HistogramChartController', ["$scope", "$translate", function($scope, $translate) {
+  .controller('HistogramChartController', function($scope, $translate) {
 
     var recordType,
       label = {
@@ -118,4 +118,4 @@ angular
       });
     });
 
-  }]);
+  });

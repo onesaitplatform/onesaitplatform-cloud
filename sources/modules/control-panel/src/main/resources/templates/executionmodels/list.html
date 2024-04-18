@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -92,8 +92,8 @@
 									</div>										
 								</div>
 								<form id="form_compare" class="" th:action="@{'/executionmodels/comparation'}" role="form" method="get">											
-									<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-								</form>										
+																			
+								<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>										
 														
 							</div>
 							<div class="portlet-body" style="display: block; height: auto;">
@@ -124,13 +124,13 @@
 															<!-- NOTEBOOK -->
 															<td class="text-left text-truncate-xxs" th:title="${execution.description}" th:text="${execution.description}"></td>
 															<!-- DATE -->
-															<td class="text-center" th:if="${execution.createdAt!=null}"><span th:text="${#dates.format(execution.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(execution.createdAt,'dd/MM/yyyy')}" ></span></td>
+															<td class="text-center" th:if="${execution.createdAt!=null}"><span th:text="${#dates.format(execution.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(execution.createdAt,'dd/MM/YYYY')}" ></span></td>
 															<td class="text-center" th:if="${execution.createdAt==null}" th:text="'---'"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
 																	<!-- VIEW -->															
-																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/executionmodels/show/${execution.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
+																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/executionmodels/show/${execution.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
 																		
 																</div>
 															</td>
@@ -158,13 +158,13 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"></script>
-	<script th:src="@{/static/js/layout.js}"></script>
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
 	
 	
 	<script th:inline="javascript">	
@@ -244,7 +244,7 @@
 	});
 	 
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
+	$(window).load(function(){  
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		

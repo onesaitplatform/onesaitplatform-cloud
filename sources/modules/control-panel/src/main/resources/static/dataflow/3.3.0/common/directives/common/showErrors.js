@@ -36,7 +36,7 @@ angular.module('commonUI.commonDirectives')
       };
     };
   })
-  .directive('showErrors', ["$timeout", "showErrorsConfig", "$interpolate", function($timeout, showErrorsConfig, $interpolate) {
+  .directive('showErrors', function($timeout, showErrorsConfig, $interpolate) {
     var getShowSuccess, getTrigger, linkFn;
     getTrigger = function(options) {
       var trigger;
@@ -112,4 +112,4 @@ angular.module('commonUI.commonDirectives')
         return linkFn;
       }
     };
-  }]);
+  });

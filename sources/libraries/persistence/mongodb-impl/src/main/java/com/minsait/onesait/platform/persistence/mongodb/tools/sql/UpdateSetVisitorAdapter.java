@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.NullValue;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.schema.Column;
 
 @AllArgsConstructor
 public class UpdateSetVisitorAdapter extends ExpressionVisitorAdapter {
@@ -43,8 +42,6 @@ public class UpdateSetVisitorAdapter extends ExpressionVisitorAdapter {
 	private static final String ISODATE_FUNCTION = "ISODate";
 	private static final String OBJECTID_FUNCTION = "ObjectId";
 	private static final String APPEND_FUNCTION = "APPEND";
-	private static final String BOOLEAN_FUNCTION = "BOOLEAN";
-	private static final String OBJECT = "OBJECT";
 	private static final ObjectMapper mapper = new ObjectMapper();
 
 	@Override
@@ -55,20 +52,11 @@ public class UpdateSetVisitorAdapter extends ExpressionVisitorAdapter {
 			builder.append(getObjectId(stringValue.getValue()));
 		else if (isBooleanValue(stringValue.getValue()))
 			builder.append(getBooleanValue(stringValue.getValue()));
-		else if (isObject(stringValue.getValue())) {
-			final JsonNode object = toObject(stringValue.getValue());
-			builder.append(toObjectString(object));
-		} else
+		else
 			builder.append(stringValue);
 
 	}
-	
-	
-	@Override
-	public void visit(Column column) {
-		builder.append(column.getColumnName());
-	}
-	
+
 	@Override
 	public void visit(LongValue longValue) {
 		builder.append(longValue.getStringValue());
@@ -90,16 +78,13 @@ public class UpdateSetVisitorAdapter extends ExpressionVisitorAdapter {
 		if (function.getName().equalsIgnoreCase(APPEND_FUNCTION)) {
 			final ExpressionList params = function.getParameters();
 			int push2Pos;
-			final String statement = "$push:{";
 			// First look where to insert $push cmd
-			if (positionInStatement == 0) {
+			if (positionInStatement == 0)
 				push2Pos = 0;
-				builder.insert(push2Pos, statement);
-			} else {
+			else
 				push2Pos = builder.lastIndexOf(",");
-				builder.insert(push2Pos + 1, statement);
-			}
-
+			final String statement = "$push:{";
+			builder.insert(push2Pos + 1, statement);
 			if (params.getExpressions().size() == 1) {
 				// argument is object?
 				final String param = params.getExpressions().get(0).toString();
@@ -135,29 +120,9 @@ public class UpdateSetVisitorAdapter extends ExpressionVisitorAdapter {
 				throw new GenericRuntimeOPException("Incorrect use of APPEND function");
 			}
 
-		} else if (function.getName().equalsIgnoreCase(BOOLEAN_FUNCTION)) {
-			final ExpressionList params = function.getParameters();
-			if (params.getExpressions().size() == 1) {
-				final String param = params.getExpressions().get(0).toString();
-				builder.append(Boolean.valueOf(param));
-				builder.append("}");
-			} else {
-				throw new RuntimeException("Incorrect use of " + BOOLEAN_FUNCTION + " function");
-			}
-
-		} else if (function.getName().equalsIgnoreCase(OBJECT)) {
-
-			final ExpressionList params = function.getParameters();
-			if (params.getExpressions().size() == 1) {
-				final String param = params.getExpressions().get(0).toString();
-				final JsonNode object = toObject(param);
-				builder.append(toObjectString(object));
-			} else {
-				throw new RuntimeException("Incorrect use of " + OBJECT + " function");
-			}
-		} else {
-			throw new GenericRuntimeOPException("SQL Function " + function.getName() + " not supported");
 		}
+
+		throw new GenericRuntimeOPException("SQL Function " + function.getName() + " not supported");
 
 	}
 
@@ -204,8 +169,7 @@ public class UpdateSetVisitorAdapter extends ExpressionVisitorAdapter {
 			value = value.replaceAll("'", "\"").replaceAll("\\\\\"", "\"");
 			if (value.startsWith("\"") && value.endsWith("\""))
 				value = value.substring(0 + 1, value.length() - 1);
-			if (mapper.readTree(value).isNumber())
-				return false;			
+			mapper.readTree(value);
 			return true;
 		} catch (final Exception e) {
 			return false;

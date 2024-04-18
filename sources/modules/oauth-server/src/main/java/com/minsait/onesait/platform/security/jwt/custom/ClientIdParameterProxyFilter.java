@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package com.minsait.onesait.platform.security.jwt.custom;
 
 import java.io.IOException;
-import java.util.Optional;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -24,16 +23,10 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.filter.GenericFilterBean;
-
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
-import com.minsait.onesait.platform.multitenant.config.model.Vertical;
-import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 
 @Configuration
 @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -41,33 +34,14 @@ public class ClientIdParameterProxyFilter extends GenericFilterBean {
 
 	private static String clientId = "client_id";
 
-	private static final String VERTICAL = "vertical";
-
-	@Value("${onesaitplatform.multitenancy.enabled:false}")
-	private boolean multitenancyEnabled;
-
-	@Autowired
-	private MultitenancyService multitenancyService;
-
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
-		if (multitenancyEnabled && !StringUtils.isEmpty(request.getParameter(VERTICAL))) {
-
-			final Optional<Vertical> vertical = multitenancyService.getVertical(request.getParameter(VERTICAL));
-			vertical.ifPresent(v -> {
-				MultitenancyContextHolder.setVerticalSchema(v.getSchema());
-				MultitenancyContextHolder.setForced(true);
-			});
-
-		}
-
 		if (!StringUtils.isEmpty(request.getParameter(clientId)))
 			chain.doFilter(new CustomHttpServletRequestWrapper((HttpServletRequest) request), response);
 		else
 			chain.doFilter(request, response);
 
-		MultitenancyContextHolder.clear();
 	}
 
 }

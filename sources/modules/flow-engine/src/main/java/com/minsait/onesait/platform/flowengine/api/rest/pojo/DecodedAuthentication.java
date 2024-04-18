@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,9 @@ import java.util.Base64;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
-@NoArgsConstructor
-@AllArgsConstructor
 public class DecodedAuthentication {
 
 	@Getter
@@ -38,20 +32,9 @@ public class DecodedAuthentication {
 	@Setter
 	private String credentials;
 
-	@Getter
-	@Setter
-	private String verticalSchema;
-
-	private static final String SPLITTER = ":";
-
 	public DecodedAuthentication(String authentication) {
-		final String auth = new String(Base64.getDecoder().decode(authentication));
-		userId = auth.split(SPLITTER)[0];
-		credentials = auth.split(SPLITTER)[1];
-		try {
-			verticalSchema = auth.split(SPLITTER)[2];
-		} catch (final Exception e) {
-			log.debug("no vertical in authentication");
-		}
+		String auth = new String(Base64.getDecoder().decode(authentication));
+		this.userId = auth.split(":")[0];
+		this.credentials = auth.split(":")[1];
 	}
 }

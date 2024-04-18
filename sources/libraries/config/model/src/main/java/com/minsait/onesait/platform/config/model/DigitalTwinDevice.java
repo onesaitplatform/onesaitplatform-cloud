@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package com.minsait.onesait.platform.config.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -26,16 +25,14 @@ import javax.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.minsait.onesait.platform.config.model.base.OPResource;
-import com.minsait.onesait.platform.config.model.listener.EntityListener;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Configurable
 @Entity
-@Table(name = "DIGITAL_TWIN_DEVICE", uniqueConstraints = @UniqueConstraint(columnNames = { "IDENTIFICATION" }))
-
-@EntityListeners(EntityListener.class)
+@Table(name = "DIGITAL_TWIN_DEVICE", uniqueConstraints = @UniqueConstraint(name = "UK_IDENTIFICATION", columnNames = {
+		"IDENTIFICATION" }))
 public class DigitalTwinDevice extends OPResource {
 
 	private static final long serialVersionUID = 1L;
@@ -76,8 +73,7 @@ public class DigitalTwinDevice extends OPResource {
 	@Setter
 	private String ip;
 
-	@Column(name = "IPV6", length = 512, nullable = false)
-	@org.hibernate.annotations.Type(type = "org.hibernate.type.BooleanType")
+	@Column(name = "IPV6", length = 512, nullable = false, columnDefinition = "BIT")
 	@Getter
 	@Setter
 	@NotNull
@@ -104,20 +100,20 @@ public class DigitalTwinDevice extends OPResource {
 	@Getter
 	@Setter
 	private String longitude;
-
+	
 	@Override
-	public boolean equals(Object o) {
-		if (this == o)
-			return true;
-		if (!(o instanceof DigitalTwinDevice))
-			return false;
-		final DigitalTwinDevice that = (DigitalTwinDevice) o;
-		return getIdentification() != null && getIdentification().equals(that.getIdentification());
-	}
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof DigitalTwinDevice))
+            return false;
+        final DigitalTwinDevice that = (DigitalTwinDevice) o;
+        return this.getIdentification() != null && this.getIdentification().equals(that.getIdentification());
+    }
 
-	@Override
-	public int hashCode() {
-		return java.util.Objects.hash(getIdentification());
-	}
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(getIdentification());
+    }
 
 }

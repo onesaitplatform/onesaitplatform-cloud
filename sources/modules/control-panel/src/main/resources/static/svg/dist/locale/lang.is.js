@@ -23,7 +23,7 @@ var svgEditorLang_is = (function () {
       toggle_stroke_tools: 'Show/hide more stroke tools',
       palette_info: 'Smelltu hér til að breyta fylla lit, Shift-smelltu til að breyta högg lit',
       zoom_level: 'Breyta Stækkunarstig',
-      panel_drag: 'Click to show hide',
+      panel_drag: 'Drag left/right to resize side panel',
       quality: 'Quality:',
       pathNodeTooltip: 'Drag node to move it. Double-click node to change segment type',
       pathCtrlPtTooltip: 'Drag control point to adjust curve properties',

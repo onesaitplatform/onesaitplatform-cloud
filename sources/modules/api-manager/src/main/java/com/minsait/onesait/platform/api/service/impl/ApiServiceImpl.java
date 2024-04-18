@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.XML;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -38,6 +38,7 @@ import com.github.opendevl.JFlat;
 import com.minsait.onesait.platform.api.audit.aop.ApiManagerAuditable;
 import com.minsait.onesait.platform.api.processor.ApiProcessorDelegate;
 import com.minsait.onesait.platform.api.processor.utils.ApiProcessorUtils;
+import com.minsait.onesait.platform.api.rule.DefaultRuleBase.ReasonType;
 import com.minsait.onesait.platform.api.rule.RuleManager;
 import com.minsait.onesait.platform.api.service.ApiServiceInterface;
 import com.minsait.onesait.platform.api.service.Constants;
@@ -87,7 +88,14 @@ public class ApiServiceImpl extends ApiManagerService implements ApiServiceInter
 		if (stopped != null && stopped) {
 			reason = facts.get(RuleManager.REASON);
 			reasonType = facts.get(RuleManager.REASON_TYPE);
-			data.put(Constants.HTTP_RESPONSE_CODE, facts.get(Constants.HTTP_RESPONSE_CODE));
+
+			if (reasonType.equals(ReasonType.API_LIMIT.name())) {
+				data.put(Constants.HTTP_RESPONSE_CODE, HttpStatus.TOO_MANY_REQUESTS);
+			} else if (reasonType.equals(ReasonType.SECURITY.name())) {
+				data.put(Constants.HTTP_RESPONSE_CODE, HttpStatus.FORBIDDEN);
+			} else {
+				data.put(Constants.HTTP_RESPONSE_CODE, HttpStatus.INTERNAL_SERVER_ERROR);
+			}
 			final String messageError = ApiProcessorUtils.generateErrorMessage(reasonType,
 					"Stopped Execution, Found Stop State", reason);
 			data.put(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_VALUE);
@@ -99,7 +107,7 @@ public class ApiServiceImpl extends ApiManagerService implements ApiServiceInter
 			data.put(Constants.OUTPUT, messageError);
 
 		} else {
-			data.put(Constants.STATUS, ChainProcessingStatus.FOLLOW);
+			data.put(Constants.STATUS, "FOLLOW");
 		}
 		return data;
 
@@ -123,7 +131,7 @@ public class ApiServiceImpl extends ApiManagerService implements ApiServiceInter
 		final Object response = data.get(Constants.OUTPUT);
 		String output = response instanceof byte[] ? new String((byte[]) response) : (String) response;
 
-		if (!StringUtils.hasText(output)) {
+		if (StringUtils.isEmpty(output)) {
 			output = "{}";
 		}
 
@@ -133,14 +141,11 @@ public class ApiServiceImpl extends ApiManagerService implements ApiServiceInter
 
 		if (contentTypeOutput.equalsIgnoreCase(MediaType.APPLICATION_ATOM_XML_VALUE)
 				|| contentTypeOutput.equalsIgnoreCase("application/xml")) {
-			if (jsonObj != null) {
+			if (jsonObj != null)
 				outputBody = XML.toString(jsonObj);
-			}
-			if (jsonArray != null) {
+			if (jsonArray != null)
 				outputBody = XML.toString(jsonArray);
-			}
 
-			data.put(Constants.OUTPUT, outputBody);
 		} else if (contentTypeOutput.equalsIgnoreCase(TEXT_CSV)) {
 			try {
 				if (jsonObj != null) {
@@ -156,19 +161,14 @@ public class ApiServiceImpl extends ApiManagerService implements ApiServiceInter
 					json2csv = new JFlat(outputBody).json2Sheet().headerSeparator(".").getJsonAsSheet();
 
 					outputBody = deserializeCSV2D(json2csv);
-
 				}
-				data.put(Constants.OUTPUT, outputBody);
 			} catch (final Exception e) {
-				data.put(Constants.OUTPUT, "");
+				throw new GenericOPException(e);
 			}
 
 		}
 
-		if (response instanceof byte[]) {
-			data.put(Constants.OUTPUT, new ByteArrayResource((byte[]) response));
-		}
-
+		data.put(Constants.OUTPUT, outputBody);
 		data.put(Constants.CONTENT_TYPE, contentTypeOutput);
 		return data;
 
@@ -215,9 +215,8 @@ public class ApiServiceImpl extends ApiManagerService implements ApiServiceInter
 			final List<Object> columns = Arrays.asList(a);
 			for (int i = 0; i < size; i++) {
 				builder.append(columns.get(i));
-				if (i + 1 != size) {
+				if (i + 1 != size)
 					builder.append(",");
-				}
 			}
 			builder.append(System.getProperty("line.separator"));
 		});
@@ -230,7 +229,7 @@ public class ApiServiceImpl extends ApiManagerService implements ApiServiceInter
 
 		final String contentType = (String) data.get(Constants.CONTENT_TYPE_OUTPUT);
 
-		if (StringUtils.hasText(formatResult)) {
+		if (!StringUtils.isEmpty(formatResult)) {
 			switch (formatResult.toUpperCase()) {
 			case XML_STRING:
 				return MediaType.APPLICATION_ATOM_XML_VALUE;
@@ -242,7 +241,7 @@ public class ApiServiceImpl extends ApiManagerService implements ApiServiceInter
 				break;
 			}
 		}
-		if (StringUtils.hasText(contentType)) {
+		if (!StringUtils.isEmpty(contentType)) {
 			return contentType;
 		}
 

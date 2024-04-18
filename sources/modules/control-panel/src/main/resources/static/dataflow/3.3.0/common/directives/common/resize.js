@@ -18,7 +18,7 @@
  */
 
 angular.module('commonUI.commonDirectives')
-  .directive('resize', ["$window", function ($window) {
+  .directive('resize', function ($window) {
     return function (scope, element) {
       var w = angular.element($window);
       scope.getWindowDimensions = function () {
@@ -41,4 +41,4 @@ angular.module('commonUI.commonDirectives')
         scope.$apply();
       });
     };
-  }]);
+  });

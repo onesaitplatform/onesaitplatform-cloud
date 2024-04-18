@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -38,7 +37,7 @@ import io.swagger.annotations.ApiResponses;
 public interface SwaggerGeneratorService {
 
 	/**
-	 *
+	 * 
 	 * @deprecated
 	 */
 	@GET
@@ -60,7 +59,6 @@ public interface SwaggerGeneratorService {
 			@ApiResponse(code = 501, message = "Internal Server Error") })
 	public Response getApiWithoutToken(
 			@PathParam("version") @ApiParam(name = "version", required = true) String version,
-			@PathParam("identification") @ApiParam(name = "identification", required = true) String identificacion,
-			@QueryParam("vertical") @ApiParam(name = "vertical", required = false) String vertical)
+			@PathParam("identification") @ApiParam(name = "identification", required = true) String identificacion)
 			throws GenericOPException;
 }

@@ -1,0 +1,372 @@
+version: '2'
+services:
+
+  #registryui:
+  #  image: registry:2
+  #  stdin_open: true
+  #  tty: true
+  #  ports:
+  #  - 25000:80/tcp
+  #  labels:
+  #    io.rancher.container.pull_image: always
+  #    io.rancher.scheduler.affinity:host_label: node={WORKER2DEPLOY}
+
+  oauthservice:
+    image: onesaitplatform/oauthserver:1.1.1-ce
+    environment:
+      SERVER_NAME: {DOMAIN_NAME}
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/platform-logs:/var/log/platform-logs:rw
+    tty: true
+    links:
+    - configdb:configdb
+    ports:
+    - 21000:21000/tcp
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={WORKER2DEPLOY}
+
+  streamsets:
+    image: onesaitplatform/streamsets:3.8.0
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/streamsets/data:/data:rw
+    - /datadrive/onesaitplatform/streamsets/certs:/tmp:rw
+    tty: true
+    ports:
+    - 18630:18630/tcp
+    - 514:5140/udp
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={WORKER2DEPLOY}
+  schedulerdb:
+    privileged: true
+    image: onesaitplatform/schedulerdb:latest
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/schedulerdb:/var/lib/mysql:rw
+    tty: true
+    ports:
+    - 3307:3306/tcp
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={WORKER2DEPLOY}
+
+  configinit:
+    image: onesaitplatform/configinit:1.1.1-ce
+    environment:
+      LOADELASTICDB: 'false'
+      SERVER_NAME: {DOMAIN_NAME}
+    stdin_open: true
+    tty: true
+    links:
+    - realtimedb:realtimedb
+    - configdb:configdb
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={WORKER2DEPLOY}
+      io.rancher.container.start_once: 'true'
+
+  apimanagerservice:
+    privileged: true
+    image: onesaitplatform/apimanager:1.1.1-ce
+    environment:
+      SERVER_NAME: {DOMAIN_NAME}
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/platform-logs:/var/log/platform-logs:rw
+    tty: true
+    links:
+    - monitoringuiservice:monitoringuiservice
+    - cacheservice:cacheservice
+    - routerservice:routerservice
+    - schedulerdb:schedulerdb
+    - realtimedb:realtimedb
+    - configdb:configdb
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={WORKER2DEPLOY}
+
+  digitaltwinbrokerservice:
+    image: onesaitplatform/digitaltwin:1.1.1-ce
+    environment:
+      SERVER_NAME: {DOMAIN_NAME}
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/platform-logs:/var/log/platform-logs:rw
+    tty: true
+    links:
+    - monitoringuiservice:monitoringuiservice
+    - configdb:configdb
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={WORKER2DEPLOY}
+
+  cacheservice:
+    privileged: true
+    image: onesaitplatform/cacheservice:1.1.1-ce
+    environment:
+      SERVER_NAME: cacheservice:20001
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/platform-logs:/var/log/platform-logs:rw
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={WORKER2DEPLOY}
+
+  flowengineservice:
+    privileged: true
+    image: onesaitplatform/flowengine:1.1.1-ce
+    environment:
+      SERVERNAME: {DOMAIN_NAME}
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/flowengine:/tmp:rw
+    - /datadrive/onesaitplatform/platform-logs:/var/log/platform-logs:rw
+    tty: true
+    links:
+    - quasar:quasar
+    - monitoringuiservice:monitoringuiservice
+    - routerservice:routerservice
+    - schedulerdb:schedulerdb
+    - realtimedb:realtimedb
+    - configdb:configdb
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={WORKER2DEPLOY}
+
+  controlpanelservice:
+    privileged: true
+    image: onesaitplatform/controlpanel:1.1.1-ce
+    environment:
+      SERVER_NAME: {DOMAIN_NAME}
+      KAFKAENABLED: 'false'
+      #BURROWHOST: kafkamonitoringservice
+      #BURROWPORT: '18400'
+      ONESAIT_PROPERTIES: '{"onesaitplatform":{"dashboardengine":{"url":"https://{DOMAIN_NAME}/controlpanel/dashboards/editfulliframe/"}}}'
+    volumes:
+    - /datadrive/onesaitplatform/platform-logs:/var/log/platform-logs:rw
+    - /datadrive/onesaitplatform/webprojects:/usr/local/webprojects
+    links:
+    - quasar:quasar
+    - monitoringuiservice:monitoringuiservice
+    - cacheservice:cacheservice
+    - routerservice:routerservice
+    - schedulerdb:schedulerdb
+    - realtimedb:realtimedb
+    - configdb:configdb
+    ports:
+    - 18000:18000/tcp
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={WORKER2DEPLOY}
+
+
+  zookeeper:
+    privileged: true
+    image: onesaitplatform/zookeeper-secured:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: '2182'
+    stdin_open: true
+    network_mode: host
+    tty: true
+    labels:
+      io.rancher.scheduler.affinity:host_label: node={WORKER2DEPLOY}
+      io.rancher.container.dns: 'true'
+      io.rancher.container.hostname_override: container_name
+      io.rancher.container.pull_image: always
+  
+  devicesimulator:
+    privileged: true
+    image: onesaitplatform/devicesimulator:1.1.1-ce
+    environment:
+      SERVER_NAME: {DOMAIN_NAME}
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/platform-logs:/var/log/platform-logs:rw
+    tty: true
+    links:
+    - routerservice:routerservice
+    - schedulerdb:schedulerdb
+    - realtimedb:realtimedb
+    - configdb:configdb
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={WORKER2DEPLOY}
+
+  zeppelin:
+    privileged: true
+    image: onesaitplatform/notebook:latest
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/zeppelin/notebook:/zeppelin/notebook:rw
+    - /datadrive/onesaitplatform/zeppelin/conf:/zeppelin/conf:rw
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={WORKER2DEPLOY}
+
+  configdb:
+    privileged: true
+    image: onesaitplatform/configdb:latest
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/configdb:/var/lib/mysql:rw
+    tty: true
+    ports:
+    - 3306:3306/tcp
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={WORKER2DEPLOY}
+
+  rtdbmaintainerservice:
+    image: onesaitplatform/rtdbmaintainer:1.1.1-ce
+    environment:
+      SERVER_NAME: {DOMAIN_NAME}
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/platform-logs:/var/log/platform-logs:rw
+    - /datadrive/onesaitplatform/export:/tmp/export:rw
+    - /datadrive/onesaitplatform/binaryrepository:/usr/local/files:rw
+    tty: true
+    links:
+    - routerservice:routerservice
+    - schedulerdb:schedulerdb
+    - realtimedb:realtimedb
+    - configdb:configdb
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={WORKER2DEPLOY}
+
+  iotbrokerservice:
+    privileged: true
+    image: onesaitplatform/iotbroker:1.1.1-ce
+    environment:
+      SERVER_NAME: {DOMAIN_NAME}
+      KAFKAENABLED: 'false'
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/platform-logs:/var/log/platform-logs:rw
+    tty: true
+    links:
+    - monitoringuiservice:monitoringuiservice
+    - routerservice:routerservice
+    - schedulerdb:schedulerdb
+    - realtimedb:realtimedb
+    - configdb:configdb
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={WORKER2DEPLOY}
+
+  loadbalancerservice:
+    privileged: true
+    image: nginx:latest
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/webprojects:/usr/local/webprojects:rw
+    - /datadrive/onesaitplatform/nginx/nginx.conf:/etc/nginx/nginx.conf:rw
+    - /datadrive/onesaitplatform/nginx/certs/platform.cer:/etc/nginx/ssl/platform.cer:ro
+    - /datadrive/onesaitplatform/nginx/certs/server.key:/etc/nginx/ssl/server.key:ro
+    - /datadrive/onesaitplatform/nginx/conf.d:/usr/local/conf.d:ro
+    - /datadrive/geo-data:/tmp/geo-data:ro
+    - /datadrive/kml:/tmp/kml:ro
+    tty: true
+    links:
+    - monitoringuiservice:monitoringuiservice
+    - devicesimulator:devicesimulator
+    - iotbrokerservice:iotbrokerservice
+    - controlpanelservice:controlpanelservice
+    - flowengineservice:flowengineservice
+    - dashboardengineservice:dashboardengineservice
+    ports:
+    - 80:80/tcp
+    - 443:443/tcp
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={WORKER2DEPLOY}
+  quasar:
+    privileged: true
+    mem_limit: 7340032000
+    image: onesaitplatform/quasar:14
+    environment:
+      AUTHDB: admin
+      AUTHPARAMS: platformadmin:0pen-platf0rm-2018!@
+      TIMEOUTMS: '30000'
+    stdin_open: true
+    tty: true
+    links:
+    - realtimedb:realtimedb
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={WORKER2DEPLOY}
+
+  monitoringuiservice:
+    privileged: true
+    image: onesaitplatform/monitoringui:1.1.1-ce
+    environment:
+      SERVER_NAME: {DOMAIN_NAME}
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/platform-logs:/var/log/platform-logs:rw
+    tty: true
+    links:
+    - realtimedb:realtimedb
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={WORKER2DEPLOY}
+  haproxy:
+    image: rancher/lb-service-haproxy:v0.7.15
+    ports:
+    - 1883:1883/tcp
+    - 8883:8883/tcp
+    labels:
+      io.rancher.container.agent.role: environmentAdmin,agent
+      io.rancher.container.agent_service.drain_provider: 'true'
+      io.rancher.container.create_agent: 'true'
+
+  dashboardengineservice:
+    privileged: true
+    image: onesaitplatform/dashboard:1.1.1-ce
+    environment:
+      SERVER_NAME: {DOMAIN_NAME}
+      ONESAIT_PROPERTIES: '{"onesaitplatform":{"database":{"mongodb":{"socket-timeout":10000}}}}'
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/platform-logs:/var/log/platform-logs:rw
+    tty: true
+    links:
+    - quasar:quasar
+    - monitoringuiservice:monitoringuiservice
+    - routerservice:routerservice
+    - realtimedb:realtimedb
+    - configdb:configdb
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={WORKER2DEPLOY}
+
+  routerservice:
+    privileged: true
+    image: onesaitplatform/router:1.1.1-ce
+    environment:
+      SERVER_NAME: routerservice:20000
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/platform-logs:/var/log/platform-logs:rw
+    tty: true
+    labels:
+      io.rancher.container.pull_image: always
+      io.rancher.scheduler.affinity:host_label: node={WORKER2DEPLOY}
+  realtimedb:
+    privileged: true
+    mem_limit: 10485760000
+    image: onesaitplatform/realtimedb:latest
+    stdin_open: true
+    volumes:
+    - /datadrive/onesaitplatform/realtimedb:/data/db:rw
+    tty: true
+    ports:
+    - 27017:27017/tcp
+    labels:
+      io.rancher.scheduler.affinity:host_label: node={WORKER2DEPLOY}

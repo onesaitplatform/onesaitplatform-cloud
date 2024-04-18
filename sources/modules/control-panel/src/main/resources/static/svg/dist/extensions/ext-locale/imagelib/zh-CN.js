@@ -11,9 +11,9 @@ var svgEditorExtensionLocale_imagelib_zh_CN = (function () {
       title: '图像库'
     }],
     imgLibs: [{
-      name: 'library',
+      name: 'Demo library (local)',
       url: '{path}imagelib/index{modularVersion}.html',
-      description: 'Image library on this server'
+      description: 'Demonstration library for SVG-edit on this server'
     }, {
       name: 'IAN Symbol Libraries',
       url: 'https://ian.umces.edu/symbols/catalog/svgedit/album_chooser.php?svgedit=3',

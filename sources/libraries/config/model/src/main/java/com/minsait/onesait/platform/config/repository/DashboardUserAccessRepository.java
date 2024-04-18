@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,9 @@
  */
 package com.minsait.onesait.platform.config.repository;
 
-import java.util.Collection;
 import java.util.List;
 
-import javax.transaction.Transactional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 
 import com.minsait.onesait.platform.config.model.Dashboard;
 import com.minsait.onesait.platform.config.model.DashboardUserAccess;
@@ -29,18 +25,16 @@ import com.minsait.onesait.platform.config.model.User;
 
 public interface DashboardUserAccessRepository extends JpaRepository<DashboardUserAccess, String> {
 
-	DashboardUserAccess findByDashboardAndUserAndDashboardUserAccessType(Dashboard dashboard, User user,
-			DashboardUserAccessType dashboardUserAccessType);
+	DashboardUserAccess findByDashboardAndUserAndDashboardUserAccessType(Dashboard dashboard, User user, DashboardUserAccessType dashboardUserAccessType);
 
 	DashboardUserAccess findByDashboardAndUser(Dashboard dashboard, User user);
 
 	List<DashboardUserAccess> findByUser(User user);
 
+	DashboardUserAccess findById(String id);
+
 	List<DashboardUserAccess> findByDashboard(Dashboard dashboard);
 
 	void deleteByDashboard(Dashboard dashboard);
 
-	@Modifying
-	@Transactional
-	void deleteByIdNotIn(Collection<String> ids);
 }

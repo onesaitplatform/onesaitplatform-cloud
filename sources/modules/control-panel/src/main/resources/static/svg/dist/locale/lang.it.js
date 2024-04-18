@@ -23,7 +23,7 @@ var svgEditorLang_it = (function () {
       toggle_stroke_tools: 'Mostra/nascondi strumenti per il tratto',
       palette_info: 'Fare clic per cambiare il colore di riempimento, shift-click per cambiare colore del tratto',
       zoom_level: 'Cambia il livello di zoom',
-      panel_drag: 'Click to show hide',
+      panel_drag: 'Drag left/right to resize side panel',
       quality: 'Quality:',
       pathNodeTooltip: 'Drag node to move it. Double-click node to change segment type',
       pathCtrlPtTooltip: 'Drag control point to adjust curve properties',

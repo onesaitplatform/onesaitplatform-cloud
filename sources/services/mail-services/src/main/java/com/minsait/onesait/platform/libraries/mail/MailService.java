@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,9 @@
  */
 package com.minsait.onesait.platform.libraries.mail;
 
-import java.io.IOException;
-
 import javax.mail.MessagingException;
 
 import org.springframework.mail.SimpleMailMessage;
-
-import com.minsait.onesait.platform.libraries.mail.util.HtmlFileAttachment;
 
 public interface MailService {
 	void sendMail(String[] to, String subject, String text);
@@ -33,8 +29,4 @@ public interface MailService {
 			boolean htmlenable) throws MessagingException;
 	void sendHtmlMailWithFile(String to, String subject, String text, String attachmentName, String attachment,
             boolean htmlenable) throws MessagingException;
-	
-	void sendConfirmationMailMessage(String to, String subject, String htmlText, HtmlFileAttachment... files) throws MessagingException, IOException;
-	
-	void sendHtmlMail(String to[], String subject, String htmlText) throws MessagingException;
 }

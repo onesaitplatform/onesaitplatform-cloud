@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -26,10 +26,14 @@
 
 
 <!-- STYLE SHEETS -->
-<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/bootstrap.min.css}" />
-<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/components.css}" />
-<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/plugins.css}" />
-<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/layout.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/bootstrap.min.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/components.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/plugins.css}" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/static/css/layout.css}" />
 <!-- THEME -->
 <link rel="stylesheet" type="text/css" media="all"
 	th:href="@{/static/webjars/sofia2_theme/css/sofia2.css}" />
@@ -110,7 +114,7 @@
 				<!-- MAIN ROW -->
 				<div class="row">
 					<div class="col-md-12">
-						<div class="portlet light ">
+						<div class="portlet light container">
 							<div class="portlet-title">
 								<div class="caption">
 									<span class="caption-subject"
@@ -155,12 +159,14 @@
 		class="page-footer"> </footer>
 
 	<!-- CORE JS CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}" ></script>
-	<script th:src="@{/static/js/layout.js}" ></script>
+	<script th:src="@{/static/js/app.js}" />
+	<script th:src="@{/static/js/layout.js}" />
 
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" ></script>
-	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}" ></script>
+	<script
+		th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}" />
+	<script
+		th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}" />
 	<!-- LOADING DEFAULT DATES IF NEEDED -->
 	<script th:if="${lang} == 'es'"
 		th:src="@{/static/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js}"
@@ -178,7 +184,7 @@
 		type="text/javascript"></script>
 
 	<!-- TEMPLATE CONTROLLER 
-	<script th:src="@{/static/js/pages/deviceCreate.js}"></script> -->
+	<script th:src="@{/static/js/pages/deviceCreate.js}"/> -->
 
 	<!-- MAIN INIT -->
 	<script th:inline="javascript">
@@ -202,7 +208,7 @@
 	function navigateUrl(url){  window.location.href = url;	}
 	
 	// MAIN WHEN LOAD
-	$(window).on("load",function(){  
+	$(window).load(function(){  
 		// init on load.		
 		
 		

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,21 +22,17 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.minsait.onesait.platform.config.model.Project.ProjectType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 import com.minsait.onesait.platform.config.model.base.OPResource;
-import com.minsait.onesait.platform.config.versioning.VersioningIOService;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -44,167 +40,83 @@ import lombok.Setter;
 @Entity
 @Table(name = "PROJECT_RESOURCE_ACCESS")
 @Configurable
+@Builder
 @NoArgsConstructor
-public class ProjectResourceAccess extends ProjectResourceAccessParent {
+@AllArgsConstructor
+public class ProjectResourceAccess extends AuditableEntityWithUUID {
 
 	private static final long serialVersionUID = 1L;
 
+	public enum ResourceAccessType {
+		VIEW, MANAGE
+	}
+
+	@Column(name = "ACCESS", nullable = false)
+	@Enumerated(EnumType.STRING)
+	@Getter
+	@Setter
+	private ResourceAccessType access;
+
+	@JsonIgnore
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = true)
+	@Getter
+	@Setter
+	private User user;
+
+	@JsonIgnore
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "RESOURCE_ID", referencedColumnName = "ID", nullable = false)
 	@Getter
 	@Setter
 	private OPResource resource;
 
+	@JsonIgnore
 	@Fetch(FetchMode.JOIN)
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "PROJECT_ID", referencedColumnName = "ID", nullable = false)
 	@Getter
 	@Setter
 	private Project project;
 
+	@JsonIgnore
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "APP_ROLE_ID", referencedColumnName = "ID", nullable = true)
 	@Getter
 	@Setter
 	private AppRole appRole;
 
-	@ManyToOne(fetch = FetchType.EAGER)
-	@JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", nullable = true)
-	@Getter
-	@Setter
-	private User user;
-	
-	@Column(name = "ACCESS_ALL")
-	@Type(type = "org.hibernate.type.BooleanType")
-	@ColumnDefault("false")
-	@Getter
-	@Setter
-	private Boolean access_all;
-	
-	public ProjectResourceAccess(User user, ResourceAccessType access, OPResource resource, Project project,
-			AppRole appRole, Boolean access_all) {
-		super(access);
-		this.resource = resource;
-		this.project = project;
-		this.appRole = appRole;
-		this.user = user;
-		this.access_all= access_all;
-	}
-
 	@Override
 	public boolean equals(Object obj) {
 
-		if (obj == null) {
+		if (obj == null)
 			return false;
-		}
 
-		if (this.getClass() != obj.getClass()) {
+		if (this.getClass() != obj.getClass())
 			return false;
-		}
 
 		final ProjectResourceAccess that = (ProjectResourceAccess) obj;
-		if (that != null && getAppRole() != null && that.getAppRole() != null) {
-			return getAppRole().getId().equals(that.getAppRole().getId())
+		if (that != null && getAppRole() != null && that.getAppRole() != null)
+			return (getAppRole().getId().equals(that.getAppRole().getId())
 					&& getResource().getId().equals(that.getResource().getId())
-					&& getProject().getId().equals(that.getProject().getId());
-		} else if (that != null && getUser() != null && that.getUser() != null) {
-			return getUser().getUserId().equals(that.getUser().getUserId())
+					&& getProject().getId().equals(that.getProject().getId()));
+		else if (that != null && getUser() != null && that.getUser() != null)
+			return (getUser().getUserId().equals(that.getUser().getUserId())
 					&& getResource().getId().equals(that.getResource().getId())
-					&& getProject().getId().equals(that.getProject().getId());
-		} else {
+					&& getProject().getId().equals(that.getProject().getId()));
+		else
 			return super.equals(obj);
-		}
 	}
 
 	@Override
 	public int hashCode() {
-		if (getAppRole() != null) {
+		if (getAppRole() != null)
 			return java.util.Objects.hash(getAppRole().getId(), getResource().getId(), getProject().getId());
-		} else if (getUser() != null) {
+
+		else if (getUser() != null)
 			return java.util.Objects.hash(getUser().getUserId(), getResource().getId(), getProject().getId());
-		} else {
+		else
 			return super.hashCode();
-		}
-	}
-
-	@Override
-	public String toString() {
-		final StringBuilder sb = new StringBuilder();
-		if (resource != null && resource.getIdentification() != null) {
-			sb.append(" Resource : " + resource.getIdentification());
-		}
-		if (getAccess() != null) {
-			sb.append(" Access : " + getAccess().name());
-		}
-		if (user != null) {
-			sb.append(" User : " + user.getUserId());
-		}
-		if (appRole != null) {
-			sb.append(" AppRole : " + appRole.getName());
-		}
-		if (project != null) {
-			sb.append(" Project : " + project.getIdentification());
-		}
-
-		return sb.toString();
-	}
-
-	@JsonSetter("user")
-	public void setUserJson(String userId) {
-		if (StringUtils.hasText(userId)) {
-			final User u = new User();
-			u.setUserId(userId);
-			user = u;
-		}
-	}
-
-	@JsonGetter("user")
-	public String getUserJson() {
-		return user == null ? null : user.getUserId();
-	}
-
-	@JsonSetter("appRole")
-	public void setAppRoleJson(String id) {
-		if (StringUtils.hasText(id)) {
-			final AppRole ar = new AppRole();
-			ar.setId(id);
-			appRole = ar;
-		}
-	}
-
-	@JsonGetter("appRole")
-	public String getAppRoleJson() {
-		return appRole == null ? null : appRole.getId();
-	}
-
-	@JsonSetter("project")
-	public void setProjectJson(String id) {
-		if (StringUtils.hasText(id)) {
-			final Project p = new Project();
-			p.setId(id);
-			project = p;
-		}
-	}
-
-	@JsonGetter("project")
-	public String getProjectJson() {
-		return project == null ? null : project.getId();
-	}
-
-	@JsonSetter("resource")
-	public void setResourceJson(String id) throws Exception {
-		if (StringUtils.hasText(id)) {
-			final String[] parts = id.split("@");
-			final OPResource p = (OPResource) Class.forName(VersioningIOService.CONFIG_MODEL_CLASS_PREFIX + parts[1])
-					.newInstance();
-			p.setId(parts[0]);
-			resource = p;
-		}
-	}
-
-	@JsonGetter("resource")
-	public String getResourceJson() {
-		return resource == null ? null : resource.getId() + "@" + resource.getClass().getSimpleName();
 	}
 
 }

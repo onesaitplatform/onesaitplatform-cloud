@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -59,31 +59,13 @@
 			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
-				<!-- SEARCH FORM -->
-				<div id="searchFilter"  class="row" >
-					<form id="form_videocaptures" class="" role="form" method="get">
-						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-						<div class="col-md-3 col-sm-4 col-xs-12">														
-							<div class="input-icon">
-								<i class="icon-search font-grey-mint"></i>									 														
-								<input id="videocapture-identification" th:placeholder="#{gen.identification}"  name="identification" class="form-control" type="text" maxlength="50" value=""/>
-							</div>
-						</div>
-						<div class="col-md-2 col-sm-4 col-xs-12 pull-right">
-							<div class="pull-right">
-								<button type="button" id="reset_videocapture" name="reset_videocapture" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}">Reset</button>
-								<button type="button" id="search_videocapture" name="search_videocapture" class="btn btn-primary btn-primary-search" th:text="#{gen.search}">Search</button>
-							</div>
-						</div>									
-					</form>
-				</div>
 				
 				<!-- BEGIN PAGE HEADER-->
 				
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<!--<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>-->
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
 						<li><a th:href="@{/video-captures/list}"> <span th:text="#{videobroker.breadcrumb.prev}">Video Captures</span></a></li>						
 					</ul>						
 				</div>
@@ -94,135 +76,113 @@
 				<!-- END PAGE TITLE-->			
 				
 				<!-- MAIN ROW -->
-				<div class="row">					
-					<div class="portlet light">
-						<div class="portlet-title">
-							<div class="caption">									
-								<span class="caption-subject " th:text="#{videobroker.template.list}"> Video capture</span>
-							</div>
-							<div class="caption" style="padding: 22px 8px 8px 10px">
-								<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
-							</div>
-							<div id="search-on-title" class="hide input-icon search-icon">
-								<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
-							</div>									
-							<div class="tools hide">
-								<a href="" class="collapse" data-original-title="" title=""> </a>
-								<a href="" class="fullscreen" data-original-title="" title=""> </a>
-							</div>
-							<div class="pull-right btn-group btn-title-group" id="divcreate" >
-								<button type="button" class="btn btn-primary button-plus-create" th:attr="onclick='javascript:navigateUrl(\''+@{/video-captures/create}+'\')'" ><a><i class="icon-new" style="color:white;"></i></a></button>		
-							</div>
-							<!--<div class="actions margin-right-20">
-								<div class="btn-group">
-									<button type="button" class="btn btn-circle blue btn-outline" th:attr="onclick='javascript:navigateUrl(\''+@{/video-captures/create}+'\')'" ><span th:text="#{gen.create}">New </span></button>
+				<div class="row">
+					<div class="col-md-12">
+					
+						<div class="portlet light">
+							<div class="portlet-title">
+								<div class="caption">									
+									<span class="caption-subject " th:text="#{videobroker.template.list}"> Video capture</span>
+								</div>									
+								<div class="tools hide">
+									<a href="" class="collapse" data-original-title="" title=""> </a>
+									<a href="" class="fullscreen" data-original-title="" title=""> </a>
 								</div>
-							</div>-->
-						</div>
-						<div class="portlet-body" style="display: block; height: auto;">
-							
-							<div class="row main">
-								<!--<div class="col-md-12 alert-zone">
-									// ALERT ZONE																			
-								</div>-->
+								<div class="actions margin-right-20">
+									<div class="btn-group">
+										<button type="button" class="btn btn-circle blue btn-outline" th:onclick="'javascript:navigateUrl(\''+@{/video-captures/create}+'\')'" ><span th:text="#{gen.create}">New </span></button>
+									</div>
+								</div>
+							</div>
+							<div class="portlet-body" style="display: block; height: auto;">
 								
-								<!-- SIMULATIONS LIST -->
-								<div class="col-md-12">											
-									<div id="contenedor-tabla-outside" class="contiene hidden">									
+								<div class="row">
+									<div class="col-md-12 alert-zone">
+										<!-- ALERT ZONE -->																			
+									</div>
+									
+									<!-- SIMULATIONS LIST -->
+									<div class="col-md-12">											
+										<div id="contenedor-tabla-outside" class="contiene">									
 										<div id="captures">												
-											<!-- DATATABLE DANDELION CONF. -->												
-											<table id="simulationsTable" class="table table-hover table-striped"  dt:table="true"  dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none" dt:paginationtype="full">
-												<thead>
-													<tr class="cabecera-tabla">
-														<th class="titulo-columnas" > <span th:text="#{ontology.identification}" >Identification</span></th>
-														<th class="titulo-columnas text-left" ><span th:text="#{gen.owner}" >User</span></th>
-														<th class="titulo-columnas" > <span th:text="#{videobroker.url}" >Url</span></th>
-														<th class="titulo-columnas text-left" ><span th:text="#{apimanager.ontology}" >Ontology</span></th>	
-														<th class="titulo-columnas text-center" > <span th:text="#{domain.state}" >State</span></th>
-														<th class="titulo-columnas text-left" > <span th:text="#{gen.created}">Created At</span></th>
-														<th class="titulo-columnas text-left" > <span th:text="#{gen.updated}">Updated At</span></th>
-														<th class="titulo-columnas text-center" style="width:85px;"> <span th:text="#{gen.options}"> Options</span></th>
-													</tr>
-												</thead>
-													<tbody th:remove="all-but-first">
-														<tr th:each="capture : ${videoCaptures}" pages:paginate="10">
-															<!-- IDENTIFICATION -->
-															<td class="text-left no-wrap " th:text="${capture.identification}"></td>
-															<!-- USER -->
-															<td class="text-left no-wrap " th:text="${capture.user.userId}"></td>	
-															
-															<!-- URL -->													
-															<td class="text-left text-truncate-xxs no-wrap " th:text="${capture.url}"></td>
-															<!-- ONTOLOGY -->
-															<td class="text-left no-wrap " th:text="${capture.ontology.identification}"></td>
-															<!-- STATE -->
-															<td class="text-center" th:if="${capture.state.name() == 'START'}"><span th:id="'state-'+${capture.id}" class="tooltips" data-container="body" data-placement="bottom" th:title="#{gen.running}" ><span th:text="1" style="display:none" ></span><i class="la la-arrow-up text-primary font-hg"></i></span></td>
-															<td class="text-center" th:if="${capture.state.name() == 'STOP'} "><span th:id="'state-'+${capture.id}" class="tooltips" data-container="body" data-placement="bottom" th:title="#{gen.stopped}" ><span th:text="0" style="display:none" ></span><i class="la la-arrow-down text-danger font-hg" ></i></span></td>	
-															<!-- DATE -->
-															<td class="text-left" th:if="${capture.createdAt!=null}"><span th:text="${#dates.format(capture.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(capture.createdAt,'dd/MM/yyyy')}" ></span></td>
-															<td class="text-left" th:if="${capture.createdAt==null}" th:text="'---'"></td>
-															<!-- UPDATE -->
-															<td class="text-left" th:if="${capture.updatedAt!=null}"><span th:text="${#dates.format(capture.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(capture.updatedAt,'dd/MM/yyyy')}" ></span></td>
-															<td class="text-left" th:if="${capture.updatedAt==null}" th:text="'---'"></td>
-															
-															<!-- OPTIONS -->
-															<td class="icon text-center" style="white-space: nowrap">
-																<div class="grupo-iconos">		
-																	<!-- START/STOP -->
-																	<span  th:if="${capture.state.name() == 'START'}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.stop}" th:data-original-title="#{gen.stop}" th:attr="onclick='javascript:startStopCapture(\'' + ${capture.id} + '\', this);'"><i class="icon-stop"></i></span>
-																	<span  th:if="${capture.state.name() == 'STOP'}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.play}" th:data-original-title="#{gen.play}" th:attr="onclick='javascript:startStopCapture(\'' + ${capture.id} + '\', this);'"><i class="icon-play"></i></span>
-																	<!-- EDIT -->
-																	<span th:if="${capture.state.name() == 'STOP'}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/video-captures/update/${capture.id}|} + '\');'" ><i class="icon-edit"></i></span>
-																	<!-- DELETE -->
-																	<span th:if="${capture.state.name() == 'STOP'}" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn}" th:attr="onclick='showConfirmDeleteDialog(\''+ ${capture.id}+'\');'" ><i class="icon-delete"></i></span>
-
-																</div>
-															</td>
+												<!-- DATATABLE DANDELION CONF. -->												
+												<table id="simulationsTable" class="table table-hover table-striped"  dt:table="true"  dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none" dt:paginationtype="full_numbers">
+													<thead>
+														<tr class="cabecera-tabla">
+															<th class="titulo-columnas" > <span th:text="#{ontology.identification}" >Identification</span></th>
+															<th class="titulo-columnas" > <span th:text="#{videobroker.url}" >Url</span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{apimanager.ontology}" >Ontology</span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{gen.owner}" >User</span></th>
+															<th class="titulo-columnas text-center" > <span th:text="#{gen.created}">Created At</span></th>
+															<th class="titulo-columnas text-center" > <span th:text="#{gen.updated}">Updated At</span></th>
+															<th class="titulo-columnas" > <span th:text="#{domain.state}" >State</span></th>
+															<th class="titulo-columnas text-center"> <span th:text="#{gen.options}"> Options</span></th>
 														</tr>
-													</tbody>
-											</table>
+													</thead>
+														<tbody th:remove="all-but-first">
+															<tr th:each="capture : ${videoCaptures}" pages:paginate="10">
+																<!-- IDENTIFICATION -->
+																<td class="text-left no-wrap " th:text="${capture.identification}"></td>
+																<!-- URL -->													
+																<td class="text-left no-wrap " th:text="${capture.url}"></td>
+																<!-- ONTOLOGY -->
+																<td class="text-left no-wrap " th:text="${capture.ontology.identification}"></td>
+																<!-- USER -->
+																<td class="text-left no-wrap " th:text="${capture.user.userId}"></td>	
+																<!-- DATE -->
+																<td class="text-center" th:if="${capture.createdAt!=null}"><span th:text="${#dates.format(capture.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(capture.createdAt,'dd/MM/YYYY')}" ></span></td>
+																<td class="text-center" th:if="${capture.createdAt==null}" th:text="'---'"></td>
+																<!-- UPDATE -->
+																<td class="text-center" th:if="${capture.updatedAt!=null}"><span th:text="${#dates.format(capture.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(capture.updatedAt,'dd/MM/YYYY')}" ></span></td>
+																<td class="text-center" th:if="${capture.updatedAt==null}" th:text="'---'"></td>
+																<!-- STATE -->
+																<td class="text-center" th:if="${capture.state.name() == 'START'}"><span th:id="'state-'+${capture.id}" class="tooltips" data-container="body" data-placement="bottom" th:title="#{gen.running}" ><span th:text="1" style="display:none" ></span><i class="la la-arrow-up text-primary font-hg"></i></span></td>
+																<td class="text-center" th:if="${capture.state.name() == 'STOP'} "><span th:id="'state-'+${capture.id}" class="tooltips" data-container="body" data-placement="bottom" th:title="#{gen.stopped}" ><span th:text="0" style="display:none" ></span><i class="la la-arrow-down text-danger font-hg" ></i></span></td>	
+																												
+																
+																<!-- OPTIONS -->
+																<td class="icon text-center" style="white-space: nowrap">
+																	<div class="grupo-iconos">		
+																		<!-- START/STOP -->
+																		<span  th:if="${capture.state.name() == 'START'}" class="btn btn-xs btn-circle btn-outline no-border blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.stop}" th:data-original-title="#{gen.stop}" th:onclick="'javascript:startStopCapture(\'' + ${capture.id} + '\', this);'"><i class="la la-stop font-hg"></i></span>
+																		<span  th:if="${capture.state.name() == 'STOP'}" class="btn btn-xs btn-circle btn-outline no-border blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.play}" th:data-original-title="#{gen.play}" th:onclick="'javascript:startStopCapture(\'' + ${capture.id} + '\', this);'"><i class="la la-play font-hg"></i></span>
+																		<!-- EDIT -->
+																		<span th:if="${capture.state.name() == 'STOP'}" class="btn btn-xs btn-circle btn-outline no-border blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/video-captures/update/${capture.id}|} + '\');'" ><i class="la la-edit font-hg"></i></span>
+																		<!-- DELETE -->
+																		<span th:if="${capture.state.name() == 'STOP'}" class="btn btn-xs btn-circle btn-outline no-border blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn}" th:onclick="'showConfirmDeleteDialog(\''+ ${capture.id}+'\');'" ><i class="la la-trash font-hg"></i></span>
+
+																	</div>
+																</td>
+															</tr>
+														</tbody>
+												</table>
+												
+												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
 											
-											<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
+												<div id="dataTable-vis-toggle" class="btn-group margin-left-10 hide">
+													<a href="javascript:;" data-toggle="dropdown" aria-expanded="false" class="btn btn-square btn-sm btn-default ">
+														<i class="fa fa-eye"></i> Columns <i class="fa fa-angle-down"></i>
+													</a>
+													<div id="column_toggler" class="dropdown-menu hold-on-click dropdown-checkboxes pull-right">
+														<label class="toggle-vis" data-column="0" th:text="#{ontology.identification}"> Identification</label>
+														<label class="toggle-vis" data-column="1" th:text="#{videobroker.url}">URL</label>
+														<label class="toggle-vis" data-column="2" th:text="#{apimanager.ontology}">Ontology</label>
+														<label class="toggle-vis" data-column="3" th:text="#{gen.owner}">Owner</label>
+														<label class="toggle-vis" data-column="4" th:text="#{gen.created}"> State</label>
+														<label class="toggle-vis" data-column="5" th:text="#{gen.updated}"> Updated At</label>
+														<label class="toggle-vis" data-column="6" th:text="#{domain.state}"> State</label>
+														<label class="toggle-vis" data-column="7" th:text="#{gen.options}"> Options</label>
+													</div>
+												</div>	
+																				
 										
-											<div id="dataTable-vis-toggle" class="btn-group margin-right-10 hide">
-												<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
-												<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="0" checked/>
-														<label th:text="#{ontology.identification}"> Identification </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-														<label th:text="#{gen.owner}"> Owner</label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-														<label th:text="#{videobroker.url}"> URL </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
-														<label th:text="#{apimanager.ontology}"> Ontology</label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-														<label th:text="#{domain.state}"> State</label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
-														<label th:text="#{gen.created}"> Created at</label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="6" checked/>
-														<label th:text="#{gen.updated}"> Updated at</label>
-													</span>
-												</div>
-											</div>	
 										</div>
-									</div>											
+										</div>											
+									</div>
 								</div>
 							</div>
-						</div>
-					</div><!-- END PORTLET BASIC LIGHT -->							
+						</div><!-- END PORTLET BASIC LIGHT -->							
+					</div><!-- END COL-12 -->						
 				</div><!-- END MAIN ROW -->				
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
@@ -233,14 +193,14 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"></script>
-	<script th:src="@{/static/js/layout.js}"></script>
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
-	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"/>
 	
 	
 	<script th:inline="javascript">	
@@ -268,7 +228,33 @@
 
 
 	
+	// MAIN WHEN READY
+	$( document ).ready(function() {
 	
+		
+		
+		
+		//SHOW/HIDE DATATABLE COLUMNS HANDLER
+		$('label.toggle-vis').on( 'click', function (e) {
+			e.preventDefault(); 
+			// Get the column API object
+			var column = $('#simulationsTable').DataTable().column( $(this).attr('data-column') ); 
+			// Toggle the visibility
+			column.visible( ! column.visible() );			
+			// toggle Text
+			$(this).toggleClass('text-muted line-through');			
+		});	
+		
+		// SEARCH FORM RESET
+		$('#reset_user').on('click',function(){
+			$('#form_scheduledsearch')[0].reset();
+			$('#form_scheduledsearch')[0].submit();
+		});
+		
+		// SEARCH FORM
+		$('#search_user').on('click',function(){ $('#form_scheduledsearch')[0].submit(); });
+		
+	});
 	var startStopEndpoint = [[@{/video-captures/startstop}]]
 	var startStopCapture = function(captureId, obj){
 		startStopAJAX(captureId).done(updateStateSuccess(obj, captureId)).fail(updateStateFail);
@@ -323,10 +309,11 @@
 		var Close = headerReg.btnCancelar;
 		var Remove = headerReg.btnEliminar;
 		var Content = deleteContent;
-		var Title = headerReg.videoCaptureDelete;
+		var Title = headerReg.titleConfirm + ':';
 
 		// jquery-confirm DIALOG SYSTEM.
 		$.confirm({
+			icon : 'fa fa-warning',
 			title : Title,
 			theme : 'light',
 			columnClass : 'medium',
@@ -334,16 +321,17 @@
 			draggable : true,
 			dragWindowGap : 100,
 			backgroundDismiss : true,
+			closeIcon : true,
 			buttons : {
 				close : {
 					text : Close,
-					btnClass : 'btn btn-outline blue dialog',
+					btnClass : 'btn btn-sm btn-circle blue btn-outline',
 					action : function() {
 					} // GENERIC CLOSE.
 				},
 				remove : {
 					text : Remove,
-					btnClass : 'btn btn-primary',
+					btnClass : 'btn btn-sm btn-circle btn-primary btn-outline',
 					action : function() {
 						console.log(id);
 						var csrf_value = $("meta[name='_csrf']").attr("content");
@@ -376,62 +364,14 @@
 		});
 	}
 	
-	$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		$.each([],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-	});	
-	
-	// MAIN WHEN READY
-	$( document ).ready(function() {
-	
+	// MAIN WHEN LOAD
+	$(window).load(function(){  
 		
-		
-		
-		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-		$('input.toggle-vis').on( 'change', function (e) {
-			e.preventDefault(); 
-			// Get the column API object
-			var column = $('#simulationsTable').DataTable().column( $(this).attr('data-column') ); 
-			// Toggle the visibility
-			column.visible( ! column.visible() );			
-			// toggle Text
-			//$(this).toggleClass('text-muted line-through');			
-		});
-
-		// SEARCH FORM RESET
-		$('#reset_videocapture').on('click',function(){
-			$('#videocapture-identification').val('');
-			$('#simulationsTable').DataTable().column(0).search('').draw();
-		});
-
-		// SEARCH FORM
-		$('#search_videocapture').on('click',function(){
-			$('#simulationsTable').DataTable().column(0).search( $('#videocapture-identification').val()).draw();
-		});	
-		
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-		var oTable = $('#simulationsTable').dataTable({
-	      "bAutoWidth": false
-	      });   
-		
-		// SHOW/HIDE DATATABLES COLUMN INIT
-		$('#divcreate').prepend($('#dataTable-vis-toggle')); 		
-		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		// SHOW/HIDE DATATABLES COLUMN INIT 		
+		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 		$('#dataTable-vis-toggle').removeClass('hide');
-
-		$('.dataTables_info').addClass('col-md-6 col-sm-6');
-		$('.dataTables_length').addClass('col-md-6 col-sm-6');
-		$('#simulationsTable_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
-		$('#simulationsTable_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
-
-		$('#search-on-title').append($('.dataTables_filter > label > input'));
-		$('#search-on-title > input').removeClass('input-xsmall')
-		$('#simulationsTable_wrapper > div:nth-child(1)').hide();
-
-		$('.dataTables_paginate').attr('style', 'float:right !important');
-		//$.each([],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-
-		$("#contenedor-tabla-outside").removeClass("hidden");
+		$.each([ 3 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		
 	});
 	
 	//]]>

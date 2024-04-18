@@ -2,83 +2,35 @@
 ##security.require_ssl: true
 server: ## Config Web Server
    port: 21000
-   servlet.contextPath: /oauth-server
+   contextPath: /oauth-server
    tomcat:
       access_log_enabled: true
       basedir: target/tomcat
-      
-      
-logbook:
-  exclude:
-     - ${server.servlet.contextPath}/actuator/**
-     - ${server.servlet.contextPath}/static/**
-     - ${server.servlet.contextPath}/themes/**
-     - ${server.servlet.contextPath}/swagger-ui/**
-  write:
-     max-body-size: 10000
-     
+
 ldap:
   url: ldap://localhost:10389/
   base: ou=User,ou=onesait,ou=system
-  ignorepartialresult: true
   username: uid=admin,ou=system
   password: secret
   defaultRole: ROLE_USER
-  administratorWhitelist: administrator,admin,fjgcornejo_ldap
-  groupWhitelist:
-  platformRolesGroup:
-      administrator: CN=sf2rcAdministrador,OU=AppSofia2,OU=AppSmart,DC=aytologd 
-      datascientist: CN=sf2rAnalitycs,OU=AppSofia2,OU=AppSmart,DC=aytologd
-      dataviewer:
-      developer: CN=sf2rcColaborador,OU=AppSofia2,OU=AppSmart,DC=aytologd
-      devops:
-      operations:
-      partner:
-      platformAdmin:
-      sysAdmin: CN=sf2rSysAdmin,OU=AppSofia2,OU=AppSmart,DC=aytologd
-      user: CN=sf2rUsuario,OU=AppSofia2,OU=AppSmart,DC=aytologd
   attributesMap:
      userId: uid
      mail: mail
      cn: cn
-     groupOfNames: groupOfNames
-  rolesmemberattribute: member
-  authentication.regex: (.*)
-master: 
-   datasource:
-      hikari: 
-        jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
-        username: root
-        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-        driver-class-name: com.mysql.cj.jdbc.Driver
-        pool-name: master-hikari-pool
-        minimum-idle: 5
-        maximum-pool-size: 100
-        connection-timeout: 10000
+# all access to actuator endpoints without security
+management.security.enabled: false
+#security.basic.enabled: false
 
 onesaitplatform:
-   oauth.cache:
-      timeout.seconds: 900
-      size: 100000
-      maxsize.policy: PER_NODE
-   encryption:
-      key: ENC(VYVseIUh5xiRd8ws0prbEAg6bGq7vmbfi3gkM65HECy+YPbjz4f49w==)
-      iteration-count: 5
-   multitenancy:
-      enabled: true
    audit.global.notify: true
    locale.default: en
-   secure.cors: "*"
    authentication:
       provider: configdb
       configdb:
         acl:
           enabled: false
-          list: administrator,analytics,dataviewer,demo_developer,demo_user,developer,operations,partner,sysadmin,user      
-   graylog:
-      enabled: false
-      host: 127.0.0.1
-      port: 12201   
+          list: administrator,analytics,dataviewer,demo_developer,demo_user,developer,operations,partner,sysadmin,user
+   password.pattern: (?=^.{10,20}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$      
 
 sofia2: #Config onesaitplatform specific
    database.mongodb:
@@ -94,39 +46,31 @@ sofia2: #Config onesaitplatform specific
       sql.connector.http.endpoint: http://localhost:9200
       url: localhost
       port: 9300 
-      
-      
-management.endpoints.web.exposure.include: "*"
-management.endpoint.health.show-details: always
-management.health.ldap.enabled: false
-
 spring: ## General Config  
-   main:
-      allow-circular-references: true
-      allow-bean-definition-overriding: true
    application.name: onesaitplatform-oauth-server
-   boot.admin: #Spring Boot Admin Config   
-      client.url: http://localhost:18100/monitoring
-      client.username: operations
-      client.password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
-      client.instance.metadata.user.name: ${spring.boot.admin.client.username}
-      client.instance.metadata.user.password: ${spring.boot.admin.client.password}
+   boot.admin: #Spring Boot Admin Config    
+      url: http://localhost:19000
+      username: operations
+      password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
+      client.metadata.user.name: ${spring.boot.admin.username}
+      client.metadata.user.password: $spring.boot.admin.password} 
    datasource: ## JPA Config
-      hikari:
-        jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
-        username: root
-        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-        connection-timeout: 10000
-        driver-class-name: com.mysql.cj.jdbc.Driver
-        minimum-idle: 5
-        maximum-pool-size: 15
+      url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
+      username: root
+      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
+      driver-class-name: com.mysql.jdbc.Driver      
+      test-while-idle: true
+      test-on-borrow: true
+      validation-query: SELECT 1      
+      # Number of ms to wait before throwing an exception if no connection is available.
+      max-wait: 10000
+      # Maximum number of active connections that can be allocated from this pool at the same time.
+      max-active: 30
+      initial-size: 10
+      max-idle: 30
+      min-idle: 10
       
    jpa:
-      open-in-view: false
-      properties:
-        hibernate:
-          format_sql: false
-          show_sql: false
       # The SQL dialect makes Hibernate generate better SQL for the chosen database
       properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
       # Hibernate ddl auto (create, create-drop, validate, update)
@@ -147,24 +91,18 @@ cxf:
             
 ## LOGGING CONF
 logging:
-   file.path: ./target/ 
-   file.name: ${spring.application.name}
+   path: ./target/ 
+   file: ${spring.application.name}
    level:
-      ROOT: ERROR
       com.minsait: INFO
-      org.springframework.security.oauth2: ERROR
-      org.springframework.security: ERROR
-      org.springframework.cache: ERROR
-      org.zalando.logbook: TRACE  
       
       
 ## OAUTH    
 security:
-  signing-key: ENC(BXYVNNRDiawMsH4sY79FUPig6FWPGbcoMusSVrXXb6ZLtZ4qhIEUazqv6XrcRm39s8zEu2d1G8yTowyE/sEv7YF0vrLNdb1m)
+  signing-key: s1f41234pwqdqkl4l12ghg9853123sds1f41234pwqdqkl4l12ghg9853123sd
   jwt:
     client-id: onesaitplatform
-    client-secret: ENC(siZm4DUe6Y1FkxoUH7y0oUCiGDIq/vRX)
+    client-secret: onesaitplatform
     grant-type: authorization_code,refresh_token,password
     scopes: openid,authorization_code
-    expiration-time: 44000
     

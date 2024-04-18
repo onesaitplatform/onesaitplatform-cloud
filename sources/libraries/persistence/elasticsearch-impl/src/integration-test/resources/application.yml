@@ -1,65 +1,40 @@
 onesaitplatform: #Config Sofia2 specific
    database.elasticsearch:
-      enabled: true
       sql.maxHttpConnections: 10
       sql.maxHttpConnectionsPerRoute: 10
       sql.connectionTimeout.millis: 10000
       sql.connector.http.endpoint: http://localhost:9200
       url: localhost
       port: 9300
-      
-master: 
-   datasource:
-      hikari: 
-        jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
-        username: root
-        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-        driver-class-name: com.mysql.cj.jdbc.Driver
-        pool-name: master-hikari-pool
-        minimum-idle: 1
-        maximum-pool-size: 2
-        connection-timeout: 10000
-        
+
+
 spring:
-  application.name: onesaitplatform-persistence-elasticsearch
-  datasource:
-    hikari:
-      jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
+   ## GENERAL CONFIG
+   application.name: onesaitplatform-persistence-ri
+   ## Spring Data Config for MongoDB
+   data.mongodb:
+      #authentication-database: admin # Authentication database name.
+      database: sofia # Database name.
+      #field-naming-strategy: # Fully qualified name of the FieldNamingStrategy to use.
+      #grid-fs-database: # GridFS database name.
+      #host: localhost # Mongo server host. Cannot be set with uri.
+      #username: # Login user of the mongo server. Cannot be set with uri. 
+      ##password: # Login password of the mongo server. Cannot be set with uri.
+      #port: 27017 # Mongo server port. Cannot be set with uri.
+      #repositories.enabled: false # Enable Mongo repositories.
+
+      
+      #uri: mongodb://localhost/sofia # Mongo database URI. Cannot be set with host, port and credentials.
+   
+   ## JPA Config
+   datasource:
+      url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
       username: root
-      password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-      connection-timeout: 10000
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      minimum-idle: 10
-      maximum-pool-size: 30
-    url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
-    username: root
-    password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-    driver-class-name: com.mysql.jdbc.Driver
-    # Validate the connection before borrowing it from the pool.
-    test-on-borrow: true
-    validation-query: SELECT 1
-    test-while-idle: true
-    test-on-return: false
-    time-between-eviction-runs-millis: 5000
-    min-evictable-idle-time-millis: 6000
-    max-wait-millis: 10000
-    # Number of ms to wait before throwing an exception if no connection is available.
-    max-wait: 10000
-    # Maximum number of active connections that can be allocated from this pool at the same time.
-    initial-size: 10
-    max-active: 30
-    max-idle: 5
-    min-idle: 5
-    removeAbandoned: true
-  jpa:
+      password: changeIt!
+   jpa:
       # The SQL dialect makes Hibernate generate better SQL for the chosen database
       properties.hibernate.dialect: org.hibernate.dialect.MySQL5InnoDBDialect
-      # Hibernate ddl auto (create, create-drop, validate, update
-      hibernate.ddl-auto: validate
-      properties:
-        hibernate:
-          format_sql: false
-          show_sql: false 
+            
 ## LOGGING CONF
 logging:
    level:
@@ -67,3 +42,6 @@ logging:
       com.example.boot.thymeleaf: INFO
       com.indra: DEBUG
       org.hibernate: INFO
+
+
+ 

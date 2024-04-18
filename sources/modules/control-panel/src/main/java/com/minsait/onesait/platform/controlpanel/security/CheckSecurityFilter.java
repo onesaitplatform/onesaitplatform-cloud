@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 package com.minsait.onesait.platform.controlpanel.security;
-
-import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,37 +33,25 @@ public class CheckSecurityFilter extends HandlerInterceptorAdapter {
 
 	private static final String PREFIX = "/api/";
 	private static final String PREFIX_EXCEPTION = "/api/login";
-	private static final String PREFIX_THEMES_EXCEPTION = "/api/themes/";
 
-	private static final String BINARY_REPOSITORY = "/binary-repository";
 
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
-		if (request.getServletPath().startsWith(PREFIX) && !request.getServletPath().startsWith(PREFIX_EXCEPTION)
-				&& !request.getServletPath().startsWith(PREFIX_THEMES_EXCEPTION)
+		if ((request.getServletPath().startsWith(PREFIX) && !request.getServletPath().startsWith(PREFIX_EXCEPTION))
 				&& (SecurityContextHolder.getContext().getAuthentication() == null || SecurityContextHolder.getContext()
 						.getAuthentication() instanceof AnonymousAuthenticationToken)) {
-			return unauthorized(response);
+			log.warn("Trying to access REST API path without authentication");
 
-		}
-		if (request.getServletPath().startsWith(BINARY_REPOSITORY) && request.getMethod().equalsIgnoreCase("POST")
-				&& (SecurityContextHolder.getContext().getAuthentication() == null || SecurityContextHolder.getContext()
-						.getAuthentication() instanceof AnonymousAuthenticationToken)) {
-			return unauthorized(response);
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			response.setContentType("application/json;charset=UTF-8");
+			response.getWriter().write("{\"error\": \"Incorrect or Expired Authorization Header\"}");
+			response.getWriter().flush();
+			response.getWriter().close();
+			return false;
+
 		}
 		return super.preHandle(request, response, handler);
-	}
-
-	private boolean unauthorized(HttpServletResponse response) throws IOException {
-		log.warn("Trying to access REST API path without authentication");
-
-		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-		response.setContentType("application/json;charset=UTF-8");
-		response.getWriter().write("{\"error\": \"Incorrect or Expired Authorization Header\"}");
-		response.getWriter().flush();
-		response.getWriter().close();
-		return false;
 	}
 
 }

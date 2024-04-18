@@ -20,7 +20,7 @@
 angular
   .module('dataCollectorApp.home')
 
-  .controller('DataDriftRulesController', ["$scope", "$rootScope", "$modal", "pipelineConstant", "pipelineService", "previewService", function ($scope, $rootScope, $modal, pipelineConstant,
+  .controller('DataDriftRulesController', function ($scope, $rootScope, $modal, pipelineConstant,
                                                pipelineService, previewService) {
     var stageInstances = $scope.stageInstances;
 
@@ -197,9 +197,9 @@ angular
       }
     };
 
-  }])
+  })
 
-  .controller('CreateDataDriftRuleModalInstanceController', ["$scope", "$modalInstance", "$translate", "$timeout", "pipelineService", "laneName", "rulesElMetadata", "fieldPaths", "streamLabelMap", "alertTextElMetadata", function (
+  .controller('CreateDataDriftRuleModalInstanceController', function (
     $scope, $modalInstance, $translate, $timeout, pipelineService, laneName, rulesElMetadata, fieldPaths,
     streamLabelMap, alertTextElMetadata
   ) {
@@ -253,9 +253,9 @@ angular
     });
 
     $scope.$broadcast('show-errors-check-validity');
-  }])
+  })
 
-  .controller('EditDataDriftRuleModalInstanceController', ["$scope", "$modalInstance", "$translate", "pipelineService", "$timeout", "dataDriftRuleDefn", "rulesElMetadata", "fieldPaths", "streamLabelMap", "alertTextElMetadata", function (
+  .controller('EditDataDriftRuleModalInstanceController', function (
     $scope, $modalInstance, $translate, pipelineService, $timeout, dataDriftRuleDefn, rulesElMetadata, fieldPaths,
     streamLabelMap, alertTextElMetadata
   ) {
@@ -297,4 +297,4 @@ angular
     });
 
     $scope.$broadcast('show-errors-check-validity');
-  }]);
+  });

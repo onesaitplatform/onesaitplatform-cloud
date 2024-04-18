@@ -1,230 +1,236 @@
 {
-    
-    "identification": "sensor-tag",
-    "version": 1,
-    "type": "INTERNAL_ONTOLOGY",
-    "isPublic": false,
-    "category": "ALL",
-    "externalApi": false,
-    "ontologyId": "SensorTag",
-    "apiLimit": null,
-    "endpoint": "http://localhost:19100/api-manager/server/api/v1/sensor-tag",
-    "endpointExt": "",
-    "description": "Sensor tag",
-    "metainf": "sensor,iot,tag",
-    "imageType": null,
-    "status": "PUBLISHED",
-    "creationDate": "2020-02-25 18:37:08.0",
-    "userId": "developer",
-    "swaggerJson": null,
-    "operations": [
-      {
-        "identification": "sensor-tag_PUT",
-        "description": "update",
-        "operation": "PUT",
-        "endpoint": null,
-        "path": "/{id}",
-        "queryParams": [
-          {
-            "name": "body",
-            "dataType": "STRING",
-            "description": "",
-            "value": "",
-            "headerType": "BODY",
-            "condition": null
-          },
-          {
-            "name": "id",
-            "dataType": "STRING",
-            "description": "",
-            "value": null,
-            "headerType": "PATH",
-            "condition": null
-          }
-        ],
-        "postProcess": null
-      },
-      {
-        "identification": "sensor-tag_POST",
-        "description": "post",
-        "operation": "POST",
-        "endpoint": null,
-        "path": "/",
-        "queryParams": [
-          {
-            "name": "body",
-            "dataType": "STRING",
-            "description": "",
-            "value": "",
-            "headerType": "BODY",
-            "condition": null
-          }
-        ],
-        "postProcess": null
-      },
-      {
-        "identification": "delete",
-        "description": "delete all",
-        "operation": "GET",
-        "endpoint": null,
-        "path": "delete",
-        "queryParams": [
-          {
-            "name": "queryType",
-            "dataType": "STRING",
-            "description": "",
-            "value": "sql",
-            "headerType": "QUERY",
-            "condition": null
-          },
-          {
-            "name": "query",
-            "dataType": "STRING",
-            "description": "",
-            "value": "delete from SensorTag",
-            "headerType": "QUERY",
-            "condition": null
-          },
-          {
-            "name": "targetdb",
-            "dataType": "STRING",
-            "description": "",
-            "value": "rtdb",
-            "headerType": "QUERY",
-            "condition": null
-          }
-        ],
-        "postProcess": ""
-      },
-      {
-        "identification": "update",
-        "description": "update all",
-        "operation": "GET",
-        "endpoint": null,
-        "path": "update/{oid}",
-        "queryParams": [
-          {
-            "name": "queryType",
-            "dataType": "STRING",
-            "description": "",
-            "value": "sql",
-            "headerType": "QUERY",
-            "condition": null
-          },
-          {
-            "name": "targetdb",
-            "dataType": "STRING",
-            "description": "",
-            "value": "rtdb",
-            "headerType": "QUERY",
-            "condition": null
-          },
-          {
-            "name": "query",
-            "dataType": "STRING",
-            "description": "",
-            "value": "UPDATE SensorTag SET SensorTag.newAtt=2 WHERE _id=OID({$oid})",
-            "headerType": "QUERY",
-            "condition": null
-          },
-          {
-            "name": "oid",
-            "dataType": "STRING",
-            "description": "",
-            "value": null,
-            "headerType": "PATH",
-            "condition": null
-          }
-        ],
-        "postProcess": ""
-      },
-      {
-        "identification": "sensor-tag_GETAll",
-        "description": "all",
-        "operation": "GET",
-        "endpoint": null,
-        "path": "",
-        "queryParams": [],
-        "postProcess": null
-      },
-      {
-        "identification": "sensor-tag_GET",
-        "description": "by id",
-        "operation": "GET",
-        "endpoint": null,
-        "path": "/{id}",
-        "queryParams": [
-          {
-            "name": "id",
-            "dataType": "STRING",
-            "description": "",
-            "value": null,
-            "headerType": "PATH",
-            "condition": null
-          }
-        ],
-        "postProcess": null
-      },
-      {
-        "identification": "critical",
-        "description": "filter critical values",
-        "operation": "GET",
-        "endpoint": null,
-        "path": "critical/{value}",
-        "queryParams": [
-          {
-            "name": "targetdb",
-            "dataType": "STRING",
-            "description": "",
-            "value": "rtdb",
-            "headerType": "QUERY",
-            "condition": null
-          },
-          {
-            "name": "value",
-            "dataType": "NUMBER",
-            "description": "",
-            "value": null,
-            "headerType": "PATH",
-            "condition": null
-          },
-          {
-            "name": "query",
-            "dataType": "STRING",
-            "description": "",
-            "value": "select s from SensorTag as s where s.SensorTag.temperature > {$value}",
-            "headerType": "QUERY",
-            "condition": null
-          },
-          {
-            "name": "queryType",
-            "dataType": "STRING",
-            "description": "",
-            "value": "sql",
-            "headerType": "QUERY",
-            "condition": null
-          }
-        ],
-        "postProcess": ""
-      },
-      {
-        "identification": "sensor-tag_DELETEID",
-        "description": "delete",
-        "operation": "DELETE",
-        "endpoint": null,
-        "path": "/{id}",
-        "queryParams": [
-          {
-            "name": "id",
-            "dataType": "STRING",
-            "description": "",
-            "value": null,
-            "headerType": "PATH",
-            "condition": null
-          }
-        ],
-        "postProcess": null
-      }
-    ],
-    "authentications": []
-  }
+  "identification": "sensor-tag",
+  "version": 1,
+  "type": "INTERNAL_ONTOLOGY",
+  "isPublic": false,
+  "category": "ALL",
+  "externalApi": false,
+  "ontologyId": "3ad8be6c-4d45-4ffb-a7d3-d55d053a6087",
+  "apiLimit": null,
+  "endpoint": "https://development.onesaitplatform.com/api-manager/server/api/v1/sensor-tag",
+  "endpointExt": "",
+  "description": "Sensor tag",
+  "metainf": "sensor,iot,tag",
+  "imageType": null,
+  "status": "CREATED",
+  "creationDate": "08/23/2019 12:50:55",
+  "userId": "administrator",
+  "operations": [
+    {
+      "identification": "sensor-tag_PUT",
+      "description": "update",
+      "operation": "PUT",
+      "endpoint": null,
+      "path": "/{id}",
+      "headers": [],
+      "queryParams": [
+        {
+          "name": "id",
+          "dataType": "STRING",
+          "description": "",
+          "value": null,
+          "headerType": "PATH",
+          "condition": null
+        },
+        {
+          "name": "body",
+          "dataType": "STRING",
+          "description": "",
+          "value": "",
+          "headerType": "BODY",
+          "condition": null
+        }
+      ],
+      "postProcess": null
+    },
+    {
+      "identification": "sensor-tag_POST",
+      "description": "post",
+      "operation": "POST",
+      "endpoint": null,
+      "path": "/",
+      "headers": [],
+      "queryParams": [
+        {
+          "name": "body",
+          "dataType": "STRING",
+          "description": "",
+          "value": "",
+          "headerType": "BODY",
+          "condition": null
+        }
+      ],
+      "postProcess": null
+    },
+    {
+      "identification": "sensor-tag_GET",
+      "description": "by id",
+      "operation": "GET",
+      "endpoint": null,
+      "path": "/{id}",
+      "headers": [],
+      "queryParams": [
+        {
+          "name": "id",
+          "dataType": "STRING",
+          "description": "",
+          "value": null,
+          "headerType": "PATH",
+          "condition": null
+        }
+      ],
+      "postProcess": null
+    },
+    {
+      "identification": "update",
+      "description": "update all",
+      "operation": "GET",
+      "endpoint": null,
+      "path": "update/{oid}",
+      "headers": [],
+      "queryParams": [
+        {
+          "name": "queryType",
+          "dataType": "STRING",
+          "description": "",
+          "value": "sql",
+          "headerType": "QUERY",
+          "condition": null
+        },
+        {
+          "name": "query",
+          "dataType": "STRING",
+          "description": "",
+          "value": "UPDATE SensorTag SET SensorTag.newAtt=2 WHERE _id=OID({$oid})",
+          "headerType": "QUERY",
+          "condition": null
+        },
+        {
+          "name": "targetdb",
+          "dataType": "STRING",
+          "description": "",
+          "value": "rtdb",
+          "headerType": "QUERY",
+          "condition": null
+        },
+        {
+          "name": "oid",
+          "dataType": "STRING",
+          "description": "",
+          "value": null,
+          "headerType": "PATH",
+          "condition": null
+        }
+      ],
+      "postProcess": ""
+    },
+    {
+      "identification": "delete",
+      "description": "delete all",
+      "operation": "GET",
+      "endpoint": null,
+      "path": "delete",
+      "headers": [],
+      "queryParams": [
+        {
+          "name": "queryType",
+          "dataType": "STRING",
+          "description": "",
+          "value": "sql",
+          "headerType": "QUERY",
+          "condition": null
+        },
+        {
+          "name": "query",
+          "dataType": "STRING",
+          "description": "",
+          "value": "delete from SensorTag",
+          "headerType": "QUERY",
+          "condition": null
+        },
+        {
+          "name": "targetdb",
+          "dataType": "STRING",
+          "description": "",
+          "value": "rtdb",
+          "headerType": "QUERY",
+          "condition": null
+        }
+      ],
+      "postProcess": ""
+    },
+    {
+      "identification": "critical",
+      "description": "filter critical values",
+      "operation": "GET",
+      "endpoint": null,
+      "path": "critical/{value}",
+      "headers": [],
+      "queryParams": [
+        {
+          "name": "queryType",
+          "dataType": "STRING",
+          "description": "",
+          "value": "sql",
+          "headerType": "QUERY",
+          "condition": null
+        },
+        {
+          "name": "query",
+          "dataType": "STRING",
+          "description": "",
+          "value": "select s from SensorTag as s where s.SensorTag.temperature > {$value}",
+          "headerType": "QUERY",
+          "condition": null
+        },
+        {
+          "name": "targetdb",
+          "dataType": "STRING",
+          "description": "",
+          "value": "rtdb",
+          "headerType": "QUERY",
+          "condition": null
+        },
+        {
+          "name": "value",
+          "dataType": "NUMBER",
+          "description": "",
+          "value": null,
+          "headerType": "PATH",
+          "condition": null
+        }
+      ],
+      "postProcess": ""
+    },
+    {
+      "identification": "sensor-tag_GETAll",
+      "description": "all",
+      "operation": "GET",
+      "endpoint": null,
+      "path": "",
+      "headers": [],
+      "queryParams": [],
+      "postProcess": null
+    },
+    {
+      "identification": "sensor-tag_DELETEID",
+      "description": "delete",
+      "operation": "DELETE",
+      "endpoint": null,
+      "path": "/{id}",
+      "headers": [],
+      "queryParams": [
+        {
+          "name": "id",
+          "dataType": "STRING",
+          "description": "",
+          "value": null,
+          "headerType": "PATH",
+          "condition": null
+        }
+      ],
+      "postProcess": null
+    }
+  ],
+  "authentication": null
+}

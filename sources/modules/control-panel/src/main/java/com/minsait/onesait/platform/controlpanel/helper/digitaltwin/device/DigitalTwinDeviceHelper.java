@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,14 +32,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.minsait.onesait.platform.config.components.GitlabConfiguration;
 import com.minsait.onesait.platform.config.model.DigitalTwinDevice;
 import com.minsait.onesait.platform.config.model.Microservice;
 import com.minsait.onesait.platform.config.model.PropertyDigitalTwinType;
 import com.minsait.onesait.platform.config.repository.DigitalTwinDeviceRepository;
 import com.minsait.onesait.platform.config.repository.PropertyDigitalTwinTypeRepository;
 import com.minsait.onesait.platform.config.services.utils.ZipUtil;
-import com.minsait.onesait.platform.controlpanel.services.microservice.MicroserviceBusinessService;
-import com.minsait.onesait.platform.git.GitlabConfiguration;
 
 import freemarker.cache.ClassTemplateLoader;
 import freemarker.cache.TemplateLoader;
@@ -56,9 +55,6 @@ public class DigitalTwinDeviceHelper {
 
 	@Autowired
 	private PropertyDigitalTwinTypeRepository propDigitalTwinTypeRepo;
-
-	@Autowired
-	private MicroserviceBusinessService microservicesBusinessService;
 
 	@Autowired
 	private ZipUtil zipUtil;
@@ -305,12 +301,5 @@ public class DigitalTwinDeviceHelper {
 
 	}
 
-	public String createMicroservice(String identification, Boolean sensehat, String gitlabUrl, String gitlabToken) {
-		final File file = generateProject(identification, false, sensehat);
-		final Microservice microservice = microservicesBusinessService.createMicroserviceFromDigitalTwin(
-				digitalTwinDeviceRepo.findByIdentification(identification), file,
-				GitlabConfiguration.builder().site(gitlabUrl).privateToken(gitlabToken).build(), identification + "/",
-				identification + "/docker/");
-		return microservice.getIdentification();
-	}
+	
 }

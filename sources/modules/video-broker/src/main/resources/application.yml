@@ -1,43 +1,33 @@
 ## Config Web Server
 server:
    port: 24000
-   servlet.contextPath: /video-broker
+   contextPath: /video-broker
 
-master: 
-   datasource:
-      hikari: 
-        jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_master_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
-        username: root
-        password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-        driver-class-name: com.mysql.cj.jdbc.Driver
-        pool-name: master-hikari-pool
-        minimum-idle: 1
-        maximum-pool-size: 2
-        connection-timeout: 10000
 management.security.enabled: false
-management.endpoints.web.exposure.include: "*"
-management.endpoint.health.show-details: always
-management.health.elasticsearch.enabled: false
 spring:
-  main:
-      allow-circular-references: true
-      allow-bean-definition-overriding: true
   application.name: onesaitplatform-video-broker
   boot.admin: #Spring Boot Admin Config    
-      client.url: http://localhost:18100/monitoring
+      url: http://localhost:18100/monitoring
       username: operations
       password: ENC(2Xd2AOD2NrMaWs915/st8C4ILo3qlHXv)
       client.metadata.user.name: ${spring.boot.admin.username}
       client.metadata.user.password: ${spring.boot.admin.password}
-  datasource:
-     hikari:
-      jdbc-url: jdbc:mysql://localhost:3306/onesaitplatform_config?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true&nullDatabaseMeansCurrent=true
+  datasource: ## JPA Config
+      url: jdbc:mysql://localhost:3306/onesaitplatform_config?useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&useSSL=false&autoReconnect=true
       username: root
       password: ENC(v6o0Jud8aASYCkRb+u0RTICFUR8Pd5ph) 
-      connection-timeout: 10000
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      minimum-idle: 10
-      maximum-pool-size: 30
+      driver-class-name: com.mysql.jdbc.Driver
+      test-while-idle: true
+      test-on-borrow: true
+      validation-query: SELECT 1      
+      # Number of ms to wait before throwing an exception if no connection is available.
+      max-wait: 10000
+      # Maximum number of active connections that can be allocated from this pool at the same time.
+      max-active: 30
+      initial-size: 10
+      max-idle: 30
+      min-idle: 10
+      removeAbandoned: true
       
   jpa:
       # The SQL dialect makes Hibernate generate better SQL for the chosen database
@@ -63,7 +53,6 @@ onesaitplatform:
     hazelcast.queue: videoQueue
   kafka:
         enable: false
-        brokers: none
         host: development.onesaitplatform.com
         port: 9095
         user: VideoBrokerClient
@@ -79,16 +68,12 @@ onesaitplatform:
         consumer.group : kafkaGroup
         consumer.maxPollRecords : 200
         consumer.maxAge : 5000
-  graylog:
-    enabled: false
-    host: 127.0.0.1
-    port: 12201
 
 ## LOGGING CONF
 logging:
    config: classpath:logback-spring.xml
-   file.path: ./target/ 
-   file.name: ${spring.application.name}
+   path: ./target/ 
+   file: ${spring.application.name}
    level:
       com.minsait: INFO 
       org.springframework.boot: INFO

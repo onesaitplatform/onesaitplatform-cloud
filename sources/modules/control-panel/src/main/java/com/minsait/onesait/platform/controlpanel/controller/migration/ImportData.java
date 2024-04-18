@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,22 +23,16 @@ import lombok.Setter;
 
 public class ImportData {
 
-	@Getter
-	@Setter
-	private String fileName;
-	@Getter
-	@Setter
-	private Boolean override;
-
+	@Getter @Setter private String fileName;
+	
 	@Getter
 	private MultipartFile content;
 
 	public void setContent(MultipartFile content) {
 		this.content = content;
 	}
-
-	@Getter
-	@Setter
+	
+	@Getter @Setter
 	private List<String> classes;
 
 }

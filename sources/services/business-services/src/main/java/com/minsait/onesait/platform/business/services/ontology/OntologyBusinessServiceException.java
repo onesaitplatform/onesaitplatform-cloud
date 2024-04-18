@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,7 @@ public class OntologyBusinessServiceException extends Exception {
 	private static final long serialVersionUID = 1L;
 
 	public enum Error {
-		ILLEGAL_ARGUMENT, NO_VALID_SCHEMA, KAFKA_TOPIC_CREATION_ERROR, CONFIG_CREATION_ERROR, CONFIG_CREATION_ERROR_UNCLEAN,
-		PERSISTENCE_CREATION_ERROR, PERSISTENCE_CREATION_ERROR_UNCLEAN, EXTERNAL_TABLE_CREATION_ERROR
+		ILLEGAL_ARGUMENT, NO_VALID_SCHEMA, KAFKA_TOPIC_CREATION_ERROR, CONFIG_CREATION_ERROR, CONFIG_CREATION_ERROR_UNCLEAN, PERSISTENCE_CREATION_ERROR, PERSISTENCE_CREATION_ERROR_UNCLEAN
 	}
 
 	@Getter

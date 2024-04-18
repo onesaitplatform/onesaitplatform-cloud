@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 package com.minsait.onesait.platform.persistence.mongodb.services;
-
-import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -52,28 +50,14 @@ public class QueryAsTextMongoDBImpl implements QueryAsTextDBRepository {
 	@Autowired
 	private IntegrationResourcesService resourcesService;
 
-	@Autowired
-	private Sql2NativeTool sql2NativeTool;
+	private static final String ERROR_QUERYSQLASJSON = "Error querySQLAsJson:";
 
-	private static final String ERROR_QUERYSQLASJSON = "Error querySQLAsJson:{} .Query {}, ontology {}";
-
-	private boolean useQuasar;
-	private boolean useLegacySQL;
-
-	@PostConstruct
-	public void init() {
+	private boolean useQuasar() {
 		try {
-			useQuasar = ((Boolean) resourcesService.getGlobalConfiguration().getEnv().getDatabase()
+			return ((Boolean) resourcesService.getGlobalConfiguration().getEnv().getDatabase()
 					.get("mongodb-use-quasar")).booleanValue();
 		} catch (final RuntimeException e) {
-			useQuasar = true;
-		}
-
-		try {
-			useLegacySQL = ((Boolean) resourcesService.getGlobalConfiguration().getEnv().getDatabase()
-					.get("mongodb-use-legacysql")).booleanValue();
-		} catch (final RuntimeException e) {
-			useLegacySQL = true;
+			return true;
 		}
 	}
 
@@ -84,21 +68,18 @@ public class QueryAsTextMongoDBImpl implements QueryAsTextDBRepository {
 		}
 		if (sql) {
 			if (query.toLowerCase().indexOf("from ") == -1 && query.toLowerCase().indexOf("update ") == -1
-					&& query.toLowerCase().indexOf("join ") == -1) {
+					&& query.toLowerCase().indexOf("join ") == -1)
 				throw new QueryNativeFormatException("Malformed SQL Query");
-			} else if (query.toLowerCase().indexOf("from " + ontology.toLowerCase()) == -1
+			else if (query.toLowerCase().indexOf("from " + ontology.toLowerCase()) == -1
 					&& query.toLowerCase().indexOf("update " + ontology.toLowerCase()) == -1
-					&& query.toLowerCase().indexOf("join " + ontology.toLowerCase()) == -1) {
+					&& query.toLowerCase().indexOf("join " + ontology.toLowerCase()) == -1)
 				throw new GenericOPException("The query '" + query + "' is not for the ontology selected: " + ontology);
-			}
 		} else {
-			if (query.indexOf("db.") == -1) {
+			if (query.indexOf("db.") == -1)
 				return;
-			}
-			if (query.indexOf("." + ontology + ".") == -1) {
+			if (query.indexOf("." + ontology + ".") == -1)
 				throw new DBPersistenceException(
 						"The query " + query + " is not for the ontology selected:" + ontology);
-			}
 		}
 	}
 
@@ -108,7 +89,7 @@ public class QueryAsTextMongoDBImpl implements QueryAsTextDBRepository {
 			checkQueryIs4Ontology(ontology, query, false);
 			return mongoRepo.queryNativeAsJson(ontology, query, offset, limit);
 		} catch (final Exception e) {
-			log.error("Error queryNativeAsJson: {}", e.getMessage());
+			log.error("Error queryNativeAsJson:" + e.getMessage());
 			throw new DBPersistenceException(e);
 		}
 	}
@@ -117,9 +98,6 @@ public class QueryAsTextMongoDBImpl implements QueryAsTextDBRepository {
 	public String queryNativeAsJson(String ontology, String query) {
 		String queryContent = null;
 		try {
-			if (log.isDebugEnabled()) {
-				log.debug("queryNativeAsJson ontology {} query {}", ontology, query);
-			}			
 			checkQueryIs4Ontology(ontology, query, false);
 			queryContent = utils.getQueryContent(query);
 			if (query.indexOf(".createIndex(") != -1) {
@@ -128,7 +106,7 @@ public class QueryAsTextMongoDBImpl implements QueryAsTextDBRepository {
 			} else if (query.indexOf(".getIndexes(") != -1) {
 				return manageRepo.getIndexes(ontology);
 			} else if (query.indexOf(".insert(") != -1) {
-				return "Inserted row with id:" + mongoRepo.insert(ontology, queryContent);
+				return "Inserted row with id:" + mongoRepo.insert(ontology, "", queryContent);
 			} else if (query.indexOf(".update(") != -1) {
 				return mongoRepo.updateNative(ontology, queryContent, false).toString();
 			} else if (query.indexOf(".remove(") != -1) {
@@ -150,14 +128,13 @@ public class QueryAsTextMongoDBImpl implements QueryAsTextDBRepository {
 				return mongoRepo.queryNativeAsJson(ontology, query);
 			}
 		} catch (final QueryNativeFormatException e) {
-			log.error("Error queryNativeAsJson: {}.Query {} ontology {}", e.getDetailedMessage(), query, ontology);
 			throw e;
 		} catch (final DBPersistenceException e) {
-			log.error("Error queryNativeAsJson: {}.Query {} ontology {}", e.getDetailedMessage(), query, ontology);
+			log.error(ERROR_QUERYSQLASJSON + e.getDetailedMessage());
 			throw e;
 
 		} catch (final Exception e) {
-			log.error("Error queryNativeAsJson: {}.Query {} ontology {}", e.getMessage(), query, ontology, e);
+			log.error("Error queryNativeAsJson:" + e.getMessage(), e);
 			throw new DBPersistenceException(e);
 		}
 	}
@@ -165,76 +142,19 @@ public class QueryAsTextMongoDBImpl implements QueryAsTextDBRepository {
 	@Override
 	public String querySQLAsJson(String ontology, String query, int offset) {
 		try {
-			if (log.isDebugEnabled()) {
-				log.debug("querySQLAsJson ontology {} query {}", ontology, query);
-			}			
 			checkQueryIs4Ontology(ontology, query, true);
 			if (query.trim().toLowerCase().startsWith("update") || query.trim().toLowerCase().startsWith("delete")
-					|| query.trim().toLowerCase().startsWith("select") && !useQuasar) {
-				final String result = surroundNativeWithValueNode(
-						this.queryNativeAsJson(ontology, sql2NativeTool.translateSql(query)));
-				if (useLegacySQL) {
-					return idToString(result);
-				} else {
-					return result;
-				}
-			} else {
+					|| (query.trim().toLowerCase().startsWith("select") && !useQuasar()))
+				return this.queryNativeAsJson(ontology, Sql2NativeTool.translateSql(query));
+			else
 				return mongoRepo.querySQLAsJson(ontology, query, offset);
-			}
 		} catch (final DBPersistenceException e) {
-			log.error(ERROR_QUERYSQLASJSON, e.getMessage(), query, ontology, e);
+			log.error(ERROR_QUERYSQLASJSON + e.getMessage(), e);
 			throw e;
 		} catch (final Exception e) {
-			log.error(ERROR_QUERYSQLASJSON, e.getMessage(), query, ontology, e);
+			log.error(ERROR_QUERYSQLASJSON + e.getMessage());
 			throw new DBPersistenceException(e);
 		}
-	}
-
-	@Override
-	public String querySQLAsJson(String ontology, String query, int offset, int limit) {
-		try {
-			if (log.isDebugEnabled()) {
-				log.debug("querySQLAsJson ontology {} query {}", ontology, query);
-			}			
-			checkQueryIs4Ontology(ontology, query, true);
-			if (query.trim().toLowerCase().startsWith("update") || query.trim().toLowerCase().startsWith("delete")
-					|| query.trim().toLowerCase().startsWith("select") && !useQuasar) {
-				final String result = surroundNativeWithValueNode(
-						this.queryNativeAsJson(ontology, sql2NativeTool.translateSql(query), offset, limit));
-				if (useLegacySQL) {
-					return idToString(result);
-				} else {
-					return result;
-				}
-			} else {
-				return mongoRepo.querySQLAsJson(ontology, query, offset, limit);
-			}
-		} catch (final DBPersistenceException e) {
-			log.error(ERROR_QUERYSQLASJSON, e.getMessage(), query, ontology, e);
-			throw e;
-		} catch (final Exception e) {
-			log.error(ERROR_QUERYSQLASJSON, e.getMessage(), query, ontology, e);
-			throw new DBPersistenceException(e);
-		}
-	}
-
-	// Surround with value like {"value":nativeValue} when return type is not json
-	// or jsonarray
-	private String surroundNativeWithValueNode(String resultQuery) {
-		if (!resultQuery.isEmpty()) {
-			final String firstChar = resultQuery.trim().substring(0, 1);
-			if (firstChar.equals("[") || firstChar.equals("{")) {// fast check
-				return resultQuery;
-			} else {
-				return "[{\"value\":" + resultQuery + "}]";
-			}
-		} else {
-			return resultQuery;
-		}
-	}
-
-	private String idToString(String result) {
-		return result.replaceAll("\\{ *\"\\$oid\" *\\: *(\".*?\") *\\}", "$1");
 	}
 
 }

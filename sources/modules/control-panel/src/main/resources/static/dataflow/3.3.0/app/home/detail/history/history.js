@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('HistoryController', ["$rootScope", "$scope", "_", "api", "$modal", function ($rootScope, $scope, _, api, $modal) {
+  .controller('HistoryController', function ($rootScope, $scope, _, api, $modal) {
 
     angular.extend($scope, {
       showLoading: false,
@@ -128,4 +128,4 @@ angular
       }
     });
 
-  }]);
+  });

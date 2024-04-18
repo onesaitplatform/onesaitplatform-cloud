@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.jline.utils.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.minsait.onesait.platform.config.model.ConsoleMenu;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.repository.ConsoleMenuRepository;
 
@@ -33,24 +34,24 @@ public class MenuServiceImpl implements MenuService {
 	@Override
 	public String loadMenuByRole(User user) {
 		if (user != null)
-			return consoleMenuRepository.findByRoleType(user.getRole()).getJson();
+			return this.consoleMenuRepository.findByRoleType(user.getRole()).getJson();
 		else
 			return null;
 	}
-
+	
 	@Override
 	public void updateMenu(String menuId, String menuJson) {
 		try {
-			consoleMenuRepository.findById(menuId).ifPresent(menu -> {
-				menu.setJson(menuJson);
-				menu.setUpdatedAt(new Date());
-
-				consoleMenuRepository.save(menu);
-			});
-
-		} catch (final RuntimeException e) {
+			final ConsoleMenu menu = consoleMenuRepository.findById(menuId);
+			
+			menu.setJson(menuJson);
+			menu.setUpdatedAt(new Date());
+			
+			consoleMenuRepository.save(menu);
+		}
+		catch (final RuntimeException e){
 			Log.error("Error updating menu: ", e.getMessage());
 		}
 	}
-
+	
 }

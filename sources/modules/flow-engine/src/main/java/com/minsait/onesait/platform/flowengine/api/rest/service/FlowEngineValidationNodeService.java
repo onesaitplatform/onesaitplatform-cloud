@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  */
 package com.minsait.onesait.platform.flowengine.api.rest.service;
 
-import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.DecodedAuthentication;
 
@@ -23,8 +22,6 @@ public interface FlowEngineValidationNodeService {
 	User validateUserCredentials(String userId, String credentials);
 
 	User validateUser(String userId);
-	
-	FlowDomain validateDomain(String domainName);
 
 	DecodedAuthentication decodeAuth(String authentication);
 }

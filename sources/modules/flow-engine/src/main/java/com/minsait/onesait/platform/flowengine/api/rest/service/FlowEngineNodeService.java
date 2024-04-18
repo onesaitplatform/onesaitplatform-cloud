@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,12 @@ import java.util.Set;
 import org.springframework.http.ResponseEntity;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.minsait.onesait.platform.flowengine.api.rest.pojo.DataflowDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.DigitalTwinTypeDTO;
-import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineInsertRequest;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineInvokeRestApiOperationRequest;
-import com.minsait.onesait.platform.flowengine.api.rest.pojo.FlowEngineQueryRequest;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.MailRestDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.NotebookDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.NotebookInvokeDTO;
+import com.minsait.onesait.platform.flowengine.api.rest.pojo.NotebookParagraphDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.RestApiDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.RestApiOperationDTO;
 import com.minsait.onesait.platform.flowengine.api.rest.pojo.UserDomainValidationRequest;
@@ -50,12 +48,11 @@ public interface FlowEngineNodeService {
 
 	public String validateUserDomain(UserDomainValidationRequest request);
 
-	public String submitQuery(FlowEngineQueryRequest queryRequest) throws JsonProcessingException, NotFoundException;
-
-	public String submitInsert(FlowEngineInsertRequest insertRequest)
+	public String submitQuery(String ontology, String queryType, String query, String authentication)
 			throws JsonProcessingException, NotFoundException;
 
-	public void submitAudit(String data, String domainName) throws JsonProcessingException, NotFoundException;
+	public String submitInsert(String ontology, String data, String authentication)
+			throws JsonProcessingException, NotFoundException;
 
 	public List<DigitalTwinTypeDTO> getDigitalTwinTypes(String authentication);
 
@@ -68,22 +65,7 @@ public interface FlowEngineNodeService {
 	public List<NotebookDTO> getNotebooksByUser(String authentication);
 
 	public String getNotebookJSONDataByUser(String notebookId, String authentication);
-
+	
 	public ResponseEntity<String> invokeNotebook(NotebookInvokeDTO noebookInvocationData);
-
-	public List<String> getPipelinesByUser(String authentication);
-
-	public ResponseEntity<String> getPipelineStatus(DataflowDTO dataflowData);
-
-	public ResponseEntity<String> stopDataflow(DataflowDTO dataflowData);
-
-	public ResponseEntity<String> startDataflow(DataflowDTO dataflowData);
-
-	public List<String> getControlpanelApis(String authentication);
-
-	public List<RestApiOperationDTO> getControlpanelApiOperations(String apiName, String authentication);
-
-	public ResponseEntity<String> invokeManagementRestApiOperation(
-			FlowEngineInvokeRestApiOperationRequest invokeRequest);
 
 }

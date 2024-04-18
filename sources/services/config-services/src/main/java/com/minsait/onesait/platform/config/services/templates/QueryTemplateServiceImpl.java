@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,13 +43,13 @@ public class QueryTemplateServiceImpl implements QueryTemplateService {
 
 	@Autowired
 	private QueryTemplateRepository queryTemplateRepository;
-
+	
 	final ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
 
 	@Override
 	public PlatformQuery getTranslatedQuery(String ontology, String query) {
 
-		final List<QueryTemplate> templates = new ArrayList<>(
+		List<QueryTemplate> templates = new ArrayList<>(
 				queryTemplateRepository.findByOntologyIdentification(ontology));
 		templates.addAll(queryTemplateRepository.findByOntologyIdentificationIsNull());
 		MatchResult result = new MatchResult();
@@ -63,7 +63,7 @@ public class QueryTemplateServiceImpl implements QueryTemplateService {
 			}
 
 			if (result.isMatch()) {
-				final String newStringQuery = processQuery(template, result);
+				String newStringQuery = processQuery(template, result);
 				return new PlatformQuery(newStringQuery, template.getType());
 			}
 		} catch (ScriptException | JSQLParserException | NoSuchMethodException e) {
@@ -84,10 +84,10 @@ public class QueryTemplateServiceImpl implements QueryTemplateService {
 	String replaceVariables(String queryGenerator, Map<String, VariableData> variables) {
 
 		String newQuery = queryGenerator;
-		final Set<String> variableNames = variables.keySet();
-		for (final String variableName : variableNames) {
-			final VariableData variable = variables.get(variableName);
-			final String newValue = variable.getStringValue();
+		Set<String> variableNames = variables.keySet();
+		for (String variableName : variableNames) {
+			VariableData variable = variables.get(variableName);
+			String newValue = variable.getStringValue();
 			newQuery = newQuery.replace("@" + variableName, newValue);
 		}
 
@@ -95,7 +95,7 @@ public class QueryTemplateServiceImpl implements QueryTemplateService {
 	}
 
 	String processQuery(String query, String templateName) throws ScriptException, NoSuchMethodException {
-
+		
 		try {
 			final String scriptPostprocessFunction = "function postprocess(){ " + query + " }";
 			final ByteArrayInputStream scriptInputStream = new ByteArrayInputStream(
@@ -106,10 +106,10 @@ public class QueryTemplateServiceImpl implements QueryTemplateService {
 			result = inv.invokeFunction("postprocess");
 			return result.toString();
 		} catch (final ScriptException e) {
-			log.trace("Error processing query in query template: {}", templateName, e);
+			log.trace("Error processing query in query template: " + templateName, e);
 			throw e;
-		} catch (final NoSuchMethodException e) {
-			log.trace("Error invoking processing function in query template: {}", templateName, e);
+		} catch (NoSuchMethodException e) {
+			log.trace("Error invoking processing function in query template: " + templateName, e);
 			throw e;
 		}
 	}
@@ -136,58 +136,22 @@ public class QueryTemplateServiceImpl implements QueryTemplateService {
 
 	@Override
 	public QueryTemplate getQueryTemplateById(String id) {
-		return queryTemplateRepository.findById(id).orElse(null);
-	}
-
-	@Override
-	public List<QueryTemplate> getQueryTemplateByCriteria(String name) {
-		return queryTemplateRepository.findByNameContaining(name);
+		return queryTemplateRepository.findById(id);
 	}
 
 	@Override
 	public void updateQueryTemplate(QueryTemplate queryTemplate) {
 		if (queryTemplateExists(queryTemplate)) {
-			queryTemplateRepository.findById(queryTemplate.getId()).ifPresent(queryTemplateDB -> {
-				queryTemplateDB.setName(queryTemplate.getName());
-				queryTemplateDB.setDescription(queryTemplate.getDescription());
-				queryTemplateDB.setOntology(queryTemplate.getOntology());
-				queryTemplateDB.setQueryGenerator(queryTemplate.getQueryGenerator());
-				queryTemplateDB.setQuerySelector(queryTemplate.getQuerySelector());
-				queryTemplateDB.setType(queryTemplate.getType());
-				queryTemplateRepository.save(queryTemplateDB);
-			});
-
+			final QueryTemplate queryTemplateDB = queryTemplateRepository.findById(queryTemplate.getId());
+			queryTemplateDB.setName(queryTemplate.getName());
+			queryTemplateDB.setDescription(queryTemplate.getDescription());
+			queryTemplateDB.setOntology(queryTemplate.getOntology());
+			queryTemplateDB.setQueryGenerator(queryTemplate.getQueryGenerator());
+			queryTemplateDB.setQuerySelector(queryTemplate.getQuerySelector());
+			queryTemplateDB.setType(queryTemplate.getType());
+			queryTemplateRepository.save(queryTemplateDB);
 		} else
 			throw new QueryTemplateServiceException("Cannot update a query template that does not exist");
-	}
-
-	@Override
-	public void checkQueryTemplateSelectorExists(String templateId, String ontology, String query) {
-		final List<QueryTemplate> templates = new ArrayList<>(
-				queryTemplateRepository.findByOntologyIdentification(ontology));
-		templates.addAll(queryTemplateRepository.findByOntologyIdentificationIsNull());
-		MatchResult result = new MatchResult();
-		result.setResult(false);
-		QueryTemplate template = null;
-
-		try {
-			for (int i = 0; i < templates.size() && !result.isMatch(); i++) {
-				template = templates.get(i);
-				if (!template.getName().equals(templateId)) {
-					result = SqlComparator.match(query, template.getQuerySelector());
-				}
-			}
-		} catch (Exception e) {
-			log.trace("Error processing Selector", e);
-		}
-		if (result.isMatch()) {
-			String logmessage = "Query Template Selector already used";
-			if (!ontology.equals("")) {
-				logmessage = logmessage + " for entity: " + ontology;
-			}
-			log.trace(logmessage);
-			throw new QueryTemplateServiceException(logmessage);
-		}
 	}
 
 }

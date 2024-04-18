@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.minsait.onesait.platform.config.model.MigrationData;
-import com.minsait.onesait.platform.config.model.MigrationData.DataType;
-import com.minsait.onesait.platform.config.model.MigrationData.Status;
 import com.minsait.onesait.platform.config.model.User;
 
 import de.galan.verjson.core.IOReadException;
@@ -38,7 +36,7 @@ public interface MigrationService {
 	public DataFromDB getDataFromJson(String json)
 			throws VersionNotSupportedException, NamespaceMismatchException, ProcessStepException, IOReadException;
 
-	public LoadEntityResult loadData(MigrationConfiguration config, DataFromDB readData, Boolean override)
+	public LoadEntityResult loadData(MigrationConfiguration config, DataFromDB readData)
 			throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException, InstantiationException;
 
 	public void persistData(List<Object> entities, MigrationErrors errors)
@@ -58,7 +56,7 @@ public interface MigrationService {
 			SecurityException, IllegalArgumentException, IllegalAccessException, InstantiationException;
 
 	public MigrationErrors importData(MigrationConfiguration config, DataFromDB data, Boolean isProjectLoad,
-			Boolean isUserLoad, Boolean override)
+			Boolean isUserLoad)
 			throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException, InstantiationException;
 
 	MigrationError persistEntity(Object entity, Serializable id);
@@ -69,17 +67,10 @@ public interface MigrationService {
 
 	public String compareSchemas(String currentSchemaJson, String otherSchemaJson) throws IOException;
 
-	public void storeMigrationData(User user, String name, String description, String fileName, byte[] file,
-			DataType type, Status status);
+	public void storeMigrationData(User user, String name, String description, String fileName, byte[] file);
 
-	public MigrationData findMigrationData(User user, DataType type);
+	public MigrationData findMigrationData(User user);
 
 	public MigrationErrors getExportErrors();
-
-	void updateStoreMigrationData(User user, String json, DataType type);
-
-	public List<MigrationData> findByUserAndTypeAndStatus(User user, DataType type, Status status);
-
-	public void deleteMigrationData(MigrationData data);
 
 }

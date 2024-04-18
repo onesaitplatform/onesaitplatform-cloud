@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.config.model.Api;
@@ -109,7 +110,6 @@ public class ApiDTOConverter {
 		api.setPublic(apiRestDTO.getIsPublic());
 		api.setImageType(apiRestDTO.getImageType());
 		api.setApilimit(apiRestDTO.getApiLimit());
-		api.setApicachetimeout(apiRestDTO.getApiCacheTimeout());
 	}
 
 	private void setApiCategory(ApiRestDTO apiRestDTO, Api api) {

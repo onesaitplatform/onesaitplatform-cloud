@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,8 @@ public class ApiManagerServiceException extends RuntimeException {
 		PERMISSION_DENIED, NOT_FOUND, INVALID_API_STATE, INVALID_API_TYPE, EXISTING_API,
 		USER_NOT_FOUND, USER_ACCESS_NOT_FOUND, USER_IS_OWNER, USER_IS_ADMIN,
 		MISSING_ONTOLOGY, MISSING_API_IDENTIFICATION, MISSING_OPERATIONS,
-		MISSING_DIGITAL_FLOW, DUPLICATED_OPERATIONS, API_IDENTIFICATION_FORMAT_ERROR
+		MISSING_DIGITAL_FLOW,
+		DUPLICATED_OPERATIONS
 	}
 	
 	@Getter

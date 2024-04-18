@@ -25,7 +25,7 @@
 
     <!-- As yet no ES6 Module support -->
     <!--{if jquery_release}>
-    <script src="/controlpanel/static/vendor/jquery/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <!{else}-->
     <script src="jquery.min.js"></script>
     <!--{endif}-->
@@ -56,10 +56,10 @@
     <!-- FEEDS -->
     <link rel="alternate" type="application/atom+xml"
       title="SVG-edit General Discussion"
-      href="/controlpanel/static/vendor/svg/atom_v1_0.xml"/>
+      href="https://groups.google.com/group/svg-edit/feed/atom_v1_0_msgs.xml"/>
     <link rel="alternate" type="application/atom+xml"
       title="SVG-edit Updates (Commits)"
-      href="/controlpanel/static/vendor/svg/master.atom.xml"/>
+      href="https://github.com/SVG-Edit/svgedit/commits/master.atom"/>
 
 <!-- TABS -->
 
@@ -108,47 +108,47 @@
 </div>
 <!-- TOOLS -->
 <div id="toolssidenav" class="tabcontent" >
-
-<table style="margin-left: -3px;">
-		<tr>
-			<td>
-   			<div id="tool_clear" class="tool_button" title="New Image">
-   			<div></div>
-   			</div>
-   			</td>
- 			 <td>
- 				<div id="tool_import" class="tool_button" title="Open SVG" style="position: relative;">
-     			  <div id="fileinputs_import"  style="position:absolute;">
-         		   <div></div>
-        	  </div>
-      		   
- 			 </div>
-  			</td>
-  <td>
-  <div id="tool_save" class="tool_button" title="Save Image">
-  <div></div>
-         
-  </div>
-  	</td>
-  
- 
-			<td>
-  <div id="tool_export" class="tool_button" title="Export">
-  <div></div>
-         
-  </div>
-  </td>
-  <td>
-  <div id="tool_docprops" class="tool_button" title="Document Properties">
-  <div></div>
-         
-  </div>
-	</td>  
-  </tr>
-  </table>
-
+    <div id="main_button"> 
+     <div id="main_icon" class="tool_button" title="Main Menu">
+      <span>FILES</span>     
+      <div class="dropdown"></div>
+    </div>
+    <div id="main_menu">
+      <!-- File-like buttons: New, Save, Source -->
+      <ul style="list-style: none;">
+        <li id="tool_clear">
+          <div></div>
+          New Image (N)
+        </li>
+        <!--   <li id="tool_open" >
+          <div id="fileinputs" >          
+            <div></div>
+          </div>
+          Open SVG
+        </li>  -->
+        <li id="tool_import" >
+          <div id="fileinputs_import"  >
+            <div></div>
+          </div>
+          Import Image
+        </li>
+        <li id="tool_save">
+          <div></div>
+          Save Image (S)
+        </li>
+        <li id="tool_export">
+          <div></div>
+          Export
+        </li>
+        <li id="tool_docprops">
+          <div></div>
+          Document Properties (D)
+        </li>
+      </ul>
     
-      <fieldset id="layerbuttons" style="margin-left: 3px;">
+    </div>    
+    </div>    
+      <fieldset id="layerbuttons">
         <div id="layer_new" class="layer_button" title="New Layer"></div>
         <div id="layer_delete" class="layer_button" title="Delete Layer"></div>
         <div id="layer_rename" class="layer_button" title="Rename Layer"></div>
@@ -156,15 +156,15 @@
         <div id="layer_down" class="layer_button" title="Move Layer Down"></div>
         <div id="layer_moreopts" class="layer_button" title="More Options"></div>
       </fieldset>
-      <table id="layerlist" style="margin-left: 3px;">
+      <table id="layerlist">
         <tr class="layer">
           <td class="layervis"></td>
           <td class="layername">Layer 1</td>
         </tr>
       </table>
-      <span id="selLayerLabel" style="margin-left: 3px;" >Move elements to:</span>
+      <span id="selLayerLabel">Move elements to:</span>
       <select id="selLayerNames" title="Move selected elements to a different layer"
-        disabled="disabled" style="margin-left: 3px;">
+        disabled="disabled">
         <option selected="selected" value="layer1">Layer 1</option>
       </select>
    
@@ -261,11 +261,7 @@
 						<span>field</span>
 						<select id="fieldSelectText">
 							<option val=""></option>
-						</select><br>
-						<label id="labelunitsOfMeasure">
-							<span>units Of Measure:</span>
-							<input id="unitsOfMeasure" size="10" value="" type="text" />
-						</label>
+						</select>
 					</label>
 				</div>
 				
@@ -354,9 +350,9 @@
 		</tr>
 
 		<tr>
-			<td style="padding-left: 0px;">
+			<td>
 				<div id="tools_left" class="tools_panel"
-					style="display: block !important; position: static;padding-left: 1px;"></div>
+					style="display: block !important; position: static;"></div>
 			</td>
 		</tr>
 
@@ -565,7 +561,7 @@
 								<tr>
 									<td><label id="tool_angle" title="Change rotation angle"
 										class="toolset"> <span id="angleLabel"
-											class="icon_label"></span> <input id="angle" size="20"
+											class="icon_label"></span> <input id="angle" size="2"
 											value="0" type="text" />
 									</label></td>
 								</tr>
@@ -574,7 +570,7 @@
 										<div class="toolset" id="tool_blur"
 											title="Change gaussian blur value">
 											<label> <span id="blurLabel" class="icon_label"></span>
-												<input id="blur" size="6" value="0" type="text" />
+												<input id="blur" size="2" value="0" type="text" />
 											</label>
 											<div id="blur_dropdown" class="dropdown">
 												<button></button>
@@ -601,11 +597,11 @@
 								<tr>
 									<td>
 							<div id="xy_panel" class="toolset">										
-											<label>  <span style="margin-left: 4px;margin-right: 34x;" >X</span> <input id="selected_x"
-												class="attr_changer" title="Change X coordinate" size="5"
+											<label>  <span>x:</span> <input id="selected_x"
+												class="attr_changer" title="Change X coordinate" size="3"
 												data-attr="x" />
-											</label> <label> <span style="margin-left: 4px;margin-right: 4px;">Y</span><input id="selected_y"
-												class="attr_changer" title="Change Y coordinate" size="5"
+											</label> <label> <span>y:</span><input id="selected_y"
+												class="attr_changer" title="Change Y coordinate" size="3"
 												data-attr="y" />
 											</label>
 										</div>
@@ -700,7 +696,7 @@
       </div>
       <div class="toolset">
         <label id="tool_image_url">url:
-          <input id="image_url" type="text" title="Change URL" size="30"/>
+          <input id="image_url" type="text" title="Change URL" size="35"/>
         </label>
         <label id="tool_change_image">
           <button id="change_image_url" style="display: none;">Change Image</button>
@@ -711,63 +707,63 @@
     </div>
     <div id="circle_panel">
       <div class="toolset">
-        <label id="tool_circle_cx" style="margin-left: 3px;margin-right: 3px;">CX
+        <label id="tool_circle_cx">cx:
         <input id="circle_cx" class="attr_changer"
-          title="Change circle's cx coordinate" size="5" data-attr="cx"/>
+          title="Change circle's cx coordinate" size="3" data-attr="cx"/>
         </label>
-        <label id="tool_circle_cy" style="margin-left: 3px;margin-right: 3px;">CY
+        <label id="tool_circle_cy">cy:
         <input id="circle_cy" class="attr_changer"
-          title="Change circle's cy coordinate" size="5" data-attr="cy"/>
+          title="Change circle's cy coordinate" size="3" data-attr="cy"/>
         </label>
       </div>
       <div class="toolset">
-        <label id="tool_circle_r" style="margin-left: 9px;margin-right: 3px;">R
+        <label id="tool_circle_r">r:
         <input id="circle_r" class="attr_changer"
-          title="Change circle's radius" size="5" data-attr="r"/>
+          title="Change circle's radius" size="3" data-attr="r"/>
         </label>
       </div>
     </div>
     <div id="ellipse_panel">
       <div class="toolset">
-        <label id="tool_ellipse_cx" style="margin-left: 3px;margin-right: 3px;">CX
+        <label id="tool_ellipse_cx">cx:
         <input id="ellipse_cx" class="attr_changer"
-          title="Change ellipse's cx coordinate" size="5" data-attr="cx"/>
+          title="Change ellipse's cx coordinate" size="3" data-attr="cx"/>
         </label>
-        <label id="tool_ellipse_cy" style="margin-left: 3px;margin-right: 3px;">CY
+        <label id="tool_ellipse_cy">cy:
         <input id="ellipse_cy" class="attr_changer"
-          title="Change ellipse's cy coordinate" size="5" data-attr="cy"/>
+          title="Change ellipse's cy coordinate" size="3" data-attr="cy"/>
         </label>
       </div>
       <div class="toolset">
-        <label id="tool_ellipse_rx" style="margin-left: 3px;margin-right: 3px;">RX
+        <label id="tool_ellipse_rx">rx:
         <input id="ellipse_rx" class="attr_changer"
-          title="Change ellipse's x radius" size="5" data-attr="rx"/>
+          title="Change ellipse's x radius" size="3" data-attr="rx"/>
         </label>
-        <label id="tool_ellipse_ry" style="margin-left: 3px;margin-right: 3px;">RY
+        <label id="tool_ellipse_ry">ry:
         <input id="ellipse_ry" class="attr_changer"
-          title="Change ellipse's y radius" size="5" data-attr="ry"/>
+          title="Change ellipse's y radius" size="3" data-attr="ry"/>
         </label>
       </div>
     </div>
     <div id="line_panel">
       <div class="toolset">
-        <label id="tool_line_x1" style="margin-left: 3px;margin-right: 3px;">X1
+        <label id="tool_line_x1">x1:
         <input id="line_x1" class="attr_changer"
-          title="Change line's starting x coordinate" size="5" data-attr="x1"/>
+          title="Change line's starting x coordinate" size="3" data-attr="x1"/>
         </label>
-        <label id="tool_line_y1" style="margin-left: 3px;margin-right: 3px;">Y1
+        <label id="tool_line_y1">y1:
         <input id="line_y1" class="attr_changer"
-          title="Change line's starting y coordinate" size="5" data-attr="y1"/>
+          title="Change line's starting y coordinate" size="3" data-attr="y1"/>
         </label>
       </div>
       <div class="toolset">
-        <label id="tool_line_x2" style="margin-left: 3px;margin-right: 3px;">X2
+        <label id="tool_line_x2">x2:
         <input id="line_x2" class="attr_changer"
-          title="Change line's ending x coordinate" size="5" data-attr="x2"/>
+          title="Change line's ending x coordinate" size="3" data-attr="x2"/>
         </label>
-        <label id="tool_line_y2" style="margin-left: 3px;margin-right: 3px;">Y2
+        <label id="tool_line_y2">y2:
         <input id="line_y2" class="attr_changer"
-          title="Change line's ending y coordinate" size="5" data-attr="y2"/>
+          title="Change line's ending y coordinate" size="3" data-attr="y2"/>
         </label>
       </div>
     </div>
@@ -785,7 +781,7 @@
           <!-- Font family -->
           <input id="font_family" type="text" title="Change Font Family" size="12"/>
         </label>
-        <div id="font_family_dropdown" class="dropdown" style="margin-top: -5px !important;">
+        <div id="font_family_dropdown" class="dropdown">
           <button></button>
           <ul>
             <li style="font-family:Soho">Soho</li>
@@ -797,10 +793,9 @@
           </ul>
         </div>
       </div>
-     
       <label id="tool_font_size" title="Change Font Size">
-        <input id="font_size" size="4" value="0" type="text"/>
         <span id="font_sizeLabel" class="icon_label"></span>
+        <input id="font_size" size="3" value="0" type="text"/>
       </label>
       <!-- Not visible, but still used -->
       <input id="text" type="text" size="35"/>
@@ -826,66 +821,33 @@
     </div>
     <!-- For anchor elements -->
     <div id="a_panel">
-    <br>
-      <label id="tool_link_url" title="Set link URL (leave empty to remove)">       
-        <input id="link_url" type="text" size="30"/>
+      <label id="tool_link_url" title="Set link URL (leave empty to remove)">
+        <span id="linkLabel" class="icon_label"></span>
+        <input id="link_url" type="text" size="35"/>
       </label>
     </div>
     <div id="path_node_panel">
-     <br> 
-     <table>
-     <tr>
-     <td>
-       <div id="tool_node_link" class="tool_button push_button_pressed"
+      
+      <div id="tool_node_link" class="tool_button push_button_pressed"
         title="Link Control Points"></div>
-     </td>
-      <td>
-       <div class="tool_button" id="tool_node_clone" title="Clone Node"></div>
-     </td>
-      <td>
-      <div class="tool_button" id="tool_node_delete" title="Delete Node"></div>
-     </td>
-      <td>
-      <div class="tool_button" id="tool_openclose_path" title="Open/close sub-path"></div>
-     </td>
-     </tr>
-     </table>
-    
-    <table>
-     <tr>
-     <td>
-     <label id="tool_node_x" style="margin-left: 3px;margin-right: 3px;">X
+      
+      <label id="tool_node_x">x:
         <input id="path_node_x" class="attr_changer"
-          title="Change node's x coordinate" size="5" data-attr="x"/>
+          title="Change node's x coordinate" size="3" data-attr="x"/>
       </label>
-    </td>
-    <td>
-      <label id="tool_node_y" style="margin-left: 3px;margin-right: 3px;">Y
+      <label id="tool_node_y">y:
         <input id="path_node_y" class="attr_changer"
-          title="Change node's y coordinate" size="5" data-attr="y"/>
+          title="Change node's y coordinate" size="3" data-attr="y"/>
       </label>
-    </td>
-     </tr>
-      <tr>
-      <td>
-       <label style="margin-left: 3px;margin-right: 3px;">SEGMENT TYPE</label>
-      </td>
-       <td>
-        <select id="seg_type" title="Change Segment type">
+      <select id="seg_type" title="Change Segment type">
         <option id="straight_segments"
           selected="selected" value="4">Straight</option>
         <option id="curve_segments" value="6">Curve</option>
       </select>
-       </td>
-     </tr>
-     </table>
-    
-      
-      
-    
-      
-     
-     
+      <div class="tool_button" id="tool_node_clone" title="Clone Node"></div>
+      <div class="tool_button" id="tool_node_delete" title="Delete Node"></div>
+      <div class="tool_button" id="tool_openclose_path" title="Open/close sub-path"></div>
+      <div class="tool_button" id="tool_add_subpath" title="Add sub-path"></div>
     </div>
   
    
@@ -894,7 +856,7 @@
     
 </div>
     <div id="sidepanel_handle"
-      title="Click to show hide [X]">M E N U
+      title="Drag left/right to resize side panel [X]">M E N U
     </div>
   </div>
  

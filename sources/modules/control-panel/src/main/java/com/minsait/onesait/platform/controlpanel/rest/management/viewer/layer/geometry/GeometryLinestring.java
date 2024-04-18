@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.minsait.onesait.platform.controlpanel.rest.management.viewer.layer.geometry;
 
 import java.util.ArrayList;
@@ -22,7 +23,9 @@ public class GeometryLinestring extends Geometry {
 	private List<Double[]> coordinates;
 
 	public GeometryLinestring() {
+		super();
 		this.coordinates = new ArrayList<>();
+		this.type = GeometryType.LINE_STRING;
 	}
 
 	public List<Double[]> getCoordinates() {
@@ -31,6 +34,10 @@ public class GeometryLinestring extends Geometry {
 
 	public void setCoordinates(List<Double[]> coordinates) {
 		this.coordinates = coordinates;
+	}
+
+	public GeometryType getType() {
+		return type;
 	}
 
 	@Override

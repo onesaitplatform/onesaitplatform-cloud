@@ -21,7 +21,7 @@
  */
 
 angular.module('commonUI.commonDirectives')
-  .directive("focusMe", ["$timeout", "$parse", function($timeout, $parse) {
+  .directive("focusMe", function($timeout, $parse) {
     return {
       link: function(scope, element, attrs) {
         var model = $parse(attrs.focusMe);
@@ -34,4 +34,4 @@ angular.module('commonUI.commonDirectives')
         });
       }
     };
-  }]);
+  });

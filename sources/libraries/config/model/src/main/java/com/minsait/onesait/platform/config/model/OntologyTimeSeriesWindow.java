@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,13 +23,11 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.minsait.onesait.platform.config.model.base.AuditableEntityWithUUID;
 
 import lombok.Getter;
@@ -42,12 +40,12 @@ public class OntologyTimeSeriesWindow extends AuditableEntityWithUUID {
 
 	public enum WindowType {
 
-		MINUTES, HOURS, DAYS, MONTHS, YEARS
+		MINUTES, HOURS, DAYS, MONTHS
 	}
 
 	public enum FrecuencyUnit {
 
-		NONE, SECONDS, MINUTES, HOURS, DAYS, MONTHS, NODUPS
+		SECONDS, MINUTES, HOURS, DAYS, MONTHS
 	}
 
 	public enum AggregationFunction {
@@ -56,20 +54,20 @@ public class OntologyTimeSeriesWindow extends AuditableEntityWithUUID {
 
 	public enum RetentionUnit {
 
-		HOURS, DAYS, WEEKS, MONTHS, YEARS
+		HOURS, DAYS, MONTHS
 	}
 
 	/**
-	 *
+	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
 	@ManyToOne
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	@JoinColumn(name = "ONTOLOGY_TIMESERIES_ID", referencedColumnName = "ID", nullable = false)
+	@JsonBackReference
 	@Getter
 	@Setter
-	@JsonIgnore
 	private OntologyTimeSeries ontologyTimeSeries;
 
 	@Column(name = "WINDOW_TYPE", length = 20)
@@ -110,9 +108,7 @@ public class OntologyTimeSeriesWindow extends AuditableEntityWithUUID {
 	@Enumerated(EnumType.STRING)
 	private RetentionUnit retentionUnit;
 
-	@Column(name = "BDH", nullable = false)
-	@Type(type = "org.hibernate.type.BooleanType")
-	@ColumnDefault("false")
+	@Column(name = "BDH", nullable = false, columnDefinition = "BIT default 0")
 	@NotNull
 	@Getter
 	@Setter

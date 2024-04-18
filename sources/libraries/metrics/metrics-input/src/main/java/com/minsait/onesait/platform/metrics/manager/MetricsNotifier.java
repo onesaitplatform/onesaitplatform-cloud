@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@ package com.minsait.onesait.platform.metrics.manager;
 
 import javax.annotation.PostConstruct;
 
+import org.jline.utils.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -28,18 +28,15 @@ import org.springframework.web.client.RestTemplate;
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
 import com.minsait.onesait.platform.commons.model.MetricsPlatformDto;
 
-import lombok.extern.slf4j.Slf4j;
-
 @Component
 @ConditionalOnProperty(name = "onesaitplatform.metrics.collector.endpoint", matchIfMissing = false)
 @EnableScheduling
-@Slf4j
 public class MetricsNotifier {
 
-	@Value("${onesaitplatform.metrics.collector.endpoint:http://auditrouter:20002/router/metrics-collector/refresh}")
+	@Value("${onesaitplatform.metrics.collector.endpoint:http://routerservice:20000/router/metrics-collector/refresh}")
 	private String metricsCollectorEndpoint;
 
-	@Value("${onesaitplatform.metrics.enabled:false}")
+	@Value("${onesaitplatform.metrics.enabled:true}")
 	private boolean metricsEnabled;
 
 	@Autowired
@@ -49,23 +46,22 @@ public class MetricsNotifier {
 
 	@PostConstruct
 	public void init() {
-		restTemplate = new RestTemplate();
-		restTemplate.getMessageConverters().add(0, new MappingJackson2HttpMessageConverter());
+		this.restTemplate = new RestTemplate();
 	}
 
 	@Scheduled(cron = "0 * * * * *")
 	public void eachMinue() {
 
 		if (metricsEnabled) {
-			final long date = System.currentTimeMillis() - 60000;
+			long date = System.currentTimeMillis() - 60000;
 
-			final MetricsPlatformDto dto = metricsManager.computeMetrics(date);
+			MetricsPlatformDto dto = metricsManager.computeMetrics(date);
 			try {
 				if (dto.containsMetrics()) {
-					restTemplate.postForLocation(metricsCollectorEndpoint, dto);
+					this.restTemplate.postForLocation(metricsCollectorEndpoint, dto);
 				}
-			} catch (final Exception e) {
-				log.error("Error notifing metrics", e);
+			} catch (Exception e) {
+				Log.error("Error notifing metrics", e);
 			}
 		}
 	}

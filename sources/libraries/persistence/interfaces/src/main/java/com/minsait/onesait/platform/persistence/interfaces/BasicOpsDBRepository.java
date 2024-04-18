@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,16 @@
 package com.minsait.onesait.platform.persistence.interfaces;
 
 import java.util.List;
-import java.util.Map;
 
 import com.minsait.onesait.platform.commons.model.ComplexWriteResult;
 import com.minsait.onesait.platform.commons.model.MultiDocumentOperationResult;
-import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 
 public interface BasicOpsDBRepository {
 
-	public String insert(String ontology, String instance);
+	public String insert(String ontology, String schema, String instance);
 
-	public ComplexWriteResult insertBulk(String ontology, List<String> instances, boolean order, boolean includeIds);
+	public ComplexWriteResult insertBulk(String ontology, String schema, List<String> instances, boolean order,
+			boolean includeIds);
 
 	public MultiDocumentOperationResult updateNative(String ontology, String updateStmt, boolean includeIds);
 
@@ -69,26 +68,5 @@ public interface BasicOpsDBRepository {
 
 	public MultiDocumentOperationResult updateNativeByObjectIdAndBodyData(String ontologyName, String objectId,
 			String body);
-
-	public List<String> queryUpdateTransactionCompensationNative(String ontology, String updateStmt)
-			throws DBPersistenceException;
-
-	public List<String> queryUpdateTransactionCompensationNative(String collection, String query, String data)
-			throws DBPersistenceException;
-
-	public String queryUpdateTransactionCompensationNativeByObjectIdAndBodyData(String ontologyName, String objectId)
-			throws DBPersistenceException;
-
-	public List<String> queryDeleteTransactionCompensationNative(String collection, String query)
-			throws DBPersistenceException;
-
-	public List<String> queryDeleteTransactionCompensationNative(String collection);
-
-	public String queryDeleteTransactionCompensationNativeById(String collection, String objectId)
-			throws DBPersistenceException;
-
-	public String querySQLAsJson(String ontology, String query, int offset, int limit);
-
-	public ComplexWriteResult updateBulk(String collection, String queries, boolean includeIds);
 
 }

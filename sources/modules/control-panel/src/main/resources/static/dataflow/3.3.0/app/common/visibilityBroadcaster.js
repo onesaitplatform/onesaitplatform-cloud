@@ -17,7 +17,7 @@
  * Service for broadcasting whether browser is visible or not using HTML5 Page Visibility API.
  */
 angular.module('dataCollectorApp.common')
-  .service('visibilityBroadcaster', ["$rootScope", "$document", "_", function($rootScope, $document, _) {
+  .service('visibilityBroadcaster', function($rootScope, $document, _) {
 
     var document = $document[0],
       features,
@@ -61,4 +61,4 @@ angular.module('dataCollectorApp.common')
         document[detectedFeature.propertyName]);
     }
 
-  }]);
+  });

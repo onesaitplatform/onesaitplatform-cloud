@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -61,22 +61,14 @@
 			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
-				<div id="searchFilter"  class="row" >
-						<form id="form_bpm" class="" role="form" method="get">
-																
-						</form>
-					</div>
 				
 				<!-- BEGIN PAGE HEADER-->
 				
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<!--<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>-->
-						<li>
-							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:text="#{bpm.tenants.manage}">Manage BPM Tenants</span>
-							<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" th:text="#{bpm.tenants.my}">My BPM Tenants</span>
-						</li>
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>						
+						<li><span th:text="#{bpm.tenants.my}">My Tenants</span></li>
 					</ul>						
 				</div><!-- END PAGE BAR -->
 				
@@ -86,53 +78,36 @@
 				
 				<!-- MAIN ROW -->
 				<div class="row">
+					<div class="col-md-12">					
 						<div class="portlet light">
 							
 							<!-- TITTLE CONTENT -->
 							<div class="portlet-title">
 								<div class="caption">									
-									<span class="caption-subject" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:text="#{bpm.tenants.manage}"> Manage BPM Tenants </span>
-									<span class="caption-subject" th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" th:text="#{bpm.tenants.my}"> My BPM Tenants </span>		
-								</div>
-								<div class="caption" style="padding: 22px 8px 8px 10px">
-									<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
-								</div>
-								<div id="search-on-title" class="hide input-icon search-icon">
-									<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
-								</div>								
+									<span class="caption-subject" th:text="#{bpm.tenants.my}"> My Report </span>									
+								</div>									
 								<div class="tools hide">
 									<a href="" class="collapse" data-original-title="" title=""> </a>
 									<a href="" class="fullscreen" data-original-title="" title=""> </a>
-								</div>
-								<div class="pull-right btn-group btn-title-group" id="divcreate" >
-									<form method="post"  th:action="@{/bpm/sync-users}" style="display:inline-block;margin:0">
-										<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" type="submit"  name="btn-tenants-reload" value="Sync users" 
-											class="btn btn-primary button-dropdown-table-columns" style="border: none;"><span class="tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{bpm.sync.users}"><i class="icon-sync"></i></span></button>	
-									</form>
-									<button th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" type="button"  onclick="$('#role-mapping-modal').modal('show')"
-											class="btn btn-primary button-dropdown-table-columns" style="border: none;"><span class="tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{bpm.map.realm.roles}"><i class="la la-user-cog" style="font-size:16px"></i></span></button>
 								</div>															
 							</div><!-- // TITTLE CONTENT -->
 							
 							<!-- BODY CONTENT -->
 							<div class="portlet-body" style="display: block; height: auto;">
-								<div class="row main">
+								<div class="row">
 									<!-- SEARCH -->																	
 																											
 									<!-- TENANTS LIST -->
 									<div class="col-md-12">											
-										<div id="contenedor-tabla-outside" class="contiene hidden">																						
+										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
 											<div>
 												<!-- Reload button -->
-												<!--<div class="row">
+												<div class="row">
 													<div class="pull-right margin-right-20">
-														<form method="post"  th:action="@{/bpm/sync-users}">
-															<button type="submit"  name="btn-tenants-reload" value="Reload" 
-																class="btn btn-sm btn-circle btn-outline btn-primary blue" title="Reload"><i class="la la-refresh" th:text="#{bpm.sync.users}"></i></button>	
-														</form>
+														<button type="button" id="btn-tenants-reload" name="btn-tenants-reload" value="Reload" 
+															class="btn btn-sm btn-circle btn-outline btn-primary blue" title="Reload"><i class="la la-refresh"></i>&nbsp;</button>	
 													</div>
-												</div>// Reload button -->
-
+												</div><!-- // Reload button -->
 																							
 												<!-- DATATABLE initCompleteCallback (DT function) -->
 												<div dt:conf="tenants">
@@ -140,76 +115,89 @@
 												</div><!-- // DATATABLE initCompleteCallback (DT function) -->
 																									
 												<!-- DATATABLE DANDELION CONF. -->												
-												<table id="tenants" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full" dt:url="@{/bpm/tenants}"
+												<table id="tenants" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers" dt:url="@{/bpm/tenants}"
 													dt:reloadSelector="#btn-tenants-reload" dt:reloadFunction="Bpm.List.reloadTable"
 													dt:filterSelector="#filterButton" dt:filterClearSelector="#filterClearButton" > <!-- dt:dom="l0frtip" -->
 													<thead>
-														<tr class="cabecera-tabla">	
+														<tr class="cabecera-tabla">
+															<th dt:visible="false" dt:property="id" class="titulo-columnas hide" th:text="#{gen.identification}">Identification</th>
 															<th dt:property="name" class="titulo-columnas" th:text="#{gen.name}">Name</th>
-															<th dt:sortable="false" dt:renderFunction="Bpm.List.dtRenderOptions" class="titulo-columnas text-center" style="width:85px;"><span th:text="#{gen.options}">Options</span></th>
+															<th dt:property="owner" class="titulo-columnas" th:text="#{gen.owner}">Owner</th>															
+															<th dt:sortable="false" dt:renderFunction="Bpm.List.dtRenderOptions" class="titulo-columnas text-center"><span th:text="#{gen.options}">Options</span></th>
 														</tr>
 													</thead>
-													<tbody th:remove="all-but-first">
-														<tr th:each="tenant : ${tenants}" pages:paginate="10">
-															<td class="text-left " th:text="${tenant}"></td>
-															<td class="text-center " >		
-																<div class="grupo-iconos text-center">
-																	<a target="_blank" th:href="${camundaEndpoint}"><span th:attr="data-id=${tenant}" class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}"><i class="la la-eye font-hg"></i></span></a>
-																	<span class="dropdown">
-																		<span   class="btn upload-btn btn-xs btn-no-border color-blue icon-on-table tooltips" th:attr="data-id=${tenant}" data-container="body" data-placement="bottom" th:data-original-title="#{gen.uploadBtn}" ><i class="icon-upload"></i></span>
-																	</span>	
-																</div>
-															</td>
-														</tr>
-													
-													</tbody>
 												</table><!-- // DATATABLE DANDELION CONF. -->
-												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
-												<div id="dataTable-vis-toggle"
-													class="btn-group margin-right-10 hide">
-													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
-													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
-															<label th:text="#{gen.name}"> Name </label>
-														</span>
-													</div>
-												</div>
 											</div>
 										</div>											
 									</div>
 								</div><!-- // TENANTS LIST -->
-								<div id="wrapper-role-map-fragment" th:include="bpm/fragments/role-map"></div>
 							</div><!-- // BODY CONTENT -->
 						</div><!-- // PORTLET BASIC LIGHT -->							
-					<!-- Modal ROLE-MAPPING -->
-					<div id="role-mapping-modal" class="modal fade" role="dialog" style="z-index:9998">
+					</div><!-- // COL-12 -->						
+				<!-- Modal Authorizations-->
+					<div id="authorizationsModal" class="modal fade" role="dialog">
 					  <div class="modal-dialog modal-sm">
+					
 					    <!-- Modal content-->
 					    <div class="modal-content">
 					      <div class="modal-header">
 					        <button type="button" class="close" data-dismiss="modal"></button>
-					        <h4 class="modal-title" th:text="#{bpm.map.realm.roles}">Mappings</h4>
+					        <h4 class="modal-title" th:text="#{binaryfiles.authorizations}">Authorizations</h4>
 					      </div>		
 					      <div class="modal-body">
-					      <div class="form-group">
-					      <div class="form-group">    
-					      <label class="control-label" th:text="#{ontology.realm}">Process name</label>
-							<select id="realms" class="selectpicker form-control no-remove" data-live-search="true" data-width="100%" th:title="#{ontology.realmselect}" th:required="true">
-								<option th:each="realm :${realms}" th:value="${realm}" th:text="${realm}" ></option>
-							</select>
-					      </div>
-					      <br/>
-						  </div>
+						    <!-- FILE AUTHORIZATION -->
+							<div class="row">
+							<input type="hidden" id="currentTenat"/>
+								<div class="col-md-4 col-sm-6 col-xs-12">
+								<!-- USER SELECTION -->
+									<div class="form-group">
+										<label class="control-label" th:text="#{binaryfiles.user}">User</label>
+										<select id="users" class="selectpicker form-control" data-live-search="true" data-width="100%" >
+											<option value="" th:text="#{binaryfiles.userselect}"> Select User...</option>
+											<option th:each="user :${users}"  th:if="${user.active}" th:value="${user.userId}" th:text="${user.fullName}  +' ('+ ${user.userId} +')'" ></option>														
+										</select>
+									</div>
+									<div class="form-group">
+										<button type="button" class="btn btn-circle btn-primary" onclick="Bpm.List.insertAuthorization(this)" th:text="#{binaryfiles.insertauthorization}" >Insert File Authorization</button>																		
+									</div>												
+								</div>
+								<div class="col-md-8 col-sm-6 col-xs-12">
+								<!-- AUTHORIZATION ONTOLOGY-USER-TYPE -->
+									<div class="form-group">
+										<label class="control-label" th:text="#{bpm.auth.title} + ':'">File Authorizations</label>
+										<div id="alert-authorizations" class="alert alert-info">
+											<i class="fa fa-info-circle"></i> <span th:text="#{binaryfiles.auth.info}"> </span>
+										</div>
+										<div id="authorizations" class="margin-bottom-20 hide">
+											<table class="table" id="tenant_authorizations" data-loaded="false">
+												<thead>
+													<tr class="cabecera-tabla" role="row" >
+														<th class="titulo-columnas" th:text="#{binaryfiles.user}">User</th>
+														<th class="titulo-columnas text-center" th:text="#{gen.options}">Options</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr class="authorization-model">
+														<td><input type="text" name="users[]" readonly="readonly"   class="form-control"/></td>
+														<td><input type="hidden" name="tenantId[]" readonly="readonly"   class="form-control"/></td>
+														<td width="150px" class="no-wrap text-center">																																
+															<button type="button" class="btn btn-sm btn-circle btn-outline blue btn-mountable-remove btn-mountable-authorization-remove" onclick="Bpm.List.removeAuthorization(this)"><i class="fa fa-trash"></i> <span th:text="#{binaryfiles.removeauth}">Remove</span></button>
+														</td>			
+													</tr>
+												</tbody>														
+											</table>
+										</div>
+									</div>
+								</div>
+							</div>
 					      </div>									      
 					      <div class="modal-footer">
-					        <button type="button" class="btn btn-outline btn-circle btn-primary "  onclick="getRoleMappings()"  th:text="#{gen.submit}" >Submit</button>
+					        <button type="button" class="btn btn-circle btn-outline btn-primary" data-dismiss="modal" th:text="#{binaryfiles.close}">Close</button>
 					      </div>
 					    </div>
-
+					
 					  </div>
 					</div>
-					
 					<!-- Modal UPLOAD-->
 					<div id="uploadModal" class="modal fade" role="dialog">
 					  <div class="modal-dialog modal-sm">
@@ -222,14 +210,11 @@
 					      <div class="modal-body">
 					      <div class="form-group">
 					      	<form enctype="multipart/form-data" id="form_upload" method="post">
-						      <input class="form-group button_text hide" id="data" type="file" accept=".bpmn,.html,.dmn" name="data" multiple="multiple"/>
-						  	  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 						      <div class="form-group">    
 						      <label class="control-label" th:text="#{bpm.process.name}">Process name</label>
-						      	<input type="hidden" name="tenantId" id="tenantId" value=""/>
 								<input class="form-control no-remove" type="text"  name="name" id="name" th:placeholder="#{bpm.default.processname}"/>
 								<div class="mt-checkbox-list"> 
-									<label class="mt-checkbox popovers font-sm"> <div id="useTenantHelp" class="inline font-xs" th:text="#{bpm.public}">Public?</div>
+									<label class="mt-checkbox popovers font-sm"> <div class="inline font-xs" th:text="#{bpm.public}">Public?</div>
 										<input id="useTenant" class="form-control no-remove"  name="useTenant" type="checkbox" checked="true" />
 										<span></span>
 									</label>
@@ -239,11 +224,13 @@
 						      
 						      <button id="upload" type="button" class="btn btn-outline btn-circle blue pull-right" onclick="$('#data').click();" value="Select"> <i class="fa fa-file-archive-o" style="padding-right:4px;" disabled="disabled"></i><span th:text="#{binaryfiles.select}"></span></button>
 						      <br/>
+						      <input class="form-group button_text hide" id="data" type="file" accept=".bpmn,.html" name="data" multiple="multiple"/>
+						  	<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 						  	</form>
 						  </div>
 					      </div>									      
 					      <div class="modal-footer">
-					        <button type="button" class="btn btn-outline btn-circle btn-primary " id="submitNewFile"  onclick="Bpm.List.upload()" disabled="true" th:text="#{gen.submit}" >Submit</button>
+					        <button type="button" class="btn btn-outline btn-circle btn-primary " id="submitNewFile"  onclick="$('#form_upload').submit()" disabled="true" th:text="#{gen.submit}" >Submit</button>
 					      </div>
 					    </div>
 
@@ -272,27 +259,25 @@
 	}
 	</style>
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"></script>
-	<script th:src="@{/static/js/layout.js}"></script>
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/blockUI.js}"></script>
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/static/vendor/datatable/dataTables.buttons.js}"></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
-	<script th:src="@{/static/vendor/jquery-format-datetime/jquery.formatDateTime.js}"></script>
+	<script th:src="@{/static/vendor/blockUI.js}"/>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
+	<script th:src="@{/static/vendor/datatable/dataTables.buttons.js}"/>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
+	<script th:src="@{/static/vendor/jquery-format-datetime/jquery.formatDateTime.js}"/>
 	<script th:src="@{/static/vendor/json/mountable.min.js}" type="text/javascript"></script>
-	<script th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}" ></script>
-	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
+	<script th:src="@{/static/vendor/datatable/features/filtering/jquery.dataTables.yadcf.js}" />
+	<script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"/>
 	
 	
 	
 	<script type="text/javascript" th:inline="javascript">	
 	
 	// TEMPLATE SEARCH FORM.
-	var csrfParameter = [[${_csrf.parameterName}]];
-	var csrfValue = [[${_csrf.token}]];
 	var sname = [[${param.name}]] || '';
 	var stype = [[${param.type}]] || '';
 	
@@ -305,13 +290,13 @@
 	datatable_lang = [[#{datatables_lang}]];	
 	
 	// PROVISIONAL => ELIMINARRRRRRRRRRR
-	/*datatable_lang = '{\"decimal\": \"\", \"emptyTable\": \"No Entries\", \"info\": \"Showing _START_ to _END_ of _TOTAL_ Entries\", \"infoEmpty\": \"0 Entries \", \"infoFiltered\": \"(Filtered from _MAX_ total Entries)\",\"infoPostFix\":\"\",\"thousands\":\",\",\"lengthMenu\":\" _MENU_ \",\"loadingRecords\": \" \",\"processing\": \" \",\"search\":\"Search:\",\"zeroRecords\":\"No matching records found\",\"paginate\": {\"first\":\"First\",\"last\":\"Last\",\"next\":\"&gt;\",\"previous\": \"&lt;\"}}';	*/
+	datatable_lang = '{\"decimal\": \"\", \"emptyTable\": \"No Entries\", \"info\": \"Showing _START_ to _END_ of _TOTAL_ Entries\", \"infoEmpty\": \"0 Entries \", \"infoFiltered\": \"(Filtered from _MAX_ total Entries)\",\"infoPostFix\":\"\",\"thousands\":\",\",\"lengthMenu\":\" _MENU_ \",\"loadingRecords\": \" \",\"processing\": \" \",\"search\":\"Search:\",\"zeroRecords\":\"No matching records found\",\"paginate\": {\"first\":\"First\",\"last\":\"Last\",\"next\":\"&gt;\",\"previous\": \"&lt;\"}}';	
 	////////////////////////////////////////////////
 	
-	var languageJson = JSON.parse(datatable_lang);
+	/*var languageJson = JSON.parse(datatable_lang);
 	if ( languageJson ) { 
 		$.extend( true, $.fn.dataTable.defaults, { language: languageJson }); 
-	}
+	}*/
 	
 	// Datatable ajax loading
 	var ajaxLoading = "@{/img/ajax-loading-flat.gif}";
@@ -325,21 +310,6 @@
 		
 	
 	var camundaWebApp;
-	var csrf_value = $("meta[name='_csrf']").attr("content");
-	var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
-	
-	function getRoleMappings (){
-		let r = $('#realms').val();
-		$('#wrapper-role-map-fragment').load(`realms/${r}/map-roles`, function( response, status, xhr ) {
-			  if ( status == "error" ) {
-				    var msg = "Sorry but there was an error: ";
-				    $( "#error" ).html( msg + xhr.status + " " + xhr.statusText );
-			  }else
-				$('#roleMapModal').modal('hide');
-			  	$('#roleMapModal').modal('show');
-			
-		});
-	}
 		
 	var constants ={
 			
@@ -348,17 +318,12 @@
 		genDelete: [[#{gen.deleteBtn}]],
 		genUpdate:  [[#{gen.edit}]],
 		genView:  [[#{gen.view}]],
-		upload: [[#{gen.uploadBtn}]]
+		upload: [[#{bpm.upload}]]
 	};
-	
-	$(window).on('pageshow', function(event) {
- 		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		$.each([ ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-	});
 		$(document).ready(function() {
 			
 			//SHOW/HIDE DATATABLE COLUMNS HANDLER
-			$('input.toggle-vis').on( 'change', function (e) {
+			$('label.toggle-vis').on( 'click', function (e) {
 				e.preventDefault(); 
 				// Get the column API object
 				var column = $('#tenants').DataTable().column( $(this).attr('data-column') ); 
@@ -369,68 +334,22 @@
 					$('#filtering th').eq($(this).attr('data-column')).toggle();
 				}
 				// toggle Text
-				//$(this).toggleClass('text-muted line-through');			
+				$(this).toggleClass('text-muted line-through');			
 			});	
-
-			// SEARCH FORM RESET
-			$('#reset_bpm').on('click',function(){
-				$('#bpm-name').val('');
-				$('#tenants').DataTable().column(1).search('').draw();
-			});
-
-			// SEARCH FORM
-			$('#search_bpm').on('click',function(){
-				$('#tenants').DataTable().column(1).search( $('#bpm-name').val()).draw();
-			});
-			
-			
-			//$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
+		});
+		$(window).load(function(){  
 			
 			//DATATABLE 
-			var oTable = $('#tenants').DataTable({
-		      "bAutoWidth": false
-		      });
+			var oTable = $('#tenants').DataTable();
 			oTable.page.len(10);
 			
 			$('#tenants').on('draw.dt', function () {
 				Bpm.List.initCompleteCallback();
 			} );
-
-			// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-			//$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 			
-			// SHOW/HIDE DATATABLES COLUMN INIT 
-			$('#divcreate').prepend($('#dataTable-vis-toggle'));	
-			//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+			// SHOW/HIDE DATATABLES COLUMN INIT 		
+			$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
 			$('#dataTable-vis-toggle').removeClass('hide');
-
-			$('.dataTables_info').addClass('col-md-6 col-sm-6');
-			$('.dataTables_length').addClass('col-md-6 col-sm-6');
-			$('#tenants_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
-			$('#tenants_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
-
-			$('#search-on-title').append($('.dataTables_filter > label > input'));
-			$('#search-on-title > input').removeClass('input-xsmall')
-			$('#tenants_wrapper > div:nth-child(1)').hide();
-
-			$('.dataTables_paginate').attr('style', 'float:right !important');
-
-			$('.download-menu').parent().on('shown.bs.dropdown', function () {	        
-			 var $menu = $("ul", this);	        
-	         offset = $menu.offset();
-	         position = $menu.position();
-	         $('body').append($menu);
-	         $menu.show();
-	         $menu.css('position', 'absolute');
-	         $menu.css('top', (offset.top) +'px');
-	         $menu.css('left',(offset.left) +'px');
-	         $menu.css('min-width', '100px');
-	        $(this).data("myDropdownMenu", $menu);
-		     });
-			$('.download-menu').parent().on('hide.bs.dropdown', function () {
-		         $(this).append($(this).data("myDropdownMenu"));
-		         $(this).data("myDropdownMenu").removeAttr('style');
-		     });
 			
 			// FILTERING COLUMNS INIT
 			$('#filtering').appendTo($('#tenants > thead'));
@@ -447,8 +366,12 @@
 			var filtersResets = $('.dtFilter .yadcf-filter-wrapper .yadcf-filter-reset-button');
 			filters.addClass('input-small font-sm');
 			filtersResets.addClass('hide');				
+			
+
+			// HIDE COLUMNS 		
+			//$.each([ 1,3 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 					
-			$("#contenedor-tabla-outside").removeClass("hidden");
+			
 		});
 		
 	</script>

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,20 +19,20 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import com.minsait.onesait.platform.config.repository.OntologyVirtualRepository;
+import com.minsait.onesait.platform.encryptor.config.JasyptConfig;
+import com.minsait.onesait.platform.persistence.external.generator.helper.SQLHelper;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
 import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.repository.OntologyVirtualDatasourceRepository;
-import com.minsait.onesait.platform.config.repository.OntologyVirtualRepository;
-import com.minsait.onesait.platform.encryptor.config.JasyptConfig;
 import com.minsait.onesait.platform.persistence.external.exception.SGDBNotSupportedException;
-import com.minsait.onesait.platform.persistence.external.generator.helper.SQLHelper;
+import org.springframework.util.Assert;
 
 @Component("VirtualDatasourcesManagerImpl")
 public class VirtualDatasourcesManagerImpl implements VirtualDatasourcesManager {
@@ -62,10 +62,6 @@ public class VirtualDatasourcesManagerImpl implements VirtualDatasourcesManager 
 	private SQLHelper sqlHelper;
 
 	@Autowired
-	@Qualifier("PostgreSQLHelper")
-	private SQLHelper postgreSQLHelper;
-
-	@Autowired
 	@Qualifier("OracleHelper")
 	private SQLHelper oracleHelper;
 
@@ -78,8 +74,8 @@ public class VirtualDatasourcesManagerImpl implements VirtualDatasourcesManager 
 	private SQLHelper sqlserverHelper;
 
 	@Autowired
-	@Qualifier("OpQueryDatahubHelper")
-	private SQLHelper opQueryDatahubHelper;
+	@Qualifier("PostgreSQLHelperImpl")
+	private SQLHelper postgreSQLHelper;
 
 	@PostConstruct
 	public void init() {
@@ -89,36 +85,31 @@ public class VirtualDatasourcesManagerImpl implements VirtualDatasourcesManager 
 	@Override
 	public VirtualDataSourceDescriptor getDataSourceDescriptor(String datasourceName) {
 		final VirtualDataSourceDescriptor datasourceDescriptor = this.virtualDatasouces.get(datasourceName);
-		if (datasourceDescriptor == null) {
+		if(datasourceDescriptor == null) {
 			setDatasourceDescriptor(datasourceName);
 		}
 		return this.virtualDatasouces.get(datasourceName);
 	}
-
+	
 	@Override
-	public void setDatasourceDescriptor(String datasourceName) {
+	public void setDatasourceDescriptor (String datasourceName) {
 		final VirtualDataSourceDescriptor dsDescriptor = new VirtualDataSourceDescriptor();
-
+		
 		final BasicDataSource datasource = new BasicDataSource();
 		final OntologyVirtualDatasource datasourceConfiguration = ontologyVirtualDatasourceRepository
-				.findByIdentification(datasourceName);
+				.findByDatasourceName(datasourceName);
 
 		final String driverClassName = this.getDriverClassName(datasourceConfiguration.getSgdb());
 		final String connectionString = datasourceConfiguration.getConnectionString();
-		final String user = datasourceConfiguration.getUserId();
+		final String user = datasourceConfiguration.getUser();
 
 		final String password = datasourceConfiguration.getCredentials();
 		final int poolSize = Integer.parseInt(datasourceConfiguration.getPoolSize());
 
 		datasource.setDriverClassName(driverClassName);
 		datasource.setUrl(connectionString);
-
-		if (user != null && !"".equals(user)) {
-			datasource.setUsername(user);
-		}
-		if (password != null && !"".equals(password)) {
-			datasource.setPassword(JasyptConfig.getEncryptor().decrypt(password));
-		}
+		datasource.setUsername(user);
+		datasource.setPassword(JasyptConfig.getEncryptor().decrypt(password));
 		datasource.setMaxActive(poolSize);
 
 		datasource.setInitialSize(1);
@@ -128,20 +119,6 @@ public class VirtualDatasourcesManagerImpl implements VirtualDatasourcesManager 
 		datasource.setMaxWait(maxWait);
 		datasource.setRemoveAbandoned(removeAbandoned);
 		datasource.setRemoveAbandonedTimeout(removeAbandonedTimeout);
-
-		// if they are not definede, the default datasource values will be used.
-		if (datasourceConfiguration.getValidationQuery() != null) {
-			datasource.setValidationQuery(datasourceConfiguration.getValidationQuery());
-		}
-		if (datasourceConfiguration.getValidationQueryTimeout() != null) {
-			datasource.setValidationQueryTimeout(datasourceConfiguration.getValidationQueryTimeout());
-		}
-		if (datasourceConfiguration.getTestOnBorrow() != null) {
-			datasource.setTestOnBorrow(datasourceConfiguration.getTestOnBorrow());
-		}
-		if (datasourceConfiguration.getTestWhileIdle() != null) {
-			datasource.setTestWhileIdle(datasourceConfiguration.getTestWhileIdle());
-		}
 
 		dsDescriptor.setQueryLimit(datasourceConfiguration.getQueryLimit());
 		dsDescriptor.setDatasource(datasource);
@@ -161,41 +138,43 @@ public class VirtualDatasourcesManagerImpl implements VirtualDatasourcesManager 
 	@Override
 	public String getDriverClassName(VirtualDatasourceType type) {
 		switch (type) {
-		case ORACLE:
-		case ORACLE11:
-			return oracle.jdbc.driver.OracleDriver.class.getName();
-		case MYSQL:
-		case MARIADB:
-			return com.mysql.cj.jdbc.Driver.class.getName();
-		case POSTGRESQL:
-			return org.postgresql.Driver.class.getName();
-		case SQLSERVER:
-			return com.microsoft.sqlserver.jdbc.SQLServerDriver.class.getName();
-		case OP_QUERYDATAHUB:
-			return org.apache.calcite.avatica.remote.Driver.class.getName();
-		default:
-			throw new SGDBNotSupportedException("Not supported SGDB: " + type.name());
+			case ORACLE:
+			case ORACLE11:
+				return oracle.jdbc.driver.OracleDriver.class.getName();
+			case MYSQL:
+				return com.mysql.jdbc.Driver.class.getName();
+			case MARIADB:
+				return org.mariadb.jdbc.Driver.class.getName();
+			case POSTGRESQL:
+				return org.postgresql.Driver.class.getName();
+			case SQLSERVER:
+				return com.microsoft.sqlserver.jdbc.SQLServerDriver.class.getName();
+			case IMPALA:
+			case HIVE:
+				return org.apache.hive.jdbc.HiveDriver.class.getName();
+			default:
+				throw new SGDBNotSupportedException("Not supported SGDB: " + type.name());
 		}
 	}
 
 	@Override
 	public SQLHelper getOntologyHelper(VirtualDatasourceType type) {
 		switch (type) {
-		case MARIADB:
-		case MYSQL:
-			return sqlHelper;
-		case POSTGRESQL:
-			return postgreSQLHelper;
-		case SQLSERVER:
-			return sqlserverHelper;
-		case ORACLE:
-			return oracleHelper;
-		case ORACLE11:
-			return oracle11Helper;
-		case OP_QUERYDATAHUB:
-			return opQueryDatahubHelper;
-		default:
-			throw new SGDBNotSupportedException("Not supported SGDB: " + type);
+			case MARIADB:
+			case MYSQL:
+			case HIVE:
+			case IMPALA:
+				return sqlHelper;
+			case POSTGRESQL:
+				return postgreSQLHelper;
+			case SQLSERVER:
+				return sqlserverHelper;
+			case ORACLE:
+				return oracleHelper;
+			case ORACLE11:
+				return oracle11Helper;
+			default:
+				throw new SGDBNotSupportedException("Not supported SGDB: " + type);
 		}
 	}
 

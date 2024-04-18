@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2019 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -36,8 +36,6 @@
 		
 		<!-- PLUGINS STYLE SHEETS -->
 		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/datatable/datatables.bootstrap.css}"/>	
-		<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/vendor/bootstrap-select/bootstrap-select.min.css}"/>
-		
 	</head>	
 	
 	<!-- page-sidebar-closed to start page with collapsed menu -->
@@ -62,87 +60,51 @@
 			
 			<!-- BEGIN CONTENT BODY -->
 			<div class="page-content">
-				<!-- SEARCH FORM -->
-				<div id="searchFilter"  class="row" >
-					<form id="form_category" class="" role="form" method="get">
-						<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-						<div class="col-md-3 col-sm-4 col-xs-12">	
-							<div class="input-icon"> 
-								<i class="icon-search font-grey-mint"></i>			
-								<input id="identification" th:placeholder="#{gen.identification}"  name="identification" class="form-control" type="text" maxlength="50" value=""/>
-							</div>
-						</div>
-						<div class="col-md-3 col-sm-4 col-xs-12">	
-							<div class="input-icon"> 
-								<i class="icon-search font-grey-mint"></i>			
-								<input id="description" th:placeholder="#{gen.description}" name="description" class="form-control" type="text" maxlength="100" value=""/>
-							</div>
-						</div>
-						<div class="col-md-2 col-sm-4 col-xs-12 pull-right">
-							<div class="pull-right">
-								<button type="button" id="reset_category" name="reset_category" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}">Reset</button>
-								<button type="button" id="search_category" name="search_category" class="btn btn-primary btn-primary-search" th:text="#{gen.search}">Search</button>
-							</div>
-						</div>									
-					</form>
-				</div>				
+				
 				<!-- BEGIN PAGE HEADER-->
 				
 				<!-- BEGIN PAGE BAR AND BREADCRUM -->
 				<div class="page-bar margin-bottom-20">
 					<ul class="page-breadcrumb">
-						<!--<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>-->
-						<li><a th:href="@{/categories/list}"> <span th:text="#{category.template.list}"> Manage Categories</span></a></li>						
+						<li><a th:href="@{/}">Home</a><i class="fa fa-angle-right"></i></li>
+						<li><a th:href="@{/categories/list}"> <span th:text="#{category.breadcrumb.list}">Categories</span></a></li>						
 					</ul>						
 				</div>
 				<!-- END PAGE BAR -->
 				
 				<!-- BEGIN PAGE TITLE-->
-				<h1 class="page-title hide "><span th:text="#{category.template.list}">Manage Categories </span></h1>
+				<h1 class="page-title hide "><span th:text="#{category.template.list}">My Categories </span></h1>
 				<!-- END PAGE TITLE-->			
 				
-				<!-- AUXILIAR FORM TO DELETE SUBCATEGORY -->
-				<form id="delete_category_form" class="delete-category hide" action="" method="post">
-					<input type="hidden" name="_method" value="DELETE"/>
-					<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-				</form>
-				
 				<!-- MAIN ROW -->
-				<div class="row">					
+				<div class="row">
+					<div class="col-md-12">
+					
 						<div class="portlet light ">
 							<div class="portlet-title">
 								<div class="caption">									
 									<span class="caption-subject" th:text="#{category.template.list}"> My Categories </span>
 									<!-- <span class="caption-helper">Subtitulo de contenedor</span> -->
-								</div>
-								<div class="caption" style="padding: 22px 8px 8px 10px">
-									<a onclick="$('.search-icon').toggleClass('hide')" class="search-icon" style="margin-left: 18px;"><i class="icon-search"></i></a>
-								</div>
-								<div id="search-on-title" class="hide input-icon search-icon">
-									<a class ="input-icon" onclick="$('.search-icon').toggleClass('hide')"><i class="icon-search"></i></a>
-								</div>								
+								</div>									
 								<div class="tools hide">
 									<a href="" class="collapse" data-original-title="" title=""> </a>
 									<a href="" class="fullscreen" data-original-title="" title=""> </a>
-								</div>
-								<div class="pull-right btn-group btn-title-group" id="divcreate" >
-									<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" type="button" class="btn btn-primary button-plus-create"   onclick="location.href='../categories/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>		
-								</div>						
-								<!--<div class="actions margin-right-20">
+								</div>								
+								<div class="actions margin-right-20">
 									<div class="btn-group">									
 										<button id="search-toggle" type="button" class="btn btn-outline btn-circle blue" onclick="$('#searchFilter').toggleClass('hide')"><span th:text="#{gen.search}"> Search </span></button>									
-										<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='../categories/create'" ><span th:text="#{gen.create}">New </span></button>									
+										<button sec:authorize="hasAuthority('ROLE_ADMINISTRATOR')" type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='../categories/create'" ><span th:text="#{gen.create}">New </span></button>									
 									</div>										
-								</div>-->							
+								</div>								
 							</div>
 							<div class="portlet-body" style="display: block; height: auto;">
 							
-								<div class="row main">
-									<!--<div class="col-md-12 alert-zone">
-										// ALERT ZONE
-									</div>-->
-									<!--<div class="col-md-12">
-									// SEARCH FORM 
+								<div class="row">
+									<div class="col-md-12 alert-zone">
+										<!-- ALERT ZONE -->																			
+									</div>
+									<div class="col-md-12">
+									<!-- SEARCH FORM -->
 										<form id="form_category" class="" role="form" method="get">											
 											<div id="searchFilter" class="form-body hide" style="border-bottom: 1px solid #eef1f5;">
 												<div class="row">
@@ -176,21 +138,20 @@
 											</div>
 											<input type="hidden" th:value="${category}" id="category"/>												
 										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>								
-									</div>-->
+									</div>
 									<!-- ONTOLOGY LIST -->
 									<div class="col-md-12">											
-										<div id="contenedor-tabla-outside" class="contiene hidden">																						
+										<div id="contenedor-tabla-outside" class="contiene margin-bottom-30">																						
 											<div>
 												<!-- DATATABLE DANDELION CONF.  -->												
-												<table id="categories" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
+												<table id="categories" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
 													<thead>
 														<tr class="cabecera-tabla">
 															<th class="titulo-columnas" th:text="#{gen.identification}">Identification</th>
 															<th class="titulo-columnas" th:text="#{gen.description}">Description</th>
-															<th class="titulo-columnas" th:text="#{gen.type}">Type</th>
-															<th class="titulo-columnas text-left" ><span th:text="#{ontology.createdAt}"> Created At </span></th>
-															<th class="titulo-columnas text-left" ><span th:text="#{ontology.updatedAt}"> Updated At </span></th>
-															<th class="titulo-columnas text-center" dt:sortable="false" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{ontology.createdAt}"> Created At </span></th>
+															<th class="titulo-columnas text-center" ><span th:text="#{ontology.updatedAt}"> Updated At </span></th>
+															<th class="titulo-columnas text-center" dt:sortable="false"><span th:text="#{gen.options}"> Options</span></th>
 														</tr>
 													</thead>
 													<tbody th:remove="all-but-first">
@@ -199,65 +160,35 @@
 															<td class="text-left no-wrap " th:text="${category.identification}"></td>
 															<!-- DESCRIPTION -->
 															<td class="text-left text-truncate-xxs" th:title="${category.description}" th:text="${category.description}"></td>
-															<!--  TYPE -->
-															<td class="text-left text-truncate-xxs" th:title="${category.type}" th:text="${category.type}"></td>
 															<!-- DATE -->
-															<td class="text-left" th:if="${category.createdAt!=null}"><span th:text="${#dates.format(category.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(category.createdAt,'dd/MM/yyyy')}" ></span></td>
-															<td class="text-left" th:if="${category.createdAt==null}" th:text="${category.createdAt}"></td>
+															<td class="text-center" th:if="${category.createdAt!=null}"><span th:text="${#dates.format(category.createdAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(category.createdAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${category.createdAt==null}" th:text="${category.createdAt}"></td>
 															<!-- UPDATE -->
-															<td class="text-left" th:if="${category.updatedAt!=null}"><span th:text="${#dates.format(category.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(category.updatedAt,'dd/MM/yyyy')}" ></span></td>
-															<td class="text-left" th:if="${category.updatedAt==null}" th:text="${category.updatedAt}"></td>
+															<td class="text-center" th:if="${category.updatedAt!=null}"><span th:text="${#dates.format(category.updatedAt,'YYYY/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(category.updatedAt,'dd/MM/YYYY')}" ></span></td>
+															<td class="text-center" th:if="${category.updatedAt==null}" th:text="${category.updatedAt}"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
 																	<!-- VIEW -->															
-																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/categories/show/${category.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
+																	<span  th:title="#{gen.view}" class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{gen.view}" th:onclick="'javascript:navigateUrl(\'' + @{|/categories/show/${category.id}/|} + '\');'"><i class="la la-eye font-hg"></i></span>
 																																																			
 																	<!-- EDIT -->
-																	<span  class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/categories/update/${category.id}/|} + '\');'"><i class="icon-edit"></i></span>
-																	
-																	<!-- DELETE -->
-																	<span  class="btn btn-xs btn-no-border icon-on-table color-red tooltips" data-container="body" data-placement="bottom" th:title="#{gen.deleteBtn} " th:data-original-title="#{gen.deleteBtn} " th:attr="onclick='deleteCategory(\'' + ${category.id} + '\');'"><i class=icon-delete></i></span>
+																	<span  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}" th:onclick="'javascript:navigateUrl(\'' + @{|/categories/update/${category.id}/|} + '\');'"><i class="la la-edit font-hg"></i></span>
 																	
 																	<!-- INDEXES -->
-																	<!-- <span th:title="#{plantillas_listado_button_crear_indice}" class="btn grey-mint btn-xs btn-outline sbold tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{plantillas_listado_button_crear_indice}" th:attr="onclick='javascript:navigateUrl(\'' + @{|/indices/${ontology.id}/|} + '\');'"><i class="fa fa-database"></i></span> -->
+																	<!-- <span th:title="#{plantillas_listado_button_crear_indice}" class="btn grey-mint btn-xs btn-outline sbold tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{plantillas_listado_button_crear_indice}" th:onclick="'javascript:navigateUrl(\'' + @{|/indices/${ontology.id}/|} + '\');'"><i class="fa fa-database"></i></span> -->
 																</div>
 															</td>
 														</tr>
 													</tbody>
-												</table>
-												<!-- TABLE COLUMNS CONTAINER SHOW/HIDE -->
-												<div id="dataTable-vis-toggle" class="btn-group margin-right-10 hide">
-													<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
-													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
-															<label th:text="#{gen.identification}"> Identification </label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-															<label th:text="#{gen.description}"> Description </label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-															<label th:text="#{gen.type}"> Type </label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
-															<label th:text="#{gen.created}"> Created At</label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-															<label th:text="#{gen.updated}"> Updated At</label>
-														</span>
-													</div>
-												</div>														
+												</table>												
 											</div>
 										</div>											
 									</div>
 								</div>
 							</div>
 						</div><!-- END PORTLET BASIC LIGHT -->							
+					</div><!-- END COL-12 -->						
 				</div><!-- END MAIN ROW -->				
 			</div><!-- END CONTENT BODY -->
 		</div><!-- END CONTENT page-content-wrapper -->		
@@ -268,13 +199,13 @@
 	<footer th:include="fragments/footer::#footerFragment" class="page-footer"> </footer>	
 	
 	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"></script>
-	<script th:src="@{/static/js/layout.js}"></script>
+	<script th:src="@{/static/js/app.js}"/>
+	<script th:src="@{/static/js/layout.js}"/>
 	
 	<!-- PLUGINS -->
-	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"></script>
-	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"></script>	
-	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
+	<script th:src="@{/static/vendor/jquery/jquery.dataTables.min.js}"/>
+	<script th:src="@{/static/vendor/datatable/datatables.bootstrap.js}"/>	
+	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"/>
 	
 	
 	<script th:inline="javascript">	
@@ -302,32 +233,12 @@
 	//<![CDATA[
 	function navigateUrl(url){  window.location.href = url;	}
 	
-	function deleteCategory (categoryId){
-		console.log('deleteCategory()');
-		deleteCategoryConfirmation(categoryId);
-	}
-	
-	// DELETE CATEGORY
-	function deleteCategoryConfirmation (categoryId){
-		console.log('deleteCategoryConfirmation() -> formId: '+ categoryId);
-
-		console.log('deleteCategoryConfirmation() -> formAction: ' + $('.delete-category').attr('action') + ' ID: ' + $('#delete-categoryId').attr('categoryId'));
-
-		// call ontology Confirm at header.
-		HeaderController.showConfirmDialogCat('delete_category_form',categoryId);
-	}
-	
 	function create(){
 		var split = location.href.split("/");
 		var categoryId = split[split.length - 1];
 		navigateUrl("/create/" + categoryId);
 	}
 	
-	
-	$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-	});
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		var csrf_value = $("meta[name='_csrf']").attr("content");
@@ -353,14 +264,14 @@
 		});
 		
 		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-		$('input.toggle-vis').on( 'change', function (e) {
+		$('label.toggle-vis').on( 'click', function (e) {
 			e.preventDefault(); 
 			// Get the column API object
 			var column = $('#categories').DataTable().column( $(this).attr('data-column') ); 
 			// Toggle the visibility
 			column.visible( ! column.visible() );			
 			// toggle Text
-			//$(this).toggleClass('text-muted line-through');			
+			$(this).toggleClass('text-muted line-through');			
 		});	
 		
 		// SEARCH FORM RESET
@@ -372,34 +283,19 @@
 		
 		// SEARCH FORM
 		$('#search_category').on('click',function(){ $('#form_category')[0].submit(); });
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).load(function(){  
 		
-		
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
-		var oTable = $('#categories').dataTable({
-	      "bAutoWidth": false
-	      });  
+		// SHOW/HIDE DATATABLES COLUMN INIT 		
+		$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
+		$('#dataTable-vis-toggle').removeClass('hide');
 		
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
 		//$.each([ 2,6,7 ],
-		//$.each([ 2 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([ 6 ],function(ind,value){ $("label.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
-		// SHOW/HIDE DATATABLES COLUMN INIT
-		$('#divcreate').prepend($('#dataTable-vis-toggle'));	
-		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
-		$('#dataTable-vis-toggle').removeClass('hide');
-
-		$('.dataTables_info').addClass('col-md-6 col-sm-6');
-		$('.dataTables_length').addClass('col-md-6 col-sm-6');
-		$('#categories_wrapper > div:nth-child(3)').addClass('table-scrollable table-scrollable-borderless');
-		$('#categories_wrapper > div:nth-child(3) > div.col-md-5.col-sm-5').append($('.dataTables_length'));
-
-		$('#search-on-title').append($('.dataTables_filter > label > input'));
-		$('#search-on-title > input').removeClass('input-xsmall')
-		$('#categories_wrapper > div:nth-child(1)').hide();
-		
-		$('.dataTables_paginate').attr('style', 'float:right !important');
-		
-		$("#contenedor-tabla-outside").removeClass("hidden");
 	});
 	
 	//]]>

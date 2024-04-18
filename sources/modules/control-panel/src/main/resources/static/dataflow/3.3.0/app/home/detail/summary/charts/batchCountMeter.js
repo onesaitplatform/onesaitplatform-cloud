@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp.home')
-  .controller('BatchCountBarChartController', ["$scope", "$translate", "api", "pipelineConstant", function($scope, $translate, api, pipelineConstant) {
+  .controller('BatchCountBarChartController', function($scope, $translate, api, pipelineConstant) {
     var color = $scope.recordsColor,
       baseQuery = "select m1_rate,metric from meters where (pipeline='" + $scope.pipelineConfig.info.pipelineId + "') and ",
       yAxisLabel = '( batches / sec )';
@@ -208,4 +208,4 @@ angular
       refreshChartData();
     }
 
-  }]);
+  });

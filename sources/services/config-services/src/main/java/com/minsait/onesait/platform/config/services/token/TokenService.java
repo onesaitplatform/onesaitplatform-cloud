@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2019 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,7 @@ package com.minsait.onesait.platform.config.services.token;
 
 import java.util.List;
 
-import com.minsait.onesait.platform.config.dto.ClientPlatformTokenDTO;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
-import com.minsait.onesait.platform.config.model.ClientPlatformInstanceSimulation;
 import com.minsait.onesait.platform.config.model.Token;
 
 public interface TokenService {
@@ -34,9 +32,5 @@ public interface TokenService {
 	public void deactivateToken(Token token, boolean active);
 
 	List<Token> getTokens(ClientPlatform clientPlatform);
-	
-	public ClientPlatformTokenDTO getClientPlatformIdByTokenName(String tokenName);
-
-	List<ClientPlatformInstanceSimulation> getSimulations(Token token);
 
 }

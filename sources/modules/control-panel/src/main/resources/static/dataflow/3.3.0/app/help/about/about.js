@@ -19,7 +19,7 @@
 
 angular
   .module('dataCollectorApp')
-  .controller('AboutModalInstanceController', ["$scope", "$modalInstance", "api", function ($scope, $modalInstance, api) {
+  .controller('AboutModalInstanceController', function ($scope, $modalInstance, api) {
     angular.extend($scope, {
       buildInfo: {},
       cancel: function() {
@@ -33,4 +33,4 @@ angular
       }, function(res) {
         $scope.issues = [res.data];
       });
-  }]);
+  });
