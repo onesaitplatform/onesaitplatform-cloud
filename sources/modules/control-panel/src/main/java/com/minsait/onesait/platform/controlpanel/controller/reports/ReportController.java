@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,10 @@
  */
 package com.minsait.onesait.platform.controlpanel.controller.reports;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,7 +27,6 @@ import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
-import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -69,7 +63,6 @@ import com.minsait.onesait.platform.business.services.report.ReportBusinessServi
 import com.minsait.onesait.platform.business.services.report.ReportConverter;
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
 import com.minsait.onesait.platform.config.dto.report.ReportDto;
-import com.minsait.onesait.platform.config.dto.report.ReportInfoMSTemplateDTO;
 import com.minsait.onesait.platform.config.dto.report.ReportParameter;
 import com.minsait.onesait.platform.config.dto.report.ReportResourceDTO;
 import com.minsait.onesait.platform.config.dto.report.ReportType;
@@ -81,7 +74,6 @@ import com.minsait.onesait.platform.config.model.Role.Type;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.services.reports.ReportService;
-import com.minsait.onesait.platform.config.services.templates.poi.PoiTemplatesUtil;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
@@ -90,8 +82,6 @@ import com.minsait.onesait.platform.resources.service.IntegrationResourcesServic
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
-import fr.opensagres.xdocreport.converter.XDocConverterException;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jasperreports.engine.JRException;
 
@@ -124,9 +114,6 @@ public class ReportController {
 	@Autowired
 	private HttpSession httpSession;
 
-	@Autowired
-	private PoiTemplatesUtil poiTemplatesUtil;
-
 	private static final String REPORT_API_PATH = "/api/reports";
 	private static final String APP_ID = "appId";
 	private static final String REDIRECT_PROJECT_SHOW = "redirect:/projects/update/";
@@ -136,7 +123,6 @@ public class ReportController {
 	@PostConstruct
 	void setup() {
 		restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
-
 		restTemplate.getInterceptors().add((request, body, execution) -> {
 
 			request.getHeaders().add(HttpHeaders.AUTHORIZATION, "Bearer " + utils.getCurrentUserOauthToken());
@@ -286,8 +272,10 @@ public class ReportController {
 				log.error("Could not extract datasource from report, leaving empty");
 			}
 		}
+
 		model.addAttribute(REPORT, report);
-		return "/fragments/report-edit";
+
+		return "fragments/report-edit";
 	}
 
 	@PostMapping(value = "/save", produces = MediaType.TEXT_HTML_VALUE)
@@ -398,15 +386,9 @@ public class ReportController {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
 
-		if (entity.getExtension().toString().equals("DOCX")) {
-			return generateAttachmentResponse(entity.getFile(), ReportType.DOCX.contentType(),
-					entity.getIdentification() + "." + ReportType.DOCX.extension());
+		return generateAttachmentResponse(entity.getFile(), ReportType.JRXML.contentType(),
+				entity.getIdentification() + "." + ReportType.JRXML.extension());
 
-		} else {
-
-			return generateAttachmentResponse(entity.getFile(), ReportType.JRXML.contentType(),
-					entity.getIdentification() + "." + ReportType.JRXML.extension());
-		}
 	}
 
 	@DeleteMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -437,12 +419,24 @@ public class ReportController {
 		return new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK);
 	}
 
+	// @PostMapping(value = "/info", produces = MediaType.APPLICATION_JSON_VALUE)
+	// @PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
+	// @Transactional
+	// public ResponseEntity<ReportInfoDto> reportInfo(@RequestParam("file")
+	// MultipartFile multipartFile)
+	// throws IOException {
+	//
+	// final ReportInfoDto reportInfoDto =
+	// reportInfoService.extract(multipartFile.getInputStream(),
+	// ReportExtension.valueOf(FilenameUtils.getExtension(multipartFile.getOriginalFilename()).toUpperCase()));
+	//
+	// return new ResponseEntity<>(reportInfoDto, HttpStatus.OK);
+	// }
+
 	@GetMapping(value = "/{id}/parameters", produces = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@Transactional
 	public ResponseEntity<?> parameters(@PathVariable("id") String id) throws UnsupportedEncodingException {
-
-		List<String> parameters = new ArrayList<String>();
 
 		final Report report = reportService.findById(id);
 		if (report == null) {
@@ -452,104 +446,17 @@ public class ReportController {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
 
-		if (report.getExtension().name().equals("DOCX")) {
-
-			try {
-				parameters = poiTemplatesUtil.extractFromDocx(new ByteArrayInputStream(report.getFile()));
-			} catch (IOException | OpenXML4JException e) {
-				return new ResponseEntity<>("Error extracting parameters", HttpStatus.INTERNAL_SERVER_ERROR);
-			} 
-
-			ReportInfoMSTemplateDTO reportInfoMSTemplateDTO = new ReportInfoMSTemplateDTO();
-			reportInfoMSTemplateDTO.setFormType(poiTemplatesUtil.formType(parameters));
-
-			reportInfoMSTemplateDTO.setJsonParameters(
-					poiTemplatesUtil.generateJSONObject(parameters, reportInfoMSTemplateDTO.getFormType()));
-
-			return new ResponseEntity<>(reportInfoMSTemplateDTO, HttpStatus.OK);
-
-		} else if (report.getExtension().name().equals("JASPER") || report.getExtension().name().equals("JRXML")) {
-
-			final String requestURL = resourcesService.getUrl(Module.REPORT_ENGINE, ServiceUrl.BASE) + REPORT_API_PATH
-					+ "/" + URLEncoder.encode(id, StandardCharsets.UTF_8.name()) + "/parameters";
-			try {
-				final ResponseEntity<List<ReportParameter>> response = restTemplate.exchange(requestURL, HttpMethod.GET,
-						null, new ParameterizedTypeReference<List<ReportParameter>>() {
-						});
-
-				return new ResponseEntity<>(response.getBody(), HttpStatus.OK);
-			} catch (final HttpClientErrorException | HttpServerErrorException e) {
-				log.error("Error: code {}, {}", e.getStatusCode(), e.getResponseBodyAsString());
-				return new ResponseEntity<>(e.getResponseBodyAsString(), e.getStatusCode());
-			}
-
-		}else {
-			return new ResponseEntity<>("File type not supported", HttpStatus.FORBIDDEN);
-
-		}
-
-	}
-
-	@PostMapping(value = "/download/MSTemplate/report/{id}", produces = { MediaType.APPLICATION_JSON_VALUE })
-	@ApiOperation(value = "Generate and Download Report")
-	@Transactional
-	public ResponseEntity<?> generateAndDownloadReport(@PathVariable("id") String id,
-			@RequestParam("parameters") String params, @RequestParam("extension") ReportType extension) {
-
-		Report report = reportService.findById(id);
-		String wordPath;
-		InputStream docxstream = null;
+		final String requestURL = resourcesService.getUrl(Module.REPORT_ENGINE, ServiceUrl.BASE) + REPORT_API_PATH + "/"
+				+ URLEncoder.encode(id, StandardCharsets.UTF_8.name()) + "/parameters";
 		try {
-			wordPath = poiTemplatesUtil.generateReport(params, report.getFile());
+			final ResponseEntity<List<ReportParameter>> response = restTemplate.exchange(requestURL, HttpMethod.GET,
+					null, new ParameterizedTypeReference<List<ReportParameter>>() {
+					});
 
-			if (extension.name().equals("DOCX")) {
-				docxstream = new FileInputStream(wordPath);
-
-				ResponseEntity<?> response = generateAttachmentResponse(docxstream.readAllBytes(),
-						ReportType.DOCX.contentType(), report.getIdentification() + "." + extension.extension());
-
-				File file = new File(wordPath);
-				file.delete();
-
-				return response;
-
-			} else if (extension.name().equals("PDF")) {
-
-				String pdfFilePath;
-				try {
-					pdfFilePath = poiTemplatesUtil.convertToPdf(wordPath);
-				} catch (XDocConverterException e) {
-					return new ResponseEntity<>("Error converting to pdf", HttpStatus.INTERNAL_SERVER_ERROR);
-
-				}
-				InputStream pdfstream = new FileInputStream(pdfFilePath);
-
-				ResponseEntity<?> response = generateAttachmentResponse(pdfstream.readAllBytes(),
-						ReportType.PDF.contentType(), report.getIdentification() + "." + extension.extension());
-				pdfstream.close();
-				File file = new File(wordPath);
-				file.delete();
-
-				File filePdf = new File(pdfFilePath);
-				filePdf.delete();
-
-				return response;
-
-			} else {
-				return new ResponseEntity<>("Error, File type not supported", HttpStatus.FORBIDDEN);
-
-			}
-		} catch (IOException e) {
-			
-			return new ResponseEntity<>("Error processing the template", HttpStatus.INTERNAL_SERVER_ERROR);
-			
-		}finally {
-			if(docxstream != null)
-				try {
-					docxstream.close();
-				} catch (IOException e) {
-					
-				}
+			return new ResponseEntity<>(response.getBody(), HttpStatus.OK);
+		} catch (final HttpClientErrorException | HttpServerErrorException e) {
+			log.error("Error: code {}, {}", e.getStatusCode(), e.getResponseBodyAsString());
+			return new ResponseEntity<>(e.getResponseBodyAsString(), e.getStatusCode());
 		}
 
 	}
@@ -579,7 +486,7 @@ public class ReportController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@PostMapping("report/{report}/resource/{resource}")
+	@PutMapping("report/{report}/resource/{resource}")
 	@Transactional
 	public String updateResource(@PathVariable("report") String reportId, @PathVariable("resource") String resource,
 			@RequestParam("file") MultipartFile file, RedirectAttributes ra) {

@@ -117,7 +117,7 @@ var GadgetsCreateController = function() {
 	return{		
 		// LOAD() JSON LOAD FROM TEMPLATE TO CONTROLLER
 		load: function(Data) { 
-			
+			debugger
 			logControl ? console.log(LIB_TITLE + ': load()') : '';
 			return gadgetCreateReg = Data;
 		},	

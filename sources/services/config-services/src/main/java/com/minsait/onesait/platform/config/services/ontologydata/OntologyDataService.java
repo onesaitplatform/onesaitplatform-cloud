@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@ public interface OntologyDataService {
 
 	public ProcessingReport reportJsonSchemaValid(String jsonSchema) throws IOException;
 
-	public List<String> preProcessInsertData(final OperationModel operationModel, final boolean addContextData,
-			final Ontology ontology) throws IOException;
+	public List<String> preProcessInsertData(final OperationModel operationModel, final boolean addContextData, final Ontology ontology)
+			throws IOException;
 
 	public void checkOntologySchemaCompliance(final JsonNode data, final Ontology ontology);
 
@@ -54,7 +54,5 @@ public interface OntologyDataService {
 	public String decryptAllUsers(String data, String ontologyName) throws OntologyDataUnauthorizedException;
 
 	public String encryptQuery(String query, boolean mongo) throws GenericOPException;
-
-	public String getTableForEntity(String entityIdentification);
 
 }

@@ -1,0 +1,6 @@
+{
+	"title":"Data Import Tool Countries JSON example",
+	"technologies":"JSON",
+	"description":"Dataset of JSON documents.",
+	"detailedDescription":"This is an example Dataset of JSON documents, representing countries. This example may be downloaded for testing the platform's data import tool."
+}

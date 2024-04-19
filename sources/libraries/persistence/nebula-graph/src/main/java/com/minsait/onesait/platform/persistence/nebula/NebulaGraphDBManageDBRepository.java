@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,8 +48,8 @@ public class NebulaGraphDBManageDBRepository implements ManageDBRepository {
 	@Override
 	public String createTable4Ontology(String ontology, String schema, Map<String, String> config) {
 		nebulaGraphService
-				.createSpace(NebulaSpace.builder().name(ontology).replicaFactor(NebulaSpace.DEFAULT_REPLICA_FACTOR)
-						.partitionNum(NebulaSpace.DEFAULT_PARTITION_NUM).build());
+		.createSpace(NebulaSpace.builder().name(ontology).replicaFactor(NebulaSpace.DEFAULT_REPLICA_FACTOR)
+				.partitionNum(NebulaSpace.DEFAULT_PARTITION_NUM).build());
 		return ontology;
 	}
 
@@ -134,37 +134,5 @@ public class NebulaGraphDBManageDBRepository implements ManageDBRepository {
 		log.debug(NO_OP_CONTROL_ONTOLOGY);
 		return identification;
 	}
-
-	@Override
-	public void createTTLIndex(String ontology, String attribute, Long seconds) {
-		log.debug(NO_OP_CONTROL_ONTOLOGY);
-	}
-
-	@Override
-	public Map<String, List<String>> getListIndexes(String datatableName, String ontology) {
-		log.debug(NO_OP_CONTROL_ONTOLOGY);
-		return new HashMap<>();	
-	}
-
-	@Override
-	public void dropIndex(String ontology, String ontologyVirtual, String indexName) {
-		log.debug(NO_OP_CONTROL_ONTOLOGY);
-		
-	}
-
-	@Override
-	public String getIndexesOptions(String ontology) {
-		log.debug(NO_OP_CONTROL_ONTOLOGY);
-		return "[]";
-	}
-
-	@Override
-	public void createIndexWithParameter(String ontologyName, String typeIndex, String indexName, boolean unique,
-			boolean background, boolean sparse, boolean ttl, String timesecondsTTL, Object checkboxValuesArray) {
-		log.debug(NO_OP_CONTROL_ONTOLOGY);
-		
-	}
-
-	
 
 }

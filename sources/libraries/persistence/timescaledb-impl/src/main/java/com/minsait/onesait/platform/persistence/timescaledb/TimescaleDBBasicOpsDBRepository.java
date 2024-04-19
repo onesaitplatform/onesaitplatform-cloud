@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,10 @@ package com.minsait.onesait.platform.persistence.timescaledb;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang.NotImplementedException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +36,7 @@ import com.minsait.onesait.platform.commons.model.TimeSeriesResult;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.interfaces.BasicOpsDBRepository;
 import com.minsait.onesait.platform.persistence.models.ErrorResult;
+import com.minsait.onesait.platform.persistence.models.ErrorResult.ErrorType;
 import com.minsait.onesait.platform.persistence.timescaledb.config.TimescaleDBConfiguration;
 import com.minsait.onesait.platform.persistence.timescaledb.parser.JSONTimescaleResultsetExtractor;
 import com.minsait.onesait.platform.persistence.timescaledb.processor.TimescaleDBTimeSeriesProcessor;
@@ -45,20 +44,14 @@ import com.minsait.onesait.platform.resources.service.IntegrationResourcesServic
 
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.delete.Delete;
-import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.Offset;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectBody;
-import net.sf.jsqlparser.statement.select.SelectItem;
-import net.sf.jsqlparser.statement.select.SetOperationList;
-import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 
@@ -160,26 +153,32 @@ public class TimescaleDBBasicOpsDBRepository implements BasicOpsDBRepository {
 			Assert.isTrue(limit >= 1, "Limit must be greater or equal to 1");
 
 			// Parse query with JSQLParser and validate ontology
-			final Statement statement = CCJSqlParserUtil.parse(query);
+			Statement statement = CCJSqlParserUtil.parse(query);
 
-			final TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
-			final List<String> tableNames = tablesNamesFinder.getTableList(statement);
-			
+			TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+			List<String> tableNames = tablesNamesFinder.getTableList(statement);
+			for (String tableName : tableNames) {
+				if (!tableName.equalsIgnoreCase(ontology)
+						&& !tableName.toUpperCase().startsWith(ontology.toUpperCase() + "_")) {
+					throw new DBPersistenceException(new ErrorResult(ErrorResult.PersistenceType.TIMESCALE,
+							"Selected table in query does not belong to the selected ontology."));
+				}
+			}
 			// detect the type of query to execure right method: SELECT, UPDATE, DELETE
 			if (statement instanceof Select) {
-				final Optional<PlainSelect> select = parseQuery(query);
+				Optional<PlainSelect> select = parseQuery(query);
 				if (select.isPresent()) {
 					query = addLimit(select.get(), limit, offset).toString();
 				}
 				return timescaleDBJdbcTemplate.query(query, new JSONTimescaleResultsetExtractor(query));
 			} else if (statement instanceof Update) {
 				final int numRows = timescaleDBJdbcTemplate.update(query);
-				final List<String> result = new ArrayList<>();
+				List<String> result = new ArrayList<>();
 				result.add(String.format("{'updatedRows':%s}", numRows));
 				return result;
 			} else if (statement instanceof Delete) {
 				final int numRows = timescaleDBJdbcTemplate.update(query);
-				final List<String> result = new ArrayList<>();
+				List<String> result = new ArrayList<>();
 				result.add(String.format("{'deletedRows':%s}", numRows));
 				return result;
 			}
@@ -187,11 +186,11 @@ public class TimescaleDBBasicOpsDBRepository implements BasicOpsDBRepository {
 			log.error("Error querying data on TimescaleDB ontology {}. Query={}, Cause={}, Message={}.", ontology,
 					query, e.getCause(), e.getMessage());
 			throw new DBPersistenceException(e, new ErrorResult(ErrorResult.PersistenceType.TIMESCALE, e.getMessage()),
-					"Error querying data on TimescaleDB ontology: " + e.getCause());
+					"Error querying data on TimescalDB ontology");
 		}
 		log.error("Invalid query type for TimescaleDB. Ontology={}, Query={}.", ontology, query);
 		throw new DBPersistenceException(new ErrorResult(ErrorResult.PersistenceType.TIMESCALE,
-				"Error querying data on TimescaleDB ontology. Invalid query type for TimescaleDB"));
+				"Error querying data on TimescalDB ontology. Invalid query type for TimescaleDB"));
 	}
 
 	@Override
@@ -336,13 +335,13 @@ public class TimescaleDBBasicOpsDBRepository implements BasicOpsDBRepository {
 					|| (limitedSelect.getLimit() != null && limitedSelect.getLimit().getOffset() != null));
 			if (hasOffset) {
 				if (limitedSelect.getOffset() != null) {
-					limitedSelect.getOffset().setOffset(new LongValue(offset));
+					limitedSelect.getOffset().setOffset(offset);
 				} else {
 					limitedSelect.getLimit().setOffset(new LongValue(offset));
 				}
 			} else {
 				final Offset qOffset = new Offset();
-				qOffset.setOffset(new LongValue(offset));
+				qOffset.setOffset(offset);
 				limitedSelect.setOffset(qOffset);
 			}
 		}
@@ -367,7 +366,7 @@ public class TimescaleDBBasicOpsDBRepository implements BasicOpsDBRepository {
 		try {
 			final Statement statement = CCJSqlParserUtil.parse(query);
 			if (statement instanceof Select) {
-				return Optional.ofNullable(getPlainSelectFromSelect(((Select) statement).getSelectBody()));
+				return Optional.ofNullable((PlainSelect) ((Select) statement).getSelectBody());
 			} else {
 				log.debug("The statement passed as argument is not a select query, returning the original");
 				return Optional.empty();
@@ -375,25 +374,6 @@ public class TimescaleDBBasicOpsDBRepository implements BasicOpsDBRepository {
 		} catch (final JSQLParserException e) {
 			log.debug("Could not parse the query with JSQL returning the original. ", e);
 			return Optional.empty();
-		}
-	}
-	
-	private PlainSelect getPlainSelectFromSelect(SelectBody selectBody) {
-		if (SetOperationList.class.isInstance(selectBody)) { // union
-			PlainSelect plainSelect = new PlainSelect();
-
-			List<SelectItem> ls = new LinkedList<>();
-			ls.add(new AllColumns());
-			plainSelect.setSelectItems(ls);
-			
-			SubSelect subSelect = new SubSelect();
-			subSelect.setSelectBody(selectBody);
-			subSelect.setAlias(new Alias("U"));
-			plainSelect.setFromItem(subSelect);
-						
-			return plainSelect;
-		} else {
-			return (PlainSelect) selectBody;
 		}
 	}
 }

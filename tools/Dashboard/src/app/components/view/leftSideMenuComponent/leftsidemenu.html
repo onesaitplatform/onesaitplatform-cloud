@@ -1,0 +1,102 @@
+<style>
+  .el-tooltip__popper.is-light {
+    z-index: 9000000 !important;
+  }
+
+  #leftsidemenu {
+    font-size: 12px;
+  }
+
+  .el-card__body {
+    padding: 10px;
+  }
+
+  .el-card__header {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 8px;
+    background-color:#f0f1f2;
+  }
+  .el-divider--horizontal {
+    display: block;
+    height: 1px;
+    width: 100%;
+    margin: 12px 0;
+}
+.apply-icons-grey {
+          filter: invert(0%) sepia(0%) saturate(0%) hue-rotate(162deg) brightness(93%) contrast(88%);
+    }
+.leafstyle { 
+  border: 1px solid #d7dadc;
+    width: 93%;
+    margin: 3px 2px 3px 2px;
+    padding: 1px 2px 1px 10px;
+    height: auto;
+}
+.is-leaf.el-tree-node__expand-icon.el-icon-caret-right{display: none;}
+.el-tabs__item{ font-size: 12px;}
+</style>
+
+<div id="leftsidemenu">
+  <el-card class="box-card" shadow="always" style="width: 100%;height: 99.5%;">
+    <div slot="header"  class="clearfix">
+      <span style="line-height: 40px;   font-size: 14px;      font-weight: 500;      color: #303133;">Gadgets</span>
+      <el-button v-on:click="hideLeftSideMenu()" style="float: right; font-size: 16px;" type="text"><i  class="el-icon-close apply-icons-grey"></i></el-button>
+    </div>
+    <template>
+      <el-tabs v-model="activeName" @tab-click="handleClick">
+        <el-tab-pane  label="Predefined" name="first">
+
+          <el-input  size="small" prefix-icon="el-icon-search" placeholder="Search" v-model="filterText">
+          </el-input>
+          <el-divider></el-divider>
+          <el-tree class="filter-tree" :data="data" :props="defaultProps" :filter-node-method="filterNode"
+            style="overflow-y: auto; height: 80%;" @node-drag-start="handleDragStart" draggable :allow-drop="allowDrop"
+            :allow-drag="allowDrag" node-key="id" :default-expanded-keys="['Predefined', 'Custom','Code']" ref="tree">
+            <span class="custom-tree-node"  v-bind:class="{ leafstyle: data.drag}" slot-scope="{ node, data }">             
+              <i v-if="data.new" class="el-icon-plus"></i>
+              <img v-if="data.image && !data.new" style="height: 14px;padding-right: 6px;padding-top: 4px;"
+                :src="data.image">
+              <el-tooltip :content="node.label" placement="right" :open-delay="opendelay" effect="light">
+                <span v-if="!data.image" style="font-weight:bold" v-html="node.label"></span>
+                <span v-if="data.image && node.label.length<=24" v-html="node.label"></span>
+                <span v-if="data.image && node.label.length>24" v-html="node.label.substring(0,24)+'..'"></span>
+              </el-tooltip>
+              <img v-if="data.drag" style=" height: 20px; float: right;" class="apply-icons-grey"
+              src="/controlpanel/static/images/dashboards/drag.svg">           
+            </span>
+          </el-tree>
+
+        </el-tab-pane>
+        <el-tab-pane  label="Favorites" name="second">
+          <el-input size="small" placeholder="Search"   prefix-icon="el-icon-search" v-model="filterTextFavorite">
+          </el-input>
+          <el-divider></el-divider>
+          <el-tree class="filter-tree" :data="dataFavorite" :props="defaultProps" :filter-node-method="filterNode"
+            style="overflow-y: auto; height: 80%;" @node-drag-start="handleDragStart" draggable :allow-drop="allowDrop"
+            :allow-drag="allowDrag" ref="treeFavorite">
+            <span class="custom-tree-node"  v-bind:class="{ leafstyle: data.drag}" slot-scope="{ node, data }">
+              <img v-if="data.image" style="height: 14px; padding-right: 6px;padding-top: 4px;" :src="data.image">
+              <el-tooltip :content="node.label" placement="right" :open-delay="opendelay" effect="light">
+                <span v-if="!data.image" style="font-weight:bold" v-html="node.label"></span>
+                <span v-if="data.image && node.label.length<=24" v-html="node.label"></span>
+                <span v-if="data.image && node.label.length>24" v-html="node.label.substring(0,24)+'..'"></span>
+              </el-tooltip>
+              <img v-if="data.drag" style=" height: 20px; float: right;" class="apply-icons-grey"
+              src="/controlpanel/static/images/dashboards/drag.svg">           
+            </span>
+          </el-tree>
+
+        </el-tab-pane>
+
+      </el-tabs>
+    </template>
+
+
+
+
+  </el-card>
+
+
+
+</div>

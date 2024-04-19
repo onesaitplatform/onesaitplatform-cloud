@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -254,13 +254,6 @@
 	//<![CDATA[
 	function navigateUrl(url){  window.location.href = url;	}
 	
-	$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([ 2 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
-		 $.each([ 2 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
-	});
-	
-	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		
@@ -286,7 +279,10 @@
 			$('#kafkamonitoring_groups').DataTable().column(0).search( $('#topic-name').val()).draw();
 		});
 		
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).load(function(){
 
 		var oTable = $('#kafkamonitoring_groups').dataTable({
 	      "bAutoWidth": false
@@ -309,8 +305,8 @@
 		$('.dataTables_paginate').attr('style', 'float:right !important');
 
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
-		//$.each([ 2 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
-		//$.each([ 2 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
+		$.each([ 2 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
+		$.each([ 2 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
 		
 		$("#contenedor-tabla-outside").removeClass("hidden");
 		

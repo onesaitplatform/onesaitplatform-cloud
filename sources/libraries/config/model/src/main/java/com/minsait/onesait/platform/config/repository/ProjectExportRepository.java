@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import com.minsait.onesait.platform.config.model.ProjectExport;
 import com.minsait.onesait.platform.config.model.ProjectList;
-import com.minsait.onesait.platform.config.model.User;
+import com.minsait.onesait.platform.config.model.UserExport;
 
 public interface ProjectExportRepository extends JpaRepository<ProjectExport, String> {
 
@@ -35,7 +35,7 @@ public interface ProjectExportRepository extends JpaRepository<ProjectExport, St
 	@Query("SELECT o FROM ProjectList AS o")
 	public List<ProjectList> findAllForList();
 
-	public List<ProjectExport> findByUsersIn(List<User> users);
+	public List<ProjectExport> findByUsersIn(List<UserExport> users);
 
 	public List<ProjectExport> findByIdentification(String identification);
 

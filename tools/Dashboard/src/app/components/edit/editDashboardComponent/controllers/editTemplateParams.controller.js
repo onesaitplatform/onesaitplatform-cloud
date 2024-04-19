@@ -4,135 +4,23 @@
   angular.module('dashboardFramework')
     .controller(
       'editTemplateParamsController',
-      function ($scope,__env, $mdCompiler, httpService, type, config, layergrid, edit, element, utilsService,create,inline) {
+      function ($scope,__env, $mdDialog,$mdCompiler, httpService, type, config, layergrid, edit, element, utilsService,create,inline) {
         var agc = this;
 
-        $scope.tempg = {}
-
-        $scope.sync = true;
-        $scope.syncds = true;
-        $scope.synctemp = false
-
-        $scope.listeners = []
-
-        $scope.clearListeners = function () {
-          $scope.listeners.forEach(function (listener) {
-            window.removeEventListener(listener.event, listener.callback);
-          })
-        }  
-
         agc.$onInit = function () {
-          if (!$scope.config.tconfig || (Object.keys($scope.config.tconfig).length == 1 && "metainf" in $scope.config.tconfig)) {
+          if (!$scope.config.tconfig) {
             $scope.getPredefinedParameters($scope.config.content);
             $scope.getPredefinedParameters($scope.config.contentcode);
           } else {
-            $scope.gformparameters = JSON.parse(JSON.stringify($scope.config.tconfig)).gform;
+            $scope.parameters = JSON.parse(JSON.stringify($scope.config.tconfig)).gform;
           }
-          showEditInlineStyle();
-
-          var fnChangeMainDatasource = function (a) {
-            if ($scope.syncds) {
-              $scope.syncds = false;
-              window.setTimeout(function(){
-                $scope.triggerFullGadgetRefresh();
-                $scope.syncds = true;
-              }, 200)
-            }
-          }
-          
-          var fnChangeParam = function (a) {
-            if ($scope.sync) {
-              $scope.sync = false;
-              window.setTimeout(function(){
-                $scope.triggerFullGadgetRefresh(true);
-                $scope.sync = true;
-              }, 200)
-            }
-          }
-
-          window.addEventListener('ChangeMainDatasource', fnChangeMainDatasource, false);
-          window.addEventListener('ChangeParam', fnChangeParam, false);
-
-          $scope.listeners.push(
-            {
-              event: 'ChangeMainDatasource',
-              callback: fnChangeMainDatasource
-            }
-          )
-
-          $scope.listeners.push(
-            {
-              event: 'ChangeParam',
-              callback: fnChangeParam
-            }
-          )
         }
 
-        function showEditInlineStyle() {
-          if (create) {
-            $scope.tempg = JSON.parse(JSON.stringify($scope.config));
-            $scope.tempg.tempgadget = true;
-
-            function initialConfig() {
-              function setDefault(elements, localvalue) {
-                for (element in elements) {
-                  if (elements[element].elements && elements[element].elements.length > 0) {
-                    if (elements[element].type === 'section') {
-                      localvalue[elements[element].name] = {}
-                      setDefault(elements[element].elements, localvalue[elements[element].name])
-                    } else {
-                      localvalue[elements[element].name] = []
-                    }
-                  } else {
-                    localvalue[elements[element].name] = JSON.parse(JSON.stringify(elements[element].default == undefined ? null : elements[element].default))
-                  }
-                }
-              }
-              var defaultTParams = {}
-              setDefault($scope.config.tconfig.gform, defaultTParams);
-              return defaultTParams;
-            }
-
-            $scope.tempg.config = initialConfig();
-            $scope.config.config = JSON.stringify($scope.tempg.config)
-            $scope.tempg.tparams = {parameters: $scope.tempg.config, datasource: null}
-            $scope.tempg.params = {parameters: $scope.tempg.config, datasource: null}
-
-            window.setTimeout(function(){
-              loadTemplateForm();
-            }, 0)
-
-          }
-          showNoCheckEditInlineStyle();
-        }
-
-        function showNoCheckEditInlineStyle() {
-          window.setTimeout(function(){
-            $("#" + (element && element.id?element.id:$scope.config.id) + " gridster-item").css("border","1px solid #c6c6c6");
-          }, 100)
-        }
-
-        function clearTempGadgets() {
-          if($scope.layergrid && $scope.layergrid.length>0){
-            var index = $scope.layergrid.findIndex(function (element){return element.tempgadget});
-            if (index != -1) {
-              $scope.layergrid.splice(index, 1);
-            }
-          }
-          utilsService.forceRender($scope);
-        }
-
-        function hideEditInlineStyle() {
-          if (create) {
-            clearTempGadgets();
-          }
-          $("#" + (element && element.id?element.id:$scope.config.id) + " gridster-item").css("border","none");
-        }
-
-        function loadTemplateForm() {
-          var gform = JSON.parse(JSON.stringify($scope.gformparameters));
+        window.setTimeout(
+        function() {
+          var gform = JSON.parse(JSON.stringify($scope.parameters));
           if ($scope.config.config) {
-            var gformvalue = utilsService.legacyToNewParamsWithDatasource(JSON.parse($scope.config.config), $scope.element?$scope.element.datasource:null);
+            var gformvalue = utilsService.legacyToNewParamsWithDatasource(JSON.parse($scope.config.config), $scope.element.datasource);
             if (!__env.dashboardEngineAvoidReassign) {
               gformvalue = utilsService.reassign(gform, gformvalue)
             }
@@ -144,7 +32,7 @@
             el: '#gform',
             data: {
               list2: gform,
-              gformvalue: utilsService.fillWithDefaultFormData(gformvalue, gform)
+              gformvalue: create?gformvalue:utilsService.fillWithDefaultFormData(gformvalue, gform)
             },
             methods: {
               remove: function(list,index){
@@ -166,22 +54,15 @@
                 return defaultTParams;
               }
             },
-            mounted: function() {
-              if (create) {
-                window.setTimeout(
-                  function(){
-                    $scope.triggerFullGadgetRefresh(true);
-                  },
-                  200
-                );
+            mounted: function () {
+              if (this.gformvalue == {}) {
+                this.gformvalue['parameters'] = this.getDefaultTParams();
               }
             }
           });
-        }
 
-        if (!create) { 
-          window.setTimeout(loadTemplateForm,0);
-        }
+
+        },500);
        
         $scope.type = type;
         $scope.config = config;
@@ -192,7 +73,7 @@
         $scope.datasource;
         $scope.datasources = [];
         $scope.datasourceFields = [];
-        $scope.gformparameters = [];
+        $scope.parameters = [];
         
         $scope.templates = [];
 
@@ -201,11 +82,13 @@
         $scope.dat.ident ;
         $scope.dat.desc ;
 
-        $scope.close = function() {
-          window.dispatchEvent(new CustomEvent('editTemplateParamsclose',{}));
-          hideEditInlineStyle();
-          $scope.clearListeners();
-        };        
+        $scope.hide = function() {
+          $mdDialog.hide();
+        };
+
+        $scope.cancel = function() {
+          $mdDialog.cancel();
+        };
 
        
         $scope.loadDatasources = function(){
@@ -279,7 +162,7 @@
               }
             }
             if (name) {
-              $scope.gformparameters.push(param);
+              $scope.parameters.push(param);
             }
            } 
           }       
@@ -300,30 +183,8 @@
             {return null;}
       }
 
-        $scope.triggerFullGadgetRefresh = function(noTriggerDatasource) {
-          $scope.vueapp.gformvalue.parameters = Object.assign({}, $scope.vueapp.gformvalue.parameters, $scope.vueapp.gformvalue.parameters)
-          $scope.parameters = $scope.vueapp._data.gformvalue;
-          if (!$scope.element || !$scope.element.params) { //tempGadget
-            $scope.element = $scope.tempg
-          }
-          $scope.element.params = utilsService.cloneJSON($scope.parameters)
-          $scope.element.tparams = $scope.element.params;
-          if (!noTriggerDatasource) {
-            if ($scope.parameters.datasource) {
-              $scope.element.datasource = JSON.parse(JSON.stringify($scope.parameters.datasource));
-            } else {
-              $scope.element.datasource = null
-            }
-          }
-          if (create && !$scope.synctemp) {
-            $scope.layergrid.push($scope.element);
-            $scope.synctemp = true;
-          }
-          utilsService.forceRender($scope);
-        }
 
-        $scope.save = function() {
-          clearTempGadgets();
+        $scope.save = function() { 
           $scope.parameters = $scope.vueapp._data.gformvalue;
           if(!edit){
             if(create){
@@ -357,20 +218,9 @@
                     $scope.config.tparams = $scope.parameters;
                     $scope.config.gadgetid = response.data.id;
                     $scope.config.datasource = $scope.parameters.datasource;
-
-                    if($scope.layergrid && $scope.layergrid.length>0){
-                     var index = $scope.layergrid.findIndex(function (element){return element.id===$scope.config.id});
-                     if(index<0){
-                        $scope.layergrid.push($scope.config);
-                      }else{
-                        $scope.layergrid[index]=$scope.config;
-                      }
-                    }else{
-                      $scope.layergrid.push($scope.config);
-                    }
-
+                    $scope.layergrid.push($scope.config);
                     window.dispatchEvent(new CustomEvent("newgadgetcreated",{detail: $scope.config}));
-                    $scope.close();
+                    $mdDialog.cancel();
                   },
                   function(e){
                     console.log("Error create Custom Gadget: " +  JSON.stringify(e))
@@ -381,18 +231,9 @@
                 $scope.config.params = $scope.parameters;
                 $scope.config.tparams = $scope.parameters;
                 $scope.config.datasource = $scope.parameters.datasource;
-                if($scope.layergrid && $scope.layergrid.length>0){
-                  var index = $scope.layergrid.findIndex(function (element){return element.id===$scope.config.id});
-                  if(index<0){
-                    $scope.layergrid.push($scope.config);
-                  }else{
-                    $scope.layergrid[index]=$scope.config;
-                  }
-                 }else{
-                   $scope.layergrid.push($scope.config);
-                 }
+                $scope.layergrid.push($scope.config);
                 window.dispatchEvent(new CustomEvent("newgadgetcreated",{detail: $scope.config}));
-                //$scope.close();
+                $mdDialog.cancel();
               } 
             }else{  
               $scope.config.type = $scope.type;
@@ -403,19 +244,9 @@
                 $scope.config.content=utilsService.parseProperties($scope.config.content,$scope.parameters);         
                 $scope.config.contentcode=utilsService.parseProperties($scope.config.contentcode,$scope.parameters,true);
                 $scope.config.datasource = $scope.parameters.datasource
-              }             
-              if($scope.layergrid && $scope.layergrid.length>0){
-                var index = $scope.layergrid.findIndex(function (element){return element.id===$scope.config.id});
-                if(index<0){
-                  $scope.layergrid.push($scope.config);
-                }else{
-                  $scope.layergrid[index]=$scope.config;
-                }
-               }else{
-                 $scope.layergrid.push($scope.config);
-               }
-
-              //$scope.close();
+              }
+              $scope.layergrid.push($scope.config);
+              $mdDialog.cancel();
             }
           }
           else{ // only edit params (ID mode)
@@ -425,20 +256,22 @@
                 function(response){
                   $scope.element.params = $scope.parameters;
                   $scope.element.datasource = $scope.parameters.datasource;
-                 // $scope.close();
+                  $mdDialog.cancel();
                 },
                 function(e){
                   console.log("Error create Custom Gadget: " +  JSON.stringify(e));
-                 // $scope.close();
+                  $mdDialog.cancel();
                 }
               );
             } else {
-              $scope.triggerFullGadgetRefresh()
+              $scope.element.params = $scope.parameters;
+              if(typeof $scope.parameters.datasource !== 'undefined'){
+                $scope.element.datasource = JSON.parse(JSON.stringify($scope.parameters.datasource));
+              }
+              $mdDialog.cancel();
             }
           }
-
-          showNoCheckEditInlineStyle();
-          $scope.close()
+        
         };
       
       }

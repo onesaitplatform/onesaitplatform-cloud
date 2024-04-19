@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,9 +73,7 @@ public class DeviceSimulatorJob {
 		}
 		try {
 			proxyJson(user, json, context);
-			if (log.isDebugEnabled()) {
-				log.debug("Simulated instance for user: {}", user);
-			}			
+			log.debug("Simulated instance for user: {}", user);
 		} catch (HttpClientErrorException | HttpServerErrorException e) {
 			log.error("Rest error: code {}, {}", e.getStatusCode(), e.getResponseBodyAsString());
 		} catch (final Exception e) {
@@ -120,9 +118,7 @@ public class DeviceSimulatorJob {
 				int index = 0;
 				try {
 					index = context.getJobDetail().getJobDataMap().getInt(INDEX_STR);
-					if (log.isDebugEnabled()) {
-						log.debug("Inserting item {} of json array, ontology {}", index, ontology);
-					}					
+					log.debug("Inserting item {} of json array, ontology {}", index, ontology);
 				} catch (final Exception e) {
 					log.error("Not index yet, setting index to 0");
 				}
@@ -160,9 +156,7 @@ public class DeviceSimulatorJob {
 
 		persistenceService.insertOntologyInstance(fieldAndValues.toString(), ontology, user, clientPlatform,
 				clientPlatformInstance);
-		if (log.isDebugEnabled()) {
-			log.debug("Inserted in ontology {} data:", ontology, fieldAndValues.toString());
-		}		
+		log.debug("Inserted in ontology " + ontology + " data:" + fieldAndValues.toString());
 		return fieldAndValues;
 	}
 

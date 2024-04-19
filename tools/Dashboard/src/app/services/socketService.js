@@ -11,11 +11,8 @@
       vm.stompClient = {};
       vm.hashRequestResponse = {};
       vm.connected = false;
-      vm.firstShot = false;
-      vm.retrying = false;
       vm.queue = {};
       vm.resetHeartBeatCallback;//call on connection and when some data is received for reset scheduling
-      vm.enableListenerCallback;//call on connection and when some data is received for reset scheduling
 
       $stomp.setDebug(function (args) {
         $log.debug(args)
@@ -24,53 +21,37 @@
       $stomp.setDebug(false);
 
       var errorfn = function(error){
-        if (!vm.firstShot && !vm.retrying) {
-          vm.retrying = true;
-          console.log("Error websockets: " + error + " , try reconnecting in 5000 ms...");
-          $stomp.disconnect().then(function () {
-            $log.info('Disconnected');
-            vm.connected = false;
-            $timeout(vm.connect,5000);
-          })
-        } else {
-          //if connected, HeartBeat deals with reconnection
-        }
+        console.log("Error websockets: " + error + " , reconnecting...");
+        $timeout(vm.connect,2000);
       }
 
       vm.connect = function(heartBeatCallback,enableListenerCallback){
-        if(heartBeatCallback){
-          vm.resetHeartBeatCallback = heartBeatCallback;
-        }
-        if(enableListenerCallback){
-          vm.enableListenerCallback = enableListenerCallback;
-        }
-        $stomp.connect(__env.socketEndpointConnect+ "?" + (sessionStorage.getItem("dashboardEngineOauthtoken")?"oauthtoken=" +sessionStorage.getItem("dashboardEngineOauthtoken"):'anonymous'), [], errorfn, (__env.dashboardEngineProtocol === 'websocket' || __env.dashboardEngineProtocol === 'all')?{ transports: ['websocket']}:{}).then(
+        $stomp.connect(__env.socketEndpointConnect+ "?" + (__env.dashboardEngineOauthtoken?"oauthtoken=" +__env.dashboardEngineOauthtoken:'anonymous'), [], errorfn, __env.dashboardEngineProtocol === 'websocket'?{ transports: ['websocket']}:{}).then(
           function(frame){
             if(frame.command == "CONNECTED"){
-              vm.connected=true;
               console.log('%c DSEngine Websocket Connected    ' + '%c ' + new Date(), 'color: #1e8fff; font-weight:bold; font-size:13px', 'color: #bbb; font-weight:bold; font-size:13px');
-              if(vm.heartBeatCallback){
-                vm.resetHeartBeatCallback();
-              }
+              vm.connected=true;
               Object.keys(vm.queue).map(
                 function(dskey){
                   vm.sendAndSubscribe(vm.queue[dskey], true);
                 }
               )
-              if(vm.enableListenerCallback){
-                vm.enableListenerCallback();
+              if(heartBeatCallback){
+                vm.resetHeartBeatCallback = heartBeatCallback;
+                vm.resetHeartBeatCallback();
               }
-              vm.firstShot=true;
+              if(enableListenerCallback){
+                enableListenerCallback();
+              }
             }
             else{
               console.log("Error websockets, reconnecting... " + new Date())
-              $timeout(vm.connect,5000);
+              $timeout(vm.connect,2000);
             }
           }
         ).catch(
           errorfn
         );
-        vm.retrying=false;
       }
 
       vm.connectAndSendAndSubscribe = function(reqrespList){

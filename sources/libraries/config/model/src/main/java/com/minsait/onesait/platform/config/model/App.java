@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -207,8 +207,8 @@ public class App extends AppParent implements Versionable<App> {
 				appRoles.forEach(ar -> {
 					ar.getAppUsers().removeIf(au -> excludedUsers.contains(au.getUser().getUserId()));
 					ar.getChildRoles()
-							.removeIf(r -> !CollectionUtils.isEmpty(excludedIds.get(App.class.getSimpleName()))
-									&& excludedIds.get(App.class.getSimpleName()).contains(r.getApp().getId()));
+					.removeIf(r -> !CollectionUtils.isEmpty(excludedIds.get(App.class.getSimpleName()))
+							&& excludedIds.get(App.class.getSimpleName()).contains(r.getApp().getId()));
 				});
 
 				app = this;
@@ -222,10 +222,4 @@ public class App extends AppParent implements Versionable<App> {
 		return app;
 	}
 
-	@Override
-	public void setOwnerUserId(String userId) {
-		final User u = new User();
-		u.setUserId(userId);
-		setUser(u);
-	}
 }

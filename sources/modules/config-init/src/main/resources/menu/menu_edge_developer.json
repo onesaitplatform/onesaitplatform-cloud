@@ -30,15 +30,6 @@
                     "icon": "",
                     "url": "/controlpanel/ontologies/list"
                 },
-				{
-					"title": {
-						"EN": "User Tokens Management",
-						"ES": "Gestión de Tokens de Usuario",
-						"FR": "Gestion des jetons utilisateur"
-					},
-					"icon": "",
-					"url": "/controlpanel/apimanager/token/list?access=MENU"
-				},
                 {
                     "title": {
                         "EN": "My REST APIs",
@@ -75,15 +66,6 @@
                     "icon": "",
                     "url": "/controlpanel/microservices/list"
                 },
-                {
-					"title": {
-						"EN": "My Microservices Templates",
-						"ES": "Mis Plantillas de MicroServicios",
-						"FR": "Mes Modèles de microservices"
-					},
-					"icon": "",
-					"url": "/controlpanel/mstemplates/list"
-				},
                 {
                     "title": {
                         "EN": "My BPM Tenants",
@@ -295,10 +277,10 @@
 				},
                 {
                     "title": {
-						"EN": "My WebApps",
-						"ES": "Mis WebApps",
-						"FR": "Mes WebApps"
-					},
+                        "EN": "My Web Projects",
+                        "ES": "Mis Proyectos Web",
+						"FR": "Mes Projets Web"
+                    },
                     "icon": "",
                     "url": "/controlpanel/webprojects/list"
                 },
@@ -497,15 +479,15 @@
                     "icon": "",
                     "url": "/controlpanel/audit/show"
                 },
-				{
-					"title": {
-						"EN": "Assets Market",
-						"ES": "Market de Assets",
-						"FR": "Marché des Actifs"
-					},
-					"icon": "",
-					"url": "/controlpanel/bundlerepository/list"
-				}
+                {
+                    "title": {
+                        "EN": "My Market",
+                        "ES": "Mi Market",
+						"FR": "Mon Marché"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/marketasset/list"
+                }
             ]
         }
     ]

@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 	<link rel="stylesheet" type="text/css" media="all"
 		th:href="@{/static/vendor/jquery-confirm/jquery-confirm.css}" />
 	<link th:href="@{/static/vendor/toastr/toastr.css}" rel="stylesheet"/>
-	<link rel="stylesheet" type="text/css" media="all" th:href="@{/static/css/pulse.css}" />
+
 
 	<!-- MAIN SCRIPTS  -->
 	<script th:src="@{/static/vendor/jquery/jquery.min.js}"></script>
@@ -149,23 +149,12 @@ style>.dropdown-submenu {
 								class="icon-API"></i><span class="">APIs</span>
 						</a></li>
 						<!-- END APIS -->
-						
-						<!-- BEGIN USER TOKENS -->
-						<li><a data-original-title="User Tokens"
-							style="padding-right: 8px !important;"
-							th:href=" @{'/apimanager/token/list?access=HEADER'}"> <i
-								class="icon-lock"></i><span class="">User Tokens</span>
-						</a></li>
-						<!-- END USER TOKENS -->
-						
-						<!-- BEGIN ASSETS MARKET -->
-						<li><a data-original-title="Assets Market"
-							style="padding-right: 8px !important;"
-							th:href=" @{'/bundlerepository/list'}"> <i
-								class="icon-store"></i><span th:text="#{versioning.bundle.repository}" class="">Assets Market</span>
-						</a></li>
-						<!-- END ASSETS MARKET -->
 
+						<!-- BEGIN SEARCH CONFLUENCE -->
+						<li><a th:attr="data-original-title=#{head.search}"	style="padding-right: 10px !important" onclick="javascript:$('#confluenceSearch').modal('show');"><i class="icon-search"></i><span th:text="#{menu.modal.search}"></span></a>
+
+						</li>
+						<!-- END SEARCH CONFLUENCE-->
 						<li><a th:href=" @{'/support/create/'}"><i class="icon-support"></i> <span th:text="#{support.title}">Support Request</span></a></li>
 					</ul></li>
 				<!-- END USER NO-PARTNER -->
@@ -298,9 +287,6 @@ style>.dropdown-submenu {
 	</div>
 	<!-- END HEADER INNER -->
 
-
-
-
 	<!-- MODAL SEARCH -->
 	<div class="modal fade bs-example-modal-lg" id="modalDocs"
 		tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
@@ -359,7 +345,6 @@ style>.dropdown-submenu {
 			"errores": errores,
 			"informacion": informacion,
 			"btnEliminar": [[#{gen.deleteBtn}]],
-			"btnDeleteToo": [[#{mapsproject.remove.dependencies.too}]],
 			"btnEditar": [[#{gen.editBtn}]],
 			"btnCancelar": [[#{gen.cancelBtn}]],
 			"btnClose": [[#{gen.closeBtn}]],
@@ -381,7 +366,6 @@ style>.dropdown-submenu {
 			"subcategoryDelete":[[#{subcategory.delete.title}]],
 			"virtualDatasourceConfirm":[[#{datasource.delete.confirm}]],
 			"virtualDatasourceDelete":[[#{datasource.delete.title}]],
-			"virtualDatasourceDeleteOntologyAssociate":[[#{datasource.delete.accociation.ontology}]],
 			"prestoDatasourceConfirm":[[#{presto.datasource.delete.confirm}]],
 			"prestoDatasourceDelete":[[#{presto.datasource.delete.title}]],
 			"digitalTwinDeviceConfirm":[[#{digitaltwindevice.delete.confirm}]],
@@ -403,9 +387,7 @@ style>.dropdown-submenu {
 			"dashboardConfConfirm":[[#{dashboardConf.del.confirm}]],
 			"dashboardConfDelete":[[#{dashboardConf.delete.title}]],
 			"dashboardConfirm":[[#{dashboards.del.confirm}]],
-			"synopticsConfirm":[[#{synoptic.del.confirm}]],
 			"dashboardDelete":[[#{dashboards.delete.title}]],
-			"synopticsDelete":[[#{synoptics.delete.title}]],
 			"gadgetTemplateConfirm":[[#{gadgettemplates.del.confirm}]],
 			"gadgetTemplateDelete":[[#{gadgettemplates.delete.title}]],
 			"gadgetInstanceConfirm":[[#{gadgettemplates.instance.del.confirm}]],
@@ -443,8 +425,6 @@ style>.dropdown-submenu {
 			"microserviceUrl":[[#{microservice.url.title}]],
 			"appDelete":[[#{app.delete.title}]],
 			"processDelete":[[#{process.delete.title}]],
-			"emailConfirm":[[#{emails.delete.confirm}]],
-			"emailDelete":[[#{emails.delete.title}]],
 			"reportConfirm":[[#{reports.delete.confirm}]],
 			"reportDelete":[[#{reports.delete.title}]],
 			"apiDelete":[[#{apimanager.delete.title}]],
@@ -476,13 +456,8 @@ style>.dropdown-submenu {
 			"kafkaClusterConsumerGroupConfirm":[[#{kafka.cluster.consumer.delete.confirm}]],
 			"kafkaClusterConsumerGroupDelete":[[#{kafka.cluster.consumer.delete.title}]],
 			"dataLabelingDeleteTitle":[[#{datalabeling.question.delete.title}]],
-			"dataLabelingDelete":[[#{datalabeling.question.delete}]],
-			"deleteTitle":[[#{gen.delete.title}]],
-			"delete":[[#{gen.del.confirm}]],
-			"messageErrorDeleteDatamodelExistOntology":[[#{datamodel.delete.exist.ontology.error}]]
-			
-			
-			
+			"dataLabelingDelete":[[#{datalabeling.question.delete}]]
+			 
 		};
 		var messagesForms = {
 			"validation":{
@@ -551,24 +526,6 @@ style>.dropdown-submenu {
 			});
 			 $('#modalApis').modal('show');
 		}
-		
-		var showErrorNoToken = function(){
-				$.confirm({
-					title: [[#{ai.notoken.title}]],
-					theme: 'light',
-					columnClass: 'medium',
-					content: [[#{ai.notoken.msg}]],
-					backgroundDismiss: true,
-					buttons: {
-						"close": {
-							text: "Close",
-							btnClass: 'btn btn-outline blue dialog',
-							action: function (){} //GENERIC CLOSE.
-						}
-					}
-				});
-				
-			}
 		
 		
 	
@@ -642,11 +599,7 @@ style>.dropdown-submenu {
 				}
 			}
 		});
-		
 	// ]]>
- </script>
- <script>
-	 
  </script>
 </div>
 <!-- END HEADER -->

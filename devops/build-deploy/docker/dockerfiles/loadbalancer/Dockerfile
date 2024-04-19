@@ -14,8 +14,8 @@ RUN groupadd -g 10001 onesait && useradd -u 10001 -g 10001 onesait --no-create-h
 RUN install_packages vim
 RUN chmod ugo+w /opt/bitnami/nginx/conf/server_blocks
 
-# DEPRECATED Copy nginx config file
-# COPY my_server_ssl_block.conf /opt/bitnami/nginx/conf/server_blocks/my_server_block.conf
+# Copy nginx config file
+COPY my_server_ssl_block.conf /opt/bitnami/nginx/conf/server_blocks/my_server_block.conf
 
 RUN mkdir -p /opt/bitnami/nginx/conf/server_blocks/conf.d/api && \
     mkdir -p /opt/bitnami/nginx/conf/server_blocks/conf.d/engine && \
@@ -26,14 +26,13 @@ RUN mkdir -p /opt/bitnami/nginx/conf/server_blocks/conf.d/api && \
 	mkdir -p /opt/bitnami/nginx/conf/server_blocks/conf.d/engine && \
 	mkdir -p /opt/bitnami/nginx/conf/server_blocks/conf.d/log && \
 	mkdir -p /opt/bitnami/nginx/conf/server_blocks/conf.d/minio-console && \
-	mkdir -p /opt/bitnami/nginx/conf/server_blocks/conf.d/minio-browser
+	mkdir -p /opt/bitnami/nginx/conf/server_blocks/conf.d/minio-browser && \
 
-# RUN chmod ugo+w /opt/bitnami/nginx/conf/server_blocks/my_server_block.conf
-RUN chmod -R ugo+w /opt/bitnami/nginx/conf/bitnami/certs
+RUN chmod ugo+w /opt/bitnami/nginx/conf/server_blocks/my_server_block.conf
 RUN chmod ugo+w /opt/bitnami/nginx/tmp/
 RUN chmod -R ugo+w /opt/bitnami/nginx/conf/server_blocks/conf.d
 
 USER onesait
 
 EXPOSE 8080
-EXPOSE 9443
+EXPOSE 8443

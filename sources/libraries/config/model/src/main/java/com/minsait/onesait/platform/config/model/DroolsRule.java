@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ import lombok.Setter;
 @Configurable
 @Getter
 @Setter
-public class DroolsRule extends OPResource implements Versionable<DroolsRule> {
+public class DroolsRule extends OPResource implements Versionable<DroolsRule>{
 
 	private static final long serialVersionUID = 1L;
 
@@ -67,7 +67,7 @@ public class DroolsRule extends OPResource implements Versionable<DroolsRule> {
 	@org.hibernate.annotations.Type(type = "org.hibernate.type.TextType")
 	private String DRL;
 
-	// @Basic(fetch = FetchType.LAZY)
+	//	@Basic(fetch = FetchType.LAZY)
 	@Column(name = "DECISION_TABLE")
 	@Lob
 	@org.hibernate.annotations.Type(type = "org.hibernate.type.ImageType")
@@ -101,7 +101,6 @@ public class DroolsRule extends OPResource implements Versionable<DroolsRule> {
 	public String getTargetOntologyJson() {
 		return targetOntology == null ? null : targetOntology.getId();
 	}
-
 	@JsonGetter("sourceOntology")
 	public String getSourceOntologyJson() {
 		return sourceOntology == null ? null : sourceOntology.getId();
@@ -109,17 +108,16 @@ public class DroolsRule extends OPResource implements Versionable<DroolsRule> {
 
 	@JsonSetter("targetOntology")
 	public void setTargetOntologyJson(String id) {
-		if (!StringUtils.hasText(id)) {
+		if(!StringUtils.hasText(id)) {
 			final Ontology s = new Ontology();
 			s.setId(id);
 			targetOntology = s;
 
 		}
 	}
-
 	@JsonSetter("sourceOntology")
 	public void setSourceOntologyJson(String id) {
-		if (!StringUtils.hasText(id)) {
+		if(!StringUtils.hasText(id)) {
 			final Ontology s = new Ontology();
 			s.setId(id);
 			sourceOntology = s;
@@ -150,6 +148,7 @@ public class DroolsRule extends OPResource implements Versionable<DroolsRule> {
 		return null;
 	}
 
+
 	@Override
 	public String fileName() {
 		return getIdentification() + ".yaml";
@@ -159,7 +158,7 @@ public class DroolsRule extends OPResource implements Versionable<DroolsRule> {
 	public Versionable<DroolsRule> runExclusions(Map<String, Set<String>> excludedIds, Set<String> excludedUsers) {
 		// TODO Auto-generated method stub
 		Versionable<DroolsRule> v = Versionable.super.runExclusions(excludedIds, excludedUsers);
-		if (v != null) {
+		if(v != null) {
 			if (sourceOntology != null && !CollectionUtils.isEmpty(excludedIds)
 					&& !CollectionUtils.isEmpty(excludedIds.get(Ontology.class.getSimpleName()))
 					&& excludedIds.get(Ontology.class.getSimpleName()).contains(sourceOntology.getId())) {
@@ -175,12 +174,5 @@ public class DroolsRule extends OPResource implements Versionable<DroolsRule> {
 		}
 
 		return v;
-	}
-
-	@Override
-	public void setOwnerUserId(String userId) {
-		final User u = new User();
-		u.setUserId(userId);
-		setUser(u);
 	}
 }

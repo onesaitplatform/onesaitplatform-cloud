@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,7 +98,7 @@ public class PromotionToolController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")
 	@GetMapping("execute")
 	public String execute(Model model) {
-		final List<String> tenants = promotionToolService.getTenants();
+		List<String> tenants = promotionToolService.getTenants();
 		model.addAttribute(PROMOTION_TOOL_PARAMS, new PromotionToolParamsDTO());
 		model.addAttribute("originTenants", tenants);
 		return "promotiontool/execute";
@@ -111,17 +111,17 @@ public class PromotionToolController {
 			BindingResult bindingResult, RedirectAttributes redirect, HttpServletRequest request) throws Exception {
 		final Map<String, String> response = new HashMap<>();
 
-		final boolean result = configureJenkins(promotiontoolparams);
+		boolean result = configureJenkins(promotiontoolparams);
 		if (!result) {
 			response.put(STATUS_STR, "error");
 			response.put(CAUSE_STR, "Something failed while configuring the promotion");
 			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		final Boolean exportOrigin = promotiontoolparams.getExportOnOrigin();
-		final Boolean importTarget = promotiontoolparams.getImportOnTarget();
+		Boolean exportOrigin = promotiontoolparams.getExportOnOrigin();
+		Boolean importTarget = promotiontoolparams.getImportOnTarget();
 
-		final List<JenkinsParameter> parameters = new ArrayList<>();
+		List<JenkinsParameter> parameters = new ArrayList<>();
 
 		parameters.add(new JenkinsParameter(EXPORT_ON_ORIGIN, exportOrigin.toString()));
 		parameters.add(new JenkinsParameter(IMPORT_ON_TARGET, importTarget.toString()));
@@ -152,7 +152,7 @@ public class PromotionToolController {
 		}
 
 		final Map<String, List<String>> paramMap = parameters.stream()
-				.collect(Collectors.toMap(p -> p.getName(), p -> Arrays.asList((String) p.getValue())));
+				.collect(Collectors.toMap(p -> p.getName(), p -> Arrays.asList(p.getValue())));
 
 		try {
 			final int resultID = jenkinsService.buildWithParametersNoAuth(JENKINS_URL, JENKINS_JOBNAME, null, paramMap);
@@ -160,7 +160,7 @@ public class PromotionToolController {
 			response.put(STATUS_STR, "ok");
 			response.put(CAUSE_STR, "Queue ID:" + resultID);
 			return new ResponseEntity<>(response, HttpStatus.OK);
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			response.put(STATUS_STR, "error");
 			response.put(CAUSE_STR, "Something failed in the promotion execution");
 			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -174,7 +174,7 @@ public class PromotionToolController {
 			RedirectAttributes redirect, HttpServletRequest request) throws Exception {
 		final Map<String, String> response = new HashMap<>();
 		Thread.sleep(10000);
-		final String result = jenkinsService.buildInfo(JENKINS_URL, JENKINS_JOBNAME, null, queueId).result();
+		String result = jenkinsService.buildInfo(JENKINS_URL, JENKINS_JOBNAME, null, queueId).result();
 
 		if (result == null) {
 			response.put(STATUS_STR, "NO");
@@ -193,10 +193,10 @@ public class PromotionToolController {
 	}
 
 	public boolean configureJenkins(PromotionToolParamsDTO promotiontoolparams) {
-		final String configDBs = promotionToolService.getConfigDBs(promotiontoolparams.getTenants());
-		final String RTDBs = promotionToolService.getRealTimeDBs(promotiontoolparams.getTenants());
+		String configDBs = promotionToolService.getConfigDBs(promotiontoolparams.getTenants());
+		String RTDBs = promotionToolService.getRealTimeDBs(promotiontoolparams.getTenants());
 
-		final List<JenkinsParameter> parameters = new ArrayList<>();
+		List<JenkinsParameter> parameters = new ArrayList<>();
 
 		parameters.add(new JenkinsParameter("BACK_UP_PATH", BACK_UP_PATH));
 		parameters.add(new JenkinsParameter("REMOTE_USER_HOME", REMOTE_USER_HOME));
@@ -210,7 +210,7 @@ public class PromotionToolController {
 		parameters.add(new JenkinsParameter("REALTIME_DB_SCHEMAS", RTDBs));
 
 		final Map<String, List<String>> paramMap = parameters.stream()
-				.collect(Collectors.toMap(p -> p.getName(), p -> Arrays.asList((String) p.getValue())));
+				.collect(Collectors.toMap(p -> p.getName(), p -> Arrays.asList(p.getValue())));
 
 		try {
 			final int queueId = jenkinsService.buildWithParametersNoAuth(JENKINS_URL, JENKINS_CONFIGJOBNAME, null,
@@ -220,13 +220,11 @@ public class PromotionToolController {
 				Thread.sleep(1000);
 				pipelineInfo = jenkinsService.buildInfo(JENKINS_URL, JENKINS_CONFIGJOBNAME, null, queueId);
 			}
-			if (jenkinsService.buildInfo(JENKINS_URL, JENKINS_CONFIGJOBNAME, null, queueId).result()
-					.equals("SUCCESS")) {
+			if (jenkinsService.buildInfo(JENKINS_URL, JENKINS_CONFIGJOBNAME, null, queueId).result().equals("SUCCESS"))
 				return true;
-			} else {
+			else
 				return false;
-			}
-		} catch (final Exception e) {
+		} catch (Exception e) {
 			return false;
 		}
 

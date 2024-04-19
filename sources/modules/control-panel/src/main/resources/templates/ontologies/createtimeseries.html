@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -99,7 +99,7 @@
 					<input id="datamodelid" type="hidden"  />
 					<input id="schema" type="hidden" th:field="*{jsonSchema}" />
 					<input id="rtdb" name="rtdb" type="hidden" value="MONGO" th:field="*{rtdbDatasource}"/>
-					<input id="rtdbCleanLapse" type="hidden" value="1_DAYS" th:field="*{rtdbCleanLapse}"/>
+					<input id="rtdbCleanLapse" type="hidden" value="NEVER" th:field="*{rtdbCleanLapse}"/>
 																	
 					<!-- FORM ACTIONS FOR INSERT-->
 					<input th:if="${ontologyTSDTO.id} == null" type="hidden" name="action" th:value="@{/ontologies/createtimeseries}"/>
@@ -238,12 +238,7 @@
 								<a href="#tab_2" data-toggle="tab" th:classappend="${ontologyTSDTO?.id} == null ? disabled : ''" aria-expanded="true">
 									<span class="caption-subject " th:text="#{ontology.authorizations}" >AUTORIZACIONES </span>
 								</a>
-							</div>	
-							<div id="tab-data" class="option"  th:if="${ontology.id != null}">
-								<a href="#tab_data" data-toggle="tab" th:classappend="${ontology?.id} == null ? disabled : ''" aria-expanded="true">
-									<span th:text="#{ontology.dataaccess}" >Data Access Settings </span>
-								</a>
-							</div>			
+							</div>				
 						</div>
 
 						<div th:class="${ontologyTSDTO.id} == null ? 'tab-content col-md-12 padding-left-48' : 'tab-content flex-content-right'">
@@ -287,20 +282,6 @@
 									</div>
 								</div>
 								<div class="row main">
-									<div class="col-sm-2 col-xs-12">
-										<div class="form-group">
-											<label class="control-label" th:text="#{ontology.timeseries.engine}">Timeseries Engine</label><span	class="required"> *</span>
-											<select th:if="${ontologyTSDTO.id} == null" id="enginetimeseries" class="selectpicker form-control" data-live-search="true" data-width="100%" th:required="true" onchange="showMongoConf()" >
-												<option value="" th:text="#{ontology.timeseries.engine.combo}" selected="selected" disabled="disabled" style="display:none;"> Select Engine...</option>
-												<option th:each="timeserieseng :${timeseriesengs}" th:value="${timeserieseng}" th:id="${timeserieseng}" th:text="${timeserieseng}" ></option>														
-											</select>
-											<select th:if="${ontologyTSDTO.id} != null" id="enginetimeseries" class="selectpicker form-control" data-live-search="true" data-width="100%" onchange="showMongoConf()" >
-												<option th:each="timeserieseng :${timeseriesengs}" th:value="${timeserieseng}" th:id="${timeserieseng}" th:text="${timeserieseng}" ></option>														
-											</select>
-										</div>	
-									</div>
-								</div>
-								<div id="auxdataDiv" class="row main" hidden>
 									<div class="col-md-2 col-xs-2">
 										<input id="auxdata" class="margin-right-10" name="auxdata" type="checkbox" onchange="showAuxStats()" th:field="*{stats}" />
 										<label class="control-label margin-right-5" th:text="#{ontology.timeseries.auxdata}">Public</label>
@@ -323,6 +304,20 @@
 										</div>
 									</div>
 								</div>
+								<div class="row main">
+									<div class="col-sm-2 col-xs-12">
+										<div class="form-group">
+											<label class="control-label" th:text="#{ontology.timeseries.engine}">Timeseries Engine</label><span	class="required"> *</span>
+											<select th:if="${ontologyTSDTO.id} == null" id="enginetimeseries" class="selectpicker form-control" data-live-search="true" data-width="100%" th:required="true" onchange="showMongoConf()" >
+												<option value="" th:text="#{ontology.timeseries.engine.combo}" selected="selected" disabled="disabled" style="display:none;"> Select Engine...</option>
+												<option th:each="timeserieseng :${timeseriesengs}" th:value="${timeserieseng}" th:id="${timeserieseng}" th:text="${timeserieseng}" ></option>														
+											</select>
+											<select th:if="${ontologyTSDTO.id} != null" id="enginetimeseries" class="selectpicker form-control" data-live-search="true" data-width="100%" onchange="showMongoConf()" >
+												<option th:each="timeserieseng :${timeseriesengs}" th:value="${timeserieseng}" th:id="${timeserieseng}" th:text="${timeserieseng}" ></option>														
+											</select>
+										</div>	
+									</div>
+								</div>
 								<div class="row main margin-bottom-25">
 									<div class="col-md-12 col-sm-12 col-xs-12">
 										<label class="control-label" th:text="#{gen.options}">Options</label>
@@ -337,7 +332,7 @@
 										<label class="control-label margin-right-5" th:text="#{ontology.publicontology}">Public</label>
 										<i class="la la-info-circle popovers"  data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.public.help},data-title=#{ontology.public}"></i>
 									</div>								
-									<div class="col-md-12 col-xs-12" hidden>
+									<div class="col-md-12 col-xs-12">
 										<input id="contextDataEnabled" class="margin-right-10" name="contextDataEnabled" type="checkbox" checked="checked" th:field="*{contextDataEnabled}" />
 										<label class="control-label margin-right-5" th:text="#{ontology.contextDataEnabled}">ContextData</label>
 									</div>
@@ -353,7 +348,7 @@
 										<span th:text="#{gen.denotesRequired}" class="denotesRequired">* Denotes Required Field</span>
 									</div>
 								</div>
-															
+								
 								<div id="tagCreationForm">
 									<div class="row main pageCreateHeader no-margin-left padding-left-10">
 										<label class="no-padding-bottom" th:text=="'+'"></label>
@@ -401,54 +396,7 @@
 										</div>
 									</div>
 								</div>
-								<div id="informationFieldsCreationForm" class="margin-top-20">
-									<div class="row main pageCreateHeader no-margin-left padding-left-10">
-										<label class="no-padding-bottom" th:text=="'+'"></label>
-										<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{ontology.timeseries.optional.fields}"></label>
-									</div>
-									<div class="row main borderPanel no-margin-left">
-										<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(100vh / 2px);">
-											<div class="form-group">
-												<label class="control-label" th:text="#{ontology.timeseries.name}">Nombre</label><span class="required"> *</span>
-												<input id="optionalFieldName" type="text" name="optionalFieldName" maxlength="50" class="form-control " th:placeholder="#{ontology.timeseries.name}"/>
-											</div>
-											<div class="form-group">
-												<label class="control-label" th:text="#{ontology.timeseries.type}">Tipo</label><span class="required"> *</span>
-												<select id="optionalFieldType" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;">
-													<option value="" th:text="#{ontology.timeseries.type.combo}" selected="selected" disabled="disabled" style="display:none;"> Select Type...</option>	
-													<option th:each="type :${types}" th:value="${type}" th:id="${type}" th:text="${type}" ></option>													
-												</select>	
-											</div>
-											<div class="form-group pull-right">															
-												<button type="button" class="btn btn-primary btn-primary-save" id="button3" onclick="addOpotionalFieldRow()"><span th:text="#{ontology.timeseries.add.optional.field}">Add</span></button>															
-											</div>
-											<input type="hidden" id="optionalFieldsNames" th:field="*{optionalFieldNames}" />
-											<input type="hidden" id="optionalFieldTypes" th:field="*{optionalFieldTypes}" />									
-										</div>
-										<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(100vh / 2px);">
-											<div class="form-group" style="margin-bottom: 0px">
-												<div id="template_schema" class="margin-bottom-20 ">
-													<table class="table no-margin-bottom" id="optional_fields_properties" data-loaded="false">
-														<thead class="table-header-background">
-															<tr class="cabecera-tabla" role="row">
-																<th class="titulo-columnas" th:text="#{ontology.timeseries.name}">Name</th>
-																<th class="titulo-columnas" th:text="#{ontology.timeseries.type}">Type</th>
-																<th class="titulo-columnas" style="width:50px"></th>
-															</tr>
-														</thead>
-														<tbody style="border-bottom: 1px solid #ddd;">
-															<tr class="tagRow" th:each="tsprop :${ontologyTSDTO.timeSeriesProperties}" th:if="${#strings.endsWith(tsprop.propertyType,'FIELD_OPTIONAL')}"	>
-													 			<td	th:text="${tsprop.propertyName}" >A</td> 
-																<td	th:text="${tsprop.propertyDataType}" >STRING</td> 
-																<td class="text-center"><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="removeTagRow(this)"><i class="icon-delete"></i><!--<span th:text="#{gen.deleteBtn}"> Delete </span>--></button></td>
-															</tr>
-														</tbody>
-													</table>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
+								
 								<div id="fieldCreationForm" class="margin-top-20">
 									<div class="row main pageCreateHeader no-margin-left padding-left-10 " id="platform-users-header">
 										<label class="no-padding-bottom" th:text=="'+'"></label>
@@ -462,7 +410,7 @@
 											</div>
 											<div class="form-group">
 												<label class="control-label" th:text="#{ontology.timeseries.type}">Tipo</label><span class="required"> *</span>
-												<select id="fieldType" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;" onchange="setAggregationFunctionsFronDataType()">
+												<select id="fieldType" class="selectpicker form-control" data-live-search="true" data-width="100%" style="display:none;">
 													<option value="" th:text="#{ontology.timeseries.type.combo}" selected="selected" disabled="disabled" style="display:none;"> Select Type...</option>	
 													<option th:each="type :${types}" th:value="${type}" th:id="${type}" th:text="${type}" ></option>													
 												</select>	
@@ -716,8 +664,7 @@
 											<div class="mt-checkbox-list margin-top-20">
 												<!--  <input id="rtdbclean" class="margin-right-10" name="tableCompression" type="checkbox" th:field="*{tableCompression}" th:checked="checked"/>--> 
 												<input id="compressionCheck" th:field="*{compressionActive}" class="margin-right-10" name="tableCompression" type="checkbox" th:checked="false" onclick="showCompressionQuery()"/>
-												<label class="control-label margin-right-5" th:text="#{ontology.timeseries.compression}">Enable compression</label>
-												<i class="la la-info-circle popovers"  data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.timeseries.compression.help},data-title=#{ontology.timeseries.compression}"></i>								
+												<label class="control-label margin-right-5 popovers" th:text="#{ontology.timeseries.compression}" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.timeseries.compression.help},data-title=#{ontology.timeseries.compression}">Enable compression</label>
 											</div>
 										</div>
 									</div>
@@ -760,9 +707,8 @@
 										<!-- RTDB CLEANSE SELECTION -->
 										<div class="form-group">													
 											<div class="mt-checkbox-list margin-top-20">
-												<input id="rtdbclean" class="margin-right-10" name="rtdbclean" type="checkbox" th:field="*{rtdbClean}" th:checked="false" onclick="setRtdbCleanLapse()"/>
-												<label class="control-label margin-right-5" th:text="#{ontology.rtdbclean}">rtdbclean</label>
-												<i class="la la-info-circle popovers"  data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.rtdbclean.help},data-title=#{ontology.rtdbclean}"></i>								
+												<input id="rtdbclean" class="margin-right-10" name="rtdbclean" type="checkbox" th:field="*{rtdbClean}" th:checked="false"/>
+												<label class="control-label margin-right-5 popovers" th:text="#{ontology.rtdbclean}" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.rtdbclean.help},data-title=#{ontology.rtdbclean}">rtdbclean</label>
 											</div>
 										</div>
 									</div>
@@ -770,6 +716,7 @@
 										<div class="form-group">
 											<label class="control-label" th:text="#{ontology.clean.options}">Cleanse Options</label>
 											<select id="rtdbCleanLapseOpt" placeholder="asdasd" name="rtdbCleanLapseOpt" class="selectpicker form-control" data-live-search="true" data-width="100%" onchange="setRtdbCleanLapse()" >
+												<option value="NEVER" th:text="#{ontology.clean.never}" ></option>
 												<option value="1_DAYS" th:text="#{ontology.clean.oneday}" ></option>
 												<option value="2_DAYS" th:text="#{ontology.clean.twodays}" ></option>
 												<option value="3_DAYS" th:text="#{ontology.clean.threedays}"></option>
@@ -976,153 +923,7 @@
 										</div>
 									</div>
 								</div>
-							</div>
-							<div class="tab-pane " id="tab_data">
-								<div class="row main">
-									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
-										<span th:text="#{ontology.dataaccess}" >Data Access Settings </span>
-									</div>
-								</div>
-								<!-- ONTOLOGY DATA ACCESS -->
-								<div class="row main pageCreateHeader no-margin-left padding-left-10 padding-right-10">
-									<label class="no-padding-bottom" th:text=="'+'"></label>
-									<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{ontology.data.user.title.add}"></label>
-									<i class="la la-info-circle popovers" style="color: #1168A6;" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.userdataaccess.info},data-title=#{ontology.data.user.title}"></i>
-								</div>
-								<div class="row main borderPanel no-margin-left">
-									<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(40vh);">
-										<div class="form-group">
-											<label class="control-label" th:text="#{ontology.user}">User</label>
-											<select id="usersdata" class="selectpicker form-control" data-live-search="true" data-width="100%" >
-												<option value="" th:text="#{ontology.userselect}"> Select User...</option>
-												<option th:each="user :${users}" th:value="${user.userId}" th:if="${user.active}" th:text="${user.fullName} +'('+ ${user.userId} +')'" ></option>
-											</select>
-										</div>
-										<div class="form-group">
-											<label class="control-label" th:text="#{ontology.data.atributte}">Attribute</label>
-											<input type="text" id="userattribute" name="userattribute"  class="form-control"/>
-										</div>
-										<div class="form-group">
-											<label class="control-label" th:text="#{ontology.data.atributtevalue}">Value</label>
-											<input type="text" id="userattributevalue" name="attributevalue" class="form-control"/>
-										</div>
-										<div class="form-group margin-top-30">
-											<div class="row main">
-												<div class="col-md-6 col-sm-6 col-xs-6">
-													<button type="button" class="btn btn-data pull-left" onclick="insertUserDataAccess('AND')" th:text="#{ontology.insertuserdataaccessAND}">Insert User Data Access</button>
-												</div>
-												<div class="col-md-6 col-sm-6 col-xs-6">
-													<button type="button" class="btn btn-data pull-right" onclick="insertUserDataAccess('OR')" th:text="#{ontology.insertuserdataaccessOR}">Insert User Data Access</button>
-												</div>
-											</div>
-										</div>
-									</div>
-									<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(40vh); max-height: calc(42vh); overflow:auto">
-										<div class="form-group" style="margin-bottom: 0px">
-											<div id="userdataaccess" class="margin-bottom-20 hide">
-												<table class="table" id="ontology_userdataaccess" data-loaded="false">
-													<thead class="table-header-background">
-														<tr class="cabecera-tabla" role="row" >
-															<th class="titulo-columnas" th:text="#{ontology.user}">User</th>
-															<th class="titulo-columnas" th:text="#{ontology.data.rule}">Value</th>
-															<th class="titulo-columnas text-center" th:text="#{gen.options}">Options</th>
-														</tr>
-													</thead>
-													<tbody style="border-bottom: 1px solid #ddd;" th:remove="all-but-first">
-														<tr class="userdataaccess-model">
-															<td><input type="text" name="user" readonly="readonly" class="form-control"/></td>
-															<td><input type="text" name="rule" class="form-control"/></td>
-															<td class="hide"><input type="text" name="idDataAccess"/></td>
-															<td  width="150px" class="no-wrap text-center">
-																<button type="button" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips btn-mountable-authorization-remove" style="background-color:transparent;" onclick="updateUserDataAccess(this)"> <i class="icon-reload"></i></button>
-																<button type="button" class="btn btn-xs btn-no-border icon-on-table color-red tooltips btn-mountable-authorization-remove" style="background-color:transparent;" onclick="removeUserDataAccess(this)"> <i class="icon-delete"></i></button>
-															</td>
-														</tr>
-													</tbody>
-												</table>
-											</div>
-											<div id="imageNoUserRulesOnTable" hide>
-												<img id="headerImg" alt="logo" style="width: 72px; height:113px; display: block;   margin-top:27px;  margin-left: auto;margin-right:auto;"  src="/controlpanel/static/images/emptyUsers.svg">
-												<label style=" display: block;   margin: 0 auto; font-style: italic;font-weight: normal;font-size: 17px;line-height: 24px;text-align: center;color:#505D66;" th:text="#{ontology.userdataaccess.nouser}"></label>
-												<label style=" display: block;   margin: 0 auto; font-style: normal;font-weight: normal;font-size: 11px;line-height: 16px;text-align: center;color: #A7AEB2;" th:text="#{ontology.userdataaccess.table.info}"></label>
-											</div>
-										</div>
-									</div>
-								</div>
-								<div class="row main pageCreateHeader no-margin-left padding-left-10 margin-top-20">
-									<label class="no-padding-bottom" th:text=="'+'"></label>
-									<label class="no-padding-bottom" style="font-weight: bold;" th:text="#{ontology.data.role.title.add}"></label>
-									<i class="la la-info-circle popovers" style="color: #1168A6;" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{ontology.roledataaccess.info},data-title=#{ontology.data.role.title}"></i>
-								</div>
-								<div class="row main borderPanel no-margin-left">
-									<div class="col-md-3 col-sm-6 col-xs-12 padding-top-10 padding-right-20 border-right" style="min-height: calc(40vh);">
-										<div class="form-group">
-											<label class="control-label" th:text="#{ontology.realm}">Realm</label>
-											<select id="realmdata" class="selectpicker form-control" data-live-search="true" data-width="100%" >
-												<option value="" th:text="#{ontology.realmselect}"> Select Realm...</option>
-												<option th:each="realm :${realms}" th:value="${realm.id}" th:text="${realm.identification}" ></option>
-											</select>
-										</div>
-										<div class="form-group">
-											<label class="control-label" th:text="#{ontology.role}">Role</label>
-											<select id="roledata" class="selectpicker form-control" data-live-search="true" data-width="100%" >
-												<option value="" th:text="#{ontology.roleselect}"> Select Role...</option>
-											</select>
-										</div>
-										<div class="form-group">
-											<label class="control-label" th:text="#{ontology.data.atributte}">Attribute:</label>
-											<input type="text" id="roleattribute" name="roleattribute" class="form-control"/>
-										</div>
-										<div class="form-group">
-											<label class="control-label" th:text="#{ontology.data.atributtevalue}">Value:</label>
-											<input type="text" id="roleattributevalue" name="roleattributevalue" class="form-control"/>
-										</div>
-										<div class="form-group margin-top-30">
-											<div class="row main">
-												<div class="col-md-6 col-sm-6 col-xs-6">
-													<button type="button" class="btn btn-data pull-left" onclick="insertRoleDataAccess('AND')" th:text="#{ontology.insertroledataaccessAND}">Insert Role Data Access</button>
-												</div>
-												<div class="col-md-6 col-sm-6 col-xs-6">
-													<button type="button" class="btn btn-data pull-right" onclick="insertRoleDataAccess('OR')" th:text="#{ontology.insertroledataaccessOR}">Insert Role Data Access</button>
-												</div>
-											</div>
-										</div>
-									</div>
-									<div class="col-md-9 col-sm-6 col-xs-12 padding-bottom-10 no-padding-both" style="margin-top: -3px; min-height: calc(40vh); max-height: calc(42vh); overflow:auto">
-										<div class="form-group" style="margin-bottom: 0px">
-											<div id="roledataaccess" class="margin-bottom-20 hide">
-												<table class="table" id="ontology_roledataaccess" data-loaded="false">
-													<thead class="table-header-background">
-														<tr class="cabecera-tabla" role="row" >
-															<th class="titulo-columnas" th:text="#{ontology.realm}">Realm</th>
-															<th class="titulo-columnas" th:text="#{ontology.role}">Role</th>
-															<th class="titulo-columnas" th:text="#{ontology.data.rule}">Rule</th>
-															<th class="titulo-columnas text-center" th:text="#{gen.options}">Options</th>
-														</tr>
-													</thead>
-													<tbody style="border-bottom: 1px solid #ddd;" th:remove="all-but-first">
-														<tr class="roledataaccess-model">
-															<td><input type="text" name="realm" readonly="readonly" class="form-control"/></td>
-															<td><input type="text" name="role" readonly="readonly" class="form-control"/></td>
-															<td><input type="text" name="rolerule" class="form-control"/></td>
-															<td class="hide"><input type="text" name="idDataAccessRule"/></td>
-															<td class="no-wrap text-center">
-																<button type="button" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips btn-mountable-authorization-remove" style="background-color:transparent;" onclick="updateRoleDataAccess(this)"> <i class="icon-reload"></i></button>
-																<button type="button" class="btn btn-xs btn-no-border icon-on-table color-red tooltips btn-mountable-authorization-remove" style="background-color:transparent;" onclick="removeRoleDataAccess(this)"> <i class="icon-delete"></i></button>
-															</td>
-														</tr>
-													</tbody>
-												</table>
-											</div>
-											<div id="imageNoRoleRulesOnTable" hide>
-												<img id="headerImg" alt="logo" style="width: 72px; height:113px; display: block;   margin-top:27px;  margin-left: auto;margin-right:auto;"  src="/controlpanel/static/images/emptyUsers.svg">
-												<label style=" display: block;   margin: 0 auto; font-style: italic;font-weight: normal;font-size: 17px;line-height: 24px;text-align: center;color:#505D66;" th:text="#{ontology.roledataaccess.norole}"></label>
-												<label style=" display: block;   margin: 0 auto; font-style: normal;font-weight: normal;font-size: 11px;line-height: 16px;text-align: center;color: #A7AEB2;" th:text="#{ontology.roledataaccess.table.info}"></label>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>					
+							</div>						
 						</div>							
 					</div>
 				</form>
@@ -1226,12 +1027,8 @@
 	var authorizationUpdateArr  = []; // get authorizations of the ontology
 	var authorizationsIds 		= []; // get authorizations ids for actions
 	var authorizationObj 		= {}; // object to receive authorizations
-	var accessUserArr 			= []; // add user data Access
-	var accessRoleArr 			= []; // get role data Access
 	var ontologyId;
 	var mountableModel2 = $('#ontology_autthorizations').find('tr.authorization-model')[0].outerHTML;
-	var mountableModel3 = $('#ontology_userdataaccess').find('tr.userdataaccess-model')[0].outerHTML;
-	var mountableModel4 = $('#ontology_roledataaccess').find('tr.roledataaccess-model')[0].outerHTML;
 	var secsValues = [1,2,3,4,5,6,10,12,15,20,30];
 	var hourValues = [1,2,3,4,6,8,12];
 	var tagsAndFieldsList=[];
@@ -1301,7 +1098,6 @@
 			 	  var arr = ["NONE", "LAST", "FIRST", "PUSH"];
 			  	  fillAggregationTypesForSignal(arr);
 				  break;
-			  case "BOOLEAN":
 			  case "OBJECT":
 			 	  var arr = ["NONE", "LAST", "FIRST"];
 			  	  fillAggregationTypesForSignal(arr);
@@ -1328,7 +1124,6 @@
 		    		   ");";
 		    	setMonacoCompressionValue(query);
 		    }
-		    setCompressionLapseOpt();
 		  } else {
 			$("#queryDataCompression").hide();
 			$("#compressionLapseOpt").prop('disabled', 'disabled');
@@ -1591,14 +1386,17 @@
 		});
 	}
 	
+	
 	var setCompressionLapseOpt = function(){
-		var optSelected = $('#compressionLapseOpt').val();
-		$('#compressionConfig').val(optSelected);
+		
+		var deletionLapse = $("#compressionLapseOpt option:selected").text();
+		$("#compressionConfig").val(deletionLapse);
 	}
 	
 	var setRtdbCleanLapse = function(){
-		var optSelected = $('#rtdbCleanLapseOpt').val();
-		$('#rtdbCleanLapse').val(optSelected);
+		
+		var deletionLapse = $("#rtdbCleanLapseOpt option:selected").text();
+		$("#rtdbCleanLapse").val(deletionLapse);
 	}
 
 	$('input,textarea,select:visible').filter('[required]').bind('blur', function (ev) { // fires on every blur
@@ -1618,21 +1416,18 @@
 			$("#tagType option[value='TIMESTAMP']").remove();
 			$("#fieldType").selectpicker('refresh');
 			$("#tagType").selectpicker('refresh');
-			//Remove FREQU NONE & NODUP
+			//Remove FREQU NONE
 			$("#freqMongo option[value='NONE']").remove();
-			$("#freqMongo option[value='NODUPS']").remove();
 			$("#freqMongo").selectpicker('refresh');
 			//Hide timescale conf
 			document.getElementById("MongoDBDesc").style.display = '';
 			document.getElementById("TimescaleDBDesc").style.display = 'none';
-			document.getElementById("informationFieldsCreationForm").style.display = '';
 			$('.timescaleSignalProps').hide();
 			$("#auxdataDiv").show();
-			$('#tab-advanced-options').hide()
+			
 		} else {	
 			//Add ARRAY data types if not exists
 			$("#auxdataDiv").hide();
-			$('#tab-advanced-options').show()
 			var optionExists = ($('#fieldType option[value="ARRAY"]').length > 0);
 			if(!optionExists){
 				var element = "ARRAY";
@@ -1684,7 +1479,6 @@
 			}
 			document.getElementById("MongoDBDesc").style.display = 'none';
 			document.getElementById("TimescaleDBDesc").style.display = '';
-			document.getElementById("informationFieldsCreationForm").style.display = 'none';
 			$('.timescaleSignalProps').show(); // Shows
 		}
 	}
@@ -1722,36 +1516,6 @@
 			
 			toastr.success(messagesForms.operations.genOpSuccess,'');
 		} else {
-			toastr.error(messagesForms.operations.genOpError,[[#{ontology.valid.duplicates}]]);
-			return false;
-		}
-	}
-	
-	var addOpotionalFieldRow = function() {
-		var NameSelected = $("#optionalFieldName").val();
-		var typeSelected = $("#optionalFieldType option:selected").val();
-		if (NameSelected === "" || typeSelected=== "") {
-			toastr.error(messagesForms.operations.genOpError,[[#{apimanager.customsql.error.fields}]]);
-			return false;
-		}
-		if(!tagsAndFieldsList.includes(NameSelected))
-		{
-			tagsAndFieldsList.push(NameSelected);
-			$('#optional_fields_properties > tbody')
-					.append(
-							'<tr class="optionalFieldRow"><td>'
-									+ NameSelected
-									+ '</td><td >'
-									+ typeSelected
-									+ '</td><td class="text-center"><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="removeTagRow(this)"><i class="icon-delete"></i></button></td></tr>');
-			$('#optionalFieldName').val( '' );
-			$('#optionalFieldName').selectpicker('deselectAll').selectpicker('refresh');
-			$('#optionalFieldType').val( '' );
-			$('#optionalFieldType').selectpicker('deselectAll').selectpicker('refresh');
-			
-			toastr.success(messagesForms.operations.genOpSuccess,'');
-		}
-		else{
 			toastr.error(messagesForms.operations.genOpError,[[#{ontology.valid.duplicates}]]);
 			return false;
 		}
@@ -2157,31 +1921,7 @@
 		$('#field_types').val(ftypes);
 		$('#field_aggregations').val(faggrfunctions);
 		$('#field_push_signals').val(fpushsignals);
-
-		//optional fields
-		var optionalfieldinfo = document.getElementsByClassName('optionalFieldRow');
-		var ofnames=[];
-		var oftypes=[];
-		var tds=[];
-		for(i=0;optionalfieldinfo.length>i;i++)
-		{
-			tds=[];
-			for(j=0;optionalfieldinfo[i].childNodes.length>j;j++)
-			{
-				if(optionalfieldinfo[i].childNodes[j].localName == "td")
-				{
-					tds.push(optionalfieldinfo[i].childNodes[j].innerText);
-				}
-				
-			}
-			ofnames.push(tds[0]);
-			oftypes.push(tds[1]);
-		}
-		$('#optionalFieldsNames').val(ofnames);
-		$('#optionalFieldTypes').val(oftypes);
-		//end optional fields
-		if(document.getElementById('enginetimeseries').value=="MONGO")
-		{
+		if (document.getElementById('enginetimeseries').value=="MONGO") {
 			var windowinfo = document.getElementsByClassName('windowRow');
 			var windows=[];
 			var freqs=[];
@@ -2256,7 +1996,7 @@
 			// Hypertable query
 			$('#hypertableQuery').val(getMonacoValue());
 			$('#compressionQuery').val(getMonacoCompressionValue());
-			$('#compressionConfig').val($('#compressionLapseOpt').val());
+			$('#compressionConfig').val($('#compressionLapseOpt option:selected').text());
 		}
 	}
 	
@@ -2489,10 +2229,8 @@
     			wizardStep = 2;
 			
 		} else if (wizardStep == 2){
-			if(document.getElementById('enginetimeseries').value=="TIMESCALE") {
-				$('#tab-advanced-options a').removeClass('disabled');
-				$('#tab-advanced-options a').click();
-			}
+			$('#tab-advanced-options a').removeClass('disabled');
+			$('#tab-advanced-options a').click();
 			$('#continueBtn').addClass('hide');
 			$('#createWizardBtn').removeClass('hide');
 			wizardStep = 3;	
@@ -2575,18 +2313,13 @@
 							sendDatatoController();
 							$("#schema").val("");
 							$("#rtdb").val(document.getElementById('enginetimeseries').value);
+							//$("#rtdbCleanLapse").val("NEVER");
 							var schemaJson = createJsonSchema();
 							$("#schema").val(schemaJson);
 							form1.ajaxSubmit({type: 'post', success : function(data){
 									console.log(data);
 									toastr.success(messagesForms.validation.genFormSuccess,'');
-									
-									if(form.baseURI.includes('/updatetimeseries')){ //update entity timeseries
-											navigateUrl(data.redirect);
-									}else { //create entity timeseries
-											$('#modal-created').modal('show');
-									}
-								
+									$('#modal-created').modal('show');
 								//	navigateUrl(data.redirect);
 								}, error: function(data){
 									toastr.error(messagesForms.operations.genOpError,data.responseJSON.cause);
@@ -2668,7 +2401,10 @@
 	
 	jQuery(document).ready(function() {
 		handleValidation();
-		handleTabsChange();	
+		handleTabsChange();
+		
+		
+	
 		
 		$('.tagsinput').filter('[required]').parent().on('blur', 'input', function(event) {
 			
@@ -2710,7 +2446,7 @@
 	        
 		} else {
 			$('#active').trigger('click');
-	        //$('#contextDataEnabled').trigger('click');
+	        $('#contextDataEnabled').trigger('click');
 		}
 		
 		// INPUT MASK FOR ontology identification allow only letters, numbers and _
@@ -2800,69 +2536,6 @@
 		}
 		
 		showHideImageTableOntology();
-		
-		// if ontology has dataaccess we load it!.
-		dataaccessesJson = ontologyCreateJson.dataaccesses;
-		if (dataaccessesJson.length > 0 ){
-			// MOUNTING DATA ACCESS ARRAY
-			$.each( dataaccessesJson, function (key, object){
-				if (object.userId!=null && object.userId!=''){
-					var propUserAccess = {"user": object.userId, "rule": object.rule, "idDataAccess": object.id};
-					
-					accessUserArr.push(propUserAccess);
-					
-					console.log('      |----- dataaccess object , ID: ' + object.id + ' USER: ' +  object.userId + ' RULE: ' +  object.rule );
-				} else {
-					
-					var propRoleAccess = {"realm": object.appName, "role": object.appRoleName, "rolerule": object.rule, "idDataAccessRule": object.id};
-					
-					accessRoleArr.push(propRoleAccess);
-					
-					console.log('      |----- dataaccess object , ID: ' + object.id + ' REALM: ' +  object.realm + ' ROLE: ' +  object.role + ' RULE: ' +  object.rule );					
-				}
-			});
-
-			if (accessUserArr.length > 0) {
-				// TO-HTML
-				if ($('#userdataaccess').attr('data-loaded') === 'true'){
-					$('#ontology_userdataaccess > tbody').html("");
-					$('#ontology_userdataaccess > tbody').append(mountableModel3);
-				}
-				console.log('accessUserArr on UPDATE: ' + accessUserArr.length + ' Arr: ' + JSON.stringify(accessUserArr));
-				$('#ontology_userdataaccess').mounTable(accessUserArr,{
-					model: '.userdataaccess-model',
-					noDebug: false
-				});
-
-				// hide info , disable user and show table
-				$('#imageNoUserRulesOnTable').toggle($('#imageNoUserRulesOnTable').hasClass('hide'));
-				$('#userdataaccess').removeClass('hide');
-				$('#userdataaccess').attr('data-loaded',true);// TO-HTML
-				$("#users").selectpicker('deselectAll');
-			}
-			if (accessRoleArr.length > 0) {
-				// TO-HTML
-				if ($('#roledataaccess').attr('data-loaded') === 'true'){
-					$('#ontology_roledataaccess > tbody').html("");
-					$('#ontology_roledataaccess > tbody').append(mountableModel4);
-				}
-				console.log('accessRoleArr on UPDATE: ' + accessRoleArr.length + ' Arr: ' + JSON.stringify(accessRoleArr));
-				$('#ontology_roledataaccess').mounTable(accessRoleArr,{
-					model: '.roledataaccess-model',
-					noDebug: false
-				});
-
-				// hide info , disable user and show table
-				$('#imageNoRoleRulesOnTable').toggle($('#imageNoRoleRulesOnTable').hasClass('hide'));
-				$('#roledataaccess').removeClass('hide');
-				$('#roledataaccess').attr('data-loaded',true);// TO-HTML
-				$("#realmdata").selectpicker('deselectAll');
-				$("#roledata").selectpicker('deselectAll');
-				$("#entitydclassdata").selectpicker('deselectAll');
-				$("#propdclassdata").selectpicker('deselectAll');
-			}
-
-		}
 	
 	});
 	
@@ -3036,262 +2709,6 @@
 
 	}
 	
-	var dataAccess = function(action,ontId,realm,role,user,rule,selId,btn){
-		console.log('|---> authorization()');	
-		var insertURL = '/controlpanel/ontologies/dataaccess';
-		var deleteURL = '/controlpanel/ontologies/dataaccess/delete';
-		var response = {};
-		var csrf_value = $("meta[name='_csrf']").attr("content");
-		var csrf_header = $("meta[name='_csrf_header']").attr("content");
-		
-		if (action === 'insert'){
-			console.log('    |---> Inserting... ' + insertURL);
-			
-			$.ajax({
-				url:insertURL,
-                headers: {
-					[csrf_header]: csrf_value
-			    },
-				type:"POST",
-				async: true,
-				data: {"ontId": ontId, "realm": realm, "role": role, "user": user,"rule": rule, "id": selId},			 
-				dataType:"json",
-				success: function(response,status){							
-					if (response.userId!=null && response.userId!=""){
-					
-						var propUserAccess = {"user": response.userId, "rule": response.rule, "idDataAccess": response.id};
-						
-						// remove object
-						const elementIndex = accessUserArr.findIndex(function(item) {return item.idDataAccess == response.id;});
-						
-						if (elementIndex!=-1){
-							accessUserArr[elementIndex]=propUserAccess;
-						} else {
-							accessUserArr.push(propUserAccess);							
-						}
-
-						console.log('     |---> JSONtoTable: ' + accessUserArr.length + ' data: ' + JSON.stringify(accessUserArr));
-											
-						// TO-HTML
-						if ($('#userdataaccess').attr('data-loaded') === 'true'){
-							$('#ontology_userdataaccess > tbody').html("");
-							$('#ontology_userdataaccess > tbody').append(mountableModel3);
-						}
-						console.log('accessUserArr: ' + accessUserArr.length + ' Arr: ' + JSON.stringify(accessUserArr));
-						$('#ontology_userdataaccess').mounTable(accessUserArr,{
-							model: '.userdataaccess-model',
-							noDebug: false							
-						});
-						
-						// hide info , disable user and show table
-						$('#imageNoUserRulesOnTable').toggle($('#imageNoUserRulesOnTable').hasClass('hide'));			
-						$("#usersdata").selectpicker('deselectAll');
-						$("#userattribute").val("");
-						$("#userattributevalue").val("");
-						$('#userdataaccess').removeClass('hide');
-						$('#userdataaccess').attr('data-loaded',true);
-					
-					} else {
-						
-						var propRoleAccess = {"realm": response.appName, "role": response.appRoleName, "rolerule": response.rule, "idDataAccessRule": response.id};
-						
-						// remove object
-						const elementIndex = accessRoleArr.findIndex(function(item) {return item.idDataAccessRule == response.id;});
-						
-						if (elementIndex!=-1){
-							accessRoleArr[elementIndex]=propRoleAccess;
-						} else {
-							accessRoleArr.push(propRoleAccess);							
-						}
-						
-						console.log('     |---> JSONtoTable: ' + accessRoleArr.length + ' data: ' + JSON.stringify(accessRoleArr));
-											
-						// TO-HTML
-						if ($('#roledataaccess').attr('data-loaded') === 'true'){
-							$('#ontology_roledataaccess > tbody').html("");
-							$('#ontology_roledataaccess > tbody').append(mountableModel4);
-						}
-						console.log('accessUserArr: ' + accessRoleArr.length + ' Arr: ' + JSON.stringify(accessRoleArr));
-						$('#ontology_roledataaccess').mounTable(accessRoleArr,{
-							model: '.roledataaccess-model',
-							noDebug: false							
-						});
-						
-						// hide info , disable user and show table
-						$('#imageNoRoleRulesOnTable').toggle($('#imageNoRoleRulesOnTable').hasClass('hide'));			
-						$("#realmdata").selectpicker('deselectAll');
-						$("#roledata").selectpicker('deselectAll');
-						$("#roleattribute").val("");
-						$("#roleattributevalue").val("");
-						$('#roledataaccess').removeClass('hide');
-						$('#roledataaccess').attr('data-loaded',true);
-					}
-					toastr.success(messagesForms.operations.genOpSuccess,'');
-				},
-				error: function(response,status){
-					toastr.error(messagesForms.operations.genOpError,'');
-				}
-			});	
-			
-		}
-		if (action  === 'delete'){
-			console.log('    |---> Deleting... with dataAccessId:' + selId );
-			var csrf_value = $("meta[name='_csrf']").attr("content");
-			var csrf_header = $("meta[name='_csrf_header']").attr("content");
-			$.ajax({url:deleteURL, type:"POST", async: true,
-				headers: {
-					[csrf_header]: csrf_value
-			    },
-				data: {"id": selId},
-				dataType:"json",
-				success: function(response,status){
-
-					// remove object
-					accessUserArr = accessUserArr.filter(function(item) {return item.idDataAccess!== selId;});
-					// remove object
-					accessRoleArr = accessRoleArr.filter(function(item) {return item.idDataAccessRule !== selId;});
-
-					// refresh interface. TO-DO: EL this este fallará
-					if ( response  ){
-						$(btn).closest('tr').remove();
-						if (accessUserArr.length == 0 && !$('#imageNoUserRulesOnTable').is(':visible')){
-							$('#imageNoUserRulesOnTable').toggle(!$('#imageNoUserRulesOnTable').is(':visible'));
-							$('#userdataaccess').addClass('hide');
-						}
-						if (accessRoleArr.length == 0 && !$('#imageNoRoleRulesOnTable').is(':visible')){
-							$('#imageNoRoleRulesOnTable').toggle(!$('#imageNoRoleRulesOnTable').is(':visible'));
-							$('#roledataaccess').addClass('hide');
-						}
-
-					}
-					else{
-						$.alert({title: 'ALERT!', theme: 'light',  content: 'NO RESPONSE!'});
-					}
-					toastr.success(messagesForms.operations.genOpSuccess,'');
-				},
-				error: function(response,status){
-					toastr.error(messagesForms.operations.genOpError,'');
-				}
-			});
-		}
-	};
-	
-	// INSERT USER DATA AUTHORIZATION
-	function insertUserDataAccess(obj){
-		console.log('insertUserDataAccess()');
-		if ( ontologyCreateJson.actionMode !== null){
-			// UPDATE MODE ONLY AND VALUES on user and accesstype
-			if (($('#usersdata').val() !== '') && ($("#usersdata option:selected").attr('disabled') !== 'disabled') && ($('#userattribute').val() !== '') && ($('#userattribute').val() !== '')){
-
-				// AJAX INSERT (ACTION,ONTOLOGYID,USER,ACCESSTYPE) returns
-				// object with data.
-				
-				//(if rule exist)
-				var rule = '';
-				var ruleItem = accessUserArr.find(function(item) {return item.user == $('#usersdata').val();});
-				
-				if (ruleItem) {
-					rule = ruleItem.rule + ' ' + cond + ' ';
-				}
-				
-				rule = rule + $('#userattribute').val() + ' = ' + $('#userattributevalue').val();
-				
-				dataAccess('insert', ontologyCreateJson.ontologyId, '', '', $('#usersdata').val(), rule, '');
-
-			} else {  
-				toastr.error(messagesForms.operations.genOpError,ontologyCreateJson.validations.authuser);
-			}	
-		}
-	}
-	
-	// UPDATE USER DATA AUTHORIZATION
-	function updateUserDataAccess(obj){
-		console.log('updateUserDataAccess()');
-		if (ontologyCreateJson.actionMode !== null){
-			// UPDATE MODE ONLY AND VALUES on user and accesstype
-
-			// AJAX INSERT (ACTION,ONTOLOGYID,USER,ACCESSTYPE) returns
-			// object with data.
-			var selUser = $(obj).closest('tr').find("input[name='user']").val();
-			var selRule = $(obj).closest('tr').find("input[name='rule']").val();
-			
-			dataAccess('insert', ontologyCreateJson.ontologyId, '', '', selUser, selRule, '');
-		}
-	}
-	
-	// REMOVE USER DATA AUTHORIZATION
-	function removeUserDataAccess(obj){
-		console.log('removeUserDataAccess()');
-		if (ontologyCreateJson.actionMode !== null){
-
-			// AJAX REMOVE
-			// object with data.
-			var selDataAccess = $(obj).closest('tr').find("input[name='idDataAccess']").val();
-
-			console.log('removeDataAccess:' + selDataAccess);
-
-			dataAccess('delete', '', '', '', '', '', selDataAccess, obj);
-		}
-	}
-	
-	// INSERT ROLE DATA AUTHORIZATION
-	function insertRoleDataAccess(obj){
-		console.log('insertUserDataAccess()');
-		if (ontologyCreateJson.actionMode !== null){
-			// UPDATE MODE ONLY AND VALUES on user and accesstype
-			if (($('#roledata').val() !== '') && ($("#roledata option:selected").attr('disabled') !== 'disabled') && ($('#roleattribute').val() !== '') && ($('#roleattributevalue').val() !== '')){
-
-				// AJAX INSERT (ACTION,ONTOLOGYID,USER,ACCESSTYPE) returns
-				// object with data.
-				//(if rule exist) 
-				var rule = '';
-				var ruleItem = accessRoleArr.find(function(item) {return ((item.role == $('#roledata option:selected').text()) && (item.realm == $('#realmdata option:selected').text()))});
-				
-				if (ruleItem) {
-					rule = ruleItem.rolerule + ' ' + cond + ' ';
-				}
-									
-				rule = rule + $('#roleattribute').val() + ' = ' + $('#roleattributevalue').val();					
-									
-				dataAccess('insert', ontologyCreateReg.ontologyId, $('#realmdata option:selected').text(), $('#roledata option:selected').text(), '', rule, '');
-
-			} else {  
-				toastr.error(messagesForms.operations.genOpError,ontologyCreateJson.validations.authrole);
-			}
-		}
-	}
-	
-	// UPDATE ROLE DATA AUTHORIZATION
-	function updateRoleDataAccess(obj){
-		console.log('insertUserDataAccess()');
-		if ( ontologyCreateJson.actionMode !== null){
-			// UPDATE MODE ONLY AND VALUES on user and accesstype
-
-			// AJAX INSERT (ACTION,ONTOLOGYID,USER,ACCESSTYPE) returns
-			// object with data.
-			var selRealm = $(obj).closest('tr').find("input[name='realm']").val();
-			var selRole = $(obj).closest('tr').find("input[name='role']").val();
-			var selRule = $(obj).closest('tr').find("input[name='rolerule']").val();
-								
-			dataAccess('insert', ontologyCreateJson.ontologyId, selRealm, selRole, '', selRule, '');
-		}
-	}
-	
-	// REMOVE ROLE DATA AUTHORIZATION
-	function removeRoleDataAccess(obj){
-		console.log('removeUserDataAccess()');
-		if ( ontologyCreateReg.actionMode !== null){
-
-			// AJAX REMOVE
-			// object with data.
-			var selDataAccess = $(obj).closest('tr').find("input[name='idDataAccessRule']").val();
-
-			console.log('removeDataAccess:' + selDataAccess);
-
-			dataAccess('delete', '', '', '', '', '', selDataAccess, obj);
-		}
-	}
-	
 	// return position to find authId.
 	var foundIndex = function(what,item,arr){
 		var found = '';
@@ -3356,10 +2773,9 @@
 			"schema" : [[#{ontology.virtual.schema.error}]],
 			"jsonldformat": [[#{ontology.valid.jsonldformat}]]
 		},
-		"appId" : [[${appId}]],
-		"dataaccesses" : [[${dataaccesses}]]
+		"appId" : [[${appId}]]
 	};
-	$(window).on("load",function(){
+	$(window).load(function(){
 		var htmlelement = document.getElementById('querySql');
 		codeEditor = monaco.editor.create(htmlelement, {
 		       language: 'sql', 
@@ -3396,7 +2812,6 @@
 				//set advanced properties
 				setMonacoValue(timescaleProps.hypertableQuery);
 				$("#auxdataDiv").hide();
-				$('#tab-advanced-options').show()
 				if(timescaleProps.compressionActive){
 					//activate check
 					$("#compressionCheck").prop('checked', true);
@@ -3413,9 +2828,8 @@
 					//update selection
 					var selection = timescaleProps.retentionBefore + "_"+timescaleProps.retentionUnit;
 					$('#rtdbCleanLapseOpt').val(selection.toUpperCase());
+					$('#rtdbCleanLapseOpt').trigger('change');
 				}
-				$('#rtdbCleanLapseOpt').trigger('change');
-				
 				// No changes allowed in chunks or frequency config
 				document.getElementById("chunkInterval").disabled=true;
 				document.getElementById("chunkWindowNumTimescale").disabled=true;

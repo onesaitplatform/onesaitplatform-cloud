@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,9 +98,8 @@ public class LayerRestController {
 	@PostMapping("/")
 	public ResponseEntity<String> create(@RequestBody(required = true) LayerDTO layerDto)
 			throws JsonProcessingException {
-		if (log.isDebugEnabled()) {
-			log.debug("Recieved request to create a new layer {}", layerDto.getIdentification());
-		}
+
+		log.debug("Recieved request to create a new layer {}", layerDto.getIdentification());
 
 		User user = userService.getUserByIdentification(utils.getUserId());
 
@@ -163,9 +162,7 @@ public class LayerRestController {
 	@Operation(summary = "Get layer by identification")
 	@GetMapping("/{identification}")
 	public ResponseEntity<LayerDTO> getLayer(@PathVariable("identification") String identification) {
-		if (log.isDebugEnabled()) {
-			log.debug("Get layer {}", identification);
-		}
+		log.debug("Get layer {}", identification);
 		try {
 			Layer layer = layerService.findByIdentification(identification);
 			LayerDTO dto = new LayerDTO();
@@ -183,9 +180,7 @@ public class LayerRestController {
 	@Operation(summary = "Get ontology schema from layer identification")
 	@GetMapping("/{identification}/schema")
 	public ResponseEntity<String> getOntologySchema(@PathVariable("identification") String identification) {
-		if (log.isDebugEnabled()) {
-			log.debug("Get Ontology schema from layer {}", identification);
-		}
+		log.debug("Get Ontology schema from layer {}", identification);
 		try {
 			Layer layer = layerService.findByIdentification(identification);
 			if (layer == null) {
@@ -257,7 +252,6 @@ public class LayerRestController {
 		return ResponseEntity.ok().build();
 	}
 
-	@Operation(summary = "Create crud of the layer")
 	@PostMapping(value = { "/crud" }, produces = "text/plain")
 	public ResponseEntity<String> insert(String layerIdentification, @RequestBody Object data) {
 
@@ -280,7 +274,6 @@ public class LayerRestController {
 		}
 	}
 
-	@Operation(summary = "Update the crud of the layer by layerIdentification and oid")
 	@PutMapping(value = { "/crud" }, produces = "text/plain")
 	public ResponseEntity<String> update(String layerIdentification, @RequestBody Object data, String oid) {
 
@@ -301,7 +294,7 @@ public class LayerRestController {
 			return new ResponseEntity<>(ERROR_UPDATE_DATA, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	@Operation(summary = "Delete the crud of the layer by layerIdentification and oid")
+
 	@DeleteMapping(value = { "/crud" }, produces = "text/plain")
 	public ResponseEntity<String> delete(String layerIdentification, String oid) {
 
@@ -323,7 +316,6 @@ public class LayerRestController {
 		}
 	}
 
-	@Operation(summary = "Get crud of the layer by layerIdentification")
 	@GetMapping(value = { "/crud" }, produces = "text/plain")
 	public ResponseEntity<String> list(String layerIdentification) {
 

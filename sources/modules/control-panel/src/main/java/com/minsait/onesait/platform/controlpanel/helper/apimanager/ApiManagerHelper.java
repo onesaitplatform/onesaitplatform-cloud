@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import com.minsait.onesait.platform.config.model.ApiOperation;
 import com.minsait.onesait.platform.config.model.ApiOperation.Type;
 import com.minsait.onesait.platform.config.model.ApiQueryParameter;
 import com.minsait.onesait.platform.config.model.ApiQueryParameter.HeaderType;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserApi;
@@ -42,12 +41,10 @@ import com.minsait.onesait.platform.config.services.apimanager.operation.Operati
 import com.minsait.onesait.platform.config.services.apimanager.operation.QueryStringJson;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO;
-import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.controller.apimanager.UserApiDTO;
 import com.minsait.onesait.platform.controlpanel.gravitee.dto.ApiPageResponse;
 import com.minsait.onesait.platform.controlpanel.multipart.ApiMultipart;
-import com.minsait.onesait.platform.controlpanel.services.gravitee.GraviteeService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
@@ -76,10 +73,6 @@ public class ApiManagerHelper {
 	private UserService userService;
 	@Autowired
 	private AppWebUtils utils;
-	@Autowired(required = false)
-	private GraviteeService graviteeService;
-	@Autowired
-	private OPResourceService resourceService;
 
 	private static final String API_SERVICES_STR = "apiServices";
 	private static final String API_SWAGGER_UI_STR = "apiSwaggerUI";
@@ -88,7 +81,6 @@ public class ApiManagerHelper {
 	private static final String ENDPOINT_BASE_STR = "endpointBase";
 	private static final String OPERATIONS_STR = "operations";
 	private static final String CLIENTS_STR = "clients";
-	private static final String APP_USER_ACCESS = "app_user_access";
 
 	@Value("${gravitee.enable}")
 	private boolean graviteeOn;
@@ -123,10 +115,8 @@ public class ApiManagerHelper {
 		uiModel.addAttribute("ontologies", ontologies);
 		uiModel.addAttribute("api", new Api());
 		uiModel.addAttribute("graviteeOn", graviteeOn);
-		uiModel.addAttribute("hasJWTPlan", false);
 		uiModel.addAttribute("graviteeSwaggerDoc", new ApiPageResponse());
-		uiModel.addAttribute("endpointGraviteeManagement",
-				resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.MANAGEMENT));
+		uiModel.addAttribute("endpointGraviteeManagement", resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.MANAGEMENT));
 
 	}
 
@@ -146,25 +136,10 @@ public class ApiManagerHelper {
 		if (api.getGraviteeId() == null) {
 			uiModel.addAttribute(API_ENDPOINT_STR, resourcesService.getUrl(Module.APIMANAGER, ServiceUrl.BASE)
 					.concat("server/api/v").concat(api.getNumversion() + "/").concat(api.getIdentification()));
-			uiModel.addAttribute("hasJWTPlan", false);
 		} else {
 			uiModel.addAttribute(API_ENDPOINT_STR,
 					resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.GATEWAY).concat("/")
-							.concat(api.getIdentification()).concat("/v").concat(String.valueOf(api.getNumversion())));
-			
-			
-			boolean hasJWTPlan = false;
-			if(graviteeService!=null && graviteeService.hasJWTPlan(api.getGraviteeId())) {
-				hasJWTPlan=true;
-			}
-			
-			if (hasJWTPlan) {
-				uiModel.addAttribute("hasJWTPlan", true);
-				uiModel.addAttribute("JWTapps", graviteeService.getApplicationsSubscribedToAPI(api.getGraviteeId()));
-			} else {
-				uiModel.addAttribute("hasJWTPlan", false);
-			}
-
+					.concat(api.getIdentification()).concat("/v").concat(String.valueOf(api.getNumversion())));
 		}
 		uiModel.addAttribute(API_SERVICES_STR, resourcesService.getUrl(
 				com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module.APIMANAGER,
@@ -182,16 +157,12 @@ public class ApiManagerHelper {
 			uiModel.addAttribute("postProcessFx", apiManagerService.getPostProccess(api));
 		}
 
-		uiModel.addAttribute("endpointGraviteeManagement",
-				resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.MANAGEMENT));
+		uiModel.addAttribute("endpointGraviteeManagement", resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.MANAGEMENT));
 
 		final Type[] crud = ApiOperation.Type.values();
 		final HeaderType[] paramTypes = ApiQueryParameter.HeaderType.values();
 		uiModel.addAttribute("httpMethods", crud);
 		uiModel.addAttribute("paramTypes", paramTypes);
-		
-		ResourceAccessType resourceAccess = resourceService.getResourceAccess(utils.getUserId(),apiId);
-		uiModel.addAttribute(APP_USER_ACCESS, resourceAccess);
 
 	}
 
@@ -223,7 +194,7 @@ public class ApiManagerHelper {
 		} else {
 			uiModel.addAttribute(API_ENDPOINT_STR,
 					resourcesService.getUrl(Module.GRAVITEE, ServiceUrl.GATEWAY).concat("/")
-							.concat(api.getIdentification()).concat("/v").concat(String.valueOf(api.getNumversion())));
+					.concat(api.getIdentification()).concat("/v").concat(String.valueOf(api.getNumversion())));
 		}
 
 		uiModel.addAttribute("api", api);
@@ -238,9 +209,6 @@ public class ApiManagerHelper {
 		final HeaderType[] paramTypes = ApiQueryParameter.HeaderType.values();
 		uiModel.addAttribute("httpMethods", crud);
 		uiModel.addAttribute("paramTypes", paramTypes);
-		
-		ResourceAccessType resourceAccess = resourceService.getResourceAccess(utils.getUserId(),apiId);
-		uiModel.addAttribute(APP_USER_ACCESS, resourceAccess);
 	}
 
 	private static List<OperationJson> populateOperationsObject(List<ApiOperation> apiOperations) {
@@ -305,7 +273,7 @@ public class ApiManagerHelper {
 
 		if (apiMultipart.getApicachetimeout() != null) {
 
-			if (apiMultipart.getApicachetimeout() > 1000 || apiMultipart.getApicachetimeout() <= 0) {
+			if (apiMultipart.getApicachetimeout() > 1000 || apiMultipart.getApicachetimeout() < 10) {
 				// throw new Exception("Cache Limits exceded");
 			} else {
 				api.setApicachetimeout(apiMultipart.getApicachetimeout());
@@ -364,14 +332,9 @@ public class ApiManagerHelper {
 		}
 	}
 
-	public void populateUserTokenForm(Model model, String access) {
+	public void populateUserTokenForm(Model model) {
 		final User user = userService.getUser(utils.getUserId());
 		model.addAttribute("tokens", userTokenRepository.findByUser(user));
-		if (access == null || access.equals("")) {
-			model.addAttribute("access", UserToken.Access.DEFAULT);
-		} else {
-			model.addAttribute("access", UserToken.Access.valueOf(access));
-		}
 	}
 
 	public void populateApiManagerInvokeForm(Model model, String apiId) {
@@ -387,7 +350,7 @@ public class ApiManagerHelper {
 		final User user = userService.getUser(utils.getUserId());
 		final List<UserToken> userTokenList = userTokenRepository.findByUser(user);
 		final List<String> list = new ArrayList<>();
-		for (final UserToken u : userTokenList) {
+		for (final UserToken u: userTokenList) {
 			list.add(u.getToken());
 		}
 		return list;

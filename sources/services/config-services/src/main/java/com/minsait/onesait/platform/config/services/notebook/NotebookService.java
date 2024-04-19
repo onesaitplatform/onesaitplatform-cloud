@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 
 import com.minsait.onesait.platform.config.dto.NotebookForList;
-import com.minsait.onesait.platform.config.dto.NotebookForListExt;
 import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.model.NotebookUserAccess;
@@ -45,7 +44,10 @@ public interface NotebookService {
 	public Notebook importNotebook(String name, String data, String userId, boolean overwrite,
 			boolean importAuthorizations);
 
-	public Notebook importNotebookFromJupyter(String name, String data, String userId, boolean overwrite, boolean importAuthorizations);
+	public Notebook importNotebookFromJupyter(String name, String data, String userId);
+
+	public Notebook importNotebookFromJupyter(String name, String data, String userId, boolean overwrite,
+			boolean importAuthorizations);
 
 	public Notebook cloneNotebook(String name, String idzep, String userId);
 
@@ -98,10 +100,6 @@ public interface NotebookService {
 	public String cloneNotebookOnlyZeppelin(String nameClone, String notebookZepId, String userId);
 
 	public boolean hasUserPermissionInNotebook(Notebook nt, String userId);
-	
-	public boolean hasUserPermissionReadInNotebook(Notebook nt, String userId);
-	
-	public boolean hasUserPermissionRunInNotebook(Notebook nt, String userId);
 
 	List<NotebookUserAccess> getUserAccess(String notebookId);
 
@@ -156,13 +154,5 @@ public interface NotebookService {
 	List<Notebook> getNotebooksForListWithProjectsAccess(String userId);
 
 	public List<OPResourceDTO> getDtoByUserAndPermissions(String userId, String identification);
-
-	public List<NotebookForListExt> getNotebooksForListExt(String userId);
-
-	public boolean hasUserPermissionReadForNotebook(String zeppelinId, String userId);
-	
-	public boolean hasUserPermissionRunForNotebook(String zeppelinId, String userId);
-
-	public Notebook getNotebookByIdentificationOrId(String identification, String userId);
 
 }

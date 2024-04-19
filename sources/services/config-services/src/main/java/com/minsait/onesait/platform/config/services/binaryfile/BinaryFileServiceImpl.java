@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -134,52 +134,19 @@ public class BinaryFileServiceImpl implements BinaryFileService {
 	}
 
 	@Override
-	public long countFiles(User user, Boolean showAuditFiles) {
+	public List<BinaryFile> getAllFiles(User user) {
 		if (userService.isUserAdministrator(user)) {
-			if (showAuditFiles) {
-				return binaryFileRepository.count();
-			} else {
-				return binaryFileRepository.countNoAudit();
-			}
+			return binaryFileRepository.findAll();
 		}
-		if (showAuditFiles) {
-			return binaryFileRepository.countByUser(user);
-		} else {
-			return binaryFileRepository.countByUserNoAudit(user);
-		}
-		
-	}
-	
-	@Override
-	public List<BinaryFile> getAllFiles(User user, Boolean showAuditFiles) {
-		if (userService.isUserAdministrator(user)) {
-			if (showAuditFiles) {
-				return binaryFileRepository.findAll();
-			} else {
-				return binaryFileRepository.findAllNoAudit();
-			}
-		}
-		if (showAuditFiles) {
-			return binaryFileRepository.findByUser(user);
-		} else {
-			return binaryFileRepository.findByUserNoAudit(user);
-		}
+		return binaryFileRepository.findByUser(user);
 	}
 
 	@Override
-	public List<BinaryFile> getAllFilesFiltered(User user, String fileName, String fileId, String fileExt, String metaData, String owner, Boolean showAuditFiles) {
+	public List<BinaryFile> getAllFilesByName(User user, String name) {
 		if (userService.isUserAdministrator(user)) {
-			if (showAuditFiles) {
-				return binaryFileRepository.findAllByCriteria(fileName, fileId, fileExt, metaData, owner);
-			} else {
-				return binaryFileRepository.findAllByCriteriaNoAudit(fileName, fileId, fileExt, metaData, owner);
-			}
+			return binaryFileRepository.findAllByFileName(name);
 		}
-		if (showAuditFiles) {
-			return binaryFileRepository.findByUserByCriteria(user, fileName, fileId, fileExt, metaData);
-		} else {
-			return binaryFileRepository.findByUserByCriteriaNoAudit(user, fileName, fileId, fileExt, metaData);
-		}
+		return binaryFileRepository.findByUserAndFileName(user, name);
 	}
 
 	@Override

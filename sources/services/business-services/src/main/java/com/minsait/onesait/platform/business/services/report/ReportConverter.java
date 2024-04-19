@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -38,7 +36,6 @@ import com.minsait.onesait.platform.config.model.Report.ReportExtension;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.binaryfile.BinaryFileService;
 import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,20 +47,6 @@ public class ReportConverter {
 	private BinaryRepositoryServiceFactory binaryFactory;
 	@Autowired
 	private BinaryFileService binaryFileService;
-	@Autowired
-	private IntegrationResourcesService resourcesService;
-
-	private String storage;
-
-	@PostConstruct
-	public void init() {
-		try {
-			storage = resourcesService.getGlobalConfiguration().getEnv().getReport().get("resource-storage").toString();
-		} catch (Exception e) {
-			storage = RepositoryType.MONGO_GRIDFS.name();
-			log.warn("resource-storage property not found, chose GRIDFS by default {}", e);
-		}
-	}
 
 	public Report convert(ReportDto report) {
 		log.debug("INI. Convert entity Report: {}  -->  ReportDto");
@@ -88,7 +71,7 @@ public class ReportConverter {
 		final Set<BinaryFile> resources = report.getAdditionalFiles().stream().map(mf -> {
 			if (!mf.isEmpty()) {
 				try {
-					final String fileId = binaryFactory.getInstance(RepositoryType.valueOf(storage)).addBinary(mf, null,
+					final String fileId = binaryFactory.getInstance(RepositoryType.MONGO_GRIDFS).addBinary(mf, null,
 							null);
 					return binaryFileService.getFile(fileId);
 				} catch (final Exception e) {
@@ -103,10 +86,8 @@ public class ReportConverter {
 	}
 
 	public ReportDto convert(Report report) {
-		if (log.isDebugEnabled()) {
-			log.debug("INI. Convert entity Report: {}", report);
-		}
-		
+		log.debug("INI. Convert entity Report: {}", report);
+
 		final ReportDto reportDto = ReportDto.builder().id(report.getId()).identification(report.getIdentification())
 				.description(report.getDescription()).owner(report.getUser().getUserId()).created(report.getCreatedAt())
 				.fileName(report.getIdentification() + "." + report.getExtension().toString().toLowerCase())
@@ -115,9 +96,7 @@ public class ReportConverter {
 						.collect(Collectors.toList()))
 				.isPublic(report.getIsPublic()).dataSourceUrl(report.getDataSourceUrl()).build();
 
-		if (log.isDebugEnabled()) {
-			log.debug("END. Converted ReportDto: {}", reportDto);
-		}
+		log.debug("END. Converted ReportDto: {}", reportDto);
 
 		return reportDto;
 	}
@@ -137,7 +116,7 @@ public class ReportConverter {
 			if (!r.isEmpty()) {
 				target.getResources().removeIf(bf -> bf.getFileName().equalsIgnoreCase(r.getOriginalFilename()));
 				try {
-					final String fileId = binaryFactory.getInstance(RepositoryType.valueOf(storage)).addBinary(r, null,
+					final String fileId = binaryFactory.getInstance(RepositoryType.MONGO_GRIDFS).addBinary(r, null,
 							null);
 					target.getResources().add(binaryFileService.getFile(fileId));
 				} catch (BinaryRepositoryException | IOException e) {

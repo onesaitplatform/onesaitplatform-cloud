@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,17 @@ import java.util.Date;
 
 import com.minsait.onesait.platform.config.model.Api.ApiStates;
 import com.minsait.onesait.platform.config.model.Api.ApiType;
+import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.User;
 
 import lombok.Data;
 
 @Data
-public class ApiForList {
+public class ApiForList{
 
 	private String id;
 	private String identification;
-	private String description;
+	private String description;	
 	private Integer numversion;
 	private User user;
 	private ApiType apiType;
@@ -39,11 +40,10 @@ public class ApiForList {
 	private String graviteeId;
 	private Date createdAt;
 	private Date updatedAt;
-	private boolean isSync = true;
-
+	
 	public ApiForList(String id, String identification, String description, Integer numversion, User user,
-			ApiType apiType, boolean isPublic, byte[] image, ApiStates state, String imageType, Integer apicachetimeout,
-			String graviteeId, Date created_at, Date updated_at) {
+			ApiType apiType, boolean isPublic, byte[] image, ApiStates state, String imageType,
+			Integer apicachetimeout, String graviteeId, Date created_at, Date updated_at) {
 		super();
 		this.id = id;
 		this.identification = identification;

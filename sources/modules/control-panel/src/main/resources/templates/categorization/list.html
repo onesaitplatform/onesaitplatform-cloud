@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -146,26 +146,25 @@
 															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
 															<label th:text="#{categorization.tree}"> Tree </label>
 														</span>
-														
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-															<label th:text="#{gen.active}"> Active</label>
-														</span>
-														<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-															<label th:text="#{categorization.authorization}"> Authorization</label>
-														</span>
-														<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-															<label th:text="#{categorization.authorization}"> Authorization</label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="1"/>
 															<label th:text="#{gen.created}"> Created At </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
 															<label th:text="#{gen.updated}"> Updated At</label>
+														</span>
+														<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<label th:text="#{gen.active}"> Active</label>
+														</span>
+														<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+															<label th:text="#{categorization.authorization}"> Authorization</label>
+														</span>
+														<span th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<label th:text="#{categorization.authorization}"> Authorization</label>
 														</span>
 													</div>
 												</div>
@@ -175,10 +174,10 @@
 													<thead>
 														<tr class="cabecera-tabla">
 															<th dt:sortInitDirection="asc" class="titulo-columnas" th:text="#{categorization.tree}">Tree</th>
-															<th class="titulo-columnas text-left"	th:text="#{gen.active}">Active</th>
-															<th class="titulo-columnas text-left" th:text="#{categorization.authorization}">Authorization</th>
 															<th class="titulo-columnas text-left" th:text="#{gen.created}">Created at</th>
 															<th dt:sortInitDirection="dsc" class="titulo-columnas text-left" th:text="#{consolemenu.updated}">Updated at</th>
+															<th class="titulo-columnas text-left"	th:text="#{gen.active}">Active</th>
+															<th class="titulo-columnas text-left" th:text="#{categorization.authorization}">Authorization</th>
 															<th class="titulo-columnas text-center" th:text="#{gen.options}" style="width:85px;">Options</th>
 														</tr>
 													</thead>
@@ -186,12 +185,6 @@
 														<tr th:each="categorization : ${categorizations}" pages:paginate="10">
 															<!--TREE-->
 															<td class="text-left " th:text="${categorization.categorization.identification}"></td>
-															<!--ACTIVE-->
-															<td class="text-left" th:if="${categorization.active}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span th:text="' '+#{gen.active}" style="color: #2E6B33;"></span></td>
-															<td class="text-left" th:if="${!categorization.active}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.inactive}" style="color: #A73535;"></span></td>
-															<!--AUTHORIZATION-->
-															<td class="text-left" th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" th:text="${categorization.authorizationType}"></td>
-															<td class="text-left" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:text="OWNER"></td>
 															<!--CREATED -->
 															<td class="text-left" th:if="${categorization.categorization.createdAt!=null}">
 															<span th:text="${#dates.format(categorization.categorization.createdAt,'yyyy/MM/dd')}" style="display:none" ></span>
@@ -204,7 +197,12 @@
 															<span th:text="${#dates.format(categorization.categorization.updatedAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${categorization.categorization.updatedAt==null}"
 																th:text="'---'"></td>
-															
+															<!--ACTIVE-->
+															<td class="text-left" th:if="${categorization.active}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span th:text="' '+#{gen.active}" style="color: #2E6B33;"></span></td>
+															<td class="text-left" th:if="${!categorization.active}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.inactive}" style="color: #A73535;"></span></td>
+															<!--AUTHORIZATION-->
+															<td class="text-left" th:if="${#strings.arrayJoin(#authentication.authorities,'')} != 'ROLE_ADMINISTRATOR'" th:text="${categorization.authorizationType}"></td>
+															<td class="text-left" th:if="${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR'" th:text="OWNER"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos text-center">																	
@@ -313,8 +311,8 @@
 
 		// SEARCH FORM RESET
 		$('#reset_tree').on('click',function(){
-			$('#form_tree')[0].reset();
-			$('#form_tree')[0].submit();
+			$('#tree-name').val('');
+			$('#categorizations').DataTable().column(0).search('').draw();
 		});
 
 		// SEARCH FORM
@@ -322,14 +320,17 @@
 			$('#categorizations').DataTable().column(0).search( $('#tree-name').val()).draw();
 		});
 		
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
+	});
+	
+	// MAIN WHEN LOAD
+	$(window).load(function(){ 
 
 		var oTable = $('#categorizations').dataTable({
 	      "bAutoWidth": false
 	      }); 	
 
 		// HIDE COLUMN UPDATEDAT		
-		 $.each([],function(ind,value){  $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		 $.each([1],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
 		// SHOW/HIDE DATATABLES COLUMN INIT 
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));		
 		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		

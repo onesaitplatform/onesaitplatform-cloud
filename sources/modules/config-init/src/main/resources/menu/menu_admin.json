@@ -14,30 +14,12 @@
 			"submenu": [
 				{
 					"title": {
-						"EN": "Environment Management",
-						"ES": "Gestión Entorno",
-						"FR": "Gestion de l'environnement"
-					},
-					"icon": "",
-					"url": "/controlpanel/environments/list"
-				},
-				{
-					"title": {
 						"EN": "Tenants Management",
 						"ES": "Gestión de Tenants",
 						"FR": "Utilisateurs locataires"
 					},
 					"icon": "",
 					"url": "/controlpanel/multitenancy/tenants"
-				},
-				{
-					"title": {
-						"EN": "Plugins Management",
-						"ES": "Gestión de Plugins",
-						"FR": "Gestion des plugins"
-					},
-					"icon": "",
-					"url": "/controlpanel/plugins/list"
 				},
 				{
 					"title": {
@@ -59,12 +41,12 @@
 				},
 				{
 					"title": {
-						"EN": "Assets Market",
-						"ES": "Market de Assets",
-						"FR": "Marché des Actifs"
+						"EN": "Market Assets Management",
+						"ES": "Gestión de Activos del Market",
+						"FR": "Gestion des actifs du marché"
 					},
 					"icon": "",
-					"url": "/controlpanel/bundlerepository/list"
+					"url": "/controlpanel/marketasset/list"
 				},
 				{
 					"title": {
@@ -132,15 +114,6 @@
 			"url": "",
 			"submenu": [
 				{
-                    "title": {
-                        "EN": "Tags Management",
-                        "ES": "Gestión de Etiquetas",
-                        "FR": "Gestion de Tags"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/tags"
-                },
-				{
 					"title": {
 						"EN": "Applications Management",
 						"ES": "Gestión de Aplicaciones",
@@ -157,15 +130,6 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/ontologies/list"
-				},
-				{
-					"title": {
-						"EN": "User Tokens Management",
-						"ES": "Gestión de Tokens de Usuario",
-						"FR": "Gestion des jetons utilisateur"
-					},
-					"icon": "",
-					"url": "/controlpanel/apimanager/token/list?access=MENU"
 				},
 				{
 					"title": {
@@ -202,25 +166,6 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/microservices/list"
-				},	
-				{
-					"title": {
-						"EN": "Microservices Templates",
-						"ES": "Plantillas de MicroServicios",
-						"FR": "Modèles de microservices"
-					},
-					"icon": "",
-					"url": "/controlpanel/mstemplates/list"
-				},
-				{
-					"title": {
-						"EN": "My Git Projects",
-						"ES": "Mis Proyectos Git", 
-						"FR": "Mes Projets Git"
-
-					},
-					"icon": "",
-					"url": "/controlpanel/codeproject/list"
 				},
 				{
 					"title": {
@@ -260,15 +205,6 @@
 			"icon": "icon-visualization",
 			"url": "",
 			"submenu": [
-				 {
-                    "title": {
-                        "EN": "Forms Management",
-                        "ES": "Gestión de Formularios",
-                        "FR": "Gestion des Formes"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/forms/list"
-                } ,
 				{
 					"title": {
 						"EN": "Dashboards Management",
@@ -315,15 +251,6 @@
 					"url": "/controlpanel/reports/list"
 				},
 				{
-                    "title": {
-                        "EN": "Email Templates",
-                        "ES": "Platillas de Email",
-                        "FR": "Modèles d'e-mails"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/emails/list"
-                },
-				{
 					"title": {
 						"EN": "GIS Viewers Management",
 						"ES": "Gestión de Visores GIS",
@@ -340,53 +267,6 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/layers/list"
-				}
-			]
-		},
-		{
-			"title": {
-				"EN": "MAPS",
-				"ES": "MAPAS",
-				"FR": "PLANS"
-			},
-			"icon": "icon-map",
-			"url": "",
-			"submenu": [
-				{
-					"title": {
-						"EN": "Maps Project Management",
-						"ES": "Gestión Proyectos Mapas",
-						"FR": "Cartes de gestion de projet"
-					},
-					"icon": "",
-					"url": "/controlpanel/mapsproject/list"
-				},
-				{
-					"title": {
-						"EN": "Maps Management",
-						"ES": "Gestión de Mapas",
-						"FR": "Cartes de gestion"
-					},
-					"icon": "",
-					"url": "/controlpanel/mapsmap/list"
-				},
-				{
-					"title": {
-						"EN": "Layers Management",
-						"ES": "Gestión Capas",
-						"FR": "Couches de gestion"
-					},
-					"icon": "",
-					"url": "/controlpanel/mapslayer/list"
-				},
-				{
-					"title": {
-						"EN": "Styles Management",
-						"ES": "Gestión Estilos",
-						"FR": "Styles de gestion"
-					},
-					"icon": "",
-					"url": "/controlpanel/mapsstyle/list"
 				}
 			]
 		},
@@ -443,15 +323,14 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/predictors/list"
-				},
-				{
-					"title": {
-						"EN": "Data Labeling Management",
-						"ES": "Gestión De Etiquetado De Datos",
+				},{
+                    "title": {
+                        "EN": "Data Labeling Management",
+                        "ES": "Gestión De Etiquetado De Datos",
 						"FR": "Gestion des étiquetage De Données"
-					},
-					"icon": "",
-					"url": "/controlpanel/datalabeling/list"
+                    },
+                    "icon": "",
+                    "url": "/controlpanel/datalabeling/list"
 				}
 			]
 		},
@@ -670,9 +549,9 @@
 				},
 				{
 					"title": {
-						"EN": "WebApps Management",
-						"ES": "Gestión de WebApps",
-						"FR": "Gestion de WebApps"
+						"EN": "Web Projects Management",
+						"ES": "Gestión de Proyectos Web",
+						"FR": "Gestion de Projets Web"
 					},
 					"icon": "",
 					"url": "/controlpanel/webprojects/list"
@@ -786,15 +665,7 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/low-code/"
-				}, {
-                    "title": {
-                        "EN": "Tracing",
-                        "ES": "Tracing",
-                        "FR": "Tracing"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/tracing/"
-                },
+				},
 				{
 					"title": {
 						"EN": "System Audit",
@@ -913,25 +784,7 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/versioning/restore/resource"
-				},
-				{
-                    "title": {
-                        "EN": "Bundle generation",
-                        "ES": "Generación de paquetes de recursos",
-                        "FR": "Generation de colis"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/bundles/generate"
-                },
-                {
-                    "title": {
-                        "EN": "Bundle load",
-                        "ES": "Carga de paquetes de recursos",
-                        "FR": "Charger des ressources"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/bundles/load"
-                }
+				}
 			]
 		}
 	]

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
@@ -50,7 +49,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
-import com.google.common.collect.ImmutableMap;
 import com.minsait.onesait.platform.commons.git.GitOperations;
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
 import com.minsait.onesait.platform.config.components.CaasConfiguration;
@@ -62,8 +60,8 @@ import com.minsait.onesait.platform.config.model.Microservice.CaaS;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 import com.minsait.onesait.platform.git.GitlabConfiguration;
 import com.minsait.onesait.platform.git.GitlabException;
-import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 
+import avro.shaded.com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -216,12 +214,8 @@ public class OpenshiftServiceImpl implements MSAService {
 	}
 
 	private void loginOc(CaasConfiguration openshift) {
-		loginOc(openshift.getUrl(), openshift.getUser(), openshift.getPassword());
-	}
-
-	private void loginOc(String server, String user, String credentials) {
-		final ProcessBuilder pb = new ProcessBuilder("oc", "login", server, "-u", user, "-p", credentials,
-				"--insecure-skip-tls-verify");
+		final ProcessBuilder pb = new ProcessBuilder("oc", "login", openshift.getUrl(), "-u", openshift.getUser(), "-p",
+				openshift.getPassword(), "--insecure-skip-tls-verify");
 		try {
 			pb.redirectErrorStream(true);
 			executeProcess(pb);
@@ -262,15 +256,11 @@ public class OpenshiftServiceImpl implements MSAService {
 
 			log.debug("Login to oc");
 			loginOc(openshiftConfigId, url);
-			if (log.isDebugEnabled()) {
-				log.debug("Setting project {}", project);
-			}			
+			log.debug("Setting project {}", project);
 			setProject(project);
 			log.debug("Proccesing templates and creating deploy + service in oc");
 			templates.forEach(s -> processTemplate(s, allServices.contains("kafka")));
-			if (log.isDebugEnabled()) {
-				log.debug("Deleting template directory {}", tmpPath);
-			}			
+			log.debug("Deleting template directory {}", tmpPath);
 			gitOperations.deleteDirectory(tmpPath);
 
 		} catch (final GitlabException e) {
@@ -287,24 +277,16 @@ public class OpenshiftServiceImpl implements MSAService {
 		if (gitlabConfig == null) {
 			throw new GitlabException("No gitlab configuration found for the platform credentials");
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("Creating directory {}", tmpPath);
-		}		
+		log.debug("Creating directory {}", tmpPath);
 		gitOperations.createDirectory(tmpPath);
-		if (log.isDebugEnabled()) {
-			log.debug("Configure git with username: {} , email: {}", gitlabConfig.getUser(), gitlabConfig.getEmail());
-		}		
+		log.debug("Configure git with username: {} , email: {}", gitlabConfig.getUser(), gitlabConfig.getEmail());
 		gitOperations.configureGitlabAndInit(gitlabConfig.getUser(), gitlabConfig.getEmail(), tmpPath);
 		log.debug("Setting sparseCheckout true");
 		gitOperations.sparseCheckoutConfig(tmpPath);
 		final String compiledOrigin = getCompiledGitOrigin(gitlabConfig.getUser(), gitlabConfig.getPassword());
-		if (log.isDebugEnabled()) {
-			log.debug("Adding origin {}", compiledOrigin);
-		}		
+		log.debug("Adding origin {}", compiledOrigin);
 		gitOperations.addOrigin(compiledOrigin, tmpPath, true);
-		if (log.isDebugEnabled()) {
-			log.debug("Adding path {} to sparse checkout file", gitPath);
-		}		
+		log.debug("Adding path {} to sparse checkout file", gitPath);
 		gitOperations.sparseCheckoutAddPath(gitPath, tmpPath);
 		log.debug("Checkin out on branch master");
 		gitOperations.checkout("master", tmpPath);
@@ -400,37 +382,10 @@ public class OpenshiftServiceImpl implements MSAService {
 			Thread.sleep(2000);
 			setLimits(microservice.getIdentification());
 			microservice.setOpenshiftNamespace(project);
-			updateImagePullSecrets(microservice);
 		} catch (final Exception e) {
 			log.error("Could not deploy microservice", e);
 		}
 		return microservice.getOpenshiftConfiguration().getUrl();
-	}
-
-	private void updateImagePullSecrets(Microservice microservice) {
-		scaleDown(microservice.getIdentification());
-		ProcessBuilder pb = new ProcessBuilder("oc", "get", "deployment/" + microservice.getIdentification(), "-o",
-				"yaml");
-
-		pb.redirectErrorStream(true);
-		try {
-			final String yamlResult = executeProcess(pb);
-			final Yaml yaml = new Yaml();
-			final Map<String, Object> map = (Map<String, Object>) yaml.load(yamlResult);
-			final Map<String, Object> spec = ((Map<String, Object>) map.get("spec"));
-			final Map<String, Object> template = ((Map<String, Object>) spec.get("template"));
-			final Map<String, Object> specTemplate = ((Map<String, Object>) template.get("spec"));
-			specTemplate.put("imagePullSecrets", List.of(Map.of("name", "artifact-registry")));
-			final String filename = "/tmp/" + microservice.getIdentification() + ".yml";
-			final FileWriter writer = new FileWriter(filename);
-			yaml.dump(map, writer);
-			pb = new ProcessBuilder("oc", "apply", "-f", filename);
-			executeProcess(pb);
-			new File(filename).delete();
-		} catch (final Exception e) {
-			log.error("Couldnt update ImagePullSecrets: " + COULD_NOT_EXECUTE_COMMAND + pb.command(), e);
-		}
-		scaleUp(microservice.getIdentification());
 	}
 
 	@Override
@@ -752,48 +707,4 @@ public class OpenshiftServiceImpl implements MSAService {
 
 	}
 
-	@Async
-	@Override
-	public void runConfigInit(String server, String user, String credentials, String namespace, String verticalSchema,
-			String multitenantAPIKey, Map<String, Boolean> verticalCreation) {
-		verticalCreation.put(Tenant2SchemaMapper.extractVerticalNameFromSchema(verticalSchema), false);
-		loginOc(server, user, credentials);
-		setProject(namespace);
-		scaleDown(MSAService.CONFIG_INIT);
-		final Map<String, String> var = new HashMap<String, String>();
-		var.put(MSAService.MULTITENANT_SCHEMA_ENV, verticalSchema);
-		if (StringUtils.hasText(multitenantAPIKey)) {
-			var.put(MSAService.MULTITENANT_API_KEY, multitenantAPIKey);
-		}
-		setVarEnv(MSAService.CONFIG_INIT, var);
-		scaleUp(MSAService.CONFIG_INIT);
-		try {
-			Thread.sleep(300000);
-			scaleDown(MSAService.CONFIG_INIT);
-			var.put(MSAService.MULTITENANT_SCHEMA_ENV, "onesaitplatform_config");
-			var.put(MSAService.MULTITENANT_API_KEY, "");
-			setVarEnv(MSAService.CONFIG_INIT, var);
-			verticalCreation.put(Tenant2SchemaMapper.extractVerticalNameFromSchema(verticalSchema), true);
-		} catch (final InterruptedException e) {
-			log.error("Could not scale down config init", e);
-		}
-
-	}
-
-	@Override
-	public String getCurrentDockerImage(Microservice microservice, String openshiftNamespace) {
-		loginOc(microservice.getOpenshiftConfiguration().getUrl(), microservice.getOpenshiftConfiguration().getUser(),
-				microservice.getOpenshiftConfiguration().getPassword());
-		setProject(microservice.getOpenshiftNamespace());
-		final ProcessBuilder pb = new ProcessBuilder("oc", "get", "deployment/" + microservice.getIdentification(),
-				"-o", "jsonpath={.spec.template.spec.containers[0].image}");
-
-		pb.redirectErrorStream(true);
-		try {
-			return executeProcess(pb);
-		} catch (IOException | InterruptedException e) {
-			log.error(COULD_NOT_EXECUTE_COMMAND + pb.command());
-			return null;
-		}
-	}
 }

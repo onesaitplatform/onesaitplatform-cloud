@@ -9,8 +9,7 @@
 # - Run this container as 'root' user
 #
 ############################################################
-#FROM openjdk:8-jre-alpine
-FROM onesaitplatform/baseimage:latest-17
+FROM openjdk:8-jre-alpine
 
 # metadata
 LABEL platform.image.name="bpm-engine"
@@ -18,19 +17,19 @@ LABEL platform.image.name="bpm-engine"
 ADD *-exec.jar app.jar
 
 # Timezone
-RUN apk add --no-cache tzdata bash
+RUN apk add --no-cache tzdata \
+    bash
 
 # web projects folder & logs folder
 RUN mkdir -p /var/log/platform-logs && \
-	mkdir /application && \
-	mkdir /application/plugins
+	mkdir /application
 
 # create onesait user/group
 RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait
 
 WORKDIR /application
-#RUN unzip /app.jar &&\
-#	rm /app.jar
+RUN unzip /app.jar &&\
+	rm /app.jar
 
 RUN chown -R onesait:onesait /usr/local && \
     chown -R onesait:onesait /var/log/platform-logs && \
@@ -43,6 +42,7 @@ RUN chown -R onesait:onesait /usr/local && \
 # libc6-compat package for GNU libc compatibility
 # needed for execute ocp binary
 ENV BOWTIE2_VERSION 2.2.8
+ENV ASPECTJ_VERSION 1.9.7
 
 RUN apk add --no-cache \
         wget \
@@ -50,18 +50,13 @@ RUN apk add --no-cache \
         libstdc++ \
         nss
 
-# distribute tracing with opentelemetry agent
-RUN  cd /usr/local \
-    && wget https://repo1.maven.org/maven2/io/opentelemetry/javaagent/opentelemetry-javaagent/1.27.0/opentelemetry-javaagent-1.27.0.jar
-    
 VOLUME ["/var/log/platform-logs"]
 
 USER onesait
 
 EXPOSE 27000
 
-ENV JAVA_OPTS="$JAVA_OPTS -javaagent:/usr/local/opentelemetry-javaagent-1.27.0.jar" \
-	SERVER_NAME=localhost \
+ENV SERVER_NAME=localhost \
     REALTIMEDBSERVERS=realtimedb:27017 \
     REALTIMEDBAUTHDB=admin \
 	REALTIMEDBUSEAUTH=true \
@@ -104,11 +99,7 @@ ENV JAVA_OPTS="$JAVA_OPTS -javaagent:/usr/local/opentelemetry-javaagent-1.27.0.j
     USE_KEYCLOAK=false \
     SBA_USERNAME=operations \
 	SBA_SECRET=changeIt2019! \
-	MAX_HTTP_HEADER_SIZE=20000 \
-	OTEL_JAVAAGENT_ENABLED=false \
-	OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-service:4317 \
-	OTEL_SERVICE_NAME=bpm-engine \
-	OTEL_METRICS_EXPORTER=none
+	MAX_HTTP_HEADER_SIZE=20000
 
 COPY docker-entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["docker-entrypoint.sh"]

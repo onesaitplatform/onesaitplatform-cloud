@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,22 +24,22 @@ public class ClusterMembershipListener implements MembershipListener {
 
 	@Override
 	public void memberAdded(MembershipEvent membershipEvent) {
-		log.info("Added: {}", membershipEvent);
-		log.info("Info Added: {}", membershipEvent.getMember().getUuid());
-		log.info("Info Added HOST: {}:{}", membershipEvent.getMember().getAddress().getHost(),
-				membershipEvent.getMember().getAddress().getPort());
+		 log.info("Added: " + membershipEvent);
+		 log.info("Info Added: " + membershipEvent.getMember().getUuid());
+		 log.info("Info Added HOST: " + membershipEvent.getMember().getAddress().getHost()+":"+membershipEvent.getMember().getAddress().getPort());
 
 	}
 
 	@Override
 	public void memberRemoved(MembershipEvent membershipEvent) {
-		log.info("Removed: {}", membershipEvent);
-		log.info("Info Removed: {}", membershipEvent.getMember().getUuid());
-		log.info("Info Removed HOST: {}:{} ", membershipEvent.getMember().getAddress().getHost(),
-				+membershipEvent.getMember().getAddress().getPort());
+		 log.info("Removed: " + membershipEvent);
+		 log.info("Info Removed: " + membershipEvent.getMember().getUuid());
+		 log.info("Info Removed HOST: " + membershipEvent.getMember().getAddress().getHost()+":"+membershipEvent.getMember().getAddress().getPort());
+
 
 	}
 
+	
 //	@Override
 //	public void memberAttributeChanged(MemberAttributeEvent memberAttributeEvent) {
 //		 log.info("Member attribute changed: " + memberAttributeEvent);

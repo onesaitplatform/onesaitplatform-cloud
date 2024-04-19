@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@ package com.minsait.onesait.platform.metrics.manager;
 
 import javax.annotation.PostConstruct;
 
+import org.jline.utils.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -28,12 +28,9 @@ import org.springframework.web.client.RestTemplate;
 import com.minsait.onesait.platform.commons.metrics.MetricsManager;
 import com.minsait.onesait.platform.commons.model.MetricsPlatformDto;
 
-import lombok.extern.slf4j.Slf4j;
-
 @Component
 @ConditionalOnProperty(name = "onesaitplatform.metrics.collector.endpoint", matchIfMissing = false)
 @EnableScheduling
-@Slf4j
 public class MetricsNotifier {
 
 	@Value("${onesaitplatform.metrics.collector.endpoint:http://auditrouter:20002/router/metrics-collector/refresh}")
@@ -50,7 +47,6 @@ public class MetricsNotifier {
 	@PostConstruct
 	public void init() {
 		restTemplate = new RestTemplate();
-		restTemplate.getMessageConverters().add(0, new MappingJackson2HttpMessageConverter());
 	}
 
 	@Scheduled(cron = "0 * * * * *")
@@ -65,7 +61,7 @@ public class MetricsNotifier {
 					restTemplate.postForLocation(metricsCollectorEndpoint, dto);
 				}
 			} catch (final Exception e) {
-				log.error("Error notifing metrics", e);
+				Log.error("Error notifing metrics", e);
 			}
 		}
 	}

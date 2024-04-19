@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ public class RestService {
 	@Autowired
 	private ApplicationService applicationService;
 
-	@PostMapping(value = "/applications", consumes = "application/json")
+	@PostMapping("/applications")
 	@Operation(summary = "Create new application")
 	public ResponseEntity<Object> create(@RequestBody ApplicationCreate application) {
 		try {
@@ -89,7 +89,7 @@ public class RestService {
 	}
 
 	@Operation(summary = "Create new function")
-	@PostMapping(value = "/applications/{appName}/functions", consumes = "application/json")
+	@PostMapping("/applications/{appName}/functions")
 	public ResponseEntity<Object> createFunction(@RequestBody FunctionCreate function,
 			@PathVariable("appName") String appName) {
 		try {
@@ -114,7 +114,7 @@ public class RestService {
 	}
 
 	@Operation(summary = "Update an existing application")
-	@PutMapping(value = "/applications/{appName}", consumes = "application/json")
+	@PutMapping("/applications/{appName}")
 	public ResponseEntity<Object> updateApp(@PathVariable("appName") String appName,
 			@RequestBody ApplicationUpdate app) {
 		try {
@@ -188,7 +188,7 @@ public class RestService {
 	}
 
 	@Operation(summary = "Update an existing function")
-	@PutMapping(value = "/applications/{appName}/functions/{fnName}", consumes = "application/json")
+	@PutMapping("/applications/{appName}/functions/{fnName}")
 	public ResponseEntity<Object> updateFunction(@PathVariable("appName") String appName,
 			@PathVariable("fnName") String fnName, @RequestBody FunctionUpdate function) {
 		try {
@@ -213,11 +213,11 @@ public class RestService {
 	}
 
 	@Operation(summary = "Update an existing function")
-	@PutMapping(value = "/applications/{appName}/functions/{fnName}/update-version", consumes = "application/json")
+	@PutMapping("/applications/{appName}/functions/{fnName}/update-version")
 	public ResponseEntity<Object> updateFunctionsVersion(@PathVariable("appName") String appName,
 			@PathVariable("fnName") String fnName, @RequestBody String version) {
 		try {
-			applicationService.updateFunctionsVersion(appName, fnName, version.replaceAll("\"", ""));
+			applicationService.updateFunctionsVersion(appName, fnName, version);
 			return ResponseEntity.ok().build();
 		} catch (final UserNotFoundException e) {
 			log.error(USER_NOT_FOUND_EXCEPTION, e);
@@ -340,7 +340,7 @@ public class RestService {
 	}
 
 	@Operation(summary = "Deploy a function")
-	@PostMapping(value = "/applications/{appName}/functions/{fnName}/deploy", consumes = "application/json")
+	@PostMapping("/applications/{appName}/functions/{fnName}/deploy")
 	public ResponseEntity<Object> deployFn(@PathVariable("appName") String appName,
 			@PathVariable("fnName") String fnName) {
 		try {
@@ -388,7 +388,7 @@ public class RestService {
 	}
 
 	@Operation(summary = "Get function's environment")
-	@PutMapping(value = "/applications/{appName}/functions/{fnName}/environment", consumes = "application/json")
+	@PutMapping("/applications/{appName}/functions/{fnName}/environment")
 	public ResponseEntity<Object> updateEnvironment(@PathVariable("appName") String appName,
 			@PathVariable("fnName") String fnName, @RequestBody ObjectNode config) {
 		try {

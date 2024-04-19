@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -162,9 +162,7 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 		try {
 			schema = mapper.readTree(ontology.getJsonSchema());
 			if (!ontologyDataService.refJsonSchema(schema).equals("")) {
-				if (log.isDebugEnabled()) {
-					log.debug("Modifying query that contains * {}:", query);
-				}				
+				log.debug("Modifying query that contains * {}:", query);
 				final String parentNode = schema.at("/required/0").asText();
 				if (parentNode != null && parentNode.trim().length() > 0) {
 					query = query.replaceAll("count\\(.*?\\*.*?\\)", "count\\(" + parentNode + "\\)");
@@ -199,9 +197,7 @@ public class QuasarMongoDBbHttpImpl implements QuasarMongoDBbHttpConnector {
 
 					}
 				}
-				if (log.isDebugEnabled()) {
-					log.debug("Modified query that contains * {}:", query);
-				}				
+				log.debug("Modified query that contains * {}:", query);
 			} else {
 				log.error("Query for ontology {} contains * please indicate explicitly the fields you want to query",
 						collection);

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,16 +41,14 @@ public class SQLServerHelper extends SQLHelperImpl implements SQLHelper {
 	private static final String LIST_SCHEMAS_QUERY = ""
 			+ "DECLARE @SQL VARCHAR(MAX) = 'use %s;SELECT schema_name FROM information_schema.schemata;'"
 			+ "EXEC(@SQL);";
-	private static final String LIST_TABLE_INFORMATION_QUERY = "SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = '%s'";
 	private static final String LIST_TABLES_IN_DATABASE_IN_SCHEMA_QUERY = ""
 			+ "DECLARE @SQL VARCHAR(MAX) = 'use %s;SELECT table_name FROM information_schema.tables WHERE table_schema = ''%s''';"
 			+ "EXEC(@SQL);";
-
 	@Override
 	public String getAllTablesStatement() {
 		return LIST_TABLES_QUERY;
 	}
-
+	
 	@Override
 	public boolean hasDatabase() {
 		return true;
@@ -60,7 +58,7 @@ public class SQLServerHelper extends SQLHelperImpl implements SQLHelper {
 	public boolean hasSchema() {
 		return true;
 	}
-
+	
 	@Override
 	public String getDatabaseStatement() {
 		return GET_CURRENT_DATABASE_QUERY;
@@ -136,10 +134,10 @@ public class SQLServerHelper extends SQLHelperImpl implements SQLHelper {
 
 			// Set new offset
 			if (hasOffset) {
-				limitedSelect.getOffset().setOffset(new LongValue(offset));
+				limitedSelect.getOffset().setOffset(offset);
 			} else {
 				final Offset newOffset = new Offset();
-				newOffset.setOffset(new LongValue(offset));
+				newOffset.setOffset(offset);
 				newOffset.setOffsetParam("ROWS");
 				limitedSelect.setOffset(newOffset);
 			}
@@ -151,7 +149,7 @@ public class SQLServerHelper extends SQLHelperImpl implements SQLHelper {
 	public String getFieldTypeString(String fieldOspType) {
 		String type = null;
 
-		final OntologyVirtualSchemaFieldType fieldtype = OntologyVirtualSchemaFieldType.valueOff(fieldOspType);
+		OntologyVirtualSchemaFieldType fieldtype = OntologyVirtualSchemaFieldType.valueOff(fieldOspType);
 		switch (fieldtype) {
 		case STRING:
 			type = "VARCHAR(255)";

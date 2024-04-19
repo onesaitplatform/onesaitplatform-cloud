@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,7 @@
  */
 package com.minsait.onesait.platform.persistence.elasticsearch;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.List;
 
@@ -49,7 +48,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@ComponentScan(basePackages = { "com.minsait.onesait.platform" })
+@ComponentScan(basePackages = { "com.minsait.onesait.platform"})
 @EnableAutoConfiguration
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Category(IntegrationTest.class)
@@ -64,46 +63,62 @@ public class ElasticSearchBasicOpsDBRepositoryTest {
 
 	@Autowired
 	ElasticSearchManageDBRepository manage;
-
+	
 	@Rule
 	public MockitoRule mockitoRule = MockitoJUnit.rule();
-
+	
 	@Configuration
-	static class Config {
-		@Bean
-		@Primary
-		public OntologyRepository getOntologyRepository() {
-			return mock(OntologyRepository.class);
-		}
-
-		@Bean("dataHubRest")
-		public RestTemplate restTemplate() throws GenericOPException {
-			RestTemplate restTemplate = new RestTemplate();
-			return restTemplate;
-		}
-	}
-
+    static class Config {
+        @Bean
+        @Primary
+        public OntologyRepository getOntologyRepository() {
+            return mock(OntologyRepository.class);
+        }
+        
+        @Bean("dataHubRest")
+        public RestTemplate restTemplate() throws GenericOPException {
+            return new RestTemplate();
+        }
+    }
+	
 	@Autowired
-	private OntologyRepository ontologyRepository;
+    private OntologyRepository ontologyRepository;
 
-	private static final String JSON_TEST = "{" + "\"name\":\"skyji\"," + "\"job\":\"Admin\","
-			+ "\"location\":\"India\"" + "}";
+	private static final String JSON_TEST = "{" + "\"name\":\"skyji\"," + "\"job\":\"Admin\"," + "\"location\":\"India\"" + "}";
 
-	private static final String JSON_TEST_UPDATE = "{" + "\"name\":\"pepe\"," + "\"job\":\"pepe\","
-			+ "\"location\":\"pepe\"" + "}";
+	private static final String JSON_TEST_UPDATE = "{" + "\"name\":\"pepe\"," + "\"job\":\"pepe\"," + "\"location\":\"pepe\"" + "}";
 
 	private static final String SQL_TEST = "select * from ";
 
-	private static final String QUERY_ALL = "{\"match_all\" : {}}";
+    private static final String QUERY_ALL = "{\"match_all\" : {}}";
 
-	private static final String JSON_SCHEMA = "{\n" + "    \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n"
-			+ "    \"title\": \"test\",\n" + "    \"type\": \"object\",\n" + "\n" + "\n"
-			+ "        \"description\": \"Properties for DataModel test\",\n" + "\n" + "        \"required\": [\n"
-			+ "            \"name\",\n" + "            \"job\",\n" + "            \"location\"\n" + "        ],\n"
-			+ "        \"properties\": {\n" + "            \"name\": {\n" + "                \"type\": \"string\"\n"
-			+ "            },\n" + "            \"job\": {\n" + "                \"type\": \"string\"\n"
-			+ "            },\n" + "            \"location\": {\n" + "                \"type\": \"string\"\n"
-			+ "            }\n" + "        },\n" + "    \"additionalProperties\": true\n" + "}";
+    
+    private static final String JSON_SCHEMA = "{\n" + 
+            "    \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n" + 
+            "    \"title\": \"test\",\n" + 
+            "    \"type\": \"object\",\n" + 
+            "\n" + 
+            "\n" + 
+            "        \"description\": \"Properties for DataModel test\",\n" + 
+            "\n" + 
+            "        \"required\": [\n" + 
+            "            \"name\",\n" + 
+            "            \"job\",\n" + 
+            "            \"location\"\n" + 
+            "        ],\n" + 
+            "        \"properties\": {\n" + 
+            "            \"name\": {\n" + 
+            "                \"type\": \"string\"\n" + 
+            "            },\n" + 
+            "            \"job\": {\n" + 
+            "                \"type\": \"string\"\n" + 
+            "            },\n" + 
+            "            \"location\": {\n" + 
+            "                \"type\": \"string\"\n" + 
+            "            }\n" + 
+            "        },\n" + 
+            "    \"additionalProperties\": true\n" + 
+            "}";
 
 	@Before
 	public void doBefore() throws Exception {

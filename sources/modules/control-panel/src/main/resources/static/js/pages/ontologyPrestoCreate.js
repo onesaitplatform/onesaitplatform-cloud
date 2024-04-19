@@ -304,9 +304,8 @@ var OntologyCreateController = function() {
     }
 	
 	var validateSpecialComponentsAndSubmit = function (submit) {
-        // VALIDATE IDENTIFICATION METAINF AND SCHEMA AND SELECTED TABLE
-		if (validateIdName() && validateMetaInf() 
-			&& $('#tables') !== undefined && $('#tables').val() !== undefined && $('#tables').val() !== '') {
+        // VALIDATE IDENTIFICATION METAINF AND SCHEMA
+		if (validateIdName() && validateMetaInf()){
 			
 			form1.ajaxSubmit({type: 'post', success : function(data){
 					toastr.success(messagesForms.validation.genFormSuccess,'');

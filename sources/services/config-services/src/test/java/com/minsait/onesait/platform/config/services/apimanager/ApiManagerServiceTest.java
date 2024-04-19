@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ public class ApiManagerServiceTest {
 		final List<Api> existentApis = new ArrayList<>();
 
 		when(apiRepository.findByIdentificationAndApiType(identification, apiType)).thenReturn(existentApis);
-		assertTrue(service.calculateNumVersion(identification) == 1);
+		assertTrue(service.calculateNumVersion(identification, apiType) == 1);
 
 	}
 
@@ -103,7 +103,7 @@ public class ApiManagerServiceTest {
 		existentApis.add(api);
 
 		when(apiRepository.findByIdentificationAndApiType(identification, apiType)).thenReturn(existentApis);
-		assertTrue(service.calculateNumVersion(identification) == 2);
+		assertTrue(service.calculateNumVersion(identification, apiType) == 2);
 
 	}
 

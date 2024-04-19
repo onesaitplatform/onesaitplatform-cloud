@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -158,14 +158,14 @@ public final class EntitiesCast {
 			ar.setApp(null);
 			final Set<AppUserExport> sau = new HashSet<AppUserExport>();
 			ar.setDescription(arl.getDescription());
-			ar.setAppUsers(null);
+			ar.setAppUsers(sau);
 			ar.setCreatedAt(arl.getCreatedAt());
 			ar.setCreatedAt(arl.getUpdatedAt());
 			ar.setName(arl.getName());
 			ar.setId(arl.getId());
-			/*for (final AppUserExport aul : arl.getAppUsers()) {
+			for (final AppUserExport aul : arl.getAppUsers()) {
 				sau.add(castAppUserExport(aul, ar));
-			}*/
+			}
 			return ar;
 		} else {
 			return null;

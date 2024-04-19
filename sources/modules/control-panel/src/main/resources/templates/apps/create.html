@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -174,13 +174,6 @@
 										<div class="form-group">
 											<label class="control-label" th:text="#{app.secret}">Secret</label>
 											<input id="secret" type="text" name="secret" pattern="[a-zA-Z0-9_]{5,}"	maxlength="50" th:field="*{secret}" class="form-control " th:placeholder="#{app.secret}" th:title="#{app.errorpattern}" th:classappend="${app.secret} ? no-remove : ''" />
-										</div>
-									</div>
-									<div class="col-md-4 col-sm-4 col-xs-12">
-										<div class="mt-checkbox-list margin-top-20">
-											<input id="checkboxPublic" class="margin-right-10" name="checkboxPublic" type="checkbox" checked="checked" th:field="*{publicClient}" />
-											<label class="control-label margin-right-5" th:text="#{app.public.client.title}">Public</label>
-											<i class="la la-info-circle popovers" data-trigger="hover" data-placement="top" data-container="body" th:attr="data-content=#{app.public.client},data-title=#{app.public.client.title}"></i>
 										</div>
 									</div>
 								</div>

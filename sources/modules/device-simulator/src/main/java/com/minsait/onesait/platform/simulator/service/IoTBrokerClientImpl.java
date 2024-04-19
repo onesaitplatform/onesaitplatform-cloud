@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,9 +90,7 @@ public class IoTBrokerClientImpl implements IoTBrokerClient {
 
 			JsonNode response = this.restService.insertRest(iotbrokerUrl, instance, ontology,
 					this.sessionKeys.get(clientPlatform));
-			if (log.isDebugEnabled()) {
-				log.debug("Response from Rest Service: {}", response.asText());
-			}			
+			log.debug("Response from Rest Service: " + response.asText());
 
 			if (response.path("id").isMissingNode()
 					&& response.asText().equals(IoTBrokerClientImpl.UNAUTHORIZED_ONTOLOGY)) {
@@ -103,9 +101,7 @@ public class IoTBrokerClientImpl implements IoTBrokerClient {
 
 			if (this.deviceBlackList.contains(clientPlatform))
 				this.deviceBlackList.remove(clientPlatform);
-			if (log.isDebugEnabled()) {
-				log.debug("Device {}", clientPlatformInstance);
-			}			
+			log.debug("Device " + clientPlatformInstance);
 		} else {
 			this.connectDeviceRest(clientPlatform, clientPlatformInstance);
 			this.insertOntologyInstance(instance, ontology, user, clientPlatform, clientPlatformInstance);

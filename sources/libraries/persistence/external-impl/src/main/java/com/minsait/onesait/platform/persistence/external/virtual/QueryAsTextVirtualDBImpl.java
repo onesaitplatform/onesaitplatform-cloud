@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ public class QueryAsTextVirtualDBImpl implements QueryAsTextDBRepository {
 		try {
 			return this.virtualRelationalOntologyOps.queryNativeAsJson(ontology, query, offset, limit);
 		} catch (Exception e) {
-			log.error("Error queryNativeAsJson: {}", e.getMessage());
+			log.error("Error queryNativeAsJson:" + e.getMessage());
 			throw new DBPersistenceException(e);
 		}
 	}
@@ -64,7 +64,7 @@ public class QueryAsTextVirtualDBImpl implements QueryAsTextDBRepository {
 
 			return "";
 		} catch (Exception e) {
-			log.error("Error queryNativeAsJson: {}", e.getMessage(), e);
+			log.error("Error queryNativeAsJson:" + e.getMessage(), e);
 			throw new DBPersistenceException(e);
 		}
 	}
@@ -74,7 +74,7 @@ public class QueryAsTextVirtualDBImpl implements QueryAsTextDBRepository {
 		try {
 			return this.virtualRelationalOntologyOps.querySQLAsJson(ontology, query, offset);
 		} catch (Exception e) {
-			log.error("Error querySQLAsJson: {}", e.getMessage());
+			log.error("Error querySQLAsJson:" + e.getMessage());
 			throw new DBPersistenceException(e);
 		}
 	}
@@ -84,7 +84,7 @@ public class QueryAsTextVirtualDBImpl implements QueryAsTextDBRepository {
 		try {
 			return this.virtualRelationalOntologyOps.querySQLAsJson(ontology, query, offset, limit);
 		} catch (Exception e) {
-			log.error("Error querySQLAsJson: {}", e.getMessage());
+			log.error("Error querySQLAsJson:" + e.getMessage());
 			throw new DBPersistenceException(e);
 		}
 	}

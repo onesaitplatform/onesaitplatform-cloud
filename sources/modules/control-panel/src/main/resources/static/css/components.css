@@ -124,9 +124,10 @@ body {
   font-style: normal;
   font-display: block;
 }
+
 [class^="icon-"], [class*=" icon-"] {
   /* use !important to prevent issues with browser extensions that change fonts */
-  font-family: 'icomoon';
+  font-family: 'icomoon' !important;
   speak: never;
   font-style: normal;
   font-weight: normal;
@@ -137,16 +138,6 @@ body {
   /* Better Font Rendering =========== */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-i [class^="icon-map"], i [class*=" icon-map"] {
-    font-family: Simple-Line-Icons !important;
-    speak: none;
-    font-style: normal;
-    font-weight: 400;
-    font-variant: normal;
-    text-transform: none;
-    line-height: 1;
-    -webkit-font-smoothing: antialiased;
 }
 .icon-zoom-out:before {
   content: "\e900";
@@ -1649,6 +1640,7 @@ label {
 .border-right {
 	border-right-style: solid;
 	border-right-color: #c0c0c0;
+	border-right-width: 1px;
 }
 
 .border-left {
@@ -1932,7 +1924,6 @@ Utilities
 .padding-bottom-10 { padding-bottom: 10px !important; }
 
 .no-padding-top { padding-top: 0px !important; }
-.padding-top-5 { padding-top: 5px !important; }
 .padding-top-8 { padding-top: 8px !important; }
 .padding-top-10 { padding-top: 10px !important; }
 
@@ -1952,8 +1943,6 @@ Utilities
 .no-padding-both { padding-left: 0px !important; padding-right: 0px !important; }
 .padding-both-5 { padding-right: 5px !important;  padding-left: 5px !important; }
 .padding-both-10{ padding-right: 10px !important; padding-left: 10px !important; }
-
-.no-padding-all { padding-left: 0px !important; padding-right: 0px !important; padding-top: 0px !important; padding-bottom: 0px !important;}
 
 /* IE8 & IE9 mode utilities */
 .visible-ie8 {
@@ -2923,19 +2912,13 @@ Custom Bootstrap Badges
 .text-dark{
   color:#212529 !important;
 }
-.table-border-1px-black {
-  border-bottom: 1px solid grey;
-  padding-bottom: 5px;
-  padding-top: 5px;
-}
 .text-dark:hover{
   cursor: pointer;
 }
 
 .text-light{
-  color:#fff !important;
+  color:#fff; !important;
 }
-
 .text-light:hover{
   cursor: pointer;
 }
@@ -6911,11 +6894,6 @@ Form Layouts
   color: #505D66;
   font-weight: normal; }
 
-.control-label-disabled{
-  margin-top: 1px;
-  color: #959595ad;
-  font-weight: normal; }
-
 .control-label-mini {
   margin-top: 1px;
   color: #505D66;
@@ -7134,24 +7112,6 @@ Form Layouts
 
 .form-horizontal .form-group .form-control-static {
   margin-top: 1px; }
-
-.input-groove-border {
-	margin-top: 1px;
-	margin-bottom: 1px;
-	border: white 3px groove;
-	border-radius: 5px;
-	width: 75%;
-}
-
-.combobox-groove-border {
-	margin-top: 1px;
-	margin-bottom: 1px;
-	border: white 3px groove;
-	border-radius: 5px;
-    width: 75%;
-}
-
-
 
 /***
 Form Repeater
@@ -9095,11 +9055,6 @@ padding: 0px 0px 12px 0px;
 
 .portlet.light.no-top-pad {
 padding: 0px 40px 32px 60px;
-}
-
-.portlet.light.no-top-pad-layer-create {
-padding: 0px 40px 32px 0px;
-word-break: break-all;
 }
 
 	
@@ -24244,7 +24199,6 @@ margin-right: 8px; }
 		color: #616161!important;
 		flex-grow: 1;
 }
-
 @media (max-width: 767px) {
   /* 767px */
   .mt-content-row {
@@ -24302,7 +24256,7 @@ margin-right: 8px; }
     text-align: center;
     margin-right: 15px;
     margin-bottom: 15px;
-    border-radius: 2px;   
+    border-radius: 2px;    
 }
 
 .icon-arrow-cards {
@@ -24317,15 +24271,6 @@ margin-right: 8px; }
 	margin-top: 20%;
 }
 
-.user-style {
-	background: #1168A6;
-    color: #fff;
-	display: inline-block;
-    padding: 3px 8px;
-    margin-right: 10px;
-    font-size: 12px;
-}
-
 @media (min-width: 992px) {
   .modal-lg,
   .modal-xl {
@@ -24337,62 +24282,3 @@ margin-right: 8px; }
   .modal-xl {
     max-width: 1300px;
   }
- }
-.environment-edit__main {
-	display: flex;
-}
-
-.environment-edit__bar-info-main {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin: 0 25px;
-}
-
-.environment-edit__bar-info-left,
-.environment-edit__bar-info-right {
-	flex: end;
-	width: 90%;
-}
-
-.environment-edit__bar-info-separator {
-	width: 2px;
-	height: 84px;
-	background-color: #ccc;
-	margin: 0 20px;
-}
-
-.environment-edit__bar-box {
-	text-align: left;
-	font-weight: 500;
-	font-style: normal;
-	line-height: 1.25rem;
-	font-family: Soho Gothic Pro, Helvetica, Arial, sans-serif;
-}
-
-.environment-edit__item-numbers {
-	font-size: 2.5rem;
-}
-
-.environment-edit__item-subtitle {
-	font-size: 0.9rem;
-}
-
-.environment-edit__item-kpi {
-	font-size: 2rem;
-}
-
-.environment-edit__item-title {
-	font-family: Soho Gothic Pro, Helvetica, Arial, sans-serif;
-	font-size: 1.5rem;
-	font-weight: 500;
-	font-style: normal;
-	line-height: 1.25rem;
-}
-.environment-edit__item-text {
-	font-family: Soho Gothic Pro, Helvetica, Arial, sans-serif;
-	font-size: 1.2rem;
-	font-weight: 300;
-	font-style: normal;
-	line-height: 1.25rem;
-}

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,10 @@ import com.minsait.onesait.platform.commons.model.DescribeColumnData;
 import com.minsait.onesait.platform.commons.rtdbmaintainer.dto.ExportData;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
+import com.minsait.onesait.platform.persistence.external.generator.SQLGenerator;
 import com.minsait.onesait.platform.persistence.historical.minio.HistoricalMinioException;
 import com.minsait.onesait.platform.persistence.historical.minio.HistoricalMinioService;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
-import com.minsait.onesait.platform.persistence.presto.generator.PrestoSQLGenerator;
 import com.minsait.onesait.platform.persistence.presto.generator.PrestoSQLHelper;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
@@ -53,20 +53,20 @@ public class PrestoManageDBRepository implements ManageDBRepository {
 	private static final String KEY_SCHEMA = "datasourceSchema";
 	private static final String KEY_CATALOG = "datasourceCatalog";
 	private static final String KEY_BUCKET = "bucketName";
-
+	
 	@Autowired
 	@Qualifier("PrestoDatasourceManagerImpl")
 	private PrestoDatasourceManager prestoDatasourceManager;
-
+	
 	@Autowired
 	private HistoricalMinioService historicalMinioService;
 
 	@Autowired
-	private PrestoSQLGenerator sqlGenerator;
-
+	private SQLGenerator sqlGenerator;
+	
 	@Autowired
 	private PrestoSQLHelper prestoSQLHelper;
-
+	
 	@Autowired
 	private OntologyService ontologySevice;
 
@@ -77,10 +77,11 @@ public class PrestoManageDBRepository implements ManageDBRepository {
 
 	@PostConstruct
 	public void init() {
-		historicalCatalog = Optional.ofNullable((String) integrationResourcesService.getGlobalConfiguration().getEnv()
-				.getDatabase().get("prestodb-historical-catalog")).orElse("minio");
+		historicalCatalog = Optional.ofNullable(
+				(String) integrationResourcesService.getGlobalConfiguration().getEnv().getDatabase().get("prestodb-historical-catalog"))
+				.orElse("minio");
 	}
-
+	
 	public JdbcTemplate getJdbTemplate(String catalog, String schema) {
 		return new JdbcTemplate(prestoDatasourceManager.getDatasource(catalog, schema));
 	}
@@ -88,7 +89,7 @@ public class PrestoManageDBRepository implements ManageDBRepository {
 	public JdbcTemplate getJdbTemplate(String ontology) {
 		return new JdbcTemplate(prestoDatasourceManager.getDatasource(ontology));
 	}
-
+	
 	@Override
 	public Map<String, Boolean> getStatusDatabase() {
 		throw new DBPersistenceException(NOT_IMPLEMENTED_METHOD);
@@ -99,7 +100,7 @@ public class PrestoManageDBRepository implements ManageDBRepository {
 		boolean allowsCreateTable = false;
 		String statement = "";
 		String catalog = "";
-
+		
 		if (config != null && config.containsKey(KEY_ALLOWS_CREATE_TABLE)) {
 			allowsCreateTable = config.get(KEY_ALLOWS_CREATE_TABLE).equals("true");
 		}
@@ -108,34 +109,32 @@ public class PrestoManageDBRepository implements ManageDBRepository {
 					&& !config.get(KEY_SQL_STATEMENT).equals("")) {
 				statement = config.get(KEY_SQL_STATEMENT);
 
-				if (statement.toUpperCase().trim().indexOf(PREFIX_CREATE_TABLE) != 0) {
+				if (statement.toUpperCase().trim().indexOf(PREFIX_CREATE_TABLE) != 0)
 					throw new DBPersistenceException("Error creating table: invalid sqlstatement " + statement);
-				}
 			} else {
 				throw new DBPersistenceException("Error creating table: invalid sqlstatement " + statement);
 			}
-			if (config.containsKey(KEY_CATALOG) && config.get(KEY_CATALOG) != null && config.containsKey(KEY_SCHEMA)
-					&& config.get(KEY_SCHEMA) != null) {
+			if (config.containsKey(KEY_CATALOG) && config.get(KEY_CATALOG) != null &&
+					config.containsKey(KEY_SCHEMA) && config.get(KEY_SCHEMA) != null) {
 				catalog = config.get(KEY_CATALOG);
-				if (catalog.equals(historicalCatalog) && config.containsKey(KEY_BUCKET)
-						&& config.get(KEY_BUCKET) != null) {
-					if (!historicalMinioService.validateBucketString(ontology, statement)) {
-						throw new DBPersistenceException(
-								"Error creating table: forbidden external location for entity");
-					}
-
-					try {
-						historicalMinioService.createUserAndBucketIfNotExists(
-								ontologySevice.getOntologyByIdentification(ontology).getUser().getUserId());
-						historicalMinioService.createBucketDirectory(ontology);
-
-					} catch (final HistoricalMinioException e) {
-						log.error("Error creating table", e);
-						throw new DBPersistenceException("Error creating table: " + e.getCause(), e);
-					}
+				if (catalog.equals(historicalCatalog) &&
+						config.containsKey(KEY_BUCKET) && config.get(KEY_BUCKET) != null) {
+						if (!historicalMinioService.validateBucketString(ontology, statement)) {
+							throw new DBPersistenceException("Error creating table: forbidden external location for entity");
+						}
+						
+						try {
+							historicalMinioService.createUserAndBucketIfNotExists(ontologySevice.getOntologyByIdentification(ontology).getUser().getUserId());
+							historicalMinioService.createBucketDirectory(ontology);
+						
+						
+						} catch (final HistoricalMinioException e) {
+							log.error("Error creating table", e);
+							throw new DBPersistenceException("Error creating table: " + e.getCause(), e);
+						}
 				}
-				log.info("Launching SQL statment for ontology {} to Presto catalog {} : {}", ontology, catalog,
-						statement);
+				log.info("Launching SQL statment for ontology {} to Presto catalog {} : {}",
+						ontology, catalog, statement);
 				try {
 					getJdbTemplate(config.get(KEY_CATALOG), config.get(KEY_SCHEMA)).execute(statement);
 					log.info("Created table succesfully: " + ontology);
@@ -146,8 +145,8 @@ public class PrestoManageDBRepository implements ManageDBRepository {
 					log.error("Error creating table", e);
 					throw new DBPersistenceException("Error creating table: " + e.getCause(), e);
 				}
-			}
-
+			} 
+				
 		} else {
 			// else: skip create table (table exists yet)
 			log.warn("Skipping create table because do not allows create table (it already exists in db)");
@@ -155,6 +154,7 @@ public class PrestoManageDBRepository implements ManageDBRepository {
 
 		return ontology;
 	}
+	
 
 	@Override
 	public List<String> getListOfTables() {
@@ -165,7 +165,8 @@ public class PrestoManageDBRepository implements ManageDBRepository {
 	public List<String> getListOfTables4Ontology(String ontology) {
 		try {
 			return new JdbcTemplate(prestoDatasourceManager.getDatasource(ontology))
-					.queryForList(prestoSQLHelper.getAllTablesStatement(), String.class);
+					.queryForList(prestoSQLHelper.getAllTablesStatement(),
+					String.class);
 		} catch (final Exception e) {
 			log.error("Error listing tables", e);
 			throw new DBPersistenceException("Error listing tables", e);
@@ -177,7 +178,7 @@ public class PrestoManageDBRepository implements ManageDBRepository {
 	public void removeTable4Ontology(String ontology) {
 		removeTable4Ontology(ontology, false);
 	}
-
+	
 	public void removeTable4Ontology(String ontology, boolean deleteData) {
 		try {
 			if (deleteData) {
@@ -185,7 +186,7 @@ public class PrestoManageDBRepository implements ManageDBRepository {
 			}
 			final String statement = sqlGenerator.buildDrop().setOntology(ontology).setCheckIfExists(false)
 					.generate(true).getStatement();
-			getJdbTemplate(ontology).execute(statement);
+			getJdbTemplate(ontology).execute(statement);			
 		} catch (final Exception e) {
 			log.error("Error deleting table: " + e.getMessage(), e);
 			throw new DBPersistenceException(" Error deleting table: " + e.getMessage(), e);
@@ -250,33 +251,5 @@ public class PrestoManageDBRepository implements ManageDBRepository {
 	@Override
 	public String updateTable4Ontology(String identification, String jsonSchema, Map<String, String> config) {
 		throw new DBPersistenceException(NOT_IMPLEMENTED_METHOD);
-	}
-
-	@Override
-	public void createTTLIndex(String ontology, String attribute, Long seconds) {
-		throw new DBPersistenceException(NOT_IMPLEMENTED_METHOD);
-	}
-
-	@Override
-	public Map<String, List<String>> getListIndexes(String datatableName, String ontology) {
-		throw new DBPersistenceException(NOT_IMPLEMENTED_METHOD);
-	}
-
-	@Override
-	public void dropIndex(String ontology, String ontologyVirtual, String indexName) {
-		throw new DBPersistenceException(NOT_IMPLEMENTED_METHOD);
-		
-	}
-
-	@Override
-	public String getIndexesOptions(String ontology) {
-		throw new DBPersistenceException(NOT_IMPLEMENTED_METHOD);
-	}
-
-	@Override
-	public void createIndexWithParameter(String ontologyName, String typeIndex, String indexName, boolean unique,
-			boolean background, boolean sparse, boolean ttl, String timesecondsTTL, Object checkboxValuesArray) {
-		throw new DBPersistenceException(NOT_IMPLEMENTED_METHOD);
-		
-	}
+	}	
 }

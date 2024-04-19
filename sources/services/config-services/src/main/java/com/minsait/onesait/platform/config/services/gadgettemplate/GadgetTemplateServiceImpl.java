@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import com.minsait.onesait.platform.config.model.GadgetTemplate;
 import com.minsait.onesait.platform.config.model.GadgetTemplateType;
 import com.minsait.onesait.platform.config.model.Subcategory;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.repository.CategoryRelationRepository;
 import com.minsait.onesait.platform.config.repository.GadgetTemplateRepository;
 import com.minsait.onesait.platform.config.repository.GadgetTemplateTypeRepository;
@@ -43,7 +42,6 @@ import com.minsait.onesait.platform.config.services.exceptions.SubcategoryServic
 import com.minsait.onesait.platform.config.services.gadgettemplate.dto.GadgetTemplateDTO;
 import com.minsait.onesait.platform.config.services.gadgettemplate.dto.GadgetTemplateExportDto;
 import com.minsait.onesait.platform.config.services.gadgettemplate.dto.GadgetTemplateImportResponsetDto;
-import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.subcategory.SubcategoryService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 
@@ -76,9 +74,6 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 
 	@Autowired
 	private SubcategoryService subcategoryService;
-	
-	@Autowired
-	private OPResourceService resourceService;
 
 	public static final String ADMINISTRATOR = "ROLE_ADMINISTRATOR";
 
@@ -139,10 +134,6 @@ public class GadgetTemplateServiceImpl implements GadgetTemplateService {
 			return true;
 		} else {
 			Log.info("user has not permission");
-			ResourceAccessType resourceAccess = resourceService.getResourceAccess(userId, id);
-			if (resourceAccess.equals(ResourceAccessType.MANAGE)){
-				return true;
-			}
 			return gadgetTemplateRepository.findById(id).orElse(null).getUser().getUserId().equals(userId);
 		}
 	}

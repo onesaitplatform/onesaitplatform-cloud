@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,26 +38,18 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hazelcast.collection.IQueue;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.map.IMap;
 import com.hazelcast.topic.ITopic;
 import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
 import com.minsait.onesait.platform.comms.protocol.SSAPMessage;
-import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyInsertMessage;
-import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyJoinMessage;
-import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyReturnMessage;
 import com.minsait.onesait.platform.comms.protocol.body.SSAPBodyUnsubscribeMessage;
 import com.minsait.onesait.platform.comms.protocol.json.SSAPJsonParser;
 import com.minsait.onesait.platform.comms.protocol.json.Exception.SSAPParseException;
 import com.minsait.onesait.platform.comms.protocol.util.SSAPMessageGenerator;
 import com.minsait.onesait.platform.config.model.Subscriptor;
 import com.minsait.onesait.platform.config.repository.SubscriptorRepository;
-import com.minsait.onesait.platform.iotbroker.plugable.impl.gateway.reference.mqtt.security.Authenticator;
-import com.minsait.onesait.platform.iotbroker.plugable.impl.gateway.reference.mqtt.security.AuthorizatorPolicy;
 import com.minsait.onesait.platform.iotbroker.plugable.impl.security.SecurityPluginManager;
 import com.minsait.onesait.platform.iotbroker.plugable.interfaces.gateway.GatewayInfo;
 import com.minsait.onesait.platform.iotbroker.processor.GatewayNotifier;
@@ -165,10 +157,6 @@ public class MoquetteBroker {
 	@Qualifier("brokerSubscriptors")
 	IMap<String, List<String>> brokerSubscriptors;
 
-	@Autowired
-	@Qualifier("mqttClientSessions")
-	IMap<String, MqttSession> mqttClientSessions;
-
 	public static Server getServer() {
 		return server;
 	}
@@ -182,8 +170,7 @@ public class MoquetteBroker {
 			final SessionRegistry sessions = (SessionRegistry) sessionsField.get(s);
 			final Method getClientsMethod = SessionRegistry.class.getDeclaredMethod("listConnectedClients");
 			getClientsMethod.setAccessible(true);
-			final Collection<ClientDescriptor> clients = (Collection<ClientDescriptor>) getClientsMethod
-					.invoke(sessions);
+			final Collection<ClientDescriptor> clients = (Collection<ClientDescriptor>) getClientsMethod.invoke(sessions);
 			return clients.stream().map(cd -> cd.getClientID()).collect(Collectors.toList());
 		} catch (final Exception e) {
 			log.error("Error while playing reflection for mqtt clients (Moquette 0.15 changes)");
@@ -223,133 +210,20 @@ public class MoquetteBroker {
 		@Override
 		public void onPublish(InterceptPublishMessage msg) {
 			final ByteBuf byteBuf = msg.getPayload();
-			String playload = new String(ByteBufUtil.getBytes(byteBuf), Charset.forName("UTF-8"));
-			ObjectMapper mapper = new ObjectMapper();
-			try {
-				SSAPJsonParser.getInstance().deserialize(playload);
-				final String response = processor.process(playload, getGatewayInfo());
+			final String playload = new String(ByteBufUtil.getBytes(byteBuf), Charset.forName("UTF-8"));
+			final String response = processor.process(playload, getGatewayInfo());
 
-				final MqttPublishMessage message = MqttMessageBuilders.publish()
-						.topicName(outboundTopic + "/" + msg.getClientID()).retained(false).qos(MqttQoS.EXACTLY_ONCE)
-						.payload(Unpooled.copiedBuffer(response.getBytes())).build();
+			final MqttPublishMessage message = MqttMessageBuilders.publish()
+					.topicName(outboundTopic + "/" + msg.getClientID()).retained(false).qos(MqttQoS.EXACTLY_ONCE)
+					.payload(Unpooled.copiedBuffer(response.getBytes())).build();
 
-				getServer().internalPublish(message, msg.getClientID());
-			} catch (SSAPParseException e) {
-				log.info("Native MQTT connection");
-				MqttSession session = mqttClientSessions.get(msg.getClientID());
-				MqttResponse response = new MqttResponse();
-				try {
-					if (session == null) {
-						log.error("MQTT client {} not authenticated.", msg.getClientID());
-						response.setIsOk(false);
-						response.setError("MQTT client not authenticated");
-						final MqttPublishMessage message = MqttMessageBuilders.publish()
-								.topicName(msg.getTopicName() + "/" + msg.getClientID()).retained(false)
-								.qos(MqttQoS.EXACTLY_ONCE)
-								.payload(Unpooled.copiedBuffer(mapper.writeValueAsString(response).getBytes())).build();
-						getServer().internalPublish(message, msg.getClientID());
-					} else {
-
-						SSAPMessage<SSAPBodyInsertMessage> insert = SSAPMessageGenerator.generateRequestInsertMessage(
-								session.getSessionKey(),
-								msg.getTopicName().split("/")[msg.getTopicName().split("/").length - 1],
-								mapper.readValue(playload, JsonNode.class));
-						String insertResponseStr = processor.process(SSAPJsonParser.getInstance().serialize(insert),
-								getGatewayInfo());
-						SSAPMessage<SSAPBodyReturnMessage> insertResponse = SSAPJsonParser.getInstance()
-								.deserialize(insertResponseStr);
-						if (insertResponse.getBody().isOk()) {
-							log.info("Data inserted from native MQTT. {}",
-									mapper.writeValueAsString(insertResponse.getBody().getData()));
-							response.setIsOk(true);
-							response.setResponse(mapper.writeValueAsString(insertResponse.getBody().getData()));
-							final MqttPublishMessage message = MqttMessageBuilders.publish()
-									.topicName(msg.getTopicName() + "/" + msg.getClientID()).retained(false)
-									.qos(MqttQoS.EXACTLY_ONCE)
-									.payload(Unpooled.copiedBuffer(mapper.writeValueAsString(response).getBytes()))
-									.build();
-							getServer().internalPublish(message, msg.getClientID());
-						} else {
-							final SSAPMessage<SSAPBodyJoinMessage> join = SSAPMessageGenerator
-									.generateRequestJoinMessage(session.getToken(), session.getDigitalClient(),
-											session.getCliendId(), null, null, null);
-
-							final String joinResponseStr = processor
-									.process(SSAPJsonParser.getInstance().serialize(join), getGatewayInfo());
-							final SSAPMessage<SSAPBodyReturnMessage> joinResponse = SSAPJsonParser.getInstance()
-									.deserialize(joinResponseStr);
-							if (joinResponse.getBody().isOk() && joinResponse.getSessionKey() != null) {
-								insert = SSAPMessageGenerator.generateRequestInsertMessage(joinResponse.getSessionKey(),
-										msg.getTopicName().split("/")[msg.getTopicName().split("/").length - 1],
-										mapper.readValue(playload, JsonNode.class));
-								insertResponseStr = processor.process(SSAPJsonParser.getInstance().serialize(insert),
-										getGatewayInfo());
-								insertResponse = SSAPJsonParser.getInstance().deserialize(insertResponseStr);
-								if (insertResponse.getBody().isOk()) {
-									log.info("Data inserted from native MQTT. {}",
-											mapper.writeValueAsString(insertResponse.getBody().getData()));
-									response.setIsOk(true);
-									response.setResponse(mapper.writeValueAsString(insertResponse.getBody().getData()));
-									final MqttPublishMessage message = MqttMessageBuilders.publish()
-											.topicName(msg.getTopicName() + "/" + msg.getClientID()).retained(false)
-											.qos(MqttQoS.EXACTLY_ONCE)
-											.payload(Unpooled
-													.copiedBuffer(mapper.writeValueAsString(response).getBytes()))
-											.build();
-									getServer().internalPublish(message, msg.getClientID());
-								} else {
-									log.error("Error inserting data. Insert error: {}",
-											insertResponse.getBody().getError());
-									response.setIsOk(false);
-									response.setError("Error inserting data: " + insertResponse.getBody().getError());
-									final MqttPublishMessage message = MqttMessageBuilders.publish()
-											.topicName(msg.getTopicName() + "/" + msg.getClientID()).retained(false)
-											.qos(MqttQoS.EXACTLY_ONCE)
-											.payload(Unpooled
-													.copiedBuffer(mapper.writeValueAsString(response).getBytes()))
-											.build();
-									getServer().internalPublish(message, msg.getClientID());
-								}
-							} else {
-								log.error("Error inserting data. Join error: {}", joinResponse.getBody().getError());
-								response.setIsOk(false);
-								response.setError("Error inserting data: " + joinResponse.getBody().getError());
-								final MqttPublishMessage message = MqttMessageBuilders.publish()
-										.topicName(msg.getTopicName() + "/" + msg.getClientID()).retained(false)
-										.qos(MqttQoS.EXACTLY_ONCE)
-										.payload(Unpooled.copiedBuffer(mapper.writeValueAsString(response).getBytes()))
-										.build();
-								getServer().internalPublish(message, msg.getClientID());
-							}
-
-						}
-
-					}
-				} catch (SSAPParseException | JsonProcessingException e1) {
-					log.error("Error parsing message to MQTT native connection.", e);
-					response.setIsOk(false);
-					response.setError("Error inserting data: " + e1.getMessage());
-					MqttPublishMessage message;
-					try {
-						message = MqttMessageBuilders.publish().topicName(msg.getTopicName() + "/" + msg.getClientID())
-								.retained(false).qos(MqttQoS.EXACTLY_ONCE)
-								.payload(Unpooled.copiedBuffer(mapper.writeValueAsString(response).getBytes())).build();
-						getServer().internalPublish(message, msg.getClientID());
-					} catch (JsonProcessingException e2) {
-						log.error("Error parsing response data");
-					}
-				}
-			}
+			getServer().internalPublish(message, msg.getClientID());
 		}
 
 		@Override
 		public void onConnectionLost(InterceptConnectionLostMessage msg) {
 			log.info("Connection Lost with client {}. The subscriptions of this client are going to be deleted.",
 					msg.getClientID());
-			MqttSession mqttSession = mqttClientSessions.get(msg.getClientID());
-			if (mqttSession != null) {
-				mqttClientSessions.remove(mqttSession);
-			}
 
 			final List<Subscriptor> subscriptors = subscriptorRepository.findByClientId(msg.getClientID());
 			for (final Subscriptor subscriptor : subscriptors) {
@@ -377,11 +251,6 @@ public class MoquetteBroker {
 
 			log.info("Connection Lost with client {}. The subscriptions of this client are going to be deleted.",
 					msg.getClientID());
-
-			MqttSession mqttSession = mqttClientSessions.get(msg.getClientID());
-			if (mqttSession != null) {
-				mqttClientSessions.remove(mqttSession);
-			}
 
 			final List<Subscriptor> subscriptors = subscriptorRepository.findByClientId(msg.getClientID());
 			for (final Subscriptor subscriptor : subscriptors) {
@@ -480,9 +349,8 @@ public class MoquetteBroker {
 					});
 
 			final Properties brokerProperties = new Properties();
-			// brokerProperties.put(BrokerConstants.STORAGE_CLASS_NAME,
-			// MapDBPersistentStore.class.getName());
-			// brokerProperties.put(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME, store);
+			//			brokerProperties.put(BrokerConstants.STORAGE_CLASS_NAME, MapDBPersistentStore.class.getName());
+			//			brokerProperties.put(BrokerConstants.PERSISTENT_STORE_PROPERTY_NAME, store);
 			brokerProperties.put(BrokerConstants.PORT_PROPERTY_NAME, port);
 			brokerProperties.put(BrokerConstants.BROKER_INTERCEPTOR_THREAD_POOL_SIZE, pool);
 			brokerProperties.put(BrokerConstants.HOST_PROPERTY_NAME, host);
@@ -494,8 +362,6 @@ public class MoquetteBroker {
 				brokerProperties.put(BrokerConstants.KEY_MANAGER_PASSWORD_PROPERTY_NAME, keyManagerPassword);
 				brokerProperties.put(BrokerConstants.SSL_PORT_PROPERTY_NAME, sslPort);
 			}
-			brokerProperties.put(BrokerConstants.AUTHENTICATOR_CLASS_NAME, Authenticator.class.getName());
-			brokerProperties.put(BrokerConstants.AUTHORIZATOR_CLASS_NAME, AuthorizatorPolicy.class.getName());
 
 			final IConfig memoryConfig = new MemoryConfig(brokerProperties);
 			server.startServer(memoryConfig);

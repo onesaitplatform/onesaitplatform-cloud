@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import static com.minsait.onesait.platform.controlpanel.rest.management.user.Use
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,7 +30,6 @@ import java.util.UUID;
 
 import javax.validation.Valid;
 
-import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,7 +69,6 @@ import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.libraries.mail.MailService;
 import com.minsait.onesait.platform.libraries.mail.util.HtmlFileAttachment;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
-import com.minsait.onesait.platform.multitenant.config.model.MasterUser;
 import com.minsait.onesait.platform.multitenant.config.model.MasterUserLazy;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 
@@ -121,17 +118,13 @@ public class UserManagementController {
 	@ApiResponses(@ApiResponse(content = @Content(schema = @Schema(implementation = UserAmplified.class)), responseCode = "200", description = "OK"))
 	public ResponseEntity<?> get(
 			@Parameter(description = "User id", example = "developer", required = true) @PathVariable("id") String userId) {
-		if (log.isDebugEnabled()) {
-			log.debug("New GET request for user {}", userId);
-		}
+		log.debug("New GET request for user {}", userId);
 		if (isUserAdminOrSameAsRequest(userId)) {
 			if (userService.getUser(userId) == null) {
 				log.warn("User {} does not exist", userId);
 				return new ResponseEntity<>(USER_STR + userId + DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
 			}
-			if (log.isDebugEnabled()) {
-				log.debug("Found user {}", userId);
-			}
+			log.debug("Found user {}", userId);
 			return new ResponseEntity<>(new UserAmplified(userService.getUser(userId)), HttpStatus.OK);
 		} else {
 			log.warn("Forbidden access", userId);
@@ -145,9 +138,7 @@ public class UserManagementController {
 	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR')")
 	public ResponseEntity<?> getAdditionalInfo(
 			@Parameter(description = "User id", example = "developer", required = true) @PathVariable("id") String userId) {
-		if (log.isDebugEnabled()) {
-			log.debug("New GET request for user {}", userId);
-		}
+		log.debug("New GET request for user {}", userId);
 		if (utils.isAdministrator()) {
 			final User user = userService.getUser(userId);
 			if (user == null) {
@@ -175,9 +166,7 @@ public class UserManagementController {
 			response.setCreated(dateFormat.format(user.getCreatedAt()));
 			response.setActive(user.isActive());
 
-			if (log.isDebugEnabled()) {
-				log.debug("Found user {}", userId);
-			}
+			log.debug("Found user {}", userId);
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		} else {
 			log.warn("Forbidden access", userId);
@@ -199,7 +188,7 @@ public class UserManagementController {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
 	}
-
+	
 	@Operation(summary = "Get users additional info")
 	@GetMapping("/allUsersAdditionalInfo")
 	@ApiResponses(@ApiResponse(content = @Content(schema = @Schema(implementation = MasterUserAmplified.class)), responseCode = "200", description = "OK"))
@@ -209,9 +198,9 @@ public class UserManagementController {
 		if (utils.isAdministrator()) {
 			final List<MasterUserAmplified> masterUsersAmplified = new ArrayList<MasterUserAmplified>();
 			final List<?> mUsers = multitenancyService.getAllLazy();
-			for (final Object muser : mUsers) {
-				log.debug("Found users");
-				final MasterUserAmplified masterUserAmplified = new MasterUserAmplified(muser);
+			for (Object muser : mUsers) {
+				log.debug("Found users");	
+				MasterUserAmplified masterUserAmplified = new MasterUserAmplified(muser);
 				masterUsersAmplified.add(masterUserAmplified);
 			}
 			log.debug("Found users");
@@ -222,33 +211,14 @@ public class UserManagementController {
 		}
 	}
 
+
 	@Operation(summary = "Get user by id")
 	@GetMapping("/username/like/{filter}")
 	@ApiResponses(@ApiResponse(content = @Content(schema = @Schema(implementation = UserAmplified.class)), responseCode = "200", description = "OK"))
-	public ResponseEntity<List<UserAmplified>> getByUserIdLike(@Parameter(description = "Filter search", example = "dev", required = true) @PathVariable("filter") String filter,
-															@RequestParam(value = "active", required = false, defaultValue = "true") boolean active) {
-
-		if (utils.isAdministrator() || utils.isDeveloper()) {
-			if (filter == null || filter.equals("")) {
-				filter = "%%";
-			} else {
-				filter = "%" + filter + "%";
-			}
-			final List<UserAmplified> users = userService.getAllUsersByCriteriaList(filter, "%%", "%%", "%%", active);
-			return ResponseEntity.ok().body(users);
-		} else {
-			log.warn("Forbidden access");
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		}
-	}
-	
-	@Operation(summary = "Get user by fullname like")
-	@GetMapping("/fullname/like/{filter}")
-	@ApiResponses(@ApiResponse(content = @Content(schema = @Schema(implementation = UserAmplified.class)), responseCode = "200", description = "OK"))
-	public ResponseEntity<List<UserAmplified>> getByFullNameLike(
-			@Parameter(description = "Filter search", example = "Smith", required = true) @PathVariable("filter") String filter) {
+	public ResponseEntity<List<UserAmplified>> getByUserIdLike(
+			@Parameter(description = "Filter search", example = "dev", required = true) @PathVariable("filter") String filter) {
 		if (utils.isAdministrator()) {
-			final List<UserAmplified> users = userService.getAllUsersActiveByFullNameLike(filter);
+			final List<UserAmplified> users = userService.getAllUsersActiveByUsernameLike(filter);
 			return ResponseEntity.ok().body(users);
 		} else {
 			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -262,7 +232,7 @@ public class UserManagementController {
 			@Parameter(description = "Hard delete (DB)", name = "hardDelete") @RequestParam(value = "hardDelete", required = false, defaultValue = "false") boolean hardDelete) {
 		if (isUserAdminOrSameAsRequest(userId)) {
 			log.info("User to be deleted: " + userId);
-			final User userBd = userService.getUser(userId);
+			User userBd = userService.getUser(userId);
 			if (userBd == null) {
 				return new ResponseEntity<>(USER_STR + userId + DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
 			}
@@ -442,7 +412,7 @@ public class UserManagementController {
 			userDb.setAvatar(user.getAvatar());
 			userDb.setActive(
 					user.getActive() == null ? userService.getUser(user.getUsername()).isActive() : user.getActive());
-			if (!userDb.isActive()) {
+			if(!userDb.isActive()) {
 				userService.deactivateClientPlatformsTokens(userDb);
 			}
 			final String extraFields = user.getExtraFields();
@@ -549,22 +519,7 @@ public class UserManagementController {
 
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
-
-	@Operation(summary = "Deactivate user")
-	@PostMapping("/deactivate/{userId}")
-	public ResponseEntity<String> deactivate(@PathVariable("userId") String userId) {
-		if (isUserAdminOrSameAsRequest(userId)) {
-			if (userService.getUser(userId) == null) {
-				return new ResponseEntity<>(USER_STR + userId + DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
-			}
-			userService.deleteUser(userId);
-		} else {
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-		}
-
-		return new ResponseEntity<>(HttpStatus.OK);
-	}
-
+	
 	@Operation(summary = "Activate multiple users by ids")
 	@PostMapping("/activate")
 	public ResponseEntity<String> activateMultiple(
@@ -573,24 +528,6 @@ public class UserManagementController {
 			if (utils.isAdministrator()) {
 				for (final UserId userId : userIds) {
 					userService.activateUser(userService.getUser(userId.getId()));
-				}
-			} else {
-				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-			}
-		} catch (final Exception e) {
-			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		return new ResponseEntity<>(HttpStatus.OK);
-	}
-
-	@Operation(summary = "Deactivate multiple users by ids")
-	@PostMapping("/deactivate")
-	public ResponseEntity<String> deactivateMultiple(
-			@Parameter(description = "User ids", example = "developer,guest,observer", required = true) @RequestBody @Valid List<UserId> userIds) {
-		try {
-			if (utils.isAdministrator()) {
-				for (final UserId userId : userIds) {
-					userService.deleteUser(userId.getId());
 				}
 			} else {
 				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -688,7 +625,7 @@ public class UserManagementController {
 	@PostMapping("/v2/{email}/reset-password")
 	public ResponseEntity<?> resetPasswordV2(@ApiParam("email") @PathVariable("email") String email) {
 		log.info("Received request to reset password for email: {}", email);
-		final MasterUser user = multitenancyService.getUserByMail(email);
+		final User user = userService.getUserByEmail(email);
 
 		if (user == null) {
 			log.debug("Mail invalid");
@@ -716,9 +653,7 @@ public class UserManagementController {
 			final HtmlFileAttachment demoImg = new HtmlFileAttachment();
 
 			try {
-				InputStream imgOnesaitPlatformIS = new ClassPathResource("static/img/onesaitplatform.jpeg").getInputStream();
-				File imgOnesaitPlatform = File.createTempFile("onesaitplatform", ".jpeg");
-				FileUtils.copyInputStreamToFile(imgOnesaitPlatformIS, imgOnesaitPlatform);
+				final File imgOnesaitPlatform = new ClassPathResource("static/img/onesaitplatform.jpeg").getFile();
 
 				demoImg.setFile(imgOnesaitPlatform);
 				demoImg.setFileKey("onesaitplatformimg");
@@ -817,9 +752,7 @@ public class UserManagementController {
 
 						return v != null && value.equals(String.valueOf(v));
 					} catch (final Exception e) {
-						if (log.isDebugEnabled()) {
-							log.debug("Error while reading extra_fields for user {}", u.getUserId());
-						}
+						log.debug("Error while reading extra_fields for user {}", u.getUserId(), e);
 						return false;
 					}
 

@@ -13,21 +13,15 @@
       vm.connected = false;
       vm.queue = {};
       vm.resetHeartBeatCallback;//call on connection and when some data is received for reset scheduling
-      vm.retrying = false;
 
       var errorfn = function(error){
-        if (!vm.retrying) {
-          if(error.status) {
-            console.log("Error Rest Connect: " + "code: " + error.status + " - " + error.statusText + " , reconnecting...");
-          } else {
-            console.log("Error Rest Connect: " + error);
-          }
-          vm.retrying = true;
-          window.dispatchEvent(new CustomEvent("ErrorConnect",{detail: error}));
-          $timeout(vm.connect,5000);
+        if(error.status) {
+          console.log("Error Rest Connect: " + "code: " + error.status + " - " + error.statusText + " , reconnecting...");
         } else {
-          //if retrying we ignore error
+          console.log("Error Rest Connect: " + error);
         }
+        window.dispatchEvent(new CustomEvent("ErrorConnect",{detail: error}));
+        $timeout(vm.connect,5000);
       }
 
       vm.connect = function(){
@@ -48,7 +42,6 @@
         ).catch(
           errorfn
         );
-        vm.retrying=false;
       }
 
       /*vm.connectAndSendAndSubscribe = function(reqrespList){
@@ -80,8 +73,6 @@
             datasourcefinal.msg.filter = datasourcefinal.msg.filter.map(function (d) {
               return d.data[0]
             })
-            datasourcefinal.callback = datasource.callback;
-            datasourcefinal.callbacks = datasource.callbacks;
           } else {
             datasourcefinal = datasource
           }

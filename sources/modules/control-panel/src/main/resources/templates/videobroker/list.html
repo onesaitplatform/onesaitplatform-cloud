@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -135,12 +135,12 @@
 												<thead>
 													<tr class="cabecera-tabla">
 														<th class="titulo-columnas" > <span th:text="#{ontology.identification}" >Identification</span></th>
-														<th class="titulo-columnas text-left" ><span th:text="#{gen.owner}" >User</span></th>
 														<th class="titulo-columnas" > <span th:text="#{videobroker.url}" >Url</span></th>
-														<th class="titulo-columnas text-left" ><span th:text="#{apimanager.ontology}" >Ontology</span></th>	
-														<th class="titulo-columnas text-center" > <span th:text="#{domain.state}" >State</span></th>
+														<th class="titulo-columnas text-left" ><span th:text="#{apimanager.ontology}" >Ontology</span></th>
+														<th class="titulo-columnas text-left" ><span th:text="#{gen.owner}" >User</span></th>
 														<th class="titulo-columnas text-left" > <span th:text="#{gen.created}">Created At</span></th>
 														<th class="titulo-columnas text-left" > <span th:text="#{gen.updated}">Updated At</span></th>
+														<th class="titulo-columnas text-center" > <span th:text="#{domain.state}" >State</span></th>
 														<th class="titulo-columnas text-center" style="width:85px;"> <span th:text="#{gen.options}"> Options</span></th>
 													</tr>
 												</thead>
@@ -148,23 +148,22 @@
 														<tr th:each="capture : ${videoCaptures}" pages:paginate="10">
 															<!-- IDENTIFICATION -->
 															<td class="text-left no-wrap " th:text="${capture.identification}"></td>
-															<!-- USER -->
-															<td class="text-left no-wrap " th:text="${capture.user.userId}"></td>	
-															
 															<!-- URL -->													
 															<td class="text-left text-truncate-xxs no-wrap " th:text="${capture.url}"></td>
 															<!-- ONTOLOGY -->
 															<td class="text-left no-wrap " th:text="${capture.ontology.identification}"></td>
-															<!-- STATE -->
-															<td class="text-center" th:if="${capture.state.name() == 'START'}"><span th:id="'state-'+${capture.id}" class="tooltips" data-container="body" data-placement="bottom" th:title="#{gen.running}" ><span th:text="1" style="display:none" ></span><i class="la la-arrow-up text-primary font-hg"></i></span></td>
-															<td class="text-center" th:if="${capture.state.name() == 'STOP'} "><span th:id="'state-'+${capture.id}" class="tooltips" data-container="body" data-placement="bottom" th:title="#{gen.stopped}" ><span th:text="0" style="display:none" ></span><i class="la la-arrow-down text-danger font-hg" ></i></span></td>	
+															<!-- USER -->
+															<td class="text-left no-wrap " th:text="${capture.user.userId}"></td>	
 															<!-- DATE -->
 															<td class="text-left" th:if="${capture.createdAt!=null}"><span th:text="${#dates.format(capture.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(capture.createdAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${capture.createdAt==null}" th:text="'---'"></td>
 															<!-- UPDATE -->
 															<td class="text-left" th:if="${capture.updatedAt!=null}"><span th:text="${#dates.format(capture.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(capture.updatedAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${capture.updatedAt==null}" th:text="'---'"></td>
-															
+															<!-- STATE -->
+															<td class="text-center" th:if="${capture.state.name() == 'START'}"><span th:id="'state-'+${capture.id}" class="tooltips" data-container="body" data-placement="bottom" th:title="#{gen.running}" ><span th:text="1" style="display:none" ></span><i class="la la-arrow-up text-primary font-hg"></i></span></td>
+															<td class="text-center" th:if="${capture.state.name() == 'STOP'} "><span th:id="'state-'+${capture.id}" class="tooltips" data-container="body" data-placement="bottom" th:title="#{gen.stopped}" ><span th:text="0" style="display:none" ></span><i class="la la-arrow-down text-danger font-hg" ></i></span></td>	
+
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">		
@@ -193,27 +192,27 @@
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-														<label th:text="#{gen.owner}"> Owner</label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
 														<label th:text="#{videobroker.url}"> URL </label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
 														<label th:text="#{apimanager.ontology}"> Ontology</label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-														<label th:text="#{domain.state}"> State</label>
+														<input class="toggle-vis" type="checkbox" data-column="3"/>
+														<label th:text="#{gen.owner}"> Owner</label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
 														<label th:text="#{gen.created}"> Created at</label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="6" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 														<label th:text="#{gen.updated}"> Updated at</label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="6" checked/>
+														<label th:text="#{domain.state}"> State</label>
 													</span>
 												</div>
 											</div>	
@@ -268,7 +267,35 @@
 
 
 	
+	// MAIN WHEN READY
+	$( document ).ready(function() {
 	
+		
+		
+		
+		//SHOW/HIDE DATATABLE COLUMNS HANDLER
+		$('input.toggle-vis').on( 'change', function (e) {
+			e.preventDefault(); 
+			// Get the column API object
+			var column = $('#simulationsTable').DataTable().column( $(this).attr('data-column') ); 
+			// Toggle the visibility
+			column.visible( ! column.visible() );			
+			// toggle Text
+			//$(this).toggleClass('text-muted line-through');			
+		});
+
+		// SEARCH FORM RESET
+		$('#reset_videocapture').on('click',function(){
+			$('#videocapture-identification').val('');
+			$('#simulationsTable').DataTable().column(0).search('').draw();
+		});
+
+		// SEARCH FORM
+		$('#search_videocapture').on('click',function(){
+			$('#simulationsTable').DataTable().column(0).search( $('#videocapture-identification').val()).draw();
+		});	
+		
+	});
 	var startStopEndpoint = [[@{/video-captures/startstop}]]
 	var startStopCapture = function(captureId, obj){
 		startStopAJAX(captureId).done(updateStateSuccess(obj, captureId)).fail(updateStateFail);
@@ -376,40 +403,9 @@
 		});
 	}
 	
-	$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		$.each([],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-	});	
-	
-	// MAIN WHEN READY
-	$( document ).ready(function() {
-	
-		
-		
-		
-		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-		$('input.toggle-vis').on( 'change', function (e) {
-			e.preventDefault(); 
-			// Get the column API object
-			var column = $('#simulationsTable').DataTable().column( $(this).attr('data-column') ); 
-			// Toggle the visibility
-			column.visible( ! column.visible() );			
-			// toggle Text
-			//$(this).toggleClass('text-muted line-through');			
-		});
+	// MAIN WHEN LOAD
+	$(window).load(function(){
 
-		// SEARCH FORM RESET
-		$('#reset_videocapture').on('click',function(){
-			$('#videocapture-identification').val('');
-			$('#simulationsTable').DataTable().column(0).search('').draw();
-		});
-
-		// SEARCH FORM
-		$('#search_videocapture').on('click',function(){
-			$('#simulationsTable').DataTable().column(0).search( $('#videocapture-identification').val()).draw();
-		});	
-		
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 		var oTable = $('#simulationsTable').dataTable({
 	      "bAutoWidth": false
 	      });   
@@ -429,7 +425,7 @@
 		$('#simulationsTable_wrapper > div:nth-child(1)').hide();
 
 		$('.dataTables_paginate').attr('style', 'float:right !important');
-		//$.each([],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([ 3 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
 
 		$("#contenedor-tabla-outside").removeClass("hidden");
 	});

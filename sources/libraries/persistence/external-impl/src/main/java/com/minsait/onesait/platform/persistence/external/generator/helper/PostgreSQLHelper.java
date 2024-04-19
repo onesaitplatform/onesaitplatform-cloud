@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,8 +44,6 @@ public class PostgreSQLHelper extends SQLHelperImpl implements SQLHelper {
 
 	private static final String LIST_TABLES_QUERY = "SELECT table_name FROM information_schema.tables WHERE table_schema NOT IN ('pg_catalog', 'information_schema')";
 	private static final String GET_CURRENT_DATABASE_QUERY = "SELECT current_database();";
-	private static final String LIST_TABLE_INFORMATION_QUERY = "SELECT table_name, column_name FROM information_schema.columns WHERE table_schema = '%s'";
-	private static final String GET_TABLE_INFORMATION_QUERY = "SELECT c.relname AS table_name, a.attname AS column_name FROM pg_constraint AS pk JOIN  pg_class AS c ON pk.conrelid = c.oid JOIN  pg_attribute AS a ON a.attnum = ANY(pk.conkey) AND a.attrelid = c.oid WHERE  pk.contype = 'p'  AND c.relnamespace = (SELECT oid FROM pg_namespace WHERE nspname = '%s')";
 	private static final String LIST_DATABASES_QUERY = "SELECT datname FROM pg_database";
 	private static final String GET_CURRENT_SCHEMA_QUERY = "SELECT current_schema();";
 	private static final String LIST_SCHEMAS_QUERY = "SELECT schema_name FROM information_schema.schemata where schema_name not like 'pg_%'";
@@ -76,11 +74,6 @@ public class PostgreSQLHelper extends SQLHelperImpl implements SQLHelper {
 	}
 
 	@Override
-	public String getTableInformationStatement(String database, String schema) {
-		return String.format(LIST_TABLE_INFORMATION_QUERY, schema);
-	}
-
-	@Override
 	public String getDatabaseStatement() {
 		return GET_CURRENT_DATABASE_QUERY;
 	}
@@ -103,11 +96,6 @@ public class PostgreSQLHelper extends SQLHelperImpl implements SQLHelper {
 	@Override
 	public String getAllTablesStatement(String database, String schema) {
 		return String.format(LIST_TABLES_IN_SCHEMA_QUERY, schema);
-	}
-
-	@Override
-	public String getTableIndexes(String database, String schema) {
-		return String.format(GET_TABLE_INFORMATION_QUERY, schema);
 	}
 
 	@Override
@@ -159,7 +147,7 @@ public class PostgreSQLHelper extends SQLHelperImpl implements SQLHelper {
 
 	@Override
 	public ColumnRelational getColumnWithSpecs(final ColumnRelational col) {
-		List<String> colSpecs = col.getColumnSpecs();
+		List<String> colSpecs = col.getColumnSpecStrings();
 		if (colSpecs == null) {
 			colSpecs = new ArrayList<>();
 		}
@@ -174,7 +162,7 @@ public class PostgreSQLHelper extends SQLHelperImpl implements SQLHelper {
 			if (col.getColDefautlValue() != null && !col.getColDefautlValue().equals("")) {
 				if (col.getColDefautlValue() instanceof String) {
 					String defValue = (String) col.getColDefautlValue();
-					final OntologyVirtualSchemaFieldType fieldtype = OntologyVirtualSchemaFieldType
+					OntologyVirtualSchemaFieldType fieldtype = OntologyVirtualSchemaFieldType
 							.valueOff(col.getStringColDataType());
 					if (fieldtype.equals(OntologyVirtualSchemaFieldType.STRING) && !defValue.startsWith("'")) {
 						defValue = "'" + defValue + "'";
@@ -185,7 +173,7 @@ public class PostgreSQLHelper extends SQLHelperImpl implements SQLHelper {
 				}
 			}
 
-			col.setColumnSpecs(colSpecs);
+			col.setColumnSpecStrings(colSpecs);
 			col.getColDataType().setDataType(getFieldTypeString(col.getColDataType().getDataType()));
 		}
 		return col;
@@ -193,22 +181,21 @@ public class PostgreSQLHelper extends SQLHelperImpl implements SQLHelper {
 
 	@Override
 	public String parseGeometryFields(String query, String ontology) throws JSQLParserException {
-		final Ontology o = ontologyVirtualRepository.findOntology(ontology);
-		final OntologyVirtual virtual = ontologyVirtualRepository.findByOntologyId(o);
-		final String jsonSchema = o.getJsonSchema();
-		final JSONObject obj = new JSONObject(jsonSchema);
-		final JSONObject columns = obj.getJSONObject("properties");
-		// Comentado porque no se pueden pedir las columnas fk: user_id, api_id...
-//		if (query.contains("_id,")) {
-//			query = query.replace("_id,", "");
-//		}
+		Ontology o = ontologyVirtualRepository.findOntology(ontology);
+		OntologyVirtual virtual = ontologyVirtualRepository.findByOntologyId(o);
+		String jsonSchema = o.getJsonSchema();
+		JSONObject obj = new JSONObject(jsonSchema);
+		JSONObject columns = obj.getJSONObject("properties");
+		if (query.contains("_id,")) {
+			query = query.replace("_id,", "");
+		}
 
 		if (virtual.getObjectGeometry() != null && !virtual.getObjectGeometry().trim().equals("")) {
-			final Select selectStatement = (Select) CCJSqlParserUtil.parse(query);
-			final PlainSelect plainSelect = (PlainSelect) selectStatement.getSelectBody();
-			final Alias alias = plainSelect.getFromItem().getAlias();
-			final List<SelectItem> selectItems = plainSelect.getSelectItems();
-			for (final SelectItem item : selectItems) {
+			Select selectStatement = (Select) CCJSqlParserUtil.parse(query);
+			PlainSelect plainSelect = (PlainSelect) selectStatement.getSelectBody();
+			Alias alias = plainSelect.getFromItem().getAlias();
+			List<SelectItem> selectItems = plainSelect.getSelectItems();
+			for (SelectItem item : selectItems) {
 				if (item.toString().equals("*") || (alias != null && item.toString().equals(alias.getName()))) {
 					return refactorQueryAll(columns, virtual, selectStatement, alias, item.toString());
 				} else {

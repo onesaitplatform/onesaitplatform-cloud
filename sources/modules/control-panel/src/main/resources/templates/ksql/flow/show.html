@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -314,7 +314,7 @@
 															<label th:text="#{ksql.relation.ksql.type}"> Resource Type</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="4"/>
 															<label th:text="#{ksql.relation.ksql.statement}"> KSQL Statement Type</label>
 														</span>
 														<span class="checkbox-column">
@@ -439,10 +439,7 @@
 		
 		//<![CDATA[
 		function navigateUrl(url){  window.location.href = url;	}
-		$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([4],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-		});
+		
 		// MAIN WHEN READY
 		$( document ).ready(function() {
 			var csrf_value = $("meta[name='_csrf']").attr("content");
@@ -487,8 +484,11 @@
 			
 			// SEARCH FORM
 			$('#search_ksqlrelations').on('click',function(){ $('#form_ksqlrelations')[0].submit(); });
+		});
+		 
+		// MAIN WHEN LOAD
+		$(window).load(function(){ 
 
-			//$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
 			var oTable = $('#ksqlRelations').dataTable({
 		      "bAutoWidth": false
 		      });  
@@ -510,7 +510,7 @@
 			$('.dataTables_paginate').attr('style', 'float:right !important');
 			
 			// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
-			//$.each([4],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+			$.each([4],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
 
 			$("#contenedor-tabla-outside").removeClass("hidden");
 			

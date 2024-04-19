@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,8 @@ public class SQLGeneratorImplTest {
 	/** EXPECTED CREATE **/
 	private final static String EXPECTED_MYSQL_CREATE = "CREATE TABLE ontology (campo1 VARCHAR(255) COMMENT 'ontology/campo1', campo2 VARCHAR(255) COMMENT 'ontology/campo2')";
 	private final static String EXPECTED_MARIA_CREATE = "CREATE TABLE ontology (campo1 VARCHAR(255) COMMENT 'ontology/campo1', campo2 VARCHAR(255) COMMENT 'ontology/campo2')";
+	private final static String EXPECTED_HIVE_CREATE = "CREATE TABLE ontology (campo1 VARCHAR(255) COMMENT 'ontology/campo1', campo2 VARCHAR(255) COMMENT 'ontology/campo2')";
+	private final static String EXPECTED_IMPALA_CREATE = "CREATE TABLE ontology (campo1 VARCHAR(255) COMMENT 'ontology/campo1', campo2 VARCHAR(255) COMMENT 'ontology/campo2')";
 	private final static String EXPECTED_ORACLE_CREATE = "CREATE TABLE ontology (campo1 CHAR(255) COMMENT 'ontology/campo1', campo2 CHAR(255) COMMENT 'ontology/campo2')";
 	private final static String EXPECTED_SQLSERVER_CREATE = "CREATE TABLE ontology (campo1 VARCHAR(255) COMMENT 'ontology/campo1', campo2 VARCHAR(255) COMMENT 'ontology/campo2')";
 	private final static String EXPECTED_POSTGRESQL_CREATE = "CREATE TABLE \"ontology\" (campo1 VARCHAR(255) , campo2 VARCHAR(255) )";
@@ -61,6 +63,8 @@ public class SQLGeneratorImplTest {
 	/** EXPECTED CREATE **/
 	private final static String EXPECTED_MYSQL_CREATE_STATEMENT = "CREATE TABLE ontology (campo1 VARCHAR(255) COMMENT 'ontology/campo1', campo2 VARCHAR(255) COMMENT 'ontology/campo2', PRIMARY KEY (campo1))";
 	private final static String EXPECTED_MARIA_CREATE_STATEMENT = "CREATE TABLE ontology (campo1 VARCHAR(255) COMMENT 'ontology/campo1', campo2 VARCHAR(255) COMMENT 'ontology/campo2', PRIMARY KEY (campo1))";
+	private final static String EXPECTED_HIVE_CREATE_STATEMENT = "CREATE TABLE ontology (campo1 VARCHAR(255) COMMENT 'ontology/campo1', campo2 VARCHAR(255) COMMENT 'ontology/campo2', PRIMARY KEY (campo1))";
+	private final static String EXPECTED_IMPALA_CREATE_STATEMENT = "CREATE TABLE ontology (campo1 VARCHAR(255) COMMENT 'ontology/campo1', campo2 VARCHAR(255) COMMENT 'ontology/campo2', PRIMARY KEY (campo1))";
 	private final static String EXPECTED_ORACLE_CREATE_STATEMENT = "CREATE TABLE ontology (campo1 CHAR(255) COMMENT 'ontology/campo1', campo2 CHAR(255) COMMENT 'ontology/campo2', PRIMARY KEY (campo1))";
 	private final static String EXPECTED_SQLSERVER_CREATE_STATEMENT = "CREATE TABLE ontology (campo1 VARCHAR(255) COMMENT 'ontology/campo1', campo2 VARCHAR(255) COMMENT 'ontology/campo2', PRIMARY KEY (campo1))";
 	private final static String EXPECTED_POSTGRESQL_CREATE_STATEMENT = "CREATE TABLE \"ontology\" (campo1 VARCHAR(255) , campo2 VARCHAR(255) , PRIMARY KEY (campo1))";
@@ -148,7 +152,15 @@ public class SQLGeneratorImplTest {
 		when(virtualDatasourcesManager.getDatasourceForOntology(any())).thenReturn(generateDataSource(VirtualDatasourceType.MARIADB));
 		String mariaDefinition = generator.getSqlTableDefinitionFromSchema(generateOntology());
 		Assert.assertEquals("Generation table SQL definition for MARIADB is not passing test", EXPECTED_MARIA_CREATE, mariaDefinition);
-	
+		
+		when(virtualDatasourcesManager.getDatasourceForOntology(any())).thenReturn(generateDataSource(VirtualDatasourceType.HIVE));
+		String hiveDefinition = generator.getSqlTableDefinitionFromSchema(generateOntology());
+		Assert.assertEquals("Generation table SQL definition for HIVE is not passing test", EXPECTED_HIVE_CREATE, hiveDefinition);
+		
+		when(virtualDatasourcesManager.getDatasourceForOntology(any())).thenReturn(generateDataSource(VirtualDatasourceType.IMPALA));
+		String impalaDefinition = generator.getSqlTableDefinitionFromSchema(generateOntology());
+		Assert.assertEquals("Generation table SQL definition for IMPALA is not passing test", EXPECTED_IMPALA_CREATE, impalaDefinition);
+		
 		when(virtualDatasourcesManager.getDatasourceForOntology(any())).thenReturn(generateDataSource(VirtualDatasourceType.ORACLE));
 		String oracleDefinition = generator.getSqlTableDefinitionFromSchema(generateOntology());
 		Assert.assertEquals("Generation table SQL definition for ORACLE is not passing test", EXPECTED_ORACLE_CREATE, oracleDefinition);
@@ -172,6 +184,14 @@ public class SQLGeneratorImplTest {
 		when(virtualDatasourcesManager.getDatasourceForOntology(any())).thenReturn(generateDataSource(VirtualDatasourceType.MARIADB));
 		String mariaDefinition = generator.getSQLCreateTable(generateCreateStatement(), VirtualDatasourceType.MARIADB).getStatement();
 		Assert.assertEquals("Generation table SQL definition for MARIADB is not passing test", EXPECTED_MARIA_CREATE_STATEMENT, mariaDefinition);
+		
+		when(virtualDatasourcesManager.getDatasourceForOntology(any())).thenReturn(generateDataSource(VirtualDatasourceType.HIVE));
+		String hiveDefinition = generator.getSQLCreateTable(generateCreateStatement(), VirtualDatasourceType.HIVE).getStatement();
+		Assert.assertEquals("Generation table SQL definition for HIVE is not passing test", EXPECTED_HIVE_CREATE_STATEMENT, hiveDefinition);
+		
+		when(virtualDatasourcesManager.getDatasourceForOntology(any())).thenReturn(generateDataSource(VirtualDatasourceType.IMPALA));
+		String impalaDefinition = generator.getSQLCreateTable(generateCreateStatement(), VirtualDatasourceType.IMPALA).getStatement();
+		Assert.assertEquals("Generation table SQL definition for IMPALA is not passing test", EXPECTED_IMPALA_CREATE_STATEMENT, impalaDefinition);
 		
 		when(virtualDatasourcesManager.getDatasourceForOntology(any())).thenReturn(generateDataSource(VirtualDatasourceType.ORACLE));
 		String oracleDefinition = generator.getSQLCreateTable(generateCreateStatement(), VirtualDatasourceType.ORACLE).getStatement();

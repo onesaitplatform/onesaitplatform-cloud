@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,23 +34,16 @@ public interface OntologyVirtualRepository extends JpaRepository<OntologyVirtual
 	@Query("SELECT ov.objectId FROM OntologyVirtual AS ov WHERE ov.ontologyId.identification=:ontologyId")
 	String findOntologyVirtualObjectIdByOntologyIdentification(@Param("ontologyId") String ontologyId);
 
-	@Query("SELECT ov FROM OntologyVirtual AS ov  WHERE ov.datasourceId.id=:datasourcesId")
-	List<OntologyVirtual> findByDatasourcesId(@Param("datasourcesId") String datasourcesId);
-
 	@Query("SELECT ov FROM OntologyVirtual AS ov WHERE ov.ontologyId.identification=:ontologyId")
 	OntologyVirtual findOntologyVirtualByOntologyIdentification(@Param("ontologyId") String ontologyId);
-
+	
 	OntologyVirtual findByOntologyId(Ontology ontology);
 
 	@Query("SELECT ov.ontologyId FROM OntologyVirtual AS ov WHERE ov.ontologyId.identification=:ontologyId")
 	Ontology findOntology(@Param("ontologyId") String ontologyId);
-
-	@Override
+	
 	List<OntologyVirtual> findAll();
-
-	@Query("SELECT ov FROM OntologyVirtual AS ov WHERE ov.ontologyId.user=:user")
-	List<OntologyVirtual> findByUser(@Param("user") User user);
-
-	List<OntologyVirtual> findByDatasourceTableName(String datasourceTableName);
-
+	
+	@Query("SELECT ov FROM OntologyVirtual AS ov WHERE ov.ontologyId.user=:user")	
+	List <OntologyVirtual> findByUser(@Param("user") User user);
 }

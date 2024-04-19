@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,6 @@ public class MongoQueryByQuasarIntegrationTest {
 		@Bean("dataHubRest")
 		public RestTemplate restTemplate() throws GenericOPException {
 			final RestTemplate rt = new RestTemplate();
-
 			return rt;
 		}
 	}

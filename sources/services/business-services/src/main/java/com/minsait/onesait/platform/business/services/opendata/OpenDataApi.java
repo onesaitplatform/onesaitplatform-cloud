@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -68,7 +67,6 @@ public class OpenDataApi {
 
 	public Object getOperation(String endpoint, String userToken, Class result) {
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
-
 		final HttpHeaders headers = new HttpHeaders();
 		if (userToken != null) {
 			headers.set("Authorization", "Bearer " + userToken);
@@ -79,7 +77,6 @@ public class OpenDataApi {
 
 	public ResponseEntity postOperation(String endpoint, String userToken, Object payload, Class result) {
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
-		restTemplate.getMessageConverters().add(0, new MappingJackson2HttpMessageConverter());
 		final HttpHeaders headers = new HttpHeaders();
 		if (userToken != null) {
 			headers.set("Authorization", "Bearer " + userToken);
@@ -88,10 +85,6 @@ public class OpenDataApi {
 				&& ((OpenDataOrganization) payload).getImage_upload() != null) {
 			headers.set("Content-Type", "multipart/form-data");
 		}
-		if ("dataset_purge".equals(endpoint)) {
-			headers.set("Content-Type", MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-		}
-
 		final HttpEntity entity = new HttpEntity<>(payload, headers);
 		return restTemplate.exchange(openDataUrl + API_ENDPOINT + endpoint, HttpMethod.POST, entity, result);
 	}
@@ -134,7 +127,6 @@ public class OpenDataApi {
 
 	public ResponseEntity postOperationWithFile(String endpoint, String userToken, OpenDataOrganization organization) {
 		final RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
-
 		final MultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
 		File tempFile = null;
 		try {
@@ -163,8 +155,8 @@ public class OpenDataApi {
 		headers.set("Authorization", "Bearer " + userToken);
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 		final HttpEntity entity = new HttpEntity<>(parameters, headers);
-		final ResponseEntity response = restTemplate.exchange(openDataUrl + API_ENDPOINT + endpoint, HttpMethod.POST,
-				entity, OrganizationShowResponse.class);
+		ResponseEntity response = restTemplate.exchange(openDataUrl + API_ENDPOINT + endpoint, HttpMethod.POST, entity,
+				OrganizationShowResponse.class);
 
 		if (tempFile != null && tempFile.exists()) {
 			tempFile.delete();

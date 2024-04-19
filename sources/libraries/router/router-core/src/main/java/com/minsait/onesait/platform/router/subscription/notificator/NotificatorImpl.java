@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -57,7 +56,6 @@ public class NotificatorImpl implements Notificator {
 	@PostConstruct
 	public void init() {
 		restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
-		restTemplate.getMessageConverters().add(0, new MappingJackson2HttpMessageConverter());
 		restTemplate.setRequestFactory(getRestTemplateRequestFactory());
 	}
 

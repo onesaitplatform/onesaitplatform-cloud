@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -154,7 +154,7 @@ public class Notebook extends OPResource implements Versionable<Notebook> {
 	@Override
 	public String pathToVersionable(boolean toYamlFile) {
 		final String path = Versionable.super.pathToVersionable(toYamlFile);
-		if (toYamlFile) {
+		if(toYamlFile) {
 			return path;
 		} else {
 			return path + File.separator + getIdentification();
@@ -166,12 +166,5 @@ public class Notebook extends OPResource implements Versionable<Notebook> {
 		final ArrayList<String> list = new ArrayList<>();
 		list.add(pathToVersionable(false) + File.separator + getIdentification() + ".zip");
 		return list;
-	}
-
-	@Override
-	public void setOwnerUserId(String userId) {
-		final User u = new User();
-		u.setUserId(userId);
-		setUser(u);
 	}
 }

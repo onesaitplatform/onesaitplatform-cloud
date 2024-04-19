@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,17 @@
  */
 package com.minsait.onesait.platform.controlpanel.security;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.security.KeyStore;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Timer;
 import java.util.regex.Pattern;
 
 import javax.servlet.Filter;
@@ -25,7 +33,14 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.apache.velocity.app.VelocityEngine;
 import org.jasig.cas.client.session.SingleSignOutFilter;
+import org.opensaml.saml2.metadata.provider.HTTPMetadataProvider;
+import org.opensaml.saml2.metadata.provider.MetadataProvider;
+import org.opensaml.saml2.metadata.provider.MetadataProviderException;
+import org.opensaml.xml.parse.StaticBasicParserPool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,6 +53,7 @@ import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
@@ -60,14 +76,56 @@ import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticat
 import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilter;
 import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
+import org.springframework.security.saml.SAMLAuthenticationProvider;
+import org.springframework.security.saml.SAMLBootstrap;
+import org.springframework.security.saml.SAMLEntryPoint;
+import org.springframework.security.saml.SAMLLogoutFilter;
+import org.springframework.security.saml.SAMLLogoutProcessingFilter;
+import org.springframework.security.saml.SAMLProcessingFilter;
+import org.springframework.security.saml.context.SAMLContextProviderImpl;
+import org.springframework.security.saml.context.SAMLContextProviderLB;
+import org.springframework.security.saml.key.JKSKeyManager;
+import org.springframework.security.saml.key.KeyManager;
+import org.springframework.security.saml.log.SAMLDefaultLogger;
+import org.springframework.security.saml.metadata.CachingMetadataManager;
+import org.springframework.security.saml.metadata.ExtendedMetadata;
+import org.springframework.security.saml.metadata.ExtendedMetadataDelegate;
+import org.springframework.security.saml.metadata.MetadataDisplayFilter;
+import org.springframework.security.saml.metadata.MetadataGenerator;
+import org.springframework.security.saml.metadata.MetadataGeneratorFilter;
+import org.springframework.security.saml.parser.ParserPoolHolder;
+import org.springframework.security.saml.processor.HTTPPostBinding;
+import org.springframework.security.saml.processor.HTTPRedirectDeflateBinding;
+import org.springframework.security.saml.processor.SAMLBinding;
+import org.springframework.security.saml.processor.SAMLProcessorImpl;
+import org.springframework.security.saml.storage.EmptyStorageFactory;
+import org.springframework.security.saml.userdetails.SAMLUserDetailsService;
+import org.springframework.security.saml.util.VelocityFactory;
+import org.springframework.security.saml.websso.SingleLogoutProfile;
+import org.springframework.security.saml.websso.SingleLogoutProfileImpl;
+import org.springframework.security.saml.websso.WebSSOProfile;
+import org.springframework.security.saml.websso.WebSSOProfileConsumer;
+import org.springframework.security.saml.websso.WebSSOProfileConsumerHoKImpl;
+import org.springframework.security.saml.websso.WebSSOProfileConsumerImpl;
+import org.springframework.security.saml.websso.WebSSOProfileImpl;
+import org.springframework.security.saml.websso.WebSSOProfileOptions;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.DefaultSecurityFilterChain;
+import org.springframework.security.web.FilterChainProxy;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.session.InvalidSessionStrategy;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
@@ -75,6 +133,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.controlpanel.interceptor.BearerTokenFilter;
 import com.minsait.onesait.platform.controlpanel.interceptor.MicrosoftTeamsTokenFilter;
 import com.minsait.onesait.platform.controlpanel.interceptor.X509CertFilter;
@@ -99,6 +158,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	public static final String ROLE_ANONYMOUS = "ROLE_ANONYMOUS";
 	public static final String BLOCK_PRIOR_LOGIN_PARAMS = "block_prior_login_params";
 
+	private static final String SAML = "saml";
 	private static final String CAS = "cas";
 	private static final String X509 = "X509";
 	private static final String CONFIGDB = "configdb";
@@ -154,6 +214,8 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 		return bean;
 	}
 
+	@Autowired(required = false)
+	private SAMLUserDetailsService samlUserDetailsService;
 	@Autowired
 	private IntegrationResourcesService integrationResourcesService;
 
@@ -210,9 +272,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 					new RegexRequestMatcher("^/users/reset-password", null),
 					new RegexRequestMatcher("^/actuator.*", null), new RegexRequestMatcher("^/opendata.*", null),
 					new RegexRequestMatcher("^/modelsmanager.*", null), new RegexRequestMatcher("^/process.*", null),
-					new RegexRequestMatcher("^/microservices.*", null),
-					new RegexRequestMatcher("^/codeproject.*", null), new RegexRequestMatcher("^/mapsproject.*", null),
-					new RegexRequestMatcher("^/forms.*", null), new RegexRequestMatcher("^/themes.*", null));
+					new RegexRequestMatcher("^/microservices.*", null));
 
 			// When using CsrfProtectionMatcher we need to explicitly declare allowed
 			// methods
@@ -234,72 +294,72 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 		final Integer maxSessionsPerUser = integrationResourcesService.getGlobalConfiguration().getEnv()
 				.getControlpanel() != null
 				&& integrationResourcesService.getGlobalConfiguration().getEnv().getControlpanel()
-						.get("maxSessionsPerUser") != null
-								? (Integer) integrationResourcesService.getGlobalConfiguration().getEnv()
-										.getControlpanel().get("maxSessionsPerUser")
-								: 10;
+				.get("maxSessionsPerUser") != null
+				? (Integer) integrationResourcesService.getGlobalConfiguration().getEnv()
+						.getControlpanel().get("maxSessionsPerUser")
+						: 10;
 
-		http.csrf().requireCsrfProtectionMatcher(csrfRequestMatcher);
+						http.csrf().requireCsrfProtectionMatcher(csrfRequestMatcher);
 
-		http.headers().frameOptions().disable();
-		http.authorizeRequests().antMatchers("/", "/home", "/favicon.ico", "/blocked", "/loginerror").permitAll()
-				.antMatchers("/api/applications", "/api/applications/", "/api/themes/css/**").permitAll()
-				.antMatchers("/opendata/register").permitAll()
-				.antMatchers("/users/register", "/oauth/authorize", "/oauth/token", "/oauth/check_token").permitAll()
-				.antMatchers(HttpMethod.POST, "/users/reset-password").permitAll()
-				.antMatchers("/resources/**", "/static/**", "/css/**", "/js/**", "/images/**", "/webjars/**")
-				.permitAll().antMatchers(HttpMethod.PUT, "/users/update/**/**").permitAll()
-				.antMatchers(HttpMethod.GET, "/users/update/**/**").permitAll()
-				.antMatchers("/health/", "/info", "/metrics", "/trace", "/logfile").permitAll()
-				.antMatchers("/nodered/auth/**/**").permitAll()
-				.antMatchers("/api/**", "/dashboards/view/**", "/dashboards/model/**", "/dashboards/editfulliframe/**",
-						"/dashboards/viewiframe/**", "/viewers/view/**", "/viewers/viewiframe/**", "/gadgets/**",
-						"/viewers/**", "/datasources/**", "/v3/api-docs/", "/v3/api-docs/**", "/swagger-resources/",
-						"/swagger-resources/**", "/users/validateNewUserFromLogin/**",
-						"/users/showGeneratedCredentials/**", "/users/createNewUserFromLogin",
-						"/users/validateResetPassword/**", "/users/resetPasswordFromLogin", "/swagger-ui.html",
-						"/layer/**", "/notebooks/app/**", "/403",
-						"/gadgettemplates/getGadgetTemplateByIdentification/**", "/modelsmanager/api/**",
-						"/datamodelsjsonld/**")
-				.permitAll().regexMatchers("^/actuator(?!/health)").hasAnyRole("OPERATIONS", "ADMINISTRATOR");
+						http.headers().frameOptions().disable();
+						http.authorizeRequests().antMatchers("/", "/home", "/favicon.ico", "/blocked", "/loginerror").permitAll()
+						.antMatchers("/api/applications", "/api/applications/").permitAll().antMatchers("/opendata/register")
+						.permitAll().antMatchers("/users/register", "/oauth/authorize", "/oauth/token", "/oauth/check_token")
+						.permitAll().antMatchers(HttpMethod.POST, "/users/reset-password").permitAll()
+						.antMatchers("/resources/**", "/static/**", "/css/**", "/js/**", "/images/**", "/webjars/**").permitAll()
+						.antMatchers(HttpMethod.PUT, "/users/update/**/**").permitAll()
+						.antMatchers(HttpMethod.GET, "/users/update/**/**").permitAll()
+						.antMatchers("/health/", "/info", "/metrics", "/trace", "/logfile").permitAll()
+						.antMatchers("/nodered/auth/**/**").permitAll()
+						.antMatchers("/actuator/**", "/api/**", "/dashboards/view/**", "/dashboards/model/**",
+								"/dashboards/editfulliframe/**", "/dashboards/viewiframe/**", "/viewers/view/**",
+								"/viewers/viewiframe/**", "/gadgets/**", "/viewers/**", "/datasources/**", "/v3/api-docs/",
+								"/v3/api-docs/**", "/swagger-resources/", "/swagger-resources/**", "/users/validateNewUserFromLogin/**","/users/showGeneratedCredentials/**",
+								"/users/createNewUserFromLogin","/users/validateResetPassword/**", "/users/resetPasswordFromLogin", "/swagger-ui.html", "/layer/**", "/notebooks/app/**", "/403",
+								"/gadgettemplates/getGadgetTemplateByIdentification/**", "/modelsmanager/api/**","/datamodelsjsonld/**")
+						.permitAll().antMatchers("/actuator/**").hasAnyRole("OPERATIONS", "ADMINISTRATOR");
 
-		// This line deactivates login page when using SAML or other Auth Provider
-		// if (!authProvider.equalsIgnoreCase(CONFIGDB))
-		// http.authorizeRequests().antMatchers(LOGIN_STR).denyAll();
-		http.x509().subjectPrincipalRegex("CN=(.*?)(?:,|$)").userDetailsService(detailsService);
-		http.formLogin().successHandler(successHandler).failureHandler(failureHandler).permitAll();
-		http.authorizeRequests().regexMatchers("^/login/cas.*", "^/cas.*", "^/login*", "^/saml*").permitAll()
-				.antMatchers("/oauth/").permitAll().antMatchers("/api-ops", "/api-ops/**").permitAll()
-				.antMatchers("/management", "/management/**").permitAll().antMatchers("/actuator/health").permitAll()
-				.antMatchers("/notebook-ops", "/notebook-ops/**").permitAll().antMatchers(HttpMethod.GET, "/files/list")
-				.authenticated().antMatchers(HttpMethod.GET, "/files/**").permitAll()
-				.antMatchers(HttpMethod.POST, "/binary-repository", "/binary-repository/**").authenticated()
-				.antMatchers("/binary-repository", "/binary-repository/**").permitAll().antMatchers("/admin")
-				.hasAnyRole("ROLE_ADMINISTRATOR").antMatchers("/admin/**").hasAnyRole("ROLE_ADMINISTRATOR").anyRequest()
-				.authenticated();
-		http.logout().logoutSuccessHandler(logoutSuccessHandler).permitAll().and().sessionManagement()
-				.invalidSessionUrl("/").maximumSessions(maxSessionsPerUser).expiredUrl("/")
-				.maxSessionsPreventsLogin(false).sessionRegistry(sessionRegistry()).and().sessionFixation().none().and()
-				.exceptionHandling().accessDeniedHandler(accessDeniedHandler)
-				.authenticationEntryPoint(authenticationEntryPoint);
+						// This line deactivates login page when using SAML or other Auth Provider
+						// if (!authProvider.equalsIgnoreCase(CONFIGDB))
+						// http.authorizeRequests().antMatchers(LOGIN_STR).denyAll();
+						http.x509().subjectPrincipalRegex("CN=(.*?)(?:,|$)").userDetailsService(detailsService);
+						http.formLogin().successHandler(successHandler).failureHandler(failureHandler).permitAll();
+						http.authorizeRequests().regexMatchers("^/login/cas.*", "^/cas.*", "^/login*", "^/saml*").permitAll()
+						.antMatchers("/oauth/").permitAll().antMatchers("/api-ops", "/api-ops/**").permitAll()
+						.antMatchers("/management", "/management/**").permitAll()
+						.antMatchers("/notebook-ops", "/notebook-ops/**").permitAll().antMatchers(HttpMethod.GET, "/files/list")
+						.authenticated().antMatchers(HttpMethod.GET, "/files/**").permitAll()
+						.antMatchers(HttpMethod.POST, "/binary-repository", "/binary-repository/**").authenticated()
+						.antMatchers("/binary-repository", "/binary-repository/**").permitAll().antMatchers("/admin")
+						.hasAnyRole("ROLE_ADMINISTRATOR").antMatchers("/admin/**").hasAnyRole("ROLE_ADMINISTRATOR").anyRequest()
+						.authenticated();
+						http.logout().logoutSuccessHandler(logoutSuccessHandler).permitAll().and().sessionManagement()
+						.invalidSessionUrl("/").maximumSessions(maxSessionsPerUser).expiredUrl("/")
+						.maxSessionsPreventsLogin(false).sessionRegistry(sessionRegistry()).and().sessionFixation().none().and()
+						.exceptionHandling().accessDeniedHandler(accessDeniedHandler)
+						.authenticationEntryPoint(authenticationEntryPoint);
 
-		if (authProvider.equalsIgnoreCase(CAS)) {
-			http.addFilterBefore(singleSignOutFilter, CasAuthenticationFilter.class).addFilterBefore(logoutFilter,
-					LogoutFilter.class);
-		}
+						if (authProvider.equalsIgnoreCase(CAS)) {
+							http.addFilterBefore(singleSignOutFilter, CasAuthenticationFilter.class).addFilterBefore(logoutFilter,
+									LogoutFilter.class);
+						}
+						if (authProvider.equalsIgnoreCase(SAML)) {
+							http.addFilterBefore(metadataGeneratorFilter(), ChannelProcessingFilter.class).addFilterAfter(samlFilter(),
+									BasicAuthenticationFilter.class);
 
-		http.addFilterBefore(new BearerTokenFilter(), AnonymousAuthenticationFilter.class)
-				.addFilterBefore(new XOpAPIKeyFilter(), AnonymousAuthenticationFilter.class)
-				.addFilterBefore(new MicrosoftTeamsTokenFilter(), AnonymousAuthenticationFilter.class);
-		if (x509Enabled) {
-			http.addFilterBefore(new X509CertFilter(), AnonymousAuthenticationFilter.class);
-		}
-		if (oauthLogin) {
-			http.addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);
-		}
+						}
+						http.addFilterBefore(new BearerTokenFilter(), AnonymousAuthenticationFilter.class)
+						.addFilterBefore(new XOpAPIKeyFilter(), AnonymousAuthenticationFilter.class)
+						.addFilterBefore(new MicrosoftTeamsTokenFilter(), AnonymousAuthenticationFilter.class);
+						if(x509Enabled) {
+							http.addFilterBefore(new X509CertFilter(), AnonymousAuthenticationFilter.class);
+						}
+						if (oauthLogin) {
+							http.addFilterBefore(ssoFilter(), BasicAuthenticationFilter.class);
+						}
 
-		http.sessionManagement().invalidSessionStrategy(invalidSessionStrategy);
-		http.httpBasic();
+						http.sessionManagement().invalidSessionStrategy(invalidSessionStrategy);
+						http.httpBasic();
 
 	}
 
@@ -331,6 +391,18 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 		registration.setFilter(filter);
 		registration.setOrder(-100);
 		return registration;
+	}
+
+	@Bean
+	@Primary
+	@Order(Ordered.HIGHEST_PRECEDENCE)
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public AuthenticationProvider samlAuthenticationProvider() {
+		final SAMLAuthenticationProvider samlAuthenticationProvider = new SAMLAuthenticationProvider();
+		samlAuthenticationProvider.setUserDetails(samlUserDetailsService);
+		samlAuthenticationProvider.setForcePrincipalAsString(false);
+		return samlAuthenticationProvider;
+
 	}
 
 	// cannot be processed by SessionResgistryImpl without this bean
@@ -366,6 +438,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 						|| path.startsWith("/gadgets/getGadgetConfigById/")
 						|| path.startsWith("/datasources/getDatasourceById/") || path.startsWith("/viewers/view/")
 						|| path.startsWith("/viewers/viewiframe/") || path.startsWith("/datamodelsjsonld/");
+
 			}
 		});
 		registration.addUrlPatterns("/*");
@@ -403,6 +476,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 		return new SessionRegistryImpl();
 	}
 
+
 	@Override
 	public void configure(AuthenticationManagerBuilder auth) {
 		auth.authenticationProvider(authenticationProvider);
@@ -430,6 +504,298 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	@ConditionalOnMissingBean(value = AuthenticationEntryPoint.class)
 	public AuthenticationEntryPoint customAuthenticationEntryPoint() {
 		return new CustomAuthenticationEntryPoint(LOGIN_STR);
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public ExtendedMetadataDelegate ssoExtendedMetadataProvider() throws MetadataProviderException {
+		final Timer backgroundTaskTimer = new Timer(true);
+		final String idpSSOCircleMetadataURL = idpMetadata;
+		final HTTPMetadataProvider httpMetadataProvider = new HTTPMetadataProvider(backgroundTaskTimer, httpClient(),
+				idpSSOCircleMetadataURL);
+		httpMetadataProvider.setParserPool(parserPool());
+		final ExtendedMetadataDelegate extendedMetadataDelegate = new ExtendedMetadataDelegate(httpMetadataProvider,
+				extendedMetadata());
+		extendedMetadataDelegate.setMetadataTrustCheck(false);
+		extendedMetadataDelegate.setMetadataRequireSignature(false);
+		backgroundTaskTimer.purge();
+		return extendedMetadataDelegate;
+	}
+
+	@Bean(initMethod = "initialize")
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public StaticBasicParserPool parserPool() {
+		return new StaticBasicParserPool();
+	}
+
+	@Bean(name = "parserPoolHolder")
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public ParserPoolHolder parserPoolHolder() {
+		return new ParserPoolHolder();
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public HttpClient httpClient() {
+		final MultiThreadedHttpConnectionManager multiThreadedHttpConnectionManager = new MultiThreadedHttpConnectionManager();
+		return new HttpClient(multiThreadedHttpConnectionManager);
+
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public ExtendedMetadata extendedMetadata() {
+		final ExtendedMetadata extendedMetadata = new ExtendedMetadata();
+		extendedMetadata.setIdpDiscoveryEnabled(false);
+		extendedMetadata.setSignMetadata(false);
+		return extendedMetadata;
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public MetadataGeneratorFilter metadataGeneratorFilter() throws GenericOPException {
+		return new MetadataGeneratorFilter(metadataGenerator());
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public MetadataGenerator metadataGenerator() throws GenericOPException {
+		final MetadataGenerator metadataGenerator = new MetadataGenerator();
+		metadataGenerator.setEntityId(entityId);
+		metadataGenerator.setEntityBaseURL(entityUrl);
+		metadataGenerator.setExtendedMetadata(extendedMetadata());
+		metadataGenerator.setIncludeDiscoveryExtension(false);
+		metadataGenerator.setKeyManager(keyManager());
+		return metadataGenerator;
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public KeyManager keyManager() throws GenericOPException {
+		FileInputStream fis = null;
+		try {
+			final KeyStore ks = KeyStore.getInstance("JKS");
+			final String storePass = samlJksStorePass;
+			File file = new File(samlJksUri);
+			if (!file.exists()) {
+				file = new File(getClass().getClassLoader().getResource(samlJksUri).getFile());
+			}
+			fis = new FileInputStream(file);
+			ks.load(fis, storePass.toCharArray());
+			final Map<String, String> passwords = new HashMap<>();
+			passwords.put(samlJksKeyAlias, samlJksKeyPass);
+			final String defaultKey = samlJksKeyAlias;
+			return new JKSKeyManager(ks, passwords, defaultKey);
+		} catch (final Exception e) {
+			log.error("Error loading SAML jks", e);
+			throw new GenericOPException(e);
+		} finally {
+			try {
+				if (fis != null) {
+					fis.close();
+				}
+			} catch (final Exception e2) {
+				log.error("" + e2);
+			}
+		}
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	@Primary
+	public SAMLEntryPoint samlEntryPoint() {
+		final SAMLEntryPoint samlEntryPoint = new SAMLEntryPoint();
+		samlEntryPoint.setDefaultProfileOptions(defaultWebSSOProfileOptions());
+		return samlEntryPoint;
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public WebSSOProfileOptions defaultWebSSOProfileOptions() {
+		final WebSSOProfileOptions webSSOProfileOptions = new WebSSOProfileOptions();
+		webSSOProfileOptions.setIncludeScoping(false);
+		return webSSOProfileOptions;
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public MetadataDisplayFilter metadataDisplayFilter() {
+		return new MetadataDisplayFilter();
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public WebSSOProfileConsumer webSSOprofileConsumer() {
+		return new WebSSOProfileConsumerImpl();
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public WebSSOProfileConsumerHoKImpl hokWebSSOprofileConsumer() {
+		return new WebSSOProfileConsumerHoKImpl();
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public WebSSOProfile webSSOprofile() {
+		return new WebSSOProfileImpl();
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public WebSSOProfileConsumerHoKImpl hokWebSSOProfile() {
+		return new WebSSOProfileConsumerHoKImpl();
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public SAMLDefaultLogger samlLogger() {
+		return new SAMLDefaultLogger();
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public CachingMetadataManager metadata() throws MetadataProviderException {
+		final List<MetadataProvider> providers = new ArrayList<>();
+		providers.add(ssoExtendedMetadataProvider());
+		return new CachingMetadataManager(providers);
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public SAMLContextProviderImpl contextProvider() {
+		final SAMLContextProviderLB context = new SAMLContextProviderLB();
+		context.setStorageFactory(new EmptyStorageFactory());
+		context.setScheme(samlScheme);
+		context.setServerName(samlServerName);
+		context.setIncludeServerPortInRequestURL(samlIncludePort);
+		context.setServerPort(samlServerPort);
+		context.setContextPath(samlContextPath);
+		return context;
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public static SAMLBootstrap sAMLBootstrap() {
+		return new SAMLBootstrap();
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public SAMLProcessorImpl processor() {
+		final Collection<SAMLBinding> bindings = new ArrayList<>();
+		bindings.add(httpRedirectDeflateBinding());
+		bindings.add(httpPostBinding());
+		return new SAMLProcessorImpl(bindings);
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public HTTPPostBinding httpPostBinding() {
+		return new HTTPPostBinding(parserPool(), velocityEngine());
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public HTTPRedirectDeflateBinding httpRedirectDeflateBinding() {
+		return new HTTPRedirectDeflateBinding(parserPool());
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public VelocityEngine velocityEngine() {
+		return VelocityFactory.getEngine();
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public FilterChainProxy samlFilter() {
+		final List<SecurityFilterChain> chains = new ArrayList<>();
+		chains.add(new DefaultSecurityFilterChain(new AntPathRequestMatcher("/saml/login/**"), samlEntryPoint()));
+		chains.add(new DefaultSecurityFilterChain(new AntPathRequestMatcher("/saml/logout/**"), samlLogoutFilter()));
+		chains.add(new DefaultSecurityFilterChain(new AntPathRequestMatcher("/saml/metadata/**"),
+				metadataDisplayFilter()));
+		chains.add(new DefaultSecurityFilterChain(new AntPathRequestMatcher("/saml/SSO/**"),
+				samlWebSSOProcessingFilter()));
+		chains.add(new DefaultSecurityFilterChain(new AntPathRequestMatcher("/saml/SingleLogout/**"),
+				samlLogoutProcessingFilter()));
+
+		return new FilterChainProxy(chains);
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public SAMLLogoutProcessingFilter samlLogoutProcessingFilter() {
+		return new SAMLLogoutProcessingFilter(logoutSuccessHandler, logoutHandler());
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public SecurityContextLogoutHandler logoutHandler() {
+		final SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
+		logoutHandler.setInvalidateHttpSession(true);
+		logoutHandler.setClearAuthentication(true);
+		return logoutHandler;
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public FilterRegistrationBean logoutSamlFilter() {
+		final FilterRegistrationBean registration = new FilterRegistrationBean();
+		registration.setFilter(new OncePerRequestFilter() {
+
+			@Override
+			protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+					FilterChain filterChain) throws ServletException, IOException {
+				response.sendRedirect("/controlpanel/saml/logout");
+			}
+
+		});
+		registration.addUrlPatterns("/logout");
+		registration.setName("logoutSamlFilter");
+		registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
+		return registration;
+
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public SingleLogoutProfile logoutprofile() {
+		return new SingleLogoutProfileImpl();
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public SAMLLogoutFilter samlLogoutFilter() {
+		return new SAMLLogoutFilter(logoutSuccessHandler, new LogoutHandler[] { logoutHandler() },
+				new LogoutHandler[] { logoutHandler() });
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public SimpleUrlAuthenticationFailureHandler authenticationFailureHandler() {
+		final SimpleUrlAuthenticationFailureHandler authHandler = new SimpleUrlAuthenticationFailureHandler();
+		authHandler.setDefaultFailureUrl(unauthorizedUrl);
+		return authHandler;
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public SavedRequestAwareAuthenticationSuccessHandler successRedirectHandler() {
+		final SavedRequestAwareAuthenticationSuccessHandler successRedirectHandler = new SavedRequestAwareAuthenticationSuccessHandler();
+		successRedirectHandler.setDefaultTargetUrl("/main");
+		return successRedirectHandler;
+	}
+
+	@Bean
+	@ConditionalOnProperty(value = "onesaitplatform.authentication.provider", havingValue = "saml")
+	public SAMLProcessingFilter samlWebSSOProcessingFilter() {
+		final SAMLProcessingFilter samlWebSSOProcessingFilter = new SAMLProcessingFilter();
+		samlWebSSOProcessingFilter
+		.setAuthenticationManager(new ProviderManager(Arrays.asList(samlAuthenticationProvider())));
+		samlWebSSOProcessingFilter.setAuthenticationSuccessHandler(successHandler);
+		samlWebSSOProcessingFilter.setAuthenticationFailureHandler(authenticationFailureHandler());
+		return samlWebSSOProcessingFilter;
 	}
 
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,10 +34,8 @@ import com.minsait.onesait.platform.config.model.Layer;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.OntologyVirtual;
 import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.model.Viewer;
 import com.minsait.onesait.platform.config.repository.LayerRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
-import com.minsait.onesait.platform.config.repository.ViewerRepository;
 import com.minsait.onesait.platform.config.services.exceptions.LayerServiceException;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.user.UserService;
@@ -56,8 +54,6 @@ public class LayerServiceImpl implements LayerService {
 
 	@Autowired
 	private LayerRepository layerRepository;
-	@Autowired
-	private ViewerRepository viewerRepository;
 
 	@Autowired
 	OntologyRepository ontologyRepository;
@@ -247,32 +243,6 @@ public class LayerServiceImpl implements LayerService {
 	@Override
 	public Layer findByIdentification(String layerIdentification) {
 		return layerRepository.findByIdentification(layerIdentification).get(0);
-	}
-
-	@Override
-	public Layer layerCleanViewer(String layerIdentification, String viewerIdentification) {
-
-		Layer l = layerRepository.findByIdentification(layerIdentification).get(0);
-
-		for (Viewer viewer : l.getViewers()) {
-			if (viewer.getIdentification().equals(viewerIdentification)) {
-				l.getViewers().remove(viewer);
-			}
-		}
-		return layerRepository.save(l);
-	}
-
-	@Override
-	public Layer layerAddViewer(String layerIdentification, String viewerIdentification) {
-
-		Layer l = layerRepository.findByIdentification(layerIdentification).get(0);
-
-		Viewer v = viewerRepository.findByIdentification(viewerIdentification).get(0);
-
-		if (!l.getViewers().contains(v)) {
-			l.getViewers().add(v);
-		}
-		return layerRepository.save(l);
 	}
 
 	@Override

@@ -310,7 +310,7 @@ var DigitalTwinCreateController = function() {
 }();
 
 // AUTO INIT CONTROLLER WHEN READY
-$(window).on("load",function(){
+$(window).load(function() {	
 	
 	DigitalTwinCreateController.load(digitalTwinCreateJson);
 	

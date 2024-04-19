@@ -11,5 +11,4 @@
   window.__env.dashboardEngineLoginRestTimeout = 5000;
   window.__env.enableDebug = false;
   window.__env.urlParameters = {};
-  window.__env.dashboardCheckHeaderLibs=true;
 }(this));

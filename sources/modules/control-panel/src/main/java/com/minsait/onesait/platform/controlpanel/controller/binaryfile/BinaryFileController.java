@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.io.ByteArrayResource;
@@ -128,12 +127,6 @@ public class BinaryFileController {
 	public static final String MODULE_NOT_ACTIVE_KEY = "moduleNotActive";
 	private static final String REDIRECT_GCP_FILES_LIST = "redirect:/files/gcp";
 
-	@Value("${onesaitplatform.controlpanel.binaryfiles.limit:200}")
-	private int maxLoadedFiles;
-
-	@Value("${onesaitplatform.controlpanel.binaryfiles.showAuditFiles:false}")
-	private boolean showAuditFiles;
-
 	@PostConstruct
 	public void init() {
 		Urls urls = configurationService.getEndpointsUrls(profileDetector.getActiveProfile());
@@ -153,7 +146,7 @@ public class BinaryFileController {
 	}
 
 	@GetMapping(value = { "/list/{redirect}", "/list" })
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_USER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String create(Model model, @PathVariable("redirect") Optional<Boolean> redirect) {
 		if (model.asMap().containsKey(MODULE_NOT_ACTIVE_KEY)) {
 			model.addAttribute("message", model.asMap().get(MODULE_NOT_ACTIVE_KEY));
@@ -168,47 +161,13 @@ public class BinaryFileController {
 	@GetMapping("gridfs")
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_USER')")
 	@Transactional
-	public String list(Model model, @RequestParam(required = false) String fileName,
-			@RequestParam(required = false) String fileId, @RequestParam(required = false) String fileExt,
-			@RequestParam(required = false) String metaData, @RequestParam(required = false) String owner) {
+	public String list(Model model, @RequestParam(required = false) String name) {
 
-		if (fileName != null && fileName.trim().equals("")) {
-			fileName = null;
-		} else if(fileName != null) {
-			fileName = "%" + fileName + "%";
-		}
-		if (fileId != null && fileId.trim().equals("")) {
-			fileId = null;
-		} else if(fileId != null) {
-			fileId = "%" + fileId + "%";
-		}
-		if (fileExt != null && fileExt.trim().equals("")) {
-			fileExt = null;
-		} else if(fileExt != null) {
-			fileExt = "%" + fileExt + "%";
-		}
-		if (metaData != null && metaData.trim().equals("")) {
-			metaData = null;
-		} else if(metaData != null) {
-			metaData = "%" + metaData + "%";
-		}
-		if (owner != null && owner.trim().equals("")) {
-			owner = null;
-		} else if(owner != null) {
-			owner = "%" + owner + "%";
-		}
-
-		User userlogged = userService.getUser(webUtils.getUserId());
-
-		if (fileName == null && fileId == null && fileExt == null && metaData == null && owner == null) {
+		if (name == null || name.trim().length() == 0) {
 			log.debug("No params for filtering, loading all files");
-
-			long files = binaryFileService.countFiles(userlogged, showAuditFiles);
-
-			if (files < maxLoadedFiles) {
-				final List<BinaryFile> list = binaryFileService.getAllFiles(userlogged, showAuditFiles).stream()
-						.filter(bf -> (bf.getRepository() != RepositoryType.MINIO_S3
-								&& bf.getRepository() != RepositoryType.GCP))
+			if (binaryFileService.countBinaryFiles() < 200L) {
+				final List<BinaryFile> list = binaryFileService.getAllFiles(userService.getUser(webUtils.getUserId()))
+						.stream().filter(bf -> (bf.getRepository() != RepositoryType.MINIO_S3 && bf.getRepository() != RepositoryType.GCP))
 						.collect(Collectors.toList());
 
 				final Map<String, String> accessMap = new HashMap<>();
@@ -221,15 +180,14 @@ public class BinaryFileController {
 				}));
 				model.addAttribute("files", list);
 				model.addAttribute("accessMap", accessMap);
-			} else {
-				model.addAttribute("limit", maxLoadedFiles);
+				model.addAttribute("accessTypes", BinaryFileAccess.Type.values());
+				model.addAttribute("users", userService.getAllUsers());
+				model.addAttribute("repos", RepositoryType.values());
 			}
 		} else {
 			final List<BinaryFile> list = binaryFileService
-					.getAllFilesFiltered(userlogged, fileName, fileId, fileExt, metaData, owner, true).stream()
-					.filter(bf -> (bf.getRepository() != RepositoryType.MINIO_S3
-							&& bf.getRepository() != RepositoryType.GCP))
-					.collect(Collectors.toList());
+					.getAllFilesByName(userService.getUser(webUtils.getUserId()), name).stream()
+					.filter(bf -> (bf.getRepository() != RepositoryType.MINIO_S3 && bf.getRepository() != RepositoryType.GCP)).collect(Collectors.toList());
 
 			final Map<String, String> accessMap = new HashMap<>();
 			final List<BinaryFile> filteredList = list.stream()
@@ -240,6 +198,9 @@ public class BinaryFileController {
 			}));
 			model.addAttribute("files", list);
 			model.addAttribute("accessMap", accessMap);
+			model.addAttribute("accessTypes", BinaryFileAccess.Type.values());
+			model.addAttribute("users", userService.getAllUsers());
+			model.addAttribute("repos", RepositoryType.values());
 		}
 
 		final Object projectId = httpSession.getAttribute(APP_ID);
@@ -247,10 +208,6 @@ public class BinaryFileController {
 			model.addAttribute(APP_ID, projectId.toString());
 			httpSession.removeAttribute(APP_ID);
 		}
-
-		model.addAttribute("accessTypes", BinaryFileAccess.Type.values());
-		model.addAttribute("users", userService.getAllUsers());
-		model.addAttribute("repos", RepositoryType.values());
 
 		return "binaryfiles/gridfs";
 	}
@@ -490,7 +447,7 @@ public class BinaryFileController {
 		}
 
 		model.addAttribute("url", this.minioAdminExternalUrl);
-		return "binaryfiles/console"; // Embebe la consola en un iframe
+		return "objectstore/console"; // Embebe la consola en un iframe
 	}
 
 	@Transactional
@@ -1083,8 +1040,8 @@ public class BinaryFileController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_USER')")
 	@Transactional
 	public String listGcp(Model model) {
-		final List<BinaryFile> list = binaryFileService.getAllFiles(userService.getUser(webUtils.getUserId()), true)
-				.stream().filter(bf -> bf.getRepository() == RepositoryType.GCP).collect(Collectors.toList());
+		final List<BinaryFile> list = binaryFileService.getAllFiles(userService.getUser(webUtils.getUserId())).stream()
+				.filter(bf -> bf.getRepository() == RepositoryType.GCP).collect(Collectors.toList());
 
 		final Map<String, String> accessMap = new HashMap<>();
 		final List<BinaryFile> filteredList = list.stream()
@@ -1234,7 +1191,7 @@ public class BinaryFileController {
 
 		} catch (final Exception e) {
 			log.error("Could not update binary file: {}", e);
-			webUtils.addRedirectException(e, redirectAttributes);
+			webUtils.addRedirectMessage("binaryfiles.error", redirectAttributes);
 			return REDIRECT_GCP_FILES_LIST;
 		}
 

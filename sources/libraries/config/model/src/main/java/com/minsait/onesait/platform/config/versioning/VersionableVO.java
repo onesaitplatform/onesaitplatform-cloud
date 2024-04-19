@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,24 +23,17 @@ public class VersionableVO {
 	private String name;
 	private String id;
 	private String className;
-	private String userId;
 
 	public VersionableVO(String name, String id) {
 		this.name = name;
 		this.id = id;
 	}
 
+
 	public VersionableVO(String name, String id, String className) {
 		this.name = name;
 		this.id = id;
 		this.className = className;
-	}
-
-	public VersionableVO(String name, String id, String className, String userId) {
-		this.name = name;
-		this.id = id;
-		this.className = className;
-		this.userId = userId;
 	}
 
 }

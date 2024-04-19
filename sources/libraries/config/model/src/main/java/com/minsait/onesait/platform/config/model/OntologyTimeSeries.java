@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -145,8 +145,7 @@ public class OntologyTimeSeries extends AuditableEntityWithUUID implements Versi
 	}
 
 	@Override
-	public Versionable<OntologyTimeSeries> runExclusions(Map<String, Set<String>> excludedIds,
-			Set<String> excludedUsers) {
+	public Versionable<OntologyTimeSeries> runExclusions(Map<String, Set<String>> excludedIds, Set<String> excludedUsers) {
 		Versionable<OntologyTimeSeries> o = Versionable.super.runExclusions(excludedIds, excludedUsers);
 		if (o != null && ontology != null && !CollectionUtils.isEmpty(excludedIds)
 				&& !CollectionUtils.isEmpty(excludedIds.get(Ontology.class.getSimpleName()))
@@ -155,11 +154,6 @@ public class OntologyTimeSeries extends AuditableEntityWithUUID implements Versi
 			o = null;
 		}
 		return o;
-	}
-
-	@Override
-	public void setOwnerUserId(String userId) {
-
 	}
 
 }

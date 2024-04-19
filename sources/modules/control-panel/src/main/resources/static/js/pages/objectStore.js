@@ -20,9 +20,6 @@ var BinaryFilesController = function() {
 	var getBinaryFile = function(id){
 		navigateUrl(mainPath + id );
 	}
-	var getBinaryFileUrl = function(id){
-		copyUrl(mainPath + id);		
-	}
 	var changePublic = function(id){
 		var csrf_value = $("meta[name='_csrf']").attr("content");
 		var csrf_header = $("meta[name='_csrf_header']").attr("content"); 
@@ -291,9 +288,6 @@ var BinaryFilesController = function() {
 		},
 		getBinaryFile : function(id){
 			getBinaryFile(id);
-		},
-		getBinaryFileUrl : function(id){
-			getBinaryFileUrl(id);
 		},
 		changePublic : function(id){
 			changePublic(id);

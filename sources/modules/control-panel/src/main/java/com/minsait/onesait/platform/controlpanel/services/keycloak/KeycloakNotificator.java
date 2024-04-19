@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,14 +69,13 @@ public class KeycloakNotificator {
 		try {
 			final HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
-
 			return template.exchange(url, method, new HttpEntity<>(body, headers), clazz);
 		} catch (final HttpClientErrorException | HttpServerErrorException e) {
 			log.error("Error on request {}, code: {}, cause: {}", url, e.getRawStatusCode(),
 					e.getResponseBodyAsString());
 			return null;
 		} catch (final ResourceAccessException e) {
-			log.error("Could not notify to keycloak manager", e);
+			log.error("Could not notify to keycloak manager");
 			return null;
 		}
 	}

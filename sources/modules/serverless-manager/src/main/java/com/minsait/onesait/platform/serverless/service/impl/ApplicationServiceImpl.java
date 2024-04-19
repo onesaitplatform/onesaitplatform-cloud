@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.minsait.onesait.platform.serverless.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -108,7 +107,6 @@ public class ApplicationServiceImpl implements ApplicationService {
 			app.setName(appUpdate.getName());
 		}
 		fnService.update(appUpdate, app.getAppId());
-		applicationRepository.save(app);
 		return mergeApp(app);
 	}
 
@@ -147,13 +145,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 
 	@Override
 	public List<ApplicationInfo> list() {
-		try {
-			final List<Application> apps = applicationRepository.findAll();
-			return mergeApps(apps);
-		} catch (final Exception e) {
-			log.error("Error listing apps", e);
-			throw new RuntimeException("Error listing apps " + e.getMessage());
-		}
+		final List<Application> apps = applicationRepository.findAll();
+		return mergeApps(apps);
 	}
 
 	@Override
@@ -206,33 +199,27 @@ public class ApplicationServiceImpl implements ApplicationService {
 	}
 
 	private List<FunctionInfo> mergeFunctions(Set<Function> functions) {
-		return functions.stream().map(this::mergeFunction).filter(Objects::nonNull).collect(Collectors.toList());
+		return functions.stream().map(this::mergeFunction).collect(Collectors.toList());
 	}
 
 	private FunctionInfo mergeFunction(Function function) {
 		final FunctionInfo fn = new FunctionInfo(function);
 		if (function.getFnId() != null) {
 			final FnFunction fnFunction = fnService.getFunction(function.getFnId());
-			if (fnFunction != null) {
-				fn.setEnvironment(fnFunction.getConfig());
-				fn.setMemory(fnFunction.getMemory());
-				fn.setImage(fnFunction.getImage());
-				if (fnFunction.getAnnotations().get(FnFunction.INVOKE_ANNOTATION) != null) {
-					fn.getInvokeEndpoints().add(((String) fnFunction.getAnnotations().get(FnFunction.INVOKE_ANNOTATION))
-							.replace(FN_DEFAULT_URL, baseURL));
-				}
-				if (fnFunction.getTriggers() != null) {
-					fnFunction.getTriggers().stream().forEach(t -> {
-						if (t.getAnnotations().get(FnFunction.INVOKE_HTTP_ANNOTATION) != null) {
-							fn.getInvokeEndpoints()
-									.add(((String) t.getAnnotations().get(FnFunction.INVOKE_HTTP_ANNOTATION))
-											.replace(FN_DEFAULT_URL, baseURL));
-						}
-					});
-				}
-			} else {
-				log.warn("Function {} does not exist in fnproject", function.getName());
-				return null;
+			fn.setEnvironment(fnFunction.getConfig());
+			fn.setMemory(fnFunction.getMemory());
+			fn.setImage(fnFunction.getImage());
+			if (fnFunction.getAnnotations().get(FnFunction.INVOKE_ANNOTATION) != null) {
+				fn.getInvokeEndpoints().add(((String) fnFunction.getAnnotations().get(FnFunction.INVOKE_ANNOTATION))
+						.replace(FN_DEFAULT_URL, baseURL));
+			}
+			if (fnFunction.getTriggers() != null) {
+				fnFunction.getTriggers().stream().forEach(t -> {
+					if (t.getAnnotations().get(FnFunction.INVOKE_HTTP_ANNOTATION) != null) {
+						fn.getInvokeEndpoints().add(((String) t.getAnnotations().get(FnFunction.INVOKE_HTTP_ANNOTATION))
+								.replace(FN_DEFAULT_URL, baseURL));
+					}
+				});
 			}
 		}
 		return fn;
@@ -332,7 +319,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 		}
 		final Function function = optFunction.get();
 		fnService.deleteFunction(function.getFnId());
-		app.getFunctions().removeIf(f -> f.getName().equals(function.getName()));
+		app.getFunctions().remove(function);
 		applicationRepository.save(app);
 
 	}
@@ -354,9 +341,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 		final Function function = optFunction.get();
 		final FnFunction fnFunction = fnService.getFunction(function.getFnId());
 		fnFunction.setImage(version);
-		if (log.isDebugEnabled()) {
-			log.debug("Updating function's version, fn: {}, version: {}", fnName, version);
-		}		
+		log.debug("Updating function's version, fn: {}, version: {}", fnName, version);
 		fnService.updateFunction(fnFunction);
 
 	}

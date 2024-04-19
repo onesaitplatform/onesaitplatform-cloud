@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,7 +84,7 @@ public class OPResourceTest {
 		realm = appRepository.save(realm);
 		final OPResource resource = ((Set<OPResource>) resourceService.getResources("developer", "")).iterator().next();
 		final ProjectResourceAccess pra = new ProjectResourceAccess(null, ResourceAccessType.VIEW, resource, pdb,
-				realm.getAppRoles().iterator().next(), false);
+				realm.getAppRoles().iterator().next());
 		pdb.getProjectResourceAccesses().add(pra);
 		pdb = projectRepository.save(pdb);
 		Assert.assertTrue(!resourceService.hasAccess(user.getUserId(), resource.getId(), ResourceAccessType.MANAGE));

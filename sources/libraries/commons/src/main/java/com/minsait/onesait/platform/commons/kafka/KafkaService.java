@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,8 @@ package com.minsait.onesait.platform.commons.kafka;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -34,7 +33,6 @@ import org.apache.kafka.clients.admin.DeleteAclsResult;
 import org.apache.kafka.clients.admin.DeleteTopicsResult;
 import org.apache.kafka.clients.admin.ListTopicsResult;
 import org.apache.kafka.clients.admin.NewTopic;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.acl.AccessControlEntry;
 import org.apache.kafka.common.acl.AccessControlEntryFilter;
 import org.apache.kafka.common.acl.AclBinding;
@@ -42,11 +40,10 @@ import org.apache.kafka.common.acl.AclBindingFilter;
 import org.apache.kafka.common.acl.AclOperation;
 import org.apache.kafka.common.acl.AclPermissionType;
 import org.apache.kafka.common.resource.PatternType;
+import org.apache.kafka.common.resource.ResourceFilter;
 import org.apache.kafka.common.resource.ResourcePattern;
 import org.apache.kafka.common.resource.ResourcePatternFilter;
 import org.apache.kafka.common.resource.ResourceType;
-import org.apache.kafka.common.serialization.StringSerializer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
@@ -93,11 +90,11 @@ public class KafkaService {
 	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.ksql.out.prefix:KSQLDESTYNY_}")
 	private String ksqlOutTopicPrefix;
 
+	@Value("${onesaitplatform.iotbroker.plugable.gateway.kafka.group:ontologyGroup}")
+	private String ontologyGroup;
+
 	@Value("${onesaitplatform.multitenancy.enabled:false}")
 	private boolean isMultitenancyEnabled;
-
-	@Autowired(required = false)
-	private KafkaConfigService kafkaConfigService;
 
 	private static final String CREATING_TOPIC = "Creating topic '{}'";
 	private static final String CANNOT_ENSURE_CREATING_TOPIC = "Cannot ensure topic creation for  '{}'";
@@ -110,7 +107,7 @@ public class KafkaService {
 
 	private AdminClient adminAcl;
 
-	private void applySecurity(Map<String, Object> config) {
+	private void applySecurity(Properties config) {
 		if (!KAFKA_DEFAULTPORT.equals(kafkaPort) || kafkaBrokers.contains(KAFKA_DEFAULTPORT)) {
 			config.put("security.protocol", "SASL_PLAINTEXT");
 			config.put("sasl.mechanism", "PLAIN");
@@ -123,42 +120,18 @@ public class KafkaService {
 		}
 	}
 
-	private Map<String, Object> getKafkaClientPropertiesLegacy() {
-		Map<String, Object> configProps = new HashMap<>();
-		if (!EMPTY_BROKERS.equals(kafkaBrokers)) {
-			configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBrokers);
-		} else {
-			configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaHost + ":" + kafkaPort);
-		}
-		configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-		configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-
-		applySecurity(configProps);
-
-		return configProps;
-	}
-
-	@SuppressWarnings("unchecked")
-	private Map<String, Object> getKafkaClientPropertiesFromConfig() {
-		Map<String, Object> props = new HashMap<>();
-		if (kafkaConfigService != null) {
-			props = kafkaConfigService.getKafkaConfigProperties();
-			return props;
-		}
-		return null;
-	}
-
 	@PostConstruct
 	public void postKafka() {
 
 		try {
-
-			Map<String, Object> props = getKafkaClientPropertiesFromConfig();
-			if (props == null) {
-				props = getKafkaClientPropertiesLegacy();
+			Properties config = new Properties();
+			if (!EMPTY_BROKERS.equals(kafkaBrokers)) {
+				config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBrokers);
+			} else {
+				config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaHost + ":" + kafkaPort);
 			}
-
-			adminAcl = AdminClient.create(props);
+			applySecurity(config);
+			adminAcl = AdminClient.create(config);
 		} catch (Exception e) {
 			log.error("Something went wrong applying kafka security config, or not established", e);
 		}
@@ -227,8 +200,8 @@ public class KafkaService {
 			return createTopic(getTopicName(ontologyName, vertical, tenant), partitions, replication);
 		} catch (Exception e) {
 			log.info(CANNOT_ENSURE_CREATING_TOPIC, getTopicName(ontologyName, vertical, tenant));
-			log.error("Error creating input topic for Ontology={}, vertical={}, tenant={}", ontologyName, vertical,
-					tenant, e);
+			log.error("Error creating input topic for Ontology=" + ontologyName + ", vertical=" + vertical + ", tenant="
+					+ tenant, e);
 			return false;
 		}
 	}
@@ -246,8 +219,8 @@ public class KafkaService {
 			return createTopic(getNotificationTopicName(ontologyName, vertical, tenant), partitions, replication);
 		} catch (Exception e) {
 			log.info(CANNOT_ENSURE_CREATING_TOPIC, getTopicName(ontologyName, vertical, tenant));
-			log.error("Error creating notification topic for Ontology={}, vertical={}, tenant={}", ontologyName,
-					vertical, tenant, e);
+			log.error("Error creating notification topic for Ontology=" + ontologyName + ", vertical=" + vertical
+					+ ", tenant=" + tenant, e);
 			return false;
 		}
 	}

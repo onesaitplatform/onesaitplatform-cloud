@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ public class LogFileBeanConfiguration {
 	}
 
 	@Scheduled(fixedDelay = 600000)
-	protected void refreshLogFileProperty() {
+	private void refreshLogFileProperty() {
 		log.debug("Refreshing property file");
 		final LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
 		for (final Logger logger : context.getLoggerList()) {
@@ -81,9 +81,7 @@ public class LogFileBeanConfiguration {
 	private void setNewPropertyValue(String absolutePath) {
 		final Map<String, Object> map = new HashMap<>();
 		map.put("logging.file", absolutePath);
-		if (log.isDebugEnabled()) {
-			log.debug("log file at {}", absolutePath);
-		}
+		log.debug("log file at {}", absolutePath);
 		configEnv.getPropertySources().addFirst(new MapPropertySource("REFRESHABLE_MAP", map));
 	}
 }

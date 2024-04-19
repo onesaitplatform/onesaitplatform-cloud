@@ -18,7 +18,7 @@
     });
 
   /** @ngInject */
-  function MainController($window, $rootScope, $scope,  $mdDialog,$mdPanel, $timeout,$interval,  httpService, interactionService,urlParamService, gadgetManagerService,filterService,utilsService,datasourceSolverService,favoriteGadgetService, $translate, localStorageService, __env, cacheBoard) {
+  function MainController($window, $rootScope, $scope,  $mdDialog, $timeout,$interval,  httpService, interactionService,urlParamService, gadgetManagerService,filterService,utilsService,datasourceSolverService,favoriteGadgetService, $translate, localStorageService, __env, cacheBoard) {
     var vm = this;
     
     $window.onbeforeunload = function(){
@@ -203,7 +203,7 @@
           function(data){loadDashboard(data.data);}
         ).catch(
           function(error){      
-            if(sessionStorage.getItem("dashboardEngineOauthtoken") != null){
+            if(__env.dashboardEngineOauthtoken != null){
               document.getElementsByTagName("dashboard")[0].innerHTML = "<div style='padding:15px;background:#fbecec'><div class='no-data-title'>Dashboard Engine Error " + (error.status?error.status:"") + "</div><div class='no-data-text'>" + (error.config?"Rest Call: " + error.config.url + ". ":"") + "Detail: " + (error.data?JSON.stringify(error.data):error) + "</div></div>";
               window.dispatchEvent(new CustomEvent('errordashboardengine', { detail: {
                 "type": "failLoadDashboard",
@@ -429,9 +429,16 @@
 //------------------------------------------------------------------------------------------
       
       function newTemplateDialog(identification,inline,config,layergrid){
-        httpService.getUserGadgetTemplateByIdentification(identification).then(
-          function(data){     
-            var template = data.data      
+        httpService.getUserGadgetTemplate().then(
+          function(templates){           
+           var template = templates.data.filter(function(itm){
+              return itm.identification===identification;
+            });
+            template = template[0];
+            if(!template) return;   
+            //type htmlive  
+            // $scope.config.type = $scope.type;
+
             config.type = 'livehtml';
             //subtype angularJS, ...
             config.subtype = template.type;
@@ -440,14 +447,11 @@
             config.template = template.identification;
             config.tempId = template.id
             config.tconfig = template.config
-            function contextShowAddGadgetTemplateParameterDialog () {
-              showAddGadgetTemplateParameterDialog(config.type,config,layergrid,true,inline);
-            }
-            checkHeaderLibsInDashboard(template.headerlibs, contextShowAddGadgetTemplateParameterDialog)
+            showAddGadgetTemplateParameterDialog(config.type,config,layergrid,true,inline);
+
+            
           }
-        ).catch(function (error) {
-          console.error('Can not load gadget template: ', error)
-        });;
+        );
       }
 
 
@@ -858,12 +862,8 @@
                             description:configGadet.datasource.description}
               }
               config.gadgetid = gadget.id;
-
-              function contextEndAddCustomGadget () {
-                layergrid.push(config);
-                window.dispatchEvent(new CustomEvent("newgadgetcreated",{detail: config}));
-              }
-              checkHeaderLibsInDashboard(template.headerlibs, contextEndAddCustomGadget)
+              layergrid.push(config);
+              window.dispatchEvent(new CustomEvent("newgadgetcreated",{detail: config}));
           }            
         ,function(e){
           if(e.message==='Gadget was deleted'){
@@ -1031,51 +1031,10 @@
           $scope.status = 'You cancelled the dialog.';
         });
       }
-       
-      function showAddGadgetTemplateParameterDialog(type,config,layergrid,create,inline){
-       
-        
-        if(window.panelRef){
-          window.panelRef.close();
-        }
-        window.panelRef = {};
-        var configPanel = {
-          attachTo: angular.element(document.getElementById("divrightsidemenubody")),
-          controller: 'editTemplateParamsController',
-          controllerAs: 'ctrl',
-         // position: panelPosition,
-          //animation: panelAnimation,
-          
-          templateUrl: 'app/partials/edit/addGadgetTemplateParameterDialog.html',
-          clickOutsideToClose: true,
-          escapeToClose: true,
-          focusOnOpen: true,
-          locals: {
-            type: type,
-            config: config,
-            element: null,
-            layergrid: layergrid,
-            edit: false,
-            create:create,
-            inline:inline
-          }
-        };
-        window.dispatchEvent(new CustomEvent('showMenurightsidebardashboard',{}));
-        window.removeEventListener('editTemplateParamsclose',function(a){
-          window.panelRef.close();
-          window.dispatchEvent(new CustomEvent('hideMenurightsidebardashboard',{}));
-        });
-        window.addEventListener('editTemplateParamsclose',function(a){
-          window.panelRef.close();
-          window.dispatchEvent(new CustomEvent('hideMenurightsidebardashboard',{}));
-        });
-      
-        $mdPanel.open(configPanel)
-        .then(function(result) {
-          window.panelRef = result;
-        });
 
-      /*  $mdDialog.show({
+      function showAddGadgetTemplateParameterDialog(type,config,layergrid,create,inline){
+        
+        $mdDialog.show({
           controller: 'editTemplateParamsController',
           templateUrl: 'app/partials/edit/addGadgetTemplateParameterDialog.html',
           parent: angular.element(document.body),
@@ -1096,90 +1055,7 @@
         .then(function() {
         }, function() {
           $scope.status = 'You cancelled the dialog.';
-        });*/
-      }
-
-      function AddDashboardHeaderLibsController($scope, httpService, $mdDialog, $window, gadgetlibs, dashboardlibs) {
-          $timeout(function(){
-            document.querySelector("#headerlibseditor").style.height= window.getComputedStyle(document.querySelector("md-dialog")).height + "px"
-            document.querySelector("#headerlibseditor").style.width= "800px"
-            $scope.VSheaderlibseditor = monaco.editor.createDiffEditor(document.querySelector("#headerlibseditor"), {
-              readOnly: false,
-              scrollBeyondLastLine: false,
-              theme: "vs-dark",
-              automaticLayout: true,
-              renderSideBySide: false
-            })
-
-          var originalModel = monaco.editor.createModel(
-            dashboardlibs,
-            "html"
-          );
-
-          var newModel = monaco.editor.createModel(
-            dashboardlibs + "\n" + gadgetlibs,
-            "html"
-          );
-
-          $scope.VSheaderlibseditor.setModel({
-            original: originalModel,
-            modified: newModel
-          });
-
-          $scope.VSheaderlibseditor.revealLine(newModel.getLineCount())
-
-        },0);
-  
-        $scope.hide = function() {
-          $mdDialog.hide();
-        };
-  
-        $scope.cancel = function() {
-          $mdDialog.cancel();
-        };
-  
-        $scope.saveAndReload = function() {
-          httpService.saveHeaderLibsById(vm.id,$scope.VSheaderlibseditor.getModifiedEditor().getValue()).then(
-            function(){
-              $window.location.reload();
-            }
-          );
-        };
-  
-      }
-
-      function checkHeaderLibsInDashboard(gadgetlibs, callback) {
-        if (__env.dashboardCheckHeaderLibs) {
-          httpService.getHeaderLibsById(vm.id).then(
-            function (data) {
-              if (utilsService.isLibsinHLibs(gadgetlibs, data.data)) {
-                callback();
-              } else {
-                $mdDialog.show({
-                  controller: AddDashboardHeaderLibsController,
-                  templateUrl: 'app/partials/edit/askAddHeaderLibsToDashboardDialog.html',
-                  parent: angular.element(document.body),
-                  clickOutsideToClose: true,
-                  fullscreen: false, // Only for -xs, -sm breakpoints.
-                  openFrom: '.sidenav-fab',
-                  closeTo: angular.element(document.querySelector('.sidenav-fab')),
-                  locals: {
-                    gadgetlibs: gadgetlibs,
-                    dashboardlibs: data.data
-                  }
-                })
-                  .then(function () {
-
-                  }, function () {
-                    $scope.status = 'You cancelled the dialog.';
-                    callback();
-                  });
-              }
-            }
-          )
-        } else {
-          callback();
-        }
+        });
       }
 
       function dropElementEvent(e,newElem){         
@@ -1241,7 +1117,7 @@
           else if(type == 'favoritegadget'){         
             showAddFavoriteGadgetDialog(newElem,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard);
           } 
-          else if(type == 'customgadget'){ //New (Inline or not) of Custom Gadget
+          else if(type == 'customgadget'){ 
            // showAddTemplateDialog(newElem,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard);
             newTemplateDialog(customType,inLine,newElem,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard);
           }          
@@ -1256,10 +1132,10 @@
             }
           }
         }
-        else{ //Prevous created favorite, gadget custom, base gadget
+        else{
           if(type=='favoritegadget'){
             addFavoriteGadget(id,newElem,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard);
-          } else if(type == 'customgadget'){   
+          } else if(type == 'customgadget'){         
             addCustomGadget(id,newElem,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard);
           }else{
             addGadgetGeneric(type,newElem,vm.dashboard.pages[vm.selectedpage].layers[vm.dashboard.pages[vm.selectedpage].selectedlayer].gridboard);

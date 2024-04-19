@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,6 @@ public interface MasterUserRepository extends JpaRepository<MasterUser, String> 
 
 	@Cacheable(cacheNames = MASTER_USER_REPOSITORY, unless = "#result == null", key = "{#p0.toLowerCase()}")
 	public MasterUser findByUserId(String userId);
-
-	public MasterUser findByEmail(String email);
 
 	@Override
 	@CacheEvict(cacheNames = { MASTER_USER_REPOSITORY_LAZY, MASTER_USER_REPOSITORY }, key = "{#p0.toLowerCase()}")
@@ -77,12 +75,6 @@ public interface MasterUserRepository extends JpaRepository<MasterUser, String> 
 	@CacheEvict(cacheNames = { MASTER_USER_REPOSITORY_LAZY, MASTER_USER_REPOSITORY }, key = "{#p0.toLowerCase()}")
 	int updateMasterUserPassword(@Param("userId") String userId, @Param("oldPass") String oldPass,
 			@Param("newPass") String newPass);
-
-	@Transactional
-	@Modifying
-	@Query("UPDATE MasterUser u SET u.password= :newPass WHERE u.userId= :userId")
-	@CacheEvict(cacheNames = { MASTER_USER_REPOSITORY_LAZY, MASTER_USER_REPOSITORY }, key = "{#p0.toLowerCase()}")
-	int updatePasswordFromReset(@Param("userId") String userId, @Param("newPass") String newPass);
 
 	@Transactional
 	@Modifying

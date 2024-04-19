@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,17 @@
  */
 package com.minsait.onesait.platform.controlpanel.rest.report;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -57,18 +51,13 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.net.HttpHeaders;
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
-import com.minsait.onesait.platform.config.dto.report.ReportInfoMSTemplateDTO;
 import com.minsait.onesait.platform.config.dto.report.ReportParameter;
 import com.minsait.onesait.platform.config.dto.report.ReportType;
-import com.minsait.onesait.platform.config.dto.report.ReportTypeSwagger;
-import com.minsait.onesait.platform.config.model.BinaryFile;
 import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.Report;
 import com.minsait.onesait.platform.config.model.Report.ReportExtension;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.reports.ReportService;
-import com.minsait.onesait.platform.config.services.templates.poi.PoiTemplatesUtil;
-import com.minsait.onesait.platform.controlpanel.rest.report.model.Report2DTO;
 import com.minsait.onesait.platform.controlpanel.rest.report.model.ReportDTO;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
@@ -77,7 +66,6 @@ import com.minsait.onesait.platform.resources.service.IntegrationResourcesServic
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
-import fr.opensagres.xdocreport.converter.XDocConverterException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -90,18 +78,14 @@ import lombok.extern.slf4j.Slf4j;
 @Tag(name = "Reports")
 @RestController
 @RequestMapping("api/reports")
-@ApiResponses({ @ApiResponse(responseCode = "400", description = "Bad request"),
-		@ApiResponse(responseCode = "500", description = "Internal server error"),
-		@ApiResponse(responseCode = "403", description = "Forbidden") })
+@ApiResponses({ @ApiResponse(responseCode= "400", description= "Bad request"),
+	@ApiResponse(responseCode= "500", description= "Internal server error"), @ApiResponse(responseCode= "403", description= "Forbidden") })
 @PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 @Slf4j
 public class ReportRestController {
 
 	@Autowired
 	private ReportService reportService;
-
-	@Autowired
-	private PoiTemplatesUtil poiTemplatesUtil;
 
 	@Autowired
 	private IntegrationResourcesService resourcesService;
@@ -137,15 +121,15 @@ public class ReportRestController {
 		});
 	}
 
-	@Operation(summary = "Download report")
+	@Operation(summary= "Download report")
 	@PostMapping("{id}/{extension}")
 	@Transactional
-	@ApiResponses(@ApiResponse(content = @Content(schema = @Schema(implementation = String.class)), responseCode = "200", description = "OK"))
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=String.class)), responseCode= "200", description= "OK"))
 	public ResponseEntity<?> downloadReport(
-			@Parameter(description = "Report ID or Name", required = true) @PathVariable("id") String id,
-			@Parameter(description = "Parameters") @RequestBody(required = false) ReportParameter[] params,
-			@Parameter(description = "Output file format", required = true) @PathVariable("extension") ReportType extension)
-			throws UnsupportedEncodingException {
+			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id,
+			@Parameter(description= "Parameters") @RequestBody(required = false) ReportParameter[] params,
+			@Parameter(description= "Output file format", required = true) @PathVariable("extension") ReportType extension)
+					throws UnsupportedEncodingException {
 		final Report entity = reportService.findByIdentificationOrId(id);
 
 		if (entity == null || entity.getFile() == null) {
@@ -169,12 +153,12 @@ public class ReportRestController {
 		}
 	}
 
-	@Operation(summary = "Retrieve declared parameters in Jasper Template when their default values")
-	@ApiResponses(@ApiResponse(content = @Content(schema = @Schema(implementation = ReportParameter[].class)), responseCode = "200", description = "OK"))
+	@Operation(summary= "Retrieve declared parameters in Jasper Template when their default values")
+	@ApiResponses(@ApiResponse(content=@Content(schema=@Schema(implementation=ReportParameter[].class)), responseCode= "200", description= "OK"))
 	@GetMapping(value = "/{id}/parameters", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> parameters(
-			@Parameter(description = "Report ID or Name", required = true) @PathVariable("id") String id)
-			throws UnsupportedEncodingException {
+			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id)
+					throws UnsupportedEncodingException {
 
 		final Report report = reportService.findByIdentificationOrId(id);
 		if (report == null) {
@@ -189,7 +173,7 @@ public class ReportRestController {
 		try {
 			final ResponseEntity<List<ReportParameter>> response = restTemplate.exchange(requestURL, HttpMethod.GET,
 					null, new ParameterizedTypeReference<List<ReportParameter>>() {
-					});
+			});
 
 			return new ResponseEntity<>(response.getBody(), HttpStatus.OK);
 		} catch (final HttpClientErrorException | HttpServerErrorException e) {
@@ -198,8 +182,8 @@ public class ReportRestController {
 		}
 	}
 
-	@Operation(summary = "Get all reports")
-	@ApiResponse(content = @Content(schema = @Schema(implementation = ReportDTO[].class)), responseCode = "200", description = "OK")
+	@Operation(summary= "Get all reports")
+	@ApiResponse(content=@Content(schema=@Schema(implementation=ReportDTO[].class)), responseCode= "200", description= "OK")
 	@GetMapping()
 	public ResponseEntity<List<ReportDTO>> getReports() {
 
@@ -218,34 +202,12 @@ public class ReportRestController {
 		return new ResponseEntity<>(listDTO, HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get all reports with ids")
-	@ApiResponse(content = @Content(schema = @Schema(implementation = ReportDTO[].class)), responseCode = "200", description = "OK")
-	@GetMapping("/withId")
-	public ResponseEntity<List<Report2DTO>> getReportsWithIds() {
-
-		final List<Report> reports = utils.isAdministrator() ? reportService.findAllActiveReports()
-				: reportService.findAllActiveReportsByUserId(utils.getUserId());
-
-		final List<Report2DTO> listDTO = new ArrayList<>();
-		for (final Report report : reports) {
-			final Report2DTO dto = new Report2DTO();
-			dto.setCreatedAt(report.getCreatedAt());
-			dto.setDescription(report.getDescription());
-			dto.setName(report.getIdentification());
-			dto.setId(report.getId());
-			listDTO.add(dto);
-		}
-
-		return new ResponseEntity<>(listDTO, HttpStatus.OK);
-	}
-
-	@Operation(summary = "Get report by name or ID")
-	@ApiResponses(value = {
-			@ApiResponse(content = @Content(schema = @Schema(implementation = ReportDTO.class)), responseCode = "200", description = "OK"),
-			@ApiResponse(responseCode = "404", description = "Not found") })
+	@Operation(summary= "Get report by name or ID")
+	@ApiResponses(value = { @ApiResponse(content=@Content(schema=@Schema(implementation=ReportDTO.class)), responseCode= "200", description= "OK"),
+			@ApiResponse(responseCode= "404", description= "Not found") })
 	@GetMapping("/{id}")
 	public ResponseEntity<ReportDTO> getReportById(
-			@Parameter(description = "Report ID or Name", required = true) @PathVariable("id") String id) {
+			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id) {
 
 		final Report entity = reportService.findByIdentificationOrId(id);
 
@@ -265,8 +227,8 @@ public class ReportRestController {
 
 	}
 
-	@Operation(summary = "Create new report")
-	@ApiResponse(responseCode = "201", description = "CREATED")
+	@Operation(summary= "Create new report")
+	@ApiResponse(responseCode= "201", description= "CREATED")
 	@PostMapping(consumes = { "multipart/form-data" })
 	@Transactional
 	public ResponseEntity<Object> createNewReport(
@@ -311,13 +273,12 @@ public class ReportRestController {
 	}
 
 	@Deprecated
-	@Operation(summary = "Update report by ID")
-	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "OK"),
-			@ApiResponse(responseCode = "404", description = "Not found") })
+	@Operation(summary= "Update report by ID")
+	@ApiResponses(value = { @ApiResponse(responseCode= "200", description= "OK"), @ApiResponse(responseCode= "404", description= "Not found") })
 	@PutMapping("/{id}")
 	@Transactional
 	public ResponseEntity<Object> updateReport(
-			@Parameter(description = "Report ID or Name", required = true) @PathVariable("id") String id,
+			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id,
 			@RequestParam(required = false, value = "description") String description,
 			@RequestParam(required = false, value = "identification") String identification,
 			@RequestParam(required = false, value = "file") MultipartFile file) {
@@ -352,13 +313,12 @@ public class ReportRestController {
 
 	}
 
-	@Operation(summary = "Update report by ID")
-	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "OK"),
-			@ApiResponse(responseCode = "404", description = "Not found") })
+	@Operation(summary= "Update report by ID")
+	@ApiResponses(value = { @ApiResponse(responseCode= "200", description= "OK"), @ApiResponse(responseCode= "404", description= "Not found") })
 	@PostMapping(value = "/{id}", consumes = { "multipart/form-data" })
 	@Transactional
 	public ResponseEntity<Object> updateWithPostReport(
-			@Parameter(description = "Report ID or Name", required = true) @PathVariable("id") String id,
+			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id,
 			@RequestParam(required = false, value = "description") String description,
 			@RequestParam(required = false, value = "identification") String identification,
 			@RequestParam(required = false, value = "file") MultipartFile file) {
@@ -393,12 +353,12 @@ public class ReportRestController {
 
 	}
 
-	@Operation(summary = "Delete report by ID")
-	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "DELETED"),
-			@ApiResponse(responseCode = "404", description = "Not found") })
+	@Operation(summary= "Delete report by ID")
+	@ApiResponses(value = { @ApiResponse(responseCode= "200", description= "DELETED"),
+			@ApiResponse(responseCode= "404", description= "Not found") })
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Object> deleteReport(
-			@Parameter(description = "Report ID or Name", required = true) @PathVariable("id") String id) {
+			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id) {
 		final Report entity = reportService.findByIdentificationOrId(id);
 
 		if (entity == null || entity.getFile() == null) {
@@ -413,13 +373,12 @@ public class ReportRestController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@Operation(summary = "Get file of report")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = String.class))),
-			@ApiResponse(responseCode = "404", description = "Not found") })
+	@Operation(summary= "Get file of report")
+	@ApiResponses(value = { @ApiResponse(responseCode= "200", description= "OK", content=@Content(schema=@Schema(implementation=String.class))),
+			@ApiResponse(responseCode= "404", description= "Not found") })
 	@GetMapping("/{id}/file")
 	public ResponseEntity<Object> getFileOfReport(
-			@Parameter(description = "Report ID or Name", required = true) @PathVariable("id") String id) {
+			@Parameter(description= "Report ID or Name", required = true) @PathVariable("id") String id) {
 
 		final Report entity = reportService.findByIdentificationOrId(id);
 
@@ -445,110 +404,5 @@ public class ReportRestController {
 				.header(HttpHeaders.CACHE_CONTROL, "max-age=60, must-revalidate").contentLength(byteArray.length)
 				.header(HttpHeaders.SET_COOKIE, "fileDownload=true").body(byteArray);
 
-	}
-
-	@Operation(summary = "Get json from MS Word Template")
-	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "OK"),
-			@ApiResponse(responseCode = "404", description = "Not found") })
-	@PostMapping("/getJsonFromMsTemplate/{id}")
-	public ResponseEntity<?> getJsonFromTemplate(@PathVariable("id") String id) throws IOException, OpenXML4JException {
-
-		Report report = reportService.findById(id);
-		if (report == null) {
-			report = reportService.findByIdentificationOrId(id);
-		}
-		List<String> parameters = poiTemplatesUtil.extractFromDocx(new ByteArrayInputStream(report.getFile()));
-
-		ReportInfoMSTemplateDTO reportInfoMSTemplateDTO = new ReportInfoMSTemplateDTO();
-
-		reportInfoMSTemplateDTO.setJsonParameters(
-				poiTemplatesUtil.generateJSONObject(parameters, reportInfoMSTemplateDTO.getFormType()));
-
-		return new ResponseEntity(reportInfoMSTemplateDTO.getJsonParameters(), HttpStatus.OK);
-	}
-
-	@Operation(summary = "Download report from MS Word Template")
-	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "OK"),
-			@ApiResponse(responseCode = "404", description = "Not found") })
-	@PostMapping("/downloadMSWordTemplate/{id}")
-	public ResponseEntity<?> generateAndDownloadReport(@PathVariable("id") String id,
-			@Parameter(description = "Parameters") @RequestBody(required = false) String params,
-			@RequestParam("extension") ReportTypeSwagger extension) throws IOException {
-		Report report = reportService.findById(id);
-		if (report == null) {
-			report = reportService.findByIdentificationOrId(id);
-		}
-
-		String wordPath = poiTemplatesUtil.generateReport(params.toString(), report.getFile());
-
-		if (extension.name().equals("DOCX")) {
-			InputStream docxstream = new FileInputStream(wordPath);
-
-			ResponseEntity<?> response = generateAttachmentResponse(docxstream.readAllBytes(),
-					ReportTypeSwagger.DOCX.contentType(), report.getIdentification() + "." + extension.extension());
-
-			File file = new File(wordPath);
-			file.delete();
-			docxstream.close();
-			return response;
-
-		} else if (extension.name().equals("PDF")) {
-			String pdfFilePath;
-			try {
-				pdfFilePath = poiTemplatesUtil.convertToPdf(wordPath);
-			} catch (IOException | XDocConverterException e) {
-				return new ResponseEntity<>("PDF conversion failed", HttpStatus.BAD_REQUEST);
-
-			}
-			InputStream pdfstream = new FileInputStream(pdfFilePath);
-
-			ResponseEntity<?> response = generateAttachmentResponse(pdfstream.readAllBytes(),
-					ReportTypeSwagger.PDF.contentType(), report.getIdentification() + "." + extension.extension());
-			pdfstream.close();
-			File file = new File(wordPath);
-			file.delete();
-
-			File filePdf = new File(pdfFilePath);
-			filePdf.delete();
-
-			return response;
-
-		} else {
-			return new ResponseEntity<>("Extension is not valid", HttpStatus.BAD_REQUEST);
-		}
-	}
-
-	@Operation(summary = "Clone report")
-	@ApiResponse(responseCode = "201", description = "CLONED")
-	@PostMapping("/clone")
-	@Transactional
-	public ResponseEntity<Object> cloneReport(@RequestParam(required = true, value = "id") String id,
-			@RequestParam(required = true, value = "newIdentification") String newIdentification) {
-
-		if (!newIdentification.matches(AppWebUtils.IDENTIFICATION_PATERN)) {
-			return new ResponseEntity<>(" Error: Use alphanumeric characters and '-', '_'", HttpStatus.BAD_REQUEST);
-		}
-		final Report report = reportService.findByIdentificationOrId(id);
-
-		final Report reportNew = reportService.findByIdentificationOrId(newIdentification);
-		if (reportNew != null) {
-			return new ResponseEntity<>(" Error: A report already exists with that identifier", HttpStatus.CONFLICT);
-		}
-		Report newReport = new Report();
-		newReport.setActive(report.getActive());
-		newReport.setDataSourceUrl(report.getDataSourceUrl());
-		newReport.setDescription(report.getDescription());
-		newReport.setExtension(report.getExtension());
-		newReport.setFile(report.getFile());
-		newReport.setIdentification(newIdentification);
-		newReport.setIsPublic(report.getIsPublic());
-		newReport.setResources(new HashSet<BinaryFile>(report.getResources()));
-		final User user = new User();
-		user.setUserId(utils.getUserId());
-		newReport.setUser(user);
-
-		reportService.saveOrUpdate(newReport);
-
-		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 }

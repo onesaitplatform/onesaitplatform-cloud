@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,6 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 
 import com.minsait.onesait.platform.business.services.opendata.OpenDataApi;
@@ -71,8 +69,7 @@ public class DatasetServiceImpl implements DatasetService {
 	private static final String DELETED = "deleted";
 
 	@Override
-	public OpenDataPackageList getDatasetsListByUser(String userToken, String query, String sort, Integer rows,
-			Integer start) {
+	public OpenDataPackageList getDatasetsListByUser(String userToken, String query, String sort, Integer rows, Integer start) {
 		String parameters = "";
 		if (query != null) {
 			parameters += "&q=" + query;
@@ -80,8 +77,8 @@ public class DatasetServiceImpl implements DatasetService {
 		if (sort != null) {
 			parameters += "&sort=" + sort;
 		}
-
-		return getDatasetsByUserWithPagination(userToken, parameters, rows, start);
+		
+		return getDatasetsByUserWithPagination(userToken, parameters, rows, start);	
 	}
 
 	@Override
@@ -95,15 +92,15 @@ public class DatasetServiceImpl implements DatasetService {
 		}
 		return getDatasetsByUserWithPagination(userToken, parameters, null, null).getResults();
 	}
-
+		
 	@Override
 	public List<OpenDataPackage> getDatasetsByUser(String userToken) {
 		return getDatasetsByUserWithPagination(userToken, null, null, null).getResults();
 	}
-
-	private OpenDataPackageList getDatasetsByUserWithPagination(String userToken, String parameters, Integer rows,
-			Integer start) {
-		final String endpoint = "package_search?include_private=true";
+	
+	private OpenDataPackageList getDatasetsByUserWithPagination(String userToken, String parameters, 
+			Integer rows, Integer start) {
+		String endpoint = "package_search?include_private=true";
 		if (parameters == null) {
 			parameters = "";
 		}
@@ -112,15 +109,15 @@ public class DatasetServiceImpl implements DatasetService {
 		}
 		String paginate = "&rows=" + ROWS_LIMIT + "&start=" + start;
 		if (rows != null && rows < ROWS_LIMIT) {
-			paginate = "&rows=" + rows + "&start=" + start;
+			paginate = "&rows=" + rows + "&start=" + start;		
 		}
-
-		PackageSearchResponse responsePackages = (PackageSearchResponse) api
-				.getOperation(endpoint + parameters + paginate, userToken, PackageSearchResponse.class);
+		
+		PackageSearchResponse responsePackages = (PackageSearchResponse) api.getOperation(endpoint + parameters + paginate,
+				userToken, PackageSearchResponse.class);
 
 		if (responsePackages.getSuccess()) {
-			final List<OpenDataPackage> datasets = responsePackages.getResult().getResults();
-			final int count = responsePackages.getResult().getCount();
+			List<OpenDataPackage> datasets = responsePackages.getResult().getResults();
+			int count = responsePackages.getResult().getCount();
 			int counter = 0;
 			if (rows == null && count > ROWS_LIMIT) {
 				counter = (int) Math.ceil((float) count / ROWS_LIMIT);
@@ -129,15 +126,14 @@ public class DatasetServiceImpl implements DatasetService {
 			}
 			for (int i = 1; i < counter; i++) {
 				paginate = "&rows=" + ROWS_LIMIT + "&start=" + ((ROWS_LIMIT * i) + start);
-				responsePackages = (PackageSearchResponse) api.getOperation(endpoint + parameters + paginate, userToken,
-						PackageSearchResponse.class);
-				if (responsePackages.getSuccess()) {
+				responsePackages = (PackageSearchResponse) api.getOperation(endpoint + parameters + paginate, 
+						userToken, PackageSearchResponse.class);
+				if (responsePackages.getSuccess())
 					datasets.addAll(responsePackages.getResult().getResults());
-				}
 			}
 			if (rows != null && datasets.size() > rows) {
 				return new OpenDataPackageList(count, datasets.subList(0, rows));
-			}
+			} 
 			return new OpenDataPackageList(count, datasets);
 		}
 		return new OpenDataPackageList(0, new ArrayList<>());
@@ -146,12 +142,12 @@ public class DatasetServiceImpl implements DatasetService {
 	@Override
 	public List<OpenDataPackage> getDatasetsByUserWithPermissions(String userToken,
 			List<OpenDataOrganization> orgsFromUser) {
-		final List<OpenDataPackage> datasets = getDatasetsByUser(userToken);
-		final List<OpenDataPackage> datasetsFromUser = new ArrayList<>();
-		for (final OpenDataPackage dataset : datasets) {
-			final String orgId = dataset.getOwner_org();
-			final Optional<OpenDataOrganization> foundOrg = orgsFromUser.stream()
-					.filter(elem -> elem.getId().equals(orgId)).findFirst();
+		List<OpenDataPackage> datasets = getDatasetsByUser(userToken);
+		List<OpenDataPackage> datasetsFromUser = new ArrayList<>();
+		for (OpenDataPackage dataset : datasets) {
+			String orgId = dataset.getOwner_org();
+			Optional<OpenDataOrganization> foundOrg = orgsFromUser.stream().filter(elem -> elem.getId().equals(orgId))
+					.findFirst();
 			if (foundOrg.isPresent()) {
 				datasetsFromUser.add(dataset);
 			}
@@ -162,16 +158,16 @@ public class DatasetServiceImpl implements DatasetService {
 	@Override
 	public List<OpenDataPackageDTO> getDTOFromDatasetList(List<OpenDataPackage> datasets,
 			List<OpenDataOrganization> orgsFromUser) {
-		final List<OpenDataPackageDTO> dtos = new ArrayList<>();
-		for (final OpenDataPackage pkg : datasets) {
+		List<OpenDataPackageDTO> dtos = new ArrayList<>();
+		for (OpenDataPackage pkg : datasets) {
 			final OpenDataPackageDTO obj = new OpenDataPackageDTO();
 			obj.setName(pkg.getTitle());
 			obj.setIsPublic(!pkg.getIsPrivate());
 			obj.setOrganization(pkg.getOrganization().getTitle());
 			obj.setId(pkg.getId());
 
-			final String organizationId = pkg.getOrganization().getId();
-			final Optional<OpenDataOrganization> foundOrg = orgsFromUser.stream()
+			String organizationId = pkg.getOrganization().getId();
+			Optional<OpenDataOrganization> foundOrg = orgsFromUser.stream()
 					.filter(elem -> elem.getId().equals(organizationId)).findFirst();
 			if (foundOrg.isPresent()) {
 				obj.setRole(foundOrg.get().getCapacity());
@@ -187,15 +183,15 @@ public class DatasetServiceImpl implements DatasetService {
 				if (pkg.getMetadata_modified() != null) {
 					modified = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS").parse(pkg.getMetadata_modified());
 				}
-			} catch (final ParseException e) {
+			} catch (ParseException e) {
 				e.printStackTrace();
 			}
 			obj.setCreatedAt(created);
 			obj.setUpdatedAt(modified);
 
-			final List<String> tagsNames = new ArrayList<String>();
+			List<String> tagsNames = new ArrayList<String>();
 			if (pkg.getTags() != null && !pkg.getTags().isEmpty()) {
-				for (final OpenDataTag tag : pkg.getTags()) {
+				for (OpenDataTag tag : pkg.getTags()) {
 					tagsNames.add(tag.getName());
 				}
 			}
@@ -213,7 +209,7 @@ public class DatasetServiceImpl implements DatasetService {
 
 	@Override
 	public List<OpenDataLicense> getLicensesList() {
-		final LicenseListResponse responseLicenses = (LicenseListResponse) api.getOperation("license_list", null,
+		LicenseListResponse responseLicenses = (LicenseListResponse) api.getOperation("license_list", null,
 				LicenseListResponse.class);
 		if (responseLicenses.getSuccess()) {
 			return responseLicenses.getResult();
@@ -223,9 +219,9 @@ public class DatasetServiceImpl implements DatasetService {
 
 	@Override
 	public boolean existsDataset(OpenDataPackageDTO dataset, String userToken) {
-		final String datasetName = dataset.getName();
+		String datasetName = dataset.getName();
 		try {
-			final PackageShowResponse responsePackage = (PackageShowResponse) api
+			PackageShowResponse responsePackage = (PackageShowResponse) api
 					.getOperation("package_show?id=" + datasetName, userToken, PackageShowResponse.class);
 			if (responsePackage.getSuccess() && responsePackage.getResult().getState().equals(DELETED)) {
 				throw new OpenDataServiceException("Dataset exists in deleted state");
@@ -238,7 +234,7 @@ public class DatasetServiceImpl implements DatasetService {
 
 	@Override
 	public OpenDataPackage createDataset(OpenDataPackageDTO datasetDTO, String userToken) {
-		final OpenDataPackage dataset = new OpenDataPackage();
+		OpenDataPackage dataset = new OpenDataPackage();
 		dataset.setIsPrivate(!datasetDTO.getIsPublic());
 		dataset.setOwner_org(datasetDTO.getOrganization());
 		dataset.setTitle(datasetDTO.getTitle());
@@ -249,29 +245,29 @@ public class DatasetServiceImpl implements DatasetService {
 			dataset.setNotes(datasetDTO.getDescription());
 		}
 		if (datasetDTO.getTags() != null && !datasetDTO.getTags().isEmpty()) {
-			final List<OpenDataTag> tagsList = new ArrayList<>();
-			for (final String tag : datasetDTO.getTags()) {
-				final OpenDataTag newTag = new OpenDataTag();
+			List<OpenDataTag> tagsList = new ArrayList<>();
+			for (String tag : datasetDTO.getTags()) {
+				OpenDataTag newTag = new OpenDataTag();
 				newTag.setName(tag);
 				tagsList.add(newTag);
 			}
 			dataset.setTags(tagsList);
 		}
-		final PackageShowResponse responsePackage = (PackageShowResponse) api
+		PackageShowResponse responsePackage = (PackageShowResponse) api
 				.postOperation("package_create", userToken, dataset, PackageShowResponse.class).getBody();
 		if (responsePackage != null && responsePackage.getSuccess()) {
-			final String datasetId = responsePackage.getResult().getId();
+			String datasetId = responsePackage.getResult().getId();
 
-			final ODTypology typology = typologyService.getTypologyById(datasetDTO.getTypology());
+			ODTypology typology = typologyService.getTypologyById(datasetDTO.getTypology());
 			if (typology != null) {
-				final ODTypologyDataset typologyDataset = new ODTypologyDataset();
+				ODTypologyDataset typologyDataset = new ODTypologyDataset();
 				typologyDataset.setDatasetId(datasetId);
 				typologyDataset.setTypologyId(typology.getId());
 				typologyDatasetService.createNewTypologyDataset(typologyDataset);
 			}
-			final List<String> filesList = datasetDTO.getFiles();
-			for (final String idFile : filesList) {
-				final ODBinaryFilesDataset binaryFileDataset = new ODBinaryFilesDataset();
+			List<String> filesList = datasetDTO.getFiles();
+			for (String idFile : filesList) {
+				ODBinaryFilesDataset binaryFileDataset = new ODBinaryFilesDataset();
 				binaryFileDataset.setDatasetId(datasetId);
 				binaryFileDataset.setFilesId(idFile);
 				binaryFileDatasetService.createNewBinaryFiles(binaryFileDataset);
@@ -286,10 +282,10 @@ public class DatasetServiceImpl implements DatasetService {
 	@Override
 	public OpenDataPackage getDatasetById(String userToken, String id) {
 		try {
-			final PackageShowResponse responsePackage = (PackageShowResponse) api.getOperation("package_show?id=" + id,
+			PackageShowResponse responsePackage = (PackageShowResponse) api.getOperation("package_show?id=" + id,
 					userToken, PackageShowResponse.class);
 			if (responsePackage.getSuccess()) {
-				final OpenDataPackage dataset = responsePackage.getResult();
+				OpenDataPackage dataset = responsePackage.getResult();
 				if (dataset.getState().equals(DELETED)) {
 					throw new OpenDataServiceException("Dataset exists in deleted state");
 				}
@@ -305,7 +301,7 @@ public class DatasetServiceImpl implements DatasetService {
 
 	@Override
 	public OpenDataPackageDTO getDTOFromDataset(OpenDataPackage dataset, String organization, String license) {
-		final OpenDataPackageDTO datasetDTO = new OpenDataPackageDTO();
+		OpenDataPackageDTO datasetDTO = new OpenDataPackageDTO();
 		datasetDTO.setId(dataset.getId());
 		datasetDTO.setIsPublic(!dataset.getIsPrivate());
 		datasetDTO.setTitle(dataset.getTitle());
@@ -314,8 +310,8 @@ public class DatasetServiceImpl implements DatasetService {
 		datasetDTO.setOrganization(organization);
 		datasetDTO.setLicense(license);
 
-		final List<String> tags = new ArrayList<>();
-		final List<OpenDataTag> tagsList = dataset.getTags();
+		List<String> tags = new ArrayList<>();
+		List<OpenDataTag> tagsList = dataset.getTags();
 		for (int i = 0; i < tagsList.size(); i++) {
 			tags.add(tagsList.get(i).getName());
 		}
@@ -326,10 +322,10 @@ public class DatasetServiceImpl implements DatasetService {
 	@Override
 	public boolean getModifyPermissions(List<OpenDataOrganization> organizationsFromUser, String orgId) {
 		boolean modifyPermissions = false;
-		final Optional<OpenDataOrganization> foundOrg = organizationsFromUser.stream()
+		Optional<OpenDataOrganization> foundOrg = organizationsFromUser.stream()
 				.filter(elem -> elem.getId().equals(orgId)).findFirst();
 		if (foundOrg.isPresent()) {
-			final String role = foundOrg.get().getCapacity();
+			String role = foundOrg.get().getCapacity();
 			if (role.equals("admin") || role.equals("editor")) {
 				modifyPermissions = true;
 			}
@@ -339,10 +335,10 @@ public class DatasetServiceImpl implements DatasetService {
 
 	@Override
 	public List<DatasetResource> getConfigResources(List<OpenDataResource> resources) {
-		final List<String> resourceIds = new ArrayList<>();
+		List<String> resourceIds = new ArrayList<>();
 		List<DatasetResource> configResources = new ArrayList<>();
 
-		for (final OpenDataResource res : resources) {
+		for (OpenDataResource res : resources) {
 			resourceIds.add(res.getId());
 		}
 		if (!resourceIds.isEmpty()) {
@@ -359,7 +355,7 @@ public class DatasetServiceImpl implements DatasetService {
 
 	@Override
 	public OpenDataPackage updateDataset(OpenDataPackageDTO datasetDTO, String userToken) {
-		final OpenDataPackage dataset = new OpenDataPackage();
+		OpenDataPackage dataset = new OpenDataPackage();
 		dataset.setId(datasetDTO.getId());
 		dataset.setTitle(datasetDTO.getTitle());
 		dataset.setName(datasetDTO.getName());
@@ -373,22 +369,22 @@ public class DatasetServiceImpl implements DatasetService {
 			dataset.setNotes("");
 		}
 
-		final List<OpenDataTag> newTags = new ArrayList<>();
-		for (final String tag : datasetDTO.getTags()) {
-			final OpenDataTag newTag = new OpenDataTag();
+		List<OpenDataTag> newTags = new ArrayList<>();
+		for (String tag : datasetDTO.getTags()) {
+			OpenDataTag newTag = new OpenDataTag();
 			newTag.setName(tag);
 			newTags.add(newTag);
 		}
 		dataset.setTags(newTags);
 
-		final PackageShowResponse responsePackage = (PackageShowResponse) api
+		PackageShowResponse responsePackage = (PackageShowResponse) api
 				.postOperation("package_patch", userToken, dataset, PackageShowResponse.class).getBody();
 		if (responsePackage != null && responsePackage.getSuccess()) {
 
-			final String datasetId = responsePackage.getResult().getId();
+			String datasetId = responsePackage.getResult().getId();
 
-			final ODTypology newtypology = typologyService.getTypologyById(datasetDTO.getTypology());
-			final ODTypologyDataset oldTypologyDataset = typologyDatasetService.getTypologyByDatasetId(datasetId);
+			ODTypology newtypology = typologyService.getTypologyById(datasetDTO.getTypology());
+			ODTypologyDataset oldTypologyDataset = typologyDatasetService.getTypologyByDatasetId(datasetId);
 			ODTypology oldtypology = new ODTypology();
 			if (oldTypologyDataset != null) {
 				oldtypology = typologyService.getTypologyById(oldTypologyDataset.getTypologyId());
@@ -397,20 +393,19 @@ public class DatasetServiceImpl implements DatasetService {
 				}
 			}
 			if (newtypology != null && !newtypology.getId().equals(oldtypology.getId())) {
-				final ODTypologyDataset typologyDataset = new ODTypologyDataset();
+				ODTypologyDataset typologyDataset = new ODTypologyDataset();
 				typologyDataset.setDatasetId(datasetId);
 				typologyDataset.setTypologyId(newtypology.getId());
 				typologyDatasetService.createNewTypologyDataset(typologyDataset);
 			}
 
-			final List<String> newfilesList = datasetDTO.getFiles();
-			final List<String> oldFilesList = getOldFileList(datasetId);
+			List<String> newfilesList = datasetDTO.getFiles();
+			List<String> oldFilesList = getOldFileList(datasetId);
 
-			if (oldFilesList != null || !oldFilesList.isEmpty()) {
+			if (oldFilesList != null || !oldFilesList.isEmpty())
 				binaryFileDatasetService.deleteBinaryFilesDatasetByDataset(datasetId);
-			}
-			for (final String idFile : newfilesList) {
-				final ODBinaryFilesDataset binaryFileDataset = new ODBinaryFilesDataset();
+			for (String idFile : newfilesList) {
+				ODBinaryFilesDataset binaryFileDataset = new ODBinaryFilesDataset();
 				binaryFileDataset.setDatasetId(datasetId);
 				binaryFileDataset.setFilesId(idFile);
 				binaryFileDatasetService.createNewBinaryFiles(binaryFileDataset);
@@ -424,10 +419,9 @@ public class DatasetServiceImpl implements DatasetService {
 	}
 
 	private List<String> getOldFileList(String datasetId) {
-		final List<String> returnList = new ArrayList<String>();
-		final List<ODBinaryFilesDataset> oldBinaryFileDataset = binaryFileDatasetService
-				.getBinaryFilesByDatasetId(datasetId);
-		for (final ODBinaryFilesDataset file : oldBinaryFileDataset) {
+		List<String> returnList = new ArrayList<String>();
+		List<ODBinaryFilesDataset> oldBinaryFileDataset = binaryFileDatasetService.getBinaryFilesByDatasetId(datasetId);
+		for (ODBinaryFilesDataset file : oldBinaryFileDataset) {
 			returnList.add(file.getFilesId());
 		}
 		return returnList;
@@ -435,15 +429,10 @@ public class DatasetServiceImpl implements DatasetService {
 
 	@Override
 	public void deleteDataset(String userToken, String id) {
-		final OpenDataPackage dataset = new OpenDataPackage();
+		OpenDataPackage dataset = new OpenDataPackage();
 		dataset.setId(id);
 		try {
 			api.postOperation("package_delete", userToken, dataset, PackageShowResponse.class);
-			// purge para borrado físico
-			final MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-			map.add("id", id);
-			api.postOperation("dataset_purge", userToken, map, PackageShowResponse.class);
-
 			typologyDatasetService.deleteTypologyDatasetByDatasetId(id);
 			binaryFileDatasetService.deleteBinaryFilesDatasetByDataset(id);
 		} catch (final HttpClientErrorException e) {

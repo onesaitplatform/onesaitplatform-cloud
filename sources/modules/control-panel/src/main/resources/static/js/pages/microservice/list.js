@@ -20,8 +20,9 @@ Microservice.List = (function() {
 	
 	var dtRenderOptions = function (data, type, row) {
 		return '<div class="grupo-iconos text-center">'
-		+ '<span data-id="' + row.id + '" data-contextPath="' + row.contextPath + '" data-caas="' + row.caas + '" data-deployed="' + row.deployed + '" data-url="' + row.deploymentUrl + '" class="btn-url btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genUrl+'"><i class="icon-url"></i></span></a>'
+		+ '<span data-id="' + row.id + '" data-contextPath="' + row.contextPath + '" data-caas="' + row.caas + '" data-deployed="' + row.deployed + '" data-url="' + row.deploymentUrl + '" class="btn-url btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genUrl+'"><i class="la la-eye font-hg"></i></span></a>'
 		+ '<span data-id="' + row.id + '" class="icon-microservice-edit btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genUpdate+'"><i class="icon-edit"></i></span>'
+		+ '<a target="_blank" href="'+row.deploymentUrl+'"><span data-id="' + row.id + '" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genView+'"><i class="icon-url"></i></span></a>'
 		+ '<span data-id="' + row.id + '" class="icon-microservice-trash btn btn-xs btn-no-border icon-on-table color-red tooltips" data-container="body" data-placement="bottom" data-original-title="'+constants.genDelete+'"><i class="icon-delete"></i></span>'																											
 		+ '</div>';
 	};
@@ -98,27 +99,20 @@ Microservice.List = (function() {
 
 	function createRows(data){
 		if(data!== null && typeof data!='undefined' && data.length>0){
-			//$('#microservices tbody').empty();
-			var table = $('#microservices').DataTable(); 
-			table.clear().draw();
+			$('#microservices tbody').empty();
 			for(var i = 0; i<data.length;i++){
 				var tr = '<tr>';
 				tr  +=createTrContent(data[i]);
 				tr +='</tr>';
-				table.row.add($(tr)).draw();
-				//$('#microservices tbody').append(tr);
+				$('#microservices tbody').append(tr);
 			}
-  			//table.data.reload().draw();
-  			
-			// HIDE COLUMNS		
-		//$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		}
 		return null;
 	}
 	
 	function createTrContent(data){		
 
-		var html = '<td class="text-left ">'+data.id+'</td>';
+		var html = '<td class="text-left hide">'+data.id+'</td>';
 		html += '<td class="text-left ">'+data.name+'</td>';
 		html += '<td class="text-left ">'+data.owner+'</td>';
 		html += '<td>'+dtRenderLinks(data.gitlab,null,data)+'</td>';
@@ -142,12 +136,7 @@ Microservice.List = (function() {
 		var parametersArray = [];
 		elements.each(function(){
 			var name = $(this).find("input[name='name\\[\\]']").val();
-			var value = '';
-			if(typeof $(this).find("input[name='value\\[\\]']").val() !== 'undefined'){
-				value = $(this).find("input[name='value\\[\\]']").val();
-			}else{
-				value = $(this).find("select[name='value\\[\\]']").val()
-			}
+			var value = $(this).find("input[name='value\\[\\]']").val();
 			var parameter = {"name":name, "value":value};
 			parametersArray.push(parameter);
 		});
@@ -388,35 +377,14 @@ Microservice.List = (function() {
 			    				$('#table_parameters > tbody').html("");
 			    				$('#table_parameters > tbody').append(mountableModel);
 			    			}
-
-			        		//$('#table_parameters').mounTable(parameters,{
-			    			//	model: '.parameters-model',
-			    			//	noDebug: false							
-			    			//});
-			    			
-			    			//<--- START Change to combo
-			    			let tdsHTML = '';
-			    			parameters.forEach(function(param){
-								tdsHTML += `<tr><td><input type="text" name="name[]" readonly="readonly"   value="${param.name}" class="form-control"/></td>`
-								if(typeof param.value === 'string'){
-									tdsHTML += `<td><input type="text" name="value[]" value="${param.value}" class="form-control"/></td>`;
-								}else if(param.value === null){
-									tdsHTML += `<td><input type="text" name="value[]" value="" class="form-control"/></td>`;
-								}else{
-									tdsHTML += `<td><select name="value[]" class="form-control"/>`;
-									param.value.forEach(function(s){
-										tdsHTML += `<option value="${s}">${s}</option>`;
-									})
-								}
-								tdsHTML += '</tr>';
-							})
-			    			$('#table-body').html(tdsHTML);
-
-			    			//-->END 
+			        		
+			        		$('#table_parameters').mounTable(parameters,{
+			    				model: '.parameters-model',
+			    				noDebug: false							
+			    			});
 			        		$('#parameters').removeClass('hide');
 			    			$('#parameters').attr('data-loaded',true);
 			    			$('#parametersModal').modal('show');
-			    			$('#parametersModal').removeClass('hidden');
 			    			$('#current-microservice').val(id);
 			        		
 			        	}
@@ -652,7 +620,7 @@ Microservice.List = (function() {
 				<button class="close" data-close="alert"></button> <span >${messageCopied}</span>
 			</div>
 			<div><label>${messageBase}</label>
-				<input class="col-md-12 form-control" readonly="readonly" value="${window.location.origin}${contextpath}" onclick=" this.select();document.execCommand('copy'); $('#infoCopied').show();" type="text"/>	
+				<input class="col-md-12 form-control" readonly="readonly" value="${openshiftUrl}" onclick=" this.select();document.execCommand('copy'); $('#infoCopied').show();" type="text"/>	
 			</div>
 			`
 		}

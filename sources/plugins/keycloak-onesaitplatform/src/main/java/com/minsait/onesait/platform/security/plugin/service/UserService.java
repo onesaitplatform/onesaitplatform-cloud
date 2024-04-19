@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,8 +62,7 @@ public class UserService {
 	@Cacheable(cacheNames = "userExists", unless = "#result==false")
 	public boolean userExists(String userId) {
 		try {
-			restTemplate.exchange(controlpanel + API_MASTER_USERS + userId + "/exists", HttpMethod.GET, null,
-					Void.class);
+			restTemplate.exchange(controlpanel + API_MASTER_USERS + userId + "/exists", HttpMethod.GET, null, String.class);
 			return true;
 		} catch (final HttpClientErrorException e) {
 			if (e.getStatusCode() == HttpStatus.NOT_FOUND) {

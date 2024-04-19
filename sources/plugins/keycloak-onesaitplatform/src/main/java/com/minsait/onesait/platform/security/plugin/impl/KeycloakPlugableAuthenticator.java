@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,8 +65,6 @@ public class KeycloakPlugableAuthenticator implements PlugableOauthAuthenticator
 
 	private static final ObjectMapper mapper = new ObjectMapper();
 
-	private static final String DEFAULT_CLIENT = "onesaitplatform";
-
 	@Value("${oauth2.client.clientId}")
 	private String clientId;
 
@@ -86,11 +84,9 @@ public class KeycloakPlugableAuthenticator implements PlugableOauthAuthenticator
 				final UserDetails details = userDetailsService.loadUserByUsername(authentication.getName());
 				final OAuth2Request request = new OAuth2Request(null, clientId, null, true, null, null, null, null,
 						null);
-				SecurityContextHolder.getContext()
-						.setAuthentication(new OAuth2Authentication(request,
-								new UsernamePasswordAuthenticationToken(details, details.getPassword(),
-										DEFAULT_CLIENT.equals(clientId) ? details.getAuthorities()
-												: authentication.getAuthorities())));
+				SecurityContextHolder.getContext().setAuthentication(
+						new OAuth2Authentication(request, new UsernamePasswordAuthenticationToken(details,
+								details.getPassword(), details.getAuthorities())));
 			} catch (final Exception e) {
 				log.error("Error creating user", e);
 				throw new RuntimeException("Error creating user within plugin");
@@ -134,8 +130,7 @@ public class KeycloakPlugableAuthenticator implements PlugableOauthAuthenticator
 		final Authentication authentication = loadOauthAuthentication(token);
 		if (authentication != null) {
 			final UserDetails details = userDetailsService.loadUserByUsername(authentication.getName());
-			return new UsernamePasswordAuthenticationToken(details, details.getPassword(),
-					authentication.getAuthorities());
+			return new UsernamePasswordAuthenticationToken(details, details.getPassword(), details.getAuthorities());
 		}
 		return null;
 	}

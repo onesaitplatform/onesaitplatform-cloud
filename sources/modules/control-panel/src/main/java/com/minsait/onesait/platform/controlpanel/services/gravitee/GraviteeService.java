@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import com.minsait.onesait.platform.controlpanel.gravitee.dto.ApiPageResponse;
 import com.minsait.onesait.platform.controlpanel.gravitee.dto.ApiPageUpdate;
 import com.minsait.onesait.platform.controlpanel.gravitee.dto.ApiPlan;
 import com.minsait.onesait.platform.controlpanel.gravitee.dto.ApiUpdate;
-import com.minsait.onesait.platform.controlpanel.gravitee.dto.Application;
 import com.minsait.onesait.platform.controlpanel.gravitee.dto.GraviteeApi;
 
 public interface GraviteeService {
@@ -33,8 +32,6 @@ public interface GraviteeService {
 	ApiUpdate createApi(ApiCreate api) throws GenericOPException;
 
 	ApiUpdate updateApi(ApiUpdate api) throws GenericOPException;
-
-	void updateApiFromSwagger(Api api) throws GenericOPException;
 
 	ApiPlan createDefaultPlan(String apiId) throws GenericOPException;
 
@@ -54,7 +51,7 @@ public interface GraviteeService {
 
 	ApiPage createSwaggerDocPage(String apiId, Api api) throws GenericOPException;
 
-	GraviteeApi processApi(Api api, boolean jwtPlan, String clientId) throws GenericOPException;
+	GraviteeApi processApi(Api api) throws GenericOPException;
 
 	void changeLifeCycleState(String graviteeId, ApiStates state) throws GenericOPException;
 
@@ -63,29 +60,5 @@ public interface GraviteeService {
 	List<ApiPageResponse> getPublishedApiPages(String apiId) throws GenericOPException;
 
 	public ApiPageResponse processUpdateAPIDocs(Api api, String content) throws GenericOPException;
-
-	void createUpdateIdentityProvider();
-
-	Application createApplication(String clientId);
-
-	List<Application> getApplications();
-
-	void createOauthPlan(String apiId, String clientId);
-
-	void closePlan(String apiId, String planId) throws GenericOPException;
-
-	Application getApplicationsByClientId(String clientId);
-
-	boolean hasJWTPlan(String apiId);
-
-	List<String> getApplicationsSubscribedToAPI(String apiId);
-
-	void subscribeToAPI(String apiId, String application);
-
-	void unsubscribeToAPI(String apiId, String application);
-
-	String getURLIframe(String apiId, String iframe);
-
-	boolean isApiSync(String apiId);
 
 }
