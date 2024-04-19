@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -308,12 +308,10 @@
 												<table id="files" class="table table-hover table-striped" dt:table="true" dt:filterClearSelector="#clearFilters" dt:filterPlaceholder="none"  dt:paginationtype="full">
 													<thead>
 														<tr class="cabecera-tabla">
-															<th class="titulo-columnas text-left "  ><span th:text="Id">#{binaryfiles.id}</span></th>
 															<th class="titulo-columnas text-left" dt:filterable="true" dt:filterCssClass="input-small" dt:selector="fileFilter"><span th:text="#{binaryfiles.filename}"> filename </span></th>
 															<th class="titulo-columnas text-left" ><span th:text="#{binaryfiles.fileid}">file id</span></th>
 															<th class="titulo-columnas text-left" ><span th:text="#{binaryfiles.metadata }">Metadata</span></th>
 															<th class="titulo-columnas text-left "  ><span th:text="#{binaryfiles.owner}">Owner</span></th>
-															<th class="titulo-columnas text-left" > <span th:text="#{gen.created}">Created At</span></th>
 															<th class="titulo-columnas text-left" > <span th:text="#{gen.updated}">Updated At</span></th>
 															<th class="titulo-columnas text-left" ><span th:text="#{binaryfiles.accesstypes}" >Access types</span></th>
 															<th class="titulo-columnas text-left"><span th:text="#{gen.public}">Public</span></th>
@@ -322,8 +320,6 @@
 													</thead>
 													<tbody th:remove="all-but-first">
 														<tr th:each="cFile : ${files}" pages:paginate="10">
-															<!-- Binary File Id -->
-															<td class="text-left bold no-wrap" th:text="${file.id}"></td>
 															<!-- File name -->
 															<td class="text-left bold no-wrap" th:text="${cFile.path}"></td>
 															<!-- File id -->
@@ -332,9 +328,6 @@
 															<td class="text-left no-wrap text-truncate-md" th:text="${cFile.metadata}"></td>
 															<!-- OWNER -->
 															<td class="text-left no-wrap " th:text="${cFile.user.userId}"></td>
-															<!-- DATE -->
-															<td class="text-left" th:if="${cFile.createdAt!=null}"><span th:text="${#dates.format(cFile.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(cFile.createdAt,'dd/MM/yyyy')}" ></span></td>
-															<td class="text-left" th:if="${cFile.createdAt==null}" th:text="'---'"></td>
 															<!-- UPDATE -->
 															<td class="text-left" th:if="${cFile.updatedAt!=null}"><span th:text="${#dates.format(cFile.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(cFile.updatedAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${cFile.updatedAt==null}" th:text="'---'"></td>										
@@ -360,7 +353,7 @@
 																	<ul class="dropdown-menu dropdown-menu-table download-menu">
 																		<li>
 																			<!-- Copy link, accesible always -->
-																			<span class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" th:attr="onclick='BinaryFilesController.getBinaryFileUrl(\''+${cFile.id}+ '?vertical=' + ${#strings.toLowerCase(#authentication.getPrincipal().getVertical())}+ '\')'"><i class="icon-url"></i><span class="span-title-three-dots-icons" th:text="#{binaryfiles.copy}" >Copy URL</span></span>
+																			<span class="btn btn-xs btn-no-border btn-circle btn-outline " data-container="body" data-placement="bottom" th:attr="onclick='BinaryFilesController.getBinaryFileUrl(\''+${cFile.id}+'\')'"><i class="icon-url"></i><span class="span-title-three-dots-icons" th:text="#{binaryfiles.copy}" >Copy URL</span></span>
 																		</li>
 																		<li>
 																			<!-- SHARE -->	
@@ -380,7 +373,7 @@
 																</th:block>
 																<th:block  th:unless="${((cFile.user.userId eq #authentication.getName()) OR (#strings.arrayJoin(#authentication.authorities,'') == 'ROLE_ADMINISTRATOR') OR (accessMap.get(cFile.id) eq 'WRITE'))}">
 																	<!-- Copy link, accesible always -->
-																	<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{binaryfiles.copy}"  th:attr="onclick='BinaryFilesController.getBinaryFileUrl(\''+${cFile.id}+ '?vertical=' + ${#strings.toLowerCase(#authentication.getPrincipal().getVertical())}+ '\')'"><i class="icon-url"></i></span>
+																	<span class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:attr="onclick='BinaryFilesController.copyS3AddressToClipboard(\''+|${s3Server}/|+${cFile.path}+ '\')'"><i class="icon-url"></i></span>
 																</th:block>					
 															</td>
 														</tr>
@@ -413,37 +406,29 @@
 													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
-															<label th:text="#{binaryfiles.id}"> Id </label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
 															<label th:text="#{binaryfiles.filename}"> File Name </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
 															<label th:text="#{binaryfiles.fileid}"> File Id </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
 															<label th:text="#{binaryfiles.metadata}"> Metadata</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
 															<label th:text="#{binaryfiles.owner}"> Owner</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
-															<label th:text="#{gen.created}"> Created At</label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
 															<label th:text="#{gen.updated}"> Updated At</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="7" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 															<label th:text="#{binaryfiles.accesstypes}"> Access Types</label>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="8" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
 															<label th:text="#{gen.public}"> Public</label>
 														</span>
 													</div>
@@ -513,8 +498,6 @@
 	var errorMaxSize = [[#{binaryfiles.maxsize.error}]];
 	function navigateUrl(url){  window.location.href = url;	}
 	function navigateWindow(url){ window.open(url,'_blank');	}
-	
-	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		//var currentMode = $('#repositories').text();
@@ -536,10 +519,9 @@
 		
 
 		// SEARCH FORM RESET
-		// SEARCH FORM RESET
-		$('#reset_file').on('click',function(){	    
-			$('#form_file')[0].reset();
-			$('#form_file')[0].submit();
+		$('#reset_file').on('click',function(){
+			$('#file-name').val('');
+			$('#files').DataTable().column(0).search('').draw();
 		});
 
 		// SEARCH FORM
@@ -547,13 +529,18 @@
 			$('#files').DataTable().column(0).search( $('#file-name').val()).draw();
 		});
 		
+		
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).on("load",function(){  
 		$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
 	
 		//DATATABLE 
 		var oTable = $('#files').dataTable({
 	      "bAutoWidth": false
 	      });
-		$.each([0,2,3],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		
 		// SHOW/HIDE DATATABLES COLUMN INIT
 		$('#divcreate').prepend($('#dataTable-vis-toggle')); 		
 		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		
@@ -603,7 +590,7 @@
 		filtersResets.addClass('hide');
 		
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
-		//$.each([1,2],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([1,2],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		$('#yadcf-filter--files-0').attr("placeholder", [[#{binaryfiles.text.placeholder}]]);
 		
@@ -623,4 +610,3 @@
 </body>
 </html>
   
-

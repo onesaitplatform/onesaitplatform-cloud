@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,9 +51,7 @@ public class JenkinsBuildWatcher implements Runnable {
 					if (queueItem.cancelled()) {
 						log.warn("Build was cancelled");
 					} else {
-						if (log.isDebugEnabled()) {
-							log.debug("Build is executing with build number: {}", queueItem.executable().number());
-						}						
+						log.debug("Build is executing with build number: " + queueItem.executable().number());
 					}
 					break;
 				}
@@ -70,9 +68,7 @@ public class JenkinsBuildWatcher implements Runnable {
 				buildInfo = client.api().jobsApi().buildInfo(null, microservice.getJobName(),
 						queueItem.executable().number());
 			}
-			if (log.isDebugEnabled()) {
-				log.debug("Build status: {}", buildInfo.result());
-			}			
+			log.debug("Build status: " + buildInfo.result());
 		} catch (final Exception e) {
 			log.error("Something happened, could not wait until pipeline", e);
 

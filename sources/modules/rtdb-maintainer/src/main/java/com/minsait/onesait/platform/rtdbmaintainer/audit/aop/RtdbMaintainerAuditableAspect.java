@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,9 +108,7 @@ public class RtdbMaintainerAuditableAspect extends BaseAspect {
 
 	@Before("@annotation(auditable) && args(opId,..)")
 	public void beforeKillOp(JoinPoint joinPoint, RtdbMaintainerAuditable auditable, long opId) {
-		if (log.isDebugEnabled()) {
-			log.debug("Killing mongo op with id: {}", opId);
-		}		
+		log.debug("Killing mongo op with id: {}", opId);
 		final RtdbMaintainerAuditEvent event = auditProcessor.getEventKillOp(opId);
 		eventProducer.publish(event);
 

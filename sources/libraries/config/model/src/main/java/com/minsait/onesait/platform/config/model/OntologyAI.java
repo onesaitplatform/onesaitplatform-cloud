@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -120,8 +120,9 @@ public class OntologyAI extends AuditableEntityWithUUID implements Versionable<O
 		try {
 			final MindsDBPredictorGeneric service = BeanUtil.getBean(MindsDBPredictorGeneric.class);
 			final PredictorDTO p = PredictorDTO.builder().targetFields(o.getTargetProperties())
-					.inputFields(o.getInputProperties()).name(o.getPredictor()).ontology(o.getSourceEntity())
-					.connName(o.getConnectionName()).user(o.getUserJson()).build();
+					.inputFields(o.getInputProperties()).name(o.getPredictor())
+					.ontology(o.getSourceEntity()).connName(o.getConnectionName()).user(o.getUserJson())
+					.build();
 			service.createPredictor(p);
 		} catch (final Exception e) {
 			e.printStackTrace();
@@ -153,10 +154,6 @@ public class OntologyAI extends AuditableEntityWithUUID implements Versionable<O
 			o = null;
 		}
 		return o;
-	}
-
-	@Override
-	public void setOwnerUserId(String userId) {
 	}
 
 }

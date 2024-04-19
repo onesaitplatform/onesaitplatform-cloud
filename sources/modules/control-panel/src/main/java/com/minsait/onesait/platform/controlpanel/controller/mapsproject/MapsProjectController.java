@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.minsait.onesait.platform.config.model.Configuration;
 import com.minsait.onesait.platform.config.model.MapsProject;
-import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
 import com.minsait.onesait.platform.config.services.exceptions.DashboardServiceException;
@@ -132,7 +131,7 @@ public class MapsProjectController {
 		@SuppressWarnings("unchecked")
 		final ArrayList<String> descriptions = (ArrayList<String>) configurationService
 				.fromYaml(configuration.getYmlConfig()).get("descriptions");
-		apiManagerHelper.populateUserTokenForm(model, "");
+		apiManagerHelper.populateUserTokenForm(model);
 		model.addAttribute("urls", urls);
 		model.addAttribute("descriptions", descriptions);
 
@@ -244,20 +243,9 @@ public class MapsProjectController {
 	}
 
 	@DeleteMapping("/{id}")
-	public String deleteProject(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
+	public String delete(Model model, @PathVariable("id") String id, RedirectAttributes redirect) {
 		try {
-			this.entityDeletionService.deleteMapsProject(id, false, utils.getUserId());
-		} catch (final RuntimeException e) {
-			utils.addRedirectException(e, redirect);
-		}
-		return REDIRECT_PROJECT_LIST;
-	}
-
-	@DeleteMapping("/full/{id}")
-	public String deleteProjectAndDependencies(Model model, @PathVariable("id") String id,
-			RedirectAttributes redirect) {
-		try {
-			this.entityDeletionService.deleteMapsProject(id, true, utils.getUserId());
+			this.entityDeletionService.deleteMapsProject(id, utils.getUserId());
 		} catch (final RuntimeException e) {
 			utils.addRedirectException(e, redirect);
 		}
@@ -271,13 +259,9 @@ public class MapsProjectController {
 		try {
 			String idElem = "";
 			final String userId = utils.getUserId();
-			User sessionUser = userService.getUser(utils.getUserId());
-			final List<MapsProject> mps = mapsProjectService.getByIdentifier(identification);
-			if (mps != null && mps.size() > 0) {
-				return new ResponseEntity<>("idinuse", HttpStatus.BAD_REQUEST);
-			}
+
 			idElem = mapsProjectService.clone(mapsProjectService.getByIdANDUser(elementid, userId), identification,
-					sessionUser, sessionUser);
+					userService.getUser(userId));
 			final List<MapsProject> opt = mapsProjectService.getByIdentifier(idElem);
 			if (opt == null && opt.size() == 0) {
 				return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
@@ -285,7 +269,7 @@ public class MapsProjectController {
 			return new ResponseEntity<>(identification, HttpStatus.OK);
 		} catch (final Exception e) {
 			log.error(e.getMessage());
-			return new ResponseEntity<>("fail", HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>("{\"status\" : \"fail\"}", HttpStatus.BAD_REQUEST);
 		}
 	}
 
@@ -296,13 +280,13 @@ public class MapsProjectController {
 		try {
 			String idElem = "";
 			final String userId = utils.getUserId();
-			User sessionUser = userService.getUser(userId);
+
 			JSONArray usersJson = new JSONArray(users);
 
 			for (int i = 0; i < usersJson.length(); i++) {
 
 				idElem = mapsProjectService.clone(mapsProjectService.getByIdANDUser(elementid, userId),
-						randomIdentfication(identification), userService.getUser(usersJson.getString(i)), sessionUser);
+						randomIdentfication(identification), userService.getUser(usersJson.getString(i)));
 				final List<MapsProject> opt = mapsProjectService.getByIdentifier(idElem);
 				if (opt == null && opt.size() == 0) {
 					return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

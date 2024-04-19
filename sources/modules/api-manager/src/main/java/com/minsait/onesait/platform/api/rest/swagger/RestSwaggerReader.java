@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.springframework.util.StringUtils;
 
 import com.minsait.onesait.platform.api.service.Constants;
+import com.minsait.onesait.platform.config.model.ApiQueryParameter;
 import com.minsait.onesait.platform.config.services.apimanager.dto.ApiDTO;
 import com.minsait.onesait.platform.config.services.apimanager.dto.ApiQueryParameterDTO;
 import com.minsait.onesait.platform.config.services.apimanager.dto.OperacionDTO;
@@ -134,9 +135,8 @@ public class RestSwaggerReader {
 		final String identification = apiDto.getIdentification();
 
 		info.setDescription(INFO_DESCRIPTION + " - " + identification + " - " + vVersion);
-		if (StringUtils.hasText(config.getHost())) {
+		if (StringUtils.hasText(config.getHost()))
 			swagger.setHost(config.getHost());
-		}
 		swagger.setBasePath(config.getBasePath());
 
 		swagger.setSchemes(schemes);
@@ -154,6 +154,7 @@ public class RestSwaggerReader {
 		for (final OperacionDTO operacionDTO : operations) {
 			parse(swagger, operacionDTO);
 		}
+
 		return swagger;
 	}
 
@@ -179,9 +180,8 @@ public class RestSwaggerReader {
 		final String description = operacionDTO.getDescription();
 		final String operation = operacionDTO.getOperation().name();
 		String path = operacionDTO.getPath();
-		if (!path.startsWith("/")) {
+		if (!path.startsWith("/"))
 			path = "/" + path;
-		}
 		final List<ApiQueryParameterDTO> queryParams = operacionDTO.getQueryParams().stream()
 				.filter(p -> !excludeParms.contains(p.getName())).collect(Collectors.toList());
 
@@ -195,10 +195,10 @@ public class RestSwaggerReader {
 		op.operationId(description.replaceAll(" ", "_"));
 
 		final String method = operation.toLowerCase(Locale.US);
-		// DONT NEED THIS ANYMORE, OPENAPI 3 SEC DEFINITIONS INSTEAD
-//		createPARAMETER(swagger, op, Constants.AUTHENTICATION_HEADER, Constants.AUTHENTICATION_HEADER,
-//				ApiQueryParameter.HeaderType.HEADER.name(), ApiQueryParameter.DataType.STRING.name().toLowerCase(),
-//				null);
+
+		createPARAMETER(swagger, op, Constants.AUTHENTICATION_HEADER, Constants.AUTHENTICATION_HEADER,
+				ApiQueryParameter.HeaderType.HEADER.name(), ApiQueryParameter.DataType.STRING.name().toLowerCase(),
+				null);
 
 		swaggerPath = swaggerPath.set(method, op);
 
@@ -219,16 +219,13 @@ public class RestSwaggerReader {
 		op.setConsumes(consumes);
 		op.setProduces(produces);
 		op.setResponses(responses);
-		op.addSecurity(Constants.AUTHENTICATION_HEADER, null);
-		op.addSecurity(Constants.JWT, null);
 
 	}
 
 	private static List<String> splitStringValue(String value) {
 		final List<String> enumValue = new ArrayList<>();
-		if (value == null) {
+		if (value == null)
 			return Collections.emptyList();
-		}
 
 		if (value.contains(RestSwaggerReader.DATA_TYPE_VALUE_SEPARATOR)) {
 			enumValue.add(value);

@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -136,7 +136,6 @@
 											<table id="digital_twin_types" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
 												<thead>
 													<tr class="cabecera-tabla">
-														<th class="titulo-columnas text-left" th:text="#{gen.id}">id</th>
 														<th class="titulo-columnas text-left" th:text="#{gen.name}">Name</th>
 														<th class="titulo-columnas text-left" ><span th:text="#{ontology.userId}" >Owner</span></th>
 														<th class="titulo-columnas text-left" th:text="#{gen.description}">Description</th>
@@ -148,8 +147,6 @@
 												</thead>
 												<tbody th:remove="all-but-first">
 													<tr th:each="type : ${digitalTwinTypes}" pages:paginate="10">
-														<!-- ID -->
-														<td class="text-left no-wrap " th:text="${type.id}"></td>
 														<!-- IDENTIFICATION/NAME -->
 														<td class="text-left no-wrap " th:text="${type.identification}"></td>
 														<!-- USER -->
@@ -185,31 +182,27 @@
 												 <a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
 												<div id="column_toggler" class="dropdown-menu hold-on-click pull-right">
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="0"/>
-														<label th:text="#{gen.id}"> id </label>
-													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="0" checked/>
 														<label th:text="#{gen.name}"> Name </label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
 														<label th:text="#{ontology.userId}"> Owner </label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
 														<label th:text="#{gen.description}"> Description </label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
 														<label th:text="#{digitaltwintype.type}"> type </label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
 														<label th:text="#{ontology.createdAt}"> Created At </label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="6" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 														<label th:text="#{ontology.updatedAt}"> Updated At </label>
 													</span>														
 												</div>
@@ -283,11 +276,6 @@
 		HeaderController.showConfirmDialogDigitalTwinType('delete_type_form');
 	}
 	
-	//$(window).on('pageshow', function(event) {
- 	//	 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  	//	 $.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-	//});
-	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		var csrf_value = $("meta[name='_csrf']").attr("content");
@@ -332,11 +320,14 @@
 		
 		// SEARCH FORM
 		$('#search_digital_type').on('click',function(){ $('#form_digital_twin_type')[0].submit(); });
- 
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).on("load",function(){  
 		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
-		$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-		//$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
+		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
 		// SHOW/HIDE DATATABLES COLUMN INIT
 		$('#divcreate').prepend($('#dataTable-vis-toggle')); 		
 		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		

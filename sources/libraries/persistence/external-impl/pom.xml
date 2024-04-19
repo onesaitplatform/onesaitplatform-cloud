@@ -174,7 +174,7 @@
 	<repositories>
 		<repository>
 			<id>onesait</id>
-			<url>https://nexus.onesaitplatform.com/nexus/repository/thirdparty/</url>
+			<url>https://nexus.onesaitplatform.com/nexus/content/repositories/thirdparty/</url>
 		</repository>
 		<repository>
 			<id>cloudera</id>

@@ -15,9 +15,7 @@ var ApiCreateController = function() {
 	var internalLanguage = 'en';
 	var reader = new FileReader();
 	var mountableModel2 = "";
-	var mountableModel;
 	var oTable;
-	var subscriptions = [];
 	
 	if ($('#api_authorizations').find('tr.authorization-model')[0]){
 		mountableModel2 = $('#api_authorizations').find('tr.authorization-model')[0].outerHTML;
@@ -240,9 +238,7 @@ var ApiCreateController = function() {
     			$('#row-operations-ai').addClass('hide');
     		}else{
     			$('.common-ops').removeClass('hide');
-    			if(apiCreateReg.apiType === 'IOT' || apiCreateReg.apiType === 'INTERNAL_ONTOLOGY' || apiCreateReg.apiType === 'NODE_RED'){
-    				$('#row-operations').removeClass('hide');
-    			}
+    			$('#row-operations').removeClass('hide');
     			$('#row-operations-nebula').addClass('hide');
     			$('#row-operations-ai').addClass('hide');
     		}
@@ -426,14 +422,12 @@ var ApiCreateController = function() {
 	}
 	
 	var validateMetaInf = function () {
-    	if ($('#id_metainf').val() === '' || $('#id_metainf').val().length < 5 ){
+    	if ($('#id_metainf').val() === ''){
     		$('#id_metainf').prev().addClass('tagsinput-has-error');
     		$('#id_metainf').nextAll('span:first').removeClass('hide');
-    		$('#metainferror').addClass('hide');
     		return false;
 		} else {
     		$('#id_metainf').prev().removeClass('tagsinput-has-error');
-    		$('#metainferror').removeClass('hide');
     		$('#id_metainf').nextAll('span:first').addClass('hide');
     		return true;
 		}
@@ -467,23 +461,13 @@ var ApiCreateController = function() {
             	apiType:			{ required: true },
             	ontology:			{ required: true },
             	id_endpoint:		{ required: true },
+            	apiDescription:		{ required: true },
             	id_metainf:			{ required: true },
 				datecreated:		{ date: true, required: true }
             },
-            invalidHandler: function(event, validator) { //display error alert on form submit  
-            
-            if ($('#metainf').val() !== ''){
-        			$('#metainferror').addClass('hide');
-        			$('#id_metainf').closest('.form-group').removeClass('has-error');
-        			$('#id_metainf').prev().removeClass('tagsinput-has-error');;
-        		} else {
-        			$('#metainferror').removeClass('hide');
-        			$('#id_metainf').closest('.form-group').addClass('has-error');
-        			$('#id_metainf').prev().addClass('tagsinput-has-error');
-        		}               
+            invalidHandler: function(event, validator) { //display error alert on form submit              
             	toastr.error(messagesForms.validation.genFormError,'');
                 validateMetaInf();
-                validateDescription();
             },
             errorPlacement: function(error, element) {
                 if 		( element.is(':checkbox'))	{ error.insertAfter(element.closest(".md-checkbox-list, .md-checkbox-inline, .checkbox-list, .checkbox-inline")); }
@@ -516,9 +500,6 @@ var ApiCreateController = function() {
 				
 				if (error == "" && !validateMetaInf()){
 					error = apiCreateReg.apimanager_gen_error;
-				} 
-				if (error == "" && !validateDescription()){
-					error = apiCreateReg.apimanager_gen_error;
 				}
 				
 				if (error == "" && operations.length==0 && apiType=="INTERNAL_ONTOLOGY") {
@@ -540,21 +521,6 @@ var ApiCreateController = function() {
             }
         });
     }
-    
-    var validateDescription = function(){		
-		var description = $('#apiDescripcion').val();
-		var error1 = $('.alert-danger');
-		if(typeof description === 'undefined' || description.trim().length < 5 || description == "" ){
-			error1.show();
-			$('#descriptionerror').removeClass('hide').addClass(' font-red');
-			$('#apiDescripcion').closest('.form-group').addClass('has-error')
-			return false;
-		}else{
-			$('#descriptionerror').addClass('hide');
-			$('#apiDescripcion').closest('.form-group').removeClass('has-error')
-			return true;
-		}
-	}
 		
 	function validateDescOperations(){
 		var ontology = $("#ontology option:selected").text();
@@ -577,10 +543,7 @@ var ApiCreateController = function() {
 	var initTemplateElements = function(){
 		logControl ? console.log('initTemplateElements() -> selectpickers, datepickers, resetForm, today->dateCreated currentLanguage: ' + currentLanguage) : '';
 		
-		$('#id_metainf').on('itemAdded', function(event) {
-			if ($(this).val() !== ''){ $('#metainferror').addClass('hide');}
-		});
-
+		
 		// authorization tab control 
 		$(".nav-tabs a[href='#tab_2']").on("click", function(e) {
 		  if ($(this).hasClass("disabled")) {
@@ -623,27 +586,17 @@ var ApiCreateController = function() {
 				$('.form').validate().element('#' + event.currentTarget.getElementsByTagName('select')[0].getAttribute('id'));
 			}
 		})
-		$('#apiDescripcion').bind('blur', function (ev) { // fires on every blur
-			validateDescription();             // checks form for validity
-		})
-		
 			
 		$('.tagsinput').filter('[required]').parent().on('blur', 'input', function(event) {
-			if ($(event.target).parent().next().val() == ''){
-				$(event.target).parent().next().nextAll('span:first').removeClass('hide');
-				$(event.target).parent().next().nextAll('span:last-child').addClass('hide');
-				$(event.target).parent().addClass('tagsinput-has-error');
-			} else if($(event.target).parent().next().val().length < 5){
-				$(event.target).parent().next().nextAll('span:last-child').addClass('font-red');
-				$(event.target).parent().next().nextAll('span:last-child').removeClass('hide');
-				$(event.target).parent().addClass('tagsinput-has-error');
-			} else {
+			if ($(event.target).parent().next().val() !== ''){
 				$(event.target).parent().next().nextAll('span:first').addClass('hide');
-				$(event.target).parent().next().nextAll('span:last-child').addClass('hide');
 				$(event.target).parent().removeClass('tagsinput-has-error');
+			} else {
+				$(event.target).parent().next().nextAll('span:first').removeClass('hide');
+				$(event.target).parent().addClass('tagsinput-has-error');
 			}   
 		})
-	
+		
 		// INSERT MODE ACTIONS  (apiCreateReg.actionMode = NULL ) 
 		if ( apiCreateReg.actionMode === null){
 			logControl ? console.log('action-mode: INSERT') : '';
@@ -660,8 +613,7 @@ var ApiCreateController = function() {
 		else {
 			createOperationsOntology();
 			loadOperations();
-			if(apiCreateReg.graviteeId != null && apiCreateReg.hasJWTPlan)
-				mountableModel = $('#table_subscriptions').find('tr.subscriptions-model')[0].outerHTML;
+			
 			
 			$('#id_endpoint').val($('#id_endpoint_hidden').val());
 			
@@ -680,67 +632,7 @@ var ApiCreateController = function() {
 		    if ($('#checkboxLimit').prop('checked')) {
 		    	$('#id_limit').prop('disabled', false);
 		    }
-		    
-		    if(apiCreateReg.graviteeId && apiCreateReg.hasJWTPlan){
-				applications = apiCreateReg.subscriptions;
-				mountTableSubscriptions();
-			}
 		}
-	}
-	
-	function subscribe(){
-		let app = $('#apps').val()
-		let apiId = apiCreateReg.apiId;
-		fetch(`/controlpanel/api/apis/${apiId}/gravitee/subscribe?application=${app}`,
-			{
-			  method: 'POST'	
-			}
-		)
-		.then(r => r.json())
-		.then(data => {
-			applications = data;
-			mountTableSubscriptions();
-		})
-	}
-	
-	function unsubscribe(obj){
-		let app = $(obj).closest('tr').find("input[name='applications\\[\\]']").val();
-		let apiId = apiCreateReg.apiId;
-		fetch(`/controlpanel/api/apis/${apiId}/gravitee/unsubscribe?application=${app}`,
-			{
-			  method: 'POST'	
-			}
-		)
-		.then(r => r.json())
-		.then(data => {
-			applications = data;
-			mountTableSubscriptions();
-		})
-	}
-	
-	function mountTableSubscriptions(){
-		let subsArr = []
-		$.each( applications, function (key, object){			
-			
-			subsArr.push({'applications': object, 'clientIds': object})
-			
-		});
-
-		// TO-HTML
-		if ($('#subscriptions').attr('data-loaded') === 'true'){
-			$('#table_subscriptions > tbody').html("");
-			$('#table_subscriptions > tbody').append(mountableModel);
-		}
-		$('#table_subscriptions').mounTable(subsArr,{
-			model: '.subscriptions-model',
-			noDebug: false							
-		});
-		
-		// hide info , disable user and show table
-					
-		$('#subscriptions').removeClass('hide');
-		$('#subscriptions').attr('data-loaded',true);// TO-HTML
-
 	}
 	
     function replaceOperation(newOp){
@@ -1330,12 +1222,6 @@ var ApiCreateController = function() {
 				}	
 			}
 		},
-		subscribe: function(){
-			subscribe();
-		},
-		unsubscribe: function(obj){
-			unsubscribe(obj);
-		}
 
 	};
 }();

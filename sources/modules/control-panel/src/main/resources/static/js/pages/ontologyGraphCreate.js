@@ -251,8 +251,7 @@ var OntologyCreateGraphController = function() {
 				throw Error(response.statusText);
 			}
 			toastr.info(messagesForms.operations.genOpSuccess,`OK`);
-			$('#modal-created').modal('show');
-			//window.location.href= ontologyCreateReg.ontologies;
+			window.location.href= ontologyCreateReg.ontologies;
 		})
 		.catch(e => console.log("Waiting for background execution to finish"))
 	}

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,8 +101,8 @@ public class OntologyConfiguration {
 
 	private boolean allowsCustomIdConfig = false;
 	private boolean allowsUpsertById = false;
+
 	private String customIdField;
-	private String ttlRetentionPeriod;
 
 	private String datasourceCatalog;
 	private String bucketName;
@@ -182,7 +182,7 @@ public class OntologyConfiguration {
 		}
 
 		customIdField = request.getParameter("customIdField");
-		ttlRetentionPeriod = request.getParameter("ttlRetentionPeriod");
+
 		// presto
 
 		datasourceCatalog = request.getParameter("datasourceCatalog");

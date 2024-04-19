@@ -58,12 +58,7 @@
   
       inicializeIncomingsEvents(); 
       //Added config filters to interactionService hashmap      
-      interactionService.registerGadgetFilters(vm.element.id,vm.config);
-      
-      if (!vm.element.toolsopts) {
-        vm.element.toolsopts = {}
-      }
-        
+      interactionService.registerGadgetFilters(vm.element.id,vm.config);      
     }
 
 
@@ -353,89 +348,6 @@ vm.elemntbadgesclass = function(){
       $scope.answer = function(answer) {
         $mdDialog.hide(answer);
       };
-    }
-
-    vm.openSaveAsPrebuildGadgetDialog = function (ev) {      
-      if(vm.eventedit){
-        vm.sendSelectEvent("saveAsPrebuildGadget",vm.element);
-        return;
-      }
-
-      $mdDialog.show({
-        controller: SaveAsPrebuildGadgetDialog,
-        templateUrl: 'app/partials/edit/saveAsPrebuildGadgetDialog.html',
-        parent: angular.element(document.body),
-        targetEvent: ev,
-        clickOutsideToClose:false,
-        multiple : true,
-        fullscreen: false, // Only for -xs, -sm breakpoints.
-        locals: {
-          element: vm.element
-        }
-      })
-      .then(function(answer) {
-      }, function() {
-        $scope.status = 'You cancelled the dialog.';
-      });
-    };
-
-    function SaveAsPrebuildGadgetDialog($scope, $mdDialog, httpService, utilsService, element) {
-      $scope.identification = "";
-      $scope.description = "";
-
-      $scope.element = element;
-
-      $scope.saveAsPrebuildGadget = function() {
-
-        var config = JSON.parse(JSON.stringify(utilsService.deepMerge(element.tparams,element.params)))
-
-        if (config.datasource && config.datasource.transforms) {
-          delete config.datasource.transforms
-        }
-
-        var gadget = {
-          "identification": $scope.identification,
-          "description": $scope.description,               
-          "config": JSON.stringify(config),
-          "gadgetMeasures": [],
-          "type": element.tempId,
-          "instance":true
-        }
-        if( element.datasource){     
-          gadget["datasource"]= {
-            "identification": element.datasource.name,
-            "query": element.datasource.query,
-            "refresh": element.datasource.refresh,
-            "maxValues": element.datasource.maxValues,
-            "description": element.datasource.description
-          }
-        }
-
-        httpService.createGadget(gadget).then(
-          function(response){
-            var config = {}
-            config.type = element.template;                 
-            config.params = element.params;
-            config.tparams = element.tparams;
-            config.gadgetid = response.data.id;
-            config.datasource = element.tparams.datasource;
-            window.dispatchEvent(new CustomEvent("newprebuildgadgetcreated",{detail: gadget}));
-            $scope.hide();
-          },
-          function(e){
-            console.log("Error create Custom Gadget: " +  JSON.stringify(e))
-          }
-        )
-      }
-
-      $scope.hide = function() {
-        $mdDialog.hide();
-      };
-
-      $scope.cancel = function() {
-        $mdDialog.cancel();
-      };
-
     }
 
     function EditGadgetDialog($scope, $timeout,$mdDialog,  element, contenteditor, httpService) {
@@ -1670,11 +1582,6 @@ $scope.hideFields = function(type){
         data.config = JSON.stringify(config);
         return data;
     }
-
-     //Method to download data as xlsx
-     vm.downloadData = function () {
-      vm.sendSelectEvent("downloadData_"+vm.element.id, {})
-     }
 
     vm.addFavoriteDialog = function (ev) {
       if(vm.eventedit){

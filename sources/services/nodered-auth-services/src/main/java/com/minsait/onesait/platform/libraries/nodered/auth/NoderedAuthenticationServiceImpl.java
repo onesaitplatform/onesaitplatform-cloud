@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class NoderedAuthenticationServiceImpl implements NoderedAuthenticationService {
 
+	private String proxyUrl;
 	@Value("${onesaitplatform.flowengine.services.request.timeout.ms:5000}")
 	private int restRequestTimeout;
 	@Value("${onesaitplatform.router.avoidsslverification:false}")
@@ -69,11 +70,13 @@ public class NoderedAuthenticationServiceImpl implements NoderedAuthenticationSe
 
 	@PostConstruct
 	public void init() {
+		proxyUrl = resourcesService.getUrl(Module.FLOWENGINE, ServiceUrl.ADVICE);
 		if (avoidSSLVerification) {
 			httpRequestFactory = SSLUtil.getHttpRequestFactoryAvoidingSSLVerification();
 		} else {
 			httpRequestFactory = new HttpComponentsClientHttpRequestFactory();
 		}
+
 		httpRequestFactory.setConnectTimeout(restRequestTimeout);
 	}
 
@@ -105,7 +108,7 @@ public class NoderedAuthenticationServiceImpl implements NoderedAuthenticationSe
 		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 		HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
 
-		String url = getProxyUrl() + domain + LOGIN_URL;
+		String url = proxyUrl + domain + LOGIN_URL;
 		try {
 			ResponseEntity<NoderedAuthenticationResult> result = restTemplate.postForEntity(url, request,
 					NoderedAuthenticationResult.class);
@@ -133,7 +136,7 @@ public class NoderedAuthenticationServiceImpl implements NoderedAuthenticationSe
 		}
 		RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
 
-		String url = getProxyUrl() + domain + CHECK_URL;
+		String url = proxyUrl + domain + CHECK_URL;
 		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
 		headers.add("Content-Type", "application/json");
 		headers.add("Authorization", "Bearer " + token);
@@ -142,14 +145,9 @@ public class NoderedAuthenticationServiceImpl implements NoderedAuthenticationSe
 					new HttpEntity<>(headers), String.class);
 			return responseEntity.getStatusCode() == HttpStatus.OK;
 		} catch (HttpClientErrorException e) {
-			if (log.isDebugEnabled()) {
-				log.debug("Token for domain {} is not valid.", domain);
-			}
+			log.debug("Token for domain " + domain + " is not valid.");
 			return false;
 		}
 	}
 
-	private String getProxyUrl() {
-		return resourcesService.getUrl(Module.FLOWENGINE, ServiceUrl.ADVICE);
-	}
 }

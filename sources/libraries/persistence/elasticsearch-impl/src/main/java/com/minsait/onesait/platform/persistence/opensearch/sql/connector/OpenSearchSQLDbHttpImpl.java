@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,12 +29,13 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.persistence.OpensearchEnabledCondition;
+import com.minsait.onesait.platform.persistence.opensearch.OpenSearchUtil;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.http.BaseHttpClient;
-import com.minsait.onesait.platform.persistence.opensearch.OpenSearchUtil;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
 
 import lombok.extern.slf4j.Slf4j;
+
 
 @Component
 @Lazy
@@ -42,7 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OpenSearchSQLDbHttpImpl implements OpenSearchSQLDbHttpConnector {
 	private static final String BUILDING_ERROR = "Error building URL";
-
+	
 	private String endpoint;
 	private String baseQueryObject;
 	private String queryPath;
@@ -63,19 +64,19 @@ public class OpenSearchSQLDbHttpImpl implements OpenSearchSQLDbHttpConnector {
 
 		@SuppressWarnings("unchecked")
 		final Map<String, Object> sql = (Map<String, Object>) elasticsearch.get("sql");
+		
+        String username = elasticsearch.get("username") != null ? (String) elasticsearch.get("username") : "";
+        String password = elasticsearch.get("password") != null ? (String) elasticsearch.get("password") : "";  		
 
-		String username = elasticsearch.get("username") != null ? (String) elasticsearch.get("username") : "";
-		String password = elasticsearch.get("password") != null ? (String) elasticsearch.get("password") : "";
-
-		authHeader = null;
-		if (!"".equals(username) && !"".equals(password)) {
-			String auth = username + ":" + password;
-			byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(StandardCharsets.UTF_8));
-			authHeader = "Basic " + new String(encodedAuth);
-
-			log.info("Setting OpenDistro basic authentication parameters {}", authHeader);
-		}
-
+        authHeader = null;
+        if (!"".equals(username) && !"".equals(password)) {        	    
+            String auth = username + ":" + password;
+            byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(StandardCharsets.UTF_8));
+            authHeader = "Basic " + new String(encodedAuth);
+            
+            log.info("Setting OpenDistro basic authentication parameters {}", authHeader);
+        }
+        
 		endpoint = (String) sql.get("endpoint");
 		baseQueryObject = (String) sql.get("baseQueryObject");
 		queryPath = (String) sql.get("queryPath");
@@ -86,7 +87,6 @@ public class OpenSearchSQLDbHttpImpl implements OpenSearchSQLDbHttpConnector {
 		final String url = buildUrl();
 		String body = query;
 		String res = null;
-		query = query.replaceAll("\\n", " ");
 		try {
 			if (scrollInit <= 0)
 				scrollInit = 0;
@@ -107,7 +107,7 @@ public class OpenSearchSQLDbHttpImpl implements OpenSearchSQLDbHttpConnector {
 			throw new DBPersistenceException(BUILDING_ERROR, e);
 		}
 		final StringBuilder bodyBuilder = new StringBuilder();
-		bodyBuilder.append("{\"" + baseQueryObject + "\": \"");
+		bodyBuilder.append("{\""+baseQueryObject+"\": \"");
 		bodyBuilder.append(body);
 		bodyBuilder.append("\"}");
 		log.info("Query to execute: {}", bodyBuilder.toString());
@@ -124,7 +124,6 @@ public class OpenSearchSQLDbHttpImpl implements OpenSearchSQLDbHttpConnector {
 		String url;
 		String body;
 		String res = null;
-		query = query.replaceAll("\\n", " ");
 		try {
 			url = buildUrl();
 			body = buildQuery(query, 0, limit, false);
@@ -132,13 +131,13 @@ public class OpenSearchSQLDbHttpImpl implements OpenSearchSQLDbHttpConnector {
 			log.error(BUILDING_ERROR, e);
 			throw new DBPersistenceException(BUILDING_ERROR, e);
 		}
-
+		
 		final StringBuilder bodyBuilder = new StringBuilder();
-		bodyBuilder.append("{\"" + baseQueryObject + "\": \"");
+		bodyBuilder.append("{\""+baseQueryObject+"\": \"");
 		bodyBuilder.append(body);
 		bodyBuilder.append("\"}");
-		final String result = httpClient.invokeSQLPlugin(url, bodyBuilder.toString(), HttpMethod.POST,
-				BaseHttpClient.ACCEPT_TEXT_CSV, null, authHeader);
+		final String result = httpClient.invokeSQLPlugin(url, bodyBuilder.toString(), HttpMethod.POST, BaseHttpClient.ACCEPT_TEXT_CSV,
+				null, authHeader);
 
 		res = OpenSearchUtil.parseElastiSearchResult(result, queryHasSelectId(query));
 		return res;
@@ -157,6 +156,7 @@ public class OpenSearchSQLDbHttpImpl implements OpenSearchSQLDbHttpConnector {
 		if (encode) {
 			params = URLEncoder.encode(params, "UTF-8");
 		}
+
 
 		return params;
 	}

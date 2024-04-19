@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ import com.minsait.onesait.platform.config.components.Urls;
 import com.minsait.onesait.platform.config.model.Configuration;
 import com.minsait.onesait.platform.config.model.Configuration.Type;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
-import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -55,9 +54,7 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 
 	private String profile;
 
-	private Map<String, Urls> urlsMap = new HashMap<>();
-	
-	//private Urls urls;
+	private Urls urls;
 
 	@Getter
 	private GlobalConfiguration globalConfiguration;
@@ -79,7 +76,7 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 		GIS_VIEWER("gisViewer"), REPORT_ENGINE("reportEngine"), OPEN_DATA("openData"), DATACLEANERUI("dataCleanerUI"),
 		LOGCENTRALIZER("logCentralizer"), KEYCLOAK_MANAGER("keycloakManager"), EDGE("edge"), MINIO("minio"),
 		PRESTO("presto"), PROMETHEUS("prometheus"), SERVERLESS("serverless"), MODELJSONLD("modeljsonld"),
-		NEBULA_GRAPH("nebula"), SPARK("spark"), DATALABELING("datalabeling"), TRACINGUI("tracingUI");
+		NEBULA_GRAPH("nebula"), SPARK("spark"), DATALABELING("datalabeling");
 
 		String moduleString;
 
@@ -99,14 +96,11 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 	public void getActiveProfile() {
 
 		profile = profileDetector.getActiveProfile();
-		//loadConfigurations();
-		loadGlobalConfigurations();
+		loadConfigurations();
 	}
 
 	@Override
 	public String getUrl(Module module, ServiceUrl service) {
-
-		final Urls urls = getUrls(); //Multitenant compatible
 		try {
 			switch (module) {
 			case CONTROLPANEL:
@@ -371,14 +365,6 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 				default:
 					break;
 				}
-			case TRACINGUI:
-				switch (service) {
-				case BASE:
-					return urls.getTracingUI().getBase();
-				default:
-					break;
-				}
-				break;
 			default:
 				break;
 			}
@@ -393,7 +379,6 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 	@Override
 	public Map<String, String> getSwaggerUrls() {
 		final Map<String, String> map = new HashMap<>();
-		final Urls urls = getUrls(); //Multitenant compatible
 		final String base = urls.getDomain().getBase();
 		String controlpanel = base.endsWith("/") ? base.concat("controlpanel") : base.concat("/controlpanel");
 		String iotbroker = base.endsWith("/") ? base.concat("iot-broker") : base.concat("/iot-broker");
@@ -425,22 +410,10 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 
 	@Override
 	public void reloadConfigurations() {
-		//loadConfigurations();
-		//Empty map so that new requests wil populate it
-		urlsMap = new HashMap<>();
+		loadConfigurations();
 	}
-	
-	private Urls getUrls() { 
-		final String vertical = MultitenancyContextHolder.getVerticalSchema();
-		if (!urlsMap.containsKey(vertical)) {
-			// load config for vertical
-			urlsMap.put(vertical, loadConfigurations());
-		}
-		return urlsMap.get(vertical);
-	}
-	
-	private Urls loadConfigurations() {
-		Urls urls;
+
+	private void loadConfigurations() {
 		try {
 			urls = configurationService.getEndpointsUrls(profile);
 		} catch (final Exception e) {
@@ -449,10 +422,6 @@ public class IntegrationResourcesServiceImpl implements IntegrationResourcesServ
 			urls = getConfigurationFromResource(ENDPOINTS_PREFIX_FILE + profile + YML_SUFFIX, ModulesUrls.class)
 					.getOnesaitplatform().get("urls");
 		}
-		return urls;
-	}
-	
-	private void loadGlobalConfigurations() {
 
 		globalConfiguration = configurationService.getGlobalConfiguration(profile);
 		if (globalConfiguration == null) {

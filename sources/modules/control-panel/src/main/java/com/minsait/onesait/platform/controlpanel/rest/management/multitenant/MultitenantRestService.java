@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,17 +98,6 @@ public class MultitenantRestService {
 		} else {
 			return ResponseEntity.ok().build();
 		}
-	}
-
-	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = String.class))))
-	@Operation(summary = "Replicates user")
-	@PostMapping("/users/{userId}/replicate")
-	@PreAuthorize("hasRole('ROLE_ADMINISTRATOR') or hasRole('ROLE_PLATFORM_ADMIN')")
-	public ResponseEntity<String> replicateUser(@PathVariable("userId") String userId,
-			@RequestParam("tenant") String tenant, @RequestParam String vertical) {
-		multitenancyService.replicateUser(userId, vertical, tenant);
-		return ResponseEntity.ok().build();
-
 	}
 
 	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content = @Content(schema = @Schema(implementation = UserInfoDTO[].class))))

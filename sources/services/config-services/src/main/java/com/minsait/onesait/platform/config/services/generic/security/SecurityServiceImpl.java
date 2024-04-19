@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,6 @@ public class SecurityServiceImpl implements SecurityService {
 	private static final String SETELEMENTUSERACCESSTYPE = "setAccessType";
 	private static final String EDITSTR = "EDIT";
 	private static final String VIEWSTR = "VIEW";
-	private static final String RUNSTR = "RUN";
 	private static final String METHOD_NOT_FOUND_ERROR = "Security service for {}, user: {}, method not found";
 	private static final String METHOD_ILLEGAL_ACCESS_ERROR = "Security service for {}, user: {}, invoke method illegal access";
 	private static final String METHOD_ILLEGAL_ARGUMENT_ERROR = "Security service for %s, user: %s, invoke method illegal argument";
@@ -113,9 +112,8 @@ public class SecurityServiceImpl implements SecurityService {
 		final Map<String, String> elemAccessMap = new HashMap<>();
 		final Class<?> entityUserAccessClass = getEntityClass(String.format(ENTITY_USER_ACCESS, type));
 		if (entityUserAccessClass == null) {// Not entity UserAccess Found for element security so we skip this
-			if (log.isDebugEnabled()) {
-				log.debug("Not entity UserAccess found: {}, skipping this security control", String.format(ENTITY_USER_ACCESS, type));
-			}			
+			log.debug("Not entity UserAccess found: " + String.format(ENTITY_USER_ACCESS, type)
+					+ ", skipping this security control");
 		} else {
 			final Repositories repositories = new Repositories(listableBeanFactory);
 			Object repositoryUserAccessBean;
@@ -187,8 +185,6 @@ public class SecurityServiceImpl implements SecurityService {
 			}
 			if (mratAccessType != null && mratAccessType == ProjectResourceAccess.ResourceAccessType.MANAGE) {
 				return EDITSTR;
-			} else if (meatAccessType != null && meatAccessType.equals(RUNSTR)) {
-				return RUNSTR;
 			} else if ((mratAccessType != null && mratAccessType == ProjectResourceAccess.ResourceAccessType.VIEW)
 					|| (meatAccessType != null && meatAccessType.equals(VIEWSTR))) {
 				return VIEWSTR;

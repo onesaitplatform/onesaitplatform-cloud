@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -216,9 +216,7 @@ public class OauthServerAuditableAspect extends BaseAspect {
 	public void auditCheckTokenEndpointException(Throwable exception, String token) {
 		log.error("Exception throwed in CheckTokenEndpoint.checkToken: {}, class: {}", exception.getMessage(),
 				exception.getClass().getName());
-		if (log.isDebugEnabled()) {
-			log.debug("Token was {}", token);
-		}		
+		log.debug("Token was {}", token);
 		eventProducer
 		.publish(auditProcessor.genetateErrorEvent(SYS_ADMIN, OAUTHSERVER_ERROR + " " + CHECK_MESSAGE_ID,
 				exception.getMessage(), OperationType.OAUTH_TOKEN_CHECK, exception.getMessage()));

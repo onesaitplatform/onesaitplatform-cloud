@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -223,8 +223,7 @@ public class TimescaleDBTimeSeriesProcessorImpl implements TimescaleDBTimeSeries
 			final JSONObject timestamp = (JSONObject) instanceData.get(TIMESTAMP_PROPERTY);
 			String formattedDate = (String) timestamp.get(SDATE);
 			// TODO: Round date to frequency
-			if (timeseriesOntology.getTimeSeriesTimescaleProperties().getFrecuencyUnit() != FrecuencyUnit.NONE
-					&& timeseriesOntology.getTimeSeriesTimescaleProperties().getFrecuencyUnit() != FrecuencyUnit.NODUPS) {
+			if (timeseriesOntology.getTimeSeriesTimescaleProperties().getFrecuencyUnit() != FrecuencyUnit.NONE) {
 
 				final SimpleDateFormat sdfSeconds = new SimpleDateFormat(FORMAT_WINDOW_SECONDS);
 				final Calendar calendar = Calendar.getInstance();
@@ -242,10 +241,8 @@ public class TimescaleDBTimeSeriesProcessorImpl implements TimescaleDBTimeSeries
 			}
 			// Process Instance
 			try {
-				if (log.isDebugEnabled()) {
-					log.debug("Process TimescaleDB timeserie for ontology {}",
+				log.debug("Process TimescaleDB timeserie for ontology {}",
 						timeseriesOntology.getOntology().getIdentification());
-				}				
 				DateTime dateTime = new DateTime(formattedDate);
 				params.put(TIMESTAMP_PROPERTY + index, new Timestamp(dateTime.getMillis()));
 				params.putAll(generateValueClauseForInstance(tags, fields, formattedDate, instanceData, index));

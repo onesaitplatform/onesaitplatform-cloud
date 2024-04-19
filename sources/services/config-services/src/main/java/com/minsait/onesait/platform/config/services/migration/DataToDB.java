@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,10 +110,8 @@ public class DataToDB {
 			final Instance inst = config.getInstance(i);
 			final Class<?> clazz = inst.getClazz();
 			final Serializable id = inst.getId();
-			if (log.isDebugEnabled()) {
-				log.debug("Loading class from file: {} id: {}", clazz.getName() ,id);
-			}
-			
+
+			log.debug("Loading class from file: " + clazz.getName() + " id: " + id);
 
 			if (!entities.exist(clazz, id)) {
 				if (OPResource.class.isAssignableFrom(clazz) || clazz.getName().equals(PROJECT)) {
@@ -255,9 +253,7 @@ public class DataToDB {
 			final String version = instanceData.get("numversion") != null ? instanceData.get("numversion").toString()
 					: null;
 			final Instance rootInstance = new Instance(clazz, id, identification, version);
-			if (log.isDebugEnabled()) {
-				log.debug("### getEntityFromData ### Instance: {}", rootInstance.toString());
-			}
+			log.debug("### getEntityFromData ### Instance: {}", rootInstance.toString());
 			for (final String fieldName : orderedFields) {
 				final Field field = allFields.get(fieldName);
 				if (!field.isAnnotationPresent(OneToMany.class)) {

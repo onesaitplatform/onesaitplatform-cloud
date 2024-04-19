@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,5 @@ public interface MapsMapService {
 	public List<MapsMap> getByIdentifier(String identification);
 
 	public MapsMap getById(String identification);
-
-	public MapsMap getByIdentificationANDUser(String identification, String userId);
 
 }

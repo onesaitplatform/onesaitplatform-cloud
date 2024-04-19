@@ -81,7 +81,6 @@
               return d.data[0]
             })
             datasourcefinal.callback = datasource.callback;
-            datasourcefinal.callbacks = datasource.callbacks;
           } else {
             datasourcefinal = datasource
           }

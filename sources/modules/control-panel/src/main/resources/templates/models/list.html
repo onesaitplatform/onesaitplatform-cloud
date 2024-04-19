@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -70,6 +70,12 @@
 									<input id="identification" th:placeholder="#{gen.identification}"  name="identification" class="form-control" type="text" maxlength="50" value=""/>
 								</div>
 							</div>
+							<!--<div class="col-md-3 col-sm-4 col-xs-12">
+								<div class="input-icon">
+									<i class="icon-search font-grey-mint"></i>
+									<input id="description" th:placeholder="#{gen.description}" name="description" class="form-control" type="text" maxlength="100" value=""/>
+								</div>
+							</div>-->
 							<div class="col-md-2 col-sm-4  col-xs-12 pull-right">
 								<div class="pull-right">
 									<button type="button" id="reset_model" name="reset_model" value="Reset" class="btn btn-outline-search" th:text="#{gen.resetBtn}"></button>
@@ -119,10 +125,54 @@
 								<div class="pull-right btn-group btn-title-group" id="divcreate" >
 									<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-primary button-plus-create" onclick="location.href='../models/create'" ><a><i class="icon-new" style="color:white;"></i></a></button>		
 								</div>							
+								<!--<div class="actions margin-right-20">
+									<div class="btn-group">									
+										<button id="search-toggle" type="button" class="btn btn-outline btn-circle blue" onclick="$('#searchFilter').toggleClass('hide')"><span th:text="#{gen.search}"> Search </span></button>									
+										<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" type="button" class="btn btn-outline btn-circle btn-primary" onclick="location.href='../models/create'" ><span th:text="#{gen.create}">New </span></button>									
+									</div>										
+								</div>-->								
 							</div>
 							<div class="portlet-body" style="display: block; height: auto;">
 							
 								<div class="row main">
+									<!--<div class="col-md-12 alert-zone">
+										// ALERT ZONE			
+									</div>-->
+									<!--<div class="col-md-12">
+									// SEARCH FORM 
+										<form id="form_model" class="" role="form" method="get">											
+											<div id="searchFilter" class="form-body hide" style="border-bottom: 1px solid #eef1f5;">
+												<div class="row">
+													<div class="col-md-2 col-sm-4 col-xs-12">
+														<div class="form-group">															
+															<div class="input-group">
+																<span class="input-group-addon">
+																	<i class="fa fa-tag font-grey-mint"></i>
+																</span>															
+																<input id="identification" th:placeholder="#{gen.identification}"  name="identification" class="form-control" type="text" maxlength="50" value=""/>
+															</div>
+														</div>
+													</div>
+													<div class="col-md-2 col-sm-4 col-xs-12">
+														<div class="form-group">															
+															<div class="input-group">
+																<span class="input-group-addon">
+																	<i class="fa fa-tag font-grey-mint"></i>
+																</span>
+																<input id="description" th:placeholder="#{gen.description}" name="description" class="form-control" type="text" maxlength="100" value=""/>
+															</div>
+														</div>
+													</div>
+													<div class="col-md-8 col-sm-4  col-xs-12">
+														<div class="btn-group margin-bottom-10">
+															<button type="button" id="search_model" name="search_model" th:title="#{gen.search}" class="btn btn-sm btn-outline btn-circle blue" th:text="#{gen.search}">Search</button>
+															<button type="button" id="reset_model" name="reset_model" value="Reset" class="btn  btn-sm btn-outline btn-circle blue" title="Reset"><i class="la la-refresh"></i>&nbsp;</button>
+														</div>
+													</div>
+												</div>
+											</div>										
+										<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" /></form>								
+									</div>-->
 									<!-- MODELS LIST -->
 									<div class="col-md-12">											
 										<div id="contenedor-tabla-outside" class="contiene hidden">																						
@@ -131,7 +181,6 @@
 												<table id="categories" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full">
 													<thead> 
 														<tr class="cabecera-tabla">
-															<th class="titulo-columnas" th:text="#{gen.id}">Id</th>
 															<th class="titulo-columnas" th:text="#{gen.identification}">Identification</th>
 															<th class="titulo-columnas" th:text="#{gen.description}">Description</th>
 															<th class="titulo-columnas">Notebook</th>
@@ -142,8 +191,6 @@
 													</thead>
 													<tbody th:remove="all-but-first">
 														<tr th:each="modelo : ${models}" pages:paginate="10">
-															<!-- ID -->
-															<td class="text-left no-wrap " th:text="${modelo.id}"></td>
 															<!-- IDENTIFICATION/NAME -->
 															<td class="text-left no-wrap " th:text="${modelo.identification}"></td>
 															<!-- DESCRIPTION -->
@@ -188,27 +235,23 @@
 												<a  class="dropdown-togglebtn btn-primary button-dropdown-table-columns"  data-toggle="dropdown" aria-expanded="false"  > <i class="icon-show-columns" ></i></a>
 													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="0"/>
-															<label th:text="#{gen.id}"> Id </label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="0" checked/>
 															<label th:text="#{gen.identification}"> Identification </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
 															<label th:text="#{gen.description}"> Description </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
 															<label> Notebook</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
 															<label th:text="#{gen.created}"> Created At</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
 															<label th:text="#{gen.updated}"> Updated At</label>
 														</span>
 													</div>
@@ -269,10 +312,6 @@
 		navigateUrl("/create/" + modelId);
 	}
 	
-	//$(window).on('pageshow', function(event) {
- 	//	 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  	//	 $.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-	//});	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 	
@@ -323,7 +362,10 @@
 			//$('#form_model')[0].submit(); 
 			$('#categories').DataTable().column(0).search( $('#identification').val()).draw();
 		});
-	
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).on("load",function(){ 
 		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 
 		var oTable = $('#categories').dataTable({
@@ -332,7 +374,8 @@
 		
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)		
 		//$.each([ 2,6,7 ],
-		$.each([ 0 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
+		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
 		// SHOW/HIDE DATATABLES COLUMN INIT
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));	
 		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		

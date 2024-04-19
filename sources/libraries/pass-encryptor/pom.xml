@@ -8,17 +8,22 @@
 		<version>${revision}</version>
 		<relativePath>../..</relativePath>
 	</parent>
+
 	<artifactId>onesaitplatform-pass-encryptor</artifactId>
 	<name>onesaitplatform-pass-encryptor</name>
 	<description>Password encryptor</description>
+
 	<properties>
 		<license.dir>${project.parent.basedir}</license.dir>
+
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -35,11 +40,12 @@
 			<artifactId>aspectjweaver</artifactId>
 			<version>1.9.8</version>
 		</dependency>
-		<dependency>
-			<groupId>org.aspectj</groupId>
-			<artifactId>aspectjtools</artifactId>
-			<version>1.9.8</version>
-		</dependency>
+		 <dependency>
+      <groupId>org.aspectj</groupId>
+      <artifactId>aspectjtools</artifactId>
+      <version>1.9.8</version>
+          
+    </dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-aop</artifactId>
@@ -60,16 +66,7 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	<repositories>
-		<repository>
-			<id>libs-milestones</id>
-			<name>libs Milestones</name>
-			<url>https://repo.spring.io/milestone</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
+
 	<build>
 		<plugins>
 			<plugin>

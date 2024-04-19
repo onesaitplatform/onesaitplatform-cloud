@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,15 +101,11 @@ public class FigmaFileUtils {
 			final String basePath = TMP_DIR + File.separator + userId + File.separator + JS_FOLDER;
 			log.debug("Creating DIRs");
 			fileUtils.createDirs(basePath);
-			if (log.isDebugEnabled()) {
-				log.debug("Unzipping {} to path {}", pathToZip, basePath);
-			}			
+			log.debug("Unzipping {} to path {}", pathToZip, basePath);
 			fileUtils.unzipToPath(pathToZip, basePath);
 			log.debug("Compiling templates");
 			compileTemplates(figmaSetUp, basePath);
-			if (log.isDebugEnabled()) {
-				log.debug("Zipping files to {}", basePath + File.separator + OUTPUT_ZIP);
-			}			
+			log.debug("Zipping files to {}", basePath + File.separator + OUTPUT_ZIP);
 			return fileUtils.zipFiles(basePath, TMP_DIR + File.separator + userId + File.separator + OUTPUT_ZIP);
 		} catch (final Exception e) {
 			log.error("Error while generating JS client", e);
@@ -249,9 +245,7 @@ public class FigmaFileUtils {
 	}
 
 	private void writeMustacheTemplate(String writePath, Map<String, Object> scopes) throws IOException {
-		if (log.isDebugEnabled()) {
-			log.debug("Compiling template {}", writePath);
-		}		
+		log.debug("Compiling template {}", writePath);
 		final String content = new String(Files.readAllBytes(Paths.get(writePath)));
 
 		try (Writer writer = new FileWriter(writePath)) {

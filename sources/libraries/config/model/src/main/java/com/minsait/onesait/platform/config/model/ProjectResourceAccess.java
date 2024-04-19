@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,26 +14,19 @@
  */
 package com.minsait.onesait.platform.config.model;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import com.minsait.onesait.platform.config.model.Project.ProjectType;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.versioning.VersioningIOService;
 
@@ -73,22 +66,14 @@ public class ProjectResourceAccess extends ProjectResourceAccessParent {
 	@Getter
 	@Setter
 	private User user;
-	
-	@Column(name = "ACCESS_ALL")
-	@Type(type = "org.hibernate.type.BooleanType")
-	@ColumnDefault("false")
-	@Getter
-	@Setter
-	private Boolean access_all;
-	
+
 	public ProjectResourceAccess(User user, ResourceAccessType access, OPResource resource, Project project,
-			AppRole appRole, Boolean access_all) {
+			AppRole appRole) {
 		super(access);
 		this.resource = resource;
 		this.project = project;
 		this.appRole = appRole;
 		this.user = user;
-		this.access_all= access_all;
 	}
 
 	@Override

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,15 @@
 package com.minsait.onesait.platform.config.services.ontology.dto;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import javax.persistence.Column;
+import javax.validation.constraints.NotNull;
+
 import org.apache.kafka.connect.data.Timestamp;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.Type;
 
 import com.minsait.onesait.platform.config.model.DataModel;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
@@ -78,14 +84,6 @@ public class OntologyTimeSeriesServiceDTO {
 
 	@Getter
 	@Setter
-	private String[] optionalFieldNames;
-
-	@Getter
-	@Setter
-	private String[] optionalFieldTypes;
-
-	@Getter
-	@Setter
 	private String[] fieldAggregations;
 
 	@Getter
@@ -108,6 +106,8 @@ public class OntologyTimeSeriesServiceDTO {
 	@Setter
 	private String[] deletepolicies;
 
+	// Timeseries fields
+
 	// ontology fields
 
 	@Getter
@@ -121,7 +121,7 @@ public class OntologyTimeSeriesServiceDTO {
 	@Getter
 	@Setter
 	private boolean allowsCreateTopic;
-
+	
 	@Getter
 	@Setter
 	private boolean allowsCreateNotificationTopic;
@@ -188,11 +188,12 @@ public class OntologyTimeSeriesServiceDTO {
 	@Getter
 	@Setter
 	private OntologyTimeseriesTimescaleProperties timeSeriesTimescaleProperties;
+	
 
 	@Getter
 	@Setter
 	private Set<OntologyTimeseriesTimescaleAggregates> timeSeriesTimescaleAggregates;
-
+	
 	@Getter
 	@Setter
 	private String[] buckettypes;
@@ -212,18 +213,18 @@ public class OntologyTimeSeriesServiceDTO {
 	@Getter
 	@Setter
 	private String compressionQuery;
-
-	@Getter
-	@Setter
-	private boolean supportsJsonLd;
-
-	@Getter
-	@Setter
-	private String jsonLdContext;
-
-	@Getter
-	@Setter
-	private boolean enableDataClass;
+	
+    @Getter
+    @Setter
+    private boolean supportsJsonLd;
+    
+    @Getter
+    @Setter
+    private String jsonLdContext;
+    
+    @Getter
+    @Setter
+    private boolean enableDataClass;
 
 	public void setTimeSeriesProperties() {
 		this.timeSeriesProperties = new HashSet<>();
@@ -262,17 +263,6 @@ public class OntologyTimeSeriesServiceDTO {
 					OntologyTimeSeriesProperty.AggregationFunction.valueOf(aggregationFunction));
 			otsproperty.setPropertyPushSignal(pushSignal);
 			this.timeSeriesProperties.add(otsproperty);
-		}
-		if (this.optionalFieldNames != null && this.rtdbDatasource.equals(RtdbDatasource.TIMESCALE.toString())) {
-			for (int i = 0; i < this.optionalFieldNames.length; i++) {
-				name = this.optionalFieldNames[i];
-				datatype = this.optionalFieldTypes[i];
-				otsproperty = new OntologyTimeSeriesProperty();
-				otsproperty.setPropertyType(PropertyType.FIELD_OPTIONAL);
-				otsproperty.setPropertyDataType(OntologyTimeSeriesProperty.PropertyDataType.valueOf(datatype));
-				otsproperty.setPropertyName(name);
-				this.timeSeriesProperties.add(otsproperty);
-			}
 		}
 	}
 
@@ -321,9 +311,6 @@ public class OntologyTimeSeriesServiceDTO {
 		if (this.freqtypes[0].equalsIgnoreCase("NONE")) {
 			ontologyTimescaleProperties.setFrecuency(0);
 			ontologyTimescaleProperties.setFrecuencyUnit(OntologyTimeSeriesWindow.FrecuencyUnit.valueOf("NONE"));
-		} else if (this.freqtypes[0].equalsIgnoreCase("NODUPS")) {
-			ontologyTimescaleProperties.setFrecuency(0);
-			ontologyTimescaleProperties.setFrecuencyUnit(OntologyTimeSeriesWindow.FrecuencyUnit.valueOf("NODUPS"));
 		} else {
 			int freqnum = Integer.parseInt(this.freqtypes[0].trim().split(" ")[0]);
 			String frequnit = this.freqtypes[0].trim().split(" ")[1];
@@ -335,25 +322,31 @@ public class OntologyTimeSeriesServiceDTO {
 		// Compression
 		ontologyTimescaleProperties.setCompressionActive(compressionActive);
 		int compressionAfter = 0;
-		String compressionUnit = "DAYS";
+		String compressionUnit = "days";
 		if (compressionActive) {
-			compressionAfter = Integer.parseInt(this.compressionConfig.trim().split("_")[0]);
-			compressionUnit = this.compressionConfig.trim().split("_")[1];
+			compressionAfter = Integer.parseInt(this.compressionConfig.trim().split(" ")[0]);
+			compressionUnit = this.compressionConfig.trim().split(" ")[1];
+			if (!compressionUnit.endsWith("s")) {
+				compressionUnit = compressionUnit + "s";
+			}
 		}
 		ontologyTimescaleProperties.setCompressionAfter(compressionAfter);
-		ontologyTimescaleProperties.setCompressionUnit(RetentionUnit.valueOf(compressionUnit));
+		ontologyTimescaleProperties.setCompressionUnit(RetentionUnit.valueOf(compressionUnit.toUpperCase()));
 		ontologyTimescaleProperties.setCompressionQuery(compressionQuery);
 		// Deletion
 		ontologyTimescaleProperties.setRetentionActive(rtdbClean);
 		int retentionBefore = 0;
-		String retentionUnit = "DAYS";
+		String retentionUnit = "days";
 		if (rtdbClean) {
-			retentionBefore = Integer.parseInt(this.rtdbCleanLapse.trim().split("_")[0]);
-			retentionUnit = this.rtdbCleanLapse.trim().split("_")[1];
+			retentionBefore = Integer.parseInt(this.rtdbCleanLapse.trim().split(" ")[0]);
+			retentionUnit = this.rtdbCleanLapse.trim().split(" ")[1];
+			ontologyTimescaleProperties.setRetentionBefore(retentionBefore);
+			if (!retentionUnit.endsWith("s")) {
+				retentionUnit = retentionUnit + "s";
+			}
 		}
-		ontologyTimescaleProperties.setRetentionBefore(retentionBefore);
-		ontologyTimescaleProperties.setRetentionUnit(RetentionUnit.valueOf(retentionUnit));
+		ontologyTimescaleProperties.setRetentionUnit(RetentionUnit.valueOf(retentionUnit.toUpperCase()));
 		return ontologyTimescaleProperties;
 	}
-
+	
 }

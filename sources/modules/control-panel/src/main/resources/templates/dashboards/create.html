@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -119,23 +119,31 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${owner}) AND ${dashboard?.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='DashboardsCreateController.deleteDashboard(\''+${dashboard.id}+'\');'"><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
-									
-									<span class="sep" th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${owner}) AND ${dashboard?.id} != null"></span>
+									<button th:if="${dashboard.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='DashboardsCreateController.deleteDashboard(\''+${dashboard.id}+'\');'"><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+									<span class="sep" th:if="(${dashboard.id} != null)"></span>
 										
 									<!-- CANCEL -->											
 									<button	id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:DashboardsCreateController.cancel(\''+${dashboard.id}+'\',\'' + @{/dashboards/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
 
-									<span class="sep no-border" th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${owner}) AND ${dashboard?.id} != null"></span>
+									<span class="sep no-border" th:if="(${dashboard.id} != null)"></span>
 									
 									<!-- RESET create -->
-									<button id="resetBtn" type="button" th:if="${dashboard.id} == null " class="btn btn-primary-cancel" name="reset" th:value="#{gen.resetBtn}"><span th:text="#{gen.resetBtn}"> Reset</span></button>
+									<button id="resetBtn" type="button" th:if="${dashboard.id} == null " 
+										class="btn btn-primary-cancel" name="reset"									
+										th:value="#{gen.resetBtn}">
+										 <span th:text="#{gen.resetBtn}"> Reset</span>
+									</button>
 									<!-- RESET authorizations-->
-									<button id="resetBtn" disabled="true" type="button" th:if="${dashboard.id} != null" class="btn btn-primary-cancel" name="reset"	th:value="#{gen.resetBtn}"><span th:text="#{gen.resetBtn}"> Reset</span></button>
+									<button id="resetBtn" disabled="true" type="button" th:if="${dashboard.id} != null" 
+										class="btn btn-primary-cancel" name="reset"
+										
+										th:value="#{gen.resetBtn}">
+										 <span th:text="#{gen.resetBtn}"> Reset</span>
+									</button>
 									<!-- CREATE -->
 									<button th:if="${dashboard.id} == null" id="createBtn" type="submit" class="btn btn-primary btn-primary-save" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>	
 									<!-- UPDATE -->
-									<button th:if="${dashboard.id} != null AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${owner} OR ${app_user_access.name()} =='MANAGE')" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>								
+									<button th:if="${dashboard.id} != null" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>								
 								</div>
 							</div>
 						</div>
@@ -179,17 +187,16 @@
 																	<span></span>
 																</label>
 															</div>
-
 															<label id="imageText" class="control-label" th:text="#{dashboards.image}">Image</label>
 															<div class="clearfix"></div>
 															<div id="imageShow" th:style="*{hasImage} ? 'display:block' : 'display:none'">
 																<button id="removeImgBtn" type="button" class="btn btn-sm btn-outline red-sunglo" name="removeImgBtn" onclick="manageImg()"><i class="fa fa-times"></i> <span th:text="#{gen.deleteBtn} + ' ' + #{dashboards.image}"> Delete Image</span></button>
 																<img id="showedImg" th:if="*{hasImage}" th:src="@{/dashboards/} + ${dashboard.id + '/getImage'}" class="img-responsive thumbnail" style="max-height: 135px; margin-top: 10px;"/>
-																<img id="showedImg" th:if="not *{hasImage}" th:src="@{/img/DASHBOARD.png}" class="img-responsive thumbnail" style="max-height: 135px; margin: 20px auto;"/>
+																<img id="showedImg" th:if="not *{hasImage}" th:src="@{/img/APPLICATION.png}" class="img-responsive thumbnail" style="max-height: 135px; margin: 20px auto;"/>
 															</div>
 															<div id="imageForm" th:style="*{hasImage} ? 'display:none' : 'display:block'">
 																<input id="image" class="btn btn-default" type="file" th:field="*{image}" onchange="DashboardsCreateController.validateImageSize();" style="width:100%" th:style="${dashboard.generateImage} == true ? 'display:none'"/>
-																<img id="showedImgPreview" class="img-responsive thumbnail" th:src="@{/img/DASHBOARD.png}" style="max-height: 135px;  margin-top: 10px;"/>
+																<img id="showedImgPreview" class="img-responsive thumbnail" th:src="@{/img/APPLICATION.png}" style="max-height: 135px;  margin-top: 10px;"/>
 															</div>															
 														</div>
 										</div>	
@@ -273,14 +280,7 @@
 													<select id="dashboardConfId" class="form-control selectpicker" data-size="5" data-live-search="true" data-width="100%" th:field="*{dashboardConfId}" onchange="updateHeaderLibs()"  >
 														<option th:each="schema :${schema}" th:value="${schema.id}" th:text="${schema.identification} +' (' + ${schema.description} + ')'" ></option>
 												</select>
-												
-												
 											</div>
-											</div>
-											<div class="col-md-3 col-sm-6 col-xs-12" th:if="*{identification == null}">
-											<div class="form-group" style="margin-top: 25px;">
-											<button  id="restoreStyleBtn" onclick="updateHeaderLibs()" type="button" class="btn btn-secondary"  th:value="#{gen.restoreStyleBtn}" ><span th:text="#{gen.restoreStyleBtn}"> Restore Initial Style</span></button>	
-											</div>	
 										</div>	
 									</div>
                                
@@ -532,7 +532,6 @@
 	
 	$( document ).ready(function() {
 		handleTabsChange();
-		updateHeaderLibs();
 		if(dashboardCreateJson.actionMode!=null){
 			if(category!=null){
 				 getSubcategories();
@@ -545,7 +544,6 @@
 			});
 			$("#i18n").selectpicker("refresh"); 
 		}
-		updateHeaderLibs();
 	});
 
 	 
@@ -566,14 +564,14 @@
 			
 			$('#image').val(null);
 			$('#hasImage').val(false);
-			$('#showedImgPreview').attr('src','/controlpanel/img/DASHBOARD.png');
+			$('#showedImgPreview').attr('src','/controlpanel/img/APPLICATION.png');
 			
 		} else {
 			
 				
 				$('#image').val(null);
 				$('#hasImage').val(false);
-				$('#showedImgPreview').attr('src','/controlpanel/img/DASHBOARD.png');
+				$('#showedImgPreview').attr('src','/controlpanel/img/APPLICATION.png');
 				manageImg();
 			
 			if($('#checkboxGenerateImage').prop('checked') == true) {
@@ -633,10 +631,10 @@
 
  	function updateHeaderLibs(){ 		
  		var schema = [[${schema}]];  		
- 		if(schema!=null && typeof schema !='undefined' && schema.length>0 && $('#dashboardConfId').val()!==null && $('#dashboardConfId').val()!== undefined ){
+ 		if(typeof schema !='undefined' && schema.length>0 && $('#dashboardConfId').val()!==null && $('#dashboardConfId').val()!== undefined ){
  			for(var i = 0;i<schema.length;i++){
  				if(schema[i].id === $('#dashboardConfId').val()){
- 					if(schema[i].headerlibs === null || typeof schema[i].headerlibs==='undefined'){
+ 					if(schema[i].headerlibs === null){
  						DashboardsCreateController.getCodeMirror().setValue("");
  					}else{
  						DashboardsCreateController.getCodeMirror().setValue(schema[i].headerlibs);
@@ -645,6 +643,7 @@
  			}
  		}
  	}
+ 	
  	
  	
  	

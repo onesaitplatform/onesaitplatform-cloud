@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -51,8 +50,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.GenericFilterBean;
 
 import com.microsoft.sqlserver.jdbc.StringUtils;
-import com.minsait.onesait.platform.business.services.datasources.exception.DashboardEngineException;
 import com.minsait.onesait.platform.config.model.security.UserPrincipal;
+import com.minsait.onesait.platform.exception.DashboardEngineException;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.config.services.MultitenancyService;
 import com.minsait.onesait.platform.multitenant.util.BeanUtil;
@@ -220,12 +219,7 @@ public class CustomFilter extends GenericFilterBean {
 
 		final UserDetails user = userDetailsService.loadUserByUsername(userId);
 		final Authentication auth = new UsernamePasswordAuthenticationToken(user, token, user.getAuthorities());
-		// SecurityContextHolder.getContext().setAuthentication(auth);
-		
-		// To avoid concurrency problem where getUser returns null: https://docs.spring.io/spring-security/site/docs/5.2.11.RELEASE/reference/html/overall-architecture.html#:~:text=concurrent%20requests%20in%20a%20single%20session
-		SecurityContext context = SecurityContextHolder.createEmptyContext();
-		context.setAuthentication(auth);
-		SecurityContextHolder.setContext(context);
+		SecurityContextHolder.getContext().setAuthentication(auth);
 	}
 
 	private void generateSecurityContextAuthenticationAnonymous() {
@@ -235,12 +229,7 @@ public class CustomFilter extends GenericFilterBean {
 				MultitenancyContextHolder.getVerticalSchema(), MultitenancyContextHolder.getTenantName());
 		final Authentication auth = new UsernamePasswordAuthenticationToken(user, AUTH_VALUE_ANONYMOUS,
 				grantedAuthorities);
-//		SecurityContextHolder.getContext().setAuthentication(auth);
-		
-		// To avoid concurrency problem where getUser returns null: https://docs.spring.io/spring-security/site/docs/5.2.11.RELEASE/reference/html/overall-architecture.html#:~:text=concurrent%20requests%20in%20a%20single%20session
-		SecurityContext context = SecurityContextHolder.createEmptyContext();
-		context.setAuthentication(auth);
-		SecurityContextHolder.setContext(context);
+		SecurityContextHolder.getContext().setAuthentication(auth);
 	}
 
 	private void setMultitenantContext() {

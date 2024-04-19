@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -137,7 +137,6 @@
 										<span class="btn color-blue" data-container="body" data-placement="bottom" onclick="$('#statefilter').toggleClass('hide');turnFirstOptionToGrey();" style="padding:0"><i class="icon-filter"></i></span>
 										<span id="statefilter" class="hide" style="display:inline-block" > </span>
 										<span class="separator"></span>
-										<button th:if="${graviteeOn}" sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" id="graviteeIM" type="button" class="btn btn-outline blue dialog btn-no-border" th:attr="onclick='javascript:recreateIM();'" style="margin-left:15px"><span th:text="#{apimanager.gravitee.recreate.im}"> IM </span></button>
 										<button id="tokenBtn" type="button" class="btn btn-outline blue dialog btn-no-border" th:attr="onclick='javascript:navigateUrl(\'' + @{|/apimanager/token/list|} + '\');'" style="margin-left:15px"><span th:text="#{apimanager.usertoken}"> Token </span></button>
 										<button sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR')" id="cacheBtn" type="button" class="btn btn-outline blue dialog btn-no-border" onclick="clearCache()"><span th:text="#{apimanager.clearcache}"> Clear Cache </span></button>
 										<div class="pull-right btn-group " id="divcreate" style="margin-left:30px;">
@@ -148,12 +147,6 @@
 							<div class="portlet-body" style="display: block; height: auto;">
 
 								<div class="row main">
-									
-									<div class="row main" id="pulsepanel" style="display:flex; height: 50%;">
-										<div id="pulse" class="col-md-12">
-											<div class="pulsating-circle"></div>
-										</div>
-									</div>
 
 									<!-- USER LIST -->
 									<div class="col-md-12">
@@ -163,23 +156,20 @@
 												<table id="apis" class="table table-hover table-striped" dt:table="true"  dt:paginationtype="full">
 													<thead>
 														<tr class="cabecera-tabla">
-															<th class="titulo-columnas text-left" ><span th:text="#{gen.id}"> id </span></th>
 															<th class="titulo-columnas text-left" ><span th:text="#{apimanager.image}"> image </span></th>
 															<th class="titulo-columnas text-left" ><span th:text="#{apimanager.id} + ' - ' + #{apimanager.numversion}">Identification</span><span ></span></th>
-															<th class="titulo-columnas text-left" ><span th:text="#{gen.owner}" >Name</span></th>
 															<th class="titulo-columnas text-left "  ><span th:text="#{apimanager.description}">Description</span></th>
-															<th class="titulo-columnas text-left"><span th:text="#{gen.public}">Public</span></th>
-															<th class="titulo-columnas text-left"><span th:text="#{apimanager.state}" >State</span></th>
 															<th class="titulo-columnas text-left" > <span th:text="#{gen.created}">Created At</span></th>
 															<th class="titulo-columnas text-left" > <span th:text="#{gen.updated}">Updated At</span></th>
+															<th class="titulo-columnas text-left"><span th:text="#{gen.public}">Public</span></th>
+															<th class="titulo-columnas text-left" ><span th:text="#{gen.owner}" >Name</span></th>
+															<th class="titulo-columnas text-left"><span th:text="#{apimanager.state}" >State</span><span   ></span></th>
 															<th class="titulo-columnas text-center" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
 														</tr>
 
 													</thead>
 													<tbody th:remove="all-but-first">
 														<tr th:each="api : ${apis}" pages:paginate="10">
-															<!-- ID -->
-															<td class="text-left no-wrap text-truncate-md" th:text="${api.id}"></td>
 															<!-- IMAGE -->
 															<td class="text-left no-wrap">
 																<img class="img-responsive thumbnail" style="max-width: 125px; margin-bottom: 0px;" th:if="${not #lists.isEmpty(api.image)}" th:src="@{${api.id} + '/getImage'}" />
@@ -187,21 +177,21 @@
 															</td>
 															<!-- IDENTIFICATION - VERSION -->
 															<td class="text-left no-wrap" th:text="${api.identification} + ' - V' + ${api.numversion}"></td>
-															<!-- OWNER -->
-															<td class="text-left no-wrap " th:text="${api.user.userId}"></td>
 															<!-- DESCRIPTION -->
 															<td class="text-left no-wrap text-truncate-md" th:text="${api.description}"></td>
-															<!-- PUBLIC -->
-															<td class="text-left" th:if="${api.public}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"></i><span th:text="' '+#{gen.public}" style="color: #2E6B33;"></span></td>
-															<td class="text-left" th:if="${!api.public}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.private}" style="color: #A73535;"></span></td>
-															<!-- STATE -->
-															<td class="text-left no-wrap " th:text="#{apimanager.state.__${api.state}__}"></td>
 															<!-- DATE -->
 															<td class="text-left" th:if="${api.createdAt!=null}"><span th:text="${#dates.format(api.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(api.createdAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${api.createdAt==null}" th:text="'---'"></td>
 															<!-- UPDATE -->
 															<td class="text-left" th:if="${api.updatedAt!=null}"><span th:text="${#dates.format(api.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(api.updatedAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${api.updatedAt==null}" th:text="'---'"></td>
+															<!-- PUBLIC -->
+															<td class="text-left" th:if="${api.public}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"></i><span th:text="' '+#{gen.public}" style="color: #2E6B33;"></span></td>
+															<td class="text-left" th:if="${!api.public}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.private}" style="color: #A73535;"></span></td>
+															<!-- OWNER -->
+															<td class="text-left no-wrap " th:text="${api.user.userId}"></td>
+															<!-- STATE -->
+															<td class="text-left no-wrap " th:text="#{apimanager.state.__${api.state}__}"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
@@ -214,8 +204,6 @@
 																<span th:if="!(${api.graviteeId} AND ${graviteeOn}) AND !((((${#authentication.name} == ${api.user.userId}) OR (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR')) AND (${api.state.name() == 'CREATED'} OR ${api.state.name() == 'DEVELOPMENT'} OR ${api.state.name() == 'PUBLISHED'})))" disabled  class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-container="body" data-placement="bottom" th:title="#{gen.edit}" th:data-original-title="#{gen.edit}"><i class="icon-edit"></i></span>
 
 																<!-- GRAVITEE IO-->
-																<span th:if="${api.graviteeId} AND ${!api.isSync}" th:title="#{apimanager.gravitee.sync}" class="btn btn-xs btn-no-border icon-on-table color-blue tooltips" data-container="body" data-placement="bottom" th:data-original-title="#{apimanager.gravitee.sync}" th:attr="onclick='javascript:deployGraviteeAPI(\'' + ${api.id} + '\');'"><i class="la la-sync"></i></span>
-																
 																<span th:if="${api.graviteeId} AND ${graviteeOn}" class="dropdown">
 																	<span   class="btn btn-xs btn-no-border color-blue icon-on-table tooltips"   th:title="#{apimanager.gravitee}" th:data-original-title="#{apimanager.gravitee}" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-gravitee"></i></span>
 																	<!--<i class="icon-gravitee dropdown-toggle" data-toggle="dropdown"></i><span class="span-title-three-dots-icons" th:text="#{apimanager.gravitee}" > Gravitee Stats</span>
@@ -300,42 +288,35 @@
 													<div id="column_toggler" data-container="body" class="dropdown-menu hold-on-click pull-right">
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="0"/>
-															<label th:text="#{gen.id}"> ID </label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="1"/>
 															<label th:text="#{apimanager.image}"> Image </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
 															<label th:text="#{apimanager.id} + ' - ' + #{apimanager.numversion}"> Id + Version </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
-															<label th:text="#{gen.owner}"> Owner</label>
-														</span>	
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="4"/>
+															<input class="toggle-vis" type="checkbox" data-column="2"/>
 															<label th:text="#{apimanager.description}"> Description</label>
 														</span>
-														
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<label th:text="#{gen.created}"> Created At</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+															<label th:text="#{gen.updated}"> Updated At</label>
+														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 															<label th:text="#{gen.public}"> Public</label>
 														</span>
-													<span class="checkbox-column">
+														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
-															<label th:text="#{apimanager.state}"> State</label>
-														</span>
+															<label th:text="#{gen.owner}"> Owner</label>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="7" checked/>
-															<label th:text="#{gen.created}"> Created At</label>
+															<label th:text="#{apimanager.state}"> State</label>
 														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="8" checked/>
-															<label th:text="#{gen.updated}"> Updated At</label>
-														</span>
-														
 													</div>
 												</div>
 											</div>
@@ -484,16 +465,6 @@
 	var apisToMount = [];
 
 	function navigateUrl(url){  window.location.href = url;	}
-	
-	function recreateIM(){
-		$.ajax({
-		    url: '/controlpanel/apimanager/gravitee/im/recreate',
-		    type: 'GET',
-		    success: function() {
-		    	navigateUrl('/controlpanel/apimanager/list');
-		    }
-		});
-	}
 
 	// DELETE API
 	function deleteApi(id){
@@ -534,12 +505,7 @@
 						    type: 'DELETE',
 						    success: function(result) {
 						    	console.log(result);
-						    	if(result == "/controlpanel/apimanager/list"){
-									navigateUrl('/controlpanel/apimanager/list');
-								} else {
-								 	toastr.error(result);	
-								}
-						    	
+						    	navigateUrl('/controlpanel/apimanager/list');
 						    }
 						});
 					}
@@ -559,6 +525,7 @@
 		apisToMount.push(item);
 		mountClientGenTable();
 		$('.btn-generate').prop( "disabled", false );
+
 	}
 
 	removeAPIFromTable = (obj) => {
@@ -577,6 +544,7 @@
 		$('#alert-apis-modal').removeClass('hide');
 		$('#client-generation').addClass('hide');
 		$('.btn-generate').prop( "disabled", true );
+
 	}
 
 	mountClientGenTable = () =>{
@@ -596,7 +564,6 @@
 		$('#client-generation').removeClass('hide');
 		$('#client-generation').attr('data-loaded',true);
 	}
-	
 	function navigateWindow(url){ window.open(url,'_blank');	}
 
 	function clearCache(){
@@ -644,6 +611,7 @@
 						});
 					}
 				}
+
 			}
 		});
 	}
@@ -697,7 +665,48 @@
 	}
 
 	// MAIN WHEN READY
-	
+	$( document ).ready(function() {
+
+
+		//SHOW/HIDE DATATABLE COLUMNS HANDLER
+		$('input.toggle-vis').on( 'change', function (e) {
+			e.preventDefault();
+			// Get the column API object
+			var column = $('#apis').DataTable().column( $(this).attr('data-column') );
+			// Toggle the visibility
+			column.visible( ! column.visible() );
+			// toggle Text
+			//$(this).toggleClass('text-muted line-through');
+		});
+
+
+		// SEARCH FORM RESET
+		$('#reset_api').on('click',function(){
+			$('#form_api')[0].reset();
+			$('#form_api')[0].submit();
+		});
+
+		// SEARCH FORM
+		$('#search_api').on('click',function(){ $('#form_api')[0].submit(); });
+
+
+		//Stretchy
+	   loadStretchy();
+
+	   $('.btn-client-gen').each(function() {
+			$(this).on('click', function (e) {
+				e.preventDefault();
+				var id = $(this).data('id');
+				resetTable();
+				$("#clientGenModal").modal('show');
+			});
+		});
+
+	   $('.btn-generate').off().on('click', function(e){
+		   generateClientRequest();
+	   })
+	});
+
 	generateClientRequest = () =>{
 		var framework = $('#framework').val();
 		var ids = []
@@ -723,21 +732,14 @@
 		// You should set responseType as blob for binary responses
 		xhttp.responseType = 'blob';
 		xhttp.send(JSON.stringify(ids));
+
+
+
 	}
 
 	function turnFirstOptionToGrey(){
 		$(".yadcf-filter").css('color','grey');
 		$(".yadcf-filter option").css('color','black');
-	}
-	
-	function deployGraviteeAPI(apiId){
-		fetch(`/controlpanel/api/apis/${apiId}/gravitee/deploy`,
-			{
-				'method': 'POST'
-				
-			}		
-		).then(r => window.location.reload());
-		
 	}
 
 	//CLONE
@@ -803,47 +805,15 @@
 		});
 	}
 
-	$( document ).ready(function() {
-
-		//SHOW/HIDE DATATABLE COLUMNS HANDLER
-		$('input.toggle-vis').on( 'change', function (e) {
-			e.preventDefault();
-			// Get the column API object
-			var column = $('#apis').DataTable().column( $(this).attr('data-column') );
-			// Toggle the visibility
-			column.visible( ! column.visible() );
-			// toggle Text
-			//$(this).toggleClass('text-muted line-through');
-		});
-
-		// SEARCH FORM RESET
-		$('#reset_api').on('click',function(){
-			$('#form_api')[0].reset();
-			$('#form_api')[0].submit();
-		});
-
-		// SEARCH FORM
-		$('#search_api').on('click',function(){ $('#form_api')[0].submit(); });
-
-		//Stretchy
-	   loadStretchy();
-
-	   $('.btn-client-gen').each(function() {
-			$(this).on('click', function (e) {
-				e.preventDefault();
-				var id = $(this).data('id');
-				resetTable();
-				$("#clientGenModal").modal('show');
-			});
-		});
-
-	   $('.btn-generate').off().on('click', function(e){
-		   generateClientRequest();
-	   })
-	   
+	// MAIN WHEN LOAD
+	$(window).on("load",function(){
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
 		var oTable = $('#apis').DataTable({
 	      "bAutoWidth": false
 	      });
+
+		// SHOW/HIDE DATATABLES COLUMN INIT
+		$.each([ 0,2,8 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('change'); });
 
 		//TABLE STYLES
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));
@@ -881,8 +851,11 @@
 		});
 
 		yadcf.init(oTable, [
-			    {column_number : 6, filter_type: "select",filter_container_id:"statefilter",filter_default_label: [[#{apimanager.state}]]}
+			    {column_number : 7,   filter_type: "select",filter_container_id:"statefilter",filter_default_label: [[#{apimanager.state}]]}
 			  ]);
+
+
+		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)
 
         var filtersResets = $('.yadcf-filter-reset-button');
 	    filtersResets.html('<i class="icon-delete"></i>');
@@ -899,13 +872,11 @@
 				$(".yadcf-filter").css('color','black');
 			}
 		});
-		
-		// HIDE COLUMNS (DESCRIPTION, DATAMODEL AND CREATEDAT)
-		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		$.each([ 0,1,4 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-		
-		HeaderController.unblockListTable("contenedor-tabla-outside");
+		$("#contenedor-tabla-outside").removeClass("hidden");
+
 	});
+
+
 
 	</script>
 

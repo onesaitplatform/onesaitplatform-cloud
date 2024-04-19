@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.core.ParameterizedTypeReference;
@@ -48,8 +47,6 @@ public class GitlabRestService extends GitRestService {
 	private static final String GITLAB_PROJECTS = "/projects";
 	private static final String GITLAB_GROUPS = "/groups";
 	private static final String USERNAME_STR = "username";
-	private static final String REPOSITORY_TREE = "/repository/tree";
-	private static final String REPOSITORY_FILES = "/repository/files";
 
 	@Override
 	public GitlabConfiguration getGitlabConfigurationFromPrivateToken(String url, String privateToken) {
@@ -174,9 +171,7 @@ public class GitlabRestService extends GitRestService {
 				+ "\", \"visibility\":\"private\"}";
 		int namespaceId = 0;
 		if (name.contains("/")) {
-			if (log.isDebugEnabled()) {
-				log.debug("parsing subgroups for {}", name);
-			}
+			log.debug("parsing subgroups for {}", name);
 			final String[] subgroups = name.split("/");
 			final String directParentGroup = name.substring(0,
 					name.length() - subgroups[subgroups.length - 1].length() - 1);
@@ -282,14 +277,14 @@ public class GitlabRestService extends GitRestService {
 			}
 
 			String url = gitConfiguration.getSite() + GITLAB_API_PATH + GITLAB_PROJECTS + "/"
-					+ getProjectId(gitConfiguration.getSite(), projectFullpath, gitConfiguration.getPrivateToken())
-					+ "/repository/commits" + "?path=" + URLEncoder.encode(filePath, StandardCharsets.UTF_8.name());
+					+ getProjectId(gitConfiguration.getSite(), projectFullpath, gitConfiguration.getPrivateToken()) + "/repository/commits"
+					+ "?path=" + URLEncoder.encode(filePath, StandardCharsets.UTF_8.name());
 			if (StringUtils.hasText(branch)) {
 				url = url + "&ref_name=" + URLEncoder.encode(branch, StandardCharsets.UTF_8.name());
 			}
 			final ResponseEntity<List<CommitWrapper>> response = execute(url, HttpMethod.GET, null,
 					gitConfiguration.getPrivateToken(), new ParameterizedTypeReference<List<CommitWrapper>>() {
-					});
+			});
 
 			return response.getBody();
 		} catch (final UnsupportedEncodingException e) {
@@ -323,54 +318,6 @@ public class GitlabRestService extends GitRestService {
 					e.getResponseBodyAsString());
 			throw e;
 		}
-	}
-
-	@Override
-	public List<String> getRepoDirectories(GitlabConfiguration gitConfiguration, String branch) {
-		if (gitConfiguration.getSite() == null) {
-			gitConfiguration.setSite(getSiteFromProjectURL(gitConfiguration.getProjectURL()));
-		}
-		final int projectId = getProjectId(gitConfiguration.getSite(),
-				getProjectPathFromURL(gitConfiguration.getProjectURL()), gitConfiguration.getPrivateToken());
-		try {
-			final List<String> directories = new ArrayList<>();
-			final ResponseEntity<JsonNode> response = sendHttp(
-					gitConfiguration.getSite() + GITLAB_API_PATH + GITLAB_PROJECTS + "/" + projectId + REPOSITORY_TREE
-							+ "?ref=" + gitConfiguration.getBranch(),
-					HttpMethod.GET, null, gitConfiguration.getPrivateToken());
-			response.getBody().forEach(n -> {
-				if (n.get("type").asText().equals("tree")) {
-					directories.add(n.get("name").asText());
-				}
-			});
-			return directories;
-		} catch (final Exception e) {
-			log.error("Error while getting repo directories: {}", e.getMessage());
-		}
-		return null;
-	}
-
-	@Override
-	public String getBase64ForFile(GitlabConfiguration gitConfiguration, String branch, String filePath) {
-		if (gitConfiguration.getSite() == null) {
-			gitConfiguration.setSite(getSiteFromProjectURL(gitConfiguration.getProjectURL()));
-		}
-		final int projectId = getProjectId(gitConfiguration.getSite(),
-				getProjectPathFromURL(gitConfiguration.getProjectURL()), gitConfiguration.getPrivateToken());
-		try {
-			final ResponseEntity<JsonNode> response = sendHttp(
-					gitConfiguration.getSite() + GITLAB_API_PATH + GITLAB_PROJECTS + "/" + projectId + REPOSITORY_FILES
-							+ "/" + URLEncoder.encode(filePath, StandardCharsets.UTF_8.name()) + "?ref="
-							+ gitConfiguration.getBranch(),
-					HttpMethod.GET, null, gitConfiguration.getPrivateToken());
-			return response.getBody().get("content").asText();
-		} catch (final HttpClientErrorException | HttpServerErrorException e) {
-			log.error("Error while getting repo file {} ,  code:{} message:{} :", filePath, e.getRawStatusCode(),
-					e.getResponseBodyAsString());
-		} catch (final Exception e) {
-			log.error("Error while getting repo file {} :", filePath, e.getMessage());
-		}
-		return null;
 	}
 
 }

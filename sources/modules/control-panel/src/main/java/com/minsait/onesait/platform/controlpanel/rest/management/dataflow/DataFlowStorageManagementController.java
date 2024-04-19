@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,8 +76,7 @@ public class DataFlowStorageManagementController {
 			@Parameter(description= "Dataflow pipeline identification", required = true) @PathVariable("identification") String pipelineIdentification)
 					throws UnsupportedEncodingException {
 		final String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
-		ResponseEntity<String> response = dataflowService.getPipelineConfiguration(utils.getUserId(), identification);
-		return new ResponseEntity<String>(response.getBody(), response.getStatusCode());
+		return dataflowService.getPipelineConfiguration(utils.getUserId(), identification);
 	}
 
 	@Operation(summary = "Export pipeline")
@@ -90,8 +89,7 @@ public class DataFlowStorageManagementController {
 			@Parameter(description= "Dataflow pipeline identification", required = true) @PathVariable("identification") String pipelineIdentification)
 					throws UnsupportedEncodingException {
 		final String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
-		ResponseEntity<String> response = dataflowService.exportPipeline(utils.getUserId(), identification);
-		return new ResponseEntity<String>(response.getBody(), response.getStatusCode());
+		return dataflowService.exportPipeline(utils.getUserId(), identification);
 	}
 
 	@Operation(summary = "Import pipeline")
@@ -119,8 +117,7 @@ public class DataFlowStorageManagementController {
 			@Parameter(description= "Overwrite pipeline if exists") @RequestParam(required = false, defaultValue = "false") boolean overwrite,
 			@RequestBody(required = false) String config) throws UnsupportedEncodingException {
 		final String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
-		ResponseEntity<String> response = dataflowService.importPipelineData(utils.getUserId(), identification, config, overwrite);
-		return new ResponseEntity<String>(response.getBody(), response.getStatusCode());
+		return dataflowService.importPipelineData(utils.getUserId(), identification, config, overwrite);
 	}
 
 	@Operation(summary = "Update pipeline")
@@ -133,8 +130,7 @@ public class DataFlowStorageManagementController {
 			@Parameter(description= "Dataflow pipeline identification", required = true) @PathVariable("identification") String pipelineIdentification,
 			@RequestBody(required = false) String config) throws UnsupportedEncodingException {
 		final String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
-		ResponseEntity<String> response = dataflowService.updatePipeline(utils.getUserId(), identification, config);
-		return new ResponseEntity<String>(response.getBody(), response.getStatusCode());
+		return dataflowService.updatePipeline(utils.getUserId(), identification, config);
 	}
 
 	@Operation(summary = "Clone pipeline")
@@ -149,8 +145,7 @@ public class DataFlowStorageManagementController {
 					throws UnsupportedEncodingException {
 		final String identificationOri = URLDecoder.decode(pipelineIdentificationOri, StandardCharsets.UTF_8.name());
 		final String identificationDest = URLDecoder.decode(pipelineIdentificationDest, StandardCharsets.UTF_8.name());
-		ResponseEntity<String> response = dataflowService.clonePipeline(utils.getUserId(), identificationOri, identificationDest);
-		return new ResponseEntity<String>(response.getBody(), response.getStatusCode());
+		return dataflowService.clonePipeline(utils.getUserId(), identificationOri, identificationDest);
 	}
 
 	@Operation(summary = "Pipelines")
@@ -169,23 +164,7 @@ public class DataFlowStorageManagementController {
 			@Parameter(description= "Order", required = false) @RequestParam(name = "order", required = false, defaultValue = StreamsetsApiWrapper.Order.ASC) String order,
 			@Parameter(description= "Status", required = false) @RequestParam(name = "status", required = false, defaultValue = "false") boolean status) {
 
-		ResponseEntity<String> response = dataflowService.pipelines(utils.getUserId(), filterText, label, offset, len, orderBy, order, status);
-		return new ResponseEntity<String>(response.getBody(), response.getStatusCode());
-	}
-	
-	@Operation(summary = "get pipeline by identification or id")
-	@GetMapping("/pipelines/{id}")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Status of all pipelines obtained", content=@Content(schema=@Schema(implementation=String.class))),
-			@ApiResponse(responseCode = "400", description = "Bad request"), @ApiResponse(responseCode = "401", description = "Unauthorized"),
-			@ApiResponse(responseCode = "403", description = "Forbidden"), @ApiResponse(responseCode = "404", description = "Not Found"),
-			@ApiResponse(responseCode = "500", description = "Internal Server Error") })
-	public ResponseEntity<Object> getPipeline(
-			@Parameter(description= "Dataflow pipeline identification or id", required = true) @PathVariable("id") String pipelineIdentification)
-					throws UnsupportedEncodingException {
-
-		final String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
-		return dataflowService.getPipelineByIdentificationOrId(identification, utils.getUserId());
+		return dataflowService.pipelines(utils.getUserId(), filterText, label, offset, len, orderBy, order, status);
 	}
 
 	@Operation(summary = "delete pipeline")
@@ -201,7 +180,7 @@ public class DataFlowStorageManagementController {
 
 		final String identification = URLDecoder.decode(pipelineIdentification, StandardCharsets.UTF_8.name());
 		final Pipeline pipeline = dataflowService.getPipelineByIdentification(identification);
-		dataflowService.deleteHardPipeline(pipeline.getId(), utils.getUserId());
+		dataflowService.removeHardPipeline(pipeline.getId(), utils.getUserId());
 		return ResponseEntity.ok(identification);
 	}
 

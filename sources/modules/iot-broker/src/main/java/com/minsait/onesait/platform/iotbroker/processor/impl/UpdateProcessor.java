@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -143,7 +143,7 @@ public class UpdateProcessor implements MessageTypeProcessor {
 				responseMessage.getBody().setData(objectMapper.readTree("{\"id\":\"" + sequenceNumber + "\"}"));
 			}
 		} catch (final Exception e) {
-			log.error("Error in process:{}", e.getMessage());
+			log.error("Error in process:" + e.getMessage());
 			final String error = MessageException.ERR_DATABASE;
 			responseMessage = SSAPUtils.generateErrorMessage(updateMessage, SSAPErrorCode.PROCESSOR, error);
 			if (messageStr != null) {
@@ -227,7 +227,7 @@ public class UpdateProcessor implements MessageTypeProcessor {
 			}
 
 		} catch (final Exception e) {
-			log.error("Error in process:{}", e.getMessage());
+			log.error("Error in process:" + e.getMessage());
 			final String error = MessageException.ERR_DATABASE;
 			responseMessage = SSAPUtils.generateErrorMessage(updateMessage, SSAPErrorCode.PROCESSOR, error);
 			if (messageStr != null) {

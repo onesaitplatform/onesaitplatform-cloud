@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -522,9 +522,7 @@ public class TestVersionControl {
 	@Test
 	public void testReadAll() {
 		final List<Versionable<?>> versionables = versioningIOService.readAllVersionables(VersioningIOService.DIR);
-		if (log.isDebugEnabled()) {
-			log.debug("Versionables count: {}", versionables.size());
-		}
+		log.debug("Versionables count: {}", versionables.size());
 	}
 
 	@Test

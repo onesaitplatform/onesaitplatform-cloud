@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
-import org.opensearch.client.opensearch._types.mapping.Property;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Lazy;
@@ -35,10 +34,6 @@ import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.commons.model.DescribeColumnData;
 import com.minsait.onesait.platform.commons.rtdbmaintainer.dto.ExportData;
-import com.minsait.onesait.platform.config.model.Ontology;
-import com.minsait.onesait.platform.config.model.OntologyElastic;
-import com.minsait.onesait.platform.config.repository.OntologyElasticRepository;
-import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.persistence.OpensearchEnabledCondition;
 import com.minsait.onesait.platform.persistence.exceptions.DBPersistenceException;
 import com.minsait.onesait.platform.persistence.interfaces.ManageDBRepository;
@@ -61,8 +56,6 @@ public class OpenSearchManageDBRepository implements ManageDBRepository {
 
 	private static final String NOT_IMPLEMENTED_ALREADY = "Not Implemented Already";
 	private static final String ALLOWS_TEMPLATE_CONFIG = "allowsTemplateConfig";
-	private static final String TTL_RETENTION_PERIOD = "ttlRetentionPeriod";
-	private static final String TTL_PRIORITY = "ttlPriority";
 
 	@Autowired
 	private OSBaseApi connector;
@@ -86,24 +79,22 @@ public class OpenSearchManageDBRepository implements ManageDBRepository {
 	@Getter
 	@Setter
 	private String openSearchEndpoint;
-
-	@Autowired
-	private OntologyRepository ontologyRepository;
-	@Autowired
-	private OntologyElasticRepository ontologyElasticRepository;
-
+	
 	@PostConstruct
 	public void init() {
 		final Map<String, Object> database = resourcesService.getGlobalConfiguration().getEnv().getDatabase();
 
 		@SuppressWarnings("unchecked")
-		final Map<String, Object> opensearch = (Map<String, Object>) database.get("opensearch");
+		final
+		Map<String, Object> opensearch = (Map<String, Object>) database.get("opensearch");
 
 		@SuppressWarnings("unchecked")
-		final Map<String, Object> sql = (Map<String, Object>) opensearch.get("sql");
+		final
+		Map<String, Object> sql = (Map<String, Object>) opensearch.get("sql");
 
 		@SuppressWarnings("unchecked")
-		final Map<String, Object> dump = (Map<String, Object>) opensearch.get("dump");
+		final
+		Map<String, Object> dump = (Map<String, Object>) opensearch.get("dump");
 
 		openSearchEndpoint = (String) sql.get("endpoint");
 
@@ -120,23 +111,11 @@ public class OpenSearchManageDBRepository implements ManageDBRepository {
 	@Override
 	public String createTable4Ontology(final String ontology, final String schema, final Map<String, String> config) {
 		try {
-			// Delete custom Policy if there is one
-			connector.deleteTTLPolicy(ontology);
-			// Create custom Policy if there is one and apply it to the index name as
-			// ism_template
-			if (config != null && config.get(TTL_RETENTION_PERIOD) != null
-					&& config.get(TTL_RETENTION_PERIOD).isEmpty()) {
-				connector.createTTLPolicy(ontology, ontology, config.get(TTL_RETENTION_PERIOD),
-						Integer.parseInt(config.get(TTL_PRIORITY)));
-			}
-			// Create index
 			if (JSONPersistenceUtilsElasticSearch.isJSONSchema(schema)) {
 
-				final Map<String, Property> mapping = JSONPersistenceUtilsElasticSearch
-						.getOpenSearchSchemaFromJSONSchema(schema);
+				final String mapping = JSONPersistenceUtilsElasticSearch.getElasticSearchSchemaFromJSONSchema(schema);
 				try {
-					if (config != null && config.get(ALLOWS_TEMPLATE_CONFIG) != null
-							&& !config.get(ALLOWS_TEMPLATE_CONFIG).isEmpty()
+					if (config!= null && config.get(ALLOWS_TEMPLATE_CONFIG) != null && !config.get(ALLOWS_TEMPLATE_CONFIG).isEmpty()
 							&& Boolean.parseBoolean(config.get(ALLOWS_TEMPLATE_CONFIG))) {
 						log.info("Creating ElasticSearch template for ontology: {}", ontology);
 						final boolean res = connector.createTemplate(ontology.toLowerCase(), mapping, config);
@@ -164,7 +143,6 @@ public class OpenSearchManageDBRepository implements ManageDBRepository {
 
 		return ontology.toLowerCase();
 	}
-
 	@Override
 	public List<String> getListOfTables() {
 		final List<String> list = new ArrayList<>();
@@ -191,14 +169,8 @@ public class OpenSearchManageDBRepository implements ManageDBRepository {
 	@Override
 	public void removeTable4Ontology(String ontology) {
 		ontology = ontology.toLowerCase();
-		final Ontology ontol = ontologyRepository.findByIdentification(ontology);
-		final OntologyElastic elasticOntol = ontologyElasticRepository.findByOntologyId(ontol);
-		// Check if ontology is a template
-		if (elasticOntol != null && elasticOntol.getTemplateConfig() == true) {
-			connector.deleteTemplate(ontology);
-		} else {
-			connector.deleteIndex(ontology);
-		}
+		// eSDeleteService.deleteAll(ontology);
+		connector.deleteIndex(ontology);
 	}
 
 	@Override
@@ -307,35 +279,6 @@ public class OpenSearchManageDBRepository implements ManageDBRepository {
 	@Override
 	public String updateTable4Ontology(String identification, String jsonSchema, Map<String, String> config) {
 		throw new DBPersistenceException(NOT_IMPLEMENTED_ALREADY);
-	}
-
-	@Override
-	public void createTTLIndex(String ontology, String attribute, Long seconds) {
-		throw new DBPersistenceException(NOT_IMPLEMENTED_ALREADY);
-
-	}
-
-	@Override
-	public Map<String, List<String>> getListIndexes(String datatableName, String ontology) {
-		throw new DBPersistenceException(NOT_IMPLEMENTED_ALREADY);
-	}
-
-	@Override
-	public void dropIndex(String ontology, String ontologyVirtual, String indexName) {
-		throw new DBPersistenceException(NOT_IMPLEMENTED_ALREADY);
-		
-	}
-
-	@Override
-	public String getIndexesOptions(String ontology) {
-		throw new DBPersistenceException(NOT_IMPLEMENTED_ALREADY);
-	}
-
-	@Override
-	public void createIndexWithParameter(String ontologyName, String typeIndex, String indexName, boolean unique,
-			boolean background, boolean sparse, boolean ttl, String timesecondsTTL, Object checkboxValuesArray) {
-		throw new DBPersistenceException(NOT_IMPLEMENTED_ALREADY);
-		
 	}
 
 }

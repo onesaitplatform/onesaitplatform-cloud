@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package com.minsait.onesait.platform.persistence.external.generator.helper;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -44,16 +43,12 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.Index;
-import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.Offset;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
-import net.sf.jsqlparser.statement.select.SetOperationList;
-import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.util.SelectUtils;
 
 @Slf4j
@@ -62,9 +57,7 @@ import net.sf.jsqlparser.util.SelectUtils;
 public class SQLHelperImpl implements SQLHelper {
 
 	private static final String LIST_VALIDATE_QUERY = "SELECT 1";
-	private static final String LIST_TABLE_INFORMATION_QUERY = "SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = '%s'";
 	private static final String LIST_TABLES_QUERY = "SHOW TABLES";
-	private static final String GET_TABLE_INFORMATION_QUERY = "SELECT COLUMN_NAME, TABLE_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = '%s' AND INDEX_NAME = 'PRIMARY'";
 	private static final String GET_CURRENT_DATABASE_QUERY = "SELECT DATABASE()";
 	private static final String LIST_DATABASES_QUERY = "SHOW DATABASES";
 	private static final String LIST_TABLES_IN_DATABASE_QUERY = "SHOW TABLES IN %s";
@@ -119,16 +112,6 @@ public class SQLHelperImpl implements SQLHelper {
 	public String getSchemasStatement(String database) {
 		// default no schema
 		return null;
-	}
-
-	@Override
-	public String getTableInformationStatement(String database, String schema) {
-		return String.format(LIST_TABLE_INFORMATION_QUERY, database);
-	}
-
-	@Override
-	public String getTableIndexes(String database, String schema) {
-		return String.format(GET_TABLE_INFORMATION_QUERY, database);
 	}
 
 	@Override
@@ -197,7 +180,7 @@ public class SQLHelperImpl implements SQLHelper {
 		try {
 			final Statement statement = CCJSqlParserUtil.parse(query);
 			if (statement instanceof Select) {
-				return Optional.ofNullable(getPlainSelectFromSelect(((Select) statement).getSelectBody()));
+				return Optional.ofNullable((PlainSelect) ((Select) statement).getSelectBody());
 			} else {
 				log.debug("The statement passed as argument is not a select query, returning the original");
 				return Optional.empty();
@@ -205,25 +188,6 @@ public class SQLHelperImpl implements SQLHelper {
 		} catch (final JSQLParserException e) {
 			log.debug("Could not parse the query with JSQL returning the original. ", e);
 			return Optional.empty();
-		}
-	}
-
-	private PlainSelect getPlainSelectFromSelect(SelectBody selectBody) {
-		if (SetOperationList.class.isInstance(selectBody)) { // union
-			final PlainSelect plainSelect = new PlainSelect();
-
-			final List<SelectItem> ls = new LinkedList<>();
-			ls.add(new AllColumns());
-			plainSelect.setSelectItems(ls);
-
-			final SubSelect subSelect = new SubSelect();
-			subSelect.setSelectBody(selectBody);
-			subSelect.setAlias(new Alias("U"));
-			plainSelect.setFromItem(subSelect);
-
-			return plainSelect;
-		} else {
-			return (PlainSelect) selectBody;
 		}
 	}
 
@@ -384,10 +348,9 @@ public class SQLHelperImpl implements SQLHelper {
 		final String jsonSchema = o.getJsonSchema();
 		final JSONObject obj = new JSONObject(jsonSchema);
 		final JSONObject columns = obj.getJSONObject("properties");
-		// Comentado porque no se pueden pedir las columnas fk: user_id, api_id...
-//		if (query.contains("_id,")) {
-//			query = query.replace("_id,", "");
-//		}
+		if (query.contains("_id,")) {
+			query = query.replace("_id,", "");
+		}
 
 		if (virtual.getObjectGeometry() != null && !virtual.getObjectGeometry().trim().equals("")) {
 			final Select selectStatement = (Select) CCJSqlParserUtil.parse(query);

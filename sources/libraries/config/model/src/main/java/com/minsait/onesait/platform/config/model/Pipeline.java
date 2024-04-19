@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,9 +64,7 @@ public class Pipeline extends OPResource implements Versionable<Pipeline> {
 	}
 
 	public enum PipelineStatus {
-		EDITED, RUN_ERROR, STOPPED, FINISHED, RUNNING, START_ERROR, RUNNING_ERROR, DISCONNECTED, DISCONNECTING,
-		CONNECTING, STOP_ERROR, INSTANCE_ERROR, CONNECT_ERROR, FINISHING, RETRY, STARTING, STARTING_ERROR, STOPPING,
-		STOPPING_ERROR
+		EDITED, RUN_ERROR, STOPPED, FINISHED, RUNNING, START_ERROR, RUNNING_ERROR, DISCONNECTED, DISCONNECTING, CONNECTING, STOP_ERROR, INSTANCE_ERROR, CONNECT_ERROR, FINISHING, RETRY, STARTING, STARTING_ERROR, STOPPING, STOPPING_ERROR
 	}
 
 	@Column(name = "IDSTREAMSETS", length = 100, nullable = false)
@@ -285,13 +283,6 @@ public class Pipeline extends OPResource implements Versionable<Pipeline> {
 			p = null;
 		}
 		return p;
-	}
-
-	@Override
-	public void setOwnerUserId(String userId) {
-		final User u = new User();
-		u.setUserId(userId);
-		setUser(u);
 	}
 
 }

@@ -9,27 +9,19 @@ var MapsStyleController = function() {
 
 
 	var emptyStyle = {
-		'styleType': 'simple',
+		'styleType': null,
 		'radius': 10,
-		'blur': 15,
-		//'zIndex': null,
+		'zIndex': null,
 		'circleVertex': false,
-		'labelVisibility': false,
-		'fill': {
-			'color':"#aabbcc"
-			},
-		'initialRampColor': "#aabbcc",
-		'finalRampColor': "#aabbcc",
-		'name': null,
-		'fieldToClassify': null,
+		'fill': "#aabbcc",
 		'stroke': {
 			'color': "#aabbcc",
 			'width': 2,
 			'lineCap': "round",
 			'lineJoin': "round",
 			'miterLimit': 10,
-			'lineDash': null,
-			'lineDashOffset': null
+			'lineDash': [10, 10],
+			'lineDashOffset': [10, 10]
 		},
 		'text': {
 			'textVisibility': false,
@@ -56,9 +48,30 @@ var MapsStyleController = function() {
 			'scale': null,
 			'position': null,
 			'rotateWithView': null,
-			'opacity': 100,
+			'opacity': null,
+			'rotation': null,
 			'color': "#aabbcc",
-			'displacement': null
+			'resolution': null,
+			'decluttermode': null,
+			'displacement': null,
+			'size': null
+		},
+		'icon': {
+			'src': null,
+			'opacity': null,
+			'rotation': null,
+			'anchorOrigin': null,
+			'anchorXUnits': null,
+			'anchorYUnits': null,
+			'offsetOrigin': null,
+			'scale': null,
+			'position': null,
+			'color': null,
+			'crossOrigin': null,
+			'anchor': null,
+			'offset': null,
+			'displacement': null,
+			'size': null
 
 		}
 	}
@@ -67,9 +80,7 @@ var MapsStyleController = function() {
 	// CONTROLLER PRIVATE FUNCTIONS	
 
 
-	var getCheck = function(id) {
-		return $("#" + id).is(":checked");
-	}
+
 	var navigateUrl = function(url) { window.location.href = url; }
 	// DELETE DASHBOARDCONF
 	/*var deleteDashboardConfConfirmation = function(dashboardconfId){
@@ -199,56 +210,16 @@ var MapsStyleController = function() {
 			config = emptyStyle;
 		}
 		if (config != null && Object.keys(config).length > 0) {
-
-
-			$('#styleType').on('change', function() {
-				if (valSelect($("#styleType").val()) !== 'heatmap') {
-					$('.noheat').css("display", "block");
-				} else {
-					$('.noheat').css("display", "none");
-				}
-
-
-			})
-
-			$('#useStrokeLine').on('change', function() {
-
-				if (getCheck('useStrokeLine')) {
-
-					$('#strokelinedash0').attr('disabled', false);
-					$('#strokelinedash1').attr('disabled', false);
-					$('#strokelineDashOffset0').attr('disabled', false);
-				} else {
-					$('#strokelinedash0').attr('disabled', true);
-					$('#strokelinedash1').attr('disabled', true);
-					$('#strokelineDashOffset0').attr('disabled', true);
-				}
-			})
-
-			$("#useStrokeLine").prop('checked', false);
-			$("#useStrokeLine").val(false).change();
-
 			//PROPERTIES
-			$("#name").val(config.name).change();
-			$("#fieldToClassify").val(config.fieldToClassify).change();
 			$("#styleType").val(config.styleType).change();
 			$("#radius").val(config.radius).change();
-			$("#blur").val(config.blur).change();
-			//$("#zIndex").val(config.zIndex).change();
+			$("#zIndex").val(config.zIndex).change();
 
 			$("#circleVertex").val(config.circleVertex).change();
 			if (config.circleVertex) {
 				$("#circleVertex").prop('checked', true);
 			}
-			$("#labelVisibility").val(config.labelVisibility).change();
-			if (config.labelVisibility) {
-				$("#labelVisibility").prop('checked', true);
-			}
-			if (typeof config.fill != 'undefined' && config.fill != null) {
-				$("#fill").val(config.fill.color).change();
-			}
-			$("#initialRampColor").val(config.initialRampColor).change();
-			$("#finalRampColor").val(config.finalRampColor).change();
+			$("#fill").val(config.fill).change();
 
 			if (typeof config.stroke != 'undefined' && config.stroke != null) {
 				//STROKE
@@ -256,17 +227,13 @@ var MapsStyleController = function() {
 				$("#strokewidth").val(config.stroke.width).change();
 
 				if (typeof config.stroke.lineDash != 'undefined' && config.stroke.lineDash != null && config.stroke.lineDash.length > 0) {
-					$("#useStrokeLine").prop('checked', true);
-					$("#useStrokeLine").val(true).change();
 					$("#strokelinedash0").val(config.stroke.lineDash[0]).change();
 					$("#strokelinedash1").val(config.stroke.lineDash[1]).change();
 				}
 
-				if (typeof config.stroke.lineDashOffset != 'undefined' && config.stroke.lineDashOffset != null) {
-					$("#useStrokeLine").prop('checked', true);
-					$("#useStrokeLine").val(true).change();
-					$("#strokelineDashOffset0").val(config.stroke.lineDashOffset).change();
-
+				if (typeof config.stroke.lineDashOffset != 'undefined' && config.stroke.lineDashOffset != null && config.stroke.lineDashOffset.length > 0) {
+					$("#strokelineDashOffset0").val(config.stroke.lineDashOffset[0]).change();
+					$("#strokelineDashOffset1").val(config.stroke.lineDashOffset[1]).change();
 				}
 				$("#strokelineCap").val(config.stroke.lineCap).change();
 				$("#strokelineJoin").val(config.stroke.lineJoin).change();
@@ -312,22 +279,55 @@ var MapsStyleController = function() {
 				$("#imagesrc").val(config.image.src).change();
 				$("#imagescale").val(config.image.scale).change();
 				$("#imageposition").val(config.image.position).change();
-
+				$("#imagerotateWithView").val(config.image.rotateWithView).change();
+				if (config.image.rotateWithView) {
+					$("#imagerotateWithView").prop('checked', true);
+				}
 				if (typeof config.image.displacement != 'undefined' && config.image.displacement != null && config.image.displacement.length > 0) {
 					$("#imagedisplacement0").val(config.image.displacement[0]).change();
 					$("#imagedisplacement1").val(config.image.displacement[1]).change();
 				}
 				$("#imageopacity").val(config.image.opacity).change();
-
+				$("#imagerotation").val(config.image.rotation).change();
 				$("#imagecolor").val(config.image.color).change();
-
-
+				if (typeof config.image.size != 'undefined' && config.image.size != null && config.image.size.length > 0) {
+					$("#imagesize0").val(config.image.size[0]).change();
+					$("#imagesize1").val(config.image.size[1]).change();
+				}
+				$("#imageresolution").val(config.image.resolution).change();
+				$("#imagedecluttermode").val(config.image.decluttermode).change();
 			}
-
+			//ICON
+			if (typeof config.icon != 'undefined' && config.icon != null) {
+				$("#iconsrc").val(config.icon.src).change();
+				$("#iconopacity").val(config.icon.opacity).change();
+				$("#iconrotation").val(config.icon.rotation).change();
+				if (typeof config.icon.anchor != 'undefined' && config.icon.anchor != null && config.icon.anchor.length > 0) {
+					$("#iconanchor0").val(config.icon.anchor[0]).change();
+					$("#iconanchor1").val(config.icon.anchor[1]).change();
+				}
+				$("#iconanchorOrigin").val(config.icon.anchorOrigin).change();
+				$("#iconanchorXUnits").val(config.icon.anchorXUnits).change();
+				$("#iconanchorYUnits").val(config.icon.anchorYUnits).change();
+				if (typeof config.icon.offset != 'undefined' && config.icon.offset != null && config.icon.offset.length > 0) {
+					$("#iconoffset0").val(config.icon.offset[0]).change();
+					$("#iconoffset1").val(config.icon.offset[1]).change();
+				}
+				$("#iconoffsetOrigin").val(config.icon.offsetOrigin).change();
+				$("#iconscale").val(config.icon.scale).change();
+				$("#iconposition").val(config.icon.position).change();
+				if (typeof config.icon.displacement != 'undefined' && config.icon.displacement != null && config.icon.displacement.length > 0) {
+					$("#icondisplacement0").val(config.icon.displacement[0]).change();
+					$("#icondisplacement1").val(config.icon.displacement[1]).change();
+				}
+				$("#iconcolor").val(config.icon.color).change();
+				$("#iconcrossOrigin").val(config.crossOrigin).change();
+				if (typeof config.icon.size != 'undefined' && config.icon.size != null && config.icon.size.length > 0) {
+					$("#iconsize0").val(config.icon.size[0]).change();
+					$("#iconsize1").val(config.icon.size[1]).change();
+				}
+			}
 		}
-
-
-
 	}
 
 	var toNum = function(val) {
@@ -389,24 +389,15 @@ var MapsStyleController = function() {
 		} else {
 			//create
 			return createConfig();
-		}
+		} 
 	}
 
 	var updateConfig = function() {
 		configResponse.styleType = valSelect($("#styleType").val());
 		configResponse.radius = toNum($("#radius").val());
-		configResponse.blur = toNum($("#blur").val());
-		//configResponse.zIndex = toNum($("#zIndex").val());
+		configResponse.zIndex = toNum($("#zIndex").val());
 		configResponse.circleVertex = $("#circleVertex").is(":checked");
-		configResponse.labelVisibility = $("#labelVisibility").is(":checked");
-		if (configResponse.fill == null) {
-			configResponse.fill = {};
-		}
-		configResponse.fill.color = $("#fill").val();
-		configResponse.initialRampColor = $("#initialRampColor").val();
-		configResponse.finalRampColor = $("#finalRampColor").val();
-		configResponse.name = $("#name").val();
-		configResponse.fieldToClassify = $("#fieldToClassify").val();
+		configResponse.fill = $("#fill").val();
 		if (configResponse.stroke == null) {
 			configResponse.stroke = {};
 		}
@@ -416,54 +407,65 @@ var MapsStyleController = function() {
 		if (configResponse.image == null) {
 			configResponse.image = {};
 		}
-
-		if (valSelect($("#styleType").val()) === 'heatmap') {
-			configResponse.stroke = null;
-			configResponse.text = null;
-			configResponse.image = null;
-		} else {
-			configResponse.stroke.color = $("#strokecolor").val();
-			configResponse.stroke.width = toNum($("#strokewidth").val());
-			configResponse.stroke.lineCap = valSelect($("#strokelineCap").val());
-			configResponse.stroke.lineJoin = valSelect($("#strokelineJoin").val());
-			configResponse.stroke.miterLimit = toNum($("#strokemiterLimit").val());
-			configResponse.stroke.lineDash = valTwoValues($("#strokelinedash0").val(), $("#strokelinedash1").val());
-			configResponse.stroke.lineDashOffset = toNum($("#strokelineDashOffset0").val());
-			if (!getCheck('useStrokeLine')) {
-				configResponse.stroke.lineDash = null;
-				configResponse.stroke.lineDashOffset = null;
-			}
-			configResponse.text.textVisibility = $("#texttextVisibility").is(":checked");
-			configResponse.text.fillColor = $("#textfillColor").val();
-			configResponse.text.strokeColor = $("#textstrokeColor").val();
-			configResponse.text.defaultText = $("#textdefaultText").val();
-			configResponse.text.textField = $("#texttextField").val();
-			configResponse.text.scale = toNum($("#textscale").val());
-			//font= $("#textFont").val();
-			configResponse.text.placement = valSelect($("#textplacement").val());
-			configResponse.text.textAlign = valSelect($("#texttextAlign").val());
-			configResponse.text.offsetY = toNum($("#textoffsetY").val());
-			configResponse.text.offsetX = toNum($("#textoffsetX").val());
-			configResponse.text.rotation = toNum($("#textrotation").val());
-			configResponse.text.textBaseLine = valSelect($("#texttextBaseLine").val());
-			configResponse.text.overflow = $("#textoverflow").is(":checked");
-			configResponse.text.rotateWithView = $("#textrotateWithView").is(":checked");
-			configResponse.text.backgroundFill = $("#textbackgroundFill").val();
-			configResponse.text.resolution = toNum($("#textresolution").val());
-			configResponse.text.padding = valFourValues($("#textpadding0").val(), $("#textpadding1").val(), $("#textpadding2").val(), $("#textpadding3").val());
-
-
-			configResponse.image.src = $("#imagesrc").val();
-			configResponse.image.scale = toNum($("#imagescale").val());
-			configResponse.image.position = valSelect($("#imageposition").val());
-
-			configResponse.image.opacity = toNum($("#imageopacity").val());
-
-			configResponse.image.color = $("#imagecolor").val();
-
-			configResponse.image.displacement = valTwoValues($("#imagedisplacement0").val(), $("#imagedisplacement1").val());
-
+		if (configResponse.icon == null) {
+			configResponse.icon = {}
 		}
+		configResponse.stroke.color = $("#strokecolor").val();
+		configResponse.stroke.width = toNum($("#strokewidth").val());
+		configResponse.stroke.lineCap = valSelect($("#strokelineCap").val());
+		configResponse.stroke.lineJoin = valSelect($("#strokelineJoin").val());
+		configResponse.stroke.miterLimit = toNum($("#strokemiterLimit").val());
+		configResponse.stroke.lineDash = valTwoValues($("#strokelinedash0").val(), $("#strokelinedash1").val());
+		configResponse.stroke.lineDashOffset = valTwoValues($("#strokelineDashOffset0").val(), $("#strokelineDashOffset1").val());
+
+		configResponse.text.textVisibility = $("#texttextVisibility").is(":checked");
+		configResponse.text.fillColor = $("#textfillColor").val();
+		configResponse.text.strokeColor = $("#textstrokeColor").val();
+		configResponse.text.defaultText = $("#textdefaultText").val();
+		configResponse.text.textField = $("#texttextField").val();
+		configResponse.text.scale = toNum($("#textscale").val());
+		//font= $("#textFont").val();
+		configResponse.text.placement = valSelect($("#textplacement").val());
+		configResponse.text.textAlign = valSelect($("#texttextAlign").val());
+		configResponse.text.offsetY = toNum($("#textoffsetY").val());
+		configResponse.text.offsetX = toNum($("#textoffsetX").val());
+		configResponse.text.rotation = toNum($("#textrotation").val());
+		configResponse.text.textBaseLine = valSelect($("#texttextBaseLine").val());
+		configResponse.text.overflow = $("#textoverflow").is(":checked");
+		configResponse.text.rotateWithView = $("#textrotateWithView").is(":checked");
+		configResponse.text.backgroundFill = $("#textbackgroundFill").val();
+		configResponse.text.resolution = toNum($("#textresolution").val());
+		configResponse.text.padding = valFourValues($("#textpadding0").val(), $("#textpadding1").val(), $("#textpadding2").val(), $("#textpadding3").val());
+
+
+		configResponse.image.src = $("#imagesrc").val();
+		configResponse.image.scale = toNum($("#imagescale").val());
+		configResponse.image.position = valSelect($("#imageposition").val());
+		configResponse.image.rotateWithView = $("#imagerotateWithView").is(":checked");
+		configResponse.image.opacity = toNum($("#imageopacity").val());
+		configResponse.image.rotation = toNum($("#imagerotation").val());
+		configResponse.image.color = $("#imagecolor").val();
+		configResponse.image.resolution = toNum($("#imageresolution").val());
+		configResponse.image.decluttermode = valSelect($("#imagedecluttermode").val());
+		configResponse.image.displacement = valTwoValues($("#imagedisplacement0").val(), $("#imagedisplacement1").val());
+		configResponse.image.size = valTwoValues($("#imagesize0").val(), $("#imagesize1").val());
+
+
+		configResponse.icon.src = $("#iconsrc").val();
+		configResponse.icon.opacity = toNum($("#iconopacity").val());
+		configResponse.icon.rotation = toNum($("#iconrotation").val());
+		configResponse.icon.anchorOrigin = valSelect($("#iconanchorOrigin").val());
+		configResponse.icon.anchorXUnits = toNum($("#iconanchorXUnits").val());
+		configResponse.icon.anchorYUnits = toNum($("#iconanchorYUnits").val());
+		configResponse.icon.offsetOrigin = valSelect($("#iconoffsetOrigin").val());
+		configResponse.icon.scale = toNum($("#iconscale").val());
+		configResponse.icon.position = valSelect($("#iconposition").val());
+		configResponse.icon.color = $("#iconcolor").val();
+		configResponse.icon.crossOrigin = $("#iconcrossOrigin").val();
+		configResponse.icon.anchor = valTwoValues($("#iconanchor0").val(), $("#iconanchor1").val());
+		configResponse.icon.offset = valTwoValues($("#iconoffset0").val(), $("#iconoffset1").val());
+		configResponse.icon.displacement = valTwoValues($("#icondisplacement0").val(), $("#icondisplacement1").val());
+		configResponse.icon.size = valTwoValues($("#iconsize0").val(), $("#iconsize1").val());
 
 
 
@@ -475,20 +477,14 @@ var MapsStyleController = function() {
 		var conf = {
 			'styleType': valSelect($("#styleType").val()),
 			'radius': toNum($("#radius").val()),
-			'blur': toNum($("#blur").val()),
-			//'zIndex': toNum($("#zIndex").val()),
+			'zIndex': toNum($("#zIndex").val()),
 			'circleVertex': $("#circleVertex").is(":checked"),
-			'labelVisibility': $("#labelVisibility").is(":checked"),
-			'fill':{'color': $("#fill").val()},
-			'initialRampColor': $("#initialRampColor").val(),
-			'finalRampColor': $("#finalRampColor").val(),
-			'name': $("#name").val(),
-			'fieldToClassify': $("#fieldToClassify").val(),
+			'fill': $("#fill").val(),
 			'stroke': {},
 			'text': {},
-			'image': {}
+			'image': {},
+			'icon': {}
 		}
-		 
 
 		conf.stroke = {
 			'color': $("#strokecolor").val(),
@@ -497,11 +493,7 @@ var MapsStyleController = function() {
 			'lineJoin': valSelect($("#strokelineJoin").val()),
 			'miterLimit': toNum($("#strokemiterLimit").val()),
 			'lineDash': valTwoValues($("#strokelinedash0").val(), $("#strokelinedash1").val()),
-			'lineDashOffset': toNum($("#strokelineDashOffset0").val())
-		}
-		if (!getCheck('useStrokeLine')) {
-			conf.stroke.lineDash = null;
-			conf.stroke.lineDashOffset = null;
+			'lineDashOffset': valTwoValues($("#strokelineDashOffset0").val(), $("#strokelineDashOffset1").val())
 		}
 		conf.text = {
 			'textVisibility': $("#texttextVisibility").is(":checked"),
@@ -529,17 +521,35 @@ var MapsStyleController = function() {
 			'src': $("#imagesrc").val(),
 			'scale': toNum($("#imagescale").val()),
 			'position': valSelect($("#imageposition").val()),
-
+			'rotateWithView': $("#imagerotateWithView").is(":checked"),
 			'opacity': toNum($("#imageopacity").val()),
-
+			'rotation': toNum($("#imagerotation").val()),
 			'color': $("#imagecolor").val(),
-
-			'displacement': valTwoValues($("#imagedisplacement0").val(), $("#imagedisplacement1").val())
-
+			'resolution': toNum($("#imageresolution").val()),
+			'decluttermode': valSelect($("#imagedecluttermode").val()),
+			'displacement': valTwoValues($("#imagedisplacement0").val(), $("#imagedisplacement1").val()),
+			'size': valTwoValues($("#imagesize0").val(), $("#imagesize1").val())
 		}
 
 
+		conf.icon = {
+			'src': $("#iconsrc").val(),
+			'opacity': toNum($("#iconopacity").val()),
+			'rotation': toNum($("#iconrotation").val()),
+			'anchorOrigin': valSelect($("#iconanchorOrigin").val()),
+			'anchorXUnits': toNum($("#iconanchorXUnits").val()),
+			'anchorYUnits': toNum($("#iconanchorYUnits").val()),
+			'offsetOrigin': valSelect($("#iconoffsetOrigin").val()),
+			'scale': toNum($("#iconscale").val()),
+			'position': valSelect($("#iconposition").val()),
+			'color': $("#iconcolor").val(),
+			'crossOrigin': $("#iconcrossOrigin").val(),
+			'anchor': valTwoValues($("#iconanchor0").val(), $("#iconanchor1").val()),
+			'offset': valTwoValues($("#iconoffset0").val(), $("#iconoffset1").val()),
+			'displacement': valTwoValues($("#icondisplacement0").val(), $("#icondisplacement1").val()),
+			'size': valTwoValues($("#iconsize0").val(), $("#iconsize1").val())
 
+		}
 
 		return JSON.stringify(conf);
 	}

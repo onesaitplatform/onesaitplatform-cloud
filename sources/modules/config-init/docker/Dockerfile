@@ -20,6 +20,8 @@ RUN mkdir -p /usr/local/webprojects && \
 # create onesait user/group
 RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait
 
+RUN apk add --no-cache mongodb-tools
+
 RUN chown -R onesait:onesait /usr/local && \
     chown -R onesait:onesait /var/log/platform-logs && \
     chown -R onesait:onesait /tmp/examples && \
@@ -55,12 +57,6 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G" \
     OPENSEARCHDBPORT=9200 \
     ELASTICSEARCH_ENABLED=false \
     OPENSEARCH_ENABLED=false \
-    OPENSEARCH_TTL_REPLICAS=0 \
-    OPENSEARCH_TTL_SHARDS=1 \
-    OPENSEARCH_TTL_PATTERN_FIELD=formatedTimeStamp \
-    OPENSEARCH_TTL_PATTERN_FUNCTION=YEAR_MONTH \
-    OPENSEARCH_TTL_RETENTION_PERIOD=30d \
-    OPENSEARCH_TTL_PRIORITY=10 \
     LOADCONFIGDB=true \
     LOADMONGODB=false \
     LOADTESTDATA=false \
@@ -69,7 +65,6 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G" \
     LOADMAILCONFIG=false \
     LOADGRAYLOGDB=false \
     LOADFLOWENGINEMONITOR=false \
-    LOADMETRICS=false \
     REALTIMEDBNAME=onesaitplatform_rtdb \
     RTDB_EXECUTION_TIMEOUT=10000 \
     RTDB_QUERIES_LIMIT=2000 \
@@ -95,7 +90,6 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G" \
 	TIMESCALE_USER=ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot) \
 	TIMESCALE_PASS=ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c) \
 	SERVER_BASE_DOMAIN_MINIO_AUTH=onesaitplatform.com \
-	ADMIN_VERTICAL_TOKEN= \
-	CREATE_DATAFLOW_INSTANCE_VERTICAL=false
+	ADMIN_VERTICAL_TOKEN=
 
 ENTRYPOINT java $JAVA_OPTS -Dspring.application.json=$ONESAIT_PROPERTIES -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=docker -jar /app.jar

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,12 @@
  */
 package com.minsait.onesait.platform.config.model;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -74,12 +71,5 @@ public class ProjectResourceAccessList extends ProjectResourceAccessParent {
 	@Getter
 	@Setter
 	private User user;
-	
-	@Column(name = "ACCESS_ALL")
-	@Type(type = "org.hibernate.type.BooleanType")
-	@ColumnDefault("false")
-	@Getter
-	@Setter
-	private Boolean access_all;
 
 }

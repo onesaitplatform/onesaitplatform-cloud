@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,18 +110,6 @@ public class MapsLayerServiceImpl implements MapsLayerService {
 	public List<MapsLayer> getByIdentifier(String identification) {
 
 		return mapsLayerRepository.findByIdentification(identification);
-	}
-
-	@Override
-	@Transactional
-	public MapsLayer getByIdentificationANDUser(String identification, String userId) {
-		final User user = userRepository.findByUserId(userId);
-		if (mapsLayerRepository.findByUserIdentificationContaining(user, identification).size() > 0) {
-			return mapsLayerRepository.findByUserIdentificationContaining(user, identification).get(0);
-		} else {
-			return null;
-		}
-
 	}
 
 	@Override

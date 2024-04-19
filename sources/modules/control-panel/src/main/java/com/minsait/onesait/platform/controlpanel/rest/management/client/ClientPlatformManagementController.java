@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,7 +126,14 @@ public class ClientPlatformManagementController {
 	@ApiResponses(@ApiResponse(responseCode = "200", description = "OK", content=@Content(schema=@Schema(implementation=ClientPlatformDTO[].class))))
 	public ResponseEntity<Object> getAllClientplatforms() {
 
-		final List<ClientPlatform> list = clientPlatformService.getAllClientPlatformByCriteria(utils.getUserId(), null, null);
+		List<ClientPlatform> list;
+
+		if (utils.isAdministrator()) {
+			list = clientPlatformService.getAllClientPlatforms();
+		} else {
+			final User user = userService.getUserByIdentification(utils.getUserId());
+			list = clientPlatformService.getclientPlatformsByUser(user);
+		}
 
 		final List<ClientPlatformDTO> returnlist = new ArrayList<>();
 		for (final ClientPlatform clientPlatform : list) {
@@ -403,9 +410,7 @@ public class ClientPlatformManagementController {
 		try {
 			manageDBPersistenceServiceFacade.removeTable4Ontology(LOG_ONTOLOGY_PREFIX + identification);
 		} catch (final Exception e) {
-			if (log.isDebugEnabled()) {
-				log.debug("Sth went wrong while removing table 4 ontology: {}", e);
-			}			
+			log.debug("Sth went wrong while removing table 4 ontology", e);
 		}
 	}
 
@@ -433,7 +438,7 @@ public class ClientPlatformManagementController {
 	@PreAuthorize("!@securityService.hasAnyRole('ROLE_USER')")
 	@Operation(summary = "Create new token in the digital client by identification")
 	@PostMapping(value = "/{identification}/token")
-	public ResponseEntity<?> generateTokens(@PathVariable("identification") String identification,
+	public ResponseEntity<GenerateTokensResponse> generateTokens(@PathVariable("identification") String identification,
 			@RequestParam(value = "tenant", required = false) String tenant) {
 		if (!StringUtils.isEmpty(tenant)) {
 			multitenancyService.getTenant(tenant).ifPresent(t -> MultitenancyContextHolder.setTenantName(t.getName()));
@@ -444,13 +449,8 @@ public class ClientPlatformManagementController {
 		if (!check && tokenService
 				.generateTokenForClient(clientPlatformService.getByIdentification(identification)) != null) {
 			response.setOk(true);
-			Token token = tokenService.generateTokenForClient(clientPlatformService.getByIdentification(identification));
-			return ResponseEntity.ok().body("Token: " + token.getTokenName());
-		} else {
-			return ResponseEntity.ok().body(response);
 		}
-		
-		
+		return ResponseEntity.ok().body(response);
 	}
 
 }

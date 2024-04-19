@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
+import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.minsait.onesait.platform.config.model.Api;
@@ -76,7 +79,7 @@ public interface ResourceService {
 	public void cleanAllRecords(String id, String userToken);
 
 	public List<Map<String, Object>> getResourceFromUrl(String url, Map<String, String> resultMap)
-			throws IOException;
+			throws IOException, ParserConfigurationException, SAXException;
 
 	public Ontology createOntology(String ontologyIdentification, String ontologyDescription, String schema,
 			String userId) throws IOException;

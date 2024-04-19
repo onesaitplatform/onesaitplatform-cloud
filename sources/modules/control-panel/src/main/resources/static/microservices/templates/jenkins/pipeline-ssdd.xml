@@ -6,6 +6,7 @@
       <triggers/>
       <parameters>
         <string>DOCKER_MODULETAGVALUE</string>
+        <string>DOCKER_USERNAMEVALUE</string>
         <string>DOCKER_PUSHREGISTRY_PRIVATE</string>
         <string>GIT_URL</string>
         <string>GIT_BRANCHNAME</string>
@@ -58,6 +59,12 @@
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
+          <name>DOCKER_USERNAMEVALUE</name>
+          <description>Image registry image namespace</description>
+          <defaultValue>onesaitplatform</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
           <name>DOCKER_PUSHREGISTRY_PRIVATE</name>
           <description>Push image to private registry</description>
           <defaultValue>true</defaultValue>
@@ -66,7 +73,7 @@
         <hudson.model.StringParameterDefinition>
           <name>PRIVATE_REGISTRY</name>
           <description>URL to the docker registry</description>
-          <defaultValue>europe-docker.pkg.dev/dcme-npro-onst-prd-devops-00/production-registry</defaultValue>
+          <defaultValue>production-registry.devops.onesait.com</defaultValue>
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
@@ -79,13 +86,13 @@
     <script>pipeline {
       agent {
           kubernetes {
-              defaultContainer 'jnlp'
-              yaml """
+              defaultContainer &apos;jnlp&apos;
+              yaml &quot;&quot;&quot;
   apiVersion: v1
   kind: Pod
   metadata:
     labels:
-      maven-version: "3.6.0"
+      maven-version: &quot;3.6.0&quot;
   spec:
     containers:
       - name: git
@@ -118,78 +125,81 @@
         tty: true
 
 
-  """
+  &quot;&quot;&quot;
           }
       }
      environment {          
-        BASEPATH = '{{MICROSERVICE_NAME}}'
-        SOURCESPATH = '{{SOURCES_PATH}}'
-        DOCKERPATH = '{{DOCKER_PATH}}'
-        MICROSERVICE_NAME = '{{MICROSERVICE_NAME}}'
+        BASEPATH = &apos;{{MICROSERVICE_NAME}}&apos;
+        SOURCESPATH = &apos;{{SOURCES_PATH}}&apos;
+        DOCKERPATH = &apos;{{DOCKER_PATH}}&apos;
+        MICROSERVICE_NAME = &apos;{{MICROSERVICE_NAME}}&apos;
      }
      
      parameters { 
-       string(name: 'GIT_URL', 
-              defaultValue: '{{GIT_REPOSITORY}}', 
-              description: 'URL Git Repository')
-       string(name: 'GIT_USER', 
-              defaultValue: '{{GIT_USER}}', 
-              description: 'URL Git user')
-       string(name: 'GIT_TOKEN', 
-              defaultValue: '{{GIT_TOKEN}}', 
-              description: 'Git private token')
-       string(name: 'GIT_BRANCHNAME', 
-              defaultValue: 'master', 
-              description: 'compilation branch name')
-       string(name: 'DOCKER_MODULETAGVALUE', 
-              defaultValue: 'latest', 
-              description: 'Image generation tag value')
-       string(name: 'DOCKER_PUSHREGISTRY_PRIVATE', 
-              defaultValue: 'true', 
-              description: 'Push image to private registry')
-       string(name: 'PRIVATE_REGISTRY', 
-              defaultValue: 'europe-docker.pkg.dev/dcme-npro-onst-prd-devops-00/production-registry', 
-              description: 'URL to the docker registry')
+       string(name: &apos;GIT_URL&apos;, 
+              defaultValue: &apos;{{GIT_REPOSITORY}}&apos;, 
+              description: &apos;URL Git Repository&apos;)
+       string(name: &apos;GIT_USER&apos;, 
+              defaultValue: &apos;{{GIT_USER}}&apos;, 
+              description: &apos;URL Git user&apos;)
+       string(name: &apos;GIT_TOKEN&apos;, 
+              defaultValue: &apos;{{GIT_TOKEN}}&apos;, 
+              description: &apos;Git private token&apos;)
+       string(name: &apos;GIT_BRANCHNAME&apos;, 
+              defaultValue: &apos;master&apos;, 
+              description: &apos;compilation branch name&apos;)
+       string(name: &apos;DOCKER_MODULETAGVALUE&apos;, 
+              defaultValue: &apos;latest&apos;, 
+              description: &apos;Image generation tag value&apos;)
+       string(name: &apos;DOCKER_USERNAMEVALUE&apos;, 
+              defaultValue: &apos;onesaitplatform&apos;, 
+              description: &apos;Image registry image namespace&apos;)
+       string(name: &apos;DOCKER_PUSHREGISTRY_PRIVATE&apos;, 
+              defaultValue: &apos;true&apos;, 
+              description: &apos;Push image to private registry&apos;)
+       string(name: &apos;PRIVATE_REGISTRY&apos;, 
+              defaultValue: &apos;production-registry.devops.onesait.com&apos;, 
+              description: &apos;URL to the docker registry&apos;)
    }     
      
      stages {
-         stage('fetch') {  
+         stage(&apos;fetch&apos;) {  
           steps {  
-            container('git') {
+            container(&apos;git&apos;) {
 
-                 sh "git clone \$(echo ${params.GIT_URL} | sed -e 's/:\\/\\//:\\/\\/${params.GIT_USER}:${params.GIT_TOKEN}@/') ${env.BASEPATH}"
-                 dir("${env.BASEPATH}"){
-                   sh 'chmod 777 -R .'
-                   sh "git checkout ${params.GIT_BRANCHNAME}"
+                 sh &quot;git clone \$(echo ${params.GIT_URL} | sed -e &apos;s/:\\/\\//:\\/\\/${params.GIT_USER}:${params.GIT_TOKEN}@/&apos;) ${env.BASEPATH}&quot;
+                 dir(&quot;${env.BASEPATH}&quot;){
+                   sh &apos;chmod 777 -R .&apos;
+                   sh &quot;git checkout ${params.GIT_BRANCHNAME}&quot;
                  }
                
             }       
           }          
          }
        
-       stage('build') {
+       stage(&apos;build&apos;) {
           steps {
-            container('maven') {
-            dir("${env.BASEPATH}/${env.SOURCESPATH}"){
-                sh 'mkdir -p $HOME/.m2'
+            container(&apos;maven&apos;) {
+            dir(&quot;${env.BASEPATH}/${env.SOURCESPATH}&quot;){
+                sh &apos;mkdir -p $HOME/.m2&apos;
                
-                sh 'mvn clean install -DskipTests=true'
+                sh &apos;mvn clean install -DskipTests=true&apos;
                 }
             }
              
           }
        }
-      stage('deliver') {
+      stage(&apos;deliver&apos;) {
         stages{
-           stage('build-image') {
+           stage(&apos;build-image&apos;) {
               steps {
                // variable sustitution
-               container('docker-client'){
-                 dir("${env.BASEPATH}") {
-                  sh "cp ${SOURCESPATH}/target/*.jar ${env.DOCKERPATH}"
+               container(&apos;docker-client&apos;){
+                 dir(&quot;${env.BASEPATH}&quot;) {
+                  sh &quot;cp ${SOURCESPATH}target/*.jar ${env.DOCKERPATH}&quot;
                   
                   script {
-                   	img = docker.build("${PRIVATE_REGISTRY}/${env.MICROSERVICE_NAME}:${params.DOCKER_MODULETAGVALUE}", "--network host ${env.DOCKERPATH}")
+                   	img = docker.build("${params.DOCKER_USERNAMEVALUE}/${env.MICROSERVICE_NAME}:${params.DOCKER_MODULETAGVALUE}", "--network host ${env.DOCKERPATH}")
                   }
                   
                  }
@@ -197,15 +207,16 @@
               }
            }
 
-           stage('deliver image') {
+           stage(&apos;deliver image&apos;) {
               when {
-                expression { params.DOCKER_PUSHREGISTRY_PRIVATE == 'true' }
+                expression { params.DOCKER_PUSHREGISTRY_PRIVATE == &apos;true&apos; }
               }
               steps {
-                container('docker-client'){
+                container(&apos;docker-client&apos;){
       				 script {
-                        docker.withRegistry("https://europe-docker.pkg.dev", "production-registry-write") {
+                        docker.withRegistry('https://production-registry.devops.onesait.com', 'registry-onesait') {
                             img.push()
+                            img.push("latest")
                         }
                     }
                  }

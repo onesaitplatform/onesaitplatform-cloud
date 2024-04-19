@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,9 +144,8 @@ public class LdapUserService {
 		} else {
 			user.setRole(roleRepository.findById(defaultRole).orElse(null));
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("Importing user {} from LDAP server", user.getUserId());
-		}		
+
+		log.debug("Importing user {} from LDAP server", user.getUserId());
 		final User createdUser = userRepository.save(user);
 		try {
 			generateToken(user);
@@ -170,9 +169,7 @@ public class LdapUserService {
 		}
 
 		if (!currentRole.getId().equals(ldapRole.getId())) {
-			if (log.isDebugEnabled()) {
-				log.debug("Updating user {} from LDAP server", user.getUserId());
-			}			
+			log.debug("Updating user {} from LDAP server", user.getUserId());
 			user.setRole(ldapRole);
 			userRepository.save(user);
 		}

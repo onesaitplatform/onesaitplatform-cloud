@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 package com.minsait.onesait.platform.systemconfig.init;
-
-import static com.minsait.onesait.platform.encryptor.config.JasyptConfig.JASYPT_BEAN;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -32,7 +30,6 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Calendar;
@@ -60,7 +57,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -76,7 +72,6 @@ import com.minsait.onesait.platform.commons.OSDetector;
 import com.minsait.onesait.platform.commons.exception.GenericOPException;
 import com.minsait.onesait.platform.commons.exception.GenericRuntimeOPException;
 import com.minsait.onesait.platform.config.ConfigDBTenantConfig;
-import com.minsait.onesait.platform.config.dto.OPResourceVO;
 import com.minsait.onesait.platform.config.model.Api;
 import com.minsait.onesait.platform.config.model.Api.ApiCategories;
 import com.minsait.onesait.platform.config.model.Api.ApiStates;
@@ -112,8 +107,7 @@ import com.minsait.onesait.platform.config.model.Internationalization;
 import com.minsait.onesait.platform.config.model.Layer;
 import com.minsait.onesait.platform.config.model.LineageRelations;
 import com.minsait.onesait.platform.config.model.LineageRelations.Group;
-import com.minsait.onesait.platform.config.model.MicroserviceTemplate;
-import com.minsait.onesait.platform.config.model.MicroserviceTemplate.Language;
+import com.minsait.onesait.platform.config.model.MarketAsset;
 import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.model.NotebookUserAccessType;
 import com.minsait.onesait.platform.config.model.ODTypology;
@@ -133,8 +127,6 @@ import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow.Frecue
 import com.minsait.onesait.platform.config.model.OntologyTimeSeriesWindow.WindowType;
 import com.minsait.onesait.platform.config.model.OntologyUserAccess;
 import com.minsait.onesait.platform.config.model.OntologyUserAccessType;
-import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource;
-import com.minsait.onesait.platform.config.model.OntologyVirtualDatasource.VirtualDatasourceType;
 import com.minsait.onesait.platform.config.model.Pipeline;
 import com.minsait.onesait.platform.config.model.Pipeline.PipelineStatus;
 import com.minsait.onesait.platform.config.model.PipelineUserAccessType;
@@ -142,7 +134,6 @@ import com.minsait.onesait.platform.config.model.Role;
 import com.minsait.onesait.platform.config.model.Rollback;
 import com.minsait.onesait.platform.config.model.Subcategory;
 import com.minsait.onesait.platform.config.model.Subscription;
-import com.minsait.onesait.platform.config.model.Tag;
 import com.minsait.onesait.platform.config.model.Token;
 import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.model.UserToken;
@@ -175,7 +166,7 @@ import com.minsait.onesait.platform.config.repository.I18nResourcesRepository;
 import com.minsait.onesait.platform.config.repository.InternationalizationRepository;
 import com.minsait.onesait.platform.config.repository.LayerRepository;
 import com.minsait.onesait.platform.config.repository.LineageRelationsRepository;
-import com.minsait.onesait.platform.config.repository.MicroserviceTemplateRepository;
+import com.minsait.onesait.platform.config.repository.MarketAssetRepository;
 import com.minsait.onesait.platform.config.repository.NotebookRepository;
 import com.minsait.onesait.platform.config.repository.NotebookUserAccessTypeRepository;
 import com.minsait.onesait.platform.config.repository.ODBinaryFilesDatasetRepository;
@@ -196,7 +187,6 @@ import com.minsait.onesait.platform.config.repository.RoleRepository;
 import com.minsait.onesait.platform.config.repository.RollbackRepository;
 import com.minsait.onesait.platform.config.repository.SubcategoryRepository;
 import com.minsait.onesait.platform.config.repository.SubscriptionRepository;
-import com.minsait.onesait.platform.config.repository.TagRepository;
 import com.minsait.onesait.platform.config.repository.TokenRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.repository.UserTokenRepository;
@@ -205,7 +195,6 @@ import com.minsait.onesait.platform.config.repository.WebProjectRepository;
 import com.minsait.onesait.platform.config.services.dataflow.beans.DataflowCredential;
 import com.minsait.onesait.platform.config.services.exceptions.WebProjectServiceException;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
-import com.minsait.onesait.platform.encryptor.config.JasyptConfig;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
 import com.minsait.onesait.platform.multitenant.config.model.MasterConfiguration;
@@ -224,7 +213,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-@DependsOn(JASYPT_BEAN)
 @ConditionalOnProperty(name = "onesaitplatform.init.configdb")
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -253,7 +241,7 @@ public class InitConfigDB {
 	private static final String OPERATIONTYPE_STR = "operationType";
 	private static final String VALUE_STR = "value";
 	private static final String SHA_STR = "SHA256(LoOY0z1pq+O2/h05ysBSS28kcFc8rSr7veWmyEi7uLs=)";
-	private static final String BUNDLE_STR = "BundlesRepository";
+	private static final String SHA_EDGE_STR = "SHA256(LoOY0z1pq+O2/h05ysBSS28kcFc8rSr7veWmyEi7uLs=)";
 	private static final String RESTSCHEMA_STR = "examples/Restaurants-schema.json";
 	private static final String GTKPEXAMPLE_STR = "GTKP-Example";
 	private static final String GENERALIOT_STR = "General,IoT";
@@ -268,17 +256,6 @@ public class InitConfigDB {
 	private static final String AIRLINE_SAFETY_STR = "airline_safety";
 	private static final String INDONESIAN_CITIES_STR = "indonesian_cities";
 	private static final String METEORITE_LANDINGS_STR = "meteorite_landings";
-	private static final String DEFAULT_NAME_TAG = "Flight";
-	private static final String DEFAULT_RESOURCES_ENERGY_NAME_TAG = "airportsdata";
-	private static final String DEFAULT_RESOURCES_DASHBO_NAME_TAG = "Visualize OpenFlights Data";
-	private static final String DEFAULT_RESOURCES_GATGET_NAME_TAG = "airportsByCountry";
-	private static final String DEFAULT_RESOURCES_GATGETTOP_NAME_TAG = "airportsByCountryTop10";
-	private static final String DEFAULT_RESOURCES_ENERGY_TYPE_TAG = "Ontology";
-	private static final String DEFAULT_RESOURCES_DASHBO_TYPE_TAG = "Dashboard";
-	private static final String DEFAULT_RESOURCES_GATGET_TYPE_TAG = "Gadget";
-	private static final String DEFAULT_RESOURCES_ENERGY_ID_TAG = "MASTER-Ontology-15";
-	private static final String DEFAULT_RESOURCES_DASHBO_ID_TAG = "MASTER-Dashboard-2";
-	private static final String DEFAULT_RESOURCES_GATGET_ID_TAG = "MASTER-Gadget-3";
 
 	private boolean started = false;
 	private User userDeveloper = null;
@@ -371,6 +348,9 @@ public class InitConfigDB {
 	UserTokenRepository userTokenRepository;
 
 	@Autowired
+	MarketAssetRepository marketAssetRepository;
+
+	@Autowired
 	NotebookRepository notebookRepository;
 
 	@Autowired
@@ -381,9 +361,6 @@ public class InitConfigDB {
 
 	@Autowired
 	OntologyVirtualDatasourceRepository ontologyVirtualDataSourceRepository;
-
-	@Autowired
-	TagRepository tagRepository;
 
 	@Autowired
 	private ResourceLoader resourceLoader;
@@ -494,16 +471,8 @@ public class InitConfigDB {
 	@Value("${onesaitplatform.init.multitenant.adminToken:}")
 	private String adminVerticalToken;
 
-	// id enabled (true) it will create a custon Streamsets instance for the
-	// vertical
-	@Value("${onesaitplatform.dataflow.create.vertical.instance:false}")
-	private boolean dataflowCreateVerticalInstance;
-
 	@Autowired
 	private MasterConfigurationRepository masterConfigurationRepository;
-
-	@Autowired
-	private MicroserviceTemplateRepository mstemplateRepository;
 
 	private static final String DATAMODEL_EMPTY_BASE = "EmptyBase";
 
@@ -697,8 +666,6 @@ public class InitConfigDB {
 			log.info("OK init_GadgetTemplate_Instances");
 			initGadgetsCrudAndImportTool();
 			log.info("OK init_GadgetTemplate_CrudAndImportTool");
-			initGadgetsTemplatesDefCharts();
-			log.info("OK init_GadgetTemplate_LineBarPie");
 
 			if (initSamples) {
 
@@ -747,6 +714,7 @@ public class InitConfigDB {
 				log.info("OK init_DigitalTwinDevice");
 			}
 
+			initMarketPlace();
 			log.info("OK init_Market");
 
 			if (initSamples) {
@@ -844,18 +812,6 @@ public class InitConfigDB {
 			}
 
 			initPrestoConnections();
-			log.info("Init Presto Connections");
-
-			initDataTags();
-			log.info("OK init_DataTags");
-
-			initMsTemplates();
-			log.info("OK init_MsTemplates");
-
-			if (timeseriesdbEnabled) {
-				initTimeseriesdbConnection();
-				log.info("Init Timeseriesdb Connection");
-			}
 		}
 
 	}
@@ -1046,6 +1002,7 @@ public class InitConfigDB {
 			newResource.setUser(getUserDeveloper());
 			resourceRepository.save(newResource);
 		}
+
 	}
 
 	private void initSubscription() {
@@ -1267,6 +1224,7 @@ public class InitConfigDB {
 			api.getApiOperations().add(operation);
 
 			apiRepository.save(api);
+
 		}
 	}
 
@@ -1379,6 +1337,7 @@ public class InitConfigDB {
 		baseLayer.setUrl("https://server.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer");
 
 		baseLayerRepository.save(baseLayer);
+
 	}
 
 	private void initRealms() {
@@ -1644,7 +1603,6 @@ public class InitConfigDB {
 			config.setDescription("BillableModules for docker environment");
 			config.setYmlConfig(loadFromResources("configurations/BillableModulesDocker.json"));
 			configurationRepository.save(config);
-
 		}
 
 		Configuration config = configurationRepository.findByTypeAndEnvironment(Type.LINEAGE, DEFAULT);
@@ -1819,33 +1777,7 @@ public class InitConfigDB {
 			config.setYmlConfig(loadFromResources("configurations/kafkaProperties.json"));
 			configurationRepository.save(config);
 		}
-		config = configurationRepository.findByTypeAndEnvironmentAndIdentification(
-				Type.KAFKA_INTERNAL_CLIENT_PROPERTIES, DEFAULT, "Kafka internal Client Properties");
-		if (config == null) {
-			config = new Configuration();
-			config.setDescription("Kafka properties to connect to Cluster.");
-			config.setEnvironment(DEFAULT);
-			config.setId("MASTER-Configuration-k0");
-			config.setType(Type.KAFKA_INTERNAL_CLIENT_PROPERTIES);
-			config.setUser(getUserAdministrator());
-			config.setIdentification("Kafka internal Client Properties");
-			config.setYmlConfig(loadFromResources("configurations/KafkaClientConfig_default.yml"));
-			configurationRepository.save(config);
-		}
 
-		config = configurationRepository.findByTypeAndEnvironmentAndIdentification(
-				Type.KAFKA_INTERNAL_CLIENT_PROPERTIES, DOCKER, "Kafka internal Client Properties");
-		if (config == null) {
-			config = new Configuration();
-			config.setDescription("Kafka properties to connect to Cluster.");
-			config.setEnvironment(DOCKER);
-			config.setId("MASTER-Configuration-k1");
-			config.setType(Type.KAFKA_INTERNAL_CLIENT_PROPERTIES);
-			config.setUser(getUserAdministrator());
-			config.setIdentification("Kafka internal Client Properties");
-			config.setYmlConfig(loadFromResources("configurations/KafkaClientConfig_docker.yml"));
-			configurationRepository.save(config);
-		}
 		config = configurationRepository.findById("MASTER-Configuration-30").orElse(null);
 		if (config == null) {
 			config = new Configuration();
@@ -1886,43 +1818,6 @@ public class InitConfigDB {
 			configurationRepository.save(config);
 		}
 
-		config = configurationRepository.findByTypeAndEnvironment(Type.BUNDLE_GIT, DEFAULT);
-		if (config == null) {
-			config = new Configuration();
-			config.setDescription(BUNDLE_STR);
-			config.setEnvironment(DEFAULT);
-			config.setId("MASTER-Configuration-33");
-			config.setType(Type.BUNDLE_GIT);
-			config.setUser(getUserAdministrator());
-			config.setIdentification(BUNDLE_STR);
-			config.setYmlConfig(loadFromResources("configurations/BundlesConfiguration.yml"));
-			configurationRepository.save(config);
-		}
-
-		config = configurationRepository.findById("MASTER-Configuration-34").orElse(null);
-		if (config == null) {
-			config = new Configuration();
-			config.setId("MASTER-Configuration-34");
-			config.setIdentification("AIConfiguration");
-			config.setType(Configuration.Type.AI);
-			config.setUser(getUserAdministrator());
-			config.setEnvironment(DEFAULT);
-			config.setDescription("AI Properties for OpenAI and other providers");
-			config.setYmlConfig(loadFromResources("configurations/AIConfiguration.yml"));
-			configurationRepository.save(config);
-		}
-		config = configurationRepository.findById("MASTER-Configuration-35").orElse(null);
-		if (config == null) {
-			config = new Configuration();
-			config.setId("MASTER-Configuration-35");
-			config.setIdentification("KubernetesManager");
-			config.setType(Configuration.Type.CUSTOM);
-			config.setUser(getUserAdministrator());
-			config.setEnvironment(DEFAULT);
-			config.setDescription("Environment Info for Kubernetes Manager ");
-			config.setYmlConfig(loadFromResources("configurations/KubernetesManager.yml"));
-			configurationRepository.save(config);
-		}
 	}
 
 	public void initClientPlatformOntology() {
@@ -2014,149 +1909,161 @@ public class InitConfigDB {
 		log.info("init ConsoleMenu");
 		final List<ConsoleMenu> menus = consoleMenuRepository.findAll();
 
-		if (!consoleMenuRepository.findById("MASTER-ConsoleMenu-1").isPresent()) {
-			try {
-				log.info("Adding menu for role ADMIN");
-
-				final ConsoleMenu menu = new ConsoleMenu();
-				menu.setId("MASTER-ConsoleMenu-1");
-				menu.setJson(loadFromResources("menu/menu_admin.json"));
-				menu.setRoleType(roleRepository.findById(Role.Type.ROLE_ADMINISTRATOR.toString()).orElse(null));
-				consoleMenuRepository.save(menu);
-			} catch (final Exception e) {
-				log.error("Error adding menu for role ADMIN");
-			}
+		if (!menus.isEmpty()) {
+			consoleMenuRepository.deleteAll();
 		}
-		
-		if (!consoleMenuRepository.findById("MASTER-ConsoleMenu-2").isPresent()) {
-			try {
-				log.info("Adding menu for role DEVELOPER");
 
-				final ConsoleMenu menu = new ConsoleMenu();
-				menu.setId("MASTER-ConsoleMenu-2");
-				menu.setJson(loadFromResources("menu/menu_developer.json"));
-				menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DEVELOPER.toString()).orElse(null));
-				consoleMenuRepository.save(menu);
-			} catch (final Exception e) {
-				log.error("Error adding menu for role DEVELOPER");
-			}
+		log.info("No menu elents found...adding");
+		try {
+			log.info("Adding menu for role ADMIN");
+
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-1");
+			menu.setJson(loadFromResources("menu/menu_admin.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_ADMINISTRATOR.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role ADMIN");
 		}
-		
-		if (!consoleMenuRepository.findById("MASTER-ConsoleMenu-3").isPresent()) {
-			try {
-				log.info("Adding menu for role USER");
+		try {
+			log.info("Adding menu for role DEVELOPER");
 
-				final ConsoleMenu menu = new ConsoleMenu();
-				menu.setId("MASTER-ConsoleMenu-3");
-
-				menu.setJson(loadFromResources("menu/menu_user.json"));
-				menu.setRoleType(roleRepository.findById(Role.Type.ROLE_USER.toString()).orElse(null));
-				consoleMenuRepository.save(menu);
-			} catch (final Exception e) {
-				log.error("Error adding menu for role USER");
-			}			
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-2");
+			menu.setJson(loadFromResources("menu/menu_developer.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DEVELOPER.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role DEVELOPER");
 		}
-		
-		if (!consoleMenuRepository.findById("MASTER-ConsoleMenu-4").isPresent()) {
-			try {
-				log.info("Adding menu for role ANALYTIC");
+		try {
+			log.info("Adding menu for role USER");
 
-				final ConsoleMenu menu = new ConsoleMenu();
-				menu.setId("MASTER-ConsoleMenu-4");
-				menu.setJson(loadFromResources("menu/menu_analytic.json"));
-				menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DATASCIENTIST.toString()).orElse(null));
-				consoleMenuRepository.save(menu);
-			} catch (final Exception e) {
-				log.error("Error adding menu for role ANALYTIC");
-			}			
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-3");
+
+			menu.setJson(loadFromResources("menu/menu_user.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_USER.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role USER");
 		}
-		
-		if (!consoleMenuRepository.findById("MASTER-ConsoleMenu-5").isPresent()) {
-			try {
-				log.info("Adding menu for role DATAVIEWER");
+		try {
+			log.info("Adding menu for role ANALYTIC");
 
-				final ConsoleMenu menu = new ConsoleMenu();
-				menu.setId("MASTER-ConsoleMenu-5");
-				menu.setJson(loadFromResources("menu/menu_dataviewer.json"));
-				menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DATAVIEWER.toString()).orElse(null));
-				consoleMenuRepository.save(menu);
-			} catch (final Exception e) {
-				log.error("Error adding menu for role DATAVIEWER");
-			}			
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-4");
+			menu.setJson(loadFromResources("menu/menu_analytic.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DATASCIENTIST.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role ANALYTIC");
 		}
-		
-		if (!consoleMenuRepository.findById("MASTER-ConsoleMenu-6").isPresent()) {
-			try {
-				log.info("Adding menu for role PLATFORM_ADMINISTRATOR");
+		try {
+			log.info("Adding menu for role DATAVIEWER");
 
-				final ConsoleMenu menu = new ConsoleMenu();
-				menu.setId("MASTER-ConsoleMenu-6");
-				menu.setJson(loadFromResources("menu/menu_platform_admin.json"));
-				menu.setRoleType(roleRepository.findById(Role.Type.ROLE_PLATFORM_ADMIN.toString()).orElse(null));
-				consoleMenuRepository.save(menu);
-			} catch (final Exception e) {
-				log.error("Error adding menu for role PLATFORM_ADMINISTRATOR");
-			}			
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-5");
+			menu.setJson(loadFromResources("menu/menu_dataviewer.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DATAVIEWER.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role DATAVIEWER");
 		}
-		
-		if (!consoleMenuRepository.findById("MASTER-ConsoleMenu-7").isPresent()) {
-			try {
-				log.info("Adding menu for role DEVOPS");
+		try {
+			log.info("Adding menu for role PLATFORM_ADMINISTRATOR");
 
-				final ConsoleMenu menu = new ConsoleMenu();
-				menu.setId("MASTER-ConsoleMenu-7");
-
-				menu.setJson(loadFromResources("menu/menu_devops.json"));
-				menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DEVOPS.toString()).orElse(null));
-				consoleMenuRepository.save(menu);
-			} catch (final Exception e) {
-				log.error("Error adding menu for role DEVOPS");
-			}				
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-6");
+			menu.setJson(loadFromResources("menu/menu_platform_admin.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_PLATFORM_ADMIN.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role DATAVIEWER");
 		}
-		
-		if (!consoleMenuRepository.findById("MASTER-ConsoleMenu-8").isPresent()) {
-			try {
-				log.info("Adding menu for role PARTNER");
+		try {
+			log.info("Adding menu for role DEVOPS");
 
-				final ConsoleMenu menu = new ConsoleMenu();
-				menu.setId("MASTER-ConsoleMenu-8");
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-7");
 
-				menu.setJson(loadFromResources("menu/menu_partner.json"));
-				menu.setRoleType(roleRepository.findById(Role.Type.ROLE_PARTNER.toString()).orElse(null));
-				consoleMenuRepository.save(menu);
-			} catch (final Exception e) {
-				log.error("Error adding menu for role PARTNER");
-			}
+			menu.setJson(loadFromResources("menu/menu_devops.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_DEVOPS.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role DEVOPS");
 		}
-		
-		if (!consoleMenuRepository.findById("MASTER-ConsoleMenu-9").isPresent()) {
-			try {
-				log.info("Adding menu for role OPERATIONS");
+		try {
+			log.info("Adding menu for role PARTNER");
 
-				final ConsoleMenu menu = new ConsoleMenu();
-				menu.setId("MASTER-ConsoleMenu-9");
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-8");
 
-				menu.setJson(loadFromResources("menu/menu_operations.json"));
-				menu.setRoleType(roleRepository.findById(Role.Type.ROLE_OPERATIONS.toString()).orElse(null));
-				consoleMenuRepository.save(menu);
-			} catch (final Exception e) {
-				log.error("Error adding menu for role OPERATIONS");
-			}			
+			menu.setJson(loadFromResources("menu/menu_partner.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_PARTNER.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role PARTNER");
 		}
-		
-		if (!consoleMenuRepository.findById("MASTER-ConsoleMenu-10").isPresent()) {
-			try {
-				log.info("Adding menu for role SYS_ADMIN");
+		try {
+			log.info("Adding menu for role OPERATIONS");
 
-				final ConsoleMenu menu = new ConsoleMenu();
-				menu.setId("MASTER-ConsoleMenu-10");
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-9");
 
-				menu.setJson(loadFromResources("menu/menu_sys_admin.json"));
-				menu.setRoleType(roleRepository.findById(Role.Type.ROLE_SYS_ADMIN.toString()).orElse(null));
-				consoleMenuRepository.save(menu);
-			} catch (final Exception e) {
-				log.error("Error adding menu for role SYS_ADMIN");
-			}			
+			menu.setJson(loadFromResources("menu/menu_operations.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_OPERATIONS.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role OPERATIONS");
+		}
+		try {
+			log.info("Adding menu for role SYS_ADMIN");
+
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-10");
+
+			menu.setJson(loadFromResources("menu/menu_sys_admin.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_SYS_ADMIN.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role SYS_ADMIN");
+		}
+		try {
+			log.info("Adding menu for role EDGE_USER");
+
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-11");
+
+			menu.setJson(loadFromResources("menu/menu_edge_user.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_EDGE_USER.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role SYS_ADMIN");
+		}
+		try {
+			log.info("Adding menu for role EDGE_USER");
+
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-12");
+
+			menu.setJson(loadFromResources("menu/menu_edge_developer.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_EDGE_DEVELOPER.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role EDGE_DEVELOPER");
+		}
+		try {
+			log.info("Adding menu for role EDGE_ADMINISTRATOR");
+
+			final ConsoleMenu menu = new ConsoleMenu();
+			menu.setId("MASTER-ConsoleMenu-13");
+
+			menu.setJson(loadFromResources("menu/menu_edge_admin.json"));
+			menu.setRoleType(roleRepository.findById(Role.Type.ROLE_EDGE_ADMINISTRATOR.toString()).orElse(null));
+			consoleMenuRepository.save(menu);
+		} catch (final Exception e) {
+			log.error("Error adding menu for role EDGE_ADMINISTRATOR");
 		}
 	}
 
@@ -3504,9 +3411,7 @@ public class InitConfigDB {
 			dataModel.setUser(getUserAdministrator());
 			dataModelRepository.save(dataModel);
 			//
-		}
-		if (!dataModelRepository.findById("MASTER-DataModel-26").isPresent()) {
-			final DataModel dataModel = new DataModel();
+			dataModel = new DataModel();
 			dataModel.setId("MASTER-DataModel-26");
 			dataModel.setIdentification("AuditPlatform");
 			dataModel.setTypeEnum(DataModel.MainType.SYSTEM_ONTOLOGY);
@@ -3514,10 +3419,6 @@ public class InitConfigDB {
 			dataModel.setDescription("System Ontology. Auditory of operations between user and Platform.");
 			dataModel.setLabels(GENERALIOT_STR);
 			dataModel.setUser(getUserAdministrator());
-			dataModelRepository.save(dataModel);
-		} else {
-			final DataModel dataModel = dataModelRepository.findById("MASTER-DataModel-26").get();
-			dataModel.setJsonSchema(loadFromResources("datamodels/DataModel_AuditPlatform.json"));
 			dataModelRepository.save(dataModel);
 		}
 
@@ -6358,6 +6259,33 @@ public class InitConfigDB {
 				type.setRole(roleRepository.findById(Role.Type.ROLE_USER.toString()).orElse(null));
 				userCDBRepository.save(type);
 
+				type = new User();
+				type.setUserId("edge_administrator");
+				type.setPassword(SHA_EDGE_STR);
+				type.setFullName("EDGE Administrator User of the Platform");
+				type.setEmail("edge_admin@onesaitplatform.com");
+				type.setActive(true);
+				type.setRole(roleRepository.findById(Role.Type.ROLE_EDGE_ADMINISTRATOR.toString()).orElse(null));
+				userCDBRepository.save(type);
+
+				type = new User();
+				type.setUserId("edge_developer");
+				type.setPassword(SHA_EDGE_STR);
+				type.setFullName("EDGE Developer User of the Platform");
+				type.setEmail("edge_developer@onesaitplatform.com");
+				type.setActive(true);
+				type.setRole(roleRepository.findById(Role.Type.ROLE_EDGE_DEVELOPER.toString()).orElse(null));
+				userCDBRepository.save(type);
+
+				type = new User();
+				type.setUserId("edge_user");
+				type.setPassword(SHA_EDGE_STR);
+				type.setFullName("EDGE User User of the Platform");
+				type.setEmail("edge_user@onesaitplatform.com");
+				type.setActive(true);
+				type.setRole(roleRepository.findById(Role.Type.ROLE_EDGE_USER.toString()).orElse(null));
+				userCDBRepository.save(type);
+
 			} catch (final Exception e) {
 				log.error("Error UserCDB:" + e.getMessage());
 				userCDBRepository.deleteAll();
@@ -6402,6 +6330,223 @@ public class InitConfigDB {
 	@Autowired
 	private MasterUserRepository masterUserRepository;
 
+	public void initMarketPlace() {
+		log.info("init MarketPlace");
+
+		final String MARKET_IMG_NODERED_PNG = "market/img/NODERED.png";
+		final String MARKET_IMG_NOTEBOOK_PNG = "market/img/NOTEBOOK.png";
+
+		final List<MarketAsset> marketAssets = marketAssetRepository.findAll();
+		if (marketAssets.isEmpty()) {
+			log.info("No market Assets...adding");
+			MarketAsset marketAsset = new MarketAsset();
+			// Getting Started Guide
+			marketAsset.setId("MASTER-MarketAsset-1");
+			marketAsset.setIdentification("GettingStartedGuide");
+			marketAsset.setUser(getUserAdministrator());
+			marketAsset.setPublic(true);
+			marketAsset.setState(MarketAsset.MarketAssetState.APPROVED);
+			marketAsset.setMarketAssetType(MarketAsset.MarketAssetType.DOCUMENT);
+			marketAsset.setPaymentMode(MarketAsset.MarketAssetPaymentMode.FREE);
+			marketAsset.setJsonDesc(loadFromResources("market/details/GettingStartedGuide.json"));
+			marketAsset.setImage(loadFileFromResources("market/img/asset.jpg"));
+			marketAsset.setImageType("jpg");
+			marketAssetRepository.save(marketAsset);
+
+			// Architecture
+			marketAsset = new MarketAsset();
+			marketAsset.setId("MASTER-MarketAsset-2");
+			marketAsset.setIdentification("onesaitPlatformArchitecture");
+			marketAsset.setUser(getUserAdministrator());
+			marketAsset.setPublic(true);
+			marketAsset.setState(MarketAsset.MarketAssetState.APPROVED);
+			marketAsset.setMarketAssetType(MarketAsset.MarketAssetType.DOCUMENT);
+			marketAsset.setPaymentMode(MarketAsset.MarketAssetPaymentMode.FREE);
+			marketAsset.setJsonDesc(loadFromResources("market/details/onesaitPlatformArchitecture.json"));
+			marketAsset.setImage(loadFileFromResources("market/img/asset.jpg"));
+			marketAsset.setImageType("jpg");
+			marketAssetRepository.save(marketAsset);
+
+			// onesaitPlatform WITH DOCKER
+			marketAsset = new MarketAsset();
+			marketAsset.setId("MASTER-MarketAsset-3");
+			marketAsset.setIdentification("onesaitPlatformWithDocker");
+			marketAsset.setUser(getUserAdministrator());
+			marketAsset.setPublic(true);
+			marketAsset.setState(MarketAsset.MarketAssetState.APPROVED);
+			marketAsset.setMarketAssetType(MarketAsset.MarketAssetType.DOCUMENT);
+			marketAsset.setPaymentMode(MarketAsset.MarketAssetPaymentMode.FREE);
+			marketAsset.setJsonDesc(loadFromResources("market/details/onesaitPlatformWithDocker.json"));
+			marketAsset.setImage(loadFileFromResources("market/img/docker.png"));
+			marketAsset.setImageType("png");
+			marketAssetRepository.save(marketAsset);
+
+			// DIGITAL TWIN
+			marketAsset = new MarketAsset();
+			marketAsset.setId("MASTER-MarketAsset-4");
+			marketAsset.setIdentification("DIGITAL TWIN EXAMPLE");
+			marketAsset.setUser(getUserAdministrator());
+			marketAsset.setPublic(true);
+			marketAsset.setState(MarketAsset.MarketAssetState.APPROVED);
+			marketAsset.setMarketAssetType(MarketAsset.MarketAssetType.APPLICATION);
+			marketAsset.setPaymentMode(MarketAsset.MarketAssetPaymentMode.FREE);
+			marketAsset.setJsonDesc(loadFromResources("market/details/DigitalTwin.json"));
+			marketAsset.setImage(loadFileFromResources("market/img/gears.png"));
+			marketAsset.setImageType("png");
+			marketAsset.setContent(loadFileFromResources("market/docs/TurbineHelsinki.zip"));
+			marketAsset.setContentId("TurbineHelsinki.zip");
+			marketAssetRepository.save(marketAsset);
+
+			// OAUTH2 Authentication
+			marketAsset = new MarketAsset();
+			marketAsset.setId("MASTER-MarketAsset-5");
+			marketAsset.setIdentification("OAuth2AndJWT");
+			marketAsset.setUser(getUserAdministrator());
+			marketAsset.setPublic(true);
+			marketAsset.setState(MarketAsset.MarketAssetState.APPROVED);
+			marketAsset.setMarketAssetType(MarketAsset.MarketAssetType.DOCUMENT);
+			marketAsset.setPaymentMode(MarketAsset.MarketAssetPaymentMode.FREE);
+			marketAsset.setJsonDesc(loadFromResources("market/details/Oauth2Authentication.json"));
+			marketAsset.setContent(loadFileFromResources("market/docs/oauth2-authentication.zip"));
+			marketAsset.setContentId("oauth2-authentication.zip");
+			marketAssetRepository.save(marketAsset);
+
+			// JSON document example for Data import tool
+			marketAsset = new MarketAsset();
+			marketAsset.setId("MASTER-MarketAsset-6");
+			marketAsset.setIdentification("Countries JSON");
+			marketAsset.setUser(getUserAdministrator());
+			marketAsset.setPublic(true);
+			marketAsset.setState(MarketAsset.MarketAssetState.APPROVED);
+			marketAsset.setMarketAssetType(MarketAsset.MarketAssetType.DOCUMENT);
+			marketAsset.setPaymentMode(MarketAsset.MarketAssetPaymentMode.FREE);
+			marketAsset.setJsonDesc(loadFromResources("market/details/Countries.json"));
+			marketAsset.setImage(loadFileFromResources("market/img/json.png"));
+			marketAsset.setImageType("png");
+			marketAsset.setContent(loadFileFromResources("market/docs/countries.json"));
+			marketAsset.setContentId("countries.json");
+			marketAssetRepository.save(marketAsset);
+
+			// Digital Twin Web
+			createMarketAsset("MASTER-MarketAsset-7", "SenseHatDemo", MarketAsset.MarketAssetState.APPROVED,
+					MarketAsset.MarketAssetType.WEBPROJECT, MarketAsset.MarketAssetPaymentMode.FREE, true,
+					"market/details/SenseHatDemo.json", null, null, null, null);
+
+			// Digital Twin Sense Hat
+			createMarketAsset("MASTER-MarketAsset-8", "DigitalTwinSenseHat", MarketAsset.MarketAssetState.APPROVED,
+					MarketAsset.MarketAssetType.APPLICATION, MarketAsset.MarketAssetPaymentMode.FREE, true,
+					"market/details/DigitalTwinSenseHat.json", "market/img/jar-file.jpg", "jpg",
+					"market/docs/SensehatHelsinki.zip", "SensehatHelsinki.zip");
+
+			// Videos
+			createMarketAsset("MASTER-MarketAsset-9", "Tutorials", MarketAsset.MarketAssetState.APPROVED,
+					MarketAsset.MarketAssetType.DOCUMENT, MarketAsset.MarketAssetPaymentMode.FREE, true,
+					"market/details/Tutorials.json", null, null, null, null);
+
+			// Quickview Video
+			createMarketAsset("MASTER-MarketAsset-10", "QuickviewPlatform", MarketAsset.MarketAssetState.APPROVED,
+					MarketAsset.MarketAssetType.DOCUMENT, MarketAsset.MarketAssetPaymentMode.FREE, true,
+					"market/details/QuickviewPlatform.json", null, null, null, null);
+
+			// Health Check Android Application
+			createMarketAsset("MASTER-MarketAsset-11", "HealthCheckAndroidApplication",
+					MarketAsset.MarketAssetState.APPROVED, MarketAsset.MarketAssetType.APPLICATION,
+					MarketAsset.MarketAssetPaymentMode.FREE, true, "market/details/HealthCheckApplication.json", null,
+					null, "market/docs/HealthCheckApp.zip", "HealthCheckApp.zip");
+
+			// Airports Dashboard
+			createMarketAsset("MASTER-MarketAsset-12", "AirportsDashboard", MarketAsset.MarketAssetState.APPROVED,
+					MarketAsset.MarketAssetType.URLAPPLICATION, MarketAsset.MarketAssetPaymentMode.FREE, true,
+					"market/details/Airports.json", null, null, null, null);
+
+			// Notebook - Regression
+			createMarketAsset("MASTER-MarketAsset-13", "Notebook", MarketAsset.MarketAssetState.APPROVED,
+					MarketAsset.MarketAssetType.DOCUMENT, MarketAsset.MarketAssetPaymentMode.FREE, true,
+					"market/details/Notebookregression.json", MARKET_IMG_NOTEBOOK_PNG, "png",
+					"market/docs/LinearRegressionBostonAttributesDemo.json",
+					"LinearRegressionBostonAttributesDemo.json");
+
+			// Notebook - Phyton Examples
+			createMarketAsset("MASTER-MarketAsset-14", "NotebookPython", MarketAsset.MarketAssetState.APPROVED,
+					MarketAsset.MarketAssetType.DOCUMENT, MarketAsset.MarketAssetPaymentMode.FREE, true,
+					"market/details/NotebookPythonClient.json", MARKET_IMG_NOTEBOOK_PNG, "png",
+					"market/docs/OnesaitPlatformPythonClient.json", "OnesaitPlatformPythonClient.json");
+
+			// Notebook - Spark Examples
+			createMarketAsset("MASTER-MarketAsset-15", "NotebookSpark", MarketAsset.MarketAssetState.APPROVED,
+					MarketAsset.MarketAssetType.DOCUMENT, MarketAsset.MarketAssetPaymentMode.FREE, true,
+					"market/details/NotebookSparkClient.json", MARKET_IMG_NOTEBOOK_PNG, "png",
+					"market/docs/OnesaitPlatformSparkClient.json", "OnesaitPlatformSparkClient.json");
+
+			// Notebook - Examples Int.
+			createMarketAsset("MASTER-MarketAsset-16", "NotebookZeppelin", MarketAsset.MarketAssetState.APPROVED,
+					MarketAsset.MarketAssetType.DOCUMENT, MarketAsset.MarketAssetPaymentMode.FREE, true,
+					"market/details/NotebookZeppelinInterpretes.json", MARKET_IMG_NOTEBOOK_PNG, "png",
+					"market/docs/OnesaitPlatformZeppelinInterpretes.json", "OnesaitPlatformZeppelinInterpretes.json");
+
+			// Node-Red Flow - Text Azure Cognitive Services
+			createMarketAsset("MASTER-MarketAsset-17", "NoderedACSLanguage", MarketAsset.MarketAssetState.APPROVED,
+					MarketAsset.MarketAssetType.DOCUMENT, MarketAsset.MarketAssetPaymentMode.FREE, true,
+					"market/details/NoderedAzureCognitiveServiceLanguage.json", MARKET_IMG_NODERED_PNG, "png",
+					"market/docs/AzureCognitiveServiceLanguage.json", "AzureCognitiveServiceLanguage.json");
+
+			// Node-Red Flow - Speech Azure Cognitive Services
+			createMarketAsset("MASTER-MarketAsset-18", "NoderedACSSpeech", MarketAsset.MarketAssetState.APPROVED,
+					MarketAsset.MarketAssetType.DOCUMENT, MarketAsset.MarketAssetPaymentMode.FREE, true,
+					"market/details/NoderedAzureCognitiveServiceSpeech.json", MARKET_IMG_NODERED_PNG, "png",
+					"market/docs/AzureCognitiveServiceSpeech.json", "AzureCognitiveServiceSpeech.json");
+
+			// Node-Red Flow - Translation Azure Cognitive Services
+			createMarketAsset("MASTER-MarketAsset-19", "NoderedACSTranslation", MarketAsset.MarketAssetState.APPROVED,
+					MarketAsset.MarketAssetType.DOCUMENT, MarketAsset.MarketAssetPaymentMode.FREE, true,
+					"market/details/NoderedAzureCognitiveServiceTranslation.json", MARKET_IMG_NODERED_PNG, "png",
+					"market/docs/AzureCognitiveServiceTranslation.json", "AzureCognitiveServiceTranslation.json");
+
+			// Node-Red Flow - Vision Azure Cognitive Services
+			createMarketAsset("MASTER-MarketAsset-20", "NoderedACSVision", MarketAsset.MarketAssetState.APPROVED,
+					MarketAsset.MarketAssetType.DOCUMENT, MarketAsset.MarketAssetPaymentMode.FREE, true,
+					"market/details/NoderedAzureCognitiveServiceVision.json", MARKET_IMG_NODERED_PNG, "png",
+					"market/docs/AzureCognitiveServiceVision.json", "AzureCognitiveServiceVision.json");
+
+			// Node-Red Flow - External API REST Invoke
+			createMarketAsset("MASTER-MarketAsset-21", "OpenNotify", MarketAsset.MarketAssetState.APPROVED,
+					MarketAsset.MarketAssetType.DOCUMENT, MarketAsset.MarketAssetPaymentMode.FREE, true,
+					"market/details/OpenNotify.json", MARKET_IMG_NODERED_PNG, "png", "market/docs/OpenNotify.json",
+					"AzureCognitiveServiceVision.json");
+
+		}
+		// SSO-OAuth2-Plugin
+		if (!marketAssetRepository.findById("MASTER-MarketAsset-22").isPresent()) {
+			createMarketAsset("MASTER-MarketAsset-22", "sso-oauth-plugin", MarketAsset.MarketAssetState.APPROVED,
+					MarketAsset.MarketAssetType.APPLICATION, MarketAsset.MarketAssetPaymentMode.FREE, true,
+					"market/details/sso-oauth-plugin.json", null, null, "market/docs/sso-oauth-plugin.zip", null);
+		}
+	}
+
+	private void createMarketAsset(String id, String identification, MarketAsset.MarketAssetState state,
+			MarketAsset.MarketAssetType assetType, MarketAsset.MarketAssetPaymentMode paymentMode, boolean isPublic,
+			String jsonDesc, String image, String imageType, String content, String contentId) {
+
+		final MarketAsset marketAsset = new MarketAsset();
+		marketAsset.setId(id);
+		marketAsset.setIdentification(identification);
+		marketAsset.setUser(getUserAdministrator());
+		marketAsset.setPublic(isPublic);
+		marketAsset.setState(state);
+		marketAsset.setMarketAssetType(assetType);
+		marketAsset.setPaymentMode(paymentMode);
+		marketAsset.setJsonDesc(loadFromResources(jsonDesc));
+		if (image != null) {
+			marketAsset.setImage(loadFileFromResources(image));
+			marketAsset.setImageType(imageType);
+		}
+		if (content != null) {
+			marketAsset.setContent(loadFileFromResources(content));
+			marketAsset.setContentId(contentId);
+		}
+		marketAssetRepository.save(marketAsset);
+	}
+
 	public void initNotebook() {
 		log.info("init notebook");
 		final List<Notebook> notebook = notebookRepository.findAll();
@@ -6426,20 +6571,11 @@ public class InitConfigDB {
 		log.info("init dataflow instances");
 		final boolean hasDefault = dataflowInstanceRepository.findByDefaultInstance(true) != null;
 		if (!hasDefault) {
-
-			// Default vertical has no sufix
-			String verticalSufix = "";
-			if (!MultitenancyContextHolder.getVerticalSchema().equals("onesaitplatform_config")
-					&& dataflowCreateVerticalInstance) {
-				// if vertical is not the default one
-				verticalSufix = "-" + MultitenancyContextHolder.getVerticalSchema().substring(23);
-			}
-
 			final DataflowInstance instance = new DataflowInstance();
-			instance.setId("MASTER-DataflowInstance" + verticalSufix + "-1");
+			instance.setId("MASTER-DataflowInstance-1");
 			instance.setIdentification("Default");
-			instance.setId("MASTER-DataflowInstance" + verticalSufix + "-1");
-			instance.setUrl("http://streamsets" + verticalSufix + ":18630");
+			instance.setId("MASTER-DataflowInstance-1");
+			instance.setUrl("http://streamsets:18630");
 			instance.setDefaultInstance(true);
 
 			final DataflowCredential adminCredential = new DataflowCredential();
@@ -6485,7 +6621,7 @@ public class InitConfigDB {
 	public void initNotebookUserAccessType() {
 		log.info("init notebook access type");
 		final List<NotebookUserAccessType> notebookUat = notebookUserAccessTypeRepository.findAll();
-		if (!notebookUat.contains(ACCESS_TYPE_ONE)) {
+		if (notebookUat.isEmpty()) {
 			try {
 				final NotebookUserAccessType p = new NotebookUserAccessType();
 				p.setId(ACCESS_TYPE_ONE);
@@ -6495,32 +6631,8 @@ public class InitConfigDB {
 			} catch (final Exception e) {
 				log.info("Could not create notebook access type by:" + e.getMessage());
 			}
-		}
 
-		if (!notebookUat.contains("ACCESS-TYPE-2")) {
-			try {
-				final NotebookUserAccessType p = new NotebookUserAccessType();
-				p.setId("ACCESS-TYPE-2");
-				p.setDescription("View Access");
-				p.setName("VIEW");
-				notebookUserAccessTypeRepository.save(p);
-			} catch (final Exception e) {
-				log.info("Could not create notebook access type by:" + e.getMessage());
-			}
 		}
-
-		if (!notebookUat.contains("ACCESS-TYPE-3")) {
-			try {
-				final NotebookUserAccessType p = new NotebookUserAccessType();
-				p.setId("ACCESS-TYPE-3");
-				p.setDescription("Runner Access");
-				p.setName("RUN");
-				notebookUserAccessTypeRepository.save(p);
-			} catch (final Exception e) {
-				log.info("Could not create notebook access type by:" + e.getMessage());
-			}
-		}
-
 	}
 
 	public void initDataflowUserAccessType() {
@@ -6700,240 +6812,319 @@ public class InitConfigDB {
 
 		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-4").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
-		} else {
-			gadgetTemplate = gadgetTemplateRepository.findById("MASTER-GadgetTemplate-4").get();
-		}
-		gadgetTemplate.setId("MASTER-GadgetTemplate-4");
-		gadgetTemplate.setIdentification("ReactMaterialList");
-		gadgetTemplate.setPublic(true);
-		gadgetTemplate.setType("reactJS");
-		gadgetTemplate.setHeaderlibs(
-				"<script src=\"/controlpanel/static/vendor/react/react.production.min.js\" crossorigin></script>\n"
-						+ "<script src=\"/controlpanel/static/vendor/react/react-dom.production.min.js\" crossorigin></script>\n"
-						+ "<script src=\"/controlpanel/static/vendor/material-ui/material-ui.production.min.js\" crossorigin></script>\n"
-						+ " ");
-		gadgetTemplate.setDescription("react js material list need to import dependencies");
-		gadgetTemplate.setTemplate("<style>\n" + "    .MuiListItemText-root{\n" + "        background: #d8eaff\n"
-				+ "    }\n" + "</style>");
+			gadgetTemplate.setId("MASTER-GadgetTemplate-4");
+			gadgetTemplate.setIdentification("ReactMaterialList");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("reactJS");
+			gadgetTemplate.setHeaderlibs(
+					"<script src=\"/controlpanel/static/vendor/react/react.production.min.js\" crossorigin></script>\n"
+							+ "<script src=\"/controlpanel/static/vendor/react/react-dom.production.min.js\" crossorigin></script>\n"
+							+ "<script src=\"/controlpanel/static/vendor/material-ui/material-ui.production.min.js\" crossorigin></script>\n"
+							+ " ");
+			gadgetTemplate.setDescription("react js material list need to import dependencies");
+			gadgetTemplate.setTemplate("<style>\n" + "    .MuiListItemText-root{\n" + "        background: #d8eaff\n"
+					+ "    }\n" + "</style>");
 
-		gadgetTemplate.setTemplateJS("\n" + "const {\n" + "  List,\n" + "  ListItem,\n" + "  ListItemText\n"
-				+ "} = MaterialUI;\n" + "\n" + "var key = /*label-osp  name=\"key\" type=\"ds_parameter\"*/\"dummyk\"\n"
-				+ "var value = /*label-osp  name=\"value\" type=\"ds_parameter\"*/\"dummyv\"\n" + "\n" + "\n"
-				+ "function GadgetComponent(props) {\n" + "    const ds = props.ds;\n"
-				+ "    const listItems = ds.map(inst => React.createElement(ListItem, {button: true}, React.createElement(ListItemText, {\n"
-				+ "        primary: inst[key]\n" + "    }), inst[value]));\n"
-				+ "    return React.createElement(List, null, listItems);\n" + "}\n" + "\n"
-				+ "vm.renderReactGadget = function(ds, old_ds){\n" + "  ReactDOM.render(\n"
-				+ "      React.createElement(GadgetComponent, { ds: ds || [{dummyk:1,dummyv:2}] }), document.querySelector('#' + vm.id + ' reacttemplate' + ' .rootapp')\n"
-				+ "  );\n" + "}\n" + "\n" + "vm.destroyReactGadget = function(){\n" + "\n" + "}");
-		gadgetTemplate.setUser(getUserAdministrator());
-		gadgetTemplateRepository.save(gadgetTemplate);
+			gadgetTemplate.setTemplateJS("\n" + "const {\n" + "  List,\n" + "  ListItem,\n" + "  ListItemText\n"
+					+ "} = MaterialUI;\n" + "\n"
+					+ "var key = /*label-osp  name=\"key\" type=\"ds_parameter\"*/\"dummyk\"\n"
+					+ "var value = /*label-osp  name=\"value\" type=\"ds_parameter\"*/\"dummyv\"\n" + "\n" + "\n"
+					+ "function GadgetComponent(props) {\n" + "    const ds = props.ds;\n"
+					+ "    const listItems = ds.map(inst => React.createElement(ListItem, {button: true}, React.createElement(ListItemText, {\n"
+					+ "        primary: inst[key]\n" + "    }), inst[value]));\n"
+					+ "    return React.createElement(List, null, listItems);\n" + "}\n" + "\n"
+					+ "vm.renderReactGadget = function(ds, old_ds){\n" + "  ReactDOM.render(\n"
+					+ "      React.createElement(GadgetComponent, { ds: ds || [{dummyk:1,dummyv:2}] }), document.querySelector('#' + vm.id + ' reacttemplate' + ' .rootapp')\n"
+					+ "  );\n" + "}\n" + "\n" + "vm.destroyReactGadget = function(){\n" + "\n" + "}");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
+		}
 
 		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-5").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
-		} else {
-			gadgetTemplate = gadgetTemplateRepository.findById("MASTER-GadgetTemplate-5").get();
-		}
-		gadgetTemplate = new GadgetTemplate();
-		gadgetTemplate.setId("MASTER-GadgetTemplate-5");
-		gadgetTemplate.setIdentification("VueEchartLineorBar");
-		gadgetTemplate.setPublic(true);
-		gadgetTemplate.setType("vueJS");
-		gadgetTemplate.setHeaderlibs(
-				"<!--Write here your html code to load required libs and init scripts for your component\n"
-						+ "    When you use it into some Dashboard you'll need to include it in header libs section -->\n"
-						+ "    <script src=\"/controlpanel/static/vendor/echarts-410/echarts.min.js\"></script>\n"
-						+ "<script src=\"/controlpanel/static/vendor/vue-echarts-402/index.js\"></script>");
-		gadgetTemplate.setDescription("vue echart component from datasource bar or line");
-		gadgetTemplate.setTemplate("<!-- Write your HTML <div></div> and CSS <style></style> here -->\n"
-				+ "<!--Focus here and F11 or F10 to full screen editor-->\n"
-				+ "<v-chart :options=\"chartConfig\"></v-chart>");
+			gadgetTemplate.setId("MASTER-GadgetTemplate-5");
+			gadgetTemplate.setIdentification("VueEchartLineorBar");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("vueJS");
+			gadgetTemplate.setHeaderlibs(
+					"<!--Write here your html code to load required libs and init scripts for your component\n"
+							+ "    When you use it into some Dashboard you'll need to include it in header libs section -->\n"
+							+ "    <script src=\"/controlpanel/static/vendor/echarts-410/echarts.min.js\"></script>\n"
+							+ "<script src=\"/controlpanel/static/vendor/vue-echarts-402/index.js\"></script>");
+			gadgetTemplate.setDescription("vue echart component from datasource bar or line");
+			gadgetTemplate.setTemplate("<!-- Write your HTML <div></div> and CSS <style></style> here -->\n"
+					+ "<!--Focus here and F11 or F10 to full screen editor-->\n"
+					+ "<v-chart :options=\"chartConfig\"></v-chart>");
 
-		gadgetTemplate.setTemplateJS("//Write your Vue with JSON controller code here\n" + "\n"
-				+ "//Focus here and F11 or F10 to full screen editor\n" + "\n"
-				+ "var color = /*select-osp  name=\"ColorSerie\" type=\"ds\" options=\"red,blue,green,orange,yellow,black,purple,pink\"*/ 'red'\n"
-				+ "var typechart = /*select-osp  name=\"ChartType\" type=\"ds\" options=\"bar,line\"*/ 'line'\n"
-				+ "var key = /*label-osp  name=\"Key\" type=\"ds_parameter\"*/ \"key\"\n"
-				+ "var value = /*label-osp  name=\"Value\" type=\"ds_parameter\"*/ \"value\"\n" + "\n"
-				+ "//This function will be call once to init components\n" + "vm.vueconfig = {\n"
-				+ "    el: document.getElementById(vm.id).querySelector('vuetemplate'),\n" + "    data: {\n"
-				+ "        ds: [{\"key\":\"A\",\"value\":123},{\"key\":\"B\",\"value\":143}]\n" + "    },\n"
-				+ "    computed: {\n" + "        chartConfig() {\n" + "            return {\n"
-				+ "                xAxis: {\n" + "                    type: 'category',\n"
-				+ "                    data: this.ds.map(inst => inst[key])\n" + "                },\n"
-				+ "                yAxis: {\n" + "                    type: 'value'\n" + "                },\n"
-				+ "                series: [{\n" + "                    data: this.ds.map(inst => inst[value]),\n"
-				+ "                    type: typechart,\n" + "                    color: color\n"
-				+ "                }]\n" + "            };\n" + "        }\n" + "    },\n" + "    methods: {\n"
-				+ "        drawVueComponent: function (newData, oldData) {\n"
-				+ "            //This will be call on new data\n" + "        },\n"
-				+ "        resizeEvent: function () {\n" + "            //Resize event\n" + "        },\n"
-				+ "        destroyVueComponent: function () {\n" + "            vm.vueapp.$destroy();\n"
-				+ "        },\n" + "        receiveValue: function (data) {\n"
-				+ "            //data received from datalink\n" + "        },\n" + "        sendValue: vm.sendValue,\n"
-				+ "        sendFilter: vm.sendFilter\n" + "    },\n" + "\tcomponents: {\n"
-				+ "\t\t'v-chart':VueECharts\n" + "\t}\n" + "}\n" + "\n" + "//Init Vue app\n"
-				+ "vm.vueapp = new Vue(vm.vueconfig);\n");
-		gadgetTemplate.setUser(getUserAdministrator());
-		gadgetTemplateRepository.save(gadgetTemplate);
+			gadgetTemplate.setTemplateJS("//Write your Vue with JSON controller code here\n" + "\n"
+					+ "//Focus here and F11 or F10 to full screen editor\n" + "\n"
+					+ "var color = /*select-osp  name=\"ColorSerie\" type=\"ds\" options=\"red,blue,green,orange,yellow,black,purple,pink\"*/ 'red'\n"
+					+ "var typechart = /*select-osp  name=\"ChartType\" type=\"ds\" options=\"bar,line\"*/ 'line'\n"
+					+ "var key = /*label-osp  name=\"Key\" type=\"ds_parameter\"*/ \"key\"\n"
+					+ "var value = /*label-osp  name=\"Value\" type=\"ds_parameter\"*/ \"value\"\n" + "\n"
+					+ "//This function will be call once to init components\n" + "vm.vueconfig = {\n"
+					+ "    el: document.getElementById(vm.id).querySelector('vuetemplate'),\n" + "    data: {\n"
+					+ "        ds: [{\"key\":\"A\",\"value\":123},{\"key\":\"B\",\"value\":143}]\n" + "    },\n"
+					+ "    computed: {\n" + "        chartConfig() {\n" + "            return {\n"
+					+ "                xAxis: {\n" + "                    type: 'category',\n"
+					+ "                    data: this.ds.map(inst => inst[key])\n" + "                },\n"
+					+ "                yAxis: {\n" + "                    type: 'value'\n" + "                },\n"
+					+ "                series: [{\n" + "                    data: this.ds.map(inst => inst[value]),\n"
+					+ "                    type: typechart,\n" + "                    color: color\n"
+					+ "                }]\n" + "            };\n" + "        }\n" + "    },\n" + "    methods: {\n"
+					+ "        drawVueComponent: function (newData, oldData) {\n"
+					+ "            //This will be call on new data\n" + "        },\n"
+					+ "        resizeEvent: function () {\n" + "            //Resize event\n" + "        },\n"
+					+ "        destroyVueComponent: function () {\n" + "            vm.vueapp.$destroy();\n"
+					+ "        },\n" + "        receiveValue: function (data) {\n"
+					+ "            //data received from datalink\n" + "        },\n"
+					+ "        sendValue: vm.sendValue,\n" + "        sendFilter: vm.sendFilter\n" + "    },\n"
+					+ "\tcomponents: {\n" + "\t\t'v-chart':VueECharts\n" + "\t}\n" + "}\n" + "\n" + "//Init Vue app\n"
+					+ "vm.vueapp = new Vue(vm.vueconfig);\n");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
+		}
 
 		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-6").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
-		} else {
-			gadgetTemplate = gadgetTemplateRepository.findById("MASTER-GadgetTemplate-6").get();
+			gadgetTemplate.setId("MASTER-GadgetTemplate-6");
+			gadgetTemplate.setIdentification("Vue ODS Select");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("vueJSODS");
+			gadgetTemplate.setHeaderlibs(
+					"<!--Write here your html code to load required libs and init scripts for your component\n"
+							+ "    When you use it into some Dashboard you'll need to include it in header libs section -->\n"
+							+ "    <script src=\"/controlpanel/static/vendor/echarts-410/echarts.min.js\"></script>\n"
+							+ "<script src=\"/controlpanel/static/vendor/vue-echarts-402/index.js\"></script>");
+			gadgetTemplate.setDescription("vue ods select component from datasource");
+			gadgetTemplate.setTemplate("<!-- Write your HTML <div></div> and CSS <style></style> here -->\n"
+					+ "<!--Focus here and F11 or F10 to full screen editor-->\n" + "<ods-select\n"
+					+ "  v-model=\"value\"\n" + "  :placeholder=\"select\"\n" + "  @change=\"sendFilter(key,value)\"\n"
+					+ "  >\n" + "  <ods-option\n" + "    v-for=\"item in ds\"\n" + "    :key=\"item[key]\"\n"
+					+ "    :label=\"item[label]\"\n" + "    :value=\"item[key]\">\n" + "  </ods-option>\n"
+					+ "</ods-select>");
+
+			gadgetTemplate.setTemplateJS("//Write your Vue ODS JSON controller code here\n" + "\n"
+					+ "//Focus here and F11 or F10 to full screen editor\n" + "\n"
+					+ "//This function will be call once to init components\n" + "\n"
+					+ "var key = /*label-osp  name=\"KeySelect\" type=\"ds_parameter\"*/ \"value\"\n"
+					+ "var label =  /*label-osp  name=\"ValueSelect\" type=\"ds_parameter\"*/ \"label\"\n"
+					+ "var select = /*label-osp  name=\"PlaceHolder\" type=\"text\"*/ \"Select\"\n" + "\n"
+					+ "vm.vueconfig = {\n" + "    el: document.getElementById(vm.id).querySelector(\"vuetemplate\"),\n"
+					+ "    data: {\n" + "        ds: [{\n" + "            value: \"Option1\",\n"
+					+ "            label: \"Option1\"\n" + "        }, {\n" + "            value: \"Option2\",\n"
+					+ "            label: \"Option2\"\n" + "        }, {\n" + "            value: \"Option3\",\n"
+					+ "            label: \"Option3\"\n" + "        }, {\n" + "            value: \"Option4\",\n"
+					+ "            label: \"Option4\"\n" + "        }, {\n" + "            value: \"Option5\",\n"
+					+ "            label: \"Option5\"\n" + "        }],\n" + "        value: \"\",\n"
+					+ "        key: key,\n" + "        label: label,\n" + "        select: select\n" + "    },\n"
+					+ "    methods: {\n" + "        drawVueComponent: function (newData, oldData) {\n"
+					+ "            //This will be call on new data\n" + "        },\n"
+					+ "        resizeEvent: function () {\n" + "            //Resize event\n" + "        },\n"
+					+ "        destroyVueComponent: function () {\n" + "\n" + "        },\n"
+					+ "        receiveValue: function (data) {\n" + "            //data received from datalink\n"
+					+ "        },\n" + "        sendValue: vm.sendValue,\n" + "        sendFilter: vm.sendFilter\n"
+					+ "    }\n" + "}\n" + "\n" + "//Init Vue app\n" + "vm.vueapp = new Vue(vm.vueconfig);\n");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
 		}
-		gadgetTemplate = new GadgetTemplate();
-		gadgetTemplate.setId("MASTER-GadgetTemplate-6");
-		gadgetTemplate.setIdentification("Vue ODS Select");
-		gadgetTemplate.setPublic(true);
-		gadgetTemplate.setType("vueJSODS");
-		gadgetTemplate.setHeaderlibs("");
-		gadgetTemplate.setDescription("vue ods select component from datasource");
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/img/VueODSSelect.webp"));
-		gadgetTemplate.setTemplate(loadFromResources("gadgettemplates/html/VueODSSelect.html"));
-		gadgetTemplate.setTemplateJS(loadFromResources("gadgettemplates/js/VueODSSelect.js"));
-		gadgetTemplate.setUser(getUserAdministrator());
-		gadgetTemplate.setConfig(loadFromResources("gadgettemplates/config/VueODSSelect.json"));
-		gadgetTemplateRepository.save(gadgetTemplate);
 
 		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-9").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
-		} else {
-			gadgetTemplate = gadgetTemplateRepository.findById("MASTER-GadgetTemplate-9").get();
-		}
+			gadgetTemplate.setId("MASTER-GadgetTemplate-9");
+			gadgetTemplate.setIdentification("VueEchartMixed");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("vueJS");
+			gadgetTemplate.setHeaderlibs(
+					"<!--Write here your html code to load required libs and init scripts for your component\n"
+							+ "    When you use it into some Dashboard you'll need to include it in header libs section -->\n"
+							+ "    <script src=\"/controlpanel/static/vendor/echarts-410/echarts.min.js\"></script>\n"
+							+ "<script src=\"/controlpanel/static/vendor/vue-echarts-402/index.js\"></script>");
+			gadgetTemplate.setDescription("vue echart mixed chart with parameters");
+			gadgetTemplate.setTemplate("<!--Focus here and F11 or F10 to full screen editor-->\n"
+					+ "<!-- Write your CSS <style></style> here -->\n" + "<style>\n" + "    .fullsize {\n"
+					+ "        height: 100%;\n" + "        width: 100%;\n" + "    }\n" + "</style>\n"
+					+ "<div class=\"gadget-app\">\n" + "    <!-- Write your HTML <div></div> here -->\n"
+					+ "    <v-chart class=\"fullsize\" :options=\"chartConfig\" autoresize loading></v-chart>\n"
+					+ "</div>");
 
-		gadgetTemplate = new GadgetTemplate();
-		gadgetTemplate.setId("MASTER-GadgetTemplate-9");
-		gadgetTemplate.setIdentification("VueEchartMixed");
-		gadgetTemplate.setPublic(true);
-		gadgetTemplate.setType("vueJS");
-		gadgetTemplate.setHeaderlibs("");
-		gadgetTemplate.setDescription("vue echart mixed chart with parameters");
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/img/VueEchartMixed.webp"));
-		gadgetTemplate.setTemplate(loadFromResources("gadgettemplates/html/VueEchartMixed.html"));
-		gadgetTemplate.setTemplateJS(loadFromResources("gadgettemplates/js/VueEchartMixed.js"));
-		gadgetTemplate.setConfig(loadFromResources("gadgettemplates/config/VueEchartMixed.json"));
-		gadgetTemplate.setUser(getUserAdministrator());
-		gadgetTemplateRepository.save(gadgetTemplate);
+			gadgetTemplate.setTemplateJS("//Write your Vue with JSON controller code here\n" + "\n"
+					+ "//Focus here and F11 or F10 to full screen editor\n" + "\n"
+					+ "function findValues(jsonData, path) {\n"
+					+ "    if (!(jsonData instanceof Object) || typeof (path) === \"undefined\") {\n"
+					+ "        throw \"Not valid argument:jsonData:\" + jsonData + \", path:\" + path;\n" + "    }\n"
+					+ "    path = path.replace(/\\[(\\w+)\\]/g, '.$1'); // convert indexes to properties\n"
+					+ "    path = path.replace(/^\\./, ''); // strip a leading dot\n"
+					+ "    var pathArray = path.split('.');\n"
+					+ "    for (var i = 0, n = pathArray.length; i < n; ++i) {\n" + "        var key = pathArray[i];\n"
+					+ "        if (key in jsonData) {\n" + "            if (jsonData[key] !== null) {\n"
+					+ "                jsonData = jsonData[key];\n" + "            } else {\n"
+					+ "                return null;\n" + "            }\n" + "        } else {\n"
+					+ "            return key;\n" + "        }\n" + "    }\n" + "    return jsonData;\n" + "}\n" + "\n"
+					+ "function calculateSeries(data) {\n"
+					+ "    return vm.tparams.parameters.series.map(function (s) {\n" + "        var that = this\n"
+					+ "        var ds = ds;\n" + "        var s = {\n" + "            type: s.type,\n"
+					+ "            name: s.label,\n" + "            yAxisIndex: s.yAxis,\n"
+					+ "            data: data.map(inst => findValues(inst, s.field)),\n"
+					+ "            color: s.color\n" + "        }\n" + "        if (s.type == 'point') {\n"
+					+ "            s.type = 'line'\n" + "            s.lineStyle = {\n" + "                width: 0\n"
+					+ "            }\n" + "        }\n" + "        return s;\n" + "    })\n" + "}\n" + "\n"
+					+ "//This function will be call once to init components\n" + "vm.vueconfig = {\n"
+					+ "    el: document.querySelector('#' + vm.id + ' .gadget-app'),\n" + "    data: {\n"
+					+ "        ds: []\n" + "    },\n" + "    computed: {\n" + "        chartConfig() {\n"
+					+ "            return {\n" + "                legend: {\n"
+					+ "                    show: vm.tparams.parameters.general.showLegend\n" + "                },\n"
+					+ "                grid: {\n"
+					+ "                    left: Math.max(0, ...vm.tparams.parameters.axes.yAxis.filter(axis => axis.position === 'left').map(axis => parseInt(axis.offset?axis.offset:0))) + 60,\n"
+					+ "                    right: Math.max(0, ...vm.tparams.parameters.axes.yAxis.filter(axis => axis.position === 'right').map(axis => parseInt(axis.offset?axis.offset:0))) + 60\n"
+					+ "                },\n" + "                xAxis: {\n" + "                    type: 'category',\n"
+					+ "                    data: this.ds.map(inst => findValues(inst, vm.tparams.parameters.axes.xAxis.field)),\n"
+					+ "                    name: vm.tparams.parameters.axes.xAxis.label\n" + "                },\n"
+					+ "                yAxis: vm.tparams.parameters.axes.yAxis.map(function (yAxis) {\n"
+					+ "                    var yAxis = {\n" + "                        id: yAxis.id,\n"
+					+ "                        position: yAxis.position,\n"
+					+ "                        type: yAxis.type,\n" + "                        name: yAxis.label,\n"
+					+ "                        offset: parseInt(yAxis.offset?yAxis.offset:0)\n"
+					+ "                    }\n" + "                    if (yAxis.min) {\n"
+					+ "                        yAxis['min'] = yAxis.min\n" + "                    }\n"
+					+ "                    if (yAxis.max) {\n" + "                        yAxis['max'] = yAxis.max\n"
+					+ "                    }\n" + "                    return yAxis;\n" + "                }),\n"
+					+ "                series: calculateSeries(this.ds),\n" + "                tooltip: {\n"
+					+ "                    show: vm.tparams.parameters.general.showTooltip,\n"
+					+ "                    axisPointer: {\n" + "                        type: 'cross'\n"
+					+ "                    },\n" + "                    trigger: 'axis'\n" + "                },\n"
+					+ "                dataZoom: [\n" + "                    {\n"
+					+ "                        show: vm.tparams.parameters.axes.xAxis.showZoom,\n"
+					+ "                        realtime: true\n" + "                    }\n" + "                ]\n"
+					+ "            }\n" + "        }\n" + "    },\n" + "    methods: {\n"
+					+ "        drawVueComponent: function (newData, oldData) {\n"
+					+ "            //This will be call on new data\n" + "        },\n"
+					+ "        resizeEvent: function () {\n" + "            //Resize event\n" + "        },\n"
+					+ "        destroyVueComponent: function () {\n" + "            vm.vueapp.$destroy();\n"
+					+ "        },\n" + "        receiveValue: function (data) {\n"
+					+ "            //data received from datalink\n" + "        },\n"
+					+ "        sendValue: vm.sendValue,\n" + "        sendFilter: vm.sendFilter\n" + "    },\n"
+					+ "    components: {\n" + "        'v-chart': VueECharts\n" + "    }\n" + "}\n" + "\n"
+					+ "vm.drawLiveComponent = function () { }\n" + "\n" + "//Init Vue app\n"
+					+ "vm.vueapp = new Vue(vm.vueconfig);\n" + "");
+			gadgetTemplate.setConfig(
+					"{\"gform\":[{\"id\":8,\"type\":\"section\",\"elements\":[{\"id\":4,\"type\":\"checkbox\",\"name\":\"showLegend\",\"default\":true,\"title\":\"Show Legend\"},{\"id\":4,\"type\":\"checkbox\",\"name\":\"showTooltip\",\"default\":true,\"title\":\"Show Tooltip\"}],\"name\":\"general\",\"title\":\"General\"},{\"id\":8,\"type\":\"section\",\"elements\":[{\"id\":8,\"type\":\"section\",\"elements\":[{\"id\":1,\"type\":\"input-text\",\"name\":\"label\",\"default\":\"\",\"title\":\"\"},{\"id\":6,\"type\":\"ds-field\",\"name\":\"field\"},{\"id\":4,\"type\":\"checkbox\",\"name\":\"showZoom\",\"default\":false,\"title\":\"Show Zoom\"}],\"name\":\"xAxis\",\"title\":\"X Axis \"},{\"id\":9,\"type\":\"section-array\",\"elements\":[{\"id\":10,\"type\":\"autogenerate-id\",\"name\":\"id\",\"prefix\":\"\"},{\"id\":1,\"type\":\"input-text\",\"name\":\"label\",\"default\":\"\"},{\"id\":3,\"type\":\"selector\",\"name\":\"position\",\"options\":[{\"value\":\"left\",\"text\":\"\"},{\"value\":\"right\",\"text\":\"\"}],\"default\":\"left\"},{\"id\":3,\"type\":\"selector\",\"name\":\"type\",\"options\":[{\"value\":\"value\",\"text\":\"Linear\"},{\"value\":\"log\",\"text\":\"Logarithmic\"}],\"default\":\"value\"},{\"id\":2,\"type\":\"input-number\",\"name\":\"min\",\"default\":\"0\"},{\"id\":2,\"type\":\"input-number\",\"name\":\"max\",\"default\":\"\"},{\"id\":2,\"type\":\"input-number\",\"name\":\"offset\",\"default\":\"0\"}],\"name\":\"yAxis\",\"title\":\"Y Axes\"}],\"name\":\"axes\",\"title\":\"Axes Config\"},{\"id\":9,\"type\":\"section-array\",\"elements\":[{\"id\":6,\"type\":\"ds-field\",\"name\":\"field\"},{\"id\":1,\"type\":\"input-text\",\"name\":\"label\",\"default\":\"\"},{\"id\":5,\"type\":\"color-picker\",\"name\":\"color\",\"default\":\"rgba(30, 144, 255, 1)\"},{\"id\":3,\"type\":\"selector\",\"name\":\"type\",\"options\":[{\"value\":\"bar\",\"text\":\"\"},{\"value\":\"line\",\"text\":\"\"},{\"value\":\"point\",\"text\":\"\"}],\"default\":\"line\"},{\"id\":11,\"type\":\"model-selector\",\"name\":\"yAxis\",\"path\":\"axes.yAxis.*.id\"}],\"name\":\"series\",\"title\":\"Data Series\"}]}");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
+		}
 
 		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-10").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
-		} else {
-			gadgetTemplate = gadgetTemplateRepository.findById("MASTER-GadgetTemplate-10").get();
+			gadgetTemplate.setId("MASTER-GadgetTemplate-10");
+			gadgetTemplate.setIdentification("ScatterMap");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("angularJS");
+			gadgetTemplate.setHeaderlibs("");
+			gadgetTemplate.setDescription("Leaflet Scatter map with variable size");
+			gadgetTemplate.setTemplate("<!-- Write your HTML <div></div> and CSS <style></style> here -->\n"
+					+ "<!--Focus here and F11 to full screen editor-->\n" + "<style>	\n" + "    .gadget-app {\n"
+					+ "			width: 100%;\n" + "			height: 100%;\n" + "	}\n" + "</style>\n"
+					+ "<div class='gadget-app'></div>");
+
+			gadgetTemplate.setTemplateJS("//Write your controller (JS code) code here\n"
+					+ "//Focus here and F11 to full screen editor\n" + "\n" + "function getMinMax(data, field) {\n"
+					+ "    var minmax;\n" + "    if (!data.length) {\n" + "        console.warn(\"no data\")\n"
+					+ "        var minmax = {\n" + "            min: 0,\n" + "            max: 0\n" + "        }\n"
+					+ "    } else {\n" + "        var minmax = {\n" + "            min: data[0][field],\n"
+					+ "            max: data[0][field]\n" + "        }\n"
+					+ "        for (var i=1;i < data.length; i++) {\n"
+					+ "            minmax.min = Math.min(minmax.min, data[i][field]);\n"
+					+ "            minmax.max = Math.max(minmax.max, data[i][field]);\n" + "        }\n" + "    }\n"
+					+ "    return minmax;\n" + "}\n" + "\n" + "function valueToSize (min,max,value,minsize,maxsize) {\n"
+					+ "    var range = max-min;\n" + "    var rangesize = maxsize-minsize;\n"
+					+ "    return (value/range)*rangesize + parseFloat(minsize)\n" + "}\n" + "\n"
+					+ "//This function will be call once to init components\n"
+					+ "vm.initLiveComponent = function () {\n"
+					+ "    var mapElem = document.querySelector('#' + vm.id + ' .gadget-app')\n"
+					+ "    vm.map = L.map(mapElem, {\n"
+					+ "        center: [parseFloat(vm.tparams.parameters.center.latitude), parseFloat(vm.tparams.parameters.center.longitude)],\n"
+					+ "        zoom: parseInt(vm.tparams.parameters.center.zoom)\n" + "    });\n"
+					+ "    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {\n"
+					+ "        attribution: '&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors'\n"
+					+ "    }).addTo(vm.map);\n" + "    vm.map.createPane('markers');\n" + "};\n" + "\n"
+					+ "//This function will be call when data change. On first execution oldData will be null\n"
+					+ "vm.drawLiveComponent = function (newData, oldData) {\n"
+					+ "    var minmax = getMinMax(newData, vm.tparams.parameters.point.value);\n"
+					+ "    newData.map(function (d) {\n"
+					+ "        var cmarker = new L.CircleMarker([d[vm.tparams.parameters.point.latField], d[vm.tparams.parameters.point.lonField]], {\n"
+					+ "            pane: \"markers\",\n" + "            color: vm.tparams.parameters.point.color,\n"
+					+ "            fillColor: vm.tparams.parameters.point.color,\n" + "            fillOpacity: 0.5,\n"
+					+ "            stroke: false,\n"
+					+ "            radius: parseFloat(valueToSize(minmax.min,minmax.max,d[vm.tparams.parameters.point.value],vm.tparams.parameters.point.size.min,vm.tparams.parameters.point.size.max))\n"
+					+ "        });\n" + "        cmarker.addTo(vm.map).bindPopup(\n"
+					+ "            d[vm.tparams.parameters.point.title] + \"\\n\" + d[vm.tparams.parameters.point.value]\n"
+					+ "        );\n" + "    })\n" + "};\n" + "\n" + "//This function will be call on element resize\n"
+					+ "vm.resizeEvent = function () {\n" + "\n" + "}\n" + "\n"
+					+ "//This function will be call when element is destroyed\n"
+					+ "vm.destroyLiveComponent = function () {\n" + "\n" + "};\n" + "\n"
+					+ "//This function will be call when receiving a value from vm.sendValue(idGadgetTarget,data)\n"
+					+ "vm.receiveValue = function (data) {\n" + "\n" + "};");
+			gadgetTemplate.setConfig(
+					"{\"gform\":[{\"id\":8,\"type\":\"section\",\"elements\":[{\"id\":2,\"type\":\"input-number\",\"name\":\"latitude\",\"default\":\"0\",\"min\":\"-90\",\"max\":\"90\"},{\"id\":2,\"type\":\"input-number\",\"name\":\"longitude\",\"default\":\"0\",\"min\":\"-180\",\"max\":\"180\"},{\"id\":2,\"type\":\"input-number\",\"name\":\"zoom\",\"default\":\"0\",\"min\":\"0\"}],\"name\":\"center\",\"title\":\"Center\"},{\"id\":8,\"type\":\"section\",\"elements\":[{\"id\":5,\"type\":\"color-picker\",\"name\":\"color\",\"default\":\"rgba(30, 144, 255, 1)\"},{\"id\":6,\"type\":\"ds-field\",\"name\":\"latField\",\"title\":\"Latitude Field\"},{\"id\":6,\"type\":\"ds-field\",\"name\":\"lonField\",\"title\":\"Longitude Field\"},{\"id\":6,\"type\":\"ds-field\",\"name\":\"title\",\"title\":\"Title\"},{\"id\":6,\"type\":\"ds-field\",\"name\":\"value\",\"title\":\"Value\"},{\"id\":8,\"type\":\"section\",\"elements\":[{\"id\":2,\"type\":\"input-number\",\"name\":\"min\",\"default\":\"20\",\"min\":\"1\"},{\"id\":2,\"type\":\"input-number\",\"name\":\"max\",\"default\":\"35\",\"min\":\"1\"}],\"name\":\"size\"}],\"name\":\"point\"}]}");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
 		}
-
-		gadgetTemplate = new GadgetTemplate();
-		gadgetTemplate.setId("MASTER-GadgetTemplate-10");
-		gadgetTemplate.setIdentification("ScatterMap");
-		gadgetTemplate.setPublic(true);
-		gadgetTemplate.setType("angularJS");
-		gadgetTemplate.setHeaderlibs("");
-		gadgetTemplate.setDescription("Leaflet Scatter map with variable size");
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/scattermap.webp"));
-		gadgetTemplate.setTemplate("<!-- Write your HTML <div></div> and CSS <style></style> here -->\n"
-				+ "<!--Focus here and F11 to full screen editor-->\n" + "<style>	\n" + "    .gadget-app {\n"
-				+ "			width: 100%;\n" + "			height: 100%;\n" + "	}\n" + "</style>\n"
-				+ "<div class='gadget-app'></div>");
-
-		gadgetTemplate.setTemplateJS("//Write your controller (JS code) code here\n"
-				+ "//Focus here and F11 to full screen editor\n" + "\n" + "function getMinMax(data, field) {\n"
-				+ "    var minmax;\n" + "    if (!data.length) {\n" + "        console.warn(\"no data\")\n"
-				+ "        var minmax = {\n" + "            min: 0,\n" + "            max: 0\n" + "        }\n"
-				+ "    } else {\n" + "        var minmax = {\n" + "            min: data[0][field],\n"
-				+ "            max: data[0][field]\n" + "        }\n" + "        for (var i=1;i < data.length; i++) {\n"
-				+ "            minmax.min = Math.min(minmax.min, data[i][field]);\n"
-				+ "            minmax.max = Math.max(minmax.max, data[i][field]);\n" + "        }\n" + "    }\n"
-				+ "    return minmax;\n" + "}\n" + "\n" + "function valueToSize (min,max,value,minsize,maxsize) {\n"
-				+ "    var range = max-min;\n" + "    var rangesize = maxsize-minsize;\n"
-				+ "    return (value/range)*rangesize + parseFloat(minsize)\n" + "}\n" + "\n"
-				+ "//This function will be call once to init components\n" + "vm.initLiveComponent = function () {\n"
-				+ "    var mapElem = document.querySelector('#' + vm.id + ' .gadget-app')\n"
-				+ "    vm.map = L.map(mapElem, {\n"
-				+ "        center: [parseFloat(vm.tparams.parameters.center.latitude), parseFloat(vm.tparams.parameters.center.longitude)],\n"
-				+ "        zoom: parseInt(vm.tparams.parameters.center.zoom)\n" + "    });\n"
-				+ "    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {\n"
-				+ "        attribution: '&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors'\n"
-				+ "    }).addTo(vm.map);\n" + "    vm.map.createPane('markers');\n" + "};\n" + "\n"
-				+ "//This function will be call when data change. On first execution oldData will be null\n"
-				+ "vm.drawLiveComponent = function (newData, oldData) {\n"
-				+ "    var minmax = getMinMax(newData, vm.tparams.parameters.point.value);\n"
-				+ "    newData.map(function (d) {\n"
-				+ "        var cmarker = new L.CircleMarker([d[vm.tparams.parameters.point.latField], d[vm.tparams.parameters.point.lonField]], {\n"
-				+ "            pane: \"markers\",\n" + "            color: vm.tparams.parameters.point.color,\n"
-				+ "            fillColor: vm.tparams.parameters.point.color,\n" + "            fillOpacity: 0.5,\n"
-				+ "            stroke: false,\n"
-				+ "            radius: parseFloat(valueToSize(minmax.min,minmax.max,d[vm.tparams.parameters.point.value],vm.tparams.parameters.point.size.min,vm.tparams.parameters.point.size.max))\n"
-				+ "        });\n" + "        cmarker.addTo(vm.map).bindPopup(\n"
-				+ "            d[vm.tparams.parameters.point.title] + \"\\n\" + d[vm.tparams.parameters.point.value]\n"
-				+ "        );\n" + "    })\n" + "};\n" + "\n" + "//This function will be call on element resize\n"
-				+ "vm.resizeEvent = function () {\n" + "\n" + "}\n" + "\n"
-				+ "//This function will be call when element is destroyed\n"
-				+ "vm.destroyLiveComponent = function () {\n" + "\n" + "};\n" + "\n"
-				+ "//This function will be call when receiving a value from vm.sendValue(idGadgetTarget,data)\n"
-				+ "vm.receiveValue = function (data) {\n" + "\n" + "};");
-		gadgetTemplate.setConfig(
-				"{\"metainf\":{\"category\":\"Predefined\",\"order\":15},\"gform\":[{\"id\":8,\"type\":\"section\",\"elements\":[{\"id\":2,\"type\":\"input-number\",\"name\":\"latitude\",\"default\":\"0\",\"min\":\"-90\",\"max\":\"90\"},{\"id\":2,\"type\":\"input-number\",\"name\":\"longitude\",\"default\":\"0\",\"min\":\"-180\",\"max\":\"180\"},{\"id\":2,\"type\":\"input-number\",\"name\":\"zoom\",\"default\":\"0\",\"min\":\"0\"}],\"name\":\"center\",\"title\":\"Center\"},{\"id\":8,\"type\":\"section\",\"elements\":[{\"id\":5,\"type\":\"color-picker\",\"name\":\"color\",\"default\":\"rgba(30, 144, 255, 1)\"},{\"id\":6,\"type\":\"ds-field\",\"name\":\"latField\",\"title\":\"Latitude Field\"},{\"id\":6,\"type\":\"ds-field\",\"name\":\"lonField\",\"title\":\"Longitude Field\"},{\"id\":6,\"type\":\"ds-field\",\"name\":\"title\",\"title\":\"Title\"},{\"id\":6,\"type\":\"ds-field\",\"name\":\"value\",\"title\":\"Value\"},{\"id\":8,\"type\":\"section\",\"elements\":[{\"id\":2,\"type\":\"input-number\",\"name\":\"min\",\"default\":\"20\",\"min\":\"1\"},{\"id\":2,\"type\":\"input-number\",\"name\":\"max\",\"default\":\"35\",\"min\":\"1\"}],\"name\":\"size\"}],\"name\":\"point\"}]}");
-		gadgetTemplate.setUser(getUserAdministrator());
-		gadgetTemplateRepository.save(gadgetTemplate);
 
 		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-11").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
-		} else {
-			gadgetTemplate = gadgetTemplateRepository.findById("MASTER-GadgetTemplate-11").get();
+			gadgetTemplate.setId("MASTER-GadgetTemplate-11");
+			gadgetTemplate.setIdentification("Simple Value (Vue)");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("vueJS");
+			gadgetTemplate.setHeaderlibs("");
+			gadgetTemplate.setDescription("Vue simple value with increment from previous value os datasource");
+			gadgetTemplate.setTemplate("<!-- Write your HTML <div></div> and CSS <style></style> here -->\n"
+					+ "<!--Focus here and F11 to full screen editor-->\n" + "<style>\n" + "	.card-count {\n"
+					+ "		font-weight: bold;\n" + "		font-size: -webkit-xxx-large;\n"
+					+ "		padding-left: 20px;\n" + "	}\n" + "\n" + "	.card-count-perc {\n"
+					+ "		font-size: -webkit-large;\n" + "		padding-left: 10px;\n" + "	}\n" + "\n"
+					+ "	.card-title {\n" + "		color: #000000;\n" + "		font-size: x-large;\n" + "	}\n" + "\n"
+					+ "	.card-green {\n" + "		color: green;\n" + "	}\n" + "\n" + "	.my-card {\n"
+					+ "		padding: 15px;\n" + "	}\n" + "\n" + "	.card-icon {\n" + "		padding-top: 0px;\n"
+					+ "		padding-left: 0px;\n" + "		padding-bottom: 25px;\n" + "		padding-right: 25px;\n"
+					+ "	}\n" + "\n" + "	.fullsize {\n" + "		height: 100%;\n" + "		width: 100%;\n" + "	}\n"
+					+ "</style>\n" + "<div class=\"gadget-app\">\n" + "	<div class=\"my-card\">\n"
+					+ "		<!--<md-icon class=\"card-icon\" style=\"font-size:35px\"></md-icon>-->\n"
+					+ "		<label class=\"card-title\">{{title}}</label><br>\n"
+					+ "		<label v-bind:style=\"'color:' + colorField\" class=\"card-count\">{{ds[0][field]}}</label>\n"
+					+ "		<label v-bind:style=\"'color:' + increase.color\" class=\"card-count-perc\">{{' (' + increase.value + '%)'}}</label>\n"
+					+ "	</div>\n" + "</div>");
+
+			gadgetTemplate.setTemplateJS("//Write your Vue JSON controller code here\n" + "\n"
+					+ "//Focus here and F11 to full screen editor\n" + "\n"
+					+ "//This function will be call once to init components\n" + "\n"
+					+ "var title = vm.tparams.parameters.title;\n" + "var field = vm.tparams.parameters.field;\n"
+					+ "var colorField = vm.tparams.parameters.colorField;\n" + "\n" + "vm.vueconfig = {\n"
+					+ "	el: document.querySelector('#' + vm.id + ' .gadget-app'),\n" + "	data:{\n"
+					+ "		ds:[],\n" + "        title: title,\n" + "        field: field,\n"
+					+ "		colorField: colorField\n" + "	},\n" + "	computed: {\n" + "        increase() {\n"
+					+ "			if (this.ds.length<2) {\n" + "				return {\n"
+					+ "					value: \"+\" + 0,\n" + "					color: 'orange'\n"
+					+ "				}\n" + "			} else {\n"
+					+ "				if (!(isNaN(this.ds[0][this.field]) || isNaN(this.ds[1][this.field]))) {\n"
+					+ "					var value = 100-((this.ds[0][this.field]/this.ds[1][this.field])*100)\n"
+					+ "					return {\n" + "						value: value.toFixed(2),\n"
+					+ "						color: (value>0?'green':(value==0?'orange':'red'))\n"
+					+ "					}\n" + "				} else {\n" + "					return {\n"
+					+ "						value: \"?\",\n" + "						color: 'orange'\n"
+					+ "					}\n" + "				}\n" + "			}\n" + "		}\n"
+					+ "	},		\n" + "	methods:{\n" + "		drawVueComponent: function(newData,oldData){\n"
+					+ "			//This will be call on new data\n" + "		},\n" + "		resizeEvent: function(){\n"
+					+ "			//Resize event\n" + "		},\n" + "		destroyVueComponent: function(){\n"
+					+ "			vm.vueapp.$destroy();\n" + "		},\n" + "		receiveValue: function(data){\n"
+					+ "			//data received from datalink\n" + "		},\n" + "		sendValue: vm.sendValue,\n"
+					+ "		sendFilter: vm.sendFilter\n" + "	}\n" + "}\n" + "\n" + "//Init Vue app\n"
+					+ "vm.vueapp = new Vue(vm.vueconfig);\n" + "");
+			gadgetTemplate.setConfig(
+					"{\"gform\":[{\"name\":\"title\",\"type\":\"input-text\",\"title\":\"Title of KPI\"},{\"name\":\"field\",\"type\":\"ds-field\",\"title\":\"Field to show\"},{\"id\":5,\"type\":\"color-picker\",\"name\":\"colorField\",\"default\":\"rgba(0, 0, 0, 1)\",\"title\":\"Field Color\"}]}");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
 		}
-
-		gadgetTemplate = new GadgetTemplate();
-		gadgetTemplate.setId("MASTER-GadgetTemplate-11");
-		gadgetTemplate.setIdentification("Simple Value (Vue)");
-		gadgetTemplate.setPublic(true);
-		gadgetTemplate.setType("vueJS");
-		gadgetTemplate.setHeaderlibs("");
-		gadgetTemplate.setDescription("Vue simple value with increment from previous value of datasource");
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/simplevalue.webp"));
-		gadgetTemplate.setTemplate("<!-- Write your HTML <div></div> and CSS <style></style> here -->\n"
-				+ "<!--Focus here and F11 to full screen editor-->\n" + "<style>\n" + "	.card-count {\n"
-				+ "		font-weight: bold;\n" + "		font-size: -webkit-xxx-large;\n"
-				+ "		padding-left: 20px;\n" + "	}\n" + "\n" + "	.card-count-perc {\n"
-				+ "		font-size: -webkit-large;\n" + "		padding-left: 10px;\n" + "	}\n" + "\n"
-				+ "	.card-title {\n" + "		color: #000000;\n" + "		font-size: x-large;\n" + "	}\n" + "\n"
-				+ "	.card-green {\n" + "		color: green;\n" + "	}\n" + "\n" + "	.my-card {\n"
-				+ "		padding: 15px;\n" + "	}\n" + "\n" + "	.card-icon {\n" + "		padding-top: 0px;\n"
-				+ "		padding-left: 0px;\n" + "		padding-bottom: 25px;\n" + "		padding-right: 25px;\n"
-				+ "	}\n" + "\n" + "	.fullsize {\n" + "		height: 100%;\n" + "		width: 100%;\n" + "	}\n"
-				+ "</style>\n" + "<div class=\"gadget-app\">\n" + "	<div class=\"my-card\">\n"
-				+ "		<!--<md-icon class=\"card-icon\" style=\"font-size:35px\"></md-icon>-->\n"
-				+ "		<label class=\"card-title\">{{title}}</label><br>\n"
-				+ "		<label v-bind:style=\"'color:' + colorField\" class=\"card-count\">{{ds[0][field]}}</label>\n"
-				+ "		<label v-bind:style=\"'color:' + increase.color\" class=\"card-count-perc\">{{' (' + increase.value + '%)'}}</label>\n"
-				+ "	</div>\n" + "</div>");
-
-		gadgetTemplate.setTemplateJS("//Write your Vue JSON controller code here\n" + "\n"
-				+ "//Focus here and F11 to full screen editor\n" + "\n"
-				+ "//This function will be call once to init components\n" + "\n"
-				+ "var title = vm.tparams.parameters.title;\n" + "var field = vm.tparams.parameters.field;\n"
-				+ "var colorField = vm.tparams.parameters.colorField;\n" + "\n" + "vm.vueconfig = {\n"
-				+ "	el: document.querySelector('#' + vm.id + ' .gadget-app'),\n" + "	data:{\n" + "		ds:[],\n"
-				+ "        title: title,\n" + "        field: field,\n" + "		colorField: colorField\n" + "	},\n"
-				+ "	computed: {\n" + "        increase() {\n" + "			if (this.ds.length<2) {\n"
-				+ "				return {\n" + "					value: \"+\" + 0,\n"
-				+ "					color: 'orange'\n" + "				}\n" + "			} else {\n"
-				+ "				if (!(isNaN(this.ds[0][this.field]) || isNaN(this.ds[1][this.field]))) {\n"
-				+ "					var value = 100-((this.ds[0][this.field]/this.ds[1][this.field])*100)\n"
-				+ "					return {\n" + "						value: value.toFixed(2),\n"
-				+ "						color: (value>0?'green':(value==0?'orange':'red'))\n" + "					}\n"
-				+ "				} else {\n" + "					return {\n" + "						value: \"?\",\n"
-				+ "						color: 'orange'\n" + "					}\n" + "				}\n"
-				+ "			}\n" + "		}\n" + "	},		\n" + "	methods:{\n"
-				+ "		drawVueComponent: function(newData,oldData){\n" + "			//This will be call on new data\n"
-				+ "		},\n" + "		resizeEvent: function(){\n" + "			//Resize event\n" + "		},\n"
-				+ "		destroyVueComponent: function(){\n" + "			vm.vueapp.$destroy();\n" + "		},\n"
-				+ "		receiveValue: function(data){\n" + "			//data received from datalink\n"
-				+ "		},\n" + "		sendValue: vm.sendValue,\n" + "		sendFilter: vm.sendFilter\n" + "	}\n"
-				+ "}\n" + "\n" + "//Init Vue app\n" + "vm.vueapp = new Vue(vm.vueconfig);\n" + "");
-		gadgetTemplate.setConfig(
-				"{\"metainf\":{\"category\":\"Predefined\",\"order\":-94},\"gform\":[{\"name\":\"title\",\"type\":\"input-text\",\"title\":\"Title of KPI\"},{\"name\":\"field\",\"type\":\"ds-field\",\"title\":\"Field to show\"},{\"id\":5,\"type\":\"color-picker\",\"name\":\"colorField\",\"default\":\"rgba(0, 0, 0, 1)\",\"title\":\"Field Color\"}]}");
-		gadgetTemplate.setUser(getUserAdministrator());
-		gadgetTemplateRepository.save(gadgetTemplate);
 
 	}
 
@@ -6942,186 +7133,124 @@ public class InitConfigDB {
 
 		GadgetTemplate gadgetTemplate;
 
-		// add gadget templates dummy (legacy) for gadgets
+		// add gadget templates dummy for gadgets
 		if (gadgetTemplateRepository.findById("line").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
-		} else {
-			gadgetTemplate = gadgetTemplateRepository.findById("line").get();
+			gadgetTemplate.setId("line");
+			gadgetTemplate.setIdentification("line");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("base");
+			gadgetTemplate.setHeaderlibs("");
+			gadgetTemplate.setDescription("dummy template that serves as a type for gadgets");
+			gadgetTemplate.setTemplate("");
+			gadgetTemplate.setTemplateJS("");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
 		}
-		gadgetTemplate = new GadgetTemplate();
-		gadgetTemplate.setId("line");
-		gadgetTemplate.setIdentification("line");
-		gadgetTemplate.setPublic(true);
-		gadgetTemplate.setType("base");
-		gadgetTemplate.setHeaderlibs("");
-		gadgetTemplate
-				.setDescription("Legacy line gadget (this gadget always create a Prebuild Gadget with popup form)");
-		gadgetTemplate.setTemplate("");
-		gadgetTemplate.setTemplateJS("");
-		gadgetTemplate.setUser(getUserAdministrator());
-		gadgetTemplate.setConfig("{\"metainf\":{\"category\":\"Predefined\",\"order\":2}}");
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/line.svg"));
-		gadgetTemplateRepository.save(gadgetTemplate);
-
 		if (gadgetTemplateRepository.findById("bar").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
-		} else {
-			gadgetTemplate = gadgetTemplateRepository.findById("bar").get();
+			gadgetTemplate.setId("bar");
+			gadgetTemplate.setIdentification("bar");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("base");
+			gadgetTemplate.setHeaderlibs("");
+			gadgetTemplate.setDescription("dummy template that serves as a type for gadgets");
+			gadgetTemplate.setTemplate("");
+			gadgetTemplate.setTemplateJS("");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
 		}
-		gadgetTemplate = new GadgetTemplate();
-		gadgetTemplate.setId("bar");
-		gadgetTemplate.setIdentification("bar");
-		gadgetTemplate.setPublic(true);
-		gadgetTemplate.setType("base");
-		gadgetTemplate.setHeaderlibs("");
-		gadgetTemplate
-				.setDescription("Legacy bar gadget (this gadget always create a Prebuild Gadget with popup form)");
-		gadgetTemplate.setTemplate("");
-		gadgetTemplate.setTemplateJS("");
-		gadgetTemplate.setUser(getUserAdministrator());
-		gadgetTemplate.setConfig("{\"metainf\":{\"category\":\"Predefined\",\"order\":2}}");
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/bar.svg"));
-		gadgetTemplateRepository.save(gadgetTemplate);
-
 		if (gadgetTemplateRepository.findById("mixed").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
-		} else {
-			gadgetTemplate = gadgetTemplateRepository.findById("mixed").get();
+			gadgetTemplate.setId("mixed");
+			gadgetTemplate.setIdentification("mixed");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("base");
+			gadgetTemplate.setHeaderlibs("");
+			gadgetTemplate.setDescription("dummy template that serves as a type for gadgets");
+			gadgetTemplate.setTemplate("");
+			gadgetTemplate.setTemplateJS("");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
 		}
-		gadgetTemplate = new GadgetTemplate();
-		gadgetTemplate.setId("mixed");
-		gadgetTemplate.setIdentification("mixed");
-		gadgetTemplate.setPublic(true);
-		gadgetTemplate.setType("base");
-		gadgetTemplate.setHeaderlibs("");
-		gadgetTemplate.setDescription(
-				"Legacy mixed gadget with lines, points or bars (this gadget always create a Prebuild Gadget with popup form)");
-		gadgetTemplate.setTemplate("");
-		gadgetTemplate.setTemplateJS("");
-		gadgetTemplate.setUser(getUserAdministrator());
-		gadgetTemplate.setConfig("{\"metainf\":{\"category\":\"Predefined\",\"order\":3}}");
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/mixed.svg"));
-		gadgetTemplateRepository.save(gadgetTemplate);
-
 		if (gadgetTemplateRepository.findById("pie").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
-		} else {
-			gadgetTemplate = gadgetTemplateRepository.findById("pie").get();
+			gadgetTemplate.setId("pie");
+			gadgetTemplate.setIdentification("pie");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("base");
+			gadgetTemplate.setHeaderlibs("");
+			gadgetTemplate.setDescription("dummy template that serves as a type for gadgets");
+			gadgetTemplate.setTemplate("");
+			gadgetTemplate.setTemplateJS("");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
 		}
-		gadgetTemplate = new GadgetTemplate();
-		gadgetTemplate.setId("pie");
-		gadgetTemplate.setIdentification("pie");
-		gadgetTemplate.setPublic(true);
-		gadgetTemplate.setType("base");
-		gadgetTemplate.setHeaderlibs("");
-		gadgetTemplate
-				.setDescription("Legacy pie gadget (this gadget always create a Prebuild Gadget with popup form)");
-		gadgetTemplate.setTemplate("");
-		gadgetTemplate.setTemplateJS("");
-		gadgetTemplate.setUser(getUserAdministrator());
-		gadgetTemplate.setConfig("{\"metainf\":{\"category\":\"Predefined\",\"order\":4}}");
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/pie.svg"));
-		gadgetTemplateRepository.save(gadgetTemplate);
-
 		if (gadgetTemplateRepository.findById("wordcloud").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
-		} else {
-			gadgetTemplate = gadgetTemplateRepository.findById("wordcloud").get();
+			gadgetTemplate.setId("wordcloud");
+			gadgetTemplate.setIdentification("wordcloud");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("base");
+			gadgetTemplate.setHeaderlibs("");
+			gadgetTemplate.setDescription("dummy template that serves as a type for gadgets");
+			gadgetTemplate.setTemplate("");
+			gadgetTemplate.setTemplateJS("");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
 		}
-		gadgetTemplate = new GadgetTemplate();
-		gadgetTemplate.setId("wordcloud");
-		gadgetTemplate.setIdentification("wordcloud");
-		gadgetTemplate.setPublic(true);
-		gadgetTemplate.setType("base");
-		gadgetTemplate.setHeaderlibs("");
-		gadgetTemplate.setDescription(
-				"Legacy wordcloud gadget (this gadget always create a Prebuild Gadget with popup form)");
-		gadgetTemplate.setTemplate("");
-		gadgetTemplate.setTemplateJS("");
-		gadgetTemplate.setUser(getUserAdministrator());
-		gadgetTemplate.setConfig("{\"metainf\":{\"category\":\"Predefined\",\"order\":5}}");
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/wordcloud.svg"));
-		gadgetTemplateRepository.save(gadgetTemplate);
-
 		if (gadgetTemplateRepository.findById("map").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
-		} else {
-			gadgetTemplate = gadgetTemplateRepository.findById("map").get();
+			gadgetTemplate.setId("map");
+			gadgetTemplate.setIdentification("map");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("base");
+			gadgetTemplate.setHeaderlibs("");
+			gadgetTemplate.setDescription("dummy template that serves as a type for gadgets");
+			gadgetTemplate.setTemplate("");
+			gadgetTemplate.setTemplateJS("");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
 		}
-		gadgetTemplate = new GadgetTemplate();
-		gadgetTemplate.setId("map");
-		gadgetTemplate.setIdentification("map");
-		gadgetTemplate.setPublic(true);
-		gadgetTemplate.setType("base");
-		gadgetTemplate.setHeaderlibs("");
-		gadgetTemplate.setDescription(
-				"Legacy leaflet map gadget for drawing points (this gadget always create a Prebuild Gadget with popup form)");
-		gadgetTemplate.setTemplate("");
-		gadgetTemplate.setTemplateJS("");
-		gadgetTemplate.setUser(getUserAdministrator());
-		gadgetTemplate.setConfig("{\"metainf\":{\"category\":\"Predefined\",\"order\":6}}");
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/map.svg"));
-		gadgetTemplateRepository.save(gadgetTemplate);
-
 		if (gadgetTemplateRepository.findById("radar").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
-		} else {
-			gadgetTemplate = gadgetTemplateRepository.findById("radar").get();
+			gadgetTemplate.setId("radar");
+			gadgetTemplate.setIdentification("radar");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("base");
+			gadgetTemplate.setHeaderlibs("");
+			gadgetTemplate.setDescription("dummy template that serves as a type for gadgets");
+			gadgetTemplate.setTemplate("");
+			gadgetTemplate.setTemplateJS("");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
 		}
-		gadgetTemplate = new GadgetTemplate();
-		gadgetTemplate.setId("radar");
-		gadgetTemplate.setIdentification("radar");
-		gadgetTemplate.setPublic(true);
-		gadgetTemplate.setType("base");
-		gadgetTemplate.setHeaderlibs("");
-		gadgetTemplate
-				.setDescription("Legacy radar gadget (this gadget always create a Prebuild Gadget with popup form)");
-		gadgetTemplate.setTemplate("");
-		gadgetTemplate.setTemplateJS("");
-		gadgetTemplate.setUser(getUserAdministrator());
-		gadgetTemplate.setConfig("{\"metainf\":{\"category\":\"Predefined\",\"order\":7}}");
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/radar.svg"));
-		gadgetTemplateRepository.save(gadgetTemplate);
-
 		if (gadgetTemplateRepository.findById("table").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
-		} else {
-			gadgetTemplate = gadgetTemplateRepository.findById("table").get();
+			gadgetTemplate.setId("table");
+			gadgetTemplate.setIdentification("table");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("base");
+			gadgetTemplate.setHeaderlibs("");
+			gadgetTemplate.setDescription("dummy template that serves as a type for gadgets");
+			gadgetTemplate.setTemplate("");
+			gadgetTemplate.setTemplateJS("");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
 		}
-		gadgetTemplate = new GadgetTemplate();
-		gadgetTemplate.setId("table");
-		gadgetTemplate.setIdentification("table");
-		gadgetTemplate.setPublic(true);
-		gadgetTemplate.setType("base");
-		gadgetTemplate.setHeaderlibs("");
-		gadgetTemplate
-				.setDescription("Legacy table gadget (this gadget always create a Prebuild Gadget with popup form)");
-		gadgetTemplate.setTemplate("");
-		gadgetTemplate.setTemplateJS("");
-		gadgetTemplate.setUser(getUserAdministrator());
-		gadgetTemplate.setConfig("{\"metainf\":{\"category\":\"Predefined\",\"order\":8}}");
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/table.svg"));
-		gadgetTemplateRepository.save(gadgetTemplate);
-
 		if (gadgetTemplateRepository.findById("datadiscovery").orElse(null) == null) {
 			gadgetTemplate = new GadgetTemplate();
-		} else {
-			gadgetTemplate = gadgetTemplateRepository.findById("datadiscovery").get();
+			gadgetTemplate.setId("datadiscovery");
+			gadgetTemplate.setIdentification("datadiscovery");
+			gadgetTemplate.setPublic(true);
+			gadgetTemplate.setType("base");
+			gadgetTemplate.setHeaderlibs("");
+			gadgetTemplate.setDescription("dummy template that serves as a type for gadgets");
+			gadgetTemplate.setTemplate("");
+			gadgetTemplate.setTemplateJS("");
+			gadgetTemplate.setUser(getUserAdministrator());
+			gadgetTemplateRepository.save(gadgetTemplate);
 		}
-		gadgetTemplate = new GadgetTemplate();
-		gadgetTemplate.setId("datadiscovery");
-		gadgetTemplate.setIdentification("datadiscovery");
-		gadgetTemplate.setPublic(true);
-		gadgetTemplate.setType("base");
-		gadgetTemplate.setHeaderlibs("");
-		gadgetTemplate.setDescription(
-				"Legacy datadiscovery gadget for table autoservice with dimensions and metrics from datasource (this gadget always create a Prebuild Gadget with popup form)");
-		gadgetTemplate.setTemplate("");
-		gadgetTemplate.setTemplateJS("");
-		gadgetTemplate.setUser(getUserAdministrator());
-		gadgetTemplate.setConfig("{\"metainf\":{\"category\":\"Predefined\",\"order\":9}}");
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/datadiscovery.svg"));
-		gadgetTemplateRepository.save(gadgetTemplate);
 		// end add gadget templates dummy for gadgets
 	}
 
@@ -7277,8 +7406,7 @@ public class InitConfigDB {
 						+ " // link messages with internacionalization json on controlpanel\n"
 						+ " messages: __env.i18njson.languages\n" + " });\n" + "\n" + "</script>");
 
-		gadgetTemplate.setDescription("CRUD gadget template for entities of the platform");
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/crud.webp"));
+		gadgetTemplate.setDescription("CRUD gadget template");
 		gadgetTemplate.setTemplate("<!-- Write your HTML <div></div> and CSS <style></style> here -->\n"
 				+ "<!--Focus here and F11 to full screen editor-->\n" + "<style>\n" + "    div.el-dialog__body h3 {\n"
 				+ "        font-size: 14px !important;\n" + "        display: none !important;\n" + "    }\n" + "\n"
@@ -8005,7 +8133,7 @@ public class InitConfigDB {
 				+ "   },\n" + "   i18n: window.i18n\n" + "\n" + "}\n" + "//Init Vue app\n"
 				+ "vm.vueapp = new Vue(vm.vueconfig);\n" + "");
 		gadgetTemplate.setConfig(
-				"{\"metainf\":{\"category\":\"Predefined\",\"order\":10},\"gform\":[{\"id\":1,\"type\":\"input-text\",\"name\":\"initialEntity\",\"default\":\"\",\"title\":\"initialEntity\"},{\"id\":3,\"type\":\"selector\",\"name\":\"typeGadget\",\"options\":[{\"value\":\"withWizard\",\"text\":\"withWizard\"},{\"value\":\"noWizard\",\"text\":\"noWizard\"},{\"value\":\"searchOnly\",\"text\":\"searchOnly\"}],\"title\":\"typeGadget\",\"default\":\"withWizard\"},{\"id\":4,\"type\":\"checkbox\",\"name\":\"hideIdColumn\",\"default\":false,\"title\":\"hideIdColumn\"}]}");
+				"{\"gform\":[{\"id\":1,\"type\":\"input-text\",\"name\":\"initialEntity\",\"default\":\"\",\"title\":\"initialEntity\"},{\"id\":3,\"type\":\"selector\",\"name\":\"typeGadget\",\"options\":[{\"value\":\"withWizard\",\"text\":\"withWizard\"},{\"value\":\"noWizard\",\"text\":\"noWizard\"},{\"value\":\"searchOnly\",\"text\":\"searchOnly\"}],\"title\":\"typeGadget\",\"default\":\"withWizard\"},{\"id\":4,\"type\":\"checkbox\",\"name\":\"hideIdColumn\",\"default\":false,\"title\":\"hideIdColumn\"}]}");
 		gadgetTemplate.setUser(getUserAdministrator());
 		gadgetTemplateRepository.save(gadgetTemplate);
 
@@ -8156,9 +8284,7 @@ public class InitConfigDB {
 						+ "window.i18n = new VueI18n({\n" + " locale: getLocale(),\n" + " fallbackLocale: 'EN',\n"
 						+ " // link messages with internacionalization json on controlpanel\n"
 						+ " messages: __env.i18njson.languages\n" + " });\n" + "\n" + "</script>");
-		gadgetTemplate.setDescription(
-				"Table from file gadget. That gadget allow you to upload files in csv or json to some entity of the platform");
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/import.webp"));
+		gadgetTemplate.setDescription("IMPORT gadget template");
 		gadgetTemplate.setTemplate("<style>\n" + ".el-upload-list__item-name {\n" + "  max-height:30px;\n"
 				+ "  font-size: small;}\n" + ".control-label {\n" + "  margin-top: 1px;\n" + "  color: #505D66;\n"
 				+ "  font-weight: normal;\n" + "  width: fit-content;\n" + "  font-size: small; }\n"
@@ -8338,7 +8464,7 @@ public class InitConfigDB {
 				+ "        this.uploaddisabled = true;\n" + "    },\n" + "    i18n: window.i18n\n" + "}\n" + "\n"
 				+ "//Init Vue app\n" + "vm.vueapp = new Vue(vm.vueconfig);");
 		gadgetTemplate.setConfig(
-				"{\"metainf\":{\"category\":\"Predefined\",\"order\":11},\"gform\":[{\"id\":1,\"type\":\"input-text\",\"name\":\"initialEntity\",\"default\":\"\",\"title\":\"initialEntity\"}]}");
+				"{\"gform\":[{\"id\":1,\"type\":\"input-text\",\"name\":\"initialEntity\",\"default\":\"\",\"title\":\"initialEntity\"}]}");
 		gadgetTemplate.setUser(getUserAdministrator());
 		gadgetTemplateRepository.save(gadgetTemplate);
 
@@ -8606,8 +8732,7 @@ public class InitConfigDB {
 				+ " // link messages with internacionalization json on controlpanel\n"
 				+ " messages: __env.i18njson.languages\n" + " });\n" + "\n" + "</script>");
 
-		gadgetTemplate.setDescription("CRUD gadget template for entities of the platform (ODS version)");
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/crud.webp"));
+		gadgetTemplate.setDescription("ODS CRUD gadget template");
 		gadgetTemplate.setTemplate("<!-- Write your HTML <div></div> and CSS <style></style> here -->\n"
 				+ "<!--Focus here and F11 to full screen editor-->\n" + "<style>\n" + "    div.ods-dialog__body h3 {\n"
 				+ "        font-size: 14px !important;\n" + "        display: none !important;\n" + "    }\n" + "\n"
@@ -9320,7 +9445,7 @@ public class InitConfigDB {
 				+ "   },\n" + "   i18n: window.i18n\n" + "\n" + "}\n" + "//Init Vue app\n"
 				+ "vm.vueapp = new Vue(vm.vueconfig);\n" + "");
 		gadgetTemplate.setConfig(
-				"{\"metainf\":{\"category\":\"Predefined\",\"order\":12},\"gform\":[{\"id\":1,\"type\":\"input-text\",\"name\":\"initialEntity\",\"default\":\"\",\"title\":\"initialEntity\"},{\"id\":3,\"type\":\"selector\",\"name\":\"typeGadget\",\"options\":[{\"value\":\"withWizard\",\"text\":\"withWizard\"},{\"value\":\"noWizard\",\"text\":\"noWizard\"},{\"value\":\"searchOnly\",\"text\":\"searchOnly\"}],\"title\":\"typeGadget\",\"default\":\"withWizard\"},{\"id\":4,\"type\":\"checkbox\",\"name\":\"hideIdColumn\",\"default\":false,\"title\":\"hideIdColumn\"}]}");
+				"{\"gform\":[{\"id\":1,\"type\":\"input-text\",\"name\":\"initialEntity\",\"default\":\"\",\"title\":\"initialEntity\"},{\"id\":3,\"type\":\"selector\",\"name\":\"typeGadget\",\"options\":[{\"value\":\"withWizard\",\"text\":\"withWizard\"},{\"value\":\"noWizard\",\"text\":\"noWizard\"},{\"value\":\"searchOnly\",\"text\":\"searchOnly\"}],\"title\":\"typeGadget\",\"default\":\"withWizard\"},{\"id\":4,\"type\":\"checkbox\",\"name\":\"hideIdColumn\",\"default\":false,\"title\":\"hideIdColumn\"}]}");
 		gadgetTemplate.setUser(getUserAdministrator());
 		gadgetTemplateRepository.save(gadgetTemplate);
 
@@ -9459,9 +9584,7 @@ public class InitConfigDB {
 				+ " // link messages with internacionalization json on controlpanel\n"
 				+ " messages: __env.i18njson.languages\n" + " });\n" + "\n" + "</script>");
 
-		gadgetTemplate.setDescription(
-				"Table from file gadget. That gadget allow you to upload files in csv or json to some entity of the platform (ODS version)");
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/import.webp"));
+		gadgetTemplate.setDescription("ODS Import gadget template");
 		gadgetTemplate.setTemplate("<style>\n" + "  .ods-upload-list__item-name {\n" + "    max-height:30px;\n"
 				+ "    font-size: small;}\n" + "  .control-label {\n" + "    margin-top: 1px;\n"
 				+ "    color: #505D66;\n" + "    font-weight: normal;\n" + "    width: fit-content;\n"
@@ -9509,7 +9632,7 @@ public class InitConfigDB {
 				+ "        <div slot=\"tip\" class=\"ods-upload__tip\" style=\"font-size: 11px;line-height: 16px;color: #A7AEB2;\">{{ $t(\"form.info.max\") }}</div>\n"
 				+ "      </ods-upload>\n" + "    \n" + "    </div>\n" + "    <footer style=\"margin-top: 10px;\">\n"
 				+ "      <div slot=\"tip\" style=\"text-align: right;\">\n"
-				+ "        <ods-button class=\"textButtonColor\"  style=\"margin-left: 10px; background: #F0F1F2; border: none;text-align: center;\"  size=\"small\" plain @click=\"clearFiles\">Cancel</ods-button>\n"
+				+ "        <ods-button class=\"secundary\" style=\"margin-left: 10px; background: #F0F1F2;text-align: center;\" size=\"small\" plain @click=\"clearFiles\">Cancel</ods-button>\n"
 				+ "        <ods-button style=\"margin-left: 10px; background: #1168A6; border-radius: 2px;text-align: center;\" ref=\"importbutton\" size=\"small\" \n"
 				+ "          :disabled=\"importdisabled\" type=\"primary\" @click=\"submitUpload\">{{ $t(\"button.import\") }} <i class=\"el-icon-upload2\"></i></ods-button>\n"
 				+ "      </div>\n" + "    </footer>\n"
@@ -9642,142 +9765,7 @@ public class InitConfigDB {
 				+ "        this.uploaddisabled = true;\n" + "    },\n" + "    i18n: window.i18n\n" + "}\n" + "\n"
 				+ "//Init Vue app\n" + "vm.vueapp = new Vue(vm.vueconfig);");
 		gadgetTemplate.setConfig(
-				"{\"metainf\":{\"category\":\"Predefined\",\"order\":13},\"gform\":[{\"id\":1,\"type\":\"input-text\",\"name\":\"initialEntity\",\"default\":\"\",\"title\":\"initialEntity\"}]}");
-		gadgetTemplate.setUser(getUserAdministrator());
-		gadgetTemplateRepository.save(gadgetTemplate);
-	}
-
-	private void initGadgetsTemplatesDefCharts() {
-		log.info("init GadgetTemplate_LineBarPie");
-		GadgetTemplate gadgetTemplate;
-		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-14").orElse(null) == null) {
-			gadgetTemplate = new GadgetTemplate();
-		} else {
-			gadgetTemplate = gadgetTemplateRepository.findById("MASTER-GadgetTemplate-14").get();
-		}
-		gadgetTemplate.setId("MASTER-GadgetTemplate-14");
-		gadgetTemplate.setIdentification("LineChart");
-		gadgetTemplate.setPublic(true);
-		gadgetTemplate.setType("vueJS");
-		gadgetTemplate.setHeaderlibs("");
-
-		gadgetTemplate.setDescription("Line chart with parameters");
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/img/LineChart.webp"));
-		gadgetTemplate.setTemplate(loadFromResources("gadgettemplates/html/LineChart.html"));
-		gadgetTemplate.setTemplateJS(loadFromResources("gadgettemplates/js/LineChart.js"));
-		gadgetTemplate.setConfig(loadFromResources("gadgettemplates/config/LineChart.json"));
-		gadgetTemplate.setUser(getUserAdministrator());
-		gadgetTemplateRepository.save(gadgetTemplate);
-
-		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-15").orElse(null) == null) {
-			gadgetTemplate = new GadgetTemplate();
-		} else {
-			gadgetTemplate = gadgetTemplateRepository.findById("MASTER-GadgetTemplate-15").get();
-		}
-		gadgetTemplate.setId("MASTER-GadgetTemplate-15");
-		gadgetTemplate.setIdentification("BarChart");
-		gadgetTemplate.setPublic(true);
-		gadgetTemplate.setType("vueJS");
-		gadgetTemplate.setHeaderlibs("");
-
-		gadgetTemplate.setDescription("Bar chart with parameters");
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/img/BarChart.webp"));
-		gadgetTemplate.setTemplate(loadFromResources("gadgettemplates/html/BarChart.html"));
-		gadgetTemplate.setTemplateJS(loadFromResources("gadgettemplates/js/BarChart.js"));
-		gadgetTemplate.setConfig(loadFromResources("gadgettemplates/config/BarChart.json"));
-		gadgetTemplate.setUser(getUserAdministrator());
-		gadgetTemplateRepository.save(gadgetTemplate);
-
-		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-16").orElse(null) == null) {
-			gadgetTemplate = new GadgetTemplate();
-		} else {
-			gadgetTemplate = gadgetTemplateRepository.findById("MASTER-GadgetTemplate-16").get();
-		}
-		gadgetTemplate.setId("MASTER-GadgetTemplate-16");
-		gadgetTemplate.setIdentification("PieChart");
-		gadgetTemplate.setPublic(true);
-		gadgetTemplate.setType("vueJS");
-		gadgetTemplate.setHeaderlibs("");
-
-		gadgetTemplate.setDescription("Pie chart with parameters");
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/img/PieChart.webp"));
-		gadgetTemplate.setTemplate(loadFromResources("gadgettemplates/html/PieChart.html"));
-		gadgetTemplate.setTemplateJS(loadFromResources("gadgettemplates/js/PieChart.js"));
-		gadgetTemplate.setConfig(loadFromResources("gadgettemplates/config/PieChart.json"));
-		gadgetTemplate.setUser(getUserAdministrator());
-		gadgetTemplateRepository.save(gadgetTemplate);
-
-		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-17").orElse(null) == null) {
-			gadgetTemplate = new GadgetTemplate();
-		} else {
-			gadgetTemplate = gadgetTemplateRepository.findById("MASTER-GadgetTemplate-17").get();
-		}
-		gadgetTemplate.setId("MASTER-GadgetTemplate-17");
-		gadgetTemplate.setIdentification("TableChart");
-		gadgetTemplate.setPublic(true);
-		gadgetTemplate.setType("vueJS");
-		gadgetTemplate.setHeaderlibs("");
-
-		gadgetTemplate.setDescription("Table chart with parameters");
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/img/TableChart.webp"));
-		gadgetTemplate.setTemplate(loadFromResources("gadgettemplates/html/TableChart.html"));
-		gadgetTemplate.setTemplateJS(loadFromResources("gadgettemplates/js/TableChart.js"));
-		gadgetTemplate.setConfig(loadFromResources("gadgettemplates/config/TableChart.json"));
-		gadgetTemplate.setUser(getUserAdministrator());
-		gadgetTemplateRepository.save(gadgetTemplate);
-
-		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-18").orElse(null) == null) {
-			gadgetTemplate = new GadgetTemplate();
-		} else {
-			gadgetTemplate = gadgetTemplateRepository.findById("MASTER-GadgetTemplate-18").get();
-		}
-		gadgetTemplate.setId("MASTER-GadgetTemplate-18");
-		gadgetTemplate.setIdentification("DatePicker");
-		gadgetTemplate.setPublic(true);
-		gadgetTemplate.setType("vueJS");
-		gadgetTemplate.setHeaderlibs("");
-
-		gadgetTemplate.setDescription("DatePicker for select year, months and dates");
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/img/DatePicker.webp"));
-		gadgetTemplate.setTemplate(loadFromResources("gadgettemplates/html/DatePicker.html"));
-		gadgetTemplate.setTemplateJS(loadFromResources("gadgettemplates/js/DatePicker.js"));
-		gadgetTemplate.setConfig(loadFromResources("gadgettemplates/config/DatePicker.json"));
-		gadgetTemplate.setUser(getUserAdministrator());
-		gadgetTemplateRepository.save(gadgetTemplate);
-
-		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-19").orElse(null) == null) {
-			gadgetTemplate = new GadgetTemplate();
-		} else {
-			gadgetTemplate = gadgetTemplateRepository.findById("MASTER-GadgetTemplate-19").get();
-		}
-		gadgetTemplate.setId("MASTER-GadgetTemplate-19");
-		gadgetTemplate.setIdentification("KPI_Obj");
-		gadgetTemplate.setPublic(true);
-		gadgetTemplate.setType("vueJS");
-		gadgetTemplate.setHeaderlibs("");
-
-		gadgetTemplate.setDescription("Simple value gadget for objetives with color config");
-		gadgetTemplate.setTemplate(loadFromResources("gadgettemplates/html/KPI_Obj.html"));
-		gadgetTemplate.setTemplateJS(loadFromResources("gadgettemplates/js/KPI_Obj.js"));
-		gadgetTemplate.setConfig(loadFromResources("gadgettemplates/config/KPI_Obj.json"));
-		gadgetTemplate.setUser(getUserAdministrator());
-		gadgetTemplateRepository.save(gadgetTemplate);
-
-		if (gadgetTemplateRepository.findById("MASTER-GadgetTemplate-20").orElse(null) == null) {
-			gadgetTemplate = new GadgetTemplate();
-		} else {
-			gadgetTemplate = gadgetTemplateRepository.findById("MASTER-GadgetTemplate-20").get();
-		}
-		gadgetTemplate.setId("MASTER-GadgetTemplate-20");
-		gadgetTemplate.setIdentification("MapChart");
-		gadgetTemplate.setPublic(true);
-		gadgetTemplate.setType("angularJS");
-		gadgetTemplate.setHeaderlibs("");
-		gadgetTemplate.setDescription("Map Chart with OpenLayers");
-		gadgetTemplate.setTemplate(loadFromResources("gadgettemplates/html/MapChart.html"));
-		gadgetTemplate.setImage(loadFileFromResources("gadgettemplates/img/MapChart.webp"));
-		gadgetTemplate.setTemplateJS(loadFromResources("gadgettemplates/js/MapChart.js"));
-		gadgetTemplate.setConfig(loadFromResources("gadgettemplates/config/MapChart.json"));
+				"{\"gform\":[{\"id\":1,\"type\":\"input-text\",\"name\":\"initialEntity\",\"default\":\"\",\"title\":\"initialEntity\"}]}");
 		gadgetTemplate.setUser(getUserAdministrator());
 		gadgetTemplateRepository.save(gadgetTemplate);
 	}
@@ -9921,17 +9909,14 @@ public class InitConfigDB {
 		} catch (final IOException e) {
 			throw new WebProjectServiceException("Error uploading files " + e);
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("File {} {} uploaded", path, fileName);
-		}
+
+		log.debug("File: " + path + fileName + " uploaded");
 	}
 
 	private void unzipFile(String path, String fileName) {
 
 		final File folder = new File(path + fileName);
-		if (log.isDebugEnabled()) {
-			log.debug("Unzipping zip file: {}", folder);
-		}
+		log.debug("Unzipping zip file: " + folder);
 
 		DataInputStream is = null;
 		try (ZipInputStream zis = new ZipInputStream(new FileInputStream(folder))) {
@@ -9952,10 +9937,7 @@ public class InitConfigDB {
 					final File f = new File(path + ze.getName());
 					f.mkdirs();
 				} else {
-					if (log.isDebugEnabled()) {
-						log.debug("Unzipping file: {}", ze.getName());
-					}
-
+					log.debug("Unzipping file: " + ze.getName());
 					final FileOutputStream fos = new FileOutputStream(path + ze.getName());
 					IOUtils.copy(zis, fos);
 					fos.close();
@@ -9970,9 +9952,7 @@ public class InitConfigDB {
 				try {
 					is.close();
 				} catch (final IOException e) {
-					if (log.isDebugEnabled()) {
-						log.debug("Error: {}", e);
-					}
+					log.debug("Error: " + e);
 				}
 			}
 		}
@@ -9987,9 +9967,7 @@ public class InitConfigDB {
 		try {
 			Files.delete(file.toPath());
 		} catch (final IOException e) {
-			if (log.isDebugEnabled()) {
-				log.debug("Error deleting folder: {}", file.getPath());
-			}
+			log.debug("Error deleting folder: {}", file.getPath());
 		}
 	}
 
@@ -10019,148 +9997,6 @@ public class InitConfigDB {
 		prestoConnection.setUser(getUserAdministrator());
 		prestoConnection.setPublic(true);
 		prestoDatasourceRepository.save(prestoConnection);
-	}
-
-	private void initDataTags() {
-		log.info("init initDataTags");
-		final List<Tag> tags = tagRepository.findAll();
-		if (tags.isEmpty()) {
-			log.info("No tag found..adding");
-			final Tag tag = new Tag();
-			final List<OPResourceVO> listResources = new ArrayList<>();
-			listResources.add(new OPResourceVO(DEFAULT_RESOURCES_ENERGY_NAME_TAG, DEFAULT_RESOURCES_ENERGY_ID_TAG,
-					DEFAULT_RESOURCES_ENERGY_TYPE_TAG));
-			listResources.add(new OPResourceVO(DEFAULT_RESOURCES_DASHBO_NAME_TAG, DEFAULT_RESOURCES_DASHBO_ID_TAG,
-					DEFAULT_RESOURCES_DASHBO_TYPE_TAG));
-			listResources.add(new OPResourceVO(DEFAULT_RESOURCES_GATGET_NAME_TAG, DEFAULT_RESOURCES_GATGET_ID_TAG,
-					DEFAULT_RESOURCES_GATGET_TYPE_TAG));
-			listResources.add(new OPResourceVO(DEFAULT_RESOURCES_GATGETTOP_NAME_TAG, DEFAULT_RESOURCES_GATGET_ID_TAG,
-					DEFAULT_RESOURCES_GATGET_TYPE_TAG));
-			tag.setName(DEFAULT_NAME_TAG);
-			tag.setResources(listResources);
-			tagRepository.save(tag);
-		}
-	}
-
-	private void initMsTemplates() {
-		log.info("init initMsTemplates");
-		if (mstemplateRepository.findMicroserviceTemplateById("MSTEMPLATE_ML_MODEL_ARCHETYPE") == null) {
-			final MicroserviceTemplate mstemplate = new MicroserviceTemplate();
-			mstemplate.setId("MSTEMPLATE_ML_MODEL_ARCHETYPE");
-			mstemplate.setDescription("ML Model Archetype Microservice Template");
-			mstemplate.setIdentification("ML-Model-Archetype");
-			mstemplate.setDockerRelativePath("sources/docker");
-			mstemplate.setGitBranch("master");
-			mstemplate.setGitPassword("b1hhwxqke6ewvNZ1-RKs");
-			mstemplate.setGitRepository(
-					"https://gitlab.devops.onesait.com/onesait/platform/engine/onesait-platform/microservice-templates/microservice-ml.git");
-			mstemplate.setGitUser("devopsonesait");
-			mstemplate.setLanguage(Language.ML_MODEL_ARCHETYPE);
-			mstemplate.setPublic(false);
-			mstemplate.setRelativePath("sources");
-			mstemplate.setUser(getUserAdministrator());
-			mstemplate.setGraalvm(false);
-			mstemplateRepository.save(mstemplate);
-		}
-		if (mstemplateRepository.findMicroserviceTemplateById("MSTEMPLATE_IOT_CLIENT_ARCHETYPE") == null) {
-			final MicroserviceTemplate mstemplate = new MicroserviceTemplate();
-			mstemplate.setId("MSTEMPLATE_IOT_CLIENT_ARCHETYPE");
-			mstemplate.setDescription("IoT Client Archetype Microservice Template");
-			mstemplate.setIdentification("IoT-Client-Archetype");
-			mstemplate.setDockerRelativePath("sources/docker");
-			mstemplate.setGitBranch("master");
-			mstemplate.setGitPassword("b1hhwxqke6ewvNZ1-RKs");
-			mstemplate.setGitRepository(
-					"https://gitlab.devops.onesait.com/onesait/platform/engine/onesait-platform/microservice-templates/microservice-iot.git");
-			mstemplate.setGitUser("devopsonesait");
-			mstemplate.setLanguage(Language.IOT_CLIENT_ARCHETYPE);
-			mstemplate.setPublic(false);
-			mstemplate.setRelativePath("sources");
-			mstemplate.setUser(getUserAdministrator());
-			mstemplate.setGraalvm(false);
-			mstemplateRepository.save(mstemplate);
-		}
-		if (mstemplateRepository.findMicroserviceTemplateById("MSTEMPLATE_NOTEBOOK_ARCHETYPE") == null) {
-			final MicroserviceTemplate mstemplate = new MicroserviceTemplate();
-			mstemplate.setId("MSTEMPLATE_NOTEBOOK_ARCHETYPE");
-			mstemplate.setDescription("Notebook Archetype Microservice Template");
-			mstemplate.setIdentification("Notebook-Archetype");
-			mstemplate.setDockerRelativePath("zeppelin-spark/notebook");
-			mstemplate.setGitBranch("master");
-			mstemplate.setGitPassword("b1hhwxqke6ewvNZ1-RKs");
-			mstemplate.setGitRepository(
-					"https://gitlab.devops.onesait.com/onesait/platform/engine/onesait-platform/microservice-templates/microservice-nb.git");
-			mstemplate.setGitUser("devopsonesait");
-			mstemplate.setLanguage(Language.NOTEBOOK_ARCHETYPE);
-			mstemplate.setPublic(false);
-			mstemplate.setRelativePath("zeppelin-spark");
-			mstemplate.setUser(getUserAdministrator());
-			mstemplate.setGraalvm(false);
-			mstemplateRepository.save(mstemplate);
-		}
-		if (mstemplateRepository.findMicroserviceTemplateById("MSTEMPLATE_GRAALVM") == null) {
-			final MicroserviceTemplate mstemplate = new MicroserviceTemplate();
-			mstemplate.setId("MSTEMPLATE_GRAALVM_ARCHETYPE");
-			mstemplate.setDescription("GraalVM Microservice Template");
-			mstemplate.setIdentification("GraalVM-Archetype");
-			mstemplate.setDockerRelativePath("");
-			mstemplate.setGitBranch("master");
-			mstemplate.setGitPassword("b1hhwxqke6ewvNZ1-RKs");
-			mstemplate.setGitRepository(
-					"https://gitlab.devops.onesait.com/onesait/platform/engine/onesait-platform/microservice-templates/microservice-graalvm.git");
-			mstemplate.setGitUser("devopsonesait");
-			mstemplate.setLanguage(Language.Java17);
-			mstemplate.setPublic(false);
-			mstemplate.setRelativePath("./");
-			mstemplate.setUser(getUserAdministrator());
-			mstemplate.setGraalvm(true);
-			mstemplateRepository.save(mstemplate);
-		}
-		if (mstemplateRepository.findMicroserviceTemplateById("MSTEMPLATE_JAVA17") == null) {
-			final MicroserviceTemplate mstemplate = new MicroserviceTemplate();
-			mstemplate.setId("MSTEMPLATE_JAVA17_ARCHETYPE");
-			mstemplate.setDescription("Java17 Microservice Template");
-			mstemplate.setIdentification("Java17-Archetype");
-			mstemplate.setDockerRelativePath("docker");
-			mstemplate.setGitBranch("master");
-			mstemplate.setGitPassword("b1hhwxqke6ewvNZ1-RKs");
-			mstemplate.setGitRepository(
-					"https://gitlab.devops.onesait.com/onesait/platform/engine/onesait-platform/microservice-templates/microservice-java17.git");
-			mstemplate.setGitUser("devopsonesait");
-			mstemplate.setLanguage(Language.Java17);
-			mstemplate.setPublic(false);
-			mstemplate.setRelativePath("./");
-			mstemplate.setUser(getUserAdministrator());
-			mstemplate.setGraalvm(false);
-			mstemplateRepository.save(mstemplate);
-		}
-	}
-
-	@Value("${onesaitplatform.database.timescaledb.enabled:false}")
-	private Boolean timeseriesdbEnabled;
-	@Value("${onesaitplatform.database.timescaledb.url}")
-	private String timeseriesdbUrl;
-	@Value("${onesaitplatform.database.timescaledb.user:postgres}")
-	private String timeseriesdbUser;
-	@Value("${onesaitplatform.database.timescaledb.password:password_test}")
-	private String timeseriesdbPassword;
-	@Value("${onesaitplatform.database.timescaledb.connectionName:op_timeseriesdb}")
-	private String timeseriesdbConnection;
-
-	private void initTimeseriesdbConnection() {
-		if (ontologyVirtualDataSourceRepository.findByIdentification(timeseriesdbConnection) == null) {
-			final OntologyVirtualDatasource virtualDatasource = new OntologyVirtualDatasource();
-			virtualDatasource.setIdentification(timeseriesdbConnection);
-			virtualDatasource.setSgdb(VirtualDatasourceType.POSTGRESQL);
-			virtualDatasource.setConnectionString(timeseriesdbUrl);
-			virtualDatasource.setUserId(timeseriesdbUser);
-			virtualDatasource.setCredentials(JasyptConfig.getEncryptor().encrypt(timeseriesdbPassword));
-			virtualDatasource.setUser(getUserAdministrator());
-			virtualDatasource.setPublic(true);
-			virtualDatasource.setPoolSize("100");
-			virtualDatasource.setQueryLimit(100);
-			ontologyVirtualDataSourceRepository.save(virtualDatasource);
-		}
 	}
 
 }

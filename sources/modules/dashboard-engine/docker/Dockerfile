@@ -11,10 +11,11 @@ RUN apk add --no-cache tzdata \
 
 # logs folder
 RUN mkdir -p /var/log/platform-logs && \
-    mkdir /application && \
-	mkdir /application/plugins
+    mkdir /application
 
-WORKDIR /application   
+WORKDIR /application    
+RUN unzip /app.jar &&\
+	rm /app.jar
 
 # create onesait platform user/group
 RUN addgroup -S onesait -g 433 && adduser -u 431 -S -g onesait -h /usr/local -s /sbin/nologin onesait
@@ -25,18 +26,13 @@ RUN chown -R onesait:onesait /usr/local && \
     chmod -R 777 /var/log && \
     chmod -R 777 /usr/local &&\
     chmod -R 777 /application
-    
-# distribute tracing with opentelemetry agent  
-RUN cd /usr/local \
-    && wget https://repo1.maven.org/maven2/io/opentelemetry/javaagent/opentelemetry-javaagent/1.27.0/opentelemetry-javaagent-1.27.0.jar
-    
-     
+
 VOLUME ["/tmp", "/var/log/platform-logs"]
 
 EXPOSE 18300
 
 #HZ_SERVICE_DISCOVERY_STRATEGY can take values: service or zookeeper
-ENV JAVA_OPTS="$JAVA_OPTS -Xms1G -Xmx3G -XX:+ExitOnOutOfMemoryError -XX:+HeapDumpOnOutOfMemoryError -javaagent:/usr/local/opentelemetry-javaagent-1.27.0.jar --add-opens java.base/java.lang=ALL-UNNAMED"
+
 ENV SERVER_NAME=localhost \
     REALTIMEDBSERVERS=realtimedb:27017 \
     REALTIMEDBAUTHDB=admin \
@@ -101,15 +97,7 @@ ENV SERVER_NAME=localhost \
 	ENCRYPTION_KEY=ENC(VYVseIUh5xiRd8ws0prbEAg6bGq7vmbfi3gkM65HECy+YPbjz4f49w==) \
     ENCRYPTION_ITERATIONS=5 \
     QUERY_METRICS_ENABLED=false \
-    HTTP_LOG_LEVEL=INFO \
-    OTEL_JAVAAGENT_ENABLED=false \
-	OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-service:4317 \
-	OTEL_SERVICE_NAME=dashboard-engine \
-	OTEL_METRICS_EXPORTER=none \
-	TIMESCALE_ENABLED=false \
-	TIMESCALE_URL=jdbc:postgresql://timeseriesdb:5432/?currentSchema=public \
-	TIMESCALE_USER=ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot) \
-	TIMESCALE_PASS=ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c)
+    HTTP_LOG_LEVEL=INFO
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod ugo+x /usr/local/bin/docker-entrypoint.sh

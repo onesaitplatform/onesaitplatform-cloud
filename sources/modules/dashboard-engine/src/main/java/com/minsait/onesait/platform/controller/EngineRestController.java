@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,7 +111,7 @@ public class EngineRestController {
 	private int queryDefaultLimit;
 
 	private static final String ERROR_TRUE = "{\"error\":\"true\"}";
-	private static final String EMPTY = "[]";
+	private static final String EMPTY = "[ ]";
 
 	@GetMapping(value = "/getEntityCrudInfo/{id}")
 	public @ResponseBody ResponseEntity<OntologyCrudDTO> getEntityCrudInfo(@PathVariable("id") String id) {
@@ -164,21 +164,6 @@ public class EngineRestController {
 				if (!ontologyDTO.getIsAuthorizationsPermissions().equals("ALL")) {
 					iterator.remove();
 				}
-
-			}
-			ontologiesResult = mapOntolotyDTO(ontologies);
-		}
-		return new ResponseEntity<>(ontologiesResult, HttpStatus.OK);
-	}
-
-	@GetMapping(value = "/getEntitiesQueryPermission")
-	public @ResponseBody ResponseEntity<List<com.minsait.onesait.platform.bean.OntologyDTO>> getEntitiesQueryPermission() {
-		final List<OntologyDTO> ontologies = ontologyConfigService.getAllOntologiesForList(utils.getUserId(), "", "",
-				"", "");
-		List<com.minsait.onesait.platform.bean.OntologyDTO> ontologiesResult = new ArrayList<com.minsait.onesait.platform.bean.OntologyDTO>();
-		if (ontologies != null && ontologies.size() > 0) {
-			for (Iterator iterator = ontologies.iterator(); iterator.hasNext();) {
-				OntologyDTO ontologyDTO = (OntologyDTO) iterator.next();
 
 			}
 			ontologiesResult = mapOntolotyDTO(ontologies);
@@ -520,9 +505,7 @@ public class EngineRestController {
 			String rootName = prop.keys().next();
 			String finalschema = "{\"" + rootName + "\": {\"type\":\"object\",\"properties\":" + schema.toString()
 					+ "}}";
-			if (!ontology.getRtdbDatasource().equals(Ontology.RtdbDatasource.TIMESCALE)) {
-				schema = new JSONObject(finalschema);
-			}
+			schema = new JSONObject(finalschema);
 		} catch (JSONException e) {
 			schema = jsonSchema.getJSONObject("properties");
 		}
@@ -855,13 +838,13 @@ public class EngineRestController {
 		List<String[]> csvData = new ArrayList<>();
 		csvData.add(headerList.toArray(new String[0]));
 		long max = getMaxRegisters();
-		while (!suboutput.replaceAll("\\s", "").equals(EMPTY)) {
+		while (!suboutput.equals(EMPTY)) {
 			selectStatement = new SelectStatement();
 			selectStatement.setOntology(ontologyName);
 			selectStatement.setLimit(max);
 			selectStatement.setOffset(offset);
 			suboutput = crudService.queryParams(selectStatement, utils.getUserId());
-			if (!suboutput.replaceAll("\\s", "").equals(EMPTY)) {
+			if (!suboutput.equals(EMPTY)) {
 				offset += max;
 				JSONArray jsonArray = new JSONArray(suboutput);
 				for (Object o : jsonArray) {
@@ -896,13 +879,13 @@ public class EngineRestController {
 		String suboutput = "";
 		int offset = 0;
 		long max = getMaxRegisters();
-		while (!suboutput.replaceAll("\\s", "").equals(EMPTY)) {
+		while (!suboutput.equals(EMPTY)) {
 			SelectStatement selectStatement = new SelectStatement();
 			selectStatement.setOntology(ontologyName);
 			selectStatement.setLimit(max);
 			selectStatement.setOffset(offset);
 			suboutput = crudService.queryParams(selectStatement, utils.getUserId());
-			if (!suboutput.replaceAll("\\s", "").equals(EMPTY)) {
+			if (!suboutput.equals(EMPTY)) {
 				offset += max;
 				JSONArray jsonArray = new JSONArray(suboutput);
 				suboutput = deleteIdAndContext(jsonArray);
@@ -994,7 +977,7 @@ public class EngineRestController {
 			selectStatement.setLimit(setedLimit);
 			selectStatement.setOffset(offset);
 			suboutput = crudService.queryParams(selectStatement, utils.getUserId());
-			if (suboutput.replaceAll("\\s", "").equals(EMPTY)) {
+			if (suboutput.equals(EMPTY)) {
 				total = 0;
 
 			} else {
@@ -1161,7 +1144,7 @@ public class EngineRestController {
 			selectStatement.setLimit(setedLimit);
 			selectStatement.setOffset(offset);
 			suboutput = crudService.queryParams(selectStatement, utils.getUserId());
-			if (suboutput.replaceAll("\\s", "").equals(EMPTY)) {
+			if (suboutput.equals(EMPTY)) {
 				total = 0;
 				outputJsonFile = outputJsonFile + ",";
 			} else {

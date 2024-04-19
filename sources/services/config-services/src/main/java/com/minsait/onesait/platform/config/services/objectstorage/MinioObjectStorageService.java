@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,7 +109,6 @@ public class MinioObjectStorageService implements ObjectStorageService {
 	private MinioClient minioClient;
 
 	private RestTemplate restTemplate;
-	private RestTemplate restTemplateDownload;
 
 	private String minioBaseUrl;
 
@@ -140,19 +139,7 @@ public class MinioObjectStorageService implements ObjectStorageService {
 		restTemplate.getMessageConverters().add(0, new MappingJackson2HttpMessageConverter());
 		restTemplate.setErrorHandler(new ResponseErrorHandler() {// This error handler allow to handle 40X codes
 
-			public boolean hasError(ClientHttpResponse response) throws IOException {
-				return false;
-			}
-
 			@Override
-			public void handleError(ClientHttpResponse response) throws IOException {
-
-			}
-		});
-
-		restTemplateDownload = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
-		restTemplateDownload.setErrorHandler(new ResponseErrorHandler() {// This error handler allow to handle 40X codes
-
 			public boolean hasError(ClientHttpResponse response) throws IOException {
 				return false;
 			}
@@ -596,7 +583,7 @@ public class MinioObjectStorageService implements ObjectStorageService {
 
 		HttpEntity<Void> entityGetFile = new HttpEntity<>(headers);
 
-		ResponseEntity<Resource> responseGetFile = restTemplateDownload.exchange(
+		ResponseEntity<Resource> responseGetFile = restTemplate.exchange(
 				this.minioAdminUrl + "api/v1/buckets/" + bucketName + "/objects/download?prefix=" + prefixSearch,
 				HttpMethod.GET, entityGetFile, Resource.class);
 
@@ -703,7 +690,7 @@ public class MinioObjectStorageService implements ObjectStorageService {
 	@Override
 	public String getUserBucketName(String userId) {
 		if (userId.indexOf("_") > 0) {
-			userId = userId.replace('_', '-');
+			userId = userId.replace('_', '-');			
 		}
 		userId = userId.toLowerCase();
 		return userId + "bucket";

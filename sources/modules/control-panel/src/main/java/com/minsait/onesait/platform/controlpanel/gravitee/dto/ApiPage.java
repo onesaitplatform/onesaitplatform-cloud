@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ public class ApiPage {
 	private int order;
 	private boolean homepage;
 	private boolean published;
-	public String name;
+	private String name;
 	private Type type;
 	private JsonNode configuration;
 
@@ -49,7 +49,7 @@ public class ApiPage {
 				.type(Type.SWAGGER).configuration(ApiPage.tryItFlag()).build();
 	}
 
-	public static JsonNode tryItFlag() {
+	static JsonNode tryItFlag() {
 		final ObjectMapper mapper = new ObjectMapper();
 		final JsonNode tryIt = mapper.createObjectNode();
 		((ObjectNode) tryIt).put(TRY_IT, String.valueOf(true));

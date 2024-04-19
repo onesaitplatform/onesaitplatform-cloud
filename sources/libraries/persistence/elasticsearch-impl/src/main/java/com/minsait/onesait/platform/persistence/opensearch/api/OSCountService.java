@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,13 @@
 package com.minsait.onesait.platform.persistence.opensearch.api;
 
 import java.io.IOException;
-import java.util.Arrays;
 
-import org.opensearch.client.opensearch.OpenSearchClient;
-import org.opensearch.client.opensearch._types.query_dsl.MatchAllQuery;
-import org.opensearch.client.opensearch._types.query_dsl.Query;
-import org.opensearch.client.opensearch._types.query_dsl.QueryStringQuery;
-import org.opensearch.client.opensearch.core.CountRequest;
-import org.opensearch.client.opensearch.core.CountResponse;
+import org.opensearch.client.RequestOptions;
+import org.opensearch.client.RestHighLevelClient;
+import org.opensearch.client.core.CountRequest;
+import org.opensearch.client.core.CountResponse;
+import org.opensearch.index.query.QueryBuilder;
+import org.opensearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
@@ -38,35 +37,34 @@ public class OSCountService {
 
 	@Autowired
 	OSBaseApi connector;
+	
 	@Autowired
-	private OpenSearchClient javaClient;
-
+	private RestHighLevelClient hlClient;
+	
 	private static final String COUNTING_ERROR = "Error in count query ";
-
-	private CountResponse count(Query query, String... indices) {
-		CountRequest countRequest = new CountRequest.Builder().index(Arrays.asList(indices)).query(query).build();
-		return executeCount(countRequest);
+	
+	private CountResponse count(QueryBuilder queryBuilder, String... indices) {
+	    CountRequest countRequest = new CountRequest(indices);
+	    countRequest.query(queryBuilder);
+	    return executeCount(countRequest, indices);
 	}
-
-	private CountResponse executeCount(CountRequest countRequest) {
-		try {
-			return javaClient.count(countRequest);
-		} catch (final IOException e) {
-			log.error(COUNTING_ERROR + e.getMessage());
-			return null;
-		}
+	
+	private CountResponse executeCount(CountRequest countRequest, String... indices) {
+	    try {
+            return hlClient.count(countRequest, RequestOptions.DEFAULT);         
+        } catch (final IOException e) {
+            log.error(COUNTING_ERROR + e.getMessage());
+            return null;
+        }
 	}
 
 	public long getMatchAllQueryCount(String... indices) {
-		final Query q = new Query.Builder().matchAll(new MatchAllQuery.Builder().build()).build();
-		CountResponse countResponse = count(q, indices);
-		return countResponse == null ? -1 : countResponse.count();
+	    CountResponse countResponse = count(QueryBuilders.matchAllQuery(), indices);
+	    return countResponse == null ? -1 : countResponse.getCount();		
 	}
 
 	public long getQueryCount(String jsonQueryString, String... indices) {
-		final Query q = new Query.Builder().queryString(new QueryStringQuery.Builder().query(jsonQueryString).build())
-				.build();
-		CountResponse countResponse = count(q, indices);
-		return countResponse == null ? -1 : countResponse.count();
+	    CountResponse countResponse = count(QueryBuilders.wrapperQuery(jsonQueryString), indices);
+	    return countResponse == null ? -1 : countResponse.getCount();
 	}
 }

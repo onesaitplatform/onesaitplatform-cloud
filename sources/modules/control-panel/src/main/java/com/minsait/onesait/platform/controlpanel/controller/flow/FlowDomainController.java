@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
@@ -52,6 +53,7 @@ import com.minsait.onesait.platform.config.services.flowdomain.FlowDomainService
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
 import com.minsait.onesait.platform.libraries.flow.engine.FlowEngineService;
+import com.minsait.onesait.platform.libraries.flow.engine.FlowEngineServiceFactory;
 import com.minsait.onesait.platform.libraries.nodered.auth.NoderedAuthenticationServiceImpl;
 import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
@@ -68,6 +70,10 @@ public class FlowDomainController {
 
 	@Value("${onesaitplatform.flowengine.services.request.timeout.ms:5000}")
 	private int restRequestTimeout;
+
+	private String baseUrl;
+
+	private String proxyUrl;
 
 	@Value("${onesaitplatform.controlpanel.avoidsslverification:false}")
 	private boolean avoidSSLVerification;
@@ -90,7 +96,6 @@ public class FlowDomainController {
 	@Autowired
 	private HttpSession httpSession;
 
-	@Autowired
 	private FlowEngineService flowEngineService;
 
 	private static final String DOMAINS_STR = "domains";
@@ -103,9 +108,13 @@ public class FlowDomainController {
 	private static final String REDIRECT_FLOWS_LIST = "redirect:/flows/list";
 	private static final String APP_ID = "appId";
 
-	
-	private String getFlowEngineProxyUrl() {
-		return resourcesService.getUrl(Module.FLOWENGINE, ServiceUrl.PROXYURL);
+	@PostConstruct
+	public void init() {
+		proxyUrl = resourcesService.getUrl(Module.FLOWENGINE, ServiceUrl.PROXYURL);
+		baseUrl = resourcesService.getUrl(Module.FLOWENGINE, ServiceUrl.BASE); // <host>/flowengine/admin
+		flowEngineService = FlowEngineServiceFactory.getFlowEngineService(baseUrl, restRequestTimeout,
+				avoidSSLVerification);
+
 	}
 
 	@GetMapping(value = "/list", produces = "text/html")
@@ -317,7 +326,7 @@ public class FlowDomainController {
 				final String authBase64 = Base64.getEncoder().encodeToString(auth.getBytes());
 				final String accessToken = noderedAuthService.getNoderedAuthAccessToken(domain.getUser().getUserId(),
 						domainId);
-				String proxyUrlAndDomain = getFlowEngineProxyUrl() + domainId + "/?authentication=" + authBase64 + "&access_token="
+				String proxyUrlAndDomain = proxyUrl + domainId + "/?authentication=" + authBase64 + "&access_token="
 						+ accessToken;
 				if (flowId != null) {
 					proxyUrlAndDomain += "#flow/" + flowId;
@@ -385,7 +394,6 @@ public class FlowDomainController {
 		final List<FlowEngineDomainStatus> filteredDomainStatusList = new ArrayList<>();
 		for (final FlowDomain domain : domainList) {
 			final FlowEngineDomainStatus domainStatus = new FlowEngineDomainStatus();
-			domainStatus.setId(domain.getId());
 			domainStatus.setDomain(domain.getIdentification());
 			domainStatus.setPort(domain.getPort());
 			domainStatus.setHome(domain.getHome());

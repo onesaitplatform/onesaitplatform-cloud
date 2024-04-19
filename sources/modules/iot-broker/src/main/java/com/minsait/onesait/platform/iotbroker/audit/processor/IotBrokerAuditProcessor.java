@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,9 +55,7 @@ public class IotBrokerAuditProcessor {
 
 	public IotBrokerAuditEvent getEvent(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info) {
 
-		if (log.isDebugEnabled()) {
-			log.debug("getEvent from message {}", message);
-		}		
+		log.debug("getEvent from message " + message);
 
 		IotBrokerAuditEvent event = null;
 
@@ -72,9 +70,7 @@ public class IotBrokerAuditProcessor {
 
 	public OPAuditError getErrorEvent(SSAPMessage<? extends SSAPBodyMessage> message, GatewayInfo info, Exception ex) {
 
-		if (log.isDebugEnabled()) {
-			log.debug("getErrorEvent from message {}", message);
-		}		
+		log.debug("getErrorEvent from message " + message);
 
 		OPAuditError event = null;
 

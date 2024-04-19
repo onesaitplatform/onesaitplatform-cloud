@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,9 +44,9 @@ public interface MapsProjectService {
 
 	boolean hasUserEditPermission(String id, String userId);
 
-	void delete(String id,boolean deleteDepencies ,String userId);
+	void delete(String id, String userId);
 
-	String clone(MapsProject originalMapsProject, String identification, User targetUser,User sessionUser);
+	String clone(MapsProject originalMapsProject, String identification, User user);
 
 	String importMapsProject(String originalMapProject, boolean overwrite, User user);
 

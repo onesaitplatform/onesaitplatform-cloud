@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,12 +45,11 @@ public class MicroserviceServiceImpl implements MicroserviceService {
 
 	@Override
 	public Microservice create(Microservice service) {
-		if (microserviceRepository.findByIdentificationAndActiveTrue(service.getIdentification()) != null) {
+		if (microserviceRepository.findByIdentificationAndActiveTrue(service.getIdentification()) != null)
 			throw new MicroserviceException(
 					"Microservice with identification " + service.getIdentification() + " already exists.");
-		} else {
+		else
 			return microserviceRepository.save(service);
-		}
 	}
 
 	@Override
@@ -77,11 +76,6 @@ public class MicroserviceServiceImpl implements MicroserviceService {
 	public Microservice getById(String id) {
 		return microserviceRepository.findById(id).orElse(null);
 	}
-	
-	@Override
-	public Microservice getByIdentificationOrId(String identification) {
-		return microserviceRepository.findByIdentificationOrId(identification);
-	}
 
 	@Override
 	public void delete(Microservice service) {
@@ -102,18 +96,14 @@ public class MicroserviceServiceImpl implements MicroserviceService {
 		mDB.setJenkinsConfiguration(service.getJenkinsConfiguration());
 		mDB.setRancherConfiguration(service.getRancherConfiguration());
 		mDB.setOpenshiftConfiguration(service.getOpenshiftConfiguration());
-		if (StringUtils.hasText(service.getContextPath())) {
+		if (StringUtils.hasText(service.getContextPath()))
 			mDB.setContextPath(service.getContextPath());
-		}
-		mDB.setJobUrl(service.getJobUrl());
-		mDB.setGitlabRepository(service.getGitlab());
-		mDB.setStripRoutePrefix(service.isStripRoutePrefix());
 		return save(mDB);
 	}
 
 	@Override
 	public List<String> getAllIdentificationsByUser(String userId) {
-		final User user = userService.getUser(userId);
+		User user = userService.getUser(userId);
 		if (user.isAdmin()) {
 			return microserviceRepository.findAllIdentifications();
 		} else {

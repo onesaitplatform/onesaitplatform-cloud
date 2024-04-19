@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -289,7 +289,6 @@
 	
 	<script type="text/javascript" th:inline="javascript">
 	
-	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 
@@ -313,12 +312,16 @@
 			$('#categorizations').DataTable().column(0).search( $('#planner-name').val()).draw();
 		});
 		
+	});
+	
+	// MAIN WHEN LOAD
+	$(window).on("load",function(){
 		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 
 		var oTable = $('#categorizations').dataTable({
 	      "bAutoWidth": false
 	      });		
-		
+
 		// HIDE COLUMN OWNER		
 		$.each([2],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		// SHOW/HIDE DATATABLES COLUMN INIT 

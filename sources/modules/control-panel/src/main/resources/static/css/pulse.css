@@ -1,3 +1,7 @@
+body {
+  background: #454a59;
+}
+
 .pulsating-circle {
   position: absolute;
   left: 50%;

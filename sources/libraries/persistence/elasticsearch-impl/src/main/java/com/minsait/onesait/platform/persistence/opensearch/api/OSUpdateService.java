@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,33 +15,24 @@
 package com.minsait.onesait.platform.persistence.opensearch.api;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import java.util.concurrent.ExecutionException;
 
-import org.opensearch.client.json.JsonData;
-import org.opensearch.client.json.JsonpMapper;
-import org.opensearch.client.opensearch.OpenSearchClient;
-import org.opensearch.client.opensearch._types.InlineScript;
-import org.opensearch.client.opensearch._types.Result;
-import org.opensearch.client.opensearch._types.Script;
-import org.opensearch.client.opensearch._types.query_dsl.MatchAllQuery;
-import org.opensearch.client.opensearch._types.query_dsl.Query;
-import org.opensearch.client.opensearch._types.query_dsl.QueryStringQuery;
-import org.opensearch.client.opensearch.core.UpdateByQueryRequest;
-import org.opensearch.client.opensearch.core.UpdateByQueryResponse;
-import org.opensearch.client.opensearch.core.UpdateRequest;
-import org.opensearch.client.opensearch.core.UpdateResponse;
+import org.opensearch.action.DocWriteResponse;
+import org.opensearch.action.update.UpdateRequest;
+import org.opensearch.action.update.UpdateResponse;
+import org.opensearch.client.RequestOptions;
+import org.opensearch.client.RestHighLevelClient;
+import org.opensearch.common.xcontent.XContentType;
+import org.opensearch.index.query.QueryBuilders;
+import org.opensearch.index.reindex.BulkByScrollResponse;
+import org.opensearch.index.reindex.UpdateByQueryRequest;
+import org.opensearch.script.Script;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.minsait.onesait.platform.config.model.OntologyElastic;
 import com.minsait.onesait.platform.persistence.OpensearchEnabledCondition;
 
-import jakarta.json.spi.JsonProvider;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -50,40 +41,40 @@ import lombok.extern.slf4j.Slf4j;
 public class OSUpdateService {
 
 	@Autowired
-	private OpenSearchClient javaClient;
-
-	private UpdateResponse<Object> update(String index, String id, JsonData jd) {
-		UpdateRequest<Object, Object> updateReq = new UpdateRequest.Builder<>().id(id).doc(jd).docAsUpsert(false)
-				.index(index).build();
-		return executeUpdate(updateReq);
+	private RestHighLevelClient hlClient;
+	
+	private UpdateResponse update(String index, String id, String json) {
+		final UpdateRequest updateRequest = new UpdateRequest(index, id);
+		updateRequest.doc(json, XContentType.JSON);
+		return executeUpdate(updateRequest);
 	}
 
-	private UpdateByQueryResponse updateIndexByQuery(String index, String jsonScript) {
-		Query q = new Query.Builder().matchAll(new MatchAllQuery.Builder().build()).build();
-		Script script = new Script.Builder().inline(new InlineScript.Builder().source(jsonScript).build()).build();
-		final UpdateByQueryRequest updateRequest = new UpdateByQueryRequest.Builder().script(script).query(q).build();
-		return executeUpdateByQuery(updateRequest);
+	private BulkByScrollResponse updateIndexByQuery(String index, String jsonScript) {
+		final UpdateByQueryRequest updateByQueryRequest = new UpdateByQueryRequest(index);
+		updateByQueryRequest.setQuery(QueryBuilders.matchAllQuery());
+		updateByQueryRequest.setScript(new Script(jsonScript));
+		return executeUpdateByQuery(updateByQueryRequest);
 	}
 
-	private UpdateByQueryResponse updateIndexByQuery(String index, String jsonScript, String jsonQuery) {
-		Query q = new Query.Builder().queryString(new QueryStringQuery.Builder().query(jsonQuery).build()).build();
-		Script script = new Script.Builder().inline(new InlineScript.Builder().source(jsonScript).build()).build();
-		final UpdateByQueryRequest updateRequest = new UpdateByQueryRequest.Builder().script(script).query(q).build();
-		return executeUpdateByQuery(updateRequest);
+	private BulkByScrollResponse updateIndexByQuery(String index, String jsonScript, String jsonQuery) {
+		final UpdateByQueryRequest updateByQueryRequest = new UpdateByQueryRequest(index);
+		updateByQueryRequest.setQuery(QueryBuilders.wrapperQuery(jsonQuery));
+		updateByQueryRequest.setScript(new Script(jsonScript));
+		return executeUpdateByQuery(updateByQueryRequest);
 	}
 
-	private UpdateResponse<Object> executeUpdate(UpdateRequest<Object, Object> updateRequest) {
+	private UpdateResponse executeUpdate(UpdateRequest updateRequest) {
 		try {
-			return javaClient.update(updateRequest, Object.class);
+			return hlClient.update(updateRequest, RequestOptions.DEFAULT);
 		} catch (final IOException e) {
 			log.error("Error in update query ", e);
 			return null;
 		}
 	}
 
-	private UpdateByQueryResponse executeUpdateByQuery(UpdateByQueryRequest updateByQueryRequest) {
+	private BulkByScrollResponse executeUpdateByQuery(UpdateByQueryRequest updateByQueryRequest) {
 		try {
-			return javaClient.updateByQuery(updateByQueryRequest);
+			return hlClient.updateByQuery(updateByQueryRequest, RequestOptions.DEFAULT);
 		} catch (final IOException e) {
 			log.error("Error in delete by query ", e);
 			return null;
@@ -91,30 +82,17 @@ public class OSUpdateService {
 	}
 
 	public boolean updateIndex(String index, String id, String jsonString) {
-		// we need to map the jsonString to a json object, otherwise the parser will
-		// scape "quote" chars and end in parse error.
-		JsonpMapper jsonpMapper = javaClient._transport().jsonpMapper();
-		JsonProvider jsonProvider = jsonpMapper.jsonProvider();
-		Reader reader = new StringReader(jsonString);
-		JsonData jd = JsonData.from(jsonProvider.createParser(reader), jsonpMapper);
-		final UpdateResponse<Object> updateResponse = update(index, id, jd);
-		return updateResponse == null || updateResponse.result() == Result.NotFound ? false : true;
+		final UpdateResponse updateResponse = update(index, id, jsonString);
+		return updateResponse == null || updateResponse.getResult() == DocWriteResponse.Result.NOT_FOUND ? false : true;
 	}
 
 	public long updateAll(String index, String jsonScript) throws InterruptedException, ExecutionException {
-		final UpdateByQueryResponse updateIndexByQuery = updateIndexByQuery(index, jsonScript);
-		return updateIndexByQuery == null ? -1 : updateIndexByQuery.updated();
+		final BulkByScrollResponse updateIndexByQuery = updateIndexByQuery(index, jsonScript);
+		return updateIndexByQuery == null ? -1 : updateIndexByQuery.getUpdated();
 	}
 
 	public long updateByQueryAndFilter(String index, String jsonScript, String jsonQuery) {
-		final UpdateByQueryResponse updateIndexByQuery = updateIndexByQuery(index, jsonScript, jsonQuery);
-		return updateIndexByQuery == null ? -1 : updateIndexByQuery.updated();
-	}
-
-	public boolean updateIndexFromTemplate(OntologyElastic ontology, String id, String jsonString) {
-
-		final JsonObject instanceObject = new JsonParser().parse(jsonString).getAsJsonObject();
-		final String index = OSTemplateHelper.getIndexFromInstance(ontology, instanceObject);
-		return updateIndex(index, id, jsonString);
+		final BulkByScrollResponse updateIndexByQuery = updateIndexByQuery(index, jsonScript, jsonQuery);
+		return updateIndexByQuery == null ? -1 : updateIndexByQuery.getUpdated();
 	}
 }

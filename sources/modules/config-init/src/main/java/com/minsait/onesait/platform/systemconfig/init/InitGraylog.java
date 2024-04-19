@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ public class InitGraylog {
 	@Value("${onesaitplatform.graylog.password}")
 	@Encryptable
 	private String graylogPassword;
-	@Value("${onesaitplatform.graylog.externalUri:http://127.0.0.1:9000/log-centralizer}")
+	@Value("${onesaitplatform.graylog.externalUri:http://127.0.0.1:9000}")
 	String graylogExternalUri;
 
 	private static final String SESSION_PATH = "/api/system/sessions";

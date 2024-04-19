@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,9 +98,8 @@ public class LayerRestController {
 	@PostMapping("/")
 	public ResponseEntity<String> create(@RequestBody(required = true) LayerDTO layerDto)
 			throws JsonProcessingException {
-		if (log.isDebugEnabled()) {
-			log.debug("Recieved request to create a new layer {}", layerDto.getIdentification());
-		}
+
+		log.debug("Recieved request to create a new layer {}", layerDto.getIdentification());
 
 		User user = userService.getUserByIdentification(utils.getUserId());
 
@@ -163,9 +162,7 @@ public class LayerRestController {
 	@Operation(summary = "Get layer by identification")
 	@GetMapping("/{identification}")
 	public ResponseEntity<LayerDTO> getLayer(@PathVariable("identification") String identification) {
-		if (log.isDebugEnabled()) {
-			log.debug("Get layer {}", identification);
-		}
+		log.debug("Get layer {}", identification);
 		try {
 			Layer layer = layerService.findByIdentification(identification);
 			LayerDTO dto = new LayerDTO();
@@ -183,9 +180,7 @@ public class LayerRestController {
 	@Operation(summary = "Get ontology schema from layer identification")
 	@GetMapping("/{identification}/schema")
 	public ResponseEntity<String> getOntologySchema(@PathVariable("identification") String identification) {
-		if (log.isDebugEnabled()) {
-			log.debug("Get Ontology schema from layer {}", identification);
-		}
+		log.debug("Get Ontology schema from layer {}", identification);
 		try {
 			Layer layer = layerService.findByIdentification(identification);
 			if (layer == null) {

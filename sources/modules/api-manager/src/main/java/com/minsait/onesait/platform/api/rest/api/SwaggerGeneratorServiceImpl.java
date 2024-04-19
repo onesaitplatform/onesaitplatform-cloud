@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import javax.ws.rs.core.Response;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -41,7 +40,6 @@ import com.minsait.onesait.platform.resources.service.IntegrationResourcesServic
 import io.swagger.jaxrs.config.BeanConfig;
 import io.swagger.models.Path;
 import io.swagger.models.Swagger;
-import io.swagger.models.auth.ApiKeyAuthDefinition;
 import io.swagger.models.parameters.HeaderParameter;
 import io.swagger.parser.OpenAPIParser;
 import io.swagger.parser.SwaggerParser;
@@ -49,10 +47,6 @@ import io.swagger.util.Json;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.security.SecurityRequirement;
-import io.swagger.v3.oas.models.security.SecurityScheme;
-import io.swagger.v3.oas.models.security.SecurityScheme.In;
-import io.swagger.v3.oas.models.security.SecurityScheme.Type;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 
@@ -120,10 +114,9 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 	@Override
 	public Response getApiWithoutToken(String numVersion, String identification, String vertical)
 			throws GenericOPException {
-		if (StringUtils.hasText(vertical)) {
+		if (StringUtils.hasText(vertical))
 			masterUserService.getVertical(vertical)
 					.ifPresent(v -> MultitenancyContextHolder.setVerticalSchema(v.getSchema()));
-		}
 
 		if (numVersion.indexOf('v') != -1) {
 			numVersion = numVersion.substring(1, numVersion.length());
@@ -164,18 +157,19 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 	private Response getExternalApiWithSwagger(Api api, Swagger swagger) {
 
 		if (!StringUtils.hasText(api.getGraviteeId())) {
+			addCustomHeaderToPaths(swagger);
 			swagger.setHost(null);
 			swagger.setBasePath(getApiBasePath(api, String.valueOf(api.getNumversion())));
 		} else {
 			swagger.setHost(getGraviteeHost());
 			swagger.setBasePath(getGraviteeBasePath(api));
 		}
-		addCustomHeaderToPaths(swagger);
 		MultitenancyContextHolder.clear();
 		return Response.ok(Json.pretty(swagger)).build();
 	}
 
 	private Response getExternalApiWithOpenAPI(Api api, OpenAPI openAPI) {
+		addCustomHeaderToPaths(openAPI);
 		final Server server = new Server();
 
 		if (StringUtils.hasText(api.getGraviteeId())) {
@@ -183,7 +177,6 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 		} else {
 			server.setUrl(getApiBasePath(api, String.valueOf(api.getNumversion())));
 		}
-		addCustomHeaderToPaths(openAPI);
 		openAPI.setServers(Arrays.asList(server));
 		MultitenancyContextHolder.clear();
 		return Response.ok(io.swagger.v3.core.util.Json.pretty(openAPI)).build();
@@ -210,10 +203,7 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 		final OpenAPIParser openAPIParser = new OpenAPIParser();
 		final SwaggerParseResult swaggerParseResult = openAPIParser.readContents(swaggerJson, null, null);
 		final OpenAPI openAPI = swaggerParseResult.getOpenAPI();
-		openAPI.getComponents().addSecuritySchemes(Constants.AUTHENTICATION_HEADER,
-				new SecurityScheme().in(In.HEADER).type(Type.APIKEY).name(Constants.AUTHENTICATION_HEADER));
-		openAPI.getComponents().addSecuritySchemes("JWT",
-				new SecurityScheme().type(Type.HTTP).bearerFormat(Constants.JWT).scheme("bearer"));
+
 		final String json = io.swagger.v3.core.util.Json.pretty(openAPI);
 		MultitenancyContextHolder.clear();
 		return Response.ok(json).build();
@@ -228,16 +218,8 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 		if (StringUtils.hasText(api.getGraviteeId())) {
 			swagger.setHost(getGraviteeHost());
 		}
-		// TO OPENAPI 3
-		final OpenAPIParser openAPIParser = new OpenAPIParser();
-		final SwaggerParseResult swaggerParseResult = openAPIParser.readContents(Json.pretty(swagger), null, null);
-		final OpenAPI openAPI = swaggerParseResult.getOpenAPI();
-		openAPI.getComponents().addSecuritySchemes(Constants.AUTHENTICATION_HEADER,
-				new SecurityScheme().in(In.HEADER).type(Type.APIKEY).name(Constants.AUTHENTICATION_HEADER));
-		openAPI.getComponents().addSecuritySchemes("JWT",
-				new SecurityScheme().type(Type.HTTP).bearerFormat(Constants.JWT).scheme("bearer"));
 		MultitenancyContextHolder.clear();
-		return Response.ok(io.swagger.v3.core.util.Json.pretty(openAPI)).build();
+		return Response.ok(Json.pretty(swagger)).build();
 	}
 
 	private String getApiBasePath(Api api, String numVersion) {
@@ -266,15 +248,8 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 		header.setType("string");
 		swagger.getPaths().entrySet().forEach(p -> {
 			final Path path = p.getValue();
-			path.getOperations().forEach(op -> {
-				op.addSecurity(Constants.AUTHENTICATION_HEADER, null);
-				op.addSecurity(Constants.JWT, null);
-			});
+			path.getOperations().forEach(o -> o.addParameter(header));
 		});
-		swagger.addSecurityDefinition(Constants.AUTHENTICATION_HEADER,
-				new ApiKeyAuthDefinition().in(io.swagger.models.auth.In.HEADER).name(Constants.AUTHENTICATION_HEADER));
-		swagger.addSecurityDefinition(Constants.JWT,
-				new ApiKeyAuthDefinition().in(io.swagger.models.auth.In.HEADER).name(HttpHeaders.AUTHORIZATION));
 	}
 
 	/**
@@ -293,14 +268,7 @@ public class SwaggerGeneratorServiceImpl implements SwaggerGeneratorService {
 		header.setSchema(schema);
 		openAPI.getPaths().entrySet().forEach(p -> {
 			final PathItem path = p.getValue();
-			path.readOperations().forEach(o -> {
-				o.addSecurityItem(
-						new SecurityRequirement().addList(Constants.AUTHENTICATION_HEADER).addList(Constants.JWT));
-			});
+			path.readOperations().forEach(o -> o.addParametersItem(header));
 		});
-		openAPI.getComponents().addSecuritySchemes(Constants.AUTHENTICATION_HEADER,
-				new SecurityScheme().in(In.HEADER).type(Type.APIKEY).name(Constants.AUTHENTICATION_HEADER));
-		openAPI.getComponents().addSecuritySchemes("JWT",
-				new SecurityScheme().type(Type.HTTP).bearerFormat(Constants.JWT).scheme("bearer"));
 	}
 }

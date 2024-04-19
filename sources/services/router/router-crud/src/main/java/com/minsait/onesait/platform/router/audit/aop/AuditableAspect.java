@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,9 +46,8 @@ public class AuditableAspect extends BaseAspect {
 	private static final String PROCESSING_STR = "Processing :";
 	private static final String TYPE_STR = " Type : ";
 	private static final String BY_USER_STR = " By User : ";
-	private static final String CALL_FOR = "INFO Log @@AfterThrowing Call For: {} -> {}";
-	private static final String CALL_FOR_EXCEPTION = "INFO Log @@AfterThrowing Call For: {} -> {}. Exception Message: {}";
-	private static final String CALL_FOR_CLASS = "INFO Log @@AfterThrowing Call For: {} -> {}. Class: {}";
+	private static final String CALL_FOR = "INFO Log @@AfterThrowing Call For: ";
+
 
 	// @Around(value = "@annotation(auditable)")
 	public Object processTx(ProceedingJoinPoint joinPoint, Auditable auditable) throws java.lang.Throwable {
@@ -139,11 +138,8 @@ public class AuditableAspect extends BaseAspect {
 
 			if (retVal instanceof ResponseEntity) {
 				final ResponseEntity response = (ResponseEntity) retVal;
-				if (log.isDebugEnabled()) {
-					log.debug(
-						"After -> CALL FOR {} -> {} RETURNED CODE: ", className, methodName,
-						response.getStatusCode());
-				}				
+				log.debug("After -> CALL FOR " + className + "-> " + methodName + " RETURNED CODE: "
+						+ response.getStatusCode());
 			}
 
 			if (retVal instanceof OperationResultModel) {
@@ -198,9 +194,9 @@ public class AuditableAspect extends BaseAspect {
 		OPEventFactory.builder().build().setErrorDetails(event, ex);
 		eventProducer.publish(event);
 
-		log.debug(CALL_FOR, className, methodName);
-		log.debug(CALL_FOR_EXCEPTION, className, methodName, ex.getMessage());
-		log.debug(CALL_FOR_CLASS, className, methodName, ex.getClass().getName());
+		log.debug(CALL_FOR + className + "-> " + methodName);
+		log.debug(CALL_FOR + className + "-> " + methodName + " Exception Message: " + ex.getMessage());
+		log.debug(CALL_FOR + className + "-> " + methodName + " Class: " + ex.getClass().getName());
 
 	}
 

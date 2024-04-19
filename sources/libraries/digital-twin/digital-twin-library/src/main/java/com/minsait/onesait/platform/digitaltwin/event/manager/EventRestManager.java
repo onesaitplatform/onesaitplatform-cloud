@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -152,7 +152,7 @@ public class EventRestManager implements EventManager {
 		public void run() {
 
 			try {
-				if (ip == null || ip.isEmpty())
+				if (ip == null)
 					ip = getLocalIp();
 			} catch (Exception e) {
 				log.error("Unable to get local IP to register device in broker", e);

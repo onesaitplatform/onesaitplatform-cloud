@@ -18,14 +18,13 @@ Microservice.Create = (function(){
 		$('#select-dependency-architecture').hide();
 		$('#select-module-architecture').hide();
 		$('#project-structure').hide();
-		$('#jenkisjoburl').hide();
 		$("#btn-cancel").on('click', function (e) {
 			e.preventDefault();
 			window.location = '/controlpanel/microservices/list';
 		});
 		
 		// INPUT MASK FOR microservice identification allow only letters, numbers and -_
-		//$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
+		$("#identification").inputmask({ regex: "[a-zA-Z0-9_-]*", greedy: false });
 		
 		// Reset form
 		$('#resetBtn').on('click',function(){ 
@@ -42,21 +41,9 @@ Microservice.Create = (function(){
 				$('#project-structure').show();
 				$('.only-new-nb').hide();
 				$('.only-new').hide();
-				$('#template').val("").change();
 			}
 			
 		});
-		
-		$('#checkbox-strip-prefix').on('change', function(){
-			$('#stripRoutePrefix').val($(this).is(':checked'))
-		})
-		
-		if($("#templateText").val()==''){
-			$('#project-structure').show();
-			$('#gitToHide').hide();
-			$('#gitToHide2').hide();
-			$('#mstemplatetext').hide();
-		}
 		
 		if(exists.gitlab){
 			$('#gitlab-configuration').hide();
@@ -102,27 +89,26 @@ Microservice.Create = (function(){
 		}
 		
 		$('#template').on('change', function(){
-			var keytemplate = microserviceCreateJson.optionstemplate[this.value];
-			if(keytemplate != 'IOT_CLIENT_ARCHETYPE')
+			if($(this).val() != 'IOT_CLIENT_ARCHETYPE' )
 				$('#select-ontologies').hide();
 			else
 				$('#select-ontologies').show();
 				
-			if(keytemplate != 'NOTEBOOK_ARCHETYPE' )
+			if($(this).val() != 'NOTEBOOK_ARCHETYPE' )
 				deactivateNotebookArchetype();
 			else
 				activateNotebookArchetype();
-			if(keytemplate == 'IMPORT_FROM_ZIP')
+			if($(this).val() == 'IMPORT_FROM_ZIP')
 				$('#file-zip').show();
 			else
 				$('#file-zip').hide();
 			
-			if(keytemplate == 'IMPORT_FROM_GIT')
+			if($(this).val() == 'IMPORT_FROM_GIT')
 				$('#git-template').show();
 			else
 				$('#git-template').hide();
 			
-			if(keytemplate === 'MLFLOW_MODEL' ){
+			if($(this).val() === 'MLFLOW_MODEL' ){
 				$('.experiments-divs').removeClass('hide');
 				$('.no-experiments-divs').addClass('hide');
 				$('#port-div').addClass('hide');
@@ -134,7 +120,7 @@ Microservice.Create = (function(){
 				$('#port-div').removeClass('hide');
 			}
 			
-			if(keytemplate != 'ARCHITECTURE_ARCHETYPE' )
+			if($(this).val() != 'ARCHITECTURE_ARCHETYPE' )
 			{
 				$('#select-dependency-architecture').hide();
 				$('#select-module-architecture').hide();

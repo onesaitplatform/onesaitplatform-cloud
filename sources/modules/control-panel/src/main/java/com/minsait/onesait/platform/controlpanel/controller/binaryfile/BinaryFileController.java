@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -153,7 +153,7 @@ public class BinaryFileController {
 	}
 
 	@GetMapping(value = { "/list/{redirect}", "/list" })
-	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER,ROLE_USER')")
+	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	public String create(Model model, @PathVariable("redirect") Optional<Boolean> redirect) {
 		if (model.asMap().containsKey(MODULE_NOT_ACTIVE_KEY)) {
 			model.addAttribute("message", model.asMap().get(MODULE_NOT_ACTIVE_KEY));
@@ -174,28 +174,18 @@ public class BinaryFileController {
 
 		if (fileName != null && fileName.trim().equals("")) {
 			fileName = null;
-		} else if(fileName != null) {
-			fileName = "%" + fileName + "%";
 		}
 		if (fileId != null && fileId.trim().equals("")) {
 			fileId = null;
-		} else if(fileId != null) {
-			fileId = "%" + fileId + "%";
 		}
 		if (fileExt != null && fileExt.trim().equals("")) {
 			fileExt = null;
-		} else if(fileExt != null) {
-			fileExt = "%" + fileExt + "%";
 		}
 		if (metaData != null && metaData.trim().equals("")) {
 			metaData = null;
-		} else if(metaData != null) {
-			metaData = "%" + metaData + "%";
 		}
 		if (owner != null && owner.trim().equals("")) {
 			owner = null;
-		} else if(owner != null) {
-			owner = "%" + owner + "%";
 		}
 
 		User userlogged = userService.getUser(webUtils.getUserId());
@@ -1234,7 +1224,7 @@ public class BinaryFileController {
 
 		} catch (final Exception e) {
 			log.error("Could not update binary file: {}", e);
-			webUtils.addRedirectException(e, redirectAttributes);
+			webUtils.addRedirectMessage("binaryfiles.error", redirectAttributes);
 			return REDIRECT_GCP_FILES_LIST;
 		}
 

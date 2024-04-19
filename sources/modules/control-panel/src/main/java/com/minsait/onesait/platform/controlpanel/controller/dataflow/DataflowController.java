@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -286,14 +286,14 @@ public class DataflowController {
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
 	@DeleteMapping(value = "/pipeline/{id}", produces = "text/html")
 	public ResponseEntity removePipeline(@PathVariable("id") String id) {
-		dataflowService.deleteHardPipeline(id, utils.getUserId());
+		dataflowService.removePipeline(id, utils.getUserId());
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DATASCIENTIST')")
 	@DeleteMapping(value = "/pipeline/hardDelete/{id}", produces = "text/html")
 	public ResponseEntity removeHardPipeline(@PathVariable("id") String id) {
-		dataflowService.deletePipeline(id, utils.getUserId());
+		dataflowService.removeHardPipeline(id, utils.getUserId());
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
@@ -372,11 +372,7 @@ public class DataflowController {
 	public ResponseEntity<String> appRest(HttpServletRequest request, @RequestBody(required = false) String body) {
 		ResponseEntity<String> dataflowResponse = dataflowService.sendHttp(request,
 				HttpMethod.valueOf(request.getMethod()), body, utils.getUserId());
-		if (dataflowResponse.getHeaders().containsKey("Content-Disposition")) {
-			return ResponseEntity.status(dataflowResponse.getStatusCode()).headers(dataflowResponse.getHeaders()).body(dataflowResponse.getBody());
-		} else {
-			return ResponseEntity.status(dataflowResponse.getStatusCode()).body(dataflowResponse.getBody());
-		}
+		return ResponseEntity.status(dataflowResponse.getStatusCode()).body(dataflowResponse.getBody());
 	}
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR')")

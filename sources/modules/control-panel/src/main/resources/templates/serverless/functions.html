@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -37,12 +37,11 @@
 	<link rel="stylesheet" type="text/css" media="all"
 		th:href="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker3.min.css}" />
 	<style>
-		.dark-mode-editor {
-			height: calc(100% + 1px) !important;
+		.dark-mode-editor{
+			 height: calc(100% + 1px)!important;
 		}
-
 		.white-mode-editor {
-			height: calc(100% + 1px) !important;
+			 height: calc(100% + 1px)!important;
 		}
 	</style>
 </head>
@@ -164,18 +163,18 @@
 										th:required="true" maxlength="100" th:field="*{name}" class="form-control "
 										th:placeholder="#{gen.name}" />
 								</div>
-							</div>
-							<div class="col-md-4 col-sm-4 col-xs-12">
-								<div class="form-group">
-									<label th:text="#{serverless.yamlPath}" class="control-label"
-										style="margin-bottom: 9px;">Yaml Path</label>
-									<span class="required"> *</span>
-									<input id="yamlPath" type="text" name="yamlPath" th:required="true" maxlength="200"
-										th:field="*{pathToYaml}" class="form-control " placeholder="function/randomizer"
-										readonly />
+								<div class="col-md-4 col-sm-4 col-xs-12" style="display: none;">
+									<div class="form-group">
+										<label th:text="#{serverless.yamlPath}" class="control-label"
+											style="margin-bottom: 9px;">Yaml Path</label>
+										<span class="required"> *</span>
+										<input id="yamlPath" type="text" name="yamlPath" th:required="true"
+											maxlength="200" th:field="*{pathToYaml}" class="form-control "
+											placeholder="function/randomizer" />
+									</div>
 								</div>
-							</div>
 
+							</div>
 						</div>
 						<div style='min-width: 0px;'>
 							<div style="height: calc(100% - 400px); margin: 1rem">
@@ -226,21 +225,19 @@
 		var currentLanguage = [[${lang}]];
 		var appName = [[${app.name}]];
 		var backUrl;
-
 		const projectId = [[${app.name}]]
 		document.querySelector('git-editor-app').apiData = {
 			baseUrl: [[${baseUrl}]],
 			token: [[${token}]],
 			noTabs: "false",
 		}
-
+	
 		if (appName === null) {
-			backUrl = [[@{/serverless/applications/}]];
+			backUrl = [[@{/serverless/applications /}]];
 		}else {
 			backUrl = [[@{'/serverless/applications/'+${app.name}}]];
 		}
 		$("#btn-save").click(function (event) {
-
 			let yamlPath = $("#actual-git-path").text().replace(/Path: /g, '');
 			if (yamlPath === '/')
 				yamlPath = '.';
@@ -263,15 +260,6 @@
 			deleteFunctionInfo: [[#{serverless.function.delete.info}]]
 
 		};
-
-		function matchFunctionPath() {
-			if ($("#actual-git-path").text() != $('#yamlPath').val) {
-				$('#yamlPath').val($("#actual-git-path").text().replace(/Path: /g, ''));
-				setTimeout(matchFunctionPath, 2000);
-			}
-		}
-
-
 
 		var deleteFunction = function (fnName) {
 			let headersObj = {};
@@ -318,7 +306,7 @@
 		$(document).ready(function () {
 			let action = $('#action-form').val();
 			$('#form-function').attr('action', action);
-			matchFunctionPath();
+
 		});
 
 	//]]>

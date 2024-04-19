@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,33 +63,25 @@ public class ReportServiceImpl implements ReportService {
 
 	@Override
 	public Report findById(String id) {
-		if (log.isDebugEnabled()) {
-			log.debug("INI. Find report by Id: {}", id);
-		}
+		log.debug("INI. Find report by Id: {}", id);
 		return reportRepository.findById(id).orElse(null);
 	}
 
 	@Transactional
 	@Override
 	public void saveOrUpdate(Report report) {
-		if (log.isDebugEnabled()) {
-			log.debug("INI. Save report: {}", report);
-		}
+		log.debug("INI. Save report: {}", report);
 		reportRepository.save(report);
 	}
 
 	@Transactional
 	@Override
 	public void disable(String id) {
-		if (log.isDebugEnabled()) {
-			log.debug("INI. Disable report id: {}", id);
-		}
+		log.debug("INI. Disable report id: {}", id);
 		final Report entity = reportRepository.findById(id).orElse(null);
 
 		if (entity != null) {
-			if (log.isDebugEnabled()) {
-				log.debug("Disable > Find report {}", entity);
-			}
+			log.debug("Disable > Find report {}", entity);
 			entity.setActive(Boolean.FALSE);
 			reportRepository.save(entity);
 		}

@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,6 @@ public class ConfigurationController {
 	private static final String REDIRECT_CONF_LIST = "redirect:/configurations/list";
 	private static final String APP_ID = "appId";
 	private static final String REDIRECT_PROJECT_SHOW = "redirect:/projects/update/";
-	private static final String APP_USER_ACCESS = "app_user_access";
 
 	@GetMapping("/list")
 	public String list(Model model) {
@@ -148,12 +147,8 @@ public class ConfigurationController {
 			configuration = new Configuration();
 			configuration.setUser(userService.getUser(utils.getUserId()));
 		}
-		
-		ResourceAccessType resourceAccess = resourceService.getResourceAccess(utils.getUserId(),configuration.getId());
-		
 		if (utils.isAdministrator() || configuration.getUser().getUserId().equals(utils.getUserId())
-				|| (resourceAccess!= null && resourceAccess.equals(ResourceAccessType.MANAGE))) {
-			model.addAttribute(APP_USER_ACCESS, resourceAccess);
+				|| resourceService.hasAccess(utils.getUserId(), configuration.getId(), ResourceAccessType.MANAGE)) {
 			model.addAttribute(CONFIGURATION_STR, configuration);
 			return CONF_CREATE;
 		} else {
@@ -206,11 +201,8 @@ public class ConfigurationController {
 		if (configuration == null)
 			return "error/404";
 
-		ResourceAccessType resourceAccess = resourceService.getResourceAccess(utils.getUserId(),configuration.getId());
-		
 		if (utils.isAdministrator() || configuration.getUser().getUserId().equals(utils.getUserId())
-				|| (resourceAccess!= null)) {
-			model.addAttribute(APP_USER_ACCESS, resourceAccess);
+				|| resourceService.hasAccess(utils.getUserId(), configuration.getId(), ResourceAccessType.VIEW)) {
 			model.addAttribute(CONFIGURATION_STR, configuration);
 			return "configurations/show";
 		} else {

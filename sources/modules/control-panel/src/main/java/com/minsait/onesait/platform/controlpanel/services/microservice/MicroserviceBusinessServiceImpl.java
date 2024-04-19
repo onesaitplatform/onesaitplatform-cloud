@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ import com.minsait.onesait.platform.config.model.DigitalTwinDevice;
 import com.minsait.onesait.platform.config.model.Microservice;
 import com.minsait.onesait.platform.config.model.Microservice.CaaS;
 import com.minsait.onesait.platform.config.model.Microservice.TemplateType;
+import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 import com.minsait.onesait.platform.config.services.exceptions.MicroserviceException;
 import com.minsait.onesait.platform.config.services.microservice.MicroserviceService;
@@ -134,7 +135,6 @@ public class MicroserviceBusinessServiceImpl implements MicroserviceBusinessServ
 		ms.setPort(microservice.getPort());
 		ms.setContextPath(microservice.getContextPath());
 		ms.setTemplateType(microservice.getTemplate());
-		ms.setStripRoutePrefix(microservice.isStripRoutePrefix());
 		ms.setUser(userService.getUser(microservice.getOwner()));
 
 		if (config.isCreateGitlab()) {
@@ -190,9 +190,8 @@ public class MicroserviceBusinessServiceImpl implements MicroserviceBusinessServ
 	public Microservice createMicroserviceFromDigitalTwin(DigitalTwinDevice device, File file,
 			GitlabConfiguration configuration, String sources, String docker) {
 		final MicroserviceDTO microservice = MicroserviceDTO.builder().name(device.getIdentification().toLowerCase())
-				.contextPath(device.getContextPath()).port(device.getPort())
-				.template(TemplateType.DIGITAL_TWIN.toString()).gitlabConfiguration(configuration)
-				.owner(device.getUser().getUserId()).build();
+				.contextPath(device.getContextPath()).port(device.getPort()).template(TemplateType.DIGITAL_TWIN)
+				.gitlabConfiguration(configuration).owner(device.getUser().getUserId()).build();
 
 		final MSConfig config = MSConfig.builder().createGitlab(true).defaultCaaS(true)
 				.defaultGitlab(!StringUtils.hasText(configuration.getPrivateToken())
@@ -200,6 +199,23 @@ public class MicroserviceBusinessServiceImpl implements MicroserviceBusinessServ
 				.defaultJenkins(true).docker(docker).ontology(null).sources(sources).build();
 
 		return createMicroservice(microservice, config, file);
+	}
+
+	public Microservice createMicroserviceFromNotebook(Notebook notebook, File file,
+			GitlabConfiguration configuration) {
+
+		final String notebookIdentification = notebook.getIdentification().trim().toLowerCase();
+		final MicroserviceDTO microservice = MicroserviceDTO.builder().name(notebookIdentification)
+				.contextPath("/" + notebookIdentification).port(8080).template(TemplateType.NOTEBOOK_ARCHETYPE)
+				.gitlabConfiguration(configuration).owner(notebook.getUser().getUserId()).build();
+
+		final MSConfig config = MSConfig.builder().createGitlab(true).defaultCaaS(true)
+				.defaultGitlab(!StringUtils.hasText(configuration.getPrivateToken())
+						|| !StringUtils.hasText(configuration.getSite()))
+				.defaultJenkins(true).notebook(notebook.getIdentification()).build();
+
+		return createMicroservice(microservice, config, file);
+
 	}
 
 	@Override
@@ -253,7 +269,7 @@ public class MicroserviceBusinessServiceImpl implements MicroserviceBusinessServ
 		if (!StringUtils.hasText(microservice.getJobName())) {
 			throw new MicroserviceException("This microservice doesn't have a jenkins pipeline associated");
 		}
-		final Map<String, Object> map = jenkinsService.getParametersFromJob(
+		final Map<String, String> map = jenkinsService.getParametersFromJob(
 				microservice.getJenkinsConfiguration().getJenkinsUrl(),
 				microservice.getJenkinsConfiguration().getUsername(), microservice.getJenkinsConfiguration().getToken(),
 				microservice.getJobName());
@@ -264,7 +280,7 @@ public class MicroserviceBusinessServiceImpl implements MicroserviceBusinessServ
 
 	}
 
-	private Object assignParameterValue(String key, Object value, Microservice microservice) {
+	private String assignParameterValue(String key, String value, Microservice microservice) {
 		try {
 			if (key.equalsIgnoreCase(GIT_URL)) {
 				return microservice.getGitlabRepository();
@@ -284,7 +300,7 @@ public class MicroserviceBusinessServiceImpl implements MicroserviceBusinessServ
 	@Override
 	public int buildJenkins(Microservice microservice, List<JenkinsParameter> parameters) {
 		final Map<String, List<String>> paramMap = parameters.stream()
-				.collect(Collectors.toMap(p -> p.getName(), p -> Arrays.asList((String) p.getValue())));
+				.collect(Collectors.toMap(p -> p.getName(), p -> Arrays.asList(p.getValue())));
 
 		final int result = jenkinsService.buildWithParameters(microservice.getJenkinsConfiguration().getJenkinsUrl(),
 				microservice.getJenkinsConfiguration().getUsername(), microservice.getJenkinsConfiguration().getToken(),
@@ -304,15 +320,12 @@ public class MicroserviceBusinessServiceImpl implements MicroserviceBusinessServ
 				.findFirst().orElse(null);
 		final JenkinsParameter tag = parameters.stream().filter(jp -> jp.getName().equals(DOCKER_MODULETAGVALUE))
 				.findFirst().orElse(null);
-		microservice.setJenkinsQueueId(result);
 		if (registry != null && username != null && tag != null) {
-			microservice.setDockerImage(registry.getValue() + "/" + username.getValue() + "/"
-					+ microservice.getIdentification().toLowerCase() + ":" + tag.getValue());
-		} else if (registry != null && tag != null) {
-			microservice.setDockerImage(
-					registry.getValue() + "/" + microservice.getIdentification().toLowerCase() + ":" + tag.getValue());
+			microservice.setJenkinsQueueId(result);
+			microservice.setDockerImage(registry.getValue().concat("/").concat(username.getValue()).concat("/")
+					.concat(microservice.getIdentification().toLowerCase()).concat(":").concat(tag.getValue()));
+			microserviceService.save(microservice);
 		}
-		microserviceService.save(microservice);
 		return result;
 
 	}
@@ -429,13 +442,6 @@ public class MicroserviceBusinessServiceImpl implements MicroserviceBusinessServ
 	}
 
 	@Override
-	public String getCurrentImage(Microservice microservice) {
-		checkCaaSConfig(microservice);
-		return msaServiceDispatcher.dispatch(microservice.getCaas()).getCurrentDockerImage(microservice,
-				microservice.getOpenshiftNamespace());
-	}
-
-	@Override
 	public void stopMicroservice(Microservice microservice) {
 		checkCaaSConfig(microservice);
 		msaServiceDispatcher.dispatch(microservice.getCaas()).stopService(microservice.getCaaSConfiguration(),
@@ -482,7 +488,7 @@ public class MicroserviceBusinessServiceImpl implements MicroserviceBusinessServ
 		} else {
 			setOpenshiftConfiguration(config, microservice, ms);
 		}
-		if (!microservice.getTemplate().equals(Microservice.TemplateType.MLFLOW_MODEL.toString())) {
+		if (!microservice.getTemplate().equals(Microservice.TemplateType.MLFLOW_MODEL)) {
 			setGitlabConfiguration(config, microservice, ms);
 		}
 
@@ -508,13 +514,7 @@ public class MicroserviceBusinessServiceImpl implements MicroserviceBusinessServ
 		try {
 			if (!StringUtils.hasText(microservice.getJobName())) {
 				ms.setJobName(microservice.getName().concat("-pipeline"));
-				if (config.isCreateGitlab() && microservice.getTemplate() != null) {
-					// will overwrite paths at MicroserviceTemplateUtil
-					ms.setJenkinsXML(microserviceJenkinsTemplateUtil.compileXMLTemplate(config, microservice,
-							config.getSources(), config.getDocker()));
-				} else {
-					ms.setJenkinsXML(microserviceJenkinsTemplateUtil.compileXMLTemplate(config, microservice));
-				}
+				ms.setJenkinsXML(microserviceJenkinsTemplateUtil.compileXMLTemplate(config, microservice));
 				ms.setJobUrl(createJenkinsPipeline(ms, config.getJenkinsView()));
 			} else {
 				ms.setJobName(microservice.getJobName());
@@ -585,7 +585,7 @@ public class MicroserviceBusinessServiceImpl implements MicroserviceBusinessServ
 	}
 
 	private boolean validServiceName(String identification) {
-		final Pattern p = Pattern.compile("^[a-z-]{1,100}$");
+		final Pattern p = Pattern.compile("^[a-z-]{1,20}$");
 		final Matcher m = p.matcher(identification);
 		return m.matches();
 	}
@@ -651,18 +651,14 @@ public class MicroserviceBusinessServiceImpl implements MicroserviceBusinessServ
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM));
 		final org.springframework.http.HttpEntity<String> request = new org.springframework.http.HttpEntity<>(body,
 				headers);
-		if (log.isDebugEnabled()) {
-			log.debug("Sending method {}", httpMethod.toString());
-		}
+		log.debug("Sending method " + httpMethod.toString());
 		ResponseEntity<byte[]> response = new ResponseEntity<>(HttpStatus.ACCEPTED);
 		try {
 			response = restTemplate.exchange(new URI(url), httpMethod, request, byte[].class);
 		} catch (final Exception e) {
 			log.error(e.getMessage());
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("Execute method {} {}", httpMethod.toString(), url);
-		}
+		log.debug("Execute method " + httpMethod.toString() + " " + url);
 		final HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.set("Content-Type", response.getHeaders().getContentType().toString());
 		return new ResponseEntity<>(response.getBody(), responseHeaders,

@@ -32,15 +32,6 @@
 				},
 				{
 					"title": {
-						"EN": "User Tokens Management",
-						"ES": "Gestión de Tokens de Usuario",
-						"FR": "Gestion des jetons utilisateur"
-					},
-					"icon": "",
-					"url": "/controlpanel/apimanager/token/list?access=MENU"
-				},
-				{
-					"title": {
 						"EN": "My REST APIs",
 						"ES": "Mis APIs REST",
 						"FR": "Mes APIs REST"
@@ -48,15 +39,6 @@
 					"icon": "",
 					"url": "/controlpanel/apimanager/list"
 				},
-				{
-                    "title": {
-                        "EN": "Tags",
-                        "ES": "Etiquetas",
-                        "FR": "Tags"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/tags"
-                },
 				{
 					"title": {
 						"EN": "My Flows",
@@ -83,24 +65,6 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/microservices/list"
-				},
-				{
-					"title": {
-						"EN": "My Git Projects",
-						"ES": "Mis Proyectos Git", 
-						"FR": "Mes Projets Git"
-					},
-					"icon": "",
-					"url": "/controlpanel/codeproject/list"
-				},
-				{
-					"title": {
-						"EN": "My Microservices Templates",
-						"ES": "Mis Plantillas de MicroServicios",
-						"FR": "Mes Modèles de microservices"
-					},
-					"icon": "",
-					"url": "/controlpanel/mstemplates/list"
 				},
 				{
 					"title": {
@@ -140,15 +104,6 @@
 			"icon": "icon-visualization",
 			"url": "",
 			"submenu": [
-				 {
-                    "title": {
-                        "EN": "My Forms",
-                        "ES": "Mis Formularios",
-                        "FR": "Mes Formes"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/forms/list"
-                } ,
 				{
 					"title": {
 						"EN": "My Dashboards",
@@ -185,15 +140,6 @@
 					"icon": "",
 					"url": "/controlpanel/reports/list"
 				},
-				{
-                    "title": {
-                        "EN": "Email Templates",
-                        "ES": "Platillas de Email",
-                        "FR": "Modèles d'e-mails"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/emails/list"
-                },
 				{
 					"title": {
 						"EN": "My GIS Viewers",
@@ -458,9 +404,9 @@
 				},
 				{
 					"title": {
-						"EN": "My WebApps",
-						"ES": "Mis WebApps",
-						"FR": "Mes WebApps"
+						"EN": "My Web Projects",
+						"ES": "Mis Proyectos Web",
+						"FR": "Mes Projets Web"
 					},
 					"icon": "",
 					"url": "/controlpanel/webprojects/list"
@@ -559,12 +505,12 @@
 				},
 				{
 					"title": {
-						"EN": "Assets Market",
-						"ES": "Market de Assets",
-						"FR": "Marché des Actifs"
+						"EN": "My Market",
+						"ES": "Mi Market",
+						"FR": "Mon Marché"
 					},
 					"icon": "",
-					"url": "/controlpanel/bundlerepository/list"
+					"url": "/controlpanel/marketasset/list"
 				},
 				{
 					"title": {
@@ -594,25 +540,7 @@
 					},
 					"icon": "",
 					"url": "/controlpanel/versioning/restore/resource"
-				},
-				{
-                    "title": {
-                        "EN": "Bundle generation",
-                        "ES": "Generación de paquetes de recursos",
-                        "FR": "Generation de colis"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/bundles/generate"
-                },
-                {
-                    "title": {
-                        "EN": "Bundle load",
-                        "ES": "Carga de paquetes de recursos",
-                        "FR": "Charger des ressources"
-                    },
-                    "icon": "",
-                    "url": "/controlpanel/bundles/load"
-                }
+				}
 			]
 		}
 	]

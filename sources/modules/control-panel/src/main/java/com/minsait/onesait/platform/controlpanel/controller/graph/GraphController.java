@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import com.minsait.onesait.platform.config.model.Dashboard;
 import com.minsait.onesait.platform.config.model.DigitalTwinDevice;
 import com.minsait.onesait.platform.config.model.FlowDomain;
 import com.minsait.onesait.platform.config.model.Gadget;
-import com.minsait.onesait.platform.config.model.Microservice;
 import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Pipeline;
@@ -82,8 +81,6 @@ public class GraphController {
 		arrayLinks.addAll(graphUtil.constructGraphWithWebProjects(webprojects, user));
 		arrayLinks.addAll(graphUtil.constructGraphWithNotebooks(null, user));
 		arrayLinks.addAll(graphUtil.constructGraphWithDataFlows(null, user));
-		arrayLinks.addAll(graphUtil.constructGraphWithMicroservices(null, user));
-		
 		return arrayLinks.toString();
 	}
 
@@ -131,9 +128,7 @@ public class GraphController {
 				.map(r -> (Notebook) r).collect(Collectors.toList()), null));
 		arrayLinks.addAll(graphUtil.constructGraphWithDataFlows(resources.stream().filter(r -> r instanceof Pipeline)
 				.map(r -> (Pipeline) r).collect(Collectors.toList()), null));
-		arrayLinks.addAll(graphUtil.constructGraphWithMicroservices(resources.stream().filter(r -> r instanceof Microservice)
-				.map(r -> (Microservice) r).collect(Collectors.toList()), null));
-		
+
 		arrayLinks.stream().forEach(g -> {
 			if (g.getLinkSource() != null && g.getLinkSource().toLowerCase().contains("list")) {
 				g.setLinkSource(null);

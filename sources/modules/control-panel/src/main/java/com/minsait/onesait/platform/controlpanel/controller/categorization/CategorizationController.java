@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -181,7 +181,7 @@ public class CategorizationController {
 			return E403;
 		}
 
-		final List<User> users = userService.getAllActiveUsers();
+		final List<User> users = userService.getAllUsers();
 		model.addAttribute("users", users);
 
 		final List<CategorizationUser> catUsers = categorizationUserRepository.findByCategorizationNotOwn(user,

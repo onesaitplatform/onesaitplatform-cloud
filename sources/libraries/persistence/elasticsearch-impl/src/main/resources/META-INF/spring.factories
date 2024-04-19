@@ -1,3 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-com.minsait.onesait.platform.persistence.ESPersistenceStarterAutoConfig,\
-com.minsait.onesait.platform.persistence.OSPersistenceStarterAutoConfig
+com.minsait.onesait.platform.persistence.ESPersistenceStarterAutoConfig

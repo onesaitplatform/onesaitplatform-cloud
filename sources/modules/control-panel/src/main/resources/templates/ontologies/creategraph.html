@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -375,33 +375,6 @@
 						</div><!-- END PORTLET BASIC  -->
 							
 					</div><!-- END COL-12 -->
-									<!-- MODAL LD -->
-				<div th:include="fragments/ontology-create-ld-modal">
-				</div>
-				<!-- Modal -->
-				<div id="modal-created" data-backdrop="static" class="modal fade" role="dialog">
-					<div class="modal-dialog modal-sm">
-						<!-- Modal content-->
-						<div class="modal-content">
-							<div class="modal-header">
-								<button type="button" class="close" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} +'\');'" data-dismiss="modal"></button>
-								<h4 class="modal-title" th:text="#{json2ont.ontcreated}"></h4>
-							</div>
-							<div class="modal-body">
-						      	<h4 ><a target="_blank" th:text="#{ontology.after.create.api}" th:attr="onclick='javascript:navigateUrl(\'' + @{/apimanager/create} +'?id=\'+$(\'#identification\').val()'+');'">Create API</a></h4>
-						      	<h4 ><a target="_blank" th:text="#{ontology.after.create.device}" th:attr="onclick='javascript:navigateUrl(\'' + @{/devices/create} +'?id=\'+$(\'#identification\').val()'+');'">Create Device</a></h4>
-					      		<h4 ><a target="_blank" th:text="#{ontology.after.create.dashboard}" th:attr="onclick='javascript:navigateUrl(\'' + @{/dashboards/create} +'?id=\'+$(\'#identification\').val()'+');'">Create Dashboard</a></h4>
-					      		<h4 ><a target="_blank" th:text="#{ontology.after.create.gadget}" th:attr="onclick='javascript:navigateUrl(\'' + @{/gadgets/create} +'?id=\'+$(\'#identification\').val()'+');'">Create Gadget</a></h4>
-
-					      	</div>
-							<div class="modal-footer">
-								<button type="button" class="btn btn-default" th:attr="onclick='javascript:navigateUrl(\'' + @{/ontologies/list} + '\');'" data-dismiss="modal">Close</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-
 				</form>
 					
 			</div><!-- END CONTENT BODY -->

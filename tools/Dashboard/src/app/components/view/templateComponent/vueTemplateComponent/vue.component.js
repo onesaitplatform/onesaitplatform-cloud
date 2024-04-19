@@ -18,7 +18,6 @@
         template: "<?",
         params: "<?",
         gadgetid: "<?",
-        toolsopts: "="
       }
     });
 
@@ -49,7 +48,7 @@
       if (vm.unsubscribeHandler) {
         vm.unsubscribeHandler();
         vm.unsubscribeHandler = null;
-        if(typeof vm.datasource !== 'undefined' && vm.datasource && vm.datasource.name){
+        if(typeof vm.datasource !== 'undefined'){
           datasourceSolverService.unregisterDatasourceTrigger(vm.datasource.name, vm.id);
         }
       }
@@ -76,22 +75,12 @@
         vm.initLiveComponent();
       }
 
-      if ($scope.ds) {
-        if (vm.drawLiveComponent) {
-          vm.drawLiveComponent($scope.ds, null);
-        }
-        if (vm.vueapp.drawVueComponent) {       
-          vm.vueapp.drawVueComponent($scope.ds, null);
-          vm.vueapp.ds = $scope.ds;
-        }
-      }
     }
 
     vm.eventLProcessor = function(event, dataEvent) {
       if (dataEvent.type === "data" && dataEvent.data.length === 0) {
         vm.type = "nodata";
         $scope.ds = "";
-        vm.vueapp.ds = [];
         if (vm.drawLiveComponent) {
           vm.drawLiveComponent($scope.ds, null);
         }

@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@
 				<!-- MAIN ROW -->
 				<div class="row main">
 					<div class="col-md-12">	
-						<div class="portlet light"   >
+						<div class="portlet light">
 							<div class="portlet-title">
 								<div class="caption hide">									
 									<span class="caption-subject" th:text="#{logcentralizer.template.list}"> Log Centralizer </span>
@@ -92,7 +92,6 @@
 									<a href="" class="fullscreen" data-original-title="" title=""> </a>
 								</div>
 							</div>
-						 
 							<iframe th:if="${logCentralizerUrl != null}" style="width:100%;height: 100%;" id="iframeGraylog" th:src="${logCentralizerUrl}" frameBorder="0">
 							</iframe>
 						</div>	<!-- END PORTLET -->											

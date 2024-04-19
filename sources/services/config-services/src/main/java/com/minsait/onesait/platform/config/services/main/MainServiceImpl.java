@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.minsait.onesait.platform.config.model.Configuration;
 import com.minsait.onesait.platform.config.model.Configuration.Type;
-import com.minsait.onesait.platform.config.model.User;
-import com.minsait.onesait.platform.config.model.UserControlPanelConfig;
 import com.minsait.onesait.platform.config.model.adminpanel.AdminPanelConfiguration;
 import com.minsait.onesait.platform.config.model.adminpanel.ModuleService;
 import com.minsait.onesait.platform.config.repository.ApiRepository;
@@ -35,12 +33,11 @@ import com.minsait.onesait.platform.config.repository.ClientPlatformRepository;
 import com.minsait.onesait.platform.config.repository.DashboardRepository;
 import com.minsait.onesait.platform.config.repository.FlowDomainRepository;
 import com.minsait.onesait.platform.config.repository.GadgetRepository;
-import com.minsait.onesait.platform.config.repository.MicroserviceRepository;
+import com.minsait.onesait.platform.config.repository.MarketAssetRepository;
 import com.minsait.onesait.platform.config.repository.NotebookRepository;
 import com.minsait.onesait.platform.config.repository.OntologyRepository;
 import com.minsait.onesait.platform.config.repository.PipelineRepository;
 import com.minsait.onesait.platform.config.repository.ProjectRepository;
-import com.minsait.onesait.platform.config.repository.UserControlPanelConfigRepository;
 import com.minsait.onesait.platform.config.repository.UserRepository;
 import com.minsait.onesait.platform.config.services.configuration.ConfigurationService;
 import com.minsait.onesait.platform.config.services.main.dto.GroupModulesDTO;
@@ -60,9 +57,6 @@ public class MainServiceImpl implements MainService {
     private OntologyRepository ontologyRepository;
 
     @Autowired
-    private UserControlPanelConfigRepository userControlPanelConfigRepository;
-    
-    @Autowired
     private ClientPlatformRepository deviceRepository;
 
     @Autowired
@@ -81,6 +75,9 @@ public class MainServiceImpl implements MainService {
     private PipelineRepository dataflowRepository;
 
     @Autowired
+    private MarketAssetRepository assetRepository;
+
+    @Autowired
     private ProjectRepository projectRepository;
 
     @Autowired
@@ -91,9 +88,6 @@ public class MainServiceImpl implements MainService {
 
     @Autowired
     private ConfigurationService configurationService;
-    
-    @Autowired
-    private MicroserviceRepository microservicesRepository;
 
     @Override
     public ArrayList<KpisDTO> createKPIs() {
@@ -165,6 +159,14 @@ public class MainServiceImpl implements MainService {
 
         kpisDTOList.add(kpisDTO);
 
+        // KPI Assets Number
+        kpisDTO = new KpisDTO();
+        final long assetsNumber = assetRepository.count();
+        kpisDTO.setValue(assetsNumber);
+        kpisDTO.setIdentification("Assets");
+
+        kpisDTOList.add(kpisDTO);
+
         // KPI Projects Number
         kpisDTO = new KpisDTO();
         final long projectNumber = projectRepository.count();
@@ -186,15 +188,6 @@ public class MainServiceImpl implements MainService {
         final long binaryfilesNumber = binaryfilesRepository.count();
         kpisDTO.setValue(binaryfilesNumber);
         kpisDTO.setIdentification("BinaryFiles");
-
-        kpisDTOList.add(kpisDTO);
-        
-        // KPI Microservices Number
-        kpisDTO = new KpisDTO();
-        //final long microservicesNumber = microservicesRepository.count();
-        final long microservicesNumber = microservicesRepository.findByActiveTrue().size();
-        kpisDTO.setValue(microservicesNumber);
-        kpisDTO.setIdentification("Microservices");
 
         kpisDTOList.add(kpisDTO);
 
@@ -324,34 +317,4 @@ public class MainServiceImpl implements MainService {
         return groupServices;
     }
 
-
-
-	public String getviewPanelUser( User user) {
-		String model;
-		UserControlPanelConfig userControlPanelConfig = userControlPanelConfigRepository.findByUser(user);
-		if(userControlPanelConfig != null) {
-			model = userControlPanelConfig.getType().toString();
-		}else {
-			model = UserControlPanelConfig.ModeType.CLASSICAL_VIEW.toString();
-		}
-		   
-		return model;	
-	}
-	
-	public void  updateviewPanelUser(User user, String view) {
-	
-		UserControlPanelConfig userControlPanelConfig = userControlPanelConfigRepository.findByUser(user);
-		if(userControlPanelConfig != null) {
-			userControlPanelConfig.setType(UserControlPanelConfig.ModeType.valueOf(view));	
-			userControlPanelConfigRepository.save(userControlPanelConfig);
-		}else {
-			userControlPanelConfig = new UserControlPanelConfig();
-			userControlPanelConfig.setUser(user);
-			userControlPanelConfig.setType(UserControlPanelConfig.ModeType.valueOf(view));
-			userControlPanelConfigRepository.save(userControlPanelConfig);
-		}
-		 	 
-		
-			
-	}
 }

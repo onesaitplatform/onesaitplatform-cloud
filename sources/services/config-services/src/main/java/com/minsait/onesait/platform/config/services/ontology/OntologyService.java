@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.dto.OntologyForList;
 import com.minsait.onesait.platform.config.model.ClientPlatform;
@@ -41,8 +40,6 @@ import com.minsait.onesait.platform.config.model.User;
 import com.minsait.onesait.platform.config.services.datamodel.dto.DataModelDTO;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyDTO;
 import com.minsait.onesait.platform.config.services.ontology.dto.OntologyFieldDTO;
-import com.minsait.onesait.platform.config.services.ontology.dto.OntologyListIndexMongoConfDTO;
-import com.minsait.onesait.platform.config.services.ontology.dto.OntologyPropertiesIndexConfDTO;
 import com.minsait.onesait.platform.config.services.ontology.dto.VirtualDatasourceDTO;
 
 public interface OntologyService {
@@ -160,8 +157,6 @@ public interface OntologyService {
 
 	OntologyVirtual getOntologyVirtualByOntologyId(Ontology ontology);
 
-	List<OntologyVirtual> getOntologyVirtualByTableName(String tableName);
-
 	String getRtdbFromOntology(String ontologyIdentification);
 
 	void checkOntologySchema(String schema);
@@ -216,16 +211,9 @@ public interface OntologyService {
 
 	String getElementsAssociated(String ontologyId);
 
-	List<OntologyPropertiesIndexConfDTO> getPropertiesOntology(Ontology ontology, List<String> indexList);
-
-	List<OntologyPropertiesIndexConfDTO> getPropertiesOntologyVirtual(Ontology ontology,
-			Map<String, List<String>> indexList);
-
-	List<OntologyListIndexMongoConfDTO> getIndexTrue(String getindexMongoDB);
-
 	OntologyPresto getOntologyPrestoByOntologyId(Ontology ontology);
 
-	Ontology getOntologyByIdForDelete(String ontologyId, String sessionUserId) throws JsonProcessingException;
+	Ontology getOntologyByIdForDelete(String ontologyId, String sessionUserId);
 
 	Map<String, OntologyFieldDTO> getOntologyFieldsAndDesc(String identification, String sessionUserId)
 			throws IOException;
@@ -236,10 +224,4 @@ public interface OntologyService {
 
 	Ontology getOntologyByIdentificationInsert(String ontologyId, String sessionUserId);
 
-	Map<String, OntologyFieldDTO> getOntologyFieldsAndDescForms(String identification, String sessionUserId)
-			throws IOException;
-
-	boolean isTimescaleVirtualOntology(Ontology o);
-
-	Ontology getOntologyByIdOrIdentification(String ontologyId, String sessionUserId);
 }

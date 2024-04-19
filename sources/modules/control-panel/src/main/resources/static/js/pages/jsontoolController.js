@@ -194,7 +194,7 @@ var JsonToolController = function(){
 				ontology = $('#ontology').val();
 			}
 			arrayJson = fileLoaded;
-			if(fileLoaded && fileLoaded.length > 20 ){
+			if(fileLoaded.length > 100 ){
 				myCodeMirrorSlice20 = (JSON.stringify(fileLoaded.slice(0,20))); 
 				
 				if(myCodeMirrorSlice20 != JSON.stringify(JSON.parse(myCodeMirror.getValue()))) {
@@ -229,12 +229,12 @@ var JsonToolController = function(){
 				}
 				arrayJson = newArray;
 			}
-			if(arrayJson.length != null && arrayJson.length > 50){
+			if(arrayJson.length != null && arrayJson.length > 200){
 			
 				counter=0;
 				var infLimit=0;
-				var supLimit=50;
-				var increment =50;
+				var supLimit=200;
+				var increment =200;
 				$('#importProgress').attr('aria-valuenow', '0%').css('width','0%');
 				
 				$('#importProgress').removeClass('progress-bar-success');
@@ -291,7 +291,7 @@ var JsonToolController = function(){
 			return;
 		}
 		if(data.result != "ERROR"){
-			if(data.inserted=="") { data.inserted = 50}
+			if(data.inserted=="") { data.inserted = 200}
 			counter+=Number(data.inserted);
 			var percent = (counter/arrayJson.length)*100;
 			if(percent > 100) percent = 100;

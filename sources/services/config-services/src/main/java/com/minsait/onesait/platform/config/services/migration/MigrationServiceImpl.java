@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,6 @@ import javax.persistence.metamodel.Type;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.stereotype.Service;
@@ -93,7 +92,7 @@ import com.minsait.onesait.platform.multitenant.MultitenancyContextHolder;
 import com.minsait.onesait.platform.multitenant.config.repository.MasterUserRepository;
 import com.minsait.onesait.platform.multitenant.config.repository.TenantRepository;
 
-import com.google.common.collect.Lists;
+import avro.shaded.com.google.common.collect.Lists;
 import de.galan.verjson.core.IOReadException;
 import de.galan.verjson.core.NamespaceMismatchException;
 import de.galan.verjson.core.Verjson;
@@ -104,7 +103,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service("migrationService")
-//@Lazy
 public class MigrationServiceImpl implements MigrationService {
 
 	@PersistenceContext(unitName = ConfigDBTenantConfig.PERSISTENCE_UNIT_NAME_TENANT)
@@ -220,9 +218,7 @@ public class MigrationServiceImpl implements MigrationService {
 			if (clazz.equals(Gadget.class)) {
 				Integer r = entityManager.createNativeQuery("DELETE FROM gadget_measure WHERE gadget_id = :id")
 						.setParameter("id", id).executeUpdate();
-				if (log.isDebugEnabled()) {
-					log.debug("Remove {} GadgetMeasures instances for Gadget ID: {}", r, id);
-				}
+				log.debug("Remove {} GadgetMeasures instances for Gadget ID: {}", r, id);
 			}
 			checkPlatformToPlatformDestination(entity, clazz); //for specific platform fix, ids of destination, preserve client-ontology relation, ...
 			storedObj = entityManager.merge(entity);
@@ -268,10 +264,9 @@ public class MigrationServiceImpl implements MigrationService {
 		int iterationCount = 0;
 		while (!entitiesForTheNextStep.isEmpty()) {
 			iterationCount++;
-			if (log.isDebugEnabled()) {
-				log.debug(
-					"##### Entities to be persisted in round {}: {}", iterationCount, entitiesForTheNextStep.size());
-			}			
+			log.debug(
+					"##### Entities to be persisted in round " + iterationCount + ": " + entitiesForTheNextStep.size());
+
 			final List<Object> nextProcessingList = entitiesForTheNextStep;
 			final Iterator<Object> it = nextProcessingList.iterator();
 			entitiesForTheNextStep = new LinkedList<>();
@@ -279,24 +274,15 @@ public class MigrationServiceImpl implements MigrationService {
 			int count = 0;
 			while (it.hasNext()) {
 				count++;
-				if (log.isDebugEnabled()) {
-					log.debug("####### Entity number: {}-{}" , iterationCount, count);
-				}
-				
+				log.debug("####### Entity number: " + iterationCount + "-" + count);
 				final Object entity = it.next();
 				final Serializable id = MigrationUtils.getId(entity);
 				final Class<?> entityClazz = entity.getClass();
 
-				if (log.isDebugEnabled()) {
-					log.debug("Entity to process: {}{}{}", entityClazz, ID_STR, id);
-				}
-			
+				log.debug("Entity to process: " + entityClazz + ID_STR + id);
 				if (!processedEntities.contains(entity) && !entitiesForTheNextStep.contains(entity)) {
 					doPersistData(entity, entityClazz, id, managedTypes);
-					if (log.isDebugEnabled()) {
-						log.debug("Entity to be persisted: {}" , id.toString());
-					}
-					
+					log.debug("Entity to be persisted: " + id.toString());
 					try {
 						final EntityType<? extends Object> entityMetaModel;
 						entityMetaModel = entityManager.getMetamodel().entity(entityClazz);
@@ -314,9 +300,7 @@ public class MigrationServiceImpl implements MigrationService {
 								declaredField.setAccessible(accessible);
 
 								if (entitiesForTheNextStep.contains(attObject)) {
-									if (log.isDebugEnabled()) {
-										log.debug("Entity needs the parent: {}", attName);
-									}
+									log.debug("Entity needs the parent: {}", attName);
 									entitiesForTheNextStep.addLast(entity);
 								}
 							}
@@ -327,16 +311,11 @@ public class MigrationServiceImpl implements MigrationService {
 							entityManager.flush();
 							errors.addError(msg);
 							processedEntities.add(entity);
-							if (log.isDebugEnabled()) {
-								log.debug("Entity persisted: {}", id.toString()); //If this log is not show could be a problem in persist element
-							}
-							
+							log.debug("Entity persisted: " + id.toString()); //If this log is not show could be a problem in persist element
 						}
 					} catch (final javax.persistence.EntityNotFoundException e) {
 						entitiesForTheNextStep.addLast(entity);
-						if (log.isDebugEnabled()) {
-							log.debug("Entity not found: {}", e.getMessage());
-						}
+						log.debug("Entity not found: {}", e.getMessage());
 					}
 				}
 
@@ -348,9 +327,7 @@ public class MigrationServiceImpl implements MigrationService {
 	private void doPersistData(Object entity, Class<?> entityClazz, Serializable id, Set<Type<?>> managedTypes)
 			throws NoSuchFieldException, IllegalAccessException {
 
-		if (log.isDebugEnabled()) {
-			log.debug("Entity needs to be processed: {}{}{}", entityClazz, ID_STR, id);
-		}
+		log.debug("Entity needs to be processed: " + entityClazz + ID_STR + id);
 		final EntityType<? extends Object> entityMetaModel = entityManager.getMetamodel().entity(entityClazz);
 
 		final Set<?> declaredSingularAttributes = entityMetaModel.getDeclaredSingularAttributes();
@@ -370,9 +347,7 @@ public class MigrationServiceImpl implements MigrationService {
 		@SuppressWarnings("unchecked")
 		final SingularAttribute<Object, Object> singularAtt = (SingularAttribute<Object, Object>) att;
 		final Type<Object> attType = singularAtt.getType();
-		if (log.isDebugEnabled()) {
-			log.debug("\tSingular attribute to analyze: {}", singularAtt.getName());
-		}
+		log.debug("\tSingular attribute to analyze: " + singularAtt.getName());
 		if (managedTypes.contains(attType)) {
 			final String attName = singularAtt.getName();
 			final Field declaredField = entityClazz.getDeclaredField(attName);
@@ -382,9 +357,7 @@ public class MigrationServiceImpl implements MigrationService {
 			declaredField.setAccessible(accessible);
 			if (attObject != null) {
 				final Serializable attObjectId = MigrationUtils.getId(attObject);
-				if (log.isDebugEnabled()) {
-					log.debug("\t\tId of entity attribute: {}" , attObjectId.toString());
-				}
+				log.debug("\t\tId of entity attribute: " + attObjectId.toString());
 				Object attObjectInDB = entityManager.find(attObject.getClass(), attObjectId);
 
 				if (attObjectInDB != null) {
@@ -399,9 +372,7 @@ public class MigrationServiceImpl implements MigrationService {
 	private void analyzePluralAttribute(Object att, Set<Type<?>> managedTypes, Object entity, Class<?> entityClazz)
 			throws NoSuchFieldException, IllegalAccessException {
 		final PluralAttribute<?, ?, ?> pluralAttribute = (PluralAttribute<?, ?, ?>) att;
-		if (log.isDebugEnabled()) {
-			log.debug("\tPlural attribute to analyze: {}", pluralAttribute.getName());
-		}
+		log.debug("\tPlural attribute to analyze: " + pluralAttribute.getName());
 		if (managedTypes.contains(pluralAttribute.getElementType())) {
 			final String attName = pluralAttribute.getName();
 			final Field declaredField = entityClazz.getDeclaredField(attName);
@@ -416,9 +387,7 @@ public class MigrationServiceImpl implements MigrationService {
 					final Object subAtt = subIt.next();
 					if (subAtt != null) {
 						final Serializable subId = MigrationUtils.getId(subAtt);
-						if (log.isDebugEnabled()) {
-							log.debug("\t\tId of entity pluralAttribute: {}", subId.toString());
-						}
+						log.debug("\t\tId of entity pluralAttribute: " + subId.toString());
 					}
 				}
 			}
@@ -470,9 +439,7 @@ public class MigrationServiceImpl implements MigrationService {
 					if (repository != null) {
 						try {
 							final List<?> entities = repository.findAll();
-							if (log.isDebugEnabled()) {
-								log.debug("*********** EXPORT:         {}", javaType.getCanonicalName());
-							}
+							log.debug("*********** EXPORT:         " + javaType.getCanonicalName());
 							for (final Object entity : entities) {
 
 								if (isCandidateForUser(entity, user, new HashMap<String, String>(), config)) {
@@ -610,9 +577,7 @@ public class MigrationServiceImpl implements MigrationService {
 			}
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
 				| SecurityException e) {
-			if (log.isDebugEnabled()) {
-				log.debug("No getUser method for: {}", entity.getClass().getCanonicalName());
-			}
+			log.debug("No getUser method for: " + entity.getClass().getCanonicalName());
 		}
 		if (owned) {
 			// For every attribute check if the related entities are owned by the same user
@@ -651,9 +616,7 @@ public class MigrationServiceImpl implements MigrationService {
 			}
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
 				| SecurityException e) {
-			if (log.isDebugEnabled()) {
-				log.debug("No getUser method for: {}", entity.getClass().getCanonicalName());
-			}
+			log.debug("No getUser method for: " + entity.getClass().getCanonicalName());
 		}
 		if (owned) {
 			// For every attribute check if the related entities are owned by the same user

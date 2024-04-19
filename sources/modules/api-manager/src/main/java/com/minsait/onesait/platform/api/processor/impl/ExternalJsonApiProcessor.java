@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -354,9 +354,7 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 			final String[] splitedRef = ref.split("#");
 			final String url = splitedRef[0];
 			if (cacheExternalReferences.get(url) != null) {
-				if (log.isDebugEnabled()) {
-					log.debug("getHeaderNameFromRef: Returning cached instance for url {}", url);
-				}
+				log.debug("getHeaderNameFromRef: Returning cached instance for url {}", url);
 				final Parameter parameter = cacheExternalReferences.get(url).getParameters()
 						.get(getParameterComponent(splitedRef[1]));
 				if (parameter instanceof io.swagger.v3.oas.models.parameters.HeaderParameter) {
@@ -364,9 +362,7 @@ public class ExternalJsonApiProcessor implements ApiProcessor {
 					return parameter.getName();
 				}
 			} else {
-				if (log.isDebugEnabled()) {
-					log.debug("getHeaderNameFromRef: Downloading decriptor from url {}", url);
-				}
+				log.debug("getHeaderNameFromRef: Downloading decriptor from url {}", url);
 				final ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
 				final OpenAPIParser openAPIParser = new OpenAPIParser();
 				final SwaggerParseResult swaggerParseResult = openAPIParser.readContents(response.getBody(), null,

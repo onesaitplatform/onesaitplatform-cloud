@@ -11,8 +11,6 @@ master:
       driver-class-name: ${CONFIGDB_DRIVER}
 edge.base.url: ${EDGE_BASE_URL}
 onesaitplatform:
-   web.staticresurces.cache.minutes: ${STATIC_RESOURCES_CACHE_MINUTES}
-   bpm.url: https://${SERVER_NAME}/bpm-engine
    microservices:
       remedy:
          enabled: ${REMEDY_MS_ENABLED}
@@ -106,7 +104,6 @@ onesaitplatform:
       url.view: https://${SERVER_NAME}/controlpanel/dashboards/viewiframe/
       url.gadgets: https://${SERVER_NAME}/controlpanel/gadgets/view/
    webproject:
-      maxsize: ${WEBPROJECT_MAXSIZE}    
       rootfolder.path: /usr/local/webprojects/
       baseurl: https://${SERVER_NAME}/web/
       template.zip: https://${SERVER_NAME}/controlpanel/static/wtop/wtop.zip
@@ -160,8 +157,6 @@ onesaitplatform:
       type: ${FILE_STORE} #MONGO_GRIDFS, FILE, MINIO
    gitlab:
          manager.server: ${GITLAB_MANAGER_URL}
-         manager.server.internal: ${GITLAB_MANAGER_INTERNAL_URL}
-         maxlimitsecondscompilenpmbloqued: ${GITLAB_LIMIT_NPM_COMPILE_TIME_SECONDS}
 ldap:
   url: ${LDAP_URL}
   base: ${LDAP_BASE_DN}
@@ -233,8 +228,6 @@ logging:
       org.zalando.logbook: ${HTTP_LOG_LEVEL}
 
 gravitee:
-  version: ${GRAVITEE_VERSION}
-  migrate-apis: ${GRAVITEE_MIGRATE}
   enable: ${GRAVITEE_ON}
   clientId: ${GRAVITEE_CLIENTID}
   clientSecret: ${GRAVITEE_CLIENTSECRET}

@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@
 						<div class="col-md-3 col-sm-4 col-xs-12">														
 							<div class="input-icon">
 								<i class="icon-search font-grey-mint"></i>									 														
-								<input id="name" th:placeholder="#{gen.identification}" name="name" class="form-control" type="text" maxlength="50" value=""/>
+								<input id="name" th:placeholder="#{gen.name}" name="name" class="form-control" type="text" maxlength="50" value=""/>
 							</div>
 						</div>
 						
@@ -137,41 +137,55 @@
 											<table id="mapsmap" class="table table-hover table-striped" dt:table="true" dt:paginationtype="full_numbers">
 												<thead>
 													<tr class="cabecera-tabla">
+													<th class="titulo-columnas" th:text="#{gen.name}">Name</th>
 														<th class="titulo-columnas" th:text="#{gen.identification}">Identification</th>
-														<th class="titulo-columnas" th:text="#{gen.name}">Name</th>
 														<th class="titulo-columnas text-center" ><span th:text="#{gen.owner}" >Owner</span></th>
 														<th class="titulo-columnas" th:text="#{gen.description}">Description</th>														
-														<th class="titulo-columnas text-center" ><span > ID </span></th>													
+																											
 														<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>
 														<th class="titulo-columnas text-center" ><span th:text="#{gen.updated}"> Updated At </span></th>
+														<th class="titulo-columnas text-center" ><span > ID </span></th>
 														<th class="titulo-columnas text-center" dt:sortable="false" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
 													</tr>
 												</thead>
 												<tbody th:remove="all-but-first">
 													<tr th:each="mapsmap : ${mapsmaps}" pages:paginate="10">
+													<!--  NAME -->
+														<td class="text-left" th:text="${ mapsmap.name != '' ? mapsmap.name : mapsmap.identification }"></td>			
 														<!-- IDENTIFICATION  -->
 														<td class="text-left" th:text="${mapsmap.identification}"></td>															
-														<!--  NAME -->													
-														<td class="text-left" th:text="${ mapsmap.name != '' ? mapsmap.name : mapsmap.identification }"></td>	
 														<!-- USER -->
 														<td class="text-center " th:text="${mapsmap.user}"></td>
 														<!-- DESCRIPTION -->
-														<td class="text-left text-truncate-sm" th:title="${mapsmap.description}" th:text="${mapsmap.description}"></td>	
-														<!-- ID -->
-														<td class="text-center " th:text="${mapsmap.id}"></td>													
+														<td class="text-left text-truncate-sm" th:title="${mapsmap.description}" th:text="${mapsmap.description}"></td>														
 														<!-- DATE --> 
 		 												<td class="text-center" th:if="${mapsmap.createdAt!=null}"><span th:text="${#dates.format(mapsmap.createdAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(mapsmap.createdAt,'dd/MM/yyyy')}" ></span></td>
 														<td class="text-center" th:if="${mapsmap.createdAt==null}" th:text="'---'"></td>
 														<!-- UPDATE --> 
 		 												<td class="text-center" th:if="${mapsmap.updatedAt!=null}"><span th:text="${#dates.format(mapsmap.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span><span th:text="${#dates.format(mapsmap.updatedAt,'dd/MM/yyyy')}" ></span></td>
 														<td class="text-center" th:if="${mapsmap.updatedAt==null}" th:text="'---'"></td>
-														
+														<td class="text-center " th:text="${mapsmap.id}"></td>
 														<!-- OPTIONS -->
 														<td class="icon" style="white-space: nowrap">
 															<div class="grupo-iconos text-center">
-															    <a  class="btn btn-xs btn-no-border color-blue btn-outline blue tooltips" th:title="#{gen.edit}" th:href="'/controlpanel/mapsmap/show/'+@{${mapsmap.id}}"><i class="la la-eye font-hg"></i></a>
+																<a  class="btn btn-xs btn-no-border btn-circle btn-outline blue tooltips" th:title="#{gen.view}" th:href="'/controlpanel/mapsmap/show/'+@{${mapsmap.id}}"><i class="la la-eye font-hg"></i></a>
 															    <a  sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')"  class="btn btn-xs btn-no-border color-blue icon-on-table tooltips" data-placement="bottom" th:title="#{gen.edit}" th:href="'/controlpanel/mapsmap/update/'+@{${mapsmap.id}(form)}+ '='"><i class="icon-edit"></i></a>
-															    <a  sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')"  class="btn btn-xs btn-no-border color-red icon-on-table tooltips" data-placement="bottom" th:title="#{gen.deleteBtn}" th:attr="onclick='deleteConfirmation(\''+${mapsmap.id}+'\');'"><i class="icon-delete"></i></a>															   
+															    <span class="dropdown">
+																	<span   class="btn btn-xs btn-no-border color-blue icon-on-table" data-container="body" data-placement="bottom" data-toggle="dropdown" data-hover="dropdown" data-close-others="true" ><i class="icon-overflow"></i></span>
+																		<ul class="dropdown-menu dropdown-menu-table download-menu">
+																			
+																			<!-- CLONE
+																			<li>
+																				<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')" th:title="#{mapsmap.clone}" class="btn btn-xs btn-no-border btn-circle btn-outline" th:attr="onclick='javascript:cloneDashboardDialog(\''+${mapsmap.id}+ '\',\'' +${mapsmap.identification}+'\');'"><i class="la la-clone font-hg"></i><span class="span-title-three-dots-icons" th:text="#{mapsmap.clone}" >Clone</span></span>
+																			</li>-->
+																		    <!-- DELETE -->
+																		    <li>
+																		    	<span sec:authorize="@securityService.hasAnyRole('ROLE_ADMINISTRATOR') or @securityService.hasAnyRole('ROLE_DEVELOPER') or @securityService.hasAnyRole('ROLE_DATASCIENTIST')"  class="btn btn-xs btn-no-border btn-circle btn-outline color-red" data-container="body" data-placement="bottom" th:attr="onclick='deleteConfirmation(\''+${mapsmap.id}+'\');'"><i class="icon-delete"></i><span class="span-title-three-dots-icons" th:text="#{gen.deleteBtn}" >Delete</span></span>
+																	    	</li>
+																	    </ul>
+																    </span>
+															    </span>
+															    
 															</div>
 														</td>
 													</tr>
@@ -200,18 +214,17 @@
 													
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-														<label > ID</label>
-													</span>
-															
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 														<label th:text="#{gen.created}"> Created at</label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="6" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 														<label th:text="#{gen.updated}"> Updatet at</label>
 													</span>
-														
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="6" checked/>
+														<label > ID</label>
+													</span>
+																
 												</div>
 											</div>
 																			
@@ -384,17 +397,24 @@
 			$('#form_mapsmap')[0].submit();
 		});
 		
+		
+		
+		 
 	
 		// SEARCH FORM
-		$('#search_mapsmap').on('click',function(){ $('#form_mapsmap')[0].submit(); }); 
+		$('#search_mapsmap').on('click',function(){ $('#form_mapsmap')[0].submit(); });
 		
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).on("load",function(){  
+		
 		var oTable = $('#mapsmap').dataTable({
 		      "bAutoWidth": false
 		      });
 		
 		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-		//$.each([4],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([6],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));	
@@ -432,9 +452,6 @@
 		
 		
 		$("#contenedor-tabla-outside").removeClass("hidden");
-		
-		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([4],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 	});	
 	
 	

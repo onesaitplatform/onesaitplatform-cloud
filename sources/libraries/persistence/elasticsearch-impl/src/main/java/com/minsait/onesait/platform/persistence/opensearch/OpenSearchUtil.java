@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,11 @@ import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.opensearch.client.opensearch._types.ShardFailure;
-import org.opensearch.client.opensearch.core.SearchResponse;
-import org.opensearch.client.opensearch.core.search.Hit;
-import org.opensearch.client.opensearch.core.search.HitsMetadata;
+import org.opensearch.action.search.SearchResponse;
+import org.opensearch.action.search.ShardSearchFailure;
+import org.opensearch.rest.RestStatus;
+import org.opensearch.search.SearchHit;
+import org.opensearch.search.SearchHits;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,14 +40,14 @@ public class OpenSearchUtil {
 
 	private static final String QUERY_ERROR = "Query Error:";
 
-	public static String parseSearchResultFailures(SearchResponse<Object>  res) {
+	public static String parseSearchResultFailures(SearchResponse res) {
 		if (res == null) {
 			return "null";
-		} else if ( res.shards().failed().intValue()> 0) {
-			final List<ShardFailure>  shardFailures = res.shards().failures();
+		} else if (res.getFailedShards() > 0) {
+			final ShardSearchFailure[] shardFailures = res.getShardFailures();
 			final StringBuilder reasonBuilder = new StringBuilder();
-			for (final ShardFailure failure : shardFailures) {
-				final String reason = failure.reason().reason();
+			for (final ShardSearchFailure failure : shardFailures) {
+				final String reason = failure.reason();
 				log.info("Status: " + failure.status() + " - Search failed on shard: " + reason);
 				reasonBuilder.append(reason);
 			}
@@ -55,16 +56,13 @@ public class OpenSearchUtil {
 		return "";
 	}
 
-	public static List<String> processSearchResponseToStringList(SearchResponse<Object> searchResponse) {
-		//No status in the java response objet
-		//old REST client if (searchResponse != null && searchResponse.status().equals(RestStatus.OK)) {
-		if (searchResponse != null) {
-			final HitsMetadata<Object> hits = searchResponse.hits();
-			final List<Hit<Object>> searchHits = hits.hits();
+	public static List<String> processSearchResponseToStringList(SearchResponse searchResponse) {
+		if (searchResponse != null && searchResponse.status().equals(RestStatus.OK)) {
+			final SearchHits hits = searchResponse.getHits();
+			final SearchHit[] searchHits = hits.getHits();
 			final List<String> result = new ArrayList<>();
-			for (final Hit<Object> hit : searchHits) {
-				result.add(hit.source().toString());
-				//result.add(hit.getSourceAsString());
+			for (final SearchHit hit : searchHits) {
+				result.add(hit.getSourceAsString());
 			}
 
 			return result;
@@ -76,10 +74,8 @@ public class OpenSearchUtil {
 		}
 	}
 
-	public static String processSearchResponseToJson(SearchResponse<Object> searchResponse) {
-		//No status in the java response objet
-		//old REST client if (searchResponse != null && searchResponse.status().equals(RestStatus.OK)) {
-		if (searchResponse != null) {
+	public static String processSearchResponseToJson(SearchResponse searchResponse) {
+		if (searchResponse != null && searchResponse.status().equals(RestStatus.OK)) {
 			return parseElastiSearchResult(searchResponse.toString(), true);
 		} else {
 			final String msg = OpenSearchUtil.parseSearchResultFailures(searchResponse);
@@ -129,8 +125,7 @@ public class OpenSearchUtil {
 					jsonArray.put(source);
 				}
 			} else if (hits.length() > 0) {
-				//if empty hits, just return empty array bugfix #1983
-				//jsonArray.put(hits);
+				jsonArray.put(hits);
 			}
 
 			return jsonArray.toString();

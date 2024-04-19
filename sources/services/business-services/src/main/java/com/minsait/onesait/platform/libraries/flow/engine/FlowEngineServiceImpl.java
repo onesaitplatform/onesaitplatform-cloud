@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,19 +18,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import javax.annotation.PostConstruct;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -40,31 +35,21 @@ import com.minsait.onesait.platform.commons.ssl.SSLUtil;
 import com.minsait.onesait.platform.config.model.security.UserPrincipal;
 import com.minsait.onesait.platform.libraries.flow.engine.exception.FlowEngineServiceException;
 import com.minsait.onesait.platform.multitenant.Tenant2SchemaMapper;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesService;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.Module;
-import com.minsait.onesait.platform.resources.service.IntegrationResourcesServiceImpl.ServiceUrl;
 
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
-@Service
+@Value
+
 @Slf4j
 public class FlowEngineServiceImpl implements FlowEngineService {
 
 	private HttpComponentsClientHttpRequestFactory httpRequestFactory;
+	private String restBaseUrl;
 	private RestTemplate restTemplate;
-	
-	@Autowired
-	private IntegrationResourcesService resourcesService;
-	
-	@Value("${onesaitplatform.flowengine.services.request.timeout.ms:5000}")
-	private int restRequestTimeout;
 
-	@Value("${onesaitplatform.controlpanel.avoidsslverification:false}")
-	private boolean avoidSSLVerification;
-	
-	@PostConstruct
-	public void init() {
-		
+	public FlowEngineServiceImpl(String restBaseUrl, int restRequestTimeout, boolean avoidSSLVerification) {
+
 		if (avoidSSLVerification) {
 			httpRequestFactory = SSLUtil.getHttpRequestFactoryAvoidingSSLVerification();
 		} else {
@@ -81,14 +66,20 @@ public class FlowEngineServiceImpl implements FlowEngineService {
 						((UserPrincipal) a.getPrincipal()).getTenant());
 			});
 			return e.execute(r, b);
+
 		});
+		this.restBaseUrl = restBaseUrl;
 	}
-	
+
+	public FlowEngineServiceImpl(String restBaseUrl, int restRequestTimeout) {
+		this(restBaseUrl, restRequestTimeout, false);
+	}
+
 	@Override
 	public void stopFlowEngineDomain(String domainId) {
 
 		try {
-			restTemplate.put(getRestBaseUrl() + "/domain/stop/" + domainId, null);
+			restTemplate.put(restBaseUrl + "/domain/stop/" + domainId, null);
 		} catch (final Exception e) {
 			log.error("Unable to stop domain " + domainId);
 			throw new FlowEngineServiceException("Unable to stop domain " + domainId, e);
@@ -103,7 +94,7 @@ public class FlowEngineServiceImpl implements FlowEngineService {
 			final HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
 			final HttpEntity<FlowEngineDomain> domainToStart = new HttpEntity<>(domain, headers);
-			restTemplate.postForObject(getRestBaseUrl() + "/domain/start/", domainToStart, String.class);
+			restTemplate.postForObject(restBaseUrl + "/domain/start/", domainToStart, String.class);
 		} catch (final Exception e) {
 			log.error("Unable to start domain " + domain.getDomain());
 			throw new FlowEngineServiceException("Unable to start domain " + domain.getDomain(), e);
@@ -117,7 +108,7 @@ public class FlowEngineServiceImpl implements FlowEngineService {
 			final HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
 			final HttpEntity<FlowEngineDomain> newDomain = new HttpEntity<>(domain, headers);
-			restTemplate.postForObject(getRestBaseUrl() + "/domain", newDomain, String.class);
+			restTemplate.postForObject(restBaseUrl + "/domain", newDomain, String.class);
 		} catch (final Exception e) {
 			log.error("Unable to create domain " + domain.getDomain());
 			throw new FlowEngineServiceException("Unable to create domain " + domain.getDomain(), e);
@@ -128,7 +119,7 @@ public class FlowEngineServiceImpl implements FlowEngineService {
 	public void deleteFlowEngineDomain(String domainId) {
 
 		try {
-			restTemplate.delete(getRestBaseUrl() + "/domain/" + domainId);
+			restTemplate.delete(restBaseUrl + "/domain/" + domainId);
 		} catch (final Exception e) {
 			log.error("Unable to delete domain " + domainId);
 			throw new FlowEngineServiceException("Unable to delete domain " + domainId, e);
@@ -140,7 +131,7 @@ public class FlowEngineServiceImpl implements FlowEngineService {
 
 		FlowEngineDomain domain = null;
 		try {
-			domain = restTemplate.getForObject(getRestBaseUrl() + "/domain/" + domainId, FlowEngineDomain.class);
+			domain = restTemplate.getForObject(restBaseUrl + "/domain/" + domainId, FlowEngineDomain.class);
 		} catch (final Exception e) {
 			log.error("Unable to retrieve domain " + domainId);
 			throw new FlowEngineServiceException("Unable to retrieve domain " + domainId, e);
@@ -153,7 +144,7 @@ public class FlowEngineServiceImpl implements FlowEngineService {
 
 		List<FlowEngineDomainStatus> response = new ArrayList<>();
 		try {
-			final ResponseEntity<String> responseHttp = restTemplate.getForEntity(getRestBaseUrl() + "/domain/all",
+			final ResponseEntity<String> responseHttp = restTemplate.getForEntity(restBaseUrl + "/domain/all",
 					String.class);
 			response = (List<FlowEngineDomainStatus>) FlowEngineDomainStatus
 					.fromJsonArrayToDomainStatus(responseHttp.getBody());
@@ -174,7 +165,7 @@ public class FlowEngineServiceImpl implements FlowEngineService {
 
 				data.append(domId).append(",");
 			}
-			final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(getRestBaseUrl() + "/domain/status")
+			final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(restBaseUrl + "/domain/status")
 					.queryParam("domainList", data.toString().substring(0, data.toString().length() - 1));
 
 			final ResponseEntity<String> responseHttp = restTemplate.getForEntity(builder.toUriString(), String.class);
@@ -206,7 +197,7 @@ public class FlowEngineServiceImpl implements FlowEngineService {
 			final HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
 			final HttpEntity<String> newDomain = new HttpEntity<>(data, headers);
-			restTemplate.postForObject(getRestBaseUrl() + "/deploy", newDomain, String.class);
+			restTemplate.postForObject(restBaseUrl + "/deploy", newDomain, String.class);
 		} catch (final Exception e) {
 			log.error("Unable to deploy domain " + domain);
 			throw new FlowEngineServiceException("Unable to deploy domain " + domain, e);
@@ -218,15 +209,11 @@ public class FlowEngineServiceImpl implements FlowEngineService {
 		final RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
 
 		try {
-			return restTemplate.getForObject(getRestBaseUrl() + "/exportDomainFromFS/" + domain, String.class);
+			return restTemplate.getForObject(restBaseUrl + "/exportDomainFromFS/" + domain, String.class);
 		} catch (final Exception e) {
 			log.error("Unable to retrieve export json for domain " + domain);
 			throw new FlowEngineServiceException("Unable to retrieve export json form domain " + domain, e);
 		}
-	}
-	
-	private String getRestBaseUrl() {
-		return resourcesService.getUrl(Module.FLOWENGINE, ServiceUrl.BASE);
 	}
 
 }

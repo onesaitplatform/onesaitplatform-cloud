@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.minsait.onesait.platform.controlpanel.services.jenkins;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +26,7 @@ import java.util.Properties;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.io.IOUtils;
+import org.jclouds.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -63,7 +63,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class JenkinsServiceImpl implements JenkinsService {
 
-	private static final String HUDSON_MODEL_CHOICE_PARAMETER_DEFINITION = "hudson.model.ChoiceParameterDefinition";
 	private static final String VIEW = "view/";
 	private static final String PROPERTY_PATH = "property";
 	private static final String CLASS_PATH = "_class";
@@ -143,7 +142,7 @@ public class JenkinsServiceImpl implements JenkinsService {
 	}
 
 	@Override
-	public Map<String, Object> getParametersFromJob(String jenkinsUrl, String username, String token, String jobName) {
+	public Map<String, String> getParametersFromJob(String jenkinsUrl, String username, String token, String jobName) {
 		final String url = jenkinsUrl.concat("/job/").concat(jobName).concat("/api/json");
 		final JsonNode response = requestJenkins(url, username, token, JsonNode.class).getBody();
 		return extractParameters(response);
@@ -173,8 +172,8 @@ public class JenkinsServiceImpl implements JenkinsService {
 
 	private Properties overrideSSLProperties() {
 		final Properties overrides = new Properties();
-		overrides.setProperty("jclouds.relax-hostname", "true");
-		overrides.setProperty("jclouds.trust-all-certs", "true");
+		overrides.setProperty(Constants.PROPERTY_RELAX_HOSTNAME, "true");
+		overrides.setProperty(Constants.PROPERTY_TRUST_ALL_CERTS, "true");
 		return overrides;
 	}
 
@@ -185,9 +184,9 @@ public class JenkinsServiceImpl implements JenkinsService {
 		throw new JenkinsException(sb.toString());
 	}
 
-	private Map<String, Object> extractParameters(JsonNode node) {
+	private Map<String, String> extractParameters(JsonNode node) {
 		final ObjectMapper mapper = new ObjectMapper();
-		final Map<String, Object> parameters = new HashMap<>();
+		final Map<String, String> parameters = new HashMap<>();
 		final ArrayNode properties = (ArrayNode) node.get(PROPERTY_PATH);
 		final ArrayNode params = mapper.createArrayNode();
 		if (properties.size() > 0) {
@@ -198,14 +197,7 @@ public class JenkinsServiceImpl implements JenkinsService {
 			});
 			if (params.size() > 0) {
 				params.get(0).forEach(n -> {
-					if (HUDSON_MODEL_CHOICE_PARAMETER_DEFINITION.equals(n.get("_class").asText())) {
-						final List<String> values = new ArrayList<>();
-						n.get("choices").forEach(c -> values.add(c.asText()));
-						parameters.put(n.get("name").asText(), values);
-					} else {
-						parameters.put(n.get("name").asText(), n.at("/defaultParameterValue/value").asText());
-					}
-
+					parameters.put(n.get("name").asText(), n.at("/defaultParameterValue/value").asText());
 				});
 			}
 		}

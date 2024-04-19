@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,9 +39,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.minsait.onesait.platform.commons.ssl.SSLUtil;
 import com.minsait.onesait.platform.config.model.Microservice;
 import com.minsait.onesait.platform.config.model.Microservice.CaaS;
-import com.minsait.onesait.platform.config.model.MicroserviceTemplate;
 import com.minsait.onesait.platform.config.services.exceptions.MicroserviceException;
-import com.minsait.onesait.platform.config.services.mstemplates.MicroserviceTemplatesService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -65,9 +63,6 @@ public class CloudGatewayServiceImpl implements CloudGatewayService {
 
 	private RestTemplate restTemplate;
 
-	@Autowired
-	private MicroserviceTemplatesService mstemplateService;
-
 	@PostConstruct
 	void initRestTemplate() {
 		restTemplate = new RestTemplate(SSLUtil.getHttpRequestFactoryAvoidingSSLVerification());
@@ -85,18 +80,9 @@ public class CloudGatewayServiceImpl implements CloudGatewayService {
 				redirectToHost = "http://".concat(microservice.getIdentification()).concat(".").concat(microservice
 						.getOpenshiftNamespace().concat(":").concat(String.valueOf(microservice.getPort())));
 			}
-			final MicroserviceTemplate mstemplate = mstemplateService
-					.getMsTemplateByIdentification(microservice.getTemplateType(), microservice.getUser().getUserId());
-			String templatetype = "";
-			if (mstemplate != null) {
-				templatetype = mstemplate.getLanguage().toString();
-			}
 			final ObjectNode route = generateJsonRoute(microservice.getIdentification(), microservice.getContextPath(),
-					redirectToHost,
-					microservice.isStripRoutePrefix()
-							|| templatetype.equals(MicroserviceTemplate.Language.NOTEBOOK_ARCHETYPE.toString())
-							|| microservice.getTemplateType()
-									.equals(Microservice.TemplateType.MLFLOW_MODEL.toString()));
+					redirectToHost, microservice.getTemplateType().equals(Microservice.TemplateType.NOTEBOOK_ARCHETYPE)
+							|| microservice.getTemplateType().equals(Microservice.TemplateType.MLFLOW_MODEL));
 			final HttpEntity<ObjectNode> request = this.getRequestEntity(route);
 			this.executeRequest(gatewayUrl.concat(ROUTES_PATH).concat("/").concat(microservice.getIdentification()),
 					HttpMethod.POST, request, String.class);

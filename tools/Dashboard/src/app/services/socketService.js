@@ -44,7 +44,7 @@
         if(enableListenerCallback){
           vm.enableListenerCallback = enableListenerCallback;
         }
-        $stomp.connect(__env.socketEndpointConnect+ "?" + (sessionStorage.getItem("dashboardEngineOauthtoken")?"oauthtoken=" +sessionStorage.getItem("dashboardEngineOauthtoken"):'anonymous'), [], errorfn, (__env.dashboardEngineProtocol === 'websocket' || __env.dashboardEngineProtocol === 'all')?{ transports: ['websocket']}:{}).then(
+        $stomp.connect(__env.socketEndpointConnect+ "?" + (__env.dashboardEngineOauthtoken?"oauthtoken=" +__env.dashboardEngineOauthtoken:'anonymous'), [], errorfn, (__env.dashboardEngineProtocol === 'websocket' || __env.dashboardEngineProtocol === 'all')?{ transports: ['websocket']}:{}).then(
           function(frame){
             if(frame.command == "CONNECTED"){
               vm.connected=true;

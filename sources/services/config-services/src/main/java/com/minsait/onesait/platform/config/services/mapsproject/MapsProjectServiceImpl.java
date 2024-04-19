@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package com.minsait.onesait.platform.config.services.mapsproject;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -150,12 +149,6 @@ public class MapsProjectServiceImpl implements MapsProjectService {
 			Date date = new Date();
 			mapsProject.setCreatedAt(date);
 			mapsProject.setUpdatedAt(date);
-			JSONObject obj = new JSONObject(mapsProject.getConfig());
-			if (obj.has("mapConfig") && obj.getJSONObject("mapConfig").has("mainMapOptions")) {
-				obj.getJSONObject("mapConfig").getJSONObject("mainMapOptions").put("id",
-						mapsProject.getIdentification());
-			}
-			mapsProject.setConfig(obj.toString());
 			mapsProjectRepository.save(mapsProject);
 		} catch (final Exception e) {
 			throw new MapsProjectServiceException("Cannot create MapsProject");
@@ -170,13 +163,7 @@ public class MapsProjectServiceImpl implements MapsProjectService {
 			if (mapStyleDB.getIdentification() == null) {
 				mapStyleDB.setIdentification(mapsProject.getIdentification());
 			}
-
-			JSONObject obj = new JSONObject(mapsProject.getConfig());
-			if (obj.has("mapConfig") && obj.getJSONObject("mapConfig").has("mainMapOptions")) {
-				obj.getJSONObject("mapConfig").getJSONObject("mainMapOptions").put("id",
-						mapsProject.getIdentification());
-			}
-			mapStyleDB.setConfig(obj.toString());
+			mapStyleDB.setConfig(mapsProject.getConfig());
 			mapStyleDB.setDescription(mapsProject.getDescription());
 			mapStyleDB.setCreatedAt(mapsProject.getCreatedAt());
 			mapStyleDB.setPublic(mapsProject.isPublic());
@@ -232,224 +219,11 @@ public class MapsProjectServiceImpl implements MapsProjectService {
 	}
 
 	@Override
-	public void delete(String id, boolean deleteDepencies, String userId) {
+	public void delete(String id, String userId) {
 		if (hasUserEditPermission(id, userId)) {
 			final MapsProject mapsProject = mapsProjectRepository.findById(id).orElse(null);
 			if (mapsProject != null) {
-				if (!deleteDepencies) {
-					mapsProjectRepository.delete(mapsProject);
-				} else {
-					// Delete styles
-					JSONObject obj = new JSONObject(mapsProject.getConfig());
-
-					if (obj.has("mapConfig") && obj.getJSONObject("mapConfig").has("toolsOptions")) {
-
-						if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("measureToolOptions")) {
-							if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("measureToolOptions").has("style")) {
-								mapsStyleService
-										.deleteByIdentification(
-												obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-														.getJSONObject("measureToolOptions").getString("style"),
-												userId);
-							}
-						}
-						if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-								.has("selectByGeomToolOptions")) {
-							if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("selectByGeomToolOptions").has("style")) {
-								mapsStyleService
-										.deleteByIdentification(
-												obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-														.getJSONObject("selectByGeomToolOptions").getString("style"),
-												userId);
-							}
-						}
-						if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("showCoordToolOptions")) {
-							if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("showCoordToolOptions").has("style")) {
-								mapsStyleService
-										.deleteByIdentification(
-												obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-														.getJSONObject("showCoordToolOptions").getString("style"),
-												userId);
-
-							}
-						}
-						if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("infoToolOptions")) {
-							if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("infoToolOptions").has("style")) {
-								mapsStyleService.deleteByIdentification(
-										obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-												.getJSONObject("infoToolOptions").getString("style"),
-										userId);
-
-							}
-						}
-						if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("geocoderToolOptions")) {
-							if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("geocoderToolOptions").has("style")) {
-								mapsStyleService
-										.deleteByIdentification(
-												obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-														.getJSONObject("geocoderToolOptions").getString("style"),
-												userId);
-
-							}
-							if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("geocoderToolOptions").has("styleSelect")) {
-								mapsStyleService
-										.deleteByIdentification(
-												obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-														.getJSONObject("geocoderToolOptions").getString("styleSelect"),
-												userId);
-
-							}
-						}
-
-						if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("routingToolOptions")) {
-							if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("routingToolOptions").has("style")) {
-								mapsStyleService
-										.deleteByIdentification(
-												obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-														.getJSONObject("routingToolOptions").getString("style"),
-												userId);
-
-							}
-							if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("routingToolOptions").has("stopStyle")) {
-								mapsStyleService
-										.deleteByIdentification(
-												obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-														.getJSONObject("routingToolOptions").getString("stopStyle"),
-												userId);
-
-							}
-							if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("routingToolOptions").has("blockStyle")) {
-								mapsStyleService
-										.deleteByIdentification(
-												obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-														.getJSONObject("routingToolOptions").getString("blockStyle"),
-												userId);
-
-							}
-							if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("routingToolOptions").has("routeStyle")) {
-								mapsStyleService
-										.deleteByIdentification(
-												obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-														.getJSONObject("routingToolOptions").getString("routeStyle"),
-												userId);
-
-							}
-						}
-						if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-								.has("selectByAttrToolOptions")) {
-							if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("selectByAttrToolOptions").has("style")) {
-								mapsStyleService
-										.deleteByIdentification(
-												obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-														.getJSONObject("selectByAttrToolOptions").getString("style"),
-												userId);
-
-							}
-						}
-						if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("bufferToolOptions")) {
-							if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("bufferToolOptions").has("style")) {
-								mapsStyleService.deleteByIdentification(
-										obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-												.getJSONObject("bufferToolOptions").getString("style"),
-										userId);
-
-							}
-						}
-						if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("intersectToolOptions")) {
-							if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("intersectToolOptions").has("style")) {
-								mapsStyleService
-										.deleteByIdentification(
-												obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-														.getJSONObject("intersectToolOptions").getString("style"),
-												userId);
-
-							}
-						}
-						if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("proximityToolOptions")) {
-							if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("proximityToolOptions").has("style")) {
-								mapsStyleService
-										.deleteByIdentification(
-												obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-														.getJSONObject("proximityToolOptions").getString("style"),
-												userId);
-
-							}
-						}
-						if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("gotoToolOptions")) {
-							if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("gotoToolOptions").has("style")) {
-								mapsStyleService.deleteByIdentification(
-										obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-												.getJSONObject("gotoToolOptions").getString("style"),
-										userId);
-
-							}
-							if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("gotoToolOptions").has("styleSelect")) {
-								mapsStyleService
-										.deleteByIdentification(
-												obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-														.getJSONObject("gotoToolOptions").getString("styleSelect"),
-												userId);
-
-							}
-						}
-						if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("editionOptions")) {
-							if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("editionOptions").has("modifyStyle")) {
-								mapsStyleService
-										.deleteByIdentification(
-												obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-														.getJSONObject("editionOptions").getString("modifyStyle"),
-												userId);
-
-							}
-							if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("editionOptions").has("addStyle")) {
-								mapsStyleService.deleteByIdentification(
-										obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-												.getJSONObject("editionOptions").getString("addStyle"),
-										userId);
-
-							}
-							if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("editionOptions").has("deleteStyle")) {
-								mapsStyleService
-										.deleteByIdentification(
-												obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-														.getJSONObject("editionOptions").getString("deleteStyle"),
-												userId);
-							}
-						}
-					}
-
-					// Delete Maps
-
-					if (obj.has("mapConfig") && obj.getJSONObject("mapConfig").has("mapOptions")) {
-						JSONArray mapOptions = obj.getJSONObject("mapConfig").getJSONArray("mapOptions");
-						for (int i = 0; i < mapOptions.length(); i++) {
-							JSONObject map = mapOptions.getJSONObject(i);
-
-							deleteMapsMap(map, userId);
-						}
-					}
-
-					mapsProjectRepository.delete(mapsProject);
-				}
+				mapsProjectRepository.delete(mapsProject);
 			} else {
 				throw new MapsProjectServiceException("Cannot delete MapsProject that does not exist");
 			}
@@ -458,18 +232,18 @@ public class MapsProjectServiceImpl implements MapsProjectService {
 	}
 
 	@Override
-	public String clone(MapsProject originalMapsProject, String identification, User targetUser, User sessionUser) {
+	public String clone(MapsProject originalMapsProject, String identification, User user) {
 
 		try {
 			JSONObject objexp = new JSONObject(originalMapsProject.getConfig());
 			String oldIdentification = objexp.getJSONObject("mapConfig").getJSONObject("mainMapOptions")
 					.getString("id");
-			JSONObject obj = new JSONObject(exportMapsProject(oldIdentification, sessionUser));
+			JSONObject obj = new JSONObject(exportMapsProject(oldIdentification, user));
 			if (obj.has("mapConfig") && obj.getJSONObject("mapConfig").has("mainMapOptions")
 					&& obj.getJSONObject("mapConfig").getJSONObject("mainMapOptions").has("id")) {
 				obj.getJSONObject("mapConfig").getJSONObject("mainMapOptions").put("id", identification);
 			}
-			return this.createMapsProject(obj, identification, false, targetUser);
+			return this.createMapsProject(obj, identification, false, user);
 
 		} catch (final Exception e) {
 			log.error(e.getMessage());
@@ -477,7 +251,6 @@ public class MapsProjectServiceImpl implements MapsProjectService {
 		}
 	}
 
-	@Transactional
 	@Override
 	public String importMapsProject(String originalMapProject, boolean overwrite, User user) {
 		JSONObject obj = new JSONObject(originalMapProject);
@@ -498,52 +271,47 @@ public class MapsProjectServiceImpl implements MapsProjectService {
 		return createMapsProject(obj, id, overwrite, user);
 	}
 
-	@Transactional
 	private String createMapsProject(JSONObject obj, String id, boolean overwrite, User user) {
-		HashMap<String, String> idList = new HashMap<String, String>();
+
 		List<MapsProject> projects = this.getByIdentifier(id);
 		if (projects == null || projects.size() == 0) {
 			// Not exist create
-			obj = createProjectStyles(obj, id, overwrite, user, idList);
-			obj = createProjectMaps(obj, id, overwrite, user, idList);
+			obj = createProjectStyles(obj, id, overwrite, user);
+			obj = createProjectMaps(obj, id, overwrite, user);
 			return createNewMapsproject(obj, id, user);
 		} else {
 			// exist
 			if (overwrite) {
 				MapsProject project = projects.get(0);
-				obj = createProjectStyles(obj, id, overwrite, user, idList);
-				obj = createProjectMaps(obj, id, overwrite, user, idList);
+				obj = createProjectStyles(obj, id, overwrite, user);
+				obj = createProjectMaps(obj, id, overwrite, user);
 				project.setConfig(obj.toString());
 				project.setUser(user);
 				this.save(project);
 				return project.getIdentification();
 			} else {
 				// create new id
-				obj = createProjectStyles(obj, id, overwrite, user, idList);
-				obj = createProjectMaps(obj, id, overwrite, user, idList);
+				obj = createProjectStyles(obj, id, overwrite, user);
+				obj = createProjectMaps(obj, id, overwrite, user);
 				return createNewMapsproject(obj, id, user);
 			}
 		}
 
 	}
 
-	@Transactional
 	// this method save maps from projects
-	private JSONObject createProjectMaps(JSONObject obj, String text, boolean overwrite, User user,
-			HashMap<String, String> idList) {
+	private JSONObject createProjectMaps(JSONObject obj, String text, boolean overwrite, User user) {
 		if (obj.has("mapConfig") && obj.getJSONObject("mapConfig").has("mapOptions")) {
 			JSONArray mapOptions = obj.getJSONObject("mapConfig").getJSONArray("mapOptions");
 			for (int i = 0; i < mapOptions.length(); i++) {
 				JSONObject map = mapOptions.getJSONObject(i);
 				JSONObject mapLink = new JSONObject();
-
+				int zIndex = 0;
 				if (map.has("zIndex")) {
-
-					mapLink.put("zIndex", map.getInt("zIndex"));
-				} else {
-					mapLink.put("zIndex", i);
+					zIndex = map.getInt("zIndex");
 				}
-				mapLink.put("id", createMapsMap(map, text, overwrite, user, idList));
+				mapLink.put("id", createMapsMap(map, text, overwrite, user));
+				mapLink.put("zIndex", zIndex);
 
 				mapOptions.put(i, mapLink);
 			}
@@ -552,16 +320,16 @@ public class MapsProjectServiceImpl implements MapsProjectService {
 		return obj;
 	}
 
-	@Transactional
 	// this method save the project
 	private String createNewMapsproject(JSONObject obj, String text, User user) {
 		MapsProject p = new MapsProject();
 		p.setIdentification(text);
-		p.setDescription("Maps project " + text);
+		p.setDescription("Imported for Maps project " + text);
 		if (obj.has("mapConfig") && obj.getJSONObject("mapConfig").has("mainMapOptions")) {
 			obj.getJSONObject("mapConfig").getJSONObject("mainMapOptions").getString("id");
 			obj.getJSONObject("mapConfig").getJSONObject("mainMapOptions").put("id", p.getIdentification());
-			obj.getJSONObject("mapConfig").getJSONObject("mainMapOptions").put("description", "Maps project " + text);
+			obj.getJSONObject("mapConfig").getJSONObject("mainMapOptions").put("description",
+					"Imported for Maps project " + text);
 		}
 		p.setConfig(obj.toString());
 		p.setUser(user);
@@ -569,262 +337,222 @@ public class MapsProjectServiceImpl implements MapsProjectService {
 		return p.getIdentification();
 	}
 
-	@Transactional
 	// this method save project styles
-	private JSONObject createProjectStyles(JSONObject obj, String text, boolean overwrite, User user,
-			HashMap<String, String> idList) {
+	private JSONObject createProjectStyles(JSONObject obj, String text, boolean overwrite, User user) {
 		if (obj.has("mapConfig") && obj.getJSONObject("mapConfig").has("toolsOptions")) {
 
-			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("measureToolOptions")) {
-				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("measureToolOptions")
-						.has("style")
-						&& !obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-								.getJSONObject("measureToolOptions").getJSONObject("style").isEmpty()) {
-					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("measureToolOptions")
+			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("mesaureToolOptions")) {
+				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("mesaureToolOptions")
+						.has("style")) {
+					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("mesaureToolOptions")
 							.put("style",
 									createMapsStyle(
 											obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-													.getJSONObject("measureToolOptions").getJSONObject("style"),
-											text, overwrite, user, idList));
+													.getJSONObject("mesaureToolOptions").getJSONObject("style"),
+											text, overwrite, user));
 
 				}
 			}
 			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("selectByGeomToolOptions")) {
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-						.getJSONObject("selectByGeomToolOptions").has("style")
-						&& !obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-								.getJSONObject("selectByGeomToolOptions").getJSONObject("style").isEmpty()) {
+						.getJSONObject("selectByGeomToolOptions").has("style")) {
 					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
 							.getJSONObject("selectByGeomToolOptions").put("style",
 									createMapsStyle(
 											obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
 													.getJSONObject("selectByGeomToolOptions").getJSONObject("style"),
-											text, overwrite, user, idList));
+											text, overwrite, user));
 
 				}
 			}
 			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("showCoordToolOptions")) {
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("showCoordToolOptions")
-						.has("style")
-						&& !obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-								.getJSONObject("showCoordToolOptions").getJSONObject("style").isEmpty()) {
+						.has("style")) {
 					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("showCoordToolOptions")
 							.put("style",
 									createMapsStyle(
 											obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
 													.getJSONObject("showCoordToolOptions").getJSONObject("style"),
-											text, overwrite, user, idList));
+											text, overwrite, user));
 
 				}
 			}
 			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("infoToolOptions")) {
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("infoToolOptions")
-						.has("style")
-						&& !obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-								.getJSONObject("infoToolOptions").getJSONObject("style").isEmpty()) {
+						.has("style")) {
 					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("infoToolOptions").put(
 							"style",
 							createMapsStyle(
 									obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
 											.getJSONObject("infoToolOptions").getJSONObject("style"),
-									text, overwrite, user, idList));
+									text, overwrite, user));
 
 				}
 			}
 			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("geocoderToolOptions")) {
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("geocoderToolOptions")
-						.has("style")
-						&& !obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-								.getJSONObject("geocoderToolOptions").getJSONObject("style").isEmpty()) {
+						.has("style")) {
 					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("geocoderToolOptions")
 							.put("style",
 									createMapsStyle(
 											obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
 													.getJSONObject("geocoderToolOptions").getJSONObject("style"),
-											text, overwrite, user, idList));
+											text, overwrite, user));
 
 				}
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("geocoderToolOptions")
-						.has("styleSelect")
-						&& !obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-								.getJSONObject("geocoderToolOptions").getJSONObject("styleSelect").isEmpty()) {
+						.has("styleSelect")) {
 					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("geocoderToolOptions")
 							.put("styleSelect",
 									createMapsStyle(
 											obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
 													.getJSONObject("geocoderToolOptions").getJSONObject("styleSelect"),
-											text, overwrite, user, idList));
+											text, overwrite, user));
 
 				}
 			}
 
 			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("routingToolOptions")) {
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("routingToolOptions")
-						.has("style")
-						&& !obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-								.getJSONObject("routingToolOptions").getJSONObject("style").isEmpty()) {
+						.has("style")) {
 					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("routingToolOptions")
 							.put("style",
 									createMapsStyle(
 											obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
 													.getJSONObject("routingToolOptions").getJSONObject("style"),
-											text, overwrite, user, idList));
+											text, overwrite, user));
 
 				}
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("routingToolOptions")
-						.has("stopStyle")
-						&& !obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-								.getJSONObject("routingToolOptions").getJSONObject("stopStyle").isEmpty()) {
+						.has("stopStyle")) {
 					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("routingToolOptions")
 							.put("stopStyle",
 									createMapsStyle(
 											obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
 													.getJSONObject("routingToolOptions").getJSONObject("stopStyle"),
-											text, overwrite, user, idList));
+											text, overwrite, user));
 
 				}
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("routingToolOptions")
-						.has("blockStyle")
-						&& !obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-								.getJSONObject("routingToolOptions").getJSONObject("blockStyle").isEmpty()) {
+						.has("blockStyle")) {
 					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("routingToolOptions")
 							.put("blockStyle",
 									createMapsStyle(
 											obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
 													.getJSONObject("routingToolOptions").getJSONObject("blockStyle"),
-											text, overwrite, user, idList));
+											text, overwrite, user));
 
 				}
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("routingToolOptions")
-						.has("routeStyle")
-						&& !obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-								.getJSONObject("routingToolOptions").getJSONObject("routeStyle").isEmpty()) {
+						.has("routeStyle")) {
 					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("routingToolOptions")
 							.put("routeStyle",
 									createMapsStyle(
 											obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
 													.getJSONObject("routingToolOptions").getJSONObject("routeStyle"),
-											text, overwrite, user, idList));
+											text, overwrite, user));
 
 				}
 			}
 			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("selectByAttrToolOptions")) {
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-						.getJSONObject("selectByAttrToolOptions").has("style")
-						&& !obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-								.getJSONObject("selectByAttrToolOptions").getJSONObject("style").isEmpty()) {
+						.getJSONObject("selectByAttrToolOptions").has("style")) {
 					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
 							.getJSONObject("selectByAttrToolOptions").put("style",
 									createMapsStyle(
 											obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
 													.getJSONObject("selectByAttrToolOptions").getJSONObject("style"),
-											text, overwrite, user, idList));
+											text, overwrite, user));
 
 				}
 			}
 			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("bufferToolOptions")) {
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("bufferToolOptions")
-						.has("style")
-						&& !obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-								.getJSONObject("bufferToolOptions").getJSONObject("style").isEmpty()) {
+						.has("style")) {
 					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("bufferToolOptions").put(
 							"style",
 							createMapsStyle(
 									obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
 											.getJSONObject("bufferToolOptions").getJSONObject("style"),
-									text, overwrite, user, idList));
+									text, overwrite, user));
 
 				}
 			}
 			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("intersectToolOptions")) {
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("intersectToolOptions")
-						.has("style")
-						&& !obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-								.getJSONObject("intersectToolOptions").getJSONObject("style").isEmpty()) {
+						.has("style")) {
 					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("intersectToolOptions")
 							.put("style",
 									createMapsStyle(
 											obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
 													.getJSONObject("intersectToolOptions").getJSONObject("style"),
-											text, overwrite, user, idList));
+											text, overwrite, user));
 
 				}
 			}
 			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("proximityToolOptions")) {
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("proximityToolOptions")
-						.has("style")
-						&& !obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-								.getJSONObject("proximityToolOptions").getJSONObject("style").isEmpty()) {
+						.has("style")) {
 					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("proximityToolOptions")
 							.put("style",
 									createMapsStyle(
 											obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
 													.getJSONObject("proximityToolOptions").getJSONObject("style"),
-											text, overwrite, user, idList));
+											text, overwrite, user));
 
 				}
 			}
 			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("gotoToolOptions")) {
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("gotoToolOptions")
-						.has("style")
-						&& !obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-								.getJSONObject("gotoToolOptions").getJSONObject("style").isEmpty()) {
+						.has("style")) {
 					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("gotoToolOptions").put(
 							"style",
 							createMapsStyle(
 									obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
 											.getJSONObject("gotoToolOptions").getJSONObject("style"),
-									text, overwrite, user, idList));
+									text, overwrite, user));
 
 				}
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("gotoToolOptions")
-						.has("styleSelect")
-						&& !obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-								.getJSONObject("gotoToolOptions").getJSONObject("styleSelect").isEmpty()) {
+						.has("styleSelect")) {
 					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("gotoToolOptions").put(
 							"styleSelect",
 							createMapsStyle(
 									obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
 											.getJSONObject("gotoToolOptions").getJSONObject("styleSelect"),
-									text, overwrite, user, idList));
+									text, overwrite, user));
 
 				}
 			}
 			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("editionOptions")) {
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("editionOptions")
-						.has("modifyStyle")
-						&& !obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("editionOptions")
-								.getJSONObject("modifyStyle").isEmpty()) {
+						.has("modifyStyle")) {
 					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("editionOptions").put(
 							"modifyStyle",
 							createMapsStyle(
 									obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
 											.getJSONObject("editionOptions").getJSONObject("modifyStyle"),
-									text, overwrite, user, idList));
+									text, overwrite, user));
 
 				}
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("editionOptions")
-						.has("addStyle")
-						&& !obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("editionOptions")
-								.getJSONObject("addStyle").isEmpty()) {
+						.has("addStyle")) {
 					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("editionOptions").put(
 							"addStyle",
 							createMapsStyle(
 									obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
 											.getJSONObject("editionOptions").getJSONObject("addStyle"),
-									text, overwrite, user, idList));
+									text, overwrite, user));
 
 				}
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("editionOptions")
-						.has("deleteStyle")
-						&& !obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("editionOptions")
-								.getJSONObject("deleteStyle").isEmpty()) {
+						.has("deleteStyle")) {
 					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("editionOptions").put(
 							"deleteStyle",
 							createMapsStyle(
 									obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
 											.getJSONObject("editionOptions").getJSONObject("deleteStyle"),
-									text, overwrite, user, idList));
+									text, overwrite, user));
 
 				}
 			}
@@ -832,139 +560,60 @@ public class MapsProjectServiceImpl implements MapsProjectService {
 		return obj;
 	}
 
-	@Transactional
 	// Create maps layers
-	private String createMapsMap(JSONObject obj, String text, boolean overwrite, User user,
-			HashMap<String, String> idList) {
+	private String createMapsMap(JSONObject obj, String text, boolean overwrite, User user) {
 		if (obj.has("id")) {
 			String id = obj.getString("id");
-			MapsMap maps = mapsMapService.getByIdentificationANDUser(id, user.getUserId());
-			if (maps == null) {
-				List<MapsMap> map = mapsMapService.getByIdentifier(id);
-				if (map.size() > 0) {
-					idList.remove(id);
-					obj = createMapsLayers(obj, text, overwrite, user, idList);
-					return createNewMapsmap(obj, text, user, existIdOrNew(text, id, false, idList));
-				} else {
-					// Not exist create
-					obj = createMapsLayers(obj, text, overwrite, user, idList);
-					return createNewMapsmap(obj, text, user, id);
-				}
+			List<MapsMap> maps = mapsMapService.getByIdentifier(id);
+			if (maps == null || maps.size() == 0) {
+				// Not exist create
+				obj = createMapsLayers(obj, text, overwrite, user);
+				return createNewMapsmap(obj, text, user);
 			} else {
 				// exist
 				if (overwrite) {
-					MapsMap map = maps;
-					obj = createMapsLayers(obj, text, overwrite, user, idList);
+					MapsMap map = maps.get(0);
+					obj = createMapsLayers(obj, text, overwrite, user);
 					map.setConfig(obj.toString());
 					mapsMapService.save(map);
 					return map.getIdentification();
 				} else {
 					// create new id
-					obj = createMapsLayers(obj, text, overwrite, user, idList);
-					return createNewMapsmap(obj, text, user, null);
+					obj = createMapsLayers(obj, text, overwrite, user);
+					return createNewMapsmap(obj, text, user);
 				}
 			}
 		} else {
 			// create new id
-			obj = createMapsLayers(obj, text, overwrite, user, idList);
-			return createNewMapsmap(obj, text, user, null);
+			obj = createMapsLayers(obj, text, overwrite, user);
+			return createNewMapsmap(obj, text, user);
 		}
 	}
 
-	// Delete maps layers
-	private void deleteMapsMap(JSONObject obj, String user) {
-		if (obj.has("id")) {
-			String id = obj.getString("id");
-			List<MapsMap> maps = mapsMapService.getByIdentifier(id);
-			if (maps != null && maps.size() > 0) {
-
-				deleteMapsLayers(new JSONObject(maps.get(0).getConfig()), user);
-				mapsMapService.delete(maps.get(0).getId(), user);
-			}
-		}
-	}
-
-	private void deleteMapsLayers(JSONObject obj, String user) {
-		if (obj.has("services")) {
-			JSONArray services = obj.getJSONArray("services");
-			for (int i = 0; i < services.length(); i++) {
-				JSONObject layer = services.getJSONObject(i);
-				deleteMapsLayer(layer, user);
-
-			}
-
-		}
-
-	}
-
-	// Create maps layers
-	private void deleteMapsLayer(JSONObject obj, String user) {
-		if (obj.has("id")) {
-			String id = obj.getString("id");
-			List<MapsLayer> layers = mapsLayerService.getByIdentifier(id);
-			if (layers != null && layers.size() > 0) {
-				// delete styles
-				JSONObject layerObj = new JSONObject(layers.get(0).getConfig());
-				if (layerObj.has("style")) {
-					mapsStyleService.deleteByIdentification(layerObj.getString("style"), user);
-				}
-				if (layerObj.has("styleSelect")) {
-					mapsStyleService.deleteByIdentification(layerObj.getString("styleSelect"), user);
-
-				}
-				// delete layer
-				mapsLayerService.delete(layers.get(0).getId(), user);
-			}
-		}
-	}
-
-	private String createNewMapsmap(JSONObject obj, String text, User user, String id) {
+	private String createNewMapsmap(JSONObject obj, String text, User user) {
 		MapsMap map = new MapsMap();
-
-		if (id == null) {
-			map.setIdentification(randomIdentfication(text));
-			obj.put("id", map.getIdentification());
-
-		} else {
-			map.setIdentification(id);
-			obj.put("id", id);
-		}
-		obj.put("description", "Maps project " + text);
-		map.setDescription("Maps project " + text);
-		if (obj.getString("idDiv") == null || obj.getString("idDiv").trim().length() == 0) {
-			obj.put("idDiv", randomIdentfication(text));
-		}
-		if (obj.get("optionView") == null) {
-			JSONObject optionView = new JSONObject();
-			optionView.put("id", randomIdentfication(text));
-			obj.put("optionView", optionView);
-		} else if (obj.get("optionView") != null && (obj.getJSONObject("optionView").getString("id") == null
-				|| obj.getJSONObject("optionView").getString("id").trim().length() == 0)) {
-			obj.getJSONObject("optionView").put("id", randomIdentfication(text));
-		}
+		map.setIdentification(randomIdentfication(text));
+		obj.put("id", map.getIdentification());
+		obj.put("description", "Imported for Maps project " + text);
+		map.setDescription("Imported for Maps project " + text);
 		map.setConfig(obj.toString());
 		map.setUser(user);
 		mapsMapService.save(map);
 		return map.getIdentification();
 	}
 
-	@Transactional
-	private JSONObject createMapsLayers(JSONObject obj, String text, boolean overwrite, User user,
-			HashMap<String, String> idList) {
+	private JSONObject createMapsLayers(JSONObject obj, String text, boolean overwrite, User user) {
 		if (obj.has("services")) {
 			JSONArray services = obj.getJSONArray("services");
 			for (int i = 0; i < services.length(); i++) {
 				JSONObject layer = services.getJSONObject(i);
 				JSONObject layerLink = new JSONObject();
-
+				int zIndex = 0;
 				if (layer.has("zIndex")) {
-
-					layerLink.put("zIndex", layer.getInt("zIndex"));
-				} else {
-					layerLink.put("zIndex", i);
+					zIndex = layer.getInt("zIndex");
 				}
-				layerLink.put("id", createMapsLayer(layer, text, overwrite, user, idList));
-
+				layerLink.put("id", createMapsLayer(layer, text, overwrite, user));
+				layerLink.put("zIndex", zIndex);
 				services.put(i, layerLink);
 			}
 			obj.put("services", services);
@@ -972,144 +621,94 @@ public class MapsProjectServiceImpl implements MapsProjectService {
 		return obj;
 	}
 
-	@Transactional
 	// Create maps layers
-	private String createMapsLayer(JSONObject obj, String text, boolean overwrite, User user,
-			HashMap<String, String> idList) {
+	private String createMapsLayer(JSONObject obj, String text, boolean overwrite, User user) {
 		if (obj.has("id")) {
 			String id = obj.getString("id");
-			id = existIdOrNew(text, id, overwrite, idList);
-			MapsLayer layers = mapsLayerService.getByIdentificationANDUser(id, user.getUserId());
-			if (layers == null) {
-				List<MapsLayer> layer = mapsLayerService.getByIdentifier(id);
-				if (layer.size() > 0) {
-					idList.remove(id);
-					obj = createMapsLayerStyles(obj, text, overwrite, user, idList);
-					return createNewMapsLayer(obj, text, user, existIdOrNew(text, id, false, idList));
-				} else {
-					// Not exist create
-					obj = createMapsLayerStyles(obj, text, overwrite, user, idList);
-					return createNewMapsLayer(obj, text, user, id);
-				}
+			List<MapsLayer> layers = mapsLayerService.getByIdentifier(id);
+			if (layers == null || layers.size() == 0) {
+				// Not exist create
+				obj = createMapsLayerStyles(obj, text, overwrite, user);
+				return createNewMapsLayer(obj, text, user);
 			} else {
 				// exist
-				// if (overwrite) {
-				MapsLayer ms = layers;
-				obj = createMapsLayerStyles(obj, text, overwrite, user, idList);
-				ms.setConfig(obj.toString());
-				ms.setUser(user);
-				mapsLayerService.save(ms);
-				return ms.getIdentification();
-				// } else {
-				// create new id
-				// obj = createMapsLayerStyles(obj, text, overwrite, user, idList);
-				// return createNewMapsLayer(obj, text, user, id);
-				// }
+				if (overwrite) {
+					MapsLayer ms = layers.get(0);
+					obj = createMapsLayerStyles(obj, text, overwrite, user);
+					ms.setConfig(obj.toString());
+					ms.setUser(user);
+					mapsLayerService.save(ms);
+					return ms.getIdentification();
+				} else {
+					// create new id
+					obj = createMapsLayerStyles(obj, text, overwrite, user);
+					return createNewMapsLayer(obj, text, user);
+				}
 			}
 		} else {
 			// create new id
-			obj = createMapsLayerStyles(obj, text, overwrite, user, idList);
-			return createNewMapsLayer(obj, text, user, existIdOrNew(text, null, overwrite, idList));
+			obj = createMapsLayerStyles(obj, text, overwrite, user);
+			return createNewMapsLayer(obj, text, user);
 		}
 	}
 
-	private String createNewMapsLayer(JSONObject obj, String text, User user, String id) {
+	private String createNewMapsLayer(JSONObject obj, String text, User user) {
 		MapsLayer ml = new MapsLayer();
-		/*
-		 * if (id == null) { ml.setIdentification(randomIdentfication(text));
-		 * obj.put("id", ml.getIdentification()); } else {
-		 */
-		ml.setIdentification(id);
-		obj.put("id", id);
-		/* } */
-		obj.put("description", "Maps project " + text);
-		ml.setDescription("Maps project " + text);
+		ml.setIdentification(randomIdentfication(text));
+		obj.put("id", ml.getIdentification());
+		obj.put("description", "Imported for Maps project " + text);
+		ml.setDescription("Imported for Maps project " + text);
 		ml.setUser(user);
 		ml.setConfig(obj.toString());
 		mapsLayerService.save(ml);
 		return ml.getIdentification();
 	}
 
-	@Transactional
-	private JSONObject createMapsLayerStyles(JSONObject obj, String text, boolean overwrite, User user,
-			HashMap<String, String> idList) {
+	private JSONObject createMapsLayerStyles(JSONObject obj, String text, boolean overwrite, User user) {
 
-		if (obj.has("style") && !obj.getJSONObject("style").isEmpty()) {
-			obj.put("style", createMapsStyle(obj.getJSONObject("style"), text, overwrite, user, idList));
+		if (obj.has("style")) {
+			obj.put("style", createMapsStyle(obj.getJSONObject("style"), text, overwrite, user));
 		}
-		if (obj.has("styleSelect") && !obj.getJSONObject("styleSelect").isEmpty()) {
-			obj.put("styleSelect", createMapsStyle(obj.getJSONObject("styleSelect"), text, overwrite, user, idList));
+		if (obj.has("styleSelect")) {
+			obj.put("styleSelect", createMapsStyle(obj.getJSONObject("styleSelect"), text, overwrite, user));
 		}
 		return obj;
 	}
 
-	@Transactional
 	// Create maps styles
-	private String createMapsStyle(JSONObject obj, String text, boolean overwrite, User user,
-			HashMap<String, String> idList) {
+	private String createMapsStyle(JSONObject obj, String text, boolean overwrite, User user) {
 		if (obj.has("id")) {
 			String id = obj.getString("id");
-			id = existIdOrNew(text, id, overwrite, idList);
-			MapsStyle style = mapsStyleService.getByIdentificationANDUser(id, user.getUserId());
+			List<MapsStyle> styles = mapsStyleService.getByIdentifier(id);
 
-			if (style == null) {
-				List<MapsStyle> styles = mapsStyleService.getByIdentifier(id);
-				if (styles.size() > 0) {
-					idList.remove(id);
-					return createNewStyle(obj, text, user, existIdOrNew(text, id, false, idList));
-				} else {
-					// Not exist create
-					return createNewStyle(obj, text, user, id);
-				}
+			if (styles == null || styles.size() == 0) {
+				// Not exist create
+				return createNewStyle(obj, text, user);
 			} else {
 				// exist
-				// if (overwrite && !idList.containsKey(id)) {
-				MapsStyle ms = style;
-				ms.setConfig(obj.toString());
-				mapsStyleService.save(ms);
-				return ms.getIdentification();
-				// } else {
-				// create new id
-				// return createNewStyle(obj, text, user, id);
-				// }
+				if (overwrite) {
+					MapsStyle ms = styles.get(0);
+					ms.setConfig(obj.toString());
+					mapsStyleService.save(ms);
+					return ms.getIdentification();
+				} else {
+					// create new id
+					return createNewStyle(obj, text, user);
+				}
 			}
 
 		} else {
 			// create new id
-			return createNewStyle(obj, text, user, existIdOrNew(text, null, overwrite, idList));
+			return createNewStyle(obj, text, user);
 		}
 	}
 
-	private String existIdOrNew(String text, String id, boolean overwrite, HashMap<String, String> idList) {
-		if (idList.containsKey(id)) {
-			return idList.get(id);
-		} else if (id == null) {
-			return randomIdentfication(text);
-		} else {
-			if (overwrite) {
-				idList.put(id, id);
-				return id;
-			} else {
-				String newId = randomIdentfication(text);
-				idList.put(id, newId);
-				return newId;
-			}
-
-		}
-	}
-
-	@Transactional
-	private String createNewStyle(JSONObject obj, String text, User user, String id) {
+	private String createNewStyle(JSONObject obj, String text, User user) {
 		MapsStyle ms = new MapsStyle();
-		/* if (id != null) { */
-		ms.setIdentification(id);
-		obj.put("id", id);
-		/*
-		 * } else { ms.setIdentification(randomIdentfication(text)); obj.put("id",
-		 * ms.getIdentification()); }
-		 */
-		obj.put("description", "Maps project " + text);
-		ms.setDescription("Maps project " + text);
+		ms.setIdentification(randomIdentfication(text));
+		obj.put("id", ms.getIdentification());
+		obj.put("description", "Imported for Maps project " + text);
+		ms.setDescription("Imported for Maps project " + text);
 		ms.setUser(user);
 		ms.setConfig(obj.toString());
 		mapsStyleService.save(ms);
@@ -1146,71 +745,60 @@ public class MapsProjectServiceImpl implements MapsProjectService {
 		return obj.toString();
 	}
 
-	private JSONObject loadStyle(JSONObject ob, String field) {
-		if (ob.get(field) instanceof String) {
-			ob.put(field, loadMapStyle(ob.getString(field)));
-		} else {
-			ob.put(field, new JSONObject());
-		}
-		return ob;
-	}
-
 	private JSONObject loadMapProjectsStyles(JSONObject obj) {
 		if (obj.has("mapConfig") && obj.getJSONObject("mapConfig").has("toolsOptions")) {
 
-			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("measureToolOptions")) {
-				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("measureToolOptions")
+			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("mesaureToolOptions")) {
+				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("mesaureToolOptions")
 						.has("style")) {
-
-					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").put("measureToolOptions",
-							loadStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("measureToolOptions"), "style"));
+					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("mesaureToolOptions")
+							.put("style", loadMapStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
+									.getJSONObject("mesaureToolOptions").getString("style")));
 
 				}
 			}
 			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("selectByGeomToolOptions")) {
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
 						.getJSONObject("selectByGeomToolOptions").has("style")) {
-
-					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").put("selectByGeomToolOptions",
-							loadStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("selectByGeomToolOptions"), "style"));
+					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
+							.getJSONObject("selectByGeomToolOptions")
+							.put("style", loadMapStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
+									.getJSONObject("selectByGeomToolOptions").getString("style")));
 
 				}
 			}
 			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("showCoordToolOptions")) {
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("showCoordToolOptions")
 						.has("style")) {
-
-					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").put("showCoordToolOptions",
-							loadStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("showCoordToolOptions"), "style"));
+					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("showCoordToolOptions")
+							.put("style", loadMapStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
+									.getJSONObject("showCoordToolOptions").getString("style")));
 
 				}
 			}
 			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("infoToolOptions")) {
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("infoToolOptions")
 						.has("style")) {
-
-					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").put("infoToolOptions",
-							loadStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("infoToolOptions"), "style"));
+					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("infoToolOptions")
+							.put("style", loadMapStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
+									.getJSONObject("infoToolOptions").getString("style")));
 
 				}
 			}
 			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("geocoderToolOptions")) {
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("geocoderToolOptions")
 						.has("style")) {
-					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").put("geocoderToolOptions",
-							loadStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("geocoderToolOptions"), "style"));
+					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("geocoderToolOptions")
+							.put("style", loadMapStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
+									.getJSONObject("geocoderToolOptions").getString("style")));
 
 				}
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("geocoderToolOptions")
 						.has("styleSelect")) {
-					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").put("geocoderToolOptions",
-							loadStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("geocoderToolOptions"), "styleSelect"));
+					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("geocoderToolOptions")
+							.put("styleSelect",
+									loadMapStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
+											.getJSONObject("geocoderToolOptions").getString("styleSelect")));
 
 				}
 			}
@@ -1218,121 +806,111 @@ public class MapsProjectServiceImpl implements MapsProjectService {
 			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("routingToolOptions")) {
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("routingToolOptions")
 						.has("style")) {
-
-					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").put("routingToolOptions",
-							loadStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("routingToolOptions"), "style"));
+					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("routingToolOptions")
+							.put("style", loadMapStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
+									.getJSONObject("routingToolOptions").getString("style")));
 
 				}
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("routingToolOptions")
 						.has("stopStyle")) {
-					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").put("routingToolOptions",
-							loadStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("routingToolOptions"), "stopStyle"));
+					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("routingToolOptions")
+							.put("stopStyle", loadMapStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
+									.getJSONObject("routingToolOptions").getString("stopStyle")));
 
 				}
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("routingToolOptions")
 						.has("blockStyle")) {
-					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").put("routingToolOptions",
-							loadStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("routingToolOptions"), "blockStyle"));
+					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("routingToolOptions")
+							.put("blockStyle", loadMapStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
+									.getJSONObject("routingToolOptions").getString("blockStyle")));
 
 				}
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("routingToolOptions")
 						.has("routeStyle")) {
-
-					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").put("routingToolOptions",
-							loadStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("routingToolOptions"), "routeStyle"));
+					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("routingToolOptions")
+							.put("routeStyle", loadMapStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
+									.getJSONObject("routingToolOptions").getString("routeStyle")));
 
 				}
 			}
 			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("selectByAttrToolOptions")) {
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
 						.getJSONObject("selectByAttrToolOptions").has("style")) {
-
-					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").put("selectByAttrToolOptions",
-							loadStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("selectByAttrToolOptions"), "style"));
+					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
+							.getJSONObject("selectByAttrToolOptions")
+							.put("style", loadMapStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
+									.getJSONObject("selectByAttrToolOptions").getString("style")));
 
 				}
 			}
 			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("bufferToolOptions")) {
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("bufferToolOptions")
 						.has("style")) {
+					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("bufferToolOptions")
+							.put("style", loadMapStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
+									.getJSONObject("bufferToolOptions").getString("style")));
 
-					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").put("bufferToolOptions",
-							loadStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("bufferToolOptions"), "style"));
 				}
 			}
 			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("intersectToolOptions")) {
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("intersectToolOptions")
 						.has("style")) {
-
-					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").put("intersectToolOptions",
-							loadStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("intersectToolOptions"), "style"));
+					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("intersectToolOptions")
+							.put("style", loadMapStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
+									.getJSONObject("intersectToolOptions").getString("style")));
 
 				}
 			}
 			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("proximityToolOptions")) {
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("proximityToolOptions")
 						.has("style")) {
-
-					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").put("proximityToolOptions",
-							loadStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("proximityToolOptions"), "style"));
+					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("proximityToolOptions")
+							.put("style", loadMapStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
+									.getJSONObject("proximityToolOptions").getString("style")));
 
 				}
 			}
 			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("gotoToolOptions")) {
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("gotoToolOptions")
 						.has("style")) {
-
-					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").put("gotoToolOptions",
-							loadStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("gotoToolOptions"), "style"));
+					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("gotoToolOptions")
+							.put("style", loadMapStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
+									.getJSONObject("gotoToolOptions").getString("style")));
 
 				}
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("gotoToolOptions")
 						.has("styleSelect")) {
-
-					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").put("gotoToolOptions",
-							loadStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("gotoToolOptions"), "styleSelect"));
+					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("gotoToolOptions").put(
+							"styleSelect", loadMapStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
+									.getJSONObject("gotoToolOptions").getString("styleSelect")));
 
 				}
 			}
 			if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").has("editionOptions")) {
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("editionOptions")
 						.has("modifyStyle")) {
-
-					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").put("editionOptions",
-							loadStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("editionOptions"), "modifyStyle"));
+					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("editionOptions").put(
+							"modifyStyle", loadMapStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
+									.getJSONObject("editionOptions").getString("modifyStyle")));
 
 				}
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("editionOptions")
 						.has("addStyle")) {
-
-					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").put("editionOptions",
-							loadStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("editionOptions"), "addStyle"));
+					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("editionOptions")
+							.put("addStyle", loadMapStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
+									.getJSONObject("editionOptions").getString("addStyle")));
 
 				}
 				if (obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("editionOptions")
 						.has("deleteStyle")) {
-
-					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").put("editionOptions",
-							loadStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
-									.getJSONObject("editionOptions"), "deleteStyle"));
+					obj.getJSONObject("mapConfig").getJSONObject("toolsOptions").getJSONObject("editionOptions").put(
+							"deleteStyle", loadMapStyle(obj.getJSONObject("mapConfig").getJSONObject("toolsOptions")
+									.getJSONObject("editionOptions").getString("deleteStyle")));
 
 				}
 			}
 		}
 		return obj;
-
 	}
 
 	private JSONObject loadMapProjectsMaps(JSONObject obj) {
@@ -1342,7 +920,7 @@ public class MapsProjectServiceImpl implements MapsProjectService {
 				JSONObject map = mapOptions.getJSONObject(i);
 				JSONObject mapResult = loadMapMap(map.getString("id"));
 				mapResult.put("zIndex", map.getInt("zIndex"));
-				mapResult.put("id", map.getString("id"));
+
 				mapOptions.put(i, mapResult);
 			}
 			obj.getJSONObject("mapConfig").put("mapOptions", mapOptions);
@@ -1399,10 +977,10 @@ public class MapsProjectServiceImpl implements MapsProjectService {
 	private JSONObject loadMapsLayerStyles(JSONObject obj) {
 
 		if (obj.has("style")) {
-			obj = loadStyle(obj, "style");
+			obj.put("style", loadMapStyle(obj.getString("style")));
 		}
 		if (obj.has("styleSelect")) {
-			obj = loadStyle(obj, "styleSelect");
+			obj.put("styleSelect", loadMapStyle(obj.getString("styleSelect")));
 		}
 		return obj;
 	}
@@ -1414,9 +992,7 @@ public class MapsProjectServiceImpl implements MapsProjectService {
 		List<MapsStyle> mss = mapsStyleService.getByIdentifier(id);
 		if (mss != null && mss.size() > 0) {
 			MapsStyle ms = mss.get(0);
-			JSONObject jo = new JSONObject(ms.getConfig());
-			jo.put("id", id);
-			return jo;
+			return new JSONObject(ms.getConfig());
 		} else {
 			throw new MapsProjectServiceException(ErrorType.NOT_FOUND,
 					"NOT FOUND maps style with identification : " + id);

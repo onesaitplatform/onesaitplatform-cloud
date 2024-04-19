@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.jline.utils.Log;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -44,17 +43,13 @@ import com.minsait.onesait.platform.persistence.external.generator.helper.SQLSer
 import com.minsait.onesait.platform.persistence.external.generator.model.common.ColumnRelational;
 import com.minsait.onesait.platform.persistence.external.generator.model.common.OrderByStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.common.WhereStatement;
-import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateIndexStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.CreateStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.DeleteStatement;
-import com.minsait.onesait.platform.persistence.external.generator.model.statements.DropIndexStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.DropStatement;
-import com.minsait.onesait.platform.persistence.external.generator.model.statements.GetIndexStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.InsertStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.PreparedStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.SelectStatement;
 import com.minsait.onesait.platform.persistence.external.generator.model.statements.UpdateStatement;
-import com.minsait.onesait.platform.persistence.external.generator.model.statements.UpsertStatement;
 
 import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.BinaryExpression;
@@ -83,10 +78,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.create.table.ColDataType;
 import net.sf.jsqlparser.statement.delete.Delete;
-import net.sf.jsqlparser.statement.insert.ConflictActionType;
 import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.insert.InsertConflictAction;
-import net.sf.jsqlparser.statement.insert.InsertConflictTarget;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
@@ -94,7 +86,6 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.update.Update;
-import net.sf.jsqlparser.statement.update.UpdateSet;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 import net.sf.jsqlparser.util.SelectUtils;
 
@@ -435,26 +426,17 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 	private ExpressionList generateSQLExpressionListForVirtual(final Map<String, String> values,
 			final VirtualDatasourceType virtualDatasourceType, final Map<String, Integer> tableColumnTypes,
 			final Sequence seq, Map<String, Object> jdbcParams, boolean withParams) {
-		return generateSQLExpressionListForVirtual(values, virtualDatasourceType, tableColumnTypes, seq, jdbcParams,
-				withParams, null);
-	}
-
-	private ExpressionList generateSQLExpressionListForVirtual(final Map<String, String> values,
-			final VirtualDatasourceType virtualDatasourceType, final Map<String, Integer> tableColumnTypes,
-			final Sequence seq, Map<String, Object> jdbcParams, boolean withParams, String uniqueIdIgnore) {
 		final List<Expression> expressions = new ArrayList<>();
 		for (final Map.Entry<String, String> entry : values.entrySet()) {
 			final String paramName = entry.getKey() + seq.next();
 			Assert.isTrue(!jdbcParams.containsKey(paramName), "Duplicated param");
-			if (!StringUtils.hasText(uniqueIdIgnore) || !uniqueIdIgnore.equalsIgnoreCase(entry.getKey())) {
-				if (withParams) {
-					jdbcParams.put(paramName, getValueForSQLType(tableColumnTypes.get(entry.getKey()),
-							virtualDatasourceType, entry.getValue()));
-					expressions.add(new JdbcNamedParameter(paramName));
-				} else {
-					expressions.add(getExpressionForSQLType(tableColumnTypes.get(entry.getKey()), virtualDatasourceType,
-							entry.getValue()));
-				}
+			if (withParams) {
+				jdbcParams.put(paramName, getValueForSQLType(tableColumnTypes.get(entry.getKey()),
+						virtualDatasourceType, entry.getValue()));
+				expressions.add(new JdbcNamedParameter(paramName));
+			} else {
+				expressions.add(getExpressionForSQLType(tableColumnTypes.get(entry.getKey()), virtualDatasourceType,
+						entry.getValue()));
 			}
 		}
 		return new ExpressionList(expressions);
@@ -555,56 +537,14 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 		final Update update = new Update();
 
 		update.setTable(new Table(updateStatement.getOntology()));
-
+		update.setColumns(this.generateSQLColumns(new ArrayList<>(updateStatement.getValues().keySet())));
 		final Sequence seq = new Sequence();
-		final List<Column> columns = this.generateSQLColumns(new ArrayList<>(updateStatement.getValues().keySet()));
-		final List<Expression> expresions = this.generateSQLExpressionListForVirtual(updateStatement.getValues(),
-				virtualDatasourceType, tableColumnTypes, seq, jdbcParams, withParams).getExpressions();
-
-		for (int i = 0; i < columns.size(); i++) {
-			update.addUpdateSet(columns.get(i), expresions.get(i));
-		}
-
+		update.setExpressions(this.generateSQLExpressionListForVirtual(updateStatement.getValues(),
+				virtualDatasourceType, tableColumnTypes, seq, jdbcParams, withParams).getExpressions());
 		update.setWhere(this.getWhereForVirtual(updateStatement.getWhere(), virtualDatasourceType, tableColumnTypes,
 				seq, jdbcParams, withParams));
 
 		final PreparedStatement ps = new PreparedStatement(update.toString());
-		ps.setParams(jdbcParams);
-
-		return ps;
-	}
-
-	@Override
-	public PreparedStatement getStandardUpsert(final UpsertStatement upsertStatement,
-			final VirtualDatasourceType virtualDatasourceType, final Map<String, Integer> tableColumnTypes,
-			boolean withParams) {
-		final Map<String, Object> jdbcParams = new HashMap<>();
-		final List<Column> cols = this.generateSQLColumns(new ArrayList<>(upsertStatement.getValues().keySet()));
-		final Insert insert = new Insert().withTable(new Table(upsertStatement.getOntology()))
-				.withColumns(this.generateSQLColumns(new ArrayList<>(upsertStatement.getValues().keySet())))
-				.withSelect(this.generateSQLMultiExpressionList(List.of(upsertStatement.getValues()),
-						virtualDatasourceType, tableColumnTypes, new Sequence(), jdbcParams, withParams));
-		// excluir campo OID
-		cols.removeIf(c -> c.getColumnName().equals(upsertStatement.getUniqueID()));
-		// excluir valor asociado al OID
-		final ExpressionList expressionListOnConflict = this.generateSQLExpressionListForVirtual(
-				upsertStatement.getValues(), virtualDatasourceType, tableColumnTypes, new Sequence(), new HashMap<>(),
-				withParams, upsertStatement.getUniqueID());
-		if (virtualDatasourceType.equals(VirtualDatasourceType.POSTGRESQL)) {
-			final List<UpdateSet> updateSet = new ArrayList<>();
-			for (int i = 0; i < cols.size(); i++) {
-				updateSet.add(new UpdateSet(cols.get(i), expressionListOnConflict.getExpressions().get(i)));
-			}
-			insert.setConflictTarget(new InsertConflictTarget(upsertStatement.getUniqueID(), null, null, null));
-			insert.setConflictAction(new InsertConflictAction(ConflictActionType.DO_UPDATE).withUpdateSets(updateSet));
-		} else if (virtualDatasourceType.equals(VirtualDatasourceType.MARIADB)
-				|| virtualDatasourceType.equals(VirtualDatasourceType.MYSQL)) {
-			insert.setUseDuplicate(true);
-			insert.setDuplicateUpdateColumns(cols);
-			insert.setDuplicateUpdateExpressionList(expressionListOnConflict.getExpressions());
-		}
-
-		final PreparedStatement ps = new PreparedStatement(insert.toString());
 		ps.setParams(jdbcParams);
 
 		return ps;
@@ -688,12 +628,6 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 				case Types.BOOLEAN:
 					return raw ? Boolean.parseBoolean(value) : new LongValue(value);
 				case Types.BIT:
-					// BOOLEAN POSTGRE VALUES ARE MAPPED TO -7 in JDBC v2
-					if (relationalType.equals(VirtualDatasourceType.POSTGRESQL)) {
-						return raw ? Boolean.parseBoolean(value) : new LongValue(value);
-					} else {
-						return raw ? new LongValue(value).getValue() : new LongValue(value);
-					}
 				case Types.INTEGER:
 				case Types.SMALLINT:
 				case Types.TINYINT:
@@ -801,7 +735,6 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 	public PreparedStatement getStandardCreate(CreateStatement createStatement) {
 		createStatement = sqlHelper.parseCreateStatementColumns(createStatement);
 		createStatement = sqlHelper.parseCreateStatementConstraints(createStatement);
-
 		return new PreparedStatement(createStatement.toString());
 	}
 
@@ -836,21 +769,6 @@ public class SQLGeneratorOpsImpl implements SQLGeneratorOps {
 			return new PreparedStatement(dropStatement.toString());
 		}
 
-	}
-
-	@Override
-	public PreparedStatement getIndexStatement(GetIndexStatement getIndexStatement) {
-		return new PreparedStatement(getIndexStatement.toString());
-	}
-
-	@Override
-	public PreparedStatement createIndex(CreateIndexStatement createIndexStatement) {
-		return new PreparedStatement(createIndexStatement.toString());
-	}
-
-	@Override
-	public PreparedStatement dropIndex(DropIndexStatement dropIndexStatement) {
-		return new PreparedStatement(dropIndexStatement.toString());
 	}
 
 }

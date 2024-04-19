@@ -91,7 +91,6 @@ onesaitplatform: #Config onesaitplatform specific
       url: jdbc:postgresql://localhost:5432/?currentSchema=public
       user: ENC(0K1krO/jgwq+DCymHZDLYDFMfI8tJRot)
       password: ENC(DdyKkq1kRMvaC1p4RlThA/MkXjE5QU4c)
-      connectionName: op_timeseriesdb
    database.minio:
       access-key: ENC(d6bDYa5aGMyXndGA0edIGWFtcw3UygXi)
       secret-key: ENC(kV79KowPOv0J8QGeQ6iSQcFUqoZalNVj)
@@ -190,5 +189,4 @@ logging:
       org.springframework.boot: INFO
       org.apache.kafka: ERROR
       org.zalando.logbook: TRACE  
-      com.minsait.onesait.platform.persistence.external: DEBUG
 #      org.springframework.boot.autoconfigure: DEBUG

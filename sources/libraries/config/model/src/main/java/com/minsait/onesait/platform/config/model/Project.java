@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
-import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -34,7 +32,6 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.Type;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -71,14 +68,6 @@ public class Project extends ProjectParent implements Versionable<Project> {
 	@Getter
 	@Setter
 	private ProjectType type;
-	
-	@Basic(fetch = FetchType.EAGER)
-	@Column(name = "IMAGE", length = 100000)
-	@Lob
-	@Type(type = "org.hibernate.type.BinaryType")
-	@Getter
-	@Setter
-	private byte[] image;
 
 	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@Getter
@@ -189,12 +178,5 @@ public class Project extends ProjectParent implements Versionable<Project> {
 			}
 		}
 		return p;
-	}
-
-	@Override
-	public void setOwnerUserId(String userId) {
-		final User u = new User();
-		u.setUserId(userId);
-		setUser(u);
 	}
 }

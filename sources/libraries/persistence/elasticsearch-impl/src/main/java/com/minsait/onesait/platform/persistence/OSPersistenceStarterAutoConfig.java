@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,22 +18,15 @@ package com.minsait.onesait.platform.persistence;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.PreDestroy;
-
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.opensearch.client.Client;
 import org.opensearch.client.Node;
 import org.opensearch.client.RestClient;
 import org.opensearch.client.RestClientBuilder;
 import org.opensearch.client.RestHighLevelClient;
-import org.opensearch.client.json.jackson.JacksonJsonpMapper;
-import org.opensearch.client.opensearch.OpenSearchClient;
-import org.opensearch.client.transport.OpenSearchTransport;
-import org.opensearch.client.transport.rest_client.RestClientTransport;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Conditional;
@@ -50,11 +43,10 @@ import lombok.extern.slf4j.Slf4j;
 @Conditional(OpensearchEnabledCondition.class)
 public class OSPersistenceStarterAutoConfig {
 
-
-	//TODO Create a separated component with preDestroy method closing OpenSearchClient._transport.close()
-	@Bean//(destroyMethod = "close")
+	@Bean(destroyMethod = "close")
 	@Primary
-	public OpenSearchClient javaClient(IntegrationResourcesService resourcesService) {
+	public RestHighLevelClient client(IntegrationResourcesService resourcesService) {
+		
 		final Map<String, Object> database = resourcesService.getGlobalConfiguration().getEnv().getDatabase();
 
 		@SuppressWarnings("unchecked")
@@ -83,12 +75,14 @@ public class OSPersistenceStarterAutoConfig {
 			log.info("Setting OpenDistro basic authentication paramateres");
 			final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 			credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
-			final OpenSearchTransport transport = new RestClientTransport(RestClient.builder(nodes).setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider)).build(), new JacksonJsonpMapper()); 
-			//final RestClientBuilder builder = RestClient.builder(nodes).setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider));
-			return new OpenSearchClient(transport);
-			
+
+			final RestClientBuilder builder = RestClient.builder(nodes).setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider));
+
+			return new RestHighLevelClient(builder);
 		}
-		final OpenSearchTransport transport = new RestClientTransport(RestClient.builder(nodes).build(), new JacksonJsonpMapper()); 
-		return  new OpenSearchClient(transport);
+
+		return  new RestHighLevelClient(RestClient.builder(nodes));
+
+		
 	}
 }

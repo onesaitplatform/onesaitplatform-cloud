@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -297,10 +297,6 @@
 
 	}
 	
-	$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-	});
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 
@@ -315,9 +311,8 @@
 
 		// SEARCH FORM RESET
 		$('#reset_menu').on('click',function(){
-			$('#form_menu')[0].reset();
-			$('#form_menu')[0].submit();
-			
+			$('#menu-role').val('');
+			$('#consolemenus').DataTable().column(0).search('').draw();
 		});
 
 		// SEARCH FORM
@@ -325,14 +320,18 @@
 			$('#consolemenus').DataTable().column(0).search( $('#menu-role').val()).draw();
 		});
 		
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).on("load",function(){ 
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
 
 		var oTable = $('#consolemenus').dataTable({
 	      "bAutoWidth": false
 	      });
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
-		//$.each([],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([1],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));
 		//$('.dataTables_filter').append($('#dataTable-vis-toggle'));		

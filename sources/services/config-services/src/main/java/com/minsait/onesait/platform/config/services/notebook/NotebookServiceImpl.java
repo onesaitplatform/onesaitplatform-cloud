@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.minsait.onesait.platform.config.dto.NotebookForList;
-import com.minsait.onesait.platform.config.dto.NotebookForListExt;
 import com.minsait.onesait.platform.config.dto.OPResourceDTO;
 import com.minsait.onesait.platform.config.model.Notebook;
 import com.minsait.onesait.platform.config.model.NotebookUserAccess;
@@ -139,7 +138,6 @@ public class NotebookServiceImpl implements NotebookService {
 	private static final String USER2 = "User ";
 	private static final String UNABLE_TO_GET_INTERPRETER = "Unable to get interpreter ";
 	private static final String UNABLE_TO_GET_DEFAULT_INTERPRETER = "Unable to get default interpreter";
-	private static final String EDIT_ACCESSTYPE = "EDIT";
 
 	private String encryptRestUserpass() {
 		String key = configuration.getRestUsername() + ":" + configuration.getRestPass();
@@ -366,6 +364,11 @@ public class NotebookServiceImpl implements NotebookService {
 			log.info("Created user accesses %s for notebook %s", created.toString(), name);
 		}
 		return created;
+	}
+
+	@Override
+	public Notebook importNotebookFromJupyter(String name, String data, String userId) {
+		return importNotebookFromJupyter(name, data, userId, false, false);
 	}
 
 	@Override
@@ -635,9 +638,7 @@ public class NotebookServiceImpl implements NotebookService {
 		headers.add("Authorization", encryptRestUserpass());
 		final org.springframework.http.HttpEntity<String> request = new org.springframework.http.HttpEntity<>(body,
 				headers);
-		if (log.isDebugEnabled()) {
-			log.debug("Sending method {} Notebook", httpMethod.toString());
-		}
+		log.debug("Sending method " + httpMethod.toString() + " Notebook");
 		ResponseEntity<String> response = new ResponseEntity<>(HttpStatus.ACCEPTED);
 		try {
 			response = restTemplate.exchange(
@@ -654,9 +655,7 @@ public class NotebookServiceImpl implements NotebookService {
 		} catch (final Exception e) {
 			log.error(e.getMessage());
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("Execute method {} '{}' Notebook", httpMethod.toString(), url);
-		}
+		log.debug("Execute method " + httpMethod.toString() + " '" + url + "' Notebook");
 		final HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.set("Content-Type", response.getHeaders().getContentType().toString());
 		return new ResponseEntity<>(response.getBody(), responseHeaders,
@@ -666,16 +665,6 @@ public class NotebookServiceImpl implements NotebookService {
 	@Override
 	public Notebook getNotebook(String identification, String userId) {
 		final Notebook nt = notebookRepository.findByIdentification(identification);
-		if (hasUserPermissionInNotebook(nt, userId)) {
-			return nt;
-		} else {
-			return null;
-		}
-	}
-	
-	@Override
-	public Notebook getNotebookByIdentificationOrId(String identification, String userId) {
-		final Notebook nt = notebookRepository.findByIdentificationOrId(identification);
 		if (hasUserPermissionInNotebook(nt, userId)) {
 			return nt;
 		} else {
@@ -702,43 +691,16 @@ public class NotebookServiceImpl implements NotebookService {
 			return notebookRepository.findAllByOrderByIdentificationAsc();
 		}
 	}
-	
-	@Override
-	public List<NotebookForListExt> getNotebooksForListExt(String userId) {
-		final User user = userRepository.findByUserId(userId);
-		final List<NotebookForListExt> notebookForLists;
-		if (userService.isUserAdministrator(user)) {
-			notebookForLists = notebookRepository.findAllNotebookListExt();
-			notebookForLists
-					.stream()
-					.map(nt -> {
-						nt.setAccessType(EDIT_ACCESSTYPE);
-						return nt;
-					})
-					.collect(Collectors.toList());
-		} else {
-			notebookForLists = notebookRepository.findUserNotebookListExt(user);
-		}
-		securityService.setSecurityToInputList(notebookForLists, user, "Notebook");
-		return notebookForLists;
-	}
 
 	@Override
 	public List<NotebookForList> getNotebooksAndByProjects(String userId) {
 		final User user = userRepository.findByUserId(userId);
 		final List<NotebookForList> notebookForLists = notebookRepository.findAllNotebookList();
 		if (user.isAdmin()) {
-			return notebookForLists
-					.stream()
-					.map(nt -> {
-						nt.setAccessType(EDIT_ACCESSTYPE);
-						return nt;
-					})
-					.collect(Collectors.toList());
-			}
-		else {
-			securityService.setSecurityToInputList(notebookForLists, user, "Notebook");
 			return notebookForLists;
+		} else {
+			securityService.setSecurityToInputList(notebookForLists, user, "Notebook");
+			return notebookForLists.stream().filter(n -> "EDIT".equals(n.getAccessType())).collect(Collectors.toList());
 		}
 	}
 
@@ -757,49 +719,15 @@ public class NotebookServiceImpl implements NotebookService {
 		final User user = userRepository.findByUserId(userId);
 		return hasUserPermissionInNotebook(nt, user);
 	}
-	
-	@Override
-	public boolean hasUserPermissionReadInNotebook(Notebook nt, String userId) {
-		final User user = userRepository.findByUserId(userId);
-		return hasUserPermissionReadInNotebook(nt, user);
-	}
-	
-	@Override
-	public boolean hasUserPermissionRunInNotebook(Notebook nt, String userId) {
-		final User user = userRepository.findByUserId(userId);
-		return hasUserPermissionRunInNotebook(nt, user);
-	}
 
 	private boolean hasUserPermissionInNotebook(Notebook nt, User user) {
 		if (userService.isUserAdministrator(user) || nt.getUser().getUserId().equals(user.getUserId())
 				|| nt.isPublic()) {
 			return true;
-		} else {
+		} else { // TO-DO differentiate between access MANAGE/VIEW
 			for (final NotebookUserAccess notebookUserAccess : notebookUserAccessRepository.findByNotebookAndUser(nt,
 					user)) {
 				if (notebookUserAccess.getNotebookUserAccessType().getId().equals("ACCESS-TYPE-1")) {
-					return true;
-				}
-			}
-			return resourceService.hasAccess(user.getUserId(), nt.getId(),
-					ProjectResourceAccessParent.ResourceAccessType.MANAGE);
-		}
-	}
-
-	private boolean hasUserPermissionReadInNotebook(Notebook nt, User user) {
-		if (userService.isUserAdministrator(user) || nt.getUser().getUserId().equals(user.getUserId())
-				|| nt.isPublic()) {
-			return true;
-		} else {
-			for (final NotebookUserAccess notebookUserAccess : notebookUserAccessRepository.findByNotebookAndUser(nt,
-					user)) {
-				if (notebookUserAccess.getNotebookUserAccessType().getId().equals("ACCESS-TYPE-1")) {
-					return true;
-				}
-				if (notebookUserAccess.getNotebookUserAccessType().getId().equals("ACCESS-TYPE-2")) {
-					return true;
-				}
-				if (notebookUserAccess.getNotebookUserAccessType().getId().equals("ACCESS-TYPE-3")) {
 					return true;
 				}
 			}
@@ -807,25 +735,7 @@ public class NotebookServiceImpl implements NotebookService {
 					ProjectResourceAccessParent.ResourceAccessType.VIEW);
 		}
 	}
-	
-	private boolean hasUserPermissionRunInNotebook(Notebook nt, User user) {
-		if (userService.isUserAdministrator(user) || nt.getUser().getUserId().equals(user.getUserId())) {
-			return true;
-		} else {
-			for (final NotebookUserAccess notebookUserAccess : notebookUserAccessRepository.findByNotebookAndUser(nt,
-					user)) {
-				if (notebookUserAccess.getNotebookUserAccessType().getId().equals("ACCESS-TYPE-1")) {
-					return true;
-				}
-				if (notebookUserAccess.getNotebookUserAccessType().getId().equals("ACCESS-TYPE-3")) {
-					return true;
-				}
-			}
-			return resourceService.hasAccess(user.getUserId(), nt.getId(),
-					ProjectResourceAccessParent.ResourceAccessType.MANAGE);
-		}
-	}
-	
+
 	@Override
 	public boolean isUserOwnerOfNotebook(String userId, Notebook notebook) {
 		return notebook.getUser().getUserId().equals(userId);
@@ -850,24 +760,6 @@ public class NotebookServiceImpl implements NotebookService {
 		final Notebook nt = notebookRepository.findByIdzep(zeppelinId);
 		if (nt != null) {
 			return this.hasUserPermissionInNotebook(nt, userId);
-		}
-		return false;
-	}
-	
-	@Override
-	public boolean hasUserPermissionReadForNotebook(String zeppelinId, String userId) {
-		final Notebook nt = notebookRepository.findByIdzep(zeppelinId);
-		if (nt != null) {
-			return this.hasUserPermissionReadInNotebook(nt, userId);
-		}
-		return false;
-	}
-	
-	@Override
-	public boolean hasUserPermissionRunForNotebook(String zeppelinId, String userId) {
-		final Notebook nt = notebookRepository.findByIdzep(zeppelinId);
-		if (nt != null) {
-			return this.hasUserPermissionRunInNotebook(nt, userId);
 		}
 		return false;
 	}
@@ -1141,7 +1033,7 @@ public class NotebookServiceImpl implements NotebookService {
 	public String notebookNameByIdZep(String idzep, String userId) {
 
 		final Notebook nt = notebookRepository.findByIdzep(idzep);
-		if (hasUserPermissionReadInNotebook(nt, userId)) {
+		if (hasUserPermissionInNotebook(nt, userId)) {
 			return nt.getIdentification();
 		} else {
 			log.error(PERMISSION_DENIED);

@@ -37323,12 +37323,7 @@
   };  
 
   editor.setDatasources = function (datasources){
-	 if(datasources && datasources.size > 0){
-	  synDatasources = new Map([...datasources.entries()].sort((a,b) =>  String(a[0]).localeCompare(b[0])));
-	 }
-	 else {
 	  synDatasources = datasources;
-	 }
   };
   editor.getDatasources = function (){
 	  return synDatasources;

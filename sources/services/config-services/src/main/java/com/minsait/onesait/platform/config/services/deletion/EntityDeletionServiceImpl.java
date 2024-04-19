@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -199,7 +199,6 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 	private AppService appService;
 
 	private static final String ADMINISTRATOR = "administrator";
-	@Autowired
 	private MapsStyleService mapsStyleService;
 	@Autowired
 	private MapsLayerService mapsLayerService;
@@ -515,9 +514,7 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 
 				if (resources.size() == 1 && resources.get(0) instanceof Ontology
 						&& resources.get(0).getIdentification().toLowerCase().contains("audit")) {
-					//Use Ontology repository to force cache eviction!! 
-					ontologyRepository.delete((Ontology)resources.get(0));
-					//resourceRepository.deleteById(resources.get(0).getId());
+					resourceRepository.deleteById(resources.get(0).getId());
 					userRepository.deleteByUserId(userId);
 					invalidateUserTokens(userId);
 					return;
@@ -686,13 +683,9 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 
 	@Override
 	public void invalidateUserTokens(String userId) {
-		if (log.isDebugEnabled()) {
-			log.debug("Deleteing user token x-op-apikey for user {}", userId);
-		}
+		log.debug("Deleteing user token x-op-apikey for user {}", userId);
 		userTokenRepository.deleteByUser(userId);
-		if (log.isDebugEnabled()) {
-			log.debug("Revoking Oauth2 access tokens for user{}", userId);
-		}
+		log.debug("Revoking Oauth2 access tokens for user{}", userId);
 		final Collection<OAuthAccessToken> tokens = oauthAccessTokenRepository.findByUserName(userId);
 		tokens.forEach(t -> {
 			oauthRefreshTokenRepository.deleteById(t.getRefreshToken());
@@ -758,8 +751,8 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 
 	@Override
 	@Transactional
-	public void deleteMapsProject(String id, boolean deleteDepencies, String userId) {
-		if (mapsProjectService.hasUserPermission(id, userId)) {
+	public void deleteMapsProject(String id, String userId) {
+		if (mapsMapService.hasUserPermission(id, userId)) {
 			final MapsProject mapsProject = mapsProjectService.getById(id);
 			if (mapsProject != null) {
 				if (resourceService.isResourceSharedInAnyProject(mapsProject)) {
@@ -768,7 +761,7 @@ public class EntityDeletionServiceImpl implements EntityDeletionService {
 				}
 				// TODO validate if is used on maps
 
-				mapsProjectService.delete(id, deleteDepencies, userId);
+				mapsProjectService.delete(id, userId);
 			} else {
 				throw new OntologyServiceException("Couldn't delete Map");
 			}

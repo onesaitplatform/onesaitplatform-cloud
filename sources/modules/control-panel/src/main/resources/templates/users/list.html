@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -199,11 +199,11 @@
 															<th class="titulo-columnas" > <span th:text="#{user.name}" >Name</span></th>
 															<th class="titulo-columnas" > <span th:text="#{user.email}" >eMail</span></th>
 															<th id="roleType" dt:filterable="true" dt:filterType="select" dt:selector="roleFilter" dt:filterCssClass="input-small" class="titulo-columnas text-left" th:text="#{user.rolTypeName}">Role</th>
+															<th class="titulo-columnas text-left" > <span th:text="#{user.dateCreated}">Created At</span></th>
+															<th class="titulo-columnas text-left" > <span th:text="#{user.dateUpdated}">Updated At</span></th>
 															<th class="titulo-columnas text-left" > <span th:text="#{user.dateDeleted}">Deleted At </span></th>																
 															<th class="titulo-columnas text-left" th:text="#{user.active}">Active</th>
 															<th th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')}" class="titulo-columnas" > <span th:text="#{multitenancy.tenant}" >Tenant</span></th>
-															<th class="titulo-columnas text-left" > <span th:text="#{user.dateCreated}">Created At</span></th>
-															<th class="titulo-columnas text-left" > <span th:text="#{user.dateUpdated}">Updated At</span></th>
 															<th class="titulo-columnas text-center" dt:sortable="false" style="width:85px"> <span th:text="#{gen.options}"> Options</span></th>
 														</tr>
 													</thead>
@@ -217,17 +217,6 @@
 															<td class="text-left no-wrap " th:text="${user.mail}"></td>
 															<!-- ROLE -->
 															<td  class="text-left no-wrap " th:text="${user.role}"></td>
-															
-															<!-- DATE DELETED -->
-															<td class="text-left" th:if="${user.deleted!=null}">
-															<span th:with="sdf = ${new java.text.SimpleDateFormat('dd/MM/yyyy')}" th:text="${#dates.format(sdf.parse(user.deleted),'yyyy/MM/dd')}"  style="display:none"></span>
-															<span th:text="${user.deleted}" ></span></td>
-															<td class="text-left" th:if="${user.deleted==null}" th:text="'---'"></td>
-															<!-- ACTIVE -->														
-															<td class="text-left" th:if="${user.active}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span th:text="' '+#{gen.active}" style="color: #2E6B33;"></span></td>
-															<td class="text-left" th:if="${!user.active}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.inactive}" style="color: #A73535;"></span></td>
-															<!-- TENANT -->
-															<td th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')}"  class="text-left no-wrap " th:text="${user.tenant}"></td>
 															<!-- DATE CREATED -->
 															<td class="text-left" th:if="${user.created!=null}">
 															<span th:with="sdf = ${new java.text.SimpleDateFormat('dd/MM/yyyy')}" th:text="${#dates.format(sdf.parse(user.created),'yyyy/MM/dd')}"  style="display:none"></span>
@@ -238,6 +227,16 @@
 															<span th:with="sdf = ${new java.text.SimpleDateFormat('dd/MM/yyyy')}" th:text="${#dates.format(sdf.parse(user.updated),'yyyy/MM/dd')}"  style="display:none"></span>
 															<span th:text="${user.updated}" ></span></td>
 															<td class="text-left" th:if="${user.updated==null}" th:text="'---'"></td>
+															<!-- DATE DELETED -->
+															<td class="text-left" th:if="${user.deleted!=null}">
+															<span th:with="sdf = ${new java.text.SimpleDateFormat('dd/MM/yyyy')}" th:text="${#dates.format(sdf.parse(user.deleted),'yyyy/MM/dd')}"  style="display:none"></span>
+															<span th:text="${user.deleted}" ></span></td>
+															<td class="text-left" th:if="${user.deleted==null}" th:text="'---'"></td>
+															<!-- ACTIVE -->														
+															<td class="text-left" th:if="${user.active}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span th:text="' '+#{gen.active}" style="color: #2E6B33;"></span></td>
+															<td class="text-left" th:if="${!user.active}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.inactive}" style="color: #A73535;"></span></td>
+															<!-- TENANT -->
+															<td th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')}"  class="text-left no-wrap " th:text="${user.tenant}"></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos">
@@ -294,27 +293,25 @@
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
 															<label th:text="#{user.rolTypeName}"> Role</label>
-														
+														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="4" checked/>
-															<label th:text="#{user.dateDeleted}"> Deleted at</label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
-															<label th:text="#{user.active}"> Active </label>
-														</span>
-														<span th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')}" class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
-															<label th:text="#{multitenancy.tenant}"> Tenant </label>
-														</span>
-														
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="7" checked/>
 															<label th:text="#{user.dateCreated}"> Created At</label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="8" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 															<label th:text="#{user.dateUpdated}"> Updated At</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="6" checked/>
+															<label th:text="#{user.dateDeleted}"> Deleted at</label>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="7" checked/>
+															<label th:text="#{user.active}"> Active </label>
+														</span>
+														<span th:if="${@environment.getProperty('onesaitplatform.multitenancy.enabled')}" class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="8" checked/>
+															<label th:text="#{multitenancy.tenant}"> Tenant </label>
 														</span>
 													</div>		
 												</div>											
@@ -607,30 +604,7 @@ function modalMessage(message){
 }
 	
 	
-
-	
-	// FUNCION PARA SELECCION SIMPLE DE REGISTROS DE UN LISTADO DATATABLE
-	var handleSingleSelection = function(pTableId){
-		$("#"+pTableId).on('click','tr:not(.tr-detail)',function(event){
-			if ($(event.target).is('td')){
-				event.stopPropagation();
-				var eleRow = $(event.target).parent('tr');
-				
-				// SE CUENTAN LAS FILAS QUE NO SEAN CABECERA NI FILTRO.
-				if (!$(eleRow).hasClass('cabecera-tabla') && !$(eleRow).hasClass('filtering')){
-					// SUCCESS VISUAL SELECTION
-					$(eleRow).hasClass('success') ?  $(eleRow).removeClass('success') : $(eleRow).addClass('success');
-				}
-			}
-		});
-	}
-
-	function turnFirstOptionToGrey(){
-		$(".yadcf-filter").css('color','grey');
-		$(".yadcf-filter option").css('color','black');
-	}
-
-		// MAIN WHEN READY
+	// MAIN WHEN READY
 	$( document ).ready(function() {
 	
 		setTimeout(function(){
@@ -665,7 +639,32 @@ function modalMessage(message){
 		// SEARCH FORM
 		$('#search_user').on('click',function(){ $('#form_user')[0].submit(); });
 	
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
+	});
+	
+	// FUNCION PARA SELECCION SIMPLE DE REGISTROS DE UN LISTADO DATATABLE
+	var handleSingleSelection = function(pTableId){
+		$("#"+pTableId).on('click','tr:not(.tr-detail)',function(event){
+			if ($(event.target).is('td')){
+				event.stopPropagation();
+				var eleRow = $(event.target).parent('tr');
+				
+				// SE CUENTAN LAS FILAS QUE NO SEAN CABECERA NI FILTRO.
+				if (!$(eleRow).hasClass('cabecera-tabla') && !$(eleRow).hasClass('filtering')){
+					// SUCCESS VISUAL SELECTION
+					$(eleRow).hasClass('success') ?  $(eleRow).removeClass('success') : $(eleRow).addClass('success');
+				}
+			}
+		});
+	}
+
+	function turnFirstOptionToGrey(){
+		$(".yadcf-filter").css('color','grey');
+		$(".yadcf-filter option").css('color','black');
+	}
+		 
+	// MAIN WHEN LOAD
+	$(window).on("load",function(){  
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);  
 		//DATATABLE 
 		var oTable = $('#users').DataTable({
 			"bAutoWidth": false
@@ -728,7 +727,7 @@ function modalMessage(message){
 		// HIDE COLUMNS 	
 		
 		
-		//$.each([ 1,4,6 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([ 1,6,8 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		 yadcf.init(oTable, [			
 			    {column_number : 3,   filter_type: "select",filter_container_id:"rolefilter",filter_default_label: "[[#{user.rolTypeName}]]"}			 
@@ -751,9 +750,6 @@ function modalMessage(message){
 		});
 		 
 	     $("#contenedor-tabla-outside").removeClass("hidden");
-	     
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-   		 $.each([ 1,4,6 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 	});
 	
 	//]]>

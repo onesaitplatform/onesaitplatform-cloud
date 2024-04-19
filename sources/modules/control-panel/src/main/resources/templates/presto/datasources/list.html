@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -260,11 +260,7 @@
 	
 	//<![CDATA[
 	function navigateUrl(url){  window.location.href = url;	}
-	
-	//$(window).on('pageshow', function(event) {
- 	//	 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  	//	 $.each([ 1, 4 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-	//});
+		
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		var csrf_value = $("meta[name='_csrf']").attr("content");
@@ -313,14 +309,24 @@
 		// SEARCH FORM
 		$('#search_datasource').on('click',function(){ $('#form_datasource')[0].submit(); });
 		
+	});
+	var deleteUrl = [[@{'/presto/datasources/'}]];
+	var showConfirmDeleteDialog = function(id){	
+		$('#delete_datasource_create_form').attr('action', deleteUrl + id);
+		$('#datasourceId').val(id);
+		HeaderController.showConfirmDialogPrestoDatasource('delete_datasource_create_form');	
+	}
+	 
+	// MAIN WHEN LOAD
+	$(window).on("load",function(){
+		
 		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 
 		var oTable = $('#datasource').dataTable({
 	      "bAutoWidth": false
 	      });
 		
-		// HIDE COLUMNS (OWNER AND CREATEDAT)
-						
+		// HIDE COLUMNS (OWNER AND CREATEDAT)				
 		$.each([ 1, 4 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 
@@ -356,13 +362,6 @@
 		
 		$("#contenedor-tabla-outside").removeClass("hidden");		
 	});
-	
-	var deleteUrl = [[@{'/presto/datasources/'}]];
-	var showConfirmDeleteDialog = function(id){	
-		$('#delete_datasource_create_form').attr('action', deleteUrl + id);
-		$('#datasourceId').val(id);
-		HeaderController.showConfirmDialogPrestoDatasource('delete_datasource_create_form');	
-	}
 	
 	//]]>
 	</script>

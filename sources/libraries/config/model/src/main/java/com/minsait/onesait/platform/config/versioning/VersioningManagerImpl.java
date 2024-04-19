@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,12 +82,7 @@ public class VersioningManagerImpl implements VersioningManager {
 
 	@Override
 	public <T> void serialize(Versionable<T> versionable) {
-		serialize(versionable, null);
-	}
-
-	@Override
-	public <T> void serialize(Versionable<T> versionable, String directory) {
-		versioningIOService.serializeToFileSystem(versionable, directory);
+		versioningIOService.serializeToFileSystem(versionable);
 	}
 
 	@Override
@@ -161,9 +156,7 @@ public class VersioningManagerImpl implements VersioningManager {
 			}
 			final String author = getGitAuthor(userRepository.findFullNameByUserId(userId),
 					userRepository.findEmailByUserId(userId));
-			if (log.isDebugEnabled()) {
-				log.debug("Commiting file {} for GIT user {} with message {}", versionable.fileName(), author, message);
-			}
+			log.debug("Commiting file {} for GIT user {} with message {}", versionable.fileName(), author, message);
 			try {
 				String pathToFile = versionable.pathToVersionable(false);
 				if (pathToFile.endsWith(versionable.getClass().getSimpleName())) {
@@ -183,9 +176,7 @@ public class VersioningManagerImpl implements VersioningManager {
 		if (!StringUtils.hasText(message)) {
 			message = String.format(DEFAULT_COMMIT_MESSAGE_NO_USER, versionable.fileName());
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("Commiting file {} with message {}", versionable.fileName(), message);
-		}
+		log.debug("Commiting file {} with message {}", versionable.fileName(), message);
 		try {
 			gitOperations.addFile(VersioningIOService.DIR, versioningIOService.absolutePath(versionable));
 			gitOperations.commit(message, VersioningIOService.DIR);

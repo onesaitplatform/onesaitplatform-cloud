@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,6 @@ import com.minsait.onesait.platform.config.dto.GadgetDatasourceForList;
 import com.minsait.onesait.platform.config.model.GadgetDatasource;
 import com.minsait.onesait.platform.config.model.Ontology;
 import com.minsait.onesait.platform.config.model.Ontology.RtdbDatasource;
-import com.minsait.onesait.platform.config.model.ProjectResourceAccessParent.ResourceAccessType;
 import com.minsait.onesait.platform.config.model.base.OPResource;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
 import com.minsait.onesait.platform.config.services.exceptions.GadgetDatasourceServiceException;
@@ -53,7 +52,6 @@ import com.minsait.onesait.platform.config.services.gadget.GadgetDatasourceServi
 import com.minsait.onesait.platform.config.services.gadget.dto.OntologyDTO;
 import com.minsait.onesait.platform.config.services.ontology.OntologyService;
 import com.minsait.onesait.platform.config.services.ontologydata.OntologyDataUnauthorizedException;
-import com.minsait.onesait.platform.config.services.opresource.OPResourceService;
 import com.minsait.onesait.platform.config.services.user.UserService;
 import com.minsait.onesait.platform.controlpanel.services.resourcesinuse.ResourcesInUseService;
 import com.minsait.onesait.platform.controlpanel.utils.AppWebUtils;
@@ -90,9 +88,6 @@ public class GadgetDatasourceController {
 	
 	@Autowired 
 	private HttpSession httpSession;
-	
-	@Autowired
-	private OPResourceService resourceService;
 
 	private static final String DATASOURCE_STR = "datasource";
 	private static final String DATASOURCE_ONT_SEL_STR = "datasourceOntologySelected";
@@ -103,8 +98,6 @@ public class GadgetDatasourceController {
 	private static final String ERROR_TRUE_STR = "{\"error\":\"true\"}";
 	private static final String APP_ID = "appId";
 	private static final String REDIRECT_PROJECT_SHOW = "redirect:/projects/update/";
-	private static final String APP_USER_ACCESS = "app_user_access";
-	private static final String OWNER_USER = "owner";
 
 	@PreAuthorize("@securityService.hasAnyRole('ROLE_ADMINISTRATOR,ROLE_DEVELOPER')")
 	@RequestMapping(value = "/list", produces = "text/html")
@@ -243,9 +236,6 @@ public class GadgetDatasourceController {
 			}
 
 			model.addAttribute(DATASOURCE_STR, gadgetDatasourceToDTO(gadgetDatasource));
-			model.addAttribute(OWNER_USER, gadgetDatasource.getUser().getUserId());
-			ResourceAccessType resourceAccess = resourceService.getResourceAccess(utils.getUserId(),gadgetDatasource.getId());
-			model.addAttribute(APP_USER_ACCESS, resourceAccess);
 			String ontologyIdentification = "";
 			if (gadgetDatasource.getOntology() != null && gadgetDatasource.getOntology().getIdentification() != null) {
 				ontologyIdentification = gadgetDatasource.getOntology().getIdentification();
@@ -489,12 +479,8 @@ public class GadgetDatasourceController {
 	public String show(Model model, @PathVariable("id") String id) {
 		GadgetDatasource gadgetDatasource = this.gadgetDatasourceService.getGadgetDatasourceById(id);
 		if (gadgetDatasource != null) {
-			if (!gadgetDatasourceService.hasUserViewPermission(id, this.utils.getUserId())) {
+			if (!gadgetDatasourceService.hasUserViewPermission(id, this.utils.getUserId()))
 				return ERROR_403;
-			}
-			ResourceAccessType resourceAccess = resourceService.getResourceAccess(utils.getUserId(),gadgetDatasource.getId());
-			model.addAttribute(APP_USER_ACCESS, resourceAccess);
-			
 			model.addAttribute(DATASOURCE_STR, gadgetDatasource);
 			String ontologyIdentification = "";
 			if (gadgetDatasource.getOntology() != null && gadgetDatasource.getOntology().getIdentification() != null) {

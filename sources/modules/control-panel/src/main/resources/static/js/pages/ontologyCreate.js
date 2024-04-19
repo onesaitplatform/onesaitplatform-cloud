@@ -23,7 +23,7 @@ var OntologyCreateController = function() {
 	var LANGUAGE = ['es'];
 	var currentLanguage = ''; // loaded from template.
 	var internalLanguage = 'en';
-	var validTypes = ["object","string","number","integer","date","timestamp-mongo","timestamp","array","geometry-point","geometry-linestring","geometry-polygon","geometry-multipoint","geometry-multilinestring","geometry-multipolygon","file","boolean","email"]; // Valid
+	var validTypes = ["object","string","number","integer","date","timestamp-mongo","timestamp","array","geometry-point","geometry-linestring","geometry-polygon","geometry-multipoint","geometry-multilinestring","geometry-multipolygon","file","boolean"]; // Valid
 																																		// property
 																																		// types
 	var mountableModel = $('#datamodel_properties').find('tr.mountable-model')[0].outerHTML; 
@@ -65,7 +65,6 @@ var OntologyCreateController = function() {
 		var isGeometryMultiLineString	= false;
 		var isGeometryMultiPolygon	= false;
 		var isDate	= false;
-		var isEmail	= false;
 		var isTimestampMongo     = false;
 		var objectType		= '';
 		var isTimestamp = false;
@@ -91,7 +90,6 @@ var OntologyCreateController = function() {
 				isGeometryMultiLineString	= false;
 				isGeometryMultiPolygon	= false;
 				isDate	= false;
-				isEmail	= false;
 				isTimestampMongo     = false;
 				isTimestamp = false;
 				propEncrypted = false;
@@ -115,11 +113,7 @@ var OntologyCreateController = function() {
 						if(object.hasOwnProperty('format')){
 							if (object['format'] == 'date'){
 								isDate	= true;
-							}
-							else if (object['format'] == 'email'){
-								isEmail	= true;
-							}				
-							else {
+							} else {
 								isTimestamp=true;									
 							}						
 						}
@@ -151,7 +145,7 @@ var OntologyCreateController = function() {
 						if ( object.hasOwnProperty('properties')) { if (object.properties.hasOwnProperty('$date')){ isTimestampMongo = true;  }}
 						if (isFile) { objectType = 'file';  } else if (isGeometryPoint) { objectType = 'geometry-point'; } else if (isGeometryLineString) { objectType = 'geometry-linestring'; } else if (isGeometryPolygon) { objectType = 'geometry-polygon'; }
 						else if (isGeometryMultiPoint) { objectType = 'geometry-multipoint'; } else if (isGeometryMultiLineString) { objectType = 'geometry-multilinestring'; } else if (isGeometryMultiPolygon) { objectType = 'geometry-multipolygon'; }
-						else if (isTimestampMongo) { objectType = 'timestamp-mongo'; } else if (isTimestamp) { objectType = 'timestamp'; } else if (isDate) { objectType = 'date'; } else if (isEmail) { objectType = 'email'; }
+						else if (isTimestampMongo) { objectType = 'timestamp-mongo'; } else if (isTimestamp) { objectType = 'timestamp'; } else if (isDate) { objectType = 'date'; }
 						else {
 							 
 								if(Array.isArray(propValue) ){
@@ -273,14 +267,13 @@ var OntologyCreateController = function() {
 					var srcAtt = srcAttPath.split(".")[ srcAttPath.split(".").length - 1]
 					var target = r["target"];
 					var validate = r["validate"];
-					var relationType = r["relationType"];
 					var dstOnt = target.split(schemaUrl)[1].split("#")[0];
 					var dstAttPath = target.split(schemaUrl)[1].split("#")[1];
 					if(dstAttPath.endsWith(".items"))
 					dstAttPath = dstAttPath.replace(/.items/g, '');
 
 					var dstAtt = dstAttPath.split(".")[ dstAttPath.split(".").length - 1]
-					referencesArr.push({ "srcAtt" : srcAtt, "dstOntology" : dstOnt, "dstAtt": dstAtt, "srcAttPath" : srcAttPath, "dstAttPath" : dstAttPath, "validate": validate, "relationType": relationType});
+					referencesArr.push({ "srcAtt" : srcAtt, "dstOntology" : dstOnt, "dstAtt": dstAtt, "srcAttPath" : srcAttPath, "dstAttPath" : dstAttPath, "validate": validate});
 					referencesIds.push(srcAtt + dstOnt + dstAtt);
 				});
 				mountTableReferences();
@@ -298,8 +291,7 @@ var OntologyCreateController = function() {
 				var self = r.srcAttPath;
 				var target = schemaUrl + r.dstOntology + '#' + r.dstAttPath;
 				var validate = r.validate;
-				let relationType = r.relationType;
-				refs.push({"self":self, "target": target, "validate":validate, "relationType": relationType});
+				refs.push({"self":self, "target": target, "validate":validate});
 			});
 			schema["_references"] = refs;
 		}
@@ -362,9 +354,9 @@ var OntologyCreateController = function() {
 	}
 		
 	// INSERT RELATION
-	var insertRelation = function (srcAtt, dstOnt, dstAtt, srcAttPath, dstAttPath, validate, relationType){
+	var insertRelation = function (srcAtt, dstOnt, dstAtt, srcAttPath, dstAttPath, validate){
 		if(referencesIds.indexOf(srcAtt + dstOnt + dstAtt) == -1){
-			var relation = { "srcAtt" : srcAtt, "dstOntology" : dstOnt, "dstAtt": dstAtt, "srcAttPath" : srcAttPath, "dstAttPath" : dstAttPath, "validate" : validate, "relationType": relationType};
+			var relation = { "srcAtt" : srcAtt, "dstOntology" : dstOnt, "dstAtt": dstAtt, "srcAttPath" : srcAttPath, "dstAttPath" : dstAttPath, "validate" : validate};
 			referencesArr.push(relation);
 			referencesIds.push(srcAtt + dstOnt + dstAtt);
 			mountTableReferences();
@@ -631,14 +623,7 @@ var OntologyCreateController = function() {
 			}else {
 				properties[prop] = JSON.parse('{"type": ["string","null"],"format": "date"'+defaultD+'}');
 			}
-		}else if(type == 'email'){			
-			if(req == 'required'){
-				properties[prop] = JSON.parse('{"type": "string","format": "email"'+defaultD+'}');
-			}else {
-				properties[prop] = JSON.parse('{"type": ["string","null"],"format": "email"'+defaultD+'}');
-			}
-		}
-		else {
+		}else {
 			let enumD = '';	
 			if(type=='string'||type=='number'||type=='integer'){
 				if(enumData!=null && enumData!=''){
@@ -1259,8 +1244,6 @@ var OntologyCreateController = function() {
 			return "\"type\":\"boolean\"";
 		} else if(orgType == "Date"){
 			return "\"type\":\"string\", \"format\":\"date\"";
-		} else if(orgType == "Email"){
-			return "\"type\":\"string\", \"format\":\"email\"";
 		} else if(orgType == "DateTime") {
 			return "\"type\":\"string\", \"format\":\"date-time\"";
 		} else{
@@ -1415,7 +1398,6 @@ var OntologyCreateController = function() {
 	var initTemplateElements = function(){
 		logControl ? console.log('initTemplateElements() ->  resetForm,  currentLanguage: ' + currentLanguage) : '';
 		
-		$('#linked-data-modal').on("hide.bs.modal", function() {updateSchemaProperties()})
 		// tagsinput validate fix when handleValidation()
 		$('#metainf').on('itemAdded', function(event) {
 			if ($(this).val() !== ''){ $('#metainferror').addClass('hide');}
@@ -1456,10 +1438,6 @@ var OntologyCreateController = function() {
 		$(".option a[href='#tab_data']").on("click", function(e) {
 			$('.tabContainer').find('.option').removeClass('active');
 			$('#tab-data').addClass('active');
-		});
-		$(".option a[href='#tab_index_configuration']").on("click", function(e) {
-			$('.tabContainer').find('.option').removeClass('active');
-			$('#tab-index').addClass('active');
 		});
 		
 		// Wizard container
@@ -3210,9 +3188,8 @@ var OntologyCreateController = function() {
 			var dstProperty = $('#target-property :selected').text();
 			var dstPropertyPath = $('#target-property').val();
 			var validate = $('#validate-property').val();
-			var relationType = $('#relation-type').val();
 			if(dstOntology != "" && dstProperty != "")
-				insertRelation(srcProperty, dstOntology, dstProperty, srcPropertyPath, dstPropertyPath, validate, relationType);
+				insertRelation(srcProperty, dstOntology, dstProperty, srcPropertyPath, dstPropertyPath, validate);
 			// TODO: else alert red selections
 			
 		},

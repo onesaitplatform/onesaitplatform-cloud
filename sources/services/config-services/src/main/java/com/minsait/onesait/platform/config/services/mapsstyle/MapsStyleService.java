@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import com.minsait.onesait.platform.config.services.mapsstyle.dto.MapsStyleDTO;
 
 public interface MapsStyleService {
 
-	public List<MapsStyleDTO> getStylesForUser(String userId, String identification);
+	public List<MapsStyle> getStylesForUser(String userId, String identification);
 
 	public List<MapsStyle> getByIdentifier(String identification);
 
@@ -49,9 +49,5 @@ public interface MapsStyleService {
 	public String clone(MapsStyle originalMapsStyle, String identification, User user);
 
 	List<MapsStyleDTO> getStylesForUserWithEmpty(String userId, String identification);
-
-	void deleteByIdentification(String identification, String userId);
-
-	public MapsStyle getByIdentificationANDUser(String id, String userId);
 
 }

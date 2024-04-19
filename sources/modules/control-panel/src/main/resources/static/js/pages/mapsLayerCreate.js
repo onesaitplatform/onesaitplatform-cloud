@@ -125,7 +125,7 @@ var MapsLayerController = function() {
 			// ALL OK, THEN SUBMIT.
 			submitHandler: function(form) {
 
-				
+
 				if (logicValidation()) {
 					toastr.success(messagesForms.validation.genFormSuccess, '');
 					var auxForm = $('#aux_form');
@@ -164,13 +164,6 @@ var MapsLayerController = function() {
 		if (lT === 'GEOJSON_LAYER') {
 			$('#divStyle').show();
 		}
-		
-		$('#divstyleselect').hide();
-		
-		if(lT==='WFS_LAYER' || lT ==='GEOJSON_LAYER'){
-			$('#divstyleselect').show();
-		}
-		
 		//sources
 		$('#rowEntitySource').hide();
 		$('#rowWSource').hide();
@@ -309,7 +302,7 @@ var MapsLayerController = function() {
 			if (typeof config.source != 'undefined' && config.source != null) {
 				$("#arcgisdsourceurl").val(config.source.url).change();
 				$("#arcgissourcesrs").val(config.source.srs).change();
-				//$("#arcgissourceprojection").val(config.source.projection).change();
+				$("#arcgissourceprojection").val(config.source.projection).change();
 
 				if (typeof config.source.params != 'undefined' && config.source.params != null) {
 					$("#arcgisdsourceparamslayers").val(config.source.params.layers).change();
@@ -323,7 +316,7 @@ var MapsLayerController = function() {
 				$("#arcgisfsourceurl").val(config.source.url).change();
 				$("#arcgisfsourcelayer").val(config.source.layer).change();
 				$("#arcgissourcesrs").val(config.source.srs).change();
-				//$("#arcgissourceprojection").val(config.source.projection).change();
+				$("#arcgissourceprojection").val(config.source.projection).change();
 			}
 
 		} else if (config.layerType == 'ARCGIS_TILE_LAYER') {
@@ -331,7 +324,7 @@ var MapsLayerController = function() {
 			if (typeof config.source != 'undefined' && config.source != null) {
 				$("#arcgistsourceurl").val(config.source.url).change();
 				$("#arcgissourcesrs").val(config.source.srs).change();
-				//$("#arcgissourceprojection").val(config.source.projection).change();
+				$("#arcgissourceprojection").val(config.source.projection).change();
 			}
 
 		} else if (config.layerType == 'GEOJSON_LAYER') {
@@ -348,7 +341,7 @@ var MapsLayerController = function() {
 				$("#entitysourcelayer").val(config.source.layer).change();
 				$("#entitysourcedataProjection").val(config.source.dataProjection).change();
 				$("#entitysourcesrs").val(config.source.srs).change();
-				//$("#entitysourceprojection").val(config.source.projection).change();
+				$("#entitysourceprojection").val(config.source.projection).change();
 
 
 			}
@@ -367,10 +360,10 @@ var MapsLayerController = function() {
 				$("#wsourceurl").val(config.source.url).change();
 				$("#wsourcedataProjection").val(config.source.dataProjection).change();
 				$("#wsourcesrs").val(config.source.srs).change();
-				//$("#wsourceprojection").val(config.source.projection).change();
+				$("#wsourceprojection").val(config.source.projection).change();
 				//configResponse.source.layer = get('wfsSelectLayer');
-					$("#wsourceparamsversionwfs").val(config.source.version).change();
-					$("#wsourceparamslayers").val(config.source.layer).change();
+					$("#wsourceparamsversionwfs").val(config.source.params.version).change();
+					$("#wsourceparamslayers").val(config.source.params.layers).change();
 
 			}
 
@@ -384,7 +377,7 @@ var MapsLayerController = function() {
 				$("#wsourceurl").val(config.source.url).change();
 				$("#wsourcedataProjection").val(config.source.dataProjection).change();
 				$("#wsourcesrs").val(config.source.srs).change();
-				//$("#wsourceprojection").val(config.source.projection).change();
+				$("#wsourceprojection").val(config.source.projection).change();
 				if (typeof config.source.params != 'undefined' && config.source.params != null) {
 					$("#wsourceparamsversionwms").val(config.source.params.version).change();
 				}
@@ -400,7 +393,7 @@ var MapsLayerController = function() {
 				$("#wsourceurl").val(config.source.url).change();
 				$("#wsourcedataProjection").val(config.source.dataProjection).change();
 				$("#wsourcesrs").val(config.source.srs).change();
-				//$("#wsourceprojection").val(config.source.projection).change();
+				$("#wsourceprojection").val(config.source.projection).change();
 				
 				//config.source.layer = get('wfsSelectLayer');
 				//config.source.style = get('wfsSelectStyle');
@@ -447,28 +440,7 @@ var MapsLayerController = function() {
 		}
 	}
 
-
- var loadwmtsSelected =function(){
-
-		var selected = [];
-		$('td  input[type=checkbox ]:checked').each(function() {
-	    selected.push($(this).attr('idname'));
-			});
-			return selected.join(",");
-	}
-	
-	var loadwmtsStyleSelected = function(){
-	
-		var selected = [];
-		$('td  input[type=checkbox ]:checked').each(function() {
-	    selected.push($('select[idname="'+$(this).attr('idname')+'"]').val());
-			});
-			return selected.join(",");
-	}
-
-
 	var updateConfig = function() {
-		
 		configResponse.id = get('identification');
 		configResponse.layerName = get('layerName');
 		configResponse.layerType = get('layerType');
@@ -517,7 +489,7 @@ var MapsLayerController = function() {
 			configResponse.source.layer = get('entitysourcelayer');
 			configResponse.source.dataProjection = get('entitysourcedataProjection');
 			configResponse.source.srs = get('entitysourcesrs')
-			//configResponse.source.projection = get('entitysourceprojection');
+			configResponse.source.projection = get('entitysourceprojection');
 			configResponse.clusterOptions = { 'isCluster': getCheck('clusterOptionsisCluster'), 'distance': get('clusterOptionsdistance') };
 
 		} else if (configResponse.layerType == 'WFS_LAYER') {
@@ -531,7 +503,7 @@ var MapsLayerController = function() {
 				configResponse.source.version = get('wsourceparamsversionwfs');
 				configResponse.source.outputFormat = "json";
 				configResponse.style = get('style');
-				//configResponse.source.projection = get('wsourceprojection');
+				configResponse.source.projection = get('wsourceprojection');
 				 
 			}
 
@@ -544,7 +516,7 @@ var MapsLayerController = function() {
 			if (get('wsourceurl') != null || get('wsourcedataProjection') != null || get('wsourceparamsversionwms') != null ) {
 				configResponse.source = { 'url': get('wsourceurl'), 'dataProjection': get('wsourcedataProjection') }
 				configResponse.source.srs = get('wsourcesrs');
-				//configResponse.source.projection = get('wsourceprojection')
+				configResponse.source.projection = get('wsourceprojection')
 				configResponse.source.params = { 'version': get('wsourceparamsversionwms'), 'layers': loadwmtsSelected(), 'styles': loadwmtsStyleSelected() }
 				 
 			}
@@ -557,7 +529,7 @@ var MapsLayerController = function() {
 				configResponse.source.srs = get('wsourcesrs');
 				configResponse.source.layer = get('wfsSelectLayer');
 				configResponse.source.style = get('wfsSelectStyle');
-				//configResponse.source.projection = get('wsourceprojection')
+				configResponse.source.projection = get('wsourceprojection')
 				configResponse.source.version = get('wsourceparamsversionwmts');
 				 
 			}
@@ -624,7 +596,7 @@ var MapsLayerController = function() {
 			conf.source.dataProjection = get('entitysourcedataProjection');
 
 			conf.source.srs = get('entitysourcesrs')
-			//conf.source.projection = get('entitysourceprojection');
+			conf.source.projection = get('entitysourceprojection');
 
 			conf.clusterOptions = { 'isCluster': getCheck('clusterOptionsisCluster'), 'distance': get('clusterOptionsdistance') };
 
@@ -635,21 +607,20 @@ var MapsLayerController = function() {
 			if (get('wsourceurl') != null || get('wsourcedataProjection') != null || get('wsourceparamsversionwfs') != null || get('wsourceparamslayers') != null || get('wsourceparamsstyles') != null) {
 				conf.source = { 'url': get('wsourceurl'), 'dataProjection': get('wsourcedataProjection') }
 				conf.source.srs = get('wsourcesrs');
-				//conf.source.projection = get('wsourceprojection');
-				conf.source.version = get('wsourceparamsversionwfs');
-				conf.source.layer = get('wsourceparamslayers');
-				conf.source.style = get('wsourceparamsstyles');
-				 
+				conf.source.projection = get('wsourceprojection')
+				if (get('wsourceparamsversionwfs') != null || get('wsourceparamslayers') != null || get('wsourceparamsstyles') != null) {
+					conf.source.params = { 'version': get('wsourceparamsversionwfs'), 'layers': get('wsourceparamslayers'), 'styles': get('wsourceparamsstyles') }
+				}
 			}
 			conf.clusterOptions = { 'isCluster': getCheck('clusterOptionsisCluster'), 'distance': get('clusterOptionsdistance') };
 
 		} else if (conf.layerType == 'WMS_LAYER') {
 			conf.filter = get('filter');
 			conf.selectable = getCheck('selectable');
-			if (get('wsourceurl') != null || get('wsourcedataProjection') != null || get('wsourceparamsversionwms') != null  ) {
+			if (get('wsourceurl') != null || get('wsourcedataProjection') != null || get('wsourceparamsversionwms') != null || get('wsourceparamslayers') != null || get('wsourceparamsstyles') != null) {
 				conf.source = { 'url': get('wsourceurl'), 'dataProjection': get('wsourcedataProjection') }
 				conf.source.srs = get('wsourcesrs');
-				//conf.source.projection = get('wsourceprojection')
+				conf.source.projection = get('wsourceprojection')
 				conf.source.params = { 'version': get('wsourceparamsversionwms'), 'layers': loadwmtsSelected(), 'styles': loadwmtsStyleSelected()  }				 
 			}
 
@@ -659,7 +630,7 @@ var MapsLayerController = function() {
 			if (get('wsourceurl') != null || get('wsourcedataProjection') != null || get('wsourceparamsversionwmts') != null || get('wfsSelectLayer') != null || get('wfsSelectStyle') != null) {
 				conf.source = { 'url': get('wsourceurl'), 'dataProjection': get('wsourcedataProjection') }
 				conf.source.srs = get('wsourcesrs');
-				//conf.source.projection = get('wsourceprojection')
+				conf.source.projection = get('wsourceprojection')
 				conf.source.layer = get('wfsSelectLayer');
 				conf.source.style = get('wfsSelectStyle');
 				conf.source.version = get('wsourceparamsversionwmts');

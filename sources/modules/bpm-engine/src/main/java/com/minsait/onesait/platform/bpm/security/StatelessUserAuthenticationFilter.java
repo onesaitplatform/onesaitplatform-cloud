@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,25 +25,24 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import org.camunda.bpm.engine.IdentityService;
 import org.camunda.bpm.engine.ProcessEngine;
-import org.camunda.bpm.engine.identity.Tenant;
 import org.camunda.bpm.engine.rest.util.EngineUtil;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.minsait.onesait.platform.bpm.util.RoleConverterUtil;
+import com.minsait.onesait.platform.config.services.bpm.BPMTenantService;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class StatelessUserAuthenticationFilter implements Filter {
 
-	private final IdentityService identityService;
+	private final BPMTenantService bpmTenantService;
 
-	public StatelessUserAuthenticationFilter(IdentityService identityService) {
-		this.identityService = identityService;
+	public StatelessUserAuthenticationFilter(BPMTenantService bpmTenantService) {
+		this.bpmTenantService = bpmTenantService;
 	}
 
 	@Override
@@ -69,11 +68,10 @@ public class StatelessUserAuthenticationFilter implements Filter {
 		}
 
 		try {
-			engine.getIdentityService().setAuthentication(username, getUserGroups(), identityService.createTenantQuery()
-					.userMember(username).list().stream().map(Tenant::getId).toList());
+			engine.getIdentityService().setAuthentication(username, getUserGroups(),
+					bpmTenantService.getTenantNamesForUser(username));
 			log.info("Authentication success webapp ROLE: {}, TENANTS: {}", String.join(",", getUserGroups()),
-					String.join(",", identityService.createTenantQuery().userMember(username).list().stream()
-							.map(Tenant::getId).toList()));
+					String.join(",", bpmTenantService.getTenantNamesForUser(username)));
 			chain.doFilter(request, response);
 		} finally {
 			clearAuthentication(engine);

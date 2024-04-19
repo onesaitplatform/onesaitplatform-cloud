@@ -484,7 +484,7 @@ var DashboardsCreateController = function() {
 	        	$("#image").val(null);
 	        	$('#showedImg').val("");
 				$('#hasImage').val(false);
-				$('#showedImgPreview').attr('src','/controlpanel/img/DASHBOARD.png');
+				$('#showedImgPreview').attr('src','/controlpanel/img/APPLICATION.png');
 	         } else if ($('#image').prop('files')) {
 	        	 reader.readAsDataURL($("#image").prop('files')[0]);	        	 
 	         }

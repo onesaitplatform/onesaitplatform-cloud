@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -125,13 +125,12 @@
 														<th class="titulo-columnas" th:text="#{gen.name}">Name</th>
 														
 														 
-																										
+														<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>														
 														<th class="titulo-columnas text-center" ><span th:text="#{datalabeling.lastSync}"> last Sync </span></th>						
 														<th class="titulo-columnas text-center" ><span th:text="#{datalabeling.bucket}">  Bucket </span></th>	
 														<th class="titulo-columnas text-center" ><span th:text="#{datalabeling.prefix}"> Prefix </span></th>
 														<th th:if="${type=='source'}" class="titulo-columnas text-center" ><span th:text="#{datalabeling.regexFilter}"> Regex Filter </span></th>
 														<th class="titulo-columnas text-center" ><span > ID </span></th>
-															<th class="titulo-columnas text-center" ><span th:text="#{gen.created}"> Created At </span></th>	
 													    <th class="titulo-columnas text-center" dt:sortable="false" style="width:85px;"><span th:text="#{gen.options}"> Options</span></th>
 													</tr>
 												</thead>
@@ -139,6 +138,9 @@
 													<tr th:each="cloudstorages : ${cloudstorages}" pages:paginate="10">
 														<!-- NAME -->
 														<td class="text-left" th:text="${cloudstorages.title}"></td>
+														<!-- DATE --> 
+		 												<td class="text-center" th:if="${cloudstorages.createdAt!=null}"><span th:text="${cloudstorages.createdAt}" style="display:none" ></span><span th:text="${cloudstorages.createdAt}" ></span></td>
+														<td class="text-center" th:if="${cloudstorages.createdAt==null}" th:text="'---'"></td>
 														<!-- LAST SYNC --> 
 		 												<td class="text-center" th:if="${cloudstorages.lastSync!=null}"><span th:text="${cloudstorages.lastSync}" style="display:none" ></span><span th:text="${cloudstorages.lastSync}" ></span></td>
 														<td class="text-center" th:if="${cloudstorages.lastSync==null}" th:text="'---'"></td>
@@ -153,9 +155,6 @@
 														<!-- ID --> 												
 														<td class="text-center " th:text="${cloudstorages.identification}"></td>
 														
-														<!-- DATE --> 
-		 												<td class="text-center" th:if="${cloudstorages.createdAt!=null}"><span th:text="${cloudstorages.createdAt}" style="display:none" ></span><span th:text="${cloudstorages.createdAt}" ></span></td>
-														<td class="text-center" th:if="${cloudstorages.createdAt==null}" th:text="'---'"></td>
 														
 														
 														<!-- OPTIONS -->
@@ -188,32 +187,32 @@
 													</span>
 													
 													
-													
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-														<label th:text="#{datalabeling.lastSync}"> last Sync </label>
+														<label th:text="#{gen.created}"> Created at</label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-														<label th:text="#{datalabeling.bucket}"> Bucket</label>
+														<label th:text="#{datalabeling.lastSync}"> last Sync </label>
 													</span>
 													<span class="checkbox-column">
 														<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+														<label th:text="#{datalabeling.bucket}"> Bucket</label>
+													</span>
+													<span class="checkbox-column">
+														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
 														<label th:text="#{datalabeling.prefix}"> Prefix</label>
 													</span>													
 													
 													<span th:if="${type=='source'}" class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="4" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
 														<label th:text="#{datalabeling.regexFilter}"> Regex Filter</label>
 													</span>
 													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="5" checked/>
+														<input class="toggle-vis" type="checkbox" data-column="6" checked/>
 														<label> ID </label>
 													</span>
-													<span class="checkbox-column">
-														<input class="toggle-vis" type="checkbox" data-column="6" checked/>
-														<label th:text="#{gen.created}"> Created at</label>
-													</span>				
+																	
 												</div>
 											</div>
 																			
@@ -269,10 +268,7 @@
 	function navigateUrl(url){  window.location.href = url;	}
 	function navigateNewTab(url){ window.open(url, '_blank');  	}
 	
-	$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-	});
+
 
 	// MAIN WHEN READY
 	$( document ).ready(function() {
@@ -294,15 +290,19 @@
 			$('#form_dashboard')[0].submit();
 		});
 		
+	});
+	 
+	// MAIN WHEN LOAD
+	$(window).on("load",function(){
 		
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true); 
 		
 		var oTable = $('#dashboards').dataTable({
 		      "bAutoWidth": false
 		      });
 		
 		// HIDE COLUMNS (DeESCRIPTION,  CREATEDAT)		
-		//$.each([],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 		
 		$('.dataTables_filter').append($('#dataTable-vis-toggle'));	

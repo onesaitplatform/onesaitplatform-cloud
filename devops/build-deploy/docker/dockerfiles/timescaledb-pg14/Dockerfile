@@ -1,4 +1,4 @@
-FROM timescale/timescaledb-ha:pg14.8-ts2.11.0
+FROM timescale/timescaledb-ha:pg14-latest
 
 # Metadata
 LABEL module.maintainer "onesaitplatform@indra.es" \

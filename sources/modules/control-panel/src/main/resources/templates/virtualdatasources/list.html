@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -132,8 +132,8 @@
 													<thead>
 														<tr class="cabecera-tabla">
 															<th class="titulo-columnas" th:text="#{datasource.identification}">Identification</th>
-															<th class="titulo-columnas text-left" ><span th:text="#{ontology.userId}" >Owner</span></th>
 															<th class="titulo-columnas" th:text="#{datasource.domain}">Identification</th>
+															<th class="titulo-columnas text-left" ><span th:text="#{ontology.userId}" >Owner</span></th>
 															<th class="titulo-columnas text-left">SGDB</th>
 															<th class="titulo-columnas text-left" th:text="#{gen.public}">Public</th>
 															<th class="titulo-columnas text-left" ><span th:text="#{ontology.createdAt}"> Created At </span></th>
@@ -145,10 +145,10 @@
 														<tr th:each="datasource : ${datasources}" pages:paginate="10">
 															<!-- IDENTIFICATION/NAME -->
 															<td class="text-left no-wrap " th:text="${datasource.identification}"></td>
-															<!-- USER -->
-															<td class="text-left " th:text="${datasource.user.userId}"></td>
 															<!-- DOMAIN -->
 															<td class="text-left no-wrap " th:text="${datasource.datasourceDomain}"></td>
+															<!-- USER -->
+															<td class="text-left " th:text="${datasource.user.userId}"></td>
 															<!-- SGDB -->
 															<td class="text-left " th:text="${datasource.sgdb}"></td>
 															<!-- PUBLIC -->
@@ -204,11 +204,11 @@
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-															<label th:text="#{ontology.userId}"> Owner</label>
+															<label th:text="#{datasource.domain}"> Domain </label>
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
-															<label th:text="#{datasource.domain}"> Domain </label>
+															<label th:text="#{ontology.userId}"> Owner</label>
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
@@ -312,10 +312,7 @@
 			}
 		});
 	}
-	$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
-	});	
+	
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 		var csrf_value = $("meta[name='_csrf']").attr("content");
@@ -364,14 +361,24 @@
 		// SEARCH FORM
 		$('#search_datasource').on('click',function(){ $('#form_datasource')[0].submit(); });
 		
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+	});
+	var deleteUrl = [[@{'/virtualdatasources/'}]];
+	var showConfirmDeleteDialog = function(id){	
+		$('#delete_datasource_create_form').attr('action', deleteUrl + id);
+		$('#datasourceId').val(id);
+		HeaderController.showConfirmDialogVirtualDatasource('delete_datasource_create_form');	
+	}
+	 
+	// MAIN WHEN LOAD
+	$(window).on("load",function(){
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 
 		var oTable = $('#datasource').dataTable({
 	      "bAutoWidth": false
 	      });
 		
 		// HIDE COLUMNS (DeESCRIPTION, DATAMODEL AND CREATEDAT)				
-		//$.each([ ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
+		$.each([ 5 ],function(ind,value){ $("input.toggle-vis[data-column='"+ value +"']").trigger('click'); });
 		
 		// SHOW/HIDE DATATABLES COLUMN INIT 
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));
@@ -408,33 +415,9 @@
 		$("#contenedor-tabla-outside").removeClass("hidden");		
 	});
 	
-	var deleteUrl = [[@{'/virtualdatasources/'}]];
-	var showConfirmDeleteDialog = function(id){	
-		$('#delete_datasource_create_form').attr('action', deleteUrl + id);
-		$('#datasourceId').val(id);
-
-		var csrf_value = $("meta[name='_csrf']").attr("content");
-		var csrf_header = $("meta[name='_csrf_header']").attr("content");
-		$.ajax({
-			url: "getEntitiesDatabaseConections/" + id,
-			headers: { [csrf_header]: csrf_value },
-			type: 'GET',
-			dataType: 'json',
-			contentType: 'application/json',
-			mimeType: 'application/json',
-			success: function (listEntitiesConnection) {
-				if (listEntitiesConnection.length>0){
-					HeaderController.showConfirmDialogVirtualDatasourceWithExternalDatabaseConnections('delete_datasource_create_form', listEntitiesConnection);	
-				} else {
-					HeaderController.showConfirmDialogVirtualDatasource('delete_datasource_create_form');
-				}
-			}
-		});
-	}
-	 
-	
 	//]]>
 	</script>
 	
 </body>
 </html>
+  

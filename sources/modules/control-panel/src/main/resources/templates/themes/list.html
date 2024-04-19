@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -148,15 +148,15 @@
 														</span>
 														<span class="checkbox-column">
 															<input class="toggle-vis" type="checkbox" data-column="1" checked/>
-															<label th:text="#{gen.active}"> Active</label>
-														</span>
-														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
 															<label th:text="#{gen.created}"> Created At </label>
 														</span>
 														<span class="checkbox-column">
-															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<input class="toggle-vis" type="checkbox" data-column="2" checked/>
 															<label th:text="#{gen.updated}"> Updated At</label>
+														</span>
+														<span class="checkbox-column">
+															<input class="toggle-vis" type="checkbox" data-column="3" checked/>
+															<label th:text="#{gen.active}"> Active</label>
 														</span>
 													</div>
 												</div>
@@ -166,9 +166,9 @@
 													<thead>
 														<tr class="cabecera-tabla">
 															<th dt:sortInitDirection="asc" class="titulo-columnas" th:text="#{themes.theme}">Theme</th>
-															<th class="titulo-columnas text-left"  th:text="#{gen.active}">Active</th>
 															<th class="titulo-columnas text-left" th:text="#{gen.created}">Created at</th>
 															<th dt:sortInitDirection="dsc" class="titulo-columnas text-left" th:text="#{consolemenu.updated}">Updated at</th>
+															<th class="titulo-columnas text-left"  th:text="#{gen.active}">Active</th>
 															<th class="titulo-columnas text-center" style="width:85px;"><span th:text="#{gen.options}"> Options </span></th>
 														</tr>
 													</thead>
@@ -176,9 +176,6 @@
 														<tr th:each="theme : ${themes}" pages:paginate="10">
 															<!--THEME-->
 															<td class="text-left " th:text="${theme.identification}"></td>
-															<!--ACTIVE-->
-															<td class="text-left" th:if="${theme.active}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span th:text="' '+#{gen.active}" style="color: #2E6B33;"></span></td>
-															<td class="text-left" th:if="${!theme.active}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.inactive}" style="color: #A73535;"></span></td>
 															<!--CREATED -->
 															<td class="text-left" th:if="${theme.createdAt!=null}">
 																<span th:text="${#dates.format(theme.createdAt,'yyyy/MM/dd')}" style="display:none" ></span>
@@ -189,6 +186,9 @@
 																<span th:text="${#dates.format(theme.updatedAt,'yyyy/MM/dd')}" style="display:none" ></span>
 																<span th:text="${#dates.format(theme.updatedAt,'dd/MM/yyyy')}" ></span></td>
 															<td class="text-left" th:if="${theme.updatedAt==null}" th:text="'---'"></td>
+															<!--ACTIVE-->
+															<td class="text-left" th:if="${theme.active}"><span th:text="1" style="display:none" ></span><i class="badge badge-empty-success"> </i><span th:text="' '+#{gen.active}" style="color: #2E6B33;"></span></td>
+															<td class="text-left" th:if="${!theme.active}"><span th:text="0" style="display:none" ></span><i class="badge badge-empty-error"></i><span th:text="' '+#{gen.inactive}" style="color: #A73535;"></span></td>
 															<!-- OPTIONS -->
 															<td class="icon text-center" style="white-space: nowrap">
 																<div class="grupo-iconos text-center">
@@ -271,11 +271,6 @@
 	
 	<script type="text/javascript" th:inline="javascript">
 	
-	$(window).on('pageshow', function(event) {
- 		 $('#column_toggler').find("input[type='checkbox']").prop('checked', true);
-  		 $.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
-		 $.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('click'); });
-	});
 	// MAIN WHEN READY
 	$( document ).ready(function() {
 
@@ -299,7 +294,11 @@
 			$('#themes').DataTable().column(0).search( $('#theme-name').val()).draw();
 		});	
 
-		//$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
+	});
+	
+	// MAIN WHEN LOAD
+	$(window).on("load",function(){ 
+		$('#column_toggler').find("input[type='checkbox']").prop('checked', true);
 
 		var oTable = $('#themes').dataTable({
 	      "bAutoWidth": false
@@ -307,8 +306,8 @@
 		
 
 		// HIDE COLUMN UPDATEDAT		
-		//$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
-		//$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
+		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
+		$.each([0],function(ind,value){ $("input.toggle-vis[data-column='0']").trigger('change'); });
 
 		// SHOW/HIDE DATATABLES COLUMN INIT
 		$('#divcreate').prepend($('#dataTable-vis-toggle'));		
@@ -378,7 +377,7 @@
 								headers: {
 									[csrf_header]: csrf_value
 							    }
-						}).done(function(response){
+						}).success(function(response){
 								navigateUrl("/controlpanel/themes/list");}
 						).fail(function(response, data){
 								$.alert({title: 'Error', theme: 'light', style: 'red', content: "TO-DO: Completar captura error"});
@@ -419,7 +418,7 @@
 								headers: {
 									[csrf_header]: csrf_value
 							    }
-						}).done(function(response){
+						}).success(function(response){
 								navigateUrl("/controlpanel/themes/list");}
 							).fail(function(response, data){
 								$.alert({title: 'Error', theme: 'light', style: 'red', content: "TO-DO: Completar captura error"});
@@ -460,7 +459,7 @@
 								headers: {
 									[csrf_header]: csrf_value
 							    }
-						}).done(function(response){
+						}).success(function(response){
 								navigateUrl("/controlpanel/themes/list");}
 							).fail(function(response, data){
 								$.alert({title: 'Error', theme: 'light', style: 'red', content: "TO-DO: Completar captura error"});
@@ -500,7 +499,7 @@
 								headers: {
 									[csrf_header]: csrf_value
 							    }
-						}).done(function(response){
+						}).success(function(response){
 								navigateUrl("/controlpanel/themes/list");}
 							).fail(function(response, data){
 								$.alert({title: 'Error', theme: 'light', style: 'red', content: "TO-DO: Completar captura error"});

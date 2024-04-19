@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -116,7 +116,7 @@
 					<!-- FORM ACTIONS FOR INSERT-->
 					<input th:if="${element.id} == null" type="hidden" name="action"
 						th:value="@{/mapsproject/create}" />
-					
+					<th:block th:include="versioning/fragments/form-commit"></th:block>
 					<!-- FORM ACTIONS FOR UPDATE -->
 					<input th:if="${element.id} != null" type="hidden" name="action"
 						th:value="@{/mapsproject/update}" /> <input
@@ -176,7 +176,7 @@
 									<button th:if="${element.id} != null" id="deleteBtn"
 										type="button" class="btn btn-primary btn-primary-delete "
 										name="delete" th:value="#{gen.deleteBtn}"
-										onclick="showConfirmDeleteDialog()">
+										th:attr="onclick='MapsProjectController.deleteProject(\'' + ${element.id} + '\');'">
 										<i class="icon-delete"></i><span th:text="#{gen.deleteBtn}"
 											class="delete-btn-text"> Delete </span>
 									</button>
@@ -214,7 +214,7 @@
 
 									<!-- UPDATE -->
 									<button th:if="${element.id} != null" id="updateBtn"
-										type="button" class="btn btn-primary btn-primary-save"
+										type="submit" class="btn btn-primary btn-primary-save"
 										name="update" th:value="#{gen.editBtn}">
 										<span th:text="#{gen.changes}"> Save Changes</span>
 									</button>
@@ -292,8 +292,8 @@
 									style="margin-left: 15px;">Map Bookmarks</span>
 								</a>
 							</div>
-							<div id="tab-measureToolOptions" class="option">
-								<a href="#tab_measureToolOptions" data-toggle="tab"
+							<div id="tab-mesaureToolOptions" class="option">
+								<a href="#tab_mesaureToolOptions" data-toggle="tab"
 									aria-expanded="true"> <span class="caption-subject "
 									style="margin-left: 15px;"> Measure</span>
 								</a>
@@ -379,8 +379,7 @@
 												th:placeholder="#{gen.description}" />
 										</div>
 									</div>
-									</div>
-								<div class="row main">
+									
 									
 									
 									<div class="col-md-2 col-sm-2">
@@ -563,7 +562,7 @@
 									</div>
 								</div>
 							</div>
-							<div class="tab-pane " id="tab_measureToolOptions">
+							<div class="tab-pane " id="tab_mesaureToolOptions">
 								<div class="row main">
 									<div class="col-md-9 col-sm-9 col-xs-9 panelHeader">
 										<span>Measure</span>
@@ -574,10 +573,10 @@
 										<div class="mt-checkbox-list margin-top-20">
 											<label class="mt-checkbox popovers font-sm"
 												data-trigger="hover" data-placement="top"
-												data-container="body" data-content="toolsOptionsmeasureToolOptionsenable"
-												data-title="toolsOptionsmeasureToolOptionsenable">
+												data-container="body" data-content="toolsOptionsmesaureToolOptionsenable"
+												data-title="toolsOptionsmesaureToolOptionsenable">
 												<div class="inline font-xs">Enabled</div> <input
-												id="toolsOptionsmeasureToolOptionsenable" class="form-control" name="toolsOptionsmeasureToolOptionsenable"
+												id="toolsOptionsmesaureToolOptionsenable" class="form-control" name="toolsOptionsmesaureToolOptionsenable"
 												type="checkbox" /> <span></span>
 											</label>
 										</div>
@@ -587,7 +586,7 @@
 										<div class="form-group">
 											<div class="col-md-6 col-sm-6  "
 												style="padding-left: 0px; padding-right: 0px;">
-												<select id="toolsOptionsmeasureToolOptionsstyle"
+												<select id="toolsOptionsmesaureToolOptionsstyle"
 													class="selectpicker form-control" data-live-search="true"
 													data-width="100%">
 													<option th:each="style : ${mapsstyles}" th:id="${style.id}"
@@ -605,12 +604,12 @@
 													</button>
 													<button type="button"
 														class="btn btn-primary button-plus-create"
-														onclick="navigateWindow('/controlpanel/mapsstyle/update/'+$('#toolsOptionsmeasureToolOptionsstyle option:selected').attr('id'))">
+														onclick="navigateWindow('/controlpanel/mapsstyle/update/'+$('#toolsOptionsmesaureToolOptionsstyle option:selected').attr('id'))">
 														<a><i class="icon-edit" style="color: white;"></i></a>
 													</button>
 													<button type="button"
 														class="btn btn-primary button-plus-create"
-														onclick="updateStyleList('toolsOptionsmeasureToolOptionsstyle')">
+														onclick="updateStyleList('toolsOptionsmesaureToolOptionsstyle')">
 														<a><i class="icon-reload" style="color: white;"></i></a>
 													</button>
 
@@ -626,12 +625,12 @@
 											<label class="mt-checkbox popovers font-sm"
 												data-trigger="hover" data-placement="top"
 												data-container="body"
-												data-content="toolsOptionsmeasureToolOptionsinline"
-												data-title="toolsOptionsmeasureToolOptionsinline">
+												data-content="toolsOptionsmesaureToolOptionsinline"
+												data-title="toolsOptionsmesaureToolOptionsinline">
 												<div class="inline font-xs">In Line Mode</div> <input
-												id="toolsOptionsmeasureToolOptionsinline"
+												id="toolsOptionsmesaureToolOptionsinline"
 												class="form-control"
-												name="toolsOptionsmeasureToolOptionsinline" type="checkbox" />
+												name="toolsOptionsmesaureToolOptionsinline" type="checkbox" />
 												<span></span>
 											</label>
 										</div>
@@ -639,9 +638,9 @@
 									<div class="col-md-2 col-sm-2">
 										<div class="form-group">
 											<label class="control-label">Zoom Duration</label> <input
-												id="toolsOptionsmeasureToolOptionszoomDuration"
+												id="toolsOptionsmesaureToolOptionszoomDuration"
 												class="form-control" type="number"
-												name="toolsOptionsmeasureToolOptionszoomDuration">
+												name="toolsOptionsmesaureToolOptionszoomDuration">
 										</div>
 									</div>
 								</div>
@@ -658,7 +657,7 @@
 											<label class="mt-checkbox popovers font-sm"
 												data-trigger="hover" data-placement="top"
 												data-container="body" data-content="toolsOptionsselectByGeomToolOptionsenable"
-												data-title="toolsOptionsmeasureToolOptionsenable">
+												data-title="toolsOptionsmesaureToolOptionsenable">
 												<div class="inline font-xs">Enabled</div> <input
 												id="toolsOptionsselectByGeomToolOptionsenable" class="form-control" name="toolsOptionsselectByGeomToolOptionsenable"
 												type="checkbox" /> <span></span>
@@ -1093,7 +1092,6 @@
 
 										</div>
 									</div>
-									
 									<div class="col-md-4 col-sm-4">
 										<div class="form-group">
 											<label class="control-label">Lang Code</label> <input
@@ -1113,7 +1111,7 @@
 												id="toolsOptionsgeocoderToolOptionsoptionslocation"
 												name="toolsOptionsgeocoderToolOptionsoptionslocation"
 												data-role="tagsinput"
-												class="form-control tagsinput  " type="text"></input>
+												class="form-control tagsinput tagsnumber" type="text"></input>
 
 										</div>
 									</div>
@@ -1146,7 +1144,7 @@
 												class="form-control " />
 										</div>
 									</div>
-									<div class="col-md-4 col-xs-4">
+									<div class="col-md-8 col-xs-8">
 										<div class="form-group">
 											<label class="control-label" data-trigger="hover"
 												data-placement="top" data-container="body">
@@ -1156,19 +1154,6 @@
 												name="toolsOptionsgeocoderToolOptionsoptionssearchExtent"
 												data-role="tagsinput"
 												class="form-control tagsinput tagsnumber" type="text"></input>
-
-										</div>
-									</div>
-									<div class="col-md-4 col-xs-4">
-										<div class="form-group">
-											<label class="control-label" data-trigger="hover"
-												data-placement="top" data-container="body">
-												Source Country</label> <input data-msg="Please fill this field"
-												th:tabindex="2"
-												id="toolsOptionsgeocoderToolOptionssourceCountry"
-												name="toolsOptionsgeocoderToolOptionssourceCountry"
-												data-role="tagsinput" class="form-control tagsinput"
-												type="text"></input>
 
 										</div>
 									</div>
@@ -1188,7 +1173,36 @@
 										<span>Search</span>
 									</div>
 								</div>
-							 
+								<div class="row main" style="display:none">
+									<div class="col-md-3 col-sm-3">
+										<div class="form-group">
+											<label class="control-label">address</label> <input
+												id="toolsOptionsgeocoderToolOptionssearchaddress"
+												type="text"
+												name="toolsOptionsgeocoderToolOptionssearchaddress"
+												class="form-control " />
+										</div>
+									</div>
+									<div class="col-md-3 col-sm-3">
+										<div class="form-group">
+											<label class="control-label">address 2</label> <input
+												id="toolsOptionsgeocoderToolOptionssearchaddress2"
+												type="text"
+												name="toolsOptionsgeocoderToolOptionssearchaddress2"
+												class="form-control " />
+										</div>
+									</div>
+									<div class="col-md-3 col-sm-3">
+										<div class="form-group">
+											<label class="control-label">address 3</label> <input
+												id="toolsOptionsgeocoderToolOptionssearchaddress3"
+												type="text"
+												name="toolsOptionsgeocoderToolOptionssearchaddress3"
+												class="form-control " />
+										</div>
+									</div>
+									
+								</div>
 								<div class="row main">
 								<div class="col-md-3 col-sm-3">
 										<div class="form-group">
@@ -1273,9 +1287,30 @@
 												class="form-control " />
 										</div>
 									</div>
-									 
+									<div class="col-md-2 col-sm-2" style="display:none">
+										<div class="form-group">
+											<label class="control-label">srs</label> <input
+												id="toolsOptionsgeocoderToolOptionssearchsrs" type="text"
+												name="toolsOptionsgeocoderToolOptionssearchsrs"
+												class="form-control " />
+										</div>
+									</div>
 								</div>
-								 
+								<div class="row main" style="display:none">
+									<div class="col-md-6 col-xs-12">
+										<div class="form-group">
+											<label class="control-label" data-trigger="hover"
+												data-placement="top" data-container="body"> Reverse
+												Coordinates</label> <input data-msg="Please fill this field"
+												th:tabindex="2"
+												id="toolsOptionsgeocoderToolOptionssearchreverseCoordinates"
+												name="toolsOptionsgeocoderToolOptionssearchreverseCoordinates"
+												data-role="tagsinput"
+												class="form-control tagsinput tagsnumber" type="text"></input>
+
+										</div>
+									</div>
+								</div>
 							</div>
 							<div class="tab-pane " id="tab_routingToolOptions">
 								<div class="row main">
@@ -1302,8 +1337,8 @@
 												id="toolsOptionsroutingToolOptionsprovider"
 												class="form-control selectpicker">
 												<option value=""></option>
-												<option value="ors">Open Route Service</option>
-												<option value="esri">ESRI World Route Service</option>
+												<option value="OpenRoute Service">OpenRoute Service</option>
+												<option value="esri">ESRI</option>
 											</select>
 										</div>
 									</div>
@@ -2222,16 +2257,17 @@
 											<div class="btn-group btn-group-xs" role="group">
 												<button type="button"
 													class="btn btn-primary btn-primary-save" id="button2"
-													th:title="#{gen.add}"
 													onclick="addMapRow()">
-													
 													<span>Add</span>
 												</button>
-												
 												<button type="button"
 													class="btn btn-primary button-plus-create"
-													onclick="updateMapList()"
-													th:title="#{mapsproject.update.list}">
+													onclick="editMap($('#selectMap option:selected').attr('id'),1)">
+													<a><i class="icon-edit" style="color: white;"></i></a>
+												</button>
+												<button type="button"
+													class="btn btn-primary button-plus-create"
+													onclick="updateMapList()">
 													<a><i class="icon-reload" style="color: white;"></i></a>
 												</button>
 
@@ -2651,9 +2687,7 @@
 	class="page-footer"> </footer>
 
 <!-- CORE CONTROLLERS -->
-	<!-- CORE CONTROLLERS -->
-	<script th:src="@{/static/js/app.js}"></script>
-	<script th:src="@{/static/js/layout.js}"></script>
+
 
 <!-- TEMPLATE CONTROLLER  -->
 <script th:src="@{/static/js/utils/languages.js}"></script>
@@ -2794,14 +2828,14 @@
 	 var addProjectionRow = function(elem) {
 	 
 	 
-		var projection = {'prjName':$('#prjName').val(), 'prjData':{'name':$('#prjDataname').val(),'prjData':$('#prjDataprjData').val()}};
+		var projection = {'prjName':$('#prjName').val(), 'prjData':{'prjName':$('#prjDataname').val(),'prjData':$('#prjDataprjData').val()}};
 		if(elem!=null){
 		 projection = elem;
 		}  
 		if (projection.prjName === "" || typeof projection.prjName =='undefined' || projection.prjName == null ) {			
 			return false;
 		}
-		if (projection.prjData.name === "" || typeof projection.prjData.name =='undefined' || projection.prjData.name == null ) {			
+		if (projection.prjData.prjName === "" || typeof projection.prjData.prjName =='undefined' || projection.prjData.prjName == null ) {			
 			return false;
 		}
 		if (projection.prjData.prjData === "" || typeof projection.prjData.prjData =='undefined' || projection.prjData.prjData == null ) {			
@@ -2814,7 +2848,7 @@
 					.append(
 							'<tr class="tagProjectionsRow"><td>'
 									+ projection.prjName
-									+ '</td><td>'+projection.prjData.name+'</td><td>'+projection.prjData.prjData+'</td><td class="text-center"><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="removeprojectionRow(this)"><i class="icon-delete"></i></button></td></tr>');
+									+ '</td><td>'+projection.prjData.prjName+'</td><td>'+projection.prjData.prjData+'</td><td class="text-center"><button type="button" data-property="" class="btn btn-xs btn-no-border icon-on-table color-red tooltips" style="background-color:transparent;" onclick="removeprojectionRow(this)"><i class="icon-delete"></i></button></td></tr>');
 			  
 		} else {
 			
@@ -2874,8 +2908,7 @@
 	
 	var updateMapList = function(){
 		$.get("/controlpanel/mapsmap/getMapsList/").done(
-						function(data){
-							mapsmaps = data;					
+						function(data){					
 							if(data && data.length>0 ){
 								$('#selectMap').empty();
 								for(var i=0;i<data.length;i++){
@@ -2891,8 +2924,7 @@
 	var updateStyleList = function(idElement){	
 		var temp = $('#'+idElement).val();
 		$.get("/controlpanel/mapsstyle/getStyleList/").done(
-						function(data){	
-											
+						function(data){					
 							if(data && data.length>0 ){							
 								$('#'+idElement).empty();								 
 								for(var i=0;i<data.length;i++){
@@ -2910,18 +2942,6 @@
 						}
 		)	
 	}
-	
-	 
-	var deleteUrl =  [[@{/mapsproject}]];
-	
-	
-	var showConfirmDeleteDialog = function(){	
-		$('#delete_mapsproject_form').attr('action', deleteUrl + '/' + elementID);
-		$('#delete-id').val(elementID);
-		HeaderController.showConfirmDialogMapsProject('delete_mapsproject_form',deleteUrl,elementID);	
-	} 
-	
-	 
 	
 	
 		function editMap (id){
@@ -2943,7 +2963,6 @@
 			 }
 			 			  
 		});
-		
 		
 		});
 	// ]]>

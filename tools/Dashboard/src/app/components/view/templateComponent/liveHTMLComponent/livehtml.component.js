@@ -61,12 +61,7 @@
             if (vm.initLiveComponent) {
               vm.initLiveComponent();
             }
-
-            if ($scope.ds) {
-              if (vm.drawLiveComponent) {
-                vm.drawLiveComponent($scope.ds, null);
-              }
-            }
+    
     
           });
         }

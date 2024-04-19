@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,11 @@
  */
 package com.minsait.onesait.platform.controlpanel.controller.mapsstyle;
 
-import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +37,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.minsait.onesait.platform.config.model.MapsStyle;
 import com.minsait.onesait.platform.config.services.deletion.EntityDeletionService;
 import com.minsait.onesait.platform.config.services.exceptions.MapsStyleServiceException;
-import com.minsait.onesait.platform.config.services.mapsmap.dto.MapsMapDTO;
 import com.minsait.onesait.platform.config.services.mapsstyle.MapsStyleService;
 import com.minsait.onesait.platform.config.services.mapsstyle.dto.MapsStyleDTO;
 import com.minsait.onesait.platform.config.services.user.UserService;
@@ -81,7 +78,6 @@ public class MapsStyleController {
 		return STYLE_LIST;
 	}
 
-	 
 	@GetMapping(value = "/create")
 	public String create(Model model) {
 		MapsStyle maps = new MapsStyle();

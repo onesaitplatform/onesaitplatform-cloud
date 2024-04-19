@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -299,11 +299,6 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 		});
 	}
 
-	@Override
-	public void replicateUser(String userId, String vertical, String tenant) {
-		getUserOrReplicate(userId, this.verticalRepository.findByName(vertical), tenant);
-	}
-
 	private User getUserOrReplicate(String userId, Vertical vertical, String tenant) {
 		MultitenancyContextHolder.setVerticalSchema(vertical.getSchema());
 		final User user = userService.getUser(userId);
@@ -441,23 +436,6 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 		return true;
 
 	}
-	
-	@Override
-	public boolean checkCurrentPasword(String userId, String Pass) {
-		
-		int limit = 1;
-		final List<MasterUserHistoric> list = masterUserHistoricRepository.findByMasterUserLastNvalues(userId,
-				limit);
-		final JPAHAS256ConverterCustom converter = new JPAHAS256ConverterCustom();
-		final String newPassConverted = converter.convertToDatabaseColumn(Pass);
-		
-		if (list.get(0).getPassword().equals(newPassConverted)) {
-		return true;
-		}else {
-		return false;
-		}
-		
-	}
 
 	@Override
 	public List<MasterUser> getUsersForCurrentVertical() {
@@ -569,16 +547,6 @@ public class MultitenancyServiceImpl implements MultitenancyService {
 		} else {
 			return (masterUserRepository.findAllLazy());
 		}
-	}
-
-	@Override
-	public MasterUser getUserByMail(String email) {
-		return masterUserRepository.findByEmail(email);
-	}
-
-	@Override
-	public void updateMasterUserPassword(String userId, String password) {
-		masterUserRepository.updatePasswordFromReset(userId, password);
 	}
 
 }

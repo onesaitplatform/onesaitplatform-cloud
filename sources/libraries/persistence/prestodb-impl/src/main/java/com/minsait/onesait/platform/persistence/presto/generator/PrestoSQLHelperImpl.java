@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package com.minsait.onesait.platform.persistence.presto.generator;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,28 +23,20 @@ import org.springframework.stereotype.Component;
 
 import com.minsait.onesait.platform.config.components.OntologyVirtualSchemaFieldType;
 import com.minsait.onesait.platform.config.services.exceptions.OPResourceServiceException;
-import com.minsait.onesait.platform.persistence.presto.generator.helper.SelectSwapLimitOffset;
 import com.minsait.onesait.platform.persistence.presto.generator.model.common.ColumnPresto;
 import com.minsait.onesait.platform.persistence.presto.generator.model.common.HistoricalOptions;
 import com.minsait.onesait.platform.persistence.presto.generator.model.statements.PrestoCreateStatement;
 
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
-import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.Offset;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectBody;
-import net.sf.jsqlparser.statement.select.SelectItem;
-import net.sf.jsqlparser.statement.select.SetOperationList;
-import net.sf.jsqlparser.statement.select.SubSelect;
 
 @Slf4j
 @Primary
@@ -151,7 +142,7 @@ public class PrestoSQLHelperImpl implements PrestoSQLHelper {
 
 	@Override
 	public String addLimit(final String query, final long limit) {
-		final Optional<PlainSelect> selectStatement = parseQuery(query, false);
+		final Optional<PlainSelect> selectStatement = parseQuery(query);
 		if (selectStatement.isPresent()) {
 			return addLimit(selectStatement.get(), limit).toString();
 		} else {
@@ -161,7 +152,7 @@ public class PrestoSQLHelperImpl implements PrestoSQLHelper {
 
 	@Override
 	public String addLimit(final String query, final long limit, final long offset) {
-		final Optional<PlainSelect> selectStatement = parseQuery(query, true);
+		final Optional<PlainSelect> selectStatement = parseQuery(query);
 		if (selectStatement.isPresent()) {
 			return addLimit(selectStatement.get(), limit, offset).toString();
 		} else {
@@ -169,14 +160,11 @@ public class PrestoSQLHelperImpl implements PrestoSQLHelper {
 		}
 	}
 
-	private Optional<PlainSelect> parseQuery(final String query, final boolean swapLimitOffset) {
+	private Optional<PlainSelect> parseQuery(final String query) {
 		try {
 			final Statement statement = CCJSqlParserUtil.parse(query);
 			if (statement instanceof Select) {
-				if (swapLimitOffset) {
-					swapLimitOffsetForToString(statement);
-				}
-				return Optional.ofNullable(getPlainSelectFromSelect(((Select) statement).getSelectBody()));
+				return Optional.ofNullable((PlainSelect) ((Select) statement).getSelectBody());
 			} else {
 				log.debug("The statement passed as argument is not a select query, returning the original");
 				return Optional.empty();
@@ -184,37 +172,6 @@ public class PrestoSQLHelperImpl implements PrestoSQLHelper {
 		} catch (final JSQLParserException e) {
 			log.debug("Could not parse the query with JSQL returning the original. ", e);
 			return Optional.empty();
-		}
-	}
-	
-	private void swapLimitOffsetForToString(Statement statement) {
-		StatementVisitorAdapter statementVisitor = new StatementVisitorAdapter() {
-    	    public void visit(Select select) {
-    	    	if (select.getSelectBody() instanceof PlainSelect) {
-    	    		select.setSelectBody(new SelectSwapLimitOffset((PlainSelect) select.getSelectBody()));
-    	    	}
-    	    }
-    	};
-    	
-    	statement.accept(statementVisitor);
-	}
-	
-	private PlainSelect getPlainSelectFromSelect(SelectBody selectBody) {
-		if (SetOperationList.class.isInstance(selectBody)) { // union
-			PlainSelect plainSelect = new PlainSelect();
-
-			List<SelectItem> ls = new LinkedList<>();
-			ls.add(new AllColumns());
-			plainSelect.setSelectItems(ls);
-			
-			SubSelect subSelect = new SubSelect();
-			subSelect.setSelectBody(selectBody);
-			subSelect.setAlias(new Alias("U"));
-			plainSelect.setFromItem(subSelect);
-						
-			return plainSelect;
-		} else {
-			return (PlainSelect) selectBody;
 		}
 	}
 

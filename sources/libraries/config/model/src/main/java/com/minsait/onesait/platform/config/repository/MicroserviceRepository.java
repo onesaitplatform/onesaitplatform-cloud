@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,4 @@ public interface MicroserviceRepository extends JpaRepository<Microservice, Stri
 
 	@Query("SELECT m.identification FROM Microservice AS m WHERE m.user=:user ORDER BY m.identification ASC")
 	List<String> findAllIdentificationsByUser(@Param("user") User user);
-	
-	@Query("SELECT m FROM Microservice AS m WHERE m.identification=:identification OR m.id=:identification")
-	Microservice findByIdentificationOrId(@Param("identification") String identification);
 }

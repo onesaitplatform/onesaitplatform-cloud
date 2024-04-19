@@ -1,7 +1,7 @@
 <!--
 
     Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
-    2013-2023 SPAIN
+    2013-2022 SPAIN
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -80,30 +80,23 @@
 			
 			if (isNative(query)){
 				$.alert({title: 'ERROR!', theme: 'light', style: 'red', content: [[#{datasources.queryError}]]});
-			}else{
-				if(typeof query !=='undefined'){
-					var testOntology = getOntologyFromQuery(query);
-					console.log('ontologia: ' + testOntology);
-	
-					var csrf_value = $("meta[name='_csrf']").attr("content");
-					var csrf_header = $("meta[name='_csrf_header']").attr("content");
-					
-					$.ajaxSetup({'headers': {
-						[csrf_header]: csrf_value
-					}});
-					
-					query = getMonacoValue();
-					if(query.indexOf(" limit ") < 0){						
-						query = query + " limit "+$('#maxvalues').val();
-					}
-					
-					timeStart = Date.now();	
-					$("#Canvasrespuesta").load('/controlpanel/querytool/query', { 'query': query, 'queryType': 'SQL', 'ontologyIdentification': testOntology},function(response){
-						callbackQuery(response);
-					});	
+			}
+			if(typeof query !=='undefined'){
+				var testOntology = getOntologyFromQuery(query);
+				console.log('ontologia: ' + testOntology);
+
+				var csrf_value = $("meta[name='_csrf']").attr("content");
+				var csrf_header = $("meta[name='_csrf_header']").attr("content");
 				
-					$("#dimensionsPanel").show();
-				}
+				$.ajaxSetup({'headers': {
+					[csrf_header]: csrf_value
+				}});
+				timeStart = Date.now();	
+				$("#Canvasrespuesta").load('/controlpanel/querytool/query', { 'query': getMonacoValue(), 'queryType': 'SQL', 'ontologyIdentification': testOntology},function(response){
+					callbackQuery(response);
+				});	
+			
+				$("#dimensionsPanel").show();
 			}
 		}
 	
@@ -295,9 +288,9 @@
 							<div class="col-md-6 col-sm-6 col-xs-12">
 								<div class="pull-right">
 									<!-- DELETE -->
-									<button th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${owner}) AND ${datasource.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='DatasourcesCreateController.deleteGadgetDatasource(\'' + ${datasource.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
+									<button th:if="${datasource.id} != null" id="deleteBtn" type="button" class="btn btn-primary btn-primary-delete" name="delete"  value="Remove" th:attr="onclick='DatasourcesCreateController.deleteGadgetDatasource(\'' + ${datasource.id} + '\');'" ><i class="icon-delete"></i><span th:text="#{gen.deleteBtn}" class="delete-btn-text"> Delete </span></button>
 									
-									<span class="sep" th:if="(${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${owner}) AND ${datasource.id} != null"></span>
+									<span class="sep" th:if="(${datasource.id} != null)"></span>
 								
 									<!-- CANCEL -->											
 									<button th:if="(${appId} == null)"	id="cancelBtn" type="button" class="btn btn-primary-cancel" name="cancel" th:value="#{gen.cancelBtn}" value="cancel" th:attr="onclick='javascript:DatasourcesCreateController.cancel(\'' + ${datasource.id} + '\',\'' + @{/datasources/list} + '\');'"><span th:text="#{gen.cancelBtn}"> Cancel </span></button>
@@ -312,7 +305,7 @@
 									<!-- CREATE -->
 									<button th:if="${datasource.id} == null" id="createBtn" type="submit" class="btn btn-primary btn-primary-save" name="create"  th:value="#{gen.createBtn}" ><span th:text="#{gen.createBtn}"> New</span></button>	
 									<!-- UPDATE -->
-									<button th:if="(${datasource.id} != null) AND (${#strings.arrayJoin(#authentication.authorities,'')} == 'ROLE_ADMINISTRATOR' OR ${#authentication.name} == ${owner} OR ${app_user_access.name()} =='MANAGE')" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>								
+									<button th:if="${datasource.id} != null" id="updateBtn" type="submit" class="btn btn-primary btn-primary-save" name="update"  th:value="#{gen.editBtn}" ><span th:text="#{gen.changes}"> Save Changes</span></button>								
 								</div>
 							</div>
 						</div>
@@ -426,7 +419,7 @@
 	<script th:src="@{/static/vendor/jquery/jquery.autocomplete.js}"></script>
 	<script th:src="@{/static/vendor/bootstrap-datepicker/bootstrap-datepicker.min.js}"></script>
     <script th:src="@{/static/vendor/bootstrap-select/bootstrap-select.min.js}"></script>
-	<script th:src="@{/static/vendor/sql-formatter/sql-formatter.min.js}"></script>
+	
 	<!-- JSON EDITOR -->	
 	<script th:src="@{/static/vendor/json/jsoneditor.js}"></script>	
 	<script th:src="@{/static/vendor/ace/ace.js}" charset="utf-8"></script>
@@ -472,7 +465,7 @@
 		var codeEditor;		
 		var setMonacoValue = function (value){
 			if (codeEditor){
-				codeEditor.setValue(format(value));
+				codeEditor.setValue(value);
 			}
 		}
 		var getMonacoValue = function (){
@@ -536,40 +529,25 @@
 				
 			}
 		}
-		
-		var format = window.sqlFormatter.format;
-		const sqlfmt = (sql) => {
-  			return format(sql);
-  		};
-		
-		$(window).on("load", function () {
-				var htmlelement = document.getElementById('querySql');
-				codeEditor = monaco.editor.create(htmlelement, {
-					language: 'sql',
-					scrollBeyondLastLine: false,
-					theme: "vs-dark",
-					automaticLayout: true
-				});
-				monaco.languages.registerDocumentFormattingEditProvider("sql", {
-					async provideDocumentFormattingEdits(model) {
-						var formatted = await sqlfmt(model.getValue());
-						return [
-							{
-								range: model.getFullModelRange(),
-								text: formatted,
-							},
-						];
-					}
-				});
-
-				const form = document.getElementById("datasource_create_form");
-				form.addEventListener("formdata", e => {
-					e.formData.append('query', getMonacoValue());
-				});
-
-				setMonacoValue($('#query').val());
-				loadConfig();
+		$(window).on("load",function(){
+			var htmlelement = document.getElementById('querySql');
+			codeEditor = monaco.editor.create(htmlelement, {
+			       language: 'sql', 
+			       scrollBeyondLastLine: false,	 
+			       theme: "vs-dark",	 
+			       automaticLayout: true	 
 			});
+			
+			
+			 const form = document.getElementById("datasource_create_form");
+		        form.addEventListener("formdata", e =>
+		        {		        
+		            e.formData.append('query', getMonacoValue());		           
+		        });
+
+		    setMonacoValue($('#query').val());
+			loadConfig();
+		});
 		
 		/* ]]> */
 	</script>

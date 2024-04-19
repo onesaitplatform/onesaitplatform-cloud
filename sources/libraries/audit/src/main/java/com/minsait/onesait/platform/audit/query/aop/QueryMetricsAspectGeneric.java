@@ -1,6 +1,6 @@
 /**
  * Copyright Indra Soluciones Tecnologías de la Información, S.L.U.
- * 2013-2023 SPAIN
+ * 2013-2022 SPAIN
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -140,9 +140,7 @@ public class QueryMetricsAspectGeneric {
 		} else if (value.contains("dashboard")) {
 			return "DASHBOARD_ENGINE";
 		} else {
-			if (log.isDebugEnabled()) {
-				log.debug("Module not recognised {}", value);
-			}
+			log.debug("Module not recognised {}", value);
 			return "QUERY_TOOL";
 		}
 	}
